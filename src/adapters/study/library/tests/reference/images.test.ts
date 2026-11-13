@@ -1,3 +1,5 @@
+import { createFiles, createDatabase } from "../reuse/capabilities.js";
+import { createEntry } from "../reuse/fixtures.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
@@ -11,18 +13,21 @@ import { createLibraryFlow } from "../reuse/flows.js";
 import type { LibrarySchema, LibraryEntry } from "../../types.js";
 
 const png = Buffer.from("89504e470d0a1a0a00000000", "hex");
-const actor = { accountId: "alice", role: "user" };
+const actor = { accountId: "alice", role: "user" } as const;
 const schema: LibrarySchema = {
     id: "images",
     version: 1,
     namespace: "images",
     language: "en",
+    metadata: { labels: { en: "Images" } },
     layers: [
         {
             id: "words",
+            metadata: { labels: { en: "Words" } },
             fields: [
                 {
                     id: "pictures",
+                    metadata: { labels: { en: "Pictures" } },
                     type: "imageList",
                     input: { control: "imageFiles" },
                 },
@@ -33,13 +38,20 @@ const schema: LibrarySchema = {
 
 test("reference image upload validates bytes and keeps files private; reads follow card and staged-request access through registered flows", async () => {
     const stored = new Map<string, Uint8Array>();
-    const files = new LibraryImageStore({
-        put: async (_actor, key, data, options) => {
-            assert.equal(options.publicRead, false);
-            stored.set(key, data);
-        },
-        get: async (_actor, key) => stored.get(key),
-    } as never);
+    const files = new LibraryImageStore(
+        createFiles({
+            put: async (_actor, key, data, options) => {
+                assert.equal(options?.publicRead, false);
+                stored.set(key, data);
+                return {
+                    key,
+                    size: data.byteLength,
+                    lastModified: new Date(0),
+                };
+            },
+            get: async (_actor, key) => stored.get(key) ?? null,
+        }),
+    );
     let readable = true;
     let stagedReadable = false;
     let entry: LibraryEntry;
@@ -54,7 +66,7 @@ test("reference image upload validates bytes and keeps files private; reads foll
         isReferenced: async () => false,
     });
     const uploaded = await images.upload(actor, "image/png", png);
-    entry = {
+    entry = createEntry({
         id: "card",
         schemaId: schema.id,
         layer: "words",
@@ -63,7 +75,7 @@ test("reference image upload validates bytes and keeps files private; reads foll
         scope: "user",
         scopeId: "alice",
         createdBy: "alice",
-    } as LibraryEntry;
+    });
     assert.deepEqual(
         (await images.read(actor, "card", "pictures", 0)).data,
         png,
@@ -86,6 +98,7 @@ test("reference image upload validates bytes and keeps files private; reads foll
         images.read(actor, "request", "pictures", -1, true),
         /image_not_found/,
     );
+    assert.ok(entry.fields);
     await images.validate(actor, schema, "words", entry.fields);
     await assert.rejects(
         images.validate(
@@ -131,13 +144,20 @@ test("image uploads reject MIME mismatches, active content and oversized payload
 
 test("discarding staged images follows owner authorization and keeps images referenced by cards or requests", async () => {
     const stored = new Map<string, Uint8Array>();
-    const files = new LibraryImageStore({
-        put: async (_actor, key, data) => {
-            stored.set(key, data);
-        },
-        get: async (_actor, key) => stored.get(key),
-        delete: async (_actor, key) => stored.delete(key),
-    } as never);
+    const files = new LibraryImageStore(
+        createFiles({
+            put: async (_actor, key, data) => {
+                stored.set(key, data);
+                return {
+                    key,
+                    size: data.byteLength,
+                    lastModified: new Date(0),
+                };
+            },
+            get: async (_actor, key) => stored.get(key) ?? null,
+            delete: async (_actor, key) => stored.delete(key),
+        }),
+    );
     const referenced = new Set<string>();
     const runs: string[] = [];
     const images = new LibraryImages({
@@ -176,12 +196,12 @@ test("image cleanup detects references in saved fields, pending graphs and histo
         { fields_json: JSON.stringify({ images: [value] }) },
     ];
     let requestRows: Array<Record<string, unknown>> = [];
-    const database = {
+    const database = createDatabase({
         executeCommand: async ({ table }) => ({
             rows: table === "study_library_entries" ? entryRows : requestRows,
         }),
-    };
-    assert.equal(await hasImageReference(database as never, value), true);
+    });
+    assert.equal(await hasImageReference(database, value), true);
     entryRows = [];
     requestRows = [
         {
@@ -190,7 +210,7 @@ test("image cleanup detects references in saved fields, pending graphs and histo
             }),
         },
     ];
-    assert.equal(await hasImageReference(database as never, value), true);
+    assert.equal(await hasImageReference(database, value), true);
     requestRows = [
         {
             source_context_json: JSON.stringify([
@@ -198,7 +218,7 @@ test("image cleanup detects references in saved fields, pending graphs and histo
             ]),
         },
     ];
-    assert.equal(await hasImageReference(database as never, value), true);
+    assert.equal(await hasImageReference(database, value), true);
     requestRows = [
         {
             source_entry_json: JSON.stringify({
@@ -206,5 +226,5 @@ test("image cleanup detects references in saved fields, pending graphs and histo
             }),
         },
     ];
-    assert.equal(await hasImageReference(database as never, value), false);
+    assert.equal(await hasImageReference(database, value), false);
 });

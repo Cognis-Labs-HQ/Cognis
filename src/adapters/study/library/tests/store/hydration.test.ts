@@ -60,7 +60,7 @@ test("listing cards hydrates ordered and grouped references with one batch per e
         entries[0].referenceGroups?.reading[0].map((value) => value.entryId),
         ["first", "second"],
     );
-    assert.deepEqual(entries[1].references[0].transformation, {
+    assert.deepEqual(entries[1].references?.[0].transformation, {
         form: "polite",
     });
     await new LibraryStore(database).list(

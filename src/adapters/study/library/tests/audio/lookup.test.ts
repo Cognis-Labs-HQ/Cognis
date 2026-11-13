@@ -1,33 +1,37 @@
+import { createFiles } from "../reuse/capabilities.js";
+import { createEntry, createLayer } from "../reuse/fixtures.js";
 import { LibraryService } from "../../service/index.js";
 import assert from "node:assert/strict";
 import test from "node:test";
-import {
-    createCtx,
-    type NamespaceFileClient,
-    type StudyAudioCapability,
-} from "@cognis/core";
+import { createCtx, type StudyAudioCapability } from "@cognis/core";
 import { LibraryAudioCache } from "../../audio-cache.js";
 import { readEntryAudio } from "../../service/audio.js";
-import type {
-    LibraryEntry,
-    LibraryLayerSchema,
-    LibrarySchema,
-} from "../../types.js";
+import type { LibrarySchema } from "../../types.js";
 
 function createAudioCache() {
     const objects = new Map<string, Uint8Array>();
-    return new LibraryAudioCache({
-        get: async (_actor, key) => objects.get(key) ?? null,
-        put: async (_actor, key, data) => {
-            objects.set(key, data);
-        },
-    } as unknown as NamespaceFileClient);
+    return new LibraryAudioCache(
+        createFiles({
+            get: async (_actor, key) => objects.get(key) ?? null,
+            put: async (_actor, key, data) => {
+                objects.set(key, data);
+                return {
+                    key,
+                    size: data.byteLength,
+                    lastModified: new Date(0),
+                };
+            },
+        }),
+    );
 }
 
 test("missing card audio is fetched once into Files without changing authored fields", async () => {
     const cache = createAudioCache();
     let requests = 0;
     const provider: StudyAudioCapability = {
+        registerLanguage() {
+            throw new Error("unexpected_language_registration");
+        },
         registerProvider() {
             throw new Error("not_used");
         },
@@ -39,18 +43,18 @@ test("missing card audio is fetched once into Files without changing authored fi
             return { mediaType: "audio/mpeg", data: new Uint8Array([1, 2, 3]) };
         },
     };
-    const entry = {
+    const entry = createEntry({
         scope: "global",
         id: "dog",
         label: "dog",
         language: "en",
         fields: {},
-    } as LibraryEntry;
-    const layer = {
+    });
+    const layer = createLayer({
         id: "words",
         semanticRole: "lexicalUnit",
         fields: [{ id: "audio", type: "audio" }],
-    } as LibraryLayerSchema;
+    });
     const [first, second] = await Promise.all(
         Array.from({ length: 10 }, () =>
             readEntryAudio(entry, layer, "audio", cache, provider),
@@ -77,6 +81,9 @@ test("audio access checks ownership and derives transformed speech from the sche
     const cache = createAudioCache();
     const requests: string[] = [];
     const provider: StudyAudioCapability = {
+        registerLanguage() {
+            throw new Error("unexpected_language_registration");
+        },
         registerProvider() {
             throw new Error("not_used");
         },
@@ -87,7 +94,7 @@ test("audio access checks ownership and derives transformed speech from the sche
             return { mediaType: "audio/mpeg", data: new Uint8Array([1, 2, 3]) };
         },
     };
-    const entry = {
+    const entry = createEntry({
         id: "dog",
         schemaId: "test",
         language: "en",
@@ -97,7 +104,7 @@ test("audio access checks ownership and derives transformed speech from the sche
         scopeId: "alice",
         tags: ["noun"],
         fields: { audio: "file:base.audio", pronunciation: ["dog"] },
-    } as LibraryEntry;
+    });
     let writes = 0;
     const store = {
         get: async () => entry,
@@ -237,6 +244,9 @@ test("only the first pronunciation controls playback and cache identity", async 
     const cache = createAudioCache();
     const spoken: string[] = [];
     const provider: StudyAudioCapability = {
+        registerLanguage() {
+            throw new Error("unexpected_language_registration");
+        },
         registerProvider() {
             throw new Error("not_used");
         },
@@ -248,7 +258,7 @@ test("only the first pronunciation controls playback and cache identity", async 
             return { mediaType: "audio/mpeg", data: new Uint8Array([1, 2]) };
         },
     };
-    const entry = {
+    const entry = createEntry({
         scope: "global",
         id: "kanji",
         language: "ja",
@@ -259,12 +269,12 @@ test("only the first pronunciation controls playback and cache identity", async 
                 ...Array.from({ length: 20 }, (_, index) => `other-${index}`),
             ],
         },
-    } as LibraryEntry;
-    const layer = {
+    });
+    const layer = createLayer({
         id: "kanji",
         semanticRole: "compoundWritingUnit",
         fields: [{ id: "audio", type: "audio" }],
-    } as LibraryLayerSchema;
+    });
     await readEntryAudio(entry, layer, "audio", cache, provider);
     entry.fields!.pronunciation = ["first", "changed-secondary"];
     await readEntryAudio(entry, layer, "audio", cache, provider);

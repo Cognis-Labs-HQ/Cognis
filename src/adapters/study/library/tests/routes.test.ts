@@ -1,3 +1,4 @@
+import type { LibraryService } from "../service/index.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
@@ -87,9 +88,14 @@ test("viewed-entry routes read and update the authenticated user's cache", async
     const calls: Array<{ accountId: string; entryIds: readonly string[] }> = [];
     const route = createLibraryRoutes(
         {
-            viewedEntryIds: async (actor) =>
-                actor.accountId === "alice" ? ["entry-a"] : [],
-            markEntriesViewed: async (actor, entryIds) => {
+            viewedEntryIds: async (
+                ...[actor]: Parameters<LibraryService["viewedEntryIds"]>
+            ) => (actor.accountId === "alice" ? ["entry-a"] : []),
+            markEntriesViewed: async (
+                ...[actor, entryIds]: Parameters<
+                    LibraryService["markEntriesViewed"]
+                >
+            ) => {
                 calls.push({ accountId: actor.accountId, entryIds });
             },
         } as never,
@@ -123,7 +129,11 @@ test("visibility requests can be withdrawn by their submitter", async () => {
     let withdrawn = "";
     const route = createLibraryRoutes(
         {
-            withdrawPush: async (_actor, requestId) => {
+            withdrawPush: async (
+                ...[_actor, requestId]: Parameters<
+                    LibraryService["withdrawPush"]
+                >
+            ) => {
                 withdrawn = requestId;
                 return { id: requestId, status: "withdrawn" };
             },
@@ -155,7 +165,11 @@ test("entry deletion passes validated selections to the Library capability", asy
         | undefined;
     const route = createLibraryRoutes(
         {
-            deleteEntries: async (actor, entryIds, blacklistContentHashes) => {
+            deleteEntries: async (
+                ...[actor, entryIds, blacklistContentHashes]: Parameters<
+                    LibraryService["deleteEntries"]
+                >
+            ) => {
                 request = { actor, entryIds, blacklistContentHashes };
                 return [...entryIds, "dependent"];
             },
@@ -247,7 +261,11 @@ test("packaged audio remains behind authenticated entry access", async () => {
     let requestedField = "";
     const route = createLibraryRoutes(
         {
-            readAudio: async (_actor, entryId, fieldId) => {
+            readAudio: async (
+                ...[_actor, entryId, fieldId]: Parameters<
+                    LibraryService["readAudio"]
+                >
+            ) => {
                 requestedEntry = entryId;
                 requestedField = fieldId;
                 return { mediaType: "audio/mpeg", data: Buffer.from("audio") };
@@ -284,7 +302,11 @@ test("entry update delegates validated identity to the Library capability", asyn
     };
     const route = createLibraryRoutes(
         {
-            update: async (_actor, entryId, input) => {
+            update: async (
+                ...[_actor, entryId, input]: Parameters<
+                    LibraryService["update"]
+                >
+            ) => {
                 updatedId = entryId;
                 return { id: entryId, ...input };
             },
@@ -424,7 +446,11 @@ test("transformed audio requests keep descriptors in an authenticated POST body"
     let received: unknown;
     const route = createLibraryRoutes(
         {
-            readAudio: async (actor, entryId, fieldId, transformation) => {
+            readAudio: async (
+                ...[actor, entryId, fieldId, transformation]: Parameters<
+                    LibraryService["readAudio"]
+                >
+            ) => {
                 received = { actor, entryId, fieldId, transformation };
                 return { mediaType: "audio/mpeg", data: Buffer.from("audio") };
             },

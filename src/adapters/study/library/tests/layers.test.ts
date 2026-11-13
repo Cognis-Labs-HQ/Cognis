@@ -43,6 +43,7 @@ const entry = (id: string, label: string, layer = "letters"): LibraryEntry => ({
     label,
     scope: "global",
     scopeId: "global",
+    protected: false,
     createdBy: "owner",
     createdAt: "2026-01-01",
     updatedAt: "2026-01-01",
@@ -334,10 +335,13 @@ test("one pronunciation group may span multiple linked relationships", () => {
     const schema: LibrarySchema = structuredClone(english);
     const letters = schema.layers[1].relationships![0];
     letters.grouped = true;
-    schema.layers[1].relationships!.push({
-        ...letters,
-        id: "suffixes",
-    });
+    schema.layers[1].relationships = [
+        ...schema.layers[1].relationships!,
+        {
+            ...letters,
+            id: "suffixes",
+        },
+    ];
     schema.layers[1].fields = [
         {
             id: "pronunciation",

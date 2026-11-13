@@ -632,3 +632,7 @@ Notifikasi permintaan dan konten Library menggunakan `accountId` yang tetap agar
 ## Pengiriman Notifikasi Study
 
 Notifikasi permintaan, konten, dan penghapusan Study memakai kategori yang didaftarkan saat bootstrap Library. Pengiriman runtime hanya mencari kemampuan notifikasi terkini tanpa melakukan registrasi, sehingga pembatasan bootstrap SMTP tidak menghalangi pengiriman atau pemberitahuan perubahan visibilitas.
+
+## Verifikasi Pengembang
+
+Fungsi pembuat data uji dalam `tests/reuse/` menyediakan entri, skema, dan tiruan kapabilitas publik yang lengkap. Operasi yang belum dikonfigurasi menghasilkan galat, bukan keberhasilan diam-diam. Penulisan berkas mengembalikan metadata objek, dan transaksi basis data mempertahankan tipe hasilnya. Pengujian penyimpanan gambar menjalankan penyimpanan terstruktur dan pembatalan transaksi secara lokal. Jalankan pengujian Library dengan opsi Node `--experimental-vm-modules --import tsx --test`. Perubahan khusus pengujian ini tidak mengaktifkan pemeriksaan tipe seluruh repositori; integrasinya menunggu perbaikan komponen lain.

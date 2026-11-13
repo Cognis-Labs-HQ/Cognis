@@ -43,6 +43,7 @@ const entry = (id: string, label: string, layer = "letters"): LibraryEntry => ({
     label,
     scope: "global",
     scopeId: "global",
+    protected: false,
     createdBy: "owner",
     createdAt: "2026-01-01",
     updatedAt: "2026-01-01",

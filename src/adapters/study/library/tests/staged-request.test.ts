@@ -1,3 +1,5 @@
+import { createDatabase } from "./reuse/capabilities.js";
+import { createEntry } from "./reuse/fixtures.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { LibraryVisibilityService } from "../visibility.js";
@@ -9,7 +11,7 @@ import type {
     LibraryEntryInput,
 } from "../types.js";
 
-const source = {
+const source = createEntry({
     id: "card",
     schemaId: "schema",
     layer: "words",
@@ -20,7 +22,7 @@ const source = {
     editable: true,
     fields: {},
     references: [],
-} as LibraryEntry;
+});
 const proposal = {
     schemaId: "schema",
     layer: "words",
@@ -138,22 +140,22 @@ test("saving an unchanged staged card does not grant ownership; changed drafts r
         source_entry_json: JSON.stringify(source),
         modified_by_json: "[]",
     };
-    const database = {
+    const database = createDatabase({
         executeCommand: async (command) => {
             if (command.option === "UPDATE") row = { ...row, ...command.set };
             return { rowCount: 1, rows: [row] };
         },
-    };
+    });
     const unchanged = await stagePushRequest(
-        database as never,
+        database,
         "request",
         { ...proposal, label: "original", fields: { reference_images: [] } },
         "admin",
     );
     assert.deepEqual(unchanged.modifiedBy, []);
-    await stagePushRequest(database as never, "request", proposal, "editor");
+    await stagePushRequest(database, "request", proposal, "editor");
     const changed = await stagePushRequest(
-        database as never,
+        database,
         "request",
         { ...proposal, label: "another" },
         "second",

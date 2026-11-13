@@ -1,3 +1,5 @@
+import { createFiles } from "../reuse/capabilities.js";
+import { createSchema } from "../reuse/fixtures.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { Readable } from "node:stream";
@@ -10,14 +12,12 @@ import {
     validateUploadedAudioFields,
 } from "../../service/uploads.js";
 import { createLibraryFlow } from "../reuse/flows.js";
-import type { NamespaceFileClient } from "@cognis/core";
-import type { LibrarySchema } from "../../types.js";
 import { readRawBody } from "../../../../../api/reuse/read-json.js";
 
-const actor = { accountId: "alice", role: "user" };
-const schema = {
+const actor = { accountId: "alice", role: "user" } as const;
+const schema = createSchema({
     layers: [{ id: "words", fields: [{ id: "audio", type: "audio" }] }],
-} as LibrarySchema;
+});
 
 function recording(size = 12) {
     const data = Buffer.alloc(size);
@@ -52,12 +52,19 @@ test("audio uploads enforce the 5 MiB boundary and verified media signatures", a
 
 test("owned uploads execute authorization before persistence and reject foreign attachments", async () => {
     const objects = new Map<string, Uint8Array>();
-    const cache = new LibraryAudioCache({
-        get: async (_actor, key) => objects.get(key) ?? null,
-        put: async (_actor, key, data) => {
-            objects.set(key, data);
-        },
-    } as NamespaceFileClient);
+    const cache = new LibraryAudioCache(
+        createFiles({
+            get: async (_actor, key) => objects.get(key) ?? null,
+            put: async (_actor, key, data) => {
+                objects.set(key, data);
+                return {
+                    key,
+                    size: data.byteLength,
+                    lastModified: new Date(0),
+                };
+            },
+        }),
+    );
     let authorized = false;
     const upload = await storeUploadedAudio(actor, "audio/wav", recording(), {
         cache,

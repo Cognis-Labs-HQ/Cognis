@@ -1,10 +1,10 @@
+import { createEntry, createSchema } from "../reuse/fixtures.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { validateReferenceTransformation } from "../../layers/reference-transformation.js";
-import type { LibraryEntry, LibrarySchema } from "../../types.js";
 
 test("server rejects plural references until the base card opts into the family", () => {
-    const schema = {
+    const schema = createSchema({
         transformSets: [
             {
                 id: "noun",
@@ -22,8 +22,8 @@ test("server rejects plural references until the base card opts into the family"
                 ],
             },
         ],
-    } as LibrarySchema;
-    const target = { label: "dog", tags: ["countable"] } as LibraryEntry;
+    });
+    const target = createEntry({ label: "dog", tags: ["countable"] });
     const reference = {
         entryId: "dog",
         relation: "words",
