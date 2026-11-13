@@ -250,3 +250,7 @@ Users action menus resolve rows by immutable account ID rather than public usern
 ## Complete Cached Assets
 
 Range requests bypass the whole-file cache, and only complete HTTP 200 responses can populate or replace public assets. Partial responses leave existing complete bytes intact. Content-hashed font files use the same immutable caching and cross-generation reuse as hashed scripts and images, avoiding unnecessary downloads after worker updates.
+
+## Administration Saves
+
+Administration saves only sections with pending changes. Security controls become editable after both security settings and password policy load successfully. A form redraw preserves pending edits; leaving a changed section still requires the existing discard confirmation. A partial save keeps failed or newer edits pending, so retry does not resend settings already saved. The Security tutorial continues to explain session policy and trusted domains.
