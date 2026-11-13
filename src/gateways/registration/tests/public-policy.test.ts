@@ -4,14 +4,16 @@ import path from "node:path";
 import { createCtx } from "@cognis/core";
 import { CoreRegistrationGateway } from "../gateway.js";
 import { authorizeAccountCreation } from "../bootstrap/account-creation-gate.js";
-import { InMemoryTestExecutor } from "../../db/tests/in-memory-test-executor.js";
+import { createAccountStore } from "./reuse/accounts.js";
+import { PolicyExecutor } from "./reuse/policy-executor.js";
 
 test("native signup policy persists independently of the adapter and SSO creation flow", async () => {
-    const db = new InMemoryTestExecutor();
+    const db = new PolicyExecutor();
     const registered: string[] = [];
     const deps = {
         dbExecutor: db,
         accountStore: {
+            ...createAccountStore(),
             register: async (username: string) => {
                 registered.push(username);
                 return { username, role: "user", enabled: true };
@@ -47,13 +49,32 @@ test("native signup policy persists independently of the adapter and SSO creatio
         "gateAccountCreation",
         "authorizeCreation",
         { id: "registration:test-policy" },
-        (stage) => authorizeAccountCreation(gateway, true, stage.input),
+        (stage) => {
+            assert.ok(stage.input && typeof stage.input === "object");
+            assert.ok(
+                "accountId" in stage.input &&
+                    typeof stage.input.accountId === "string",
+            );
+            assert.ok(
+                "email" in stage.input && typeof stage.input.email === "string",
+            );
+            return authorizeAccountCreation(gateway, true, {
+                accountId: stage.input.accountId,
+                email: stage.input.email,
+            });
+        },
     );
     const result = await ctx.flow.run("gateAccountCreation", {
         accountId: "x:person",
         email: "person@example.com",
     });
-    assert.equal(result.stageResults.authorizeCreation[0].authorized, true);
+    const authorized = result.stageResults.authorizeCreation[0];
+    assert.ok(
+        authorized &&
+            typeof authorized === "object" &&
+            "authorized" in authorized,
+    );
+    assert.equal(authorized.authorized, true);
     await assert.rejects(
         gateway.registerPublic({ username: "native", password: "password" }),
         /public_disabled/,
@@ -73,5 +94,7 @@ test("native signup policy persists independently of the adapter and SSO creatio
         accountId: "x:other",
         email: "other@example.com",
     });
-    assert.equal(closed.stageResults.authorizeCreation[0].authorized, false);
+    const denied = closed.stageResults.authorizeCreation[0];
+    assert.ok(denied && typeof denied === "object" && "authorized" in denied);
+    assert.equal(denied.authorized, false);
 });

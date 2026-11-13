@@ -16,7 +16,7 @@ export interface LdapIdentity {
     attributes?: Record<string, unknown>;
 }
 
-export interface LdapDirectorySample {
+export type LdapDirectorySample = {
     users: Array<{
         id: string;
         dn?: string;
@@ -28,9 +28,9 @@ export interface LdapDirectorySample {
     groups: Array<{ name: string; dn?: string; members?: string[] }>;
     supportsMemberOf: boolean;
     directoryFlavor: "openldap" | "freeipa" | "generic";
-}
+};
 
-export interface LdapCredentialTestResult {
+export type LdapCredentialTestResult = {
     credentialTest: {
         accountId: string;
         dn?: string;
@@ -39,7 +39,7 @@ export interface LdapCredentialTestResult {
         groups: string[];
         role: string;
     };
-}
+};
 
 export interface LdapClient {
     authenticate(
@@ -811,6 +811,6 @@ class LdapAuthAdapter implements AuthProviderAdapter {
     }
 }
 
-export function createAdapter(): AuthProviderAdapter {
+export function createAdapter(): LdapAuthAdapter {
     return new LdapAuthAdapter();
 }

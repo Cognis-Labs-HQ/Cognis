@@ -76,3 +76,7 @@ LDAP connection and credential forms pass adapter localization keys directly to 
 Source removal runs the `reconcile-auth-sources` flow. It revokes sessions for every account associated with the removed source. With source unification disabled, the user account is deprovisioned; with unification enabled, only the removed source identity is detached so another configured source can authenticate and refresh the retained account.
 
 Successful Test and Discover requests display a localized success toast before setup advances to filters and role mapping.
+
+## Type Contracts
+
+The adapter factory retains the adapter-owned client injection method and the directory-or-credential test result union. Consumers narrow the result before reading directory groups or credential details. Directory searches use ldapts paging with a page size of 100; authentication and group mapping are unchanged.

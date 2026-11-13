@@ -28,3 +28,7 @@ The adapter exposes one admin setting:
 - `algorithm` — HMAC algorithm used for setup verification and login verification.
 
 The method declares its login placeholder, language base and configuration labels; the gateway renders that metadata without a provider-ID branch.
+
+## Type Contracts
+
+The adapter owns a narrow declaration for the QR renderer’s promise-based SVG operation, including correction level, margin and width options. Setup tests exercise the real renderer. Code length, algorithm selection and verification windows are unchanged.

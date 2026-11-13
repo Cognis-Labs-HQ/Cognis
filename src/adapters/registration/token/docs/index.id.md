@@ -21,3 +21,7 @@ Saat pendaftaran publik ditutup, Cognis menyimpan status penyedia terautentikasi
 ## Perintah Undangan
 
 Administrator dan pemilik dapat membuka `/invite` tanpa status pendiri. Kebijakan undangan tetap mengatur penerbitan. Adapter Token Pendaftaran yang aktif menyediakan `cognisctl invite:token:generate` untuk membuat token mandiri tanpa pengiriman SMTP, dan `cognisctl invite:email:send person@example.com` untuk mengirim undangan. Tanpa argumen email, panduan masukan CLI dibuka. Kedua perintah menggunakan API pendaftaran terautentikasi serta mematuhi pembatasan peran, domain, dan pengiriman.
+
+## Kontrak Tipe
+
+Adapter token memerlukan pendaftaran akun, pemeriksaan keberadaan, dan penghapusan bersama eksekutor basis data terstruktur. Pengujian menyediakan kontrak ini secara langsung, termasuk transaksi generik dan pembersihan akun setelah penukaran gagal. Aturan validasi dan otorisasi token tidak berubah.

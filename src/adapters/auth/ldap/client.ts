@@ -8,7 +8,7 @@ import type {
 
 type LdapEntry = Record<string, unknown> & { dn: string };
 
-function values(entry: LdapEntry, attribute: string): string[] {
+function values(entry: Record<string, unknown>, attribute: string): string[] {
     const raw = entry[attribute];
     if (Array.isArray(raw)) return raw.map(String);
     return raw == null ? [] : [String(raw)];
@@ -144,7 +144,7 @@ async function resolveGroups(
                 "memberUid",
                 "objectClass",
             ],
-            paged: { pageSize: 100, pagePause: false },
+            paged: { pageSize: 100 },
             sizeLimit: 500,
             timeLimit: 15,
         },
@@ -290,7 +290,7 @@ export class StandardLdapClient implements LdapClient {
                             options.memberOfAttribute,
                             "objectClass",
                         ],
-                        paged: { pageSize: 100, pagePause: false },
+                        paged: { pageSize: 100 },
                         sizeLimit: 500,
                         timeLimit: 15,
                     }),
@@ -304,7 +304,7 @@ export class StandardLdapClient implements LdapClient {
                             "memberUid",
                             "objectClass",
                         ],
-                        paged: { pageSize: 100, pagePause: false },
+                        paged: { pageSize: 100 },
                         sizeLimit: 500,
                         timeLimit: 15,
                     }),

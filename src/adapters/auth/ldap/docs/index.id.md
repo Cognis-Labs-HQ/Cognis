@@ -56,3 +56,7 @@ Formulir koneksi dan kredensial LDAP meneruskan kunci pelokalan adaptor secara l
 Penghapusan sumber menjalankan alur `reconcile-auth-sources`. Alur ini mencabut sesi setiap akun yang terkait dengan sumber yang dihapus. Jika penyatuan sumber dinonaktifkan, akun pengguna dinonaktifkan sepenuhnya; jika diaktifkan, hanya identitas sumber yang dihapus dilepas agar sumber lain dapat mengautentikasi dan memperbarui akun yang dipertahankan.
 
 Permintaan Uji dan Temukan yang berhasil menampilkan toast keberhasilan yang dilokalkan sebelum penyiapan beralih ke filter dan pemetaan peran.
+
+## Kontrak Tipe
+
+Fungsi pembuat adapter mempertahankan metode injeksi klien milik adapter dan gabungan tipe hasil pengujian direktori atau kredensial. Konsumen mempersempit tipe hasil sebelum membaca grup direktori atau detail kredensial. Pencarian direktori menggunakan halaman ldapts berukuran 100; autentikasi dan pemetaan grup tidak berubah.
