@@ -29,8 +29,11 @@ function firstStageResult<T>(
 }
 
 export function registerShareApprovalFlow(input: {
-    ctx: GatewayBootstrapContext;
-    gateway: CoreShareGateway;
+    ctx: Pick<GatewayBootstrapContext, "flow" | "capabilities" | "log">;
+    gateway: Pick<
+        CoreShareGateway,
+        "createApprovalRequestBatch" | "resolveApprovalStatus"
+    >;
 }): void {
     const systemCtx = input.ctx.capabilities.get<Ctx>(CTX_CAPABILITY);
     if (!input.ctx.flow.exists(APPROVAL_FLOW_ID)) {
@@ -184,7 +187,7 @@ export function registerShareApprovalFlow(input: {
 }
 
 export async function requestShareApproval(input: {
-    ctx: GatewayBootstrapContext;
+    ctx: Pick<GatewayBootstrapContext, "flow" | "capabilities" | "log">;
     request: ShareApprovalInput;
 }): Promise<ShareApprovalResult> {
     const result = await input.ctx.flow.run(APPROVAL_FLOW_ID, input.request);

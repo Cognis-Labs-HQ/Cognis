@@ -1,11 +1,8 @@
+import type { BootstrapLog } from "../../shared.js";
 export function logRejectedDeliveries(input: {
     results: PromiseSettledResult<unknown>[];
     recipients: string[];
-    log?: (
-        level: string,
-        message: string,
-        metadata?: Record<string, unknown>,
-    ) => void;
+    log?: BootstrapLog;
     message: string;
     operation: string;
     shareId: string;

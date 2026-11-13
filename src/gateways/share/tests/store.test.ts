@@ -1,95 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import type {
-    StructuredDbCommand,
-    StructuredDbCommandResult,
-} from "../../db/reuse/db-command.js";
-import type { StructuredDbTableDef } from "../../db/reuse/db-table.js";
+import { MemoryExecutor } from "./reuse/executor.js";
 import { ShareTokenStore } from "../gateway/store.js";
-
-class MemoryExecutor {
-    public readonly tableDefs: StructuredDbTableDef[] = [];
-    public readonly rows = new Map<string, Record<string, unknown>>();
-    public readonly auxiliaryRows = new Map<
-        string,
-        Map<string, Record<string, unknown>>
-    >();
-
-    async ensureTable(def: StructuredDbTableDef): Promise<void> {
-        this.tableDefs.push(def);
-    }
-
-    async executeCommand(
-        command: StructuredDbCommand,
-    ): Promise<StructuredDbCommandResult> {
-        const rows =
-            command.table === "share_tokens"
-                ? this.rows
-                : (this.auxiliaryRows.get(command.table) ??
-                  new Map<string, Record<string, unknown>>());
-        this.auxiliaryRows.set(command.table, rows);
-        if (command.option === "INSERT") {
-            const key = String(
-                command.values.id ?? command.values.resource_key ?? "",
-            );
-            rows.set(key, { ...command.values });
-            return { rowCount: 1 };
-        }
-        if (command.option === "SELECT") {
-            const entries = Array.from(rows.values()).filter((row) =>
-                this.matchesWhere(row, command.where ?? []),
-            );
-            return { rows: entries };
-        }
-        if (command.option === "UPDATE") {
-            let rowCount = 0;
-            for (const [key, row] of rows.entries()) {
-                if (this.matchesWhere(row, command.where ?? [])) {
-                    rows.set(key, { ...row, ...command.set });
-                    rowCount += 1;
-                }
-            }
-            return { rowCount };
-        }
-        if (command.option === "DELETE") {
-            const beforeSize = rows.size;
-            for (const [key, row] of rows.entries()) {
-                const matches = this.matchesWhere(row, command.where ?? []);
-                if (matches) {
-                    rows.delete(key);
-                }
-            }
-            return { rowCount: beforeSize - rows.size };
-        }
-        return { rowCount: 0 };
-    }
-
-    private matchesWhere(
-        row: Record<string, unknown>,
-        conditions: StructuredDbCommand["where"] = [],
-    ): boolean {
-        return conditions.every((condition) => {
-            const rowValue = row[condition.column];
-            if (condition.operator === "<") {
-                return String(rowValue ?? "") < String(condition.value ?? "");
-            }
-            if (condition.operator === "!=") {
-                return rowValue !== condition.value;
-            }
-            return rowValue === condition.value;
-        });
-    }
-
-    async transaction<T>(
-        callback: (executor: MemoryExecutor) => Promise<T>,
-    ): Promise<T> {
-        return callback(this);
-    }
-}
 
 test("share token schema declares resource and token columns", async () => {
     const executor = new MemoryExecutor();
-    const store = new ShareTokenStore(executor as never);
+    const store = new ShareTokenStore(executor);
     await store.ensureSchema();
     const tableDef = executor.tableDefs.find(
         (def) => def.name === "share_tokens",
@@ -136,7 +52,7 @@ test("schema upgrade backfills resource keys for existing shares", async () => {
         metadata: JSON.stringify({ contentUrl: "/meetings?meeting=meeting-1" }),
         created_at: "2026-01-01T00:00:00.000Z",
     });
-    const store = new ShareTokenStore(executor as never);
+    const store = new ShareTokenStore(executor);
 
     await store.ensureSchema();
 
@@ -151,7 +67,7 @@ test("schema upgrade backfills resource keys for existing shares", async () => {
 
 test("account unlock grants are scoped to a share and account", async () => {
     const executor = new MemoryExecutor();
-    const store = new ShareTokenStore(executor as never);
+    const store = new ShareTokenStore(executor);
     await store.ensureSchema();
 
     assert.equal(await store.hasAccountUnlock("share-1", "bob"), false);
@@ -164,7 +80,7 @@ test("account unlock grants are scoped to a share and account", async () => {
 
 test("issue, list, resolve, and delete share tokens", async () => {
     const executor = new MemoryExecutor();
-    const store = new ShareTokenStore(executor as never);
+    const store = new ShareTokenStore(executor);
     const issued = await store.issue({
         ownerAccountId: "alice",
         resourceType: "meeting",
@@ -231,7 +147,7 @@ test("issue, list, resolve, and delete share tokens", async () => {
 
 test("share resolution survives access timestamp persistence failure", async () => {
     const executor = new MemoryExecutor();
-    const store = new ShareTokenStore(executor as never);
+    const store = new ShareTokenStore(executor);
     const issued = await store.issue({
         ownerAccountId: "alice",
         resourceType: "meeting",
@@ -252,7 +168,7 @@ test("share resolution survives access timestamp persistence failure", async () 
 
 test("updateById edits expiry, permissions, and password controls", async () => {
     const executor = new MemoryExecutor();
-    const store = new ShareTokenStore(executor as never);
+    const store = new ShareTokenStore(executor);
     const issued = await store.issue({
         ownerAccountId: "alice",
         resourceType: "whiteboard",
@@ -287,7 +203,7 @@ test("updateById edits expiry, permissions, and password controls", async () => 
 
 test("listByResource returns matching share tokens including recently expired ones", async () => {
     const executor = new MemoryExecutor();
-    const store = new ShareTokenStore(executor as never);
+    const store = new ShareTokenStore(executor);
     await store.issue({
         ownerAccountId: "alice",
         resourceType: "meeting",
@@ -329,7 +245,7 @@ test("listByResource returns matching share tokens including recently expired on
 
 test("purgeExpired removes only tokens past the retention window", async () => {
     const executor = new MemoryExecutor();
-    const store = new ShareTokenStore(executor as never);
+    const store = new ShareTokenStore(executor);
     await store.issue({
         ownerAccountId: "alice",
         resourceType: "meeting",
@@ -354,7 +270,7 @@ test("purgeExpired removes only tokens past the retention window", async () => {
 
 test("expired share notifications remain claimable until delivery succeeds", async () => {
     const executor = new MemoryExecutor();
-    const store = new ShareTokenStore(executor as never);
+    const store = new ShareTokenStore(executor);
     await store.ensureSchema();
     const share = await store.issue({
         ownerAccountId: "alice",
@@ -388,7 +304,7 @@ test("share creation succeeds when activity recording fails", async () => {
         return executeCommand(command);
     };
     const logs: string[] = [];
-    const store = new ShareTokenStore(executor as never, (_level, message) => {
+    const store = new ShareTokenStore(executor, (_level, message) => {
         logs.push(message);
     });
 
@@ -406,7 +322,7 @@ test("share creation succeeds when activity recording fails", async () => {
 test("malformed metadata is logged without hiding an otherwise valid share", async () => {
     const executor = new MemoryExecutor();
     const logs: string[] = [];
-    const store = new ShareTokenStore(executor as never, (_level, message) => {
+    const store = new ShareTokenStore(executor, (_level, message) => {
         logs.push(message);
     });
     const share = await store.issue({
