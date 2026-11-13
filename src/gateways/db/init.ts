@@ -27,7 +27,7 @@
 
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
-import type { DbExecutor } from "./reuse/db-executor.js";
+import type { RawDbExecutor } from "./reuse/db-executor.js";
 import { sha256Of } from "../../api/reuse/crypto.js";
 
 /** Minimal logging interface required by the database initializer. */
@@ -50,7 +50,7 @@ function splitSqlStatements(sql: string): string[] {
 
 async function ensureMigrationsTable(
     dir: string,
-    executor: DbExecutor,
+    executor: Pick<RawDbExecutor, "execute">,
 ): Promise<void> {
     if (dir === "mariadb") {
         await executor.execute(
@@ -78,7 +78,7 @@ function migrationPlaceholder(dir: string, index: number): string {
 async function isMigrationApplied(
     id: string,
     dir: string,
-    executor: DbExecutor,
+    executor: Pick<RawDbExecutor, "execute">,
 ): Promise<boolean> {
     const placeholder = migrationPlaceholder(dir, 1);
     const result = await executor.execute(
@@ -92,7 +92,7 @@ async function recordMigration(
     id: string,
     checksum: string,
     dir: string,
-    executor: DbExecutor,
+    executor: Pick<RawDbExecutor, "execute">,
 ): Promise<void> {
     const now = new Date().toISOString();
     if (dir === "postgres") {
@@ -115,7 +115,7 @@ async function runInitPhase(
     initRoot: string,
     dir: string,
     logger: DbInitLogger,
-    executor: DbExecutor,
+    executor: Pick<RawDbExecutor, "execute">,
 ): Promise<{ files: string[]; sqlCount: number }> {
     const already = await isMigrationApplied(INIT_SENTINEL_ID, dir, executor);
     if (already) {
@@ -172,7 +172,7 @@ async function runMigratePhase(
     migrateRoot: string,
     dir: string,
     logger: DbInitLogger,
-    executor: DbExecutor,
+    executor: Pick<RawDbExecutor, "execute">,
 ): Promise<{ files: string[]; sqlCount: number }> {
     let files: string[];
     try {
@@ -216,7 +216,7 @@ async function runMigratePhase(
 export async function initializeDatabaseSchema(
     dbType: string,
     logger: DbInitLogger,
-    executor: DbExecutor,
+    executor: Pick<RawDbExecutor, "execute">,
     adaptersRoot: string = path.resolve(process.cwd(), "src", "adapters"),
 ) {
     const dir = resolveDbProviderDir(dbType);

@@ -49,3 +49,7 @@ Schema initialization runs in a transaction with a per-table advisory lock, incl
 Deploy the updated host adapter before reinitializing affected module schemas. Restart the host or disable and re-enable the affected module to clear its schema-initialization cache. The database role must own the affected tables (or have equivalent DDL rights). Unique-index creation scans existing data and blocks writes, so allow a maintenance window and sufficient statement timeout. Inspect duplicate non-NULL keys and resolve them through an approved data-recovery process before retrying; do not drop tables or reset content.
 
 Run the adapter tests with `COGNIS_TEST_POSTGRES_URL` pointing to a disposable PostgreSQL database. The integration test creates and removes its own random schema and requires schema-creation permission. Without this variable, that test explicitly skips.
+
+## Driver result contract
+
+The adapter owns a narrow declaration for the `pg` promise API it consumes. Query methods preserve generic row projections. Driver row counts may be null for control or schema statements; adapter outputs normalize those counts to zero while retaining numeric counts and returned rows. Live schema tests require `COGNIS_TEST_POSTGRES_URL` pointing to a disposable database.
