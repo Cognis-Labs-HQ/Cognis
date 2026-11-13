@@ -28,7 +28,6 @@ export interface MariaDbPool {
     query(sql: string, params?: unknown[]): Promise<[unknown, unknown]>;
     getConnection(): Promise<MariaDbClient>;
     end(): Promise<void>;
-    on?(event: "error", handler: (error: Error) => void): void;
 }
 
 export interface MariaDbPoolSettings {
@@ -528,12 +527,6 @@ class MariaDbExecutor implements RawDbExecutor {
                     normalize(column, value),
                 ]),
             );
-        const where = command.where?.map((clause) => ({
-            ...clause,
-            value: Array.isArray(clause.value)
-                ? clause.value.map((value) => normalize(clause.column, value))
-                : normalize(clause.column, clause.value),
-        }));
         if (command.option === "INSERT") {
             return {
                 ...command,
@@ -548,6 +541,12 @@ class MariaDbExecutor implements RawDbExecutor {
                         : command.conflict,
             };
         }
+        const where = command.where?.map((clause) => ({
+            ...clause,
+            value: Array.isArray(clause.value)
+                ? clause.value.map((value) => normalize(clause.column, value))
+                : normalize(clause.column, clause.value),
+        }));
         if (command.option === "UPDATE") {
             return { ...command, set: normalizeRecord(command.set), where };
         }
@@ -672,12 +671,12 @@ async function createMariaDbPool(
         uri: databaseUrl,
         ...readMariaDbPoolSettings(),
     });
-    pool.on("error", (error: Error) => {
+    pool.addListener("error", (error: Error) => {
         writeDbLog(log, "error", "Idle MariaDB pool connection failed.", {
             component: "db",
             provider: "mariadb",
             ...buildDbErrorMeta(error),
         });
     });
-    return pool as MariaDbPool;
+    return pool;
 }

@@ -44,3 +44,7 @@ Die Schemainitialisierung läuft in einer Transaktion mit einer Advisory-Sperre 
 Vor der erneuten Initialisierung betroffener Modulschemas muss der aktualisierte Host-Adapter bereitgestellt werden. Den Host neu starten oder das betroffene Modul deaktivieren und erneut aktivieren, um den Schemacache zu leeren. Die Datenbankrolle muss die Tabellen besitzen oder gleichwertige DDL-Rechte haben. Die Indexerstellung prüft vorhandene Daten und blockiert Schreibzugriffe; Wartungsfenster und ausreichendes Anweisungszeitlimit einplanen. Doppelte Nicht-NULL-Schlüssel vor einem erneuten Versuch prüfen und durch ein genehmigtes Wiederherstellungsverfahren bereinigen; keine Tabellen löschen oder Inhalte zurücksetzen.
 
 Für Adaptertests `COGNIS_TEST_POSTGRES_URL` auf eine entbehrliche PostgreSQL-Testdatenbank setzen. Der Integrationstest erstellt und entfernt ein eigenes zufälliges Schema und benötigt die entsprechende Berechtigung. Ohne diese Variable wird der Test ausdrücklich übersprungen.
+
+## Treiber-Ergebnisvertrag
+
+Der Adapter besitzt eine begrenzte Deklaration für die verwendete Promise-API von `pg`. Abfragen behalten generische Zeilentypen. Bei Steuerungs- oder Schemabefehlen kann die Zeilenanzahl des Treibers null sein; der Adapter normalisiert sie auf null Zeilen und erhält numerische Anzahlen sowie Ergebniszeilen. Live-Schematests benötigen `COGNIS_TEST_POSTGRES_URL` für eine entbehrliche Testdatenbank.

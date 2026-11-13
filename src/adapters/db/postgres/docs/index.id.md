@@ -44,3 +44,7 @@ Inisialisasi skema berjalan dalam transaksi dengan kunci advisory per tabel, ter
 Pasang pembaruan adaptor host sebelum menginisialisasi ulang skema modul yang terdampak. Mulai ulang host atau nonaktifkan lalu aktifkan kembali modul untuk mengosongkan cache inisialisasi skema. Peran basis data harus memiliki tabel terkait atau hak DDL yang setara. Pembuatan indeks memindai data dan memblokir penulisan; sediakan waktu pemeliharaan serta batas waktu pernyataan yang cukup. Periksa kunci non-NULL yang duplikat dan selesaikan melalui proses pemulihan data yang disetujui sebelum mencoba kembali; jangan menghapus tabel atau mereset konten.
 
 Jalankan pengujian adaptor dengan `COGNIS_TEST_POSTGRES_URL` yang menunjuk ke basis data PostgreSQL khusus pengujian. Pengujian integrasi membuat dan menghapus skema acaknya sendiri dan memerlukan izin pembuatan skema. Tanpa variabel ini, pengujian tersebut dilewati secara eksplisit.
+
+## Kontrak hasil pengandar
+
+Adaptor memiliki deklarasi terbatas untuk API promise `pg` yang digunakannya. Metode kueri mempertahankan proyeksi baris generik. Jumlah baris pengandar dapat bernilai null untuk perintah kendali atau skema; keluaran adaptor menormalkannya menjadi nol dengan mempertahankan jumlah numerik dan baris hasil. Pengujian skema langsung memerlukan `COGNIS_TEST_POSTGRES_URL` yang menunjuk ke basis data uji sementara.

@@ -97,3 +97,7 @@ The Database gateway provides `engagement:store` for participant reward receipts
 Schema initialization creates declared tables and adds missing columns and indexes. It does not replace existing primary or unique keys. The structured storage contract does not express large text fields: MariaDB TEXT is limited to 65,535 bytes, and multibyte composite keys are subject to InnoDB’s key-size limit. Study payload sizes and schema changes must be assessed against those provider limits.
 
 Adapter contract registration follows [the shared gateway bootstrap contract](/docs/gateways).
+
+## Executor boundaries
+
+Applications use structured commands through `db:executor`. Raw SQL execution remains inside the database gateway and its adapters. Raw transactions retain that capability for schema work, and schema initialization requires only raw execution. The optional `renamedFrom` column field describes the existing source column to preserve its data.

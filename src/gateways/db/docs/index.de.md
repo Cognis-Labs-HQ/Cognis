@@ -74,3 +74,7 @@ Das Datenbank-Gateway stellt `engagement:store` für Belohnungsbelege, Booster-E
 Die Schemainitialisierung erstellt deklarierte Tabellen und ergänzt fehlende Spalten und Indizes. Bestehende Primärschlüssel oder eindeutige Schlüssel werden nicht ersetzt. Der strukturierte Speichervertrag beschreibt keine großen Textfelder: MariaDB-TEXT ist auf 65.535 Byte begrenzt, und mehrbytekodierte zusammengesetzte Schlüssel unterliegen der InnoDB-Schlüsselgrenze. Study-Nutzdaten und Schemaänderungen müssen gegen diese Anbietergrenzen geprüft werden.
 
 Die Vertragsregistrierung von Adaptern folgt dem [gemeinsamen Gateway-Bootstrap-Vertrag](/docs/gateways).
+
+## Executor-Grenzen
+
+Anwendungen verwenden strukturierte Befehle über `db:executor`. Direkte SQL-Ausführung bleibt im Datenbank-Gateway und seinen Adaptern. Direkte Transaktionen behalten diese Fähigkeit für Schemaoperationen; die Schemainitialisierung benötigt nur direkte Ausführung. Das optionale Spaltenfeld `renamedFrom` bezeichnet die vorhandene Quellspalte, deren Daten erhalten bleiben.

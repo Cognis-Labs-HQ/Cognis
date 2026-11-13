@@ -43,9 +43,9 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.24` |
 | SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.1.1`  |
 | TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.28` |
-| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.26` |
-| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.31` |
-| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.27` |
+| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.27` |
+| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.32` |
+| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.28` |
 | Memory Database       | `src/adapters/db/memory/`           | `0.1.24` |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.40` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.23` |
@@ -67,7 +67,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 | Komponente            | Pfad                          | Version  |
 | --------------------- | ----------------------------- | -------- |
-| Database (db)         | `src/gateways/db/`            | `1.4.0`  |
+| Database (db)         | `src/gateways/db/`            | `1.4.1`  |
 | Authentication (auth) | `src/gateways/auth/`          | `2.2.4`  |
 | Share                 | `src/gateways/share/`         | `1.9.8`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.3.6`  |

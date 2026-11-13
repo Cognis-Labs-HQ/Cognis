@@ -72,3 +72,7 @@ Gateway basis data menyediakan `engagement:store` untuk bukti imbalan peserta, p
 Inisialisasi skema membuat tabel yang dideklarasikan serta menambahkan kolom dan indeks yang belum ada. Kunci utama atau unik yang sudah ada tidak diganti. Kontrak penyimpanan terstruktur tidak menyediakan kolom teks besar: TEXT MariaDB dibatasi 65.535 byte, dan kunci gabungan multibita tunduk pada batas ukuran kunci InnoDB. Ukuran data dan perubahan skema Study harus diperiksa terhadap batas penyedia tersebut.
 
 Registrasi kontrak adapter mengikuti [kontrak bootstrap gateway bersama](/docs/gateways).
+
+## Batas eksekutor
+
+Aplikasi menggunakan perintah terstruktur melalui `db:executor`. Eksekusi SQL mentah tetap berada dalam gateway basis data dan adaptornya. Transaksi mentah mempertahankan kemampuan ini untuk operasi skema; inisialisasi skema hanya memerlukan eksekusi mentah. Kolom opsional `renamedFrom` menyatakan kolom sumber yang sudah ada agar datanya tetap terpelihara.
