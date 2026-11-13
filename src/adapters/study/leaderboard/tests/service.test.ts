@@ -433,15 +433,13 @@ test("persisted competitive state can be restored after restart", async () => {
     const restarted = new LeaderboardService(progress);
     restarted.restoreState(saved!);
     assert.equal(restarted.listDefinitions().length, 1);
-    assert.equal(
-        (
-            await restarted.queryStandings({
-                definitionId: "weekly",
-                viewerId: "alice",
-            })
-        ).rows[0].score[0],
-        -42,
-    );
+    const standings = await restarted.queryStandings({
+        definitionId: "weekly",
+        viewerId: "alice",
+    });
+    const score = standings.rows[0].score;
+    assert.ok(typeof score !== "number");
+    assert.equal(score[0], -42);
 });
 
 test("a failed leaderboard save does not poison future writes and retrying the observation persists it", async () => {
