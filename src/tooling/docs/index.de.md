@@ -2,16 +2,26 @@
 
 ## Überblick
 
-Das Verzeichnis `src/tooling/` enthält alle Entwickler-Tools für die Cognis-Codebase: Linting-Skripte, den TypeScript-Konfigurations-Generator, ein Container-Healthcheck-Skript und die `cognisctl`-Betriebs-CLI.
+Das Verzeichnis `src/tooling/` enthält alle Entwickler-Tools für die Cognis-Codebase: Linting-Skripte, TypeScript-Quellprüfungen, ein Container-Healthcheck-Skript und die `cognisctl`-Betriebs-CLI.
 
 ## Verantwortlichkeiten
 
 - Lesbarkeitsregeln durchsetzen (keine Tabs, kein nachgestelltes Leerzeichen) via `lint-readable.mjs`.
 - Placeholder-Standards durchsetzen via `lint-placeholder.mjs`.
-- Ein konsolidiertes `tsconfig.json` für das Monorepo generieren.
+- Alle TypeScript-Quellen und Tests mit `npm run typecheck` prüfen.
 - Betriebsverwaltungsbefehle über `cognisctl` bereitstellen.
 
 ## Architektur
+
+### TypeScript-Quellprüfung
+
+Vor jedem Commit `npm run typecheck` ausführen. `npm run ci:test` prüft Typen vor den Tests; beide CI-Pipelines verwenden dieselbe Prüfung. `npm run build` erzeugt Produktionsdateien separat mit esbuild für Node 24.
+
+Die zentrale `tsconfig.json` ist das maßgebliche strikte Projekt ohne Dateiausgabe. Sie erfasst alle `.ts`-, `.tsx`-, `.mts`- und `.cts`-Dateien unter `src`, einschließlich Deklarationen, Tests sowie optionaler und verschachtelter Komponenten. Nur generierte `dist`-Verzeichnisse und Abhängigkeiten sind ausgeschlossen. Neue Komponenten benötigen keinen Referenzlisteneintrag.
+
+NodeNext-Auflösung sowie ES2024- und DOM-Bibliotheken unterstützen Server- und Browserverträge. `@cognis/core` verweist auf die Quellen dieses Checkouts. Importiertes eigenes JavaScript liefert mit `allowJs` abgeleitete Typen; `checkJs` bleibt deaktiviert. Dies ist keine vollständige JavaScript-Prüfung. Komponentenkonfigurationen begrenzen die zentrale Prüfung nicht.
+
+Abdeckungstests vergleichen die Compiler-Dateiliste mit dem nicht leeren Quellbestand, führen den echten npm-Befehl mit statischen Testdaten aus, erkennen Produktions- und Testfehler getrennt und prüfen wiederholte fehlerfreie Läufe ohne Dateiausgabe.
 
 ### Linting
 

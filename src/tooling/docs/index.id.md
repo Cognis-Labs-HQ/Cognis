@@ -2,16 +2,26 @@
 
 ## Ikhtisar
 
-Direktori `src/tooling/` berisi semua tooling pengembang untuk kodebase Cognis: skrip linting, generator konfigurasi TypeScript, skrip healthcheck container, dan CLI operasional `cognisctl`.
+Direktori `src/tooling/` berisi semua tooling pengembang untuk kodebase Cognis: skrip linting, pemeriksaan sumber TypeScript, skrip healthcheck container, dan CLI operasional `cognisctl`.
 
 ## Tanggung Jawab
 
 - Menegakkan aturan keterbacaan (tidak ada tab, tidak ada spasi trailing) melalui `lint-readable.mjs`.
 - Menegakkan standar placeholder melalui `lint-placeholder.mjs`.
-- Menghasilkan `tsconfig.json` yang terkonsolidasi untuk monorepo.
+- Memeriksa seluruh sumber TypeScript dan pengujian dengan `npm run typecheck`.
 - Menyediakan perintah manajemen operasional melalui `cognisctl`.
 
 ## Arsitektur
+
+### Pemeriksaan sumber TypeScript
+
+Jalankan `npm run typecheck` sebelum melakukan commit. `npm run ci:test` memeriksa tipe sebelum menjalankan pengujian; kedua pipeline CI memakai pemeriksa yang sama. `npm run build` menghasilkan aset produksi secara terpisah melalui esbuild untuk Node 24.
+
+`tsconfig.json` pada akar merupakan proyek ketat utama tanpa keluaran berkas. Konfigurasi ini mencakup seluruh berkas `.ts`, `.tsx`, `.mts`, dan `.cts` di bawah `src`, termasuk deklarasi, pengujian, komponen opsional, dan komponen bersarang. Hanya direktori hasil `dist` dan dependensi yang dikecualikan. Komponen baru tidak memerlukan pembaruan daftar referensi.
+
+Resolusi NodeNext serta pustaka ES2024 dan DOM mendukung kontrak server dan browser. `@cognis/core` mengarah ke sumber checkout ini. JavaScript milik proyek yang diimpor menyumbangkan tipe hasil inferensi melalui `allowJs`; `checkJs` tetap dinonaktifkan, sehingga ini bukan pemeriksaan seluruh JavaScript. Konfigurasi komponen tidak membatasi cakupan akar.
+
+Pengujian cakupan membandingkan inventaris compiler dengan inventaris sumber yang tidak kosong, menjalankan perintah npm sebenarnya pada fixture statis, menolak kesalahan produksi dan pengujian secara terpisah, serta memastikan pemeriksaan bersih berulang tidak menghasilkan berkas.
 
 ### CLI `cognisctl`
 

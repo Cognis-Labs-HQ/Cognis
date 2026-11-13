@@ -17,7 +17,7 @@
         "check:ui-host": "node src/tooling/scripts/check-ui-host-contracts.mjs",
         "check:ui-build": "node src/tooling/scripts/check-ui-build.mjs",
         "check:server-build": "node src/tooling/scripts/check-server-build.mjs",
-        "typecheck": "node src/tooling/scripts/gen-tsconfig.mjs && tsc -p tsconfig.json --noEmit",
+        "typecheck": "tsc -p tsconfig.json --noEmit",
         "lint": "node ./src/tooling/scripts/lint-placeholder.mjs && node ./src/tooling/scripts/lint-readable.mjs",
         "test": "node --import tsx src/tooling/scripts/run-tests.ts",
         "start": "node --import tsx src/api/main.ts",

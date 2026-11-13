@@ -381,7 +381,10 @@ test("component:list uses the owned inventory for modules, gateways, and adapter
                 String(input),
                 "http://localhost:3000/api/v1/components",
             );
-            assert.equal(options?.headers?.["authorization"], "Bearer token");
+            assert.equal(
+                new Headers(options?.headers).get("authorization"),
+                "Bearer token",
+            );
             return Response.json({
                 data: [
                     {
@@ -572,7 +575,11 @@ test("component:config:get supports module configuration routes", async () => {
 test("component:config:set supports module configuration routes", async () => {
     const originalFetch = globalThis.fetch;
     try {
-        const requests = [];
+        const requests: {
+            method: RequestInit["method"];
+            requestUrl: string;
+            body: RequestInit["body"];
+        }[] = [];
         globalThis.fetch = async (input, init) => {
             const requestUrl = String(input);
             requests.push({
