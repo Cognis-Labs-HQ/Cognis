@@ -12,5 +12,4 @@ Registration documentation includes public-capability examples and technical con
 
 ## Commits
 
-- [0a07f8f619aa74e0b49cbae0ebe6489c5a6b0f2b](https://github.com/Cognis-Labs-HQ/Cognis/commit/0a07f8f619aa74e0b49cbae0ebe6489c5a6b0f2b)
-- [4017b8fb74d855ef203f1588bdea7bea648e215d](https://github.com/Cognis-Labs-HQ/Cognis/commit/4017b8fb74d855ef203f1588bdea7bea648e215d)
+- [3492bfe6761c6c7100b8c2744c128884078680fc](https://github.com/Cognis-Labs-HQ/Cognis/commit/3492bfe6761c6c7100b8c2744c128884078680fc)
