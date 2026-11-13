@@ -1,3 +1,6 @@
+import { registerAuthBootstrapHook as registerSessionLogin } from "../bootstrap/session-login.js";
+import { registerAuthBootstrapHook as registerSessionCommit } from "../bootstrap/session-commit.js";
+import { GatewayRegistry } from "@cognis/core";
 import { registerUserValidationModes } from "../user-validation.js";
 import { runBootstrapScope } from "@cognis/core";
 import assert from "node:assert/strict";
@@ -59,18 +62,24 @@ async function registrationFixture() {
         userValidationMode: "none" as const,
         loginSessionTimeoutMinutes: 720,
     });
-    await registerAuthBootstrapHook({
+    const loginContext = {
         accountStore,
         authGateway,
         authRouteBootstrapRuntime: runtime,
         readSecuritySettings,
         ctx: {
             capabilities,
+            gatewayRegistry: new GatewayRegistry(),
             flow: system.flow,
             adaptersRoot: "/unused",
             routeRegistry: new RouteRegistry(),
         },
         routeContext: createDefaultRouteContext({ flow: system.flow }),
+    };
+    await registerAuthBootstrapHook(loginContext);
+    await runBootstrapScope(system, "gateway:auth", async () => {
+        await registerSessionCommit(loginContext);
+        await registerSessionLogin(loginContext);
     });
     system.flow.extend(
         "gateAccountCreation",

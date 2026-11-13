@@ -113,3 +113,7 @@ Verschachtelte Bootstrap-Bereiche erben die Berechtigung ihres übergeordneten B
 Der Core-Export stellt einen einheitlichen Typ `AccessRole` bereit. Modulmanifeste deklarieren optionale `requiresCapabilities` neben den bereitgestellten Fähigkeiten. Kontolisten enthalten die stabile `accountId` für kontobezogene Verbraucher. Komponenteninhaber behalten ihre Namen und Lokalisierungsmetadaten in UI-Anbieterbeschreibungen.
 
 Datei-Namespace-Definitionen akzeptieren schreibgeschützte `allowComponents`-Listen. Flow-Helfer akzeptieren eine nicht vorhandene Ergebnissammlung, ohne Ergebnisauswahl oder Autorisierung zu ändern.
+
+## Fehler beim Gateway-Start
+
+`GatewayRegistry.hasBootstrapFailure(id)` unterscheidet ein gefundenes Gateway mit Import- oder Initialisierungsfehler von einem nicht vorhandenen optionalen Gateway. Der Host erfasst Fehler ohne ausführbare Registrierungen. Frühe Registrierung, Rückabwicklung, Deaktivierung und erneute Aktivierung löschen diesen Nachweis nicht; nur ein vollständig erfolgreicher Bootstrap tut dies. Fehler erforderlicher Gateways brechen den Start weiterhin ab. Ungültige oder fehlende Manifeste ohne nutzbare Identität liegen außerhalb dieses Signals. Richtlinien dürfen bewusste administrative Deaktivierung erlauben und fehlgeschlagene aktive Initialisierung ablehnen.

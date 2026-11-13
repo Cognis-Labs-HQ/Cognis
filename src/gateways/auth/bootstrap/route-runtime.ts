@@ -98,6 +98,13 @@ export function createAuthRouteBootstrapRuntime(): AuthRouteBootstrapRuntime {
                 shouldSetSecureCookie(req),
             );
         },
+        clearPendingTfaLoginAttempts(): void {
+            pendingTfaLoginAttempts.clear();
+        },
+        consumePendingTfaLoginAttempt(loginAttemptId: string): boolean {
+            pruneExpiredTfaLoginAttempts();
+            return pendingTfaLoginAttempts.delete(loginAttemptId);
+        },
         clearPendingTfaLoginAttempt(loginAttemptId: string): void {
             pendingTfaLoginAttempts.delete(loginAttemptId);
         },
