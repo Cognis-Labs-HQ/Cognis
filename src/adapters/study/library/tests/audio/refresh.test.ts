@@ -1,24 +1,31 @@
+import { createFiles, createAudioProvider } from "../reuse/capabilities.js";
+import { createEntry, createSchema } from "../reuse/fixtures.js";
 import assert from "node:assert/strict";
 import test from "node:test";
-import type { NamespaceFileClient, StudyAudioCapability } from "@cognis/core";
 import { LibraryAudioCache } from "../../audio-cache.js";
 import { readAuthorizedEntryAudio } from "../../service/audio.js";
 import { createLibraryFlow } from "../reuse/flows.js";
-import type { LibraryEntry, LibrarySchema } from "../../types.js";
 import { LibraryStore } from "../../store.js";
 import type { DbExecutor } from "../../../../../gateways/db/reuse/db-executor.js";
 
 test("only global administrators can regenerate, bypassing cache and replacing an explicit recording", async () => {
     const objects = new Map<string, Uint8Array>();
-    const cache = new LibraryAudioCache({
-        get: async (_actor, key) => objects.get(key) ?? null,
-        put: async (_actor, key, data) => {
-            objects.set(key, data);
-        },
-    } as NamespaceFileClient);
+    const cache = new LibraryAudioCache(
+        createFiles({
+            get: async (_actor, key) => objects.get(key) ?? null,
+            put: async (_actor, key, data) => {
+                objects.set(key, data);
+                return {
+                    key,
+                    size: data.byteLength,
+                    lastModified: new Date(0),
+                };
+            },
+        }),
+    );
     await cache.store("manual", "audio/mpeg", new Uint8Array([1]));
     await cache.store("generated", "audio/mpeg", new Uint8Array([2]));
-    const entry = {
+    const entry = createEntry({
         id: "one",
         scope: "global",
         language: "en",
@@ -27,8 +34,8 @@ test("only global administrators can regenerate, bypassing cache and replacing a
         label: "dog",
         updatedAt: "2026-10-18T00:00:00.000Z",
         fields: { audio: "file:manual" },
-    } as LibraryEntry;
-    const schema = {
+    });
+    const schema = createSchema({
         layers: [
             {
                 id: "words",
@@ -36,7 +43,7 @@ test("only global administrators can regenerate, bypassing cache and replacing a
                 fields: [{ id: "audio", type: "audio" }],
             },
         ],
-    } as LibrarySchema;
+    });
     let calls = 0;
     let persisted = 0;
     const dependencies = {
@@ -44,14 +51,14 @@ test("only global administrators can regenerate, bypassing cache and replacing a
         flow: createLibraryFlow(),
         read: async () => entry,
         schema: () => schema,
-        provider: {
+        provider: createAudioProvider({
             supports: () => true,
             cacheKey: () => "generated",
             fetchAudio: async () => {
                 calls++;
                 return { mediaType: "audio/mpeg", data: new Uint8Array([3]) };
             },
-        } as unknown as StudyAudioCapability,
+        }),
         store: {
             updateField: async () => {
                 persisted++;
@@ -60,7 +67,7 @@ test("only global administrators can regenerate, bypassing cache and replacing a
             },
         } as unknown as LibraryStore,
     };
-    const input = {
+    const input: Parameters<typeof readAuthorizedEntryAudio>[0] = {
         actor: { accountId: "admin", role: "admin" },
         entryId: "one",
         fieldId: "audio",
@@ -193,13 +200,20 @@ for (const concurrent of [false, true])
         );
         const before = structuredClone(row);
         const objects = new Map<string, Uint8Array>();
-        const cache = new LibraryAudioCache({
-            get: async (_actor, key) => objects.get(key) ?? null,
-            put: async (_actor, key, data) => {
-                objects.set(key, data);
-            },
-        } as NamespaceFileClient);
-        const schema = {
+        const cache = new LibraryAudioCache(
+            createFiles({
+                get: async (_actor, key) => objects.get(key) ?? null,
+                put: async (_actor, key, data) => {
+                    objects.set(key, data);
+                    return {
+                        key,
+                        size: data.byteLength,
+                        lastModified: new Date(0),
+                    };
+                },
+            }),
+        );
+        const schema = createSchema({
             layers: [
                 {
                     id: "words",
@@ -207,7 +221,7 @@ for (const concurrent of [false, true])
                     fields: [{ id: "audio", type: "audio" }],
                 },
             ],
-        } as LibrarySchema;
+        });
         const operations: string[] = [];
         const dependencies = {
             store,
@@ -215,14 +229,14 @@ for (const concurrent of [false, true])
             flow: createLibraryFlow((id) => operations.push(id)),
             read: async () => store.get("one"),
             schema: () => schema,
-            provider: {
+            provider: createAudioProvider({
                 supports: () => true,
                 cacheKey: () => "generated",
                 fetchAudio: async () => ({
                     mediaType: "audio/mpeg",
                     data: new Uint8Array([3]),
                 }),
-            } as unknown as StudyAudioCapability,
+            }),
         };
         const result = readAuthorizedEntryAudio(
             {

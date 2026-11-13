@@ -55,6 +55,7 @@ function entry(
         fields: {},
         scope: location.scope,
         scopeId: location.scopeId!,
+        protected: false,
         createdBy: "alice",
         createdAt: "2026-01-01",
         updatedAt: "2026-01-01",

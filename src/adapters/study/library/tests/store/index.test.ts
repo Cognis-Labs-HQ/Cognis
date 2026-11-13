@@ -203,6 +203,7 @@ test("content pack import ignores duplicate all-key references", async () => {
     );
     assert.ok(referenceDeleteIndex >= 0);
     assert.ok(referenceDeleteIndex < referenceInsertIndex);
+    assert.ok(referenceInsert);
     assert.deepEqual(
         referenceInsert.option === "INSERT"
             ? referenceInsert.conflict
@@ -730,6 +731,7 @@ test("entry updates replace editable fields and relationships atomically", async
                     command.table === "study_library_reference_groups" &&
                     command.values.relation === "readings",
             )
+            .filter((command) => command.option === "INSERT")
             .map((command) => ({
                 target: command.values.target_entry_id,
                 group: command.values.group_index,

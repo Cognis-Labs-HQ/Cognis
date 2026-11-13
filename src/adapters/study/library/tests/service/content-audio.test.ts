@@ -1,7 +1,7 @@
+import { createFiles } from "../reuse/capabilities.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { LibraryAudioCache } from "../../audio-cache.js";
-import type { NamespaceFileClient } from "@cognis/core";
 import { storeContentPackAudio } from "../../service/content-audio.js";
 
 function audioPlan() {
@@ -56,14 +56,15 @@ test("pack reactivation reuses persisted recordings and restores missing files a
     const files = new Map<string, Uint8Array>();
     const writes: string[] = [];
     let failWrite = false;
-    const client = {
+    const client = createFiles({
         get: async (_actor, key) => files.get(key) ?? null,
         put: async (_actor, key, data) => {
             if (failWrite) throw new Error("storage_failed");
             writes.push(key);
             files.set(key, data);
+            return { key, size: data.byteLength, lastModified: new Date(0) };
         },
-    } as NamespaceFileClient;
+    });
     const ingest = async () => {
         const plan = audioPlan();
         await storeContentPackAudio(

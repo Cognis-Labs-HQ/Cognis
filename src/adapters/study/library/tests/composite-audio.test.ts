@@ -1,15 +1,13 @@
+import { createFiles, createAudioProvider } from "./reuse/capabilities.js";
+import { createEntry, createLayer, createSchema } from "./reuse/fixtures.js";
 import assert from "node:assert/strict";
 import test from "node:test";
-import {
-    createCtx,
-    type NamespaceFileClient,
-    type StudyAudioCapability,
-} from "@cognis/core";
+import { createCtx } from "@cognis/core";
 import { LibraryAudioCache } from "../audio-cache.js";
 import { readAuthorizedEntryAudio } from "../service/audio.js";
 import { audioReferences } from "../service/composite-audio.js";
 import { encodeWav, composeRecording } from "../service/recording.js";
-import type { LibraryEntry, LibrarySchema } from "../types.js";
+import type { LibraryEntry } from "../types.js";
 
 function tone() {
     return encodeWav(
@@ -22,14 +20,21 @@ function tone() {
 
 function fixture() {
     const objects = new Map<string, Uint8Array>();
-    const cache = new LibraryAudioCache({
-        get: async (_actor, key) => objects.get(key) ?? null,
-        put: async (_actor, key, data, options) => {
-            assert.equal(options?.publicRead, false);
-            objects.set(key, data);
-        },
-    } as unknown as NamespaceFileClient);
-    const schema = {
+    const cache = new LibraryAudioCache(
+        createFiles({
+            get: async (_actor, key) => objects.get(key) ?? null,
+            put: async (_actor, key, data, options) => {
+                assert.equal(options?.publicRead, false);
+                objects.set(key, data);
+                return {
+                    key,
+                    size: data.byteLength,
+                    lastModified: new Date(0),
+                };
+            },
+        }),
+    );
+    const schema = createSchema({
         id: "test",
         layers: [
             {
@@ -54,11 +59,11 @@ function fixture() {
                 ],
             },
         ],
-    } as LibrarySchema;
+    });
     const entries = new Map<string, LibraryEntry>([
         [
             "word",
-            {
+            createEntry({
                 scope: "global",
                 id: "word",
                 label: "run",
@@ -66,21 +71,21 @@ function fixture() {
                 schemaId: "test",
                 layer: "words",
                 fields: {},
-            } as LibraryEntry,
+            }),
         ],
         [
             "comma",
-            {
+            createEntry({
                 id: "comma",
                 label: ",",
                 schemaId: "test",
                 layer: "words",
                 tags: ["punctuation"],
-            } as LibraryEntry,
+            }),
         ],
         [
             "sentence",
-            {
+            createEntry({
                 scope: "global",
                 id: "sentence",
                 label: "run, run",
@@ -92,7 +97,7 @@ function fixture() {
                     { relation: "words", entryId: "comma", position: 1 },
                     { relation: "words", entryId: "word", position: 2 },
                 ],
-            } as LibraryEntry,
+            }),
         ],
     ]);
     const ctx = createCtx();
@@ -101,14 +106,14 @@ function fixture() {
         stages: ["authorize", "validate", "resolve"],
     });
     let calls = 0;
-    const provider = {
+    const provider = createAudioProvider({
         supports: (_language, role) => role !== "orderedLexicalSequence",
         cacheKey: () => "word.audio",
         fetchAudio: async () => {
             calls++;
             return tone();
         },
-    } as unknown as StudyAudioCapability;
+    });
     const read = async (denied?: string) =>
         readAuthorizedEntryAudio(
             {
@@ -166,14 +171,20 @@ test("new sentence audio is automatically composed, cached and replaced by uploa
 
 test("composition selects only the first pronunciation group and detects cycles", async () => {
     const context = fixture();
-    const layer = {
+    const layer = createLayer({
         id: "kanji",
         fields: [],
         metadata: { labels: { en: "Kanji" } },
         semanticRole: "compoundWritingUnit",
-        relationships: [{ id: "readings", presentationRole: "pronunciation" }],
-    } as unknown as LibrarySchema["layers"][number];
-    const entry = {
+        relationships: [
+            {
+                id: "readings",
+                targetLayer: "words",
+                presentationRole: "pronunciation",
+            },
+        ],
+    });
+    const entry = createEntry({
         id: "kanji",
         referenceGroups: {
             readings: [
@@ -181,7 +192,7 @@ test("composition selects only the first pronunciation group and detects cycles"
                 [{ entryId: "second", relation: "readings" }],
             ],
         },
-    } as LibraryEntry;
+    });
     assert.deepEqual(
         audioReferences(entry, layer).map((item) => item.entryId),
         ["first"],
@@ -262,12 +273,14 @@ function transformedFixture() {
     context.schema.transformSets = [
         {
             id: "verb",
+            metadata: { labels: { en: "Verb" } },
             flag: "verb",
             matchTags: ["verb"],
             baseState: "base",
             rules: [
                 {
                     id: "polite",
+                    metadata: { labels: { en: "Polite" } },
                     fromState: "base",
                     toState: "polite",
                     removeSuffix: "る",
@@ -276,6 +289,7 @@ function transformedFixture() {
                 },
                 {
                     id: "past",
+                    metadata: { labels: { en: "Past" } },
                     fromState: "polite",
                     toState: "polite-past",
                     removeSuffix: "ます",
@@ -295,6 +309,8 @@ function transformedFixture() {
     words.relationships = [
         {
             id: "reading",
+            metadata: { labels: { en: "Reading" } },
+            onDelete: "restrict",
             targetLayer: "words",
             presentationRole: "pronunciation",
         },

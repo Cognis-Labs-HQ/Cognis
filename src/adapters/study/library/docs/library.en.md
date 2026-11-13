@@ -645,3 +645,7 @@ Library request and content notifications address recipients by immutable `accou
 ## Study Notification Delivery
 
 Study request, content and deletion notifications use the category registered by Library bootstrap. Runtime delivery resolves the current notification capability and never performs registration, so SMTP bootstrap restrictions do not suppress delivery or visibility-change notices.
+
+## Developer Verification
+
+Test factories in `tests/reuse/` provide complete entries, schemas and public capability fakes. Unconfigured capability operations throw instead of silently succeeding. File writes return object metadata, and database transactions preserve their result type. The image persistence fixture exercises structured storage and rollback locally. Run Library tests with Node’s `--experimental-vm-modules --import tsx --test` options. These test-only changes do not enable the repository-wide typecheck pipeline; that requires separate integration after the other components are repaired.

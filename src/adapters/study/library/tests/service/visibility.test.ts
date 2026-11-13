@@ -373,6 +373,7 @@ test("relocation never announces existing cards as newly created global content"
         createLibraryFlow(),
         undefined,
         undefined,
+        undefined,
         async (input) => {
             announcements.push(input);
         },

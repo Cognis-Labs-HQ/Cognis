@@ -632,3 +632,7 @@ Anfrage- und Inhaltsbenachrichtigungen der Library verwenden die unveränderlich
 ## Study-Benachrichtigungen
 
 Benachrichtigungen zu Study-Anfragen, Inhalten und Löschungen verwenden die beim Library-Bootstrap registrierte Kategorie. Zur Laufzeit wird nur die aktuelle Benachrichtigungsfunktion aufgelöst. Es erfolgt keine Registrierung, sodass SMTP-Bootstrap-Beschränkungen weder die Zustellung noch Hinweise zu Sichtbarkeitsänderungen unterdrücken.
+
+## Entwicklerprüfung
+
+Testfabriken in `tests/reuse/` liefern vollständige Einträge, Schemas und Nachbildungen öffentlicher Fähigkeiten. Nicht konfigurierte Operationen werfen Fehler, statt stillschweigend erfolgreich zu sein. Dateischreibvorgänge liefern Objektmetadaten; Datenbanktransaktionen behalten ihren Ergebnistyp. Der Bildspeicherungstest prüft strukturierte Speicherung und Rückabwicklung lokal. Library-Tests werden mit den Node-Optionen `--experimental-vm-modules --import tsx --test` ausgeführt. Diese reinen Teständerungen aktivieren die repositoryweite Typprüfung nicht; deren Integration erfolgt erst nach der Reparatur der anderen Komponenten.
