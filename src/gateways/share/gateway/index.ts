@@ -513,7 +513,7 @@ export class CoreShareGateway {
         for (const record of records) {
             if (!this.resolveRecordAdapter(record)) continue;
             const recipientAuthorized =
-                !isExpired(record) &&
+                !this.isTokenExpired(record) &&
                 record.grantedCapabilities.includes(input.requiredCapability) &&
                 record.accessControls.recipients.some(
                     (recipient) =>

@@ -55,3 +55,11 @@ A mounted link-share page may programmatically spawn an otherwise valid componen
 ## Delegated access contract
 
 `share:resolveDelegatedAccess` accepts guest claims plus a target `resourceType`, `resourceId`, and `requiredCapability`. Share resolves the token's original resource and runs `resolve-share-delegated-access` with `{ source, target }`. A source-resource hook may authorize only by returning the exact source and target identifiers, a non-empty `sourceCapability`, and `allowedCapabilities`. Share independently verifies that the original token grants `sourceCapability`; mismatched identifiers or capabilities fail closed. Target components never import or name the source provider.
+
+## Enforce expiry at access checks
+
+Direct user shares stop granting access at expiry, including password-unlocked shares retained for history. An empty expiry remains unlimited; malformed nonempty expiry values deny access.
+
+## Honor explicit grant revocation
+
+PATCH with `grantedCapabilities: []` removes every granted capability. Omitting the field preserves grants; a nonempty array replaces them. Recipient, password and adapter checks remain in force.
