@@ -16,4 +16,4 @@ Core 0.6.4 erfasst Bootstrap-Fehler gefundener Gateways getrennt von ausführbar
 
 ## Commits
 
-- [9751bf8: Sitzungen erst nach abschließender Prüfung festlegen](https://github.com/Cognis-Labs-HQ/Cognis/commit/9751bf814ebdd26fedecd6366389cb1f2b7fbacd)
+- [0f5aaa8: Sitzungen erst nach abschließender Prüfung festlegen](https://github.com/Cognis-Labs-HQ/Cognis/commit/0f5aaa8b1ef309db23b947ea6361dc3369e4713f)
