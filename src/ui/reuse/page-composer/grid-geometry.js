@@ -39,7 +39,7 @@ export function createGridGeometry(state, unit) {
         Math.floor(pixelToGridColumn(pixel) / gridStep(dim)) * gridStep(dim);
     const snapPixelRowFloor = (pixel, dim) =>
         Math.floor(pixelToGridRow(pixel) / gridStep(dim)) * gridStep(dim);
-    function computeGridDimensions() {
+    function computeGridDimensions({ minimumRows = 0 } = {}) {
         if (!state.contentGrid) return;
         state.contentGrid.style.width = "";
         const width = state.contentGrid.getBoundingClientRect().width;
@@ -63,6 +63,7 @@ export function createGridGeometry(state, unit) {
         );
         const extra = state.editing ? 1 : 0;
         state.gridRows = Math.max(
+            minimumRows,
             state.editing ? Math.max(3, maxBottom + 2) : 1,
             maxBottom + extra,
         );

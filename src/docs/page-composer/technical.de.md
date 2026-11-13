@@ -145,6 +145,8 @@ Composer verwaltet den Innenabstand der Inhaltssektion: 28px auf breiteren Bilds
 
 Gemeinsame Texte umbrechen vor und nach dem Laden einer Schriftart innerhalb der verfügbaren Breite, ohne die gewählte Schriftgröße zu verringern.
 
+Array-Angaben unterstützen `['full', 'fill']` für die gesamte Breite und das Ausfüllen der verfügbaren Höhe sowie `['full', n]` für die gesamte Breite mit einer numerischen Höhenbegrenzung. Haupt- und verschachtelte Composer berücksichtigen diese Maße in schmalen und breiten Rastern. Beim Ziehen unter das Raster erweitert der Editor die Inhaltsgrenzen und das sichtbare Raster gemeinsam, bevor das Widget abgelegt wird.
+
 ## Sicherheit
 
 Composer steuert Darstellung und DOM-Lebensdauer statt Inhaltsrechte. Seitenaktionen nutzen Eigentümerabläufe; Markup und Styles beachten gemeinsame Menü- und Panelgrenzen.

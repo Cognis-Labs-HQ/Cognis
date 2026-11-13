@@ -129,6 +129,8 @@ Composer mengatur jarak dalam bagian konten: 28px pada layar lebar dan 14px pada
 
 Teks bersama membungkus sesuai lebar yang tersedia sebelum dan sesudah font dimuat, tanpa memperkecil ukuran font pilihan.
 
+Deklarasi array mendukung `['full', 'fill']` untuk lebar penuh dan pengisian tinggi yang tersedia, atau `['full', n]` untuk lebar penuh dengan batas tinggi numerik. Composer utama maupun bersarang mengikuti ukuran ini pada grid sempit dan lebar. Saat widget diseret ke bawah grid, editor memperluas batas konten dan grid yang terlihat secara bersamaan sebelum widget dilepas.
+
 ## Keamanan
 
 Composer mengatur presentasi dan masa DOM, bukan otorisasi sumber daya. Tindakan tetap memakai alur pemilik; markup serta gaya mematuhi batas panel dan menu.

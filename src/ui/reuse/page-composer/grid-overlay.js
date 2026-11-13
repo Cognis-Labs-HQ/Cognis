@@ -253,12 +253,18 @@ export function createGridOverlayHandlers({
                         : "composer-grid-cell";
                 cell.style.left = `${gridColumnOffset(c)}px`;
                 cell.style.top = `${gridRowOffset(r)}px`;
-                cell.style.width = `${gridColumnSpanSize(cStep)}px`;
-                cell.style.height = `${gridRowSpanSize(rStep)}px`;
+                cell.style.width = `${Math.min(gridColumnSpanSize(cStep), state.gridPixelWidth - gridColumnOffset(c))}px`;
+                cell.style.height = `${Math.min(gridRowSpanSize(rStep), state.gridPixelHeight - gridRowOffset(r))}px`;
                 overlay.appendChild(cell);
             }
         }
         return overlay;
+    }
+    function refreshGridBounds(minimumRows = 0) {
+        computeGridDimensions({ minimumRows });
+        state.gridSection
+            .querySelector(".composer-grid-overlay")
+            ?.replaceWith(createGridOverlay());
     }
     function createCell(el, placement, { includeContent = true } = {}) {
         const cell = document.createElement("div");
@@ -345,8 +351,7 @@ export function createGridOverlayHandlers({
                         ),
                     );
                     if (rawRow + placement.h > state.gridRows) {
-                        state.gridRows = rawRow + placement.h + 1;
-                        state.gridSection.style.minHeight = `${state.gridPixelHeight}px`;
+                        refreshGridBounds(rawRow + placement.h + 1);
                     }
                     currentCol = col;
                     currentRow = rawRow;
@@ -390,6 +395,7 @@ export function createGridOverlayHandlers({
                     }
                     shade.remove();
                     cell.classList.remove("composer-cell--dragging");
+                    refreshGridBounds();
                     if (e.type === "pointercancel") return;
                     const panel = document.getElementById(
                         "composer-elements-panel",
