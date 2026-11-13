@@ -8,4 +8,4 @@ Kontrak acara, penyimpanan, inisialisasi, dan HTTP adaptor Kalender kini menjela
 
 ## Komit
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/88ea561561637225701c1002d14429b0e18ac0f9
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/49940f0a083eae2e463de353238acc248c4f8c27
