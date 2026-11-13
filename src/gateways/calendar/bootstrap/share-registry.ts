@@ -57,11 +57,7 @@ export class CalendarShareRegistry {
 
     constructor(
         private readonly db: DbExecutor | null,
-        private readonly log?: (
-            level: string,
-            msg: string,
-            meta?: Record<string, unknown>,
-        ) => void,
+        private readonly log?: import("./helpers.js").CalendarLogger,
     ) {}
 
     async ensureSchema(): Promise<void> {
@@ -271,30 +267,32 @@ export class CalendarShareRegistry {
                 { column: "owner_calendar_id", value: ownerCalendarId },
             ],
         });
-        const shares = (result.rows ?? []).map((row) => ({
-            id: String(row.id ?? ""),
-            shareTokenId: this.normalizeOptionalString(row.share_token_id),
-            ownerAccountId: String(row.owner_account_id ?? ""),
-            ownerCalendarId: String(row.owner_calendar_id ?? ""),
-            recipientAccountId: String(row.recipient_account_id ?? ""),
-            recipientCalendarId: String(row.recipient_calendar_id ?? ""),
-            recipientHandle:
-                row.recipient_handle == null
-                    ? null
-                    : String(row.recipient_handle),
-            recipientDisplayName:
-                row.recipient_display_name == null
-                    ? null
-                    : String(row.recipient_display_name),
-            recipientAvatarKey:
-                row.recipient_avatar_key == null
-                    ? null
-                    : String(row.recipient_avatar_key),
-            permission: row.permission === "write" ? "write" : "read",
-            expiresAt: String(row.expires_at ?? "").trim(),
-            createdAt: String(row.created_at ?? ""),
-            updatedAt: String(row.updated_at ?? ""),
-        }));
+        const shares = (result.rows ?? []).map(
+            (row): CalendarUserShareRegistryRecord => ({
+                id: String(row.id ?? ""),
+                shareTokenId: this.normalizeOptionalString(row.share_token_id),
+                ownerAccountId: String(row.owner_account_id ?? ""),
+                ownerCalendarId: String(row.owner_calendar_id ?? ""),
+                recipientAccountId: String(row.recipient_account_id ?? ""),
+                recipientCalendarId: String(row.recipient_calendar_id ?? ""),
+                recipientHandle:
+                    row.recipient_handle == null
+                        ? null
+                        : String(row.recipient_handle),
+                recipientDisplayName:
+                    row.recipient_display_name == null
+                        ? null
+                        : String(row.recipient_display_name),
+                recipientAvatarKey:
+                    row.recipient_avatar_key == null
+                        ? null
+                        : String(row.recipient_avatar_key),
+                permission: row.permission === "write" ? "write" : "read",
+                expiresAt: String(row.expires_at ?? "").trim(),
+                createdAt: String(row.created_at ?? ""),
+                updatedAt: String(row.updated_at ?? ""),
+            }),
+        );
         const expiredShares = shares.filter((share) =>
             this.isExpiredUserShare(share),
         );
@@ -847,7 +845,7 @@ export class CalendarShareRegistry {
         });
     }
 
-    private async deleteCalendarUserShareById(shareId: string): Promise<void> {
+    async deleteCalendarUserShareById(shareId: string): Promise<void> {
         if (!this.db) {
             this.memoryUserShares.delete(shareId);
             return;

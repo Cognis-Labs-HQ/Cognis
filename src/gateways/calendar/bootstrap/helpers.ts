@@ -1,3 +1,4 @@
+import type { ServerResponse } from "node:http";
 import { randomBytes } from "node:crypto";
 import { sanitizeFilenameBase } from "../../../api/reuse/sanitize-filename.js";
 import type {
@@ -50,11 +51,7 @@ export type ResolveAccountId = (
 export type ResolveAccountDisplayName = (
     accountId: string,
 ) => Promise<string> | string;
-export type CalendarLogger = (
-    level: string,
-    msg: string,
-    meta?: Record<string, unknown>,
-) => void;
+export type CalendarLogger = import("../../shared.js").BootstrapLog;
 
 export type EventLocationRef = {
     calendarId: string;

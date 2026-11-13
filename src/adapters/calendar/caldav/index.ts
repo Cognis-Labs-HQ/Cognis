@@ -62,7 +62,9 @@ export function createCalendarAdapter(): CalendarAdapter {
     };
 }
 
-function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
+function createCaldavRoutes(
+    ctx: CalendarAdapterBootstrapCtx,
+): Parameters<CalendarAdapterBootstrapCtx["registerRoute"]>[0] {
     const routeContext = resolveRouteContext(
         ctx.capabilities.get<RouteContext>("auth:routeContext"),
     );

@@ -67,3 +67,7 @@ Gastseiten prüfen den Abbruch nach Lokalisierung, Composer-Initialisierung, Sit
 Lesezugriffe und Änderungen für Gastkalender verwenden die lebenszyklusgebundene Capability `calendar:sharedClient` und benannte Flows `calendar:shared:*`. Anfragen behalten die ausdrückliche Gastberechtigung bei, kombinieren Seiten- und Anbieterabbruch und gelangen nie in die Ausgangswarteschlange des Kontos. Verbraucher setzen den Freigabe-Endpunkt nicht selbst zusammen.
 
 Calendar erkennt `meetings:createMeeting` beim aktiven Browseranbieter. Der Anbieter besitzt die Erstellungsanfrage und das Ziel; Calendar löst eine gültige HTTP(S)-URL für das Ereignis auf, ohne Modul-ID oder Route zu kennen. Fehlende Anbieter werden abgewiesen; offline bleibt die Besprechungsoption deaktiviert.
+
+## Typisierte Kalendergrenzen
+
+Die Verträge für Kalenderereignisse, Speicherung, Initialisierung und Adapter-HTTP beschreiben jetzt das implementierte Verhalten. ICS und CalDAV behalten ihre Berechtigungen, Passwortverarbeitung und Feedformate bei.

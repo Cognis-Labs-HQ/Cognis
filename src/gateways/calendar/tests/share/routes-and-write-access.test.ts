@@ -12,7 +12,7 @@ import { issueAccessToken } from "../../../auth/access-tokens.js";
 import { bootstrap } from "../../bootstrap.js";
 
 async function createDispatchJson(
-    claimsByToken: Map<string, any>,
+    claimsByToken: Parameters<typeof createAuthContext>[0],
     hooks: {
         removedRecipients?: Array<Record<string, string>>;
         deletedResources?: Array<Record<string, string>>;
@@ -32,14 +32,20 @@ async function createDispatchJson(
         "free",
         "tentative",
     ]);
-    capabilities.contribute("share:removeUserRecipient", async (input) => {
-        hooks.removedRecipients?.push(input as Record<string, string>);
-        return "updated";
-    });
-    capabilities.contribute("share:deleteResourceShares", async (input) => {
-        hooks.deletedResources?.push(input as Record<string, string>);
-        return 1;
-    });
+    capabilities.contribute(
+        "share:removeUserRecipient",
+        async (input: Record<string, string>) => {
+            hooks.removedRecipients?.push(input);
+            return "updated";
+        },
+    );
+    capabilities.contribute(
+        "share:deleteResourceShares",
+        async (input: Record<string, string>) => {
+            hooks.deletedResources?.push(input);
+            return 1;
+        },
+    );
     hooks.captureCapabilities?.(capabilities);
     await bootstrap({
         adaptersRoot: path.resolve(process.cwd(), "src", "adapters"),
@@ -48,7 +54,7 @@ async function createDispatchJson(
         capabilities,
         uiRegistry,
         flow: createCtx().flow,
-    } as any);
+    });
     return createJsonDispatcher(routeRegistry);
 }
 
@@ -237,7 +243,7 @@ test("deleting a received calendar removes only that share recipient", async () 
     const aliceToken = issueAccessToken("alice", "admin", 60);
     const bobToken = issueAccessToken("bob", "user", 60);
     const removedRecipients: Array<Record<string, string>> = [];
-    let capabilities: CapabilityStore | null = null;
+    const captured: { capabilities?: CapabilityStore } = {};
     const dispatchJson = await createDispatchJson(
         new Map([
             [aliceToken, { sub: "alice", role: "admin" }],
@@ -246,7 +252,7 @@ test("deleting a received calendar removes only that share recipient", async () 
         {
             removedRecipients,
             captureCapabilities: (value) => {
-                capabilities = value;
+                captured.capabilities = value;
             },
         },
     );
@@ -257,7 +263,7 @@ test("deleting a received calendar removes only that share recipient", async () 
         { name: "Shared project" },
     );
     const ownerCalendarId = String(created.body.data.id);
-    const deliver = capabilities?.get<
+    const deliver = captured.capabilities?.get<
         (input: {
             shareId: string;
             resourceType: string;

@@ -3,7 +3,7 @@ import type {
     CalendarEventRecord,
     CalendarEventResponseRecord,
     CalendarRecord,
-} from "./gateway.js";
+} from "./gateway/index.js";
 
 export interface CalendarStore {
     ensureSchema(): Promise<void>;

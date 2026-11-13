@@ -7,7 +7,7 @@ import {
 } from "../../../api/reuse/route-context.js";
 import { sendCalendarError, sendJson } from "./helpers.js";
 import type { CoreCalendarGateway } from "../gateway/index.js";
-import type { GatewayBootstrapContext } from "../shared.js";
+import type { GatewayBootstrapContext } from "../../shared.js";
 
 export function createCalendarAdapterRoutes(
     gatewayId: string,
