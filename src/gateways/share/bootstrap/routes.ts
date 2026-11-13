@@ -485,8 +485,7 @@ export function createShareRoutes(input: {
                     ...(typeof body.label === "string"
                         ? { label: body.label }
                         : {}),
-                    ...(Array.isArray(body.grantedCapabilities) &&
-                    body.grantedCapabilities.length > 0
+                    ...(Array.isArray(body.grantedCapabilities)
                         ? { grantedCapabilities: body.grantedCapabilities }
                         : {}),
                     ...(body.accessControls &&

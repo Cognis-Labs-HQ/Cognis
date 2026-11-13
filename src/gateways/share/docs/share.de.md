@@ -55,3 +55,11 @@ Eine eingebundene Link-Freigabeseite darf eine ansonsten gültige Komponentensei
 ## Vertrag für delegierten Zugriff
 
 `share:resolveDelegatedAccess` akzeptiert Gast-Claims sowie `resourceType`, `resourceId` und `requiredCapability` des Ziels. Share löst die ursprüngliche Ressource des Tokens auf und führt `resolve-share-delegated-access` mit `{ source, target }` aus. Ein Hook der Quellressource darf nur autorisieren, indem er die exakten Quell- und Zielkennungen, eine nicht leere `sourceCapability` und `allowedCapabilities` zurückgibt. Share prüft unabhängig, dass das ursprüngliche Token `sourceCapability` gewährt; abweichende Kennungen oder Fähigkeiten werden sicher abgelehnt. Zielkomponenten importieren oder benennen den Quellanbieter niemals.
+
+## Ablauf bei Zugriff prüfen
+
+Direkte Benutzerfreigaben gewähren nach Ablauf keinen Zugriff mehr, auch nach Passwortentsperrung und während der Aufbewahrung im Verlauf. Ein leerer Ablaufwert bleibt unbegrenzt; ungültige nichtleere Werte verweigern den Zugriff.
+
+## Ausdrücklichen Rechteentzug beachten
+
+PATCH mit `grantedCapabilities: []` entfernt alle gewährten Fähigkeiten. Ohne dieses Feld bleiben sie erhalten; ein nichtleeres Array ersetzt sie. Empfänger-, Passwort- und Adapterprüfungen bleiben wirksam.

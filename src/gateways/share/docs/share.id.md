@@ -55,3 +55,11 @@ Halaman berbagi tautan yang terpasang dapat membuka halaman komponen yang valid 
 ## Kontrak akses terdelegasi
 
 `share:resolveDelegatedAccess` menerima klaim tamu beserta `resourceType`, `resourceId`, dan `requiredCapability` target. Share menyelesaikan sumber daya asal token lalu menjalankan `resolve-share-delegated-access` dengan `{ source, target }`. Hook pemilik sumber daya asal hanya dapat mengizinkan dengan mengembalikan pengenal asal dan target yang persis, `sourceCapability` yang tidak kosong, serta `allowedCapabilities`. Share memverifikasi secara mandiri bahwa token asal memberikan `sourceCapability`; pengenal atau kapabilitas yang tidak cocok ditolak secara aman. Komponen target tidak pernah mengimpor atau menyebut penyedia asal.
+
+## Periksa kedaluwarsa saat akses
+
+Berbagi langsung kepada pengguna tidak lagi memberi akses setelah kedaluwarsa, termasuk berbagi yang telah dibuka dengan kata sandi dan disimpan dalam riwayat. Nilai kedaluwarsa kosong tetap tanpa batas; nilai tidak kosong yang tidak valid menolak akses.
+
+## Hormati pencabutan hak eksplisit
+
+PATCH dengan `grantedCapabilities: []` menghapus semua kapabilitas yang diberikan. Tanpa bidang tersebut, hak tetap dipertahankan; larik tidak kosong menggantikannya. Pemeriksaan penerima, kata sandi, dan adaptor tetap berlaku.
