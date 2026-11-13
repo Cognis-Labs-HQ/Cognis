@@ -7,15 +7,16 @@ import {
     type Ctx,
     type CapabilityStore,
 } from "@cognis/core";
+import type { CoreAuthGateway } from "../gateway.js";
 import { issueAccessToken } from "../access-tokens.js";
 
 export type HttpIncomingMessage = import("node:http").IncomingMessage;
 
-export type InMemoryDb = {
-    execute: (sql: string, params?: unknown[]) => Promise<{ rows: unknown[] }>;
-    executeCommand: () => Promise<{ rows: unknown[] }>;
-    ensureTable: () => Promise<void>;
-    transaction: <T>(cb: (db: InMemoryDb) => Promise<T>) => Promise<T>;
+export type InMemoryDb = ConstructorParameters<typeof CoreAuthGateway>[0] & {
+    execute: (
+        sql: string,
+        params?: unknown[],
+    ) => Promise<{ rows: Record<string, unknown>[] }>;
 };
 
 export type TestResponse = {
@@ -30,14 +31,13 @@ export type TestResponse = {
 };
 
 export function makeInMemoryDb(): InMemoryDb {
-    return {
+    const db: InMemoryDb = {
         execute: async (_sql: string, _params?: unknown[]) => ({ rows: [] }),
-        executeCommand: async () => ({ rows: [] }),
-        ensureTable: async () => {},
-        transaction: async <T>(
-            cb: (db: InMemoryDb) => Promise<T>,
-        ): Promise<T> => cb(makeInMemoryDb()),
+        executeCommand: async (_command) => ({ rows: [] }),
+        ensureTable: async (_definition) => {},
+        transaction: async (callback) => callback(db),
     };
+    return db;
 }
 
 export function makeJsonRequest(

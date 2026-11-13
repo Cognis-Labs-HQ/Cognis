@@ -85,18 +85,28 @@ async function registrationFixture() {
         "gateAccountCreation",
         "authorizeCreation",
         { id: "test:invitePolicy" },
-        ({ input }) => ({
-            authorized: input.registrationToken === "valid-invitation",
-        }),
+        ({ input }) => {
+            assert.ok(input && typeof input === "object");
+            return {
+                authorized:
+                    "registrationToken" in input &&
+                    input.registrationToken === "valid-invitation",
+            };
+        },
     );
     const routes = new RouteRegistry();
-    routes.register(
-        createSessionRoutes({
-            accountStore,
-            authGateway,
-            capabilities,
-            authRouteBootstrapRuntime: runtime,
-            readSecuritySettings,
+    const sessionRoute = createSessionRoutes({
+        accountStore,
+        authGateway,
+        capabilities,
+        authRouteBootstrapRuntime: runtime,
+        readSecuritySettings,
+    });
+    routes.register((req, res, url) =>
+        sessionRoute(req, res, url, {
+            component: "gateway:auth",
+            method: req.method ?? "GET",
+            path: url.pathname,
         }),
     );
     return { accounts, profiles, routes };

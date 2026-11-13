@@ -1,9 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { issueAccessToken } from "../../access-tokens.js";
-import { createKeyringRoutes } from "../../../../adapters/auth/keyring/api/routes/index.js";
-import { createDefaultRouteContext } from "../../../../api/reuse/route-context.js";
-import { makeJsonRequest, makeResponse } from "../auth-gateway-test-helpers.js";
+import { createKeyringRoutes } from "../api/routes/index.js";
+import { createRouteFixture } from "./route-fixture.js";
 
 function validVault() {
     return {
@@ -17,7 +15,7 @@ function validVault() {
     };
 }
 
-test("authenticated users can save and load an opaque keyring vault", async () => {
+test("authenticated users can save and load an opaque keyring vault", async (context) => {
     const values = new Map<string, string>();
     const store = {
         async ensureSchema() {},
@@ -31,8 +29,10 @@ test("authenticated users can save and load an opaque keyring vault", async () =
             values.delete(accountId);
         },
     };
+    const { routeContext, makeJsonRequest, makeResponse } =
+        createRouteFixture(context);
     const route = createKeyringRoutes({
-        routeContext: createDefaultRouteContext(),
+        routeContext,
         store,
         getAccountInstanceId: async () => "instance-1",
         purgeDependentAccountData: async (accountId) => {
@@ -40,16 +40,15 @@ test("authenticated users can save and load an opaque keyring vault", async () =
             values.set("dependencies-purged", "true");
         },
     });
-    const token = issueAccessToken("Keyring-User", "user", 60);
+    const token = "Keyring-User";
     const headers = { authorization: `Bearer ${token}` };
 
     const putResponse = makeResponse();
     assert.equal(
         await route(
             makeJsonRequest("PUT", { vault: validVault() }, headers),
-            putResponse as any,
+            putResponse.res,
             new URL("http://localhost/api/v1/auth/keyring"),
-            {} as any,
         ),
         true,
     );
@@ -61,9 +60,8 @@ test("authenticated users can save and load an opaque keyring vault", async () =
     assert.equal(
         await route(
             makeJsonRequest("GET", {}, headers),
-            getResponse as any,
+            getResponse.res,
             new URL("http://localhost/api/v1/auth/keyring"),
-            {} as any,
         ),
         true,
     );
@@ -74,9 +72,8 @@ test("authenticated users can save and load an opaque keyring vault", async () =
     assert.equal(
         await route(
             makeJsonRequest("DELETE", {}, headers),
-            deleteResponse as any,
+            deleteResponse.res,
             new URL("http://localhost/api/v1/auth/keyring"),
-            {} as any,
         ),
         true,
     );
@@ -86,18 +83,19 @@ test("authenticated users can save and load an opaque keyring vault", async () =
     const emptyResponse = makeResponse();
     await route(
         makeJsonRequest("GET", {}, headers),
-        emptyResponse as any,
+        emptyResponse.res,
         new URL("http://localhost/api/v1/auth/keyring"),
-        {} as any,
     );
     assert.match(emptyResponse.payload, /"vault":null/);
 });
 
-test("keyring policy bounds default vaults and accepts a configured bounded increase", async () => {
+test("keyring policy bounds default vaults and accepts a configured bounded increase", async (context) => {
     let stored = "";
     let policyBytes = 2 * 1024 * 1024;
+    const { routeContext, makeJsonRequest, makeResponse } =
+        createRouteFixture(context);
     const route = createKeyringRoutes({
-        routeContext: createDefaultRouteContext(),
+        routeContext,
         store: {
             async ensureSchema() {},
             async get() {
@@ -114,7 +112,7 @@ test("keyring policy bounds default vaults and accepts a configured bounded incr
             derivationIterations: 310000,
         }),
     });
-    const token = issueAccessToken("large-keyring-user", "user", 60);
+    const token = "large-keyring-user";
     const response = makeResponse();
     const vault = {
         ...validVault(),
@@ -123,9 +121,8 @@ test("keyring policy bounds default vaults and accepts a configured bounded incr
 
     await route(
         makeJsonRequest("PUT", { vault }, { authorization: `Bearer ${token}` }),
-        response as any,
+        response.res,
         new URL("http://localhost/api/v1/auth/keyring"),
-        {} as any,
     );
 
     assert.equal(response.status, 413);
@@ -134,14 +131,14 @@ test("keyring policy bounds default vaults and accepts a configured bounded incr
     const allowed = makeResponse();
     await route(
         makeJsonRequest("PUT", { vault }, { authorization: `Bearer ${token}` }),
-        allowed as any,
+        allowed.res,
         new URL("http://localhost/api/v1/auth/keyring"),
     );
     assert.equal(allowed.status, 200);
     assert.equal(JSON.parse(stored).cipher.length, 3 * 1024 * 1024);
 });
 
-test("keyring API rejects malformed vault payloads", async () => {
+test("keyring API rejects malformed vault payloads", async (context) => {
     const store = {
         async ensureSchema() {},
         async get() {
@@ -150,12 +147,14 @@ test("keyring API rejects malformed vault payloads", async () => {
         async set() {},
         async delete() {},
     };
+    const { routeContext, makeJsonRequest, makeResponse } =
+        createRouteFixture(context);
     const route = createKeyringRoutes({
-        routeContext: createDefaultRouteContext(),
+        routeContext,
         store,
         getAccountInstanceId: async () => "instance-1",
     });
-    const token = issueAccessToken("keyring-user-invalid", "user", 60);
+    const token = "keyring-user-invalid";
     const response = makeResponse();
     await route(
         makeJsonRequest(
@@ -165,22 +164,23 @@ test("keyring API rejects malformed vault payloads", async () => {
                 authorization: `Bearer ${token}`,
             },
         ),
-        response as any,
+        response.res,
         new URL("http://localhost/api/v1/auth/keyring"),
-        {} as any,
     );
     assert.equal(response.status, 400);
     assert.match(response.payload, /invalid_keyring_vault/);
 });
 
-test("keyring API purges a vault from a previous account instance", async () => {
+test("keyring API purges a vault from a previous account instance", async (context) => {
     let deletedAccountId = "";
     const staleVault = {
         ...validVault(),
         accountInstanceId: "retired-instance",
     };
+    const { routeContext, makeJsonRequest, makeResponse } =
+        createRouteFixture(context);
     const route = createKeyringRoutes({
-        routeContext: createDefaultRouteContext(),
+        routeContext,
         store: {
             async ensureSchema() {},
             async get() {
@@ -193,14 +193,13 @@ test("keyring API purges a vault from a previous account instance", async () => 
         },
         getAccountInstanceId: async () => "current-instance",
     });
-    const token = issueAccessToken("Recreated-User", "user", 60);
+    const token = "Recreated-User";
     const response = makeResponse();
 
     await route(
         makeJsonRequest("GET", {}, { authorization: `Bearer ${token}` }),
-        response as any,
+        response.res,
         new URL("http://localhost/api/v1/auth/keyring"),
-        {} as any,
     );
 
     assert.equal(deletedAccountId, "recreated-user");

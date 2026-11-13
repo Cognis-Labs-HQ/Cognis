@@ -1,4 +1,6 @@
 import test from "node:test";
+import { IncomingMessage } from "node:http";
+import { Socket } from "node:net";
 import assert from "node:assert/strict";
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
@@ -13,6 +15,7 @@ import {
     verifyAccessToken,
 } from "../access-tokens.js";
 import {
+    getCookieSession,
     registerPageScriptOrigin,
     registerPageScriptOrigins,
     requireAuth,
@@ -217,4 +220,22 @@ test("page script origins are isolated and replaced per owner", () => {
         /https:\/\/first\.example\.test/,
     );
     assert.match(contentSecurityPolicy, /https:\/\/second\.example\.test/);
+});
+
+test("cookie sessions expose page identity and reject missing or revoked sessions", () => {
+    const req = new IncomingMessage(new Socket());
+    assert.equal(getCookieSession(req), null);
+    const token = issueAccessToken("cookie-page-user", "teacher", 60, {
+        providerId: "external-provider",
+        setupPending: true,
+    });
+    req.headers.cookie = `other=value; cognis_access_token=${encodeURIComponent(token)}`;
+    assert.deepEqual(getCookieSession(req), {
+        sub: "cookie-page-user",
+        role: "teacher",
+        providerId: "external-provider",
+        setupPending: true,
+    });
+    revokeAccessTokensForSubject("cookie-page-user");
+    assert.equal(getCookieSession(req), null);
 });

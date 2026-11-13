@@ -253,7 +253,9 @@ export function requireRoleAccess(
  * visitor is not logged in or the token is invalid. Used by page-serving
  * routes to gate HTML delivery behind authentication.
  */
-export function getCookieSession(req: IncomingMessage): AuthClaims | null {
+export function getCookieSession(
+    req: IncomingMessage,
+): Omit<AuthClaims, "ttlSeconds"> | null {
     const cookie = req.headers.cookie ?? "";
     const match = cookie.match(/(?:^|; )cognis_access_token=([^;]+)/);
     if (!match) return null;

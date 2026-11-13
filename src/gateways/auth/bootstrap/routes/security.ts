@@ -285,6 +285,7 @@ export function createSecurityRoutes({
             const timeoutMinutes = body.timeoutMinutes;
             if (
                 maximumMinutes === 0 ||
+                typeof timeoutMinutes !== "number" ||
                 !Number.isInteger(timeoutMinutes) ||
                 Number(timeoutMinutes) < 1 ||
                 Number(timeoutMinutes) > maximumMinutes
