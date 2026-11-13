@@ -9,11 +9,10 @@ import {
 } from "../index.js";
 import type { NotificationEnvelope } from "../../../../gateways/notify/gateway.js";
 import { createInternalNotificationRoutes } from "../routes/index.js";
-import {
-    createAuthContext,
-    RequestRecorder,
-    ResponseRecorder,
-} from "../../../../api/tests/reuse/route-test-helpers.js";
+import { IncomingMessage, ServerResponse } from "node:http";
+import { Socket } from "node:net";
+import { createCtx, hasMinRole, isRoleAllowed } from "@cognis/core";
+import type { RouteContext } from "../../../../api/reuse/route-context.js";
 
 function makeEnvelope(
     recipientUsername: string,
@@ -61,15 +60,30 @@ test("internal inbox route marks one notification read at the canonical URL", as
     const store = new AsyncInternalNotificationStore();
     await store.add(makeEnvelope("route-user", "Shared item"));
     const [notification] = await store.list("route-user");
-    const token = "route-token";
-    const handler = createInternalNotificationRoutes(
-        store,
-        createAuthContext(
-            new Map([[token, { sub: "route-user", role: "user" }]]),
-        ),
-    );
-    const request = new RequestRecorder({ method: "PUT", token });
-    const response = new ResponseRecorder();
+    const claims = { sub: "route-user", role: "user" } as const;
+    const system = createCtx();
+    const context: RouteContext = {
+        getAuthClaims: () => claims,
+        requireAuth: () => claims,
+        requireRoleAccess: (_request, _response, policy) =>
+            isRoleAllowed(claims.role, policy) ? claims : null,
+        canAccessUserData: (_claims, target) => target === claims.sub,
+        hasMinRole,
+        getCookieSession: () => null,
+        setPageSecurityHeaders(response) {
+            response.setHeader("x-content-type-options", "nosniff");
+        },
+        lookupAccessToken: () => null,
+        revokeAccessTokensForSubject: () => 0,
+        getCapability: (id) => system.getCapability(id),
+        requireCapability: (id) => system.requireCapability(id),
+        flow: system.flow,
+    };
+    const handler = createInternalNotificationRoutes(store, context);
+    const request = new IncomingMessage(new Socket());
+    request.method = "PUT";
+    request.push(null);
+    const response = new ServerResponse(request);
     const handled = await handler(
         request,
         response,

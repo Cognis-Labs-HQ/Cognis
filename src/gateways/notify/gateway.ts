@@ -114,15 +114,13 @@ function isSenderWithTrackedSend(sender: {
 function isSenderWithQueueList(
     sender: NotificationSender,
 ): sender is NotificationSender & SenderWithQueueList {
-    return typeof (sender as Record<string, unknown>).listQueue === "function";
+    return typeof sender.listQueue === "function";
 }
 
 function isSenderWithQueueItem(
     sender: NotificationSender,
 ): sender is NotificationSender & SenderWithQueueItem {
-    return (
-        typeof (sender as Record<string, unknown>).getQueueItem === "function"
-    );
+    return typeof sender.getQueueItem === "function";
 }
 
 export class CoreNotificationGateway implements NotificationGateway {

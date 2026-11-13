@@ -33,3 +33,7 @@ Produsen notifikasi dapat menandai entri sebagai berkelanjutan dan menyediakan d
 Produsen dapat mengorelasikan notifikasi berkelanjutan dengan prompt UI lain. Peristiwa generik `cognis:notification-resolved` menghapus setiap notifikasi dengan pengenal korelasi yang sama tanpa membuat adaptor mengetahui produsennya.
 
 Produsen dapat melampirkan peta `metadata.localizedText` berdasarkan locale dengan string `subject` dan `body`. Adaptor peramban internal memilih locale peramban pertama yang didukung dan memakai teks amplop asli jika tidak tersedia; adaptor tidak menafsirkan domain produsen.
+
+## Kontrak Pengiriman Bertipe
+
+Pengiriman internal memperoleh eksekutor basis data terstruktur melalui ctx. Kontrak pencatatannya memakai tingkat keparahan bootstrap yang didukung. Enkripsi, otorisasi kotak masuk, dan pengiriman yang selalu aktif tidak berubah.

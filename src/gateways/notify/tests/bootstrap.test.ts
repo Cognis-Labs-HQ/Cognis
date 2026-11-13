@@ -1,3 +1,5 @@
+import { NotificationTestDatabase } from "./reuse/database.js";
+import { createRequest, createResponse } from "./reuse/http.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
@@ -9,22 +11,12 @@ import {
 import type { NotificationEnvelope } from "../contracts/sender.js";
 import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import { bootstrap as bootstrapImplementation } from "../bootstrap.js";
-import { issueAccessToken } from "../../auth/access-tokens.js";
-
-function makeInMemoryDb() {
-    return {
-        executeCommand: async () => ({ rows: [], rowCount: 0 }),
-        ensureTable: async () => {},
-        transaction: async <T>(
-            cb: (db: ReturnType<typeof makeInMemoryDb>) => Promise<T>,
-        ) => cb(makeInMemoryDb()),
-    };
-}
+import { issueAccessToken, createAuthContext } from "./reuse/auth.js";
 
 function makeResponse() {
     let status = 0;
     let payload = "";
-    return {
+    return createResponse({
         writeHead(code: number) {
             status = code;
         },
@@ -37,7 +29,7 @@ function makeResponse() {
         get payload() {
             return payload;
         },
-    } as any;
+    });
 }
 
 const adminToken = issueAccessToken("test-session", "admin", 60);
@@ -54,8 +46,9 @@ async function makeCtx() {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-    const db = makeInMemoryDb();
+    const db = new NotificationTestDatabase();
     const systemCtx = createCtx();
+    capabilities.contribute("auth:routeContext", createAuthContext());
     capabilities.contribute("db:executor", db);
     capabilities.contribute("system:ctx", systemCtx);
     return {
@@ -235,10 +228,10 @@ test("GET /api/v1/gateways/notify/adapters returns empty list when no senders", 
 
     const handlers = routeRegistry.getHandlers();
     const adapterHandler = handlers[handlers.length - 1];
-    const req = {
+    const req = createRequest({
         method: "GET",
         headers: { authorization: `Bearer ${adminToken}` },
-    } as any;
+    });
     const res = makeResponse();
 
     const handled = await adapterHandler(
@@ -267,7 +260,7 @@ test("gateway adapter route requires admin auth", async () => {
 
     const handlers = routeRegistry.getHandlers();
     const adapterHandler = handlers[handlers.length - 1];
-    const req = { method: "GET", headers: {} } as any;
+    const req = createRequest({ method: "GET", headers: {} });
     const res = makeResponse();
 
     await adapterHandler(

@@ -38,3 +38,7 @@ Die Vertragsregistrierung von Adaptern folgt dem [gemeinsamen Gateway-Bootstrap-
 ## Zuverlässige Freigaben und Tests
 
 Administratoren können Konfigurationen vor der Senderaktivierung testen. Tests aktivieren keine normale Zustellung; jeder Anbieter verwaltet seinen Diagnosetransport und dessen Bereinigung.
+
+## Typisierte Zustellverträge
+
+Die optionale Warteschlangenabfrage ist im Notify-Vertrag typisiert. Der Bootstrap lädt den Gateway-eigenen Speicher direkt und stellt dessen E-Mail- und Einstellungsmethoden ohne unvollständige Konstruktor-Typzusicherungen bereit. Die Broadcast-Prüfung liefert gültige Rollen und Zeitangaben vor dem Speichern.

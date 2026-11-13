@@ -32,10 +32,10 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント             | パス                                | バージョン |
 | -------------------------- | ----------------------------------- | ---------- |
-| SMTP Notification          | `src/adapters/notify/smtp/`         | `0.5.2`    |
+| SMTP Notification          | `src/adapters/notify/smtp/`         | `0.5.3`    |
 | CalDAV                     | `src/adapters/calendar/caldav/`     | `1.0.13`   |
 | ICS                        | `src/adapters/calendar/ics/`        | `1.0.11`   |
-| Internal Notification      | `src/adapters/notify/internal/`     | `0.5.33`   |
+| Internal Notification      | `src/adapters/notify/internal/`     | `0.5.34`   |
 | Local File Storage         | `src/adapters/file/local/`          | `0.1.26`   |
 | File Quota                 | `src/adapters/file/quota/`          | `1.0.24`   |
 | Local Auth                 | `src/adapters/auth/local/`          | `0.4.1`    |
@@ -73,7 +73,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Authentication (auth) | `src/gateways/auth/`          | `2.2.4`    |
 | Share                 | `src/gateways/share/`         | `1.9.8`    |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.3.6`    |
-| Notification (notify) | `src/gateways/notify/`        | `2.2.9`    |
+| Notification (notify) | `src/gateways/notify/`        | `2.2.10`   |
 | Social                | `src/gateways/social/`        | `1.4.5`    |
 | File Storage (files)  | `src/gateways/files/`         | `2.3.6`    |
 | Registration          | `src/gateways/registration/`  | `1.2.6`    |

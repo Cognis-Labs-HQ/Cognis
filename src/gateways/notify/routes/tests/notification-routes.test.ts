@@ -1,36 +1,42 @@
+import { createRequest, createResponse } from "../../tests/reuse/http.js";
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createNotificationRoutes } from "../index.js";
+import { createNotificationRoutes as createRoutes } from "../index.js";
 import {
     CoreNotificationGateway,
     VolatileNotificationPreferenceStore,
 } from "../../gateway.js";
-import { issueAccessToken } from "../../../auth/access-tokens.js";
+import { issueAccessToken, createAuthContext } from "../../tests/reuse/auth.js";
 
 import type {
     NotificationEnvelope,
     NotificationSender,
 } from "../../contracts/sender.js";
 
+function createNotificationRoutes(...args: Parameters<typeof createRoutes>) {
+    args[2] = { ...args[2], routeContext: createAuthContext() };
+    return createRoutes(...args);
+}
+
 function requestWithBody(
     method: string,
-    body: Record<string, unknown>,
+    body: Record<string, unknown> | Array<Record<string, unknown>>,
     token: string,
 ) {
     const chunks = [Buffer.from(JSON.stringify(body))];
-    return {
+    return createRequest({
         method,
         headers: { authorization: `Bearer ${token}` },
         [Symbol.asyncIterator]: async function* () {
             for (const c of chunks) yield c;
         },
-    } as any;
+    });
 }
 
 function makeResponse() {
     let status = 0;
     let payload = "";
-    return {
+    return createResponse({
         writeHead(code: number) {
             status = code;
         },
@@ -43,7 +49,7 @@ function makeResponse() {
         get payload() {
             return payload;
         },
-    } as any;
+    });
 }
 
 class CapturingSender implements NotificationSender {
@@ -148,17 +154,17 @@ test("notification route returns 401 without authentication", async () => {
     let status = 0;
 
     await route(
-        {
+        createRequest({
             method: "POST",
             headers: {},
             [Symbol.asyncIterator]: async function* () {},
-        } as any,
-        {
+        }),
+        createResponse({
             writeHead(c: number) {
                 status = c;
             },
             end() {},
-        } as any,
+        }),
         new URL("http://localhost/api/v1/notify/send"),
     );
 
@@ -183,12 +189,12 @@ test("notification route returns 403 for non-admin users", async () => {
             },
             userToken,
         ),
-        {
+        createResponse({
             writeHead(c: number) {
                 status = c;
             },
             end() {},
-        } as any,
+        }),
         new URL("http://localhost/api/v1/notify/send"),
     );
 
@@ -202,11 +208,11 @@ test("notification route does not handle unrelated paths", async () => {
     const adminToken = issueAccessToken("admin", "admin", 60);
 
     const handled = await route(
-        {
+        createRequest({
             method: "GET",
             headers: { authorization: `Bearer ${adminToken}` },
-        } as any,
-        { writeHead() {}, end() {} } as any,
+        }),
+        createResponse({ writeHead() {}, end() {} }),
         new URL("http://localhost/api/v1/other"),
     );
 
@@ -222,11 +228,11 @@ test("GET /api/v1/notify/providers returns sender list to admin", async () => {
     const res = makeResponse();
 
     await route(
-        {
+        createRequest({
             method: "GET",
             headers: { authorization: `Bearer ${adminToken}` },
             [Symbol.asyncIterator]: async function* () {},
-        } as any,
+        }),
         res,
         new URL("http://localhost/api/v1/notify/providers"),
     );
@@ -247,11 +253,11 @@ test("GET /api/v1/notify/providers returns sender list to non-admin user", async
     const res = makeResponse();
 
     await route(
-        {
+        createRequest({
             method: "GET",
             headers: { authorization: `Bearer ${userToken}` },
             [Symbol.asyncIterator]: async function* () {},
-        } as any,
+        }),
         res,
         new URL("http://localhost/api/v1/notify/providers"),
     );
@@ -268,11 +274,11 @@ test("GET /api/v1/notify/providers returns 401 without auth", async () => {
     const res = makeResponse();
 
     await route(
-        {
+        createRequest({
             method: "GET",
             headers: {},
             [Symbol.asyncIterator]: async function* () {},
-        } as any,
+        }),
         res,
         new URL("http://localhost/api/v1/notify/providers"),
     );
@@ -289,11 +295,11 @@ test("GET /api/v1/notify/categories returns categories to authenticated user", a
     const res = makeResponse();
 
     await route(
-        {
+        createRequest({
             method: "GET",
             headers: { authorization: `Bearer ${userToken}` },
             [Symbol.asyncIterator]: async function* () {},
-        } as any,
+        }),
         res,
         new URL("http://localhost/api/v1/notify/categories"),
     );
@@ -311,11 +317,11 @@ test("GET /api/v1/notify/categories returns 401 without auth", async () => {
     const res = makeResponse();
 
     await route(
-        {
+        createRequest({
             method: "GET",
             headers: {},
             [Symbol.asyncIterator]: async function* () {},
-        } as any,
+        }),
         res,
         new URL("http://localhost/api/v1/notify/categories"),
     );
@@ -331,11 +337,11 @@ test("GET /api/v1/notify/providers/:id/config returns 404 for unknown sender", a
     const res = makeResponse();
 
     await route(
-        {
+        createRequest({
             method: "GET",
             headers: { authorization: `Bearer ${adminToken}` },
             [Symbol.asyncIterator]: async function* () {},
-        } as any,
+        }),
         res,
         new URL("http://localhost/api/v1/notify/providers/unknown/config"),
     );
@@ -368,11 +374,11 @@ test("GET /api/v1/notify/users/:username/notification-prefs returns 401 without 
     const res = makeResponse();
 
     await route(
-        {
+        createRequest({
             method: "GET",
             headers: {},
             [Symbol.asyncIterator]: async function* () {},
-        } as any,
+        }),
         res,
         new URL(
             "http://localhost/api/v1/notify/users/alice/notification-prefs",
@@ -390,11 +396,11 @@ test("GET /api/v1/notify/users/:username/notification-prefs returns 403 for diff
     const res = makeResponse();
 
     await route(
-        {
+        createRequest({
             method: "GET",
             headers: { authorization: `Bearer ${userToken}` },
             [Symbol.asyncIterator]: async function* () {},
-        } as any,
+        }),
         res,
         new URL(
             "http://localhost/api/v1/notify/users/alice/notification-prefs",
@@ -412,11 +418,11 @@ test("GET /api/v1/notify/users/:username/notification-prefs returns empty array 
     const res = makeResponse();
 
     await route(
-        {
+        createRequest({
             method: "GET",
             headers: { authorization: `Bearer ${userToken}` },
             [Symbol.asyncIterator]: async function* () {},
-        } as any,
+        }),
         res,
         new URL(
             "http://localhost/api/v1/notify/users/alice/notification-prefs",
@@ -481,7 +487,7 @@ test("PUT /api/v1/notify/users/:username/notification-prefs strips disabled entr
         async ensureSchema() {},
     };
 
-    const route = createNotificationRoutes(gateway, mockStore as any);
+    const route = createNotificationRoutes(gateway, mockStore);
     const userToken = issueAccessToken("alice", "user", 60);
     const res = makeResponse();
 
@@ -540,11 +546,11 @@ test("GET /api/v1/notify/providers/:id/config includes requiredFields when sende
     const res = makeResponse();
 
     await route(
-        {
+        createRequest({
             method: "GET",
             headers: { authorization: `Bearer ${adminToken}` },
             [Symbol.asyncIterator]: async function* () {},
-        } as any,
+        }),
         res,
         new URL("http://localhost/api/v1/notify/providers/smtp/config"),
     );
@@ -574,11 +580,11 @@ test("GET /api/v1/notify/providers/:id/config returns empty requiredFields when 
     const res = makeResponse();
 
     await route(
-        {
+        createRequest({
             method: "GET",
             headers: { authorization: `Bearer ${adminToken}` },
             [Symbol.asyncIterator]: async function* () {},
-        } as any,
+        }),
         res,
         new URL("http://localhost/api/v1/notify/providers/smtp/config"),
     );
@@ -596,11 +602,11 @@ test("GET /api/v1/notify/users/:username/notification-prefs returns 200 for owne
     const res = makeResponse();
 
     await route(
-        {
+        createRequest({
             method: "GET",
             headers: { authorization: `Bearer ${ownerToken}` },
             [Symbol.asyncIterator]: async function* () {},
-        } as any,
+        }),
         res,
         new URL(
             "http://localhost/api/v1/notify/users/alice/notification-prefs",
@@ -615,14 +621,14 @@ test("GET /api/v1/notify/users/:username/notification-prefs returns 200 for owne
 test("POST /api/v1/notify/broadcasts creates a broadcast for admin users", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);
-    let createdPayload: Record<string, unknown> | null = null;
+    const captured: { createdPayload?: Record<string, unknown> } = {};
     const route = createNotificationRoutes(gateway, {
         async getUserNotifPrefs() {
             return [];
         },
         async saveUserNotifPrefs() {},
         async createBroadcast(input) {
-            createdPayload = input as Record<string, unknown>;
+            captured.createdPayload = input as Record<string, unknown>;
             return { id: "broadcast-1", ...input };
         },
     });
@@ -650,8 +656,8 @@ test("POST /api/v1/notify/broadcasts creates a broadcast for admin users", async
     );
 
     assert.equal(response.status, 200);
-    assert.ok(createdPayload);
-    assert.equal(createdPayload?.createdBy, "admin-user");
+    assert.ok(captured.createdPayload);
+    assert.equal(captured.createdPayload?.createdBy, "admin-user");
     const body = JSON.parse(response.payload);
     assert.equal(body.data.id, "broadcast-1");
 });
@@ -798,7 +804,7 @@ test("POST /api/v1/notify/broadcasts rejects external redirect URLs", async () =
 test("POST /api/v1/notify/broadcasts accepts trusted external redirect URLs", async () => {
     const prefStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(prefStore);
-    let createdPayload: Record<string, unknown> | null = null;
+    const captured: { createdPayload?: Record<string, unknown> } = {};
     const route = createNotificationRoutes(
         gateway,
         {
@@ -807,7 +813,7 @@ test("POST /api/v1/notify/broadcasts accepts trusted external redirect URLs", as
             },
             async saveUserNotifPrefs() {},
             async createBroadcast(input) {
-                createdPayload = input as Record<string, unknown>;
+                captured.createdPayload = input as Record<string, unknown>;
                 return { id: "broadcast-2", ...input };
             },
         },
@@ -838,7 +844,7 @@ test("POST /api/v1/notify/broadcasts accepts trusted external redirect URLs", as
 
     assert.equal(response.status, 200);
     assert.equal(
-        createdPayload?.redirectUrl,
+        captured.createdPayload?.redirectUrl,
         "https://status.example.com/landing",
     );
 });
@@ -863,11 +869,11 @@ test("GET /api/v1/notify/broadcasts/active returns role-targeted broadcasts", as
     const response = makeResponse();
 
     await route(
-        {
+        createRequest({
             method: "GET",
             headers: { authorization: `Bearer ${userToken}` },
             [Symbol.asyncIterator]: async function* () {},
-        } as any,
+        }),
         response,
         new URL("http://localhost/api/v1/notify/broadcasts/active"),
     );
@@ -904,11 +910,11 @@ test("GET /api/v1/notify/broadcasts/:id/states returns broadcast acknowledgement
     const response = makeResponse();
 
     await route(
-        {
+        createRequest({
             method: "GET",
             headers: { authorization: `Bearer ${adminToken}` },
             [Symbol.asyncIterator]: async function* () {},
-        } as any,
+        }),
         response,
         new URL("http://localhost/api/v1/notify/broadcasts/broadcast-9/states"),
     );

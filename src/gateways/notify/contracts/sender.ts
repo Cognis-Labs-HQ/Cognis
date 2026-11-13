@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { BootstrapDisposer } from "@cognis/core";
+import type { BootstrapDisposer, BootstrapLog } from "@cognis/core";
 import type { CapabilityStore } from "@cognis/core";
 
 /**
@@ -25,7 +25,7 @@ export interface NotifyAdapterBootstrapCtx {
         minimumRole: "admin",
     ): boolean;
     readJson(req: IncomingMessage): Promise<Record<string, unknown>>;
-    log?: (level: string, msg: string, meta?: Record<string, unknown>) => void;
+    log?: BootstrapLog;
 }
 
 export interface NotificationEnvelope {
