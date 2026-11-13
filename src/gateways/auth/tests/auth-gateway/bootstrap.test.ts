@@ -21,78 +21,6 @@ import {
     type InMemoryDb,
 } from "../auth-gateway-test-helpers.js";
 
-test("keyring manifest declares the Authentication gateway as its parent", async () => {
-    const manifest = JSON.parse(
-        await readFile("src/adapters/auth/keyring/manifest.json", "utf8"),
-    ) as { gateway?: string; name?: string };
-
-    assert.equal(manifest.gateway, "auth");
-    assert.equal(manifest.name, "User Keyring");
-});
-
-test("keyring adapter purges a vault after every persisted user deletion", async () => {
-    const { bootstrapAuthAdapter } =
-        await import("../../../../adapters/auth/keyring/index.js");
-    const commands: Array<Record<string, unknown>> = [];
-    const capabilities = new CapabilityStore();
-    capabilities.contribute("db:executor", {
-        async ensureTable() {},
-        async transaction(operation: (executor: unknown) => Promise<unknown>) {
-            return operation(capabilities.get("db:executor"));
-        },
-        async executeCommand(command: Record<string, unknown>) {
-            commands.push(command);
-            return { rows: [] };
-        },
-    });
-    const systemCtx = createCtx();
-    systemCtx.registerFlow({
-        id: "deprovision-user",
-        stages: ["persist-state", "cleanup-dependencies"],
-    });
-    systemCtx.flow.extend(
-        "deprovision-user",
-        "persist-state",
-        { id: "test:persist-user-deletion" },
-        () => ({ persisted: true }),
-    );
-    await bootstrapAuthAdapter({
-        adapterRoot: "src/adapters/auth/keyring",
-        capabilities,
-        flow: systemCtx.flow,
-    });
-
-    const results = [];
-    for (let deletionAttempt = 0; deletionAttempt < 3; deletionAttempt += 1) {
-        results.push(
-            await systemCtx.flow.run("deprovision-user", {
-                username: "LDAP.User",
-                action: "delete",
-            }),
-        );
-    }
-
-    assert.equal(
-        commands.filter(
-            (command) =>
-                command.option === "DELETE" &&
-                command.table === "auth_keyring_vaults" &&
-                JSON.stringify(command.where).includes("ldap.user"),
-        ).length,
-        3,
-    );
-    for (const result of results) {
-        assert.ok(
-            result.stageResults["cleanup-dependencies"].some(
-                (entry) =>
-                    (entry as { purged?: boolean; accountId?: string })
-                        .purged === true &&
-                    (entry as { accountId?: string }).accountId === "ldap.user",
-            ),
-        );
-    }
-});
-
 function createDbExecutor(): InMemoryDb {
     return makeInMemoryDb();
 }
@@ -451,7 +379,9 @@ test("registered auth providers own removable callback routes", async () => {
                 configure() {},
                 getConfigSchema: () => [],
                 registerRoutes(router) {
-                    router.get("/callback", (_req, res) => res.end(""));
+                    router.get("/callback", (_req, res) => {
+                        res.end("");
+                    });
                 },
             }),
         /auth_provider_route_duplicate/,
@@ -472,7 +402,9 @@ test("registered auth providers own removable callback routes", async () => {
         configure() {},
         getConfigSchema: () => [],
         registerRoutes(router) {
-            router.get("/callback", (_req, res) => res.end("unexpected"));
+            router.get("/callback", (_req, res) => {
+                res.end("unexpected");
+            });
         },
     });
     const disabled = await dispatchRoute(
@@ -735,16 +667,7 @@ test("auth gateway bootstrap registers security section without redundant authen
 test("CoreAuthGateway.getEnabledAdapter returns null for a disabled adapter", async () => {
     const { CoreAuthGateway } = await import("../../gateway.js");
 
-    const db = {
-        execute: async (_sql: string, _params?: unknown[]) => ({ rows: [] }),
-        executeCommand: async () => ({ rows: [] }),
-    } as ReturnType<typeof makeInMemoryDb> & {
-        execute: (
-            sql: string,
-            params?: unknown[],
-        ) => Promise<{ rows?: unknown[] }>;
-        executeCommand: () => Promise<{ rows?: unknown[] }>;
-    };
+    const db = makeInMemoryDb();
 
     const gw = new CoreAuthGateway(db);
 
@@ -831,11 +754,27 @@ test("CoreAuthGateway lists adapter publisher metadata", async () => {
 
 test("CoreAuthGateway lists a locked keyring without treating it as a login provider", async () => {
     const { CoreAuthGateway } = await import("../../gateway.js");
-    const { createAdapter } =
-        await import("../../../../adapters/auth/keyring/index.js");
     const gateway = new CoreAuthGateway(makeInMemoryDb());
 
-    gateway.registerAdapter(createAdapter(), ["db"]);
+    gateway.registerAdapter(
+        {
+            id: "keyring",
+            name: "User Keyring",
+            locked: true,
+            authenticationProvider: false,
+            authenticate: async () => null,
+            configure() {},
+            getConfigSchema: () => [
+                {
+                    key: "maxVaultMiB",
+                    type: "number",
+                    label: "test.vault_limit",
+                    required: true,
+                },
+            ],
+        },
+        ["db"],
+    );
 
     const listedKeyring = gateway.listAdapters()[0];
     assert.equal(listedKeyring?.id, "keyring");

@@ -16,6 +16,7 @@ import { resolveRole } from "./local-account.js";
 import type { AuthBootstrapHookContext } from "./index.js";
 
 import {
+    type AuthenticatedSession,
     applyAccountCreationCredentials,
     resolveExternalProfileHandle,
     resolveExternalAccountNamespace,
@@ -92,9 +93,7 @@ export async function registerAuthBootstrapHook(
             const reconcile = context.ctx.capabilities.get<
                 (request: Record<string, unknown>) => Promise<unknown>
             >(`auth:source-reconciler:${adapterId}`);
-            return reconcile
-                ? reconcile(stageCtx.input)
-                : { reconciled: false };
+            return reconcile ? reconcile(input) : { reconciled: false };
         },
     );
 
@@ -132,18 +131,7 @@ export async function registerAuthBootstrapHook(
             const input = (stageCtx.input ?? {}) as {
                 provider?: string;
                 credentials?: Record<string, unknown>;
-                authenticatedSession?: {
-                    accountId: string;
-                    provider: string;
-                    externalUserId?: string;
-                    email?: string;
-                    emails?: string[];
-                    displayName?: string;
-                    handle?: string;
-                    username?: string;
-                    accountNamespace?: string;
-                    role?: string;
-                };
+                authenticatedSession?: AuthenticatedSession;
             };
             const resolveResult = (
                 (stageCtx.stageResults["resolve-provider"] ?? []) as Array<{
@@ -191,10 +179,7 @@ export async function registerAuthBootstrapHook(
                       )) ?? null);
             const providerUsername =
                 adapter.id !== "local"
-                    ? resolveExternalProfileHandle(
-                          session as Record<string, unknown>,
-                          adapter.id,
-                      )
+                    ? resolveExternalProfileHandle(session, adapter.id)
                     : undefined;
             if (
                 resolvedExternalAccountId &&
@@ -218,7 +203,7 @@ export async function registerAuthBootstrapHook(
             if (adapter.id !== "local") {
                 session.username = providerUsername;
                 session.accountNamespace = resolveExternalAccountNamespace(
-                    session as Record<string, unknown>,
+                    session,
                     adapter.id,
                 );
             }
@@ -240,11 +225,7 @@ export async function registerAuthBootstrapHook(
                 (stageCtx.stageResults["authenticate"] ?? []) as Array<{
                     success: boolean;
                     reason?: string;
-                    session?: {
-                        accountId: string;
-                        provider: string;
-                        role?: string;
-                    };
+                    session?: AuthenticatedSession;
                     adapterId?: string;
                     externalIdentityMapped?: boolean;
                 }>
@@ -368,7 +349,7 @@ export async function registerAuthBootstrapHook(
                             "externalUserId" in session
                                 ? String(session.externalUserId)
                                 : session.accountId,
-                        session: session as Record<string, unknown>,
+                        session: session,
                     };
                 }
                 const authorization = stageCtx.data[

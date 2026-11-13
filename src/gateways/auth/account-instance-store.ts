@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { DbExecutor } from "../shared.js";
+import type { DbExecutor } from "../db/reuse/db-executor.js";
 
 export class AccountInstanceStore {
     constructor(private readonly db: DbExecutor) {}

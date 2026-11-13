@@ -177,3 +177,7 @@ The version-1 Auth-owned `auth:login` capability runs `auth:prepareLogin` (`auth
 TFA contributes the version-1 `tfa:assessSession` capability and its staged flow. A known active TFA gateway without working assessment fails closed. Intentionally absent or administratively disabled TFA remains optional. Persisted enabled enrollment remains required during provider outages, with recovery codes still available; persisted administrator disablement explicitly waives that provider. Optional publisher-metadata errors do not remove an otherwise valid provider.
 
 Factor verification and setup completion both use the Auth-owned final commit. `auth:consumePendingLoginAttempt` atomically consumes an unexpired primary-authenticated attempt after successful factor verification; concurrent or repeated completion cannot reuse it. Setup verification also excludes concurrent completion of the same setup. A failed final commit returns no ordinary token or cookie; sign in again after the underlying failure is resolved. Owner cleanup removes assessment/commit flows and pending login attempts; stale in-flight work fails closed. The existing login and setup tutorials keep the same controls and progression; unavailable sessions use translated error toasts.
+
+## Typed Authentication Boundaries
+
+Auth and TFA declarations now describe the existing account roles, external identity fields, database commands and cookie session projections. Session timeout validation retains the same accepted numeric values. Login assurance and single-use factor attempts remain unchanged.

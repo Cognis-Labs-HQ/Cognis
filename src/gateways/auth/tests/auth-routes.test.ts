@@ -9,6 +9,12 @@ function makeGateway(store: VolatileLocalAccountStore): AuthGateway & {
     confirmPassword(accountId: string, password: string): Promise<boolean>;
 } {
     return {
+        async createLocalAdmin(username: string, password: string) {
+            await store.register(username, password, "admin");
+            const account = await store.verify(username, password);
+            assert.ok(account);
+            return account;
+        },
         async confirmPassword(accountId: string, password: string) {
             return Boolean(await store.verify(accountId, password));
         },
@@ -177,7 +183,7 @@ test("login sets cookie max-age to token ttl", async () => {
 
 test("POST /api/v1/auth/verify returns 200 with correct password", async () => {
     const accountStore = new VolatileLocalAccountStore();
-    await accountStore.register("verifyuser", "secret", false);
+    await accountStore.register("verifyuser", "secret", "user");
     const gateway = makeGateway(accountStore);
     const route = createAuthRoutes(gateway, accountStore);
     const token = issueAccessToken("verifyuser", "user", 60);
@@ -206,7 +212,7 @@ test("POST /api/v1/auth/verify returns 200 with correct password", async () => {
 
 test("POST /api/v1/auth/verify returns 401 with wrong password for stale session", async () => {
     const accountStore = new VolatileLocalAccountStore();
-    await accountStore.register("verifyuser2", "secret", false);
+    await accountStore.register("verifyuser2", "secret", "user");
     const gateway = makeGateway(accountStore);
     const route = createAuthRoutes(gateway, accountStore);
     const staleIssuedAt = Date.now() - 2 * 60 * 60 * 1000;
@@ -234,7 +240,7 @@ test("POST /api/v1/auth/verify returns 401 with wrong password for stale session
 
 test("POST /api/v1/auth/verify returns 200 for fresh session without password check", async () => {
     const accountStore = new VolatileLocalAccountStore();
-    await accountStore.register("verifyuser3", "secret", false);
+    await accountStore.register("verifyuser3", "secret", "user");
     const gateway = makeGateway(accountStore);
     const route = createAuthRoutes(gateway, accountStore);
     const token = issueAccessToken("verifyuser3", "user", 3600);

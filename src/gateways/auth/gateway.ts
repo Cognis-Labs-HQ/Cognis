@@ -665,7 +665,7 @@ export class CoreAuthGateway {
 
                 let requires: string[] | undefined;
                 let publisher: string | undefined;
-                let locked = false;
+                let locked: boolean | undefined = false;
                 try {
                     const manifestRaw = await readFile(
                         path.join(authAdaptersRoot, entry, "manifest.json"),
