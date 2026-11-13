@@ -6,29 +6,31 @@ import {
     readPostgresPoolSettings,
     type PostgresClient,
     type PostgresPool,
+    type PostgresQueryResult,
 } from "../index.js";
 
 function createPool(
     options: {
-        query?: PostgresPool["query"];
+        query?: (
+            sql: string,
+            params?: unknown[],
+        ) => Promise<PostgresQueryResult>;
         connect?: PostgresPool["connect"];
         end?: PostgresPool["end"];
     } = {},
 ): PostgresPool {
+    const query = async <Row>(sql: string, params?: unknown[]) => {
+        const result = options.query
+            ? await options.query(sql, params)
+            : { rows: [], rowCount: 0 };
+        // SQL selects the fixture dataset; the caller supplies its row projection.
+        return { rows: result.rows as Row[], rowCount: result.rowCount };
+    };
     return {
-        query:
-            options.query ??
-            ((async () => ({
-                rows: [],
-                rowCount: 0,
-            })) as PostgresPool["query"]),
+        query,
         connect:
             options.connect ??
-            (async () =>
-                createClient(
-                    options.query ?? (async () => ({ rows: [], rowCount: 0 })),
-                    () => undefined,
-                )),
+            (async () => createClient(query, () => undefined)),
         end: options.end ?? (async () => undefined),
     };
 }
@@ -44,7 +46,7 @@ test("postgres adapter executes concurrent ordinary queries through the pool", a
     const activeStatements = new Set<string>();
     let maximumConcurrency = 0;
     const pool = createPool({
-        query: (async (statement: string) => {
+        query: async (statement: string) => {
             activeStatements.add(statement);
             maximumConcurrency = Math.max(
                 maximumConcurrency,
@@ -53,7 +55,7 @@ test("postgres adapter executes concurrent ordinary queries through the pool", a
             await new Promise((resolve) => setTimeout(resolve, 5));
             activeStatements.delete(statement);
             return { rows: [{ statement }], rowCount: 1 };
-        }) as PostgresPool["query"],
+        },
     });
     const gateway = new PostgresDbGateway(pool);
 
@@ -274,11 +276,42 @@ test("postgres renames legacy columns without losing their values", async () => 
                 renamedFrom: "read",
             },
         ],
-    } as Parameters<typeof executor.ensureTable>[0]);
+    });
 
     assert.ok(
         statements.includes(
             "ALTER TABLE internal_notifications RENAME COLUMN read TO is_read",
         ),
     );
+});
+
+test("postgres normalizes command counts without changing rows or numeric counts", async () => {
+    const pool = createPool({
+        query: async (sql) => ({
+            rows: sql === "SELECT value" ? [{ value: 7 }] : [],
+            rowCount: sql === "SELECT value" ? 1 : null,
+        }),
+    });
+    const gateway = new PostgresDbGateway(pool);
+    assert.deepEqual(await gateway.query("BEGIN"), { rows: [], rowCount: 0 });
+    assert.deepEqual(await gateway.query("SELECT value"), {
+        rows: [{ value: 7 }],
+        rowCount: 1,
+    });
+    assert.deepEqual(await gateway.execute("BEGIN"), { affectedRows: 0 });
+    assert.deepEqual(
+        await gateway.executeCommand({ option: "DELETE", table: "records" }),
+        {
+            rows: [],
+            rowCount: 0,
+        },
+    );
+    const executor = await createDbExecutor({
+        databaseUrl: "postgresql://unused",
+        pool,
+    });
+    assert.deepEqual(await executor.execute("BEGIN"), {
+        rows: [],
+        rowCount: 0,
+    });
 });

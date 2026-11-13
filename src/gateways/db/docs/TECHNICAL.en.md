@@ -106,6 +106,10 @@ Schema initialization creates declared tables and adds missing columns and index
 
 Adapter contract registration follows [the shared gateway bootstrap contract](/docs/gateways).
 
+### Executor boundaries
+
+Applications use structured commands through `db:executor`. Raw SQL execution remains inside the database gateway and its adapters. Raw transactions retain that capability for schema work, and schema initialization requires only raw execution. The optional `renamedFrom` column field describes the existing source column to preserve its data.
+
 ## Security
 
 The executor is an infrastructure capability, not a user authorization boundary. Callers must authorize operations before structured commands; database credentials and backups remain deployment-managed.

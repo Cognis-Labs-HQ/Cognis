@@ -7,6 +7,7 @@ export type StructuredDbColumnDefault =
 export interface StructuredDbColumnDef {
     name: string;
     type: StructuredDbColumnType;
+    renamedFrom?: string;
     notNull?: boolean;
     primaryKey?: boolean;
     unique?: boolean;

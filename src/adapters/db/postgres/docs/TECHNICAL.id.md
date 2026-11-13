@@ -53,6 +53,10 @@ Pasang pembaruan adaptor host sebelum menginisialisasi ulang skema modul yang te
 
 Jalankan pengujian adaptor dengan `COGNIS_TEST_POSTGRES_URL` yang menunjuk ke basis data PostgreSQL khusus pengujian. Pengujian integrasi membuat dan menghapus skema acaknya sendiri dan memerlukan izin pembuatan skema. Tanpa variabel ini, pengujian tersebut dilewati secara eksplisit.
 
+### Kontrak hasil pengandar
+
+Adaptor memiliki deklarasi terbatas untuk API promise `pg` yang digunakannya. Metode kueri mempertahankan proyeksi baris generik. Jumlah baris pengandar dapat bernilai null untuk perintah kendali atau skema; keluaran adaptor menormalkannya menjadi nol dengan mempertahankan jumlah numerik dan baris hasil. Pengujian skema langsung memerlukan `COGNIS_TEST_POSTGRES_URL` yang menunjuk ke basis data uji sementara.
+
 ## Keamanan
 
 Kredensial dan keamanan transportasi dikelola penerapan. Ikat nilai sebagai parameter; otorisasi aplikasi harus berjalan sebelum executor dipanggil.

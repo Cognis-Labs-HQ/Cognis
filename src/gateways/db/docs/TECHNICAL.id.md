@@ -81,6 +81,10 @@ Inisialisasi skema membuat tabel yang dideklarasikan serta menambahkan kolom dan
 
 Registrasi kontrak adapter mengikuti [kontrak bootstrap gateway bersama](/docs/gateways).
 
+### Batas eksekutor
+
+Aplikasi menggunakan perintah terstruktur melalui `db:executor`. Eksekusi SQL mentah tetap berada dalam gateway basis data dan adaptornya. Transaksi mentah mempertahankan kemampuan ini untuk operasi skema; inisialisasi skema hanya memerlukan eksekusi mentah. Kolom opsional `renamedFrom` menyatakan kolom sumber yang sudah ada agar datanya tetap terpelihara.
+
 ## Keamanan
 
 Executor adalah infrastruktur, bukan batas otorisasi pengguna. Pelaku harus diotorisasi sebelum perintah terstruktur; kredensial dan cadangan dikelola penerapan.

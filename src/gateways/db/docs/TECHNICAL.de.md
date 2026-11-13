@@ -83,6 +83,10 @@ Die Schemainitialisierung erstellt deklarierte Tabellen und ergänzt fehlende Sp
 
 Die Vertragsregistrierung von Adaptern folgt dem [gemeinsamen Gateway-Bootstrap-Vertrag](/docs/gateways).
 
+### Executor-Grenzen
+
+Anwendungen verwenden strukturierte Befehle über `db:executor`. Direkte SQL-Ausführung bleibt im Datenbank-Gateway und seinen Adaptern. Direkte Transaktionen behalten diese Fähigkeit für Schemaoperationen; die Schemainitialisierung benötigt nur direkte Ausführung. Das optionale Spaltenfeld `renamedFrom` bezeichnet die vorhandene Quellspalte, deren Daten erhalten bleiben.
+
 ## Sicherheit
 
 Der Executor ist Infrastruktur und keine Benutzerberechtigung. Aufrufer prüfen Rechte vor strukturierten Befehlen; Zugangsdaten und Sicherungen verwaltet die Bereitstellung.

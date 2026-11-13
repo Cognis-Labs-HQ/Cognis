@@ -58,6 +58,10 @@ Deploy the updated host adapter before reinitializing affected module schemas. R
 
 Run the adapter tests with `COGNIS_TEST_POSTGRES_URL` pointing to a disposable PostgreSQL database. The integration test creates and removes its own random schema and requires schema-creation permission. Without this variable, that test explicitly skips.
 
+### Driver result contract
+
+The adapter owns a narrow declaration for the `pg` promise API it consumes. Query methods preserve generic row projections. Driver row counts may be null for control or schema statements; adapter outputs normalize those counts to zero while retaining numeric counts and returned rows. Live schema tests require `COGNIS_TEST_POSTGRES_URL` pointing to a disposable database.
+
 ## Security
 
 Database credentials and transport security belong to the deployment. Bind values through parameters; application authorization must run before invoking the database executor.
