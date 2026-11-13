@@ -126,7 +126,7 @@ export interface CalendarAdapterBootstrapCtx {
         ) => Promise<boolean>,
         gatewayId?: string,
     ): void;
-    log?: (level: string, msg: string, meta?: Record<string, unknown>) => void;
+    log?: import("../../shared.js").BootstrapLog;
     isGatewayEnabled(): boolean;
     isAdapterEnabled(adapterId?: string): boolean;
 }

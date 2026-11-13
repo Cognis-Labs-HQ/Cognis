@@ -67,3 +67,7 @@ Pemuatan halaman tamu memeriksa pembatalan setelah lokalisasi, inisialisasi comp
 Pembacaan dan perubahan Calendar tamu memakai kapabilitas `calendar:sharedClient` yang terikat siklus hidup serta alur bernama `calendar:shared:*`. Permintaan mempertahankan wewenang tamu secara eksplisit, menggabungkan pembatalan halaman dan penyedia, serta tidak pernah masuk antrean akun. Konsumen tidak menyusun endpoint berbagi sendiri.
 
 Calendar menemukan `meetings:createMeeting` dari penyedia browser yang aktif. Penyedia memiliki permintaan pembuatan dan tujuannya; Calendar menentukan URL HTTP(S) yang valid untuk acara tanpa mengetahui ID atau rute modul. Penyedia yang tidak tersedia ditolak dan opsi rapat tetap dinonaktifkan saat offline.
+
+## Batas Kalender Bertipe
+
+Kontrak acara, penyimpanan, inisialisasi, dan HTTP adaptor Kalender kini menjelaskan perilaku yang diterapkan. ICS dan CalDAV mempertahankan izin, penanganan frasa sandi, dan format umpan yang ada.

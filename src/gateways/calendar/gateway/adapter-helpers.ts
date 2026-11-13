@@ -4,6 +4,7 @@ import path from "node:path";
 import type { CoreCalendarGateway } from "./index.js";
 import type {
     CalendarAdapter,
+    CalendarAdapterInfo,
     CalendarAdapterBootstrapCtx,
     CalendarBootstrapBaseCtx,
     CalendarEventRecord,

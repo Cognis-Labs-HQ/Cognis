@@ -33,6 +33,8 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Komponen              | Jalur                               | Versi    |
 | --------------------- | ----------------------------------- | -------- |
 | SMTP Notification     | `src/adapters/notify/smtp/`         | `0.5.2`  |
+| CalDAV                | `src/adapters/calendar/caldav/`     | `1.0.13` |
+| ICS                   | `src/adapters/calendar/ics/`        | `1.0.11` |
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.33` |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.26` |
 | File Quota            | `src/adapters/file/quota/`          | `1.0.24` |
@@ -78,7 +80,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Logging               | `src/gateways/logging/`       | `1.5.19` |
 | Observability         | `src/gateways/observability/` | `1.0.7`  |
 | Study                 | `src/gateways/study/`         | `2.6.9`  |
-| Calendar              | `src/gateways/calendar/`      | `1.7.6`  |
+| Calendar              | `src/gateways/calendar/`      | `1.7.7`  |
 
 ## Kontrak inti
 

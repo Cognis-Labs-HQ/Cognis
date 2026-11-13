@@ -78,7 +78,7 @@ export function createCalendarProfileResolvers(
                           };
                       }),
               );
-              return permitted.filter(Boolean);
+              return permitted.filter((profile) => profile !== null);
           }
         : null;
     return { resolveAccountDisplayName, resolveShareableUsers };

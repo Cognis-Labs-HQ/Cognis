@@ -1,4 +1,4 @@
-import type { GatewayBootstrapContext } from "../shared.js";
+import type { GatewayBootstrapContext } from "../../shared.js";
 
 export function registerCalendarComponent(
     ctx: GatewayBootstrapContext,

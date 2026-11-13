@@ -1,7 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 
 export function readSharePassphrase(
-    req: { headers?: Record<string, string | string[]> },
+    req: { headers?: Record<string, string | string[] | undefined> },
     url: URL,
 ): string {
     const headerValue = req.headers?.["x-cognis-calendar-passphrase"];
