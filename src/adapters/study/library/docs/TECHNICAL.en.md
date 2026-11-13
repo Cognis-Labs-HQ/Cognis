@@ -600,6 +600,10 @@ Study request, content and deletion notifications use the category registered by
 
 Study card previews use the shared reader surface. The dialog follows the available width, keeps heading and Previous/Next actions visible, and scrolls long content independently. Tablet and touch controls retain 44px targets; compact detail facts stack without squeezing their values.
 
+### Developer Verification
+
+Test factories in `tests/reuse/` provide complete entries, schemas and public capability fakes. Unconfigured capability operations throw instead of silently succeeding. File writes return object metadata, and database transactions preserve their result type. The image persistence fixture exercises structured storage and rollback locally. Run Library tests with Node’s `--experimental-vm-modules --import tsx --test` options. These test-only changes do not enable the repository-wide typecheck pipeline; that requires separate integration after the other components are repaired.
+
 ## Security
 
 ### Access

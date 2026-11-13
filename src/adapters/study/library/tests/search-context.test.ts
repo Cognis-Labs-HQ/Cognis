@@ -75,7 +75,11 @@ async function routeFixture() {
         body = JSON.stringify(query),
     ) => {
         const response = Object.assign(new ResponseRecorder(), {
-            setHeader(name: string, value: string) {
+            setHeader(
+                this: InstanceType<typeof ResponseRecorder>,
+                name: string,
+                value: string,
+            ) {
                 this.headers[name.toLowerCase()] = value;
             },
         });

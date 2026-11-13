@@ -64,7 +64,7 @@ test("schema-driven cards retain grouped pronunciations through create and edit"
     const input = mockSymbolInput(first, second);
 
     const created = await library.create(actor, { scope: "user" }, input);
-    assert.deepEqual(created.fields.pronunciation, ["a", "b"]);
+    assert.deepEqual(created.fields?.pronunciation, ["a", "b"]);
     assert.deepEqual(created.referenceGroups, input.referenceGroups);
 
     const editedInput = {
@@ -80,7 +80,7 @@ test("schema-driven cards retain grouped pronunciations through create and edit"
     };
     const updated = await library.update(actor, created.id, editedInput);
     assert.equal(updated.label, "ba");
-    assert.deepEqual(updated.fields.pronunciation, ["b", "authored"]);
+    assert.deepEqual(updated.fields?.pronunciation, ["b", "authored"]);
     assert.deepEqual(updated.referenceGroups, editedInput.referenceGroups);
 });
 
@@ -145,7 +145,9 @@ test("content-pack notifications report only newly introduced records", async ()
             undefined,
             undefined,
             { readThrough: async () => {} } as never,
-            async (notification) => notifications.push(notification),
+            async (notification) => {
+                notifications.push(notification);
+            },
         );
 
     await createLibrary(0).ingestContentPack(root);
@@ -188,21 +190,27 @@ test("schema registrations are versioned, persisted, and immutable", async () =>
     const { library, saved } = service();
     const input = schema(1);
     await library.registerSchema(input);
-    input.metadata.labels.en = "Changed outside the registry";
+    Object.assign(input.metadata.labels, {
+        en: "Changed outside the registry",
+    });
 
     assert.equal(
         library.getSchema("test-language")?.metadata.labels.en,
         "Test Language",
     );
     const returned = library.getSchema("test-language")!;
-    returned.layers[0].metadata.labels.en = "Changed outside direct read";
+    Object.assign(returned.layers[0].metadata.labels, {
+        en: "Changed outside direct read",
+    });
     assert.equal(
         library.getSchema("test-language")!.layers[0].metadata.labels.en,
         "Units",
     );
     const listed = library.listSchemas();
     assert.equal(listed[0].metadata.labels.en, "Test Language");
-    listed[0].metadata.labels.en = "Changed outside the listing";
+    Object.assign(listed[0].metadata.labels, {
+        en: "Changed outside the listing",
+    });
     assert.equal(library.listSchemas()[0].metadata.labels.en, "Test Language");
     assert.equal(saved.length, 1);
     await assert.rejects(

@@ -522,7 +522,9 @@ test("reference images are validated, bundled and preserved in content-pack plan
     );
     const schemaPath = path.join(root, "schema.json");
     const schema = JSON.parse(await readFile(schemaPath, "utf8"));
-    const layer = schema.layers.find(({ id }) => id === "words");
+    const layer = schema.layers.find(
+        ({ id }: { id: string }) => id === "words",
+    );
     layer.fields.push({
         id: "images",
         type: "imageList",
@@ -542,7 +544,7 @@ test("reference images are validated, bundled and preserved in content-pack plan
         "image/png",
     );
     assert.deepEqual(
-        plan.records.find(({ layer }) => layer === "words")?.fields.images,
+        plan.records.find(({ layer }) => layer === "words")?.fields?.images,
         ["dog.png"],
     );
     await writeFile(path.join(root, "assets", "dog.png"), "<svg/>");
