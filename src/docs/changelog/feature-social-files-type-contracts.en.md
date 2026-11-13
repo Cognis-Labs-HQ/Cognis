@@ -12,5 +12,4 @@ Profile persistence tests use a component-owned structured database fixture with
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/7629b15df776f93d33a6ef423aab750de61a28a6
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/7aee693c7a0d3e82cf7e5744c46406f1cb3c41e9
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/ff7f3932e04aa47722da1841f1a891c550f240e2
