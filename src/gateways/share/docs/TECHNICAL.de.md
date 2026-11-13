@@ -90,6 +90,14 @@ Eine eingebundene Link-Freigabeseite darf eine ansonsten gültige Komponentensei
 
 Die Freigabeseite prüft nach asynchroner Vorbereitung das Abbruchsignal. Schließen verhindert spätes Rendern; Deaktivieren beendet Wartungsaufgaben und spätere Ablaufhinweise.
 
+### Ablauf bei Zugriff prüfen
+
+Direkte Benutzerfreigaben gewähren nach Ablauf keinen Zugriff mehr, auch nach Passwortentsperrung und während der Aufbewahrung im Verlauf. Ein leerer Ablaufwert bleibt unbegrenzt; ungültige nichtleere Werte verweigern den Zugriff.
+
+### Ausdrücklichen Rechteentzug beachten
+
+PATCH mit `grantedCapabilities: []` entfernt alle gewährten Fähigkeiten. Ohne dieses Feld bleiben sie erhalten; ein nichtleeres Array ersetzt sie. Empfänger-, Passwort- und Adapterprüfungen bleiben wirksam.
+
 ## Sicherheit
 
 ### Sicherheitsgrenze
