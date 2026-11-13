@@ -1,0 +1,231 @@
+# Komponentenwiederherstellung
+
+**Feature-Zweig:** feature-component-recovery
+
+Study trennt jetzt Übersichtsnavigation und interaktive Sprachleitfäden. Varianten für gewählte Lernsprachen ersetzen allgemeines Explore und erklären Kartendetails, Zeichnen und Kartenerstellung; begrenzte Zweiglebensdauer und routenbezogene Erkennung verhindern Überschneidungen.
+
+## Fehler isolieren
+
+Browserkataloge ermitteln Anbieterzugehörigkeit und installierte Version aus Hostregistrierungen. Bei einem Fehler verliert eine optionale Komponente ihre teilweisen Fähigkeiten, Abläufe und Listener; andere Komponenten werden weiter geladen. Eine ausdrückliche Aktualisierung oder neue Revision erlaubt einen erneuten Versuch. Erforderliche Hostkomponenten behalten ihren bestehenden Schutz. Externe Module bleiben immer optional: Modulmanifeste können Cognis weder global sperren noch eine erforderliche Hostabhängigkeit erzeugen.
+
+Unerwartete Serverausnahmen werden dem registrierten Eigentümer zugeordnet. Erwartete Eingabefehler und ungültiges JSON zählen nicht. Drei unterschiedliche, von Administratoren beobachtete Fehler innerhalb von fünf Minuten lösen die normale authentifizierte Deaktivierung aus. Meldungen werden dedupliziert, im Speicher begrenzt und nach installierter Version getrennt. Andere Nutzer können keine globale Deaktivierung auslösen. Zähler werden beim Neustart oder nach Ablauf des Zeitfensters zurückgesetzt. Reparieren oder aktualisieren Sie eine deaktivierte Komponente vor dem erneuten Aktivieren.
+
+## Verwaltungsoperationen
+
+`component:info`, `component:release-channel get|set|list`, `component:upgrade`, Aktivieren und Deaktivieren unterstützen einzelne Ziele und `--all`, optional nach Typ oder Adapter-Gateway gefiltert. Benannte `component:*`-Abläufe verwenden den API-eigenen Vertrag `component:management` in Version eins und vorhandene authentifizierte Verwaltungsrouten. Bestehende erforderliche oder gesperrte Hostkomponenten und Abhängigkeitsprüfungen bleiben maßgeblich. Serialisierte Änderungen lesen den Zustand nach dem Erwerb ihrer Sperre erneut. Fehlerhafte Adapterkataloge bleiben am Gateway und als fehlgeschlagene Ermittlung in passenden Sammelergebnissen sichtbar. Andere Komponenten und das Deaktivieren dieses optionalen Gateways funktionieren weiterhin. Berechtigungsfehler brechen die Operation ab.
+
+## Kanäle und Aktualisierungen
+
+Verfügbare Kanäle stammen aus Marketplace-Zweigen und Veröffentlichungen. Die Auswahl wird atomar in `config/component-channels.json` gespeichert. Aktualisierungen behalten vorhandene Berechtigungs-, Integritäts-, Installations- und Abhängigkeitsprüfungen bei. Zuvor aktive Module werden vorübergehend deaktiviert. Nach fehlgeschlagener Installation versucht die Wiederherstellung eine geprüfte Aktivierung mit der vom Aufrufer gegebenen Haftungsausschlussbestätigung. Unklare Installationen bleiben nach Zeitüberschreitung deaktiviert. Erfolgreiche Aktualisierungen melden nötige Neustarts. Mitgelieferte Gateways, Adapter und Kernmodule werden mit dem Host aktualisiert, bieten keine eigenen Kanäle und werden bei Sammelaktualisierungen übersprungen. Konfigurationsänderungen und Repository-Importe bleiben einzeln.
+
+## Laufzeitkennung
+
+Die Adapterermittlung behält kanonische Manifestkennungen für Abhängigkeiten und erfasst gesonderte Laufzeitkennungen für Anbieter. Die Social-Anbieter profile, messages und call behalten dadurch ihre installierten Versionen und ihren optionalen Status trotz des Präfixes `social-` in ihren Manifestkennungen.
+
+## CLI-Ausgabe und Fortschritt
+
+Alle CLI-Befehle geben standardmäßig kurze, verständliche Ergebnisse aus. Listen zeigen höchstens zwanzig Einträge; große Felder und verschachtelte Daten werden zusammengefasst. Lebenszyklusergebnisse nennen jedes Ziel, Erfolg, Überspringen oder Fehler, installierte Version und nötigen Neustart. Leere Ergebnisse werden ausdrücklich genannt. `-v` oder `--verbose` vor oder nach dem Befehlsnamen zeigt die vollständige Antwort, auch bei registrierten Gateway-, Adapter- und Modulbefehlen. Ein wörtliches Argument, das einem globalen Schalter entspricht, folgt auf `--`.
+
+`-v` bedeutet jetzt ausführliche Ausgabe; `--version` zeigt die CLI-Version. Skripte lesen strukturierte Antworten aus stdout. Fortschritt erscheint auf stderr, beginnt bei der Befehlsausführung und nennt bei längeren Vorgängen die verstrichene Zeit. Modulaktualisierungen übertragen zusätzlich tatsächliche Zustände für Auswahl, vorübergehendes Deaktivieren, Installation, Warten, Wiederherstellung und Ergebnis. Es werden keine erfundenen Downloadprozente angezeigt. Ältere Server mit reiner JSON-Antwort unterstützen weiterhin die Zeitanzeige. Unterbrochene Übertragungen führen zu einem Fehler mit dem Hinweis, vor einem erneuten Versuch den Komponentenzustand zu prüfen. Sammelfehler behalten in beiden Ausgabemodi einen Fehlerstatus.
+
+```sh
+cognisctl component:upgrade module study-language-en
+cognisctl component:upgrade module --all -v
+cognisctl -v component:info module study-language-en
+cognisctl --version
+```
+
+## Unveränderte Zustände
+
+Statusmeldungen verwenden normale Satzschreibung und behalten Komponentenkennungen bei. Aktivieren und Deaktivieren überspringen bereits passende Zustände. Vor dem Deaktivieren oder Installieren vergleicht Aktualisieren den installierten Commit mit dem gewählten Katalogzweig oder Release. Gleiche Versionsnummern bedeuten nicht zwingend gleichen Code. Ohne ausdrückliche Auswahl bleibt der installierte Kanal erhalten. Aktualisieren Sie den Marketplace-Katalog, um neue Quellrevisionen zu entdecken. Fehlende Revisionsangaben erfordern `--force`, statt blind neu zu installieren. `--force` wiederholt Aktivieren, Deaktivieren oder Aktualisieren, auch mit `--all`; Berechtigungs-, Integritäts-, Abhängigkeits- und erforderliche Hostprüfungen bleiben bestehen.
+
+```sh
+cognisctl component:upgrade module analytics --force
+cognisctl component:disable module analytics --force
+```
+
+## Anleitungssteuerung Und Texte
+
+Enthält die verfeinerte Dashboard-Anleitung mit 18 Schritten: Bewusste Klickübungen öffnen Benachrichtigungen und Kontomenü, während Hover und andere Aktionen gesperrt bleiben. Die Anleitung erklärt Seitenaktionsleiste, Sprache, Darstellung und Layout. Die gemeinsame elementgebundene Lebensdauer schließt nur die passende Oberfläche beim Gruppenende; fehlende Bedienelemente werden auch beim ersten Besuch gemäß Skip-Regel ausgelassen. Der Katalog umfasst 55 Anleitungen mit 175 Schritten, darunter 22 Administratoranleitungen.
+
+## Tutorial-Wiederherstellung und Ziele
+
+Tutorial neu starten bleibt die Wiederherstellungsaktion; einen Wiederholungsbutton gibt es nicht mehr. Einführende UI-Schritte heben ihre Bereiche hervor, auch leere Jitsi-Besprechungslisten und Teilnehmer finden. Lernanbieter verwenden veröffentlichte Study-Sprachziele und das öffentliche Arbeitsbereichsziel. `highlightNext` bleibt für Erklärungen aktiv und für ereignisgesteuerte Schritte deaktiviert.
+
+## Warteschlange für schwebende Menüs
+
+Schwebende Menüs verwenden die Capability `ui:floatingMenus` Version 1 und die gestuften Flows `ui:floatingMenu:request`, `present`, `dismiss` und `release`. Gleiche Prioritäten folgen der Anforderungsreihenfolge; höhere Prioritäten unterbrechen niedrigere. Eine Reservierung bietet `ready` für die erste Freigabe oder Abmeldung, `present(element, { visible })`, `dismiss(element)` und `dispose()`. Tutorials behalten Priorität 100 bis Abschluss, Abbruch oder Anbieterentfernung, auch zwischen Schritten. Composer-Slots und die Wiederholungsauswahl verwenden dieselbe Warteschlange. Abgebrochene Anforderungen und veraltete Darstellungen ersetzen keine neueren Menüs; leere Slots geben frei, und beim Seitenabbau werden Beobachter und Reservierungen entfernt.
+
+## Weiter-Hinweis nur mit Animation
+
+Der Hinweis für Weiter/Fertig verwendet nur die pulsierende Animation ohne dauerhafte Umrandung. Reduzierte Bewegung deaktiviert die Animation; der normale Tastaturfokus bleibt sichtbar.
+
+## Genaue Tutorial-Ziele
+
+Sprechblasen behalten sichtbare Dock-Steuerelemente unterhalb des reservierten Menübereichs als Anker und meiden das tatsächliche Aktionsmenü. Der Wiederholungsschritt hebt den ?-Button selbst hervor. Dieser behält während Tutorials die Textfarbe des Themes; die Wiederholung ersetzt keine laufende Anleitung.
+
+## Abschluss bleibt nach Updates erhalten
+
+Der Abschluss gehört zum stabilen Konto- und Anbieter/Tutorial-Bezeichner. Inhalts- und Paketupdates setzen ihn nie zurück. Eine abgeschlossene Anleitung wird nur über das ? im Seitenkopf erneut gestartet. Bezeichner bei Überarbeitungen beibehalten; der Abschluss bleibt im Browserspeicher des Kontos.
+
+Wiederherstellungs-Toasts verwenden den maßgeblichen Anzeigenamen des Manifests und gegebenenfalls dessen Übersetzungskatalog. Der Name wird als unveränderter Text eingesetzt. Metadaten zum Anbieterbesitz enthalten optional `name` und `stringsBaseUrl`. Betriebsfehler und automatische Deaktivierungen verwenden `minRole: "admin"` und erscheinen nur für Administratoren und Eigentümer; normale Benachrichtigungen behalten ihre Zielgruppe. Der Stack enthält außerdem bedingte Tutorialpfade, rollenabhängigen Fortschritt, Neustart, aktuelle Dock-Geometrie und Vorrang für Banneraktionen.
+
+Der Tutorial-Stack korrigiert die Hervorhebung des Sucheingabefelds über Kopfzeilen, setzt nach jedem Filter-Klick fort und zeigt für manuelle Schritte einen pulsierenden Weiter/Fertig-Hinweis mit Unterstützung reduzierter Bewegung.
+
+Der Tutorial-Stack verwendet jetzt das optionale boolesche Feld `highlightNext` pro Schritt mit Standardwert false. Bestehende Erklärungen aktivieren es; automatische Übungen deaktivieren es. Die Beitragsrichtlinien für Host und Module verlangen nutzerorientierte Tutorial-Abdeckung und deren Prüfung bei UI-Änderungen.
+
+Der Tutorial-Stack führt Zurück jetzt zum Einstieg abgeschlossener Gruppen oder Abhängigkeitszweige. Aktionsbezogene Hervorhebungen verwenden auf ausdrücklichen Wunsch den ersten sichtbaren, nutzbaren Treffer im deklarierten Abschnitt; standardmäßig bleibt die Zuordnung eindeutig. Komponenten hebt einen bearbeitbaren Schalter hervor und überspringt den Schritt, wenn keiner verfügbar ist. Die Inhaltsprüfung präzisierte 34 Ziele im Host und den Begleitmodulen.
+
+## Wiederholungen beenden
+
+Wiederholungen verwenden Überspringen als einzigen Beenden-Button. Der redundante Abbrechen-Button entfällt.
+
+## Isolierte Einstellungsanleitung
+
+Der Schrift-Schritt verwendet eigene Texte aus dem Host-Katalog. Optionale Klassenübersetzungen sind für die Registrierung der Einstellungsanleitungen nicht mehr nötig. Komponenten dokumentieren ihre Abdeckung selbst.
+
+## Einheitliche Katalogeinrückung
+
+Die im Tutorial-PR geänderten XML-Kataloge verwenden zwei Leerzeichen für String-Einträge. Übersetzungswerte bleiben erhalten; die Schrift-Texte wechseln in allen vier Sprachen von Klassen zu Einstellungen.
+
+## Bereitschaft beim Dokumentverlauf
+
+Zurück und Vorwärts innerhalb von Dokumentation oder Änderungsverlauf erhalten die Bereitschaft der eingebundenen Seite. Ein tatsächlicher Seitenwechsel oder das Ende der Seitenlebensdauer macht sie weiterhin ungültig; interner Dokumentverlauf startet keine Prüfungen erneut.
+
+## Tutorial-Menüaktionen
+
+Tutorial neu starten ist im ersten sichtbaren Schritt verborgen. Wiederholungen verbergen Überspringen im letzten sichtbaren Schritt und bieten Fertig an. Ein einteiliger Guide hat weder Tutorial neu starten noch Überspringen. Die redundante Gesamtübersicht entfällt; die Abdeckung bleibt bei der jeweiligen Komponente.
+
+## Browser-Testseiten entfernen
+
+Eigenständige Browser-Demos für Tutorials, Änderungsverlauf und Wiederherstellung sind entfernt. Gemeinsame Hilfen für automatisierte Tests bleiben erhalten.
+
+## Ausgewählten Stapel verwalten
+
+Die Verwaltungsanleitung verwendet den ausgewählten Stapel als Grenze und umfasst Bearbeiten, Teilen und Exportieren. In der Stapelliste bleibt sie nicht verfügbar.
+
+## Wiederholung im Seitenkopf
+
+Der ?-Button steht in derselben Zeile wie der Seitentitel. Er zeigt keinen Hover-Tooltip und behält seine lokalisierte barrierefreie Beschriftung.
+
+## Wiederholung neben dem Titel
+
+Der ?-Button steht in derselben Zeile wie der Seitentitel. Er zeigt keinen Hover-Tooltip und behält seine lokalisierte barrierefreie Beschriftung.
+
+## Wiederholung im Kopf verfeinern
+
+Die Wiederholung ist ein kompaktes Symbol ohne sichtbaren Rahmen mit klarem Abstand zum Seitentitel. Es vergrößert die Titelzeile nicht, behält die Textfarbe des Themes und zeigt dezente Hover- sowie sichtbare Tastaturfokus-Hinweise. Der Tooltip bleibt entfernt.
+
+## Vollständige Marktplatz-Grenzen
+
+Marktplatz-Anleitungen umfassen Werkzeugleiste, Karten, Quelleneinstellungen und Modulaktionen und behalten ihre Listen- und Detailbedingungen.
+
+## Unterbrochene Darstellung fortsetzen
+
+Geht ein Ziel während asynchroner Darstellung verloren, wird es vor der Bereitschaftsmeldung erneut aufgelöst. Neustart und Abbruch verhindern veraltete Wiederherstellung und blockierte schwebende Menüs.
+
+## Unabhängige Sichtbarkeitsbedingungen
+
+`scope` begrenzt Ziele und Erkennung. Das optionale `visibleWhen` verlangt ein eindeutig sichtbares Element, ohne Ziele auf dessen Nachfahren zu beschränken; sie bleiben innerhalb der Komponente. Die Bibliotheksverwaltung prüft damit ihren Browser und erklärt die Suche in der Seitenleiste. Ungültige Selektoren brechen die Registrierung ab und räumen den Anbieter auf.
+
+## Gezielte Seitenführungen
+
+Anleitungen folgen der sichtbaren UI-Reihenfolge und verwenden unterschiedliche reale Bedienelemente. Einstellungen lassen Erklärungen zu nicht verfügbaren Änderungsaktionen weg. Profil, Benutzer, Dokumentation, Kalender und Study verwenden sinnvolle Ziele einschließlich leerer Kalender, Dokumentseitenleiste und Kartendetails.
+
+## SPA und Zielwiederherstellung
+
+Bereitschaftsblocker teilen ersetzungssichere Besitzer über gebündelte und direkte Importe. Seitenlebensdauern geben alte Beiträge frei. Scrollen oder Layoutwechsel überspringen kein bereits gezeigtes Ziel stillschweigend. Pro sichtbarer Ansicht läuft eine automatische Anleitung; Ergänzungen bleiben über ? wählbar.
+
+## Regeln für Tutorialautoren
+
+Vorgaben und alle vier Host-Tutorialdokumente behandeln aktive Ansichten, stabile Karten, ausdrückliche Dialogzweige, optionale und leere Zustände, UI-Reihenfolge, Bereinigung und Prüfung von Quell- und Produktionsbuilds. Das Kontomenü schließt vor dem Tutorialstart.
+
+## Asynchrone Detailzweige
+
+Detail- und Klassenverwaltungszweige warten auf ihre geöffneten Ansichten. Optionale Schrittzahlen werden nach der Vorbereitung aktualisiert, sodass eine fehlende Schreibaktion vor der Anzeige der nächsten Aktionen ausgeschlossen ist. Ein fremder Dialog unterbricht die Anleitung auch oberhalb ihres erlaubten Detaildialogs. Nur aktive Popup-Portale liefern Ziele; schließende Overlays liefern weder neue Zweige noch deren Schreibaktionen. Optionale Bedingungen nutzen das öffentliche, besitzerberechtigte targetAvailable-Ergebnis statt gemeinsamer Dialogmarkierungen.
+
+## Position der Neustartaktion
+
+Tutorial neu starten ist die erste Aktion im schwebenden Menü und verwendet btn-cancel. Sie bleibt im ersten sichtbaren Schritt verborgen.
+
+## Gezielte Anleitungen
+
+Anleitungen markieren den gesamten Besprechungsbereich Teilnehmer und den Abschnitt verfügbare Teilnehmer, unterscheiden Profilbeiträge und kompakte Sozialaktionen, entfernen doppelte Nachrichtenhinweise und behandeln leere Freigaben. Sprachmodulanleitungen erfordern eine ausdrückliche Einschreibung und beginnen mit Aktivitäten. Die Komponentenverwaltung bietet bedingte Detail- und Einstellungszweige; fehlende optionale Steuerelemente entfallen. Anleitungsauswahlen nutzen die gemeinsame Atemanimation, Texte beschreiben nützliche Aktionen und Ergebnisse.
+
+## Stabile Beispiele Und Leere Chats
+
+Zusammengehörige Kartenschritte teilen einen stabilen targetScope-Container: Favorit und Kartendetails müssen auch nach einer Umsortierung dasselbe Beispiel zeigen. targetScope ist ein seiteneigener CSS-Selektor für verwandte Schritte und darf nicht mit portal kombiniert werden. Prüfen Sie berechnete Animationsfarben der Anleitungsauswahl außerhalb einer aktiven Anleitungsebene; Abbrechen bleibt ohne Animation. Einstellungsbeispiele benötigen ein bearbeitbares Schemafeld; ein Endpunkt allein genügt nicht. Ohne Gespräch entfallen Verwaltungsschritte. Profilaktionen stehen vor den zusammenhängenden Beitragsschritten.
+
+## Wiederholung Und Einstellungen
+
+Beispielziele und gemeinsame Kartenbereiche werden für jede neue Wiederholung zurückgesetzt; Zurück und Neustart behalten das aktuelle Beispiel. Prüfen Sie Wiederholungen nach dem Ausblenden einer weiterhin verbundenen Karte. Ein Bedienelement in einer wartenden Leiste darf nicht durch ein benachbartes Label ersetzt werden; lassen Sie den Schritt aus, solange das echte Element unsichtbar ist. Adaptereditoren über die injizierte Popup-API teilen eigene Inhaltsziele und Lebenszyklen, auch bei angepassten und mehrseitigen Formularen. Erhalten Sie onOpen und den Schutz ungespeicherter Änderungen; verschachtelte Bestätigungen bleiben eigenständige Dialoge.
+
+## Anbieterbesitz Und Wiederherstellung
+
+Der Besitzer eines Browser-Anbieters wird bei der Registrierung aus dem Bootstrap-Kontext erfasst, bevor URLs umgeschrieben werden. Aliase statischer Verzeichnisse bestimmen keine Komponentenidentität. Erforderliche oder gesperrte Host-Adapter bleiben geschützt; externe Module bleiben optional. Das konfigurierte Adapterverzeichnis ordnet Manifeste ohne Gateway-Feld zu. Adapter in einem anders benannten Ordner deklarieren ihr logisches Gateway im Manifest. Durch Abhängigkeiten blockierte Verfügbarkeit gilt als inaktiv statt ausdrücklich deaktiviert; Deaktivierungsanfragen erreichen daher weiterhin den Besitzer. JSON-Routen für Objekte akzeptieren Objektinhalte, weist null, Arrays und primitive Werte als Clientfehler zurück und klassifiziert zu große Eingaben vor der Wiederherstellungszuordnung als Clientfehler. Endpunkte mit Array-Inhalten wählen ausdrücklich `shape: "array"`, darunter die Benachrichtigungseinstellungen.
+
+## Ausstehende Öffnung
+
+Das Öffnen einer Karte ist vor dem Klick an den Anleitungszweig gebunden. Neustart und Abschluss brechen die ausstehende Detailanzeige einschließlich asynchroner Zusammenstellung und Dialogvorbereitung ab. Neue Versuche starten sofort; ältere Abschlüsse geben keine neueren Versuche frei. Normale Kartenaufrufe behalten ihre Seitenlebensdauer.
+
+## Steuerung der Adapterverwaltung
+
+Der ausschließlich für Administratoren zugängliche Adapterkatalog unter `GET /api/v1/gateways/tfa/adapters` veröffentlicht für jede Methode die Endpunkte `config`, `enable` und `disable`. Komponentenbefehle verwenden diese veröffentlichten Endpunkte für einzelne und gebündelte Aktionen, statt Routen zu erraten. Das Gateway prüft Administratorrechte sowohl beim Katalog als auch bei jeder Aktion. Eine Testaktion wird nicht angeboten, da das Gateway keine implementiert.
+
+## Wiederherstellung von Katalogübersetzungen
+
+Der authentifizierte Endpunkt für Katalogübersetzungen liefert die angeforderte Sprache aus dem Cache und verwendet bei fehlenden Daten Englisch aus dem Cache. `Content-Language` bezeichnet die tatsächlich gelieferte Sprache; unbekannte Module und Module ohne nutzbares Sprachpaket liefern weiterhin 404. Manuelles Aktualisieren durchsucht alle serverseitig konfigurierten Quellen, bevor die Katalogübersetzungen vorbereitet werden. Fehlerhafte Sprachpakete oder eine noch nicht geladene Quellenliste verhindern dadurch keinen Reparaturscan. Schlägt die Vorbereitung fehl, bleibt der zuletzt veröffentlichte Katalog erhalten und die Aktualisierungsschaltfläche wird für einen weiteren Versuch freigegeben.
+
+## Kontogebundener Tutorialabschluss
+
+Tutorialabschlüsse werden in der Anwendungsdatenbank für das authentifizierte Konto und den stabilen Anbieter/Tutorial-Bezeichner gespeichert. Sie gelten über Browser und Geräte hinweg, bleiben beim Löschen von Browserdaten erhalten und werden durch Tutorialupdates oder zurückgesetzte Einstellungen nicht gelöscht. Nur das ? im Seitenkopf startet abgeschlossene Anleitungen erneut. `GET /api/v1/tutorials/completions` liest die Abschlüsse des Aufrufers; `POST` speichert bis zu 100 geprüfte Bezeichner idempotent über benannte Abläufe und eine Datenbanktransaktion. Die Kontoidentität stammt aus der Authentifizierung, niemals aus dem Anfrageinhalt. Bestehende Browserabschlüsse werden nach der Anmeldung übertragen und erst nach Datenbankbestätigung entfernt. Lesefehler verschieben automatische Tutorials; Schreibfehler werden angezeigt und erlauben einen erneuten Versuch. Eine Sitzung bestätigt den erfolgreichen Abschluss erst nach der Speicherung.
+
+## Regeln für Übersetzungsnamensräume
+
+Lokalisierungsschlüssel verwenden ausschließlich kleingeschriebene, durch Punkte getrennte Wörter, auch im Modulnamensraum und bei Tutorialschlüsseln. Für die unveränderliche ID `terms-of-service` lautet ein Schlüssel `module.terms.of.service.admin.title`. Manifest-Metadaten, Kataloge und Verweise verwenden denselben Namensraum; Modul-IDs, UUIDs, Fähigkeitsnamen und Tutorial-Anbieter-/Abschlussbezeichner behalten ihre bestehenden Identitäten. Namensraumprüfungen dürfen nicht für ungültige Schlüssel gelockert werden. XML-Einrückung an benachbarte Einträge anpassen und Übersetzungswerte beim Formatieren erhalten.
+
+## Commits
+
+- [27dbfaaac](https://github.com/Cognis-Labs-HQ/Cognis/commit/27dbfaaac48ada61ec79bcfb61bc7b630103a2f1) — Komponentenfehler isolieren und Lebenszyklusbefehle ergänzen.
+- [29290416b](https://github.com/Cognis-Labs-HQ/Cognis/commit/29290416bcdb5709d9074fee5c43a7c653eccc6d) — Kurze CLI-Ausgaben, ausführlichen Modus und Aktualisierungsfortschritt ergänzen.
+- [5f5201043](https://github.com/Cognis-Labs-HQ/Cognis/commit/5f5201043c021b8587a959533c0b8cc10b0ee05a) — Reviewfehler beheben und externe Module optional halten.
+- [833155c20](https://github.com/Cognis-Labs-HQ/Cognis/commit/833155c20f324a22737d834a8e73aa264ee4b3e5) — Unnötige Komponentenaktionen ohne Zwang überspringen und CLI-Schreibweise vereinheitlichen.
+- [b4409b89c](https://github.com/Cognis-Labs-HQ/Cognis/commit/b4409b89c29fec24ba2e5246f216e3d1e6f9de9a) — Tutorial-Ansicht und Hostversion synchronisieren.
+- [66080c8dd](https://github.com/Cognis-Labs-HQ/Cognis/commit/66080c8dd041974b6a2f9cf0c9aa7d6a49cc27bb) — Bereitschaft für Start-Popups aus dem Tutorial-Zweig übernehmen.
+- [acbbf4781](https://github.com/Cognis-Labs-HQ/Cognis/commit/acbbf4781c42eeca29623be59bd3d4f951e62706)
+- [fe0e6366e](https://github.com/Cognis-Labs-HQ/Cognis/commit/fe0e6366ee681f493f018a06c8f65cd9a0360b0a)
+- [41ad3cfb8](https://github.com/Cognis-Labs-HQ/Cognis/commit/41ad3cfb81333d5ba6970b696d679689a07e987e)
+- [7e36ab051](https://github.com/Cognis-Labs-HQ/Cognis/commit/7e36ab0513a43eb2cd62483ca7d2b461fd9989a7)
+- [cd556b79d](https://github.com/Cognis-Labs-HQ/Cognis/commit/cd556b79daded5f84a1df77b32cfdb7a98e4f60a)
+- [72f2c6d69](https://github.com/Cognis-Labs-HQ/Cognis/commit/72f2c6d69731a5b4ae4ebe911917af2becc52ac1)
+- [09b9c7547](https://github.com/Cognis-Labs-HQ/Cognis/commit/09b9c7547)
+- [2b00ca977](https://github.com/Cognis-Labs-HQ/Cognis/commit/2b00ca9777b0c50e528698221a25341a740390f7)
+- [b55cabbc0](https://github.com/Cognis-Labs-HQ/Cognis/commit/b55cabbc0af004f4a0fe80310684a0ebb90bf4ee)
+- [7ca378e73](https://github.com/Cognis-Labs-HQ/Cognis/commit/7ca378e7344f489fd43fd081eb6ffbf69160c471)
+- [69982a176](https://github.com/Cognis-Labs-HQ/Cognis/commit/69982a1763e33a63ed0418046e82ba43846ad33a)
+- [94ba80e35](https://github.com/Cognis-Labs-HQ/Cognis/commit/94ba80e357759320f4389e0fe20ec05afa1d0cfc)
+- [fafd56ed4](https://github.com/Cognis-Labs-HQ/Cognis/commit/fafd56ed47d5594683481f6a1e13a2aa3c151d2f)
+- [155ea17b1](https://github.com/Cognis-Labs-HQ/Cognis/commit/155ea17b1e84273dbbd1008e56bfbfa399ec39b7)
+- [dbaffe178](https://github.com/Cognis-Labs-HQ/Cognis/commit/dbaffe178706498350ad91d63ee22e0221372ae9)
+- [32840e91c](https://github.com/Cognis-Labs-HQ/Cognis/commit/32840e91c76709022a9db065a851a9f837678762)
+- [46dab0ac3](https://github.com/Cognis-Labs-HQ/Cognis/commit/46dab0ac3c37d0167f700ebd98de72eed034a476)
+- [221dec1da](https://github.com/Cognis-Labs-HQ/Cognis/commit/221dec1da771d5d83f0112dd1d07da331c28de66)
+- [e47034c9e](https://github.com/Cognis-Labs-HQ/Cognis/commit/e47034c9e2138b1e34f6f1309143c5637b3afd01)
+- [81d180198](https://github.com/Cognis-Labs-HQ/Cognis/commit/81d1801989dd2922ef7a182040f362883dd8a42c)
+- [3588b9fd4](https://github.com/Cognis-Labs-HQ/Cognis/commit/3588b9fd46785f3f83570719a2b707231e1c968c)
+- [fcde545ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/fcde545ead9ae19b52580154f718fa5893a58505)
+- [f744ed1ff](https://github.com/Cognis-Labs-HQ/Cognis/commit/f744ed1ff133e702d17b99a55c2292ea831bc0b7)
+- [e14d74fd2](https://github.com/Cognis-Labs-HQ/Cognis/commit/e14d74fd26a17fb36908456580b49a0daa6009f1)
+- [34757d5ec](https://github.com/Cognis-Labs-HQ/Cognis/commit/34757d5ec0826abe7918af96c87e23f9eee05e60)
+- [c7c2c2c5b](https://github.com/Cognis-Labs-HQ/Cognis/commit/c7c2c2c5b10e72244f2ae42793099c6927dc33bb)
+- [5ecd84ae3](https://github.com/Cognis-Labs-HQ/Cognis/commit/5ecd84ae3e2b2d83a2456b2994c82ef44b0335e1)
+- [bbbd1a5fa](https://github.com/Cognis-Labs-HQ/Cognis/commit/bbbd1a5fa3ea2cc9ee5b99af2e8f200388ecbaee)
+- [2879b39c5](https://github.com/Cognis-Labs-HQ/Cognis/commit/2879b39c53d42bbff0809997ce87ecff17e0e0c4)
+- [d500bcfc7](https://github.com/Cognis-Labs-HQ/Cognis/commit/d500bcfc7f8b64f06088bf59b05e9c2c30e33c9b)
+- [980e2990e](https://github.com/Cognis-Labs-HQ/Cognis/commit/980e2990e0501a8a49c4cfed32f15a65ba5c6c4b)
+- [1055336d9](https://github.com/Cognis-Labs-HQ/Cognis/commit/1055336d97d57138a9668b022756d0700bffc7e9)
+- [3f0b55744](https://github.com/Cognis-Labs-HQ/Cognis/commit/3f0b55744f35e6595024790c23916de4308757dc)
+- [2a16b8206](https://github.com/Cognis-Labs-HQ/Cognis/commit/2a16b820668bf7e7df6b8076b95fd655394ad27d)
+- [c39f46dac](https://github.com/Cognis-Labs-HQ/Cognis/commit/c39f46dac94426e706b10877115e66eae43248f2)
+- [6dd3f0702](https://github.com/Cognis-Labs-HQ/Cognis/commit/6dd3f07026b7f0fb51ecf3ef2787229a2083b00e)
+- [dee358571](https://github.com/Cognis-Labs-HQ/Cognis/commit/dee3585716b66accc4b0bd4aa39611a74616d049)

@@ -176,10 +176,16 @@ export function createModuleRoutes(
             const module = (await marketplace.listCachedModules()).find(
                 (entry) => entry.uuid === moduleUuid,
             );
-            const assetId = module?.assetIds?.strings?.[stringsMatch[2]];
-            const asset = assetId
+            const strings = module?.assetIds?.strings;
+            let locale = stringsMatch[2];
+            const assetId = strings?.[locale];
+            let asset = assetId
                 ? await marketplace.getAsset(assetId)
                 : undefined;
+            if (!asset && locale !== "en" && strings?.en) {
+                locale = "en";
+                asset = await marketplace.getAsset(strings.en);
+            }
             if (!asset) {
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
@@ -194,6 +200,7 @@ export function createModuleRoutes(
             }
             res.writeHead(200, {
                 "content-type": asset.contentType,
+                "content-language": locale,
                 "cache-control": "private, max-age=3600",
                 "x-content-type-options": "nosniff",
             });

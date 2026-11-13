@@ -1,3 +1,5 @@
+import { getBootstrapScope } from "@cognis/core";
+import { attributeComponentFault } from "../components/fault.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 
 export type RouteHandler = (
@@ -25,7 +27,29 @@ export class RouteRegistry {
     }> = [];
 
     register(handler: RouteHandler, gatewayId?: string): () => boolean {
-        const entry = { handler, gatewayId };
+        const scope = getBootstrapScope()?.owner.split(":");
+        const owner =
+            scope?.[0] === "adapter" && scope.length === 3
+                ? {
+                      type: "adapter" as const,
+                      gatewayId: scope[1],
+                      id: scope[2],
+                  }
+                : scope?.[0] === "module" && scope.length === 2
+                  ? { type: "module" as const, id: scope[1] }
+                  : gatewayId
+                    ? { type: "gateway" as const, id: gatewayId }
+                    : undefined;
+        const ownedHandler: RouteHandler = owner
+            ? async (request, response, url) => {
+                  try {
+                      return await handler(request, response, url);
+                  } catch (error) {
+                      throw attributeComponentFault(error, owner);
+                  }
+              }
+            : handler;
+        const entry = { handler: ownedHandler, gatewayId };
         this.entries.push(entry);
         return () => {
             const index = this.entries.indexOf(entry);

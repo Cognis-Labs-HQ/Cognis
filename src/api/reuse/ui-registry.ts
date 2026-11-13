@@ -4,7 +4,7 @@
  * never reads gateway-specific content — it only knows the section IDs,
  * labels, and script URLs returned here.
  */
-import type { RoleAccessPolicy } from "@cognis/core";
+import { getBootstrapScope, type RoleAccessPolicy } from "@cognis/core";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
@@ -50,6 +50,13 @@ export interface PageElement {
  * `uiCtx.capabilities`.
  */
 export interface NavbarPlugin {
+    component?: {
+        type: "module" | "gateway" | "adapter";
+        id: string;
+        gatewayId?: string;
+        required: boolean;
+        version?: string;
+    };
     /** Browser-absolute URL of the ES module to dynamically import. */
     scriptUrl: string;
     /** UI capabilities contributed when this plugin is imported. */
@@ -62,6 +69,8 @@ export interface NavbarPlugin {
 }
 
 export interface UiCapabilityProvider {
+    access?: RoleAccessPolicy;
+    component?: NavbarPlugin["component"];
     offlineAccessGuard?: string;
     scriptUrl: string;
     providesCapabilities: string[];
@@ -300,7 +309,7 @@ export class UIRegistry {
         ) {
             throw new Error("ui_registration_conflict");
         }
-        this.navbarPlugins.push(plugin);
+        this.navbarPlugins.push(this.ownedProvider(plugin));
     }
 
     registerSpaRoute(route: SpaRoute): void {
@@ -504,7 +513,7 @@ export class UIRegistry {
     }
 
     listNavbarPlugins(): NavbarPlugin[] {
-        return this.resolveDescriptor([...this.navbarPlugins]);
+        return this.resolveDescriptor(this.navbarPlugins);
     }
 
     listCapabilityProviders(): UiCapabilityProvider[] {
@@ -516,7 +525,35 @@ export class UIRegistry {
     }
 
     registerCapabilityProvider(provider: UiCapabilityProvider): void {
-        this.capabilityProviders.push(provider);
+        this.capabilityProviders.push(this.ownedProvider(provider));
+    }
+
+    private ownedProvider<T extends NavbarPlugin | UiCapabilityProvider>(
+        provider: T,
+    ): T {
+        const scope = getBootstrapScope()?.owner.split(":");
+        const identity =
+            scope?.[0] === "adapter" && scope.length === 3
+                ? {
+                      type: "adapter" as const,
+                      gatewayId: scope[1],
+                      id: scope[2],
+                  }
+                : scope?.[0] === "gateway" && scope.length === 2
+                  ? { type: "gateway" as const, id: scope[1] }
+                  : scope?.[0] === "module" && scope.length === 2
+                    ? { type: "module" as const, id: scope[1] }
+                    : provider.ownerId
+                      ? { type: "module" as const, id: provider.ownerId }
+                      : undefined;
+        const result = { ...provider };
+        delete result.component;
+        if (identity)
+            result.component = {
+                ...identity,
+                required: false,
+            };
+        return result;
     }
 
     private listActiveCapabilityProviders(): UiCapabilityProvider[] {

@@ -87,3 +87,7 @@ Nach bestätigtem Abbruch der Einrichtung wird die Navigation erneut an die übr
 Jede Methode liefert `stringsBaseUrl` und `loginUi` mit `placeholderKey`, `supportsResend` und `challengeOnSelect`. Die Anmeldeoberfläche verwendet diese Metadaten statt Verzweigungen nach Anbieterkennungen. Konfigurationsbeschriftungen sind Übersetzungsschlüssel des Anbieters.
 
 Die Vertragsregistrierung von Adaptern folgt dem [gemeinsamen Gateway-Bootstrap-Vertrag](/docs/gateways).
+
+## Steuerung der Adapterverwaltung
+
+Der ausschließlich für Administratoren zugängliche Adapterkatalog unter `GET /api/v1/gateways/tfa/adapters` veröffentlicht für jede Methode die Endpunkte `config`, `enable` und `disable`. Komponentenbefehle verwenden diese veröffentlichten Endpunkte für einzelne und gebündelte Aktionen, statt Routen zu erraten. Das Gateway prüft Administratorrechte sowohl beim Katalog als auch bei jeder Aktion. Eine Testaktion wird nicht angeboten, da das Gateway keine implementiert.

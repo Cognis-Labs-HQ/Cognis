@@ -1,3 +1,4 @@
+import { createTutorialCompletionRoutes } from "../../tutorials/routes.js";
 import { readdir, readFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
@@ -80,6 +81,7 @@ export function createSystemRoutes(
     routeContext?: RouteContext,
 ) {
     const ctx = resolveRouteContext(routeContext);
+    const tutorialCompletionRoutes = createTutorialCompletionRoutes(ctx);
     const listCapabilities = ctx.getCapability<() => string[]>(
         "system:listCapabilities",
     );
@@ -120,6 +122,7 @@ export function createSystemRoutes(
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
+        if (await tutorialCompletionRoutes(req, res, url)) return true;
         const logMeta = {
             component: "api-system",
             method: req.method ?? "GET",

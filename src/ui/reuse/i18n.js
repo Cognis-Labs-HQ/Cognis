@@ -367,7 +367,7 @@ async function loadModuleStrings(activeLocale, moduleIds) {
                     `/modules/${encodeURIComponent(moduleId)}/strings/${locale}.xml`,
             );
             return [...strings].filter(([key]) =>
-                key.startsWith(`module.${moduleId}.`),
+                key.startsWith(`module.${moduleId.replaceAll("-", ".")}.`),
             );
         }),
     );

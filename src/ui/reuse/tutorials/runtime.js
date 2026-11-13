@@ -106,9 +106,9 @@ export function registerTutorials(
                 ),
             );
     };
-    function notifyFailure() {
+    function notifyFailure(kind = "error") {
         Promise.resolve()
-            .then(() => feedback("error"))
+            .then(() => feedback(kind))
             .catch((error) => {
                 log("error", "Tutorial feedback failed.", {
                     component: "ui",
@@ -117,13 +117,13 @@ export function registerTutorials(
                 });
             });
     }
-    function report(error) {
+    function report(error, kind = "error") {
         log("error", "Tutorial operation failed.", {
             component: "ui",
             operation: "tutorial",
             errorName: error?.name,
         });
-        notifyFailure();
+        notifyFailure(kind);
     }
     const operations = {};
     operations.register = action("register", async ({ owner, input }) => {
@@ -262,16 +262,17 @@ export function registerTutorials(
                 view: (options) => view({ ...options, menuLease }),
                 navigate: ctx.capabilities.get("ui:navigate"),
                 log,
-                onFinish(result) {
+                async onFinish(result) {
                     void menuLease
                         .then((lease) => lease.dispose())
                         .catch(report);
                     if (active === session) active = undefined;
                     if (result.status === "completed") {
                         try {
-                            onComplete(actor, id);
+                            await operations.complete({ actor, id });
                         } catch (error) {
-                            report(error);
+                            report(error, "completion");
+                            throw error;
                         }
                     }
                     if (result.status === "failed") notifyFailure();
@@ -302,6 +303,9 @@ export function registerTutorials(
                 dispose: () => operations.dispose({ session }),
             });
         },
+    );
+    operations.complete = action("complete", ({ actor, id }) =>
+        onComplete(actor, id),
     );
     operations.next = action("next", ({ session, interacted = false }) =>
         active === session && session ? session.next(interacted) : false,

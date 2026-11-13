@@ -33,22 +33,96 @@ function preloadHostProviders(urls) {
 export function createProviderLifecycle({
     uiCtx,
     importProvider = (url) => import(url),
+    onFailure,
 }) {
     const active = new Map();
     const catalogs = new Map();
     const failures = new WeakMap();
     let pending = Promise.resolve();
+    const ownership = new Map();
+    const quarantined = new Map();
+    const ownerKey = (entry) =>
+        entry?.component
+            ? JSON.stringify([
+                  entry.component.type,
+                  entry.component.gatewayId,
+                  entry.component.id,
+                  entry.component.version,
+              ])
+            : null;
 
-    async function reconcile(providers, preload) {
+    async function reconcile(providers, preload, retryFailed) {
         const desired = new Map(
             providers
                 .filter((provider) => provider?.scriptUrl)
                 .map((provider) => [provider.scriptUrl, provider]),
         );
+        const signatures = new Map();
+        for (const [url, entry] of desired) {
+            const key = ownerKey(entry);
+            if (key) signatures.set(key, (signatures.get(key) ?? "") + url);
+        }
+        for (const [key, signature] of quarantined)
+            if (retryFailed || signatures.get(key) !== signature)
+                quarantined.delete(key);
+        const isolate = async (error, details, entry) => {
+            const key = ownerKey(entry);
+            if (!key) throw error;
+            for (const [url, release] of active) {
+                if (ownership.get(url) !== key) continue;
+                try {
+                    await release();
+                } catch (failure) {
+                    uiCtx.capabilities.get("ui:log")?.(
+                        "error",
+                        "Component cleanup failed.",
+                        {
+                            component: "ui",
+                            operation: "disposeProvider",
+                            errorName: failure?.name,
+                        },
+                    );
+                }
+                active.delete(url);
+                ownership.delete(url);
+            }
+            if (entry.component.required) throw error;
+            quarantined.set(key, signatures.get(key));
+            uiCtx.capabilities.get("ui:log")?.(
+                "error",
+                "Component provider isolated.",
+                {
+                    component: "ui",
+                    operation: "isolateProvider",
+                    componentId: entry.component.id,
+                    ...details,
+                },
+            );
+            if (onFailure) {
+                try {
+                    await onFailure({
+                        ...details,
+                        scriptUrl: entry.scriptUrl,
+                        component: entry.component,
+                    });
+                } catch (failure) {
+                    uiCtx.capabilities.get("ui:log")?.(
+                        "error",
+                        "Component failure reporting failed.",
+                        {
+                            component: "ui",
+                            operation: "reportProviderFailure",
+                            errorName: failure?.name,
+                        },
+                    );
+                }
+            }
+        };
         for (const [url, release] of active) {
             if (desired.has(url)) continue;
             await release();
             active.delete(url);
+            ownership.delete(url);
         }
         const releasePreloads = preloadHostProviders(
             preload
@@ -56,8 +130,9 @@ export function createProviderLifecycle({
                 : [],
         );
         try {
-            for (const [url] of desired) {
-                if (active.has(url)) continue;
+            for (const [url, entry] of desired) {
+                if (active.has(url) || quarantined.has(ownerKey(entry)))
+                    continue;
                 const details = {
                     providerScript: url.startsWith("/")
                         ? url.split(/[?#]/)[0]
@@ -70,13 +145,26 @@ export function createProviderLifecycle({
                 } catch (error) {
                     if (error && typeof error === "object")
                         failures.set(error, details);
-                    throw error;
+                    await isolate(error, details, entry);
+                    continue;
                 }
                 const removers = [];
                 const controller = new AbortController();
                 const release = async () => {
                     controller.abort();
-                    for (const remove of removers.toReversed()) await remove();
+                    const released = await Promise.allSettled(
+                        removers
+                            .toReversed()
+                            .map((remove) => Promise.resolve().then(remove)),
+                    );
+                    const rejected = released.filter(
+                        (result) => result.status === "rejected",
+                    );
+                    if (rejected.length)
+                        throw new AggregateError(
+                            rejected.map((result) => result.reason),
+                            "provider_cleanup_failed",
+                        );
                 };
                 const scopedCtx = {
                     ...uiCtx,
@@ -116,11 +204,24 @@ export function createProviderLifecycle({
                     const dispose = await provider.mountProvider?.(scopedCtx);
                     if (typeof dispose === "function") removers.push(dispose);
                     active.set(url, release);
+                    ownership.set(url, ownerKey(entry));
                 } catch (error) {
                     if (error && typeof error === "object")
                         failures.set(error, details);
-                    await release();
-                    throw error;
+                    try {
+                        await release();
+                    } catch (failure) {
+                        uiCtx.capabilities.get("ui:log")?.(
+                            "error",
+                            "Failed provider cleanup failed.",
+                            {
+                                component: "ui",
+                                operation: "rollbackProvider",
+                                errorName: failure?.name,
+                            },
+                        );
+                    }
+                    await isolate(error, details, entry);
                 }
             }
         } finally {
@@ -129,10 +230,18 @@ export function createProviderLifecycle({
     }
 
     return {
-        reconcile(providers, catalog = "default", { preload = false } = {}) {
+        reconcile(
+            providers,
+            catalog = "default",
+            { preload = false, retryFailed = false } = {},
+        ) {
             const next = pending.then(() => {
                 catalogs.set(catalog, providers);
-                return reconcile([...catalogs.values()].flat(), preload);
+                return reconcile(
+                    [...catalogs.values()].flat(),
+                    preload,
+                    retryFailed,
+                );
             });
             pending = next.catch((error) => {
                 uiCtx.capabilities.get("ui:log")?.(

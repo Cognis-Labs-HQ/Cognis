@@ -1,3 +1,5 @@
+import { readFile } from "node:fs/promises";
+import { discoverCoreComponentDependencies } from "../../../components/discovery.js";
 import { isModuleCapabilityAvailable } from "../../../reuse/module-capability-availability.js";
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -18,7 +20,6 @@ import {
     assertModuleEnableDependencies,
     assertModuleCapabilityDependencies,
     buildServer,
-    discoverCoreComponentDependencies,
 } from "../../../server.js";
 import { RouteRegistry } from "../../../reuse/route-registry.js";
 import { createDefaultRouteContext } from "../../../reuse/route-context.js";
@@ -313,6 +314,16 @@ test("core component discovery reads adapter dependency identities", async () =>
             uuid: "4387fae9-26dd-5a80-84b2-e5f4833b7fb9",
             name: "Profile Adapter",
             gatewayId: "social",
+            adapterId: "profile",
+            version: JSON.parse(
+                await readFile(
+                    new URL(
+                        "../../../../adapters/social/profile/manifest.json",
+                        import.meta.url,
+                    ),
+                    "utf8",
+                ),
+            ).version,
         },
     ]);
 });

@@ -83,8 +83,15 @@ export function createSession({
         cleanStep();
         record.signal.removeEventListener("abort", ownerRemoved);
         const result = { ...status(), status: outcome, reason };
-        onFinish(result);
-        settle(result);
+        Promise.resolve(onFinish(result)).then(
+            () => settle(result),
+            () =>
+                settle({
+                    ...result,
+                    status: "failed",
+                    reason: "completionPersistence",
+                }),
+        );
         ready(false);
         emit("finish", result);
         log(

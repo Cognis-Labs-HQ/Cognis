@@ -89,3 +89,7 @@ After enrollment cancellation is acknowledged, navigation is offered again to th
 Each method supplies `stringsBaseUrl` and `loginUi` metadata: `placeholderKey`, `supportsResend` and `challengeOnSelect`. The login UI discovers these values rather than branching on provider IDs. Configuration labels are provider-owned translation keys.
 
 Adapter contract registration follows [the shared gateway bootstrap contract](/docs/gateways).
+
+## Adapter Management Controls
+
+The administrator-only adapter catalog at `GET /api/v1/gateways/tfa/adapters` publishes each method’s `config`, `enable` and `disable` endpoints. Component lifecycle commands consume these advertised controls for individual and bulk operations instead of guessing routes. The gateway enforces administrator authorization on the catalog and each control; methods do not advertise a test action because this gateway does not implement one.

@@ -633,6 +633,7 @@
   <string name="ui.tutorial.missing">対象の操作項目を利用できません。表示してから「再試行」を選んでください。</string>
   <string name="ui.tutorial.waiting">ページの要素を待っています。いつでも中止できます。</string>
   <string name="ui.tutorial.error">チュートリアルを続行できませんでした。ページは引き続き利用できます。</string>
+  <string name="ui.tutorial.progress_error">チュートリアルの進捗を読み込み、または保存できませんでした。接続を確認して再度お試しください。</string>
   <string name="ui.tutorial.workspace.title">ワークスペースの使い方</string>
   <string name="ui.tutorial.workspace.navigation.body">メインナビゲーションには、アカウントで利用できるページへのリンクがあります。</string>
   <string name="ui.tutorial.workspace.search.body">検索を開いて、ページ、設定、現在のページの操作を探してみます。</string>
@@ -749,6 +750,8 @@
   <string name="ui.tutorial.restart">チュートリアルを最初からやり直す</string>
   <string name="ui.tutorial.docs.read.browse.documents.title">文書を探す</string>
   <string name="ui.tutorial.docs.read.browse.documents.body">サイドメニューでトピックやコンポーネントを選びます。グループを展開すると各ページが表示され、選んだ文書がメニューの横に開きます。</string>
+  <string name="ui.components.provider_failed">コンポーネント {{component}} で障害が発生したため隔離しました。他のコンポーネントは引き続き利用できます。</string>
+  <string name="ui.components.disabled_after_failures">コンポーネント {{component}} で障害が繰り返されたため無効にしました。コンポーネント管理またはコマンドラインで修復し、再度有効にしてください。</string>
   <string name="ui.tutorial.admin.components.metadata.title">コンポーネントの詳細</string>
   <string name="ui.tutorial.admin.components.metadata.body">ここでバージョンと依存関係を確認し、このコンポーネントの動作条件を把握できます。</string>
   <string name="ui.tutorial.admin.components.settings.fields.title">コンポーネント設定の編集</string>

@@ -633,6 +633,7 @@
   <string name="ui.tutorial.missing">The control is unavailable. Make it available, then choose Retry.</string>
   <string name="ui.tutorial.waiting">Waiting for the page element. You can cancel at any time.</string>
   <string name="ui.tutorial.error">The tutorial could not continue. Your page remains available.</string>
+  <string name="ui.tutorial.progress_error">Tutorial progress could not be loaded or saved. Check your connection and try again.</string>
   <string name="ui.tutorial.workspace.title">Your Workspace</string>
   <string name="ui.tutorial.workspace.navigation.body">The main navigation links to the pages available to your account.</string>
   <string name="ui.tutorial.workspace.search.body">Open Search to try finding a page, setting or action on the current page.</string>
@@ -749,6 +750,8 @@
   <string name="ui.tutorial.restart">Restart Tutorial</string>
   <string name="ui.tutorial.docs.read.browse.documents.title">Browse Documents</string>
   <string name="ui.tutorial.docs.read.browse.documents.body">Use the side menu to choose a topic or component. Expand a group to find its pages; the selected document opens beside the menu.</string>
+  <string name="ui.components.provider_failed">The {{component}} component failed and was isolated. Other components remain available.</string>
+  <string name="ui.components.disabled_after_failures">The {{component}} component was disabled after repeated failures. Use component management or the CLI to repair and re-enable it.</string>
   <string name="ui.tutorial.admin.components.metadata.title">Component Details</string>
   <string name="ui.tutorial.admin.components.metadata.body">Check the version and dependencies here to identify what this component needs to run.</string>
   <string name="ui.tutorial.admin.components.settings.fields.title">Edit Component Settings</string>

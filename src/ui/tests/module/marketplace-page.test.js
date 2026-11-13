@@ -568,11 +568,14 @@ test("module marketplace refreshes every configured source on demand", () => {
         source,
         /\{ modules: discovered, sourceFailures \} = await loadAvailableModules\([\s\S]*reportSourceFailures\(sourceFailures\)/,
     );
-    assert.match(source, /discoverConfiguredSources\(true\)/);
+    assert.match(
+        source,
+        /await loadAvailableModules\(undefined, true, \{[\s\S]*marketplaceEtag = undefined;[\s\S]*await loadKnownModules\(false, signal\);/,
+    );
     assert.match(source, /discoverConfiguredSources\(false, signal\)/);
     assert.match(source, /target\.id === "module-source-refresh"/);
     assert.match(source, /ui\.app\.modules\.refresh_complete/);
-    assert.match(source, /await refreshMarketplaceData\(\)/);
+    assert.match(source, /await refreshMarketplaceData\(signal\)/);
     assert.match(source, /isMarketplaceRefreshPending\(\)/);
     assert.match(
         source,

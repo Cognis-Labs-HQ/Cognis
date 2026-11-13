@@ -59,7 +59,7 @@ Modul yang menerbitkan dokumen hukum, dukungan, atau dokumen lain yang relevan s
 
 Manifes menyatakan `uuid`, `id`, `name`, `version`, `publisher`, `class`, `coreApiVersion`, `summary`, `description`, `categories`, `recommended`, `license`, `homepage`, `repository`, `support`, `capabilities`, `requires` berbasis UUID, `entrypoints`, dan `assets`. Jalur aset bersifat relatif terhadap repositori. `assets.icon` mengidentifikasi ikon toko persegi, `assets.banner` mengidentifikasi pahlawan detail, dan `assets.screenshots` adalah galeri terurut. Jalur harus tetap berada di dalam repositori.
 
-Kunci pelokalan harus menggunakan titik sebagai pemisah kata: tulis `module.example.canvas.label`, bukan `module.example.canvas_label` atau `module.example.canvas-label`. Segmen yang dipisahkan titik menjaga kepemilikan, pencarian, validasi, dan perilaku alat tetap dapat diprediksi. ID modul terdaftar merupakan satu-satunya pengecualian yang disengaja bila ID tetapnya sudah mengandung tanda hubung.
+Kunci pelokalan menggunakan kata huruf kecil yang dipisahkan titik pada namespace modul maupun label fitur. Selaraskan metadata manifes, katalog, dan referensi kode. ID modul yang tetap tidak menjadi pengecualian dari aturan ini.
 
 ### Sumber dan repositori pribadi
 
@@ -171,9 +171,9 @@ Helper host `mountWhenDirect` memberikan AbortSignal melalui `mount(root, { sign
 
 Halaman langsung yang dibatalkan segera melepas token pemuatan bersama, meskipun inisialisasi terjemahan, penyedia, atau composer masih tertunda. Pembersihan sumber daya tetap terikat pada sinyal host yang sama.
 
-## Pertahankan ID modul pada kunci
+## Namespace terjemahan bertitik
 
-Kunci terjemahan menggunakan `module.<manifest.id>.<feature>.<label>`. Pertahankan ID modul yang terdiri dari beberapa kata beserta tanda hubungnya; untuk `terms-of-service`, gunakan `module.terms-of-service.admin.title`. Sufiks setelah ID modul menggunakan kata huruf kecil yang dipisahkan titik. Metadata manifes, berkas XML, dan referensi kode harus memakai namespace yang sama.
+Kunci pelokalan menggunakan kata huruf kecil yang hanya dipisahkan titik, termasuk namespace modul dan kunci tutorial. Untuk ID tetap `terms-of-service`, gunakan `module.terms.of.service.admin.title`. Metadata manifes, katalog, dan referensi memakai namespace yang sama; ID modul, UUID, nama kapabilitas, dan ID pemilik/penyelesaian tutorial mempertahankan identitasnya. Jangan melonggarkan validasi namespace untuk menerima kunci yang tidak valid. Ikuti indentasi entri XML di sekitarnya dan pertahankan nilai terjemahan saat memformat.
 
 Tampilan marketplace mempertahankan nama, deskripsi, kategori, dan tag yang tersimpan bersama berkas terjemahan katalognya ketika modul terpasang menggunakan namespace berbeda. Preferensi modul terpasang mempertahankan URL terjemahannya sendiri; penemuan katalog baru menggantikan tampilan yang tersimpan.
 
@@ -272,3 +272,7 @@ Instalasi mengambil kredensial dengan snapshot penyedia, endpoint, dan namespace
 ## Tutorial terpandu
 
 Tutorial terikat pada halaman atau URL. Kunjungan pertama yang memenuhi syarat otomatis memulai tutorial halaman yang belum selesai. SVG tanda tanya di samping judul dalam `page-context` memutar ulang tutorial yang tersedia pada halaman itu. Host memiliki tampilan dan siklus hidup; fitur memiliki teks, target, dan skrip. Tutorial tidak mengubah izin.
+
+## Pemulihan Terjemahan Katalog
+
+Endpoint terjemahan katalog yang diautentikasi menyajikan bahasa yang diminta dari cache jika tersedia, lalu menggunakan bahasa Inggris dalam cache jika bahasa tersebut tidak tersedia. Respons menyatakan bahasa yang disajikan melalui `Content-Language`; modul yang tidak dikenal dan modul tanpa bundel yang dapat digunakan tetap mengembalikan 404. Penyegaran manual memindai seluruh sumber yang dikonfigurasi di server sebelum menyiapkan terjemahan katalog, sehingga bundel cache yang rusak atau daftar sumber yang belum dimuat tidak menghalangi pemindaian pemulihan. Jika persiapan gagal, katalog terakhir tetap tersedia dan tombol penyegaran dapat digunakan kembali.

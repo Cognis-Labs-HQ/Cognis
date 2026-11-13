@@ -59,7 +59,7 @@ Modules that publish legal, support, or other documents relevant before authenti
 
 The manifest declares `uuid`, `id`, `name`, `version`, `publisher`, `class`, `coreApiVersion`, `summary`, `description`, `categories`, `recommended`, `license`, `homepage`, `repository`, `support`, `capabilities`, UUID-based `requires`, `entrypoints`, and `assets`. Asset paths are repository-relative. `assets.icon` identifies the square store icon, `assets.banner` identifies the detail hero, and `assets.screenshots` is an ordered gallery. Paths must remain inside the repository.
 
-Localization keys must use periods as word separators: write `module.example.canvas.label`, not `module.example.canvas_label` or `module.example.canvas-label`. Period-delimited segments preserve predictable ownership, lookup, validation, and tooling behavior. The registered module ID remains the one intentional exception when its immutable ID already contains a hyphen.
+Localization keys use lowercase period-delimited words in both the module namespace and feature labels. Keep manifest metadata, catalogs and code references aligned. Immutable module IDs do not create an exception to this rule.
 
 ### Sources and private repositories
 
@@ -171,9 +171,9 @@ The host `mountWhenDirect` helper supplies `mount(root, { signal })` with an Abo
 
 A cancelled direct page releases its shared loading token immediately, even while translation, provider or composer initialization is pending. Resource cleanup remains bound to the same host signal.
 
-## Preserve module IDs in locale keys
+## Period-delimited locale namespaces
 
-Locale keys use `module.<manifest.id>.<feature>.<label>`. Keep a multiword module ID intact with its hyphens; for `terms-of-service`, use `module.terms-of-service.admin.title`. The suffix after the module ID uses lowercase period-delimited words. Manifest metadata, XML bundles and code references must use the same namespace.
+Localization keys use lowercase words separated only by periods, including the module namespace and tutorial keys. For the immutable ID `terms-of-service`, use `module.terms.of.service.admin.title`. Manifest metadata, catalogs and references share this namespace; module IDs, UUIDs, capability names and tutorial owner/completion IDs retain their established identities. Never weaken namespace validation to admit an invalid key. Match XML sibling indentation and preserve translated values when formatting.
 
 Marketplace presentation keeps cached names, descriptions, categories and tags with their catalog locale bundle when an installed module uses a different namespace. Installed preferences retain their own locale URL; a fresh catalog discovery replaces the cached presentation.
 
@@ -272,3 +272,7 @@ Installation resolves credentials against the same provider, endpoint and namesp
 ## Guided tutorials
 
 Tutorials belong to a page or URL. The first eligible visit starts the page’s unseen tutorials automatically. A question-mark SVG beside the title in `page-context` replays tutorials available on that page. The host owns presentation and lifecycle; each feature owns its text, targets and script. Tutorials never change permissions.
+
+## Catalog Translation Recovery
+
+The authenticated catalog strings endpoint serves the requested cached locale when available and falls back to cached English when that locale is missing. Responses identify the served language with `Content-Language`; unknown modules and modules without either usable bundle still return 404. Manual Refresh scans all configured server sources before preparing catalog translations, so a broken cached bundle or an unloaded source list cannot prevent the repair scan. A failed preparation retains the last published catalog and releases the refresh button for another attempt.

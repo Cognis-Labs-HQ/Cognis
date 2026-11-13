@@ -633,6 +633,7 @@
   <string name="ui.tutorial.missing">Kontrol tidak tersedia. Tampilkan kontrol tersebut, lalu pilih Coba Lagi.</string>
   <string name="ui.tutorial.waiting">Menunggu elemen halaman. Anda dapat membatalkan kapan saja.</string>
   <string name="ui.tutorial.error">Tutorial tidak dapat dilanjutkan. Halaman Anda tetap tersedia.</string>
+  <string name="ui.tutorial.progress_error">Progres tutorial tidak dapat dimuat atau disimpan. Periksa koneksi Anda dan coba lagi.</string>
   <string name="ui.tutorial.workspace.title">Ruang Kerja Anda</string>
   <string name="ui.tutorial.workspace.navigation.body">Navigasi utama berisi tautan ke halaman yang tersedia bagi akun Anda.</string>
   <string name="ui.tutorial.workspace.search.body">Buka Pencarian untuk mencoba menemukan halaman, pengaturan, atau tindakan di halaman ini.</string>
@@ -749,6 +750,8 @@
   <string name="ui.tutorial.restart">Mulai Ulang Tutorial</string>
   <string name="ui.tutorial.docs.read.browse.documents.title">Jelajahi Dokumen</string>
   <string name="ui.tutorial.docs.read.browse.documents.body">Gunakan menu samping untuk memilih topik atau komponen. Buka grup untuk menemukan halamannya; dokumen pilihan tampil di sebelah menu.</string>
+  <string name="ui.components.provider_failed">Komponen {{component}} gagal dan telah diisolasi. Komponen lain tetap tersedia.</string>
+  <string name="ui.components.disabled_after_failures">Komponen {{component}} dinonaktifkan setelah kegagalan berulang. Gunakan pengelolaan komponen atau baris perintah untuk memperbaiki dan mengaktifkannya kembali.</string>
   <string name="ui.tutorial.admin.components.metadata.title">Detail Komponen</string>
   <string name="ui.tutorial.admin.components.metadata.body">Periksa versi dan dependensi di sini untuk mengetahui kebutuhan komponen ini.</string>
   <string name="ui.tutorial.admin.components.settings.fields.title">Ubah Pengaturan Komponen</string>

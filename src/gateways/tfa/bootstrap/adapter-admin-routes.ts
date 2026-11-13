@@ -1,3 +1,4 @@
+import { buildGatewayAdapterAdminControls } from "../../../api/reuse/adapter-admin-controls.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import {
     getAuthClaims,
@@ -28,7 +29,17 @@ export function createTfaAdapterAdminRoutes(
         if (url.pathname === base && req.method === "GET") {
             if (!requireAuth(req, res, "admin")) return true;
             res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: gateway.listAdapters() }));
+            res.end(
+                JSON.stringify({
+                    data: gateway.listAdapters().map((adapter) => ({
+                        ...adapter,
+                        controls: buildGatewayAdapterAdminControls(
+                            base,
+                            adapter.id,
+                        ),
+                    })),
+                }),
+            );
             return true;
         }
 

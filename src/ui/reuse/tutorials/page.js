@@ -2,7 +2,7 @@
  * Coordinates page discovery, account-scoped completion and header replay controls.
  * Public export: createPageTutorials — creates a lifecycle-owned page coordinator.
  * @example const page = createPageTutorials(dependencies); page.connect();
- * @param {object} dependencies Public ctx, tutorial, document, storage and localization boundaries.
+ * @param {object} dependencies Public ctx, tutorial, document, account completion and localization boundaries.
  * @returns {{refresh: Function, open: Function, complete: Function, connect: Function, dispose: Function}} Page operations.
  */
 import { createFloatingMenu } from "../floating-menu.js";
@@ -12,7 +12,7 @@ export function createPageTutorials({
     api,
     document,
     account,
-    storage,
+    completions,
     localize,
     prepareStyles,
     report,
@@ -22,38 +22,19 @@ export function createPageTutorials({
     const signal = ctx.signal
         ? AbortSignal.any([ctx.signal, controller.signal])
         : controller.signal;
-    const completed = new Set();
     const attempted = new Set();
     const automaticSurfaces = new Set();
-    const storageFailures = new Set();
     let help,
         menu,
         pending,
         queued = false,
         navigating = false;
     let epoch = 0;
+    let completionFailure;
     const location = () => ({ pathname: window.location.pathname });
     // Completion follows the stable owner/tutorial ID, never content or package revisions.
     const key = (actor, id) =>
         `cognis_tutorial:${encodeURIComponent(actor)}:${id}`;
-    function seen(actor, id) {
-        const name = key(actor, id);
-        if (completed.has(name)) return true;
-        let persisted;
-        try {
-            persisted = storage()?.getItem(name);
-        } catch (error) {
-            if (!storageFailures.has(actor)) {
-                storageFailures.add(actor);
-                report(error);
-            }
-        }
-        if (persisted === "completed") {
-            completed.add(name);
-            return true;
-        }
-        return false;
-    }
     function schedule() {
         if (queued || signal.aborted) return;
         queued = true;
@@ -147,11 +128,28 @@ export function createPageTutorials({
             return;
         const surface = JSON.stringify([actor, page.pathname, plays[0].id]);
         if (automaticSurfaces.has(surface)) return;
+        const completionScope = JSON.stringify([actor, revision]);
+        if (completionFailure === completionScope) return;
+        let completed;
+        try {
+            completed = await completions.load(actor);
+        } catch (error) {
+            completionFailure = completionScope;
+            throw error;
+        }
+        if (
+            signal.aborted ||
+            revision !== epoch ||
+            account() !== actor ||
+            !ready.isReady() ||
+            api.current()
+        )
+            return;
         const first = plays.find(
             (play) =>
                 play.automatic !== false &&
                 !attempted.has(key(actor, play.id)) &&
-                !seen(actor, play.id),
+                !completed.has(play.id),
         );
         if (!first) return;
         automaticSurfaces.add(surface);
@@ -159,7 +157,10 @@ export function createPageTutorials({
     }
     async function start(id, actor) {
         if (signal.aborted || account() !== actor) return false;
-        const firstTime = Boolean(actor && !seen(actor, id));
+        const completed = actor ? await completions.load(actor) : new Set();
+        if (signal.aborted || account() !== actor) return false;
+        completionFailure = undefined;
+        const firstTime = Boolean(actor && !completed.has(id));
         attempted.add(key(actor, id));
         const session = await api.start(id, { firstTime });
         void session.finished
@@ -171,15 +172,11 @@ export function createPageTutorials({
             .catch(report);
         return session;
     }
-    function complete(actor, id) {
-        if (!actor || signal.aborted) return;
-        const name = key(actor, id);
-        completed.add(name);
-        try {
-            storage()?.setItem(name, "completed");
-        } catch (error) {
-            report(error);
-        }
+    async function complete(actor, id) {
+        if (!actor) return;
+        if (signal.aborted || account() !== actor)
+            throw new Error("tutorial_completion_identity_changed");
+        await completions.complete(actor, id);
         schedule();
     }
     async function open() {
@@ -271,6 +268,7 @@ export function createPageTutorials({
             "cognis:route-will-change",
             () => {
                 epoch++;
+                completions.invalidate();
                 attempted.clear();
                 navigating = true;
                 menu?.dispose();
@@ -282,6 +280,7 @@ export function createPageTutorials({
             "popstate",
             () => {
                 epoch++;
+                completions.invalidate();
                 attempted.clear();
                 menu?.dispose();
                 schedule();
@@ -298,6 +297,13 @@ export function createPageTutorials({
             const id = "ui:tutorial:page";
             ctx.extendFlow(flow, stage, { id, order: 10000 }, () => {
                 if (flow !== "authenticate-session") navigating = false;
+                if (
+                    flow === "page:mounted" ||
+                    flow === "authenticate-session"
+                ) {
+                    completionFailure = undefined;
+                    completions.invalidate();
+                }
                 schedule();
             });
             signal.addEventListener(

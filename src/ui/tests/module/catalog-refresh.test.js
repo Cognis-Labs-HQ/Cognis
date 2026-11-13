@@ -18,7 +18,7 @@ const missing = (key) =>
         key,
     });
 
-async function fixture(context) {
+async function fixture(context, { failTranslations = false } = {}) {
     const strings = new Map();
     for (const path of [
         "../../languages/en/strings.xml",
@@ -45,10 +45,10 @@ async function fixture(context) {
     const module = (id, version) => ({
         id,
         uuid: id,
-        name: `module.${id}.name`,
-        summary: `module.${id}.summary`,
-        description: `module.${id}.description`,
-        tags: [`module.${id}.tag`],
+        name: `module.${id.replaceAll("-", ".")}.name`,
+        summary: `module.${id.replaceAll("-", ".")}.summary`,
+        description: `module.${id.replaceAll("-", ".")}.description`,
+        tags: [`module.${id.replaceAll("-", ".")}.tag`],
         ui: { stringsBaseUrl: `/catalog/${id}` },
         version,
         installedVersion: version,
@@ -68,7 +68,10 @@ async function fixture(context) {
         module("study-language-ja", "4.0.1"),
         module("elevenlabs-tts", "2.0.1"),
     ];
-    let waitForStrings = () => Promise.resolve();
+    let waitForStrings = () =>
+        failTranslations
+            ? Promise.reject(missing("module.example.name"))
+            : Promise.resolve();
     const localized = loadTestModule(
         new URL("../../app/modules/presentation.js", import.meta.url),
         {
@@ -78,14 +81,20 @@ async function fixture(context) {
                     const id = url.split("/").at(-1);
                     const bundle = new Map([
                         [
-                            `module.${id}.name`,
+                            `module.${id.replaceAll("-", ".")}.name`,
                             id === "elevenlabs-tts"
                                 ? "ElevenLabs Speech"
                                 : "Japanese",
                         ],
-                        [`module.${id}.summary`, "Summary"],
-                        [`module.${id}.description`, "Description"],
-                        [`module.${id}.tag`, "Speech"],
+                        [
+                            `module.${id.replaceAll("-", ".")}.summary`,
+                            "Summary",
+                        ],
+                        [
+                            `module.${id.replaceAll("-", ".")}.description`,
+                            "Description",
+                        ],
+                        [`module.${id.replaceAll("-", ".")}.tag`, "Speech"],
                     ]);
                     return {
                         t: (key) => {
@@ -125,8 +134,9 @@ async function fixture(context) {
     const sidebar = { outerHTML: "" };
     const floating = { innerHTML: "", hidden: false };
     let composerOptions;
+    let storeMarkup;
     const render = () => {
-        composerOptions.elements[0].render();
+        storeMarkup = composerOptions.elements[0].render();
         composerOptions.toolbar[0].render();
     };
     const unused = () => assert.fail("unexpected action");
@@ -198,8 +208,9 @@ async function fixture(context) {
                               cached: structuredClone(initial),
                           };
                 },
-                loadAvailableModules: async () => {
+                loadAvailableModules: async (sourceUuids, forceRefresh) => {
                     operations.push("source-scan");
+                    handlers.set("last-scan", { sourceUuids, forceRefresh });
                     return {
                         modules: structuredClone(initial),
                         sourceFailures: [],
@@ -277,8 +288,16 @@ async function fixture(context) {
         pass++
     )
         await new Promise(setImmediate);
-    assert.match(floating.innerHTML, /data-module-update/);
+    if (!failTranslations)
+        assert.match(floating.innerHTML, /data-module-update/);
     return {
+        get storeMarkup() {
+            return storeMarkup;
+        },
+        repairTranslations: () => {
+            waitForStrings = () => Promise.resolve();
+        },
+        isRefreshPending: page.isMarketplaceRefreshPending,
         catalog,
         i18n,
         messages,
@@ -349,7 +368,7 @@ test("discovery prepares detached copies and preserves the published catalog on 
     const release = state.stall();
     const incoming = {
         ...state.initial[1],
-        name: "module.elevenlabs-tts.missing",
+        name: "module.elevenlabs.tts.missing",
     };
     const pending = state.catalog.prepareDiscoveredCatalog(
         published,
@@ -360,7 +379,7 @@ test("discovery prepares detached copies and preserves the published catalog on 
     assert.deepEqual(structuredClone(published), before);
     assert.equal(
         filters.formatModuleTag(
-            "module.elevenlabs-tts.tag",
+            "module.elevenlabs.tts.tag",
             published,
             state.i18n,
         ),
@@ -369,7 +388,7 @@ test("discovery prepares detached copies and preserves the published catalog on 
     release();
     await assert.rejects(pending, {
         code: "missing_translation",
-        key: "module.elevenlabs-tts.missing",
+        key: "module.elevenlabs.tts.missing",
     });
     assert.deepEqual(structuredClone(published), before);
 });
@@ -389,7 +408,7 @@ test("catalog metadata keeps its matching locale bundle when installed metadata 
         state.i18n,
     );
     assert.equal(catalog[0].localizedPresentation.name, "Japanese");
-    assert.equal(catalog[0].name, "module.study-language-ja.name");
+    assert.equal(catalog[0].name, "module.study.language.ja.name");
     assert.equal(catalog[0].status, "disabled");
     assert.equal(catalog[0].ui.stringsBaseUrl, "/installed/other");
     assert.equal(
@@ -444,4 +463,37 @@ test("saving source settings still triggers discovery after the visible source l
         scans + 1,
     );
     assert.deepEqual(state.errors, []);
+});
+
+test("manual refresh can repair a catalog whose translations failed on first mount", async (context) => {
+    const state = await fixture(context, { failTranslations: true });
+    assert.ok(state.messages.some(({ type }) => type === "error"));
+    const scans = () =>
+        state.operations.filter((operation) => operation === "source-scan")
+            .length;
+    const before = scans();
+    await state.clickButton({ id: "module-source-refresh" });
+    assert.equal(scans(), before + 1);
+    assert.deepEqual(state.handlers.get("last-scan"), {
+        sourceUuids: undefined,
+        forceRefresh: true,
+    });
+    assert.equal(state.isRefreshPending(), false);
+    assert.match(state.storeMarkup, /id="module-source-refresh"[^>]*>/);
+    assert.doesNotMatch(
+        state.storeMarkup.match(/id="module-source-refresh"[^>]*>/)[0],
+        /disabled|aria-busy/,
+    );
+    state.repairTranslations();
+    await state.clickButton({ id: "module-source-refresh" });
+    assert.equal(scans(), before + 2);
+    assert.equal(state.isRefreshPending(), false);
+    assert.ok(
+        state.messages.some(
+            ({ type, message }) =>
+                type === "success" &&
+                message === state.i18n.t("ui.app.modules.refresh_complete"),
+        ),
+    );
+    assert.match(state.sidebar.outerHTML, /Speech/);
 });

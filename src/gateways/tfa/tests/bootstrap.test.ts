@@ -57,11 +57,12 @@ async function dispatchRoute(
     routeRegistry: RouteRegistry,
     headers: Record<string, string>,
     pathname: string,
+    method = "GET",
 ) {
     const res = makeResponse();
     let handled = false;
     const req = {
-        method: "GET",
+        method,
         headers,
     } as unknown as import("node:http").IncomingMessage;
     for (const entry of routeRegistry.getEntries()) {
@@ -77,7 +78,7 @@ async function dispatchRoute(
     return { handled, res };
 }
 
-test("tfa bootstrap preserves persisted disabled adapter state after restart", async () => {
+test("tfa catalog restores adapter state and publishes authenticated lifecycle controls", async () => {
     const db = new InMemoryTestExecutor();
     const store = new DbTfaStore(db);
     await store.ensureSchema();
@@ -127,11 +128,64 @@ test("tfa bootstrap preserves persisted disabled adapter state after restart", a
     assert.ok(result.handled);
     assert.equal(result.res.status, 200);
     const payload = JSON.parse(result.res.payload) as {
-        data: Array<{ id: string; enabled: boolean }>;
+        data: Array<{
+            id: string;
+            enabled: boolean;
+            controls: Record<string, string>;
+        }>;
     };
     const totpAdapter = payload.data.find((entry) => entry.id === "totp");
     assert.ok(totpAdapter);
     assert.equal(totpAdapter?.enabled, false);
+    for (const adapter of payload.data) {
+        const base = `/api/v1/gateways/tfa/adapters/${encodeURIComponent(adapter.id)}`;
+        assert.deepEqual(adapter.controls, {
+            config: `${base}/config`,
+            enable: `${base}/enable`,
+            disable: `${base}/disable`,
+        });
+    }
+
+    const userToken = issueAccessToken("regular-user", "user", null);
+    for (const action of ["enable", "disable"]) {
+        const endpoint = totpAdapter.controls[action];
+        const denied = await dispatchRoute(
+            routeRegistry,
+            { authorization: `Bearer ${userToken}` },
+            endpoint,
+            "POST",
+        );
+        assert.equal(denied.res.status, 403);
+        const changed = await dispatchRoute(
+            routeRegistry,
+            { authorization: `Bearer ${adminToken}` },
+            endpoint,
+            "POST",
+        );
+        assert.equal(changed.handled, true);
+        assert.equal(changed.res.status, 200);
+        assert.deepEqual(JSON.parse(changed.res.payload), {
+            data: { updated: true },
+        });
+        const refreshed = await dispatchRoute(
+            routeRegistry,
+            { authorization: `Bearer ${adminToken}` },
+            "/api/v1/gateways/tfa/adapters",
+        );
+        assert.equal(
+            JSON.parse(refreshed.res.payload).data.find(
+                (entry: { id: string }) => entry.id === "totp",
+            ).enabled,
+            action === "enable",
+        );
+        assert.equal(
+            (await store.listAdapterConfigs()).find(
+                (entry) => entry.adapterId === "totp",
+            )?.enabled,
+            action === "enable",
+        );
+    }
+
     assert.equal(
         uiRegistry.getStaticDir("tfa"),
         path.resolve(process.cwd(), "src", "gateways", "tfa", "ui"),

@@ -42,3 +42,38 @@ test("bounded JSON retains empty-request handling and reports malformed JSON", a
         SyntaxError,
     );
 });
+
+test("object JSON rejects valid non-object shapes as client errors", async () => {
+    for (const body of ["null", "[]", "12", '"text"', "true"]) {
+        await assert.rejects(
+            readJson(Readable.from([body]) as IncomingMessage),
+            {
+                message: "invalid_request_body",
+                status: 400,
+            },
+        );
+    }
+    assert.deepEqual(
+        await readJson(
+            Readable.from(['{"items":[],"value":null}']) as IncomingMessage,
+        ),
+        { items: [], value: null },
+    );
+});
+
+test("array request contracts accept arrays explicitly without weakening object routes", async () => {
+    assert.deepEqual(
+        await readJson(
+            Readable.from(['[{"enabled":true}]']) as IncomingMessage,
+            { shape: "array" },
+        ),
+        [{ enabled: true }],
+    );
+    for (const body of ["null", "{}", "false", '"text"'])
+        await assert.rejects(
+            readJson(Readable.from([body]) as IncomingMessage, {
+                shape: "array",
+            }),
+            { status: 400, message: "invalid_request_body" },
+        );
+});
