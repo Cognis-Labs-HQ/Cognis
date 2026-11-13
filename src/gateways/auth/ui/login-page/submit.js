@@ -96,6 +96,9 @@ export function createLoginSubmitHandler({
                 return;
             }
             const errorKeyByCode = {
+                session_unavailable: "ui.app.login.error.generic",
+                tfa_unavailable: "ui.app.login.error.generic",
+                account_disabled: "ui.app.login.reason.account_disabled",
                 account_archived: "ui.app.login.reason.account_archived",
                 account_deactivated: "ui.app.login.reason.account_deactivated",
             };

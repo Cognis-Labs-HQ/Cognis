@@ -113,3 +113,7 @@ Lingkup bootstrap bertingkat mewarisi wewenang induk dan tidak dapat mendaftarka
 Ekspor Core menyediakan satu tipe `AccessRole` yang baku. Manifest modul mendeklarasikan `requiresCapabilities` opsional selain kapabilitas yang disediakan, dan daftar akun menyertakan `accountId` stabil untuk konsumen yang bekerja dalam lingkup akun. Pemilik komponen mempertahankan nama dan metadata pelokalan dalam deskriptor penyedia UI.
 
 Definisi namespace berkas menerima daftar `allowComponents` hanya-baca. Helper alur menerima kumpulan hasil tahap yang tidak tersedia tanpa mengubah pemilihan hasil atau otorisasi.
+
+## Kegagalan Bootstrap Gateway
+
+`GatewayRegistry.hasBootstrapFailure(id)` membedakan gateway yang ditemukan tetapi gagal diimpor atau diinisialisasi dari gateway opsional yang tidak ada. Host mencatat kegagalan tanpa membuat registrasi yang dapat dijalankan. Registrasi awal, pembatalan, penonaktifan, dan pengaktifan kembali tidak menghapus bukti ini; hanya bootstrap yang sepenuhnya berhasil menghapusnya. Kegagalan gateway wajib tetap menghentikan startup. Manifest tidak valid atau tidak ada tanpa identitas yang dapat digunakan berada di luar sinyal ini. Kebijakan dapat menghormati penonaktifan administrator yang disengaja sambil menolak inisialisasi aktif yang gagal.

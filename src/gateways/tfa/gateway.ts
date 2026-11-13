@@ -1,11 +1,11 @@
+import { discoverTfaAdapters } from "./adapter-discovery.js";
+import type { BootstrapLog } from "../shared.js";
 import type { CapabilityStore } from "@cognis/core";
 import {
     bootstrapTfaAdapters,
     type TfaAdapterBootstrapContext,
 } from "./adapter-bootstrap.js";
 import { randomBytes } from "node:crypto";
-import { readdir, readFile } from "node:fs/promises";
-import path from "node:path";
 import type { DbTfaStore } from "./reuse/tfa-store.js";
 
 import type {
@@ -109,6 +109,8 @@ export class CoreTfaGateway {
     private static readonly RECOVERY_CODE_LOW_THRESHOLD = 2;
     private readonly adapters = new Map<string, TfaMethodAdapter>();
     private readonly enabledAdapters = new Set<string>();
+    private readonly verifyingSetups = new Set<string>();
+    private readonly explicitlyDisabledAdapters = new Set<string>();
     private readonly adapterEnabledStateProviders = new Map<
         string,
         () => boolean
@@ -133,15 +135,11 @@ export class CoreTfaGateway {
     >();
 
     constructor(
-        private readonly store: DbTfaStore,
+        private readonly store: Pick<DbTfaStore, keyof DbTfaStore>,
         private readonly options: {
             dispatchNotification?: NotifyDispatch;
             adapterFactoryContext?: Record<string, unknown>;
-            log?: (
-                level: string,
-                message: string,
-                metadata?: Record<string, unknown>,
-            ) => void;
+            log?: BootstrapLog;
         } = {},
     ) {}
 
@@ -175,7 +173,11 @@ export class CoreTfaGateway {
     async loadPersistedConfigs(): Promise<void> {
         const configs = await this.store.listAdapterConfigs();
         const configuredIds = new Set(configs.map((entry) => entry.adapterId));
+        this.explicitlyDisabledAdapters.clear();
         for (const entry of configs) {
+            if (entry.enabled)
+                this.explicitlyDisabledAdapters.delete(entry.adapterId);
+            else this.explicitlyDisabledAdapters.add(entry.adapterId);
             const adapter = this.adapters.get(entry.adapterId);
             if (!adapter) continue;
             adapter.configure?.(entry.config);
@@ -218,12 +220,14 @@ export class CoreTfaGateway {
         const { enabled: _omit, ...adapterConfig } = config;
         const wasEnabled = this.enabledAdapters.has(adapterId);
         adapter.configure?.(adapterConfig);
+        await this.store.saveAdapterConfig(adapterId, enabled, adapterConfig);
         if (enabled) {
             this.enabledAdapters.add(adapterId);
         } else {
             this.enabledAdapters.delete(adapterId);
         }
-        await this.store.saveAdapterConfig(adapterId, enabled, adapterConfig);
+        if (enabled) this.explicitlyDisabledAdapters.delete(adapterId);
+        else this.explicitlyDisabledAdapters.add(adapterId);
         await this.notifyAdapterConfigChange(adapterId, adapterConfig);
         if (wasEnabled !== enabled) {
             await this.notifyAdapterEnabledChange(adapterId, enabled);
@@ -235,8 +239,9 @@ export class CoreTfaGateway {
         if (!adapter) return;
         const wasEnabled = this.enabledAdapters.has(adapterId);
         const existingConfig = await this.getAdapterConfig(adapterId);
-        this.enabledAdapters.add(adapterId);
         await this.store.saveAdapterConfig(adapterId, true, existingConfig);
+        this.enabledAdapters.add(adapterId);
+        this.explicitlyDisabledAdapters.delete(adapterId);
         if (!wasEnabled) {
             await this.notifyAdapterEnabledChange(adapterId, true);
         }
@@ -247,8 +252,9 @@ export class CoreTfaGateway {
         if (!adapter) return;
         const wasEnabled = this.enabledAdapters.has(adapterId);
         const existingConfig = await this.getAdapterConfig(adapterId);
-        this.enabledAdapters.delete(adapterId);
         await this.store.saveAdapterConfig(adapterId, false, existingConfig);
+        this.enabledAdapters.delete(adapterId);
+        this.explicitlyDisabledAdapters.add(adapterId);
         if (wasEnabled) {
             await this.notifyAdapterEnabledChange(adapterId, false);
         }
@@ -355,7 +361,11 @@ export class CoreTfaGateway {
             (entry) => entry.usedAt == null,
         ).length;
         const enforcementRequired = await this.store.getEnforceAllUsers();
-        const hasConfiguredMethod = enabledMethods.length > 0;
+        const hasConfiguredMethod = userMethods.some(
+            (method) =>
+                method.enabled &&
+                !this.explicitlyDisabledAdapters.has(method.methodId),
+        );
 
         return {
             availableMethods,
@@ -411,6 +421,22 @@ export class CoreTfaGateway {
     }
 
     async verifyMethodSetup(input: {
+        accountId: string;
+        setupId: string;
+        verification: Record<string, unknown>;
+    }): Promise<{ verified: boolean; message?: string }> {
+        if (this.verifyingSetups.has(input.setupId)) {
+            return { verified: false, message: "setup_verification_pending" };
+        }
+        this.verifyingSetups.add(input.setupId);
+        try {
+            return await this.completeMethodSetup(input);
+        } finally {
+            this.verifyingSetups.delete(input.setupId);
+        }
+    }
+
+    private async completeMethodSetup(input: {
         accountId: string;
         setupId: string;
         verification: Record<string, unknown>;
@@ -795,7 +821,7 @@ export class CoreTfaGateway {
 
     async isSecondFactorEnabled(accountId: string): Promise<boolean> {
         const status = await this.getUserStatus(accountId);
-        return status.enabledMethods.length > 0;
+        return status.hasConfiguredMethod;
     }
 
     async isSetupRequired(accountId: string): Promise<boolean> {
@@ -858,59 +884,12 @@ export class CoreTfaGateway {
     }
 
     async discoverAdapters(tfaAdaptersRoot: string): Promise<void> {
-        let entries: string[];
-        try {
-            entries = await readdir(tfaAdaptersRoot);
-        } catch {
-            return;
-        }
-
-        for (const entry of entries) {
-            const packagePath = path.join(
-                tfaAdaptersRoot,
-                entry,
-                "package.json",
-            );
-            try {
-                const packageRaw = await readFile(packagePath, "utf8");
-                const packageJson = JSON.parse(packageRaw) as {
-                    main?: string;
-                    version?: string;
-                };
-                if (!packageJson.main) continue;
-                const entryPath = path.resolve(
-                    tfaAdaptersRoot,
-                    entry,
-                    packageJson.main,
-                );
-                const module = await import(`${entryPath}?t=${Date.now()}`);
-                if (typeof module.createAdapter !== "function") continue;
-                const factory = module.createAdapter as TfaAdapterFactory;
-                const adapter = factory(
-                    this.options.adapterFactoryContext ?? {},
-                );
-                if (module.defineContracts !== undefined)
-                    Object.assign(adapter, {
-                        defineContracts: module.defineContracts,
-                    });
-                if (packageJson.version) {
-                    Object.assign(adapter, { version: packageJson.version });
-                }
-                const manifestRaw = await readFile(
-                    path.join(tfaAdaptersRoot, entry, "manifest.json"),
-                    "utf8",
-                );
-                const manifest = JSON.parse(manifestRaw) as {
-                    publisher?: string;
-                };
-                if (manifest.publisher) {
-                    Object.assign(adapter, { publisher: manifest.publisher });
-                }
-                this.registerAdapter(adapter);
-            } catch {
-                // Skip broken adapters
-            }
-        }
+        const adapters = await discoverTfaAdapters(
+            tfaAdaptersRoot,
+            this.options.adapterFactoryContext ?? {},
+            this.options.log,
+        );
+        for (const adapter of adapters) this.registerAdapter(adapter);
     }
 }
 

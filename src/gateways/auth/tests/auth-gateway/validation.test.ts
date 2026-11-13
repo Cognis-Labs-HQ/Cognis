@@ -102,17 +102,19 @@ test("login refuses a configured validation policy without its provider", async 
     assert.ok(registerResult.handled);
     assert.equal(registerResult.res.status, 201);
 
-    await assert.rejects(
-        dispatchRoute(
-            routeRegistry,
-            makeJsonRequest("POST", {
-                provider: "local",
-                username: "alice",
-                password: "pass123",
-            }),
-            "/api/v1/auth/login",
-        ),
-        /user_validation_unavailable/,
+    const denied = await dispatchRoute(
+        routeRegistry,
+        makeJsonRequest("POST", {
+            provider: "local",
+            username: "alice",
+            password: "pass123",
+        }),
+        "/api/v1/auth/login",
+    );
+    assert.equal(denied.res.status, 503);
+    assert.equal(
+        JSON.parse(denied.res.payload).error.code,
+        "session_unavailable",
     );
 });
 

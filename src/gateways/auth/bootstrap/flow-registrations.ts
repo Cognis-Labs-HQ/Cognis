@@ -7,7 +7,7 @@ import {
     registerCanonicalFlow,
 } from "@cognis/core";
 import type { Ctx } from "@cognis/core";
-import { issueAccessToken, type AccessRole } from "../access-tokens.js";
+import { type AccessRole } from "../access-tokens.js";
 import {
     LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY,
     resolveLoginSessionTimeoutPreference,
@@ -438,18 +438,31 @@ export async function registerAuthBootstrapHook(
             const profileRole = getProfileRole
                 ? await getProfileRole(session.accountId).catch(() => undefined)
                 : undefined;
-            const lifecycleState = await profileLifecycle
-                ?.getState(session.accountId)
-                .catch(() => "active");
-            if (lifecycleState === "archived") {
-                return {
-                    sessionResult: { outcome: "account_archived" },
-                };
+            let lifecycleState: string | undefined;
+            try {
+                lifecycleState = await profileLifecycle?.getState(
+                    session.accountId,
+                );
+                if (
+                    profileLifecycle &&
+                    !["active", "deactivated", "archived"].includes(
+                        lifecycleState ?? "",
+                    )
+                ) {
+                    throw new Error("invalid_profile_lifecycle");
+                }
+            } catch (error) {
+                context.ctx.log?.("error", "Profile lifecycle lookup failed.", {
+                    component: "auth-gateway",
+                    operation: "getProfileLifecycle",
+                    accountId: session.accountId,
+                    errorName:
+                        error instanceof Error ? error.name : "UnknownError",
+                });
+                return { sessionResult: { outcome: "session_unavailable" } };
             }
-            if (lifecycleState === "deactivated") {
-                await profileLifecycle
-                    ?.setState(session.accountId, "active")
-                    .catch(() => undefined);
+            if (lifecycleState === "archived") {
+                return { sessionResult: { outcome: "account_archived" } };
             }
             if (profileRole === "owner") {
                 role = "owner";
@@ -461,19 +474,6 @@ export async function registerAuthBootstrapHook(
             if (isFounder && (role === "admin" || role === "owner")) {
                 role = "owner";
             }
-
-            const globalTtlSeconds =
-                context.authRouteBootstrapRuntime.getAccessTokenTtlSeconds();
-            await context.accountStore
-                .updateLastLogin(session.accountId)
-                .catch((error) =>
-                    context.ctx.log?.("error", "Could not record login time.", {
-                        component: "auth-gateway",
-                        operation: "updateLastLogin",
-                        accountId: session.accountId,
-                        errorName: error?.name,
-                    }),
-                );
 
             const createProfile = capabilities.get<
                 (
@@ -635,26 +635,13 @@ export async function registerAuthBootstrapHook(
                 userValidationMode: securitySettings.userValidationMode,
                 requiredUserValidation: !validation.verified,
             };
-            const token = issueAccessToken(
-                session.accountId,
-                role,
-                ttlSeconds,
-                {
-                    providerId: session.provider ?? adapterId,
-                },
-            );
             const sessionResult = {
-                outcome: "success",
-                token,
+                outcome: "authenticated",
                 ttlSeconds,
                 ...sharedPayload,
             };
             stageCtx.data["sessionResult"] = sessionResult;
-            return {
-                sessionResult: {
-                    ...sessionResult,
-                },
-            };
+            return { sessionResult };
         },
     );
 
