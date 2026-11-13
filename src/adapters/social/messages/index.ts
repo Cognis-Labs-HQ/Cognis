@@ -19,6 +19,7 @@ import {
     MESSAGING_FLOW_CATALOG,
     registerCanonicalFlow,
 } from "@cognis/core";
+import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import type { Ctx } from "@cognis/core";
 import { createChatroomMembershipCapability } from "./membership.js";
 import { createChatroomDeletionCapability } from "./chatroom-deletion.js";
@@ -105,7 +106,7 @@ export async function bootstrapSocialAdapter(
         );
         return;
     }
-    const dbExecutor = ctx.capabilities.get("db:executor");
+    const dbExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
     if (!dbExecutor) {
         ctx.log?.(
             "warn",

@@ -118,12 +118,12 @@ test("profile routes - avatar upload succeeds when previous delete fails", async
 
     const originalDelete = gateway.delete.bind(gateway);
     let shouldFailDelete = true;
-    gateway.delete = async (key: string) => {
+    gateway.delete = async (accountId, key) => {
         if (key === firstAvatarKey && shouldFailDelete) {
             shouldFailDelete = false;
             throw new Error("transient delete failure");
         }
-        return originalDelete(key);
+        return originalDelete(accountId, key);
     };
 
     let status = 0;

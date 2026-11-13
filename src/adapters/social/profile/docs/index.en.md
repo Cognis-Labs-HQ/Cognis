@@ -188,3 +188,7 @@ Successful Profile preference writes update their bounded, provider-owned read s
 Profile edit forms use the owning component’s display-name, bio, location and website limits. Account role synchronization resolves a profile’s public handle from its immutable account ID before updating role and visibility.
 
 `profile:setRole(accountId, role)` → `Promise<void>`.
+
+## Typed Storage and Routes
+
+Profile roles and visibility types match the stored records, including moderator accounts and private, friends and community visibility. Preference reads expose the stored JSON text. Persistence tests use a profile-owned structured database fixture with rollback support.

@@ -1,5 +1,5 @@
+import { hasMinRole, isAccessRole } from "@cognis/core";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { hasMinRole } from "@cognis/core";
 import {
     resolveRouteContext,
     type RouteContext,
@@ -28,7 +28,7 @@ export interface SocialRoutesOptions {
 }
 
 function hasAdminBypass(role: string | null | undefined): boolean {
-    return Boolean(role && hasMinRole(role, "admin"));
+    return isAccessRole(role) && hasMinRole(role, "admin");
 }
 
 function isProfileInteractive(profile: AccountProfile): boolean {

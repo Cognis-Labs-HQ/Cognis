@@ -57,3 +57,7 @@ Messages menyiapkan daftar ruang, terjemahan, dan katalog emoji setelah masuk te
 ## Penggunaan Emoji Terpisah
 
 Pemilih reaksi Messages yang dapat digunakan kembali mencatat frekuensi emoji secara terpisah dari perubahan reaksi. Hanya permintaan reaksi pesan yang menyertakan keadaan aktif akhir. Kegagalan pencatatan penggunaan dicatat tanpa menghalangi reaksi yang dipilih atau fungsi pembaruannya.
+
+## Penyimpanan dan Rute Bertipe
+
+Deklarasi peran dan visibilitas profil sosial kini sesuai dengan rekaman tersimpan. Rute pesan dan profil tetap mempertahankan pemeriksaan izin, sementara callback, notifikasi, dan perintah basis data menggunakan kontrak eksplisit. Resolusi sesi tamu yang tidak tersedia tetap menggagalkan proses sebelum profil tamu dibaca.

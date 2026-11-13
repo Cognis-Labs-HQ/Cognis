@@ -115,3 +115,7 @@ HTTP-Routen authentifizieren und autorisieren den Handelnden. Capabilities sind 
 ## Capability für Profilidentitäten
 
 Der Profile-Adapter veröffentlicht `social:profile:identity` für Plattform- und Modul-Verbraucher. Die Funktionen `normalizeHandleKey` und `normalizeHandleKeys` wenden die kanonischen Regeln zur Normalisierung von Handles an. `resolveAccountHandle(accountId, fieldName?)` löst eine kanonische Konto-ID in den normalisierten Profil-Handle auf und weist fehlende Konten oder Handles zurück. Orchestratoren verwenden diese Capability, statt den Profile-Adapter zu importieren oder die Normalisierungslogik zu duplizieren.
+
+## Typisierte Speicherung und Routen
+
+Bootstrap-Verträge für Adapter deklarieren die benötigten Seitenfähigkeiten und Host-Protokollstufen. Adapter erhalten die Gateway-Registrierung über ihren Bootstrap-Kontext. Profilzeilendeklarationen behalten die aktuellen Rollen und Sichtbarkeitswerte bei, ohne gespeicherte Datensätze umzuwandeln.

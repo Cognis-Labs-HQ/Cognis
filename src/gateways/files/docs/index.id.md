@@ -103,3 +103,7 @@ Komponen sebaiknya menggunakan `files:namespace` untuk operasi file rutin melalu
 `files:uiClient` dikontribusikan oleh penyedia UI Berkas dan menyediakan penyelesaian URL berkas bernamespace bagi modul browser.
 
 Registrasi kontrak adapter mengikuti [kontrak bootstrap gateway bersama](/docs/gateways).
+
+## Penyimpanan dan Rute Bertipe
+
+Pemeriksaan ACL menerima komponen pemanggil secara eksplisit bersama aktor. Registrasi namespace mempertahankan daftar izin yang tidak dapat diubah; kepemilikan objek, identitas namespace, dan aturan izin tetap sama.

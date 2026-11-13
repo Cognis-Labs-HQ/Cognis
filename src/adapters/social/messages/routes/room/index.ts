@@ -343,10 +343,19 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                     );
                     const guestSessionIdsBySender = new Map(
                         Array.from(uniqueSenderIds)
-                            .map((senderId) => [
-                                senderId,
-                                resolveShareGuestSessionId({ sub: senderId }),
-                            ])
+                            .map((senderId) => {
+                                if (!resolveShareGuestSessionId) {
+                                    throw new Error(
+                                        "Share guest session resolver is unavailable.",
+                                    );
+                                }
+                                return [
+                                    senderId,
+                                    resolveShareGuestSessionId({
+                                        sub: senderId,
+                                    }),
+                                ] as const;
+                            })
                             .filter(([, guestSessionId]) => guestSessionId),
                     );
                     await Promise.all(
@@ -356,7 +365,7 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                                     guestSessionId,
                                 ).catch(() => null);
                                 if (!guestProfile) return;
-                                profilesByAccountId.set(senderId, {
+                                const senderProfile = {
                                     accountId: senderId,
                                     handle: "",
                                     displayName: guestProfile.displayName,
@@ -366,10 +375,14 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                                     website: null,
                                     avatarKey: guestProfile.avatarKey,
                                     bannerKey: null,
-                                    visibility: "community",
+                                    visibility: "community" as const,
                                     createdAt: "",
                                     updatedAt: "",
-                                });
+                                };
+                                profilesByAccountId.set(
+                                    senderId,
+                                    senderProfile,
+                                );
                             },
                         ),
                     );
@@ -680,7 +693,7 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
         }
 
         if (sub === "members" && !subArg && req.method === "POST") {
-            if (member.role !== "owner" && member.role !== "admin") {
+            if (member?.role !== "owner" && member?.role !== "admin") {
                 res.writeHead(403, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -759,7 +772,7 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                 return true;
             }
             const isSelfLeave = target.accountId === accountId;
-            const isOwnerKick = member.role === "owner";
+            const isOwnerKick = member?.role === "owner";
             if (!isSelfLeave && !isOwnerKick) {
                 res.writeHead(403, { "content-type": "application/json" });
                 res.end(

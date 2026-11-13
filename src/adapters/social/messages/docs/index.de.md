@@ -57,3 +57,7 @@ Messages bereitet Raumliste, Übersetzungen und Emoji-Kataloge nach bestätigter
 ## Unabhängige Emoji-Nutzung
 
 Die wiederverwendbare Reaktionsauswahl in Nachrichten erfasst die Emoji-Häufigkeit unabhängig von Reaktionsänderungen. Nur die Nachrichtenreaktion enthält den abschließenden Aktivzustand. Fehler bei der Nutzungserfassung werden protokolliert und verhindern weder die gewählte Reaktion noch ihre Aktualisierungsfunktion.
+
+## Typisierte Speicherung und Routen
+
+Rollen und Sichtbarkeitsdeklarationen sozialer Profile entsprechen jetzt den gespeicherten Datensätzen. Nachrichten- und Profilrouten behalten ihre Berechtigungsprüfungen bei; Rückrufe, Benachrichtigungen und Datenbankbefehle verwenden explizite Verträge. Fehlt die Auflösung der Gastsitzung, schlägt der Vorgang weiterhin vor dem Lesen des Gastprofils fehl.
