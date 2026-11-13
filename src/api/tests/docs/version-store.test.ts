@@ -1,10 +1,11 @@
+import type { StructuredDbCommand } from "../../../gateways/db/reuse/db-command.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createDocumentVersionStoreCapability } from "../../reuse/document-version-store.js";
-import { InMemoryTestExecutor } from "../../../gateways/db/tests/in-memory-test-executor.js";
+import { DocumentDatabaseFixture } from "./database.js";
 
 test("document version store appends immutable cryptographic versions", async () => {
-    const database = new InMemoryTestExecutor();
+    const database = new DocumentDatabaseFixture();
     const store = createDocumentVersionStoreCapability().createStore({
         namespace: "legal",
         database,
@@ -40,7 +41,7 @@ test("document version store normalizes driver-native dates", async () => {
     const rows: Array<Record<string, unknown>> = [];
     const database = {
         async ensureTable() {},
-        async executeCommand(command: Record<string, unknown>) {
+        async executeCommand(command: StructuredDbCommand) {
             if (command.option === "INSERT") {
                 rows.push(command.values as Record<string, unknown>);
                 return {};
@@ -68,7 +69,7 @@ test("document version store normalizes driver-native dates", async () => {
 });
 
 test("document version store compares two immutable version hashes", async () => {
-    const database = new InMemoryTestExecutor();
+    const database = new DocumentDatabaseFixture();
     const store = createDocumentVersionStoreCapability().createStore({
         namespace: "legal-diff",
         database,
@@ -103,7 +104,7 @@ test("document version store compares two immutable version hashes", async () =>
 });
 
 test("document version store rejects missing and unrelated version hashes", async () => {
-    const database = new InMemoryTestExecutor();
+    const database = new DocumentDatabaseFixture();
     const store = createDocumentVersionStoreCapability().createStore({
         namespace: "legal-diff-validation",
         database,

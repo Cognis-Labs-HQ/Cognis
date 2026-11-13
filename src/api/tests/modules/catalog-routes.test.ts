@@ -1,3 +1,5 @@
+import type { ModuleMarketplaceService } from "@cognis/core";
+import { moduleManifest } from "../reuse/module-fixtures.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
@@ -200,13 +202,18 @@ test("module marketplace install forwards the selected branch", async () => {
         },
         undefined,
         {
-            install: async (_module, branch, validateDependencies) => {
-                installedBranch = branch;
-                const manifest = {
+            install: async (
+                ...[_module, branch, validateDependencies]: Parameters<
+                    ModuleMarketplaceService["install"]
+                >
+            ) => {
+                installedBranch = branch ?? "";
+                const manifest = moduleManifest({
                     id: "notes",
                     uuid: "module-uuid",
                     requires: ["338b9237-a2c8-5bcf-9437-bccc9abd9a27"],
-                };
+                });
+                assert.ok(validateDependencies);
                 await validateDependencies(manifest);
                 return manifest;
             },
@@ -425,8 +432,15 @@ test("module install jobs expose dependency validation error codes", async () =>
         },
         undefined,
         {
-            install: async (_module, _branch, validate) => {
-                await validate({ id: "example", uuid: "module-uuid" } as any);
+            install: async (
+                ...[_module, _branch, validate]: Parameters<
+                    ModuleMarketplaceService["install"]
+                >
+            ) => {
+                assert.ok(validate);
+                await validate(
+                    moduleManifest({ id: "example", uuid: "module-uuid" }),
+                );
                 throw new Error("unreachable");
             },
         } as any,
@@ -541,7 +555,7 @@ test("module catalog serves cached images from the same origin", async () => {
         undefined,
         undefined,
         {
-            getAsset: (id) =>
+            getAsset: (id: string) =>
                 id === assetId
                     ? {
                           body: Buffer.from("<svg/>", "utf8"),

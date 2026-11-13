@@ -107,3 +107,9 @@ export interface AuthAccountStore {
 Pemilik mendeklarasikan kontrak domain melalui registri publik `system:contracts` selama bootstrap. `define(id, { version, kind, members, description })` mencatat struktur; `resolve(id, version)` memeriksa implementasi publik dan mengikat akses ke registrasi tersebut. Rollback atau penonaktifan menghapus definisi; pengaktifan kembali memulihkannya. Modul menggunakan namespace sendiri. Resolusi dalam konteks modul mempertahankan pemeriksaan izin host. Kontrak modul baru tidak memerlukan berkas sumber Core; deklarasi tipe opsional berada di direktori kontrak publik penyedia. Pembuatan kode verifikasi berada dalam penggunaan ulang server bersama dan diekspos Auth sebagai `auth:verificationCodes`, bukan diekspor Core.
 
 Lingkup bootstrap bertingkat mewarisi wewenang induk dan tidak dapat mendaftarkan kontrak setelah induk ditutup.
+
+## Kontrak Tipe Publik
+
+Ekspor Core menyediakan satu tipe `AccessRole` yang baku. Manifest modul mendeklarasikan `requiresCapabilities` opsional selain kapabilitas yang disediakan, dan daftar akun menyertakan `accountId` stabil untuk konsumen yang bekerja dalam lingkup akun. Pemilik komponen mempertahankan nama dan metadata pelokalan dalam deskriptor penyedia UI.
+
+Definisi namespace berkas menerima daftar `allowComponents` hanya-baca. Helper alur menerima kumpulan hasil tahap yang tidak tersedia tanpa mengubah pemilihan hasil atau otorisasi.

@@ -1,3 +1,7 @@
+import {
+    moduleSource,
+    marketplaceModule,
+} from "../../reuse/module-fixtures.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { discoverModuleSourcesOnStartup } from "../../../server.js";
@@ -9,12 +13,18 @@ test("startup refreshes module sources once and reports discovered modules", asy
     await discoverModuleSourcesOnStartup(
         {
             listSources: async () => [
-                { uuid: "public-source", scanPrivateRepos: false },
-                { uuid: "private-source", scanPrivateRepos: true },
+                moduleSource({
+                    uuid: "public-source",
+                    scanPrivateRepos: false,
+                }),
+                moduleSource({
+                    uuid: "private-source",
+                    scanPrivateRepos: true,
+                }),
             ],
             discover: async (...args: unknown[]) => {
                 calls.push(args);
-                return [{ uuid: "module-uuid" }] as never;
+                return [marketplaceModule({ uuid: "module-uuid" })];
             },
         },
         (level, message, meta) => logs.push({ level, message, ...meta }),
@@ -37,7 +47,7 @@ test("startup reports module source refresh failures", async () => {
 
     await discoverModuleSourcesOnStartup(
         {
-            listSources: async () => [{ uuid: "public-source" }],
+            listSources: async () => [moduleSource({ uuid: "public-source" })],
             discover: async () => {
                 throw new Error("source unavailable");
             },
@@ -62,7 +72,10 @@ test("startup scans credentialed sources with server-owned credentials", async (
     await discoverModuleSourcesOnStartup(
         {
             listSources: async () => [
-                { uuid: "private-source", scanPrivateRepos: true },
+                moduleSource({
+                    uuid: "private-source",
+                    scanPrivateRepos: true,
+                }),
             ],
             discover: async () => {
                 discoveryCalled = true;

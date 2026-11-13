@@ -7,7 +7,7 @@
  */
 
 /** Role level assigned to an authenticated session or access token. */
-export type AccessRole = "user" | "teacher" | "moderator" | "admin" | "owner";
+export type { AccessRole } from "./access-policy.js";
 
 export interface AuthContext {
     accountId: string;

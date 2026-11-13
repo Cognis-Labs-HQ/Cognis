@@ -4,8 +4,8 @@ import { checked, type ComponentTransport } from "./transport.js";
 import type { ComponentInfo } from "./types.js";
 
 function publicMetadata(
-    entry: Record<string, unknown>,
-): Record<string, unknown> {
+    entry: ComponentInfo,
+): Pick<ComponentInfo, "id"> & Record<string, unknown> {
     const allowed = new Set([
         "id",
         "uuid",
@@ -29,11 +29,14 @@ function publicMetadata(
         "description",
         "publisher",
     ]);
-    return Object.fromEntries(
-        Object.entries(entry).filter(
-            ([key, value]) => allowed.has(key) && value !== undefined,
+    return {
+        ...Object.fromEntries(
+            Object.entries(entry).filter(
+                ([key, value]) => allowed.has(key) && value !== undefined,
+            ),
         ),
-    );
+        id: entry.id,
+    };
 }
 
 /** Adapter discovery failures remain visible on their gateway without blocking unrelated management. */

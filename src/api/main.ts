@@ -1,3 +1,4 @@
+import type { Dirent } from "node:fs";
 import { registerSecretEncryption } from "./bootstrap/secret-encryption.js";
 import type { EngagementStore } from "@cognis/core";
 import { buildServer, discoverModuleSourcesOnStartup } from "./server.js";
@@ -85,7 +86,7 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
             path.resolve(process.cwd(), "external-modules");
 
         async function scanManifestDir(dir: string): Promise<void> {
-            let dirEntries: Awaited<ReturnType<typeof readdir>>;
+            let dirEntries: Dirent<string>[];
             try {
                 dirEntries = await readdir(dir, { withFileTypes: true });
             } catch (error) {
@@ -157,7 +158,7 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
         return this.manifests;
     }
 
-    async installFromZip(_binary: Uint8Array) {
+    async installFromZip(_binary: Uint8Array): Promise<ModuleManifest> {
         throw new Error(
             "ZIP module installation is not wired in bootstrap runtime yet",
         );
@@ -661,7 +662,7 @@ const server = buildServer({
             columns: ["module_id", "enabled"],
         });
         return (result.rows ?? []).map((row) => ({
-            moduleId: row.module_id,
+            moduleId: row.module_id as string,
             enabled: Boolean(row.enabled),
         }));
     },
@@ -675,7 +676,7 @@ const server = buildServer({
             columns: ["gateway_id", "enabled"],
         });
         return (result.rows ?? []).map((row) => ({
-            gatewayId: row.gateway_id,
+            gatewayId: row.gateway_id as string,
             enabled: Boolean(row.enabled),
         }));
     },

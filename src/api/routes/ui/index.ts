@@ -1,3 +1,4 @@
+import type { AccessRole } from "@cognis/core";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
@@ -80,7 +81,7 @@ function sendRedirect(res: ServerResponse, location: string): true {
 
 function isSettingsSectionVisible(
     section: SettingsSectionVisibilityCheck,
-    role: string,
+    role: AccessRole,
 ): boolean {
     return (
         (!section.isEnabled || section.isEnabled()) &&
@@ -464,7 +465,8 @@ export function createUiRoutes(
                     const session = ctx.getCookieSession(req);
                     if (
                         matchingRoute.access &&
-                        !isRoleAllowed(session.role, matchingRoute.access)
+                        (!session ||
+                            !isRoleAllowed(session.role, matchingRoute.access))
                     ) {
                         return sendRedirect(res, "/dashboard");
                     }

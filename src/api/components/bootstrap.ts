@@ -106,16 +106,26 @@ export async function installComponentManagement(options: {
                         ...identity,
                         version: manifest?.version,
                         ...(manifest?.name ? { name: manifest.name } : {}),
-                        ...(manifest?.ui?.stringsBaseUrl
+                        ...(manifest &&
+                        "ui" in manifest &&
+                        manifest.ui?.stringsBaseUrl
                             ? { stringsBaseUrl: manifest.ui.stringsBaseUrl }
                             : {}),
                         required:
                             identity.type === "module"
-                                ? (manifest as { class?: string } | undefined)
-                                      ?.class === "core"
-                                : manifest?.required === true ||
-                                  (manifest as { locked?: boolean } | undefined)
-                                      ?.locked === true,
+                                ? Boolean(
+                                      manifest &&
+                                      "class" in manifest &&
+                                      manifest.class === "core",
+                                  )
+                                : (manifest &&
+                                      "required" in manifest &&
+                                      manifest.required === true) ||
+                                  Boolean(
+                                      manifest &&
+                                      "locked" in manifest &&
+                                      manifest.locked === true,
+                                  ),
                     };
                     return { ...provider, component: owner };
                 });

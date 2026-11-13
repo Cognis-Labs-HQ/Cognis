@@ -15,6 +15,7 @@ export interface ModuleManifest {
     template?: boolean;
     coreApiVersion: string;
     capabilities: string[];
+    requiresCapabilities?: string[];
     /**
      * Stable UUIDs (or legacy IDs) of core components required by this module.
      * Every dependency must exist and be active before installation.

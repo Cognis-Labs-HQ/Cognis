@@ -1,3 +1,4 @@
+import type { AccessRole } from "@cognis/core";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import path from "node:path";
 import { isRoleAllowed, type BootstrapLog } from "@cognis/core";
@@ -15,7 +16,7 @@ interface RegisteredSpaPageInput {
     log?: BootstrapLog;
     resolveLoginRedirect: () => Promise<string | null>;
     redirect: (location: string) => boolean;
-    getSessionRole: () => string | undefined;
+    getSessionRole: () => AccessRole | undefined;
 }
 
 export async function handleRegisteredSpaPage(

@@ -3,19 +3,37 @@ import { randomUUID } from "node:crypto";
 interface DocumentDatabase {
     ensureTable(definition: {
         name: string;
-        columns: Array<Record<string, unknown>>;
+        columns: Array<{
+            name: string;
+            type: "text";
+            primaryKey?: boolean;
+            notNull?: boolean;
+            unique?: boolean;
+        }>;
         indexes?: Array<{ columns: string[] }>;
     }): Promise<void>;
-    executeCommand(command: Record<string, unknown>): Promise<{
-        rows?: Array<Record<string, unknown>>;
-    }>;
+    executeCommand(
+        command:
+            | {
+                  option: "SELECT";
+                  table: string;
+                  where: Array<{ column: string; value: string }>;
+                  orderBy?: Array<{ column: string; direction: "DESC" }>;
+              }
+            | { option: "INSERT"; table: string; values: DocumentVersionRow }
+            | {
+                  option: "DELETE";
+                  table: string;
+                  where: Array<{ column: string; value: string }>;
+              },
+    ): Promise<{ rows?: Array<Record<string, unknown>> }>;
 }
 
 const TABLE_NAME = "core_document_versions";
 const IDENTIFIER_PATTERN = /^[a-z0-9][a-z0-9._-]{0,127}$/;
 let lastPublishedAt = 0;
 
-export interface DocumentVersionRow {
+export type DocumentVersionRow = {
     id: string;
     namespace: string;
     slug: string;
@@ -23,7 +41,7 @@ export interface DocumentVersionRow {
     markdown: string;
     actor_id: string;
     published_at: string;
-}
+};
 
 export type DocumentDiffLine =
     | {
@@ -210,7 +228,7 @@ function requireIdentifier(value: unknown, label: string): string {
 }
 
 export function createDocumentVersionStoreCapability(): DocumentVersionStoreCapability {
-    return Object.freeze({
+    return Object.freeze<DocumentVersionStoreCapability>({
         createStore({ namespace, database, documents }) {
             const scopedNamespace = requireIdentifier(namespace, "namespace");
             const supportedSlugs = new Set(Object.keys(documents));
@@ -240,7 +258,7 @@ export function createDocumentVersionStoreCapability(): DocumentVersionStoreCapa
                     : null;
             };
 
-            return Object.freeze({
+            return Object.freeze<DocumentVersionStore>({
                 async ensureSchema() {
                     await database.ensureTable({
                         name: TABLE_NAME,

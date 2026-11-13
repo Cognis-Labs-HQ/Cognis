@@ -255,7 +255,14 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
                                                         },
                                                     ),
                                                 )
-                                            ).filter((entry) => entry[1]),
+                                            ).filter(
+                                                (
+                                                    entry,
+                                                ): entry is readonly [
+                                                    string,
+                                                    string,
+                                                ] => Boolean(entry[1]),
+                                            ),
                                         )
                                       : undefined,
                               }

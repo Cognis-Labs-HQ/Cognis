@@ -1,3 +1,4 @@
+import { moduleSource } from "../reuse/module-fixtures.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { Readable } from "node:stream";
@@ -7,25 +8,30 @@ import { createModuleSourceRoutes } from "../../routes/modules/sources.js";
 function fixture() {
     let configured = false;
     const calls: string[] = [];
-    const marketplace = {
+    const marketplace: Parameters<typeof createModuleSourceRoutes>[0] = {
         listSources: async () => {
             calls.push("list");
-            return [{ uuid: "source", credentialConfigured: configured }];
+            return [
+                moduleSource({
+                    uuid: "source",
+                    credentialConfigured: configured,
+                }),
+            ];
         },
-        saveSource: async (
-            _source: unknown,
-            credential: { token?: string },
-        ) => {
+        saveSource: async (_source: unknown, credential = {}) => {
             calls.push("save");
             configured ||= Boolean(credential.token);
-            return { uuid: "source", credentialConfigured: configured };
+            return moduleSource({
+                uuid: "source",
+                credentialConfigured: configured,
+            });
         },
         removeSource: async () => {
             calls.push("remove");
         },
         validateSourceCredential: async () => {
             calls.push("validate");
-            return { valid: true };
+            return { valid: true, warnings: [], scopes: [] };
         },
         getSettings: async () => ({
             recommendedModulesUrl: "https://example.test/modules",
@@ -34,19 +40,16 @@ function fixture() {
             recommendedModulesUrl: "https://example.test/modules",
         }),
     };
-    const route = createModuleSourceRoutes(
-        marketplace as Parameters<typeof createModuleSourceRoutes>[0],
-        {
-            requireAuth(req, res, role) {
-                assert.equal(role, "admin");
-                const sub = String(req.headers.authorization ?? "");
-                if (sub.startsWith("admin-")) return { sub, role: "admin" };
-                res.writeHead(403);
-                res.end();
-                return null;
-            },
+    const route = createModuleSourceRoutes(marketplace, {
+        requireAuth(req, res, role) {
+            assert.equal(role, "admin");
+            const sub = String(req.headers.authorization ?? "");
+            if (sub.startsWith("admin-")) return { sub, role: "admin" };
+            res.writeHead(403);
+            res.end();
+            return null;
         },
-    );
+    });
     async function request(
         method: string,
         path: string,
@@ -106,10 +109,13 @@ test("source configuration receipts are shared across administrators and exclude
         { uuid: "source", token: "test-private-PAT" },
     );
     assert.equal(saved.status, 200);
-    assert.deepEqual(saved.payload.data, {
-        uuid: "source",
-        credentialConfigured: true,
-    });
+    assert.deepEqual(
+        saved.payload.data,
+        moduleSource({
+            uuid: "source",
+            credentialConfigured: true,
+        }),
+    );
     const listed = await host.request(
         "GET",
         "/api/v1/modules/sources",

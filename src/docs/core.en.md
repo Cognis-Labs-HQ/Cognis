@@ -120,3 +120,9 @@ Flows are ordered stage pipelines that components can extend without direct impo
 Domain contracts are declared by their owners through the public `system:contracts` registry during bootstrap. `define(id, { version, kind, members, description })` records a structural contract; `resolve(id, version)` checks the public implementation and returns a handle bound to that registration. Definitions are removed on rollback or disable and restored on reactivation. Module IDs must use their own namespace. Module-scoped resolution preserves the host’s permission wrappers. A new module contract requires no Core source file; optional type declarations remain in the provider’s public contract directory. Verification-code generation now belongs to shared server reuse and is exposed by Auth as `auth:verificationCodes`, not exported by Core.
 
 Nested bootstrap scopes inherit their parent’s authority and cannot register contracts after that parent closes.
+
+## Public Type Contracts
+
+The Core export provides one canonical `AccessRole` type. Module manifests declare optional `requiresCapabilities` alongside the capabilities they provide, and account listings expose the stable `accountId` used by account-scoped consumers. Component owners retain their names and localization metadata in UI provider descriptors.
+
+File namespace definitions accept readonly `allowComponents` lists. Flow helpers accept an undefined stage-results collection without changing result selection or authorization.

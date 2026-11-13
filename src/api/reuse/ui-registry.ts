@@ -4,6 +4,7 @@
  * never reads gateway-specific content — it only knows the section IDs,
  * labels, and script URLs returned here.
  */
+import type { ComponentOwner } from "../components/types.js";
 import { getBootstrapScope, type RoleAccessPolicy } from "@cognis/core";
 import { readFileSync } from "node:fs";
 import path from "node:path";
@@ -50,13 +51,7 @@ export interface PageElement {
  * `uiCtx.capabilities`.
  */
 export interface NavbarPlugin {
-    component?: {
-        type: "module" | "gateway" | "adapter";
-        id: string;
-        gatewayId?: string;
-        required: boolean;
-        version?: string;
-    };
+    component?: ComponentOwner;
     /** Browser-absolute URL of the ES module to dynamically import. */
     scriptUrl: string;
     /** UI capabilities contributed when this plugin is imported. */
@@ -519,7 +514,8 @@ export class UIRegistry {
     listCapabilityProviders(): UiCapabilityProvider[] {
         return this.resolveDescriptor(
             this.listActiveCapabilityProviders().filter(
-                (provider) => provider.providesCapabilities?.length,
+                (provider): provider is UiCapabilityProvider =>
+                    Boolean(provider.providesCapabilities?.length),
             ),
         );
     }
@@ -556,7 +552,9 @@ export class UIRegistry {
         return result;
     }
 
-    private listActiveCapabilityProviders(): UiCapabilityProvider[] {
+    private listActiveCapabilityProviders(): Array<
+        NavbarPlugin | UiCapabilityProvider
+    > {
         return [...this.navbarPlugins, ...this.capabilityProviders].filter(
             (provider) => !provider.isEnabled || provider.isEnabled(),
         );

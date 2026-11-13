@@ -32,6 +32,7 @@ export interface LocalAccountStore {
     has(username: string): Promise<boolean>;
     list(): Promise<
         Array<{
+            accountId: string;
             username: string;
             enabled: boolean;
             isFounder: boolean;
