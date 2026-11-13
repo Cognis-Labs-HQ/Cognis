@@ -353,3 +353,7 @@ Messagesの再利用可能なリアクション選択機能は、リアクショ
 
 - [src/api/main.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/api/main.ts)
 - [src/api/routes/docs/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/api/routes/docs/index.ts)
+
+### 管理設定の保存
+
+管理画面では未保存の変更がある項目だけを保存します。セキュリティ設定とパスワードポリシーの読み込みが両方とも成功すると、セキュリティ項目を編集できます。フォームを再表示しても変更は保持されますが、変更した項目から移動する場合は従来どおり破棄の確認が必要です。一部の保存に失敗した場合や保存中に新しく編集した場合は、その変更が未保存のまま残り、再試行で保存済みの設定を再送しません。セキュリティのチュートリアルでは引き続きセッションポリシーと信頼するドメインを説明します。
