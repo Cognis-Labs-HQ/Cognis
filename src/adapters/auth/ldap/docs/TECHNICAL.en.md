@@ -36,6 +36,10 @@ Source removal runs the `reconcile-auth-sources` flow. It revokes sessions for e
 
 Successful Test and Discover requests display a localized success toast before setup advances to filters and role mapping.
 
+### Type Contracts
+
+The adapter factory retains the adapter-owned client injection method and the directory-or-credential test result union. Consumers narrow the result before reading directory groups or credential details. Directory searches use ldapts paging with a page size of 100; authentication and group mapping are unchanged.
+
 ## Security
 
 Directory credentials are validated by the configured LDAP client. Administrator access depends on configured group mappings; protect bind credentials and validate the directory's TLS certificate.

@@ -41,6 +41,10 @@ Stellt zeitbasierte Einmalpasswort-Prüfung für das TFA-Gateway bereit.
 - Standard-Algorithmus: `SHA256`.
 - Unterstützte Algorithmen: `SHA1`, `SHA256`, `SHA512`.
 
+### Typverträge
+
+Der Adapter besitzt eine eng gefasste Deklaration für die Promise-basierte SVG-Operation des QR-Renderers einschließlich Fehlerkorrekturstufe, Rand und Breite. Einrichtungstests prüfen den tatsächlichen Renderer. Codelänge, Algorithmusauswahl und Prüfzeitfenster bleiben unverändert.
+
 ## Sicherheit
 
 Aktivierung erfolgt erst nach gültiger sechsstelliger Bestätigung. Schütze das Geheimnis; Prüfung akzeptiert die aktuelle Dreißigsekundenperiode und je eine benachbarte Periode.

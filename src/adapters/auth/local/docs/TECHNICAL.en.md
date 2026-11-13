@@ -66,6 +66,10 @@ Local accounts are managed via the `cognisctl` CLI using the `user:*` command na
 
 The local adapter is also the target of `POST /api/v1/auth/register` for self-registration (always issues the `user` role) and `POST /api/v1/auth/login` when no provider is specified.
 
+### Type Contracts
+
+Account details expose the persisted role and provider in their return type. Password verification reads nullable role columns using the declared text-column shape and retains the existing role precedence.
+
 ## Security
 
 Local passwords use scrypt with a random salt and timing-safe verification. Account management requires the owning Auth operation's authorization; the local adapter verifies credentials but does not issue sessions or grant administrator roles from registration input.

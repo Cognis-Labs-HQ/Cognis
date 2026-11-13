@@ -41,6 +41,10 @@ Menyediakan verifikasi kata sandi sekali pakai berbasis waktu untuk gateway TFA.
 - Algoritma default: `SHA256`.
 - Algoritma yang didukung: `SHA1`, `SHA256`, `SHA512`.
 
+### Kontrak Tipe
+
+Adapter memiliki deklarasi terbatas untuk operasi SVG berbasis Promise pada perender QR, termasuk tingkat koreksi, margin, dan lebar. Pengujian penyiapan menggunakan perender sebenarnya. Panjang kode, pilihan algoritma, dan jendela verifikasi tidak berubah.
+
 ## Keamanan
 
 Penyiapan aktif setelah konfirmasi enam digit valid. Lindungi rahasia tersimpan; verifikasi menerima periode tiga puluh detik saat ini dan satu tetangga di tiap sisi.

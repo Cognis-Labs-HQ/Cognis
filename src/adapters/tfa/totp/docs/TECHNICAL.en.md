@@ -41,6 +41,10 @@ Provides time-based one-time password verification for the TFA gateway.
 - Default algorithm: `SHA256`.
 - Supported algorithms: `SHA1`, `SHA256`, `SHA512`.
 
+### Type Contracts
+
+The adapter owns a narrow declaration for the QR renderer’s promise-based SVG operation, including correction level, margin and width options. Setup tests exercise the real renderer. Code length, algorithm selection and verification windows are unchanged.
+
 ## Security
 
 Setup is enabled only after a valid six-digit confirmation. The stored secret permits code generation and must remain protected; verification accepts the current thirty-second window and one neighboring window on either side.

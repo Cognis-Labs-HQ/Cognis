@@ -50,6 +50,10 @@ Lokale Konten werden über die `cognisctl`-CLI mit dem `user:*`-Befehlsnamespace
 | `user:enable`       | Deaktiviertes Konto reaktivieren |
 | `user:delete`       | Konto löschen                    |
 
+### Typverträge
+
+Kontodetails weisen die gespeicherte Rolle und den Provider im Rückgabetyp aus. Die Passwortprüfung liest nullable Rollenspalten entsprechend dem deklarierten Textspaltentyp und behält die bestehende Rollenrangfolge bei.
+
 ## Sicherheit
 
 Lokale Passwörter nutzen scrypt mit Zufallssalz und zeitkonstanter Prüfung. Kontoverwaltung benötigt Auth-Berechtigung; der Adapter prüft Zugangsdaten statt Sitzungen oder Administratorrechte aus Registrierung zu vergeben.

@@ -50,6 +50,10 @@ Akun lokal dikelola melalui CLI `cognisctl` menggunakan namespace perintah `user
 | `user:enable`       | Mengaktifkan kembali akun yang dinonaktifkan |
 | `user:delete`       | Menghapus akun                               |
 
+### Kontrak Tipe
+
+Detail akun menampilkan peran tersimpan dan penyedia dalam tipe hasilnya. Verifikasi kata sandi membaca kolom peran yang dapat bernilai null sesuai bentuk kolom teks yang dideklarasikan dan mempertahankan urutan prioritas peran.
+
 ## Keamanan
 
 Kata sandi lokal memakai scrypt dengan salt acak dan pemeriksaan aman waktu. Pengelolaan akun memerlukan otorisasi Auth; adapter memeriksa kredensial, bukan menerbitkan sesi atau memberikan admin dari masukan pendaftaran.
