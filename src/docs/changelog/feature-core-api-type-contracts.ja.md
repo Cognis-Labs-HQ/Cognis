@@ -18,5 +18,4 @@ Core を 0.6.3、API を 0.13.32 に更新し、ワークスペースのロッ�
 
 ## コミット
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/9a3a52bd4b0ad3c1de469f4bf18950095325dc63
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/8269301ee7fe4e332adc2d66b9f6a7c4d98a4253
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/e34777ea07ccb815f00b541cf131f89f9210e4e0
