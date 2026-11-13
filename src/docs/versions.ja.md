@@ -38,19 +38,19 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Internal Notification      | `src/adapters/notify/internal/`     | `0.5.34`   |
 | Local File Storage         | `src/adapters/file/local/`          | `0.1.26`   |
 | File Quota                 | `src/adapters/file/quota/`          | `1.0.24`   |
-| Local Auth                 | `src/adapters/auth/local/`          | `0.4.1`    |
+| Local Auth                 | `src/adapters/auth/local/`          | `0.4.2`    |
 | User Keyring               | `src/adapters/auth/keyring/`        | `2.1.3`    |
-| LDAP Auth                  | `src/adapters/auth/ldap/`           | `0.5.37`   |
+| LDAP Auth                  | `src/adapters/auth/ldap/`           | `0.5.38`   |
 | OIDC Auth                  | `src/adapters/auth/oidc/`           | `0.1.24`   |
 | SAML Auth                  | `src/adapters/auth/saml/`           | `0.1.24`   |
 | SMTP TFA                   | `src/adapters/tfa/smtp/`            | `1.1.1`    |
-| TOTP TFA                   | `src/adapters/tfa/totp/`            | `1.0.28`   |
+| TOTP TFA                   | `src/adapters/tfa/totp/`            | `1.0.29`   |
 | PostgreSQL Database        | `src/adapters/db/postgres/`         | `0.5.27`   |
 | MariaDB Database           | `src/adapters/db/mariadb/`          | `0.5.32`   |
 | SQLite Database            | `src/adapters/db/sqlite/`           | `0.3.28`   |
 | Memory Database            | `src/adapters/db/memory/`           | `0.1.24`   |
-| Registration Token         | `src/adapters/registration/token/`  | `0.1.40`   |
-| Public Registration        | `src/adapters/registration/public/` | `0.1.23`   |
+| Registration Token         | `src/adapters/registration/token/`  | `0.1.41`   |
+| Public Registration        | `src/adapters/registration/public/` | `0.1.24`   |
 | Profile (Social)           | `src/adapters/social/profile/`      | `3.0.15`   |
 | Messages (Social)          | `src/adapters/social/messages/`     | `2.7.39`   |
 | Calls (Social)             | `src/adapters/social/call/`         | `0.5.36`   |
@@ -76,7 +76,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Notification (notify) | `src/gateways/notify/`        | `2.2.10`   |
 | Social                | `src/gateways/social/`        | `1.4.6`    |
 | File Storage (files)  | `src/gateways/files/`         | `2.3.7`    |
-| Registration          | `src/gateways/registration/`  | `1.2.6`    |
+| Registration          | `src/gateways/registration/`  | `1.2.7`    |
 | Logging               | `src/gateways/logging/`       | `1.5.19`   |
 | Observability         | `src/gateways/observability/` | `1.0.7`    |
 | Study                 | `src/gateways/study/`         | `2.6.9`    |

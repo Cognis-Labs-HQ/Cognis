@@ -63,3 +63,7 @@ LDAP-Verbindungs- und Zugangsdatenformulare übergeben die Lokalisierungsschlüs
 Das Entfernen einer Quelle führt den Ablauf `reconcile-auth-sources` aus. Er widerruft die Sitzungen aller mit der entfernten Quelle verbundenen Konten. Ohne Quellenvereinheitlichung wird das Nutzerkonto entfernt; mit Vereinheitlichung wird nur die entfernte Quellenidentität gelöst, sodass eine andere konfigurierte Quelle das erhaltene Konto authentifizieren und aktualisieren kann.
 
 Nach erfolgreichem „Testen und ermitteln“ wird eine lokalisierte Erfolgsmeldung angezeigt, bevor die Einrichtung zu Filtern und Rollenzuordnungen wechselt.
+
+## Typverträge
+
+Die Adapter-Fabrik erhält die adaptereigene Methode zur Client-Injektion und den Ergebnistyp für Verzeichnis- oder Zugangsdatenprüfungen. Verbraucher grenzen den Ergebnistyp ein, bevor sie Verzeichnisgruppen oder Zugangsdaten lesen. Verzeichnissuchen verwenden ldapts mit einer Seitengröße von 100; Authentifizierung und Gruppenzuordnung bleiben unverändert.

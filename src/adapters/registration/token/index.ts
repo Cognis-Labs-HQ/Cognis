@@ -96,7 +96,7 @@ function parseToken(rawToken: string): { tokenId: string; tokenHash: string } {
 
 export function createAdapter(deps: {
     dbExecutor: DbExecutor;
-    accountStore: LocalAccountStore;
+    accountStore: Pick<LocalAccountStore, "register" | "delete" | "exists">;
     canSendInviteEmail: () => boolean;
     sendInviteEmail: (
         to: string,

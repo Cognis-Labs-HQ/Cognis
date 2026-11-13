@@ -1,10 +1,35 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import { createAdapter } from "../index.js";
+
+function unexpectedOperation(): never {
+    throw new Error("Unexpected token adapter dependency operation");
+}
+
+function createUnusedAccountStore(): Parameters<
+    typeof createAdapter
+>[0]["accountStore"] {
+    return {
+        register: unexpectedOperation,
+        delete: unexpectedOperation,
+        exists: unexpectedOperation,
+    };
+}
+
+function createExecutor(overrides: Partial<DbExecutor>): DbExecutor {
+    const executor: DbExecutor = {
+        ensureTable: unexpectedOperation,
+        executeCommand: unexpectedOperation,
+        transaction: async (callback) => callback(executor),
+        ...overrides,
+    };
+    return executor;
+}
 
 test("redeemInvite deletes created account when token cannot be marked redeemed", async () => {
     let deletedAccountId = "";
-    const dbExecutor = {
+    const dbExecutor: DbExecutor = {
         async ensureTable() {},
         async executeCommand(command: { option: string; table?: string }) {
             if (
@@ -34,9 +59,7 @@ test("redeemInvite deletes created account when token cannot be marked redeemed"
             }
             return { rows: [], rowCount: 1 };
         },
-        async transaction<T>(
-            callback: (executor: typeof dbExecutor) => Promise<T>,
-        ) {
+        async transaction<T>(callback: (executor: DbExecutor) => Promise<T>) {
             return callback(dbExecutor);
         },
     };
@@ -52,8 +75,8 @@ test("redeemInvite deletes created account when token cannot be marked redeemed"
         },
     };
     const adapter = createAdapter({
-        dbExecutor: dbExecutor as any,
-        accountStore: accountStore as any,
+        dbExecutor,
+        accountStore,
         canSendInviteEmail: () => true,
         sendInviteEmail: async () => {},
         isEmailRegistered: async () => false,
@@ -85,7 +108,7 @@ test("issueInvite revokes prior pending tokens for the same invitee email", asyn
     let insertedTokenCount = 0;
     let sentEmailCount = 0;
 
-    const dbExecutor = {
+    const dbExecutor: DbExecutor = {
         async executeCommand(command: {
             option: string;
             table?: string;
@@ -113,16 +136,14 @@ test("issueInvite revokes prior pending tokens for the same invitee email", asyn
             return { rows: [] };
         },
         async ensureTable() {},
-        async transaction<T>(
-            callback: (executor: typeof dbExecutor) => Promise<T>,
-        ) {
+        async transaction<T>(callback: (executor: DbExecutor) => Promise<T>) {
             return callback(dbExecutor);
         },
     };
 
     const adapter = createAdapter({
-        dbExecutor: dbExecutor as any,
-        accountStore: {} as any,
+        dbExecutor,
+        accountStore: createUnusedAccountStore(),
         canSendInviteEmail: () => true,
         sendInviteEmail: async () => {
             sentEmailCount++;
@@ -167,7 +188,7 @@ test("failed replacement delivery preserves prior pending tokens", async () => {
     let revoked = false;
     let deletedReplacement = false;
     const adapter = createAdapter({
-        dbExecutor: {
+        dbExecutor: createExecutor({
             ensureTable: async () => {},
             executeCommand: async (command: {
                 option: string;
@@ -185,8 +206,8 @@ test("failed replacement delivery preserves prior pending tokens", async () => {
                 }
                 return { rows: [], rowCount: 1 };
             },
-        } as any,
-        accountStore: {} as any,
+        }),
+        accountStore: createUnusedAccountStore(),
         canSendInviteEmail: () => true,
         sendInviteEmail: async () => {
             throw new Error("smtp_delivery_failed");
@@ -214,7 +235,7 @@ test("external account token consumption records one-time redemption", async () 
     let redemptionSet: Record<string, unknown> | undefined;
     let verifiedEmail: { accountId: string; email: string } | undefined;
     const adapter = createAdapter({
-        dbExecutor: {
+        dbExecutor: createExecutor({
             ensureTable: async () => {},
             executeCommand: async (command: {
                 option: string;
@@ -223,8 +244,8 @@ test("external account token consumption records one-time redemption", async () 
                 if (command.option === "UPDATE") redemptionSet = command.set;
                 return { rows: [], rowCount: 1 };
             },
-        } as any,
-        accountStore: {} as any,
+        }),
+        accountStore: createUnusedAccountStore(),
         canSendInviteEmail: () => true,
         sendInviteEmail: async () => {},
         isEmailRegistered: async () => false,
@@ -253,11 +274,11 @@ test("external account token consumption records one-time redemption", async () 
 test("generic external tokens do not verify a user-supplied email", async () => {
     let verified = false;
     const adapter = createAdapter({
-        dbExecutor: {
+        dbExecutor: createExecutor({
             ensureTable: async () => {},
             executeCommand: async () => ({ rows: [], rowCount: 1 }),
-        } as any,
-        accountStore: {} as any,
+        }),
+        accountStore: createUnusedAccountStore(),
         canSendInviteEmail: () => true,
         sendInviteEmail: async () => {},
         isEmailRegistered: async () => false,
@@ -284,14 +305,14 @@ test("concurrent external token consumption shares one account authorization", a
         releaseEmail = resolve;
     });
     const adapter = createAdapter({
-        dbExecutor: {
+        dbExecutor: createExecutor({
             ensureTable: async () => {},
             executeCommand: async (command: { option: string }) => {
                 if (command.option === "UPDATE") updateCalls += 1;
                 return { rows: [], rowCount: 1 };
             },
-        } as any,
-        accountStore: {} as any,
+        }),
+        accountStore: createUnusedAccountStore(),
         canSendInviteEmail: () => true,
         sendInviteEmail: async () => {},
         isEmailRegistered: async () => false,
@@ -323,7 +344,7 @@ test("concurrent token consumption does not authorize a different account", asyn
         releaseEmail = resolve;
     });
     const adapter = createAdapter({
-        dbExecutor: {
+        dbExecutor: createExecutor({
             ensureTable: async () => {},
             executeCommand: async (command: {
                 option: string;
@@ -343,8 +364,8 @@ test("concurrent token consumption does not authorize a different account", asyn
                 }
                 return { rows: [], rowCount: 0 };
             },
-        } as any,
-        accountStore: {} as any,
+        }),
+        accountStore: createUnusedAccountStore(),
         canSendInviteEmail: () => true,
         sendInviteEmail: async () => {},
         isEmailRegistered: async () => false,
@@ -372,7 +393,7 @@ test("concurrent token consumption does not authorize a different account", asyn
 test("external token consumption is restored when canonical email persistence fails", async () => {
     const updates: Array<Record<string, unknown> | undefined> = [];
     const adapter = createAdapter({
-        dbExecutor: {
+        dbExecutor: createExecutor({
             ensureTable: async () => {},
             executeCommand: async (command: {
                 option: string;
@@ -381,8 +402,8 @@ test("external token consumption is restored when canonical email persistence fa
                 if (command.option === "UPDATE") updates.push(command.set);
                 return { rows: [], rowCount: 1 };
             },
-        } as any,
-        accountStore: {} as any,
+        }),
+        accountStore: createUnusedAccountStore(),
         canSendInviteEmail: () => true,
         sendInviteEmail: async () => {},
         isEmailRegistered: async () => false,
@@ -411,7 +432,7 @@ test("external token consumption is restored when canonical email persistence fa
 test("founding users are limited to ten active pending invitations", async () => {
     let inserted = false;
     const adapter = createAdapter({
-        dbExecutor: {
+        dbExecutor: createExecutor({
             ensureTable: async () => {},
             executeCommand: async (command: {
                 option: string;
@@ -423,8 +444,8 @@ test("founding users are limited to ten active pending invitations", async () =>
                 if (command.option === "INSERT") inserted = true;
                 return { rows: [], rowCount: 0 };
             },
-        } as any,
-        accountStore: {} as any,
+        }),
+        accountStore: createUnusedAccountStore(),
         canSendInviteEmail: () => true,
         sendInviteEmail: async () => {},
         isEmailRegistered: async () => false,

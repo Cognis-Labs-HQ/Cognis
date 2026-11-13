@@ -28,3 +28,7 @@ Adaptor menyediakan satu pengaturan admin:
 - `algorithm` — algoritma HMAC untuk verifikasi penyiapan dan verifikasi login.
 
 Metode mendeklarasikan placeholder masuk, basis bahasa, dan label konfigurasi; gateway menampilkannya tanpa percabangan ID penyedia.
+
+## Kontrak Tipe
+
+Adapter memiliki deklarasi terbatas untuk operasi SVG berbasis Promise pada perender QR, termasuk tingkat koreksi, margin, dan lebar. Pengujian penyiapan menggunakan perender sebenarnya. Panjang kode, pilihan algoritma, dan jendela verifikasi tidak berubah.

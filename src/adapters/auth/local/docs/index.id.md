@@ -47,3 +47,7 @@ Pembersihan identitas eksternal dapat menghapus identitas berdasarkan awalan sum
 Akun SSO menggunakan ID acak yang tidak mengungkap identitas penyedia. ID penyedia disimpan terpisah dan hanya ditampilkan kepada administrator; nama pengguna publik tidak memuatnya. Auth mencadangkan nama sebelum perubahan profil atau email: nama duplikat dari penyedia yang sama ditolak, sedangkan penyedia berbeda mendapat akhiran acak pendek bila perlu. Daftar pengguna dan endpoint tindakan membedakan `username` publik dari `accountId` internal.
 
 Akun lokal yang sudah ada tetap berfungsi meskipun ada catatan SSO lama. Startup tidak memerlukan reset basis data. Login dan provisi akun SSO lama ditolak secara individual sampai akun tersebut dibuat ulang dengan ID opak. ID akun, hubungan, dan rapat tidak dimigrasikan atau dihapus secara otomatis.
+
+## Kontrak Tipe
+
+Detail akun menampilkan peran tersimpan dan penyedia dalam tipe hasilnya. Verifikasi kata sandi membaca kolom peran yang dapat bernilai null sesuai bentuk kolom teks yang dideklarasikan dan mempertahankan urutan prioritas peran.

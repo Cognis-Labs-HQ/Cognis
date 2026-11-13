@@ -28,3 +28,7 @@ Der Adapter bietet eine Admin-Einstellung:
 - `algorithm` — HMAC-Algorithmus für Setup- und Login-Prüfung.
 
 Die Methode deklariert Platzhalter, Sprachbasis und Konfigurationsbeschriftungen; das Gateway stellt diese ohne Verzweigung nach Anbieterkennung dar.
+
+## Typverträge
+
+Der Adapter besitzt eine eng gefasste Deklaration für die Promise-basierte SVG-Operation des QR-Renderers einschließlich Fehlerkorrekturstufe, Rand und Breite. Einrichtungstests prüfen den tatsächlichen Renderer. Codelänge, Algorithmusauswahl und Prüfzeitfenster bleiben unverändert.
