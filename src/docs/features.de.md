@@ -235,3 +235,7 @@ Aktionsmenüs der Benutzerverwaltung lösen Zeilen anhand der unveränderlichen 
 ## Vollständige Cache-Ressourcen
 
 Bereichsanfragen umgehen den Cache für vollständige Dateien. Nur vollständige HTTP-200-Antworten können öffentliche Ressourcen darin anlegen oder ersetzen. Teilantworten lassen vorhandene vollständige Dateien unverändert. Schriftdateien mit Inhaltshash nutzen dieselbe unveränderliche Zwischenspeicherung und generationenübergreifende Wiederverwendung wie gehashte Skripte und Bilder, wodurch unnötige Downloads nach Worker-Updates entfallen.
+
+## Verwaltung speichern
+
+Die Verwaltung speichert nur Bereiche mit ausstehenden Änderungen. Sicherheitsfelder werden erst nach dem erfolgreichen Laden der Sicherheitseinstellungen und der Passwortrichtlinie bearbeitbar. Beim erneuten Darstellen bleiben Änderungen erhalten; beim Verlassen eines geänderten Bereichs ist weiterhin die Bestätigung zum Verwerfen erforderlich. Nach einem teilweise erfolgreichen Speichern bleiben fehlgeschlagene oder neuere Änderungen offen. Ein erneuter Versuch sendet bereits gespeicherte Einstellungen nicht erneut. Die Sicherheitsanleitung erklärt weiterhin Sitzungsrichtlinien und vertrauenswürdige Domains.

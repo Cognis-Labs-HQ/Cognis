@@ -1,3 +1,5 @@
+import { createAdministrationSave } from "./save.js";
+import { uiCtx } from "../../reuse/ui-ctx.js";
 import { guides } from "./guides.js";
 import { apiFetch } from "../../reuse/api-client.js";
 import {
@@ -699,6 +701,7 @@ export async function mount(rootEl, { signal } = {}) {
 
     securitySection = initSecuritySection(root, {
         i18n,
+        signal,
         onDirtyChange: (dirty) => changesBar?.markDirty("security", dirty),
     });
 
@@ -825,10 +828,21 @@ export async function mount(rootEl, { signal } = {}) {
                     ...securityOwnedElements,
                 ],
                 onRender: () => {
-                    securitySection.refresh();
+                    const refreshed = securitySection.refresh().catch(() => {
+                        if (signal?.aborted) return;
+                        const log = uiCtx.capabilities.get("ui:log");
+                        log?.("error", "security_load_failed", {
+                            component: "administration",
+                            operation: "loadSecurity",
+                        });
+                        showToast(i18n.t("ui.reuse.load_failed"), {
+                            variant: "error",
+                        });
+                    });
                     securityOwnedGatewaySections.forEach((section) => {
                         section.subComposerOptions?.onRender?.(root);
                     });
+                    return refreshed;
                 },
             },
         },
@@ -898,26 +912,18 @@ export async function mount(rootEl, { signal } = {}) {
     const floatingSlot = composer.getFloatingSlot("admin-changes-bar");
 
     changesBar = createUnsavedChangesBar(floatingSlot, {
-        onSave: async () => {
-            try {
-                await securitySection.save();
-                changesBar.markDirty("security", false);
-                for (const section of gatewaySections) {
-                    if (!section.isDirty?.()) continue;
-                    await section.save?.();
-                    changesBar.markDirty(section.id, false);
-                }
+        onSave: createAdministrationSave({
+            securitySection,
+            gatewaySections,
+            markDirty: (id, dirty) => changesBar.markDirty(id, dirty),
+            refresh: async () => {
                 await reloadGatewaysAndAdapters();
                 syncRuntimeToggleControls();
-                showToast(i18n.t("ui.app.admin.settings_saved"), {
-                    variant: "success",
-                });
-            } catch {
-                showToast(i18n.t("ui.reuse.save_failed"), {
-                    variant: "error",
-                });
-            }
-        },
+            },
+            i18n,
+            showToast,
+            log: (...args) => uiCtx.capabilities.get("ui:log")?.(...args),
+        }),
         onDiscard: async () => {
             securitySection?.discard();
             gatewaySections.forEach((section) => section.discard?.());

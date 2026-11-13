@@ -1,0 +1,61 @@
+{
+    "../../reuse/ui-ctx.js": ["uiCtx"],
+    "./guides.js": ["guides"],
+    "../../reuse/api-client.js": ["apiFetch"],
+    "../../reuse/i18n.js": ["applyDocumentTitle", "createI18n", "extendI18n"],
+    "../../reuse/page-composer/index.js": ["createPageComposer"],
+    "../../reuse/page-entry.js": ["mountWhenDirect"],
+    "../../reuse/popup.js": ["openPopup"],
+    "../../reuse/escape-html.js": ["escapeHtml"],
+    "./module-config.js": ["resolveModuleConfigScriptUrl"],
+    "./bind-module-controls.js": [
+        "bindGithubModuleImportButton",
+        "bindModuleConfigureButtons",
+        "bindModuleToggles"
+    ],
+    "./security.js": ["initSecuritySection"],
+    "./ui-state-bindings.js": [
+        "bindExpandedStateListeners",
+        "bindDetailsToggleClicks",
+        "bindSummarySliderClicks",
+        "restoreExpandedState"
+    ],
+    "../../reuse/unsaved-changes.js": ["createUnsavedChangesBar"],
+    "../../layouts/dashboard-layout.js": ["updateNavbarAvatar"],
+    "../../reuse/toast.js": ["showToast"],
+    "./adapter-config-popup.js": ["createAdapterConfigPopup"],
+    "./api-loaders.js": [
+        "loadAdminSections",
+        "loadAllAdapters",
+        "loadGatewayAdapters",
+        "loadGatewaySection",
+        "loadGateways",
+        "loadIntegrity",
+        "loadHealth",
+        "loadModules",
+        "adapterRequiresSetup",
+        "toggleGateway",
+        "toggleModule",
+        "importGithubModule"
+    ],
+    "./render-components.js": [
+        "renderComponentsContent",
+        "renderStatusContent",
+        "buildScrollTargetId"
+    ],
+    "./toggle-flows.js": [
+        "getAdapterDisableContext",
+        "getGatewayAdapters",
+        "getGatewayEnableableAdapters",
+        "isModuleEnabled",
+        "shouldQueryGatewayAdapters"
+    ],
+    "./adapter-controls.js": [
+        "adapterCompositeKey",
+        "resolveAdapterControlUrl"
+    ],
+    "./control-bindings.js": ["createAdministrationControlBindings"],
+    "./reloaders.js": ["createAdministrationReloaders"],
+    "./runtime-toggles.js": ["syncRuntimeToggleControls"],
+    "./save.js": ["createAdministrationSave"]
+}
