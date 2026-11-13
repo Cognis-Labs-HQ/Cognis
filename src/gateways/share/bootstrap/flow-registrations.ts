@@ -9,7 +9,8 @@ import {
     getFirstMatchingStageResult,
     getFirstStageResult,
 } from "../../../api/reuse/flow-helpers.js";
-import type { CoreShareGateway } from "../gateway/index.js";
+import type { ShareTokenRecord } from "../gateway/types.js";
+import type { CoreShareGateway, ShareTokenView } from "../gateway/index.js";
 import { createHash } from "node:crypto";
 import { logRejectedDeliveries } from "../reuse/settled-deliveries.js";
 import {
@@ -53,7 +54,10 @@ export async function registerShareBootstrapHooks(input: {
                 };
             } | null;
             const requesterAccountId = String(
-                stageCtx.input?.requesterClaims?.sub ?? "",
+                (
+                    stageCtx.input as
+                        { requesterClaims?: { sub?: unknown } } | undefined
+                )?.requesterClaims?.sub ?? "",
             ).trim();
             const recipients =
                 tokenResult?.tokenRecord?.accessControls?.recipients;
@@ -183,6 +187,7 @@ export async function registerShareBootstrapHooks(input: {
                 resourceId?: string;
                 ownerAccountId?: string;
                 meetingInstanceId?: string;
+                metadata?: Record<string, string>;
             } | null;
             const authorizeResult = getFirstMatchingStageResult(
                 stageCtx.stageResults,
@@ -293,19 +298,7 @@ export async function registerShareBootstrapHooks(input: {
                 minted?: boolean;
                 shareRecord?: unknown;
             } | null;
-            const shareRecord = issued?.shareRecord as {
-                ownerAccountId?: string;
-                resourceType?: string;
-                resourceId?: string;
-                label?: string;
-                shareUrl?: string;
-                destinationUrl?: string;
-                actionUrl?: string;
-                metadata?: Record<string, string> | null;
-                accessControls?: {
-                    recipients?: Array<{ type?: string; id?: string }>;
-                };
-            } | null;
+            const shareRecord = issued?.shareRecord as ShareTokenView | null;
             const userRecipients = Array.from(
                 new Set(
                     (shareRecord?.accessControls?.recipients ?? [])
@@ -380,7 +373,7 @@ export async function registerShareBootstrapHooks(input: {
                             actionUrl: actionUrl || undefined,
                             senderName: "Cognis Share",
                             metadata: {
-                                shareId: (shareRecord as { id?: string })?.id,
+                                shareId: shareRecord?.id,
                                 resourceType: shareRecord?.resourceType,
                                 resourceId: shareRecord?.resourceId,
                             },
@@ -390,7 +383,7 @@ export async function registerShareBootstrapHooks(input: {
                 logRejectedDeliveries({
                     results: notificationResults,
                     recipients: userRecipients,
-                    log: input.log,
+                    log: input.ctx.log,
                     message: "Failed to dispatch direct share notification.",
                     operation: "dispatch_direct_share_notification",
                     shareId: String(shareRecord?.id ?? ""),
@@ -562,7 +555,7 @@ export async function registerShareBootstrapHooks(input: {
             ) as {
                 valid?: boolean;
                 reason?: string;
-                tokenRecord?: Record<string, unknown>;
+                tokenRecord?: ShareTokenRecord;
             } | null;
             const resourceResult = getFirstMatchingStageResult(
                 stageCtx.stageResults,
@@ -639,16 +632,10 @@ export async function registerShareBootstrapHooks(input: {
                         ? stageCtx.data.guestAccessToken
                         : "",
                 grantedCapabilities:
-                    (tokenResult.tokenRecord?.grantedCapabilities as
-                        string[] | undefined) ?? [],
-                accessControls:
-                    (tokenResult.tokenRecord?.accessControls as
-                        Record<string, unknown> | undefined) ?? {},
+                    tokenResult.tokenRecord?.grantedCapabilities ?? [],
+                accessControls: tokenResult.tokenRecord?.accessControls ?? {},
                 readonlyWatermark: Boolean(
-                    (
-                        tokenResult.tokenRecord?.accessControls as
-                            { watermarkReadonly?: boolean } | undefined
-                    )?.watermarkReadonly,
+                    tokenResult.tokenRecord?.accessControls.watermarkReadonly,
                 ),
                 guestProfile:
                     typeof stageCtx.data.guestProfile === "object"
@@ -784,11 +771,12 @@ export async function registerShareBootstrapHooks(input: {
         "authorize-revocation",
         { id: "share-gateway:authorize-recipient-rejection" },
         async (stageCtx) => {
-            if (stageCtx.input?.rejection !== true) return null;
             const flowInput = (stageCtx.input ?? {}) as {
+                rejection?: boolean;
                 claims?: { sub?: string };
                 shareId?: string;
             };
+            if (flowInput.rejection !== true) return null;
             const shareRecord = await input.gateway.getTokenById(
                 String(flowInput.shareId ?? ""),
             );

@@ -1,3 +1,4 @@
+import type { BootstrapLog } from "../../shared.js";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
@@ -112,11 +113,7 @@ export function createShareRoutes(input: {
     routeContext?: RouteContext;
     uiRoot: string;
     flow: FlowApi;
-    log?: (
-        level: string,
-        message: string,
-        meta?: Record<string, unknown>,
-    ) => void;
+    log?: BootstrapLog;
 }): (req: IncomingMessage, res: ServerResponse, url: URL) => Promise<boolean> {
     const routeContext = resolveRouteContext(input.routeContext);
 
