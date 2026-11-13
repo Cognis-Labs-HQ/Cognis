@@ -105,3 +105,7 @@ Penulisan preferensi Profile yang berhasil memperbarui salinan baca terbatas mil
 Formulir profil memakai batas komponen untuk nama tampilan, biografi, lokasi, dan situs web. Sinkronisasi peran mencari nama publik profil dari ID akun yang tetap sebelum memperbarui peran dan visibilitas.
 
 `profile:setRole(accountId, role)` → `Promise<void>`.
+
+## Penyimpanan dan Rute Bertipe
+
+Tipe peran dan visibilitas profil sesuai dengan rekaman tersimpan, termasuk akun moderator serta visibilitas privat, teman, dan komunitas. Pembacaan preferensi menyediakan teks JSON tersimpan. Pengujian penyimpanan menggunakan simulasi basis data terstruktur milik profil dengan dukungan rollback.

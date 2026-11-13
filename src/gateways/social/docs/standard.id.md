@@ -115,3 +115,7 @@ Rute HTTP mengautentikasi dan mengotorisasi pelaku. Kapabilitas merupakan permuk
 ## Kapabilitas identitas profil
 
 Adapter Profile menerbitkan `social:profile:identity` untuk konsumen platform dan modul. Fungsi `normalizeHandleKey` dan `normalizeHandleKeys` menerapkan aturan normalisasi handle kanonis, sedangkan `resolveAccountHandle(accountId, fieldName?)` mengubah ID akun kanonis menjadi handle profil yang dinormalisasi dan menolak akun atau handle yang tidak ada. Orkestrator menggunakan kapabilitas ini alih-alih mengimpor adapter Profile atau menduplikasi logika normalisasi.
+
+## Penyimpanan dan Rute Bertipe
+
+Kontrak bootstrap adaptor mendeklarasikan kebutuhan kapabilitas halaman dan tingkat pencatatan host. Adaptor menerima operasi registrasi gateway melalui konteks bootstrap. Deklarasi baris profil mempertahankan nilai peran dan visibilitas saat ini tanpa mengonversi rekaman tersimpan.

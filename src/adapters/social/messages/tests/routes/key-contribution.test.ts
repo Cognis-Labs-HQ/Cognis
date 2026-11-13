@@ -156,11 +156,11 @@ test("meeting share guests receive a room key without consuming member delivery 
             memberAcknowledged = true;
         },
     };
-    const capabilities = new Map([
+    const capabilities = new Map<string, unknown>([
         ["share:resolveGuestId", () => "share-1"],
         [
             "social:messages:authorizeExternalRoomAccess",
-            async ({ roomId }) => ({
+            async ({ roomId }: { roomId: string }) => ({
                 external: true,
                 authorized: roomId === "room-1",
             }),

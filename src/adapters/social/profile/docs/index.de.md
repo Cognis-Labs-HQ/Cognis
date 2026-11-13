@@ -115,3 +115,7 @@ Erfolgreiche Profile-Einstellungsschreibvorgänge aktualisieren vor weiteren Les
 Profilformulare verwenden die komponenteneigenen Grenzen für Anzeigename, Biografie, Ort und Webseite. Die Rollensynchronisierung ermittelt den öffentlichen Profilnamen anhand der unveränderlichen Konto-ID, bevor Rolle und Sichtbarkeit aktualisiert werden.
 
 `profile:setRole(accountId, role)` → `Promise<void>`.
+
+## Typisierte Speicherung und Routen
+
+Profilrollen und Sichtbarkeitstypen entsprechen den gespeicherten Datensätzen, einschließlich Moderatoren sowie privater, Freundes- und Community-Sichtbarkeit. Einstellungsabfragen liefern den gespeicherten JSON-Text. Persistenztests verwenden eine profileigene strukturierte Datenbanknachbildung mit Rollback.

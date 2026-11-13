@@ -1,3 +1,6 @@
+import { IncomingMessage } from "node:http";
+import { Socket } from "node:net";
+import { createCtx, hasMinRole } from "@cognis/core";
 import test from "node:test";
 import assert from "node:assert/strict";
 import type { RouteContext } from "../../../../../../api/reuse/route-context.js";
@@ -14,24 +17,42 @@ const profile = {
     displayName: "Alice",
 };
 
-function request(method: string, body?: string, accountId = "alice") {
-    return {
-        method,
-        accountId,
-        [Symbol.asyncIterator]: async function* () {
-            if (body) yield Buffer.from(body);
-        },
-    } as any;
+function request(
+    method: string,
+    body?: string,
+    accountId = "alice",
+): IncomingMessage {
+    const request = new IncomingMessage(new Socket());
+    request.method = method;
+    request.headers["x-test-account"] = accountId;
+    if (body) request.push(Buffer.from(body));
+    request.push(null);
+    return request;
 }
 
-const routeContext = {
+function unexpectedContextCall(): never {
+    throw new Error("Unexpected availability route context call");
+}
+
+const routeContext: RouteContext = {
     requireAuth(request) {
         return {
-            sub: String((request as { accountId: string }).accountId),
+            sub: String(request.headers["x-test-account"]),
             role: "user",
         };
     },
-} as RouteContext;
+    getAuthClaims: unexpectedContextCall,
+    requireRoleAccess: unexpectedContextCall,
+    canAccessUserData: unexpectedContextCall,
+    hasMinRole,
+    getCookieSession: unexpectedContextCall,
+    setPageSecurityHeaders: unexpectedContextCall,
+    lookupAccessToken: unexpectedContextCall,
+    revokeAccessTokensForSubject: unexpectedContextCall,
+    getCapability: () => undefined,
+    requireCapability: unexpectedContextCall,
+    flow: createCtx().flow,
+};
 
 function responseCapture() {
     const capture = { status: 0, body: "" };

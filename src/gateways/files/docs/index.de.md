@@ -103,3 +103,7 @@ Komponenten sollten für reguläre Dateioperationen über `ctx` bevorzugt `files
 `files:uiClient` wird vom Files-UI-Anbieter bereitgestellt und löst namensraumbezogene Datei-URLs für Browsermodule auf.
 
 Die Vertragsregistrierung von Adaptern folgt dem [gemeinsamen Gateway-Bootstrap-Vertrag](/docs/gateways).
+
+## Typisierte Speicherung und Routen
+
+ACL-Prüfungen erhalten neben dem Akteur eine explizite aufrufende Komponente. Die Namensraumregistrierung behält ihre unveränderliche Zulassungsliste; Objekteigentum, Namensraumidentität und Berechtigungsregeln bleiben unverändert.

@@ -64,14 +64,22 @@ test("assertWithinCeiling allows publicRead in a component-managed namespace", (
 
 test("canAccess always allows the owner", () => {
     assert.equal(
-        canAccess(PRIVATE_OWNER, { ownerId: "alice" }, { actorId: "alice" }),
+        canAccess(
+            PRIVATE_OWNER,
+            { ownerId: "alice" },
+            { callerComponent: "test-component", actorId: "alice" },
+        ),
         true,
     );
 });
 
 test("canAccess denies non-owners in a private-owner namespace", () => {
     assert.equal(
-        canAccess(PRIVATE_OWNER, { ownerId: "alice" }, { actorId: "bob" }),
+        canAccess(
+            PRIVATE_OWNER,
+            { ownerId: "alice" },
+            { callerComponent: "test-component", actorId: "bob" },
+        ),
         false,
     );
 });
@@ -81,7 +89,7 @@ test("canAccess allows group members in a private-group namespace", () => {
         canAccess(
             PRIVATE_GROUP,
             { ownerId: "alice", groupIds: ["bob"] },
-            { actorId: "bob" },
+            { callerComponent: "test-component", actorId: "bob" },
         ),
         true,
     );
@@ -92,7 +100,7 @@ test("canAccess denies non-members in a private-group namespace", () => {
         canAccess(
             PRIVATE_GROUP,
             { ownerId: "alice", groupIds: ["bob"] },
-            { actorId: "carol" },
+            { callerComponent: "test-component", actorId: "carol" },
         ),
         false,
     );
@@ -103,7 +111,7 @@ test("canAccess allows public readers in a component-managed namespace", () => {
         canAccess(
             COMPONENT_MANAGED,
             { ownerId: "alice", publicRead: true },
-            { actorId: "carol" },
+            { callerComponent: "test-component", actorId: "carol" },
         ),
         true,
     );
@@ -114,7 +122,7 @@ test("canAccess denies unrelated actors in a component-managed namespace without
         canAccess(
             COMPONENT_MANAGED,
             { ownerId: "alice" },
-            { actorId: "carol" },
+            { callerComponent: "test-component", actorId: "carol" },
         ),
         false,
     );
@@ -125,7 +133,7 @@ test("canAccess restricts deletes to owners and privileged actors", () => {
         canAccess(
             COMPONENT_MANAGED,
             { ownerId: "alice", publicRead: true },
-            { actorId: "bob" },
+            { callerComponent: "test-component", actorId: "bob" },
             "delete",
         ),
         false,
@@ -134,7 +142,11 @@ test("canAccess restricts deletes to owners and privileged actors", () => {
         canAccess(
             COMPONENT_MANAGED,
             { ownerId: "alice", publicRead: true },
-            { actorId: "root", role: "admin" },
+            {
+                callerComponent: "test-component",
+                actorId: "root",
+                role: "admin",
+            },
             "delete",
         ),
         true,

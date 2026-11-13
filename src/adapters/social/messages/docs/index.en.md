@@ -57,3 +57,7 @@ Messages prepares its room list, translations and emoji catalogs after verified 
 ## Independent Emoji Usage
 
 The reusable Messages reaction picker records emoji frequency independently of reaction changes. Only the message-reaction request includes the final active state. Usage-recording failures are logged without preventing the selected reaction or its update callback.
+
+## Typed Storage and Routes
+
+Social profile roles and visibility declarations now match stored records. Messages and profile routes retain their authorization checks while their callbacks, notification envelopes and database commands use explicit contracts. Missing guest-session resolution still fails before a guest profile is read.

@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import type { StructuredDbWhereClause } from "../../../gateways/db/reuse/db-command.js";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import type { StructuredDbTableDef } from "../../../gateways/db/reuse/db-table.js";
 import {
@@ -254,12 +255,13 @@ export class DbProfileStore implements ProfileCreateStore {
                 .replace(/^@/, "")
                 .toLowerCase()
                 .replace(/[\\%_]/g, "\\$&") + "%";
-        const visibilityFilters = options.includeHidden
-            ? []
-            : [
-                  { column: "visibility", operator: "!=", value: "hidden" },
-                  { column: "account_lifecycle_state", value: "active" },
-              ];
+        const visibilityFilters: StructuredDbWhereClause[] =
+            options.includeHidden
+                ? []
+                : [
+                      { column: "visibility", operator: "!=", value: "hidden" },
+                      { column: "account_lifecycle_state", value: "active" },
+                  ];
 
         const byHandle = await this.db.executeCommand({
             option: "SELECT",

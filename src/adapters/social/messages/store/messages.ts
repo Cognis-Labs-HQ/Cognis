@@ -207,7 +207,7 @@ export async function unreadCount(
                 ? [
                       {
                           column: "created_at",
-                          operator: ">",
+                          operator: ">" as const,
                           value: member.lastReadAt,
                       },
                   ]
