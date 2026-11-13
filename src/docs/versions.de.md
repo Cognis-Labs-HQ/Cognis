@@ -70,13 +70,13 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Komponente            | Pfad                          | Version  |
 | --------------------- | ----------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`            | `1.4.1`  |
-| Authentication (auth) | `src/gateways/auth/`          | `2.2.4`  |
+| Authentication (auth) | `src/gateways/auth/`          | `2.2.5`  |
 | Share                 | `src/gateways/share/`         | `1.9.9`  |
-| Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.3.6`  |
+| Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.3.7`  |
 | Notification (notify) | `src/gateways/notify/`        | `2.2.10` |
 | Social                | `src/gateways/social/`        | `1.4.6`  |
 | File Storage (files)  | `src/gateways/files/`         | `2.3.7`  |
-| Registration          | `src/gateways/registration/`  | `1.2.6`  |
+| Registration          | `src/gateways/registration/`  | `1.2.7`  |
 | Logging               | `src/gateways/logging/`       | `1.5.19` |
 | Observability         | `src/gateways/observability/` | `1.0.7`  |
 | Study                 | `src/gateways/study/`         | `2.6.9`  |
