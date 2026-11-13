@@ -8,4 +8,4 @@
 
 ## コミット
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/54d8066a0d9bdbe38d6b4baa0d79c67e49cc56dc
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/6b35ffb159afbea717ce9bd656629055f34ebaef
