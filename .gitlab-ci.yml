@@ -15,7 +15,7 @@ test:
     script:
         - apk add ripgrep python3 build-base
         - npm ci
-        - npm test
+        - npm run ci:test
     tags:
         - shared
     rules:

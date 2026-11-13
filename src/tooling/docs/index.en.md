@@ -2,17 +2,17 @@
 
 ## Overview
 
-The `src/tooling/` directory contains all developer tooling for the Cognis codebase: linting scripts, the TypeScript configuration generator, a container healthcheck script, and the `cognisctl` operational CLI. These tools maintain code quality, validate the codebase before commits, and provide operational control of a running Cognis instance.
+The `src/tooling/` directory contains all developer tooling for the Cognis codebase: linting scripts, TypeScript source checks, a container healthcheck script, and the `cognisctl` operational CLI. These tools maintain code quality, validate the codebase before commits, and provide operational control of a running Cognis instance.
 
 ## Responsibilities
 
 - Enforce readability rules (no tabs, no trailing whitespace, no consecutive blank lines) via `lint-readable.mjs`.
 - Enforce placeholder standards via `lint-placeholder.mjs`, which delegates to Prettier.
-- Generate a consolidated `tsconfig.json` for the monorepo via `gen-tsconfig.mjs`.
+- Check all TypeScript sources and tests with `npm run typecheck`.
 - Provide a `/health` readiness check implementation via `healthcheck.mjs`.
 - Expose operational management commands via `cognisctl` (`src/tooling/cli/index.ts`).
 
-Not responsible for: running tests (that is `npm test`), building a production bundle (no build step — TypeScript is run directly via `tsx`), or managing deployments.
+Tests run through `npm test`; production assets are built through `npm run build`. Deployment management is separate.
 
 ## Architecture
 
@@ -36,17 +36,15 @@ All linting runs via `npm run lint`, which executes both lint scripts in sequenc
 
 Note that documentation code examples use two-space indentation for readability; Prettier enforces four-space indentation in all source files.
 
-### TypeScript
+### TypeScript source checks
 
-The project runs TypeScript directly via `tsx` — there is no separate compile step:
+Run `npm run typecheck` before committing. `npm run ci:test` checks types before running tests; both CI pipelines use the same checker. `npm run build` separately emits production assets through esbuild for Node 24.
 
-```
-npm start        # node --import tsx src/api/main.ts
-npm test         # node --import tsx ... *.test.ts
-npm run cli      # node --import tsx src/tooling/cli/index.ts
-```
+The root `tsconfig.json` is the authoritative strict, no-emit project. It includes every `.ts`, `.tsx`, `.mts` and `.cts` file under `src`, including declarations, tests, optional components and nested components. Only generated `dist` directories and dependencies are excluded. New components need no reference-list update.
 
-`gen-tsconfig.mjs` generates a merged `tsconfig.json` that covers all packages in the monorepo before typechecking.
+NodeNext resolution, ES2024 and DOM libraries support the server and browser contracts. `@cognis/core` resolves to this checkout’s source. Imported first-party JavaScript contributes inferred types with `allowJs`; `checkJs` remains disabled, so this is not whole-JavaScript verification. Component configurations do not limit root coverage.
+
+Coverage tests compare the compiler inventory with the nonempty source inventory, run the real npm command on static fixtures, reject production and test errors independently, and verify repeated clean runs emit no files.
 
 ### `cognisctl` CLI
 
