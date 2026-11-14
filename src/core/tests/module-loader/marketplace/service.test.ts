@@ -13,6 +13,10 @@ import {
 
 import { checkoutModuleRepository } from "../../../services/module-loader/marketplace/checkout.js";
 
+const mainCommit = "a".repeat(40);
+const previewCommit = "b".repeat(40);
+const releaseCommit = "c".repeat(40);
+
 const source = {
     uuid: "6931e77f-f740-4db7-9f7c-5809f44255ee",
     name: "Additional source",
@@ -369,9 +373,12 @@ test("private scans include organization repositories visible through the authen
                 },
             ]);
         }
-        if (url.includes("/branches?") || url.includes("/tags?")) {
-            return Response.json([]);
+        if (url.includes("/branches?")) {
+            return Response.json([
+                { name: "main", commit: { sha: "a".repeat(40) } },
+            ]);
         }
+        if (url.includes("/tags?")) return Response.json([]);
         if (url.includes("/contents/manifest.json?")) {
             return Response.json({
                 content: Buffer.from(
@@ -597,14 +604,17 @@ test("module marketplace discovers repository manifests", async () => {
                 : String(input).includes("/tags?")
                   ? new Response(
                         JSON.stringify([
-                            { name: "v1.0.0", commit: { sha: "tag123" } },
+                            { name: "v1.0.0", commit: { sha: releaseCommit } },
                         ]),
                     )
                   : String(input).includes("/branches?")
                     ? new Response(
                           JSON.stringify([
-                              { name: "main", commit: { sha: "abc123" } },
-                              { name: "preview", commit: { sha: "def456" } },
+                              { name: "main", commit: { sha: mainCommit } },
+                              {
+                                  name: "preview",
+                                  commit: { sha: previewCommit },
+                              },
                           ]),
                       )
                     : String(input).includes("/repos?")
@@ -630,14 +640,19 @@ test("module marketplace discovers repository manifests", async () => {
                                     JSON.stringify({
                                         uuid: "71567e48-480a-45a5-a853-8c96d6ab9973",
                                         id: "notes",
-                                        name: String(input).includes(
-                                            "ref=preview",
+                                        name: [
+                                            "preview",
+                                            previewCommit,
+                                        ].includes(
+                                            new URL(
+                                                String(input),
+                                            ).searchParams.get("ref") ?? "",
                                         )
                                             ? "Preview Notes"
                                             : moduleName,
                                         version:
                                             String(input).includes(
-                                                "ref=def456",
+                                                `ref=${previewCommit}`,
                                             ) ||
                                             String(input).includes(
                                                 "ref=preview",
@@ -729,13 +744,13 @@ test("module marketplace discovers repository manifests", async () => {
         assert.equal(modules[0].defaultBranch, "main");
         assert.equal(modules[0].version, "1.0.0");
         assert.deepEqual(modules[0].branches, [
-            { name: "main", commit: "abc123", version: "1.0.0" },
-            { name: "preview", commit: "def456", version: "1.1.0" },
+            { name: "main", commit: mainCommit, version: "1.0.0" },
+            { name: "preview", commit: previewCommit, version: "1.1.0" },
         ]);
         assert.ok(branchRequestCaches.length > 0);
         assert.deepEqual(new Set(branchRequestCaches), new Set(["no-store"]));
         assert.deepEqual(modules[0].releases, [
-            { name: "v1.0.0", commit: "tag123", version: "1.0.0" },
+            { name: "v1.0.0", commit: releaseCommit, version: "1.0.0" },
         ]);
         assert.equal(modules[0].installed, true);
         assert.equal(modules[0].installedBranch, "main");
@@ -769,7 +784,7 @@ test("module marketplace discovers repository manifests", async () => {
                 sourceUuid: "178271bf-5631-40df-82df-967f8a37a020",
                 cloneUrl: "https://github.com/acme/notes.git",
                 branch: "preview",
-                commit: "def456",
+                commit: previewCommit,
             }),
         );
         const preview = await service.discover(undefined, true);
@@ -817,7 +832,13 @@ test("module marketplace ignores incomplete module registrations", async () => {
                       },
                   ]),
               )
-            : new Response(JSON.stringify({ id: "incomplete" }));
+            : String(input).includes("/branches?")
+              ? Response.json([
+                    { name: "main", commit: { sha: "a".repeat(40) } },
+                ])
+              : String(input).includes("/tags?")
+                ? Response.json([])
+                : new Response(JSON.stringify({ id: "incomplete" }));
     try {
         assert.deepEqual(await service.discover(), []);
         assert.equal(warnings[0]?.repository, "acme/incomplete");

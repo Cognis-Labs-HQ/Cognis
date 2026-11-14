@@ -8,6 +8,15 @@ import type { ModuleSource } from "../../../services/module-loader/marketplace/i
 import type { ModuleManifest } from "../../../contracts/module-manifest.js";
 
 class TestMarketplaceRepository extends MarketplaceRepository {
+    channels(
+        source: ModuleSource,
+        releases: boolean,
+    ): Promise<Array<{ name: string; commit: string }>> {
+        return releases
+            ? this.discoverReleases(source, "example/notes", {})
+            : this.discoverBranches(source, "example/notes", {});
+    }
+
     cacheAsset(
         source: ModuleSource,
         assetPath: string,
@@ -94,7 +103,7 @@ test("public GitHub strings use the raw content endpoint", async () => {
     );
     const originalFetch = globalThis.fetch;
     let requestedUrl = "";
-    globalThis.fetch = async (input) => {
+    globalThis.fetch = async (input: string | URL | Request) => {
         requestedUrl = String(input);
         return new Response(
             '<resources><string name="module.notes.name">Notes</string></resources>',
@@ -238,4 +247,97 @@ for (const failure of ["http", "empty", "size", "network"] as const) {
         );
         if (failure === "http") assert.equal(logs[0].status, 404);
     });
+}
+
+for (const provider of ["github", "gitlab"] as const) {
+    for (const releases of [false, true]) {
+        test(`${provider} ${releases ? "tags" : "branches"} reject malformed records after pagination`, async (context) => {
+            const repository = new TestMarketplaceRepository(
+                "unused",
+                "unused",
+            );
+            const source: ModuleSource = {
+                uuid: "6931e77f-f740-4db7-9f7c-5809f44255ee",
+                name: "Example",
+                provider,
+                namespace: "example",
+                baseUrl: "https://example.test",
+            };
+            let malformed: unknown;
+            context.mock.method(
+                globalThis,
+                "fetch",
+                async (input: string | URL | Request) => {
+                    const url = new URL(String(input));
+                    if (url.searchParams.get("page") === "2")
+                        return Response.json([malformed]);
+                    const next = new URL(url);
+                    next.searchParams.set("page", "2");
+                    return Response.json(
+                        [
+                            {
+                                name: "main",
+                                commit: {
+                                    [provider === "github" ? "sha" : "id"]:
+                                        "a".repeat(40),
+                                },
+                            },
+                        ],
+                        {
+                            headers:
+                                provider === "github"
+                                    ? { link: `<${next}>; rel="next"` }
+                                    : { "x-next-page": "2" },
+                        },
+                    );
+                },
+            );
+            for (malformed of [
+                null,
+                [],
+                42,
+                { name: "preview" },
+                { name: "preview", commit: {} },
+                { name: "preview", commit: "hash" },
+                { commit: { sha: "b".repeat(40) } },
+                { name: 42, commit: { sha: "b".repeat(40) } },
+                { name: "preview", commit: { sha: 42 } },
+                { name: "preview", commit: { sha: "main" } },
+                { name: "preview", commit: { id: "preview" } },
+            ]) {
+                await assert.rejects(
+                    repository.channels(source, releases),
+                    /invalid_module_channel_listing/,
+                );
+            }
+            for (const length of [0, 6, 7, 8, 12, 39, 41, 63, 65]) {
+                malformed = {
+                    name: "preview",
+                    commit: {
+                        [provider === "github" ? "sha" : "id"]: "b".repeat(
+                            length,
+                        ),
+                    },
+                };
+                await assert.rejects(
+                    repository.channels(source, releases),
+                    /invalid_module_channel_listing/,
+                );
+            }
+            for (const length of [40, 64]) {
+                malformed = {
+                    name: "preview",
+                    commit: {
+                        [provider === "github" ? "sha" : "id"]: "b".repeat(
+                            length,
+                        ),
+                    },
+                };
+                assert.deepEqual(await repository.channels(source, releases), [
+                    { name: "main", commit: "a".repeat(40) },
+                    { name: "preview", commit: "b".repeat(length) },
+                ]);
+            }
+        });
+    }
 }
