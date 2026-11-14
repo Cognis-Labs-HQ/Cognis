@@ -147,6 +147,10 @@ Gemeinsame Texte umbrechen vor und nach dem Laden einer Schriftart innerhalb der
 
 Array-Angaben unterstützen `['full', 'fill']` für die gesamte Breite und das Ausfüllen der verfügbaren Höhe sowie `['full', n]` für die gesamte Breite mit einer numerischen Höhenbegrenzung. Haupt- und verschachtelte Composer berücksichtigen diese Maße in schmalen und breiten Rastern. Beim Ziehen unter das Raster erweitert der Editor die Inhaltsgrenzen und das sichtbare Raster gemeinsam, bevor das Widget abgelegt wird.
 
+### Ressourcen-Entwurfspfade
+
+Der öffentliche Formularentwurfsmanager akzeptiert die optionale Abhängigkeit `resolveStoragePath(scopeKey)`. Ressourcenseiten können ihren kanonischen eigenen Pfad zurückgeben, damit Lesen, Speichern und Entfernen eines gesendeten Entwurfs auch nach einer Navigation dieselbe Ressource betreffen. Standardmäßig gilt weiterhin der aktuelle Seitenpfad. Das angemeldete Konto bleibt Bestandteil jedes Speicherschlüssels; die Auflösung ändert weder die Kontotrennung noch ausgeschlossene Felder.
+
 ## Sicherheit
 
 Composer steuert Darstellung und DOM-Lebensdauer statt Inhaltsrechte. Seitenaktionen nutzen Eigentümerabläufe; Markup und Styles beachten gemeinsame Menü- und Panelgrenzen.

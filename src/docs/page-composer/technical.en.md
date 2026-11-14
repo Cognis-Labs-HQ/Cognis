@@ -181,6 +181,10 @@ Composer owns the content-section inset: 28px on wider screens and 14px at 640px
 
 Shared text wraps within the available width before and after a font loads, without reducing the selected font size.
 
+### Resource Draft Paths
+
+The public form draft manager accepts an optional `resolveStoragePath(scopeKey)` dependency. Resource pages can return their canonical owned path so reading, saving and consuming a draft still address the same resource after navigation. The default remains the current page path. The authenticated account stays part of every storage key; the resolver does not change account isolation or field exclusions.
+
 ## Security
 
 Composer controls presentation and owned DOM lifetime, not resource authorization. Page actions still require their owner's flows; markup and stylesheet contributions must respect the shared panel and menu boundaries.

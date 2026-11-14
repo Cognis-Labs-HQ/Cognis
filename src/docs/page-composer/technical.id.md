@@ -131,6 +131,10 @@ Teks bersama membungkus sesuai lebar yang tersedia sebelum dan sesudah font dimu
 
 Deklarasi array mendukung `['full', 'fill']` untuk lebar penuh dan pengisian tinggi yang tersedia, atau `['full', n]` untuk lebar penuh dengan batas tinggi numerik. Composer utama maupun bersarang mengikuti ukuran ini pada grid sempit dan lebar. Saat widget diseret ke bawah grid, editor memperluas batas konten dan grid yang terlihat secara bersamaan sebelum widget dilepas.
 
+### Jalur Draf Sumber Daya
+
+Pengelola draf formulir publik menerima dependensi opsional `resolveStoragePath(scopeKey)`. Halaman sumber daya dapat mengembalikan jalur kanonis miliknya agar pembacaan, penyimpanan, dan penghapusan draf terkirim tetap mengarah ke sumber daya yang sama setelah navigasi. Nilai bawaan tetap jalur halaman saat ini. Akun yang terautentikasi tetap menjadi bagian dari setiap kunci penyimpanan; resolver tidak mengubah isolasi akun atau pengecualian kolom.
+
 ## Keamanan
 
 Composer mengatur presentasi dan masa DOM, bukan otorisasi sumber daya. Tindakan tetap memakai alur pemilik; markup serta gaya mematuhi batas panel dan menu.

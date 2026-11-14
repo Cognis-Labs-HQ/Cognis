@@ -1,0 +1,38 @@
+# 安定した会話の更新
+
+**機能ブランチ:** feature-messages-async-ownership
+
+## 選択中の会話を維持
+
+遅れて完了した会話更新が最新の選択を置き換えなくなります。見出し、メッセージ、鍵、操作の保留中の更新は、その表示が現在のものでなくなると停止します。
+
+## 下書きと送信結果を保持
+
+送信確認または永続キューへの保存後に、送信した版の下書きだけを消去します。その後の編集と元の会話の下書きは、会話を切り替えても残ります。送信中の重複送信は引き続き防止します。会話更新に失敗した場合は再送を促すのではなく、送信済みまたはキューに保存済みであることを通知します。
+
+## 未読数を正確に維持
+
+既読状態の更新確認に失敗しても未読表示は変わらず、同じ失敗が続く間は翻訳された通知を繰り返しません。入力のチュートリアルでは、送信中に次の下書きを書く方法を説明します。
+
+共有下書きマネージャーに、省略可能なリソースパス解決関数を追加しました。メッセージは元のルームのパスで下書きを読み取り、保存、削除します。他のページは現在のページパスを引き続き使用し、下書きはすべてアカウントごとに分離されます。
+
+## 遅延した失敗の影響を限定
+
+バックグラウンド更新に失敗すると、翻訳された通知が表示され、現在の下書きは保持されます。繰り返す失敗は記録されますが、通知が再表示されるのは復旧後、または別の会話を選んだ後です。離れたルームやアカウントの遅延した失敗によって、古い送信エラーが表示されたり、追加の読み取りが始まったり、現在の会話が中断されたりすることはありません。メッセージ画面を離れて開き直した場合も、古い画面の保留中の更新は終了します。
+
+リアクションの変更と過去のメッセージの読み込みは、開始した会話に紐づきます。現在の会話で失敗すると翻訳済みの通知を表示し、メッセージの内容を含めずに記録します。すでに離れたルーム、アカウント、ページでの失敗は無視されます。これらの操作は自動的には再試行されません。プレビューのチュートリアルでは書式、リンク、改行を説明し、添付ファイルは扱いません。
+
+## コミット
+
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/62da72d2f6e896ea7d52bf4c1ce7da15802a9966
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/0dd00af82a18452217745672bdc5babbf9e817a5
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/bf23786bfcdcc5d5f4badcdb205c9438f2401be2
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/fe80f98b1ae4030a0dbbd030d7471234aafc0c5b
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/f434c53b4d1df2d09e57629266575411b0c51fb3
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/8cc2dd723c42a2552ea0653adf1e1ad8f8dd2da2
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/b9ee5c17977491ad6621c46fe96bc2a692004bb4
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/a2fc0fd084eec300b0f03b6e1a402c72c7918583
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/291480ff28497884e7d12a956a5b9dcbcf51a690
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/6c63b95a5ca6e1fc792c4e32a6a56f1e9df74b22
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/8369fb5aabb552af45f7c222e21c37f739bc2da1
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/9863f4d28c62b78bea67e0470a43b148fac6fb4c
