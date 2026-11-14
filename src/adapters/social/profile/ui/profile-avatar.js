@@ -11,6 +11,8 @@ import { createAvatarCache } from "./reuse/avatar-cache.js";
 let activeScope = null;
 let activeContext = null;
 const mountedImages = new WeakSet();
+const imageContexts = new WeakMap();
+const imageOwners = new WeakMap();
 const cache = createAvatarCache({
     isCurrent: (context) => context === getAvatarContext() && !!context,
     invalidate: (key) => {
@@ -110,6 +112,94 @@ export function getProfileInitialsColor(seed) {
     return `hsl(${Math.abs(hash) % 360}, 55%, 42%)`;
 }
 
+/** Returns canonical presentation for an already authorized profile record. */
+export function getProfileAvatarPresentation(profile = {}) {
+    const label = String(profile?.displayName || profile?.handle || "");
+    return {
+        label,
+        colorSeed: label,
+        initials: getProfileInitials(label),
+        color: getProfileInitialsColor(label),
+    };
+}
+
+/**
+ * Builds only the avatar content; callers retain their link, button and badge.
+ * Sizes are small (32px), medium (48px) and large (80px).
+ * @param {{ profile?: object, size?: string, avatarKey?: string, blobUrl?: string, imageClass?: string, imageAlt?: string }} options
+ * @returns {string}
+ */
+export function buildProfileAvatarContent({
+    profile = {},
+    size = "small",
+    avatarKey = "",
+    blobUrl = "",
+    imageClass = "",
+    imageAlt = "",
+} = {}) {
+    if (!["small", "medium", "large"].includes(size))
+        throw new Error("profile_avatar_size_invalid");
+    const { label, colorSeed } = getProfileAvatarPresentation(profile);
+    const fallbackClass = "profile-capability-avatar-initials";
+    const rendererImageClass = ["profile-capability-avatar-image", imageClass]
+        .filter(Boolean)
+        .join(" ");
+    const initials = buildInitialsHtml(label, colorSeed, fallbackClass, {
+        avatarKey,
+        imageClass: rendererImageClass,
+    });
+    const content = blobUrl
+        ? `<img class="${escapeHtml(rendererImageClass)}" src="${escapeHtml(blobUrl)}" alt="${escapeHtml(imageAlt)}"` +
+          ` data-avatar-key="${escapeHtml(avatarKey)}" data-avatar-label="${escapeHtml(label)}"` +
+          ` data-avatar-color-seed="${escapeHtml(colorSeed)}" data-avatar-fallback-class="${fallbackClass}">`
+        : initials;
+    return `<span class="profile-avatar-content" data-profile-avatar-size="${size}">${content}</span>`;
+}
+
+/** Refreshes retained image fallback metadata without replacing its image node. */
+export function updateProfileAvatarImage(image, placeholder) {
+    for (const key of [
+        "avatarKey",
+        "avatarLabel",
+        "avatarColorSeed",
+        "avatarFallbackClass",
+    ])
+        image.dataset[key] = placeholder.dataset[key] || "";
+    image.className =
+        placeholder.tagName === "IMG"
+            ? placeholder.className
+            : placeholder.dataset.avatarImageClass;
+    image.alt = placeholder.getAttribute("alt") || "";
+}
+
+/** Reconciles owner content after its caller has checked the current lifetime. */
+export function renderProfileAvatarContent(
+    previous,
+    options,
+    { retainImage = false } = {},
+) {
+    if (retainImage && !options.profile && previous) return previous;
+    const template = document.createElement("template");
+    template.innerHTML = buildProfileAvatarContent(options);
+    const content = document.adoptNode(template.content.firstElementChild);
+    const image = previous?.querySelector("img[data-avatar-key]");
+    const next = content.firstElementChild;
+    if (
+        image &&
+        (retainImage ||
+            (image.dataset.avatarKey === next.dataset.avatarKey &&
+                image.getAttribute("src") === next.getAttribute("src")))
+    ) {
+        // A failed metadata read supplies no newer identity for a retained image.
+        if (options.profile) updateProfileAvatarImage(image, next);
+        next.replaceWith(image);
+        imageOwners.set(image, options.isCurrent);
+    } else if (next.tagName === "IMG") {
+        trackProfileAvatarImage(next, options.isCurrent);
+    }
+    return content;
+}
+
 /**
  * Generates an initials span, optionally annotated with data attributes for
  * deferred image hydration when an avatarKey and imageClass are supplied.
@@ -141,6 +231,17 @@ function buildInitialsHtml(
     );
 }
 
+function trackProfileAvatarImage(image, isCurrent) {
+    if (!mountedImages.has(image)) {
+        image.addEventListener("error", handleProfileAvatarError, {
+            once: true,
+        });
+        mountedImages.add(image);
+    }
+    imageContexts.set(image, getAvatarContext());
+    if (isCurrent) imageOwners.set(image, isCurrent);
+}
+
 /**
  * Replaces a hydration-pending initials placeholder with an actual <img>.
  *
@@ -158,13 +259,12 @@ function replaceAvatarPlaceholder(placeholder, blobUrl) {
     image.className = imageClass;
     image.src = blobUrl;
     image.alt = "";
-    image.addEventListener("error", handleProfileAvatarError, { once: true });
     image.dataset.avatarKey = avatarKey;
     image.dataset.avatarLabel = label;
     image.dataset.avatarColorSeed = colorSeed;
     image.dataset.avatarFallbackClass = fallbackClass;
     placeholder.replaceWith(image);
-    mountedImages.add(image);
+    trackProfileAvatarImage(image);
 }
 
 /**
@@ -281,7 +381,14 @@ export async function hydrateProfileAvatars(container, { signal } = {}) {
     await Promise.all(
         placeholders.map(async (placeholder) => {
             const avatarKey = placeholder.dataset?.avatarKey;
-            if (!avatarKey || isProfileAvatarUnavailable(avatarKey)) return;
+            if (!avatarKey) return;
+            if (placeholder.tagName === "IMG")
+                trackProfileAvatarImage(placeholder);
+            if (isProfileAvatarUnavailable(avatarKey)) {
+                if (placeholder.tagName === "IMG")
+                    replaceFailedImage(placeholder);
+                return;
+            }
             const label = placeholder.dataset.avatarLabel;
             const colorSeed = placeholder.dataset.avatarColorSeed;
             const blobUrl = await fetchProfileAvatarBlobUrl(avatarKey);
@@ -297,7 +404,10 @@ export async function hydrateProfileAvatars(container, { signal } = {}) {
                 return;
             if (placeholder.tagName !== "IMG")
                 replaceAvatarPlaceholder(placeholder, blobUrl);
-            else if (placeholder.src !== blobUrl) placeholder.src = blobUrl;
+            else {
+                if (placeholder.src !== blobUrl) placeholder.src = blobUrl;
+                trackProfileAvatarImage(placeholder);
+            }
         }),
     );
     if (context === getAvatarContext() && !signal?.aborted)
@@ -309,6 +419,8 @@ const avatarRenderer = {
         return isRendererAvailable();
     },
     buildMarkup: buildProfileAvatarMarkup,
+    buildContent: buildProfileAvatarContent,
+    getPresentation: getProfileAvatarPresentation,
     fetch: fetchProfileAvatarBlobUrl,
     getInitials: getProfileInitials,
     getInitialsColor: getProfileInitialsColor,
@@ -332,6 +444,11 @@ export function handleProfileAvatarError(event) {
     const avatarKey = image.dataset?.avatarKey;
     if (!avatarKey) return;
     if (!image.isConnected || !mountedImages.has(image)) return;
+    if (
+        imageContexts.get(image) !== getAvatarContext() ||
+        imageOwners.get(image)?.() === false
+    )
+        return;
     cache.evictImage(avatarKey, image.src);
     replaceFailedImage(image);
 }

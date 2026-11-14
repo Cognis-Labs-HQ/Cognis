@@ -23,3 +23,7 @@ Identitas dan aksi sosial muncul sebelum langkah posting dan pratinjau yang beru
 Pada profil Anda sendiri, Edit Profil membuka detail Anda. Jika penyimpanan gagal, perubahan tetap tersedia untuk diperbaiki dan dicoba kembali.
 
 Foto profil tetap terlihat saat jumlah dan detail diperbarui. Buka kembali profil untuk mencoba ulang pembaruan gambar yang gagal; penghapusan yang dikonfirmasi hanya menghapus gambar terpilih. Langkah identitas mempertahankan target, urutan, dan identitas penyelesaiannya.
+
+Inisial pada navigasi, pratinjau, dan profil memakai aturan nama dan warna yang sama. Avatar pratinjau membuka profil tersebut. Perubahan nama juga memperbarui inisial setelah kesalahan gambar. Kontrol identitas dan avatar mempertahankan target tutorial, urutan langkah, dan ID penyelesaiannya.
+
+Pratinjau interaktif adalah dialog nonmodal bernama. Mengarahkan penunjuk tidak memindahkan fokus keyboard; kartu yang sedang fokus tetap terbuka saat penunjuk menjauh. Escape menutupnya dan mengembalikan fokus ke pemicu hanya jika fokus sebelumnya berada di dalam kartu.

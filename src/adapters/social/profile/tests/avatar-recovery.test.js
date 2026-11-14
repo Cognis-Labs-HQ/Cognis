@@ -19,11 +19,11 @@ test("navbar retains the exact loaded image across a transient metadata refresh"
     const state = avatarFixture(context);
     await state.ready;
     await state.navbar.updateNavbarAvatar();
-    const image = state.document.querySelector(".avatar-image");
+    const image = state.document.querySelector(".avatar-button img");
     assert.ok(image);
     state.setRequest(async () => new Response("", { status: 503 }));
     await state.navbar.updateNavbarAvatar();
-    assert.equal(state.document.querySelector(".avatar-image"), image);
+    assert.equal(state.document.querySelector(".avatar-button img"), image);
 });
 
 test("an image error can recover on a later explicit hydration", async (context) => {
@@ -70,30 +70,33 @@ test("explicit absence and access denial clear navbar images; a new key replaces
     const state = avatarFixture(context);
     await state.ready;
     await state.navbar.updateNavbarAvatar();
-    const original = state.document.querySelector(".avatar-image");
+    const original = state.document.querySelector(".avatar-button img");
     state.setProfile({ handle: "alice", avatarKey: "alice/avatar-two" });
     await state.navbar.updateNavbarAvatar();
-    assert.notEqual(state.document.querySelector(".avatar-image"), original);
+    assert.notEqual(
+        state.document.querySelector(".avatar-button img"),
+        original,
+    );
     state.setProfile({ handle: "alice", avatarKey: null });
     await state.navbar.updateNavbarAvatar();
-    assert.equal(state.document.querySelector(".avatar-image"), null);
+    assert.equal(state.document.querySelector(".avatar-button img"), null);
     state.setProfile({ handle: "alice", avatarKey: "alice/avatar-three" });
     await state.navbar.updateNavbarAvatar();
     state.setRequest(async () => new Response("", { status: 403 }));
     await state.navbar.updateNavbarAvatar();
-    assert.equal(state.document.querySelector(".avatar-image"), null);
+    assert.equal(state.document.querySelector(".avatar-button img"), null);
 });
 
 test("navbar image decoding errors leave a retryable next refresh", async (context) => {
     const state = avatarFixture(context);
     await state.ready;
     await state.navbar.updateNavbarAvatar();
-    const image = state.document.querySelector(".avatar-image");
+    const image = state.document.querySelector(".avatar-button img");
     image.dispatchEvent(new state.window.Event("error"));
-    assert.equal(state.document.querySelector(".avatar-image"), null);
+    assert.equal(state.document.querySelector(".avatar-button img"), null);
     await state.navbar.updateNavbarAvatar();
     assert.notEqual(
-        state.document.querySelector(".avatar-image").src,
+        state.document.querySelector(".avatar-button img").src,
         image.src,
     );
 });
@@ -102,12 +105,12 @@ test("unchanged navbar refreshes keep the original image error recovery valid", 
     const state = avatarFixture(context);
     await state.ready;
     await state.navbar.updateNavbarAvatar();
-    const image = state.document.querySelector(".avatar-image");
+    const image = state.document.querySelector(".avatar-button img");
     await state.navbar.updateNavbarAvatar();
     image.dispatchEvent(new state.window.Event("error"));
     await state.navbar.updateNavbarAvatar();
     assert.notEqual(
-        state.document.querySelector(".avatar-image").src,
+        state.document.querySelector(".avatar-button img").src,
         image.src,
     );
 });
@@ -125,5 +128,5 @@ test("unknown provider outcomes cannot authorize an image", async (context) => {
         }),
     );
     await state.navbar.updateNavbarAvatar();
-    assert.equal(state.document.querySelector(".avatar-image"), null);
+    assert.equal(state.document.querySelector(".avatar-button img"), null);
 });

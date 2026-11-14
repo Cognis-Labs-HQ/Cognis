@@ -23,3 +23,7 @@ Identität und Sozialaktionen stehen vor den aufeinanderfolgenden Beitrags- und 
 Im eigenen Profil öffnet Profil bearbeiten Ihre Angaben. Bei einem Speicherfehler bleiben Ihre Änderungen zum Korrigieren und erneuten Versuchen erhalten.
 
 Profilfotos bleiben sichtbar, während Zahlen und Details aktualisiert werden. Öffnen Sie das Profil nach einem fehlgeschlagenen Bildabruf erneut; eine bestätigte Entfernung löscht nur das ausgewählte Bild. Der Identitätsschritt behält sein Ziel, seinen Ablauf und seine Abschlusskennung.
+
+Initialen in Navigation, Vorschau und Profil folgen denselben Namens- und Farbregeln. Der Vorschauavatar öffnet dieses Profil. Nach einer Namensänderung zeigen auch Ersatzinitialen bei Bildfehlern den aktuellen Namen. Bestehende Identitäts- und Avataraktionen behalten ihre Tutorialziele, Schrittfolge und Abschlusskennungen.
+
+Die interaktive Vorschau ist ein benannter nichtmodaler Dialog. Beim Darüberfahren wird der Tastaturfokus nicht verschoben; ein fokussiertes Fenster bleibt beim Wegbewegen des Zeigers offen. Escape schließt es und setzt den Fokus nur dann auf den Auslöser zurück, wenn er zuvor in der Vorschau lag.
