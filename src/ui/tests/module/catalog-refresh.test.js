@@ -73,9 +73,9 @@ async function fixture(context, { failTranslations = false } = {}) {
             ? Promise.reject(missing("module.example.name"))
             : Promise.resolve();
     const localized = loadTestModule(
-        new URL("../../app/modules/presentation.js", import.meta.url),
+        new URL("../../reuse/presentation.js", import.meta.url),
         {
-            "../../reuse/i18n.js": {
+            "./i18n.js": {
                 extendI18n: async (_base, url) => {
                     await waitForStrings();
                     const id = url.split("/").at(-1);
@@ -113,7 +113,7 @@ async function fixture(context, { failTranslations = false } = {}) {
                 loadAuthenticatedModuleAssets: async (modules) =>
                     assert.ok(Array.isArray(modules)),
             },
-            "./presentation.js": localized,
+            "../../reuse/presentation.js": localized,
         },
     );
     const window = new EventTarget();

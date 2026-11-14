@@ -1,3 +1,4 @@
+import { localizeModulePresentation } from "../../reuse/presentation.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -16,7 +17,6 @@ import {
 } from "../../app/modules/preferences.js";
 import { resolveModuleAssetUrl } from "../../app/modules/assets.js";
 import {
-    localizeModulePresentation,
     resolveLocalizedReadme,
     resolveModuleRepositoryUrl,
 } from "../../app/modules/presentation.js";
@@ -381,24 +381,25 @@ test("module presentation resolves manifest localization keys", async () => {
     );
 });
 
-test("module presentation discovers conventional strings and preserves unresolved values", async () => {
-    const module = {
-        id: "example",
-        name: "module.example.name",
-        summary: "Literal summary",
-    };
+test("module presentation discovers conventional strings and rejects missing translations", async () => {
+    const module = { id: "example", name: "module.example.name" };
     let requestedStringsBaseUrl;
-    await localizeModulePresentation(
-        module,
-        { locale: "en", t: () => "" },
-        async (_baseI18n, stringsBaseUrl) => {
-            requestedStringsBaseUrl = stringsBaseUrl;
-            return { locale: "en", t: () => "" };
-        },
+    await assert.rejects(
+        localizeModulePresentation(
+            module,
+            { locale: "en" },
+            async (_base, stringsBaseUrl) => {
+                requestedStringsBaseUrl = stringsBaseUrl;
+                return {
+                    t(key) {
+                        throw new Error(`missing_translation:${key}`);
+                    },
+                };
+            },
+        ),
+        /missing_translation:module.example.name/,
     );
     assert.equal(requestedStringsBaseUrl, "/static/modules/example/languages");
-    assert.equal(module.localizedPresentation.name, "module.example.name");
-    assert.equal(module.localizedPresentation.summary, "Literal summary");
 });
 
 test("module presentation respects catalog suppression of unavailable strings", async () => {

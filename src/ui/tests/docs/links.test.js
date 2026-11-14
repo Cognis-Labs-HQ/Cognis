@@ -3,9 +3,9 @@ import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { linkShortCommitRefs } from "../reuse/commit-links.js";
+import { linkShortCommitRefs } from "../../reuse/commit-links.js";
 
-const ROOT = resolve(fileURLToPath(import.meta.url), "../../../../");
+const ROOT = resolve(fileURLToPath(import.meta.url), "../../../../../");
 const OLD_DOC_FILE_URL_PATTERNS = [
     {
         label: "inline markdown link",
@@ -175,7 +175,10 @@ test("docs page falls back ungrouped docs to the platform section", () => {
         "docs navigation should assign ungrouped docs to platform",
     );
     assert.match(source, /createSideMenu\(/);
-    assert.match(source, /createNavigationGroups\(i18n, navigationDocs\)/);
+    assert.match(
+        source,
+        /createNavigationGroups\(i18n, navigationDocs, groupLabels\)/,
+    );
 });
 
 test("docs and changelogs use the shared side menu capability", () => {
