@@ -1,3 +1,4 @@
+import { createRenderer, message } from "./thread-selection/fixture.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
@@ -100,23 +101,38 @@ test("room leave controls use explicit destructive button styling", () => {
     assert.match(englishStrings, />Leave Room</);
 });
 
-test("messages omits availability lights from primary chat avatars", () => {
+test("messages omits availability lights from primary chat avatars", async (context) => {
     const roomRenderSource = readFileSync(
         resolve(ROOT, "src/adapters/social/messages/ui/room-render.js"),
         "utf8",
     );
-    const messageRenderSource = readFileSync(
-        resolve(ROOT, "src/adapters/social/messages/ui/message-render.js"),
-        "utf8",
-    );
-
     assert.equal(
         roomRenderSource.match(/showAvailability:\s*false/g)?.length,
         2,
     );
-    assert.equal(
-        messageRenderSource.match(/showAvailability:\s*false/g)?.length,
-        3,
+    const state = createRenderer();
+    context.after(state.dispose);
+    state.messages = [
+        message("incoming", 0, { senderId: "other" }),
+        message("outgoing", 1),
+    ];
+    await state.render();
+    assert.equal(state.avatarOptions.length, 3);
+    assert.ok(
+        state.avatarOptions.every(
+            (options) => options.showAvailability === false,
+        ),
+    );
+    assert.ok(
+        state.avatarOptions.some(
+            (options) => options.avatarClass === "messages-message-avatar",
+        ),
+    );
+    assert.ok(
+        state.avatarOptions.some(
+            (options) =>
+                options.avatarClass === "messages-message-bubble-avatar",
+        ),
     );
 });
 

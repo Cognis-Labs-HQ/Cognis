@@ -1,3 +1,4 @@
+import { loadPresentation } from "../fixtures/presentation.js";
 import * as reactionRecord from "../../ui/reuse/reaction-record.js";
 import * as threadDom from "../../ui/thread-dom.js";
 import * as threadData from "../../ui/thread-data.js";
@@ -53,6 +54,7 @@ export function createRenderer({
         requests: [],
         style: "default",
         hydrated: [],
+        avatarOptions: [],
         popups: [],
         errors: [],
         decrypt: async (_key, record) => record.ciphertext,
@@ -116,6 +118,7 @@ export function createRenderer({
     );
     client.mountProvider(offline.ctx);
     const dependencies = {
+        "./reuse/conversation-presentation.js": loadPresentation(),
         "./thread-dom.js": threadDom,
         "./reuse/reaction-record.js": reactionRecord,
         "./thread-data.js": threadData,
@@ -126,12 +129,10 @@ export function createRenderer({
                     [
                         "ui:profileAvatarRenderer",
                         {
-                            buildMarkup: ({
-                                label,
-                                profileHandle,
-                                avatarClass,
-                            }) =>
-                                `<a class="${avatarClass}" href="/profile/${escapeHtml(profileHandle ?? label)}">${escapeHtml(label)}</a>`,
+                            buildMarkup: (options) => {
+                                state.avatarOptions.push(options);
+                                return `<a class="${options.avatarClass}" href="/profile/${escapeHtml(options.profileHandle ?? options.label)}">${escapeHtml(options.label)}</a>`;
+                            },
                             hydrate(target) {
                                 state.hydrated.push(target);
                                 for (const avatar of target.querySelectorAll(
@@ -151,6 +152,7 @@ export function createRenderer({
                 member.displayName || member.handle || member.accountId,
         },
         "/static/reuse/popup.js": {
+            openPopup: async (options) => state.popups.push(options),
             createAnchoredPopup: () => ({
                 hide() {},
                 destroy() {},

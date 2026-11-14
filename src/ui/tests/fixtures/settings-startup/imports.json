@@ -47,10 +47,7 @@
     "../../reuse/toast.js": ["showToast"],
     "../../reuse/escape-html.js": ["escapeHtml"],
     "../../reuse/info-tooltip.js": ["renderInfoTooltip"],
-    "../../reuse/message-style-options.js": [
-        "isValidMessageStyle",
-        "normalizeMessageStyle"
-    ],
+    "../../reuse/message-style-options.js": ["normalizeMessageStyle"],
     "../../reuse/dynamic-contribution-loader.js": ["loadDynamicContributions"],
     "../../reuse/structured-content.js": ["renderStructuredContent"],
     "./search-index.js": [
@@ -66,5 +63,6 @@
     "./language-redraw.js": ["createLanguageRedraw"],
     "../../reuse/ui-language-state.js": ["uiLanguageMembershipChanged"],
     "../../reuse/app-router.js": ["navigateTo"],
-    "./guides.js": ["guides"]
+    "./guides.js": ["guides"],
+    "./message-style-prefs.js": ["initMessageStylePrefs"]
 }

@@ -658,7 +658,7 @@
   <string name="ui.tutorial.settings.appearance.theme.title">テーマ</string>
   <string name="ui.tutorial.settings.appearance.theme.body">画面をライトまたはダークテーマに切り替えます。</string>
   <string name="ui.tutorial.settings.appearance.message.layout.title">メッセージの表示形式</string>
-  <string name="ui.tutorial.settings.appearance.message.layout.body">好みのメッセージ形式を選びます。保存すると未適用の表示設定が反映されます。</string>
+  <string name="ui.tutorial.settings.appearance.message.layout.body">各レイアウトを選び、下の会話サンプルを比較しましょう。保存すると選択が適用され、破棄すると保存済みのレイアウトに戻ります。</string>
   <string name="ui.tutorial.settings.language.title">言語設定</string>
   <string name="ui.tutorial.settings.language.available.languages.title">利用できる言語</string>
   <string name="ui.tutorial.settings.language.available.languages.body">言語を優先言語リストへドラッグします。タッチ画面ではハンドルをドラッグします。</string>
@@ -769,4 +769,15 @@
   <string name="ui.tutorial.admin.status.file.integrity.title">ファイルの整合性</string>
   <string name="ui.tutorial.admin.status.file.integrity.body">ここでファイル検査の結果を確認します。ファイルの欠落や変更は、コンポーネントが読み込めない原因になることがあります。</string>
   <string name="ui.reuse.layout_keyboard">矢印キーで移動し、Shift キーを押しながらサイズを変更します</string>
+  <string name="ui.app.settings.message_preview_title">会話のサンプル</string>
+  <string name="ui.app.settings.message_preview_participant">サンプルの学習者</string>
+  <string name="ui.app.settings.message_preview_handle">サンプル学習者</string>
+  <string name="ui.app.settings.message_preview_self">サンプルのあなた</string>
+  <string name="ui.app.settings.message_preview_self_handle">サンプルあなた</string>
+  <string name="ui.app.settings.message_preview_text_1">学習は順調ですか？</string>
+  <string name="ui.app.settings.message_preview_text_2">新しいメッセージ表示を試しています。この長めのサンプルでは、小さな画面でテキストがどのように折り返されるかを確認できます。</string>
+  <string name="ui.app.settings.message_preview_text_3">いいですね！次の学習でまた会いましょう。</string>
+  <string name="ui.app.settings.message_preview_failed">会話のサンプルを表示できませんでした。</string>
+  <string name="ui.tutorial.settings.appearance.message.preview.title">メッセージ表示の比較</string>
+  <string name="ui.tutorial.settings.appearance.message.preview.body">架空の会話で、受信と送信のメッセージ、名前、時刻を確認できます。保存する前にメッセージスタイルを切り替えて表示を比べましょう。</string>
 </resources>

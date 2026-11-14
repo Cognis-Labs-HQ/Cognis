@@ -689,6 +689,11 @@ export async function bootstrapSocialAdapter(
         isEnabled: () => ctx.isGatewayEnabled() && ctx.isAdapterEnabled(),
     });
     ctx.registerCapabilityProvider?.({
+        scriptUrl: "/static/adapters/social/messages/presentation-provider.js",
+        providesCapabilities: ["social:messagePresentation"],
+        isEnabled: () => ctx.isGatewayEnabled() && ctx.isAdapterEnabled(),
+    });
+    ctx.registerCapabilityProvider?.({
         scriptUrl: "/static/adapters/social/messages/offline-client.js",
         providesCapabilities: ["social:messagesRequest"],
         isEnabled: () => ctx.isGatewayEnabled() && ctx.isAdapterEnabled(),

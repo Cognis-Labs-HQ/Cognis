@@ -658,7 +658,7 @@
   <string name="ui.tutorial.settings.appearance.theme.title">Theme</string>
   <string name="ui.tutorial.settings.appearance.theme.body">Select the light or dark theme for the interface.</string>
   <string name="ui.tutorial.settings.appearance.message.layout.title">Message Layout</string>
-  <string name="ui.tutorial.settings.appearance.message.layout.body">Pick the message layout you prefer; Save applies pending appearance changes.</string>
+  <string name="ui.tutorial.settings.appearance.message.layout.body">Try each layout and compare the sample conversation below. Save applies your choice; Discard restores your saved layout.</string>
   <string name="ui.tutorial.settings.language.title">Language Preferences</string>
   <string name="ui.tutorial.settings.language.available.languages.title">Available Languages</string>
   <string name="ui.tutorial.settings.language.available.languages.body">Drag a language into Preferred Languages. On a touch screen, drag its handle.</string>
@@ -769,4 +769,15 @@
   <string name="ui.tutorial.admin.status.file.integrity.title">File Integrity</string>
   <string name="ui.tutorial.admin.status.file.integrity.body">Compare file-check results here. Missing or changed files can explain why a component fails to load.</string>
   <string name="ui.reuse.layout_keyboard">Use Arrow Keys to Move; Hold Shift to Resize</string>
+  <string name="ui.app.settings.message_preview_title">Sample Conversation</string>
+  <string name="ui.app.settings.message_preview_participant">Sample Learner</string>
+  <string name="ui.app.settings.message_preview_handle">sample_learner</string>
+  <string name="ui.app.settings.message_preview_self">Sample You</string>
+  <string name="ui.app.settings.message_preview_self_handle">sample_you</string>
+  <string name="ui.app.settings.message_preview_text_1">How is your practice going?</string>
+  <string name="ui.app.settings.message_preview_text_2">I am trying a new message layout. This longer sample shows how text wraps on smaller screens.</string>
+  <string name="ui.app.settings.message_preview_text_3">Looks good! See you at the next session.</string>
+  <string name="ui.app.settings.message_preview_failed">The sample conversation could not be displayed.</string>
+  <string name="ui.tutorial.settings.appearance.message.preview.title">Compare Message Styles</string>
+  <string name="ui.tutorial.settings.appearance.message.preview.body">This fictional exchange shows incoming and outgoing messages with names and times. Change Message Style to compare layouts before saving.</string>
 </resources>
