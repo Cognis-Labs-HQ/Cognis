@@ -654,11 +654,7 @@ function bindUsersInteractions() {
                 });
                 await refreshUsersAfterMutation();
             } else {
-                const responseBody = await res.json().catch(() => null);
-                const responseMessage =
-                    responseBody?.error?.message ??
-                    i18n.t("ui.reuse.save_failed");
-                showToast(responseMessage, {
+                showToast(i18n.t("ui.reuse.save_failed"), {
                     variant: "error",
                 });
                 await refreshUsersAfterMutation();

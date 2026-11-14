@@ -1,6 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { CapabilityStore, CTX_CAPABILITY, createCtx } from "@cognis/core";
+import {
+    CapabilityStore,
+    CTX_CAPABILITY,
+    createCtx,
+    runBootstrapScope,
+} from "@cognis/core";
 import { registerAuthBootstrapHook } from "../bootstrap/flow-registrations.js";
 import type { AuthBootstrapHookContext } from "../bootstrap/index.js";
 import { VolatileLocalAccountStore } from "../reuse/account-store.js";
@@ -19,7 +24,9 @@ for (const role of ["user", "teacher", "moderator", "admin"] as const) {
             },
             ctx: { capabilities, flow: system.flow },
         } as unknown as AuthBootstrapHookContext;
-        await registerAuthBootstrapHook(context);
+        await runBootstrapScope(system, "gateway:auth", async () => {
+            await registerAuthBootstrapHook(context);
+        });
         const created = await system.flow.run("provision-user", {
             username: "person",
             password: "disposable-provision-password",

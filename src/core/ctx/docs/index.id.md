@@ -38,6 +38,8 @@ Flow didaftarkan sekali dengan ID tahap eksplisit. Hook tahap kemudian ditambahk
 
 Flow dapat memanggil flow lain melalui `context.ctx.runFlow(...)` untuk komposisi bertingkat. Contoh: flow konstruksi halaman login memanggil flow login; hook flow login memanggil flow LDAP saat syarat adapter terpenuhi.
 
+Pelaksana membekukan konteks eksekusi setiap tahap secara dangkal sebelum memanggil handler pemilik atau hook ekstensi. Ikatan `ctx`, `flowId`, `stageId`, `input`, `meta`, `data`, dan `stageResults` tidak dapat diganti atau dihapus, dan bidang konteks baru tidak dapat ditambahkan. Pemilik dan hook berbagi konteks yang sama dalam satu tahap; setiap tahap dan pemanggilan menerima konteksnya sendiri. Muatan tidak dibekukan secara mendalam: `input`, `data`, dan `stageResults` mempertahankan identitas yang ada serta isi yang dapat diubah. Tahap berikutnya tetap melihat hasil yang terkumpul melalui objek `stageResults` yang sama. Metadata tetap berupa salinan `meta` yang dibekukan secara dangkal; nilai metadata bertingkat tidak dibekukan.
+
 ## Konfigurasi
 
 Komponen ini tidak memiliki konfigurasi variabel lingkungan runtime.

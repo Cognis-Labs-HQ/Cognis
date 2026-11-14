@@ -101,3 +101,11 @@ Pembacaan dan reaksi yang diakui memakai urutan tampilan saat ini. Pembacaan riw
 Header klien terlingkup `x-cognis-read-source` membedakan transport baru (`live`), pemakai transport yang sudah dimulai (`shared`), dan snapshot tersimpan atau dipulihkan (`cached`). Baris server bersama atau tersimpan tidak menimpa metadata yang ditampilkan atau menghapus baris yang dimuat. Baris tersebut dapat mengisi bagian awal yang lebih lama dan belum dimuat kecuali hasil langsung telah memastikan batas akhirnya. Bagian awal cache yang kosong hanya mengakhiri riwayat yang saat ini dapat dibaca; hasil langsung berikutnya dapat membukanya kembali. Proyeksi antrean tetap diselaraskan secara terpisah. Tanda tangan yang menyertakan sumber memungkinkan respons yang benar-benar baru memperbarui metadata meskipun muatannya sama dengan snapshot lama.
 
 Perender mengembalikan hasil usang secara eksplisit ketika kepemilikan ruang, akun, kunci, gaya, atau kontainer berubah. Pemanggil tindakan, pembukaan ruang, dan pembaruan latar belakang berhenti tanpa pemberitahuan kesalahan, penulisan status baca, atau pembacaan status mengetik lanjutan; kegagalan pembacaan saat ini tetap dibedakan.
+
+## Bukti penghapusan akun
+
+Pada `deprovision-user` → `cleanup-dependencies`, komponen memperoleh `auth:deprovisionOutcome` versi 1 melalui `system:contracts` dan memanggil `deletedAccount(input, stageResults)` dengan objek asli dari pemanggilan tersebut. Hanya bukti milik Auth yang mengonfirmasi penghapusan tersimpan yang mengizinkan penghapusan keanggotaan ruang dan aktivitas pesan akun. Hasil salinan, hasil penonaktifan/pengarsipan, serta bukti yang hilang atau tidak tersedia tidak mengizinkan pembersihan ini.
+
+Pasang bersama penyedia Auth 2.2.12 bawaan atau alternatif yang menerapkan kontrak berversi ini; hasil alur publik yang dapat diubah bukan pengganti. Pembersihan menggunakan bukti penghapusan yang sudah tersimpan, bukan melakukan otorisasi ulang setelah penghapusan. Mutasi eksternal yang sudah dimulai dapat selesai sebagian sebelum kegagalan berikutnya; pembatalan lintas komponen tidak dijamin. Kontrol antarmuka dan tutorial biasa tidak berubah.
+
+Migrasi ini melindungi konsumen pembersihan bawaan. Sebelum mengaktifkan penghapusan akun dalam penerapan, perbarui atau nonaktifkan hook pembersihan eksternal yang masih memercayai hasil alur publik yang dapat diubah.

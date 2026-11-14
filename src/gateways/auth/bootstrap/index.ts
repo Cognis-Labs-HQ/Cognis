@@ -1,3 +1,4 @@
+import { registerAccountInstanceCleanup } from "./account-instance-cleanup.js";
 import type { PendingLoginLifetime } from "../pending-login-lifetimes.js";
 import type { LoginContinuation } from "../login-continuation.js";
 import * as verificationCodes from "../../reuse/verification-codes.js";
@@ -300,38 +301,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             return instanceId;
         },
     );
-    ctx.flow.extend(
-        "deprovision-user",
-        "cleanup-dependencies",
-        { id: "auth-gateway:delete-account-instance" },
-        async (stageContext) => {
-            const request = stageContext.input as {
-                username?: string;
-                action?: string;
-            };
-            const persisted = (
-                stageContext.stageResults["persist-state"] ?? []
-            ).some((result) => (result as { persisted?: boolean }).persisted);
-            if (
-                !persisted ||
-                request.action !== "delete" ||
-                !request.username
-            ) {
-                return { cleaned: false };
-            }
-            await accountInstanceStore.delete(request.username);
-            const accountId = request.username.trim().toLowerCase();
-            ctx.log?.("info", "Deleted transient account instance.", {
-                component: "auth-gateway",
-                operation: "delete_account_instance",
-                accountId,
-            });
-            return {
-                cleaned: true,
-                accountId,
-            };
-        },
-    );
+    registerAccountInstanceCleanup(ctx, accountInstanceStore);
 
     const authGateway = new CoreAuthGateway(dbExecutor);
     await authGateway.ensureSchema();

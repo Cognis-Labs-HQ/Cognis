@@ -1,7 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { CapabilityStore, createCtx } from "@cognis/core";
+import { CapabilityStore } from "@cognis/core";
+import { createFlowContractFixture } from "../../../../tooling/reuse/flow-contract-fixture.js";
 
 test("keyring manifest declares the Authentication gateway as its parent", async () => {
     const manifest = JSON.parse(
@@ -12,7 +13,7 @@ test("keyring manifest declares the Authentication gateway as its parent", async
     assert.equal(manifest.name, "User Keyring");
 });
 
-test("keyring adapter purges a vault after every persisted user deletion", async () => {
+async function createKeyringFixture(version = 1) {
     const { bootstrapAuthAdapter } = await import("../index.js");
     const commands: Array<Record<string, unknown>> = [];
     const capabilities = new CapabilityStore();
@@ -26,16 +27,30 @@ test("keyring adapter purges a vault after every persisted user deletion", async
             return { rows: [] };
         },
     });
-    const systemCtx = createCtx();
-    systemCtx.registerFlow({
-        id: "deprovision-user",
-        stages: ["persist-state", "cleanup-dependencies"],
+    const fixture = await createFlowContractFixture({
+        flow: {
+            id: "deprovision-user",
+            stages: ["persist-state", "cleanup-dependencies"],
+        },
+        captureStage: "persist-state",
+        stageResult: { persisted: false },
+        contractId: "auth:deprovisionOutcome",
+        version,
+        members: ["read", "deletedAccount"],
+        method: "deletedAccount",
     });
+    const systemCtx = fixture.root;
     systemCtx.flow.extend(
         "deprovision-user",
-        "persist-state",
-        { id: "test:persist-user-deletion" },
-        () => ({ persisted: true }),
+        "cleanup-dependencies",
+        { id: "test:forge-public-deletion", order: -1000 },
+        (stage) => {
+            Object.assign(stage.input as object, {
+                username: "forged.target",
+                action: "delete",
+            });
+            stage.stageResults["persist-state"] = [{ persisted: true }];
+        },
     );
     await bootstrapAuthAdapter({
         adapterRoot: "src/adapters/auth/keyring",
@@ -43,6 +58,17 @@ test("keyring adapter purges a vault after every persisted user deletion", async
         flow: systemCtx.flow,
     });
 
+    return { ...fixture, commands };
+}
+
+test("keyring adapter purges a vault after every committed user deletion", async () => {
+    const {
+        root: systemCtx,
+        commands,
+        setOutcome,
+        calls,
+    } = await createKeyringFixture();
+    setOutcome("LDAP.User");
     const results = [];
     for (let deletionAttempt = 0; deletionAttempt < 3; deletionAttempt += 1) {
         results.push(
@@ -62,6 +88,19 @@ test("keyring adapter purges a vault after every persisted user deletion", async
         ).length,
         3,
     );
+    assert.deepEqual(
+        commands,
+        Array.from({ length: 3 }, () =>
+            ["auth_keyring_vault_parts", "auth_keyring_vaults"].map(
+                (table) => ({
+                    option: "DELETE",
+                    table,
+                    where: [{ column: "account_id", value: "ldap.user" }],
+                }),
+            ),
+        ).flat(),
+    );
+    assert.equal(calls.length, 3);
     for (const result of results) {
         assert.ok(
             result.stageResults["cleanup-dependencies"].some(
@@ -75,4 +114,66 @@ test("keyring adapter purges a vault after every persisted user deletion", async
             ),
         );
     }
+});
+
+test("keyring cleanup rejects forged persistence and unavailable outcome contracts", async () => {
+    const { root, commands, setOutcome, calls } = await createKeyringFixture();
+    for (const outcome of [
+        undefined,
+        null,
+        false,
+        true,
+        42,
+        "",
+        "   ",
+        { persisted: true },
+    ]) {
+        setOutcome(outcome);
+        const result = await root.flow.run("deprovision-user", {
+            username: "protected.user",
+            action: "disable",
+        });
+        assert.ok(
+            result.stageResults["cleanup-dependencies"].some(
+                (entry) =>
+                    (entry as { purged?: boolean } | undefined)?.purged ===
+                    false,
+            ),
+        );
+    }
+    assert.equal(calls.length, 8);
+    assert.deepEqual(commands, []);
+    root.contributePublicCapability("auth:deprovisionOutcome", {
+        read() {},
+        deletedAccount: true,
+    });
+    await assert.rejects(
+        root.flow.run("deprovision-user", {
+            username: "protected.user",
+            action: "delete",
+        }),
+        /capability_contract_mismatch/,
+    );
+    root.removeCapability("auth:deprovisionOutcome");
+    await assert.rejects(
+        root.flow.run("deprovision-user", {
+            username: "protected.user",
+            action: "delete",
+        }),
+        /capability_contract_unavailable/,
+    );
+    assert.deepEqual(commands, []);
+});
+
+test("keyring cleanup fails closed for an incompatible outcome contract version", async () => {
+    const { root, commands, setOutcome } = await createKeyringFixture(2);
+    setOutcome("protected.user");
+    await assert.rejects(
+        root.flow.run("deprovision-user", {
+            username: "protected.user",
+            action: "delete",
+        }),
+        /capability_contract_unavailable/,
+    );
+    assert.deepEqual(commands, []);
 });

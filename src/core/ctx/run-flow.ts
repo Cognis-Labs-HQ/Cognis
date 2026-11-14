@@ -45,7 +45,7 @@ export async function runFlow(
             Array.from(stageHookMap?.values() ?? []),
         );
 
-        const executionContext: FlowStageContext = {
+        const executionContext: FlowStageContext = Object.freeze({
             ctx,
             flowId,
             stageId,
@@ -53,7 +53,7 @@ export async function runFlow(
             meta,
             data,
             stageResults,
-        };
+        });
 
         const currentStageResults: unknown[] = [];
         const owner = options?.handlers?.[stageId];

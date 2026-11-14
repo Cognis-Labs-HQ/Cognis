@@ -1,205 +1,18 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createUserRoutes } from "../../routes/users/index.js";
-import { createDefaultRouteContext } from "../../reuse/route-context.js";
-import { VolatileLocalAccountStore } from "../../../gateways/auth/reuse/account-store.js";
 import { VolatileUserPreferenceStore } from "../../reuse/preference-store.js";
+import { TestAccountStore as VolatileLocalAccountStore } from "./reuse/accounts.js";
 import {
-    issueAccessToken,
-    verifyAccessToken,
-    revokeAccessTokensForSubject,
-} from "../../../gateways/auth/access-tokens.js";
-import {
-    CapabilityStore,
-    CTX_CAPABILITY,
-    createCtx,
-    registerCanonicalFlow,
-    USER_LIFECYCLE_FLOW_CATALOG,
-} from "@cognis/core";
-import type { LocalAccountStore } from "../../../gateways/auth/reuse/account-store.js";
-
-function makeRouteContext(accountStore: LocalAccountStore) {
-    const VALID_ROLES = new Set(["user", "teacher", "moderator", "admin"]);
-    const capabilities = new CapabilityStore();
-    const flowCtx = createCtx();
-    capabilities.contribute(CTX_CAPABILITY, flowCtx);
-    capabilities.contribute(
-        "auth:revokeAccessTokensForSubject",
-        revokeAccessTokensForSubject,
-    );
-    for (const flow of USER_LIFECYCLE_FLOW_CATALOG) {
-        registerCanonicalFlow(flowCtx, flow);
-    }
-    flowCtx.flow.extend(
-        "provision-user",
-        "validate-request",
-        { id: "test:validate-account-input" },
-        (stageCtx) => {
-            const input = (stageCtx.input ?? {}) as { role?: string };
-            const role = String(input.role ?? "user");
-            if (!VALID_ROLES.has(role)) {
-                return { valid: false, reason: "invalid_role", role };
-            }
-            return { valid: true, role };
-        },
-    );
-    flowCtx.flow.extend(
-        "provision-user",
-        "persist-account",
-        { id: "test:create-account" },
-        async (stageCtx) => {
-            const input = (stageCtx.input ?? {}) as {
-                username?: string;
-                password?: string;
-            };
-            const validateResult = (
-                (stageCtx.stageResults["validate-request"] ?? []) as Array<{
-                    valid: boolean;
-                    reason?: string;
-                    role?: string;
-                }>
-            )[0];
-            if (!validateResult?.valid) {
-                return {
-                    persisted: false,
-                    reason: validateResult?.reason ?? "validation_failed",
-                };
-            }
-            const username = String(input.username ?? "");
-            const password = String(input.password ?? "").trim();
-            const role = validateResult.role ?? "user";
-            if (!password) {
-                return { persisted: false, reason: "missing_password" };
-            }
-            const created = await accountStore.register(
-                username,
-                password,
-                role === "admin" ? "admin" : "user",
-            );
-            return { persisted: true, created, role };
-        },
-    );
-    flowCtx.flow.extend(
-        "provision-user",
-        "emit-events",
-        { id: "test:provision-emit" },
-        (stageCtx) => {
-            const persistResult = (
-                (stageCtx.stageResults["persist-account"] ?? []) as Array<{
-                    persisted: boolean;
-                    created?: { username: string };
-                    role?: string;
-                }>
-            )[0];
-            if (!persistResult?.persisted) return { emitted: false };
-            return {
-                emitted: true,
-                accountId: persistResult.created?.username,
-                role: persistResult.role,
-            };
-        },
-    );
-    flowCtx.flow.extend(
-        "deprovision-user",
-        "authorize-request",
-        { id: "test:authorize-deprovision" },
-        (stageCtx) => {
-            const input = (stageCtx.input ?? {}) as {
-                callerRole?: string;
-                targetRole?: string;
-                targetIsFounder?: boolean;
-            };
-            if (input.targetIsFounder) {
-                return {
-                    authorized: false,
-                    reason: "protected_founder_account",
-                };
-            }
-            if (
-                input.callerRole === "admin" &&
-                (input.targetRole === "admin" || input.targetRole === "owner")
-            ) {
-                return { authorized: false, reason: "protected_admin_account" };
-            }
-            return { authorized: true };
-        },
-    );
-    flowCtx.flow.extend(
-        "deprovision-user",
-        "persist-state",
-        { id: "test:apply-deprovision" },
-        async (stageCtx) => {
-            const input = (stageCtx.input ?? {}) as {
-                username?: string;
-                action?: "delete" | "disable" | "archive";
-            };
-            const authorizeResult = (
-                (stageCtx.stageResults["authorize-request"] ?? []) as Array<{
-                    authorized: boolean;
-                    reason?: string;
-                }>
-            )[0];
-            if (!authorizeResult?.authorized) {
-                return {
-                    persisted: false,
-                    reason: authorizeResult?.reason ?? "authorization_failed",
-                };
-            }
-            const username = String(input.username ?? "");
-            if (input.action === "delete") {
-                await accountStore.delete(username);
-            } else if (input.action === "disable") {
-                await accountStore.setEnabled?.(username, false);
-            }
-            return { persisted: true, username, action: input.action };
-        },
-    );
-    flowCtx.flow.extend(
-        "deprovision-user",
-        "cleanup-dependencies",
-        { id: "test:revoke-tokens" },
-        (stageCtx) => {
-            const persistResult = (
-                (stageCtx.stageResults["persist-state"] ?? []) as Array<{
-                    persisted: boolean;
-                    username?: string;
-                }>
-            )[0];
-            if (!persistResult?.persisted || !persistResult.username) {
-                return { cleaned: false, revokedTokenCount: 0 };
-            }
-            const revokeTokens = capabilities.get<(subject: string) => number>(
-                "auth:revokeAccessTokensForSubject",
-            );
-            const revokedCount = revokeTokens?.(persistResult.username) ?? 0;
-            return { cleaned: true, revokedTokenCount: revokedCount };
-        },
-    );
-    return createDefaultRouteContext({
-        getCapability: capabilities.get.bind(capabilities),
-        requireCapability: capabilities.require.bind(capabilities),
-        flow: flowCtx.flow,
-    });
-}
+    makeRouteContext,
+    createProfileLifecycleTracker,
+} from "./reuse/context.js";
+import { issueAccessToken, verifyAccessToken } from "./reuse/sessions.js";
 
 const adminToken = issueAccessToken("admin", "admin", 60);
 const ownerToken = issueAccessToken("owner", "owner", 60);
 const headers = { authorization: `Bearer ${adminToken}` };
 const ownerHeaders = { authorization: `Bearer ${ownerToken}` };
-
-function createProfileLifecycleTracker() {
-    const states = new Map<string, "active" | "deactivated" | "archived">();
-    return {
-        states,
-        get: async (accountId: string) => states.get(accountId) ?? "active",
-        set: async (
-            accountId: string,
-            lifecycleState: "active" | "deactivated" | "archived",
-        ) => {
-            states.set(accountId, lifecycleState);
-        },
-    };
-}
 
 test("user routes create/list/update lifecycle", async () => {
     const accounts = new VolatileLocalAccountStore();
@@ -213,7 +26,7 @@ test("user routes create/list/update lifecycle", async () => {
         undefined,
         undefined,
         undefined,
-        makeRouteContext(accounts),
+        await makeRouteContext(accounts),
         lifecycle.get,
         lifecycle.set,
     );
@@ -310,7 +123,7 @@ test("user routes log account disable operations", async () => {
         },
         undefined,
         undefined,
-        makeRouteContext(accounts),
+        await makeRouteContext(accounts),
         lifecycle.get,
         lifecycle.set,
     );
@@ -348,7 +161,15 @@ test("user info endpoint allows self-access and admin access, blocks others", as
     const accounts = new VolatileLocalAccountStore();
     await accounts.register("alice", "pw", "user");
     const prefs = new VolatileUserPreferenceStore();
-    const route = createUserRoutes(accounts, prefs);
+    const route = createUserRoutes(
+        accounts,
+        prefs,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        await makeRouteContext(accounts),
+    );
     let body = "";
     let status = 0;
 
@@ -419,7 +240,15 @@ test("getInfo endpoint returns lastLogin field", async () => {
     const accounts = new VolatileLocalAccountStore();
     await accounts.register("carol", "pw", "user");
     const prefs = new VolatileUserPreferenceStore();
-    const route = createUserRoutes(accounts, prefs);
+    const route = createUserRoutes(
+        accounts,
+        prefs,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        await makeRouteContext(accounts),
+    );
     let body = "";
     let status = 0;
 
@@ -476,7 +305,15 @@ test("admin can set founder flag through isfounder endpoint", async () => {
     const accounts = new VolatileLocalAccountStore();
     await accounts.register("dana", "pw", "user");
     const prefs = new VolatileUserPreferenceStore();
-    const route = createUserRoutes(accounts, prefs);
+    const route = createUserRoutes(
+        accounts,
+        prefs,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        await makeRouteContext(accounts),
+    );
     let status = 0;
     let body = "";
 
@@ -517,7 +354,7 @@ test("disabling a user invalidates existing access tokens for that user", async 
         undefined,
         undefined,
         undefined,
-        makeRouteContext(accounts),
+        await makeRouteContext(accounts),
         lifecycle.get,
         lifecycle.set,
     );
@@ -553,7 +390,7 @@ test("deleting a user invalidates existing access tokens for that user", async (
         undefined,
         undefined,
         undefined,
-        makeRouteContext(accounts),
+        await makeRouteContext(accounts),
     );
     let status = 0;
 
@@ -586,7 +423,7 @@ test("deleting a user frees the username for re-registration", async () => {
         undefined,
         undefined,
         undefined,
-        makeRouteContext(accounts),
+        await makeRouteContext(accounts),
     );
     let status = 0;
 

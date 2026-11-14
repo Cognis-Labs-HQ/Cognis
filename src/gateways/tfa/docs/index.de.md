@@ -121,3 +121,7 @@ Methodenadapter erhalten verpflichtend `lifetime: { id, expiresAt, signal }` fü
 ### Abschließende Zustandsänderungen koordinieren
 
 Abschlussvorgänge für Konto, Methode und Gateway sperren neue Vorgänge während Bereinigung und Speicherung. Überlappende Vorgänge besitzen jeweils eine eigene Sperre; der Abschluss eines Vorgangs öffnet keinen anderen. Eine fehlgeschlagene Registrierung bleibt ein Prüfungsfehler. Die Bereinigung wartet auf ihr Ende, ohne ein späteres Zurücksetzen oder Deaktivieren an dessen eigener Zustandsänderung zu hindern.
+
+## Autorisierung des Kontoziels
+
+Kontenübergreifende Verwaltung sowie alle TFA-Lesezugriffe mit Zielauswahl, Wiederherstellungscode-Aktionen, Methodenpräferenzen, Aktivierungen/Deaktivierungen und Administrator-Zurücksetzungen erfordern Auths Richtlinie `auth:authorizeAccountTarget` v1. Administratoren dürfen keine anderen Administratoren, Eigentümer oder Gründeradministratoren verwalten. Vom Eigentümer erlaubte Aktionen bleiben verfügbar. Fehlende Richtlinien oder unlesbare Kontometadaten führen vor nachgelagerten Speicherzugriffen zur Ablehnung. Die Benutzerverwaltung verbietet weiterhin Selbstverwaltung; TFA akzeptiert ein weggelassenes oder exakt angegebenes eigenes Ziel. Einrichtung und Methodendetails bleiben auf das eigene Konto beschränkt. Leere, doppelte oder fehlerhafte Zielparameter werden abgelehnt. Verwenden Sie Einstellungen für Ihre eigene Sicherheit und die Benutzerverwaltung für ein zulässiges anderes Konto.

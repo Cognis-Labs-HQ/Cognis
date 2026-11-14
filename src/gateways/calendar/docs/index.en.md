@@ -81,3 +81,11 @@ Account operations require verified account sessions. Shared-resource operations
 New Event and Edit Event use a wider dialog on computers. Start and End, then Status and Recurrence, share rows when there is enough space. Title, Description, Calendar, participants and reminders retain full width. Narrow screens stack the fields in reading order; the dialog scrolls within the viewport and keeps its existing Save, Cancel and unsaved-change protection. All Day stays immediately after End. Date validation, writable-calendar filtering, meeting availability and offline queued changes follow the same contracts.
 
 Week headings wrap within their day columns and use compact stacked labels based on the calendar panel width, including beside a desktop sidebar. Day all-day and timed rows share their minimum slot height. Compact events keep their tighter spacing. Pending invitations overlay diagonal stripes and reduced opacity on the Busy, Free or Tentative background, with a dashed border; hovering retains both states.
+
+## Account deletion receipts
+
+During `deprovision-user` → `cleanup-dependencies`, the component resolves `auth:deprovisionOutcome` version 1 through `system:contracts` and calls `deletedAccount(input, stageResults)` with the original objects from that invocation. Only an Auth-owned receipt confirming a committed deletion authorizes removal of the account's calendar activity. Copied results, disable/archive outcomes, and missing or unavailable receipts do not authorize this cleanup.
+
+Deploy with the bundled Auth 2.2.12 provider or an alternative implementing this versioned contract; mutable public flow results are not a fallback. Cleanup uses the committed receipt rather than reauthorizing after deletion. An external mutation already started may partially complete before a later failure; cross-component rollback is not guaranteed. Normal UI controls and tutorials are unchanged.
+
+This migration protects the bundled cleanup consumers. Before enabling account deletion in a deployment, update or disable external cleanup hooks that still trust mutable public flow results.

@@ -1,3 +1,4 @@
+import { exposeUnfrozenFlowEnvelopes } from "../reuse/unfrozen-flow-envelope.js";
 import { registerAuthRouteBootstrapHook as registerContinuation } from "../../bootstrap/login-continuation.js";
 import { registerAuthRouteBootstrapHook as registerAttempts } from "../../bootstrap/tfa-login-attempt-capabilities.js";
 import { createLoginAttemptRoutes } from "../../bootstrap/routes/login-attempt.js";
@@ -19,8 +20,14 @@ import { createAuthRouteBootstrapRuntime } from "../../bootstrap/route-runtime.j
 import { createSessionRoutes } from "../../bootstrap/routes/session.js";
 import { makeJsonRequest } from "../auth-gateway-test-helpers.js";
 
-export async function createLoginFixture() {
+export async function createLoginFixture(
+    options: {
+        unfrozenEnvelope?: { enabled: boolean };
+    } = {},
+) {
     const root = createCtx();
+    if (options.unfrozenEnvelope)
+        exposeUnfrozenFlowEnvelopes(root, options.unfrozenEnvelope);
     const capabilities = new CapabilityStore();
     const gatewayRegistry = new GatewayRegistry();
     const disposers: Array<

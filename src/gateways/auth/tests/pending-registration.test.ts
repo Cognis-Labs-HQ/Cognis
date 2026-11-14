@@ -76,8 +76,8 @@ async function registrationFixture() {
         },
         routeContext: createDefaultRouteContext({ flow: system.flow }),
     };
-    await registerAuthBootstrapHook(loginContext);
     await runBootstrapScope(system, "gateway:auth", async () => {
+        await registerAuthBootstrapHook(loginContext);
         await registerSessionCommit(loginContext);
         await registerSessionLogin(loginContext);
     });

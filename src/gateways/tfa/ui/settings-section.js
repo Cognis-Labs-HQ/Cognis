@@ -69,17 +69,6 @@ export function createSettingsSection({ i18n, root, markDirty, signal }) {
         return runTfaSetupFlow(method.id);
     }
 
-    function resolveTranslatedMessage(key) {
-        if (typeof key !== "string" || !key.trim()) {
-            return null;
-        }
-        const translated = i18n.t(key);
-        if (translated && translated !== key) {
-            return translated;
-        }
-        return null;
-    }
-
     function resolveTranslatedTfaErrorMessage(message) {
         const normalizedMessage = String(message ?? "").trim();
         const messageKeyByCode = {
@@ -100,16 +89,10 @@ export function createSettingsSection({ i18n, root, markDirty, signal }) {
             tfa_method_enable_failed: "gateway.tfa.settings.setup_failed",
             tfa_preferences_not_confirmed: "gateway.tfa.settings.setup_failed",
         };
-        const mappedMessage = resolveTranslatedMessage(
-            messageKeyByCode[normalizedMessage],
-        );
-        if (mappedMessage) {
-            return mappedMessage;
-        }
-        return (
-            resolveTranslatedMessage(normalizedMessage) ||
-            i18n.t("gateway.tfa.settings.setup_failed")
-        );
+        const messageKey = Object.hasOwn(messageKeyByCode, normalizedMessage)
+            ? messageKeyByCode[normalizedMessage]
+            : "gateway.tfa.settings.setup_failed";
+        return i18n.t(messageKey);
     }
 
     function resolveTfaErrorToastVariant(message) {
