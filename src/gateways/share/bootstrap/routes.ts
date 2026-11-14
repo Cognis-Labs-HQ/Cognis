@@ -1,3 +1,8 @@
+import {
+    normalizeExpiresAt,
+    readResourceFilter,
+    readSharePassword,
+} from "./route-input.js";
 import type { BootstrapLog } from "../../shared.js";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
@@ -42,69 +47,12 @@ function sendDuplicateUserShareError(res: ServerResponse): void {
     );
 }
 
-function normalizeExpiresAt(value: unknown): string | undefined | null {
-    if (value === undefined) return undefined;
-    if (typeof value !== "string") return null;
-    const expiresAt = value.trim();
-    if (!expiresAt) return "";
-    const timestamp = Date.parse(expiresAt);
-    return Number.isFinite(timestamp)
-        ? new Date(timestamp).toISOString()
-        : null;
-}
-
-function readResourceFilter(url: URL): {
-    resourceType?: string;
-    resourceId?: string;
-} {
-    const resourceType = String(
-        url.searchParams.get("resourceType") ?? "",
-    ).trim();
-    const resourceId = String(url.searchParams.get("resourceId") ?? "").trim();
-    return {
-        ...(resourceType ? { resourceType } : {}),
-        ...(resourceId ? { resourceId } : {}),
-    };
-}
-
 function getFirstStageResult<T>(
     stageResults: Record<string, unknown[]>,
     stageId: string,
 ): T | null {
     const results = stageResults[stageId] as T[] | undefined;
     return results?.[0] ?? null;
-}
-
-function readSharePassword(req: IncomingMessage, url: URL): string | null {
-    for (const headerName of [
-        "x-cognis-share-password",
-        "x-cognis-calendar-passphrase",
-    ]) {
-        const value = req.headers[headerName];
-        const password = String(
-            Array.isArray(value) ? value[0] : (value ?? ""),
-        );
-        if (password) return password;
-    }
-    const authorization = String(
-        Array.isArray(req.headers.authorization)
-            ? req.headers.authorization[0]
-            : (req.headers.authorization ?? ""),
-    );
-    if (authorization.startsWith("Basic ")) {
-        const decoded = Buffer.from(
-            authorization.slice("Basic ".length),
-            "base64",
-        ).toString("utf8");
-        const separator = decoded.indexOf(":");
-        const password = separator >= 0 ? decoded.slice(separator + 1) : "";
-        if (password) return password;
-    }
-    const queryPassword =
-        url.searchParams.get("password") ??
-        url.searchParams.get("passphrase") ??
-        "";
-    return queryPassword || null;
 }
 
 export function createShareRoutes(input: {
@@ -248,7 +196,15 @@ export function createShareRoutes(input: {
             /^\/api\/v1\/share\/status\/([^/]+)$/,
         );
         if (req.method === "GET" && statusMatch) {
-            const claims = routeContext.getAuthClaims(req);
+            const claims =
+                routeContext.getAuthClaims(req) ??
+                (await routeContext.getCapability<
+                    (req: IncomingMessage) => Promise<{
+                        sub: string;
+                        role: "user";
+                        purpose: "share";
+                    } | null>
+                >("share:getGuestClaims")?.(req));
             if (!claims) {
                 sendError(res, 401, "unauthorized", "Authentication required.");
                 return true;
@@ -722,8 +678,7 @@ export function createShareRoutes(input: {
             // requesters for direct-access purposes — only pass through
             // claims that belong to a genuine account session.
             const directAccessClaims =
-                requesterClaims &&
-                !resolveShareGuestId({ sub: requesterClaims.sub })
+                requesterClaims && requesterClaims.purpose === "session"
                     ? requesterClaims
                     : null;
             const flowResult = await input.flow.run("resolve-share-token", {
@@ -844,7 +799,14 @@ export function createShareRoutes(input: {
             req.method === "GET" &&
             url.pathname === "/api/v1/share/guest-profile"
         ) {
-            const claims = routeContext.requireAuth(req, res, "user");
+            const guest = await routeContext.getCapability<
+                (req: IncomingMessage) => Promise<{
+                    sub: string;
+                    role: "user";
+                    purpose: "share";
+                } | null>
+            >("share:getGuestClaims")?.(req);
+            const claims = guest ?? routeContext.requireAuth(req, res, "user");
             if (!claims) return true;
             const guestSessionId = resolveShareGuestSessionId(claims);
             if (!guestSessionId) {

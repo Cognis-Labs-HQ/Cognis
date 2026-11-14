@@ -18,6 +18,7 @@ async function session(
     received: (accountId: string) => Promise<string[]> = async () => [],
     language?: string,
     recordResult?: ConstructorParameters<typeof DeckService>[8],
+    providers?: ConstructorParameters<typeof DeckService>[7],
 ) {
     const storage = structuredStore();
     let transactionDepth = 0;
@@ -64,7 +65,7 @@ async function session(
             access,
             received,
             undefined,
-            undefined,
+            providers,
             recordResult
                 ? async (result, actor) => {
                       assert.equal(
@@ -228,7 +229,11 @@ test("shared decks isolate learner schedules and revocation takes effect immedia
 
 test("link guests cannot persist personal decks or learner review history", async () => {
     const { service } = await session();
-    const guest = { accountId: "share:link:session", role: "user" };
+    const guest = {
+        accountId: "share:link:session",
+        role: "user",
+        claims: { sub: "share:link:session", purpose: "share" as const },
+    };
     await assert.rejects(
         () => service.save(guest, { name: "Guest", entryIds: ["public"] }),
         /deck_read_only/,
@@ -434,7 +439,11 @@ test("deck metadata and details do not expose cached content after its Library a
 test("malformed deck languages return a client error through the actual save route", async () => {
     const { service } = await session();
     const route = createDeckRoutes(service, {
-        requireAuth: () => ({ sub: owner.accountId, role: owner.role }),
+        requireAuth: () => ({
+            sub: owner.accountId,
+            role: owner.role,
+            purpose: "session",
+        }),
     } as never);
     for (const language of ["en_", "not a language"]) {
         let status = 0;
@@ -472,7 +481,13 @@ test("deck review rejects oversized JSON before changing a schedule", async () =
                 reviews++;
             },
         } as never,
-        { requireAuth: () => ({ sub: "alice", role: "user" }) } as never,
+        {
+            requireAuth: () => ({
+                sub: "alice",
+                role: "user",
+                purpose: "session",
+            }),
+        } as never,
     );
     const response = {
         status: 0,
@@ -631,4 +646,81 @@ test("a failed deck deletion rolls back documents, reviews and all learner sched
     storage.fail(() => false);
     await service.delete(owner, deck.id);
     assert.deepEqual(await service.list(owner), []);
+});
+
+test("guest GET requires target permission even for provider decks and matching owner identities", async () => {
+    const guest = {
+        sub: "share:synthetic:guest",
+        role: "user",
+        purpose: "share" as const,
+    };
+    for (const provider of [undefined, true]) {
+        let allowed = false;
+        const provided = {
+            id: "provider-deck",
+            ownerAccountId: guest.sub,
+            name: "Provider",
+            language: "en",
+            entryIds: [],
+            notes: [],
+            cards: [],
+            schemas: [],
+            progress: {},
+            provider,
+        };
+        const { service } = await session(
+            async () => allowed,
+            undefined,
+            undefined,
+            undefined,
+            async () => (provider ? [provided] : []),
+        );
+        const deck = provider
+            ? provided
+            : await service.save(
+                  {
+                      accountId: guest.sub,
+                      role: "user",
+                      claims: { sub: guest.sub, purpose: "session" },
+                  },
+                  {
+                      name: "Private",
+                      entryIds: [],
+                      notes: [
+                          { id: "note", front: "Question", back: "Answer" },
+                      ],
+                  },
+              );
+        const route = createDeckRoutes(service, {
+            requireAuth: () => {
+                throw new Error("Guest must use explicit admission");
+            },
+            getCapability: (id: string) =>
+                id === "share:getGuestClaims" ? async () => guest : undefined,
+        } as never);
+        const invoke = async () => {
+            let status = 0;
+            let body = "";
+            await route(
+                Object.assign(Readable.from([]), { method: "GET" }) as never,
+                {
+                    writeHead: (code: number) => {
+                        status = code;
+                    },
+                    end: (text: string) => {
+                        body = text;
+                    },
+                } as never,
+                new URL("http://localhost/api/v1/study/decks/" + deck.id),
+            );
+            return { status, data: JSON.parse(body).data };
+        };
+        assert.equal((await invoke()).status, 404);
+        allowed = true;
+        const result = await invoke();
+        assert.equal(result.status, 200);
+        assert.equal(result.data.deck.canEdit, false);
+        assert.equal(result.data.deck.canExport, false);
+        assert.deepEqual(result.data.deck.progress, {});
+    }
 });

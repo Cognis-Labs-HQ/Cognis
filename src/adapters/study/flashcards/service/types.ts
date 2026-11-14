@@ -1,7 +1,7 @@
 export interface DeckActor {
     accountId: string;
     role: string;
-    claims?: { sub: string };
+    claims?: { sub: string; purpose?: "session" | "share" };
 }
 
 export interface DeckCard {

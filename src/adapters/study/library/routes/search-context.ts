@@ -38,7 +38,7 @@ export function createDictionarySearchContextRoutes(
                     data,
                     handlers: {
                         authorize: () => {
-                            if (claims.sub.startsWith("share:"))
+                            if (claims.purpose === "share")
                                 throw new Error("forbidden");
                         },
                         ...(reading

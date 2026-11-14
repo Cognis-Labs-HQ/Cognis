@@ -649,3 +649,7 @@ Study request, content and deletion notifications use the category registered by
 ## Developer Verification
 
 Test factories in `tests/reuse/` provide complete entries, schemas and public capability fakes. Unconfigured capability operations throw instead of silently succeeding. File writes return object metadata, and database transactions preserve their result type. The image persistence fixture exercises structured storage and rollback locally. Run Library tests with Node’s `--experimental-vm-modules --import tsx --test` options. These test-only changes do not enable the repository-wide typecheck pipeline; that requires separate integration after the other components are repaired.
+
+## Session Identity
+
+Personal activity and saved state use verified account sessions, including account names beginning with `share:`. Guest restrictions follow verified credential purpose rather than names or browser markers. Offline delivery retains its verified-session, account and instance checks.

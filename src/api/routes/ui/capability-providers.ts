@@ -18,7 +18,10 @@ export async function serveProviders(
     ) {
         return false;
     }
-    const claims = routeContext.requireAuth(req, res, "user");
+    const guest = await routeContext.getCapability<
+        (req: IncomingMessage) => Promise<{ sub: string; role: "user" } | null>
+    >("share:getGuestClaims")?.(req);
+    const claims = guest ?? routeContext.requireAuth(req, res, "user");
     if (!claims) return true;
     let providers = (uiRegistry?.listCapabilityProviders() ?? []).filter(
         (provider) => isRoleAllowed(claims.role, provider.access),

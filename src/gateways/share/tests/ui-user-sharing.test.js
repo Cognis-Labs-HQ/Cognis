@@ -142,13 +142,16 @@ test("share history supports email delivery and form-based update mode", () => {
 });
 
 test("logged-in share recipients keep their account session", () => {
-    assert.match(sessionFlowSource, /if \(shareData\.directAccess === true\)/);
+    assert.match(
+        sessionFlowSource,
+        /shareData\.directAccess === true && hasValidatedAccountSession/,
+    );
     assert.match(
         sessionFlowSource,
         /guestAccessToken: shareData\.guestAccessToken/,
     );
     assert.match(shareAppSource, /import "\.\.\/session-flow-hooks\.js"/);
-    assert.match(shareButtonSource, /accountId\.startsWith\("share:"\)/);
+    assert.match(shareButtonSource, /session:isGuest/);
     assert.match(
         sessionFlowSource,
         /isUserShare && shareData\.directAccess !== true[\s\S]*recipient_restricted/,
@@ -214,7 +217,7 @@ test("anonymous share guests activate a temporary unlocked keyring", () => {
     );
     assert.match(
         sessionFlowSource,
-        /isViewingAsGuest\(\) && hasAccountSession[\s\S]*discardStaleGuestMarkers\(\)[\s\S]*shareToken\.startsWith\("shr_"\)/,
+        /hasAccountSession &&\s*sessionStorage\.getItem\(GUEST_TOKEN_ACTIVE_KEY\)[\s\S]*discardStaleGuestMarkers\(\)[\s\S]*shareToken\.startsWith\("shr_"\)/,
     );
     assert.match(
         sessionFlowSource,
@@ -247,13 +250,19 @@ test("anonymous share guests activate a temporary unlocked keyring", () => {
         sessionFlowSource,
         /useAccountKeyring: hasValidatedAccountSession/,
     );
-    assert.match(sessionFlowSource, /if \(shareData\.directAccess === true\)/);
+    assert.match(
+        sessionFlowSource,
+        /shareData\.directAccess === true && hasValidatedAccountSession/,
+    );
     assert.doesNotMatch(
         sessionFlowSource,
         /hasValidatedAccountSession && shareData\.directAccess === true/,
     );
     assert.match(sessionFlowSource, /!isViewingAsGuest\(\)/);
-    assert.match(sessionFlowSource, /!ownAccountId\.startsWith\("share:"\)/);
+    assert.match(
+        sessionFlowSource,
+        /priorSessionResult\?\.purpose === "session"/,
+    );
     assert.match(receivedShareSource, /if \(useAccountKeyring\)/);
     assert.match(
         receivedShareSource,

@@ -123,3 +123,7 @@ Nicht verfügbare Ziele bleiben in der Hauptnavigation, im Benutzermenü und im 
 ## Bestätigte Favoriten
 
 Erfolgreiche Online-Änderungen an Favoriten und bestätigte Wiederholungen ersetzen Studys begrenzte Offline-Momentaufnahme durch die Serverantwort. Eine überholte laufende Abfrage kann sie nicht überschreiben. Erneuter Seitenaufbau offline erhält bestätigte Ergänzungen und Entfernungen; noch gepufferte Absichten werden weiterhin darübergelegt.
+
+## Sitzungsidentität
+
+Persönliche Aktivitäten und gespeicherte Zustände verwenden bestätigte Kontositzungen, auch bei Kontonamen mit `share:`. Gastbeschränkungen richten sich nach dem bestätigten Zweck der Anmeldung statt nach Namen oder Browsermarkierungen. Die Offline-Übertragung behält ihre Prüfungen für bestätigte Sitzungen, Konten und Instanzen bei.

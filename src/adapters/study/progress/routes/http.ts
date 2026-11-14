@@ -30,7 +30,8 @@ export function filtersFrom(url: URL): ProgressFilters {
 
 export function actorFrom(claims: {
     sub: string;
+    purpose?: "session" | "share";
     role: ProgressActor["role"];
 }): ProgressActor {
-    return { accountId: claims.sub, role: claims.role };
+    return { accountId: claims.sub, role: claims.role, claims };
 }

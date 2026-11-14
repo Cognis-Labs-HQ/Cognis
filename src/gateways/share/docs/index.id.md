@@ -29,3 +29,7 @@ Pemuatan halaman tamu memeriksa pembatalan setelah lokalisasi, inisialisasi comp
 ## Aksi Milik Penyedia
 
 Sumber daya bersama menyediakan `page.mountScriptUrl` dengan ekspor `mount(root, options)`. Fungsi mount menerima konteks berbagi, teks terlokalisasi, dan sinyal pembatalan halaman. Entrypoint yang tidak tersedia menghasilkan kesalahan renderer yang terlokalisasi.
+
+## Cakupan Kredensial
+
+Operasi akun memerlukan sesi akun yang terverifikasi. Operasi sumber daya bersama memverifikasi kredensial tamu secara eksplisit dan memeriksa kembali izin berbagi saat ini sebelum menerapkan izin sumber daya. Nama akun tidak menentukan jenis kredensial. Akses yang dicabut atau kedaluwarsa ditolak.

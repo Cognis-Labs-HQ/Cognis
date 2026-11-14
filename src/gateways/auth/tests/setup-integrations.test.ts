@@ -85,13 +85,13 @@ test("setup status supplies owner integrations for SSO sessions after limited TF
     verified = true;
     assert.deepEqual((await status()).data.integrations, []);
     assert.equal(calls, 2);
-    capabilities.contribute(
-        "share:resolveGuestId",
-        (claims: { sub: string }) =>
-            claims.sub === "share:resource:guest" ? "resource" : "",
-    );
+    capabilities.contribute("share:getGuestClaims", async () => ({
+        sub: "share:resource:guest",
+        role: "user",
+    }));
     token = issueAccessToken("share:resource:guest", "user", 60, {
         providerId: "share",
+        purpose: "share",
     });
     tfaPending = true;
     const guest = await status();
@@ -99,4 +99,56 @@ test("setup status supplies owner integrations for SSO sessions after limited TF
     assert.equal(guest.data.requiresSetup, false);
     assert.deepEqual(guest.data.integrations, []);
     assert.equal(calls, 2);
+});
+
+test("identity introspection exposes only verified metadata and preserves limited account restrictions", async () => {
+    const db = makeInMemoryDb();
+    const capabilities = new CapabilityStore();
+    const route = createSessionRoutes({
+        authGateway: new CoreAuthGateway(db),
+        accountStore: await loadLocalAccountStore(db),
+        capabilities,
+        authRouteBootstrapRuntime: createAuthRouteBootstrapRuntime(),
+        readSecuritySettings: async () => ({
+            registrationsEnabled: false,
+            userValidationMode: "none",
+            loginSessionTimeoutMinutes: 720,
+        }),
+    });
+    const token = issueAccessToken("share:ordinary", "user", 60, {
+        setupPending: true,
+    });
+    const request = makeJsonRequest(
+        "GET",
+        {},
+        { authorization: `Bearer ${token}` },
+    );
+    request.url = "/api/v1/auth/session-identity";
+    const response = makeResponse();
+    await route(
+        request,
+        response as unknown as import("node:http").ServerResponse,
+        new URL("http://localhost/api/v1/auth/session-identity"),
+        { component: "gateway:auth", method: "GET", path: request.url },
+    );
+    assert.equal(response.status, 200);
+    assert.equal(response.headers["cache-control"], "no-store");
+    assert.deepEqual(JSON.parse(response.payload), {
+        data: {
+            sub: "share:ordinary",
+            role: "user",
+            providerId: "local",
+            purpose: "session",
+            setupPending: true,
+        },
+    });
+    const denied = makeResponse();
+    request.headers.authorization = "Bearer invalid-synthetic-credential";
+    await route(
+        request,
+        denied as unknown as import("node:http").ServerResponse,
+        new URL("http://localhost/api/v1/auth/session-identity"),
+        { component: "gateway:auth", method: "GET", path: request.url },
+    );
+    assert.equal(denied.status, 401);
 });

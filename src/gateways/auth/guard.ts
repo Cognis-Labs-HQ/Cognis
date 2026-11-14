@@ -106,7 +106,8 @@ export function registerLimitedAuthPathAllowance(
     limitedAuthPathAllowances.set(normalizedOwnerId, predicate);
 }
 
-interface AuthClaims {
+export interface AuthClaims {
+    purpose: "session" | "share";
     sub: string;
     role: AccessRole;
     providerId: string;
@@ -122,7 +123,8 @@ function isTfaSetupPendingPathAllowed(
         path.startsWith("/api/v1/ui/") ||
         path === "/api/v1/auth/password-change-capability" ||
         path === "/api/v1/auth/security-sections" ||
-        path === "/api/v1/auth/setup-status"
+        path === "/api/v1/auth/setup-status" ||
+        path === "/api/v1/auth/session-identity"
     ) {
         return true;
     }
@@ -157,12 +159,14 @@ export function canAccessUserData(
     return claims.sub === targetUsername || hasMinRole(claims.role, "admin");
 }
 
-export function getAuthClaims(req: IncomingMessage): AuthClaims | null {
+export function readCredentialClaims(
+    req: IncomingMessage,
+    purpose: "session" | "share" = "session",
+): AuthClaims | null {
+    if (purpose !== "session" && purpose !== "share") return null;
     const token = extractBearerToken(req) ?? extractCookieToken(req);
     if (!token) return null;
-    const access =
-        verifyAccessToken(token) ??
-        verifyAccessToken(token, { purpose: "share" });
+    const access = verifyAccessToken(token, { purpose });
     if (!access) return null;
     const requestPath = String(req.url ?? "").split("?")[0] || "/";
     if (
@@ -173,12 +177,17 @@ export function getAuthClaims(req: IncomingMessage): AuthClaims | null {
         return null;
     }
     return {
+        purpose,
         sub: access.sub,
         role: access.role,
         providerId: access.providerId,
         setupPending: access.setupPending,
         ttlSeconds: getAccessTokenTtlSeconds(token),
     };
+}
+
+export function getAuthClaims(req: IncomingMessage): AuthClaims | null {
+    return readCredentialClaims(req, "session");
 }
 
 export function requireAuth(
@@ -255,7 +264,7 @@ export function requireRoleAccess(
  */
 export function getCookieSession(
     req: IncomingMessage,
-): Omit<AuthClaims, "ttlSeconds"> | null {
+): Omit<AuthClaims, "ttlSeconds" | "purpose"> | null {
     const cookie = req.headers.cookie ?? "";
     const match = cookie.match(/(?:^|; )cognis_access_token=([^;]+)/);
     if (!match) return null;

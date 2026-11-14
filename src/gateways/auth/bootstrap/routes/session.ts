@@ -1,3 +1,4 @@
+import { getAuthClaims } from "../../guard.js";
 import {
     buildAccessTokenCookie,
     extractBearerToken,
@@ -771,14 +772,53 @@ export function createSessionRoutes({
         }
 
         if (
+            url.pathname === "/api/v1/auth/session-identity" &&
+            req.method === "GET"
+        ) {
+            const claims =
+                getAuthClaims(req) ??
+                (await capabilities.get<
+                    (req: import("node:http").IncomingMessage) => Promise<{
+                        sub: string;
+                        role: string;
+                        providerId: string;
+                        purpose: string;
+                        setupPending: boolean;
+                    } | null>
+                >("share:getGuestClaims")?.(req));
+            res.writeHead(claims ? 200 : 401, {
+                "content-type": "application/json",
+                "cache-control": "no-store",
+            });
+            res.end(
+                JSON.stringify(
+                    claims
+                        ? {
+                              data: {
+                                  sub: claims.sub,
+                                  role: claims.role,
+                                  providerId: claims.providerId,
+                                  purpose: claims.purpose,
+                                  setupPending: claims.setupPending,
+                              },
+                          }
+                        : { error: { code: "unauthorized" } },
+                ),
+            );
+            return true;
+        }
+
+        if (
             url.pathname === "/api/v1/auth/setup-status" &&
             req.method === "GET"
         ) {
-            const claims = requireAuth(req, res, "user");
+            const guest = await capabilities.get<
+                (
+                    req: import("node:http").IncomingMessage,
+                ) => Promise<{ sub: string; role: string } | null>
+            >("share:getGuestClaims")?.(req);
+            const claims = guest ?? requireAuth(req, res, "user");
             if (!claims) return true;
-            const guest = capabilities.get<
-                (claims: { sub: string }) => string | null
-            >("share:resolveGuestId")?.(claims);
             if (guest) {
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(

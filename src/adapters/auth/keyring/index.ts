@@ -110,6 +110,12 @@ export async function bootstrapAuthAdapter(input: {
             createKeyringRoutes({
                 routeContext,
                 store,
+                getGuestClaims: (req) =>
+                    input.capabilities.get<
+                        (
+                            req: import("node:http").IncomingMessage,
+                        ) => Promise<{ sub: string; role: string } | null>
+                    >("share:getGuestClaims")?.(req) ?? Promise.resolve(null),
                 getAccountInstanceId: input.capabilities.require(
                     "auth:getAccountInstanceId",
                 ),

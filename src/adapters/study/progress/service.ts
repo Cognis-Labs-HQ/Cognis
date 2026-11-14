@@ -294,7 +294,7 @@ export class ProgressService implements ProgressCapability {
         actorId: string,
         classroomId?: string,
     ): Promise<void> {
-        if (actor.accountId.startsWith("share:"))
+        if (actor.claims?.purpose === "share")
             throw new Error("forbidden_actor");
         if (actor.accountId !== actorId && !PRIVILEGED_ROLES.has(actor.role))
             throw new Error("forbidden_actor");

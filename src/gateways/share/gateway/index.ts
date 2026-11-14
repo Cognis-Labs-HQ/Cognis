@@ -536,7 +536,7 @@ export class CoreShareGateway {
         requiredCapability: string;
     }): Promise<{ authorized: boolean; shareId?: string }> {
         const accountId = input.accountId.trim();
-        if (!accountId || accountId.startsWith("share:")) {
+        if (!accountId) {
             return { authorized: false };
         }
         const records = await this.store.listByResource({

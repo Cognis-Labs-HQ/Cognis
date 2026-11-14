@@ -377,3 +377,18 @@ test("instance changes during storage and replay waits cannot commit or acknowle
     );
     assert.deepEqual(await outbox.flush(), { sent: 0, rejected: 1 });
 });
+
+test("prefixed accounts use verified offline policy and true guests remain denied", async () => {
+    const state = fixture();
+    state.changeAccount("share:ordinary");
+    const outbox = state.create();
+    register(outbox, async () => ({ ok: true }));
+    await outbox.submit("practice", "prefixed-event", { answer: "fixture" });
+    assert.equal((await outbox.pending("practice")).length, 1);
+    state.deny();
+    state.changeAccount("share:resource:guest");
+    await assert.rejects(
+        outbox.submit("practice", "guest-event", { answer: "fixture" }),
+        /offline_delivery_unavailable/,
+    );
+});

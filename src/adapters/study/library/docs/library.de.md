@@ -636,3 +636,7 @@ Benachrichtigungen zu Study-Anfragen, Inhalten und Löschungen verwenden die bei
 ## Entwicklerprüfung
 
 Testfabriken in `tests/reuse/` liefern vollständige Einträge, Schemas und Nachbildungen öffentlicher Fähigkeiten. Nicht konfigurierte Operationen werfen Fehler, statt stillschweigend erfolgreich zu sein. Dateischreibvorgänge liefern Objektmetadaten; Datenbanktransaktionen behalten ihren Ergebnistyp. Der Bildspeicherungstest prüft strukturierte Speicherung und Rückabwicklung lokal. Library-Tests werden mit den Node-Optionen `--experimental-vm-modules --import tsx --test` ausgeführt. Diese reinen Teständerungen aktivieren die repositoryweite Typprüfung nicht; deren Integration erfolgt erst nach der Reparatur der anderen Komponenten.
+
+## Sitzungsidentität
+
+Persönliche Aktivitäten und gespeicherte Zustände verwenden bestätigte Kontositzungen, auch bei Kontonamen mit `share:`. Gastbeschränkungen richten sich nach dem bestätigten Zweck der Anmeldung statt nach Namen oder Browsermarkierungen. Die Offline-Übertragung behält ihre Prüfungen für bestätigte Sitzungen, Konten und Instanzen bei.

@@ -636,3 +636,7 @@ Notifikasi permintaan, konten, dan penghapusan Study memakai kategori yang didaf
 ## Verifikasi Pengembang
 
 Fungsi pembuat data uji dalam `tests/reuse/` menyediakan entri, skema, dan tiruan kapabilitas publik yang lengkap. Operasi yang belum dikonfigurasi menghasilkan galat, bukan keberhasilan diam-diam. Penulisan berkas mengembalikan metadata objek, dan transaksi basis data mempertahankan tipe hasilnya. Pengujian penyimpanan gambar menjalankan penyimpanan terstruktur dan pembatalan transaksi secara lokal. Jalankan pengujian Library dengan opsi Node `--experimental-vm-modules --import tsx --test`. Perubahan khusus pengujian ini tidak mengaktifkan pemeriksaan tipe seluruh repositori; integrasinya menunggu perbaikan komponen lain.
+
+## Identitas Sesi
+
+Aktivitas pribadi dan status tersimpan menggunakan sesi akun terverifikasi, termasuk nama akun yang diawali `share:`. Pembatasan tamu mengikuti tujuan kredensial terverifikasi, bukan nama atau penanda peramban. Pengiriman luring tetap memeriksa sesi terverifikasi, akun, dan instans.

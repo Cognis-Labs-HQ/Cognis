@@ -29,3 +29,7 @@ Gastseiten prüfen den Abbruch nach Lokalisierung, Composer-Initialisierung, Sit
 ## Browsereigene Aktionen
 
 Geteilte Ressourcen liefern `page.mountScriptUrl` mit einem exportierten `mount(root, options)`. Der Einstiegspunkt erhält den Freigabekontext, lokalisierte Texte und das Abbruchsignal der Seite. Fehlende Einstiegspunkte erzeugen den lokalisierten Rendererfehler.
+
+## Geltungsbereich der Anmeldung
+
+Kontoaktionen erfordern bestätigte Kontositzungen. Aktionen für freigegebene Ressourcen prüfen Gastanmeldungen ausdrücklich und kontrollieren die aktuelle Freigabe vor den Ressourcenberechtigungen. Kontonamen bestimmen niemals den Anmeldetyp. Widerrufener oder abgelaufener Zugriff wird abgelehnt.

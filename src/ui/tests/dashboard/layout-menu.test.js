@@ -277,7 +277,7 @@ test("dashboard layout suppresses release summaries for guest sessions", () => {
         "utf8",
     );
     assert.match(authSessionSource, /contribute\("session:isGuest"/);
-    assert.match(authSessionSource, /accountId\.startsWith\("share:"\)/);
+    assert.match(authSessionSource, /sessionIdentity\.get\(\)\?\.purpose/);
 });
 
 test("dashboard layout re-shows theme toggle on shell reuse when enabled", () => {

@@ -40,3 +40,7 @@ Pelajar terdaftar dapat mencatat hasil kelas sendiri dengan hak baca, tanpa hak 
 ## Imbalan Latihan Tersimpan
 
 ID proyeksi kemajuan memakai tupel identitas JSON yang tidak ambigu tanpa byte NUL yang ditolak kolom teks PostgreSQL. Hasil menggambar dan kartu belajar tepercaya memakai `study:progress:recordPractice` melalui tahap otorisasi, validasi, pencatatan peristiwa, dan imbalan. Impor peristiwa mentah tidak memberikan XP. `GET /api/v1/study/progress/engagement` yang terautentikasi mengembalikan ringkasan imbalan pelajar sendiri. Percobaan benar tanpa bantuan dapat memperoleh lencana latihan terlokalisasi. Koreksi membatalkan imbalan dan bukti peringkat terkait. Pengiriman ulang mempertahankan identitas peristiwa dan imbalan kanonis.
+
+## Identitas Sesi
+
+Aktivitas pribadi dan status tersimpan menggunakan sesi akun terverifikasi, termasuk nama akun yang diawali `share:`. Pembatasan tamu mengikuti tujuan kredensial terverifikasi, bukan nama atau penanda peramban. Pengiriman luring tetap memeriksa sesi terverifikasi, akun, dan instans.

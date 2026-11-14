@@ -79,6 +79,7 @@ test("guard allows auth security sections during TFA setup pending flow", () => 
         providerId: "local",
         setupPending: true,
         ttlSeconds: 60,
+        purpose: "session",
     });
 });
 
@@ -237,4 +238,39 @@ test("cookie sessions expose page identity and reject missing or revoked session
     });
     revokeAccessTokensForSubject("cookie-page-user");
     assert.equal(getCookieSession(req), null);
+});
+
+test("ordinary guards reject Share credentials and preserve prefixed account sessions", () => {
+    const recorder = {
+        statusCode: 0,
+        writeHead(status: number) {
+            recorder.statusCode = status;
+        },
+        end() {},
+    };
+    const response = recorder as unknown as import("node:http").ServerResponse;
+    const request = new IncomingMessage(new Socket());
+    request.url = "/api/v1/search?q=fixture&type=users";
+    const guest = issueAccessToken("share:synthetic:guest", "user", 60, {
+        purpose: "share",
+        providerId: "share",
+    });
+    request.headers.authorization = `Bearer ${guest}`;
+    assert.equal(requireAuth(request, response), null);
+    assert.equal(response.statusCode, 401);
+    for (const accountId of ["ordinary-account", "share:ordinary-account"]) {
+        const token = issueAccessToken(accountId, "user", 60);
+        request.headers.authorization = `Bearer ${token}`;
+        assert.equal(requireAuth(request, response)?.sub, accountId);
+        revokeAccessTokensForSubject(accountId);
+        assert.equal(requireAuth(request, response), null);
+    }
+    const pending = issueAccessToken("pending-scoped-fixture", "user", 60, {
+        setupPending: true,
+    });
+    request.headers.authorization = `Bearer ${pending}`;
+    assert.equal(requireAuth(request, response), null);
+    assert.equal(response.statusCode, 403);
+    request.url = "/api/v1/auth/session-identity";
+    assert.equal(requireAuth(request, response)?.setupPending, true);
 });

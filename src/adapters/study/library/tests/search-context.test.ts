@@ -58,7 +58,11 @@ async function routeFixture() {
         new Map([
             ["alice", { sub: "alice", role: "user" }],
             ["bob", { sub: "bob", role: "user" }],
-            ["guest", { sub: "share:guest", role: "user" }],
+            ["guest", { sub: "share:guest", role: "user", purpose: "share" }],
+            [
+                "prefixed",
+                { sub: "share:ordinary", role: "user", purpose: "session" },
+            ],
         ]),
     );
     const route = createDictionarySearchContextRoutes(
@@ -166,4 +170,10 @@ test("search context flows permit adjustments before persistence and veto reads 
     assert.deepEqual(reads, []);
     assert.ok(failures.length);
     assert.ok(!JSON.stringify(failures).includes("private extension failure"));
+});
+
+test("prefixed account sessions retain dictionary search context", async () => {
+    const state = await routeFixture();
+    assert.equal((await state.request("prefixed", "PUT")).statusCode, 200);
+    assert.equal((await state.request("prefixed")).statusCode, 200);
 });

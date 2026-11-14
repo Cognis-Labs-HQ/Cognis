@@ -71,3 +71,7 @@ Calendar menemukan `meetings:createMeeting` dari penyedia browser yang aktif. Pe
 ## Batas Kalender Bertipe
 
 Kontrak acara, penyimpanan, inisialisasi, dan HTTP adaptor Kalender kini menjelaskan perilaku yang diterapkan. ICS dan CalDAV mempertahankan izin, penanganan frasa sandi, dan format umpan yang ada.
+
+## Cakupan Kredensial
+
+Operasi akun memerlukan sesi akun yang terverifikasi. Operasi sumber daya bersama memverifikasi kredensial tamu secara eksplisit dan memeriksa kembali izin berbagi saat ini sebelum menerapkan izin sumber daya. Nama akun tidak menentukan jenis kredensial. Akses yang dicabut atau kedaluwarsa ditolak.

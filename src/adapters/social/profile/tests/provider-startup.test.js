@@ -232,3 +232,17 @@ test("offline transition stops availability timers and stale callbacks; recovery
     assert.equal(state.timers.size, 0);
     state.host.controller.abort();
 });
+
+test("availability uses verified guest state without excluding prefixed accounts", async () => {
+    for (const guest of [false, true]) {
+        const state = fixture();
+        state.host.changeAccount("share:ordinary");
+        state.host.ctx.capabilities.contribute("session:isGuest", () => guest);
+        state.ready();
+        await state.lifecycle.reconcile(catalog);
+        await settle();
+        assert.equal(state.requests.length > 0, !guest);
+        await state.lifecycle.reconcile([]);
+        state.host.controller.abort();
+    }
+});

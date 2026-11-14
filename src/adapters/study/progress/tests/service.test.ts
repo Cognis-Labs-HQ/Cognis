@@ -441,3 +441,24 @@ test("enrolled students record their own classroom practice without edit privile
         /forbidden_scope/,
     );
 });
+
+test("progress classifies verified purpose rather than the account namespace", async () => {
+    const service = new ProgressService(new MemoryProgressStore());
+    const account: ProgressActor = {
+        accountId: "share:ordinary",
+        role: "user",
+        claims: { sub: "share:ordinary", purpose: "session" },
+    };
+    await service.recordEvent(account, event("prefixed-event"));
+    assert.equal((await service.listEvents(account, {})).length, 1);
+    await assert.rejects(
+        service.recordEvent(
+            {
+                ...account,
+                claims: { sub: account.accountId, purpose: "share" },
+            },
+            event("guest-event"),
+        ),
+        /forbidden_actor/,
+    );
+});

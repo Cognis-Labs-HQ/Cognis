@@ -231,7 +231,13 @@ test("engagement summaries use the authenticated learner and ignore a requested 
         "/api/v1/study/progress/engagement?actorId=victim",
     );
     assert.equal(response.status, 200);
-    assert.deepEqual(actors, [{ accountId: "actor-one", role: "user" }]);
+    assert.deepEqual(actors, [
+        {
+            accountId: "actor-one",
+            role: "user",
+            claims: { sub: "actor-one", role: "user" },
+        },
+    ]);
     assert.equal((response.body.data as { xp: number }).xp, 13);
 });
 
