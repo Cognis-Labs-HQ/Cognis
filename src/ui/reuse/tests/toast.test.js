@@ -33,15 +33,28 @@ class FakeElement {
     }
 
     appendChild(child) {
+        child.parent = this;
         this.children.push(child);
     }
 
-    addEventListener(type, listener) {
-        this.listeners.set(type, listener);
+    addEventListener(type, listener, options = {}) {
+        if (!this.listeners.has(type)) this.listeners.set(type, new Map());
+        this.listeners.get(type).set(listener, options);
+    }
+
+    removeEventListener(type, listener) {
+        const listeners = this.listeners.get(type);
+        listeners?.delete(listener);
+        if (!listeners?.size) this.listeners.delete(type);
     }
 
     dispatch(type, event = {}) {
-        this.listeners.get(type)?.(event);
+        for (const [listener, options] of [
+            ...(this.listeners.get(type) ?? []),
+        ]) {
+            if (options.once) this.removeEventListener(type, listener);
+            listener(event);
+        }
     }
 
     querySelector(selector) {
@@ -57,7 +70,13 @@ class FakeElement {
         return false;
     }
 
-    remove() {}
+    remove() {
+        if (this.parent) {
+            this.parent.children = this.parent.children.filter(
+                (child) => child !== this,
+            );
+        }
+    }
 
     setPointerCapture() {}
 
@@ -220,5 +239,199 @@ test("toast hover hides the dismissal timebar", () => {
     assert.match(
         stylesheet,
         /\.toast:hover \.toast-timebar\s*{\s*display:\s*none;/,
+    );
+});
+
+let stylesheetFixtureId = 0;
+
+async function withStylesheetFixture(run) {
+    const originals = Object.fromEntries(
+        ["document", "requestAnimationFrame", "setTimeout", "clearTimeout"].map(
+            (key) => [key, globalThis[key]],
+        ),
+    );
+    const head = new FakeElement();
+    const body = new FakeElement();
+    const timers = new Map();
+    const frames = [];
+    const links = [];
+    let timerId = 0;
+    globalThis.document = {
+        head,
+        body,
+        createElement: (tag) => {
+            const element = new FakeElement();
+            if (tag === "link") links.push(element);
+            return element;
+        },
+        querySelector: (selector) =>
+            selector === ".toast-tray"
+                ? body.children.find(
+                      (child) => child.className === "toast-tray",
+                  )
+                : head.children[0],
+    };
+    globalThis.requestAnimationFrame = (callback) => frames.push(callback);
+    globalThis.setTimeout = (callback, delay) => {
+        const id = ++timerId;
+        timers.set(id, { callback, delay });
+        return id;
+    };
+    globalThis.clearTimeout = (id) => timers.delete(id);
+    const tick = async () => {
+        await Promise.resolve();
+        await Promise.resolve();
+    };
+    const expire = async (delay) => {
+        for (const [id, timer] of [...timers]) {
+            if (timer.delay !== delay) continue;
+            timers.delete(id);
+            timer.callback();
+        }
+        await tick();
+    };
+    try {
+        const { showToast } = await import(
+            `../toast.js?stylesheet=${++stylesheetFixtureId}`
+        );
+        await run({
+            showToast,
+            head,
+            body,
+            timers,
+            links,
+            frames,
+            tick,
+            expire,
+        });
+    } finally {
+        Object.assign(globalThis, originals);
+    }
+}
+
+test("toast retries a failed stylesheet through its public entry point", async () => {
+    await withStylesheetFixture(async ({ showToast, head, links, tick }) => {
+        showToast("First", { permanent: true });
+        const failed = head.children[0];
+        failed.dispatch("error");
+        await tick();
+        showToast("Second", { permanent: true });
+        assert.notEqual(head.children[0], failed);
+        assert.equal(links.length, 2);
+        assert.equal(failed.listeners.size, 0);
+        const loaded = head.children[0];
+        loaded.sheet = {};
+        loaded.dispatch("load");
+        await tick();
+        assert.equal(loaded.listeners.size, 0);
+        showToast("Third", { permanent: true });
+        assert.deepEqual(head.children, [loaded]);
+    });
+});
+
+test("concurrent toasts share bounded attempts and can retry after exhaustion", async () => {
+    await withStylesheetFixture(
+        async ({ showToast, head, timers, links, tick }) => {
+            for (let attempt = 0; attempt < 3; attempt += 1) {
+                for (let caller = 0; caller < 10; caller += 1) {
+                    showToast("Concurrent", { permanent: true });
+                }
+                assert.equal(head.children.length, 1);
+                assert.equal(timers.size, 1);
+                const first = head.children[0];
+                assert.equal(first.listeners.get("load").size, 1);
+                assert.equal(first.listeners.get("error").size, 1);
+                first.dispatch("error");
+                await tick();
+                const second = head.children[0];
+                assert.notEqual(second, first);
+                first.dispatch("load");
+                assert.equal(head.children[0], second);
+                second.dispatch("error");
+                await tick();
+                assert.equal(head.children.length, 0);
+                assert.equal(timers.size, 0);
+                assert.equal(links.length, (attempt + 1) * 2);
+                assert.ok(links.every((link) => link.listeners.size === 0));
+            }
+        },
+    );
+});
+
+test("pre-existing loaded, loading and failed links keep their external owner", async () => {
+    for (const state of ["loaded", "loading", "failed"]) {
+        await withStylesheetFixture(
+            async ({ showToast, head, timers, links, tick, expire }) => {
+                const external = new FakeElement();
+                if (state === "loaded") external.sheet = {};
+                head.appendChild(external);
+                showToast("Existing", { permanent: true });
+                assert.equal(links.length, 0);
+                if (state === "failed") {
+                    await expire(5_000);
+                    assert.equal(links.length, 1);
+                    const retry = links[0];
+                    retry.sheet = {};
+                    retry.dispatch("load");
+                } else if (state === "loading") {
+                    external.sheet = {};
+                    external.dispatch("load");
+                }
+                await tick();
+                assert.equal(timers.size, 0);
+                assert.equal(external.listeners.size, 0);
+                assert.equal(head.children[0], external);
+                showToast("Again", { permanent: true });
+                assert.equal(links.length, state === "failed" ? 1 : 0);
+            },
+        );
+    }
+});
+
+test("missing lifecycle events time out without unbounded links or listeners", async () => {
+    await withStylesheetFixture(
+        async ({ showToast, head, timers, links, expire }) => {
+            showToast("Waiting", { permanent: true });
+            await expire(5_000);
+            assert.equal(head.children.length, 1);
+            await expire(5_000);
+            assert.equal(head.children.length, 0);
+            assert.equal(timers.size, 0);
+            assert.equal(links.length, 2);
+            assert.ok(links.every((link) => link.listeners.size === 0));
+        },
+    );
+});
+
+test("caller abort and dismissal during loading cannot revive a toast", async () => {
+    await withStylesheetFixture(
+        async ({ showToast, body, head, frames, tick, expire }) => {
+            const controller = new AbortController();
+            let dismissals = 0;
+            let expirations = 0;
+            const dismiss = showToast("Pending", {
+                duration: 2_500,
+                onDismiss: () => (dismissals += 1),
+                onExpire: () => (expirations += 1),
+            });
+            controller.signal.addEventListener("abort", dismiss, {
+                once: true,
+            });
+            const toast = body.children[0].children[0];
+            controller.abort();
+            dismiss();
+            head.children[0].dispatch("error");
+            await tick();
+            head.children[0].sheet = {};
+            head.children[0].dispatch("load");
+            while (frames.length) frames.shift()();
+            assert.equal(toast.classList.contains("toast--visible"), false);
+            await expire(400);
+            await expire(2_500);
+            toast.dispatch("transitionend");
+            assert.equal(body.children[0].children.length, 0);
+            assert.equal(dismissals, 1);
+            assert.equal(expirations, 0);
+        },
     );
 });
