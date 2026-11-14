@@ -12,4 +12,4 @@ Sakelar komponen tetap menjadi kontrol papan ketik asli dengan nama terlokalisas
 
 ## Komit
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/9271150125b1c70f012d58ead601c930b3e377ef
+- [a6739b3](https://github.com/Cognis-Labs-HQ/Cognis/commit/a6739b3e637b48986cb81c427a84457282ddc813)
