@@ -12,4 +12,4 @@ TFAを使うSSOアカウントは通常のログイン画面に戻り、発行�
 
 ## コミット
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/88c16092a64a9d804cc0d3dfd316ef497a640304
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/6c3a7fb4a2bf3a2882d5cb801382ad503fcd74bb
