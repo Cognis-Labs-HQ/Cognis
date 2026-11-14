@@ -18,10 +18,4 @@ Settings and update/channel actions use the same account-bound pending and outco
 
 ## Commits
 
-- [9a0290cfd75a5a56679e3217a5cb5f5825246174](https://github.com/Cognis-Labs-HQ/Cognis/commit/9a0290cfd75a5a56679e3217a5cb5f5825246174)
-- [f721c2f72d1d73228f4d1dd2cb7f027e065e27c8](https://github.com/Cognis-Labs-HQ/Cognis/commit/f721c2f72d1d73228f4d1dd2cb7f027e065e27c8)
-- [e632fac6ba342fe403c0a2fb4ce82d5a7dde816a](https://github.com/Cognis-Labs-HQ/Cognis/commit/e632fac6ba342fe403c0a2fb4ce82d5a7dde816a)
-- [56d32ec39813023e57e3cfcd5b2a05b2ed73fb27](https://github.com/Cognis-Labs-HQ/Cognis/commit/56d32ec39813023e57e3cfcd5b2a05b2ed73fb27)
-- [4eb495fdc16c8bf8ae39a8a28d605244dd8a868f](https://github.com/Cognis-Labs-HQ/Cognis/commit/4eb495fdc16c8bf8ae39a8a28d605244dd8a868f)
-
-- [ee4ea4b80851aa7706cea39c29dd97be27575e61](https://github.com/Cognis-Labs-HQ/Cognis/commit/ee4ea4b80851aa7706cea39c29dd97be27575e61)
+- [f2b16265ec1861ac355e74a914efc6e0ff75a206](https://github.com/Cognis-Labs-HQ/Cognis/commit/f2b16265ec1861ac355e74a914efc6e0ff75a206)
