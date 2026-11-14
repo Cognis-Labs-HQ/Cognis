@@ -21,3 +21,5 @@ Posts use a distinct list target even when the composer is present. Social actio
 Identity and social actions precede the consecutive posts and preview stages.
 
 On your own profile, Edit Profile opens your details. Unsuccessful saves keep your changes available to correct and retry.
+
+Profile photos remain visible while counts and details update. Retry a failed image refresh by reopening the profile; a confirmed removal clears only the selected image. The identity step keeps its existing target, progression and completion identity.

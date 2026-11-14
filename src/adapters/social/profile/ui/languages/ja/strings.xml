@@ -25,4 +25,6 @@
   <string name="module.social.profile.tutorial.profile.preview.post.title">投稿をプレビューする</string>
   <string name="module.social.profile.tutorial.profile.preview.post.body">投稿を書き、書式と添付内容をプレビューします。公開前に対象読者を確認します。</string>
   <string name="ui.app.profile.save_pending_closed">閉じても送信済みの保存は取り消されません。プロフィールページを再読み込みして結果を確認してください。</string>
+  <string name="ui.app.profile.media_refresh_failed">プロフィール画像を更新できませんでした。プロフィールを開き直して再試行してください。</string>
+  <string name="ui.app.profile.remove_image_failed">画像を削除できませんでした。もう一度お試しください。</string>
 </resources>

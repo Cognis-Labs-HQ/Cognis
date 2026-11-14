@@ -1,5 +1,7 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 
+import { readImageBlob } from "./image-blob.js";
+
 export const AVATAR_CACHE_LIMIT = 128;
 export const AVATAR_CACHE_TTL_MS = 60_000;
 
@@ -67,21 +69,23 @@ export function createAvatarCache({ isCurrent, invalidate, log }) {
                 );
                 result = { state: profileReadState(response) };
                 if (result.state === "available") {
-                    const blob = await response.blob();
-                    const digest = new Uint8Array(
-                        await crypto.subtle.digest(
-                            "SHA-256",
-                            await blob.arrayBuffer(),
-                        ),
-                    ).join(",");
-                    if (!isCurrent(context) || entries.get(key) !== current)
+                    result = await readImageBlob(response, {
+                        isCurrent: () =>
+                            isCurrent(context) && entries.get(key) === current,
+                        previous: { ...current.result, digest: current.digest },
+                    });
+                    if (result.state === "stale") return result;
+                    if (!isCurrent(context) || entries.get(key) !== current) {
+                        if (result.blobUrl !== current.result?.blobUrl)
+                            URL.revokeObjectURL(result.blobUrl);
                         return { state: "stale" };
-                    const unchanged =
-                        current.digest === digest && current.result?.blobUrl;
-                    result.blobUrl = unchanged || URL.createObjectURL(blob);
-                    if (!unchanged && current.result?.blobUrl)
+                    }
+                    if (
+                        current.result?.blobUrl &&
+                        result.blobUrl !== current.result.blobUrl
+                    )
                         URL.revokeObjectURL(current.result.blobUrl);
-                    current.digest = digest;
+                    current.digest = result.digest;
                 }
             } catch (error) {
                 if (!current.controller.signal.aborted)

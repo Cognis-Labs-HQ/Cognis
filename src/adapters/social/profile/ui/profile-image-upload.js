@@ -48,52 +48,54 @@ export function isCropResultWithSourceRect(cropResult) {
 export function createProfileImageUploadActions({
     getState,
     setState,
-    loadOwnProfile,
     saveBannerLayoutPreference,
     refreshPage,
     updateNavbarAvatar,
     i18n,
     openPopup,
+    isCurrent,
 }) {
     const pendingUploads = new Set();
 
-    async function doRemoveAvatar() {
-        await apiFetch("/api/v1/social/profile/avatar", { method: "DELETE" });
-        const currentState = getState();
-        if (currentState.avatarBlobUrl) {
-            URL.revokeObjectURL(currentState.avatarBlobUrl);
-        }
-        setState({ avatarBlobUrl: null, profile: await loadOwnProfile() });
-        refreshPage();
-        updateNavbarAvatar().catch(() => {});
-    }
-
-    async function doRemoveBanner() {
-        await apiFetch("/api/v1/social/profile/banner", { method: "DELETE" });
-        const currentState = getState();
-        if (currentState.bannerBlobUrl) {
-            URL.revokeObjectURL(currentState.bannerBlobUrl);
-        }
-        setState({ bannerBlobUrl: null, profile: await loadOwnProfile() });
-        refreshPage();
-    }
-
-    function revokeProfileBlobUrls() {
-        const currentState = getState();
-        if (currentState.avatarBlobUrl) {
-            URL.revokeObjectURL(currentState.avatarBlobUrl);
-        }
-        if (currentState.bannerBlobUrl) {
-            URL.revokeObjectURL(currentState.bannerBlobUrl);
-        }
-        setState({
-            avatarBlobUrl: null,
-            bannerBlobUrl: null,
+    const log = (message, error) =>
+        console.error(message, {
+            component: "social-profile",
+            operation: "updateHeroMedia",
+            errorName: error?.name,
         });
+
+    async function removeImage(kind) {
+        if (!isCurrent() || pendingUploads.has(kind)) return;
+        pendingUploads.add(kind);
+        try {
+            const response = await apiFetch(`/api/v1/social/profile/${kind}`, {
+                method: "DELETE",
+            });
+            if (!isCurrent()) return;
+            if (!response.ok) throw new Error("profile_image_delete_failed");
+            setState({
+                [`${kind}BlobUrl`]: null,
+                profile: { ...getState().profile, [`${kind}Key`]: null },
+            });
+            refreshPage();
+            if (kind === "avatar")
+                void updateNavbarAvatar().catch((error) =>
+                    log("[profile] navbar refresh failed", error),
+                );
+        } catch (error) {
+            if (error?.code === "missing_translation") throw error;
+            log("[profile] image deletion failed", error);
+            if (isCurrent())
+                showToast(i18n.t("ui.app.profile.remove_image_failed"), {
+                    variant: "error",
+                });
+        } finally {
+            pendingUploads.delete(kind);
+        }
     }
 
     async function handleProfileImageUpload({ kind, file, aspectRatio }) {
-        if (pendingUploads.has(kind)) return false;
+        if (!isCurrent() || pendingUploads.has(kind)) return false;
         pendingUploads.add(kind);
         let delivered = false;
         try {
@@ -107,7 +109,7 @@ export function createProfileImageUploadActions({
                 translate: (key) => i18n.t(key),
                 escapeHtmlText: escapeHtml,
             });
-            if (!cropResult) return false;
+            if (!isCurrent() || !cropResult) return false;
             const uploadBlob = preserveOriginalGif ? file : cropResult;
             if (!(uploadBlob instanceof Blob)) return false;
             const endpoint =
@@ -117,11 +119,14 @@ export function createProfileImageUploadActions({
             const contentType = preserveOriginalGif
                 ? file.type || "application/octet-stream"
                 : "image/png";
+            const body = await uploadBlob.arrayBuffer();
+            if (!isCurrent()) return false;
             const response = await apiFetch(endpoint, {
                 method: "PUT",
                 headers: { "content-type": contentType },
-                body: await uploadBlob.arrayBuffer(),
+                body,
             });
+            if (!isCurrent()) return false;
             if (!response.ok) {
                 showToast(i18n.t("ui.app.profile.upload_failed"), {
                     variant: "error",
@@ -140,26 +145,21 @@ export function createProfileImageUploadActions({
                         component: "social-profile",
                         operation: "read-profile-image-upload-response",
                         kind,
-                        error,
+                        errorName: error?.name,
                     },
                 );
             }
 
+            if (!isCurrent()) return delivered;
             const currentState = getState();
             let nextBannerPanX = 50;
             let nextBannerPanY = 50;
             if (kind === "avatar") {
-                if (currentState.avatarBlobUrl) {
-                    URL.revokeObjectURL(currentState.avatarBlobUrl);
-                }
                 setState({
                     avatarBlobUrl: URL.createObjectURL(uploadBlob),
                     profile: responseData.profile ?? currentState.profile,
                 });
             } else {
-                if (currentState.bannerBlobUrl) {
-                    URL.revokeObjectURL(currentState.bannerBlobUrl);
-                }
                 if (
                     preserveOriginalGif &&
                     isCropResultWithSourceRect(cropResult)
@@ -195,16 +195,20 @@ export function createProfileImageUploadActions({
                     console.error("[profile] unable to save banner layout", {
                         component: "social-profile",
                         operation: "save-banner-layout",
-                        error,
+                        errorName: error?.name,
                     });
                 }
             }
 
             if (kind === "avatar") {
-                updateNavbarAvatar().catch(() => {});
+                if (isCurrent())
+                    void updateNavbarAvatar().catch((error) =>
+                        log("[profile] navbar refresh failed", error),
+                    );
             }
             return true;
         } catch (error) {
+            if (error?.code === "missing_translation") throw error;
             if (!delivered) throw error;
             console.error("[profile] uploaded image view refresh failed", {
                 operation: "refreshAfterUpload",
@@ -217,9 +221,8 @@ export function createProfileImageUploadActions({
     }
 
     return {
-        doRemoveAvatar,
-        doRemoveBanner,
-        revokeProfileBlobUrls,
+        doRemoveAvatar: () => removeImage("avatar"),
+        doRemoveBanner: () => removeImage("banner"),
         handleProfileImageUpload,
     };
 }

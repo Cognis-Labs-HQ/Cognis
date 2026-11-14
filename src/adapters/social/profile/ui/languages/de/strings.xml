@@ -25,4 +25,6 @@
   <string name="module.social.profile.tutorial.profile.preview.post.title">Beitrag prüfen</string>
   <string name="module.social.profile.tutorial.profile.preview.post.body">Verfassen Sie einen Beitrag und prüfen Sie Formatierung und Anhänge in der Vorschau. Kontrollieren Sie vor dem Veröffentlichen die Zielgruppe.</string>
   <string name="ui.app.profile.save_pending_closed">Das Schließen macht einen gesendeten Speichervorgang nicht rückgängig. Laden Sie die Profilseite neu, um das Ergebnis zu prüfen.</string>
+  <string name="ui.app.profile.media_refresh_failed">Die Profilbilder konnten nicht aktualisiert werden. Öffnen Sie das Profil erneut, um es noch einmal zu versuchen.</string>
+  <string name="ui.app.profile.remove_image_failed">Das Bild konnte nicht entfernt werden. Versuche es erneut.</string>
 </resources>

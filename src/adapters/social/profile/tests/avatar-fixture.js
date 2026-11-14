@@ -64,6 +64,7 @@ export function avatarFixture(context, { menu = false } = {}) {
     const timers = new Map();
     let timer = 0;
     let blob = 0;
+    let afterAllocate = () => {};
     let now = Date.now();
     const globals = {
         Date: class extends Date {
@@ -76,7 +77,11 @@ export function avatarFixture(context, { menu = false } = {}) {
         crypto: webcrypto,
         localStorage: window.localStorage,
         URL: {
-            createObjectURL: () => `blob:fixture-${++blob}`,
+            createObjectURL: () => {
+                const url = `blob:fixture-${++blob}`;
+                afterAllocate(url);
+                return url;
+            },
             revokeObjectURL: (url) => revoked.push(url),
         },
         console: { error: (...args) => logs.push(args) },
@@ -121,6 +126,11 @@ export function avatarFixture(context, { menu = false } = {}) {
         STATUS_OPTIONS: ["free", "busy", "tentative"],
         hydrateAvailabilityIndicators: async () => {},
     };
+    shared["./image-blob.js"] = loadTestModule(
+        new URL("../ui/reuse/image-blob.js", import.meta.url),
+        {},
+        globals,
+    );
     const cache = loadTestModule(
         new URL("../ui/reuse/avatar-cache.js", import.meta.url),
         shared,
@@ -245,6 +255,9 @@ export function avatarFixture(context, { menu = false } = {}) {
         },
         advance: (milliseconds) => {
             now += milliseconds;
+        },
+        setAfterAllocate: (callback) => {
+            afterAllocate = callback;
         },
         setRequest: (value) => {
             request = value;

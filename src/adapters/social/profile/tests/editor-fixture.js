@@ -14,6 +14,8 @@ import { escapeHtml } from "../../../../ui/reuse/escape-html.js";
 
 export const originalProfile = {
     accountId: "learner",
+    avatarKey: null,
+    bannerKey: null,
     handle: "learner",
     role: "user",
     displayName: "Original",
@@ -194,7 +196,7 @@ export async function editorFixture(
         renderComposerMarkdownPreview: (value) => escapeHtml(value),
         renderHero: ({ profile }) => {
             renderedProfiles.push(structuredClone(profile));
-            return '<button class="profile-hero-edit-btn">Edit Profile</button>';
+            return '<section class="profile-hero"><button class="profile-hero-edit-btn">Edit Profile</button></section>';
         },
         ...Object.fromEntries(
             [
@@ -213,9 +215,23 @@ export async function editorFixture(
         createPostFormBuilderForVisibility: () =>
             assert.fail("Unexpected post editor"),
     };
+    boundaries["./reuse/image-blob.js"] = loadTestModule(
+        new URL("../ui/reuse/image-blob.js", import.meta.url),
+        {},
+        globals,
+    );
+    boundaries["./reuse/avatar-cache.js"] = loadTestModule(
+        new URL("../ui/reuse/avatar-cache.js", import.meta.url),
+        {
+            ...host.imports,
+            "./image-blob.js": boundaries["./reuse/image-blob.js"],
+        },
+        globals,
+    );
     boundaries["./profile-api-loaders.js"] = loadTestModule(
         new URL("../ui/profile-api-loaders.js", import.meta.url),
         {
+            ...boundaries,
             "./offline-client.js": client,
             "./file-namespaces.js": await import("../ui/file-namespaces.js"),
         },
@@ -226,6 +242,12 @@ export async function editorFixture(
         boundaries,
         globals,
     );
+    for (const file of ["profile-page-lifetime.js", "profile-hero-media.js"])
+        boundaries[`./${file}`] = loadTestModule(
+            new URL(`../ui/${file}`, import.meta.url),
+            boundaries,
+            globals,
+        );
     let directMount;
     const app = await importTestModule(
         new URL("../ui/app.js", import.meta.url),
