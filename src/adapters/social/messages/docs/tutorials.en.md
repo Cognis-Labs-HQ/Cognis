@@ -21,3 +21,5 @@ The walkthrough explains composing once, targeting the message input and then it
 Room management is excluded from the path and count until a room header is available.
 
 The room-history step covers the same conversation region in the default, speech-bubble and IRC styles. Messages wrap within that region while preserving authored line breaks and Markdown. The guide keeps its existing targets, sequence and completion identity.
+
+The message-input step explains that you can start the next draft while a message sends. Only the submitted version clears after acknowledgement or durable queuing; newer edits remain. The input and preview keep their separate targets and existing order.

@@ -21,3 +21,5 @@ Panduan menjelaskan penulisan sekali, lalu menyorot input pesan dan kontrol prat
 Pengelolaan ruang tidak dimasukkan dalam alur dan jumlah langkah sampai judul ruang tersedia.
 
 Langkah riwayat percakapan mencakup area percakapan yang sama dalam gaya bawaan, gelembung percakapan, dan IRC. Pesan membungkus di dalam area tersebut dengan tetap mempertahankan pergantian baris dan Markdown. Panduan mempertahankan target, urutan, dan identitas penyelesaiannya.
+
+Langkah input pesan menjelaskan bahwa Anda dapat mulai menulis draf berikutnya saat pesan dikirim. Hanya versi yang dikirim yang dihapus setelah konfirmasi atau penyimpanan permanen dalam antrean; suntingan baru tetap tersimpan. Input dan pratinjau mempertahankan target terpisah dan urutan yang ada.

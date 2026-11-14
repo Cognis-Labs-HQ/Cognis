@@ -21,3 +21,5 @@ Die Anleitung erklärt das Verfassen einmal und zeigt Eingabe und Vorschau getre
 Die Gesprächsverwaltung entfällt aus Ablauf und Anzahl, solange kein Gesprächskopf verfügbar ist.
 
 Der Schritt zum Nachrichtenverlauf zeigt im Standard-, Sprechblasen- und IRC-Stil denselben Gesprächsbereich. Nachrichten werden darin umgebrochen; gesetzte Zeilenumbrüche und Markdown bleiben erhalten. Ziele, Reihenfolge und Abschlusskennung des Rundgangs bleiben unverändert.
+
+Der Schritt zur Nachrichteneingabe erklärt, dass Sie während des Sendens den nächsten Entwurf beginnen können. Nur die abgesendete Version wird nach Bestätigung oder dauerhafter Einreihung gelöscht; neuere Änderungen bleiben erhalten. Eingabe und Vorschau behalten ihre getrennten Ziele und die bestehende Reihenfolge.

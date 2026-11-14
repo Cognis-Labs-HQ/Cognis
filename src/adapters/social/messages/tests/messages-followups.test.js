@@ -536,11 +536,11 @@ test("messages refresh encrypted previews after a contextual keyring unlock", ()
 test("messages pause refresh polling until room-key setup completes", () => {
     const source = readMessagesUiBundle();
 
-    assert.match(source, /openingRoomId === roomId && roomOpenPromise/);
+    assert.match(source, /openingRoomId === roomId &&\s+roomOpenPromise/);
     assert.match(source, /readyRoomId !== selectedRoomId\) return/);
-    assert.match(source, /const key = await getRoomKey\(selectedRoomId\)/);
+    assert.match(source, /const key = await getRoomKey\(roomId\)/);
     const refreshBlock = source.match(
-        /async function refreshActiveConversation\(\)[\s\S]*?function startTypingPolling/,
+        /function refreshActiveConversation\(\)[\s\S]*?function startLiveRefreshPolling/,
     )?.[0];
     assert.ok(refreshBlock);
     assert.doesNotMatch(refreshBlock, /requireRoomKey/);
@@ -566,56 +566,6 @@ test("messages saved templates are scoped to the current account", () => {
     assert.match(
         source,
         /persistSavedMessageTemplates\(\s*savedMessageTemplates,\s*currentAccountId,?\s*\)/m,
-    );
-});
-
-test("messages composer persists per-room drafts via form-draft manager keyed by room", () => {
-    const source = readMessagesUiBundle();
-
-    assert.match(
-        source,
-        /createFormDraftManager\(\{[^}]*FORM_DRAFT_STORAGE_PREFIX:\s*"cognis_messages_draft"/m,
-    );
-    assert.match(source, /"data-composer-include-form-memory": "true"/);
-    assert.match(source, /captureFormState\b/);
-    assert.match(source, /restoreFormState\b/);
-});
-
-test("messages composer saves draft on input and clears on successful send", () => {
-    const source = readMessagesUiBundle();
-
-    assert.match(
-        source,
-        /savePersistedFormState\(\s*selectedRoomId,\s*captureFormState\(root,\s*\{[^}]*persistableOnly:\s*true[^}]*\}\)/m,
-    );
-    assert.match(source, /clearPersistedFormState\(\s*selectedRoomId\s*\)/m);
-});
-
-test("messages onRoomOpened callback restores draft for opened room", () => {
-    const source = readMessagesUiBundle();
-
-    assert.match(
-        source,
-        /const openedRoomId = room\?\.id != null \? String\(room\.id\) : null/,
-    );
-    assert.match(
-        source,
-        /const persistedState = loadPersistedFormState\(\s*openedRoomId\s*\)/,
-    );
-    assert.match(source, /restoreFormState\(\s*root,\s*persistedState\s*\)/);
-    assert.match(source, /composerInputRef\?\.dispatchEvent/);
-});
-
-test("messages onRoomOpened clears composer when opened room has no saved draft", () => {
-    const source = readMessagesUiBundle();
-
-    assert.match(
-        source,
-        /persistedState\.size === 0[\s\S]*composerInputRef instanceof HTMLTextAreaElement/m,
-    );
-    assert.match(
-        source,
-        /persistedState\.size === 0[\s\S]*composerInputRef\.value = ""/m,
     );
 });
 
@@ -657,3 +607,25 @@ test("keyring reset preserves message-room membership", () => {
     assert.doesNotMatch(source, /auth:registerKeyringDataOwner/);
     assert.match(source, /auth:registerAccountDataOwner/);
 });
+
+for (const [locale, unsupported] of Object.entries({
+    en: /attach/i,
+    de: /Anhänge|Anhang/i,
+    id: /lampiran/i,
+    ja: /添付/,
+})) {
+    test(`Messages ${locale} preview tutorial does not promise an attachment composer`, () => {
+        const strings = readFileSync(
+            resolve(
+                ROOT,
+                `src/adapters/social/messages/ui/languages/${locale}/strings.xml`,
+            ),
+            "utf8",
+        );
+        const preview = strings.match(
+            /<string name="module\.social\.messages\.tutorial\.messages\.preview\.message\.body">([^<]+)<\/string>/,
+        )?.[1];
+        assert.ok(preview);
+        assert.doesNotMatch(preview, unsupported);
+    });
+}

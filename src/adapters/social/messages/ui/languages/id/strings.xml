@@ -43,6 +43,9 @@
   <string name="module.social.messages.not_member_cannot_send">Anda bukan lagi anggota ruang ini.</string>
   <string name="module.social.messages.key_unavailable">Kunci enkripsi tidak tersedia.</string>
   <string name="module.social.messages.send_failed">Gagal mengirim pesan.</string>
+  <string name="module.social.messages.update_failed">Percakapan ini tidak dapat diperbarui. Draf Anda tidak berubah.</string>
+  <string name="module.social.messages.read_failed">Status baca tidak dapat diperbarui. Jumlah pesan belum dibaca tidak berubah.</string>
+  <string name="module.social.messages.refresh_failed">Pesan telah dikirim atau masuk antrean, tetapi percakapan tidak dapat diperbarui. Jangan kirim ulang pesan tersebut.</string>
   <string name="module.social.messages.page_subtitle">Ruang dan pesan langsung Anda.</string>
   <string name="module.social.messages.request_sent">Permintaan pesan telah dikirim.</string>
   <string name="module.social.messages.read_by">Dibaca oleh</string>
@@ -87,13 +90,13 @@
   <string name="module.social.messages.tutorial.messages.room.history.title">Riwayat Ruang</string>
   <string name="module.social.messages.tutorial.messages.room.history.body">Baca percakapan dan periksa peserta serta permintaan tertunda.</string>
   <string name="module.social.messages.tutorial.messages.compose.and.preview.title">Tulis dan Pratinjau</string>
-  <string name="module.social.messages.tutorial.messages.compose.and.preview.body">Tulis dan pratinjau draf sebelum mengirim; lampiran dan panggilan memiliki kontrol tersendiri.</string>
+  <string name="module.social.messages.tutorial.messages.compose.and.preview.body">Tulis dan pratinjau draf sebelum mengirim; panggilan memiliki kontrol tersendiri.</string>
   <string name="module.social.messages.tutorial.messages.start.room.title">Mulai Percakapan</string>
   <string name="module.social.messages.tutorial.messages.start.room.body">Buat percakapan langsung atau ruang, pilih penerima, lalu periksa anggota sebelum mengirim pesan pertama.</string>
   <string name="module.social.messages.tutorial.messages.write.message.title">Tulis Pesan</string>
-  <string name="module.social.messages.tutorial.messages.write.message.body">Tulis pesan di sini. Gunakan format dan lampiran sesuai kebutuhan, lalu periksa pratinjau sebelum mengirim.</string>
+  <string name="module.social.messages.tutorial.messages.write.message.body">Tulis pesan dan periksa pratinjau sebelum mengirim. Anda dapat mengetik draf berikutnya saat pesan dikirim; hanya versi yang dikirim yang dihapus setelah terkirim atau masuk antrean, sehingga suntingan baru tetap tersimpan.</string>
   <string name="module.social.messages.tutorial.messages.preview.message.title">Pratinjau Sebelum Mengirim</string>
-  <string name="module.social.messages.tutorial.messages.preview.message.body">Beralih ke Pratinjau untuk memeriksa format, tautan, dan lampiran. Kembali ke Tulis untuk memperbaikinya.</string>
+  <string name="module.social.messages.tutorial.messages.preview.message.body">Beralih ke Pratinjau untuk memeriksa format, tautan, dan jeda baris. Kembali ke Tulis untuk memperbaikinya.</string>
   <string name="module.social.messages.tutorial.messages.manage.room.title">Kelola Percakapan</string>
   <string name="module.social.messages.tutorial.messages.manage.room.body">Judul percakapan menunjukkan ruang dan pesertanya. Periksa tindakan yang tersedia sebelum mengubah anggota atau keluar.</string>
 </resources>

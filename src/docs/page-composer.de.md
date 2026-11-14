@@ -84,3 +84,7 @@ Der Layouteditor bleibt auf Smartphones und Tablets verfügbar. Touch-Größenre
 Unter 900 CSS-Pixel öffnet sich die Werkzeugleiste als Seitenbereich. Filter und andere lokale Aktionen bleiben darin bedienbar; Navigation schließt ihn. Escape oder der Hintergrund schließen den Bereich und stellen den Fokus wieder her. Navigation, Werkzeugleiste, Suche und Dialoge teilen die Scrollsperre, damit verschachtelte Oberflächen die Seite nicht dauerhaft sperren oder hinter Dialogen scrollen lassen.
 
 Die Arbeitsbereichseinführung markiert auf schmalen Bildschirmen die sichtbare Navigationsschaltfläche und erklärt Touch- und Tastatursteuerung. Browserregressionen prüfen 320, 390, 768, 1024 und 1440 CSS-Pixel, Drehung, Tastatureingabe und wiederholtes Einbinden. `COGNIS_BROWSER_TESTS=1 node --test src/ui/tests/page-composer/responsive-browser.test.js` benötigt einen Rechner, auf dem Chromium starten kann. Emulation bestätigt weder iOS Safari noch installierte PWAs oder Bildschirmtastaturen auf echten Geräten.
+
+## Ressourcen-Entwurfspfade
+
+Der öffentliche Formularentwurfsmanager akzeptiert die optionale Abhängigkeit `resolveStoragePath(scopeKey)`. Ressourcenseiten können ihren kanonischen eigenen Pfad zurückgeben, damit Lesen, Speichern und Entfernen eines gesendeten Entwurfs auch nach einer Navigation dieselbe Ressource betreffen. Standardmäßig gilt weiterhin der aktuelle Seitenpfad. Das angemeldete Konto bleibt Bestandteil jedes Speicherschlüssels; die Auflösung ändert weder die Kontotrennung noch ausgeschlossene Felder.

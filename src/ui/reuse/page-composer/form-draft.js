@@ -15,6 +15,7 @@ export function createFormDraftManager({
     FORM_DRAFT_STORAGE_PREFIX,
     LARGE_FORM_RESET_FIELD_THRESHOLD,
     i18n,
+    resolveStoragePath = () => window.location.pathname || "",
 }) {
     function getFormFieldKey(field, fieldIndex) {
         return field.name
@@ -223,7 +224,7 @@ export function createFormDraftManager({
         if (!account || !scopeKey) {
             return null;
         }
-        const pagePath = window.location.pathname || "";
+        const pagePath = resolveStoragePath(scopeKey);
         return `${FORM_DRAFT_STORAGE_PREFIX}:${account}:${pagePath}:${scopeKey}`;
     }
 

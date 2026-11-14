@@ -68,3 +68,7 @@ Editor tata letak tetap tersedia di ponsel dan tablet. Pegangan ukuran sentuh da
 Di bawah 900 piksel CSS, bilah alat terbuka sebagai panel samping. Filter dan tombol tindakan setempat tetap dapat digunakan saat terbuka; navigasi menutupnya. Escape atau latar belakang menutup panel dan mengembalikan fokus. Navigasi, bilah alat, pencarian, dan popup berbagi penguncian gulir agar lapisan bertingkat tidak membuat halaman terkunci atau bergulir di belakang dialog.
 
 Tutorial ruang kerja menyorot tombol navigasi yang terlihat di layar sempit dan menjelaskan kontrol sentuh serta papan ketik. Skenario regresi browser mencakup 320, 390, 768, 1024, dan 1440 piksel CSS, rotasi, masukan papan ketik, dan pemasangan berulang. Jalankan `COGNIS_BROWSER_TESTS=1 node --test src/ui/tests/page-composer/responsive-browser.test.js` pada mesin yang dapat menjalankan Chromium. Emulasi tidak membuktikan perilaku Safari iOS, PWA terpasang, atau papan ketik perangkat nyata.
+
+## Jalur Draf Sumber Daya
+
+Pengelola draf formulir publik menerima dependensi opsional `resolveStoragePath(scopeKey)`. Halaman sumber daya dapat mengembalikan jalur kanonis miliknya agar pembacaan, penyimpanan, dan penghapusan draf terkirim tetap mengarah ke sumber daya yang sama setelah navigasi. Nilai bawaan tetap jalur halaman saat ini. Akun yang terautentikasi tetap menjadi bagian dari setiap kunci penyimpanan; resolver tidak mengubah isolasi akun atau pengecualian kolom.

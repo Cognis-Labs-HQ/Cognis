@@ -151,3 +151,7 @@ The layout editor remains available on phones and tablets. Touch resize handles 
 Below 900 CSS pixels, the toolbar opens as a drawer. Filters and other in-place buttons remain usable while it is open; navigation closes it. Escape or the backdrop dismisses the drawer and restores focus. Navigation, toolbar, search and popup surfaces share scroll locking so nested overlays do not leave the page locked or scrolling behind a dialog.
 
 The workspace tutorial highlights the visible navigation toggle on narrow screens and explains touch and keyboard layout controls. Browser regression scenarios cover 320, 390, 768, 1024 and 1440 CSS pixels, rotation, keyboard input and repeated mounts. Run `COGNIS_BROWSER_TESTS=1 node --test src/ui/tests/page-composer/responsive-browser.test.js` on a machine where Chromium can launch. Browser emulation does not establish iOS Safari, installed PWA or real-device keyboard behavior.
+
+## Resource Draft Paths
+
+The public form draft manager accepts an optional `resolveStoragePath(scopeKey)` dependency. Resource pages can return their canonical owned path so reading, saving and consuming a draft still address the same resource after navigation. The default remains the current page path. The authenticated account stays part of every storage key; the resolver does not change account isolation or field exclusions.

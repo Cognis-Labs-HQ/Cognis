@@ -304,3 +304,41 @@ export function renderRoomList({
         : "";
     return `${requestsHtml}${activeHtml}${archivedHtml}`;
 }
+
+export function renderPendingRequestBanner(pendingRequest, i18n) {
+    if (!pendingRequest) return "";
+    const requesterLabel =
+        pendingRequest.requester?.displayName ||
+        pendingRequest.requester?.handle ||
+        pendingRequest.requester?.accountId ||
+        "";
+    if (pendingRequest.direction === "incoming" && pendingRequest.canRespond) {
+        return `<div class="messages-request-banner" data-request-id="${escapeHtml(pendingRequest.id)}">
+        <span class="messages-request-banner-text">${escapeHtml(i18n.t("module.social.messages.request_banner_incoming").replace("{name}", requesterLabel))}</span>
+        <div class="messages-request-banner-actions">
+          <button type="button" class="messages-request-banner-approve" aria-label="${escapeHtml(i18n.t("module.social.messages.approve_request"))}">✅</button>
+          <button type="button" class="messages-request-banner-reject" aria-label="${escapeHtml(i18n.t("module.social.messages.reject_request"))}">❌</button>
+        </div>
+      </div>`;
+    }
+    if (pendingRequest.direction === "outgoing") {
+        const recipientLabel =
+            pendingRequest.recipient?.displayName ||
+            pendingRequest.recipient?.handle ||
+            pendingRequest.recipient?.accountId ||
+            "";
+        return `<div class="messages-request-banner">
+        <span class="messages-request-banner-text">${escapeHtml(i18n.t("module.social.messages.request_banner_outgoing").replace("{name}", recipientLabel))}</span>
+      </div>`;
+    }
+    return "";
+}
+
+export function getPendingRequestSignature(pendingRequest) {
+    if (!pendingRequest) return "";
+    return [
+        pendingRequest.id ?? "",
+        pendingRequest.direction ?? "",
+        String(Boolean(pendingRequest.canRespond)),
+    ].join(":");
+}
