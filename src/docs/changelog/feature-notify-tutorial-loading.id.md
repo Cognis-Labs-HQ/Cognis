@@ -12,4 +12,4 @@ Pengujian regresi host tutorial kini menjalankan service worker bersama lokalisa
 
 ## Komit
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/a48506a8b0cf36ceaaae372bf046b621e2230bc3
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/eec701ecd4b8577c474ed0cb038dff87f08e51d6
