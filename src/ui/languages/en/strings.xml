@@ -657,9 +657,9 @@
   <string name="ui.tutorial.settings.appearance.message.layout.body">Pick the message layout you prefer; Save applies pending appearance changes.</string>
   <string name="ui.tutorial.settings.language.title">Language Preferences</string>
   <string name="ui.tutorial.settings.language.available.languages.title">Available Languages</string>
-  <string name="ui.tutorial.settings.language.available.languages.body">Add the languages you want to use from the available list.</string>
+  <string name="ui.tutorial.settings.language.available.languages.body">Drag a language into Preferred Languages. On a touch screen, drag its handle.</string>
   <string name="ui.tutorial.settings.language.language.priority.title">Language Priority</string>
-  <string name="ui.tutorial.settings.language.language.priority.body">Order preferred languages to choose which translation is used first.</string>
+  <string name="ui.tutorial.settings.language.language.priority.body">Drag preferred languages into the order you want, then Save. Discard restores the saved order.</string>
   <string name="ui.tutorial.settings.language.browser.language.title">Browser Language</string>
   <string name="ui.tutorial.settings.language.browser.language.body">Use browser language detection again when you no longer want a manual priority order.</string>
   <string name="ui.tutorial.settings.datetime.title">Time Preferences</string>

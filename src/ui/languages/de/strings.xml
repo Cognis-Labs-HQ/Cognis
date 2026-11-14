@@ -657,9 +657,9 @@
   <string name="ui.tutorial.settings.appearance.message.layout.body">Wählen Sie Ihr Nachrichtenlayout; Speichern übernimmt ausstehende Darstellungsänderungen.</string>
   <string name="ui.tutorial.settings.language.title">Spracheinstellungen</string>
   <string name="ui.tutorial.settings.language.available.languages.title">Verfügbare Sprachen</string>
-  <string name="ui.tutorial.settings.language.available.languages.body">Fügen Sie gewünschte Sprachen aus der verfügbaren Liste hinzu.</string>
+  <string name="ui.tutorial.settings.language.available.languages.body">Ziehen Sie eine Sprache in die bevorzugte Liste. Nutzen Sie auf einem Touchscreen den Griff.</string>
   <string name="ui.tutorial.settings.language.language.priority.title">Sprachreihenfolge</string>
-  <string name="ui.tutorial.settings.language.language.priority.body">Ordnen Sie bevorzugte Sprachen, um die zuerst verwendete Übersetzung festzulegen.</string>
+  <string name="ui.tutorial.settings.language.language.priority.body">Ziehen Sie bevorzugte Sprachen in die gewünschte Reihenfolge und speichern Sie. Verwerfen stellt die gespeicherte Reihenfolge wieder her.</string>
   <string name="ui.tutorial.settings.language.browser.language.title">Browsersprache</string>
   <string name="ui.tutorial.settings.language.browser.language.body">Aktivieren Sie die Browsererkennung erneut, wenn Sie keine manuelle Reihenfolge mehr wünschen.</string>
   <string name="ui.tutorial.settings.datetime.title">Zeiteinstellungen</string>

@@ -657,9 +657,9 @@
   <string name="ui.tutorial.settings.appearance.message.layout.body">Pilih tata letak pesan; Simpan menerapkan perubahan tampilan yang tertunda.</string>
   <string name="ui.tutorial.settings.language.title">Preferensi Bahasa</string>
   <string name="ui.tutorial.settings.language.available.languages.title">Bahasa Tersedia</string>
-  <string name="ui.tutorial.settings.language.available.languages.body">Tambahkan bahasa yang ingin digunakan dari daftar tersedia.</string>
+  <string name="ui.tutorial.settings.language.available.languages.body">Seret bahasa ke daftar Bahasa Pilihan. Pada layar sentuh, seret pegangannya.</string>
   <string name="ui.tutorial.settings.language.language.priority.title">Prioritas Bahasa</string>
-  <string name="ui.tutorial.settings.language.language.priority.body">Urutkan bahasa pilihan untuk menentukan terjemahan yang digunakan lebih dahulu.</string>
+  <string name="ui.tutorial.settings.language.language.priority.body">Seret bahasa pilihan ke urutan yang diinginkan, lalu simpan. Membuang perubahan mengembalikan urutan tersimpan.</string>
   <string name="ui.tutorial.settings.language.browser.language.title">Bahasa Browser</string>
   <string name="ui.tutorial.settings.language.browser.language.body">Gunakan deteksi bahasa browser lagi jika tidak ingin memakai urutan manual.</string>
   <string name="ui.tutorial.settings.datetime.title">Preferensi Waktu</string>

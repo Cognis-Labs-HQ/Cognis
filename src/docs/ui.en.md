@@ -131,3 +131,9 @@ The additive `ui:popupFocus` capability coordinates popup owners through `regist
 The required `onRevoke` callback removes delegated event handlers synchronously before focus is returned.
 
 Delegated callbacks are synchronous, and `contains` must return a boolean. A thrown error, invalid predicate value, asynchronous return, or recursive focus attempt revokes the delegation, records safe diagnostic metadata, and restores ordinary popup focus handling. Callback and logging failures cannot interrupt popup dismissal or leave its result pending.
+
+## Language list gestures
+
+Drag a language row, or its handle on a touch screen, into the preferred list at the desired position. Drops on a row insert before or after its midpoint; drops in the remaining table area append. English stays available as a preferred fallback. Changes remain a draft until Save; Discard restores the saved order. Offline mode permits reordering preferred languages but not changing membership.
+
+Settings native dragging and touch/pen handles share `bindListDropzones` in `src/ui/app/settings/dropzones.js`. The Settings controller owns selectors, eligibility and the drop callback; the helper owns destination hit testing, indicators, capture and cancellation. `cancel()` clears a gesture before rerender; `dispose()` or the supplied signal removes its listeners. Cancellation, lost capture, Escape, leaving the page and invalid drops do not submit edits. Eligibility failures release the gesture before propagating; capture release cannot commit after cancellation, owner disposal or row replacement. The Settings language tutorial retains its available/preferred list targets and explains the same drag and Save workflow.
