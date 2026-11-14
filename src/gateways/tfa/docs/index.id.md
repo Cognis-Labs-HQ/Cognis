@@ -86,6 +86,8 @@ Setelah pembatalan pendaftaran dikonfirmasi server, navigasi ditawarkan kembali 
 
 Setiap metode menyediakan `stringsBaseUrl` dan metadata `loginUi`: `placeholderKey`, `supportsResend`, serta `challengeOnSelect`. UI masuk menemukan nilai tersebut tanpa percabangan ID penyedia. Label konfigurasi memakai kunci terjemahan milik penyedia.
 
+Respons tantangan login dapat menyertakan `maxLength`, bilangan bulat positif yang menjelaskan panjang tantangan yang diterbitkan. Gateway meneruskan metadata ini ke UI login, termasuk respons pengiriman ulang; konsumen tidak boleh menggantinya dengan pengaturan penyedia yang lebih baru selama tantangan tersebut masih aktif. Tantangan pengganti menyediakan panjangnya sendiri. Metadata tampilan ini tidak membuat pengaturan panjang kode milik gateway.
+
 Registrasi kontrak adapter mengikuti [kontrak bootstrap gateway bersama](/docs/gateways).
 
 ## Kontrol Pengelolaan Adaptor

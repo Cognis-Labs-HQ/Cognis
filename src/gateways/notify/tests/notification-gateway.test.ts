@@ -218,7 +218,10 @@ test("CoreNotificationGateway.saveProviderConfig persists to configStore", async
     gateway.registerSender(sender);
 
     await gateway.saveProviderConfig("smtp", { host: "new.example.com" });
-    assert.deepEqual(stored.get("smtp"), { host: "new.example.com" });
+    assert.deepEqual(stored.get("smtp"), {
+        host: "new.example.com",
+        enabled: true,
+    });
 });
 
 test("CoreNotificationGateway.loadPersistedConfigs applies stored config to senders", async () => {

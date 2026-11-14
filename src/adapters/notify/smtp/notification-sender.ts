@@ -628,7 +628,10 @@ export class SmtpNotificationSender implements NotificationSender {
                 requiredWhen: authentication,
             },
             field("allowSelfSigned", "boolean", "allow_self_signed"),
-            field("codeLength", "number", "code_length"),
+            {
+                ...field("codeLength", "number", "code_length"),
+                infoKey: "adapter.smtp.config.code_length_help",
+            },
             field("greylistRetries", "number", "greylist_retries"),
             field("greylistRetryDelayMs", "number", "greylist_retry_delay"),
         ];
@@ -686,6 +689,16 @@ export class SmtpNotificationSender implements NotificationSender {
 
     getCodeLength(): number {
         return clampVerificationCodeLength(this.config.codeLength);
+    }
+
+    normalizeConfig(config: Record<string, unknown>): Record<string, unknown> {
+        return {
+            ...config,
+            codeLength:
+                typeof config.codeLength === "number"
+                    ? clampVerificationCodeLength(config.codeLength)
+                    : this.getCodeLength(),
+        };
     }
 
     setConfig(config: Record<string, unknown>): void {

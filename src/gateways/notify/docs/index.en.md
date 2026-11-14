@@ -2,7 +2,7 @@
 
 The gateway brokers notifications through optional sender adapters. It does not require an email transport. Adapters export `createNotificationSender()` and own their configuration, connections, queues and test delivery. In-app senders can remain available when email delivery is absent.
 
-## Delivery Contracts
+## Usage Examples
 
 Components use ctx capabilities rather than retaining the gateway implementation:
 
@@ -13,37 +13,45 @@ Components use ctx capabilities rather than retaining the gateway implementation
 
 Provider contracts are exported from `@cognis/core`. Adapter bootstrap receives ctx capabilities and bounded host registration functions, without the concrete gateway. Provider tests delegate through `testSender(senderId, recipient, config)`.
 
-## Email Actions
+## Technical Specification
 
-An optional email provider contributes `notify:registerEmailPurpose(id, action)`, `notify:sendEmail`, `notify:emailAvailable` and `notify:emailCodeLength`. Consumers supply their own content; registration is allowed only during their bootstrap and returns an owner-scoped purpose. Sending requires that purpose, a recipient and variables. It never creates a queue. Without an email provider, email delivery actions are unavailable while stored addresses remain readable.
+### Email Actions
 
-Email verification applies equally to local and SSO accounts. Codes and verification tokens bind the complete account ID and address. Verification uses the email provider's code length, independently of TFA adapters. Delivery outages do not waive required verification. The security setting uses `userValidationMode: "email"` or `"none"`.
+An optional email provider contributes `notify:registerEmailPurpose(id, action)`, `notify:sendEmail`, `notify:emailAvailable` and `notify:emailDeliveryPolicy`. Consumers supply their own content; registration is allowed only during their bootstrap and returns an owner-scoped purpose. Sending requires that purpose, a recipient and variables. It never creates a queue. Without an email provider, email delivery actions are unavailable while stored addresses remain readable.
 
-## Lifecycle
+Email verification applies equally to local and SSO accounts. Codes and verification tokens bind the complete account ID and address. Email verification reads `codeLength` from the provider-owned `notify:emailDeliveryPolicy` version 1 contract at each issuance. With SMTP, the Notification adapter’s Code Length setting also governs Email Code TFA. Changes apply to subsequent codes; existing codes retain their issued length until used, replaced or expired. An absent, disabled or unconfigured policy owner causes issuance to fail explicitly. Delivery outages do not waive required verification. The security setting uses `userValidationMode: "email"` or `"none"`.
+
+### Lifecycle
 
 Disable and unmount revoke owned registrations and pending delivery. Re-enable restores fresh channels without replaying cancelled messages. Other owners of a shared category remain active. Async message actions cannot enqueue after their registration is disposed or replaced.
 
-## Browser Capabilities
+### Browser Capabilities
 
 The lifecycle-scoped `notify:emailClient` provides own-account email requests, trusted domains, administrator `listUserEmails`, online-only `resendUserEmail` and `emailAvailable`. Settings, Users and Administration resolve it through ctx. Email edits are cached and queued by their owning provider; verification remains online. `GET /api/v1/notify/email-delivery` is authenticated and returns only availability, not provider configuration.
 
 Offline Mode and Broadcast share the top banner stack above the header. Offline Mode has priority, cannot be dismissed and offers Recheck Connectivity and Refresh after recovery. Broadcast acknowledgement, audience and scheduling policies remain enforced independently. Banner backgrounds and collapsibility are configured through the shared banner capability.
 
-## Provider-owned Contracts
+### Provider-owned Contracts
 
 Notify owns transport-neutral sender and delivery-receipt types under `contracts/`. Provider-specific runtime declarations and optional action types belong to the contributing adapter. Providers supply configuration schemas, translations, conditional fields, configured-secret metadata and test fields; the gateway forwards them without assuming a transport. Notify contributes the email validation policy to Auth. Email delivery and factory capabilities exist only when an adapter provides them.
 
+Configuration fields may provide an optional localized `infoKey`; the shared editor presents that help in an information tooltip beside the label. Blank numeric fields are omitted from configuration patches rather than converted to zero.
+
+Providers may implement the optional pure `normalizeConfig(patch)` hook to normalize configuration without changing runtime state. Notify merges the normalized patch with the saved configuration, preserving omitted fields, and persists the result before applying it to the sender. If runtime application fails, Notify disables the provider, restores the previous persisted configuration with `enabled: false`, and returns an explicit error. An administrator must correct the configuration and recover the provider before ordinary delivery resumes.
+
+Configuration saves, patches, activation changes and persisted reloads are serialized per sender, including failed-save rollback. Different senders remain independent. Replacing a registered sender while its configuration work is pending fails explicitly; replacement can proceed once that work finishes. Configuration listeners run after the transaction is released, so they may await a subsequent update. The `notify:onSenderConfigChange` payload excludes all fields declared as `password` in the provider schema or listed by `getConfiguredSecretFields()`, including newly submitted values. Public normalized fields and activation state remain available; listeners must not rely on raw credentials.
+
 Adapter contract registration follows [the shared gateway bootstrap contract](/docs/gateways).
 
-## Reliable Sharing and Tests
+### Reliable Sharing and Tests
 
 Administrator configuration tests are available before a sender is enabled. Testing does not activate normal delivery; each provider owns its diagnostic transport and cleanup.
 
-## Typed Delivery Contracts
+### Typed Delivery Contracts
 
 Sender queue inspection is optional and typed by the Notify contract. Bootstrap loads the gateway-owned store directly and exposes its email and preference operations without partial constructor assertions. Broadcast validation returns validated roles and scheduling values before persistence.
 
-## Onboarding Email Verification
+### Onboarding Email Verification
 
 Notify contributes notify:email:add and notify:email:verify to auth:onboarding during its bootstrap. They accept only {email} and {email, code}; account identity comes from verified onboarding context. They reuse ordinary email-add and verification rules, including duplicate-address checks, delivery availability, code lifetime and cooldown errors. They do not allow email listing, deletion, primary-address changes, other-account access or notification administration.
 

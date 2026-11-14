@@ -1,3 +1,4 @@
+import type { BootstrapLog } from "@cognis/core";
 import { bootstrapAdapter } from "../reuse/adapter-bootstrap.js";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
@@ -135,6 +136,11 @@ export class CoreNotificationGateway implements NotificationGateway {
     >();
     private readonly categories = new Map<string, string>();
     private readonly disabledSenders = new Set<string>();
+    private readonly configurationFailures = new Set<string>();
+    private readonly configurationTransactions = new Map<
+        string,
+        Promise<void>
+    >();
     private readonly senderRequires = new Map<string, string[]>();
     private readonly alwaysOnSenders = new Set<string>();
     private readonly senderEnabledChangeListeners = new Map<
@@ -153,6 +159,7 @@ export class CoreNotificationGateway implements NotificationGateway {
         private readonly prefStore: NotificationPreferenceStore,
         private readonly configStore?: NotificationConfigStore,
         private readonly emailStore?: NotificationEmailStore,
+        private readonly log?: BootstrapLog,
     ) {}
 
     registerAlwaysOnSender(senderId: string): void {
@@ -164,6 +171,14 @@ export class CoreNotificationGateway implements NotificationGateway {
     }
 
     registerSender(sender: NotificationSender, requires?: string[]): void {
+        const previous = this.senders.get(sender.senderId);
+        if (
+            previous &&
+            previous !== sender &&
+            this.configurationTransactions.has(sender.senderId)
+        ) {
+            throw new Error("notification_configuration_in_progress");
+        }
         this.senders.set(sender.senderId, sender);
         if (requires && requires.length > 0) {
             this.senderRequires.set(sender.senderId, requires);
@@ -308,10 +323,39 @@ export class CoreNotificationGateway implements NotificationGateway {
         return sender.getRequiredFields();
     }
 
-    async saveProviderConfig(
+    private async runSenderConfigurationTransaction<Result>(
         senderId: string,
+        operation: (sender: NotificationSender) => Promise<Result>,
+    ): Promise<Result> {
+        const sender = this.senders.get(senderId);
+        if (!sender) throw new Error("notification_sender_unavailable");
+        const previous = this.configurationTransactions.get(senderId);
+        let release!: () => void;
+        const pending = new Promise<void>((resolve) => {
+            release = resolve;
+        });
+        this.configurationTransactions.set(senderId, pending);
+        await previous;
+        try {
+            return await operation(sender);
+        } finally {
+            if (this.configurationTransactions.get(senderId) === pending) {
+                this.configurationTransactions.delete(senderId);
+            }
+            release();
+        }
+    }
+
+    private async persistProviderConfig(
+        sender: NotificationSender,
         config: Record<string, unknown>,
-    ): Promise<void> {
+        updateSettings = true,
+    ): Promise<{
+        config: Record<string, unknown>;
+        enabled: boolean;
+        enabledChanged: boolean;
+    }> {
+        const senderId = sender.senderId;
         const { enabled, ...senderConfig } = config;
         const wasEnabled = this.isSenderEnabled(senderId);
         const isEnabled = resolveComponentEnabledState({
@@ -319,27 +363,109 @@ export class CoreNotificationGateway implements NotificationGateway {
             defaultEnabled: wasEnabled,
             locked: this.alwaysOnSenders.has(senderId),
         });
+        const log = this.log;
+        let normalizedConfig: Record<string, unknown>;
+        let previousConfig: Record<string, unknown> | null | undefined;
+        let persistConfig: Record<string, unknown>;
+        try {
+            normalizedConfig = updateSettings
+                ? (sender.normalizeConfig?.(senderConfig) ?? senderConfig)
+                : senderConfig;
+            const update = { ...normalizedConfig };
+            if (update.password === "") delete update.password;
+            previousConfig = await this.configStore?.getConfig(senderId);
+            persistConfig = {
+                ...previousConfig,
+                ...update,
+                enabled: isEnabled,
+            };
+            await this.configStore?.saveConfig(senderId, persistConfig);
+        } catch (error) {
+            log?.(
+                "error",
+                "Notification provider configuration could not be saved.",
+                {
+                    component: "notify-gateway",
+                    operation: "saveProviderConfig",
+                    senderId,
+                    errorName:
+                        error instanceof Error ? error.name : "UnknownError",
+                },
+            );
+            throw error;
+        }
+        try {
+            if (updateSettings) sender.setConfig?.(normalizedConfig);
+            sender?.setDeliveryEnabled?.(isEnabled);
+        } catch (error) {
+            this.disabledSenders.add(senderId);
+            this.configurationFailures.add(senderId);
+            log?.(
+                "error",
+                "Notification provider configuration could not be applied.",
+                {
+                    component: "notify-gateway",
+                    operation: "saveProviderConfig",
+                    senderId,
+                    errorName:
+                        error instanceof Error ? error.name : "UnknownError",
+                },
+            );
+            try {
+                sender?.setDeliveryEnabled?.(false);
+            } finally {
+                await this.configStore?.saveConfig(senderId, {
+                    ...previousConfig,
+                    enabled: false,
+                });
+            }
+            throw new Error("notification_configuration_failed");
+        }
         if (!isEnabled) {
             this.disabledSenders.add(senderId);
         } else {
             this.disabledSenders.delete(senderId);
         }
-        const sender = this.senders.get(senderId);
-        sender?.setDeliveryEnabled?.(isEnabled);
-        if (sender && typeof sender.setConfig === "function") {
-            sender.setConfig(senderConfig);
-        }
-        const persistConfig: Record<string, unknown> = { ...config };
-        if (this.alwaysOnSenders.has(senderId)) {
-            persistConfig.enabled = true;
-        }
-        if (persistConfig.password === "") {
-            delete persistConfig.password;
-        }
-        await this.configStore?.saveConfig(senderId, persistConfig);
-        await this.notifySenderConfigChange(senderId, persistConfig);
-        if (wasEnabled !== isEnabled) {
-            await this.notifySenderEnabledChange(senderId, isEnabled);
+        if (updateSettings) this.configurationFailures.delete(senderId);
+        log?.("info", "Notification provider configuration saved.", {
+            component: "notify-gateway",
+            operation: "saveProviderConfig",
+            senderId,
+        });
+        const secretFields = new Set(
+            updateSettings
+                ? [
+                      ...(sender.getConfigSchema?.() ?? [])
+                          .filter((field) => field.type === "password")
+                          .map((field) => field.key),
+                      ...(sender.getConfiguredSecretFields?.() ?? []),
+                  ]
+                : [],
+        );
+        const publicConfig = Object.fromEntries(
+            Object.entries(normalizedConfig).filter(
+                ([field]) => !secretFields.has(field),
+            ),
+        );
+        return {
+            config: { ...publicConfig, enabled: isEnabled },
+            enabled: isEnabled,
+            enabledChanged: wasEnabled !== isEnabled,
+        };
+    }
+
+    async saveProviderConfig(
+        senderId: string,
+        config: Record<string, unknown>,
+    ): Promise<void> {
+        const submitted = { ...config };
+        const change = await this.runSenderConfigurationTransaction(
+            senderId,
+            (sender) => this.persistProviderConfig(sender, submitted),
+        );
+        await this.notifySenderConfigChange(senderId, change.config);
+        if (change.enabledChanged) {
+            await this.notifySenderEnabledChange(senderId, change.enabled);
         }
     }
 
@@ -347,69 +473,92 @@ export class CoreNotificationGateway implements NotificationGateway {
         senderId: string,
         patch: Record<string, unknown>,
     ): Promise<void> {
-        const existing = this.getProviderConfig(senderId);
-        if (!existing) return;
-        await this.saveProviderConfig(senderId, {
-            ...existing,
-            ...patch,
-            enabled: this.isSenderEnabled(senderId),
-        });
+        const submitted = { ...patch };
+        const change = await this.runSenderConfigurationTransaction(
+            senderId,
+            async (sender) => {
+                const existing = sender.getConfig?.();
+                if (!existing) return null;
+                return this.persistProviderConfig(sender, {
+                    ...existing,
+                    ...submitted,
+                    enabled: this.isSenderEnabled(senderId),
+                });
+            },
+        );
+        if (!change) return;
+        await this.notifySenderConfigChange(senderId, change.config);
+        if (change.enabledChanged) {
+            await this.notifySenderEnabledChange(senderId, change.enabled);
+        }
     }
 
     async loadPersistedConfigs(): Promise<void> {
         if (!this.configStore) return;
-        for (const sender of this.senders.values()) {
-            const config = await this.configStore.getConfig(sender.senderId);
-            if (!config) continue;
-            if (
-                !resolveComponentEnabledState({
-                    persistedEnabled: config.enabled,
-                    defaultEnabled: true,
-                    locked: this.alwaysOnSenders.has(sender.senderId),
-                })
-            ) {
-                this.disabledSenders.add(sender.senderId);
-            } else {
-                this.disabledSenders.delete(sender.senderId);
-            }
-            sender.setDeliveryEnabled?.(
-                !this.disabledSenders.has(sender.senderId),
+        for (const senderId of this.senders.keys()) {
+            await this.runSenderConfigurationTransaction(
+                senderId,
+                async (sender) => {
+                    const config = await this.configStore!.getConfig(senderId);
+                    if (!config) return;
+                    if (
+                        !resolveComponentEnabledState({
+                            persistedEnabled: config.enabled,
+                            defaultEnabled: true,
+                            locked: this.alwaysOnSenders.has(senderId),
+                        })
+                    ) {
+                        this.disabledSenders.add(senderId);
+                    } else {
+                        this.disabledSenders.delete(senderId);
+                    }
+                    sender.setDeliveryEnabled?.(
+                        !this.disabledSenders.has(senderId),
+                    );
+                    if (typeof sender.setConfig === "function") {
+                        const { enabled, ...senderConfig } = config;
+                        sender.setConfig(senderConfig);
+                    }
+                },
             );
-            if (typeof sender.setConfig === "function") {
-                const { enabled, ...senderConfig } = config;
-                sender.setConfig(senderConfig);
-            }
         }
     }
 
     async enableSender(senderId: string): Promise<void> {
-        const wasDisabled = this.disabledSenders.has(senderId);
-        this.disabledSenders.delete(senderId);
-        this.senders.get(senderId)?.setDeliveryEnabled?.(true);
-        const existing = (await this.configStore?.getConfig(senderId)) ?? null;
-        await this.configStore?.saveConfig(senderId, {
-            ...(existing ?? {}),
-            enabled: true,
-        });
-        if (wasDisabled) {
-            await this.notifySenderEnabledChange(senderId, true);
+        const change = await this.runSenderConfigurationTransaction(
+            senderId,
+            (sender) => {
+                if (this.configurationFailures.has(senderId)) {
+                    throw new Error("notification_configuration_failed");
+                }
+                return this.persistProviderConfig(
+                    sender,
+                    { enabled: true },
+                    false,
+                );
+            },
+        );
+        if (change.enabledChanged) {
+            await this.notifySenderEnabledChange(senderId, change.enabled);
         }
     }
 
     async disableSender(senderId: string): Promise<void> {
-        if (this.alwaysOnSenders.has(senderId)) {
-            throw new Error("adapter_locked");
-        }
-        const wasDisabled = this.disabledSenders.has(senderId);
-        this.disabledSenders.add(senderId);
-        this.senders.get(senderId)?.setDeliveryEnabled?.(false);
-        const existing = (await this.configStore?.getConfig(senderId)) ?? null;
-        await this.configStore?.saveConfig(senderId, {
-            ...(existing ?? {}),
-            enabled: false,
-        });
-        if (!wasDisabled) {
-            await this.notifySenderEnabledChange(senderId, false);
+        const change = await this.runSenderConfigurationTransaction(
+            senderId,
+            (sender) => {
+                if (this.alwaysOnSenders.has(senderId)) {
+                    throw new Error("adapter_locked");
+                }
+                return this.persistProviderConfig(
+                    sender,
+                    { enabled: false },
+                    false,
+                );
+            },
+        );
+        if (change.enabledChanged) {
+            await this.notifySenderEnabledChange(senderId, change.enabled);
         }
     }
 

@@ -1,6 +1,7 @@
 import { createAdapterSettingsPopup } from "./reuse/settings-popup.js";
 
 import { extendI18n } from "../../reuse/i18n.js";
+import { renderInfoTooltip } from "../../reuse/info-tooltip.js";
 import {
     markPopupFieldInvalid,
     resolveFieldErrorId,
@@ -67,8 +68,13 @@ export function createAdapterConfigPopup({
                     type === "password" ? "" : escapeHtml(value ?? "");
                 input = `<input ${attrs} class="${test ? "provider-test-input" : "provider-config-input"}" type="${type}" value="${inputValue}" />`;
             }
-            const wrapper = type === "boolean" ? "div" : "label";
-            return `<${wrapper} class="provider-popup-field" data-provider-field="${escapeHtml(name)}"><span class="provider-field-title">${escapeHtml(label)}<span class="provider-required-flag" data-provider-required="${escapeHtml(name)}" aria-hidden="true" hidden>*</span>${descriptor.envConflict ? `<span class="provider-field-env-warning" title="${escapeHtml(i18n.t("ui.app.admin.notif.field_env_conflict"))}">⚠</span>` : ""}</span>${input}</${wrapper}>`;
+            const info = descriptor.infoKey
+                ? renderInfoTooltip(
+                      i18n.t(descriptor.infoKey),
+                      i18n.t("ui.reuse.more_information"),
+                  )
+                : "";
+            return `<div class="provider-popup-field" data-provider-field="${escapeHtml(name)}"><span class="provider-field-title"><label for="${escapeHtml(name)}">${escapeHtml(label)}</label>${info}<span class="provider-required-flag" data-provider-required="${escapeHtml(name)}" aria-hidden="true" hidden>*</span>${descriptor.envConflict ? `<span class="provider-field-env-warning" title="${escapeHtml(i18n.t("ui.app.admin.notif.field_env_conflict"))}">⚠</span>` : ""}</span>${input}</div>`;
         };
         return `<div class="provider-popup-form">
             <div class="provider-popup-toggle-row"><span class="provider-popup-toggle-label">${i18n.t("ui.app.admin.state.active")}</span><label class="switch provider-popup-switch"><input id="enabled" type="checkbox" name="enabled" class="provider-enable-toggle" disabled /><span class="slider"></span></label></div>
@@ -76,7 +82,7 @@ export function createAdapterConfigPopup({
                 .filter(([name]) => name !== "enabled")
                 .map(([name, descriptor]) => field(name, descriptor))
                 .join("")}</div>
-            ${testSchema === null ? "" : `<div class="provider-test-row">${testSchema.map((entry) => field(entry.key, { schemaType: entry.type, schemaLabel: i18n.t(entry.label), effectiveValue: "" }, true)).join("")}<button class="btn-animated provider-test-btn" type="button">${i18n.t("ui.reuse.test")}</button></div>`}
+            ${testSchema === null ? "" : `<div class="provider-test-row">${testSchema.map((entry) => field(entry.key, { schemaType: entry.type, schemaLabel: i18n.t(entry.label), infoKey: entry.infoKey, effectiveValue: "" }, true)).join("")}<button class="btn-animated provider-test-btn" type="button">${i18n.t("ui.reuse.test")}</button></div>`}
         </div>`;
     }
 
@@ -98,6 +104,9 @@ export function createAdapterConfigPopup({
                         field.type === "password" &&
                         field.value === ""
                     ) {
+                        return;
+                    }
+                    if (field.type === "number" && field.value.trim() === "") {
                         return;
                     }
                     config[field.name] =
@@ -231,6 +240,7 @@ export function createAdapterConfigPopup({
                     required: requiredFields.includes(field),
                     schemaType: schemaEntry?.type ?? null,
                     schemaLabel: i18n.t(schemaEntry.label),
+                    infoKey: schemaEntry.infoKey,
                     schemaOptions: schemaEntry?.options ?? null,
                     visibleWhen: schemaEntry?.visibleWhen,
                     requiredWhen: schemaEntry?.requiredWhen,
