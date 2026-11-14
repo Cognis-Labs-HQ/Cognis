@@ -1,3 +1,4 @@
+import type { BootstrapLog } from "@cognis/core";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
@@ -120,6 +121,7 @@ export function createDocsRoutes(
     options: {
         sourceRoot?: string | string[];
         archiveRoot?: string;
+        log?: BootstrapLog;
     } = {},
 ) {
     const archiveRoot = options.archiveRoot ?? resolveDocsArchiveRoot();
@@ -127,6 +129,7 @@ export function createDocsRoutes(
         initializeDocsStore(
             options.sourceRoot ?? [SRC_ROOT, EXTERNAL_MODULES_ROOT],
             archiveRoot,
+            options.log,
         );
     return async (
         req: IncomingMessage,
@@ -146,6 +149,7 @@ export function createDocsRoutes(
                     version,
                     versions,
                     sourceName,
+                    groupPresentation,
                 }) => ({
                     slug,
                     path,
@@ -154,6 +158,7 @@ export function createDocsRoutes(
                     version,
                     versions,
                     sourceName,
+                    groupPresentation,
                 }),
             );
             res.writeHead(200, { "content-type": "application/json" });

@@ -753,7 +753,7 @@
   <string name="ui.tutorial.workspace.dock.layout.body">追加ボタンでドラッグせずに項目を配置できます。タッチ画面では表示中のサイズ変更ハンドルと削除ボタンを使用します。キーボードではウィジェットにフォーカスして矢印キーで移動し、Shift と矢印キーでサイズを変更します。最後に配置を保存または破棄してください。</string>
   <string name="ui.tutorial.restart">チュートリアルを最初からやり直す</string>
   <string name="ui.tutorial.docs.read.browse.documents.title">文書を探す</string>
-  <string name="ui.tutorial.docs.read.browse.documents.body">サイドメニューでトピックやコンポーネントを選びます。グループを展開すると各ページが表示され、選んだ文書がメニューの横に開きます。</string>
+  <string name="ui.tutorial.docs.read.browse.documents.body">サイドメニューでトピックやコンポーネントを選びます。モジュールのグループには表示名が使われます。グループを展開すると各ページが表示され、選んだ文書がメニューの横に開きます。</string>
   <string name="ui.components.provider_failed">コンポーネント {{component}} で障害が発生したため隔離しました。他のコンポーネントは引き続き利用できます。</string>
   <string name="ui.components.disabled_after_failures">コンポーネント {{component}} で障害が繰り返されたため無効にしました。コンポーネント管理またはコマンドラインで修復し、再度有効にしてください。</string>
   <string name="ui.tutorial.admin.components.metadata.title">コンポーネントの詳細</string>

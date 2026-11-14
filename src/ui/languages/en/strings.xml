@@ -753,7 +753,7 @@
   <string name="ui.tutorial.workspace.dock.layout.body">Use Add to place available elements without dragging. On touchscreens, use the visible resize and remove controls. With a keyboard, focus a widget and use arrows to move it or Shift plus arrows to resize. Save or discard the arrangement when finished.</string>
   <string name="ui.tutorial.restart">Restart Tutorial</string>
   <string name="ui.tutorial.docs.read.browse.documents.title">Browse Documents</string>
-  <string name="ui.tutorial.docs.read.browse.documents.body">Use the side menu to choose a topic or component. Expand a group to find its pages; the selected document opens beside the menu.</string>
+  <string name="ui.tutorial.docs.read.browse.documents.body">Use the side menu to choose a topic or component. Module groups show their display names. Expand a group to find its pages; the selected document opens beside the menu.</string>
   <string name="ui.components.provider_failed">The {{component}} component failed and was isolated. Other components remain available.</string>
   <string name="ui.components.disabled_after_failures">The {{component}} component was disabled after repeated failures. Use component management or the CLI to repair and re-enable it.</string>
   <string name="ui.tutorial.admin.components.metadata.title">Component Details</string>

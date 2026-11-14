@@ -3,6 +3,10 @@
  * Public export: collectGlobalDocsSearchGroups({ signal, onResults }).
  * @example collectGlobalDocsSearchGroups({ signal, onResults: renderGroups });
  */
+import { activeUiLanguage } from "../ui-language-state.js";
+import { createI18n, readPreferredLanguages } from "../i18n.js";
+import { resolveDocsGroupLabels } from "../docs-client.js";
+
 let content = new Map();
 let contentIdentity = "";
 
@@ -41,6 +45,13 @@ export async function collectGlobalDocsSearchGroups({
     if (!response.ok) throw new Error("docs_search_index_unavailable");
     const payload = await response.json();
     const docs = Array.isArray(payload?.data) ? payload.data : [];
+    const i18n = await createI18n({
+        persistLocale: false,
+        preferredLanguages: [activeUiLanguage(), ...readPreferredLanguages()],
+    });
+    const labels = await resolveDocsGroupLabels(i18n, docs);
+    const docsLabel = i18n.t("ui.reuse.docs");
+    const changelogsLabel = i18n.t("ui.layout.footer.changelogs");
     const langs = localStorage.getItem("cognis_language_priority") ?? "";
     const entries = docs
         .filter((item) => String(item?.slug ?? "").trim())
@@ -60,13 +71,19 @@ export async function collectGlobalDocsSearchGroups({
                 item: {
                     id: `global-docs:${slug}`,
                     label: title,
-                    description: `${changelog ? "Changelogs" : "Docs"} / ${item.group || "platform"}`,
+                    description: `${changelog ? changelogsLabel : docsLabel} / ${labels.get(item.group || "platform")}`,
                     url: changelog
                         ? `/changelogs/${slug.replace(/^changelog\//, "")}`
                         : `/docs/${slug}`,
                     resultClass: "page",
                     visible: true,
-                    searchText: [title, slug, item.group, item.description]
+                    searchText: [
+                        title,
+                        slug,
+                        labels.get(item.group || "platform"),
+                        item.group,
+                        item.description,
+                    ]
                         .filter(Boolean)
                         .join(" "),
                 },
@@ -75,7 +92,7 @@ export async function collectGlobalDocsSearchGroups({
     const groups = () =>
         [
             {
-                category: "Docs",
+                category: docsLabel,
                 items: entries
                     .filter((entry) => !entry.changelog)
                     .map((entry) => ({
@@ -84,7 +101,7 @@ export async function collectGlobalDocsSearchGroups({
                     })),
             },
             {
-                category: "Changelogs",
+                category: changelogsLabel,
                 items: entries
                     .filter((entry) => entry.changelog)
                     .map((entry) => ({

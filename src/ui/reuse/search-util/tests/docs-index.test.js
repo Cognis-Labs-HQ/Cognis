@@ -10,7 +10,23 @@ test("documentation titles arrive before content, content concurrency is bounded
     let bodyCalls = 0;
     const { collectGlobalDocsSearchGroups } = loadTestModule(
         new URL("../docs-index.js", import.meta.url),
-        {},
+        {
+            "../ui-language-state.js": { activeUiLanguage: () => undefined },
+            "../i18n.js": {
+                readPreferredLanguages: () => ["en"],
+                createI18n: async () => ({
+                    t: (key) =>
+                        ({
+                            "ui.reuse.docs": "Docs",
+                            "ui.layout.footer.changelogs": "Changelogs",
+                        })[key],
+                }),
+            },
+            "../docs-client.js": {
+                resolveDocsGroupLabels: async () =>
+                    new Map([["platform", "Platform"]]),
+            },
+        },
         {
             localStorage: { getItem: () => null },
             console,
