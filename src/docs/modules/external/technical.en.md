@@ -228,6 +228,14 @@ The injected adapter popup wrapper owns the captured tutorial signal from the st
 
 Module Settings captures the tutorial branch before temporarily enabling a disabled module and passes that same signal through configuration preparation. Cancelling during enablement prevents a late editor and restores the disabled state. If protected dismissal is declined in a custom adapter editor, later page changes continue initializing normally without repeating the cancellation request.
 
+### Credential form translations
+
+Module Sources uses the Modules page catalog at `/static/app/modules/languages/<locale>/strings.xml`, including the shared-credential tooltip. Preferred-language values fall back to English per key; a missing English value raises `missing_translation` rather than hiding the problem. The existing marketplace guide still points to Settings; its controls and progression are unchanged.
+
+The service worker refreshes mutable host translation catalogs before returning them to a new page resolver, coalescing concurrent reads. Its existing four-second network deadline bounds a stalled refresh; network or gateway-unavailable failures retain a complete cached catalog when available. HTTP 401, 403 and 404 responses remain authoritative. Content-hashed locale files remain immutable and cache-first. A resolver already holding an older catalog is not rewritten in place. Publish matching UI assets, locale files and asset manifest together, then let the normal worker update lifecycle complete and reopen the page.
+
+When diagnosing a missing translation, compare the loaded page asset and the preferred and English catalog responses with the same release manifest. Record status, content hash and whether the response came from a service-worker cache; do not include credentials. The offline Flashcards message `snapshot not prepared` reports a caught background preparation failure. It does not establish a translation failure or duplicate scheduling. Normal empty deck lists do not produce it. Useful additional diagnostics are the preparation stage, HTTP status, trigger, duration and offline/aborted flags, without account values, tokens or deck content.
+
 ## Security
 
 ### GitHub PAT permissions for private scans
