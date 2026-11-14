@@ -15,7 +15,31 @@ Komponen memakai kapabilitas ctx, bukan menyimpan implementasi gateway:
 
 Kontrak penyedia diekspor dari `@cognis/core`. Bootstrap adapter menerima kapabilitas ctx dan fungsi registrasi host terbatas, bukan gateway konkret. Pengujian menggunakan `testSender(senderId, recipient, config)`.
 
+<<<<<<< HEAD:src/gateways/notify/docs/TECHNICAL.id.md
 #### Kontrak Milik Penyedia
+=======
+Di Administrasi, siapkan pesan pada Notifikasi lalu pilih Kirim Notifikasi, atau siapkan pengumuman pada Siaran lalu pilih Buat Siaran. Tindakan eksplisit ini mengirim atau menerbitkan draf; Simpan pada pengaturan umum tidak melakukan keduanya.
+
+## Spesifikasi Teknis
+
+### Aksi Email
+
+Penyedia email opsional menyediakan `notify:registerEmailPurpose(id, action)`, `notify:sendEmail`, `notify:emailAvailable`, dan `notify:emailDeliveryPolicy`. Pemanggil menyediakan konten sendiri dan mendaftarkan tujuan miliknya hanya saat bootstrap. Pengiriman memerlukan tujuan tersebut, penerima, dan variabel; pengiriman tidak pernah membuat antrean. Alamat tersimpan tetap dapat dibaca tanpa penyedia email.
+
+Verifikasi berlaku untuk akun lokal dan SSO. Kode dan token mengikat ID akun lengkap beserta alamat. Verifikasi email membaca `codeLength` dari kontrak `notify:emailDeliveryPolicy` versi 1 milik penyedia setiap kali kode diterbitkan. Dengan SMTP, pengaturan Panjang Kode pada adapter Notifikasi juga mengatur TFA Kode Email. Perubahan berlaku untuk kode berikutnya; kode yang ada mempertahankan panjang saat diterbitkan sampai digunakan, diganti, atau kedaluwarsa. Penerbitan kode gagal secara eksplisit jika pemilik kebijakan tidak tersedia, dinonaktifkan, atau belum dikonfigurasi. Gangguan pengiriman tidak membatalkan kewajiban verifikasi. Pengaturan keamanan memakai `userValidationMode: "email"` atau `"none"`.
+
+### Siklus Hidup
+
+Penonaktifan dan pelepasan mencabut registrasi serta pengiriman tertunda miliknya. Pengaktifan kembali membuat kanal baru tanpa mengulang pesan yang dibatalkan. Pemilik lain dari kategori bersama tetap aktif. Aksi asinkron tidak boleh mengantre setelah registrasinya dicabut atau diganti.
+
+### Kapabilitas Browser
+
+`notify:emailClient` menyediakan permintaan email akun sendiri, domain tepercaya, `listUserEmails` administratif, `resendUserEmail` khusus daring, dan `emailAvailable` yang terikat siklus hidup. Pengaturan, Pengguna, dan Administrasi mengambilnya melalui ctx. Penyedia menyimpan serta mengantre perubahan email; verifikasi tetap daring. `GET /api/v1/notify/email-delivery` memerlukan autentikasi dan hanya mengembalikan ketersediaan tanpa konfigurasi penyedia.
+
+Mode Luring dan Broadcast berbagi tumpukan banner di atas header. Mode Luring memiliki prioritas, tidak dapat ditutup, serta menyediakan pemeriksaan koneksi dan muat ulang setelah pulih. Kebijakan konfirmasi, penerima, dan jadwal Broadcast tetap terpisah. Latar dan kemampuan menciut diatur melalui kapabilitas banner bersama.
+
+### Kontrak Milik Penyedia
+>>>>>>> ca8faf9a2 (Protect Notify Administration drafts and request lifetimes):src/gateways/notify/docs/index.id.md
 
 Notify memiliki tipe pengirim dan bukti pengiriman yang netral terhadap transportasi dalam `contracts/`. Deklarasi runtime khusus penyedia dan tipe aksi opsional dimiliki adapter penyumbang. Penyedia menyediakan skema konfigurasi, terjemahan, bidang bersyarat, metadata rahasia tersimpan, dan bidang pengujian; gateway meneruskannya tanpa mengasumsikan transportasi. Notify menyumbangkan kebijakan validasi surel ke Auth. Kemampuan pengiriman dan pabrik templat surel hanya tersedia jika disediakan adapter.
 
@@ -71,7 +95,12 @@ Otoritas diperiksa kembali sebelum efek setelah pembacaan asinkron. Menonaktifka
 
 Alamat mungkin sudah tersimpan saat pengiriman atau pencabutan gagal; kode yang valid dapat terpakai sebelum pemeriksaan otoritas atau kegagalan basis data berikutnya. Periksa keadaan terkini sebelum mencoba kembali.
 
+<<<<<<< HEAD:src/gateways/notify/docs/TECHNICAL.id.md
 Pendaftaran memvalidasi judul dan langkah panduan terhadap katalog milik gateway sebelum menyediakan panduan. Bahasa Inggris, Jerman, Indonesia, dan Jepang didukung; nilai bahasa pilihan yang hilang atau kosong menggunakan kunci bahasa Inggris yang sama. Teks bahasa Inggris yang hilang tetap menghasilkan kesalahan terjemahan yang eksplisit. Mendaftarkan panduan di halaman dasbor lain tidak membuka Pengaturan atau Administrasi.
+
+Panduan pengiriman menjelaskan Kirim Notifikasi secara eksplisit dan ketersediaan saat permintaan berlangsung. Panduan siaran menjelaskan Buat Siaran, peninjauan audiens, dan status publikasi. Keduanya menjelaskan penyimpanan draf pada halaman yang sama serta perbedaan Tetap di Sini dan Buang dan Lanjutkan. Simpan pada pengaturan umum tidak menerbitkan kedua draf tersebut. Tahap tindakan opsional dihilangkan saat kontrolnya tidak tersedia.
+
+Panduan siaran juga menyoroti Segarkan sebagai tindakan terpisah untuk mencoba kembali pemuatan daftar sambil mempertahankan draf, tanpa mengulangi publikasi atau perubahan status.
 
 ## Keamanan
 
@@ -90,3 +119,14 @@ Verifikasi email mengikat akun dan alamat. Pengiriman hilang tidak membatalkan k
 Perilaku ini dijelaskan dalam [kontrak bersama](/docs/adapters/social/messages/technical).
 
 Kontrol pengujian dan penerbitan opsional hanya disertakan saat tersedia; tombol uji berulang memakai satu target terlihat.
+=======
+### Draf Administrasi
+
+Draf notifikasi dan siaran tetap berada dalam memori saat halaman Administrasi yang sama dirender ulang. Jika navigasi menanyakan perubahan yang belum disimpan, Tetap di Sini mempertahankan draf dan Buang dan Lanjutkan membuangnya. Batalkan mengembalikan nilai awal formulir. Draf tidak disimpan setelah pemuatan ulang browser atau penutupan tab, dan pergantian akun menghapusnya.
+
+Kirim dan Buat hanya menerima satu permintaan sekaligus, termasuk validasi; kontrolnya tidak tersedia selama proses berlangsung. Pengiriman yang ditolak mempertahankan draf. Keberhasilan mengembalikan nilai awal hanya jika draf masih sama dengan nilai yang dikirim. Suntingan yang lebih baru selama menunggu tetap utuh dan belum disimpan. Simpan pada pengaturan umum tidak pernah mengirim notifikasi atau menerbitkan siaran.
+
+Perubahan status siaran juga hanya berjalan satu per satu. Pembuatan atau perubahan status yang berhasil tetap berhasil jika pemuatan ulang daftar sesudahnya gagal. Kesalahan pemuatan ulang dilaporkan terpisah dan baris yang sudah dimuat tetap terlihat. Periksa keadaan terkini sebelum mengulangi tindakan; tidak ada percobaan ulang otomatis. Menutup atau mengganti detail konfirmasi, meninggalkan halaman, atau berganti akun mencegah respons detail lama mengubah tampilan saat ini.
+
+Gunakan Segarkan di samping Buat Siaran untuk memuat kembali daftar melalui permintaan baca saja, termasuk setelah kesalahan pemuatan. Draf tetap dipertahankan dan pembuatan maupun perubahan status tidak pernah diulang. Segarkan tidak tersedia selama tindakan siaran lain berlangsung.
+>>>>>>> ca8faf9a2 (Protect Notify Administration drafts and request lifetimes):src/gateways/notify/docs/index.id.md

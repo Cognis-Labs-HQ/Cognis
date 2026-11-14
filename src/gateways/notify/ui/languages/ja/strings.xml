@@ -25,6 +25,7 @@
   <string name="gateway.notify.admin.broadcast_created">一斉通知を作成しました。</string>
   <string name="gateway.notify.admin.broadcast_invalid">有効なタイトル、メッセージ、対象ロール、スケジュールを入力してください。</string>
   <string name="gateway.notify.admin.broadcast_create_failed">一斉通知の作成に失敗しました。</string>
+  <string name="gateway.notify.admin.broadcast_refresh_failed">一斉通知一覧の更新に失敗しました。読み込み済みの通知は引き続き表示され、成功した作成や状態変更は取り消されません。</string>
   <string name="gateway.notify.admin.broadcast_error_missing_title">タイトルを入力してください。</string>
   <string name="gateway.notify.admin.broadcast_error_missing_message">メッセージを入力してください。</string>
   <string name="gateway.notify.admin.broadcast_error_missing_roles">対象ロールを少なくとも1つ選択してください。</string>
@@ -65,12 +66,14 @@
   <string name="gateway.notify.tutorial.preferences.save.preferences.body">選択を確認して保存します。利用できない通知先はここで有効にできません。</string>
   <string name="gateway.notify.tutorial.delivery.title">通知の配信</string>
   <string name="gateway.notify.tutorial.delivery.delivery.diagnostics.title">テスト通知の準備</string>
-  <string name="gateway.notify.tutorial.delivery.delivery.diagnostics.body">宛先とカテゴリーを選び、テスト通知の件名と本文を入力します。</string>
+  <string name="gateway.notify.tutorial.delivery.delivery.diagnostics.body">受信者とカテゴリを選び、件名とメッセージを入力します。同じページ内の表示更新では下書きが保持されます。移動の確認で「このページに留まる」を選ぶと保持され、「破棄して移動」を選ぶと破棄されます。</string>
   <string name="gateway.notify.tutorial.delivery.test.delivery.title">テスト配信</string>
-  <string name="gateway.notify.tutorial.delivery.test.delivery.body">テスト通知を送信し、選択した配信方法で相手がメッセージを受け取れるか確認します。</string>
+  <string name="gateway.notify.tutorial.delivery.test.delivery.body">「通知を送信」でこの下書きをすぐに送信します。一般設定の「保存」では送信されません。リクエストの処理中は送信できません。再試行する前に結果を確認してください。</string>
   <string name="gateway.notify.tutorial.broadcasts.title">お知らせの管理</string>
   <string name="gateway.notify.tutorial.broadcasts.audience.and.content.title">対象者と内容</string>
-  <string name="gateway.notify.tutorial.broadcasts.audience.and.content.body">掲載前に、お知らせの内容、対象者、表示期間を確認します。</string>
+  <string name="gateway.notify.tutorial.broadcasts.audience.and.content.body">内容、対象者、表示期間を確認します。「一斉通知を作成」で下書きを公開します。一般設定の「保存」では公開されません。作成処理中は再度作成できません。同じページ内の表示更新では下書きが保持され、「このページに留まる」で保持、「破棄して移動」で破棄されます。</string>
   <string name="gateway.notify.tutorial.broadcasts.publication.state.title">公開の状態</string>
-  <string name="gateway.notify.tutorial.broadcasts.publication.state.body">編集や削除の前に既存のお知らせを確認します。公開すると他の利用者の画面に反映されます。</string>
+  <string name="gateway.notify.tutorial.broadcasts.publication.state.body">この一斉通知を有効または無効にして公開状態を変更します。状態変更の処理中はお待ちください。成功後に一覧の更新が失敗しても変更は有効です。一覧を更新するためだけに同じ操作を繰り返さないでください。</string>
+  <string name="gateway.notify.tutorial.broadcasts.refresh.list.title">一斉通知一覧を更新</string>
+  <string name="gateway.notify.tutorial.broadcasts.refresh.list.body">「更新」は一斉通知一覧だけを読み込み直し、下書きを保持します。一覧の読み込みエラー後に使えば、新たな一斉通知を作成したり状態変更を繰り返したりせずに再試行できます。リクエスト処理中はお待ちください。</string>
 </resources>
