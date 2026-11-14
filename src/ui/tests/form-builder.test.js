@@ -158,7 +158,7 @@ test("form builder renders trusted integration label markup", () => {
 
     assert.match(
         builder.render(),
-        /<label for="form-builder-consent">Accept the <a href="\/terms">terms<\/a><\/label>/,
+        /<label for="form-builder-consent"><span class="form-builder-label-heading"><span class="form-builder-label-content">Accept the <a href="\/terms">terms<\/a><\/span><\/span><\/label>/,
     );
 });
 

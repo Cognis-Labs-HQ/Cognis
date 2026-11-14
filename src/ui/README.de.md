@@ -94,3 +94,10 @@ Seitenüberlagerungen werden am Dokumentkörper eingehängt, damit Hintergrundfi
 Unter Administration → Komponenten nutzen Statusbeschriftung, Zustandsanzeige und Ein-/Ausschalter ihre Inhaltsbreite. Schmale Komponentenzeilen zeigen den Namen über den Bedienelementen und die Aufklappsteuerung daneben; die Bedienelemente können innerhalb der verfügbaren Breite umbrechen. Lange Namen, Statusbeschriftungen und Versionsdetails bleiben lesbar.
 
 Ein-/Ausschalter und Aufklappsteuerung haben 44 Pixel hohe Bedienflächen. Tab fokussiert einen verfügbaren Schalter, die Leertaste schaltet ihn um, und ein Fokusring markiert den sichtbaren Schieber. Erforderliche Gateways sowie gesperrte oder nicht verfügbare Adapter behalten deaktivierte Schalter. Die Komponenten-Anleitung erklärt die Tastaturbedienung und verwendet weiterhin dieselben Ziele für Schalter, Aufklappen, Metadaten und Konfiguration.
+
+## Gemeinsame Formularüberschriften
+
+Der gemeinsame Formularbaukasten fasst jede Feldüberschrift und ihre Pflichtfeldmarkierung in einem Textcontainer zusammen. Beschriftungen können in schmalen Formularen umbrechen; die Markierung verwendet ein geschütztes Leerzeichen und bleibt im Textfluss, statt eine eigene Rasterzelle zu bilden. Native Feldbeschriftungen, Pflichtattribute, Links in Beschriftungen und Hilfeschaltflächen behalten ihre Funktionen. `setFieldRequired` aktualisiert dieselbe Überschrift für Textfelder, Auswahllisten, mehrzeilige Felder, Kontrollkästchen und Optionsfelder.
+Die Überschrift verhindert einen Umbruch zwischen Inhalt und Markierung, während der innere Beschriftungstext auch innerhalb langer ungetrennter Wörter umbrechen darf.
+
+Formularüberschriften bleiben in ihren bisherigen Feldern. Ziele und Ablauf der Kalender- und Freigabeanleitungen ändern sich nicht; es ist keine neue Aktion oder Anleitungsetappe nötig.

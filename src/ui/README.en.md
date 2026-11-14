@@ -94,3 +94,10 @@ Page overlays mount at the document body to keep viewport positioning independen
 In Administration → Components, each status label, health light and power switch uses its content width. Narrow component rows place the name above the controls and keep the disclosure beside them; controls can wrap inside the available row width. Long names, status labels and version details remain readable.
 
 Power switches and disclosure controls have 44-pixel-high targets. Tab focuses an enabled switch, Space changes it, and the focus ring follows the visible slider. Required gateways and locked or unavailable adapters retain their disabled controls. The Components tutorial explains keyboard operation and continues to use the same power, disclosure, metadata and configuration targets.
+
+## Shared Form Headings
+
+The shared form builder groups each field heading and its required marker in one text container. Labels can wrap in narrow forms; the marker uses a nonbreaking space and stays inline instead of becoming a separate grid item. Native control labels, required attributes, rich label links and tooltip buttons retain their roles. `setFieldRequired` updates the same heading for text, select, textarea, checkbox and radio fields.
+The heading prevents a break between its content and marker while the inner label content permits wrapping, including long unbroken words.
+
+Form headings remain within their existing fields. Calendar and Sharing tutorial targets and progression do not change; no new action or tutorial step is needed.
