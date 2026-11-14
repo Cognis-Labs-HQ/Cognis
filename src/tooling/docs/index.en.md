@@ -79,3 +79,7 @@ Built-in `cognisctl` commands can render response-aware terminal output with hea
 | `COGNIS_EXTERNAL_MODULES_ROOT` | `external-modules` | Used by the CLI to discover module-contributed subcommands                             |
 | `COGNIS_GATEWAY_CLI_PATHS`     | —                  | Optional path list for gateway-contributed CLI commands                                |
 | `COGNIS_ADAPTER_CLI_PATHS`     | —                  | Optional path list for adapter-contributed CLI commands                                |
+
+## Isolated Test Credentials
+
+`npm test` and `npm run ci:test` allocate a temporary token-store directory for each run and a separate writable file for every test worker. A static preload sets the file before test modules load, ignoring any inherited production token-store path. Tests may deliberately override their own path afterward for restart or failure cases. The runner removes its temporary directory after successful or failed child execution and forwards ordinary termination signals. Forced process termination or host failure can leave temporary files for operating-system cleanup. Production token persistence remains fail-closed and unchanged.
