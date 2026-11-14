@@ -6,31 +6,11 @@
 
 import { uiCtx } from "../ui-ctx.js";
 import { popupFocusOwnership } from "./focus-ownership.js";
+import { isPopupControlAvailable as available } from "./controls.js";
 
 const ACTIVE_POPUP = ".popup-overlay[data-popup-active]";
 const FOCUSABLE =
     'a[href], area[href], button, input, select, textarea, iframe, [tabindex], [contenteditable="true"]';
-
-function available(element) {
-    if (
-        !element?.isConnected ||
-        element.matches(':disabled, input[type="hidden"]')
-    )
-        return false;
-    for (let ancestor = element; ancestor; ancestor = ancestor.parentElement) {
-        if (ancestor.hidden || ancestor.inert || ancestor.hasAttribute("inert"))
-            return false;
-        const style =
-            ancestor.ownerDocument.defaultView.getComputedStyle(ancestor);
-        if (
-            style.display === "none" ||
-            style.visibility === "hidden" ||
-            style.visibility === "collapse"
-        )
-            return false;
-    }
-    return true;
-}
 
 function focusableElements(overlay) {
     return [...overlay.querySelectorAll(FOCUSABLE)]
