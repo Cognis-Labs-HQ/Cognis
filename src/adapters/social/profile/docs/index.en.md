@@ -129,7 +129,7 @@ The profile menu shows the current availability and lets the signed-in user choo
 
 ## Provided UI capabilities
 
-The profile navbar plugin provides `ui:profileAvatarRenderer`. Modules that render profile avatars must declare this ID in `requiresCapabilities`; Cognis then loads the provider before mounting their SPA routes.
+The standalone profile provider provides `ui:profileAvatarRenderer`. Modules that render profile avatars must declare this ID in `requiresCapabilities`; Cognis then loads the provider before mounting their SPA routes.
 
 ### Browser client capability
 
@@ -212,3 +212,15 @@ Edit Profile keeps the exact entered fields open until the server acknowledges t
 Discard, Close, Escape and the backdrop use the shared unsaved-change confirmation. Cancel in the confirmation retains the form. Confirming Discard closes it and ignores late callbacks; closing cannot undo a request already sent, and an informational toast says so. A save result waits for an open discard decision before updating the page. Navigation, a new mount, account/session changes and popup disposal invalidate old editor callbacks. Reopening uses the last accepted profile, with unique field/label identifiers even while the previous popup animates closed. Unsubmitted drafts are not persisted across navigation or reload.
 
 The Profile-owned editor uses the existing `social:profile:request` ctx flow and preserves its field-validation gate, shared popup focus ownership and offline delivery policy. Synthetic DOM tests exercise the real page mount, popup, form builder and registered request flows with controlled transport and storage. They do not establish live browser layout or server/database behavior.
+
+## Avatar Read Recovery
+
+The navbar and hover previews keep an unchanged image mounted during unrelated refreshes. Temporary network failures and HTTP 408, 425, 429 or 5xx responses do not permanently disable a key. The next explicit refresh or opening can retry; there is no avatar retry timer. Confirmed deletion (404/410), denial (401/403), explicit invalidation, account/token changes and provider removal clear the corresponding image. Profile page hero rendering is a separate consumer and is not changed by this recovery contract.
+
+The standalone provider owns `ui:profileAvatarRenderer` until its scope ends. Existing `fetch(key)` still returns a URL or null; `hydrate(container, { signal })` accepts optional cancellation, and `invalidate(key)` clears a key (omitting the key clears all). Cache entries are scoped to the account, access token and provider lifetime, coalesce concurrent loads, and are capped at 128 keys. Successful and confirmed-negative reads are revalidated after 60 seconds on demand. A content digest keeps identical bytes on the same URL while changed bytes receive a new URL. Eviction, invalidation and disposal revoke owned object URLs. Detached elements are not retained.
+
+The navbar provider now returns `avatarState` (`available`, `missing`, `denied`, `retryable`, `invalid` or `stale`), an optional `avatarKey`, and `avatarBlobUrl` only for an available read. `onAvatarError` evicts that specific URL; the provider's `signal` tells consumers when its lifetime ends. Only an explicit retryable result may retain a same-account, same-token, same-provider image with an unchanged or unresolved key. Unknown or omitted states cannot authorize an image, and unavailable authorization is never reported as a successful read. Ship this host consumer and Profile 3.0.19 together; installing the host alone with an older provider shows initials until the matching provider is available.
+
+The profile identity tutorial continues to explain profile links and their previews; its controls, progression and completion identity are unchanged.
+
+The renderer also exposes a required truthful `available` flag for dependent presentation providers and emits its own `cognis:profile-avatar-renderer-changed` notification on mount and revocation. Its flag becomes false on scope abort before capability removal; failed mounts and reactivation follow the same notification path. Consumers must not infer readiness merely from registry presence.

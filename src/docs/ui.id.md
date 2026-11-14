@@ -86,3 +86,5 @@ Seret bawaan dan pegangan sentuh/pena di Pengaturan memakai `bindListDropzones` 
 ## Pratinjau Gaya Pesan
 
 Tampilan memperlihatkan percakapan fiktif berlabel di bawah Gaya Pesan. Contoh pesan masuk dan keluar memakai tampilan Messages dengan nama serta tanggal dan waktu setempat. Mengganti gaya menampilkan pilihan yang belum disimpan; Simpan menerapkannya dan Buang mengembalikan tata letak tersimpan. Panduan tampilan menyertakan pratinjau hanya saat tersedia. Contoh tidak memuat tautan, tindakan profil, tanda baca pesan, atau percakapan nyata. Jika Messages tidak tersedia, pemilih dan alur preferensi tetap dapat digunakan. Penggambaran ulang bagian mempertahankan pilihan tertunda, dan meninggalkan Pengaturan membatalkan penggambaran yang belum selesai.
+
+Pratinjau Gaya Pesan memerlukan penyedia tampilan versi 2 yang siap. Jika Profile atau Messages tidak tersedia, hanya contoh yang disembunyikan; pemilih dan pilihan yang belum disimpan tetap dapat digunakan. Pilihan saat ini muncul otomatis saat penyedia pulih. Langkah tutorial pratinjau opsional mengikuti area terlihat yang sama. Rilis aset Settings yang sesuai bersama Messages 2.8.1 dan Profile 3.0.19.

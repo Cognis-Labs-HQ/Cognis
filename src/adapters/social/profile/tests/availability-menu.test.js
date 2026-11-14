@@ -1,3 +1,4 @@
+import { avatarFixture, deferred, settle } from "./avatar-fixture.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -18,20 +19,37 @@ test("availability menu presents every status with a matching dot", () => {
     assert.doesNotMatch(template, /data-availability-option="/);
 });
 
-test("availability menu remounts idempotently after SPA shell refreshes", () => {
-    const navbar = readFileSync(resolve(PROFILE_ROOT, "ui/navbar.js"), "utf8");
-
-    assert.match(navbar, /ensureProfileAvatarStyles/);
-    assert.match(navbar, /querySelectorAll\("\.availability-menu-item"\)/);
-    assert.match(navbar, /existingItems\.slice\(1\)/);
-    assert.doesNotMatch(navbar, /matchingStylesheets/);
-    assert.match(navbar, /if \(availabilityMountPromise\)/);
-    assert.match(
-        navbar,
-        /dropdown\.prepend\(statusItem\);[\s\S]*await ensureProfileAvatarStyles\(\)/,
+test("availability menu coalesces repeated SPA shell refreshes and cleans old subscriptions", async (context) => {
+    const state = avatarFixture(context, { menu: true });
+    await state.ready;
+    const oldToggle = state.document.querySelector(".availability-menu-toggle");
+    const oldExpanded = oldToggle.getAttribute("aria-expanded");
+    state.document.querySelector(".availability-menu-item").remove();
+    const pending = deferred();
+    state.setMenuResponse(() => pending.promise);
+    for (let index = 0; index < 3; index++)
+        state.window.dispatchEvent(
+            new state.window.Event("cognis:navbar-refresh"),
+        );
+    await settle();
+    assert.equal(state.menuRequests.length, 2);
+    assert.equal(
+        state.document.querySelectorAll(".availability-menu-item").length,
+        1,
     );
-    assert.match(navbar, /catch \(error\) \{[\s\S]*statusItem\.remove\(\)/);
-    assert.match(navbar, /"cognis:navbar-refresh"/);
+    pending.resolve(new Response(state.menuMarkup));
+    await settle();
+    assert.equal(state.subscribers.size, 1);
+    oldToggle.dispatchEvent(
+        new state.window.MouseEvent("click", { bubbles: true }),
+    );
+    assert.equal(oldToggle.getAttribute("aria-expanded"), oldExpanded);
+    assert.equal(
+        state.document.querySelectorAll("[data-availability-option]").length,
+        3,
+    );
+    await state.lifecycle.reconcile([]);
+    assert.equal(state.subscribers.size, 0);
 });
 
 test("availability menu uses borderless controls and hover outlines", () => {

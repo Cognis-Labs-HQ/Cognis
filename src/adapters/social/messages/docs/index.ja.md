@@ -112,4 +112,10 @@ Messagesの再利用可能なリアクション選択機能は、リアクショ
 
 ## 読み取り専用の会話表示
 
-ブラウザープロバイダーは、ライフサイクルに属する ctx を通じて `social:messagePresentation` バージョン 1 を提供します。`render({ style, records, currentAccountId })` は `messages:presentConversation` の `validate` と `render` ステージを実行し、操作できないマークアップを返します。各レコードには文字列の `id`、`senderId`、`senderDisplayName`、`senderHandle`、`text` と ISO 形式の `createdAt` が必要です。描画用のスナップショットにはこれらの表示項目だけが渡されます。プロバイダーは共通スタイルシートと中止シグナルを公開し、利用側は `cognis:message-presentation-changed` を監視して、無効化されたプロバイダーの利用を止めます。実際の会話と読み取り専用表示は同じ行・本文レンダラーを使います。読み取り専用の経路では、ルーム取得、アバター画像取得、検索登録、既読通知、内容の保存を行いません。サンプルの利用側が独自の翻訳済みレコードとラベルを用意します。
+ブラウザープロバイダーは、ライフサイクルに属する ctx を通じて `social:messagePresentation` バージョン 2 を提供します。`render({ style, records, currentAccountId })` は `messages:presentConversation` の `validate` と `render` ステージを実行し、操作できないマークアップを返します。各レコードには文字列の `id`、`senderId`、`senderDisplayName`、`senderHandle`、`text` と ISO 形式の `createdAt` が必要です。描画用のスナップショットにはこれらの表示項目だけが渡されます。プロバイダーは共通スタイルシートと中止シグナルを公開し、利用側は `cognis:message-presentation-changed` を監視して、無効化されたプロバイダーの利用を止めます。実際の会話と読み取り専用表示は同じ行・本文レンダラーを使います。読み取り専用の経路では、ルーム取得、アバター画像取得、検索登録、既読通知、内容の保存を行いません。サンプルの利用側が独自の翻訳済みレコードとラベルを用意します。
+
+## プレビューの準備状態
+
+バージョン2の契約では真偽値 `available` が必須です。Messages のスコープと現在の Profile 画像レンダラーが有効な間だけ真になります。Profile が `cognis:profile-avatar-renderer-changed` を所有し、Messages は `cognis:message-presentation-changed` で変更を通知します。登録から削除される前に失効が反映されます。処理中の描画は依存先の世代を確認し、同じレンダラーオブジェクトが削除後に戻る場合も古い結果を破棄します。Profile が未提供、または初期化の取り消しで利用できない場合はプレビューを隠します。再有効化すると、Settings の再読み込みや設定の保存なしで、選択中の未保存スタイルを再表示します。Messages の終了時には通知の転送も解除します。
+
+対応する Settings のアセット、Messages 2.8.1、Profile 3.0.19 を同時に配布してください。Settings は `available: true` を持つバージョン2を受け付け、バージョン1や準備状態の欠落を互換経路として扱いません。実際の会話で使う共通レンダラーと選択・更新動作は変更しません。

@@ -1,57 +1,3 @@
-/**
- * Profile adapter avatar rendering: authenticated fetch with initials fallback.
- *
- * Provides the single profile-owned mechanism for fetching and rendering
- * profile avatar images exposed through the social gateway UI export. Callers only need to
- * describe the avatar parameters — this module handles the authenticated
- * fetch, in-memory caching, DOM hydration, and automatic reversion to
- * initials when an image is unavailable or fails to load.
- *
- * Public exports:
- *   getProfileInitials(label) — generates canonical initials for a profile label.
- *   getProfileInitialsColor(seed) — generates the canonical fallback colour.
- *   fetchProfileAvatarBlobUrl(avatarKey) — fetches the avatar image via
- *     authenticated API and returns a blob: URL, or null if unavailable.
- *     Results are cached per key for the lifetime of the page.
- *   isProfileAvatarUnavailable(avatarKey) — returns true when a key is
- *     known to be permanently unavailable in this session.
- *   buildProfileAvatarMarkup(params) — generates avatar HTML that shows
- *     an initials placeholder wired for async hydration when an avatarKey
- *     is provided, or pure initials when no key exists. Pair with
- *     hydrateProfileAvatars() after inserting the HTML into the DOM.
- *   hydrateProfileAvatars(container) — finds all pending avatar
- *     placeholders inside container and replaces them with loaded <img>
- *     elements.
- *   handleProfileAvatarError(event) — attach to a container's "error"
- *     event (capture phase) to automatically revert a failed avatar <img>
- *     back to an initials span.
- *
- * Usage:
- *   import {
- *     buildProfileAvatarMarkup,
- *     hydrateProfileAvatars,
- *     handleProfileAvatarError,
- *   } from '/static/adapters/social/profile/profile-avatar.js';
- *
- *   // In a render function:
- *   container.innerHTML = buildProfileAvatarMarkup({
- *     avatarKey: member.avatarKey,
- *     label: member.displayName,
- *     colorSeed: member.handle,
- *     avatarClass: 'my-avatar',
- *     imageClass: 'my-avatar-img',
- *     fallbackClass: 'my-avatar-initials',
- *     profileHandle: member.handle,
- *     linkClass: 'my-avatar-link',
- *     showAvailability: false,
- *   });
- *   await hydrateProfileAvatars(container);
- *
- *   // Attach once on a shared ancestor to revert broken images to initials:
- *   root.addEventListener('error', handleProfileAvatarError, { capture: true });
- */
-
-import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { ensurePersistentStylesheet } from "/static/reuse/page-styles.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
@@ -60,8 +6,81 @@ import {
     hydrateAvailabilityIndicators,
 } from "./availability.js";
 
-const unavailableAvatarKeys = new Set();
-const avatarBlobUrlCache = new Map();
+import { createAvatarCache } from "./reuse/avatar-cache.js";
+
+let activeScope = null;
+let activeContext = null;
+const mountedImages = new WeakSet();
+const cache = createAvatarCache({
+    isCurrent: (context) => context === getAvatarContext() && !!context,
+    invalidate: (key) => {
+        for (const image of document.querySelectorAll("img[data-avatar-key]")) {
+            if (
+                !mountedImages.has(image) ||
+                (key !== undefined && image.dataset.avatarKey !== key)
+            )
+                continue;
+            replaceFailedImage(image);
+            mountedImages.delete(image);
+        }
+    },
+    log: (...args) => uiCtx.capabilities.get("ui:log")?.(...args),
+});
+
+function isRendererAvailable() {
+    return (
+        !!activeScope &&
+        !activeScope.signal.aborted &&
+        uiCtx.capabilities.get("ui:profileAvatarRenderer") === avatarRenderer
+    );
+}
+
+function notifyRendererChange() {
+    window.dispatchEvent(
+        new window.Event("cognis:profile-avatar-renderer-changed"),
+    );
+}
+
+export function getAvatarContext() {
+    if (!isRendererAvailable()) return null;
+    const account = localStorage.getItem("cognis_account");
+    const token = localStorage.getItem("cognis_access_token");
+    if (activeContext?.account !== account || activeContext?.token !== token) {
+        activeContext = { account, token };
+        cache.clear();
+    }
+    return activeContext;
+}
+
+export function evictProfileAvatarImage(key, url) {
+    cache.evictImage(key, url);
+}
+
+export function invalidateProfileAvatar(key) {
+    cache.clear(key);
+}
+
+export function mountProfileAvatarRenderer(scope) {
+    activeScope = scope;
+    activeContext = null;
+    scope.capabilities.contribute("ui:profileAvatarRenderer", avatarRenderer);
+    scope.signal.addEventListener(
+        "abort",
+        () => {
+            if (activeScope !== scope) return;
+            activeScope = null;
+            activeContext = null;
+            cache.clear();
+            notifyRendererChange();
+        },
+        { once: true },
+    );
+    notifyRendererChange();
+}
+
+export function readProfileAvatar(avatarKey) {
+    return cache.read(avatarKey, getAvatarContext());
+}
 const availabilityStylesReady = ensurePersistentStylesheet(
     "/static/adapters/social/profile/availability.css",
 );
@@ -89,24 +108,6 @@ export function getProfileInitialsColor(seed) {
         hash = (hash * 31 + character.charCodeAt(0)) | 0;
     }
     return `hsl(${Math.abs(hash) % 360}, 55%, 42%)`;
-}
-
-/**
- * Builds the authenticated API URL for a stored file by key. Room/chatroom
- * avatar keys are namespaced under "chats" (prefixed with "chatrooms/" by
- * convention); every other avatar key belongs to the "profile" namespace.
- *
- * @param {string} avatarKey
- * @returns {string}
- */
-function buildAvatarFileUrl(avatarKey) {
-    const namespace = String(avatarKey).startsWith("chatrooms/")
-        ? "chats"
-        : "profile";
-    return `/api/v1/files/${namespace}/${String(avatarKey)
-        .split("/")
-        .map((segment) => encodeURIComponent(segment))
-        .join("/")}`;
 }
 
 /**
@@ -157,51 +158,43 @@ function replaceAvatarPlaceholder(placeholder, blobUrl) {
     image.className = imageClass;
     image.src = blobUrl;
     image.alt = "";
+    image.addEventListener("error", handleProfileAvatarError, { once: true });
     image.dataset.avatarKey = avatarKey;
     image.dataset.avatarLabel = label;
     image.dataset.avatarColorSeed = colorSeed;
     image.dataset.avatarFallbackClass = fallbackClass;
     placeholder.replaceWith(image);
+    mountedImages.add(image);
 }
 
 /**
  * Fetches a profile avatar image via authenticated API and returns a blob URL.
- * Keys known to be unavailable are skipped immediately. Results are cached
- * per key for the lifetime of the page.
+ * Confirmed absence is cached briefly; transient failures remain retryable.
  *
  * @param {string|null|undefined} avatarKey
  * @returns {Promise<string|null>}
  */
 export async function fetchProfileAvatarBlobUrl(avatarKey) {
-    if (!avatarKey || unavailableAvatarKeys.has(avatarKey)) return null;
-    if (avatarBlobUrlCache.has(avatarKey))
-        return avatarBlobUrlCache.get(avatarKey);
-    const promise = apiFetch(buildAvatarFileUrl(avatarKey))
-        .then(async (response) => {
-            if (!response.ok) return null;
-            return URL.createObjectURL(await response.blob());
-        })
-        .catch(() => null);
-    avatarBlobUrlCache.set(avatarKey, promise);
-    return promise;
+    const result = await readProfileAvatar(avatarKey);
+    return result.state === "available" ? result.blobUrl : null;
 }
 
 /**
- * Returns true when the given key is known to be permanently unavailable
- * in this session (either never fetched successfully, or image load failed).
+ * Returns true when the key is confirmed absent or denied in the current session.
  *
  * @param {string|null|undefined} avatarKey
  * @returns {boolean}
  */
 export function isProfileAvatarUnavailable(avatarKey) {
-    return !avatarKey || unavailableAvatarKeys.has(avatarKey);
+    getAvatarContext();
+    return !avatarKey || cache.unavailable(avatarKey);
 }
 
 /**
- * Generates complete avatar markup. When avatarKey is present and not yet
- * known to be unavailable, produces an initials span with data attributes
+ * Generates complete avatar markup. When avatarKey is present,
+ * produces an initials span with data attributes
  * for deferred image hydration via hydrateProfileAvatars(). When no key is
- * available or the key is known unavailable, produces a plain initials span.
+ * available, produces a plain initials span.
  * The result is wrapped in a linked <a> when profileHandle is provided,
  * or a plain <span> otherwise.
  *
@@ -232,7 +225,7 @@ export function buildProfileAvatarMarkup({
     const rendererAvatarClass = `${avatarClass} profile-capability-avatar`;
     const rendererImageClass = `${imageClass} profile-capability-avatar-image`;
     const rendererFallbackClass = `${fallbackClass} profile-capability-avatar-initials`;
-    const canHydrate = avatarKey && !unavailableAvatarKeys.has(avatarKey);
+    const canHydrate = !!avatarKey;
     const avatarContent = canHydrate
         ? buildInitialsHtml(label, safeColorSeed, rendererFallbackClass, {
               avatarKey,
@@ -271,35 +264,50 @@ export function buildProfileAvatarMarkup({
 /**
  * Finds all hydration-pending avatar placeholders inside container and
  * asynchronously replaces each with a loaded <img>. Placeholders whose
- * key resolves to null are recorded as unavailable and left as initials.
+ * read fails remain initials and can retry on a later hydration.
  *
  * @param {Element} container
  * @returns {Promise<void>}
  */
-export async function hydrateProfileAvatars(container) {
+export async function hydrateProfileAvatars(container, { signal } = {}) {
+    const context = getAvatarContext();
     await ensureProfileAvatarStyles();
+    if (!context || context !== getAvatarContext() || signal?.aborted) return;
     const placeholders = Array.from(
         container.querySelectorAll(
-            "[data-avatar-key][data-avatar-image-class]",
+            "[data-avatar-key][data-avatar-image-class], img[data-avatar-key]",
         ),
     );
     await Promise.all(
         placeholders.map(async (placeholder) => {
             const avatarKey = placeholder.dataset?.avatarKey;
-            if (!avatarKey || unavailableAvatarKeys.has(avatarKey)) return;
+            if (!avatarKey || isProfileAvatarUnavailable(avatarKey)) return;
+            const label = placeholder.dataset.avatarLabel;
+            const colorSeed = placeholder.dataset.avatarColorSeed;
             const blobUrl = await fetchProfileAvatarBlobUrl(avatarKey);
-            if (!blobUrl) {
-                unavailableAvatarKeys.add(avatarKey);
+            if (
+                !blobUrl ||
+                context !== getAvatarContext() ||
+                !placeholder.isConnected ||
+                signal?.aborted ||
+                placeholder.dataset.avatarKey !== avatarKey ||
+                placeholder.dataset.avatarLabel !== label ||
+                placeholder.dataset.avatarColorSeed !== colorSeed
+            )
                 return;
-            }
-            if (!placeholder.isConnected) return;
-            replaceAvatarPlaceholder(placeholder, blobUrl);
+            if (placeholder.tagName !== "IMG")
+                replaceAvatarPlaceholder(placeholder, blobUrl);
+            else if (placeholder.src !== blobUrl) placeholder.src = blobUrl;
         }),
     );
-    await hydrateAvailabilityIndicators(container);
+    if (context === getAvatarContext() && !signal?.aborted)
+        await hydrateAvailabilityIndicators(container);
 }
 
-uiCtx.capabilities.contribute("ui:profileAvatarRenderer", {
+const avatarRenderer = {
+    get available() {
+        return isRendererAvailable();
+    },
     buildMarkup: buildProfileAvatarMarkup,
     fetch: fetchProfileAvatarBlobUrl,
     getInitials: getProfileInitials,
@@ -307,11 +315,12 @@ uiCtx.capabilities.contribute("ui:profileAvatarRenderer", {
     handleError: handleProfileAvatarError,
     hydrate: hydrateProfileAvatars,
     isUnavailable: isProfileAvatarUnavailable,
-});
+    invalidate: invalidateProfileAvatar,
+};
 
 /**
- * Handles an "error" event on an avatar <img> by marking its key as
- * unavailable and reverting the element to an initials span in place.
+ * Handles an image decoding error by evicting its read and restoring a
+ * retryable initials placeholder. No retry is scheduled automatically.
  * Attach to a shared ancestor in capture phase:
  *   root.addEventListener('error', handleProfileAvatarError, { capture: true });
  *
@@ -322,13 +331,22 @@ export function handleProfileAvatarError(event) {
     if (!image || image.tagName !== "IMG") return;
     const avatarKey = image.dataset?.avatarKey;
     if (!avatarKey) return;
-    unavailableAvatarKeys.add(avatarKey);
+    if (!image.isConnected || !mountedImages.has(image)) return;
+    cache.evictImage(avatarKey, image.src);
+    replaceFailedImage(image);
+}
+
+function replaceFailedImage(image) {
+    const avatarKey = image.dataset?.avatarKey;
     const fallbackClass = image.dataset.avatarFallbackClass;
     if (!fallbackClass) return;
     const label = image.dataset.avatarLabel || "";
     const colorSeed = image.dataset.avatarColorSeed || label;
     const template = document.createElement("template");
-    template.innerHTML = buildInitialsHtml(label, colorSeed, fallbackClass);
+    template.innerHTML = buildInitialsHtml(label, colorSeed, fallbackClass, {
+        avatarKey,
+        imageClass: image.className,
+    });
     const fallback = template.content.firstElementChild;
     if (fallback) image.replaceWith(fallback);
 }

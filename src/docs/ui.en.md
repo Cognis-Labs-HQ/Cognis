@@ -141,3 +141,5 @@ Settings native dragging and touch/pen handles share `bindListDropzones` in `src
 ## Message Style Preview
 
 Appearance shows a labeled, fictional conversation below Message Style. Incoming and outgoing samples use the Messages presentation with participant labels and localized dates and times. Switching the style previews the unsaved choice; Save applies it and Discard restores the saved layout. The appearance tutorial includes the preview only while it is available. The sample has no links, profile actions, receipts or real conversation data. If Messages is unavailable, the selector and ordinary preference workflow remain usable. Repeated section renders retain pending choices, and leaving Settings cancels unfinished rendering.
+
+Message Style previews require a ready version 2 presentation provider. If Profile or Messages becomes unavailable, only the sample is hidden; the selector and unsaved choice remain usable. The current choice reappears automatically when its providers recover. The optional preview tutorial step follows the same visible region. Deploy matching Settings, Messages 2.8.1 and Profile 3.0.19 assets together.

@@ -41,7 +41,8 @@ export async function settingsFixture(
     state.install = () => {
         state.providerController = new dom.window.AbortController();
         state.provider = {
-            version: 1,
+            version: 2,
+            available: true,
             signal: state.providerController.signal,
             stylesheets: ["/static/test/messages.css"],
             render: async (input) => {

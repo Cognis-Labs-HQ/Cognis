@@ -56,7 +56,7 @@ Das Profilmenü zeigt die aktuelle Verfügbarkeit und ermöglicht angemeldeten B
 
 ## Bereitgestellte UI-Capabilities
 
-Das Profil-Navbar-Plugin stellt `ui:profileAvatarRenderer` bereit. Module, die Profilbilder darstellen, müssen diese ID in `requiresCapabilities` deklarieren; Cognis lädt den Anbieter dann vor dem Einhängen ihrer SPA-Routen.
+Der eigenständige Profilanbieter stellt `ui:profileAvatarRenderer` bereit. Module, die Profilbilder darstellen, müssen diese ID in `requiresCapabilities` deklarieren; Cognis lädt den Anbieter dann vor dem Einhängen ihrer SPA-Routen.
 
 ### Browserclient-Capability
 
@@ -139,3 +139,15 @@ Profil bearbeiten bleibt mit den exakt eingegebenen Feldern geöffnet, bis der S
 Verwerfen, Schließen, Escape und der Hintergrund verwenden die gemeinsame Bestätigung für ungespeicherte Änderungen. Abbrechen in der Bestätigung behält das Formular. Bestätigtes Verwerfen schließt es und ignoriert spätere Rückmeldungen. Schließen kann eine bereits gesendete Anfrage nicht rückgängig machen; ein Hinweis weist darauf hin. Ein Speicherergebnis wartet vor der Seitenaktualisierung auf eine offene Verwerfungsentscheidung. Navigation, erneutes Einbinden, Konto- oder Sitzungswechsel und das Schließen des Dialogs entziehen alten Rückmeldungen ihre Wirkung. Beim erneuten Öffnen wird das zuletzt angenommene Profil verwendet. Feld- und Beschriftungskennungen bleiben auch während der Schließanimation eindeutig. Nicht gesendete Entwürfe bleiben bei Navigation oder Neuladen nicht erhalten.
 
 Der profileigene Editor nutzt den vorhandenen ctx-Ablauf `social:profile:request` und bewahrt die Feldvalidierung, die gemeinsame Fokusverwaltung und die Offline-Zustellrichtlinie. Synthetische DOM-Tests führen die echte Seiteneinbindung, den Dialog, den Formulargenerator und registrierte Anfrageabläufe mit kontrolliertem Transport und Speicher aus. Sie belegen weder das Layout im echten Browser noch das Server- oder Datenbankverhalten.
+
+## Profilbilder erneut laden
+
+Navigationsleiste und Profilvorschau behalten unveränderte Bilder bei unabhängigen Aktualisierungen bei. Vorübergehende Netzwerkfehler sowie HTTP 408, 425, 429 und 5xx sperren einen Bildschlüssel nicht dauerhaft. Die nächste ausdrückliche Aktualisierung oder Öffnung kann erneut laden; es gibt keinen Wiederholungszeitgeber. Bestätigte Löschung (404/410), verweigerter Zugriff (401/403), ausdrückliche Invalidierung, Konto- oder Tokenwechsel und das Entfernen des Anbieters entfernen das zugehörige Bild. Die große Profilansicht verwendet einen getrennten Verbraucher und wird durch diesen Vertrag nicht geändert.
+
+Der eigenständige Anbieter besitzt `ui:profileAvatarRenderer` während seiner Laufzeit. `fetch(key)` liefert weiterhin eine URL oder null; `hydrate(container, { signal })` unterstützt optionalen Abbruch, und `invalidate(key)` leert einen Schlüssel (ohne Schlüssel alle). Der Cache ist an Konto, Zugriffstoken und Anbieter gebunden, bündelt parallele Abrufe und ist auf 128 Schlüssel begrenzt. Erfolgreiche und bestätigt negative Abrufe werden nach 60 Sekunden bei Bedarf erneut geprüft. Ein Inhaltsdigest bewahrt bei identischen Bytes dieselbe URL; geänderte Bytes erhalten eine neue. Verdrängung, Invalidierung und Beendigung geben Objekt-URLs frei. Entfernte Elemente werden nicht festgehalten.
+
+Der Navigationsanbieter liefert `avatarState` (`available`, `missing`, `denied`, `retryable`, `invalid` oder `stale`), optional `avatarKey` und nur bei Erfolg `avatarBlobUrl`. `onAvatarError` verwirft genau diese URL; `signal` kennzeichnet das Ende der Anbieterlebensdauer. Nur ein ausdrücklich wiederholbarer Fehler darf ein Bild desselben Kontos, Tokens und Anbieters mit unverändertem oder noch unbekanntem Schlüssel erhalten. Unbekannte oder fehlende Zustände erlauben kein Bild; ungeklärte Berechtigung gilt nie als erfolgreicher Abruf. Host-Verbraucher und Profile 3.0.19 müssen gemeinsam ausgeliefert werden. Ein neuer Host mit altem Anbieter zeigt bis zur passenden Version Initialen.
+
+Die Einführung zur Profilidentität erklärt weiterhin Profillinks und ihre Vorschau. Bedienelemente, Ablauf und Abschlusskennung bleiben unverändert.
+
+Für abhängige Darstellungsanbieter stellt der Renderer außerdem den verbindlichen Bereitschaftswert `available` bereit und sendet beim Einhängen und Widerrufen sein eigenes Ereignis `cognis:profile-avatar-renderer-changed`. Beim Abbruch des Scopes wird der Wert bereits vor dem Entfernen der Capability falsch. Fehlgeschlagene Starts und Reaktivierungen nutzen denselben Benachrichtigungsweg. Die bloße Registrierung belegt keine Bereitschaft.

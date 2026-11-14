@@ -80,7 +80,7 @@ test("optional, late, removed and unsupported providers leave Settings usable", 
         0,
     );
     fixture.state.install();
-    fixture.state.provider.version = 2;
+    fixture.state.provider.version = 3;
     choose(fixture, "default");
     await settle();
     assert.equal(preview(fixture).hidden, true);
@@ -112,7 +112,7 @@ test("late renders cannot overwrite newer styles, replacement mounts or navigati
     assert.equal(fixture.root.textContent, "destination");
 });
 
-test("malformed version one provider lifetimes fail closed without affecting Settings", async (context) => {
+test("malformed version two provider lifetimes fail closed without affecting Settings", async (context) => {
     const fixture = await settingsFixture(context);
     await settle();
     const renderCount = fixture.state.renders.length;
@@ -158,4 +158,40 @@ test("missing translations from the presentation provider remain explicit failur
     assert.equal(preview(fixture).hidden, true);
     assert.equal(fixture.state.errors.length, 1);
     assert.equal(fixture.state.writes.length, 0);
+});
+
+test("dependency readiness hides and restores the current unsaved style without saving or reloading", async (context) => {
+    const fixture = await settingsFixture(context);
+    await settle();
+    const notify = () =>
+        fixture.dom.window.dispatchEvent(
+            new fixture.dom.window.Event("cognis:message-presentation-changed"),
+        );
+    fixture.state.provider.available = false;
+    notify();
+    assert.equal(preview(fixture).hidden, true);
+    assert.equal(
+        preview(fixture).querySelector("[data-message-preview-thread]")
+            .childNodes.length,
+        0,
+    );
+    const renders = fixture.state.renders.length;
+    choose(fixture, "irc");
+    await settle();
+    assert.equal(fixture.state.renders.length, renders);
+    assert.equal(fixture.state.messagePrefs.isDirty(), true);
+    fixture.state.provider.available = true;
+    notify();
+    await settle();
+    assert.equal(preview(fixture).hidden, false);
+    assert.equal(preview(fixture).dataset.messageStyle, "irc");
+    assert.equal(fixture.state.writes.length, 0);
+    assert.equal(fixture.state.errors.length, 0);
+    fixture.state.provider.version = 1;
+    notify();
+    assert.equal(
+        preview(fixture).hidden,
+        true,
+        "the older contract is not a readiness fallback",
+    );
 });

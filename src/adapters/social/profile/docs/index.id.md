@@ -46,7 +46,7 @@ Menu profil menampilkan ketersediaan saat ini dan memungkinkan pengguna yang mas
 
 ## Kapabilitas UI yang disediakan
 
-Plugin navbar profil menyediakan `ui:profileAvatarRenderer`. Modul yang merender avatar profil harus menyatakan ID ini dalam `requiresCapabilities`; Cognis kemudian memuat penyedia sebelum memasang rute SPA modul.
+Penyedia profil mandiri menyediakan `ui:profileAvatarRenderer`. Modul yang merender avatar profil harus menyatakan ID ini dalam `requiresCapabilities`; Cognis kemudian memuat penyedia sebelum memasang rute SPA modul.
 
 ### Kapabilitas klien browser
 
@@ -129,3 +129,15 @@ Edit Profil mempertahankan isian persis seperti yang dimasukkan hingga server me
 Buang, Tutup, Escape, dan latar dialog menggunakan konfirmasi perubahan belum tersimpan yang sama. Batal dalam konfirmasi mempertahankan formulir. Konfirmasi Buang menutupnya dan mengabaikan hasil terlambat; menutup tidak membatalkan permintaan yang sudah dikirim, sebagaimana dijelaskan notifikasi informasi. Hasil penyimpanan menunggu keputusan pembuangan yang terbuka sebelum memperbarui halaman. Navigasi, pemuatan halaman baru, pergantian akun atau sesi, dan penutupan dialog membatalkan kewenangan hasil editor lama. Pembukaan ulang memakai profil terakhir yang diterima, dengan pengenal kolom dan label unik bahkan selama animasi penutupan dialog lama. Draf yang belum dikirim tidak disimpan melewati navigasi atau muat ulang.
 
 Editor milik Profil menggunakan alur ctx `social:profile:request` yang ada serta mempertahankan gerbang validasi kolom, kepemilikan fokus dialog bersama, dan kebijakan pengiriman offline. Uji DOM sintetis menjalankan pemuatan halaman, dialog, pembuat formulir, dan alur permintaan terdaftar yang sebenarnya dengan transportasi serta penyimpanan terkendali. Uji ini tidak membuktikan tata letak peramban nyata atau perilaku server dan basis data.
+
+## Pemulihan Pembacaan Avatar
+
+Bilah navigasi dan pratinjau profil mempertahankan gambar yang tidak berubah saat pembaruan lain berlangsung. Kegagalan jaringan sementara serta HTTP 408, 425, 429 atau 5xx tidak menonaktifkan kunci secara permanen. Pembaruan atau pembukaan berikutnya dapat mencoba lagi; tidak ada pewaktu percobaan avatar. Penghapusan terkonfirmasi (404/410), penolakan akses (401/403), pembatalan cache eksplisit, perubahan akun/token, dan penghapusan penyedia menghapus gambar terkait. Tampilan utama halaman profil menggunakan konsumen terpisah dan tidak diubah oleh kontrak ini.
+
+Penyedia mandiri memiliki `ui:profileAvatarRenderer` selama masa aktifnya. `fetch(key)` tetap mengembalikan URL atau null; `hydrate(container, { signal })` menerima pembatalan opsional, dan `invalidate(key)` membersihkan satu kunci (tanpa kunci berarti semuanya). Cache dibatasi menurut akun, token akses, dan masa aktif penyedia, menggabungkan permintaan bersamaan, serta menampung paling banyak 128 kunci. Hasil berhasil dan hasil negatif terkonfirmasi diperiksa ulang sesuai kebutuhan setelah 60 detik. Digest konten mempertahankan URL untuk bita yang sama dan membuat URL baru untuk bita yang berubah. Pengeluaran entri, pembatalan cache, dan penghentian melepaskan URL objek. Elemen yang dilepas tidak disimpan.
+
+Penyedia bilah navigasi mengembalikan `avatarState` (`available`, `missing`, `denied`, `retryable`, `invalid` atau `stale`), `avatarKey` opsional, dan `avatarBlobUrl` hanya jika pembacaan berhasil. `onAvatarError` mengeluarkan URL tertentu; `signal` menunjukkan berakhirnya masa aktif penyedia. Hanya hasil yang secara eksplisit dapat dicoba ulang boleh mempertahankan gambar untuk akun, token, dan penyedia yang sama dengan kunci yang tetap atau belum diketahui. Status tidak dikenal atau tidak diberikan tidak mengizinkan gambar; otorisasi yang belum pasti tidak pernah dianggap berhasil. Kirim konsumen host ini bersama Profile 3.0.19. Host baru dengan penyedia lama menampilkan inisial hingga penyedia yang sesuai tersedia.
+
+Tutorial identitas profil tetap menjelaskan tautan profil dan pratinjaunya; kontrol, alur, dan identitas penyelesaian tidak berubah.
+
+Penggambar juga menyediakan penanda kesiapan `available` yang akurat bagi penyedia tampilan yang bergantung padanya, serta mengirim peristiwa miliknya `cognis:profile-avatar-renderer-changed` saat dipasang dan dicabut. Penanda menjadi salah saat cakupan dibatalkan, sebelum kapabilitas dihapus. Kegagalan pemasangan dan pengaktifan kembali memakai jalur pemberitahuan yang sama. Konsumen tidak boleh menyimpulkan kesiapan hanya dari keberadaan dalam registri.

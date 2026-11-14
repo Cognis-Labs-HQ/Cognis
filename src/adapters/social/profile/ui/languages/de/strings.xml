@@ -17,7 +17,7 @@
   <string name="ui.app.profile.provider_sync_failed">Profil konnte nicht synchronisiert werden.</string>
   <string name="module.social.profile.tutorial.profile.title">Profile und Beiträge</string>
   <string name="module.social.profile.tutorial.profile.profile.identity.title">Profilidentität</string>
-  <string name="module.social.profile.tutorial.profile.profile.identity.body">Prüfen Sie Identität und Verfügbarkeit; Ihr eigenes Profil bietet Bearbeitungsfunktionen.</string>
+  <string name="module.social.profile.tutorial.profile.profile.identity.body">Prüfen Sie Identität und Verfügbarkeit; Ihr eigenes Profil bietet Bearbeitungsfunktionen. Bewegen Sie den Zeiger über einen Profillink, um eine Vorschau zu sehen, und wählen Sie ihn aus, um das Profil zu öffnen.</string>
   <string name="module.social.profile.tutorial.profile.posts.title">Beiträge</string>
   <string name="module.social.profile.tutorial.profile.posts.body">Lesen Sie sichtbare Beiträge und nutzen Sie die für Ihr Konto erlaubten Aktionen.</string>
   <string name="module.social.profile.tutorial.profile.social.actions.title">Soziale Aktionen</string>
