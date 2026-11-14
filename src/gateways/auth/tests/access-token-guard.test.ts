@@ -88,6 +88,7 @@ test("token store persists tokens to disk across module reload", async () => {
     const tokenModulePath = new URL("../access-tokens.ts", import.meta.url)
         .href;
 
+    const previousTokenStorePath = process.env.COGNIS_ACCESS_TOKEN_STORE_PATH;
     process.env.COGNIS_ACCESS_TOKEN_STORE_PATH = tokenStorePath;
 
     try {
@@ -108,7 +109,10 @@ test("token store persists tokens to disk across module reload", async () => {
             setupPending: false,
         });
     } finally {
-        delete process.env.COGNIS_ACCESS_TOKEN_STORE_PATH;
+        if (previousTokenStorePath === undefined)
+            delete process.env.COGNIS_ACCESS_TOKEN_STORE_PATH;
+        else
+            process.env.COGNIS_ACCESS_TOKEN_STORE_PATH = previousTokenStorePath;
         rmSync(tempDir, { recursive: true, force: true });
     }
 });

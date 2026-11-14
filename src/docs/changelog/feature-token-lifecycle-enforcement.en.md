@@ -14,6 +14,11 @@ Unrelated settings writes never apply TFA policy. When the TFA read capability e
 
 The policy flow requires a single-use operation and execution state held by its owner. Direct raw-flow calls and captured-operation replay are rejected before mutation; integrations must call the policy capability.
 
+## Isolated Test Credentials
+
+`npm test` and `npm run ci:test` allocate a temporary token-store directory for each run and a separate writable file for every test worker. A static preload sets the file before test modules load, ignoring any inherited production token-store path. Tests may deliberately override their own path afterward for restart or failure cases. The runner removes its temporary directory after successful or failed child execution and forwards ordinary termination signals. Forced process termination or host failure can leave temporary files for operating-system cleanup. Production token persistence remains fail-closed and unchanged.
+
 ## Commits
 
 - https://github.com/Cognis-Labs-HQ/Cognis/commit/3a2f90aa804ed98e3ba72cc10724913cf14bbf84
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/b44cbd57317dfaaef823ea3ee8c6589eacde1dae
