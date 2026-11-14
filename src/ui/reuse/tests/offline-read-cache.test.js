@@ -369,3 +369,202 @@ test("coalesced oversized reads remain usable online without entering the offlin
     assert.equal(calls, 1);
     assert.equal(state.read.has("content"), false);
 });
+
+for (const options of [
+    {},
+    { preferCached: true, refreshIntervalMs: 0 },
+    { onlineMaxAgeMs: 30_000 },
+]) {
+    test(`read provenance follows each outcome without changing payloads (${JSON.stringify(options)})`, async () => {
+        const state = fixture(options);
+        const sources = [];
+        const onSource = (source) => sources.push(source);
+        const original = { value: 1 };
+        assert.equal(
+            await state.read(
+                "key",
+                async () => original,
+                undefined,
+                false,
+                onSource,
+            ),
+            original,
+        );
+        const load = async () => ({ value: 2 });
+        if (options.preferCached || options.onlineMaxAgeMs) {
+            assert.equal(
+                (await state.read("key", load, undefined, false, onSource))
+                    .value,
+                1,
+            );
+            await new Promise((resolve) => setImmediate(resolve));
+            assert.deepEqual(sources, ["live", "cached"]);
+        }
+        state.disconnect();
+        const offline = await state.read(
+            "key",
+            () => assert.fail("offline transport"),
+            undefined,
+            false,
+            onSource,
+        );
+        assert.equal(offline.value, options.preferCached ? 2 : 1);
+        assert.equal(sources.at(-1), "cached");
+        const count = sources.length;
+        await assert.rejects(
+            state.read("missing", load, undefined, false, onSource),
+            /offline_read_unavailable/,
+        );
+        assert.equal(sources.length, count);
+    });
+}
+
+test("a fallback reports cached while a successful load that disconnects remains live", async () => {
+    const state = fixture();
+    const sources = [];
+    const onSource = (source) => sources.push(source);
+    await state.read("key", async () => ({ value: 1 }));
+    assert.equal(
+        (
+            await state.read(
+                "key",
+                async () => {
+                    state.disconnect();
+                    throw new TypeError("Failed to fetch");
+                },
+                undefined,
+                false,
+                onSource,
+            )
+        ).value,
+        1,
+    );
+    state.connect();
+    assert.equal(
+        (
+            await state.read(
+                "key",
+                async () => {
+                    state.disconnect();
+                    return { value: 2 };
+                },
+                undefined,
+                false,
+                onSource,
+            )
+        ).value,
+        2,
+    );
+    assert.deepEqual(sources, ["cached", "live"]);
+});
+
+for (const replacement of ["none", "snapshot", "oversized"]) {
+    test(`coalesced provenance distinguishes explicit replacement (${replacement})`, async () => {
+        const state = fixture({ maxBytes: 100 });
+        const firstSources = [];
+        const secondSources = [];
+        const transport = Promise.withResolvers();
+        const first = state.read(
+            "key",
+            () => transport.promise,
+            undefined,
+            false,
+            (source) => firstSources.push(source),
+        );
+        const second = state.read(
+            "key",
+            () => assert.fail("coalesced transport"),
+            undefined,
+            false,
+            (source) => secondSources.push(source),
+        );
+        await Promise.resolve();
+        if (replacement !== "none")
+            state.read.set("key", {
+                value: replacement === "snapshot" ? "new" : "x".repeat(100),
+            });
+        transport.resolve({ value: "live" });
+        for (const result of await Promise.all([first, second])) {
+            assert.equal(
+                result.value,
+                replacement === "snapshot" ? "new" : "live",
+            );
+        }
+        assert.deepEqual(firstSources, [
+            replacement === "snapshot" ? "cached" : "live",
+        ]);
+        assert.deepEqual(secondSources, [
+            replacement === "snapshot" ? "cached" : "shared",
+        ]);
+        const freshSources = [];
+        const fresh = await state.read(
+            "key",
+            async () => ({ value: "live" }),
+            undefined,
+            false,
+            (source) => freshSources.push(source),
+        );
+        assert.equal(fresh.value, "live");
+        assert.deepEqual(freshSources, ["live"]);
+    });
+}
+
+test("failed and aborted reads do not publish successful provenance", async () => {
+    const controller = new AbortController();
+    const state = fixture({ signal: controller.signal });
+    const sources = [];
+    const onSource = (source) => sources.push(source);
+    await assert.rejects(
+        state.read(
+            "denied",
+            async () => {
+                throw Object.assign(new Error("denied"), { status: 403 });
+            },
+            undefined,
+            false,
+            onSource,
+        ),
+        /denied/,
+    );
+    const transport = Promise.withResolvers();
+    const pending = state.read(
+        "pending",
+        () => transport.promise,
+        undefined,
+        false,
+        onSource,
+    );
+    await Promise.resolve();
+    controller.abort();
+    transport.resolve({ value: 1 });
+    await assert.rejects(pending, { name: "AbortError" });
+    assert.deepEqual(sources, []);
+    assert.equal(state.read.has("pending"), false);
+});
+
+test("a coalesced caller restoring an older retained snapshot reports cached", async () => {
+    const state = fixture();
+    await state.read("key", async () => ({ value: "saved" }));
+    const transport = Promise.withResolvers();
+    const firstSources = [];
+    const secondSources = [];
+    const first = state.read(
+        "key",
+        () => transport.promise,
+        () => false,
+        false,
+        (source) => firstSources.push(source),
+    );
+    const second = state.read(
+        "key",
+        () => assert.fail("coalesced transport"),
+        undefined,
+        false,
+        (source) => secondSources.push(source),
+    );
+    transport.resolve({ value: "live" });
+    assert.equal((await first).value, "live");
+    assert.equal((await second).value, "saved");
+    assert.deepEqual(firstSources, ["live"]);
+    assert.deepEqual(secondSources, ["cached"]);
+});

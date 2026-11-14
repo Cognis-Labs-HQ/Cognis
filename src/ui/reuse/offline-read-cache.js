@@ -1,12 +1,12 @@
-import { offlinePolicy } from "./offline-policy.js";
 /**
  * Bounded, session-only snapshots for explicitly selected lightweight reads.
  * Public exports: createOfflineReadCache — create a component-owned read cache.
  * @example const read = createOfflineReadCache({ signal });
  * const data = await read('schemas', () => fetchSchemas());
  * @param {{signal?: AbortSignal, maxBytes?: number, maxEntries?: number, preferCached?: boolean, refreshIntervalMs?: number, onlineMaxAgeMs?: number}} options
- * @returns {((key: string, load: () => Promise<unknown>) => Promise<unknown>) & {has: (key: string) => boolean, invalidate: () => void, set: (key: string, value: unknown) => void}} Cached read executor and snapshot readiness.
+ * @returns {((key: string, load: () => Promise<unknown>, canCache?: (value: unknown) => boolean, refresh?: boolean, onSource?: (source: 'live' | 'shared' | 'cached') => void) => Promise<unknown>) & {has: (key: string) => boolean, invalidate: () => void, set: (key: string, value: unknown) => void}} Cached read executor and snapshot readiness.
  */
+import { offlinePolicy } from "./offline-policy.js";
 import {
     isOffline,
     offlineEnabled,
@@ -28,6 +28,7 @@ export function createOfflineReadCache({
     let size = 0;
     let generation = 0;
     const pending = new Map();
+    const snapshotOrigins = new Map();
     const checkedAt = new Map();
     const readIdentity = () =>
         JSON.stringify([
@@ -38,6 +39,7 @@ export function createOfflineReadCache({
         ]);
     function clear() {
         snapshots.clear();
+        snapshotOrigins.clear();
         size = 0;
         generation += 1;
         pending.clear();
@@ -54,10 +56,11 @@ export function createOfflineReadCache({
     function removeSnapshot(key) {
         size -= (snapshots.get(key)?.length ?? 0) * 2;
         snapshots.delete(key);
+        snapshotOrigins.delete(key);
         checkedAt.delete(key);
     }
 
-    function store(key, result) {
+    function store(key, result, origin) {
         const snapshot = JSON.stringify(result);
         if (snapshot === undefined || snapshot.length * 2 > maxBytes) {
             if (snapshots.has(key)) {
@@ -78,6 +81,7 @@ export function createOfflineReadCache({
             removeSnapshot(oldest);
         }
         snapshots.set(key, snapshot);
+        if (origin) snapshotOrigins.set(key, origin);
         checkedAt.set(key, Date.now());
         size += snapshot.length * 2;
         if (changed) notifyReadiness();
@@ -89,6 +93,7 @@ export function createOfflineReadCache({
         load,
         canCache = () => true,
         refresh = false,
+        onSource,
     ) => {
         signal?.throwIfAborted();
         const currentIdentity = readIdentity();
@@ -102,11 +107,15 @@ export function createOfflineReadCache({
         )
             clear();
         identity = currentIdentity;
-        const restore = () => {
+        const complete = (value, source) => {
+            onSource?.(source);
+            return value;
+        };
+        const restore = (source = "cached") => {
             const snapshot = snapshots.get(key);
             if (snapshot === undefined)
                 throw new Error("offline_read_unavailable");
-            return JSON.parse(snapshot);
+            return complete(JSON.parse(snapshot), source);
         };
         if (isOffline()) {
             if (!offlinePolicy.allows())
@@ -142,14 +151,18 @@ export function createOfflineReadCache({
             return restore();
         }
         const loadGeneration = generation;
+        const transportSource = pending.has(key) ? "shared" : "live";
         let result;
-        let loadPromise;
+        let pendingRead;
         let replaced = false;
         try {
             if (!pending.has(key))
-                pending.set(key, Promise.resolve().then(load));
-            loadPromise = pending.get(key);
-            result = await loadPromise;
+                pending.set(key, {
+                    promise: Promise.resolve().then(load),
+                    origin: {},
+                });
+            pendingRead = pending.get(key);
+            result = await pendingRead.promise;
         } catch (error) {
             if ([401, 403].includes(error?.status)) clear();
             if (
@@ -167,8 +180,8 @@ export function createOfflineReadCache({
                 throw new Error("offline_access_denied");
             return restore();
         } finally {
-            replaced = pending.get(key) !== loadPromise;
-            if (pending.get(key) === loadPromise) pending.delete(key);
+            replaced = pending.get(key) !== pendingRead;
+            if (pending.get(key) === pendingRead) pending.delete(key);
         }
         signal?.throwIfAborted();
         if (
@@ -176,16 +189,22 @@ export function createOfflineReadCache({
             loadGeneration === generation &&
             readIdentity() === currentIdentity
         )
-            return snapshots.has(key) ? restore() : result;
+            return snapshots.has(key)
+                ? restore(
+                      snapshotOrigins.get(key) === pendingRead.origin
+                          ? transportSource
+                          : "cached",
+                  )
+                : complete(result, transportSource);
         if (
             loadGeneration !== generation ||
             (!offlineEnabled() && !onlineMaxAgeMs) ||
             readIdentity() !== currentIdentity ||
             !canCache(result)
         )
-            return result;
-        store(key, result);
-        return result;
+            return complete(result, transportSource);
+        store(key, result, pendingRead.origin);
+        return complete(result, transportSource);
     };
     execute.set = (key, value) => {
         signal?.throwIfAborted();
