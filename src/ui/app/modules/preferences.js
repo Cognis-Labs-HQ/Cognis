@@ -163,7 +163,7 @@ export async function openModulePreferences(module, labels) {
             ],
             closeProtection: true,
             onOpen: (overlay, close, api) => {
-                dismiss = () => api.requestClose();
+                dismiss = close;
                 overlay.dataset.moduleSettings = module.id;
                 if (lifetime?.aborted) {
                     close("cancel");

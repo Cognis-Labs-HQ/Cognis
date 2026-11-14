@@ -17,6 +17,8 @@ test("cancelled adapter preparation never opens a late editor", async () => {
             assert.fail("cancelled preparation must not open settings"),
     });
     const opening = popup.openAdapterConfig("Example", {
+        gatewayId: "auth",
+        adapterId: "example",
         configUrl: "/api/config",
         signal: controller.signal,
     });

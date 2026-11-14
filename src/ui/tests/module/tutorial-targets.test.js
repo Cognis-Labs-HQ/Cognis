@@ -71,6 +71,13 @@ test("module targets publish only their own active settings controls and preserv
     for (const key of fields.keys())
         await api.field("example", key, { signal: controller.signal });
     await api.action("example", "voices", { signal: controller.signal });
+    const adapter = await api.adapterSettings("auth", "example", {
+        signal: controller.signal,
+    });
+    assert.equal(
+        adapter.popup,
+        '[data-adapter-settings-gateway="auth"][data-adapter-settings-id="example"]',
+    );
     const audio = await api.preview("example", { signal: controller.signal });
     assert.equal(
         targets.get("example.field.api-key").resolve(),

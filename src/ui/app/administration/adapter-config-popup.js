@@ -136,6 +136,8 @@ export function createAdapterConfigPopup({
             name,
             {
                 signal,
+                gatewayId,
+                adapterId,
                 configUrl,
                 testUrl,
                 enableUrl,
@@ -159,7 +161,10 @@ export function createAdapterConfigPopup({
             if (payload.stringsBaseUrl)
                 i18n = await extendI18n(i18n, [payload.stringsBaseUrl]);
             if (signal?.aborted) return false;
-            const openSettingsPopup = createAdapterSettingsPopup(openPopup);
+            const openSettingsPopup = createAdapterSettingsPopup(openPopup, {
+                gatewayId,
+                adapterId,
+            });
             const configPopupScriptUrl = String(
                 payload.configPopupScriptUrl ?? "",
             ).trim();

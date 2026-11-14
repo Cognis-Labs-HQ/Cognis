@@ -24,7 +24,7 @@ export async function mountProvider(ctx) {
             })
             .then((target) => ({
                 ...target,
-                ...(popup ? { popup: `[data-module-settings="${id}"]` } : {}),
+                ...(popup ? { popup } : {}),
             }));
     };
     ctx.capabilities.contribute("ui:moduleTutorialTargets", {
@@ -45,7 +45,7 @@ export async function mountProvider(ctx) {
                     document.querySelector(
                         `[data-tutorial-module="${id}"] [data-module-preferences]:not(:disabled)`,
                     ),
-                true,
+                `[data-module-settings="${id}"]`,
             );
         },
         adapterSettings(gateway, id, { signal }) {
@@ -58,7 +58,7 @@ export async function mountProvider(ctx) {
                     document.querySelector(
                         `.adapter-inline-row[data-gateway-id="${gateway}"][data-adapter-id="${id}"]>.adapter-inline-summary>.collapsible-section-title`,
                     ),
-                true,
+                `[data-adapter-settings-gateway="${gateway}"][data-adapter-settings-id="${id}"]`,
             );
         },
         revealAdapter(gateway, id) {
@@ -81,7 +81,7 @@ export async function mountProvider(ctx) {
                     surface(id)
                         ?.querySelector("form")
                         ?.elements.namedItem(key) ?? null,
-                true,
+                `[data-module-settings="${id}"]`,
             );
         },
         action(id, key, { signal }) {
@@ -95,7 +95,7 @@ export async function mountProvider(ctx) {
                     surface(id)?.querySelector(
                         `[data-popup-action="config:${key}"]:not(:disabled)`,
                     ) ?? null,
-                true,
+                `[data-module-settings="${id}"]`,
             );
         },
         preview(id, { signal }) {
@@ -106,7 +106,7 @@ export async function mountProvider(ctx) {
                 () =>
                     surface(id)?.querySelector("audio[data-config-preview]") ??
                     null,
-                true,
+                `[data-module-settings="${id}"]`,
             );
         },
         bindSettings(id, { signal }) {

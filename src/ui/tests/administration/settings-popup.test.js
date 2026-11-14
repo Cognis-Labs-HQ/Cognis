@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import { createAdapterSettingsPopup } from "../../app/administration/reuse/settings-popup.js";
 import { transientSurfaces } from "../../reuse/transient-surfaces.js";
 
+const identity = { gatewayId: "auth", adapterId: "example" };
+
 function surface() {
     const attributes = new Map();
     const bodyAttributes = new Map();
@@ -34,7 +36,7 @@ test("custom settings publish shared content targets, retain callbacks and relea
             settle = resolve;
             input.onOpen(editor, dismiss, api);
         });
-    });
+    }, identity);
     let pages = 0;
     const pending = openSettings({
         closeProtection: true,
@@ -47,6 +49,11 @@ test("custom settings publish shared content targets, retain callbacks and relea
     });
     assert.equal(options.closeProtection, true);
     assert.ok(editor.attributes.has("data-component-settings-popup"));
+    assert.equal(
+        editor.attributes.get("data-adapter-settings-gateway"),
+        "auth",
+    );
+    assert.equal(editor.attributes.get("data-adapter-settings-id"), "example");
     assert.ok(editor.body.attributes.has("data-component-settings-content"));
     options.onOpen(editor, dismiss, api);
     assert.equal(pages, 2);
@@ -73,7 +80,7 @@ test("nested decisions preserve their own modal identity instead of becoming the
             });
         options.onOpen?.(decision, () => {}, {});
         return Promise.resolve("confirmed");
-    });
+    }, identity);
     const pending = openSettings({ id: "editor" });
     let opened = false;
     assert.equal(
@@ -106,7 +113,7 @@ test("failed editor initialization rolls back its published lifetime", async () 
     const openSettings = createAdapterSettingsPopup(async (options) => {
         options.onOpen(editor, () => {}, {});
         throw new Error("editor_failed");
-    });
+    }, identity);
     await assert.rejects(openSettings({}), /editor_failed/);
     assert.equal(
         transientSurfaces.attachLifetime(editor, new AbortController().signal),

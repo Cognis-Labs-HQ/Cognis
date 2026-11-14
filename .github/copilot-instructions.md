@@ -713,3 +713,5 @@ JSON endpoints that accept arrays must explicitly select their expected shape. P
 Bind a transient opening to its group at the trigger step, before the user can click. Attaching a lifetime only after the popup target resolves leaves pending work outside cleanup. Preserve page lifetime for ordinary openings, share pending ownership through ctx across bundled and direct imports, and test cancellation during retrieval, composition and popup preparation. An older completion must not clear a newer opening.
 
 Module configuration guides consume owner-published targets, bind pending settings preparation to their branch before a click, and preserve close protection. Keep readiness separate from write permission, and test actual read-only paths/counts and delayed-popup cancellation.
+
+Popup test fakes must preserve the production API split: onOpen receives a protected dismissal callback, while requestClose is supplied to onAction. Adapter tutorial modal selectors must match identities published by the owning injected popup wrapper, including both gateway and adapter, for generic and custom editors.

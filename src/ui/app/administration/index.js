@@ -642,6 +642,8 @@ async function openAdapterConfig(gatewayId, adapterId, name, adapterOverride = n
     });
     return adapterConfigPopup.openAdapterConfig(name, {
         signal,
+        gatewayId,
+        adapterId,
         configUrl,
         testUrl,
         enableUrl: resolveAdapterControlUrl(gatewayId, adapterId, "enable", adapterOverride),

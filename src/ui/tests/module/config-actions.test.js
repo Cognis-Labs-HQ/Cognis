@@ -63,7 +63,6 @@ async function popupFixture(runActions, request, signal) {
         reportClientError() {},
         openPopup: async (options) => {
             options.onOpen(overlay, () => dismissed++, {
-                requestClose: () => dismissed++,
                 markDirty() {},
             });
             await runActions(options, overlay, inputs);
