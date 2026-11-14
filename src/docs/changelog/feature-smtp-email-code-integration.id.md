@@ -24,8 +24,4 @@ Penyimpanan dan pembaruan konfigurasi, perubahan aktivasi, serta pemuatan ulang 
 
 ## Komit
 
-- [55da5f3d0f7695d4cf5ea17438be5744857c3a7b](https://github.com/Cognis-Labs-HQ/Cognis/commit/55da5f3d0f7695d4cf5ea17438be5744857c3a7b)
-- [8d2f4505fdd739d60dd8b82d2529d0dd30e87f40](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d2f4505fdd739d60dd8b82d2529d0dd30e87f40)
-- [ef8da51a32748d419b9b46e0bf145b65fed73678](https://github.com/Cognis-Labs-HQ/Cognis/commit/ef8da51a32748d419b9b46e0bf145b65fed73678)
-- [8dd1b77ec99af1e828aaaddb10b8b47592206259](https://github.com/Cognis-Labs-HQ/Cognis/commit/8dd1b77ec99af1e828aaaddb10b8b47592206259)
-- [3a857dd36040f814548f68386c3438b7653b533f](https://github.com/Cognis-Labs-HQ/Cognis/commit/3a857dd36040f814548f68386c3438b7653b533f)
+- [40f8a8974ab8d4582bba5b60de4441ea7d90d8c3](https://github.com/Cognis-Labs-HQ/Cognis/commit/40f8a8974ab8d4582bba5b60de4441ea7d90d8c3)
