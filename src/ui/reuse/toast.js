@@ -54,6 +54,8 @@ const VARIANT_ICONS = {
 };
 
 let stylesheetReady = null;
+const failedStylesheets = new WeakSet();
+const stylesheetHref = "/static/styles/reuse/toast.css";
 let dismissLabel = "Dismiss";
 
 /**
@@ -67,30 +69,51 @@ export function configureToastDismissLabel(label) {
     dismissLabel = label;
 }
 
+function loadStylesheet() {
+    const existing = document.querySelector(`link[href="${stylesheetHref}"]`);
+    if (existing?.sheet) return Promise.resolve(true);
+    const owned = !existing || failedStylesheets.has(existing);
+    const link = owned ? document.createElement("link") : existing;
+    return new Promise((resolve) => {
+        let settled = false;
+        const finish = (loaded) => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timeout);
+            link.removeEventListener("load", onLoad);
+            link.removeEventListener("error", onError);
+            if (!loaded) {
+                console.error("[toast] failed to load stylesheet", {
+                    component: "ui",
+                    operation: "loadToastStylesheet",
+                    href: stylesheetHref,
+                });
+                failedStylesheets.add(link);
+                if (owned) link.remove();
+            }
+            resolve(loaded);
+        };
+        const onLoad = () => finish(true);
+        const onError = () => finish(false);
+        const timeout = setTimeout(onError, 5_000);
+        link.addEventListener("load", onLoad);
+        link.addEventListener("error", onError);
+        if (owned) {
+            link.rel = "stylesheet";
+            link.href = stylesheetHref;
+            document.head.appendChild(link);
+        }
+    });
+}
+
 function ensureStylesheet() {
     if (stylesheetReady) return stylesheetReady;
-
-    const existing = document.querySelector(
-        'link[href="/static/styles/reuse/toast.css"]',
-    );
-    if (existing) {
-        stylesheetReady = existing.sheet
-            ? Promise.resolve()
-            : new Promise((resolve) => {
-                  existing.addEventListener("load", resolve, { once: true });
-                  existing.addEventListener("error", resolve, { once: true });
-              });
-        return stylesheetReady;
-    }
-
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = "/static/styles/reuse/toast.css";
-    stylesheetReady = new Promise((resolve) => {
-        link.addEventListener("load", resolve, { once: true });
-        link.addEventListener("error", resolve, { once: true });
-    });
-    document.head.appendChild(link);
+    stylesheetReady = (async () => {
+        for (let attempt = 0; attempt < 2; attempt += 1) {
+            if (await loadStylesheet()) return;
+        }
+        stylesheetReady = null;
+    })();
     return stylesheetReady;
 }
 
@@ -242,7 +265,7 @@ export function showToast(
 
     requestAnimationFrame(() => {
         requestAnimationFrame(() => {
-            toast.classList.add("toast--visible");
+            if (!dismissed) toast.classList.add("toast--visible");
         });
     });
 
