@@ -16,4 +16,4 @@ Registration 1.2.10 は共通フォームビルダーとブラウザー標準の
 
 ## コミット
 
-- [d7abffa488609d4d3644526683ed2058e2cf78cf](https://github.com/Cognis-Labs-HQ/Cognis/commit/d7abffa488609d4d3644526683ed2058e2cf78cf)
+- [db32a550d3b52a892e36562f73ab1fc61e135a50](https://github.com/Cognis-Labs-HQ/Cognis/commit/db32a550d3b52a892e36562f73ab1fc61e135a50)
