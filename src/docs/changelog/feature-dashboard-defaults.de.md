@@ -16,4 +16,4 @@ Diese Vorgaben gelten für neu platzierte Karten. Gespeicherte Positionen, Grö�
 
 ## Commits
 
-- [7e57eeded62ec654a26870c66b2f0bb51cbd260b](https://github.com/Cognis-Labs-HQ/Cognis/commit/7e57eeded62ec654a26870c66b2f0bb51cbd260b)
+- [16752d26e7603714c7e8e9b0168442b1baef1836](https://github.com/Cognis-Labs-HQ/Cognis/commit/16752d26e7603714c7e8e9b0168442b1baef1836)
