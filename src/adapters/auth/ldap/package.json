@@ -1,0 +1,12 @@
+{
+    "name": "@cognis/adapter-auth-ldap",
+    "version": "0.5.37",
+    "private": true,
+    "type": "module",
+    "main": "index.ts",
+    "dependencies": {
+        "@cognis/core": "<=0.6.2",
+        "@cognis/gateways": "<=0.4.3",
+        "ldapts": "^9.0.0"
+    }
+}

@@ -1,0 +1,20 @@
+<resources>
+  <string name="adapter.share.link.name">Tautan</string>
+  <string name="adapter.share.link.description">Buat tautan yang dapat dikirim ke luar Cognis.</string>
+  <string name="adapter.share.link.email.send">Kirim</string>
+  <string name="adapter.share.link.email.recipients">Kirim undangan yang berisi tautan berbagi ini kepada:</string>
+  <string name="adapter.share.link.email.placeholder">Masukkan alamat email</string>
+  <string name="adapter.share.link.email.required">Tambahkan setidaknya satu penerima.</string>
+  <string name="adapter.share.link.email.sent">Surel berbagi terkirim.</string>
+  <string name="adapter.share.link.email.failed">Surel berbagi tidak dapat dikirim.</string>
+  <string name="adapter.share.link.popup.empty">Belum ada tautan berbagi.</string>
+  <string name="adapter.share.link.popup.active">Aktif</string>
+  <string name="adapter.share.link.popup.expired">Kedaluwarsa</string>
+  <string name="adapter.share.link.popup.expires">Kedaluwarsa pada</string>
+  <string name="adapter.share.link.popup.copy">Salin tautan</string>
+  <string name="adapter.share.link.popup.revoke">Cabut</string>
+  <string name="adapter.share.link.popup.copied">Tautan disalin.</string>
+  <string name="adapter.share.link.popup.copy_failed">Tautan tidak dapat disalin.</string>
+  <string name="adapter.share.link.popup.create_failed">Berbagi tidak dapat dibuat.</string>
+  <string name="adapter.share.link.popup.delete_failed">Berbagi tidak dapat dicabut.</string>
+</resources>

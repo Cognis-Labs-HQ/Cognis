@@ -1,0 +1,101 @@
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.verify-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(8px);
+    padding: 48px 40px;
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+}
+
+.verify-brand {
+    justify-content: center;
+    margin-bottom: 28px;
+}
+
+.verify-icon {
+    color: var(--text);
+    font-size: 3rem;
+    line-height: 1;
+    margin-bottom: 20px;
+}
+
+.verify-icon-success {
+    animation: verify-tick-arrive 600ms cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+}
+
+.verify-icon-invalid {
+    animation: verify-cross-arrive 600ms cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+}
+
+.verify-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 12px;
+}
+
+.verify-body {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 28px;
+}
+
+.verify-link {
+    display: inline-block;
+    padding: 10px 24px;
+    text-decoration: none;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+@keyframes verify-tick-arrive {
+    from {
+        opacity: 0;
+        transform: scale(0.45) rotate(-18deg);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) rotate(0);
+    }
+}
+
+@keyframes verify-cross-arrive {
+    from {
+        opacity: 0;
+        transform: scale(0.45) rotate(18deg);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) rotate(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .verify-icon-success,
+    .verify-icon-invalid {
+        animation: none;
+    }
+}

@@ -1,0 +1,715 @@
+import { MAX_IMAGE_UPLOAD_BYTES } from "../image-store.js";
+import { readRawBody } from "../../../../api/reuse/read-json.js";
+import { MAX_AUDIO_UPLOAD_BYTES } from "../service/uploads.js";
+import type { LibraryReferenceInput } from "../types.js";
+import { sendJson } from "../../../../api/reuse/http-response.js";
+import { libraryFailure } from "./failures.js";
+import type { IncomingMessage, ServerResponse } from "node:http";
+import { readJson as readRequestJson } from "../../../../api/reuse/read-json.js";
+import {
+    resolveRouteContext,
+    type RouteContext,
+} from "../../../../api/reuse/route-context.js";
+import type { LibraryCapability, LibraryActor } from "../service/index.js";
+import type {
+    LibraryEntryInput,
+    LibraryLocation,
+    LibraryPushRequest,
+} from "../types.js";
+import { canonicalizeLanguageTag } from "../language.js";
+
+async function readJson(req: IncomingMessage): Promise<unknown> {
+    try {
+        const body = await readRequestJson(req, { maxBytes: 5 * 1024 * 1024 });
+        if (!body || typeof body !== "object" || Array.isArray(body))
+            throw new Error("invalid_request_json");
+        return body;
+    } catch (error) {
+        if (error instanceof SyntaxError)
+            throw new Error("invalid_request_json");
+        throw error;
+    }
+}
+
+function locationFrom(url: URL): LibraryLocation {
+    const scope = url.searchParams.get("scope") ?? "global";
+    if (scope !== "global" && scope !== "class" && scope !== "user")
+        throw new Error("invalid_scope");
+    return { scope, scopeId: url.searchParams.get("scopeId") ?? undefined };
+}
+
+function languageFrom(url: URL): string | undefined {
+    const language = url.searchParams.get("language");
+    return language === null ? undefined : canonicalizeLanguageTag(language);
+}
+
+export function createLibraryRoutes(
+    library: LibraryCapability,
+    routeContext?: RouteContext,
+    log?: (
+        level: string,
+        message: string,
+        meta?: Record<string, unknown>,
+    ) => void | Promise<void>,
+) {
+    const ctx = resolveRouteContext(routeContext);
+    return async (
+        req: IncomingMessage,
+        res: ServerResponse,
+        url: URL,
+    ): Promise<boolean> => {
+        if (!url.pathname.startsWith("/api/v1/study/library")) return false;
+        const claims = ctx.requireAuth(req, res);
+        if (!claims) return true;
+        const actor: LibraryActor = {
+            accountId: claims.sub,
+            role: claims.role,
+        };
+        try {
+            if (
+                url.pathname === "/api/v1/study/library/images" &&
+                req.method === "PUT"
+            ) {
+                const data = await readRawBody(req, {
+                    maxBytes: MAX_IMAGE_UPLOAD_BYTES,
+                });
+                const mediaType = String(req.headers["content-type"] ?? "")
+                    .split(";")[0]
+                    .trim();
+                sendJson(res, 201, {
+                    data: await library.images.upload(actor, mediaType, data),
+                });
+                return true;
+            }
+            if (
+                url.pathname === "/api/v1/study/library/images" &&
+                req.method === "DELETE"
+            ) {
+                const body = (await readJson(req)) as { value: string };
+                sendJson(res, 200, {
+                    data: await library.images.discard(actor, body.value),
+                });
+                return true;
+            }
+            const imageMatch = url.pathname.match(
+                /^\/api\/v1\/study\/library\/(entries|push-requests)\/([^/]+)\/images\/([^/]+)\/(\d+)$/,
+            );
+            if (imageMatch && req.method === "GET") {
+                const image = await library.images.read(
+                    actor,
+                    decodeURIComponent(imageMatch[2]),
+                    decodeURIComponent(imageMatch[3]),
+                    Number(imageMatch[4]),
+                    imageMatch[1] === "push-requests",
+                );
+                res.writeHead(200, {
+                    "content-type": image.mediaType,
+                    "content-length": String(image.data.length),
+                    "cache-control": "private, no-store",
+                    "x-content-type-options": "nosniff",
+                    "content-security-policy": "sandbox; default-src 'none'",
+                });
+                res.end(image.data);
+                return true;
+            }
+            if (
+                url.pathname === "/api/v1/study/library/audio" &&
+                req.method === "PUT"
+            ) {
+                const data = await readRawBody(req, {
+                    maxBytes: MAX_AUDIO_UPLOAD_BYTES,
+                });
+                const mediaType = String(req.headers["content-type"] ?? "")
+                    .split(";")[0]
+                    .trim();
+                sendJson(res, 201, {
+                    data: await library.uploadAudio(actor, mediaType, data),
+                });
+                return true;
+            }
+            if (
+                url.pathname === "/api/v1/study/library/import" &&
+                req.method === "POST"
+            ) {
+                const body = (await readJson(req)) as {
+                    location: LibraryLocation;
+                    document: unknown;
+                };
+                const data = await library.importEntries(
+                    actor,
+                    body.location,
+                    body.document,
+                );
+                await log?.("info", "Library batch imported.", {
+                    component: "study-library",
+                    operation: "import",
+                    accountId: actor.accountId,
+                    entryCount: data.entries.length,
+                });
+                sendJson(res, 201, { data });
+                return true;
+            }
+            const assetMatch = url.pathname.match(
+                /^\/api\/v1\/study\/library\/assets\/([^/]+)\/([^/]+)\/([^/]+)\/(.+)$/,
+            );
+            if (assetMatch && req.method === "GET") {
+                const assetPath = assetMatch[4]
+                    .split("/")
+                    .map(decodeURIComponent)
+                    .join("/");
+                const asset = await library.readContentPackAsset(
+                    decodeURIComponent(assetMatch[1]),
+                    decodeURIComponent(assetMatch[2]),
+                    decodeURIComponent(assetMatch[3]),
+                    assetPath,
+                );
+                if (!asset) {
+                    sendJson(res, 404, { error: { code: "not_found" } });
+                    return true;
+                }
+                res.writeHead(200, {
+                    "content-type": asset.mediaType,
+                    "content-length": String(asset.data.byteLength),
+                    "cache-control": "private, no-store",
+                    "x-content-type-options": "nosniff",
+                    "content-security-policy": "sandbox; default-src 'none'",
+                });
+                res.end(asset.data);
+                return true;
+            }
+            if (
+                url.pathname === "/api/v1/study/library/schemas" &&
+                req.method === "GET"
+            ) {
+                const language = languageFrom(url);
+                const schemas = library
+                    .listSchemas()
+                    .filter(
+                        (schema) =>
+                            !language ||
+                            canonicalizeLanguageTag(schema.language) ===
+                                language,
+                    );
+                sendJson(res, 200, { data: schemas });
+                return true;
+            }
+            if (
+                url.pathname === "/api/v1/study/library/forms" &&
+                req.method === "GET"
+            ) {
+                sendJson(res, 200, {
+                    data: library.listFormContributions(),
+                });
+                return true;
+            }
+            if (
+                url.pathname === "/api/v1/study/library/locations" &&
+                req.method === "GET"
+            ) {
+                sendJson(res, 200, {
+                    data: await library.locations(
+                        actor,
+                        url.searchParams.get("language") || undefined,
+                    ),
+                });
+                return true;
+            }
+            if (
+                url.pathname === "/api/v1/study/library/entries" &&
+                req.method === "GET"
+            ) {
+                sendJson(res, 200, {
+                    data: await library.list(actor, locationFrom(url), {
+                        schemaId: url.searchParams.get("schemaId") ?? undefined,
+                        layer: url.searchParams.get("layer") ?? undefined,
+                        ...(url.searchParams.has("entryId")
+                            ? { entryIds: url.searchParams.getAll("entryId") }
+                            : {}),
+                        ...(url.searchParams.has("sourceRecordId")
+                            ? {
+                                  sourceRecordIds:
+                                      url.searchParams.getAll("sourceRecordId"),
+                              }
+                            : {}),
+                    }),
+                });
+                return true;
+            }
+            if (
+                url.pathname === "/api/v1/study/library/viewed-entries" &&
+                req.method === "GET"
+            ) {
+                sendJson(res, 200, {
+                    data: await library.viewedEntryIds(actor),
+                });
+                return true;
+            }
+            if (
+                url.pathname === "/api/v1/study/library/viewed-entries" &&
+                req.method === "PUT"
+            ) {
+                const body = (await readJson(req)) as { entryIds?: unknown };
+                if (
+                    !Array.isArray(body.entryIds) ||
+                    !body.entryIds.every((id) => typeof id === "string")
+                )
+                    throw new Error("invalid_entry_selection");
+                await library.markEntriesViewed(actor, body.entryIds);
+                sendJson(res, 200, { data: { entryIds: body.entryIds } });
+                return true;
+            }
+            const audioMatch = url.pathname.match(
+                /^\/api\/v1\/study\/library\/entries\/([^/]+)\/audio\/([^/]+)$/,
+            );
+            if (audioMatch && ["GET", "POST"].includes(req.method ?? "")) {
+                const body =
+                    req.method === "POST"
+                        ? ((await readJson(req)) as {
+                              transformation?: LibraryReferenceInput["transformation"];
+                              refresh?: boolean;
+                          })
+                        : {};
+                const audio = await library.readAudio(
+                    actor,
+                    decodeURIComponent(audioMatch[1]),
+                    decodeURIComponent(audioMatch[2]),
+                    body.transformation,
+                    body.refresh === true,
+                );
+                res.writeHead(200, {
+                    "content-type": audio.mediaType,
+                    "content-length": String(audio.data.byteLength),
+                    "cache-control": "private, no-cache",
+                    "x-content-type-options": "nosniff",
+                });
+                res.end(audio.data);
+                return true;
+            }
+            const detailMatch = url.pathname.match(
+                /^\/api\/v1\/study\/library\/entries\/([^/]+)$/,
+            );
+            if (detailMatch && req.method === "GET") {
+                const entry = await library.read(
+                    actor,
+                    decodeURIComponent(detailMatch[1]),
+                );
+                sendJson(
+                    res,
+                    entry ? 200 : 404,
+                    entry ? { data: entry } : { error: { code: "not_found" } },
+                );
+                return true;
+            }
+            if (detailMatch && req.method === "PUT") {
+                const entryId = decodeURIComponent(detailMatch[1]);
+                const body = (await readJson(req)) as {
+                    entry: Parameters<LibraryCapability["update"]>[2];
+                };
+                const entry = await library.update(actor, entryId, body.entry);
+                await log?.("info", "Updated library entry.", {
+                    component: "study-library",
+                    operation: "update-entry-route",
+                    accountId: actor.accountId,
+                    entryId,
+                });
+                sendJson(res, 200, { data: entry });
+                return true;
+            }
+            if (
+                url.pathname === "/api/v1/study/library/entries" &&
+                req.method === "POST"
+            ) {
+                const body = (await readJson(req)) as {
+                    location: LibraryLocation;
+                    entry: Parameters<LibraryCapability["create"]>[2];
+                };
+                const entry = await library.create(
+                    actor,
+                    body.location,
+                    body.entry,
+                );
+                await log?.("info", "Created library entry.", {
+                    component: "study-library",
+                    operation: "create",
+                    accountId: actor.accountId,
+                    entryId: entry.id,
+                });
+                sendJson(res, 201, { data: entry });
+                return true;
+            }
+            if (
+                url.pathname ===
+                    "/api/v1/study/library/entries/deletion-plan" &&
+                req.method === "POST"
+            ) {
+                const body = (await readJson(req)) as { entryIds?: unknown };
+                if (
+                    !Array.isArray(body.entryIds) ||
+                    !body.entryIds.every((id) => typeof id === "string")
+                )
+                    throw new Error("invalid_delete_request");
+                const plan = await library.planDeletion(actor, body.entryIds);
+                sendJson(res, 200, { data: plan });
+                return true;
+            }
+            if (
+                url.pathname === "/api/v1/study/library/entries" &&
+                req.method === "DELETE"
+            ) {
+                const body = (await readJson(req)) as {
+                    entryIds?: unknown;
+                    blacklistContentHashes?: unknown;
+                };
+                if (
+                    !Array.isArray(body.entryIds) ||
+                    !body.entryIds.every(
+                        (entryId) => typeof entryId === "string",
+                    ) ||
+                    typeof body.blacklistContentHashes !== "boolean"
+                ) {
+                    throw new Error("invalid_delete_request");
+                }
+                const deletedEntryIds = await library.deleteEntries(
+                    actor,
+                    body.entryIds,
+                    body.blacklistContentHashes,
+                );
+                await log?.("info", "Deleted library entries.", {
+                    component: "study-library",
+                    operation: "delete-entries-route",
+                    accountId: actor.accountId,
+                    entryCount: body.entryIds.length,
+                    blacklistContentHashes: body.blacklistContentHashes,
+                });
+                sendJson(res, 200, {
+                    data: {
+                        deleted: deletedEntryIds.length,
+                        entryIds: deletedEntryIds,
+                    },
+                });
+                return true;
+            }
+            const traceMatch = url.pathname.match(
+                /^\/api\/v1\/study\/library\/entries\/([^/]+)\/trace$/,
+            );
+            if (traceMatch && req.method === "GET") {
+                sendJson(res, 200, {
+                    data: await library.trace(
+                        actor,
+                        decodeURIComponent(traceMatch[1]),
+                    ),
+                });
+                return true;
+            }
+            if (
+                url.pathname === "/api/v1/study/library/resolve" &&
+                req.method === "POST"
+            ) {
+                const body = (await readJson(req)) as {
+                    location: LibraryLocation;
+                    entry: Parameters<LibraryCapability["resolve"]>[2];
+                };
+                const proposals = await library.resolve(
+                    actor,
+                    body.location,
+                    body.entry,
+                );
+                await log?.("info", "Resolved library relationships.", {
+                    component: "study-library",
+                    operation: "resolve",
+                    accountId: actor.accountId,
+                });
+                sendJson(res, 200, { data: proposals });
+                return true;
+            }
+            if (
+                url.pathname === "/api/v1/study/library/lookup/providers" &&
+                req.method === "GET"
+            ) {
+                sendJson(res, 200, {
+                    data: library.listLookupProviders({
+                        schemaId: url.searchParams.get("schemaId") ?? "",
+                        schemaVersion: url.searchParams.has("schemaVersion")
+                            ? Number(url.searchParams.get("schemaVersion"))
+                            : undefined,
+                        layer: url.searchParams.get("layer") ?? "",
+                    }),
+                });
+                return true;
+            }
+            if (
+                url.pathname === "/api/v1/study/library/dictionary/providers" &&
+                req.method === "GET"
+            ) {
+                sendJson(res, 200, {
+                    data: library.searchableProviders(languageFrom(url)),
+                });
+                return true;
+            }
+            if (
+                url.pathname === "/api/v1/study/library/dictionary/search" &&
+                req.method === "POST"
+            ) {
+                const input = (await readJson(req)) as Parameters<
+                    LibraryCapability["searchDictionary"]
+                >[0];
+                if (
+                    typeof input.query !== "string" ||
+                    typeof input.providerId !== "string" ||
+                    typeof input.schemaId !== "string"
+                )
+                    throw new Error("invalid_query");
+                const result = await library.searchDictionary(input);
+                await log?.("info", "Searched Library dictionary.", {
+                    component: "study-library",
+                    operation: "dictionary-search",
+                    accountId: actor.accountId,
+                    providerId: input.providerId,
+                    cacheHit: result.cached,
+                    resultCount: result.results.length,
+                });
+                sendJson(res, 200, { data: result });
+                return true;
+            }
+            if (
+                url.pathname === "/api/v1/study/library/definitions/localize" &&
+                req.method === "POST"
+            ) {
+                const request = (await readJson(req)) as Parameters<
+                    LibraryCapability["localizeDefinition"]
+                >[0];
+                sendJson(res, 200, {
+                    data: await library.localizeDefinition(request),
+                });
+                return true;
+            }
+            if (
+                url.pathname === "/api/v1/study/library/lookup" &&
+                req.method === "POST"
+            ) {
+                const body = (await readJson(req)) as {
+                    providerId: string;
+                    entry: Parameters<LibraryCapability["lookup"]>[1];
+                };
+                if (
+                    !body ||
+                    typeof body.providerId !== "string" ||
+                    !body.providerId.trim() ||
+                    !body.entry ||
+                    typeof body.entry.schemaId !== "string" ||
+                    typeof body.entry.layer !== "string" ||
+                    typeof body.entry.label !== "string"
+                )
+                    throw new Error("invalid_lookup_request");
+                sendJson(res, 200, {
+                    data: await library.lookup(body.providerId, body.entry),
+                });
+                await log?.("info", "Looked up Library composer input.", {
+                    component: "study-library",
+                    operation: "lookup",
+                    accountId: actor.accountId,
+                    providerId: body.providerId,
+                    schemaId: body.entry.schemaId,
+                    layer: body.entry.layer,
+                });
+                return true;
+            }
+            if (
+                url.pathname === "/api/v1/study/library/push-requests" &&
+                req.method === "GET"
+            ) {
+                sendJson(res, 200, {
+                    data: await library.listPushRequests(
+                        actor,
+                        (url.searchParams.get("status") ?? undefined) as
+                            LibraryPushRequest["status"] | undefined,
+                    ),
+                });
+                return true;
+            }
+            if (
+                url.pathname === "/api/v1/study/library/push-requests" &&
+                req.method === "POST"
+            ) {
+                const body = (await readJson(req)) as {
+                    entryId: string;
+                    destination: LibraryLocation;
+                    proposedEntry?: LibraryEntryInput;
+                };
+                const request = body.proposedEntry
+                    ? await library.requestUpdate(
+                          actor,
+                          body.entryId,
+                          body.proposedEntry,
+                      )
+                    : await library.requestPush(
+                          actor,
+                          body.entryId,
+                          body.destination,
+                      );
+                await log?.("info", "Submitted library push request.", {
+                    component: "study-library",
+                    operation: "request_push",
+                    accountId: actor.accountId,
+                    requestId: request.id,
+                });
+                sendJson(res, 201, { data: request });
+                return true;
+            }
+            const mergeMatch = url.pathname.match(
+                /^\/api\/v1\/study\/library\/entries\/([^/]+)\/merge$/,
+            );
+            if (mergeMatch && req.method === "POST") {
+                const proposed = (await readJson(req)) as LibraryEntryInput;
+                const result = await library.merge(
+                    actor,
+                    decodeURIComponent(mergeMatch[1]),
+                    proposed,
+                );
+                await log?.(
+                    "info",
+                    "Merged Library content or submitted merge request.",
+                    {
+                        component: "study-library",
+                        operation: "merge",
+                        accountId: actor.accountId,
+                        entryId: result.entry.id,
+                        requestId: result.request?.id,
+                    },
+                );
+                sendJson(res, result.request ? 201 : 200, { data: result });
+                return true;
+            }
+            const relocateMatch = url.pathname.match(
+                /^\/api\/v1\/study\/library\/entries\/([^/]+)\/relocate$/,
+            );
+            if (relocateMatch && req.method === "POST") {
+                const body = (await readJson(req)) as {
+                    destination: LibraryLocation;
+                };
+                const result = await library.relocate(
+                    actor,
+                    decodeURIComponent(relocateMatch[1]),
+                    body.destination,
+                );
+                await log?.(
+                    "info",
+                    "Relocated Library card or requested relocation.",
+                    {
+                        component: "study-library",
+                        operation: "relocate-entry",
+                        accountId: actor.accountId,
+                        entryId: decodeURIComponent(relocateMatch[1]),
+                        destinationScope: body.destination.scope,
+                        requestId:
+                            "request" in result ? result.request.id : undefined,
+                    },
+                );
+                sendJson(res, "request" in result ? 201 : 200, {
+                    data: result,
+                });
+                return true;
+            }
+            const downgradeMatch = url.pathname.match(
+                /^\/api\/v1\/study\/library\/entries\/([^/]+)\/move-to-personal$/,
+            );
+            if (downgradeMatch && req.method === "POST") {
+                const request = await library.moveToPersonal(
+                    actor,
+                    decodeURIComponent(downgradeMatch[1]),
+                );
+                await log?.(
+                    "info",
+                    "Requested Library card relocation to user scope.",
+                    {
+                        component: "study-library",
+                        operation: "request-relocation",
+                        accountId: actor.accountId,
+                        entryId: request.sourceEntryId,
+                        requestId: request.id,
+                    },
+                );
+                sendJson(res, 201, { data: request });
+                return true;
+            }
+            const reviewMatch = url.pathname.match(
+                /^\/api\/v1\/study\/library\/push-requests\/([^/]+)$/,
+            );
+            if (reviewMatch && req.method === "PATCH") {
+                const proposed = (await readJson(req)) as LibraryEntryInput;
+                const request = await library.stagePush(
+                    actor,
+                    decodeURIComponent(reviewMatch[1]),
+                    proposed,
+                );
+                await log?.("info", "Staged Library request changes.", {
+                    component: "study-library",
+                    operation: "stageRequest",
+                    accountId: actor.accountId,
+                    requestId: request.id,
+                });
+                sendJson(res, 200, { data: request });
+                return true;
+            }
+            if (reviewMatch && req.method === "DELETE") {
+                const request = await library.withdrawPush(
+                    actor,
+                    decodeURIComponent(reviewMatch[1]),
+                );
+                await log?.("info", "Withdrew Library request.", {
+                    component: "study-library",
+                    operation: "withdrawRequest",
+                    accountId: actor.accountId,
+                    requestId: request.id,
+                });
+                sendJson(res, 200, { data: request });
+                return true;
+            }
+            if (reviewMatch && req.method === "PUT") {
+                const body = (await readJson(req)) as {
+                    decision: "approved" | "rejected";
+                };
+                if (
+                    body.decision !== "approved" &&
+                    body.decision !== "rejected"
+                )
+                    throw new Error("invalid_decision");
+                const request = await library.reviewPush(
+                    actor,
+                    decodeURIComponent(reviewMatch[1]),
+                    body.decision,
+                );
+                await log?.("info", "Reviewed library push request.", {
+                    component: "study-library",
+                    operation: "review_push",
+                    accountId: actor.accountId,
+                    requestId: request.id,
+                    decision: body.decision,
+                });
+                sendJson(res, 200, { data: request });
+                return true;
+            }
+            return false;
+        } catch (error) {
+            const failure = libraryFailure(error);
+            await log?.("error", "Library request failed.", {
+                component: "study-library",
+                operation: req.method ?? "unknown",
+                path: url.pathname,
+                accountId: actor.accountId,
+                code: failure.code,
+                errorName: error instanceof Error ? error.name : "Error",
+            });
+            sendJson(res, failure.status, {
+                error: {
+                    code: failure.code,
+                    message: "Library request could not be completed",
+                    ...(failure.conflictEntryId
+                        ? { conflictEntryId: failure.conflictEntryId }
+                        : {}),
+                },
+            });
+            return true;
+        }
+    };
+}

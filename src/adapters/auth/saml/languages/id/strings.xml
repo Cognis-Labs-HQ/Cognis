@@ -1,0 +1,7 @@
+<resources>
+    <string name="adapter.saml.config.entrypoint">URL Titik Masuk</string>
+    <string name="adapter.saml.config.issuer">Penerbit</string>
+    <string name="adapter.saml.config.certificate">Sertifikat</string>
+    <string name="adapter.saml.config.adminattribute">Atribut Admin</string>
+    <string name="adapter.saml.config.adminvalue">Nilai Atribut Admin</string>
+</resources>

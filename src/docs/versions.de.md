@@ -1,0 +1,104 @@
+<!-- Keep all src/docs/versions.*.md language variants in sync when updating this file. -->
+
+# Komponentenversionen
+
+## Überblick
+
+Dieses Dokument erfasst die aktuelle Version jedes Gateways, Adapters und Moduls in der Cognis-Codebasis. Es dient als Changelog-Index und als schnelle Referenz, um zu erkennen, ob eine Komponente seit einer früheren Veröffentlichung aktualisiert wurde.
+
+Jedes Gateway, jeder Adapter und jedes Modul besitzt eine `package.json` mit einem `version`-Feld. Wenn Sie eine Komponente ändern — einschließlich interner Logik, Datenbankschema, öffentlicher API oder Konfigurationsformat — müssen Sie die Version in dieser `package.json` nach Semantic Versioning erhöhen. Dieses Dokument wird gleichzeitig aktualisiert. Changelog-Einträge werden als PR-spezifische Dateien unter `src/docs/changelog/` gespeichert.
+
+## Verantwortlichkeiten
+
+- Die aktuelle Version jeder versionierten Komponente in der Codebasis festhalten.
+- Als Changelog-Index dienen: Verweise auf komponentenspezifische Dokumentation und `src/docs/changelog/` für die Historie.
+- Versionsdrift zwischen bereitgestellten Komponenten und der aktuellen Codebasis leicht erkennbar machen.
+
+Nicht verantwortlich für: das Erzwingen von Versionserhöhungen (das ist Aufgabe des Code-Reviews) oder das Nachverfolgen externer Paketversionen.
+
+## Versionierungsregel
+
+Erhöhungen erfolgen nach [Semantic Versioning](https://semver.org/):
+
+- **Patch** (`0.1.x`): Fehlerbehebungen, nicht brechende interne Änderungen.
+- **Minor** (`0.x.0`): neue rückwärtskompatible Funktionen oder API-Erweiterungen.
+- **Major** (`x.0.0`): brechende Änderungen an öffentlicher API oder Schema der Komponente.
+
+## Abhängigkeitsregel
+
+Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested-version>`. Dadurch wird die neueste getestete Abhängigkeitsversion festgehalten, während die Administrations-Lebenszyklusansicht warnen kann, wenn eine neuere installierte Abhängigkeit möglicherweise nicht verifiziert ist.
+
+## Adapter
+
+| Komponente            | Pfad                                | Version  |
+| --------------------- | ----------------------------------- | -------- |
+| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.5.2`  |
+| Internal Notification | `src/adapters/notify/internal/`     | `0.5.33` |
+| Local File Storage    | `src/adapters/file/local/`          | `0.1.26` |
+| File Quota            | `src/adapters/file/quota/`          | `1.0.24` |
+| Local Auth            | `src/adapters/auth/local/`          | `0.4.1`  |
+| User Keyring          | `src/adapters/auth/keyring/`        | `2.1.3`  |
+| LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.37` |
+| OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.24` |
+| SAML Auth             | `src/adapters/auth/saml/`           | `0.1.24` |
+| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.1.1`  |
+| TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.28` |
+| PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.26` |
+| MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.31` |
+| SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.27` |
+| Memory Database       | `src/adapters/db/memory/`           | `0.1.24` |
+| Registration Token    | `src/adapters/registration/token/`  | `0.1.40` |
+| Public Registration   | `src/adapters/registration/public/` | `0.1.23` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `3.0.14` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.38` |
+| Calls (Social)        | `src/adapters/social/call/`         | `0.5.36` |
+| Link Share            | `src/adapters/share/link/`          | `1.1.38` |
+| User Share            | `src/adapters/share/user/`          | `1.1.20` |
+| Classes (Study)       | `src/adapters/study/classes/`       | `1.4.11` |
+| Library (Study)       | `src/adapters/study/library/`       | `4.1.24` |
+| Drawing (Study)       | `src/adapters/study/drawing/`       | `1.1.3`  |
+| Lernkartenadapter     | `src/adapters/study/flashcards/`    | `1.5.31` |
+| Progress (Study)      | `src/adapters/study/progress/`      | `1.3.1`  |
+| Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.2.11` |
+| Console Logging       | `src/adapters/logging/console/`     | `1.1.4`  |
+| File Logging          | `src/adapters/logging/file/`        | `1.1.5`  |
+
+## Gateways
+
+| Komponente            | Pfad                          | Version  |
+| --------------------- | ----------------------------- | -------- |
+| Database (db)         | `src/gateways/db/`            | `1.4.0`  |
+| Authentication (auth) | `src/gateways/auth/`          | `2.2.4`  |
+| Share                 | `src/gateways/share/`         | `1.9.7`  |
+| Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.3.6`  |
+| Notification (notify) | `src/gateways/notify/`        | `2.2.9`  |
+| Social                | `src/gateways/social/`        | `1.4.5`  |
+| File Storage (files)  | `src/gateways/files/`         | `2.3.6`  |
+| Registration          | `src/gateways/registration/`  | `1.2.6`  |
+| Logging               | `src/gateways/logging/`       | `1.5.19` |
+| Observability         | `src/gateways/observability/` | `1.0.7`  |
+| Study                 | `src/gateways/study/`         | `2.6.9`  |
+| Calendar              | `src/gateways/calendar/`      | `1.7.6`  |
+
+## Kernverträge
+
+| Komponente   | Pfad        | Version |
+| ------------ | ----------- | ------- |
+| Core Package | `src/core/` | `0.6.2` |
+
+## API
+
+| Komponente | Pfad       | Version   |
+| ---------- | ---------- | --------- |
+| API Server | `src/api/` | `0.13.31` |
+
+## Werkzeuge
+
+| Komponente | Pfad               | Version |
+| ---------- | ------------------ | ------- |
+| Cognis CLI | `src/tooling/cli/` | `0.4.1` |
+
+[c]: https://github.com/Cognis-Labs-HQ/Cognis/blob/master/src/core/package.json
+[a]: https://github.com/Cognis-Labs-HQ/Cognis/blob/master/src/api/package.json
+[m]: https://github.com/Cognis-Labs-HQ/Cognis/blob/master/src/adapters/social/messages/package.json
+[p]: https://github.com/Cognis-Labs-HQ/Cognis/blob/master/src/adapters/social/profile/package.json

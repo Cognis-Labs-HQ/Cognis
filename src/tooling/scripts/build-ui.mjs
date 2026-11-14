@@ -1,0 +1,321 @@
+import { createHash } from "node:crypto";
+import { COMMON_STYLESHEETS } from "../../ui/reuse/resources.js";
+import { versionOfflineWorker } from "./ui-build/offline-version.mjs";
+import { rewriteHtmlAssets } from "./ui-build/html-assets.mjs";
+import { brotliCompress, gzip } from "node:zlib";
+import { promisify } from "node:util";
+import { cp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import path from "node:path";
+import { build } from "esbuild";
+
+const repositoryRoot = process.cwd();
+const outputRoot = path.join(repositoryRoot, "dist", "ui");
+const assetRoot = path.join(outputRoot, "assets");
+const compressBrotli = promisify(brotliCompress);
+const compressGzip = promisify(gzip);
+
+async function walk(directory) {
+    const entries = await readdir(directory, { withFileTypes: true });
+    const files = await Promise.all(
+        entries.map(async (entry) => {
+            const entryPath = path.join(directory, entry.name);
+            return entry.isDirectory() ? walk(entryPath) : [entryPath];
+        }),
+    );
+    return files.flat();
+}
+
+function logicalUrls(filePath) {
+    const relativePath = path
+        .relative(repositoryRoot, filePath)
+        .split(path.sep)
+        .join("/");
+    if (relativePath.startsWith("src/ui/")) {
+        return [`/static/${relativePath.slice("src/ui/".length)}`];
+    }
+    const componentMatch = relativePath.match(
+        /^src\/(gateways|adapters|modules)\/(.+)$/,
+    );
+    if (!componentMatch) return [];
+    const componentType = componentMatch[1];
+    const remainder = componentMatch[2];
+    const typePrefix =
+        componentType === "adapters" ? "adapters" : componentType;
+    const urls = new Set([`/static/${typePrefix}/${remainder}`]);
+    urls.add(`/static/${typePrefix}/${remainder.replace("/ui/", "/")}`);
+    return [...urls];
+}
+
+await rm(outputRoot, { recursive: true, force: true });
+await mkdir(assetRoot, { recursive: true });
+const sourceFiles = (await walk(path.join(repositoryRoot, "src")))
+    .filter((filePath) => /\.(?:css|js)$/.test(filePath))
+    .filter(
+        (filePath) =>
+            !filePath.includes("/tests/") && !filePath.endsWith(".test.js"),
+    )
+    .filter(
+        (filePath) =>
+            filePath.includes("/src/ui/") ||
+            (/\/src\/(?:gateways|adapters|modules)\//.test(filePath) &&
+                filePath.includes("/ui/")),
+    );
+const resolvableFiles = await walk(path.join(repositoryRoot, "src"));
+const logicalSourcePaths = new Map();
+for (const filePath of resolvableFiles) {
+    for (const logicalUrl of logicalUrls(filePath))
+        logicalSourcePaths.set(logicalUrl, filePath);
+}
+for (const filePath of await walk(
+    path.join(repositoryRoot, "src", "ui", "public"),
+)) {
+    const publicRelativePath = path
+        .relative(path.join(repositoryRoot, "src", "ui", "public"), filePath)
+        .split(path.sep)
+        .join("/");
+    logicalSourcePaths.set(`/static/${publicRelativePath}`, filePath);
+}
+const importedSourcePaths = new Set();
+for (const sourcePath of sourceFiles) {
+    const contents = await readFile(sourcePath, "utf8");
+    for (const match of contents.matchAll(
+        /(?:\bfrom\s*|\bimport\s*\(|\bimport\s*|@import\s+(?:url\()?)["']([^"']+)["']/g,
+    )) {
+        const specifier = match[1];
+        const importedPath = specifier.startsWith("/static/")
+            ? logicalSourcePaths.get(specifier)
+            : specifier.startsWith(".")
+              ? path.resolve(path.dirname(sourcePath), specifier)
+              : undefined;
+        if (importedPath) importedSourcePaths.add(importedPath);
+    }
+}
+const forcedEntryPaths = new Set();
+for (const htmlPath of (await walk(path.join(repositoryRoot, "src"))).filter(
+    (filePath) => filePath.endsWith(".html"),
+)) {
+    const html = await readFile(htmlPath, "utf8");
+    for (const match of html.matchAll(
+        /(?:src|href)=["'](\/static\/[^"']+)["']/g,
+    )) {
+        const sourcePath = logicalSourcePaths.get(match[1]);
+        if (sourcePath && /\.(?:css|js)$/.test(sourcePath)) {
+            forcedEntryPaths.add(sourcePath);
+        }
+    }
+}
+for (const descriptorPath of resolvableFiles.filter(
+    (filePath) =>
+        /\.(?:js|ts)$/.test(filePath) && !filePath.includes("/tests/"),
+)) {
+    const contents = await readFile(descriptorPath, "utf8");
+    for (const match of contents.matchAll(
+        /(?:scriptUrl\s*:\s*|registerNavbarPlugin(?:\?\.)?\s*\(\s*)["'](\/static\/[^"']+\.js)["']/g,
+    )) {
+        const sourcePath = logicalSourcePaths.get(match[1]);
+        if (sourcePath) forcedEntryPaths.add(sourcePath);
+    }
+}
+const entrySourcePaths = sourceFiles.filter(
+    (filePath) =>
+        forcedEntryPaths.has(filePath) ||
+        filePath.startsWith(path.join(repositoryRoot, "src/ui/reuse/")) ||
+        filePath.startsWith(
+            path.join(repositoryRoot, "src/ui/styles/reuse/"),
+        ) ||
+        !importedSourcePaths.has(filePath),
+);
+const entryPoints = Object.fromEntries(
+    entrySourcePaths.map((filePath, index) => [`entry-${index}`, filePath]),
+);
+const result = await build({
+    entryPoints,
+    outdir: assetRoot,
+    bundle: true,
+    splitting: true,
+    format: "esm",
+    minify: true,
+    sourcemap: false,
+    metafile: true,
+    entryNames: "[name]-[hash]",
+    chunkNames: "chunks/[name]-[hash]",
+    assetNames: "media/[name]-[hash]",
+    loader: { ".png": "file", ".svg": "file", ".webp": "file", ".ttf": "file" },
+    plugins: [
+        {
+            name: "cognis-static-assets",
+            setup(buildContext) {
+                buildContext.onResolve({ filter: /^\/static\// }, (args) => {
+                    const resolvedPath = logicalSourcePaths.get(args.path);
+                    return resolvedPath ? { path: resolvedPath } : undefined;
+                });
+            },
+        },
+    ],
+});
+const manifest = {};
+for (const [outputPath, metadata] of Object.entries(result.metafile.outputs)) {
+    if (!metadata.entryPoint) continue;
+    const emittedUrl = `/${path.relative(outputRoot, path.resolve(repositoryRoot, outputPath)).split(path.sep).join("/")}`;
+    for (const logicalUrl of logicalUrls(
+        path.resolve(repositoryRoot, metadata.entryPoint),
+    )) {
+        manifest[logicalUrl] = emittedUrl;
+    }
+}
+for (const sourcePath of resolvableFiles.filter(
+    (file) =>
+        /\/languages\/[^/]+\/strings\.xml$/.test(file) &&
+        !file.includes("/tests/"),
+)) {
+    const bytes = await readFile(sourcePath);
+    const digest = createHash("sha256")
+        .update(bytes)
+        .digest("hex")
+        .slice(0, 8)
+        .toUpperCase();
+    const emittedUrl = `/assets/locale-${digest}.xml`;
+    await writeFile(path.join(outputRoot, emittedUrl), bytes);
+    for (const logicalUrl of logicalUrls(sourcePath))
+        manifest[logicalUrl] = emittedUrl;
+}
+await cp(
+    path.join(repositoryRoot, "src", "ui", "public"),
+    path.join(outputRoot, "public"),
+    { recursive: true },
+);
+await cp(
+    path.join(repositoryRoot, "src", "ui", "public", "assets"),
+    assetRoot,
+    { recursive: true },
+);
+await writeFile(
+    path.join(outputRoot, "asset-manifest.json"),
+    `${JSON.stringify(manifest, null, 2)}\n`,
+);
+for (const htmlPath of (await walk(path.join(outputRoot, "public"))).filter(
+    (filePath) => filePath.endsWith(".html"),
+)) {
+    const html = rewriteHtmlAssets(await readFile(htmlPath, "utf8"), manifest);
+    await writeFile(htmlPath, html);
+}
+if (manifest["/static/app/offline/index.js"]) {
+    // Prepare public bundles without executing pages or fetching private data.
+    const offlineAssets = new Set([
+        ...Object.values(manifest),
+        "/static/languages/en/strings.xml",
+        "/static/templates/dashboard-layout.html",
+        "/static/assets/reuse/license.en.md",
+        "/static/assets/reuse/clipboard.svg",
+        "/static/assets/icons/cognis-logo.webp",
+        "/static/assets/icons/cognis-icon-192.png",
+        "/static/assets/icons/cognis-icon-384.png",
+        "/static/assets/icons/cognis-icon-512.png",
+        "/static/assets/icons/cognis-header-512.png",
+    ]);
+    const visitedOutputs = new Set();
+    function includeOfflineOutput(outputPath) {
+        if (visitedOutputs.has(outputPath)) return;
+        visitedOutputs.add(outputPath);
+        const metadata = result.metafile.outputs[outputPath];
+        if (!metadata) throw new Error(`Missing offline output: ${outputPath}`);
+        offlineAssets.add(
+            `/${path.relative(outputRoot, path.resolve(repositoryRoot, outputPath)).split(path.sep).join("/")}`,
+        );
+        for (const dependency of metadata.imports ?? []) {
+            if (!dependency.external && dependency.kind !== "dynamic-import")
+                includeOfflineOutput(dependency.path);
+        }
+    }
+    for (const outputPath of Object.keys(result.metafile.outputs)) {
+        includeOfflineOutput(outputPath);
+    }
+    for (const sourceUrl of [
+        "/static/styles/fonts.css",
+        "/static/styles/page-builder.css",
+        "/static/styles/reuse/page-sections.css",
+        "/static/styles/error.css",
+        "/static/styles/popup.css",
+        "/static/styles/license.css",
+        "/static/styles/reuse/buttons.css",
+        "/static/styles/reuse/floating-window.css",
+        ...COMMON_STYLESHEETS.map((name) => `/static/styles/reuse/${name}`),
+    ]) {
+        offlineAssets.add(sourceUrl);
+        if (manifest[sourceUrl]) offlineAssets.add(manifest[sourceUrl]);
+    }
+    for (const url of logicalSourcePaths.keys()) {
+        if (/\/languages\/[^/]+\/strings\.xml$/.test(url))
+            offlineAssets.add(url);
+    }
+    for (const flag of await walk(
+        path.join(repositoryRoot, "src", "ui", "public", "assets", "flags"),
+    )) {
+        if (flag.endsWith(".svg"))
+            offlineAssets.add(`/static/assets/flags/${path.basename(flag)}`);
+    }
+    async function includeStyleDependencies(asset) {
+        if (!asset.endsWith(".css")) return;
+        const sourcePath = logicalSourcePaths.get(asset);
+        if (!sourcePath) return;
+        const stylesheet = await readFile(sourcePath, "utf8");
+        for (const match of stylesheet.matchAll(
+            /url\(\s*["']?([^"')\s]+)["']?\s*\)/g,
+        )) {
+            const resolved = new URL(
+                match[1],
+                `https://offline.invalid${asset}`,
+            );
+            if (
+                resolved.origin !== "https://offline.invalid" ||
+                !resolved.pathname.startsWith("/static/")
+            )
+                continue;
+            const dependency = resolved.pathname;
+            if (offlineAssets.has(dependency)) continue;
+            offlineAssets.add(dependency);
+            await includeStyleDependencies(dependency);
+        }
+    }
+    for (const asset of [...offlineAssets])
+        await includeStyleDependencies(asset);
+    await writeFile(
+        path.join(outputRoot, "public", "offline-manifest.json"),
+        JSON.stringify([...offlineAssets]),
+    );
+    const workerPath = path.join(outputRoot, "public", "sw.js");
+    const workerSource = await readFile(workerPath, "utf8");
+    const offlineResources = [JSON.stringify(manifest)];
+    for (const asset of offlineAssets) {
+        const sourcePath =
+            logicalSourcePaths.get(asset) ?? path.join(outputRoot, asset);
+        offlineResources.push(await readFile(sourcePath));
+    }
+    offlineResources.push(
+        await readFile(
+            path.join(outputRoot, "public", "pages", "offline.html"),
+        ),
+    );
+    await writeFile(
+        workerPath,
+        versionOfflineWorker(workerSource, offlineResources),
+    );
+}
+
+const emittedFiles = await walk(outputRoot);
+await Promise.all(
+    emittedFiles
+        .filter((filePath) =>
+            /\.(?:css|html|js|json|mjs|svg|webmanifest|xml)$/.test(filePath),
+        )
+        .flatMap(async (filePath) => {
+            const contents = await readFile(filePath);
+            return Promise.all([
+                writeFile(`${filePath}.br`, await compressBrotli(contents)),
+                writeFile(`${filePath}.gz`, await compressGzip(contents)),
+            ]);
+        }),
+);
+console.log(
+    `Built ${Object.keys(manifest).length} production UI asset mappings.`,
+);

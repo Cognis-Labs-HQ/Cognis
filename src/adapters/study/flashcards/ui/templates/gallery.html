@@ -1,0 +1,154 @@
+<template data-deck-template="browser">
+    <header class="study-deck-browser-header">
+        <h2>{title}</h2>
+        <button
+            type="button"
+            class="btn-neutral"
+            data-deck-action="add"
+            aria-label="{create_label}"
+        >
+            +
+        </button>
+    </header>
+    <div class="library-filters study-browse-filters">{browse_controls}</div>
+    <div class="study-deck-browser">{previews}</div>
+</template>
+
+<template data-deck-template="preview">
+    <article class="study-deck-preview">
+        <button type="button" class="btn-neutral" data-deck-open="{id}">
+            <span class="study-deck-preview-source">{source}</span>
+            <strong>{name}</strong>
+            <span class="study-deck-preview-meta">
+                <span>{count} {cards_label}{language}</span>
+                <span>{due_label}</span>
+            </span>
+        </button>
+        {favourite}
+    </article>
+</template>
+
+<template data-deck-template="detail">
+    <header class="study-deck-browser-header">
+        <button type="button" class="btn-neutral" data-deck-action="browse">
+            {back_label}
+        </button>
+        <div class="study-deck-actions">
+            <span data-deck-favourite>{favourite}</span>{export_action}
+        </div>
+    </header>
+    <h2>{name}</h2>
+    <div class="study-deck-actions">{editable_actions}</div>
+    <div class="study-practice-summary">{summary}</div>
+    <div data-study-session></div>
+</template>
+
+<template data-deck-template="edit-actions">
+    <span data-deck-share></span>
+    <button type="button" class="btn-neutral" data-deck-action="edit">
+        {edit_label}
+    </button>
+    <button type="button" class="btn-cancel" data-deck-action="delete">
+        {delete_label}
+    </button>
+</template>
+
+<template data-deck-template="export">
+    <button
+        type="button"
+        class="btn-neutral"
+        data-deck-action="export"
+        aria-label="{export_label}"
+        title="{export_label}"
+    >
+        <span class="study-export-icon" aria-hidden="true"></span>
+    </button>
+</template>
+
+<template data-deck-template="practice">
+    <section
+        class="study-practice study-practice--{mode}{long_content}"
+        data-practice
+    >
+        <div class="study-practice-heading">
+            {writing_navigation}{favourite}{entry_heading}
+        </div>
+        <div class="study-practice-modes">{modes}{reading_hint}</div>
+        <div
+            class="study-practice-feedback"
+            data-practice-feedback
+            role="status"
+            aria-live="polite"
+            hidden
+        ></div>
+        <div data-practice-task>{task}</div>
+        <section class="study-flashcard-answer" data-practice-answer hidden>
+            {answer}
+        </section>
+        {reading_navigation}
+    </section>
+</template>
+
+<template data-deck-template="mode">
+    <label class="study-practice-mode-preference"
+        >{label}<select class="theme-select" data-practice-mode-preference>
+            <option value="reading">{reading}</option>
+            <option value="writing">{writing}</option>
+        </select></label
+    >
+</template>
+
+<template data-deck-template="practice-navigation">
+    <div class="study-practice-navigation">
+        <button
+            type="button"
+            class="btn-neutral"
+            data-practice-previous
+            aria-label="{previous_label}"
+            title="{previous_label}"
+        >
+            {previous_content}
+        </button>
+        <button
+            type="button"
+            class="btn-neutral"
+            data-practice-next
+            aria-label="{next_label}"
+            title="{next_label}"
+        >
+            {next_content}
+        </button>
+    </div>
+</template>
+
+<template data-deck-template="completion">
+    <section class="study-deck-completion" aria-live="polite">
+        <span class="study-deck-completion-check" aria-hidden="true"></span>
+        <h3>{message}</h3>
+        <div class="study-deck-actions">
+            <button type="button" class="btn-neutral" data-deck-action="browse">
+                {home_label}
+            </button>
+            {retry_action}
+        </div>
+    </section>
+</template>
+
+<template data-deck-template="completion-retry">
+    <button type="button" class="btn-confirm" data-practice-restart>
+        {retry_label}
+    </button>
+</template>
+
+<template data-deck-template="practice-hint">
+    <button
+        type="button"
+        class="btn-neutral study-practice-hint"
+        data-reading-hint
+        aria-label="{hint_label}"
+        title="{hint_label}"
+        aria-pressed="false"
+    >
+        ?
+    </button>
+</template>

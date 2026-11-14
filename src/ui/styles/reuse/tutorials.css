@@ -1,0 +1,172 @@
+.tutorial-layer,
+.tutorial-actions {
+    --tutorial-accent: var(--accent-2, #46b69b);
+}
+
+.tutorial-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 1800;
+    pointer-events: none;
+}
+.tutorial-callout {
+    position: fixed;
+    width: min(24rem, calc(100vw - 16px));
+    box-sizing: border-box;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    background: rgb(from var(--surface) r g b / 1);
+    color: var(--text);
+    box-shadow: 0 8px 32px #0005;
+    pointer-events: auto;
+    overflow: auto;
+    overflow-wrap: anywhere;
+    animation: tutorial-appear 150ms ease-out;
+}
+.tutorial-callout h2 {
+    margin: 6px 0;
+    font-size: 1.1em;
+}
+.tutorial-callout p {
+    margin: 8px 0;
+}
+.tutorial-progress {
+    color: var(--text-muted, var(--text));
+    font-size: 0.85em;
+}
+.tutorial-actions.floating-toolbar {
+    box-sizing: border-box;
+    z-index: 1801;
+    pointer-events: auto;
+    flex-wrap: wrap;
+    justify-content: center;
+    overflow: auto;
+}
+.page-context h1:has(> .tutorial-help) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    max-width: 100%;
+}
+.tutorial-help.btn-neutral {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text);
+    font-size: 1rem;
+    flex-shrink: 0;
+    vertical-align: middle;
+}
+.tutorial-help.btn-neutral:hover:not(:disabled),
+.tutorial-help.btn-neutral:focus-visible {
+    background: var(--surface-soft);
+    border-color: var(--border);
+}
+.tutorial-help.btn-neutral:focus-visible {
+    outline: 2px solid var(--accent-2, var(--accent));
+    outline-offset: 2px;
+}
+.tutorial-help-icon {
+    display: block;
+    width: 1.125rem;
+    height: 1.125rem;
+    background: currentColor;
+    mask: url("/static/assets/reuse/icons/tutorial-help.svg") center / contain
+        no-repeat;
+}
+.tutorial-shade {
+    position: fixed;
+    inset: 0;
+    background: #0006;
+    pointer-events: none;
+}
+.tutorial-spotlight {
+    position: fixed;
+    box-sizing: border-box;
+    border: 3px solid var(--tutorial-accent);
+    border-radius: 8px;
+    pointer-events: none;
+}
+.tutorial-arrow {
+    position: fixed;
+    width: 0;
+    height: 0;
+    border: 8px solid transparent;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+.tutorial-callout:focus-visible {
+    outline: 2px solid var(--tutorial-accent);
+    outline-offset: 3px;
+}
+@keyframes tutorial-appear {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .tutorial-callout {
+        animation: none;
+    }
+}
+
+.tutorial-arrow[data-side="top"] {
+    border-top-color: var(--tutorial-accent);
+}
+.tutorial-arrow[data-side="bottom"] {
+    border-bottom-color: var(--tutorial-accent);
+}
+.tutorial-arrow[data-side="left"] {
+    border-left-color: var(--tutorial-accent);
+}
+.tutorial-arrow[data-side="right"] {
+    border-right-color: var(--tutorial-accent);
+}
+
+.tutorial-body {
+    overflow: auto;
+    min-height: 0;
+}
+
+.tutorial-callout .tutorial-offscreen {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+.tutorial-actions .tutorial-next-prompt {
+    animation: tutorial-next-breathe 2s ease-in-out infinite;
+}
+@keyframes tutorial-next-breathe {
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 transparent;
+    }
+    50% {
+        box-shadow: 0 0 0 7px
+            color-mix(in srgb, var(--tutorial-accent) 30%, transparent);
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .tutorial-actions .tutorial-next-prompt {
+        animation: none;
+    }
+}

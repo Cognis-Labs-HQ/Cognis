@@ -1,0 +1,21 @@
+# Geführte Anleitungen
+
+Diese Anleitungen erklären die verfügbaren Aktionen dieser Komponente.
+
+## Anleitung verwenden
+
+Öffnen Sie eine der folgenden Seiten für eine noch nicht abgeschlossene Anleitung. Über das ? neben dem Seitentitel wiederholen Sie eine abgeschlossene Anleitung; Überspringen beendet die Wiederholung.
+
+## Technische Spezifikation
+
+| Seite / Bereich                           | Anleitung             | Zugriff               |
+| ----------------------------------------- | --------------------- | --------------------- |
+| `^/study/(?:[a-z-]+/)?flashcards(?:/\|$)` | Karteikartenanleitung | Angemeldeter Nutzer   |
+| Flashcards · `[data-study-deck]`          | Stapel verwalten      | Angemeldeter Benutzer |
+| Flashcards · `[data-practice]`            | Mit einem Stapel üben | Angemeldeter Benutzer |
+
+Anleitungen registrieren sich über die öffentliche Capability `ui:tutorials` mit komponenteneigenen Definitionen, Katalogen, Zielen und Lebenszyklus-Signalen. Seiten, sichtbare Bereiche und Zugriffsrechte bestimmen die Verfügbarkeit. Das Entfernen der Komponente gibt ihre Anleitungen frei. Darstellung und Abschluss beschreibt der [Tutorial-Vertrag des Hosts](/docs/tutorials).
+
+Die Verwaltungsanleitung verwendet den ausgewählten Stapel als Grenze und umfasst Bearbeiten, Teilen und Exportieren. In der Stapelliste bleibt sie nicht verfügbar.
+
+Die Übungsanleitung behandelt Aufgabe und Rückmeldung. Lesen oder Schreiben wählen Sie nach Abschluss über das normale schwebende Menü; während der Anleitung steht dessen Auswahl nicht bereit.
