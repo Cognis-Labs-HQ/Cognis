@@ -139,7 +139,14 @@ export function createCalendarCoreRoutes({
                 req.method === "PATCH" ||
                 req.method === "DELETE")
         ) {
-            const claims = ctx.requireAuth(req, res, "user");
+            const guestClaims = await ctx.getCapability<
+                (req: IncomingMessage) => Promise<{
+                    sub: string;
+                    role: "user";
+                    purpose: "share";
+                } | null>
+            >("share:getGuestClaims")?.(req);
+            const claims = guestClaims ?? ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const calendarId = decodeURIComponent(sharedEventsMatch[1]);
             const resolveGuestAccess = ctx.getCapability?.<

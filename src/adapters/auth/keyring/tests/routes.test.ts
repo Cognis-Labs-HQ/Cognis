@@ -206,3 +206,48 @@ test("keyring API purges a vault from a previous account instance", async (conte
     assert.match(response.payload, /"vault":null/);
     assert.match(response.payload, /"accountInstanceId":"current-instance"/);
 });
+
+test("guest keyrings require live Share admission and stay bound to the authenticated subject", async (context) => {
+    const fixture = createRouteFixture(context);
+    const reads: string[] = [];
+    let live = true;
+    const route = createKeyringRoutes({
+        routeContext: {
+            requireAuth: (_request, response) => {
+                response.writeHead(401);
+                response.end();
+                return null;
+            },
+        },
+        getGuestClaims: async () =>
+            live ? { sub: "share:fixture:guest", role: "user" } : null,
+        store: {
+            ensureSchema: async () => {},
+            get: async (account) => {
+                reads.push(account);
+                return null;
+            },
+            set: async () => {},
+            delete: async () => {},
+        },
+        getAccountInstanceId: async (account) => `instance:${account}`,
+    });
+    const request = fixture.makeJsonRequest("GET", {});
+    const response = fixture.makeResponse();
+    await route(
+        request,
+        response.res,
+        new URL("http://localhost/api/v1/auth/keyring"),
+    );
+    assert.equal(response.status, 200);
+    assert.deepEqual(reads, ["share:fixture:guest"]);
+    live = false;
+    const denied = fixture.makeResponse();
+    await route(
+        request,
+        denied.res,
+        new URL("http://localhost/api/v1/auth/keyring"),
+    );
+    assert.equal(denied.status, 401);
+    assert.equal(reads.length, 1);
+});

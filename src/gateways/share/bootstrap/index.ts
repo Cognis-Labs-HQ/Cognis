@@ -1,3 +1,4 @@
+import { registerGuestCredentialAccess } from "./credential-access.js";
 import { requireBootstrapScope, type Ctx } from "@cognis/core";
 import { createShareMaintenance } from "./maintenance.js";
 import type { RegisterNotificationAction } from "../../../adapters/notify/smtp/contracts/action-delivery.js";
@@ -221,6 +222,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         gateway.buildAbsoluteUrl.bind(gateway),
     );
 
+    registerGuestCredentialAccess(ctx, gateway);
+    const getActiveGuestGrant = async (shareId: string) => {
+        const record = await gateway.getTokenById(shareId);
+        return record && !gateway.isTokenExpired(record) ? record : null;
+    };
     ctx.capabilities.contribute("share:resolveGuestId", resolveShareGuestId);
     ctx.capabilities.contribute(
         "share:resolveGuestSessionId",
@@ -237,7 +243,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ) =>
             resolveShareGuestAccess({
                 ...options,
-                getTokenById: gateway.getTokenById.bind(gateway),
+                getTokenById: getActiveGuestGrant,
                 getGuestProfile: gateway.getGuestProfile.bind(gateway),
             }),
     );
@@ -251,7 +257,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ) =>
             resolveShareDelegatedAccess({
                 ...options,
-                getTokenById: gateway.getTokenById.bind(gateway),
+                getTokenById: getActiveGuestGrant,
                 getGuestProfile: gateway.getGuestProfile.bind(gateway),
                 runDelegationFlow: (flowInput) =>
                     ctx.flow.run("resolve-share-delegated-access", flowInput),

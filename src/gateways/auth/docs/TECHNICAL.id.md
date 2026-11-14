@@ -196,6 +196,10 @@ Format token tersimpan 2 mewajibkan kolom keamanan eksplisit dan menolak format 
 
 Kapabilitas auth:revokeSetupPendingAccessTokens tidak menerima argumen dan mencabut semua sesi tertunda; pengecualian berdasarkan akun tidak lagi didukung.
 
+### Cakupan Kredensial
+
+Operasi akun memerlukan sesi akun yang terverifikasi. Operasi sumber daya bersama memverifikasi kredensial tamu secara eksplisit dan memeriksa kembali izin berbagi saat ini sebelum menerapkan izin sumber daya. Nama akun tidak menentukan jenis kredensial. Akses yang dicabut atau kedaluwarsa ditolak.
+
 ## Keamanan
 
 Autentikasi memvalidasi kredensial sebelum sesi dan TFA wajib. Otorisasi akun, peran, dan sumber daya tetap terpisah; penolakan keyring tidak mengubah identitas.

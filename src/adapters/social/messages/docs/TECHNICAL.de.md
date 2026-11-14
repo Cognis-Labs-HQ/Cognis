@@ -126,6 +126,10 @@ Die Nachrichtenseite löst Raumschlüssel über den Schlüsselbundbereich `Socia
 
 Rollen und Sichtbarkeitsdeklarationen sozialer Profile entsprechen jetzt den gespeicherten Datensätzen. Nachrichten- und Profilrouten behalten ihre Berechtigungsprüfungen bei; Rückrufe, Benachrichtigungen und Datenbankbefehle verwenden explizite Verträge. Fehlt die Auflösung der Gastsitzung, schlägt der Vorgang weiterhin vor dem Lesen des Gastprofils fehl.
 
+### Geltungsbereich der Anmeldung
+
+Kontoaktionen erfordern bestätigte Kontositzungen. Aktionen für freigegebene Ressourcen prüfen Gastanmeldungen ausdrücklich und kontrollieren die aktuelle Freigabe vor den Ressourcenberechtigungen. Kontonamen bestimmen niemals den Anmeldetyp. Widerrufener oder abgelaufener Zugriff wird abgelehnt.
+
 ## Sicherheit
 
 Raumzugang, Mitgliedschaft und Nachrichtenlesen werden getrennt geprüft. Verschlüsselte Räume benötigen Clientschlüssel; das Bedrohungsmodell unterscheidet Inhalte von sichtbaren Routingdaten.

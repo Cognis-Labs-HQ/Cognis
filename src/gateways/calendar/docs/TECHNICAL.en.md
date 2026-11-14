@@ -98,6 +98,10 @@ View buttons update their visible selection and pressed state together for every
 
 Calendar event, persistence, bootstrap and adapter HTTP contracts now describe the implemented behavior. ICS and CalDAV retain their existing permissions, passphrase handling and feed formats.
 
+### Credential Scope
+
+Account operations require verified account sessions. Shared-resource operations explicitly verify guest credentials and recheck the current grant before applying resource permissions. Account names never determine credential type. Revoked or expired access is denied.
+
 ## Security
 
 Calendar mutations require owned or delegated edit access. Share resolution checks current scope, expiry and protection; reminder delivery uses its bootstrap-registered notification category rather than registering during requests.

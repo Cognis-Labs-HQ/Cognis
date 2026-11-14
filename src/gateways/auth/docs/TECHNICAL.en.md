@@ -196,6 +196,10 @@ Persisted token format 2 requires explicit security fields and rejects unsupport
 
 The auth:revokeSetupPendingAccessTokens capability takes no arguments and revokes all pending sessions; subject exemptions are no longer supported.
 
+### Credential Scope
+
+Account operations require verified account sessions. Shared-resource operations explicitly verify guest credentials and recheck the current grant before applying resource permissions. Account names never determine credential type. Revoked or expired access is denied.
+
 ## Security
 
 Authentication validates primary credentials before session issuance and any required TFA challenge. Account, role and resource authorization remain separate; keyring unlock refusal must not create or switch account identity.

@@ -208,7 +208,6 @@ export function createOfflineOutbox({
                 !actor.account ||
                 !actor.session ||
                 !current(actor) ||
-                actor.account.startsWith("share:") ||
                 !allowed() ||
                 !handlers.has(owner)
             )

@@ -166,6 +166,10 @@ Tujuan yang tidak tersedia tetap terlihat dengan gaya nonaktif yang sama pada na
 
 Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
 
+### Identitas Sesi
+
+Aktivitas pribadi dan status tersimpan menggunakan sesi akun terverifikasi, termasuk nama akun yang diawali `share:`. Pembatasan tamu mengikuti tujuan kredensial terverifikasi, bukan nama atau penanda peramban. Pengiriman luring tetap memeriksa sesi terverifikasi, akun, dan instans.
+
 ## Keamanan
 
 ### Akses Dashboard dan Study

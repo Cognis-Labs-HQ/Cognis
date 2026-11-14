@@ -200,6 +200,10 @@ Das gespeicherte Tokenformat 2 verlangt explizite Sicherheitsfelder und verwirft
 
 Die Capability auth:revokeSetupPendingAccessTokens akzeptiert keine Argumente und widerruft alle ausstehenden Sitzungen; Ausnahmen für einzelne Konten werden nicht mehr unterstützt.
 
+### Geltungsbereich der Anmeldung
+
+Kontoaktionen erfordern bestätigte Kontositzungen. Aktionen für freigegebene Ressourcen prüfen Gastanmeldungen ausdrücklich und kontrollieren die aktuelle Freigabe vor den Ressourcenberechtigungen. Kontonamen bestimmen niemals den Anmeldetyp. Widerrufener oder abgelaufener Zugriff wird abgelehnt.
+
 ## Sicherheit
 
 Authentifizierung prüft Zugangsdaten vor Sitzung und nötiger TFA. Konto-, Rollen- und Inhaltsrechte bleiben getrennt; verweigerte Schlüsselbundfreigabe ändert keine Identität.

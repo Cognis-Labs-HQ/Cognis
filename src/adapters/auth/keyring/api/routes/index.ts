@@ -35,6 +35,9 @@ export function createKeyringRoutes(input: {
     routeContext: KeyringRouteContext;
     store: KeyringVaultStore;
     getAccountInstanceId(accountId: string): Promise<string>;
+    getGuestClaims?: (
+        req: IncomingMessage,
+    ) => Promise<{ sub: string; role: string } | null>;
     purgeDependentAccountData?: (accountId: string) => Promise<void>;
     getPolicy?: () => {
         maxVaultBytes: number;
@@ -48,7 +51,9 @@ export function createKeyringRoutes(input: {
 }): KeyringRouteHandler {
     return async (req, res, url): Promise<boolean> => {
         if (url.pathname !== "/api/v1/auth/keyring") return false;
-        const claims = input.routeContext.requireAuth(req, res, "user");
+        const guest = await input.getGuestClaims?.(req);
+        const claims =
+            guest ?? input.routeContext.requireAuth(req, res, "user");
         if (!claims) return true;
         const accountId = claims.sub.trim().toLowerCase();
         const maxVaultBytes = boundedVaultBytes(

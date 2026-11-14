@@ -150,6 +150,10 @@ Unavailable destinations stay visible with the same disabled styling in the prim
 
 See the [shared contract](/docs/api/technical) for this behavior.
 
+### Session Identity
+
+Personal activity and saved state use verified account sessions, including account names beginning with `share:`. Guest restrictions follow verified credential purpose rather than names or browser markers. Offline delivery retains its verified-session, account and instance checks.
+
 ## Security
 
 ### Honor Study Authentication

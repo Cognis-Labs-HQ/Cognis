@@ -52,7 +52,7 @@ test("auth gateway exposes authenticated session state through ui ctx", () => {
     );
     assert.match(
         SESSION_FLOW_SOURCE,
-        /Boolean\(localStorage\.getItem\("cognis_access_token"\)\)[\s\S]*Boolean\(localStorage\.getItem\("cognis_account"\)\)[\s\S]*!isGuestSession\(\)/,
+        /sessionIdentity\.get\(\)\?\.purpose === "session"[\s\S]*sessionIdentity\.get\(\)\?\.sub === localStorage\.getItem\("cognis_account"\)/,
     );
 });
 

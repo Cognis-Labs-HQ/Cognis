@@ -112,6 +112,10 @@ Pos yang diterbitkan langsung tampil, dan penghapusan memperbarui linimasa tanpa
 
 Tipe peran dan visibilitas profil sesuai dengan rekaman tersimpan, termasuk akun moderator serta visibilitas privat, teman, dan komunitas. Pembacaan preferensi menyediakan teks JSON tersimpan. Pengujian penyimpanan menggunakan simulasi basis data terstruktur milik profil dengan dukungan rollback.
 
+### Cakupan Kredensial
+
+Operasi akun memerlukan sesi akun yang terverifikasi. Operasi sumber daya bersama memverifikasi kredensial tamu secara eksplisit dan memeriksa kembali izin berbagi saat ini sebelum menerapkan izin sumber daya. Nama akun tidak menentukan jenis kredensial. Akses yang dicabut atau kedaluwarsa ditolak.
+
 ## Keamanan
 
 ### Privasi akun dan isolasi keyring

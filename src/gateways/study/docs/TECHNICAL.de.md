@@ -160,6 +160,10 @@ Nicht verfügbare Ziele bleiben in der Hauptnavigation, im Benutzermenü und im 
 
 Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
 
+### Sitzungsidentität
+
+Persönliche Aktivitäten und gespeicherte Zustände verwenden bestätigte Kontositzungen, auch bei Kontonamen mit `share:`. Gastbeschränkungen richten sich nach dem bestätigten Zweck der Anmeldung statt nach Namen oder Browsermarkierungen. Die Offline-Übertragung behält ihre Prüfungen für bestätigte Sitzungen, Konten und Instanzen bei.
+
 ## Sicherheit
 
 ### Study-Authentifizierung beachten

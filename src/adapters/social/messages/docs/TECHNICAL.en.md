@@ -202,6 +202,10 @@ The Messages page resolves room keys through the `Social Messages` keyring scope
 
 Social profile roles and visibility declarations now match stored records. Messages and profile routes retain their authorization checks while their callbacks, notification envelopes and database commands use explicit contracts. Missing guest-session resolution still fails before a guest profile is read.
 
+### Credential Scope
+
+Account operations require verified account sessions. Shared-resource operations explicitly verify guest credentials and recheck the current grant before applying resource permissions. Account names never determine credential type. Revoked or expired access is denied.
+
 ## Security
 
 Room eligibility, membership changes and message reads are authorized independently. Encrypted rooms depend on client-held keys; the threat model below distinguishes protected content from visible routing metadata.

@@ -104,6 +104,10 @@ Share 1.9.9 deklariert die Token-Felder der Erstellungs-, Änderungs- und Listen
 
 Synthetische Tests prüfen gespeicherte Token-Ergebnisse, abgewiesene Änderungen durch Nicht-Eigentümer und die Bereinigung von Gastprofilen. Empfänger-, Passwort-, Adapter- und Ablaufprüfungen behalten ihr bisheriges Verhalten.
 
+### Geltungsbereich der Anmeldung
+
+Kontoaktionen erfordern bestätigte Kontositzungen. Aktionen für freigegebene Ressourcen prüfen Gastanmeldungen ausdrücklich und kontrollieren die aktuelle Freigabe vor den Ressourcenberechtigungen. Kontonamen bestimmen niemals den Anmeldetyp. Widerrufener oder abgelaufener Zugriff wird abgelehnt.
+
 ## Sicherheit
 
 ### Sicherheitsgrenze

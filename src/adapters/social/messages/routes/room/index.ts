@@ -27,8 +27,18 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
         );
         if (!roomMatch) return false;
 
-        const claims = ctx.requireAuth(req, res, "user");
+        const guestClaims = await ctx.getCapability<
+            (
+                req: IncomingMessage,
+            ) => Promise<{ sub: string; role: "user"; purpose: "share" } | null>
+        >("share:getGuestClaims")?.(req);
+        const claims = guestClaims ?? ctx.requireAuth(req, res, "user");
         if (!claims) return true;
+        if (claims.purpose !== "session" && claims.purpose !== "share") {
+            res.writeHead(403, { "content-type": "application/json" });
+            res.end(JSON.stringify({ error: { code: "forbidden" } }));
+            return true;
+        }
         const accountId = claims.sub;
         const hasBypass = hasAdminBypass(claims.role);
         const roomId = roomMatch[1];
@@ -41,7 +51,7 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
         const resolveShareGuestSessionId = ctx.getCapability<
             (claims: { sub?: string }) => string
         >("share:resolveGuestSessionId");
-        const shareGuestId = resolveShareGuestId?.({ sub: accountId }) ?? "";
+        const shareGuestId = resolveShareGuestId?.(claims) ?? "";
         const authorizeExternalRoomAccess = ctx.getCapability<
             (input: {
                 claims: { sub: string; role: string };
@@ -82,9 +92,7 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                       }),
                   ])
                 : [null, null];
-        const isShareGuest = Boolean(
-            shareGuestId || externalReadAccess?.external,
-        );
+        const isShareGuest = claims.purpose === "share";
         const isAllowedShareGuest =
             isShareGuest && externalReadAccess?.authorized === true;
         const hasMeetingChatAccess = (
@@ -93,7 +101,10 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
             capability === "chat:write"
                 ? externalWriteAccess?.authorized === true
                 : externalReadAccess?.authorized === true;
-        if (!member && !isAllowedShareGuest) {
+        if (
+            (isShareGuest && !isAllowedShareGuest) ||
+            (!member && !isAllowedShareGuest)
+        ) {
             res.writeHead(403, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({

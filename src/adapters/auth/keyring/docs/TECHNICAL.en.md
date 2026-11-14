@@ -80,6 +80,10 @@ Keyring Settings reads current state when the section is shown, including its fi
 
 Keyring configuration declares its own string bundle and localized labels for maximum vault size and password derivation iterations. The shared Administration popup resolves these labels through the same XML resources as the adapter.
 
+### Credential Scope
+
+Account operations require verified account sessions. Shared-resource operations explicitly verify guest credentials and recheck the current grant before applying resource permissions. Account names never determine credential type. Revoked or expired access is denied.
+
 ## Security
 
 ### Account privacy and keyring isolation

@@ -1,12 +1,13 @@
 import "./external-profile-sync.js";
+import { createSessionIdentityClient } from "./session-identity.js";
 /**
  * Auth-gateway default hooks for the `authenticate-session` and `load-page`
  * client-side flows.
  *
  * Registers stage hooks on the shared `uiCtx` singleton:
  *
- * `validate-stored-token` — reads the JWT and account from localStorage,
- *   calls `/api/v1/users/:account/info` via apiFetch, and clears stale auth
+ * `validate-stored-token` — verifies credential purpose through Auth,
+ *   reads account information via apiFetch, and clears stale auth
  *   storage on failure. Returns `{ valid, reason, accountId, role }`.
  *
  * `enforce-setup-requirements` — when the token is valid, calls
@@ -44,21 +45,17 @@ let sessionExpiryNavigationPending = false;
 const accountInfoByAccount = new Map();
 let verifiedOfflineSession = null;
 
+const sessionIdentity = createSessionIdentityClient(apiFetch, () =>
+    localStorage.getItem("cognis_access_token"),
+);
+uiCtx.capabilities.contribute("session:verifyIdentity", sessionIdentity.verify);
+uiCtx.capabilities.contribute(
+    "session:getVerifiedIdentity",
+    sessionIdentity.get,
+);
+
 function isGuestSession() {
-    const accountId = String(
-        localStorage.getItem("cognis_account") ?? "",
-    ).trim();
-    const providerId = String(localStorage.getItem("cognis_provider_id") ?? "")
-        .trim()
-        .toLowerCase();
-    const role = String(localStorage.getItem("cognis_role") ?? "")
-        .trim()
-        .toLowerCase();
-    return (
-        accountId.startsWith("share:") ||
-        ["guest", "share"].includes(providerId) ||
-        role === "guest"
-    );
+    return sessionIdentity.get()?.purpose === "share";
 }
 
 uiCtx.capabilities.contribute("session:isGuest", isGuestSession);
@@ -91,9 +88,8 @@ uiCtx.capabilities.contribute("session:getOfflineIdentity", () =>
 uiCtx.capabilities.contribute(
     "session:isAuthenticated",
     () =>
-        Boolean(localStorage.getItem("cognis_access_token")) &&
-        Boolean(localStorage.getItem("cognis_account")) &&
-        !isGuestSession(),
+        sessionIdentity.get()?.purpose === "session" &&
+        sessionIdentity.get()?.sub === localStorage.getItem("cognis_account"),
 );
 
 uiCtx.capabilities.contribute(
@@ -102,7 +98,16 @@ uiCtx.capabilities.contribute(
 );
 
 function getFirstResult(stageResults, stageId) {
-    return (stageResults[stageId] ?? [])[0] ?? null;
+    return (
+        (stageResults[stageId] ?? []).find((result) => result != null) ?? null
+    );
+}
+
+function isStoredSessionCurrent(token, account) {
+    return (
+        token === localStorage.getItem("cognis_access_token") &&
+        account === localStorage.getItem("cognis_account")
+    );
 }
 
 function clearStoredSession({
@@ -110,6 +115,7 @@ function clearStoredSession({
     skipKeyring = false,
 } = {}) {
     verifiedOfflineSession = null;
+    sessionIdentity.clear();
     if (!skipKeyring) {
         const keyringAction = clearKeyring
             ? uiCtx.capabilities.get("keyring:clearAccountState")
@@ -169,18 +175,8 @@ uiCtx.extendFlow(
     async () => {
         const token = localStorage.getItem("cognis_access_token");
         const account = localStorage.getItem("cognis_account");
-        const usesAlternateSession =
-            uiCtx.capabilities.get("session:isGuest")?.() === true;
-        if (usesAlternateSession) {
-            return { valid: false, reason: "session_expired" };
-        }
-        if (!token || !account) {
-            if (!token) {
-                // No token at all — full clear to ensure no partial stale state.
-                clearStoredSession();
-            }
-            // Token present without account = guest/share token; let
-            // apply-alternate-auth handle it without wiping the token.
+        if (!token) {
+            clearStoredSession();
             return { valid: false, reason: "session_expired" };
         }
         const offlineSession = () => {
@@ -190,12 +186,29 @@ uiCtx.extendFlow(
         };
         if (isOffline()) return offlineSession();
         try {
+            const identity = await sessionIdentity.verify(token);
+            if (!isStoredSessionCurrent(token, account))
+                return { valid: false, reason: "session_changed" };
+            if (identity?.purpose === "share")
+                return {
+                    valid: false,
+                    reason: "guest_session",
+                    purpose: "share",
+                };
+            if (identity?.purpose !== "session" || identity.sub !== account) {
+                clearStoredSession();
+                return { valid: false, reason: "session_expired" };
+            }
             const response = await apiFetch(
                 "/api/v1/users/" + encodeURIComponent(account) + "/info",
                 { suppressAccessDeniedEvent: true },
             );
+            if (!isStoredSessionCurrent(token, account))
+                return { valid: false, reason: "session_changed" };
             if (response.ok) {
                 const payload = await response.json().catch(() => null);
+                if (!isStoredSessionCurrent(token, account))
+                    return { valid: false, reason: "session_changed" };
                 if (payload?.data) {
                     accountInfoByAccount.set(account, payload.data);
                 }
@@ -207,7 +220,8 @@ uiCtx.extendFlow(
                     valid: true,
                     reason: null,
                     accountId: account,
-                    role: localStorage.getItem("cognis_role") ?? "user",
+                    role: identity.role,
+                    purpose: identity.purpose,
                 };
                 const previous =
                     verifiedOfflineSession?.token === token &&
@@ -235,6 +249,8 @@ uiCtx.extendFlow(
                 return { valid: false, reason: "session_expired" };
             }
         } catch {
+            if (!isStoredSessionCurrent(token, account))
+                return { valid: false, reason: "session_changed" };
             if (isOffline()) return offlineSession();
             return { valid: false, reason: null };
         }
@@ -256,6 +272,12 @@ uiCtx.extendFlow(
             stageCtx.stageResults,
             "apply-alternate-auth",
         );
+        if (alternateResult?.reason === "session_changed")
+            return {
+                requiresSetup: false,
+                redirectTo: null,
+                reason: "session_changed",
+            };
         if (alternateResult?.isGuestSession === true)
             return { requiresSetup: false, redirectTo: null };
         if (!tokenResult?.valid && !alternateResult?.authenticated) {
@@ -277,20 +299,23 @@ uiCtx.extendFlow(
             authSetupCacheExpiresAt = Date.now() + AUTH_SETUP_CACHE_TTL_MS;
             return { requiresSetup: false, redirectTo: null };
         }
+        const snapshot = verifiedOfflineSession;
+        const token = localStorage.getItem("cognis_access_token");
+        const account = localStorage.getItem("cognis_account");
+        const isCurrent = () =>
+            isStoredSessionCurrent(token, account) &&
+            verifiedOfflineSession === snapshot;
+        const changedSession = {
+            requiresSetup: false,
+            redirectTo: null,
+            reason: "session_changed",
+        };
         try {
-            const snapshot = verifiedOfflineSession;
             const response = await apiFetch("/api/v1/auth/setup-status");
+            if (!isCurrent()) return changedSession;
             if (!response.ok) throw new Error("setup_status_unavailable");
             const data = (await response.json())?.data;
-            if (
-                snapshot &&
-                (snapshot.token !== verifiedOfflineSession?.token ||
-                    snapshot.account !== verifiedOfflineSession?.account ||
-                    snapshot.token !==
-                        localStorage.getItem("cognis_access_token") ||
-                    snapshot.account !== localStorage.getItem("cognis_account"))
-            )
-                throw new Error("setup_session_changed");
+            if (!isCurrent()) return changedSession;
             if (
                 typeof data?.accountInstanceId !== "string" ||
                 !data.accountInstanceId.trim()
@@ -317,14 +342,15 @@ uiCtx.extendFlow(
                     throw new Error("invalid_setup_integration");
                 }
                 const client = await import(scriptUrl.href);
-                await client.enforceSetup({
-                    accountId: localStorage.getItem("cognis_account"),
-                });
+                if (!isCurrent()) return changedSession;
+                await client.enforceSetup({ accountId: account });
+                if (!isCurrent()) return changedSession;
             }
             if (verifiedOfflineSession)
                 verifiedOfflineSession.setupKnown = true;
             authSetupRequiredCached = data?.requiresSetup === true;
         } catch (error) {
+            if (!isCurrent()) return changedSession;
             if (
                 isOffline() &&
                 verifiedOfflineSession?.ready &&
@@ -370,6 +396,23 @@ uiCtx.extendFlow(
             stageCtx.stageResults,
             "enforce-setup-requirements",
         );
+
+        if (
+            tokenResult?.reason === "session_changed" ||
+            alternateResult?.reason === "session_changed" ||
+            setupResult?.reason === "session_changed"
+        ) {
+            return {
+                authenticated: false,
+                accountId: null,
+                role: null,
+                requiresRedirect: false,
+                redirectTo: null,
+                shareContext: null,
+                isGuestSession: false,
+                failureReason: "session_changed",
+            };
+        }
 
         if (setupResult?.requiresSetup && setupResult.redirectTo) {
             return {
