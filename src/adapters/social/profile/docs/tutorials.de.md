@@ -21,3 +21,5 @@ Beiträge haben ein eigenes Listenziel, auch bei sichtbarem Editor. Sozialaktion
 Identität und Sozialaktionen stehen vor den aufeinanderfolgenden Beitrags- und Vorschauschritten.
 
 Im eigenen Profil öffnet Profil bearbeiten Ihre Angaben. Bei einem Speicherfehler bleiben Ihre Änderungen zum Korrigieren und erneuten Versuchen erhalten.
+
+Profilfotos bleiben sichtbar, während Zahlen und Details aktualisiert werden. Öffnen Sie das Profil nach einem fehlgeschlagenen Bildabruf erneut; eine bestätigte Entfernung löscht nur das ausgewählte Bild. Der Identitätsschritt behält sein Ziel, seinen Ablauf und seine Abschlusskennung.

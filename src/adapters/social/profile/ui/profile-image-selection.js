@@ -1,4 +1,9 @@
-export function createProfileImageSelection({ onFileSelected, onError }) {
+export function createProfileImageSelection({
+    onFileSelected,
+    onError,
+    signal,
+    isCurrent,
+}) {
     const pendingSelections = new Set();
 
     function createFileInput() {
@@ -11,14 +16,14 @@ export function createProfileImageSelection({ onFileSelected, onError }) {
     }
 
     function requestSelection(kind, fileInput) {
-        if (pendingSelections.has(kind)) return;
+        if (!isCurrent() || pendingSelections.has(kind)) return;
         pendingSelections.add(kind);
         window.addEventListener(
             "focus",
             () => {
                 window.setTimeout(() => pendingSelections.delete(kind), 0);
             },
-            { once: true },
+            { once: true, signal },
         );
         fileInput.click();
     }
@@ -31,21 +36,30 @@ export function createProfileImageSelection({ onFileSelected, onError }) {
         ["avatar", inputs.avatarFileInput],
         ["banner", inputs.bannerFileInput],
     ]) {
-        input.addEventListener("change", async () => {
-            const file = input.files?.[0];
-            try {
-                if (file) await onFileSelected(kind, file);
-            } catch (error) {
-                onError(error);
-            } finally {
-                input.value = "";
-                pendingSelections.delete(kind);
-            }
-        });
+        input.addEventListener(
+            "change",
+            async () => {
+                if (!isCurrent()) return;
+                const file = input.files?.[0];
+                try {
+                    if (file) await onFileSelected(kind, file);
+                } catch (error) {
+                    if (error?.code === "missing_translation") throw error;
+                    onError(error);
+                } finally {
+                    input.value = "";
+                    pendingSelections.delete(kind);
+                }
+            },
+            { signal },
+        );
     }
     return {
         ...inputs,
-        clearPendingSelection: (kind) => pendingSelections.delete(kind),
+        dispose: () => {
+            pendingSelections.clear();
+            for (const input of Object.values(inputs)) input.remove();
+        },
         requestSelection,
     };
 }

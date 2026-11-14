@@ -264,3 +264,37 @@ test("renderer readiness notifications revoke before registry removal and recove
     assert.equal(retained.available, true);
     assert.equal(changes.at(-1).available, true);
 });
+
+for (const loaded of [false, true]) {
+    test(`identity invalidation after allocation releases abandoned cache URLs; prior image=${loaded}`, async (context) => {
+        const state = avatarFixture(context);
+        await state.ready;
+        const key = "alice/avatar-one";
+        let previous;
+        if (loaded) {
+            previous = await state.avatar.readProfileAvatar(key);
+            state.advance(60_001);
+            state.setRequest(async () => new Response("changed-image"));
+        }
+        let abandoned;
+        state.setAfterAllocate((url) => {
+            abandoned = url;
+            state.window.localStorage.setItem(
+                "cognis_access_token",
+                "different-token",
+            );
+            state.avatar.getAvatarContext();
+        });
+        const result = await state.avatar.readProfileAvatar(key);
+        assert.equal(result.state, "stale");
+        assert.equal(
+            state.revoked.filter((url) => url === abandoned).length,
+            1,
+        );
+        if (previous)
+            assert.equal(
+                state.revoked.filter((url) => url === previous.blobUrl).length,
+                1,
+            );
+    });
+}

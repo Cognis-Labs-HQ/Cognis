@@ -21,3 +21,5 @@ Posting memakai target daftar tersendiri meski editor terlihat. Sorotan aksi sos
 Identitas dan aksi sosial muncul sebelum langkah posting dan pratinjau yang berurutan.
 
 Pada profil Anda sendiri, Edit Profil membuka detail Anda. Jika penyimpanan gagal, perubahan tetap tersedia untuk diperbaiki dan dicoba kembali.
+
+Foto profil tetap terlihat saat jumlah dan detail diperbarui. Buka kembali profil untuk mencoba ulang pembaruan gambar yang gagal; penghapusan yang dikonfirmasi hanya menghapus gambar terpilih. Langkah identitas mempertahankan target, urutan, dan identitas penyelesaiannya.

@@ -35,7 +35,7 @@ test("profile media and layout preferences load concurrently", () => {
 
     assert.match(
         source,
-        /Promise\.all\(\[\s*loadImageAsBlob\(profile\?\.avatarKey\),\s*loadImageAsBlob\(profile\?\.bannerKey\),\s*loadBannerLayoutPreference\(profile\?\.accountId\),/m,
+        /Promise\.all\(\[\s*media\.read\(profile\),\s*loadBannerLayoutPreference\(profile\?\.accountId\),/m,
     );
 });
 

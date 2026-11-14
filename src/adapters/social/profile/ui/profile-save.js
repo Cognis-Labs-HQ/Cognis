@@ -71,6 +71,7 @@ export async function saveProfileFields(
         refreshProfileCards(["hero", "social-links", "posts-new"]);
         bindProfileHeroEvents();
     } catch (error) {
+        if (error?.code === "missing_translation") throw error;
         log("error", "[profile] saved profile view refresh failed", error);
     }
     void updateNavbarAvatar().catch((error) =>
