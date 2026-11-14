@@ -14,6 +14,10 @@ Settings cancellation uses the protected dismissal callback supplied to onOpen; 
 
 The injected adapter popup wrapper owns the captured tutorial signal from the start of each opening. It requests protected dismissal on abort even when no later tutorial target has attached, including custom editors that do not consume the signal themselves. Cancellation during popup preparation is checked again at onOpen, and listeners are removed when the editor settles.
 
+## Preserve Settings Ownership Through Enablement
+
+Module Settings captures the tutorial branch before temporarily enabling a disabled module and passes that same signal through configuration preparation. Cancelling during enablement prevents a late editor and restores the disabled state. If protected dismissal is declined in a custom adapter editor, later page changes continue initializing normally without repeating the cancellation request.
+
 ## Commits
 
 - [ad94587](https://github.com/Cognis-Labs-HQ/Cognis/commit/ad945875c919d504058437aab92449d254d79aa8)

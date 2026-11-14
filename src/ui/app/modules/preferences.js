@@ -80,12 +80,17 @@ export function readModulePreferenceValues(
     );
 }
 
-export async function openModulePreferences(module, labels) {
+export async function openModulePreferences(
+    module,
+    labels,
+    { signal: lifetime } = {
+        signal: uiCtx.capabilities
+            .get("ui:moduleTutorialTargets")
+            ?.settingsSignal(module.id),
+    },
+) {
     const definitions = module.ui?.preferences ?? [];
     if (!definitions.length) return;
-    const lifetime = uiCtx.capabilities
-        .get("ui:moduleTutorialTargets")
-        ?.settingsSignal(module.id);
     if (lifetime?.aborted) return null;
     const values = await loadModuleConfig(module.id);
     if (lifetime?.aborted) return null;

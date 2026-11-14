@@ -676,6 +676,9 @@ function bindInteractions(root, signal) {
                     (entry) => entry.uuid === target.dataset.modulePreferences,
                 );
                 if (module) {
+                    const settingsSignal = uiCtx.capabilities
+                        .get("ui:moduleTutorialTargets")
+                        ?.settingsSignal(module.id);
                     const wasDisabled = module.status !== "enabled";
                     if (wasDisabled) {
                         const enabled = await enableModuleWithIntegrityCheck(
@@ -689,6 +692,7 @@ function bindInteractions(root, signal) {
                         didSave = await openModulePreferences(
                             module,
                             modulePreferenceLabels(i18n),
+                            { signal: settingsSignal },
                         );
                     } finally {
                         if (wasDisabled && !didSave) {

@@ -245,3 +245,52 @@ test("closing an editor releases the captured abort listener", async () => {
     branch.abort();
     assert.equal(dismissals, 0);
 });
+
+for (const asynchronous of [false, true]) {
+    test(`kept custom editors initialize later pages after cancellation (${asynchronous ? "asynchronous" : "synchronous"} protection)`, async () => {
+        const branch = new AbortController();
+        const editor = surface();
+        let options;
+        let settle;
+        let dismissals = 0;
+        const pages = [];
+        const openSettings = createAdapterSettingsPopup(
+            (input) => {
+                options = input;
+                return new Promise((resolve) => {
+                    settle = resolve;
+                    input.onOpen(
+                        editor,
+                        () => {
+                            dismissals++;
+                            return asynchronous
+                                ? Promise.resolve(false)
+                                : false;
+                        },
+                        { pageId: "home" },
+                    );
+                });
+            },
+            { ...identity, signal: branch.signal },
+        );
+        const pending = openSettings({
+            closeProtection: true,
+            onOpen: (_overlay, _dismiss, api) => pages.push(api.pageId),
+        });
+        branch.abort();
+        await Promise.resolve();
+        for (const pageId of ["server", "review", "home"])
+            options.onOpen(
+                editor,
+                () => {
+                    dismissals++;
+                    return false;
+                },
+                { pageId },
+            );
+        assert.deepEqual(pages, ["home", "server", "review", "home"]);
+        assert.equal(dismissals, 1);
+        settle("cancel");
+        await pending;
+    });
+}

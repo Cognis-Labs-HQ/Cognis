@@ -14,6 +14,10 @@ Pembatalan pengaturan memakai callback penutupan terlindungi dari onOpen; reques
 
 Pembungkus popup adaptor yang disuntikkan memiliki sinyal tutorial sejak pembukaan dimulai. Saat dibatalkan, pembungkus meminta penutupan terlindungi meskipun target tutorial berikutnya belum terpasang, termasuk editor khusus yang tidak memakai sinyal sendiri. Pembatalan selama persiapan diperiksa lagi pada onOpen, dan listener dihapus setelah editor selesai.
 
+## Pertahankan Ikatan Pengaturan Saat Aktivasi
+
+Pengaturan modul menangkap cabang tutorial sebelum mengaktifkan sementara modul yang dinonaktifkan dan meneruskan sinyal yang sama selama persiapan konfigurasi. Pembatalan saat aktivasi mencegah editor terbuka terlambat dan mengembalikan status nonaktif. Jika pengguna menolak penutupan terlindungi pada editor adaptor khusus, perpindahan halaman berikutnya tetap diinisialisasi secara normal tanpa mengulangi permintaan pembatalan.
+
 ## Komit
 
 - [ad94587](https://github.com/Cognis-Labs-HQ/Cognis/commit/ad945875c919d504058437aab92449d254d79aa8)

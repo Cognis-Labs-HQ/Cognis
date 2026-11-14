@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import vm from "node:vm";
 
-async function popupFixture(runActions, request, signal) {
+async function popupFixture(runActions, request, signal, capturedSignal) {
     const inputs = new Map();
     const children = [];
     const revoked = [];
@@ -108,6 +108,7 @@ async function popupFixture(runActions, request, signal) {
             },
         },
         { i18n: { t: (key) => key } },
+        ...(capturedSignal ? [{ signal: capturedSignal }] : []),
     );
     return { inputs, children, revoked, failures, paused, dismissed };
 }
@@ -158,4 +159,17 @@ test("tutorial branch cancellation dismisses the owned settings surface", async 
         controller.signal,
     );
     assert.equal(result.dismissed, 1);
+});
+
+test("a captured aborted signal prevents preferences preparation after the registry binding is removed", async () => {
+    const branch = new AbortController();
+    branch.abort();
+    const result = await popupFixture(
+        () => assert.fail("cancelled settings must not open"),
+        () => assert.fail("cancelled settings must not run actions"),
+        undefined,
+        branch.signal,
+    );
+    assert.equal(result.inputs.size, 0);
+    assert.equal(result.dismissed, 0);
 });

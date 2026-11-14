@@ -18,6 +18,7 @@ export function createAdapterSettingsPopup(
         const lifetime = new AbortController();
         let surface;
         let dismissSurface;
+        let initialized = false;
         const cancel = () => dismissSurface?.();
         signal?.addEventListener("abort", cancel, { once: true });
         try {
@@ -43,9 +44,12 @@ export function createAdapterSettingsPopup(
                         surface = overlay;
                     }
                     dismissSurface = dismiss;
-                    if (signal?.aborted) {
-                        dismiss();
-                        return;
+                    if (!initialized) {
+                        initialized = true;
+                        if (signal?.aborted) {
+                            dismiss();
+                            return;
+                        }
                     }
                     options.onOpen?.(overlay, dismiss, api);
                 },

@@ -52,7 +52,11 @@ test("adapter config opener reports when an adapter has no settings popup", asyn
     });
 
     assert.equal(
-        await popup.openAdapterConfig("Adapter", { configUrl: "/config" }),
+        await popup.openAdapterConfig("Adapter", {
+            configUrl: "/config",
+            gatewayId: "auth",
+            adapterId: "example",
+        }),
         false,
     );
     assert.equal(popupOpened, false);
@@ -129,6 +133,8 @@ for (const englishAvailable of [true, false]) {
         });
         const result = popup.openAdapterConfig("Provider", {
             configUrl: "/config",
+            gatewayId: "auth",
+            adapterId: "example",
         });
         if (englishAvailable) {
             assert.equal(await result, true);
