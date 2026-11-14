@@ -26,6 +26,8 @@ Invitation policy and enabled registration providers determine who may create ac
 
 The command-line contributions `invite:create`, `invite:list` and `invite:state` call the declared HTTP operations. Invitation redemption validates the token and registration policy before account creation.
 
+The invitation options guide explains recipient correction. Send Invite Email uses a required email field with localized feedback and returns focus to the field when correction is needed. Create invite and Enter share validation. Closing the dialog discards the unfinished recipient; reopening starts empty. Registration tokens and invitation history keep their existing controls.
+
 Invitation redemption uses POST /api/v1/registration/redeem with a JSON object containing token, username, password and optional email and displayName. The gateway forwards the complete input to the invitation provider. That provider owns token validation, account creation and redemption persistence; its failures propagate to the route’s error handling. Public registration uses registration:public:isEnabled for availability and registration:public:register for execution. Disabled gateways reject execution with gateway_disabled; an unavailable public provider rejects it with public_disabled. Availability is checked at execution time. Bootstrap registers these capabilities and extends existing gateAccountCreation and constructRegistrationUi flows through ctx. Callers consume these surfaces rather than importing concrete adapters.
 
 ### Restricted Completion
@@ -44,7 +46,13 @@ A failed registration-configuration composition returns registration_configurati
 
 ### Password Form Labels
 
-Registration 1.2.9 uses the host-owned `ui.reuse.password_requirements` and `ui.reuse.passwords_match` keys, shared with Security. Deploy the matching host UI catalogs and update integrations consuming these labels to the shared keys. Preferred-language values fall back to the same English XML keys; absent or empty English values fail explicitly. The public registration page remains outside authenticated tutorials; invitation and policy guide controls are unchanged.
+Registration 1.2.10 uses the host-owned `ui.reuse.password_requirements` and `ui.reuse.passwords_match` keys, shared with Security. Deploy the matching host UI catalogs and update integrations consuming these labels to the shared keys. Preferred-language values fall back to the same English XML keys; absent or empty English values fail explicitly. The public registration page remains outside authenticated tutorials; invitation and policy guide controls are unchanged.
+
+## Invitation Email Validation
+
+Send Invite Email collects the recipient through the shared form builder and native email validity. Missing or malformed input stays in the dialog, receives a localized toast and an associated field error, and cannot invoke invitation creation. Correcting the input clears its error association. A valid address is trimmed before the existing client request; server validation, permitted domains, duplicate-invitation responses and authorization remain authoritative. Repeated actions share one pending attempt. Leaving the page dismisses the email form and suppresses later creation callbacks, feedback and history refreshes; a request already sent is not rolled back.
+
+Missing preferred-language validation text uses the English value for the same key. If that value is unavailable, the page propagates the explicit missing-translation error rather than reporting an invitation transport failure. Each opening owns unique form and field identities so labels and error descriptions stay attached to the active form while a dismissed dialog finishes closing.
 
 ## Security
 
