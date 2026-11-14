@@ -88,7 +88,7 @@
   <string name="module.social.messages.tutorial.messages.rooms.title">ルーム</string>
   <string name="module.social.messages.tutorial.messages.rooms.body">サイドバーで会話を選ぶか、新しい会話を始めます。</string>
   <string name="module.social.messages.tutorial.messages.room.history.title">ルームの履歴</string>
-  <string name="module.social.messages.tutorial.messages.room.history.body">会話を読み、参加者と未処理のリクエストを確認します。</string>
+  <string name="module.social.messages.tutorial.messages.room.history.body">会話を読み、参加者と未処理のリクエストを確認します。新しいメッセージやリアクションが届いても本文を選択でき、位置を保ちながら過去のメッセージを読み込めます。</string>
   <string name="module.social.messages.tutorial.messages.compose.and.preview.title">作成とプレビュー</string>
   <string name="module.social.messages.tutorial.messages.compose.and.preview.body">送信前に下書きとプレビューを確認します。通話は専用の操作から利用します。</string>
   <string name="module.social.messages.tutorial.messages.start.room.title">会話を始める</string>

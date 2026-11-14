@@ -81,3 +81,23 @@ Unread badges change only after a successful read-status acknowledgement. A fail
 Background update failures show a localized notice and retain the current drafts. Repeated failures are logged, but the notice is shown again only after recovery or a new conversation selection. Late failures from a room or account you have left cannot show stale send errors, start follow-up reads, or interrupt the current conversation. Leaving and reopening Messages also ends the old view’s pending updates.
 
 Reaction changes and Load Earlier keep their results within the conversation where they started. Current failures show a localized update notice and are logged without message contents; failures from a room, account or page you have left are ignored. These actions do not retry automatically. The Preview tutorial covers formatting, links and line breaks; it does not describe attachments.
+
+## Stable Message Selection
+
+Selecting unchanged message text keeps the same DOM range, including its direction and offsets, when incoming messages, reactions or reader metadata update the thread. This applies to all three message styles and selections spanning adjacent messages. If the selected text itself changes or disappears, native selection rules apply; the client does not restore stale text.
+
+Load Earlier retains already loaded messages while live updates arrive. Server-page fullness and pagination cursors exclude locally queued messages. Duplicate pages do not duplicate rows. Scrolled-up views retain their anchor, while views near the bottom follow new content. Room, account, key, style and remount changes establish a separate view.
+
+An acknowledged reaction on an older visible message updates its active state immediately, including durable offline queuing. The existing message-list contract then refreshes that message’s page for reaction metadata without replacing unchanged bodies. A failed refresh reports the current update error while retaining the acknowledged state and selected text, for both recent and older messages; it does not retry the mutation.
+
+Real-DOM regression tests use the exact, test-only jsdom development dependency, compatible with the repository’s supported Node version. They exercise the exported renderer, DOM nodes, Range/Selection, interaction payloads and actual offline projection. Supplied geometry tests the scroll policy; these tests do not measure browser layout, touch selection or clipboard behavior.
+
+Queued projections have their own request order, independent of remote history merging. A late response cannot remove newer queued messages, resurrect cleared pending work, or replace an acknowledged row with its queued copy. Unchanged polls advance that order too. Discarding a response’s queued projection invalidates its signature so the next poll can reconcile fresh data.
+
+Latest-page requests also retain their publication order. A late live response cannot remove newer acknowledged messages or replace newer metadata. Older latest snapshots are discarded; explicit history requests still merge. Stale failures leave newer published content intact.
+
+Reads and acknowledged reactions share the current view’s ordering. Overlapping historical reads retain newer per-message metadata, and a complete live page prevents an older read from resurrecting absent rows. Full limited pages do not infer absence at their oldest tied timestamp; `before` remains exclusive. Coverage exists only while older reads are active: overlapping ranges with the same authority relative to those reads coalesce, then disappear when the reads finish. A stalled read therefore does not accumulate one range per poll. Superseded follow-up read errors stay silent; current read errors and failed mutations remain visible.
+
+The scoped client’s `x-cognis-read-source` header distinguishes a new transport (`live`), a subscriber to an already-started transport (`shared`), and a stored or restored snapshot (`cached`). Shared and cached remote rows cannot overwrite displayed metadata or delete loaded rows. They may fill a missing older prefix unless a live result established its end. An empty cached prefix ends currently readable history, not server history; a later live result can reopen it. Queued projections still reconcile separately. Source-tagged signatures let genuinely fresh responses update retained metadata even when their payload matches an older snapshot.
+
+The renderer returns an explicit obsolete outcome when its room, account, key, style or container ownership has changed. Action, room-opening and background-refresh callers stop without error notices, read-status writes or typing follow-ups for that outcome; current read failures remain distinct.

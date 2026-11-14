@@ -23,3 +23,5 @@ Room management is excluded from the path and count until a room header is avail
 The room-history step covers the same conversation region in the default, speech-bubble and IRC styles. Messages wrap within that region while preserving authored line breaks and Markdown. The guide keeps its existing targets, sequence and completion identity.
 
 The message-input step explains that you can start the next draft while a message sends. Only the submitted version clears after acknowledgement or durable queuing; newer edits remain. The input and preview keep their separate targets and existing order.
+
+The room-history step explains selecting text during conversation updates and loading earlier messages while retaining your place. Its region, sequence, completion identity and access rules are unchanged.
