@@ -103,4 +103,14 @@
   <string name="ui.app.modules.source_save_failed">The module source could not be saved. Your changes are still available in this form.</string>
   <string name="ui.app.modules.source_refresh_failed">The source was saved, but the source list could not be refreshed. Reopen Settings to retry.</string>
   <string name="ui.app.modules.credential_storage_unavailable">Shared credentials require a persistent server encryption key. Configure DATA_ENCRYPTION_KEY and try again.</string>
+  <string name="ui.app.modules.outcome_unknown">The result is not confirmed. Check the current state before trying again.</string>
+  <string name="ui.app.modules.recheck_state">Check State</string>
+  <string name="ui.app.modules.state_reconciled">The current module state was confirmed. Review its settings before continuing.</string>
+  <string name="ui.app.modules.state_refresh_failed">The current module state could not be refreshed. Check it again before continuing.</string>
+  <string name="ui.app.modules.lifecycle_failed">The module action was rejected. Review its requirements and try again.</string>
+  <string name="ui.app.modules.guidance_unavailable">Module enabled, but setup guidance could not be opened. Review the module settings.</string>
+  <string name="ui.tutorial.marketplace.check.state.title">Check the Module State</string>
+  <string name="ui.tutorial.marketplace.check.state.body">If a response is lost, the result may be uncertain. Check State reads the current module state without repeating the action. Wait for confirmation before continuing. An unconfirmed installation stays blocked because a current state snapshot cannot prove the job finished.</string>
+  <string name="ui.app.modules.setup_unconfirmed">The module state is known, but setup completion is not confirmed. Review and save its settings, or disable and enable it, before continuing with dependent modules.</string>
+  <string name="ui.app.modules.installation_unknown">The installation result is not confirmed. Do not repeat the installation or re-enable the module. Check State refreshes its current state but cannot confirm whether the installation job finished.</string>
 </resources>

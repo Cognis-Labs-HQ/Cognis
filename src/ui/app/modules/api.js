@@ -2,6 +2,10 @@ import { uiCtx } from "../../reuse/ui-ctx.js";
 import { apiFetch } from "../../reuse/api-client.js";
 
 const MODULE_INSTALL_POLL_MS = 500;
+const uncertainMutations = new WeakMap();
+
+export const moduleMutationUncertainty = (error) =>
+    uncertainMutations.get(error);
 
 async function data(response) {
     if (!response.ok) {
@@ -22,9 +26,14 @@ async function data(response) {
 }
 
 /** Revalidate displayed marketplace state without downloading unchanged catalogs. */
-export async function loadMarketplaceState(etag, { signal } = {}) {
+export async function loadMarketplaceState(
+    etag,
+    { signal, timeoutMs, suppressConnectionRecoveryToast = false } = {},
+) {
     const response = await apiFetch("/api/v1/modules/marketplace-state", {
         signal,
+        timeoutMs,
+        suppressConnectionRecoveryToast,
         cache: "no-store",
         headers: etag ? { "if-none-match": etag } : {},
     });
@@ -161,53 +170,107 @@ export async function loadModuleAsset(assetUrl, { signal } = {}) {
     }
 }
 
-export async function installModule(module, branch, wasEnabled) {
-    const job = await data(
-        await apiFetch("/api/v1/modules/install", {
+export async function installModule(
+    module,
+    branch,
+    wasEnabled,
+    { isCurrent = () => true } = {},
+) {
+    const check = () => {
+        if (!isCurrent()) throw new Error("module_authority_changed");
+    };
+    let accepted = false;
+    let postStatus;
+    let terminal = false;
+    check();
+    try {
+        const response = await apiFetch("/api/v1/modules/install", {
             method: "POST",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({ module, branch, wasEnabled }),
             suppressConnectionRecoveryToast: true,
-        }),
-    );
-    while (true) {
-        await new Promise((resolve) =>
-            setTimeout(resolve, MODULE_INSTALL_POLL_MS),
-        );
-        const response = await apiFetch(
-            `/api/v1/modules/install/${encodeURIComponent(job.jobId)}`,
-            { suppressConnectionRecoveryToast: true },
-        );
-        const result = await data(response);
-        if (result.status === "succeeded") return result.data;
+        });
+        postStatus = response.status;
+        accepted = response.ok;
+        const job = await data(response);
+        check();
+        if (typeof job?.jobId !== "string" || !job.jobId)
+            throw new Error("module_install_receipt_invalid");
+        while (true) {
+            await new Promise((resolve) =>
+                setTimeout(resolve, MODULE_INSTALL_POLL_MS),
+            );
+            check();
+            const response = await apiFetch(
+                `/api/v1/modules/install/${encodeURIComponent(job.jobId)}`,
+                {
+                    suppressConnectionRecoveryToast: true,
+                },
+            );
+            terminal = response.status === 422;
+            const result = await data(response);
+            check();
+            if (
+                result?.status === "succeeded" &&
+                result.data &&
+                typeof result.data === "object"
+            )
+                return result.data;
+            if (result?.status !== "pending")
+                throw new Error("module_install_receipt_invalid");
+        }
+    } catch (error) {
+        if (
+            isCurrent() &&
+            !terminal &&
+            (accepted || !postStatus || postStatus === 408 || postStatus >= 500)
+        )
+            uncertainMutations.set(error, {
+                moduleId: module.id,
+                kind: "installation",
+            });
+        throw error;
     }
 }
 
 export async function setModuleEnabled(
     moduleId,
     enabled,
-    { integrityAcknowledgementToken = "", preserveEnabledState = false } = {},
+    {
+        integrityAcknowledgementToken = "",
+        preserveEnabledState = false,
+        isCurrent = () => true,
+    } = {},
 ) {
-    return data(
-        await apiFetch(
-            `/api/v1/modules/${encodeURIComponent(moduleId)}/${enabled ? "enable" : "disable"}`,
-            {
-                method: "POST",
-                headers: enabled
-                    ? {
-                          "x-cognis-external-module-disclaimer": "accepted",
-                          ...(integrityAcknowledgementToken
-                              ? {
-                                    "x-cognis-module-integrity-risk": `accepted:${integrityAcknowledgementToken}`,
-                                }
-                              : {}),
-                      }
-                    : preserveEnabledState
-                      ? { "x-cognis-module-lifecycle": "temporary-update" }
-                      : undefined,
-            },
-        ),
-    );
+    if (!isCurrent()) throw new Error("module_authority_changed");
+    try {
+        return await data(
+            await apiFetch(
+                `/api/v1/modules/${encodeURIComponent(moduleId)}/${enabled ? "enable" : "disable"}`,
+                {
+                    method: "POST",
+                    suppressConnectionRecoveryToast: true,
+                    headers: enabled
+                        ? {
+                              "x-cognis-external-module-disclaimer": "accepted",
+                              ...(integrityAcknowledgementToken
+                                  ? {
+                                        "x-cognis-module-integrity-risk": `accepted:${integrityAcknowledgementToken}`,
+                                    }
+                                  : {}),
+                          }
+                        : preserveEnabledState
+                          ? { "x-cognis-module-lifecycle": "temporary-update" }
+                          : undefined,
+                },
+            ),
+        );
+    } catch (error) {
+        if (!error?.status || error.status === 408 || error.status >= 500) {
+            uncertainMutations.set(error, { moduleId, enabled });
+        }
+        throw error;
+    }
 }
 
 export async function uninstallModule(
