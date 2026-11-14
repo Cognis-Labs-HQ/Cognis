@@ -22,6 +22,4 @@ Account, method and gateway terminal operations block new admissions throughout 
 
 ## Commits
 
-- [c19e37a82295b037b6e5d5ed5661e43fcd61b95c](https://github.com/Cognis-Labs-HQ/Cognis/commit/c19e37a82295b037b6e5d5ed5661e43fcd61b95c)
-- [97ee12b302ac96abde12abd21defe5b0301fd1a0](https://github.com/Cognis-Labs-HQ/Cognis/commit/97ee12b302ac96abde12abd21defe5b0301fd1a0)
-- [9e50528ce82886865688fc082b8af3203be1a3aa](https://github.com/Cognis-Labs-HQ/Cognis/commit/9e50528ce82886865688fc082b8af3203be1a3aa)
+- [f07343ef8ff8b9d223a46758f8c91a88ffbcc588](https://github.com/Cognis-Labs-HQ/Cognis/commit/f07343ef8ff8b9d223a46758f8c91a88ffbcc588)
