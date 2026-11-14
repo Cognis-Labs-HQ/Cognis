@@ -1,3 +1,6 @@
+import { registerAuthRouteBootstrapHook as registerContinuation } from "../../bootstrap/login-continuation.js";
+import { registerAuthRouteBootstrapHook as registerAttempts } from "../../bootstrap/tfa-login-attempt-capabilities.js";
+import { createLoginAttemptRoutes } from "../../bootstrap/routes/login-attempt.js";
 import { ServerResponse } from "node:http";
 import { RouteRegistry } from "../../../../api/reuse/route-registry.js";
 import { createDefaultRouteContext } from "../../../../api/reuse/route-context.js";
@@ -26,6 +29,7 @@ export async function createLoginFixture() {
         }
     > = [];
     const state = {
+        accountId: "assurance-user",
         lifecycle: "deactivated",
         credentialsValid: true,
         readFails: false,
@@ -65,8 +69,8 @@ export async function createLoginFixture() {
         authenticate: async () =>
             state.credentialsValid
                 ? {
-                      accountId: "assurance-user",
-                      externalUserId: "assurance-user",
+                      accountId: state.accountId,
+                      externalUserId: state.accountId,
                       provider: "local",
                       role: "user",
                   }
@@ -98,8 +102,8 @@ export async function createLoginFixture() {
             },
             verify: async () => state.credentialsValid,
             getInfo: async () => ({
-                accountId: "assurance-user",
-                username: "assurance-user",
+                accountId: state.accountId,
+                username: state.accountId,
                 enabled: state.enabled,
             }),
             isFounder: async () => false,
@@ -118,6 +122,8 @@ export async function createLoginFixture() {
         root,
         "gateway:auth",
         async () => {
+            await registerAttempts({ capabilities, runtime });
+            await registerContinuation({ capabilities, runtime });
             await registerLogin(context);
             await registerCommit(context);
             await registerSessionLogin(context);
@@ -130,9 +136,33 @@ export async function createLoginFixture() {
         capabilities,
         authRouteBootstrapRuntime: runtime,
         readSecuritySettings: context.readSecuritySettings,
+        log: context.ctx.log,
     });
+    context.ctx.routeRegistry.register(
+        (req, res, url) =>
+            route(req, res, url, {
+                component: "auth",
+                method: req.method ?? "GET",
+                path: url.pathname,
+            }),
+        "auth",
+    );
+    const continuationRoute = createLoginAttemptRoutes(
+        capabilities,
+        context.ctx.log,
+    );
+    context.ctx.routeRegistry.register(
+        (req, res, url) =>
+            continuationRoute(req, res, url, {
+                component: "auth",
+                method: req.method ?? "GET",
+                path: url.pathname,
+            }),
+        "auth",
+    );
     return {
         context,
+        runtime,
         root,
         capabilities,
         gatewayRegistry,
@@ -149,27 +179,48 @@ export async function createLoginFixture() {
         },
         request: async (
             body: Record<string, unknown> = { provider: "local" },
+            options: {
+                method?: string;
+                path?: string;
+                headers?: Record<string, string>;
+            } = {},
         ) => {
-            const req = makeJsonRequest("POST", body);
+            const req = makeJsonRequest(
+                options.method ?? "POST",
+                body,
+                options.headers ?? {},
+            );
             const res = new ServerResponse(req);
+            const headers: import("node:http").OutgoingHttpHeaders = {};
+            res.writeHead = ((
+                status: number,
+                values: import("node:http").OutgoingHttpHeaders = {},
+            ) => {
+                res.statusCode = status;
+                Object.assign(headers, values);
+                return res;
+            }) as typeof res.writeHead;
             let payload = "";
             res.end = (chunk?: unknown) => {
                 payload = String(chunk ?? "");
                 return res;
             };
-            await route(
-                req,
-                res,
-                new URL("http://localhost/api/v1/auth/login"),
-                {
-                    component: "auth-gateway",
-                    method: "POST",
-                    path: "/api/v1/auth/login",
-                },
-            );
+            for (const handler of context.ctx.routeRegistry.getHandlers()) {
+                if (
+                    await handler(
+                        req,
+                        res,
+                        new URL(
+                            options.path ?? "/api/v1/auth/login",
+                            "http://localhost",
+                        ),
+                    )
+                )
+                    break;
+            }
             return {
                 status: res.statusCode,
-                headers: res.getHeaders(),
+                headers: { ...res.getHeaders(), ...headers },
                 payload,
             };
         },

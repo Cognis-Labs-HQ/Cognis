@@ -1,3 +1,4 @@
+import { createLoginContinuation } from "./continuation.js";
 import { createLoginSubmitHandler } from "./submit.js";
 import { renderInPageCallout } from "/static/reuse/in-page-callout.js";
 import {
@@ -60,6 +61,7 @@ export async function mount(root, { signal } = {}) {
     let currentTfaLoginAttemptId = null;
     let pendingKeyringPassword = "";
     let lastTfaPayload = null;
+    let applyingTfa = null;
     let passwordResetTokenHandled = false;
     let submitPasswordReset = null;
     const {
@@ -70,6 +72,26 @@ export async function mount(root, { signal } = {}) {
         loadClient: loadLoginIntegrationClient,
         i18n,
         root,
+        getAttemptId: () => currentTfaLoginAttemptId,
+        isAttemptCurrent: (id) => continuation.isAttemptCurrent(id),
+    });
+
+    const continuation = createLoginContinuation({
+        signal,
+        apply: (data, isCurrent) => handleAuthResult(data, "", isCurrent),
+        onError: (error) => {
+            console.error("[auth] login continuation failed", {
+                component: "auth",
+                operation: "resumeLogin",
+                errorName: error?.name,
+            });
+            const retry = root.querySelector("#login-continuation-retry");
+            if (retry) retry.hidden = false;
+            showToast(i18n.t("ui.app.login.error.generic"), {
+                variant: "error",
+            });
+        },
+        onCancelled: () => window.location.replace("/login"),
     });
 
     const typingSamples = await loadAuthTypingSamples(i18n);
@@ -341,27 +363,50 @@ export async function mount(root, { signal } = {}) {
         await navigateAfterLogin(data.accountId);
     }
 
-    async function handleAuthResult(data, password = "") {
+    async function handleAuthResult(
+        data,
+        password = "",
+        isCurrent = continuation.begin(),
+    ) {
+        if (!isCurrent()) return;
         if (data.tfaRequired === true || data.tfaSetupRequired === true) {
-            const tfaLoginClient = await loadTfaLoginClient();
-            if (!tfaLoginClient) {
-                showToast(i18n.t("ui.app.login.error.generic"), {
-                    variant: "error",
-                });
-                return;
-            }
-            if (data.tfaRequired === true) {
-                lastTfaPayload = data;
-                pendingKeyringPassword = password;
-                hideCredentialProviderSelector();
-                currentTfaLoginAttemptId =
-                    await tfaLoginClient.switchToTfaPrompt(data);
-            } else {
-                persistSession(data);
-                await uiCtx.runFlow("complete-login", {
-                    accountPassword: password,
-                });
-                tfaLoginClient.handleSetupRequired(() => undefined, data);
+            const preparation = {};
+            applyingTfa = preparation;
+            try {
+                if (data.tfaRequired === true) {
+                    continuation.setAttempt(data.loginAttemptId);
+                    currentTfaLoginAttemptId = data.loginAttemptId;
+                    lastTfaPayload = data;
+                    pendingKeyringPassword = password;
+                    const cancel = root.querySelector("#login-tfa-cancel");
+                    if (cancel) cancel.hidden = false;
+                }
+                const tfaLoginClient = await loadTfaLoginClient();
+                if (!isCurrent()) return;
+                if (!tfaLoginClient) throw new Error("tfa_login_unavailable");
+                if (data.tfaRequired === true) {
+                    hideCredentialProviderSelector();
+                    const sso = root.querySelector("#sso-buttons");
+                    if (sso) sso.hidden = true;
+                    const attemptId =
+                        await tfaLoginClient.switchToTfaPrompt(data);
+                    if (!isCurrent()) return;
+                    if (attemptId !== data.loginAttemptId)
+                        throw new Error("tfa_login_unavailable");
+                    currentTfaLoginAttemptId = attemptId;
+                } else {
+                    persistSession(data);
+                    await uiCtx.runFlow("complete-login", {
+                        accountPassword: password,
+                    });
+                    if (isCurrent())
+                        tfaLoginClient.handleSetupRequired(
+                            () => undefined,
+                            data,
+                        );
+                }
+            } finally {
+                if (applyingTfa === preparation) applyingTfa = null;
             }
             return;
         }
@@ -716,6 +761,8 @@ export async function mount(root, { signal } = {}) {
         <div id="login-credential-fields">${renderCredentialFields()}</div>
         <div id="login-tfa-fields" hidden></div>
         ${signupCalloutHtml}
+        <button type="button" id="login-continuation-retry" class="btn-neutral" hidden>${escapeHtml(i18n.t("ui.reuse.retry"))}</button>
+        <button type="button" id="login-tfa-cancel" class="btn-cancel" hidden>${escapeHtml(i18n.t("ui.reuse.cancel"))}</button>
         <button type="submit" id="login-form-submit">${escapeHtml(i18n.t("ui.app.login.form.submit"))}</button>
       `,
             },
@@ -765,30 +812,39 @@ export async function mount(root, { signal } = {}) {
                 onRender: () => {
                     mountAuthFooter(root, { i18n, signal });
                     resetPasswordResetMode();
+                    const isCurrent = continuation.begin();
                     if (lastTfaPayload !== null) {
-                        loadTfaLoginClient()
-                            .then(async (client) => {
-                                if (client) {
-                                    hideCredentialProviderSelector();
-                                    currentTfaLoginAttemptId =
-                                        (await client.switchToTfaPrompt(
-                                            lastTfaPayload,
-                                        )) ?? null;
-                                    return;
-                                }
-                                lastTfaPayload = null;
-                                loadLoginMethods();
-                                runTypingShowcase(typingSamples);
-                            })
-                            .catch((error) => {
-                                console.error(error);
-                                loadLoginMethods();
-                                runTypingShowcase(typingSamples);
+                        handleAuthResult(
+                            lastTfaPayload,
+                            pendingKeyringPassword,
+                            isCurrent,
+                        ).catch((error) => {
+                            console.error("[auth] login prompt failed", {
+                                errorName: error?.name,
                             });
+                            if (isCurrent())
+                                showToast(
+                                    i18n.t("ui.app.login.error.generic"),
+                                    { variant: "error" },
+                                );
+                        });
                     } else {
                         loadLoginMethods();
                         runTypingShowcase(typingSamples);
                     }
+                    root.querySelector("#login-tfa-cancel")?.addEventListener(
+                        "click",
+                        () => continuation.cancel(),
+                    );
+                    root.querySelector(
+                        "#login-continuation-retry",
+                    )?.addEventListener("click", () => {
+                        const retry = root.querySelector(
+                            "#login-continuation-retry",
+                        );
+                        if (retry) retry.hidden = true;
+                        void continuation.resume();
+                    });
                     renderLoginReasonToast();
                     document
                         .querySelector("#login-form")
@@ -809,13 +865,26 @@ export async function mount(root, { signal } = {}) {
                                 );
                             });
                         });
-                    consumePasswordResetToken().catch(() => {
-                        window.history.replaceState({}, "", "/login");
-                        showToast(i18n.t("ui.app.login.login_link.invalid"), {
-                            variant: "error",
-                            permanent: true,
+                    consumePasswordResetToken()
+                        .then(async () => {
+                            if (
+                                isCurrent() &&
+                                !isPasswordResetMode &&
+                                !passwordResetTokenHandled &&
+                                lastTfaPayload === null
+                            )
+                                await continuation.resume();
+                        })
+                        .catch(() => {
+                            window.history.replaceState({}, "", "/login");
+                            showToast(
+                                i18n.t("ui.app.login.login_link.invalid"),
+                                {
+                                    variant: "error",
+                                    permanent: true,
+                                },
+                            );
                         });
-                    });
                     document.querySelector("#login-form")?.addEventListener(
                         "submit",
                         createLoginSubmitHandler({
@@ -824,7 +893,11 @@ export async function mount(root, { signal } = {}) {
                                 submitPasswordReset,
                                 currentTfaLoginAttemptId,
                                 pendingKeyringPassword,
+                                applyingTfa:
+                                    Boolean(applyingTfa) ||
+                                    continuation.isCancelling(),
                             }),
+                            beginAttempt: continuation.begin,
                             loadTfaLoginClient,
                             finalizeAuthenticatedSession,
                             handleAuthResult,
