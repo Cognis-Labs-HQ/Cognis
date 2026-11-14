@@ -1,3 +1,4 @@
+import { loadPresentation } from "./fixtures/presentation.js";
 import * as reactionRecord from "../ui/reuse/reaction-record.js";
 import test from "node:test";
 import { JSDOM } from "jsdom";
@@ -53,6 +54,7 @@ function createRenderer(style, theme, messageList) {
         },
     );
     const commonImports = {
+        "./reuse/conversation-presentation.js": loadPresentation(),
         "/static/reuse/ui-ctx.js": { uiCtx },
         "/static/reuse/escape-html.js": { escapeHtml },
         "/static/reuse/member-display-name.js": {

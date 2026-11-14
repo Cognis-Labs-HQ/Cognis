@@ -658,7 +658,7 @@
   <string name="ui.tutorial.settings.appearance.theme.title">Farbschema</string>
   <string name="ui.tutorial.settings.appearance.theme.body">Wählen Sie das helle oder dunkle Farbschema.</string>
   <string name="ui.tutorial.settings.appearance.message.layout.title">Nachrichtenlayout</string>
-  <string name="ui.tutorial.settings.appearance.message.layout.body">Wählen Sie Ihr Nachrichtenlayout; Speichern übernimmt ausstehende Darstellungsänderungen.</string>
+  <string name="ui.tutorial.settings.appearance.message.layout.body">Probiere die Layouts aus und vergleiche die Beispielunterhaltung darunter. Speichern übernimmt deine Auswahl; Verwerfen stellt dein gespeichertes Layout wieder her.</string>
   <string name="ui.tutorial.settings.language.title">Spracheinstellungen</string>
   <string name="ui.tutorial.settings.language.available.languages.title">Verfügbare Sprachen</string>
   <string name="ui.tutorial.settings.language.available.languages.body">Ziehen Sie eine Sprache in die bevorzugte Liste. Nutzen Sie auf einem Touchscreen den Griff.</string>
@@ -769,4 +769,15 @@
   <string name="ui.tutorial.admin.status.file.integrity.title">Dateiintegrität</string>
   <string name="ui.tutorial.admin.status.file.integrity.body">Vergleichen Sie hier die Dateiprüfungen. Fehlende oder geänderte Dateien können erklären, warum eine Komponente nicht geladen wird.</string>
   <string name="ui.reuse.layout_keyboard">Mit Pfeiltasten verschieben; zum Ändern der Größe Umschalttaste halten</string>
+  <string name="ui.app.settings.message_preview_title">Beispielunterhaltung</string>
+  <string name="ui.app.settings.message_preview_participant">Beispiellernende Person</string>
+  <string name="ui.app.settings.message_preview_handle">beispiel_lernende</string>
+  <string name="ui.app.settings.message_preview_self">Beispiel: Du</string>
+  <string name="ui.app.settings.message_preview_self_handle">beispiel_du</string>
+  <string name="ui.app.settings.message_preview_text_1">Wie läuft dein Lernen?</string>
+  <string name="ui.app.settings.message_preview_text_2">Ich probiere ein neues Nachrichtenlayout aus. Dieses längere Beispiel zeigt den Textumbruch auf kleineren Bildschirmen.</string>
+  <string name="ui.app.settings.message_preview_text_3">Sieht gut aus! Bis zur nächsten Lerneinheit.</string>
+  <string name="ui.app.settings.message_preview_failed">Die Beispielunterhaltung konnte nicht angezeigt werden.</string>
+  <string name="ui.tutorial.settings.appearance.message.preview.title">Nachrichtenstile vergleichen</string>
+  <string name="ui.tutorial.settings.appearance.message.preview.body">Dieser erfundene Austausch zeigt eingehende und ausgehende Nachrichten mit Namen und Uhrzeiten. Ändere den Nachrichtenstil, um die Layouts vor dem Speichern zu vergleichen.</string>
 </resources>

@@ -658,7 +658,7 @@
   <string name="ui.tutorial.settings.appearance.theme.title">Tema</string>
   <string name="ui.tutorial.settings.appearance.theme.body">Pilih tema terang atau gelap untuk antarmuka.</string>
   <string name="ui.tutorial.settings.appearance.message.layout.title">Tata Letak Pesan</string>
-  <string name="ui.tutorial.settings.appearance.message.layout.body">Pilih tata letak pesan; Simpan menerapkan perubahan tampilan yang tertunda.</string>
+  <string name="ui.tutorial.settings.appearance.message.layout.body">Coba setiap tata letak dan bandingkan percakapan contoh di bawahnya. Simpan menerapkan pilihan Anda; Buang mengembalikan tata letak yang tersimpan.</string>
   <string name="ui.tutorial.settings.language.title">Preferensi Bahasa</string>
   <string name="ui.tutorial.settings.language.available.languages.title">Bahasa Tersedia</string>
   <string name="ui.tutorial.settings.language.available.languages.body">Seret bahasa ke daftar Bahasa Pilihan. Pada layar sentuh, seret pegangannya.</string>
@@ -769,4 +769,15 @@
   <string name="ui.tutorial.admin.status.file.integrity.title">Integritas Berkas</string>
   <string name="ui.tutorial.admin.status.file.integrity.body">Bandingkan hasil pemeriksaan berkas di sini. Berkas yang hilang atau berubah dapat menjelaskan kegagalan pemuatan komponen.</string>
   <string name="ui.reuse.layout_keyboard">Gunakan tombol panah untuk memindahkan; tahan Shift untuk mengubah ukuran</string>
+  <string name="ui.app.settings.message_preview_title">Percakapan Contoh</string>
+  <string name="ui.app.settings.message_preview_participant">Pelajar Contoh</string>
+  <string name="ui.app.settings.message_preview_handle">pelajar_contoh</string>
+  <string name="ui.app.settings.message_preview_self">Anda dalam Contoh</string>
+  <string name="ui.app.settings.message_preview_self_handle">anda_contoh</string>
+  <string name="ui.app.settings.message_preview_text_1">Bagaimana latihanmu?</string>
+  <string name="ui.app.settings.message_preview_text_2">Saya sedang mencoba tata letak pesan baru. Contoh yang lebih panjang ini menunjukkan pembungkusan teks pada layar kecil.</string>
+  <string name="ui.app.settings.message_preview_text_3">Bagus! Sampai jumpa di sesi berikutnya.</string>
+  <string name="ui.app.settings.message_preview_failed">Percakapan contoh tidak dapat ditampilkan.</string>
+  <string name="ui.tutorial.settings.appearance.message.preview.title">Bandingkan Gaya Pesan</string>
+  <string name="ui.tutorial.settings.appearance.message.preview.body">Percakapan fiktif ini menampilkan pesan masuk dan keluar beserta nama dan waktunya. Ubah Gaya Pesan untuk membandingkan tata letak sebelum menyimpan.</string>
 </resources>

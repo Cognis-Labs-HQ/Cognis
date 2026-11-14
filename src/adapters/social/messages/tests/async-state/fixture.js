@@ -230,6 +230,9 @@ export function createRoomFixture() {
     dependencies["./typing-state.js"] = load("typing-state.js");
     dependencies["./room-render.js"] = load("room-render.js");
     dependencies["./thread-reactions.js"] = load("thread-reactions.js");
+    dependencies["./reuse/conversation-presentation.js"] = load(
+        "reuse/conversation-presentation.js",
+    );
     dependencies["./message-render.js"] = load("message-render.js");
     dependencies["./thread-actions.js"] = load("thread-actions.js");
     state.renderThread = dependencies["./message-render.js"].renderThread;

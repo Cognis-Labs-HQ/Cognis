@@ -326,23 +326,25 @@ test("docs search indexes navigation titles and document contents", () => {
 });
 
 test("visible search indexes messages without quick reactions and chat names", () => {
-    const messageSource = readFileSync(
-        resolve(ROOT, "src/adapters/social/messages/ui/message-render.js"),
-        "utf8",
-    );
+    const messageSource =
+        readFileSync(
+            resolve(ROOT, "src/adapters/social/messages/ui/message-render.js"),
+            "utf8",
+        ) +
+        readFileSync(
+            resolve(
+                ROOT,
+                "src/adapters/social/messages/ui/reuse/conversation-presentation.js",
+            ),
+            "utf8",
+        );
     const roomSource = readFileSync(
         resolve(ROOT, "src/adapters/social/messages/ui/room-render.js"),
         "utf8",
     );
     assert.match(messageSource, /data-search-text/);
-    assert.match(
-        messageSource,
-        /data-search-exclude="true">\$\{reactionRows\.pickerRow\}/,
-    );
-    assert.match(
-        messageSource,
-        /data-search-exclude="true">\$\{reactionRows\.activeRow\}/,
-    );
+    assert.match(messageSource, /data-search-exclude="true">\$\{pickerRow\}/);
+    assert.match(messageSource, /data-search-exclude="true">\$\{activeRow\}/);
     assert.match(roomSource, /data-chat-id/);
     assert.match(
         roomSource,
@@ -568,10 +570,18 @@ test("profile messages notifications and study indexes are privacy scoped", () =
         resolve(ROOT, "src/adapters/social/profile/ui/profile-render.js"),
         "utf8",
     );
-    const messagesSource = readFileSync(
-        resolve(ROOT, "src/adapters/social/messages/ui/message-render.js"),
-        "utf8",
-    );
+    const messagesSource =
+        readFileSync(
+            resolve(ROOT, "src/adapters/social/messages/ui/message-render.js"),
+            "utf8",
+        ) +
+        readFileSync(
+            resolve(
+                ROOT,
+                "src/adapters/social/messages/ui/reuse/conversation-presentation.js",
+            ),
+            "utf8",
+        );
     const notificationsSource =
         readFileSync(
             resolve(ROOT, "src/adapters/notify/internal/ui/navbar-plugin.js"),
