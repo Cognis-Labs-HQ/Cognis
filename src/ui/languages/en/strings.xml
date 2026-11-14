@@ -76,6 +76,8 @@
   <string name="ui.reuse.markdown_code_copy_failed">Could not copy code.</string>
   <string name="ui.reuse.confirm">Confirm</string>
   <string name="ui.reuse.error">Error</string>
+  <string name="ui.reuse.healthy">Healthy</string>
+  <string name="ui.reuse.warning">Warning</string>
   <string name="ui.reuse.coming_soon">Coming Soon</string>
   <string name="ui.reuse.save_failed">Save Failed</string>
   <string name="ui.reuse.more_information">More information</string>
@@ -672,7 +674,7 @@
   <string name="ui.tutorial.admin.components.gateways.and.adapters.title">Gateways And Adapters</string>
   <string name="ui.tutorial.admin.components.gateways.and.adapters.body">Expand a component to inspect its version, dependencies, and available configuration.</string>
   <string name="ui.tutorial.admin.components.enable.and.disable.title">Enable And Disable</string>
-  <string name="ui.tutorial.admin.components.enable.and.disable.body">This power switch enables or disables the displayed component. Review dependency warnings before confirming a change.</string>
+  <string name="ui.tutorial.admin.components.enable.and.disable.body">Use this power switch to enable or disable the displayed component. With a keyboard, press Tab to focus it and Space to change it. Review dependency warnings before confirming a change.</string>
   <string name="ui.tutorial.admin.components.configuration.title">Configuration</string>
   <string name="ui.tutorial.admin.components.configuration.body">Click an adapter name to open its settings, or press Next to continue without opening them.</string>
   <string name="ui.tutorial.admin.status.title">System Status</string>

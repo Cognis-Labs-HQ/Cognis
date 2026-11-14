@@ -88,3 +88,9 @@ Semua kode yang dikomit di `src/ui/app` dan `src/ui/layouts` harus lulus kedua p
 Panel Lanjutan → Preferensi menampilkan dokumen preferensi antarmuka lengkap sebagai JSON setelah konfirmasi keamanan satu kali yang disimpan di profil pengguna pada server. Perubahan yang valid disimpan dan diterapkan melalui sistem preferensi biasa. Data pengakuan catatan rilis disimpan secara terpisah agar tidak memenuhi dokumen ini.
 
 Overlay halaman dipasang pada badan dokumen agar posisi viewport tidak dipengaruhi filter latar dan blok pembatas ruang kerja. Papan gambar tetap dibatasi area halaman yang terlihat dan mempertahankan posisi hasil seretan saat menggulir.
+
+## Kontrol Administrasi
+
+Di Administrasi → Komponen, label status, indikator kesehatan, dan sakelar daya menggunakan lebar sesuai isinya. Baris komponen yang sempit menempatkan nama di atas kontrol dan mempertahankan kontrol pembuka detail di sampingnya; kontrol dapat membungkus dalam lebar baris yang tersedia. Nama panjang, label status, dan detail versi tetap dapat dibaca.
+
+Sakelar daya dan kontrol pembuka detail memiliki area tekan setinggi 44 piksel. Tab memfokuskan sakelar yang tersedia, Spasi mengubahnya, dan garis fokus mengikuti penggeser yang terlihat. Gateway wajib serta adapter terkunci atau tidak tersedia tetap memiliki kontrol yang dinonaktifkan. Tutorial Komponen menjelaskan penggunaan papan ketik dan tetap memakai target sakelar, pembuka detail, metadata, dan konfigurasi yang sama.

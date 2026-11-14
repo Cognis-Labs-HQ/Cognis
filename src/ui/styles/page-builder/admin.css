@@ -27,24 +27,51 @@
     opacity: 0.55;
 }
 
-.module-row-controls {
-    display: grid;
-    grid-template-columns: 100px 10px 52px 32px;
+.module-row {
+    container-type: inline-size;
+}
+
+.module-row > .module-row-summary,
+.adapter-inline-row > summary.adapter-inline-summary {
+    grid-template-columns: minmax(10rem, 1fr) minmax(0, max-content) auto;
+    gap: 8px;
+}
+
+.module-row .module-row-controls {
+    display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    justify-content: flex-end;
-    gap: 12px;
+    justify-content: end;
+    justify-self: end;
+    width: max-content;
+    gap: 8px;
     min-width: 0;
+    max-width: 100%;
+}
+
+.module-row-controls > .state-pill {
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-wrap: anywhere;
+    white-space: normal;
+    text-align: center;
 }
 
 .module-row-title {
     min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    overflow-wrap: anywhere;
+    white-space: normal;
     align-self: center;
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
+}
+
+.module-row-title > strong,
+.adapter-inline-name > strong {
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
 
 .switch.switch--inline {
@@ -55,6 +82,37 @@
     margin-top: 0;
     height: 28px;
     line-height: 0;
+}
+
+.module-row-controls > .switch--inline {
+    position: relative;
+    flex: 0 0 auto;
+    min-height: 44px;
+}
+
+.module-row-controls .switch input {
+    display: block;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.module-row-controls .switch input:disabled {
+    cursor: not-allowed;
+}
+
+.module-row-controls .switch input:focus-visible + .slider {
+    outline: 2px solid var(--accent, #3b82f6);
+    outline-offset: 3px;
+}
+
+.module-row > summary > .module-chevron {
+    min-width: 44px;
+    min-height: 44px;
 }
 
 .gateway-adapters-section {
@@ -86,7 +144,6 @@
 }
 
 .adapter-inline-row summary.adapter-inline-summary {
-    grid-template-columns: minmax(0, 1fr) auto auto;
     padding: 0;
 }
 
@@ -102,14 +159,8 @@
 .adapter-inline-name {
     flex: 1;
     min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.adapter-inline-controls {
-    flex: 0 0 auto;
-    grid-template-columns: 100px 10px 52px;
+    overflow-wrap: anywhere;
+    white-space: normal;
 }
 
 .adapter-inline-meta {
@@ -182,6 +233,8 @@
 }
 
 .module-detail-key {
+    min-width: 0;
+    overflow-wrap: anywhere;
     color: var(--text-muted);
     font-weight: 600;
 }
@@ -289,16 +342,29 @@ body[data-theme="light"] .slider::before {
     color: #f59e0b;
 }
 
-@media (max-width: 640px) {
-    .module-row summary,
-    .module-row-summary {
+@container (max-width: 30rem) {
+    .module-row > .module-row-summary,
+    .adapter-inline-row > summary.adapter-inline-summary {
         grid-template-columns: minmax(0, 1fr) auto;
-        gap: 10px;
+    }
+
+    .module-row > summary > .collapsible-section-title {
+        grid-column: 1 / -1;
+    }
+
+    .module-row > summary > .module-row-controls {
+        grid-column: 1;
+        grid-row: 2;
+    }
+
+    .module-row > summary > .module-chevron {
+        grid-column: 2;
+        grid-row: 2;
     }
 
     .module-detail-item {
-        grid-template-columns: 92px minmax(0, 1fr);
-        gap: 10px;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 4px;
     }
 }
 
