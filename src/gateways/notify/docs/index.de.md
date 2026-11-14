@@ -13,6 +13,8 @@ Komponenten verwenden ctx-Fähigkeiten statt der Gateway-Implementierung:
 
 Die Verträge werden aus `@cognis/core` exportiert. Der Adapter-Bootstrap erhält ctx-Fähigkeiten und begrenzte Registrierungsfunktionen, keine konkrete Gateway-Instanz. Tests verwenden `testSender(senderId, recipient, config)`.
 
+Bereiten Sie in der Verwaltung unter Benachrichtigungen eine Nachricht vor und wählen Sie Benachrichtigung senden, oder erstellen Sie unter Rundsendungen einen Entwurf und wählen Sie Rundsendung erstellen. Nur diese ausdrücklichen Aktionen versenden oder veröffentlichen den Entwurf; das allgemeine Speichern der Einstellungen tut beides nicht.
+
 ## Technische Spezifikation
 
 ### E-Mail-Aktionen
@@ -58,3 +60,13 @@ Notify registriert notify:email:add und notify:email:verify über auth:onboardin
 Nach asynchronen Lesevorgängen wird die Berechtigung vor Wirkungen erneut geprüft. Deaktivierung oder Entfernung von Notify entfernt die Operationen. Fehlende optionale Operationen dürfen nur ohne vorgeschriebene E-Mail-Prüfung übersprungen werden; registrierte Zustellfehler bleiben Fehler. Codes und E-Mail-Links behalten eigene Lebensdauern und erzeugen keine Sitzung. Das Tutorial der angemeldeten E-Mail-Einstellungen bleibt unverändert.
 
 Eine Adresse kann bereits gespeichert sein, wenn Zustellung oder Widerruf fehlschlagen; ein gültiger Code kann vor einer späteren Berechtigungsprüfung oder einem Datenbankfehler verbraucht werden. Vor erneutem Versuch den aktuellen Zustand prüfen.
+
+### Entwürfe in der Verwaltung
+
+Benachrichtigungs- und Rundsendungsentwürfe bleiben bei erneuter Darstellung derselben Verwaltungsseite im Arbeitsspeicher. Fragt die Navigation nach ungespeicherten Änderungen, behält Bleiben den Entwurf; Verwerfen und fortfahren verwirft ihn. Verwerfen stellt die ursprünglichen Formularwerte wieder her. Entwürfe überstehen weder ein Neuladen im Browser noch das Schließen des Tabs; ein Kontowechsel löscht sie.
+
+Senden und Erstellen nehmen jeweils nur eine Anfrage gleichzeitig an, einschließlich der Validierung. Währenddessen sind ihre Schaltflächen nicht verfügbar. Eine abgelehnte Übermittlung behält den Entwurf. Nach Erfolg werden die ursprünglichen Werte nur wiederhergestellt, wenn der Entwurf noch den übermittelten Werten entspricht. Neuere Änderungen während der Wartezeit bleiben unverändert und ungespeichert. Das allgemeine Speichern der Einstellungen versendet keine Benachrichtigung und veröffentlicht keine Rundsendung.
+
+Auch Statusänderungen einer Rundsendung laufen nur einzeln. Erfolgreiches Erstellen oder Ändern des Status bleibt erfolgreich, wenn die anschließende Listenaktualisierung fehlschlägt. Der Aktualisierungsfehler wird getrennt gemeldet und bereits geladene Zeilen bleiben sichtbar. Prüfen Sie vor einer Wiederholung den aktuellen Zustand; es gibt keine automatische Wiederholung. Nach Schließen oder Ersetzen der Bestätigungsdetails, Verlassen der Seite oder Kontowechsel können ältere Detailantworten die aktuelle Ansicht nicht mehr ändern.
+
+Mit Aktualisieren neben Rundsendung erstellen laden Sie ausschließlich die Liste über eine lesende Anfrage neu, auch nach einem Ladefehler. Ihr Entwurf bleibt erhalten; Erstellung und Statusänderungen werden nicht wiederholt. Während einer anderen laufenden Rundsendungsaktion ist Aktualisieren nicht verfügbar.

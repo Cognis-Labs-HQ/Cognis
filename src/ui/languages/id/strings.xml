@@ -40,6 +40,8 @@
 
   <string name="ui.reuse.enable">Aktifkan</string>
   <string name="ui.reuse.disable">Nonaktifkan</string>
+  <string name="ui.reuse.enabled">Aktif</string>
+  <string name="ui.reuse.disabled">Nonaktif</string>
   <string name="ui.reuse.true">Benar</string>
   <string name="ui.reuse.false">Salah</string>
   <string name="ui.reuse.actions">Aksi</string>

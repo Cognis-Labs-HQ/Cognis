@@ -1,0 +1,103 @@
+<div class="notif-broadcast-panel">
+    <div class="notif-debug-fields">
+        <label class="notif-debug-field notif-debug-field--full">
+            {broadcast_title_label}
+            <input name="broadcastTitle" type="text" />
+        </label>
+        <label class="notif-debug-field notif-debug-field--full">
+            {broadcast_message_label}
+            <textarea name="broadcastMessage" rows="4"></textarea>
+        </label>
+        <label class="notif-debug-field">
+            {broadcast_mode_label}
+            <select name="broadcastMode" class="theme-select">
+                <option value="bar">{broadcast_mode_bar_label}</option>
+                <option value="popup">{broadcast_mode_popup_label}</option>
+            </select>
+        </label>
+        <label class="notif-debug-field">
+            {broadcast_start_label}
+            <input
+                name="broadcastStartAt"
+                type="datetime-local"
+                class="notif-broadcast-datetime-input"
+            />
+        </label>
+        <label class="notif-debug-field">
+            {broadcast_end_label}
+            <input
+                name="broadcastEndAt"
+                type="datetime-local"
+                class="notif-broadcast-datetime-input"
+            />
+        </label>
+        <label class="notif-debug-field notif-debug-field--full">
+            {broadcast_redirect_label}
+            <input
+                name="broadcastRedirectUrl"
+                type="url"
+                placeholder="/dashboard"
+            />
+        </label>
+        <div class="notif-debug-field notif-debug-field--full">
+            <p class="notif-broadcast-subheading">{broadcast_roles_label}</p>
+            <div class="notif-broadcast-role-options">{role_checkboxes}</div>
+        </div>
+        <div class="notif-debug-field notif-debug-field--full">
+            <label class="notif-broadcast-switch-field">
+                <span class="notif-broadcast-toggle-label"
+                    >{broadcast_require_ack_label}</span
+                >
+                <span class="switch switch--inline">
+                    <input name="broadcastRequireAck" type="checkbox" />
+                    <span class="slider"></span>
+                </span>
+            </label>
+        </div>
+        <div class="notif-debug-field notif-debug-field--full">
+            <label class="notif-broadcast-switch-field">
+                <span class="notif-broadcast-toggle-label"
+                    >{broadcast_enable_immediately_label}</span
+                >
+                <span class="switch switch--inline">
+                    <input name="broadcastEnabled" type="checkbox" checked />
+                    <span class="slider"></span>
+                </span>
+            </label>
+        </div>
+    </div>
+    <div class="notif-debug-actions">
+        <button
+            class="btn-confirm btn-animated notif-broadcast-create"
+            type="button"
+        >
+            {broadcast_create_label}
+        </button>
+        <button
+            class="btn-neutral btn-animated notif-broadcast-refresh"
+            type="button"
+        >
+            {refresh_label}
+        </button>
+    </div>
+    <div class="notif-broadcast-table-wrap">
+        <table class="notif-broadcast-table">
+            <thead>
+                <tr>
+                    <th>{broadcast_table_title_label}</th>
+                    <th>{broadcast_table_message_label}</th>
+                    <th>{broadcast_table_roles_label}</th>
+                    <th>{broadcast_table_schedule_label}</th>
+                    <th>{broadcast_table_mode_label}</th>
+                    <th>{broadcast_table_ack_label}</th>
+                    <th>{broadcast_table_status_label}</th>
+                    <th>{actions_label}</th>
+                    <th>{broadcast_table_details_label}</th>
+                </tr>
+            </thead>
+            <tbody class="notif-broadcast-table-body">
+                {broadcast_rows}
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -25,6 +25,7 @@
   <string name="gateway.notify.admin.broadcast_created">Broadcast created.</string>
   <string name="gateway.notify.admin.broadcast_invalid">Please provide a valid title, message, role targets, and schedule.</string>
   <string name="gateway.notify.admin.broadcast_create_failed">Failed to create broadcast.</string>
+  <string name="gateway.notify.admin.broadcast_refresh_failed">Failed to refresh broadcasts. Previously loaded broadcasts remain visible; a successful create or status change has not been undone.</string>
   <string name="gateway.notify.admin.broadcast_error_missing_title">Please enter a title.</string>
   <string name="gateway.notify.admin.broadcast_error_missing_message">Please enter a message.</string>
   <string name="gateway.notify.admin.broadcast_error_missing_roles">Please select at least one target role.</string>
@@ -65,12 +66,14 @@
   <string name="gateway.notify.tutorial.preferences.save.preferences.body">Review the selected combinations and save the settings; unavailable channels cannot be enabled here.</string>
   <string name="gateway.notify.tutorial.delivery.title">Notification Delivery</string>
   <string name="gateway.notify.tutorial.delivery.delivery.diagnostics.title">Prepare A Test Notification</string>
-  <string name="gateway.notify.tutorial.delivery.delivery.diagnostics.body">Choose the recipient and category, then write a subject and message for the test notification.</string>
+  <string name="gateway.notify.tutorial.delivery.delivery.diagnostics.body">Choose the recipient and category, then write a subject and message. Your draft stays during updates on this page. When asked to leave, Stay keeps it; Discard and Leave drops it.</string>
   <string name="gateway.notify.tutorial.delivery.test.delivery.title">Test Delivery</string>
-  <string name="gateway.notify.tutorial.delivery.test.delivery.body">Send a test notification to check that a recipient can receive messages through the selected channel.</string>
+  <string name="gateway.notify.tutorial.delivery.test.delivery.body">Send Notification sends this draft immediately; the general Settings Save does not send it. Sending is unavailable while a request is pending. Wait for the result before trying again.</string>
   <string name="gateway.notify.tutorial.broadcasts.title">Broadcast Administration</string>
   <string name="gateway.notify.tutorial.broadcasts.audience.and.content.title">Audience And Content</string>
-  <string name="gateway.notify.tutorial.broadcasts.audience.and.content.body">Review the announcement content, audience and display period before publishing.</string>
+  <string name="gateway.notify.tutorial.broadcasts.audience.and.content.body">Review the content, audience and display period. Create Broadcast publishes this draft; the general Settings Save does not. Creation is unavailable while pending. Drafts stay during updates on this page; Stay keeps them and Discard and Leave drops them.</string>
   <string name="gateway.notify.tutorial.broadcasts.publication.state.title">Publication State</string>
-  <string name="gateway.notify.tutorial.broadcasts.publication.state.body">Inspect existing broadcasts before editing or removing them; publishing changes what other users see.</string>
+  <string name="gateway.notify.tutorial.broadcasts.publication.state.body">Enable or disable this broadcast to change its availability. Wait while a status change is pending. If refreshing the list fails after success, the successful change still stands; do not repeat it just to refresh the list.</string>
+  <string name="gateway.notify.tutorial.broadcasts.refresh.list.title">Refresh The Broadcast List</string>
+  <string name="gateway.notify.tutorial.broadcasts.refresh.list.body">Refresh reloads only the broadcast list and keeps your draft. Use it after a list-loading error without creating another broadcast or repeating a status change. Wait while a request is pending.</string>
 </resources>

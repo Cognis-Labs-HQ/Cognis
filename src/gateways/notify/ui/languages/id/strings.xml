@@ -25,6 +25,7 @@
   <string name="gateway.notify.admin.broadcast_created">Siaran dibuat.</string>
   <string name="gateway.notify.admin.broadcast_invalid">Masukkan judul, pesan, peran target, dan jadwal yang valid.</string>
   <string name="gateway.notify.admin.broadcast_create_failed">Gagal membuat siaran.</string>
+  <string name="gateway.notify.admin.broadcast_refresh_failed">Gagal memuat ulang siaran. Siaran yang sudah dimuat tetap terlihat; pembuatan atau perubahan status yang berhasil tidak dibatalkan.</string>
   <string name="gateway.notify.admin.broadcast_error_missing_title">Masukkan judul.</string>
   <string name="gateway.notify.admin.broadcast_error_missing_message">Masukkan pesan.</string>
   <string name="gateway.notify.admin.broadcast_error_missing_roles">Pilih setidaknya satu peran target.</string>
@@ -65,12 +66,14 @@
   <string name="gateway.notify.tutorial.preferences.save.preferences.body">Tinjau kombinasi yang dipilih lalu simpan; kanal yang tidak tersedia tidak dapat diaktifkan di sini.</string>
   <string name="gateway.notify.tutorial.delivery.title">Pengiriman Notifikasi</string>
   <string name="gateway.notify.tutorial.delivery.delivery.diagnostics.title">Siapkan Notifikasi Uji</string>
-  <string name="gateway.notify.tutorial.delivery.delivery.diagnostics.body">Pilih penerima dan kategori, lalu tulis subjek dan pesan untuk notifikasi uji.</string>
+  <string name="gateway.notify.tutorial.delivery.delivery.diagnostics.body">Pilih penerima dan kategori, lalu tulis subjek serta pesan. Draf tetap ada saat tampilan halaman ini diperbarui. Saat diminta meninggalkan halaman, Tetap di Sini mempertahankannya; Buang dan Lanjutkan membuangnya.</string>
   <string name="gateway.notify.tutorial.delivery.test.delivery.title">Uji Pengiriman</string>
-  <string name="gateway.notify.tutorial.delivery.test.delivery.body">Kirim notifikasi uji untuk memeriksa apakah penerima dapat menerima pesan melalui saluran yang dipilih.</string>
+  <string name="gateway.notify.tutorial.delivery.test.delivery.body">Kirim Notifikasi langsung mengirim draf ini; Simpan pada pengaturan umum tidak mengirimkannya. Pengiriman tidak tersedia selama permintaan berlangsung. Tunggu hasilnya sebelum mencoba lagi.</string>
   <string name="gateway.notify.tutorial.broadcasts.title">Administrasi Siaran</string>
   <string name="gateway.notify.tutorial.broadcasts.audience.and.content.title">Audiens dan Konten</string>
-  <string name="gateway.notify.tutorial.broadcasts.audience.and.content.body">Tinjau isi pengumuman, audiens, dan periode tampilan sebelum menerbitkan.</string>
+  <string name="gateway.notify.tutorial.broadcasts.audience.and.content.body">Tinjau konten, audiens, dan periode tampilan. Buat Siaran menerbitkan draf ini; Simpan pada pengaturan umum tidak menerbitkannya. Pembuatan tidak tersedia selama proses berlangsung. Draf tetap ada saat tampilan halaman diperbarui; Tetap di Sini mempertahankannya dan Buang dan Lanjutkan membuangnya.</string>
   <string name="gateway.notify.tutorial.broadcasts.publication.state.title">Status Penerbitan</string>
-  <string name="gateway.notify.tutorial.broadcasts.publication.state.body">Periksa siaran sebelum menyunting atau menghapusnya; penerbitan mengubah tampilan bagi pengguna lain.</string>
+  <string name="gateway.notify.tutorial.broadcasts.publication.state.body">Aktifkan atau nonaktifkan siaran ini untuk mengubah ketersediaannya. Tunggu selama perubahan status berlangsung. Jika pemuatan ulang daftar gagal setelah berhasil, perubahan tetap berlaku; jangan mengulanginya hanya untuk memuat ulang daftar.</string>
+  <string name="gateway.notify.tutorial.broadcasts.refresh.list.title">Segarkan Daftar Siaran</string>
+  <string name="gateway.notify.tutorial.broadcasts.refresh.list.body">Segarkan hanya memuat kembali daftar siaran dan mempertahankan draf. Gunakan setelah kesalahan pemuatan daftar tanpa membuat siaran lain atau mengulangi perubahan status. Tunggu selama permintaan berlangsung.</string>
 </resources>

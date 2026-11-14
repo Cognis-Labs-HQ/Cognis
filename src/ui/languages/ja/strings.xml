@@ -40,6 +40,8 @@
 
   <string name="ui.reuse.enable">有効化</string>
   <string name="ui.reuse.disable">無効化</string>
+  <string name="ui.reuse.enabled">有効</string>
+  <string name="ui.reuse.disabled">無効</string>
   <string name="ui.reuse.true">真</string>
   <string name="ui.reuse.false">偽</string>
   <string name="ui.reuse.actions">操作</string>

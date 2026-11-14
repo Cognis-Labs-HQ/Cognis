@@ -1,3 +1,6 @@
+import { loadAdminTemplates } from "./reuse/templates.js";
+import { formatTemplate } from "/static/reuse/format-template.js";
+import { createAdminDraft } from "./reuse/admin-draft.js";
 import { ACCESS_ROLES, getRoleLabel } from "/static/reuse/access-role.js";
 import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
 import { renderMarkdown } from "/static/reuse/markdown-renderer.js";
@@ -8,24 +11,24 @@ import {
 } from "/static/reuse/trusted-domains.js";
 
 /**
- * Broadcast administration section for the notification gateway.
- *
- * Contributes broadcast creation and status management controls to the
- * Administration page as its own section.
- *
- * Public exports:
- *   createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) — returns a
- *     page-composer-compatible element definition with a dataReady promise.
- *
- * Usage:
- *   const mod = await import('/static/gateways/notify/broadcast-admin-section.js');
- *   const def = mod.createAdminSection({ i18n, apiFetch, escapeHtml, showToast });
- *   await def.dataReady;
- *
- * @param {{ i18n: object, apiFetch: Function, escapeHtml: Function, showToast: Function }} deps
- * @returns {{ id: string, label: string, dataReady: Promise<void>, subComposerOptions: object }}
+ * Contribute broadcast publication with memory-only drafts and mounted action ownership.
+ * @param {{ i18n: object, apiFetch: Function, escapeHtml: Function, showToast: Function, onDirtyChange?: Function }} deps
+ * @returns {object} Administration contribution with dirty, discard and subcomposer lifecycle hooks.
  */
-export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
+export function createAdminSection({
+    i18n,
+    apiFetch,
+    escapeHtml,
+    showToast,
+    onDirtyChange,
+}) {
+    const draft = createAdminDraft({
+        id: "broadcasts",
+        onDirtyChange,
+        submitSelector:
+            ".notif-broadcast-create, .notif-broadcast-toggle, .notif-broadcast-refresh",
+    });
+    let detailIntent = null;
     const stylesheetReady = ensurePageStylesheet(
         "/static/gateways/notify/broadcast-admin.css",
     );
@@ -37,20 +40,27 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
         return Array.isArray(payload?.data) ? payload.data : [];
     }
 
-    async function loadBroadcasts() {
-        const response = await apiFetch("/api/v1/notify/broadcasts");
-        if (!response.ok) return [];
+    async function loadBroadcasts(signal) {
+        const response = await apiFetch("/api/v1/notify/broadcasts", {
+            signal,
+        });
+        if (!response.ok) throw new Error("broadcast_list_failed");
         const payload = await response.json();
-        return Array.isArray(payload?.data) ? payload.data : [];
+        if (!Array.isArray(payload?.data))
+            throw new Error("broadcast_list_invalid");
+        return payload.data;
     }
 
-    async function loadBroadcastStates(broadcastId) {
+    async function loadBroadcastStates(broadcastId, signal) {
         const response = await apiFetch(
             `/api/v1/notify/broadcasts/${encodeURIComponent(broadcastId)}/states`,
+            { signal },
         );
-        if (!response.ok) return [];
+        if (!response.ok) throw new Error("broadcast_states_failed");
         const payload = await response.json();
-        return Array.isArray(payload?.data) ? payload.data : [];
+        if (!Array.isArray(payload?.data))
+            throw new Error("broadcast_states_invalid");
+        return payload.data;
     }
 
     function parseDateTimeLocalInput(inputValue) {
@@ -149,7 +159,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
               <span class="state-pill ${broadcast.enabled ? "pill-active" : "pill-disabled"}">${escapeHtml(statusText)}</span>
             </td>
             <td>
-              <button type="button" class="btn-animated notif-broadcast-toggle" data-broadcast-id="${escapeHtml(broadcast.id)}" data-toggle="${escapeHtml(toggleAction)}">${escapeHtml(toggleLabel)}</button>
+              <button type="button" class="${broadcast.enabled ? "btn-cancel" : "btn-confirm"} btn-animated notif-broadcast-toggle" data-broadcast-id="${escapeHtml(broadcast.id)}" data-toggle="${escapeHtml(toggleAction)}">${escapeHtml(toggleLabel)}</button>
             </td>
             <td class="notif-broadcast-row-details">${detailsCell}</td>
           </tr>
@@ -159,6 +169,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
     }
 
     function renderBroadcastContent(broadcastRows) {
+        if (!draft.active()) return "";
         const roleCheckboxes = ACCESS_ROLES.map(
             (role) => `
           <label class="notif-checkbox-option">
@@ -168,86 +179,75 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
         `,
         ).join("");
 
-        return `
-      <div class="notif-broadcast-panel">
-        <div class="notif-debug-fields">
-          <label class="notif-debug-field notif-debug-field--full">
-            ${i18n.t("gateway.notify.admin.broadcast_title")}
-            <input name="broadcastTitle" type="text" />
-          </label>
-          <label class="notif-debug-field notif-debug-field--full">
-            ${i18n.t("gateway.notify.admin.broadcast_message")}
-            <textarea name="broadcastMessage" rows="4"></textarea>
-          </label>
-          <label class="notif-debug-field">
-            ${i18n.t("gateway.notify.admin.broadcast_mode")}
-            <select name="broadcastMode" class="theme-select">
-              <option value="bar">${i18n.t("gateway.notify.admin.broadcast_mode_bar")}</option>
-              <option value="popup">${i18n.t("gateway.notify.admin.broadcast_mode_popup")}</option>
-            </select>
-          </label>
-          <label class="notif-debug-field">
-            ${i18n.t("gateway.notify.admin.broadcast_start")}
-            <input name="broadcastStartAt" type="datetime-local" class="notif-broadcast-datetime-input" />
-          </label>
-          <label class="notif-debug-field">
-            ${i18n.t("gateway.notify.admin.broadcast_end")}
-            <input name="broadcastEndAt" type="datetime-local" class="notif-broadcast-datetime-input" />
-          </label>
-          <label class="notif-debug-field notif-debug-field--full">
-            ${i18n.t("gateway.notify.admin.broadcast_redirect")}
-            <input name="broadcastRedirectUrl" type="url" placeholder="/dashboard" />
-          </label>
-          <div class="notif-debug-field notif-debug-field--full">
-            <p class="notif-broadcast-subheading">${i18n.t("gateway.notify.admin.broadcast_roles")}</p>
-            <div class="notif-broadcast-role-options">${roleCheckboxes}</div>
-          </div>
-          <div class="notif-debug-field notif-debug-field--full">
-            <label class="notif-broadcast-switch-field">
-              <span class="notif-broadcast-toggle-label">${i18n.t("gateway.notify.admin.broadcast_require_ack")}</span>
-              <span class="switch switch--inline">
-                <input name="broadcastRequireAck" type="checkbox" />
-                <span class="slider"></span>
-              </span>
-            </label>
-          </div>
-          <div class="notif-debug-field notif-debug-field--full">
-            <label class="notif-broadcast-switch-field">
-              <span class="notif-broadcast-toggle-label">${i18n.t("gateway.notify.admin.broadcast_enable_immediately")}</span>
-              <span class="switch switch--inline">
-                <input name="broadcastEnabled" type="checkbox" checked />
-                <span class="slider"></span>
-              </span>
-            </label>
-          </div>
-        </div>
-        <div class="notif-debug-actions">
-          <button class="btn-animated notif-broadcast-create" type="button">${i18n.t("gateway.notify.admin.broadcast_create")}</button>
-        </div>
-        <div class="notif-broadcast-table-wrap">
-          <table class="notif-broadcast-table">
-            <thead>
-              <tr>
-                <th>${escapeHtml(i18n.t("gateway.notify.admin.broadcast_table_title"))}</th>
-                <th>${escapeHtml(i18n.t("gateway.notify.admin.broadcast_table_message"))}</th>
-                <th>${escapeHtml(i18n.t("gateway.notify.admin.broadcast_table_roles"))}</th>
-                <th>${escapeHtml(i18n.t("gateway.notify.admin.broadcast_table_schedule"))}</th>
-                <th>${escapeHtml(i18n.t("gateway.notify.admin.broadcast_table_mode"))}</th>
-                <th>${escapeHtml(i18n.t("gateway.notify.admin.broadcast_table_ack"))}</th>
-                <th>${escapeHtml(i18n.t("gateway.notify.admin.broadcast_table_status"))}</th>
-                <th>${escapeHtml(i18n.t("ui.reuse.actions"))}</th>
-                <th>${escapeHtml(i18n.t("gateway.notify.admin.broadcast_table_details"))}</th>
-              </tr>
-            </thead>
-            <tbody class="notif-broadcast-table-body">
-              ${renderBroadcastRows(broadcastRows)}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    `;
+        return formatTemplate(templates.broadcast, {
+            broadcast_title_label: escapeHtml(
+                i18n.t("gateway.notify.admin.broadcast_title"),
+            ),
+            broadcast_message_label: escapeHtml(
+                i18n.t("gateway.notify.admin.broadcast_message"),
+            ),
+            broadcast_mode_label: escapeHtml(
+                i18n.t("gateway.notify.admin.broadcast_mode"),
+            ),
+            broadcast_mode_bar_label: escapeHtml(
+                i18n.t("gateway.notify.admin.broadcast_mode_bar"),
+            ),
+            broadcast_mode_popup_label: escapeHtml(
+                i18n.t("gateway.notify.admin.broadcast_mode_popup"),
+            ),
+            broadcast_start_label: escapeHtml(
+                i18n.t("gateway.notify.admin.broadcast_start"),
+            ),
+            broadcast_end_label: escapeHtml(
+                i18n.t("gateway.notify.admin.broadcast_end"),
+            ),
+            broadcast_redirect_label: escapeHtml(
+                i18n.t("gateway.notify.admin.broadcast_redirect"),
+            ),
+            broadcast_roles_label: escapeHtml(
+                i18n.t("gateway.notify.admin.broadcast_roles"),
+            ),
+            role_checkboxes: roleCheckboxes,
+            broadcast_require_ack_label: escapeHtml(
+                i18n.t("gateway.notify.admin.broadcast_require_ack"),
+            ),
+            broadcast_enable_immediately_label: escapeHtml(
+                i18n.t("gateway.notify.admin.broadcast_enable_immediately"),
+            ),
+            broadcast_create_label: escapeHtml(
+                i18n.t("gateway.notify.admin.broadcast_create"),
+            ),
+            broadcast_table_title_label: escapeHtml(
+                i18n.t("gateway.notify.admin.broadcast_table_title"),
+            ),
+            broadcast_table_message_label: escapeHtml(
+                i18n.t("gateway.notify.admin.broadcast_table_message"),
+            ),
+            broadcast_table_roles_label: escapeHtml(
+                i18n.t("gateway.notify.admin.broadcast_table_roles"),
+            ),
+            broadcast_table_schedule_label: escapeHtml(
+                i18n.t("gateway.notify.admin.broadcast_table_schedule"),
+            ),
+            broadcast_table_mode_label: escapeHtml(
+                i18n.t("gateway.notify.admin.broadcast_table_mode"),
+            ),
+            broadcast_table_ack_label: escapeHtml(
+                i18n.t("gateway.notify.admin.broadcast_table_ack"),
+            ),
+            broadcast_table_status_label: escapeHtml(
+                i18n.t("gateway.notify.admin.broadcast_table_status"),
+            ),
+            actions_label: escapeHtml(i18n.t("ui.reuse.actions")),
+            broadcast_table_details_label: escapeHtml(
+                i18n.t("gateway.notify.admin.broadcast_table_details"),
+            ),
+            broadcast_rows: renderBroadcastRows(broadcastRows),
+            refresh_label: escapeHtml(i18n.t("ui.reuse.refresh")),
+        });
     }
 
+    let templates;
     let userRows = [];
     let broadcastRows = [];
     const acknowledgementCache = new Map();
@@ -256,9 +256,12 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
         stylesheetReady,
         loadUsers(),
         loadBroadcasts(),
-    ]).then(([, loadedUserRows, loadedBroadcastRows]) => {
+        loadAdminTemplates(["broadcast", "acknowledgement"]),
+    ]).then(([, loadedUserRows, loadedBroadcastRows, loadedTemplates]) => {
+        if (!draft.active()) return;
         userRows = loadedUserRows;
         broadcastRows = loadedBroadcastRows;
+        templates = loadedTemplates;
     });
 
     function findBroadcastById(broadcastId) {
@@ -321,20 +324,18 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
             })
             .join("");
 
-        return `
-        <table class="notif-broadcast-ack-table">
-          <thead>
-            <tr>
-              <th>${escapeHtml(i18n.t("gateway.notify.admin.broadcast_ack_user"))}</th>
-              <th>${escapeHtml(i18n.t("gateway.notify.admin.broadcast_ack_state"))}</th>
-              <th>${escapeHtml(i18n.t("gateway.notify.admin.broadcast_ack_timestamp"))}</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${targetUserRows}
-          </tbody>
-        </table>
-      `;
+        return formatTemplate(templates.acknowledgement, {
+            broadcast_ack_user_label: escapeHtml(
+                i18n.t("gateway.notify.admin.broadcast_ack_user"),
+            ),
+            broadcast_ack_state_label: escapeHtml(
+                i18n.t("gateway.notify.admin.broadcast_ack_state"),
+            ),
+            broadcast_ack_timestamp_label: escapeHtml(
+                i18n.t("gateway.notify.admin.broadcast_ack_timestamp"),
+            ),
+            target_user_rows: targetUserRows,
+        });
     }
 
     function removeAcknowledgementDetailRow(broadcastRow) {
@@ -374,6 +375,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                 }
                 removeAcknowledgementDetailRow(row);
                 setBroadcastRowExpandedState(row, false);
+                row.removeAttribute("aria-busy");
             },
         );
     }
@@ -454,252 +456,417 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
             : i18n.t("gateway.notify.admin.broadcast_create_failed");
     }
 
-    async function refreshBroadcastTable(root) {
-        broadcastRows = await loadBroadcasts();
-        const tableBody = root.querySelector(".notif-broadcast-table-body");
-        if (!(tableBody instanceof HTMLElement)) return;
-        tableBody.innerHTML = renderBroadcastRows(broadcastRows);
-    }
-
-    async function ensureAcknowledgementStateRows(broadcastId) {
-        if (!acknowledgementCache.has(broadcastId)) {
-            const stateRows = await loadBroadcastStates(broadcastId);
-            acknowledgementCache.set(broadcastId, stateRows);
+    async function refreshBroadcastTable(operation) {
+        let nextRows;
+        try {
+            nextRows = await loadBroadcasts(operation.signal);
+        } catch {
+            if (!draft.owns(operation)) return;
+            draft.log("error", "refresh_failed");
+            showToast(i18n.t("gateway.notify.admin.broadcast_refresh_failed"), {
+                variant: "error",
+            });
+            return;
         }
-        return acknowledgementCache.get(broadcastId) ?? [];
+        if (!draft.owns(operation)) return;
+        const tableBody = operation.binding.panel.querySelector(
+            ".notif-broadcast-table-body",
+        );
+        if (!(tableBody instanceof HTMLElement)) return;
+        const content = renderBroadcastRows(nextRows);
+        detailIntent = null;
+        acknowledgementCache.clear();
+        broadcastRows = nextRows;
+        tableBody.innerHTML = content;
     }
 
-    async function toggleBroadcastDetailRow(root, broadcastRow) {
+    function ensureAcknowledgementStateRows(broadcastId, binding) {
+        if (!acknowledgementCache.has(broadcastId)) {
+            const request = loadBroadcastStates(
+                broadcastId,
+                binding.signal,
+            ).catch((error) => {
+                if (acknowledgementCache.get(broadcastId) === request)
+                    acknowledgementCache.delete(broadcastId);
+                throw error;
+            });
+            acknowledgementCache.set(broadcastId, request);
+        }
+        return acknowledgementCache.get(broadcastId);
+    }
+
+    async function toggleBroadcastDetailRow(root, broadcastRow, binding) {
+        if (!draft.current(binding)) return;
         const broadcastId = String(
             broadcastRow.dataset.broadcastId ?? "",
         ).trim();
         if (!broadcastId) return;
+        detailIntent = null;
         const isExpanded = broadcastRow.classList.contains(
             "notif-broadcast-row--expanded",
         );
         if (isExpanded) {
             removeAcknowledgementDetailRow(broadcastRow);
             setBroadcastRowExpandedState(broadcastRow, false);
+            broadcastRow.removeAttribute("aria-busy");
             return;
         }
-
         const broadcast = findBroadcastById(broadcastId);
         if (!broadcast) return;
         const targetUsers = getTargetedUsersForBroadcast(broadcast, userRows);
-
         collapseExpandedBroadcastRows(root, broadcastId);
         setBroadcastRowExpandedState(broadcastRow, true);
-
+        broadcastRow.setAttribute("aria-busy", "true");
+        const intent = { broadcastRow, binding };
+        detailIntent = intent;
+        const isCurrent = () =>
+            detailIntent === intent &&
+            draft.current(binding) &&
+            binding.panel.contains(broadcastRow) &&
+            broadcastRow.getAttribute("aria-expanded") === "true";
+        let stateRows;
         try {
-            const stateRows = await ensureAcknowledgementStateRows(broadcastId);
-            removeAcknowledgementDetailRow(broadcastRow);
-            broadcastRow.insertAdjacentHTML(
-                "afterend",
-                `
-              <tr class="notif-broadcast-ack-row" data-parent-id="${escapeHtml(
-                  broadcastId,
-              )}">
-                <td colspan="9">
-                  ${renderAcknowledgementStatusDetails(targetUsers, stateRows)}
-                </td>
-              </tr>
-            `,
+            stateRows = await ensureAcknowledgementStateRows(
+                broadcastId,
+                binding,
             );
         } catch {
+            if (!isCurrent()) return;
+            detailIntent = null;
             setBroadcastRowExpandedState(broadcastRow, false);
+            broadcastRow.removeAttribute("aria-busy");
+            draft.log("error", "details_failed", { broadcastId });
             showToast(i18n.t("gateway.notify.admin.broadcast_details_failed"), {
                 variant: "error",
             });
+            return;
         }
+        if (!isCurrent()) return;
+        broadcastRow.removeAttribute("aria-busy");
+        removeAcknowledgementDetailRow(broadcastRow);
+        broadcastRow.insertAdjacentHTML(
+            "afterend",
+            `
+            <tr class="notif-broadcast-ack-row" data-parent-id="${escapeHtml(broadcastId)}">
+                <td colspan="9">${renderAcknowledgementStatusDetails(targetUsers, stateRows)}</td>
+            </tr>
+        `,
+        );
     }
 
     function bindBroadcastSection(root) {
         const panel = root.querySelector(".notif-broadcast-panel");
         if (!(panel instanceof HTMLElement)) return;
+        const binding = draft.bind(panel);
+        if (!binding) return;
+        detailIntent = null;
+        acknowledgementCache.clear();
+
+        panel.querySelector(".notif-broadcast-refresh")?.addEventListener(
+            "click",
+            async () => {
+                const operation = draft.begin(binding);
+                if (!operation) return;
+                try {
+                    await refreshBroadcastTable(operation);
+                } finally {
+                    draft.finish(operation);
+                }
+            },
+            { signal: binding.signal },
+        );
 
         const createButton = panel.querySelector(".notif-broadcast-create");
-        createButton?.addEventListener("click", async () => {
-            const titleInput = panel.querySelector('[name="broadcastTitle"]');
-            const messageInput = panel.querySelector(
-                '[name="broadcastMessage"]',
-            );
-            const modeSelect = panel.querySelector('[name="broadcastMode"]');
-            const startInput = panel.querySelector('[name="broadcastStartAt"]');
-            const endInput = panel.querySelector('[name="broadcastEndAt"]');
-            const redirectInput = panel.querySelector(
-                '[name="broadcastRedirectUrl"]',
-            );
-            const requireAckInput = panel.querySelector(
-                '[name="broadcastRequireAck"]',
-            );
-            const enabledInput = panel.querySelector(
-                '[name="broadcastEnabled"]',
-            );
-            const selectedRoleInputs = Array.from(
-                panel.querySelectorAll('[name="broadcastRoles"]:checked'),
-            );
+        createButton?.addEventListener(
+            "click",
+            async () => {
+                const operation = draft.begin(binding);
+                if (!operation) return;
+                try {
+                    const titleInput = panel.querySelector(
+                        '[name="broadcastTitle"]',
+                    );
+                    const messageInput = panel.querySelector(
+                        '[name="broadcastMessage"]',
+                    );
+                    const modeSelect = panel.querySelector(
+                        '[name="broadcastMode"]',
+                    );
+                    const startInput = panel.querySelector(
+                        '[name="broadcastStartAt"]',
+                    );
+                    const endInput = panel.querySelector(
+                        '[name="broadcastEndAt"]',
+                    );
+                    const redirectInput = panel.querySelector(
+                        '[name="broadcastRedirectUrl"]',
+                    );
+                    const requireAckInput = panel.querySelector(
+                        '[name="broadcastRequireAck"]',
+                    );
+                    const enabledInput = panel.querySelector(
+                        '[name="broadcastEnabled"]',
+                    );
+                    const selectedRoleInputs = Array.from(
+                        panel.querySelectorAll(
+                            '[name="broadcastRoles"]:checked',
+                        ),
+                    );
 
-            const titleValue =
-                titleInput instanceof HTMLInputElement
-                    ? titleInput.value.trim()
-                    : "";
-            const messageValue =
-                messageInput instanceof HTMLTextAreaElement
-                    ? messageInput.value.trim()
-                    : "";
-            const modeValue =
-                modeSelect instanceof HTMLSelectElement
-                    ? modeSelect.value
-                    : "bar";
-            const startAtInput = parseDateTimeLocalInput(
-                startInput instanceof HTMLInputElement ? startInput.value : "",
-            );
-            const endAtInput = parseDateTimeLocalInput(
-                endInput instanceof HTMLInputElement ? endInput.value : "",
-            );
-            const redirectUrlValue =
-                redirectInput instanceof HTMLInputElement
-                    ? redirectInput.value.trim()
-                    : "";
-            const requireAcknowledgementValue =
-                requireAckInput instanceof HTMLInputElement
-                    ? requireAckInput.checked
-                    : false;
-            const enabledValue =
-                enabledInput instanceof HTMLInputElement
-                    ? enabledInput.checked
-                    : true;
-            const targetRoles = selectedRoleInputs
-                .map((selectedRoleInput) =>
-                    selectedRoleInput instanceof HTMLInputElement
-                        ? selectedRoleInput.value
-                        : "",
-                )
-                .filter(Boolean);
-            const trustedDomains = await loadTrustedDomains(apiFetch);
+                    const titleValue =
+                        titleInput instanceof HTMLInputElement
+                            ? titleInput.value.trim()
+                            : "";
+                    const messageValue =
+                        messageInput instanceof HTMLTextAreaElement
+                            ? messageInput.value.trim()
+                            : "";
+                    const modeValue =
+                        modeSelect instanceof HTMLSelectElement
+                            ? modeSelect.value
+                            : "bar";
+                    const startAtInput = parseDateTimeLocalInput(
+                        startInput instanceof HTMLInputElement
+                            ? startInput.value
+                            : "",
+                    );
+                    const endAtInput = parseDateTimeLocalInput(
+                        endInput instanceof HTMLInputElement
+                            ? endInput.value
+                            : "",
+                    );
+                    const redirectUrlValue =
+                        redirectInput instanceof HTMLInputElement
+                            ? redirectInput.value.trim()
+                            : "";
+                    const requireAcknowledgementValue =
+                        requireAckInput instanceof HTMLInputElement
+                            ? requireAckInput.checked
+                            : false;
+                    const enabledValue =
+                        enabledInput instanceof HTMLInputElement
+                            ? enabledInput.checked
+                            : true;
+                    const targetRoles = selectedRoleInputs
+                        .map((selectedRoleInput) =>
+                            selectedRoleInput instanceof HTMLInputElement
+                                ? selectedRoleInput.value
+                                : "",
+                        )
+                        .filter(Boolean);
+                    let trustedDomains;
+                    try {
+                        trustedDomains = await loadTrustedDomains(apiFetch);
+                    } catch {
+                        if (!draft.owns(operation)) return;
+                        draft.log("error", "create_validation_failed");
+                        showToast(
+                            i18n.t(
+                                "gateway.notify.admin.broadcast_create_failed",
+                            ),
+                            { variant: "error" },
+                        );
+                        return;
+                    }
+                    if (!draft.owns(operation)) return;
 
-            const validationMessage = getBroadcastCreateValidationError({
-                titleValue,
-                messageValue,
-                targetRoles,
-                startAtInput,
-                endAtInput,
-                redirectUrlValue,
-                trustedDomains,
-            });
-            if (validationMessage) {
-                showToast(validationMessage, {
-                    variant: "warning",
-                });
-                return;
-            }
-
-            try {
-                const response = await apiFetch("/api/v1/notify/broadcasts", {
-                    method: "POST",
-                    headers: { "content-type": "application/json" },
-                    body: JSON.stringify({
-                        title: titleValue,
-                        message: messageValue,
-                        displayMode: modeValue,
-                        targetRoles,
-                        startAt: startAtInput.value,
-                        endAt: endAtInput.value,
-                        requireAcknowledgement: requireAcknowledgementValue,
-                        redirectUrl: redirectUrlValue || null,
-                        enabled: enabledValue,
-                    }),
-                });
-                if (!response.ok) {
-                    const payload = await response.json().catch(() => null);
-                    const errorCode = String(payload?.error?.code ?? "").trim();
-                    showToast(resolveBroadcastCreateErrorMessage(errorCode), {
-                        variant: "error",
-                    });
-                    return;
-                }
-                acknowledgementCache.clear();
-                collapseExpandedBroadcastRows(root);
-                showToast(i18n.t("gateway.notify.admin.broadcast_created"), {
-                    variant: "success",
-                });
-                await refreshBroadcastTable(root);
-            } catch {
-                showToast(
-                    i18n.t("gateway.notify.admin.broadcast_create_failed"),
-                    {
-                        variant: "error",
-                    },
-                );
-            }
-        });
-
-        panel.addEventListener("click", async (event) => {
-            const targetNode = event.target;
-            if (!(targetNode instanceof Element)) return;
-
-            const toggleButton = targetNode.closest(".notif-broadcast-toggle");
-            if (toggleButton instanceof HTMLButtonElement) {
-                const broadcastId = String(
-                    toggleButton.dataset.broadcastId ?? "",
-                ).trim();
-                const toggleAction = String(
-                    toggleButton.dataset.toggle ?? "",
-                ).trim();
-                if (!broadcastId || !toggleAction) return;
-
-                const response = await apiFetch(
-                    `/api/v1/notify/broadcasts/${encodeURIComponent(broadcastId)}/${encodeURIComponent(toggleAction)}`,
-                    { method: "POST" },
-                );
-                if (!response.ok) {
-                    showToast(
-                        i18n.t("gateway.notify.admin.broadcast_toggle_failed"),
+                    const validationMessage = getBroadcastCreateValidationError(
                         {
-                            variant: "error",
+                            titleValue,
+                            messageValue,
+                            targetRoles,
+                            startAtInput,
+                            endAtInput,
+                            redirectUrlValue,
+                            trustedDomains,
                         },
                     );
+                    if (validationMessage) {
+                        showToast(validationMessage, {
+                            variant: "warning",
+                        });
+                        return;
+                    }
+
+                    let response;
+                    let errorCode = "";
+                    try {
+                        draft.log("info", "create_started");
+                        response = await apiFetch("/api/v1/notify/broadcasts", {
+                            method: "POST",
+                            signal: operation.signal,
+                            headers: { "content-type": "application/json" },
+                            body: JSON.stringify({
+                                title: titleValue,
+                                message: messageValue,
+                                displayMode: modeValue,
+                                targetRoles,
+                                startAt: startAtInput.value,
+                                endAt: endAtInput.value,
+                                requireAcknowledgement:
+                                    requireAcknowledgementValue,
+                                redirectUrl: redirectUrlValue || null,
+                                enabled: enabledValue,
+                            }),
+                        });
+                        if (!response.ok) {
+                            const payload = await response.json();
+                            errorCode = String(
+                                payload?.error?.code ?? "",
+                            ).trim();
+                        }
+                    } catch {
+                        if (!draft.owns(operation)) return;
+                        draft.log("error", "create_failed");
+                        showToast(
+                            i18n.t(
+                                "gateway.notify.admin.broadcast_create_failed",
+                            ),
+                            { variant: "error" },
+                        );
+                        return;
+                    }
+                    if (!draft.owns(operation)) return;
+                    if (!response.ok) {
+                        draft.log("error", "create_failed", {
+                            status: response.status,
+                        });
+                        showToast(
+                            resolveBroadcastCreateErrorMessage(errorCode),
+                            { variant: "error" },
+                        );
+                        return;
+                    }
+                    draft.accept(operation);
+                    draft.log("info", "created");
+                    showToast(
+                        i18n.t("gateway.notify.admin.broadcast_created"),
+                        { variant: "success" },
+                    );
+                    await refreshBroadcastTable(operation);
+                } finally {
+                    draft.finish(operation);
+                }
+            },
+            { signal: binding.signal },
+        );
+
+        panel.addEventListener(
+            "click",
+            async (event) => {
+                const targetNode = event.target;
+                if (!(targetNode instanceof Element)) return;
+
+                const toggleButton = targetNode.closest(
+                    ".notif-broadcast-toggle",
+                );
+                if (toggleButton instanceof HTMLButtonElement) {
+                    const broadcastId = String(
+                        toggleButton.dataset.broadcastId ?? "",
+                    ).trim();
+                    const toggleAction = String(
+                        toggleButton.dataset.toggle ?? "",
+                    ).trim();
+                    if (!broadcastId || !toggleAction) return;
+
+                    const operation = draft.begin(binding);
+                    if (!operation) return;
+                    try {
+                        let response;
+                        try {
+                            draft.log("info", "toggle_started", {
+                                broadcastId,
+                            });
+                            response = await apiFetch(
+                                `/api/v1/notify/broadcasts/${encodeURIComponent(broadcastId)}/${encodeURIComponent(toggleAction)}`,
+                                { method: "POST", signal: operation.signal },
+                            );
+                        } catch {
+                            if (!draft.owns(operation)) return;
+                            draft.log("error", "toggle_failed", {
+                                broadcastId,
+                            });
+                            showToast(
+                                i18n.t(
+                                    "gateway.notify.admin.broadcast_toggle_failed",
+                                ),
+                                { variant: "error" },
+                            );
+                            return;
+                        }
+                        if (!draft.owns(operation)) return;
+                        if (!response.ok) {
+                            draft.log("error", "toggle_failed", {
+                                broadcastId,
+                                status: response.status,
+                            });
+                            showToast(
+                                i18n.t(
+                                    "gateway.notify.admin.broadcast_toggle_failed",
+                                ),
+                                { variant: "error" },
+                            );
+                            return;
+                        }
+                        draft.log("info", "toggled", { broadcastId });
+                        await refreshBroadcastTable(operation);
+                    } finally {
+                        draft.finish(operation);
+                    }
                     return;
                 }
 
-                acknowledgementCache.delete(broadcastId);
-                collapseExpandedBroadcastRows(root);
-                await refreshBroadcastTable(root);
-                return;
-            }
+                if (
+                    targetNode.closest(
+                        "button, a, input, label, select, textarea, .notif-broadcast-ack-row",
+                    )
+                ) {
+                    return;
+                }
+                const broadcastRow = targetNode.closest(
+                    '.notif-broadcast-row[data-expandable="true"]',
+                );
+                if (!(broadcastRow instanceof HTMLTableRowElement)) return;
+                await toggleBroadcastDetailRow(root, broadcastRow, binding);
+            },
+            { signal: binding.signal },
+        );
 
-            if (
-                targetNode.closest(
-                    "button, a, input, label, select, textarea, .notif-broadcast-ack-row",
+        panel.addEventListener(
+            "keydown",
+            async (event) => {
+                if (event.key !== "Enter" && event.key !== " ") return;
+                const targetNode = event.target;
+                if (!(targetNode instanceof Element)) return;
+                if (
+                    targetNode.closest(
+                        "button, a, input, label, select, textarea",
+                    )
                 )
-            ) {
-                return;
-            }
-            const broadcastRow = targetNode.closest(
-                '.notif-broadcast-row[data-expandable="true"]',
-            );
-            if (!(broadcastRow instanceof HTMLTableRowElement)) return;
-            await toggleBroadcastDetailRow(root, broadcastRow);
-        });
-
-        panel.addEventListener("keydown", async (event) => {
-            if (event.key !== "Enter" && event.key !== " ") return;
-            const targetNode = event.target;
-            if (!(targetNode instanceof Element)) return;
-            const broadcastRow = targetNode.closest(
-                '.notif-broadcast-row[data-expandable="true"]',
-            );
-            if (!(broadcastRow instanceof HTMLTableRowElement)) return;
-            event.preventDefault();
-            await toggleBroadcastDetailRow(root, broadcastRow);
-        });
+                    return;
+                const broadcastRow = targetNode.closest(
+                    '.notif-broadcast-row[data-expandable="true"]',
+                );
+                if (!(broadcastRow instanceof HTMLTableRowElement)) return;
+                event.preventDefault();
+                await toggleBroadcastDetailRow(root, broadcastRow, binding);
+            },
+            { signal: binding.signal },
+        );
     }
 
     return {
         id: "broadcasts",
         label: i18n.t("gateway.notify.admin.broadcast_label"),
         dataReady,
+        isDirty: draft.isDirty,
+        discard: draft.discard,
         subComposerOptions: {
+            onUnmount() {
+                detailIntent = null;
+                acknowledgementCache.clear();
+                draft.unmount();
+            },
             allowCustomization: false,
             preferenceKey: "administration-broadcasts-layout",
             heading: i18n.t("gateway.notify.admin.broadcast_label"),

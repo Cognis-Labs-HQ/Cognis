@@ -71,6 +71,17 @@ export const guides = [
                     },
                     {
                         highlightNext: true,
+                        id: "refresh-list",
+                        when: ({ targetAvailable }) => targetAvailable,
+                        selector: ".notif-broadcast-refresh:not(:disabled)",
+                        targetMatch: "first",
+                        titleKey:
+                            "gateway.notify.tutorial.broadcasts.refresh.list.title",
+                        bodyKey:
+                            "gateway.notify.tutorial.broadcasts.refresh.list.body",
+                    },
+                    {
+                        highlightNext: true,
                         id: "publication-state",
                         when: ({ targetAvailable }) => targetAvailable,
                         selector: ".notif-broadcast-toggle:not(:disabled)",

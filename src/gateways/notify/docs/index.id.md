@@ -13,6 +13,8 @@ Komponen memakai kapabilitas ctx, bukan menyimpan implementasi gateway:
 
 Kontrak penyedia diekspor dari `@cognis/core`. Bootstrap adapter menerima kapabilitas ctx dan fungsi registrasi host terbatas, bukan gateway konkret. Pengujian menggunakan `testSender(senderId, recipient, config)`.
 
+Di Administrasi, siapkan pesan pada Notifikasi lalu pilih Kirim Notifikasi, atau siapkan pengumuman pada Siaran lalu pilih Buat Siaran. Tindakan eksplisit ini mengirim atau menerbitkan draf; Simpan pada pengaturan umum tidak melakukan keduanya.
+
 ## Spesifikasi Teknis
 
 ### Aksi Email
@@ -58,3 +60,13 @@ Notify mendaftarkan notify:email:add dan notify:email:verify melalui auth:onboar
 Otoritas diperiksa kembali sebelum efek setelah pembacaan asinkron. Menonaktifkan atau menghapus Notify menghapus operasi. Operasi opsional yang tidak ada hanya boleh dilewati jika kebijakan tidak mewajibkan email; kegagalan pengiriman terdaftar tetap menjadi kesalahan. Kode dan tautan email memiliki masa berlaku sendiri dan tidak membuat sesi login. Tutorial pengaturan email pengguna yang sudah masuk tidak berubah.
 
 Alamat mungkin sudah tersimpan saat pengiriman atau pencabutan gagal; kode yang valid dapat terpakai sebelum pemeriksaan otoritas atau kegagalan basis data berikutnya. Periksa keadaan terkini sebelum mencoba kembali.
+
+### Draf Administrasi
+
+Draf notifikasi dan siaran tetap berada dalam memori saat halaman Administrasi yang sama dirender ulang. Jika navigasi menanyakan perubahan yang belum disimpan, Tetap di Sini mempertahankan draf dan Buang dan Lanjutkan membuangnya. Batalkan mengembalikan nilai awal formulir. Draf tidak disimpan setelah pemuatan ulang browser atau penutupan tab, dan pergantian akun menghapusnya.
+
+Kirim dan Buat hanya menerima satu permintaan sekaligus, termasuk validasi; kontrolnya tidak tersedia selama proses berlangsung. Pengiriman yang ditolak mempertahankan draf. Keberhasilan mengembalikan nilai awal hanya jika draf masih sama dengan nilai yang dikirim. Suntingan yang lebih baru selama menunggu tetap utuh dan belum disimpan. Simpan pada pengaturan umum tidak pernah mengirim notifikasi atau menerbitkan siaran.
+
+Perubahan status siaran juga hanya berjalan satu per satu. Pembuatan atau perubahan status yang berhasil tetap berhasil jika pemuatan ulang daftar sesudahnya gagal. Kesalahan pemuatan ulang dilaporkan terpisah dan baris yang sudah dimuat tetap terlihat. Periksa keadaan terkini sebelum mengulangi tindakan; tidak ada percobaan ulang otomatis. Menutup atau mengganti detail konfirmasi, meninggalkan halaman, atau berganti akun mencegah respons detail lama mengubah tampilan saat ini.
+
+Gunakan Segarkan di samping Buat Siaran untuk memuat kembali daftar melalui permintaan baca saja, termasuk setelah kesalahan pemuatan. Draf tetap dipertahankan dan pembuatan maupun perubahan status tidak pernah diulang. Segarkan tidak tersedia selama tindakan siaran lain berlangsung.
