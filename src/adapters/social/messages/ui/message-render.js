@@ -29,7 +29,6 @@ const hydrateProfileAvatars = (container) =>
     profileAvatars().hydrate(container);
 
 const MESSAGE_UNAVAILABLE_PLACEHOLDER = "…";
-const MESSAGE_WRAP_THRESHOLD = 80;
 const MAX_VISIBLE_REACTION_CHIPS = 5;
 
 const reactionHoverPopup = createAnchoredPopup({
@@ -387,27 +386,11 @@ function renderReactionRows(message, i18n, isOwn = false) {
     };
 }
 
-function shouldAllowTextWrapping(messageText) {
-    if (typeof messageText !== "string") return false;
-    if (messageText.includes("\n")) return true;
-    let characterCount = 0;
-    for (const unicodeCharacter of messageText) {
-        characterCount += 1;
-        if (characterCount > MESSAGE_WRAP_THRESHOLD) {
-            return true;
-        }
-    }
-    return false;
-}
-
 function renderMessageBodyMarkup(messageText) {
     const normalizedText = String(
         messageText ?? MESSAGE_UNAVAILABLE_PLACEHOLDER,
     );
-    const wrapClass = shouldAllowTextWrapping(normalizedText)
-        ? ""
-        : " messages-message-body--no-wrap";
-    return `<div class="messages-message-body${wrapClass}">${renderMarkdown(normalizedText, { softBreaks: true })}</div>`;
+    return `<div class="messages-message-body">${renderMarkdown(normalizedText, { softBreaks: true })}</div>`;
 }
 
 export function renderComposerPreviewMarkup(content, emptyMessage) {
