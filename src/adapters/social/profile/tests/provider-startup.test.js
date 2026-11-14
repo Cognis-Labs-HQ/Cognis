@@ -86,7 +86,11 @@ function fixture() {
                         client.profileFetch("/api/v1/social/profile"),
                 },
             },
-            "./profile-avatar.js": { ensureProfileAvatarStyles: () => styles },
+            "./profile-avatar.js": {
+                ensureProfileAvatarStyles: () => styles,
+                mountProfileAvatarRenderer: () => {},
+            },
+            "./profile-preview.js": { mountProfilePreviews: () => {} },
         },
         globals,
     );

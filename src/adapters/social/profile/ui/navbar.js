@@ -1,14 +1,6 @@
-import { isOffline } from "/static/reuse/offline-state.js";
-import { apiFetch } from "/static/reuse/api-client.js";
-import { uiCtx } from "/static/reuse/ui-ctx.js";
-import "./provider.js";
+import { createNavbarAvatarProvider } from "./navbar-avatar-provider.js";
 import { applyStaticTranslations, createI18n } from "/static/reuse/i18n.js";
-import {
-    ensureProfileAvatarStyles,
-    fetchProfileAvatarBlobUrl,
-    getProfileInitials,
-    getProfileInitialsColor,
-} from "./profile-avatar.js";
+import { ensureProfileAvatarStyles } from "./profile-avatar.js";
 import { bindProfilePreviews } from "./profile-preview.js";
 import { registerSearchIndexing } from "./search/index.js";
 import {
@@ -20,9 +12,11 @@ import {
     STATUS_OPTIONS,
 } from "./availability.js";
 
-let availabilityMountPromise = null;
+const availabilityMounts = new WeakMap();
+const availabilityMenus = new WeakMap();
 
-async function performAvailabilityControlMount() {
+async function performAvailabilityControlMount(scope, i18n) {
+    scope.signal.throwIfAborted();
     const button = document.querySelector(".avatar-button");
     const dropdown = document.querySelector("#profile-dropdown");
     if (!button || !dropdown) return;
@@ -35,12 +29,33 @@ async function performAvailabilityControlMount() {
         return;
     }
 
+    availabilityMenus.get(scope)?.();
     const statusItem = document.createElement("li");
     statusItem.className = "availability-menu-item";
     dropdown.prepend(statusItem);
+    let unsubscribe = () => {};
+    let ownedIndicator;
+    const menuController = new AbortController();
+    const dispose = () => {
+        menuController.abort();
+        scope.signal.removeEventListener("abort", dispose);
+        unsubscribe();
+        statusItem.remove();
+        ownedIndicator?.remove();
+        if (availabilityMenus.get(scope) === dispose)
+            availabilityMenus.delete(scope);
+    };
+    availabilityMenus.set(scope, dispose);
+    scope.signal.addEventListener("abort", dispose, { once: true });
+    const isCurrent = () =>
+        !menuController.signal.aborted &&
+        statusItem.isConnected &&
+        button.isConnected;
+    const options = { signal: menuController.signal };
 
     try {
         await ensureProfileAvatarStyles();
+        if (!isCurrent()) return;
         button.classList.add("availability-avatar");
 
         if (!button.querySelector(".availability-indicator")) {
@@ -48,18 +63,16 @@ async function performAvailabilityControlMount() {
                 "beforeend",
                 availabilityIndicatorMarkup(""),
             );
+            ownedIndicator = button.querySelector(".availability-indicator");
         }
         const indicator = button.querySelector(".availability-indicator");
-        const i18n = await createI18n({
-            componentStringBaseUrls: [
-                "/static/adapters/social/profile/languages",
-            ],
-        });
-        bindProfilePreviews(i18n);
         const menuTemplateResponse = await fetch(
             "/static/adapters/social/profile/availability-menu.html",
+            options,
         );
-        statusItem.innerHTML = await menuTemplateResponse.text();
+        const markup = await menuTemplateResponse.text();
+        if (!isCurrent()) return;
+        statusItem.innerHTML = markup;
         applyStaticTranslations(i18n, statusItem);
 
         const statusToggle = statusItem.querySelector(
@@ -84,14 +97,15 @@ async function performAvailabilityControlMount() {
         }
         optionTemplate.remove();
         const availability = await fetchAvailability();
+        if (!isCurrent()) return;
         updateAvailabilitySelection(
             statusItem,
             indicator,
             availability?.status ?? "free",
             i18n,
         );
-        subscribeAvailabilityUpdates((updatedAvailability) => {
-            if (!updatedAvailability?.status) return;
+        unsubscribe = subscribeAvailabilityUpdates((updatedAvailability) => {
+            if (!isCurrent() || !updatedAvailability?.status) return;
             updateAvailabilitySelection(
                 statusItem,
                 indicator,
@@ -100,36 +114,49 @@ async function performAvailabilityControlMount() {
             );
         });
 
-        statusToggle.addEventListener("click", () => {
-            const shouldOpen = statusOptions.hidden;
-            statusOptions.hidden = !shouldOpen;
-            statusToggle.setAttribute("aria-expanded", String(shouldOpen));
-        });
+        statusToggle.addEventListener(
+            "click",
+            () => {
+                const shouldOpen = statusOptions.hidden;
+                statusOptions.hidden = !shouldOpen;
+                statusToggle.setAttribute("aria-expanded", String(shouldOpen));
+            },
+            options,
+        );
 
         statusItem
             .querySelectorAll("[data-availability-option]")
             .forEach((option) => {
-                option.addEventListener("click", async () => {
-                    const selectedStatus = option.dataset.availabilityOption;
-                    if (await setManualAvailability(selectedStatus)) {
-                        await refreshAvailabilityIndicators();
-                        statusOptions.hidden = true;
-                        statusToggle.setAttribute("aria-expanded", "false");
-                    }
-                });
+                option.addEventListener(
+                    "click",
+                    async () => {
+                        const selectedStatus =
+                            option.dataset.availabilityOption;
+                        if (await setManualAvailability(selectedStatus)) {
+                            if (!isCurrent()) return;
+                            await refreshAvailabilityIndicators();
+                            if (!isCurrent()) return;
+                            statusOptions.hidden = true;
+                            statusToggle.setAttribute("aria-expanded", "false");
+                        }
+                    },
+                    options,
+                );
             });
     } catch (error) {
-        statusItem.remove();
+        dispose();
         throw error;
     }
 }
 
-function mountAvailabilityControl() {
-    if (availabilityMountPromise) return availabilityMountPromise;
-    availabilityMountPromise = performAvailabilityControlMount().finally(() => {
-        availabilityMountPromise = null;
+function mountAvailabilityControl(scope, i18n) {
+    if (availabilityMounts.has(scope)) return availabilityMounts.get(scope);
+    const pending = performAvailabilityControlMount(scope, i18n).finally(() => {
+        if (availabilityMounts.get(scope) === pending)
+            availabilityMounts.delete(scope);
     });
-    return availabilityMountPromise;
+    availabilityMounts.set(scope, pending);
+    return pending;
 }
 
 function updateAvailabilitySelection(container, indicator, status, i18n) {
@@ -156,53 +183,33 @@ function updateAvailabilitySelection(container, indicator, status, i18n) {
     indicator.setAttribute("aria-label", label);
 }
 
-uiCtx.capabilities.contribute("ui:navbarAvatarProvider", async () => {
-    const handle = localStorage.getItem("cognis_account") ?? "";
-    const storedDisplayName =
-        localStorage.getItem("cognis_display_name") ?? handle;
-    const fallbackFor = (label) => ({
-        avatarInitials: getProfileInitials(label),
-        avatarColor: getProfileInitialsColor(label),
+export async function mountProvider(scope) {
+    scope.capabilities.contribute(
+        "ui:navbarAvatarProvider",
+        createNavbarAvatarProvider(scope),
+    );
+    const removeSearch = registerSearchIndexing();
+    scope.signal.addEventListener("abort", removeSearch, { once: true });
+    const i18n = await createI18n({
+        componentStringBaseUrls: ["/static/adapters/social/profile/languages"],
     });
-    let fallback = fallbackFor(storedDisplayName);
-    try {
-        const pingRes = isOffline()
-            ? { ok: true }
-            : await apiFetch("/api/v1/social/profile/ping");
-        if (!pingRes.ok) return { ...fallback, profileAvailable: false };
-    } catch {
-        return { ...fallback, profileAvailable: false };
-    }
-
-    try {
-        const res = await apiFetch("/api/v1/social/profile");
-        if (!res.ok) return { ...fallback, profileAvailable: true };
-        const payload = await res.json();
-        const profileLabel =
-            payload?.data?.displayName ||
-            payload?.data?.handle ||
-            storedDisplayName;
-        fallback = fallbackFor(profileLabel);
-        const avatarKey = payload?.data?.avatarKey;
-        if (!avatarKey) return { ...fallback, profileAvailable: true };
-
-        const avatarBlobUrl = await fetchProfileAvatarBlobUrl(avatarKey);
-        if (avatarBlobUrl)
-            return { ...fallback, profileAvailable: true, avatarBlobUrl };
-        return { ...fallback, profileAvailable: true };
-    } catch {
-        return { ...fallback, profileAvailable: true };
-    }
-});
-
-registerSearchIndexing();
-mountAvailabilityControl().catch((error) => {
-    console.error("[social-profile]:availability-menu-mount-failed", { error });
-});
-window.addEventListener("cognis:navbar-refresh", () => {
-    mountAvailabilityControl().catch((error) => {
-        console.error("[social-profile]:availability-menu-refresh-failed", {
-            error,
-        });
-    });
-});
+    scope.signal.throwIfAborted();
+    bindProfilePreviews(i18n);
+    await mountAvailabilityControl(scope, i18n);
+    scope.signal.throwIfAborted();
+    window.addEventListener(
+        "cognis:navbar-refresh",
+        () => {
+            mountAvailabilityControl(scope, i18n).catch((error) => {
+                if (scope.signal.aborted) return;
+                const log = scope.capabilities.get("ui:log");
+                log?.("error", "Profile availability menu refresh failed.", {
+                    component: "social-profile",
+                    operation: "refreshAvailabilityMenu",
+                    errorName: error?.name,
+                });
+            });
+        },
+        { signal: scope.signal },
+    );
+}

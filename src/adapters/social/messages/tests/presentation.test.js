@@ -22,17 +22,19 @@ const input = {
     })),
 };
 
-async function fixture(context) {
+async function fixture(context, { avatarInitially = true } = {}) {
     const dom = new JSDOM("<main></main>");
     const avatarCalls = [];
     const errors = [];
     const avatars = {
+        available: true,
         buildMarkup: (options) => {
             avatarCalls.push(options);
             return `<span class="${options.avatarClass}"><span class="${options.fallbackClass}">${escapeHtml(options.label)}</span></span>`;
         },
     };
-    uiCtx.capabilities.contribute("ui:profileAvatarRenderer", avatars);
+    if (avatarInitially)
+        uiCtx.capabilities.contribute("ui:profileAvatarRenderer", avatars);
     const module = loadTestModule(
         new URL("../ui/presentation-provider.js", import.meta.url),
         {
@@ -64,7 +66,7 @@ async function fixture(context) {
                 type: "adapter",
                 gatewayId: "social",
                 id: "social-messages",
-                version: "2.8.0",
+                version: "2.8.1",
             },
         },
     ];
@@ -79,6 +81,7 @@ async function fixture(context) {
         lifecycle,
         catalog,
         avatarCalls,
+        avatars,
         errors,
         provider: uiCtx.capabilities.get("social:messagePresentation"),
     };
@@ -235,4 +238,75 @@ test("provider styles reuse message wrapping, themed variants and date dividers"
             );
         }
     }
+});
+
+const notifyAvatars = (state) =>
+    state.dom.window.dispatchEvent(
+        new state.dom.window.Event("cognis:profile-avatar-renderer-changed"),
+    );
+
+test("presentation version two reports missing dependency and relays its return and revocation", async (context) => {
+    const state = await fixture(context, { avatarInitially: false });
+    assert.equal(state.provider.version, 2);
+    assert.equal(state.provider.available, false);
+    await assert.rejects(
+        state.provider.render(input),
+        /profile_avatar_presentation_unavailable/,
+    );
+    const readiness = [];
+    state.dom.window.addEventListener(
+        "cognis:message-presentation-changed",
+        () => readiness.push(state.provider.available),
+    );
+    uiCtx.capabilities.contribute("ui:profileAvatarRenderer", state.avatars);
+    notifyAvatars(state);
+    assert.equal(state.provider.available, true);
+    assert.match(await state.provider.render(input), /messages-message-body/);
+    state.avatars.available = false;
+    notifyAvatars(state);
+    assert.equal(state.provider.available, false);
+    state.avatars.available = true;
+    notifyAvatars(state);
+    assert.deepEqual(readiness, [true, false, true]);
+    await state.lifecycle.reconcile([]);
+    const afterRemoval = readiness.length;
+    notifyAvatars(state);
+    assert.equal(
+        readiness.length,
+        afterRemoval,
+        "removed Messages owner no longer relays Profile notifications",
+    );
+});
+
+test("dependency revocation invalidates pending presentation even after same-object reactivation", async (context) => {
+    const state = await fixture(context);
+    let resume;
+    const pending = new Promise((resolve) => {
+        resume = resolve;
+    });
+    let block = true;
+    uiCtx.extendFlow(
+        "messages:presentConversation",
+        "validate",
+        { id: "test:pendingDependency", order: 10 },
+        () => {
+            if (block) {
+                block = false;
+                return pending;
+            }
+        },
+    );
+    const obsolete = state.provider.render(input);
+    const rejected = assert.rejects(
+        obsolete,
+        /profile_avatar_presentation_unavailable/,
+    );
+    await new Promise((resolve) => setImmediate(resolve));
+    state.avatars.available = false;
+    notifyAvatars(state);
+    state.avatars.available = true;
+    notifyAvatars(state);
+    assert.match(await state.provider.render(input), /messages-message-body/);
+    resume();
+    await rejected;
 });

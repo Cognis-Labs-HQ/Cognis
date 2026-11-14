@@ -22,6 +22,10 @@ function element() {
         append(child) {
             this.children.push(child);
         },
+        addEventListener() {},
+        remove() {
+            this.isConnected = false;
+        },
         getAttribute(name) {
             return this[name];
         },
@@ -64,7 +68,11 @@ test("fresh avatar reads retain unchanged UI and reject stale account, provider 
         },
     };
     globalThis.localStorage = { getItem: (key) => account.get(key) ?? null };
-    let result = { profileAvailable: true, avatarBlobUrl: "blob:alice" };
+    let result = {
+        profileAvailable: true,
+        avatarState: "available",
+        avatarBlobUrl: "blob:alice",
+    };
     let calls = 0;
     const provider = () => {
         calls++;
@@ -93,6 +101,7 @@ test("fresh avatar reads retain unchanged UI and reject stale account, provider 
         account.set("cognis_access_token", "bob-token");
         result = {
             profileAvailable: true,
+            avatarState: "available",
             avatarInitials: "B",
             avatarColor: "blue",
         };
@@ -100,6 +109,7 @@ test("fresh avatar reads retain unchanged UI and reject stale account, provider 
         const initials = button.querySelector(".avatar-initials");
         stale.resolve({
             profileAvailable: true,
+            avatarState: "available",
             avatarBlobUrl: "blob:stale-alice",
         });
         await pending;
@@ -113,6 +123,7 @@ test("fresh avatar reads retain unchanged UI and reject stale account, provider 
         release();
         disabled.resolve({
             profileAvailable: true,
+            avatarState: "available",
             avatarBlobUrl: "blob:disabled",
         });
         await pendingDisabled;

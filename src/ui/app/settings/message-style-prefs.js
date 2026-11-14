@@ -90,7 +90,8 @@ export function initMessageStylePrefs(
         if (!preview) return;
         const provider = uiCtx.capabilities.get(capabilityName);
         const available =
-            provider?.version === 1 &&
+            provider?.version === 2 &&
+            provider.available === true &&
             typeof provider.signal?.aborted === "boolean" &&
             typeof provider.signal.addEventListener === "function" &&
             typeof provider.signal.removeEventListener === "function" &&
@@ -113,7 +114,8 @@ export function initMessageStylePrefs(
             !activeSignal.aborted &&
             order === renderOrder &&
             uiCtx.capabilities.get(capabilityName) === provider &&
-            !provider.signal?.aborted;
+            !provider.signal?.aborted &&
+            provider.available === true;
         try {
             await prepareStyles(provider, activeSignal);
             if (!isCurrent()) return;
