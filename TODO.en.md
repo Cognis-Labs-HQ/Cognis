@@ -269,3 +269,9 @@ GitHub cannot resolve the following abbreviated implementation hashes previously
 ## Study: Reliability and Isolation
 
 Keep drawing attempt receipts and dictionary-result caches bounded without losing retry identities. The broader TypeScript coverage gap remains tracked in #520. Exercise supported database providers whenever persistence changes.
+
+## Page Restoration Lifecycle
+
+`src/ui/reuse/page-entry.js:337-345` aborts the direct-load page controller on every `pagehide`, including a persisted back/forward-cache suspension. `mountWhenDirect` has no `pageshow` remount path; `src/ui/reuse/page-composer/init.js:148-165` destroys the composer when that owner aborts. Restoring the cached document therefore does not restore its page-owned resources, including clocks. SPA and direct-load restoration need one host-owned contract.
+
+**Follow-up:** Define page suspension/restoration in the page-entry/router owner and verify the actual direct-load and SPA paths through persisted `pagehide`/`pageshow`, navigation interruption, and provider cleanup. A fresh dashboard mount already creates new clock ownership. Clock cleanup must not resurrect resources after their page signal aborts; changing the shared shell solely to restart one feature would violate the component-lifecycle boundary.

@@ -12,6 +12,10 @@ Jam analog awalnya berada di elemen yang tersedia. Buka Atur Widget Halaman, lal
 
 Nilai bawaan ini berlaku untuk kartu yang baru ditempatkan. Posisi, ukuran, dan pilihan elemen tersembunyi yang tersimpan tetap dipertahankan, termasuk jam analog yang pernah ditambahkan. Tampilan sempit memakai penyajian Page Composer selebar area dengan tinggi sesuai isi tanpa menimpa profil desktop.
 
+## Pembaruan Jam
+
+Setiap jam yang terlihat diperbarui sekali per detik menggunakan preferensi zona waktu dan format waktu Anda saat ini. Mengatur ulang kartu atau mengubah ukuran layar mempertahankan satu jam aktif per tampilan. Menyembunyikan jam atau meninggalkan dasbor menghentikan pembaruannya; menampilkannya kembali memulai tampilan baru.
+
 ## Panduan Ruang Kerja
 
 Di /dashboard, panduan ruang kerja menjelaskan jam digital bawaan, jam analog opsional, dan tautan acara mendatang. Atur Widget Halaman menjelaskan Tambah, kontrol sentuh, pemindahan dan perubahan ukuran lewat papan ketik, serta Simpan atau Buang. Gunakan tanda tanya di samping judul halaman untuk mengulang panduan. Target dan urutan interaksi yang ada tidak berubah.

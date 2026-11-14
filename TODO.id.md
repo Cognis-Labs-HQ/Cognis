@@ -9,3 +9,9 @@ GitHub tidak dapat menyelesaikan hash implementasi singkat berikut yang sebelumn
 ## Study: Keandalan dan Isolasi
 
 Batasi pertumbuhan tanda terima percobaan menggambar dan cache hasil kamus tanpa kehilangan identitas percobaan ulang. Kesenjangan cakupan TypeScript yang lebih luas tetap dilacak di #520. Uji penyedia basis data yang didukung saat persistensi berubah.
+
+## Siklus Pemulihan Halaman
+
+`src/ui/reuse/page-entry.js:337-345` membatalkan pengendali halaman yang dimuat langsung pada setiap `pagehide`, termasuk saat ditangguhkan ke cache mundur/maju. `mountWhenDirect` tidak memiliki jalur pemasangan ulang melalui `pageshow`; `src/ui/reuse/page-composer/init.js:148-165` menghentikan composer ketika pemiliknya dibatalkan. Karena itu, memulihkan dokumen dari cache tidak memulihkan sumber daya milik halaman, termasuk jam. Pemulihan SPA dan pemuatan langsung memerlukan satu kontrak milik host.
+
+**Tindak lanjut:** Tetapkan penangguhan dan pemulihan pada pemilik titik masuk halaman/router, lalu verifikasi jalur pemuatan langsung dan SPA dengan `pagehide`/`pageshow` yang dipertahankan, interupsi navigasi, dan pembersihan penyedia. Pemasangan dasbor baru sudah membuat kepemilikan jam baru. Pembersihan jam tidak boleh menghidupkan kembali sumber daya setelah sinyal halamannya dibatalkan; mengubah kerangka bersama hanya untuk memulai ulang satu fitur akan melanggar batas siklus hidup komponen.
