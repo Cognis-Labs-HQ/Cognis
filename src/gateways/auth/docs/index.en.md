@@ -225,3 +225,7 @@ SSO integrations must treat `tfaRequired: true` as incomplete authentication and
 ## Account Target Authorization
 
 Cross-account account management and all target-selectable TFA reads, recovery-code operations, method preferences, enable/disable and administrator resets require Auth’s `auth:authorizeAccountTarget` v1 policy. An administrator cannot manage another admin, owner or founder-admin. Owner-authorized operations remain available. Missing policy or unreadable account metadata fails closed before downstream storage. Users keeps its self-management prohibition; TFA accepts omitted or exact explicit self targets. Setup and method-details operations remain self-only. Blank, duplicate or malformed target parameters are rejected. Use Settings for your own security and Users administration for an eligible other account.
+
+## Password Form Labels
+
+Security uses the shared `ui.reuse.password_requirements` and `ui.reuse.passwords_match` XML keys. Its registered Settings section loads Auth and host catalogs, without requiring Registration to be enabled. Password policy, confirmation validation and provider restrictions remain unchanged. Deploy Auth 2.2.13 with the matching host UI catalogs.

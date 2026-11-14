@@ -225,3 +225,7 @@ Integrasi SSO harus memperlakukan `tfaRequired: true` sebagai autentikasi belum 
 ## Otorisasi Target Akun
 
 Pengelolaan lintas akun serta semua pembacaan TFA dengan pilihan target, operasi kode pemulihan, preferensi metode, pengaktifan/penonaktifan, dan pengaturan ulang administrator memerlukan kebijakan Auth `auth:authorizeAccountTarget` v1. Administrator tidak dapat mengelola administrator lain, pemilik, atau administrator pendiri. Operasi yang diizinkan bagi pemilik tetap tersedia. Kebijakan yang hilang atau metadata akun yang tidak dapat dibaca menyebabkan penolakan sebelum akses penyimpanan lanjutan. Pengelolaan pengguna tetap melarang pengelolaan diri; TFA menerima target pribadi yang tidak ditentukan atau ditentukan secara persis. Penyiapan dan detail metode tetap khusus akun sendiri. Parameter target kosong, ganda, atau tidak valid ditolak. Gunakan Pengaturan untuk keamanan akun sendiri dan administrasi Pengguna untuk akun lain yang memenuhi syarat.
+
+## Label Formulir Kata Sandi
+
+Keamanan memakai kunci XML bersama `ui.reuse.password_requirements` dan `ui.reuse.passwords_match`. Bagian Pengaturan terdaftar memuat katalog Auth dan host tanpa mewajibkan Registration aktif. Kebijakan kata sandi, validasi konfirmasi, dan pembatasan penyedia tetap sama. Terapkan Auth 2.2.13 bersama katalog UI host yang sesuai.

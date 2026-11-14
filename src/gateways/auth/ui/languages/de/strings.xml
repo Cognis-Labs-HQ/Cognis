@@ -95,7 +95,7 @@
   <string name="ui.app.login.reason.sso_provider_unavailable">Der Anmeldeanbieter ist derzeit nicht verfügbar.</string>
   <string name="gateway.auth.tutorial.security.title">Kontosicherheit</string>
   <string name="gateway.auth.tutorial.security.password.changes.title">Passwortänderungen</string>
-  <string name="gateway.auth.tutorial.security.password.changes.body">Verwenden Sie die Passwortfunktion Ihres Anbieters; eine Änderung kann eine Identitätsbestätigung erfordern.</string>
+  <string name="gateway.auth.tutorial.security.password.changes.body">Öffnen Sie, falls verfügbar, „Passwort ändern“, geben Sie Ihr aktuelles Passwort ein, erfüllen Sie die Anforderungen und bestätigen Sie dasselbe neue Passwort. Speichern ändert es und meldet Sie ab; Abbrechen lässt Sie Ihre Eingaben verwerfen.</string>
   <string name="gateway.auth.tutorial.security.session.duration.title">Sitzungsdauer</string>
   <string name="gateway.auth.tutorial.security.session.duration.body">Wählen Sie eine erlaubte Sitzungsdauer oder den globalen Standard und speichern Sie Änderungen.</string>
 </resources>

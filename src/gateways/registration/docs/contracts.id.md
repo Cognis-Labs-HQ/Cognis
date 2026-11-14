@@ -28,3 +28,7 @@ Halaman pendaftaran tetap di luar tutorial pengguna yang sudah masuk. Panduan un
 Semua deklarasi operasi disalin dan dibekukan sebelum impor atau pemanggilan ekstensi apa pun. Penyedia yang mendeklarasikan operasi orientasi harus memuat penangan penyelesaian yang dapat dipanggil sebelum pembuatan akun diizinkan. Pembuat bidang dan ekstensi lain tidak dapat memperluas izin yang telah dicatat.
 
 Kegagalan penyusunan konfigurasi pendaftaran menghasilkan registration_configuration_unavailable, bukan daftar integrasi kosong. Ekspor penyelesaian yang belum dimigrasikan dan tidak memiliki deklarasi operasi juga memblokir pendaftaran. Plugin opsional yang hanya menyediakan bidang tetap dimuat secara independen.
+
+## Label Formulir Kata Sandi
+
+Registration 1.2.9 memakai kunci milik host `ui.reuse.password_requirements` dan `ui.reuse.passwords_match` bersama Keamanan. Terapkan katalog UI host yang sesuai dan perbarui integrasi yang memakai label ini ke kunci bersama. Nilai bahasa pilihan yang tidak tersedia memakai kunci XML bahasa Inggris yang sama; nilai Inggris yang hilang atau kosong menghasilkan kegagalan eksplisit. Halaman pendaftaran publik tetap berada di luar tutorial pengguna masuk; kontrol panduan undangan dan kebijakan tidak berubah.

@@ -253,6 +253,8 @@
   <string name="ui.app.verify_email.return_link">Kembali ke Cognis</string>
   <string name="ui.reuse.reconfirm_action">Konfirmasi ulang tindakan</string>
   <string name="ui.reuse.sensitive_action_prompt">Mohon konfirmasi tindakan sensitif ini.</string>
+  <string name="ui.reuse.password_requirements">Persyaratan kata sandi</string>
+  <string name="ui.reuse.passwords_match">Kata sandi cocok.</string>
   <string name="ui.reuse.enter_password_prompt">Masukkan kata sandi Anda untuk melanjutkan.</string>
   <string name="ui.reuse.incorrect_password">Kata sandi salah. Silakan coba lagi.</string>
   <string name="ui.reuse.sign_in_instead">Masuk saja</string>

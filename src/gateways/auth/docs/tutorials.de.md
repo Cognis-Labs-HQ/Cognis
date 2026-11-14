@@ -17,3 +17,7 @@ Anleitungen registrieren sich über die öffentliche Capability `ui:tutorials` m
 ## Zeitlich begrenzte Challenge-Zustellung
 
 Bei Email Code bedeutet „wartend“, dass die Zustellung noch nicht erfolgt ist. Warten Sie auf den neuesten Code. Erst ein angenommener Neuversand ersetzt den alten Code; bei Ablehnung bleibt er erhalten. Nach einem Zustellfehler innerhalb der Frist erneut senden oder einen neuen Login beginnen. Login-Versuche gelten fünf, Einrichtungen zehn Minuten. Ein Einrichtungsabbruch betrifft nur diese Einrichtung. Fortsetzen versendet keine neue E-Mail und verlängert keine Frist.
+
+## Passwortformular-Texte
+
+Die Anleitung zur Kontosicherheit erklärt das Öffnen der unterstützten Passwortänderung, das Erfüllen der angezeigten Richtlinie, die Bestätigung desselben neuen Passworts sowie Speichern und Abbrechen. Erfolgreiches Speichern meldet das Konto ab; beim Abbrechen kann das Verwerfen der Eingaben bestätigt werden. Die beiden vorhandenen Ziele und die Abschlusskennung bleiben unverändert.

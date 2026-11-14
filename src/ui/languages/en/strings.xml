@@ -253,6 +253,8 @@
   <string name="ui.app.verify_email.return_link">Return to Cognis</string>
   <string name="ui.reuse.reconfirm_action">Re-Confirm Action</string>
   <string name="ui.reuse.sensitive_action_prompt">Please confirm this sensitive action.</string>
+  <string name="ui.reuse.password_requirements">Password Requirements</string>
+  <string name="ui.reuse.passwords_match">Passwords match.</string>
   <string name="ui.reuse.enter_password_prompt">Enter your password to continue.</string>
   <string name="ui.reuse.incorrect_password">Incorrect password. Please try again.</string>
   <string name="ui.reuse.sign_in_instead">Sign In Instead</string>

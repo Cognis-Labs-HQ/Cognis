@@ -225,3 +225,7 @@ SSO-Integrationen müssen `tfaRequired: true` als unvollständige Anmeldung beha
 ## Autorisierung des Kontoziels
 
 Kontenübergreifende Verwaltung sowie alle TFA-Lesezugriffe mit Zielauswahl, Wiederherstellungscode-Aktionen, Methodenpräferenzen, Aktivierungen/Deaktivierungen und Administrator-Zurücksetzungen erfordern Auths Richtlinie `auth:authorizeAccountTarget` v1. Administratoren dürfen keine anderen Administratoren, Eigentümer oder Gründeradministratoren verwalten. Vom Eigentümer erlaubte Aktionen bleiben verfügbar. Fehlende Richtlinien oder unlesbare Kontometadaten führen vor nachgelagerten Speicherzugriffen zur Ablehnung. Die Benutzerverwaltung verbietet weiterhin Selbstverwaltung; TFA akzeptiert ein weggelassenes oder exakt angegebenes eigenes Ziel. Einrichtung und Methodendetails bleiben auf das eigene Konto beschränkt. Leere, doppelte oder fehlerhafte Zielparameter werden abgelehnt. Verwenden Sie Einstellungen für Ihre eigene Sicherheit und die Benutzerverwaltung für ein zulässiges anderes Konto.
+
+## Passwortformular-Texte
+
+Sicherheit verwendet die gemeinsamen XML-Schlüssel `ui.reuse.password_requirements` und `ui.reuse.passwords_match`. Der registrierte Einstellungsbereich lädt Auth- und Host-Kataloge, ohne aktivierte Registrierung vorauszusetzen. Passwortrichtlinie, Bestätigungsprüfung und Anbieterbeschränkungen bleiben unverändert. Stellen Sie Auth 2.2.13 mit den passenden Host-UI-Katalogen bereit.

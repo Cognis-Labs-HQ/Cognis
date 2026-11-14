@@ -28,3 +28,7 @@ Die Registrierungsseite bleibt außerhalb der angemeldeten Tutorials. Einladungs
 Alle Operationsdeklarationen werden vor dem Import oder Aufruf einer Erweiterung kopiert und eingefroren. Ein Anbieter mit deklarierten Onboarding-Operationen muss einen aufrufbaren Abschlusshandler laden, bevor ein Konto erstellt werden darf. Feldfabriken und andere Erweiterungen können die erfassten Berechtigungen nicht erweitern.
 
 Schlägt die Zusammenstellung der Registrierungskonfiguration fehl, wird registration_configuration_unavailable statt einer leeren Integrationsliste zurückgegeben. Nicht migrierte Abschlussexporte ohne deklarierte Operationen blockieren ebenfalls die Registrierung. Optionale Erweiterungen, die nur Felder bereitstellen, werden weiterhin unabhängig geladen.
+
+## Passwortformular-Texte
+
+Registration 1.2.9 verwendet die Host-Schlüssel `ui.reuse.password_requirements` und `ui.reuse.passwords_match` gemeinsam mit Sicherheit. Stellen Sie die passenden Host-UI-Kataloge bereit und aktualisieren Sie Integrationen, die diese Texte verwenden, auf die gemeinsamen Schlüssel. Fehlende Werte der bevorzugten Sprache werden aus denselben englischen XML-Schlüsseln aufgelöst; fehlende oder leere englische Werte führen ausdrücklich zu einem Fehler. Die öffentliche Registrierung bleibt außerhalb angemeldeter Anleitungen; Einladungs- und Richtlinienanleitungen behalten ihre Bedienelemente.

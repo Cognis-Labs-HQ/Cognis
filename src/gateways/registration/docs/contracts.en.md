@@ -28,3 +28,7 @@ The register page remains outside the authenticated tutorial system. Existing in
 All operation declarations are copied and frozen before any extension import or callback. A provider declaring onboarding operations must load a callable completion handler before account creation is permitted; field factories and other extensions cannot enlarge its captured permissions.
 
 A failed registration-configuration composition returns registration_configuration_unavailable instead of an empty integration list. Unmigrated completion exports without declared operations also block signup; optional field-only plugins retain independent loading behavior.
+
+## Password Form Labels
+
+Registration 1.2.9 uses the host-owned `ui.reuse.password_requirements` and `ui.reuse.passwords_match` keys, shared with Security. Deploy the matching host UI catalogs and update integrations consuming these labels to the shared keys. Preferred-language values fall back to the same English XML keys; absent or empty English values fail explicitly. The public registration page remains outside authenticated tutorials; invitation and policy guide controls are unchanged.
