@@ -19,3 +19,7 @@ Anleitungen registrieren sich über die öffentliche Capability `ui:tutorials` m
 Optionale Test- und Veröffentlichungsschritte erscheinen nur bei verfügbaren Bedienelementen; mehrere Testschaltflächen verwenden ein sichtbares Ziel.
 
 Die Registrierung prüft Titel und Schritte anhand des eigenen Katalogs des Gateways, bevor die Anleitungen verfügbar werden. Englisch, Deutsch, Indonesisch und Japanisch werden unterstützt. Fehlende oder leere Werte der bevorzugten Sprache verwenden denselben englischen Schlüssel. Fehlender englischer Text bleibt ein ausdrücklicher Übersetzungsfehler. Die Registrierung auf einer anderen Dashboard-Seite navigiert nicht zu Einstellungen oder Verwaltung.
+
+Die Zustellungsanleitung erklärt Benachrichtigung senden und die Verfügbarkeit während laufender Anfragen. Die Rundsendungsanleitung erklärt Rundsendung erstellen, Zielgruppenprüfung und Veröffentlichungsstatus. Beide erläutern den Erhalt von Entwürfen auf derselben Seite sowie Bleiben gegenüber Verwerfen und fortfahren. Das allgemeine Speichern der Einstellungen veröffentlicht keinen dieser Entwürfe. Optionale Aktionsschritte entfallen bei nicht verfügbaren Bedienelementen.
+
+Die Rundsendungsanleitung hebt Aktualisieren als eigene Aktion hervor, um die Liste erneut zu laden und den Entwurf zu behalten, ohne Veröffentlichung oder Statusänderung zu wiederholen.

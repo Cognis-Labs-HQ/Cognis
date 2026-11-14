@@ -1,0 +1,38 @@
+<div class="notif-debug-panel">
+    {no_users} {no_categories}
+    <div class="notif-debug-fields">
+        <label class="notif-debug-field">
+            {debug_target_user_label}
+            <select name="debugUser" class="theme-select">
+                {user_options}
+            </select>
+        </label>
+        <label class="notif-debug-field">
+            {debug_category_label}
+            <select name="debugCategory" class="theme-select">
+                {category_options}
+            </select>
+        </label>
+        <label class="notif-debug-field notif-debug-field--full">
+            {subject_label}
+            <input
+                name="debugSubject"
+                type="text"
+                placeholder="{debug_subject_placeholder_label}"
+            />
+        </label>
+        <label class="notif-debug-field notif-debug-field--full">
+            {message_label}
+            <textarea
+                name="debugBody"
+                rows="4"
+                placeholder="{debug_body_placeholder_label}"
+            ></textarea>
+        </label>
+    </div>
+    <div class="notif-debug-actions">
+        <button class="btn-confirm btn-animated notif-debug-send" type="button">
+            {debug_send_label}
+        </button>
+    </div>
+</div>

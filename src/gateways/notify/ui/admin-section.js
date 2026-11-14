@@ -1,23 +1,24 @@
+import { loadAdminTemplates } from "./reuse/templates.js";
+import { formatTemplate } from "/static/reuse/format-template.js";
+import { createAdminDraft } from "./reuse/admin-draft.js";
+
 /**
- * Notification gateway admin debug section.
- *
- * Contributes debug send controls to the Administration page.
- * Exported as a browser ES module; the admin page dynamically imports it
- * via the UIRegistry mechanism.
- *
- * Public exports:
- *   createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) — returns a
- *     page-composer-compatible element definition with a dataReady promise.
- *
- * Usage:
- *   const mod = await import('/static/gateways/notify/admin-section.js');
- *   const def = mod.createAdminSection({ i18n, apiFetch, escapeHtml, showToast });
- *   await def.dataReady;
- *
- * @param {{ i18n: object, apiFetch: Function, escapeHtml: Function, showToast: Function }} deps
- * @returns {{ id: string, label: string, dataReady: Promise<void>, subComposerOptions: object }}
+ * Contribute notification delivery with memory-only drafts and mounted action ownership.
+ * @param {{ i18n: object, apiFetch: Function, escapeHtml: Function, showToast: Function, onDirtyChange?: Function }} deps
+ * @returns {object} Administration contribution with dirty, discard and subcomposer lifecycle hooks.
  */
-export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
+export function createAdminSection({
+    i18n,
+    apiFetch,
+    escapeHtml,
+    showToast,
+    onDirtyChange,
+}) {
+    const draft = createAdminDraft({
+        id: "notifications",
+        onDirtyChange,
+        submitSelector: ".notif-debug-send",
+    });
     async function loadCategories() {
         const response = await apiFetch("/api/v1/notify/categories");
         if (!response.ok) return [];
@@ -32,17 +33,23 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
         return payload.data ?? [];
     }
 
+    let templates;
     let users = [];
     let categories = [];
 
-    const dataReady = Promise.all([loadUsers(), loadCategories()]).then(
-        ([userRows, categoryRows]) => {
-            users = userRows;
-            categories = categoryRows;
-        },
-    );
+    const dataReady = Promise.all([
+        loadUsers(),
+        loadCategories(),
+        loadAdminTemplates(["debug"]),
+    ]).then(([userRows, categoryRows, loadedTemplates]) => {
+        if (!draft.active()) return;
+        users = userRows;
+        categories = categoryRows;
+        templates = loadedTemplates;
+    });
 
     function renderNotificationsDebugContent() {
+        if (!draft.active()) return "";
         const userOptions = users
             .map((userRow) => {
                 const escapedUsername = escapeHtml(userRow.username);
@@ -58,103 +65,143 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
             .join("");
 
         const noUsers = !users.length
-            ? `<p class="notif-debug-empty">${i18n.t("gateway.notify.admin.debug_no_users")}</p>`
+            ? `<p class="notif-debug-empty">${escapeHtml(i18n.t("gateway.notify.admin.debug_no_users"))}</p>`
             : "";
         const noCategories = !categories.length
-            ? `<p class="notif-debug-empty">${i18n.t("gateway.notify.admin.debug_no_categories")}</p>`
+            ? `<p class="notif-debug-empty">${escapeHtml(i18n.t("gateway.notify.admin.debug_no_categories"))}</p>`
             : "";
 
-        return `
-    <div class="notif-debug-panel">
-      ${noUsers}
-      ${noCategories}
-      <div class="notif-debug-fields">
-        <label class="notif-debug-field">
-          ${i18n.t("gateway.notify.admin.debug_target_user")}
-          <select name="debugUser" class="theme-select">${userOptions}</select>
-        </label>
-        <label class="notif-debug-field">
-          ${i18n.t("gateway.notify.admin.debug_category")}
-          <select name="debugCategory" class="theme-select">${categoryOptions}</select>
-        </label>
-        <label class="notif-debug-field notif-debug-field--full">
-          ${i18n.t("ui.reuse.subject")}
-          <input name="debugSubject" type="text" placeholder="${i18n.t("gateway.notify.admin.debug_subject_placeholder")}" />
-        </label>
-        <label class="notif-debug-field notif-debug-field--full">
-          ${i18n.t("ui.reuse.message")}
-          <textarea name="debugBody" rows="4" placeholder="${i18n.t("gateway.notify.admin.debug_body_placeholder")}"></textarea>
-        </label>
-      </div>
-      <div class="notif-debug-actions">
-        <button class="btn-animated notif-debug-send" type="button">${i18n.t("gateway.notify.admin.debug_send")}</button>
-      </div>
-    </div>
-  `;
+        return formatTemplate(templates.debug, {
+            no_users: noUsers,
+            no_categories: noCategories,
+            debug_target_user_label: escapeHtml(
+                i18n.t("gateway.notify.admin.debug_target_user"),
+            ),
+            user_options: userOptions,
+            debug_category_label: escapeHtml(
+                i18n.t("gateway.notify.admin.debug_category"),
+            ),
+            category_options: categoryOptions,
+            subject_label: escapeHtml(i18n.t("ui.reuse.subject")),
+            debug_subject_placeholder_label: escapeHtml(
+                i18n.t("gateway.notify.admin.debug_subject_placeholder"),
+            ),
+            message_label: escapeHtml(i18n.t("ui.reuse.message")),
+            debug_body_placeholder_label: escapeHtml(
+                i18n.t("gateway.notify.admin.debug_body_placeholder"),
+            ),
+            debug_send_label: escapeHtml(
+                i18n.t("gateway.notify.admin.debug_send"),
+            ),
+        });
     }
 
     function bindNotificationsDebug(root) {
         const panel = root.querySelector(".notif-debug-panel");
         if (!panel) return;
+        const binding = draft.bind(panel);
+        if (!binding) return;
 
         const sendButton = panel.querySelector(".notif-debug-send");
         if (!(sendButton instanceof HTMLButtonElement)) return;
 
-        sendButton.addEventListener("click", async () => {
-            const userSelect = panel.querySelector('[name="debugUser"]');
-            const categorySelect = panel.querySelector(
-                '[name="debugCategory"]',
-            );
-            const subjectInput = panel.querySelector('[name="debugSubject"]');
-            const bodyInput = panel.querySelector('[name="debugBody"]');
+        sendButton.addEventListener(
+            "click",
+            async () => {
+                const operation = draft.begin(binding);
+                if (!operation) return;
+                try {
+                    const userSelect =
+                        panel.querySelector('[name="debugUser"]');
+                    const categorySelect = panel.querySelector(
+                        '[name="debugCategory"]',
+                    );
+                    const subjectInput = panel.querySelector(
+                        '[name="debugSubject"]',
+                    );
+                    const bodyInput = panel.querySelector('[name="debugBody"]');
 
-            const recipientUsername =
-                userSelect instanceof HTMLSelectElement ? userSelect.value : "";
-            const category =
-                categorySelect instanceof HTMLSelectElement
-                    ? categorySelect.value
-                    : "";
-            const subject =
-                subjectInput instanceof HTMLInputElement
-                    ? subjectInput.value.trim()
-                    : "";
-            const body =
-                bodyInput instanceof HTMLTextAreaElement
-                    ? bodyInput.value.trim()
-                    : "";
+                    const recipientUsername =
+                        userSelect instanceof HTMLSelectElement
+                            ? userSelect.value
+                            : "";
+                    const category =
+                        categorySelect instanceof HTMLSelectElement
+                            ? categorySelect.value
+                            : "";
+                    const subject =
+                        subjectInput instanceof HTMLInputElement
+                            ? subjectInput.value.trim()
+                            : "";
+                    const body =
+                        bodyInput instanceof HTMLTextAreaElement
+                            ? bodyInput.value.trim()
+                            : "";
 
-            if (!recipientUsername || !category || !subject || !body) {
-                showToast(i18n.t("gateway.notify.admin.debug_missing_fields"), {
-                    variant: "warning",
-                });
-                return;
-            }
+                    if (!recipientUsername || !category || !subject || !body) {
+                        showToast(
+                            i18n.t("gateway.notify.admin.debug_missing_fields"),
+                            {
+                                variant: "warning",
+                            },
+                        );
+                        return;
+                    }
 
-            const response = await apiFetch("/api/v1/notify/send", {
-                method: "POST",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({
-                    recipientUsername,
-                    category,
-                    subject,
-                    body,
-                }),
-            });
-
-            showToast(
-                response.ok
-                    ? i18n.t("gateway.notify.admin.debug_sent")
-                    : i18n.t("gateway.notify.admin.debug_send_failed"),
-                { variant: response.ok ? "success" : "error" },
-            );
-        });
+                    let response;
+                    try {
+                        draft.log("info", "send_started");
+                        response = await apiFetch("/api/v1/notify/send", {
+                            method: "POST",
+                            headers: { "content-type": "application/json" },
+                            signal: operation.signal,
+                            body: JSON.stringify({
+                                recipientUsername,
+                                category,
+                                subject,
+                                body,
+                            }),
+                        });
+                    } catch {
+                        if (!draft.owns(operation)) return;
+                        draft.log("error", "send_failed");
+                        showToast(
+                            i18n.t("gateway.notify.admin.debug_send_failed"),
+                            { variant: "error" },
+                        );
+                        return;
+                    }
+                    if (!draft.owns(operation)) return;
+                    draft.log(
+                        response.ok ? "info" : "error",
+                        response.ok ? "sent" : "send_failed",
+                        { status: response.status },
+                    );
+                    if (response.ok) draft.accept(operation);
+                    showToast(
+                        i18n.t(
+                            response.ok
+                                ? "gateway.notify.admin.debug_sent"
+                                : "gateway.notify.admin.debug_send_failed",
+                        ),
+                        { variant: response.ok ? "success" : "error" },
+                    );
+                } finally {
+                    draft.finish(operation);
+                }
+            },
+            { signal: binding.signal },
+        );
     }
 
     return {
         id: "notifications",
         label: i18n.t("ui.reuse.notifications"),
         dataReady,
+        isDirty: draft.isDirty,
+        discard: draft.discard,
         subComposerOptions: {
+            onUnmount: draft.unmount,
             allowCustomization: false,
             preferenceKey: "administration-notifications-layout",
             heading: i18n.t("ui.reuse.notifications"),

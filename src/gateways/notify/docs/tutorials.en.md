@@ -19,3 +19,7 @@ Guides register through the public `ui:tutorials` capability with component-owne
 Optional test-delivery and publication controls are included only while available; repeated test buttons use one visible target.
 
 Registration validates guide titles and steps against the gateway's own catalog before making guides available. English, German, Indonesian and Japanese are supported; missing or empty preferred-language values use the same English key. Missing English text remains an explicit translation error. Registering guides on another dashboard page does not navigate to Settings or Administration.
+
+The delivery guide explains explicit Send Notification and pending-request availability. The broadcast guide explains Create Broadcast, audience review and publication status. Both explain same-page draft retention and Stay versus Discard and Leave. General Settings Save does not publish either draft. Optional action stages are omitted while their controls are unavailable.
+
+The broadcast guide also highlights Refresh as a separate action for retrying list loading while keeping the draft, without repeating publication or a status change.

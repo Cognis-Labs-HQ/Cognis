@@ -40,6 +40,8 @@
 
   <string name="ui.reuse.enable">Enable</string>
   <string name="ui.reuse.disable">Disable</string>
+  <string name="ui.reuse.enabled">Enabled</string>
+  <string name="ui.reuse.disabled">Disabled</string>
   <string name="ui.reuse.true">True</string>
   <string name="ui.reuse.false">False</string>
   <string name="ui.reuse.actions">Actions</string>

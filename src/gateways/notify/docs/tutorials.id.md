@@ -19,3 +19,7 @@ Panduan didaftarkan melalui kapabilitas publik `ui:tutorials` dengan definisi, k
 Kontrol pengujian dan penerbitan opsional hanya disertakan saat tersedia; tombol uji berulang memakai satu target terlihat.
 
 Pendaftaran memvalidasi judul dan langkah panduan terhadap katalog milik gateway sebelum menyediakan panduan. Bahasa Inggris, Jerman, Indonesia, dan Jepang didukung; nilai bahasa pilihan yang hilang atau kosong menggunakan kunci bahasa Inggris yang sama. Teks bahasa Inggris yang hilang tetap menghasilkan kesalahan terjemahan yang eksplisit. Mendaftarkan panduan di halaman dasbor lain tidak membuka Pengaturan atau Administrasi.
+
+Panduan pengiriman menjelaskan Kirim Notifikasi secara eksplisit dan ketersediaan saat permintaan berlangsung. Panduan siaran menjelaskan Buat Siaran, peninjauan audiens, dan status publikasi. Keduanya menjelaskan penyimpanan draf pada halaman yang sama serta perbedaan Tetap di Sini dan Buang dan Lanjutkan. Simpan pada pengaturan umum tidak menerbitkan kedua draf tersebut. Tahap tindakan opsional dihilangkan saat kontrolnya tidak tersedia.
+
+Panduan siaran juga menyoroti Segarkan sebagai tindakan terpisah untuk mencoba kembali pemuatan daftar sambil mempertahankan draf, tanpa mengulangi publikasi atau perubahan status.

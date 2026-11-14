@@ -13,6 +13,8 @@ Components use ctx capabilities rather than retaining the gateway implementation
 
 Provider contracts are exported from `@cognis/core`. Adapter bootstrap receives ctx capabilities and bounded host registration functions, without the concrete gateway. Provider tests delegate through `testSender(senderId, recipient, config)`.
 
+In Administration, prepare a notification under Notifications and choose Send Notification, or prepare an announcement under Broadcasts and choose Create Broadcast. These explicit actions send or publish the draft; the general Settings Save does neither.
+
 ## Technical Specification
 
 ### Email Actions
@@ -58,3 +60,13 @@ Notify contributes notify:email:add and notify:email:verify to auth:onboarding d
 Handlers recheck current authority before effects after asynchronous reads. Disabling or removing Notify removes the operations. Missing optional email operations may be skipped only when the selected registration policy does not require email; registered delivery failures remain errors. Verification codes and email links retain their separate lifetimes and do not create login sessions. The existing signed-in email settings tutorial is unchanged.
 
 An address may already be stored when delivery or revocation fails; a valid code may be consumed before a later authority check or database failure. Retry only after checking the current state.
+
+### Administration Drafts
+
+Notification and broadcast drafts remain in memory during redraws of the same Administration page. If navigation asks about unsaved changes, Stay retains the draft and Discard and Leave drops it. Discard restores the initial form values. Drafts are not saved across browser reloads or tab closure, and changing accounts clears them.
+
+Send and Create accept one request at a time, including validation; their controls are unavailable while pending. A rejected submission retains its draft. Success restores the original defaults only if the draft still matches the submitted values. Newer edits made while waiting remain unchanged and unsaved. General Settings Save never sends a notification or publishes a broadcast.
+
+Broadcast status changes are also single-flight. A successful creation or status change remains successful if the following list refresh fails. The refresh error is reported separately, and previously loaded rows remain visible. Check the current state before repeating an action; there is no automatic retry. Closing or replacing acknowledgement details, leaving the page or changing accounts prevents older detail responses from updating the current view.
+
+Use Refresh beside Create Broadcast to reload only the list with a read-only request, including after a loading error. It retains your draft and never repeats creation or a status change. Refresh is unavailable while another broadcast action is pending.
