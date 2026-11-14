@@ -88,6 +88,8 @@ After enrollment cancellation is acknowledged, navigation is offered again to th
 
 Each method supplies `stringsBaseUrl` and `loginUi` metadata: `placeholderKey`, `supportsResend` and `challengeOnSelect`. The login UI discovers these values rather than branching on provider IDs. Configuration labels are provider-owned translation keys.
 
+Login challenge responses may include `maxLength`, a positive integer describing the issued challenge. The gateway forwards this metadata to the login UI, including resend responses; consumers must not replace it with a newer provider setting while that challenge remains active. A replacement challenge supplies its own length. This presentation metadata does not create a gateway-owned code-length setting.
+
 Adapter contract registration follows [the shared gateway bootstrap contract](/docs/gateways).
 
 ## Adapter Management Controls

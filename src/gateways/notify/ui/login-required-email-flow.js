@@ -51,7 +51,7 @@ async function promptVerificationCode(i18n, emailAddress) {
       <p>${escapeHtml(formatTemplate(i18n.t("ui.app.settings.emails_verify_prompt"), { email: emailAddress }))}</p>
       <label class="stack">
         <span>${i18n.t("ui.app.settings.emails_verify_submit")}</span>
-        <input id="required-email-code-input" type="text" inputmode="numeric" maxlength="6" />
+        <input id="required-email-code-input" type="text" inputmode="numeric" />
       </label>
     `,
         actions: [

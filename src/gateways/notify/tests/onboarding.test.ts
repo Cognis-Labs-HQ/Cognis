@@ -74,6 +74,8 @@ async function fixture() {
                 sent.push(input);
             },
         },
+        undefined,
+        () => 6,
     );
     await runBootstrapScope(system, "gateway:notify", async () =>
         registerEmailOnboarding(

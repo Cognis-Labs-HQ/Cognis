@@ -100,6 +100,7 @@ export type NotificationChannelRegistration = BootstrapDisposer & {
 };
 
 export interface NotificationConfigField {
+    infoKey?: string;
     key: string;
     label: string;
     type: "text" | "password" | "number" | "boolean" | "select" | "email";
@@ -123,6 +124,7 @@ export interface NotificationSender {
     getConfiguredSecretFields?(): string[];
     getTestSchema?(): NotificationConfigField[];
     getConfig?(): Record<string, unknown>;
+    normalizeConfig?(config: Record<string, unknown>): Record<string, unknown>;
     setConfig?(config: Record<string, unknown>): void;
     setDeliveryEnabled?(enabled: boolean): void;
     bootstrap?(ctx: NotifyAdapterBootstrapCtx): Promise<void>;

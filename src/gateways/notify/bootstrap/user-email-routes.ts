@@ -1,5 +1,6 @@
 import {
     createEmailVerification,
+    resolveEmailCodeLength,
     EmailVerificationError,
     type EmailVerificationDelivery,
     type EmailVerification,
@@ -77,7 +78,7 @@ export function createUserEmailRoutes(
         tfaService.issueOrGet(
             key,
             15 * 60 * 1000,
-            getVerificationCodeLength?.(),
+            resolveEmailCodeLength(getVerificationCodeLength),
         );
     return async (
         req: IncomingMessage,
@@ -359,7 +360,16 @@ export function createUserEmailRoutes(
                 } catch (err) {
                     const msg =
                         err instanceof Error ? err.message : String(err);
-                    if (msg === "email_rate_limited") {
+                    if (err instanceof EmailVerificationError) {
+                        res.writeHead(err.status, {
+                            "content-type": "application/json",
+                        });
+                        res.end(
+                            JSON.stringify({
+                                error: { code: err.code, message: err.message },
+                            }),
+                        );
+                    } else if (msg === "email_rate_limited") {
                         res.writeHead(429, {
                             "content-type": "application/json",
                         });

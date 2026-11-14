@@ -86,6 +86,8 @@ Nach bestätigtem Abbruch der Einrichtung wird die Navigation erneut an die übr
 
 Jede Methode liefert `stringsBaseUrl` und `loginUi` mit `placeholderKey`, `supportsResend` und `challengeOnSelect`. Die Anmeldeoberfläche verwendet diese Metadaten statt Verzweigungen nach Anbieterkennungen. Konfigurationsbeschriftungen sind Übersetzungsschlüssel des Anbieters.
 
+Antworten für Anmeldecodes können `maxLength` enthalten: eine positive ganze Zahl für die Länge des ausgegebenen Codes. Das Gateway reicht diese Metadaten auch bei erneutem Senden an die Anmeldeoberfläche weiter. Solange der Code aktiv ist, dürfen Verbraucher die Angabe nicht durch eine neuere Anbietereinstellung ersetzen. Ein Ersatzcode liefert seine eigene Länge. Diese Darstellungsmetadaten erzeugen keine Codelängeneinstellung des Gateways.
+
 Die Vertragsregistrierung von Adaptern folgt dem [gemeinsamen Gateway-Bootstrap-Vertrag](/docs/gateways).
 
 ## Steuerung der Adapterverwaltung

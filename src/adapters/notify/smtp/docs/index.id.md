@@ -1,6 +1,8 @@
 # Adapter Surel SMTP
 
-## Bootstrap dan Kanal
+Adapter notifikasi SMTP mengirim aksi email terdaftar dan mengelola kebijakan panjang kode bersama untuk verifikasi email dan TFA Kode Email.
+
+## Contoh Penggunaan
 
 SMTP memiliki registrasi aksi, penyusunan pesan, dan antrean. Daftarkan `notify:registerEmailPurpose` dengan pengenal lokal dan fungsi aksi yang membangun pesan dari variabel. Gateway, adapter, dan modul eksternal hanya mendaftar dalam lingkup bootstrap masing-masing; pengenal menyertakan pemilik. Auth, Registration, TFA, dan Share memiliki isi pesannya sendiri. SMTP tidak memiliki daftar tujuan khusus aplikasi.
 
@@ -14,6 +16,10 @@ const sendEmail = ctx.getCapability("notify:sendEmail");
 await sendEmail({ purpose, recipientEmail, variables });
 ```
 
+## Spesifikasi Teknis
+
+### Bootstrap dan Kanal
+
 Setiap panggilan `notify:sendEmail` menyertakan tujuan yang sudah terdaftar dan variabel. `templateId` tidak digunakan lagi. Tujuan yang hilang atau tidak dikenal ditolak; aksi asinkron diperiksa kembali sebelum masuk antrean. Registrasi ditutup saat bootstrap selesai, gagal, atau melewati batas waktu. Hook penyelesaian gateway berjalan dengan pemilik yang sama setelah penyedia selesai melakukan bootstrap.
 
 Kategori notifikasi memakai kemampuan `notify:registerCategory` yang sudah ada. SMTP membuat antrean saat registrasi dan mengembalikan fungsi pengiriman terikat kepada gateway. Gateway tetap netral terhadap pengirim. Pengiriman tidak membuat atau menebak tujuan; pengiriman SMTP langsung memerlukan tujuan terdaftar yang dinyatakan secara eksplisit.
@@ -24,11 +30,19 @@ Jeda bawaan adalah lima belas detik per penerima yang dinormalisasi dalam setiap
 
 Kontrak pengirim memakai `test(recipient, config)` umum dan hook bootstrap, kanal, serta siklus hidup opsional. Gateway memanggil `testSender(senderId, recipient, config)` tanpa metode khusus SMTP untuk pengujian, verifikasi, undangan, atau login. Fungsi bantu gateway khusus SMTP dan registrasi templat terpisah dihapus.
 
-## Konfigurasi
+### Konfigurasi
 
 Konfigurasikan `COGNIS_SMTP_HOST`, `COGNIS_SMTP_PORT` (587), `COGNIS_SMTP_FROM`, `COGNIS_SMTP_USER`/`COGNIS_SMTP_PASS` opsional serta `COGNIS_SMTP_SECURE` (`none`, `starttls` atau `tls`). Nama pengirim, host EHLO, kebijakan sertifikat/autentikasi dan panjang kode menggunakan pengaturan adapter yang ada. Pesan uji dapat membawa penggantian konfigurasi dalam antrean.
 
-## Pabrik dan Tema Penerima
+Di Administrasi, buka konfigurasi SMTP pada gateway Notifikasi dan ubah **Panjang Kode**. Ini adalah satu-satunya pengaturan panjang kode yang dapat diedit dan disimpan untuk verifikasi email serta penyiapan dan login TFA Kode Email. Nilai bawaan adalah 6 digit; nilai numerik dinormalisasi menjadi bilangan bulat dan dibatasi ke 4–10 digit. Tooltip informasi pada bidang menjelaskan penggunaan bersama ini.
+
+SMTP menyediakan nilai terkini beserta `minimumIntervalMs` melalui kontrak publik `notify:emailDeliveryPolicy` versi 1. Konsumen membaca kebijakan tersebut setiap kali menerbitkan kode baru. Perubahan yang disimpan berlaku untuk kode berikutnya, termasuk kode pengganti saat pengiriman ulang. Kode yang sudah diterbitkan mempertahankan panjang aslinya sampai digunakan, diganti, atau kedaluwarsa; perubahan pengaturan tidak menafsirkan ulang kode tersebut.
+
+Ekstensi memperoleh panjang dari `notify:emailDeliveryPolicy().codeLength`. Terapkan gateway Notifikasi bersama adapter SMTP dan TFA Kode Email agar konsumen dan pemilik kebijakan memakai kontrak yang sama.
+
+Jika pemilik kebijakan SMTP tidak tersedia, dinonaktifkan, atau belum dikonfigurasi, permintaan kode baru untuk verifikasi email dan TFA Kode Email gagal secara eksplisit. Konsumen tidak menggunakan nilai bawaan panjang kode sendiri.
+
+### Pabrik dan Tema Penerima
 
 `notify:emailTemplates` menyediakan `blocks`, `compose`, `registerFactory`, `bindFactory`, `listFactories`, dan `render`. Pabrik bawaan adalah `standard`, `code`, `action`, dan `digest`. Selama bootstrap, modul dapat mendaftarkan pabrik sendiri dengan `id`, `labelKey`, `stringsBaseUrl`, `options` bertipe, serta fungsi `render(message, { theme, variables, options })`. ID hasil menyertakan pemilik. Registrasi tujuan menerima `{ factory, options }` sebagai argumen ketiga. Skema opsi mendukung nilai wajib, nilai bawaan, dan pilihan; nilai tidak dikenal atau tidak valid ditolak sebelum antrean dibuat. Blok mencakup paragraf, judul, kode, daftar, tabel, pemisah, dan tautan aksi HTTP(S). Teks di-escape dan interpolasi templat dilakukan sekali. Versi HTML dan teks biasa memakai isi sama. Merek, logo, pratinjau, dan footer dapat dikonfigurasi. Tema memakai `ui-preferences.mode` akun penerima; penerima tidak dikenal atau preferensi kosong menggunakan mode terang. Metadata tema pemanggil tidak dapat menimpanya. Penonaktifan atau bootstrap gagal menghapus pabrik dan menolak hasil berjalan dari pemilik yang dicabut.
 
@@ -66,22 +80,22 @@ export async function registerReport(ctx, heading) {
 }
 ```
 
-## Teks Surel yang Terbaca
+### Teks Surel yang Terbaca
 
 Isi surel memakai wadah blok, bukan paragraf yang membungkus blok hasil render. Paragraf, kode, item daftar, dan sel tabel menetapkan warna tema secara eksplisit. Teks footer mode gelap dan tautan mode terang memiliki kontras yang terbaca.
 
-## Kepemilikan Kontrak SMTP
+### Kepemilikan Kontrak SMTP
 
 SMTP mendeklarasikan kontrak tujuan surel, pengiriman, kebijakan, dan pabrik templat selama bootstrap miliknya sendiri. Definisi runtime berada di `contracts/declarations.ts`; tipe aksi publik opsional berada di `contracts/action-delivery.ts`. Gateway notifikasi tidak mendeklarasikan API penyedia tersebut dan hanya menyimpan tipe pengirim serta bukti pengiriman umum. Adapter lain menggunakan mekanisme registrasi host yang sama tanpa menambah berkas Core.
 
-## Berbagi dan Pengujian Andal
+### Berbagi dan Pengujian Andal
 
 Pengujian konfigurasi SMTP dapat berjalan ketika pengirim dinonaktifkan tanpa mengaktifkan pengiriman biasa. Pengujian memakai antrean diagnostik khusus milik bootstrap dan alur bertahap; penonaktifan gateway membatalkan antrean tersebut. Penggantian kata sandi kosong mempertahankan kata sandi tersimpan yang disembunyikan. Log diagnostik memuat kode kesalahan transportasi dan respons protokol yang aman tanpa kredensial atau teks respons server.
 
-## Peninjauan dan Siklus Hidup
+### Peninjauan dan Siklus Hidup
 
 Pembentukan koneksi SMTP dan negosiasi TLS masing-masing memiliki batas tiga puluh detik. Koneksi yang macet dihancurkan agar permintaan diagnostik tidak terus tertunda. TLS langsung dan STARTTLS memakai nama host yang dikonfigurasi untuk identitas TLS dan SNI nama DNS; alamat IP tidak dikirim sebagai nama SNI.
 
-## Kontrak Pengiriman Bertipe
+### Kontrak Pengiriman Bertipe
 
 Entri antrean SMTP mempertahankan subjek wajibnya selama pengiriman dan percobaan ulang. Opsi koneksi TLS membawa sinyal pembatalan untuk TLS langsung dan STARTTLS; kebijakan sertifikat, batas waktu, dan pembersihan koneksi tidak berubah.

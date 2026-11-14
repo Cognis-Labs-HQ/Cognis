@@ -11,6 +11,7 @@
     <string name="adapter.smtp.config.allow_self_signed">Selbstsigniertes Zertifikat erlauben</string>
     <string name="adapter.smtp.config.auth_disabled">Authentifizierung deaktivieren</string>
     <string name="adapter.smtp.config.code_length">Codelänge</string>
+    <string name="adapter.smtp.config.code_length_help">Gilt gemeinsam für E-Mail-Verifizierung und E-Mail-Code-TFA. Standard: 6 Ziffern; Bereich: 4–10. Änderungen gelten für neu ausgegebene Codes. Bestehende Codes behalten ihre Länge, bis sie verwendet, ersetzt oder abgelaufen sind.</string>
     <string name="adapter.smtp.config.sender_name">Absendername</string>
     <string name="adapter.smtp.template.standard">Standard-E-Mail</string>
     <string name="adapter.smtp.template.code">Bestätigungscode</string>

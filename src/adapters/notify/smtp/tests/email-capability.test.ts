@@ -98,7 +98,9 @@ test("SMTP owns staged action registration and delivery for modules and adapters
         assert.equal(contracts.describe(id)?.owner, "adapter:notify:smtp");
     host.sender.setConfig({ codeLength: 8 });
     assert.equal(
-        host.capabilities.require<() => number>("notify:emailCodeLength")(),
+        host.capabilities.require<() => { codeLength: number }>(
+            "notify:emailDeliveryPolicy",
+        )().codeLength,
         8,
     );
     const stages: string[] = [];
@@ -324,4 +326,33 @@ test("SMTP diagnostic delivery works while disabled and retains concealed creden
         }),
         /smtp_sender_disabled/,
     );
+});
+
+test("SMTP owns normalized defaults, bounds and revocable policy availability", async (context) => {
+    const host = await fixture(context);
+    const policy = host.capabilities.require<() => { codeLength: number }>(
+        "notify:emailDeliveryPolicy",
+    );
+    assert.equal(policy().codeLength, 6);
+    for (const [input, expected] of [
+        [4, 4],
+        [10, 10],
+        [12, 10],
+        [0, 4],
+        [8.5, 8],
+        [Number.NaN, 6],
+    ]) {
+        const normalized = host.sender.normalizeConfig({ codeLength: input });
+        assert.equal(normalized.codeLength, expected);
+        host.sender.setConfig(normalized);
+        assert.equal(policy().codeLength, expected);
+    }
+    host.capabilities.contribute("notify:isSenderEnabled", () => false);
+    assert.throws(policy, /email_delivery_unavailable/);
+    host.capabilities.contribute("notify:isSenderEnabled", () => true);
+    host.sender.setConfig({ host: "" });
+    assert.throws(policy, /email_delivery_unavailable/);
+    host.sender.setConfig({ host: "synthetic.invalid" });
+    for (const dispose of host.cleanup) await dispose();
+    assert.throws(policy, /email_delivery_unavailable/);
 });

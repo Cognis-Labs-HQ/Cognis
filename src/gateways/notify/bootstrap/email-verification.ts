@@ -1,3 +1,7 @@
+import {
+    MIN_VERIFICATION_CODE_LENGTH,
+    MAX_VERIFICATION_CODE_LENGTH,
+} from "../../reuse/verification-codes.js";
 import { emailVerificationKey } from "./email-verification-key.js";
 import type { NotificationUserEmailStore } from "./stores.js";
 import type { TfaCodeService } from "../../reuse/tfa-code.js";
@@ -22,6 +26,34 @@ export class EmailVerificationError extends Error {
     ) {
         super(message);
     }
+}
+
+export function resolveEmailCodeLength(
+    read?: () => number | undefined,
+    log?: GatewayBootstrapContext["log"],
+): number {
+    let length: number | undefined;
+    try {
+        length = read?.();
+    } catch (error) {
+        log?.("error", "Email delivery policy is unavailable.", {
+            component: "notify-gateway",
+            operation: "resolveEmailCodeLength",
+            errorName: error instanceof Error ? error.name : "UnknownError",
+        });
+    }
+    if (
+        !Number.isInteger(length) ||
+        length! < MIN_VERIFICATION_CODE_LENGTH ||
+        length! > MAX_VERIFICATION_CODE_LENGTH
+    ) {
+        throw new EmailVerificationError(
+            503,
+            "email_delivery_unavailable",
+            "Email verification is not available. Contact your administrator.",
+        );
+    }
+    return length!;
 }
 
 export function createEmailVerification(
@@ -65,11 +97,12 @@ export function createEmailVerification(
                     "email_delivery_unavailable",
                     "Email verification is not available. Contact your administrator.",
                 );
+            const length = resolveEmailCodeLength(codeLength, log);
             await assertCurrent();
             await store.addUserEmail(accountId, email);
             await assertCurrent();
             const key = emailVerificationKey(accountId, email);
-            const code = codes.issueOrGet(key, 15 * 60 * 1000, codeLength?.());
+            const code = codes.issueOrGet(key, 15 * 60 * 1000, length);
             const watchToken = links.issueOrGet(key);
             const verifyUrl = externalHost
                 ? `${externalHost}/verify-email?token=${watchToken}`

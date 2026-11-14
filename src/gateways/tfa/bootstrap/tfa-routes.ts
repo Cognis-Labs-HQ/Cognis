@@ -130,6 +130,9 @@ export function createTfaRoutes(
                 JSON.stringify({
                     data: {
                         challenge: {
+                            ...(challenge.maxLength != null
+                                ? { maxLength: challenge.maxLength }
+                                : {}),
                             ...(challenge.message
                                 ? { message: challenge.message }
                                 : {}),

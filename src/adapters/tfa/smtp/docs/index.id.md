@@ -1,24 +1,31 @@
 # Adapter TFA SMTP
 
-## Ringkasan
+Metode Kode Email mengirim kode sekali pakai untuk penyiapan dan login melalui pengirim SMTP gateway Notifikasi. Panjang kode dimiliki kebijakan pengiriman pengirim tersebut; TFA membacanya melalui ctx.
 
-Adapter mendaftarkan aksi pesan kodenya sendiri saat bootstrap melalui `notify:registerEmailPurpose` dan mengirim melalui `notify:sendEmail`. Registrasi, isi kode, dan sinkronisasi pengirim dimiliki adapter ini. Gateway TFA hanya menyediakan hook siklus hidup adapter yang netral. Penonaktifan gateway membatalkan antrean SMTP miliknya; aktivasi ulang memulihkan registrasinya.
+## Contoh Penggunaan
 
-## Persyaratan
+1. Di Administrasi, konfigurasikan dan aktifkan SMTP pada gateway Notifikasi.
+2. Atur **Panjang Kode** di sana, misalnya menjadi 8 digit, lalu simpan. Kode verifikasi email baru serta kode penyiapan dan login TFA Kode Email menggunakan nilai tersebut.
+3. Di Pengaturan, aktifkan TFA Kode Email dan masukkan kode yang dikirim ke alamat email utama akun yang sudah diverifikasi. Saat login, gunakan kode dari tantangan terbaru; pengiriman ulang menerbitkan kode pengganti berdasarkan kebijakan terkini.
 
-- Gateway Notification harus menyediakan pengiriman email verifikasi.
-- Pengirim SMTP harus dikonfigurasi dan diaktifkan di administrasi gateway Notification.
-- Akun pengguna harus memiliki email utama yang sudah terverifikasi.
+## Spesifikasi Teknis
 
-## Konfigurasi
+### Persyaratan
 
-Atur panjang kode pada penyedia pengiriman surel; metode ini membaca kebijakan terkininya.
+- Pengirim SMTP gateway Notifikasi harus dikonfigurasi dan diaktifkan.
+- Pemilik SMTP harus menyediakan `notify:emailDeliveryPolicy` versi 1, ketersediaan email, dan pengiriman melalui ctx. Tantangan baru gagal secara eksplisit jika pemilik tidak tersedia, dinonaktifkan, atau belum dikonfigurasi.
+- Akun pengguna harus memiliki alamat email utama yang sudah diverifikasi.
 
-## Perilaku runtime
+### Konfigurasi dan Penyimpanan
 
-- Kode challenge disimpan di memori proses. Restart aplikasi akan membatalkan kode setup/login yang masih menunggu.
-- Pada deployment multi-instance, adapter ini sebaiknya dipakai hanya jika request selama jendela challenge diarahkan ke instance yang sama.
+Bidang **Panjang Kode** pada SMTP Notifikasi adalah satu-satunya sumber pengaturan yang dapat diedit dan disimpan untuk verifikasi email dan TFA Kode Email. Nilai bawaan adalah 6 digit, dinormalisasi menjadi bilangan bulat dan dibatasi ke 4–10 digit. TFA tidak memiliki pengaturan panjang kode terpisah yang dapat diedit atau disimpan dan tidak menyediakan kebijakan pengganti ketika pemilik tidak tersedia.
 
-## Kebijakan Pengiriman
+### Kebijakan Pengiriman dan Tantangan
 
-Panjang kode dan jeda pengiriman dibaca dari `notify:emailDeliveryPolicy`. Adapter tidak memiliki pengaturan panjang kode terpisah. Fungsi verifikasi bersama menghasilkan digit acak kriptografis; metode ini mendeklarasikan tampilan dan sumber bahasanya.
+Panjang kode dan jeda pengiriman berasal dari `notify:emailDeliveryPolicy` terkini saat kode diterbitkan. Fungsi verifikasi bersama menghasilkan digit acak kriptografis. Perubahan panjang yang disimpan berlaku untuk tantangan berikutnya, termasuk kode pengganti saat pengiriman ulang. Kode penyiapan dan login yang sudah diterbitkan mempertahankan panjang aslinya sampai digunakan, diganti, atau kedaluwarsa; perubahan pengaturan tidak menafsirkan ulang kode tersebut. Metadata panjang masukan menjelaskan tantangan yang diterbitkan, bukan nilai kebijakan yang berubah setelahnya.
+
+Kode tantangan disimpan dalam memori proses. Memulai ulang aplikasi atau menonaktifkan metode membatalkan kode penyiapan dan login yang masih menunggu. Deployment dengan beberapa instans harus mengarahkan permintaan ke instans yang sama selama masa berlaku tantangan.
+
+### Registrasi dan Siklus Hidup
+
+Adapter mendaftarkan aksi pesan kodenya saat bootstrap melalui `notify:registerEmailPurpose` dan mengirim melalui `notify:sendEmail`. Adapter memiliki registrasi, isi pesan, dan status tantangan; gateway TFA menyediakan hook siklus hidup adapter yang netral. Penonaktifan gateway membatalkan antrean SMTP dan tantangan tertundanya. Aktivasi ulang membuat registrasi baru tanpa memulihkan tantangan lama. Tampilan login dan sumber bahasa dimiliki metode ini.

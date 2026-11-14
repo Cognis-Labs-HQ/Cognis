@@ -11,6 +11,7 @@
     <string name="adapter.smtp.config.allow_self_signed">Allow Self-Signed Certificate</string>
     <string name="adapter.smtp.config.auth_disabled">Disable Authentication</string>
     <string name="adapter.smtp.config.code_length">Code Length</string>
+    <string name="adapter.smtp.config.code_length_help">Shared by email verification and Email Code TFA. Default: 6 digits; range: 4–10. Changes apply to newly issued codes. Existing codes keep their length until used, replaced or expired.</string>
     <string name="adapter.smtp.config.sender_name">Sender Name</string>
     <string name="adapter.smtp.template.standard">Standard Email</string>
     <string name="adapter.smtp.template.code">Verification Code</string>
