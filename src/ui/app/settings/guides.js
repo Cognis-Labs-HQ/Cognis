@@ -76,6 +76,16 @@ export const guides = [
                         bodyKey:
                             "ui.tutorial.settings.appearance.message.layout.body",
                     },
+                    {
+                        highlightNext: true,
+                        id: "message-preview",
+                        selector: "[data-message-style-preview]:not([hidden])",
+                        when: ({ targetAvailable }) => targetAvailable,
+                        titleKey:
+                            "ui.tutorial.settings.appearance.message.preview.title",
+                        bodyKey:
+                            "ui.tutorial.settings.appearance.message.preview.body",
+                    },
                 ],
                 scope: "#appearance",
             },

@@ -201,6 +201,10 @@ Pada `deprovision-user` → `cleanup-dependencies`, komponen memperoleh `auth:de
 
 Migrasi ini melindungi konsumen pembersihan bawaan. Sebelum mengaktifkan penghapusan akun dalam penerapan, perbarui atau nonaktifkan hook pembersihan eksternal yang masih memercayai hasil alur publik yang dapat diubah.
 
+### Tampilan Hanya Baca
+
+Penyedia peramban menyediakan `social:messagePresentation` versi 1 melalui ctx dengan cakupan siklus hidup. `render({ style, records, currentAccountId })` menjalankan `messages:presentConversation` melalui tahap `validate` dan `render`, lalu mengembalikan markup noninteraktif. Setiap catatan menyediakan string `id`, `senderId`, `senderDisplayName`, `senderHandle`, `text`, dan waktu ISO `createdAt`. Hanya bidang tampilan tersebut yang disalin untuk digambarkan. Penyedia mengumumkan stylesheet bersama dan sinyal pembatalan; konsumen mendengarkan `cognis:message-presentation-changed` dan berhenti memakai penyedia yang dicabut. Percakapan nyata dan tampilan hanya baca memakai penggambar baris dan isi yang sama. Jalur hanya baca tidak mengambil ruang, memuat gambar avatar, mendaftarkan pencarian, menghasilkan tanda baca pesan, atau menyimpan konten. Konsumen sintetis menyediakan catatan dan label terlokalisasinya sendiri.
+
 ## Keamanan
 
 Kelayakan ruang, keanggotaan, dan pembacaan pesan diperiksa terpisah. Ruang terenkripsi bergantung pada kunci klien; model ancaman membedakan konten dan metadata perutean.
