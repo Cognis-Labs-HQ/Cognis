@@ -342,15 +342,20 @@ test("disabled Study language links cannot bypass the router through their state
     scope.abort();
 });
 
-test("language introduction discovery stays on the Study overview", () => {
-    for (const language of ["en", "ja"]) {
-        assert.equal(languageStudyPage({ pathname: "/study", language }), true);
+test("language introductions are discoverable from Explore without changing the active layer", () => {
+    for (const language of ["cy", "fi"]) {
         for (const pathname of [
-            "/study/explore/ja/kana",
-            "/study/explore/ja/kanji",
-            "/study/en/flashcards",
+            `/study/explore/${language}/symbols`,
+            `/study/explore/${language}/letters/card`,
+        ]) {
+            assert.equal(languageStudyPage({ pathname, language }), true);
+        }
+        for (const pathname of [
+            "/study/fi/flashcards",
             "/settings",
-        ])
+            `/study/explore/${language === "cy" ? "fi" : "cy"}/symbols`,
+        ]) {
             assert.equal(languageStudyPage({ pathname, language }), false);
+        }
     }
 });

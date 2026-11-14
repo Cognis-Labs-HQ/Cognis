@@ -91,7 +91,6 @@ test("Study navigation stores language selection on buttons instead of URLs", ()
     assert.match(navigationSource, /data-study-settings/);
     assert.match(navigationSource, /currentPath !== "\/study\/settings"/);
     assert.match(studyPageSource, /readSelectedStudyLanguageCode\(\)/);
-    assert.match(studyPageSource, /history\.state\?\.studyLastPageUrl/);
     assert.match(navigationSource, /currentPath !== "\/study\/settings"/);
     assert.doesNotMatch(navigationSource, /withLanguageQuery/);
     assert.doesNotMatch(studyPageSource, /withLanguageQuery/);
@@ -117,7 +116,7 @@ test("Study pages redirect to the unavailable page without valid languages", () 
     );
 });
 
-test("Study hub hides saved languages whose provider is disabled", () => {
+test("Study settings hide saved languages whose provider is disabled", () => {
     const source = readFileSync(
         resolve(ROOT, "src/gateways/study/ui/study.js"),
         "utf8",
@@ -160,19 +159,7 @@ test("Study sub-navigation normalizes language codes before resolving flags", ()
     assert.match(source, /isAdminScope\(\) && !hasLibraryModule/);
 });
 
-test("Study page links use light-theme success hover tokens", () => {
-    const stylesheet = readFileSync(
-        resolve(ROOT, "src/gateways/study/ui/study.css"),
-        "utf8",
-    );
-
-    assert.match(
-        stylesheet,
-        /body\[data-theme="light"\] \.study-hub-module-link:hover,[\s\S]*background: var\(--color-success-hover-bg\);[\s\S]*color: var\(--color-success-outline-text\);/,
-    );
-});
-
-test("study hub detects native library child component by descriptor id", () => {
+test("Study navigation detects native library child component by descriptor id", () => {
     const source = readFileSync(
         resolve(ROOT, "src/gateways/study/ui/sub-navigation.js"),
         "utf8",

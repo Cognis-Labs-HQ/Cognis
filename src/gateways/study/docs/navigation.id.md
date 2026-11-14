@@ -74,7 +74,7 @@ Study menyimpan snapshot JSON ringan dengan batas ukuran di tab saat ini: skema,
 
 Pratinjau Explore memakai data cache yang telah diotorisasi. Menggambar dan latihan kartu bekerja secara lokal. Penyelesaian, ulasan, ID yang dilihat, dan status akhir favorit diantrekan; progres, XP, dan hadiah menjadi resmi setelah konfirmasi server. Audio serta permintaan kamus/ElevenLabs berhenti. Penyuntingan, penghapusan, dan berbagi memerlukan koneksi. Hanya konten yang pernah dimuat dalam batas cache yang tersedia.
 
-Study privat memerlukan sesi akun yang sama, pernah diverifikasi, dan belum kedaluwarsa di tab yang sama. Muat ulang privat secara luring memerlukan koneksi; kunjungan pertama ke hub di tab terverifikasi dapat dilakukan setelah persiapan latar belakang. Perubahan akun/sesi, preferensi, siklus hidup modul, dan pelepasan penyedia membatalkan snapshot privat. Pencabutan akses server tidak dapat diketahui saat terputus. Pemulihan memakai penjaga perubahan yang belum disimpan lalu memuat ulang otorisasi server.
+Study privat memerlukan sesi akun yang sama, pernah diverifikasi, dan belum kedaluwarsa di tab yang sama. Muat ulang privat secara luring memerlukan koneksi; kunjungan pertama ke Study di tab terverifikasi dapat dilakukan setelah persiapan latar belakang. Perubahan akun/sesi, preferensi, siklus hidup modul, dan pelepasan penyedia membatalkan snapshot privat. Pencabutan akses server tidak dapat diketahui saat terputus. Pemulihan memakai penjaga perubahan yang belum disimpan lalu memuat ulang otorisasi server.
 
 ## Antrean dan Persetujuan
 
@@ -84,7 +84,7 @@ Pemulihan memperbarui penyedia dan menjalankan `authenticate-session` sebelum ta
 
 ## Akses Dashboard dan Study
 
-Dashboard menyatakan akses luring privat yang hanya berlaku dalam sesi dan mempertahankan ringkasan akun serta acara mendatang yang tersimpan. Ekstensi Dashboard opsional yang diambil dari server dilewati saat dibuka kembali secara luring. Penyedia Study mendaftarkan rute hub dan menggunakan snapshot katalog bahasa, preferensi belajar, serta tautan modul yang terikat akun dan sesi melalui alur `study:navigation`. Pemuatan bilah navigasi menyiapkan metadata ringan hub. Explore dan kartu belajar tetap menggunakan deklarasi rute milik penyedianya; halaman yang tidak didukung tetap memakai pemulihan tanpa dialog kesalahan. Kontrol pemilihan bahasa belajar memerlukan koneksi.
+Dashboard menyatakan akses luring privat yang hanya berlaku dalam sesi dan mempertahankan ringkasan akun serta acara mendatang yang tersimpan. Ekstensi Dashboard opsional yang diambil dari server dilewati saat dibuka kembali secara luring. Penyedia Study mendaftarkan rute masuk bawaan dan menggunakan snapshot katalog bahasa, preferensi belajar, serta tautan modul yang terikat akun dan sesi melalui alur `study:navigation`. Pemuatan bilah navigasi menyiapkan metadata navigasi ringan. Explore dan kartu belajar tetap menggunakan deklarasi rute milik penyedianya; halaman yang tidak didukung tetap memakai pemulihan tanpa dialog kesalahan. Kontrol pemilihan bahasa belajar memerlukan koneksi.
 
 ## Halaman Study luring kosong
 
@@ -131,3 +131,9 @@ Aktivitas pribadi dan status tersimpan menggunakan sesi akun terverifikasi, term
 ## Ringkasan Kelas di Dasbor
 
 Kontribusi Dasbor untuk siswa dan guru dimulai dengan lima kolom dan dua baris, sesuai teks pengantar serta tindakan Kelas Saya untuk siswa. Pengguna tetap dapat memperbesar atau mengaturnya melalui Page Composer. Penempatan tersimpan dan ukuran minimum tidak berubah. Panduan ruang kerja yang ada mencakup pengeditan tata letak; panduan Kelas tetap mencakup pengelolaan kelas pada halamannya sendiri.
+
+## Masuk Ke Bahasa Pilihan
+
+Membuka `/study` langsung menampilkan Explore untuk bahasa tersedia yang dipilih. Pilihan mengikuti navigasi Study: bahasa terdaftar yang sengaja dipilih dipertahankan meskipun belum diikuti; jika tidak ada, bahasa pertama yang tersedia dan diikuti digunakan. Tanpa pilihan atau pendaftaran yang valid, pengguna daring diarahkan ke pengaturan bahasa. Katalog atau penyedia Explore yang tidak tersedia membuka halaman tidak tersedia yang sudah ada. Metadata luring yang belum tersimpan menampilkan halaman Study kosong melalui Page Composer.
+
+Alur `study:navigation:enter` memiliki tahap `resolve` dan `navigate`. Alur ini menggunakan model navigasi Study bersama dan skema penyedia, lalu memanggil `ui:navigate` dengan penggantian riwayat dan bahasa yang dipilih. Tautan langsung ke konten, dek, Library, dan halaman Study lainnya tetap menuju tujuan semula. Resolusi tertunda dibatalkan saat halaman diganti, operasi dibatalkan, atau penyedia dilepas; perubahan pendaftaran dan penyedia memicu resolusi baru. Penolakan akses diteruskan, pembatalan router dihormati, dan direktori bahasa tidak ditampilkan selama menunggu.

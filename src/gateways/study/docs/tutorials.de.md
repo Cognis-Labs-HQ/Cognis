@@ -1,22 +1,20 @@
 # Geführte Anleitungen
 
-Diese Anleitungen erklären die verfügbaren Aktionen dieser Komponente.
+## Anleitung Verwenden
 
-## Anleitung verwenden
-
-Öffnen Sie eine der folgenden Seiten für eine noch nicht abgeschlossene Anleitung. Über das ? neben dem Seitentitel wiederholen Sie eine abgeschlossene Anleitung; Überspringen beendet die Wiederholung.
+Wählen Sie in Explore über das ? neben dem Seitentitel die Study-Übersicht. Dieser manuelle Leitfaden erklärt Navigation, gewählte Sprache, verfügbare Wörterbuchsuche und Lerneinstellungen. Er bleibt auf der aktuellen Ebene und überspringt nicht verfügbare Bedienelemente. Sprachleitfäden erklären Inhalte und gelten nur für ihre eigene Sprache.
 
 ## Technische Spezifikation
 
-| Seite / Bereich                  | Anleitung         | Zugriff             |
-| -------------------------------- | ----------------- | ------------------- |
-| `/study`                         | Study-Übersicht   | Angemeldeter Nutzer |
-| `^/study/(?:settings\|welcome)$` | Lerneinstellungen | Angemeldeter Nutzer |
+| Seite / Bereich                     | Anleitung         | Zugriff             |
+| ----------------------------------- | ----------------- | ------------------- |
+| `/study/explore/*`                  | Study-Übersicht   | Angemeldeter Nutzer |
+| `/study/settings`, `/study/welcome` | Lerneinstellungen | Angemeldeter Nutzer |
 
 ## Übersicht Und Sprachleitfäden
 
-Der Leitfaden auf `/study` erklärt die Aktivitätsnavigation, gewählte Lernsprachen, verfügbare Module, Wörterbuchsuche und Lerneinstellungen. Nicht verfügbare Bedienelemente entfallen; Kartenabläufe werden nicht wiederholt.
+Die Übersicht behält die Abschlusskennung `study:getting-started`. Mit Weiter, Zurück und Neustart lassen sich die Navigationsschritte ohne Seitenwechsel durchgehen. Abgeschlossene Leitfäden können über dasselbe ?-Menü wiederholt werden. Sprachleitfäden können auf Inhaltsseiten ihrer eigenen angemeldeten Sprache automatisch starten; eine andere Sprachauswahl zeigt den zugehörigen Leitfaden.
 
-`study:tutorialTargets` veröffentlicht Navigation und Zeichenziele aus Study sowie die gekapselten Aktionen `route` und `attachDrawing`. `isEnrolled(language)` liest bestätigte Einstellungen über `study:navigation`, kontogebunden und bei Änderungen ungültig gemacht. Ein Sprachbesuch ist keine Anmeldung.
+`study:tutorialTargets` veröffentlicht Study-eigene Navigations- und Zeichenziele sowie die gekapselten Aktionen `route` und `attachDrawing`. `matchesPage` erkennt nur Explore-Pfade der angegebenen Sprache. `isEnrolled(language)` liest bestätigte kontogebundene Einstellungen über `study:navigation`. Die Erkennung navigiert nicht und meldet keine Sprache an. Library besitzt interaktive Kartenabläufe und den allgemeinen Ersatzleitfaden.
 
-Sprachleitfäden sind im ?-Menü der Übersicht wählbar. Diese bewusste Auswahl öffnet die Explore-Inhalte der Sprache. Automatisch starten sie nur auf den eigenen Inhaltsseiten und behalten eine bereits geöffnete Ebene bei. Library besitzt den interaktiven Kartenablauf und den allgemeinen Ersatzleitfaden; siehe Komponentendokumentation.
+Das frühere, ausschließlich zum Sprachverzeichnis gehörende Anleitungsziel `modules` entfällt. Externe Leitfäden müssen die aktuelle Navigation oder eigene Inhalte statt des entfernten Verzeichnisses verwenden.

@@ -1,22 +1,20 @@
 # Tutorial Terpandu
 
-Panduan ini menjelaskan tindakan yang tersedia dalam komponen ini.
-
 ## Gunakan Panduan
 
-Kunjungi halaman di bawah untuk memulai panduan yang belum selesai. Gunakan ? di samping judul halaman untuk mengulang panduan yang selesai; Lewati mengakhiri pengulangan.
+Di Explore, pilih Ikhtisar Study dari ? di samping judul halaman. Panduan manual ini menjelaskan navigasi, bahasa pilihan, pencarian kamus yang tersedia, dan pengaturan Study. Panduan tetap berada pada lapisan saat ini dan melewati kontrol yang tidak tersedia. Panduan milik bahasa menjelaskan konten dan hanya berlaku untuk bahasanya sendiri.
 
 ## Spesifikasi Teknis
 
-| Halaman / bagian                 | Panduan            | Akses          |
-| -------------------------------- | ------------------ | -------------- |
-| `/study`                         | Ringkasan Study    | Pengguna masuk |
-| `^/study/(?:settings\|welcome)$` | Preferensi Belajar | Pengguna masuk |
+| Halaman / Permukaan                 | Panduan          | Akses          |
+| ----------------------------------- | ---------------- | -------------- |
+| `/study/explore/*`                  | Ikhtisar Study   | Pengguna masuk |
+| `/study/settings`, `/study/welcome` | Preferensi Study | Pengguna masuk |
 
-## Ringkasan Dan Panduan Bahasa
+## Ikhtisar Dan Panduan Bahasa
 
-Panduan `/study` menjelaskan subnavigasi aktivitas, bahasa yang diikuti, modul tersedia, pencarian kamus, dan pengaturan belajar. Kontrol yang tidak tersedia dilewati; alur kartu tidak diulang.
+Ikhtisar mempertahankan identitas penyelesaian `study:getting-started`. Gunakan Berikutnya, Kembali, atau Mulai Ulang untuk meninjau navigasi tanpa berpindah halaman. Panduan yang selesai dapat diputar ulang dari menu ? yang sama. Panduan bahasa dapat dimulai otomatis pada konten bahasanya sendiri yang diikuti; mengganti bahasa pilihan menampilkan panduan bahasa tersebut.
 
-`study:tutorialTargets` menerbitkan target navigasi dan menggambar milik Study serta tindakan terlingkup `route` dan `attachDrawing`. `isEnrolled(language)` membaca preferensi terverifikasi melalui `study:navigation`, terikat akun aktif dan dibatalkan saat keikutsertaan berubah. Mengunjungi bahasa bukan berarti mengikutinya.
+`study:tutorialTargets` menyediakan target navigasi dan menggambar milik Study serta tindakan terbatas `route` dan `attachDrawing`. `matchesPage` hanya mencocokkan jalur Explore untuk bahasa yang diberikan. `isEnrolled(language)` membaca preferensi terverifikasi yang terikat akun melalui `study:navigation`. Penemuan panduan tidak berpindah halaman atau mendaftarkan bahasa. Library memiliki panduan kartu interaktif dan panduan umum penggantinya.
 
-Panduan modul bahasa dapat dipilih dari menu ? pada ringkasan. Pilihan sadar ini membuka konten Explore bahasa tersebut. Panduan hanya otomatis dimulai pada kontennya sendiri dan mempertahankan lapisan aktif. Library memiliki alur kartu interaktif dan panduan umum cadangan; lihat dokumentasi komponennya.
+Target tutorial `modules` yang hanya digunakan direktori lama dihapus. Panduan eksternal harus menargetkan navigasi saat ini atau kontennya sendiri, bukan direktori yang telah dihapus.

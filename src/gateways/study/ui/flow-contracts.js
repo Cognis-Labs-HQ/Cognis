@@ -1,3 +1,4 @@
+import { registerStudyEntry } from "./entry.js";
 import { registerDrawingDelivery } from "./drawing-client.js";
 import { registerFavouriteClient } from "./reuse/favourites-client.js";
 import {
@@ -8,6 +9,7 @@ import {
 
 export function mountProvider(uiCtx) {
     registerStudyNavigation(uiCtx);
+    registerStudyEntry(uiCtx);
     const subPages = uiCtx.capabilities.get("ui:subPages");
     subPages?.register("study", {
         listGroups: () => fetchStudyLanguages(),
