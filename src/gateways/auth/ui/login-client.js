@@ -116,3 +116,39 @@ export function persistLoginSession(data, storage = localStorage) {
         data.userValidationMode || "none",
     );
 }
+
+export async function getPendingLoginAttempt({ signal } = {}) {
+    const response = await fetch("/api/v1/auth/login-attempt", {
+        signal,
+        cache: "no-store",
+    });
+    const payload = await response.json();
+    if (!response.ok || !Object.hasOwn(payload ?? {}, "data"))
+        throw new Error("login_attempt_unavailable");
+    const data = payload.data;
+    if (
+        data !== null &&
+        (data?.tfaRequired !== true ||
+            data.loginUrl !== "/login" ||
+            typeof data.loginAttemptId !== "string" ||
+            !Array.isArray(data.methods) ||
+            !data.methods.length ||
+            data.token)
+    ) {
+        throw new Error("login_attempt_unavailable");
+    }
+    return data;
+}
+
+export async function cancelPendingLoginAttempt(
+    loginAttemptId,
+    { signal } = {},
+) {
+    const response = await fetch("/api/v1/auth/login-attempt", {
+        method: "DELETE",
+        signal,
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ loginAttemptId }),
+    });
+    if (!response.ok) throw new Error("login_attempt_unavailable");
+}

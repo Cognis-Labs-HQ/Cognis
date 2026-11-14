@@ -104,3 +104,92 @@ for (const [code, key] of [
         assert.deepEqual(messages, [`translated:${key}`]);
     });
 }
+
+for (const outcome of ["cancel", "retry"]) {
+    test(`TFA verification ${outcome} preserves pending-flow ownership and only commits a current success`, async () => {
+        class Element {
+            hidden = false;
+        }
+        class Input extends Element {
+            constructor(value) {
+                super();
+                this.value = value;
+            }
+        }
+        let current = true;
+        let release;
+        let attempts = 0;
+        const finished = [];
+        const messages = [];
+        const client = {
+            verifyCode: async () => {
+                attempts++;
+                if (outcome === "cancel")
+                    return new Promise((resolve) => {
+                        release = resolve;
+                    });
+                return attempts === 1
+                    ? {
+                          response: { ok: false },
+                          body: {
+                              error: { message: "invalid_verification_code" },
+                          },
+                      }
+                    : {
+                          response: { ok: true },
+                          body: { data: { token: "synthetic-session" } },
+                      };
+            },
+            resolveErrorMessage: () => "translated-invalid-code",
+        };
+        const { createLoginSubmitHandler } = loadTestModule(
+            new URL("../../ui/login-page/submit.js", import.meta.url),
+            {
+                "/static/reuse/page-entry.js": {
+                    beginPageLoading: () => () => {},
+                },
+            },
+            { console, HTMLElement: Element, HTMLInputElement: Input },
+        );
+        const handler = createLoginSubmitHandler({
+            getState: () => ({
+                currentTfaLoginAttemptId: "synthetic-attempt",
+                pendingKeyringPassword: "synthetic-password",
+            }),
+            beginAttempt: () => () => current,
+            loadTfaLoginClient: async () => client,
+            finalizeAuthenticatedSession: async (...args) =>
+                finished.push(args),
+            showToast: (message) => messages.push(message),
+            i18n: { t: (key) => key },
+        });
+        const event = {
+            preventDefault() {},
+            target: {
+                querySelector: (selector) =>
+                    selector === "#login-tfa-fields"
+                        ? new Element()
+                        : new Input("12345678"),
+            },
+        };
+        const first = handler(event);
+        await new Promise((resolve) => setImmediate(resolve));
+        if (outcome === "cancel") {
+            current = false;
+            release({
+                response: { ok: true },
+                body: { data: { token: "synthetic-session" } },
+            });
+            await first;
+            assert.equal(finished.length, 0);
+            assert.equal(messages.length, 0);
+        } else {
+            await first;
+            assert.deepEqual(messages, ["translated-invalid-code"]);
+            assert.equal(finished.length, 0);
+            await handler(event);
+            assert.equal(finished.length, 1);
+            assert.equal(finished[0][1], "synthetic-password");
+        }
+    });
+}

@@ -367,9 +367,20 @@ for (const state of [
         if (state !== "absent") host.requireTfa();
         if (state === "disabled") await host.gatewayRegistry.disable("tfa");
         if (state === "required")
-            host.capabilities.contribute("tfa:assessSession", async () => ({
-                outcome: "tfa_required",
-            }));
+            host.capabilities.contribute(
+                "tfa:assessSession",
+                async (
+                    candidate: Parameters<
+                        typeof host.runtime.createPendingTfaLoginAttempt
+                    >[0],
+                ) => ({
+                    ...candidate,
+                    outcome: "tfa_required",
+                    loginAttemptId:
+                        host.runtime.createPendingTfaLoginAttempt(candidate).id,
+                    methods: [{ id: "synthetic-factor" }],
+                }),
+            );
         if (state === "failed")
             host.capabilities.contribute("tfa:assessSession", async () => {
                 throw new Error("fixture_failure");
