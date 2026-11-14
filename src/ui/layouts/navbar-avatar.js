@@ -1,12 +1,17 @@
 import { uiCtx } from "../reuse/ui-ctx.js";
 
-/**
- * Refreshes the navbar avatar through the optional profile-owned CTX provider.
- * Keeps unchanged avatar nodes mounted and ignores superseded provider results.
- */
+/** Places provider-owned content without changing the navbar button or menu. */
 let avatarRefreshSequence = 0;
 const displayedAvatars = new WeakMap();
 let avatarSubscription = null;
+
+function showUnavailable(avatarBtn, availabilityIndicator) {
+    const placeholder = document.createElement("span");
+    placeholder.className = "avatar-initials";
+    placeholder.textContent = "?";
+    avatarBtn.replaceChildren(placeholder);
+    if (availabilityIndicator) avatarBtn.append(availabilityIndicator);
+}
 
 export async function updateNavbarAvatar() {
     const refreshSequence = ++avatarRefreshSequence;
@@ -21,17 +26,10 @@ export async function updateNavbarAvatar() {
     if (!avatarBtn) return;
     const handle = localStorage.getItem("cognis_account") ?? "";
     const accessToken = localStorage.getItem("cognis_access_token");
-
+    const avatarProvider = uiCtx.capabilities.get("ui:navbarAvatarProvider");
     const availabilityIndicator = avatarBtn.querySelector(
         ".availability-indicator",
     );
-
-    let profileAvailable = false;
-    let avatarBlobUrl = null;
-    let avatarInitials = "?";
-    let avatarColor = null;
-    const avatarProvider = uiCtx.capabilities.get("ui:navbarAvatarProvider");
-
     const previous = displayedAvatars.get(avatarBtn);
     const sameIdentity =
         previous?.handle === handle &&
@@ -40,13 +38,13 @@ export async function updateNavbarAvatar() {
     let stopWatching = previous?.stopWatching;
     if (!sameIdentity) {
         stopWatching?.();
-        avatarBtn.querySelector(".avatar-image")?.remove();
+        showUnavailable(avatarBtn, availabilityIndicator);
         displayedAvatars.delete(avatarBtn);
         const signal = avatarProvider?.signal;
         const removed = () => {
             stopWatching?.();
             if (!avatarBtn.isConnected) return;
-            renderAvatarFallback(avatarBtn, "?", null, availabilityIndicator);
+            showUnavailable(avatarBtn, availabilityIndicator);
             profileLink?.closest("li")?.toggleAttribute("hidden", true);
             displayedAvatars.delete(avatarBtn);
         };
@@ -65,121 +63,76 @@ export async function updateNavbarAvatar() {
             stopWatching,
         });
     }
-    let avatarState;
-    let avatarKey;
-    let onAvatarError;
+    let result;
     if (avatarProvider) {
         try {
-            const result = await avatarProvider();
-            avatarState = result?.avatarState;
-            avatarKey = result?.avatarKey;
-            onAvatarError = result?.onAvatarError;
-            profileAvailable = result?.profileAvailable ?? false;
-            avatarBlobUrl =
-                avatarState === "available" &&
-                typeof result?.avatarBlobUrl === "string"
-                    ? result.avatarBlobUrl
-                    : null;
-            avatarInitials = result?.avatarInitials ?? avatarInitials;
-            avatarColor = result?.avatarColor ?? avatarColor;
+            result = await avatarProvider();
+            if (
+                typeof result?.renderContent !== "function" ||
+                ![
+                    "available",
+                    "missing",
+                    "denied",
+                    "retryable",
+                    "invalid",
+                    "stale",
+                ].includes(result.avatarState)
+            )
+                throw new Error("navbar_avatar_content_unavailable");
         } catch (error) {
             console.error("[dashboard-layout]:avatar-provider-failed", {
                 error,
             });
-            profileAvailable = false;
+            result = null;
         }
     }
-
-    if (
-        refreshSequence !== avatarRefreshSequence ||
-        !avatarBtn.isConnected ||
-        handle !== (localStorage.getItem("cognis_account") ?? "") ||
-        accessToken !== localStorage.getItem("cognis_access_token") ||
-        avatarProvider !== uiCtx.capabilities.get("ui:navbarAvatarProvider")
-    ) {
+    const isCurrent = () =>
+        refreshSequence === avatarRefreshSequence &&
+        avatarBtn.isConnected &&
+        handle === (localStorage.getItem("cognis_account") ?? "") &&
+        accessToken === localStorage.getItem("cognis_access_token") &&
+        avatarProvider === uiCtx.capabilities.get("ui:navbarAvatarProvider") &&
+        !avatarProvider?.signal?.aborted;
+    if (!isCurrent()) {
         if (!avatarBtn.isConnected) stopWatching?.();
         return;
     }
-
-    if (
-        avatarState === "retryable" &&
+    const retainImage =
+        result?.avatarState === "retryable" &&
         sameIdentity &&
-        (!avatarKey || avatarKey === previous?.key) &&
-        avatarBtn.querySelector(".avatar-image")
-    )
-        return;
-
-    if (profileLink) {
-        profileLink.closest("li")?.toggleAttribute("hidden", !profileAvailable);
+        (!result.avatarKey || result.avatarKey === previous?.key);
+    let content;
+    try {
+        content = result?.renderContent(
+            sameIdentity ? previous?.content : null,
+            { retainImage },
+        );
+        if (
+            content &&
+            (content.nodeType !== 1 || content.ownerDocument !== document)
+        )
+            throw new Error("navbar_avatar_content_invalid");
+    } catch (error) {
+        console.error("[dashboard-layout]:avatar-content-failed", { error });
+        content = null;
     }
-
+    if (!isCurrent()) {
+        if (!avatarBtn.isConnected) stopWatching?.();
+        return;
+    }
+    profileLink
+        ?.closest("li")
+        ?.toggleAttribute("hidden", !content || !result.profileAvailable);
+    if (content) {
+        avatarBtn.replaceChildren(content);
+        if (availabilityIndicator) avatarBtn.append(availabilityIndicator);
+    } else showUnavailable(avatarBtn, availabilityIndicator);
     displayedAvatars.set(avatarBtn, {
         handle,
         accessToken,
         provider: avatarProvider,
-        key: avatarKey,
+        key: retainImage ? previous?.key : result?.avatarKey,
+        content,
         stopWatching,
     });
-    if (avatarBlobUrl) {
-        if (
-            avatarBtn.querySelector(".avatar-image")?.getAttribute("src") ===
-            avatarBlobUrl
-        )
-            return;
-        const img = document.createElement("img");
-        img.className = "avatar-image";
-        img.alt = "";
-        img.src = avatarBlobUrl;
-        img.addEventListener(
-            "error",
-            () => {
-                if (
-                    avatarBtn.querySelector(".avatar-image") !== img ||
-                    handle !== (localStorage.getItem("cognis_account") ?? "") ||
-                    accessToken !==
-                        localStorage.getItem("cognis_access_token") ||
-                    avatarProvider !==
-                        uiCtx.capabilities.get("ui:navbarAvatarProvider")
-                )
-                    return;
-                onAvatarError?.();
-                renderAvatarFallback(
-                    avatarBtn,
-                    avatarInitials,
-                    avatarColor,
-                    availabilityIndicator,
-                );
-            },
-            { once: true },
-        );
-        avatarBtn.replaceChildren(img);
-        if (availabilityIndicator) avatarBtn.append(availabilityIndicator);
-        return;
-    }
-
-    renderAvatarFallback(
-        avatarBtn,
-        avatarInitials,
-        avatarColor,
-        availabilityIndicator,
-    );
-}
-
-function renderAvatarFallback(
-    avatarBtn,
-    avatarInitials,
-    avatarColor,
-    availabilityIndicator,
-) {
-    const existingInitials = avatarBtn.querySelector(".avatar-initials");
-    if (existingInitials?.textContent === avatarInitials) {
-        existingInitials.style.background = avatarColor ?? "";
-        return;
-    }
-    const initialsEl = document.createElement("span");
-    initialsEl.className = "avatar-initials";
-    initialsEl.textContent = avatarInitials;
-    if (avatarColor) initialsEl.style.background = avatarColor;
-    avatarBtn.replaceChildren(initialsEl);
-    if (availabilityIndicator) avatarBtn.append(availabilityIndicator);
 }

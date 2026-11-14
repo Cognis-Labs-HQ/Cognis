@@ -145,6 +145,28 @@ export function avatarFixture(context, { menu = false } = {}) {
         },
         globals,
     );
+    const hero = loadTestModule(
+        new URL("../ui/profile-render.js", import.meta.url),
+        {
+            ...shared,
+            "./profile-avatar.js": avatar,
+            "/static/reuse/markdown-renderer.js": {
+                renderMarkdown: escapeHtml,
+            },
+            "/static/reuse/access-role.js": {
+                normalizeRoleValue: (value) => value,
+                getRoleLabel: () => "",
+            },
+            "/static/reuse/form-builder.js": {
+                createFormBuilder: () => {
+                    throw new Error("unexpected_form_construction");
+                },
+            },
+            "/static/reuse/timestamp.js": { formatDate: () => "" },
+            "/static/reuse/info-tooltip.js": { renderInfoTooltip: () => "" },
+        },
+        globals,
+    );
     const preview = loadTestModule(
         new URL("../ui/profile-preview.js", import.meta.url),
         {
@@ -234,6 +256,7 @@ export function avatarFixture(context, { menu = false } = {}) {
         document,
         uiCtx,
         avatar,
+        hero,
         preview,
         navbar,
         requests,

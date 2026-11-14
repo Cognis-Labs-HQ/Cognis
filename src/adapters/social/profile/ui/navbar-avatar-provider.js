@@ -3,9 +3,7 @@ import { isOffline } from "/static/reuse/offline-state.js";
 import { profileReadState } from "./reuse/avatar-cache.js";
 import {
     getAvatarContext,
-    evictProfileAvatarImage,
-    getProfileInitials,
-    getProfileInitialsColor,
+    renderProfileAvatarContent,
     invalidateProfileAvatar,
     readProfileAvatar,
 } from "./profile-avatar.js";
@@ -25,16 +23,37 @@ export function createNavbarAvatarProvider(scope) {
             localStorage.getItem("cognis_display_name") ??
             localStorage.getItem("cognis_account") ??
             "";
-        const fallbackFor = (value) => ({
-            avatarInitials: getProfileInitials(value),
-            avatarColor: getProfileInitialsColor(value),
-        });
-        let fallback = fallbackFor(label);
+        let currentProfile = null;
         const result = (avatarState, profileAvailable, extra = {}) => ({
-            ...fallback,
             avatarState,
             profileAvailable,
             ...extra,
+            renderContent: (previous, options) =>
+                isCurrent()
+                    ? renderProfileAvatarContent(
+                          previous,
+                          {
+                              profile:
+                                  currentProfile ||
+                                  (options?.retainImage
+                                      ? undefined
+                                      : { displayName: label }),
+                              size: "small",
+                              isCurrent: () =>
+                                  context === getAvatarContext() &&
+                                  !scope.signal.aborted &&
+                                  scope.capabilities.get(
+                                      "ui:navbarAvatarProvider",
+                                  ) === provider,
+                              avatarKey: extra.avatarKey || "",
+                              blobUrl:
+                                  avatarState === "available"
+                                      ? extra.avatarBlobUrl
+                                      : "",
+                          },
+                          options,
+                      )
+                    : null,
         });
         if (!context || scope.signal.aborted) return result("stale", false);
         if (lastContext !== context) {
@@ -71,8 +90,7 @@ export function createNavbarAvatarProvider(scope) {
                 !Object.hasOwn(profile, "avatarKey")
             )
                 return result("invalid", false);
-            const profileLabel = profile.displayName || profile.handle || label;
-            fallback = fallbackFor(profileLabel);
+            currentProfile = profile;
             const avatarKey = profile.avatarKey;
             if (lastKey && lastKey !== avatarKey)
                 invalidateProfileAvatar(lastKey);
@@ -82,10 +100,6 @@ export function createNavbarAvatarProvider(scope) {
             return result(avatar.state, true, {
                 avatarKey,
                 avatarBlobUrl: avatar.blobUrl,
-                onAvatarError: () => {
-                    if (context === getAvatarContext() && !scope.signal.aborted)
-                        evictProfileAvatarImage(avatarKey, avatar.blobUrl);
-                },
             });
         } catch (error) {
             const log = scope.capabilities.get("ui:log");
