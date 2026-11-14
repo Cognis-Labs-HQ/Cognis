@@ -32,8 +32,11 @@ test("profile editor disables private visibility choices for administrators", ()
         /disabled: isRestrictedForProfileRole/,
     );
     assert.match(
-        PROFILE_APP_SOURCE,
-        /fields: createProfileEditFields\(profile, i18n\)/,
+        readFileSync(
+            resolve(import.meta.dirname, "../ui/profile-editor.js"),
+            "utf8",
+        ),
+        /fields: createProfileEditFields\(getState\(\)\.profile, i18n\)/,
     );
 });
 

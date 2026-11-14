@@ -19,3 +19,5 @@ Identity, posts and account actions target the rendered profile regions, includi
 Posts use a distinct list target even when the composer is present. Social actions fit their buttons; composer-only preview is omitted on other profiles.
 
 Identity and social actions precede the consecutive posts and preview stages.
+
+On your own profile, Edit Profile opens your details. Unsuccessful saves keep your changes available to correct and retry.

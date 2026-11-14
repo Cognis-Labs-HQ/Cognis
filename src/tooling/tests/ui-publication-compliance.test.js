@@ -1,6 +1,8 @@
 import test from "node:test";
+import { hasOwnedFormSubmission } from "../scripts/form-builder-ownership.mjs";
 import assert from "node:assert/strict";
 import {
+    cpSync,
     existsSync,
     mkdtempSync,
     mkdirSync,
@@ -136,7 +138,9 @@ function collectUiPublicationViolations({ sourceRoot, hostReuseRoot }) {
         if (
             !isHostUtility &&
             (publishesForm || handlesSubmission) &&
-            !/\bcreateFormBuilder\s*\(/.test(executableSource)
+            !/\bcreateFormBuilder\s*\(/.test(executableSource) &&
+            (publishesForm ||
+                !hasOwnedFormSubmission({ filePath, hostReuseRoot }))
         ) {
             violations.push(
                 `${displayPath}: form or submission does not use createFormBuilder`,
@@ -312,6 +316,40 @@ test("UI publication validation rejects composer and reuse workarounds", () => {
                 violation.includes("Cognis API client"),
             ),
         );
+    } finally {
+        rmSync(fixtureRoot, { recursive: true, force: true });
+    }
+});
+
+test("delegated submissions preserve raw-form and per-file publication checks", () => {
+    const fixtureRoot = mkdtempSync(join(tmpdir(), "cognis-owned-form-"));
+    const uiRoot = join(fixtureRoot, "ui");
+    cpSync(resolve(ROOT, "src/tooling/tests/form-ownership/owner"), uiRoot, {
+        recursive: true,
+    });
+    try {
+        const violations = collectUiPublicationViolations({
+            sourceRoot: uiRoot,
+            hostReuseRoot: resolve(ROOT, "src/ui/reuse"),
+        });
+        assert.equal(
+            violations.some((entry) => entry.includes("positive.js:")),
+            false,
+        );
+        for (const name of [
+            "raw-form",
+            "mixed-forms",
+            "mixed-submission",
+            "discarded",
+            "unused",
+        ]) {
+            assert.ok(
+                violations.some((entry) =>
+                    entry.includes(`${name}.js: form or submission`),
+                ),
+                name,
+            );
+        }
     } finally {
         rmSync(fixtureRoot, { recursive: true, force: true });
     }

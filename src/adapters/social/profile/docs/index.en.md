@@ -204,3 +204,11 @@ During `deprovision-user` → `cleanup-dependencies`, the component resolves `au
 Deploy with the bundled Auth 2.2.12 provider or an alternative implementing this versioned contract; mutable public flow results are not a fallback. Cleanup uses the committed receipt rather than reauthorizing after deletion. An external mutation already started may partially complete before a later failure; cross-component rollback is not guaranteed. Normal UI controls and tutorials are unchanged.
 
 This migration protects the bundled cleanup consumers. Before enabling account deletion in a deployment, update or disable external cleanup hooks that still trust mutable public flow results.
+
+## Retry Profile Edits
+
+Edit Profile keeps the exact entered fields open until the server acknowledges the save or the account-bound offline buffer durably accepts it. A rejected request, unreadable response or failed buffer write shows an error and restores Save without discarding the draft. Repeated Save clicks and Enter submit only one pending request; fields are temporarily disabled while it runs. Optional card, navbar or local display-name refresh errors do not turn an accepted save into a failed write.
+
+Discard, Close, Escape and the backdrop use the shared unsaved-change confirmation. Cancel in the confirmation retains the form. Confirming Discard closes it and ignores late callbacks; closing cannot undo a request already sent, and an informational toast says so. A save result waits for an open discard decision before updating the page. Navigation, a new mount, account/session changes and popup disposal invalidate old editor callbacks. Reopening uses the last accepted profile, with unique field/label identifiers even while the previous popup animates closed. Unsubmitted drafts are not persisted across navigation or reload.
+
+The Profile-owned editor uses the existing `social:profile:request` ctx flow and preserves its field-validation gate, shared popup focus ownership and offline delivery policy. Synthetic DOM tests exercise the real page mount, popup, form builder and registered request flows with controlled transport and storage. They do not establish live browser layout or server/database behavior.

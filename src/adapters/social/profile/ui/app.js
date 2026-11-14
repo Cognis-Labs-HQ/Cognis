@@ -1,14 +1,12 @@
 import { guides } from "./guides.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { isOffline } from "/static/reuse/offline-state.js";
-import { saveProfileFields } from "./profile-save.js";
+import { createProfileEditor } from "./profile-editor.js";
 import { profileFetch as apiFetch } from "./offline-client.js";
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import { openPopup } from "/static/reuse/popup.js";
-import { createFormBuilder } from "/static/reuse/form-builder.js";
-import { createProfileEditFields } from "./profile-edit-fields.js";
 import { updateNavbarAvatar } from "/static/layouts/dashboard-layout.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { showToast } from "/static/reuse/toast.js";
@@ -79,6 +77,7 @@ let relationship = null;
 let pendingBannerAspectRatio = resolveBannerCropAspectRatio(bannerHeight);
 let newPostFormController = null;
 let followerCountPoller = null;
+let profileEditor = null;
 
 registerProfilePostSearchIndex(() => ({ posts, profile, urlHandle }));
 
@@ -240,104 +239,10 @@ const {
     },
 });
 
-async function openEditPopup() {
-    const profileEditFormBuilder = createFormBuilder(
-        { i18n, escapeHtml },
-        {
-            formId: "profile-edit-form",
-            formClassName: "profile-edit-form",
-            submitLabelKey: "ui.reuse.save",
-            includeSubmitButton: false,
-            fields: createProfileEditFields(profile, i18n),
-        },
-    );
-
-    let profileEditFormController = null;
-    const popupPromise = openPopup({
-        title: i18n.t("ui.app.profile.edit_profile"),
-        body: () => profileEditFormBuilder.render(),
-        variant: "info",
-        maxWidth: "40%",
-        onOpen: (overlay) => {
-            const popupFormElement =
-                overlay.querySelector("#profile-edit-form");
-            profileEditFormController =
-                popupFormElement instanceof HTMLFormElement
-                    ? profileEditFormBuilder.attach(popupFormElement)
-                    : null;
-            const popupBioInput = overlay.querySelector('textarea[name="bio"]');
-            const bioFieldWrapper = overlay.querySelector(
-                '[data-form-builder-field="bio"]',
-            );
-            const bioPreviewElement = document.createElement("div");
-            bioPreviewElement.id = "profile-edit-bio-preview";
-            bioPreviewElement.className =
-                "profile-edit-bio-preview profile-markdown";
-            bioPreviewElement.setAttribute("aria-live", "polite");
-            if (bioFieldWrapper instanceof HTMLElement) {
-                bioFieldWrapper.insertAdjacentElement(
-                    "afterend",
-                    bioPreviewElement,
-                );
-            }
-            const renderBioPreview = () => {
-                const bioValue =
-                    popupBioInput instanceof HTMLTextAreaElement
-                        ? popupBioInput.value
-                        : "";
-                bioPreviewElement.innerHTML = renderComposerMarkdownPreview(
-                    bioValue,
-                    i18n.t("ui.app.profile.bio_preview_placeholder"),
-                );
-            };
-            renderBioPreview();
-            popupBioInput?.addEventListener("input", renderBioPreview);
-        },
-        actions: [
-            {
-                id: "cancel",
-                label: i18n.t("ui.reuse.discard"),
-                variant: "cancel",
-            },
-            {
-                id: "save",
-                label: i18n.t("ui.reuse.save"),
-                variant: "confirm",
-            },
-        ],
-        onAction: (actionId) =>
-            actionId !== "save" ||
-            profileEditFormController?.validateAll(true) === true,
-        closeProtection: true,
-    });
-
-    const result = await popupPromise;
-
-    if (result === "save") {
-        const fieldValues = profileEditFormController?.getValues() ?? {};
-        await saveProfileFields(
-            {
-                displayName: fieldValues.displayName ?? currentDisplayName,
-                bio: fieldValues.bio ?? currentBio,
-                location: fieldValues.location ?? currentLocation,
-                website: fieldValues.website ?? currentWebsite,
-                visibility: fieldValues.visibility ?? currentVisibility,
-            },
-            {
-                getState,
-                setState,
-                refreshProfileCards,
-                bindProfileHeroEvents,
-                i18n,
-            },
-        );
-    }
-}
-
 function bindProfileHeroEvents() {
     root.querySelector(".profile-hero-edit-btn")?.addEventListener(
         "click",
-        openEditPopup,
+        profileEditor.open,
     );
     const heroFollowButton = root.querySelector(".profile-hero-follow-btn");
     if (heroFollowButton) {
@@ -581,6 +486,7 @@ function bindPageEvents() {
 }
 
 export async function mount(rootEl, { signal } = {}) {
+    profileEditor?.dispose();
     // Clean up any stale document-level listener from a previous mount.
     if (bannerMenuCloseHandler) {
         document.removeEventListener("click", bannerMenuCloseHandler, true);
@@ -826,6 +732,14 @@ export async function mount(rootEl, { signal } = {}) {
         },
     ];
 
+    profileEditor = createProfileEditor({
+        getState,
+        setState,
+        refreshProfileCards,
+        bindProfileHeroEvents,
+        i18n,
+        signal,
+    });
     composer = createPageComposer(root, {
         tutorials: guides,
         signal,
