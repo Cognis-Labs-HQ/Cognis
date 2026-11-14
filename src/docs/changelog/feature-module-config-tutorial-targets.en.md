@@ -8,4 +8,4 @@ The public ui:moduleTutorialTargets capability exposes settings(id), field(id,ke
 
 ## Commits
 
-- [c912fb8](https://github.com/Cognis-Labs-HQ/Cognis/commit/c912fb8834fc6ccf38021fcc91267495d849bdb0)
+- [ad94587](https://github.com/Cognis-Labs-HQ/Cognis/commit/ad945875c919d504058437aab92449d254d79aa8)
