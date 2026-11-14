@@ -12,4 +12,4 @@ Pergantian baris eksplisit, Markdown, teks literal menyerupai HTML yang di-escap
 
 ## Komit
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/3942772b469058a3e934cafb3c7e35fcfdf1a7cd
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/c3ba961f9fd59b5a8840b871d7f593a2cb5b76dc
