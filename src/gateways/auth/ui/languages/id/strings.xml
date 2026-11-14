@@ -95,7 +95,7 @@
   <string name="ui.app.login.reason.sso_provider_unavailable">Penyedia login saat ini tidak tersedia.</string>
   <string name="gateway.auth.tutorial.security.title">Keamanan Akun</string>
   <string name="gateway.auth.tutorial.security.password.changes.title">Perubahan Kata Sandi</string>
-  <string name="gateway.auth.tutorial.security.password.changes.body">Gunakan kontrol kata sandi penyedia autentikasi Anda; perubahan mungkin memerlukan konfirmasi identitas.</string>
+  <string name="gateway.auth.tutorial.security.password.changes.body">Jika tersedia, buka Ubah Kata Sandi, masukkan kata sandi saat ini, penuhi persyaratan kata sandi baru, lalu konfirmasikan kata sandi baru yang sama. Simpan mengubahnya dan mengeluarkan Anda; Batal memungkinkan Anda membuang perubahan.</string>
   <string name="gateway.auth.tutorial.security.session.duration.title">Durasi Sesi</string>
   <string name="gateway.auth.tutorial.security.session.duration.body">Pilih durasi sesi yang diizinkan atau pulihkan bawaan global, lalu simpan perubahan.</string>
 </resources>

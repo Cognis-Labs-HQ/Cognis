@@ -117,7 +117,7 @@ export async function openPasswordChangePopup({
                         passwordCriteria.length > 0
                             ? "floating-alert"
                             : "inline",
-                    floatingTitleKey: "ui.app.register.password_requirements",
+                    floatingTitleKey: "ui.reuse.password_requirements",
                     attributes: { autocomplete: "new-password" },
                 },
                 {
@@ -140,7 +140,7 @@ export async function openPasswordChangePopup({
                                 if (passwordValue.length === 0) return null;
                                 return value === passwordValue;
                             },
-                            messageKey: "ui.app.register.passwords_match",
+                            messageKey: "ui.reuse.passwords_match",
                             mode: "live",
                         },
                     ],

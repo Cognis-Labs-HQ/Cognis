@@ -277,7 +277,7 @@ export async function mount(root, { signal } = {}) {
                 required: true,
                 criteria: passwordCriteria,
                 criteriaDisplay: "floating-alert",
-                floatingTitleKey: "ui.app.register.password_requirements",
+                floatingTitleKey: "ui.reuse.password_requirements",
             },
             {
                 name: "confirmPassword",
@@ -297,7 +297,7 @@ export async function mount(root, { signal } = {}) {
                             }
                             return value === passwordValue;
                         },
-                        messageKey: "ui.app.register.passwords_match",
+                        messageKey: "ui.reuse.passwords_match",
                         mode: "live",
                     },
                 ],

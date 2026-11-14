@@ -101,3 +101,7 @@ The shared form builder groups each field heading and its required marker in one
 The heading prevents a break between its content and marker while the inner label content permits wrapping, including long unbroken words.
 
 Form headings remain within their existing fields. Calendar and Sharing tutorial targets and progression do not change; no new action or tutorial step is needed.
+
+## Password Form Labels
+
+Cross-component password forms use `ui.reuse.password_requirements` and `ui.reuse.passwords_match` from the host XML catalogs. Auth and Registration consume the same keys in English, German, Indonesian and Japanese. Ship the host catalogs with Auth 2.2.13 and Registration 1.2.9; integrations using these labels must adopt the shared keys. Same-key English fallback remains strict, including an explicit failure when English is missing or empty.

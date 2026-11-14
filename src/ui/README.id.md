@@ -101,3 +101,7 @@ Pembuat formulir bersama mengelompokkan setiap judul kolom dan penanda wajibnya 
 Judul mencegah pemisahan antara isi dan penandanya, sementara teks label di dalamnya tetap dapat membungkus, termasuk kata panjang tanpa spasi.
 
 Judul formulir tetap berada dalam kolom yang sama. Target dan alur panduan Kalender serta Berbagi tidak berubah; tidak diperlukan tindakan atau langkah panduan baru.
+
+## Label Formulir Kata Sandi
+
+Formulir kata sandi lintas komponen memakai `ui.reuse.password_requirements` dan `ui.reuse.passwords_match` dari katalog XML host. Auth dan Registration menggunakan kunci yang sama dalam bahasa Inggris, Jerman, Indonesia, dan Jepang. Rilis katalog host bersama Auth 2.2.13 dan Registration 1.2.9; integrasi yang memakai label ini harus beralih ke kunci bersama. Resolusi kunci Inggris yang sama tetap ketat dan gagal secara eksplisit jika nilai Inggris hilang atau kosong.
