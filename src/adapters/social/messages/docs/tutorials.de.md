@@ -19,3 +19,5 @@ Das Routersignal begrenzt Tutorialregistrierungen und den Seiten-Composer. Beim 
 Die Anleitung erklärt das Verfassen einmal und zeigt Eingabe und Vorschau getrennt.
 
 Die Gesprächsverwaltung entfällt aus Ablauf und Anzahl, solange kein Gesprächskopf verfügbar ist.
+
+Der Schritt zum Nachrichtenverlauf zeigt im Standard-, Sprechblasen- und IRC-Stil denselben Gesprächsbereich. Nachrichten werden darin umgebrochen; gesetzte Zeilenumbrüche und Markdown bleiben erhalten. Ziele, Reihenfolge und Abschlusskennung des Rundgangs bleiben unverändert.

@@ -65,3 +65,7 @@ Social profile roles and visibility declarations now match stored records. Messa
 ## Credential Scope
 
 Account operations require verified account sessions. Shared-resource operations explicitly verify guest credentials and recheck the current grant before applying resource permissions. Account names never determine credential type. Revoked or expired access is denied.
+
+## Message Text Wrapping
+
+Message text wraps to the available conversation width in the default, speech-bubble and IRC styles. Short messages stay on one line when they fit. Explicit line breaks, Markdown formatting and literal HTML-like text retain their existing presentation; long unbroken text can wrap inside the message. The same behavior applies to incoming and outgoing messages without changing avatars, reactions or delivery metadata.

@@ -65,3 +65,7 @@ Rollen und Sichtbarkeitsdeklarationen sozialer Profile entsprechen jetzt den ges
 ## Geltungsbereich der Anmeldung
 
 Kontoaktionen erfordern bestätigte Kontositzungen. Aktionen für freigegebene Ressourcen prüfen Gastanmeldungen ausdrücklich und kontrollieren die aktuelle Freigabe vor den Ressourcenberechtigungen. Kontonamen bestimmen niemals den Anmeldetyp. Widerrufener oder abgelaufener Zugriff wird abgelehnt.
+
+## Zeilenumbruch im Chat
+
+Nachrichtentext wird im Standard-, Sprechblasen- und IRC-Stil an die verfügbare Gesprächsbreite angepasst. Kurze Nachrichten bleiben einzeilig, wenn sie hineinpassen. Ausdrückliche Zeilenumbrüche, Markdown-Formatierung und wörtlicher HTML-ähnlicher Text behalten ihre Darstellung; lange Zeichenfolgen ohne Leerzeichen können innerhalb der Nachricht umbrechen. Dies gilt für eingehende und ausgehende Nachrichten, ohne Avatare, Reaktionen oder Zustellinformationen zu verändern.

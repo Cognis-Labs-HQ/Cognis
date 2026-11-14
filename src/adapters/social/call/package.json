@@ -6,7 +6,7 @@
     "main": "index.ts",
     "private": true,
     "dependencies": {
-        "@cognis/adapter-social-messages": "<=2.7.40",
+        "@cognis/adapter-social-messages": "<=2.7.41",
         "@cognis/core": "<=0.6.4",
         "@cognis/gateways": "<=0.4.3"
     }

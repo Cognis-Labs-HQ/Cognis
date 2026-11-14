@@ -363,10 +363,6 @@
     overflow-wrap: break-word;
 }
 
-.messages-message-body--no-wrap {
-    white-space: nowrap;
-}
-
 .messages-message-body > :first-child {
     margin-top: 0;
 }

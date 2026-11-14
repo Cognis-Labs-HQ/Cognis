@@ -19,3 +19,5 @@ The router signal bounds tutorial registrations and the page composer. Scrolling
 The walkthrough explains composing once, targeting the message input and then its preview control separately.
 
 Room management is excluded from the path and count until a room header is available.
+
+The room-history step covers the same conversation region in the default, speech-bubble and IRC styles. Messages wrap within that region while preserving authored line breaks and Markdown. The guide keeps its existing targets, sequence and completion identity.

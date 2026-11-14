@@ -1,0 +1,27 @@
+[
+    { "id": "short", "text": "Hi" },
+    {
+        "id": "reported",
+        "text": "QA-002: Yes, Bob. Your message arrived once. Let’s try the whiteboard next!"
+    },
+    {
+        "id": "ordinary",
+        "text": "Yes, Bob. Your message arrived once. Let’s try the whiteboard next!"
+    },
+    { "id": "wide", "text": "WWWW WWWW WWWW WWWW WWWW WWWW WWWW WWWW" },
+    { "id": "ascii-79", "text": "W", "repeat": 79 },
+    { "id": "ascii-80", "text": "W", "repeat": 80 },
+    { "id": "ascii-81", "text": "W", "repeat": 81 },
+    { "id": "emoji-79", "text": "😀", "repeat": 79 },
+    { "id": "emoji-80", "text": "😀", "repeat": 80 },
+    { "id": "emoji-81", "text": "😀", "repeat": 81 },
+    { "id": "cjk-79", "text": "語", "repeat": 79 },
+    { "id": "cjk-80", "text": "語", "repeat": 80 },
+    { "id": "cjk-81", "text": "語", "repeat": 81 },
+    { "id": "multiline", "text": "First line\nSecond line\n\nNew paragraph" },
+    {
+        "id": "markdown",
+        "text": "**Bold** and *emphasis*\n<b>literal HTML</b>\n[Safe](https://example.test) [Unsafe](javascript:alert%281%29)"
+    },
+    { "id": "long-token", "text": "longtoken", "repeat": 30 }
+]
