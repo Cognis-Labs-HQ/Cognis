@@ -23,7 +23,6 @@ export async function mountProvider(ctx) {
         for (const [name, selector] of Object.entries({
             navigation: ".study-subnav-modules",
             languages: ".study-subnav-language-options",
-            modules: ".study-hub-modules",
             dictionary:
                 ".study-dictionary-toggle, [data-study-dictionary-search]",
             settings: "[data-study-settings]",
@@ -91,29 +90,25 @@ export async function mountProvider(ctx) {
         );
         await owner.register({
             version: 1,
-            page: "/study",
+            page: ({ pathname }) => /^\/study\/explore(?:\/|$)/.test(pathname),
+            automatic: false,
             id: "getting-started",
             titleKey: "gateway.study.tutorial.title",
             available: () =>
                 ctx.capabilities.get("session:isAuthenticated")?.() === true,
             requires: ["ui:navigate", "study:navigation"],
-            steps: [
-                "navigation",
-                "languages",
-                "dictionary",
-                "settings",
-                "modules",
-            ].map((name) => ({
-                highlightNext: true,
-                when: ({ targetAvailable }) => targetAvailable,
-                id: name,
-                route: "/study",
-                target: ids[name],
-                titleKey: `gateway.study.tutorial.${name}.title`,
-                bodyKey: `gateway.study.tutorial.${name}.body`,
-                effects: { callout: true, arrow: true, spotlight: true },
-                missing: { timeoutMs: 3000, action: "skip" },
-            })),
+            steps: ["navigation", "languages", "dictionary", "settings"].map(
+                (name) => ({
+                    highlightNext: true,
+                    when: ({ targetAvailable }) => targetAvailable,
+                    id: name,
+                    target: ids[name],
+                    titleKey: `gateway.study.tutorial.${name}.title`,
+                    bodyKey: `gateway.study.tutorial.${name}.body`,
+                    effects: { callout: true, arrow: true, spotlight: true },
+                    missing: { timeoutMs: 3000, action: "skip" },
+                }),
+            ),
         });
         const { mountTutorialProvider } = await ctx.capabilities
             .get("ui:reuse")

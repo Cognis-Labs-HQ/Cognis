@@ -114,7 +114,7 @@ Study behält begrenzte, kleine JSON-Schnappschüsse im aktuellen Tab: Schemas, 
 
 Explore-Vorschauen verwenden bereits autorisierte Cache-Daten. Zeichnen und Lernkarten funktionieren lokal. Abschlüsse, Bewertungen, gesehene IDs und endgültige Favoritenzustände werden zur Übertragung vorgemerkt; Fortschritt, XP und Belohnungen sind erst nach Serverbestätigung verbindlich. Audio sowie Wörterbuch- und ElevenLabs-Abfragen stoppen. Bearbeiten, Löschen und Freigaben benötigen eine Verbindung. Nur zuvor geladene Inhalte innerhalb der Cache-Grenzen sind verfügbar.
 
-Privates Study benötigt dieselbe zuvor bestätigte, noch gültige Kontositzung im selben Tab. Privates Offline-Neuladen benötigt eine Verbindung; der erste Besuch der Übersicht im bestätigten Tab funktioniert nach der Vorbereitung im Hintergrund. Konto- und Sitzungswechsel, geänderte Einstellungen, Modul-Lebenszyklusänderungen und die Freigabe eines Anbieters verwerfen private Schnappschüsse. Serverseitige Sperren können ohne Verbindung nicht erkannt werden. Die Wiederherstellung prüft ungespeicherte Änderungen und lädt die Serverautorisierung neu.
+Privates Study benötigt dieselbe zuvor bestätigte, noch gültige Kontositzung im selben Tab. Privates Offline-Neuladen benötigt eine Verbindung; der erste Einstieg in Study im bestätigten Tab funktioniert nach der Vorbereitung im Hintergrund. Konto- und Sitzungswechsel, geänderte Einstellungen, Modul-Lebenszyklusänderungen und die Freigabe eines Anbieters verwerfen private Schnappschüsse. Serverseitige Sperren können ohne Verbindung nicht erkannt werden. Die Wiederherstellung prüft ungespeicherte Änderungen und lädt die Serverautorisierung neu.
 
 ### Übertragung und Zustimmung
 
@@ -168,6 +168,20 @@ Persönliche Aktivitäten und gespeicherte Zustände verwenden bestätigte Konto
 
 Die Dashboard-Elemente für Lernende und Lehrende beginnen mit fünf Spalten und zwei Zeilen, passend zum Einführungstext und zur Aktion Meine Klassen für Lernende. Über Page Composer lassen sie sich weiterhin vergrößern oder anordnen. Gespeicherte Platzierungen und Mindestgrößen bleiben unverändert. Die vorhandene Arbeitsbereich-Anleitung erklärt die Layoutbearbeitung; die Klassenanleitungen behandeln weiterhin die Klassenverwaltung auf ihren eigenen Seiten.
 
+## Einstieg In Gewählte Sprache
+
+Beim Öffnen von `/study` erscheint direkt Explore für die ausgewählte verfügbare Sprache. Die Auswahl folgt der Study-Navigation: Eine bewusst ausgewählte registrierte Sprache bleibt auch ohne Lernanmeldung erhalten; andernfalls wird die erste verfügbare angemeldete Sprache verwendet. Ohne gültige Auswahl oder Anmeldung öffnet sich online die Sprachauswahl. Ein fehlender Katalog oder Explore-Anbieter führt zur bestehenden Nicht-verfügbar-Seite. Fehlende Offline-Metadaten zeigen die leere Study-Seite im Page Composer.
+
+Der Ablauf `study:navigation:enter` enthält die Stufen `resolve` und `navigate`. Er verwendet das gemeinsame Study-Navigationsmodell und Anbieterschemata und ruft anschließend `ui:navigate` mit ersetztem Verlaufseintrag und aufgelöster Sprache auf. Direkte Links zu Inhalten, Kartensätzen, Library und anderen Study-Seiten bleiben erhalten. Ausstehende Auflösungen werden beim Seitenwechsel, Abbruch oder Entfernen des Anbieters verworfen; Änderungen an Anmeldung oder Anbietern lösen eine neue Auflösung aus. Zugriffsverweigerungen werden weitergegeben, Navigationsabbrüche respektiert und während des Wartens erscheint kein Sprachverzeichnis.
+
+## Anleitung Verwenden
+
+Wählen Sie in Explore über das ? neben dem Seitentitel die Study-Übersicht. Dieser manuelle Leitfaden erklärt Navigation, gewählte Sprache, verfügbare Wörterbuchsuche und Lerneinstellungen. Er bleibt auf der aktuellen Ebene und überspringt nicht verfügbare Bedienelemente. Sprachleitfäden erklären Inhalte und gelten nur für ihre eigene Sprache.
+
+Die Übersicht behält die Abschlusskennung `study:getting-started`. Mit Weiter, Zurück und Neustart lassen sich die Navigationsschritte ohne Seitenwechsel durchgehen. Abgeschlossene Leitfäden können über dasselbe ?-Menü wiederholt werden. Sprachleitfäden können auf Inhaltsseiten ihrer eigenen angemeldeten Sprache automatisch starten; eine andere Sprachauswahl zeigt den zugehörigen Leitfaden.
+
+`study:tutorialTargets` veröffentlicht Study-eigene Navigations- und Zeichenziele sowie die gekapselten Aktionen `route` und `attachDrawing`. `matchesPage` erkennt nur Explore-Pfade der angegebenen Sprache. `isEnrolled(language)` liest bestätigte kontogebundene Einstellungen über `study:navigation`. Die Erkennung navigiert nicht und meldet keine Sprache an. Library besitzt interaktive Kartenabläufe und den allgemeinen Ersatzleitfaden.
+
 ## Sicherheit
 
 ### Study-Authentifizierung beachten
@@ -176,7 +190,7 @@ Study benötigt vor der Routenregistrierung das Authentication-Gateway und desse
 
 ### Zugriff auf Dashboard und Study
 
-Das Dashboard deklariert privaten Offline-Zugriff innerhalb der Sitzung; Kontoübersicht und zwischengespeicherte bevorstehende Termine bleiben nutzbar. Beim erneuten Offline-Öffnen werden optionale, vom Server geladene Erweiterungen ausgelassen. Der Study-Anbieter registriert die Übersichtsroute und nutzt über `study:navigation`-Abläufe konto- und sitzungsgebundene Schnappschüsse von Sprachkatalogen, Lernpräferenzen und Modulverweisen. Beim Laden der Navigationsleiste werden diese kleinen Metadaten vorab geladen. Explore und Lernkarten behalten ihre anbietergebundenen Routendeklarationen; nicht unterstützte Seiten nutzen weiterhin die stille Wiederherstellung. Die Auswahl zu lernender Sprachen erfordert eine Verbindung.
+Das Dashboard deklariert privaten Offline-Zugriff innerhalb der Sitzung; Kontoübersicht und zwischengespeicherte bevorstehende Termine bleiben nutzbar. Beim erneuten Offline-Öffnen werden optionale, vom Server geladene Erweiterungen ausgelassen. Der Study-Anbieter registriert die Standard-Einstiegsroute und nutzt über `study:navigation`-Abläufe konto- und sitzungsgebundene Schnappschüsse von Sprachkatalogen, Lernpräferenzen und Modulverweisen. Beim Laden der Navigationsleiste werden diese kleinen Metadaten vorab geladen. Explore und Lernkarten behalten ihre anbietergebundenen Routendeklarationen; nicht unterstützte Seiten nutzen weiterhin die stille Wiederherstellung. Die Auswahl zu lernender Sprachen erfordert eine Verbindung.
 
 ## Referenz
 
@@ -210,7 +224,7 @@ Study verwendet für adaptereigene Links wie Anfragen die lokalisierten `navigat
 
 ### Technische Spezifikation
 
-| Seite / Bereich                  | Anleitung         | Zugriff             |
-| -------------------------------- | ----------------- | ------------------- |
-| `/study`                         | Study-Übersicht   | Angemeldeter Nutzer |
-| `^/study/(?:settings\|welcome)$` | Lerneinstellungen | Angemeldeter Nutzer |
+| Seite / Bereich                     | Anleitung         | Zugriff             |
+| ----------------------------------- | ----------------- | ------------------- |
+| `/study/explore/*`                  | Study-Übersicht   | Angemeldeter Nutzer |
+| `/study/settings`, `/study/welcome` | Lerneinstellungen | Angemeldeter Nutzer |

@@ -104,7 +104,7 @@ Study keeps bounded lightweight JSON snapshots in the current tab: schemas, perm
 
 Explore previews resolve relationships from already-authorized cached rows. Drawing and flashcard practice work locally. Completions, reviews, viewed IDs and final favourite states are queued for delivery; progress, XP and rewards become authoritative only after server acknowledgement. Audio and dictionary/ElevenLabs requests stop. Content edits, deletion and sharing require connectivity. Only loaded content within the cache limits is available.
 
-Private Study requires the same verified, unexpired account session in the same tab. Private offline reloads require connectivity; a first hub visit in the verified tab works after background preparation. Account/session changes, preference changes, module lifecycle changes and provider disposal invalidate private snapshots. Server revocations cannot be learned while disconnected. Recovery uses the existing unsaved-change guard and reloads to refresh server authorization.
+Private Study requires the same verified, unexpired account session in the same tab. Private offline reloads require connectivity; a first Study entry in the verified tab works after background preparation. Account/session changes, preference changes, module lifecycle changes and provider disposal invalidate private snapshots. Server revocations cannot be learned while disconnected. Recovery uses the existing unsaved-change guard and reloads to refresh server authorization.
 
 ### Queued Delivery and Consent
 
@@ -158,6 +158,18 @@ Personal activity and saved state use verified account sessions, including accou
 
 The student and teacher Dashboard contributions start at five columns by two rows, proportionate to the introductory text and student My Classes action. Users can still enlarge or arrange them with Page Composer. Saved custom placements and minimum sizes stay unchanged. The existing workspace guide covers layout editing; the Classes guides continue to cover class management on their own pages.
 
+### Selected Language Entry
+
+Opening `/study` goes straight to Explore for the selected available language. Selection follows Study subnavigation: an intentionally selected registered language is retained even when it is not enrolled; otherwise the first available enrolled language is used. With no valid selection or enrollment, online users reach language setup. An unavailable catalog or Explore provider leads to the existing unavailable page. Offline metadata misses use the empty Study composer page.
+
+The `study:navigation:enter` flow has `resolve` and `navigate` stages. It consumes the shared Study navigation model and provider schemas, then calls `ui:navigate` with replacement history and the resolved language. Explicit content, deck, Library and other Study deep links keep their destinations. Pending resolutions are discarded on page replacement, cancellation or provider disposal; enrollment/provider changes trigger fresh resolution. Read denials propagate, router vetoes are respected, and no directory is rendered while waiting.
+
+On Explore, choose Study Overview from the ? beside the page title. This manual guide explains navigation, the selected language, available dictionary search and Study settings. It stays on the current layer and omits unavailable controls. Language-owned guides explain content and remain limited to their own language.
+
+The overview keeps the completion identity `study:getting-started`. Use Next, Back or Restart to review navigation without changing the page. Completed guides can be replayed from the same ? menu. Language-specific guides can start automatically on their own enrolled language’s content; changing the selected language exposes that language’s guide.
+
+`study:tutorialTargets` publishes Study-owned navigation and drawing targets plus scoped `route` and `attachDrawing` actions. `matchesPage` matches only Explore paths for the supplied language. `isEnrolled(language)` reads verified account-bound preferences through `study:navigation`. Discovery never navigates or enrolls a language. Library owns interactive card walkthroughs and their generic fallback.
+
 ## Security
 
 ### Honor Study Authentication
@@ -166,7 +178,7 @@ Study requires the Authentication gateway and its `auth:routeContext` capability
 
 ### Dashboard and Study access
 
-Dashboard declares private session-only offline access and keeps its account summary and cached upcoming events usable. Optional server-fetched Dashboard extensions are skipped when reopening offline. The Study provider registers its hub route and uses account/session-bound snapshots for language catalogs, learning preferences and module links through `study:navigation` flows. Navbar loading warms the lightweight hub metadata. Explore and flashcards retain their provider-owned route declarations; unsupported pages still use the quiet fallback. Language enrollment controls require connectivity.
+Dashboard declares private session-only offline access and keeps its account summary and cached upcoming events usable. Optional server-fetched Dashboard extensions are skipped when reopening offline. The Study provider registers its default entry route and uses account/session-bound snapshots for language catalogs, learning preferences and module links through `study:navigation` flows. Navbar loading warms the lightweight navigation metadata. Explore and flashcards retain their provider-owned route declarations; unsupported pages still use the quiet fallback. Language enrollment controls require connectivity.
 
 ## Reference
 
@@ -204,7 +216,7 @@ Before the first input, an uncompleted pattern shows every stroke. After input b
 
 ### Technical Specification
 
-| Page / surface                   | Guide             | Access         |
-| -------------------------------- | ----------------- | -------------- |
-| `/study`                         | Study Overview    | Signed-in user |
-| `^/study/(?:settings\|welcome)$` | Study Preferences | Signed-in user |
+| Page / Surface                      | Guide             | Access         |
+| ----------------------------------- | ----------------- | -------------- |
+| `/study/explore/*`                  | Study Overview    | Signed-in user |
+| `/study/settings`, `/study/welcome` | Study Preferences | Signed-in user |
