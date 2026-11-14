@@ -445,7 +445,6 @@ test("study content and sub-navigation participate in global search", () => {
     assert.match(studySource, /collectStudySearchGroups/);
     assert.match(studySource, /resultClass: "page"/);
     assert.match(studySource, /resultClass: "setting"/);
-    assert.match(studySource, /data-search-category/);
     assert.match(subNavigationSource, /data-search-category/);
     assert.match(subNavigationSource, /data-search-description/);
     assert.match(studyNavbarSource, /registerSearchIndexing\(\)/);

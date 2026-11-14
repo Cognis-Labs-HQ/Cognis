@@ -21,8 +21,8 @@ import {
 
 const SETTINGS_GEAR_ICON = `<span class="study-settings-icon" aria-hidden="true"></span>`;
 
-async function loadLearningLanguages() {
-    const preferences = await fetchStudyPreferences();
+async function loadLearningLanguages(signal) {
+    const preferences = await fetchStudyPreferences({ signal });
     return Array.isArray(preferences?.learningLanguages)
         ? [...new Set(preferences.learningLanguages)]
         : [];
@@ -224,18 +224,16 @@ function resolveRememberedStudyPageUrl(currentPath) {
  */
 export async function loadStudySubNavigationModel({
     fallbackLanguageCode,
+    signal,
 } = {}) {
     const requestedLanguageCode = parseLanguageCode(fallbackLanguageCode);
     const subPages = uiCtx.capabilities.get("study:subPages");
     if (!subPages) throw new Error("Study sub-page provider unavailable.");
-    const learningLanguagesRaw = await loadLearningLanguages();
+    const learningLanguagesRaw = await loadLearningLanguages(signal);
     SUB_NAV_CACHE.learningLanguages = Promise.resolve(learningLanguagesRaw);
 
-    const requestedModel = await subPages.load("study", {
-        selectedGroupId: requestedLanguageCode,
-        groupIds: learningLanguagesRaw,
-    });
-    const registeredLanguagesRaw = requestedModel.groups;
+    const catalogModel = await subPages.load("study", { groupIds: [] });
+    const registeredLanguagesRaw = catalogModel.groups;
 
     const languageCatalogByCode = new Map();
     for (const registeredLanguage of registeredLanguagesRaw) {
@@ -269,12 +267,20 @@ export async function loadStudySubNavigationModel({
         ? requestedLanguageCode
         : activeLanguageCodes[0];
 
+    const requestedModel = await subPages.load("study", {
+        selectedGroupId: selectedLanguageCode,
+        groupIds: activeLanguageCodes,
+    });
     const modulesByLanguage = requestedModel.pagesByGroup;
 
     const modules = [...(modulesByLanguage.get(selectedLanguageCode) ?? [])];
-    const schemas = await fetchLibrarySchemas().catch(() => []);
     const activeLocale = document.documentElement.lang;
     const spaRoutes = await loadSpaRoutes();
+    const hasExplore = spaRoutes.some(
+        (route) => route.base === "/study/explore",
+    );
+    const schemas = hasExplore ? await fetchLibrarySchemas() : [];
+    signal?.throwIfAborted();
     if (spaRoutes.some((route) => route.base === "/study/explore"))
         modules.push({
             id: "explore",
@@ -369,6 +375,10 @@ export async function loadStudySubNavigationModel({
 
     return {
         selectedLanguageCode,
+        explorePageUrl:
+            hasExplore && selectedLanguageCode
+                ? languageExploreUrl(schemas, selectedLanguageCode)
+                : null,
         dictionaryProviders:
             selectedLanguageCode &&
             schemas.some((schema) => schema.language === selectedLanguageCode)

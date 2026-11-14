@@ -1,22 +1,20 @@
 # Guided Tutorials
 
-These guides explain the actions available in this component.
-
 ## Use A Guide
 
-Visit a page below to start its unseen guide. Use the ? beside the page title to replay a completed guide; Skip leaves a replay.
+On Explore, choose Study Overview from the ? beside the page title. This manual guide explains navigation, the selected language, available dictionary search and Study settings. It stays on the current layer and omits unavailable controls. Language-owned guides explain content and remain limited to their own language.
 
 ## Technical Specification
 
-| Page / surface                   | Guide             | Access         |
-| -------------------------------- | ----------------- | -------------- |
-| `/study`                         | Study Overview    | Signed-in user |
-| `^/study/(?:settings\|welcome)$` | Study Preferences | Signed-in user |
+| Page / Surface                      | Guide             | Access         |
+| ----------------------------------- | ----------------- | -------------- |
+| `/study/explore/*`                  | Study Overview    | Signed-in user |
+| `/study/settings`, `/study/welcome` | Study Preferences | Signed-in user |
 
 ## Overview And Language Guides
 
-The `/study` guide covers the activity subnav, enrolled languages, available modules, dictionary search and Study settings, omitting unavailable controls. It does not repeat card workflows.
+The overview keeps the completion identity `study:getting-started`. Use Next, Back or Restart to review navigation without changing the page. Completed guides can be replayed from the same ? menu. Language-specific guides can start automatically on their own enrolled language’s content; changing the selected language exposes that language’s guide.
 
-`study:tutorialTargets` publishes Study-owned navigation and drawing targets plus scoped `route` and `attachDrawing` actions. `isEnrolled(language)` reads verified preferences through `study:navigation`, bound to the current account and invalidated on enrollment changes. Visiting a language does not enroll it.
+`study:tutorialTargets` publishes Study-owned navigation and drawing targets plus scoped `route` and `attachDrawing` actions. `matchesPage` matches only Explore paths for the supplied language. `isEnrolled(language)` reads verified account-bound preferences through `study:navigation`. Discovery never navigates or enrolls a language. Library owns interactive card walkthroughs and their generic fallback.
 
-Language-module guides can be selected from the overview's ? menu. Choosing one intentionally enters that language's Explore content. They start automatically only on their own content pages and preserve the current layer when already there. Library owns the interactive card walkthrough and its generic fallback; see its component documentation.
+The former directory-only `modules` tutorial target is removed. External guide consumers must target the current navigation or their own content rather than that retired directory.
