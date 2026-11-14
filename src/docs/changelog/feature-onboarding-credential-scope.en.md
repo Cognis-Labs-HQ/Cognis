@@ -18,5 +18,4 @@ Registration blocks submission when required completion handlers, declarations o
 
 ## Commits
 
-- [485d68f4864c40bd172b1745b0ef3ee21956ab7c](https://github.com/Cognis-Labs-HQ/Cognis/commit/485d68f4864c40bd172b1745b0ef3ee21956ab7c)
-- [8c1b5561367b4e0377ea58a582deefd01f37d2e5](https://github.com/Cognis-Labs-HQ/Cognis/commit/8c1b5561367b4e0377ea58a582deefd01f37d2e5)
+- [91e4296](https://github.com/Cognis-Labs-HQ/Cognis/commit/91e4296077bf1bd0ca58ec4405023a5f0678c59c)
