@@ -16,4 +16,4 @@ Bagian bawah awal, pengganti, dan yang baru ditambahkan menggunakan perender tom
 
 ## Komit
 
-- [9d5f752baf8f6b6c3f3ce54e8de297cd0d94c98a](https://github.com/Cognis-Labs-HQ/Cognis/commit/9d5f752baf8f6b6c3f3ce54e8de297cd0d94c98a)
+- [13aa5f452dbe7d6f09ddebd92ec648df940b58c1](https://github.com/Cognis-Labs-HQ/Cognis/commit/13aa5f452dbe7d6f09ddebd92ec648df940b58c1)
