@@ -65,6 +65,10 @@ Die Inhaltsrevision ändert sich auch, wenn veröffentlichte Prüfsummen der Spr
 
 Veröffentlichte Vorabversionskennungen bleiben für Anzeigerevisionen gültig, auch bei ausschließlich archivierten Dokumenten. Unabhängige veröffentlichte Dateien, auch mit Leerzeichen oder nichtlateinischen Zeichen im Namen, beeinflussen weder Sprachprüfung noch Sprachprüfsumme.
 
+### Autorisierung des Kontoziels
+
+Kontenübergreifende Verwaltung sowie alle TFA-Lesezugriffe mit Zielauswahl, Wiederherstellungscode-Aktionen, Methodenpräferenzen, Aktivierungen/Deaktivierungen und Administrator-Zurücksetzungen erfordern Auths Richtlinie `auth:authorizeAccountTarget` v1. Administratoren dürfen keine anderen Administratoren, Eigentümer oder Gründeradministratoren verwalten. Vom Eigentümer erlaubte Aktionen bleiben verfügbar. Fehlende Richtlinien oder unlesbare Kontometadaten führen vor nachgelagerten Speicherzugriffen zur Ablehnung. Die Benutzerverwaltung verbietet weiterhin Selbstverwaltung; TFA akzeptiert ein weggelassenes oder exakt angegebenes eigenes Ziel. Einrichtung und Methodendetails bleiben auf das eigene Konto beschränkt. Leere, doppelte oder fehlerhafte Zielparameter werden abgelehnt. Verwenden Sie Einstellungen für Ihre eigene Sicherheit und die Benutzerverwaltung für ein zulässiges anderes Konto.
+
 ## Sicherheit
 
 Dokumentationsendpunkte liefern nur lesbare Informationen. Zugangsdaten und private Kontodaten gehören nicht in diese Quellen. Routen der getrennten Dokumentvergleichsfunktion prüfen Anmeldung und Dokumentrechte selbst.

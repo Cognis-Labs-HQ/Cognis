@@ -80,11 +80,13 @@ export async function mountUsers(options = {}) {
                     }
                     assert.equal(path, `/api/v1/users/${user.accountId}/role`);
                     assert.equal(request.method, "POST");
-                    return Response.json({ data: { updated: true } });
+                    return options.changeRole
+                        ? options.changeRole(request)
+                        : Response.json({ data: { updated: true } });
                 },
             },
             "../../reuse/i18n.js": {
-                createI18n: async () => ({ t: (key) => key }),
+                createI18n: async () => options.i18n ?? { t: (key) => key },
                 applyDocumentTitle() {},
             },
             "../../reuse/page-composer/index.js": {

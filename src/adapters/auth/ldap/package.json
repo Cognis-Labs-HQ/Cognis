@@ -5,7 +5,7 @@
     "type": "module",
     "main": "index.ts",
     "dependencies": {
-        "@cognis/core": "<=0.6.5",
+        "@cognis/core": "<=0.6.6",
         "@cognis/gateways": "<=0.4.3",
         "ldapts": "^9.0.0"
     }
