@@ -15,10 +15,8 @@ import {
     normalizeUserIdentifier,
 } from "./popup-manager-participant-utils.js";
 import { getEventParticipants } from "./popup-manager-participant-mappers.js";
-import {
-    getSelectedReminderOffsets,
-    renderReminderField,
-} from "./popup-manager-reminders.js";
+import { getSelectedReminderOffsets } from "./popup-manager-reminders.js";
+import { renderEventComposerBody } from "../templates/event-composer.js";
 import { renderReadOnlyEventPopupBody } from "./popup-manager-read-only-render.js";
 import {
     buildConflictCreateKey,
@@ -627,33 +625,18 @@ export function createCalendarPopupManager({
                     ? "gateway.calendar.edit_event"
                     : "gateway.calendar.event_composer",
             ),
-            body: () => `
-        ${popupBuilder.render()}
-        <label class="calendar-checkbox-row calendar-checkbox-row--styled calendar-all-day-toggle">
-          <input id="calendar-popup-all-day" type="checkbox"${startsAsAllDay ? " checked" : ""} />
-          <span>${escapeHtml(i18n.t("gateway.calendar.all_day"))}</span>
-        </label>
-        <label class="calendar-participants-row">
-          <span>${escapeHtml(i18n.t("gateway.calendar.attendees_label"))}</span>
-          <input id="calendar-popup-participant-search" type="text" placeholder="${escapeHtml(i18n.t("gateway.calendar.attendees_placeholder"))}" autocomplete="off" />
-          <div id="calendar-popup-participant-options" class="calendar-participant-options"></div>
-          <div id="calendar-popup-participant-chips" class="calendar-participant-list"></div>
-        </label>
-        ${showMeetingToggle ? `<label class="calendar-checkbox-row calendar-checkbox-row--styled"><input id="calendar-popup-create-meeting" type="checkbox" /> <span>${escapeHtml(i18n.t("gateway.calendar.create_meeting"))}</span></label>` : ""}
-        ${renderReminderField({
-            i18n,
-            escapeHtml,
-            selectedOffsets:
-                eventData?.event?.reminderOffsetsMinutes ??
-                getCalendars().find(
-                    (calendar) =>
-                        calendar.id ===
-                        (eventData?.calendar?.id ?? getSelectedCalendarId()),
-                )?.defaultReminderOffsetsMinutes ??
-                [],
-        })}
-        ${eventData?.event?.recurrence && eventData.event.recurrence !== "none" ? `<label class="calendar-checkbox-row calendar-checkbox-row--styled"><input id="calendar-popup-update-all" type="checkbox" /> <span>${escapeHtml(i18n.t("gateway.calendar.update_series"))}</span></label>` : ""}
-      `,
+            maxWidth: "56rem",
+            body: () =>
+                renderEventComposerBody({
+                    popupBuilder,
+                    i18n,
+                    escapeHtml,
+                    startsAsAllDay,
+                    showMeetingToggle,
+                    eventData,
+                    calendars: getCalendars(),
+                    selectedCalendarId: getSelectedCalendarId(),
+                }),
             closeProtection: true,
             actions: [
                 {

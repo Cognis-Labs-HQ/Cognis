@@ -201,11 +201,11 @@
   <string name="gateway.calendar.tutorial.calendar.calendar.views.title">Calendar Views</string>
   <string name="gateway.calendar.tutorial.calendar.calendar.views.body">Switch views and move between periods to find the date you need.</string>
   <string name="gateway.calendar.tutorial.calendar.events.and.invitations.title">Events And Invitations</string>
-  <string name="gateway.calendar.tutorial.calendar.events.and.invitations.body">Open an event to review details, participants and invitation status before making changes.</string>
+  <string name="gateway.calendar.tutorial.calendar.events.and.invitations.body">Open an event to review details, participants and invitation status. Striped, dashed events await your invitation response; Busy, Free and Tentative keep their availability styling.</string>
   <string name="gateway.calendar.tutorial.calendar.navigate.dates.title">Find The Right Date</string>
   <string name="gateway.calendar.tutorial.calendar.navigate.dates.body">Use the date navigation to move between periods, then choose the calendar view that best fits your schedule.</string>
   <string name="gateway.calendar.tutorial.calendar.plan.event.title">Plan An Event</string>
-  <string name="gateway.calendar.tutorial.calendar.plan.event.body">Select a date or time to create an event. Set its calendar, time, recurrence, visibility and reminders before saving.</string>
+  <string name="gateway.calendar.tutorial.calendar.plan.event.body">Select a date or time to create an event. Set its calendar, times, recurrence, participants and reminders. Start and End share a row when space allows; on narrow screens, scroll through the stacked fields before saving.</string>
   <string name="gateway.calendar.tutorial.calendar.review.upcoming.title">Review Upcoming Events</string>
   <string name="gateway.calendar.tutorial.calendar.review.upcoming.body">Open an upcoming event to review details and invitations. For repeating events, check whether an edit applies to one occurrence or the series.</string>
 </resources>

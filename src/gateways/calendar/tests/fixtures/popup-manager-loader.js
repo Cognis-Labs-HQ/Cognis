@@ -1,8 +1,14 @@
 import { readFile } from "node:fs/promises";
 import vm from "node:vm";
 
-export async function loadPopupManager() {
-    const context = vm.createContext({ Date, Map, Set, AbortController });
+export async function loadPopupManager({ globals = {}, imports = {} } = {}) {
+    const context = vm.createContext({
+        Date,
+        Map,
+        Set,
+        AbortController,
+        ...globals,
+    });
     const modules = new Map();
     const contracts = {
         "/static/reuse/ui-ctx.js": ["uiCtx"],
@@ -29,11 +35,14 @@ export async function loadPopupManager() {
                 contracts[specifier],
                 function () {
                     for (const name of contracts[specifier]) {
-                        this.setExport(name, () => {
-                            throw new Error(
-                                `Unexpected call: ${specifier}:${name}`,
-                            );
-                        });
+                        const value =
+                            imports[specifier]?.[name] ??
+                            (() => {
+                                throw new Error(
+                                    `Unexpected call: ${specifier}:${name}`,
+                                );
+                            });
+                        this.setExport(name, value);
                     }
                 },
                 { context },

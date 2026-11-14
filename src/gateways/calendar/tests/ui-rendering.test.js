@@ -278,7 +278,7 @@ test("event status backgrounds cover calendar cards and dashboard summaries", ()
     }
     assert.match(
         STATUS_CSS_SOURCE,
-        /calendar-view-canvas \.calendar-event-status--free,[\s\S]*background:\s*transparent !important;/,
+        /calendar-view-canvas \.calendar-event-status--free,[\s\S]*--calendar-status-background:\s*transparent;/,
     );
     assert.match(
         STATUS_CSS_SOURCE,
@@ -417,10 +417,10 @@ test("calendar year view day dots inherit calendar event colors", () => {
     );
 });
 
-test("calendar mobile headers render compactly on narrow viewports", () => {
+test("calendar headers adapt to panel width and compact month viewports", () => {
     assert.match(
-        CSS_SOURCE,
-        /@media \(max-width:\s*700px\)[\s\S]*\.calendar-week-day-header\s*\{[\s\S]*flex-direction:\s*column;/s,
+        TIMED_GRID_CSS_SOURCE,
+        /@container calendar-week \(max-width:\s*700px\)[\s\S]*\.calendar-week-day-header\s*\{[\s\S]*flex-direction:\s*column;/s,
     );
     assert.match(
         CSS_SOURCE,
