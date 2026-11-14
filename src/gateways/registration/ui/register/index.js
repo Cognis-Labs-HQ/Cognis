@@ -15,7 +15,14 @@ import {
     selectSupportedLanguage,
     setPreferredLanguages,
 } from "/static/reuse/i18n.js";
-import { apiFetch } from "/static/reuse/api-client.js";
+import {
+    createOnboardingClient,
+    registerPublicAccount,
+} from "/static/gateways/auth/onboarding-client.js";
+import { redeemRegistrationInvite } from "../client.js";
+import { createRegistrationCompletion } from "./completion.js";
+import { verifyRegistrationEmail } from "./email-verification.js";
+import { loadRegistrationIntegrations } from "./integrations.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { showToast } from "/static/reuse/toast.js";
 import { openPopup } from "/static/reuse/popup.js";
@@ -131,15 +138,11 @@ export async function mount(root, { signal } = {}) {
             openRegistrationsEnabled = registrationConfig.registrationsEnabled;
         }
         requiredFields = registrationConfig.requiredFields;
-        for (const descriptor of registrationConfig.integrations) {
-            try {
-                const integrationModule = await import(descriptor.scriptUrl);
-                registrationIntegrations.push({
-                    descriptor,
-                    module: integrationModule,
-                    i18n: await extendI18n(i18n, descriptor.stringsBaseUrl),
-                });
-            } catch (error) {
+        const loaded = await loadRegistrationIntegrations({
+            descriptors: registrationConfig.integrations,
+            loadModule: (scriptUrl) => import(scriptUrl),
+            loadI18n: (stringsBaseUrl) => extendI18n(i18n, stringsBaseUrl),
+            onError: (error, descriptor) => {
                 console.error(
                     JSON.stringify({
                         level: "error",
@@ -155,10 +158,22 @@ export async function mount(root, { signal } = {}) {
                 showToast(i18n.t("ui.app.register.error.generic"), {
                     variant: "error",
                 });
-            }
-        }
-        registrationIntegrationsReady = true;
-    } catch {
+            },
+        });
+        registrationIntegrations.push(...loaded.integrations);
+        registrationIntegrationsReady = loaded.ready;
+    } catch (error) {
+        console.error(
+            JSON.stringify({
+                level: "error",
+                component: "register-page",
+                operation: "load-registration-configuration",
+                error: error instanceof Error ? error.message : String(error),
+            }),
+        );
+        showToast(i18n.t("ui.app.register.error.generic"), {
+            variant: "error",
+        });
         if (!token && !hasTokenParam) openRegistrationsEnabled = false;
     }
 
@@ -308,6 +323,17 @@ export async function mount(root, { signal } = {}) {
                 });
                 if (field) registerFormFields.push(field);
             } catch (error) {
+                if (
+                    Object.hasOwn(
+                        integration.descriptor,
+                        "onboardingOperations",
+                    )
+                ) {
+                    registrationIntegrationsReady = false;
+                    showToast(i18n.t("ui.app.register.error.generic"), {
+                        variant: "error",
+                    });
+                }
                 console.error(
                     JSON.stringify({
                         level: "error",
@@ -352,7 +378,7 @@ export async function mount(root, { signal } = {}) {
         let formHtml = "";
         let messageHtml = "";
 
-        if (accountCreationHtml) {
+        if (accountCreationHtml && registrationIntegrationsReady) {
             formHtml = accountCreationHtml;
         } else if (isInvalid) {
             messageHtml = renderInPageCallout({
@@ -436,6 +462,7 @@ export async function mount(root, { signal } = {}) {
     async function promptVerificationCodeForRegister(emailAddress) {
         let inputEl = null;
         const action = await openPopup({
+            signal,
             title: i18n.t("ui.app.settings.emails_verify_title"),
             body: () => `
       <p>${escapeHtml(i18n.t("ui.app.register.verify_email_prompt").replace("{email}", emailAddress))}</p>
@@ -461,56 +488,43 @@ export async function mount(root, { signal } = {}) {
         return inputEl.value.trim();
     }
 
-    async function runEmailVerificationAfterRegister(
-        accountId,
-        emailAddress,
-        verifyToken,
-    ) {
-        const addResponse = await fetch(
-            `/api/v1/notify/users/${encodeURIComponent(accountId)}/emails`,
-            {
-                method: "POST",
-                headers: {
-                    "content-type": "application/json",
-                    authorization: `Bearer ${verifyToken}`,
-                },
-                body: JSON.stringify({ email: emailAddress }),
-            },
-        );
-        if (!addResponse.ok) {
-            const addPayload = await addResponse.json().catch(() => null);
-            const addCode = String(addPayload?.error?.code ?? "");
-            if (addCode === "email_delivery_unavailable") {
-                return;
-            }
-            return;
-        }
-        while (true) {
-            const code = await promptVerificationCodeForRegister(emailAddress);
-            if (!code) break;
-            const verifyResponse = await fetch(
-                `/api/v1/notify/users/${encodeURIComponent(accountId)}/emails/${encodeURIComponent(emailAddress)}/verify`,
-                {
-                    method: "POST",
-                    headers: {
-                        "content-type": "application/json",
-                        authorization: `Bearer ${verifyToken}`,
-                    },
-                    body: JSON.stringify({ code }),
-                },
-            );
-            if (verifyResponse.ok) break;
-            if (verifyResponse.status === 422) {
-                showToast(i18n.t("ui.app.settings.emails_verify_invalid"), {
-                    variant: "error",
-                });
-                continue;
-            }
-            showToast(i18n.t("ui.app.settings.emails_verify_failed"), {
-                variant: "error",
-            });
-        }
-    }
+    const completion = createRegistrationCompletion({
+        createAccount: (account) =>
+            token
+                ? redeemRegistrationInvite({ ...account, token })
+                : registerPublicAccount(account),
+        createClient: (credential) =>
+            createOnboardingClient(credential, { signal }),
+        verifyEmail: (executeOnboarding, email, operations) =>
+            verifyRegistrationEmail({
+                executeOnboarding,
+                email,
+                operations,
+                required: requiredFields.includes("email"),
+                prompt: promptVerificationCodeForRegister,
+                onInvalid: () =>
+                    showToast(i18n.t("ui.app.settings.emails_verify_invalid"), {
+                        variant: "error",
+                    }),
+                signal,
+            }),
+        integrations: registrationIntegrations,
+        signal,
+        reportCleanupError: (error) =>
+            console.error(
+                JSON.stringify({
+                    level: "error",
+                    component: "register-page",
+                    operation: "revoke-onboarding",
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                }),
+            ),
+    });
+    window.addEventListener("pagehide", completion.dispose, {
+        once: true,
+        ...(signal ? { signal } : {}),
+    });
 
     const composer = createPageComposer(root, {
         allowCustomization: false,
@@ -633,6 +647,13 @@ export async function mount(root, { signal } = {}) {
                         "submit",
                         async (event) => {
                             event.preventDefault();
+                            if (!registrationIntegrationsReady) {
+                                showToast(
+                                    i18n.t("ui.app.register.error.generic"),
+                                    { variant: "error" },
+                                );
+                                return;
+                            }
                             if (!formController.validateAll(true)) {
                                 showToast(
                                     i18n.t(
@@ -688,7 +709,7 @@ export async function mount(root, { signal } = {}) {
                                                     : String(error),
                                         }),
                                     );
-                                    continue;
+                                    return;
                                 }
                                 if (validationMessage) {
                                     showToast(validationMessage, {
@@ -697,8 +718,6 @@ export async function mount(root, { signal } = {}) {
                                     return;
                                 }
                             }
-                            let authenticatedToken = "";
-                            let accountCreated = false;
                             if (password !== confirmPassword) {
                                 showToast(
                                     i18n.t(
@@ -709,147 +728,21 @@ export async function mount(root, { signal } = {}) {
                                 return;
                             }
                             try {
-                                if (token) {
-                                    const response = await fetch(
-                                        "/api/v1/registration/redeem",
-                                        {
-                                            method: "POST",
-                                            headers: {
-                                                "content-type":
-                                                    "application/json",
-                                            },
-                                            body: JSON.stringify({
-                                                token,
-                                                username,
-                                                displayName,
-                                                password,
-                                                email,
-                                            }),
-                                        },
-                                    );
-                                    const body = await response.json();
-                                    if (!response.ok) {
-                                        const errorCode = String(
-                                            body?.error?.code ?? "generic",
-                                        );
-                                        const i18nCode = knownErrorCodes.has(
-                                            errorCode,
-                                        )
-                                            ? errorCode
-                                            : "generic";
-                                        showToast(
-                                            i18n.t(
-                                                `ui.app.register.error.${i18nCode}`,
-                                            ),
-                                            { variant: "error" },
-                                        );
-                                        return;
-                                    }
-                                    authenticatedToken = String(
-                                        body?.data?.verifyToken ?? "",
-                                    );
-                                    accountCreated = true;
-                                } else {
-                                    const response = await fetch(
-                                        "/api/v1/auth/register",
-                                        {
-                                            method: "POST",
-                                            headers: {
-                                                "content-type":
-                                                    "application/json",
-                                            },
-                                            body: JSON.stringify({
-                                                username,
-                                                password,
-                                                email,
-                                                displayName,
-                                            }),
-                                        },
-                                    );
-                                    if (!response.ok) {
-                                        const body = await response
-                                            .json()
-                                            .catch((error) => {
-                                                console.warn(
-                                                    JSON.stringify({
-                                                        level: "warn",
-                                                        component:
-                                                            "register-page",
-                                                        message:
-                                                            "register_parse_error",
-                                                        error:
-                                                            error instanceof
-                                                            Error
-                                                                ? error.message
-                                                                : String(error),
-                                                    }),
-                                                );
-                                                return null;
-                                            });
-                                        const code = String(
-                                            body?.error?.code ??
-                                                "register_failed",
-                                        );
-                                        const message =
-                                            code === "registrations_disabled"
-                                                ? i18n.t(
-                                                      "ui.app.register.closed",
-                                                  )
-                                                : knownErrorCodes.has(code)
-                                                  ? i18n.t(
-                                                        `ui.app.register.error.${code}`,
-                                                    )
-                                                  : i18n.t(
-                                                        "ui.app.register.error.generic",
-                                                    );
-                                        showToast(message, {
-                                            variant: "error",
-                                        });
-                                        return;
-                                    }
-                                    const regPayload = await response
-                                        .json()
-                                        .catch(() => null);
-                                    const verifyToken = String(
-                                        regPayload?.data?.verifyToken ?? "",
-                                    );
-                                    authenticatedToken = verifyToken;
-                                    accountCreated = true;
-                                    const registeredUsername = String(
-                                        regPayload?.data?.username ?? username,
-                                    );
-                                    if (email && verifyToken) {
-                                        await runEmailVerificationAfterRegister(
-                                            registeredUsername,
-                                            email,
-                                            verifyToken,
-                                        );
-                                    }
-                                }
-                                for (const integration of registrationIntegrations) {
-                                    if (
-                                        !integration.module.completeRegistration
-                                    )
-                                        continue;
-                                    if (!authenticatedToken) {
-                                        throw new Error(
-                                            "registration_session_unavailable",
-                                        );
-                                    }
-                                    await integration.module.completeRegistration(
-                                        {
-                                            values: registrationValues,
-                                            i18n: integration.i18n,
-                                            descriptor: integration.descriptor,
-                                            apiFetch: (path, options = {}) =>
-                                                apiFetch(path, {
-                                                    ...options,
-                                                    accessToken:
-                                                        authenticatedToken,
-                                                }),
-                                        },
-                                    );
-                                }
+                                const result = await completion.run({
+                                    account: {
+                                        username,
+                                        displayName,
+                                        password,
+                                        email,
+                                    },
+                                    values: registrationValues,
+                                    invite: Boolean(token),
+                                });
+                                if (
+                                    result.outcome !== "completed" ||
+                                    signal?.aborted
+                                )
+                                    return;
                                 setPreferredLanguages(
                                     sanitizeLanguagePriority([
                                         chosenLanguage,
@@ -863,9 +756,11 @@ export async function mount(root, { signal } = {}) {
                                     variant: "success",
                                 });
                                 window.setTimeout(() => {
-                                    window.location.href = "/login";
+                                    if (completion.isCurrent())
+                                        window.location.href = "/login";
                                 }, 1200);
                             } catch (error) {
+                                if (!completion.isCurrent()) return;
                                 console.error(
                                     JSON.stringify({
                                         level: "error",
@@ -878,14 +773,17 @@ export async function mount(root, { signal } = {}) {
                                     }),
                                 );
                                 showToast(
-                                    i18n.t("ui.app.register.error.generic"),
-                                    {
-                                        variant: "error",
-                                    },
+                                    error.code === "registrations_disabled"
+                                        ? i18n.t("ui.app.register.closed")
+                                        : i18n.t(
+                                              `ui.app.register.error.${knownErrorCodes.has(error.code) ? error.code : "generic"}`,
+                                          ),
+                                    { variant: "error" },
                                 );
-                                if (accountCreated) {
+                                if (error.accountCreated) {
                                     window.setTimeout(() => {
-                                        window.location.href = "/login";
+                                        if (completion.isCurrent())
+                                            window.location.href = "/login";
                                     }, 1200);
                                 }
                             }

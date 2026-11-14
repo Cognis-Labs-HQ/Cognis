@@ -7,6 +7,7 @@ import {
 import {
     issueAccessToken,
     revokeAccessToken,
+    revokeOnboardingAccessTokens,
     type AccessRole,
 } from "../access-tokens.js";
 import type { AuthBootstrapHookContext } from "./index.js";
@@ -128,6 +129,7 @@ export async function registerAuthBootstrapHook({
                         });
                     });
                 assertCurrent();
+                revokeOnboardingAccessTokens(session.accountId);
                 issuedToken = issueAccessToken(
                     session.accountId,
                     session.role,

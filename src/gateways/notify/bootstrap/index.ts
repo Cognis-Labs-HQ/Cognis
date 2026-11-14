@@ -1,3 +1,8 @@
+import { createEmailVerification } from "./email-verification.js";
+import {
+    registerEmailOnboarding,
+    type OnboardingOperations,
+} from "./onboarding.js";
 import type {
     RegisterNotificationAction,
     SendEmailAction,
@@ -33,6 +38,12 @@ export { createUserEmailRoutes };
  * inside this module directly.
  */
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
+    const onboarding =
+        ctx.capabilities.require<OnboardingOperations>("auth:onboarding");
+    const onboardingAvailable = () => {
+        const owner = ctx.gatewayRegistry.get("notify");
+        return owner?.status === "active";
+    };
     const manifestVersion = await readGatewayManifestVersion(
         import.meta.url,
         "../manifest.json",
@@ -154,6 +165,25 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         }),
         "notify",
     );
+    const emailVerification = createEmailVerification(
+        notifStore,
+        tfaService,
+        verifyTokenService,
+        {
+            purpose: emailVerificationPurpose!,
+            canSendVerificationEmail: emailAvailable,
+            sendEmail,
+        },
+        externalHost,
+        getEmailCodeLength,
+        ctx.log,
+    );
+    registerEmailOnboarding(
+        onboarding,
+        emailVerification,
+        emailAvailable,
+        onboardingAvailable,
+    );
     ctx.routeRegistry.register(
         createUserEmailRoutes(
             notifStore,
@@ -167,6 +197,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             externalHost,
             routeContext,
             getEmailCodeLength,
+            emailVerification,
         ),
         "notify",
     );

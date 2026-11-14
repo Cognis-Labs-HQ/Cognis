@@ -57,20 +57,32 @@ export async function loadRegistrationConfig() {
         throw error;
     }
     const data = payload?.data ?? {};
+    const integrations = [];
+    if (data.integrations !== undefined && !Array.isArray(data.integrations))
+        throw new Error("registration_configuration_unavailable");
+    for (const descriptor of data.integrations ?? []) {
+        const valid =
+            descriptor &&
+            typeof descriptor === "object" &&
+            !Array.isArray(descriptor) &&
+            typeof descriptor.id === "string" &&
+            descriptor.id.trim() &&
+            typeof descriptor.scriptUrl === "string" &&
+            descriptor.scriptUrl.trim();
+        if (!valid) {
+            if (descriptor && Object.hasOwn(descriptor, "onboardingOperations"))
+                throw new Error("registration_configuration_unavailable");
+            continue;
+        }
+        integrations.push(descriptor);
+    }
     return {
         registrationsEnabled: data.registrationsEnabled === true,
         userValidationMode: String(data.userValidationMode ?? "none"),
         requiredFields: Array.isArray(data.requiredFields)
             ? data.requiredFields.filter((key) => typeof key === "string")
             : [],
-        integrations: Array.isArray(data.integrations)
-            ? data.integrations.filter(
-                  (descriptor) =>
-                      descriptor?.id &&
-                      typeof descriptor.scriptUrl === "string" &&
-                      descriptor.scriptUrl.trim().length > 0,
-              )
-            : [],
+        integrations,
     };
 }
 

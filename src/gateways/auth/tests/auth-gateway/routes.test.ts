@@ -310,7 +310,7 @@ test("GET /api/v1/auth/registration-config returns open-registration state", asy
     assert.equal(body.data.userValidationMode, "none");
 });
 
-test("GET /api/v1/auth/registration-config isolates composition failures", async () => {
+test("GET /api/v1/auth/registration-config fails closed on composition failures", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
@@ -346,12 +346,10 @@ test("GET /api/v1/auth/registration-config isolates composition failures", async
     }
 
     assert.equal(handled, true);
-    assert.equal(res.status, 200);
-    const body = JSON.parse(res.payload) as {
-        data: { registrationsEnabled: boolean; integrations: unknown[] };
-    };
-    assert.equal(body.data.registrationsEnabled, true);
-    assert.deepEqual(body.data.integrations, []);
+    assert.equal(res.status, 503);
+    assert.deepEqual(JSON.parse(res.payload), {
+        error: { code: "registration_configuration_unavailable" },
+    });
 });
 
 test("GET /api/v1/gateways/auth/adapters requires admin auth", async () => {
@@ -677,6 +675,13 @@ test("registration:public:register capability is looked up lazily in register ha
         },
     });
 
+    const accountStore = capabilities.require<{
+        getInfo(
+            username: string,
+        ): Promise<{ username: string; enabled: boolean } | null>;
+    }>("auth:accountStore");
+    accountStore.getInfo = async (username) =>
+        username === createdUsername ? { username, enabled: true } : null;
     capabilities.contribute("registration:public:isEnabled", () => true);
     capabilities.contribute(
         "registration:public:register",

@@ -21,6 +21,7 @@ const tokenStore = new Map<string, AccessTokenRecord>();
 const revokedTokenStore = new Map<string, AccessTokenRecord>();
 const verifiedAtByToken = new Map<string, number>();
 const invalidatedVerificationTokens = new Set<string>();
+const pendingOnboardingIssuance = new Map<string, Set<object>>();
 const MAX_TOKEN_STORE_SIZE = 10_000;
 const tokenStorePath =
     process.env.COGNIS_ACCESS_TOKEN_STORE_PATH ??
@@ -137,7 +138,7 @@ function pruneStore(
 ): boolean {
     let removed = false;
     for (const [tokenHash, record] of store.entries()) {
-        if (record.expiresAt !== null && record.expiresAt < now) {
+        if (record.expiresAt !== null && record.expiresAt <= now) {
             store.delete(tokenHash);
             verifiedAtByToken.delete(tokenHash);
             invalidatedVerificationTokens.delete(tokenHash);
@@ -178,7 +179,7 @@ export function lookupAccessToken(token: string): {
     providerId: string;
     revoked: boolean;
     setupPending: boolean;
-    purpose: "session" | "password-reset" | "share";
+    purpose: "session" | "password-reset" | "share" | "onboarding";
 } | null {
     const stored = getStoredAccessTokenRecord(token);
     if (!stored) return null;
@@ -200,7 +201,7 @@ export function verifyAccessToken(token: string): {
 } | null;
 export function verifyAccessToken(
     token: string,
-    options: { purpose: "session" | "password-reset" | "share" },
+    options: { purpose: "session" | "password-reset" | "share" | "onboarding" },
 ): {
     sub: string;
     role: AccessRole;
@@ -209,7 +210,9 @@ export function verifyAccessToken(
 } | null;
 export function verifyAccessToken(
     token: string,
-    options?: { purpose: "session" | "password-reset" | "share" },
+    options?: {
+        purpose: "session" | "password-reset" | "share" | "onboarding";
+    },
 ): {
     sub: string;
     role: AccessRole;
@@ -250,7 +253,7 @@ export function consumeAccessToken(token: string): {
 } | null;
 export function consumeAccessToken(
     token: string,
-    options: { purpose: "session" | "password-reset" | "share" },
+    options: { purpose: "session" | "password-reset" | "share" | "onboarding" },
 ): {
     sub: string;
     role: AccessRole;
@@ -259,7 +262,9 @@ export function consumeAccessToken(
 } | null;
 export function consumeAccessToken(
     token: string,
-    options?: { purpose: "session" | "password-reset" | "share" },
+    options?: {
+        purpose: "session" | "password-reset" | "share" | "onboarding";
+    },
 ): {
     sub: string;
     role: AccessRole;
@@ -290,7 +295,7 @@ export function revokeAccessToken(rawToken: string): boolean {
     const tokenHash = hashToken(rawToken);
     const record = tokenStore.get(tokenHash);
     if (!record) return false;
-    if (record.expiresAt !== null && record.expiresAt < Date.now())
+    if (record.expiresAt !== null && record.expiresAt <= Date.now())
         return false;
     tokenStore.delete(tokenHash);
     revokedTokenStore.set(tokenHash, record);
@@ -301,6 +306,7 @@ export function revokeAccessToken(rawToken: string): boolean {
 }
 
 export function revokeAccessTokensForSubject(subject: string): number {
+    pendingOnboardingIssuance.delete(subject);
     let removed = 0;
     for (const [tokenHash, record] of tokenStore.entries()) {
         if (record.subject !== subject) continue;
@@ -313,6 +319,52 @@ export function revokeAccessTokensForSubject(subject: string): number {
     if (removed > 0) {
         persistTokenStore();
     }
+    return removed;
+}
+
+export function revokeOnboardingAccessToken(rawToken: string): boolean {
+    const stored = getStoredAccessTokenRecord(rawToken);
+    if (!stored || stored.record.purpose !== "onboarding") return false;
+    if (!stored.revoked) return revokeAccessToken(rawToken);
+    persistTokenStore();
+    return true;
+}
+
+export function captureOnboardingIssuance(subject: string): {
+    isCurrent(): boolean;
+    release(): void;
+} {
+    const lease = {};
+    const leases = pendingOnboardingIssuance.get(subject) ?? new Set<object>();
+    leases.add(lease);
+    pendingOnboardingIssuance.set(subject, leases);
+    return {
+        isCurrent: () =>
+            pendingOnboardingIssuance.get(subject)?.has(lease) === true,
+        release() {
+            leases.delete(lease);
+            if (
+                !leases.size &&
+                pendingOnboardingIssuance.get(subject) === leases
+            )
+                pendingOnboardingIssuance.delete(subject);
+        },
+    };
+}
+
+export function revokeOnboardingAccessTokens(subject: string): number {
+    pendingOnboardingIssuance.delete(subject);
+    let removed = 0;
+    for (const [tokenHash, record] of tokenStore.entries()) {
+        if (record.subject !== subject || record.purpose !== "onboarding")
+            continue;
+        tokenStore.delete(tokenHash);
+        revokedTokenStore.set(tokenHash, record);
+        verifiedAtByToken.delete(tokenHash);
+        invalidatedVerificationTokens.delete(tokenHash);
+        removed++;
+    }
+    persistTokenStore();
     return removed;
 }
 
@@ -344,9 +396,36 @@ export function issueAccessToken(
         issuedAt?: number;
         providerId?: string;
         setupPending?: boolean;
-        purpose?: "session" | "password-reset" | "share";
+        purpose?: "session" | "password-reset" | "share" | "onboarding";
     },
 ): string {
+    if (
+        options?.purpose === "onboarding" &&
+        (typeof subject !== "string" ||
+            !subject.trim() ||
+            subject !== subject.trim() ||
+            role !== "user" ||
+            (options.setupPending !== undefined &&
+                options.setupPending !== false) ||
+            Object.keys(options).some(
+                (key) =>
+                    ![
+                        "purpose",
+                        "setupPending",
+                        "providerId",
+                        "issuedAt",
+                    ].includes(key),
+            ) ||
+            (options.providerId !== undefined &&
+                options.providerId !== "local") ||
+            ttlSeconds === null ||
+            !Number.isSafeInteger(ttlSeconds) ||
+            ttlSeconds <= 0 ||
+            ttlSeconds > 1800 ||
+            (options.issuedAt !== undefined && options.issuedAt !== Date.now()))
+    ) {
+        throw new Error("invalid_onboarding_credential");
+    }
     pruneExpiredTokens();
     if (tokenStore.size >= MAX_TOKEN_STORE_SIZE) {
         throw new Error("access_token_store_capacity_reached");
