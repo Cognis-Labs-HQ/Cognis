@@ -76,3 +76,9 @@ Kapabilitas tambahan `ui:popupFocus` mengoordinasikan pemilik dialog melalui `re
 Fungsi `onRevoke` yang wajib menghapus penangan kejadian delegasi secara sinkron sebelum fokus dikembalikan.
 
 Fungsi delegasi bersifat sinkron, dan `contains` harus mengembalikan nilai boolean. Galat, nilai predikat yang tidak valid, hasil asinkron, atau upaya fokus rekursif mencabut delegasi, mencatat metadata diagnostik yang aman, dan memulihkan penanganan fokus biasa. Kegagalan fungsi maupun pencatatan tidak boleh menghambat penutupan dialog atau membiarkan hasilnya tertunda.
+
+## Gestur daftar bahasa
+
+Seret baris bahasa, atau pegangannya pada layar sentuh, ke posisi yang diinginkan dalam daftar pilihan. Titik tengah baris tujuan menentukan penyisipan sebelum atau sesudahnya; area tabel lainnya menambahkan bahasa di akhir. Bahasa Inggris tetap menjadi bahasa cadangan pilihan. Perubahan tetap berupa draf hingga disimpan; membuang perubahan mengembalikan urutan tersimpan. Mode luring mengizinkan pengurutan bahasa pilihan, tetapi tidak mengubah keanggotaannya.
+
+Seret bawaan dan pegangan sentuh/pena di Pengaturan memakai `bindListDropzones` di `src/ui/app/settings/dropzones.js`. Pengendali Pengaturan memiliki selektor, kelayakan, dan fungsi penempatan; fungsi bantu memiliki pemeriksaan tujuan, penanda, penangkapan penunjuk, dan pembatalan. `cancel()` membersihkan gestur sebelum perenderan ulang; `dispose()` atau sinyal yang diberikan menghapus pendengar. Pembatalan, hilangnya penangkapan, Escape, perpindahan halaman, dan penempatan tidak valid tidak menerapkan perubahan. Kegagalan pemeriksaan kelayakan melepaskan gestur sebelum diteruskan; pelepasan penangkapan tidak menerapkan perubahan setelah pembatalan, penghentian pengendali, atau penggantian baris. Tutorial bahasa di Pengaturan mempertahankan sasaran daftar tersedia/pilihan dan menjelaskan alur seret lalu simpan yang sama.

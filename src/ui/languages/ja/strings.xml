@@ -657,9 +657,9 @@
   <string name="ui.tutorial.settings.appearance.message.layout.body">好みのメッセージ形式を選びます。保存すると未適用の表示設定が反映されます。</string>
   <string name="ui.tutorial.settings.language.title">言語設定</string>
   <string name="ui.tutorial.settings.language.available.languages.title">利用できる言語</string>
-  <string name="ui.tutorial.settings.language.available.languages.body">一覧から使用する言語を追加します。</string>
+  <string name="ui.tutorial.settings.language.available.languages.body">言語を優先言語リストへドラッグします。タッチ画面ではハンドルをドラッグします。</string>
   <string name="ui.tutorial.settings.language.language.priority.title">言語の優先順位</string>
-  <string name="ui.tutorial.settings.language.language.priority.body">希望する言語を並べ替え、最初に使用する翻訳を決めます。</string>
+  <string name="ui.tutorial.settings.language.language.priority.body">優先言語を希望する順序にドラッグして保存します。破棄すると保存済みの順序に戻ります。</string>
   <string name="ui.tutorial.settings.language.browser.language.title">ブラウザーの言語</string>
   <string name="ui.tutorial.settings.language.browser.language.body">手動の優先順位を使わない場合は、ブラウザーの言語検出に戻せます。</string>
   <string name="ui.tutorial.settings.datetime.title">日時の設定</string>
