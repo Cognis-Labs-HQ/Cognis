@@ -5,6 +5,11 @@ import { createAdapter } from "../index.js";
 test("totp adapter setup returns secret and qr svg details", async () => {
     const adapter = createAdapter();
     const setup = await adapter.beginSetup({
+        lifetime: {
+            id: "synthetic-setup",
+            expiresAt: Date.now() + 600_000,
+            signal: new AbortController().signal,
+        },
         accountId: "alice",
         displayName: "Alice",
         issuer: "Cognis",

@@ -22,8 +22,8 @@ Bootstrap in `src/gateways/tfa/bootstrap.ts`:
 Das Gateway registriert diese Capabilities über `ctx.capabilities`:
 
 - `tfa:getUserStatus(accountId)`
-- `tfa:getLoginMethods(accountId)`
-- `tfa:verifyLogin(accountId, methodId, payload)`
+- `tfa:getLoginMethods(accountId, lifetime)`
+- `tfa:verifyLogin(accountId, methodId, payload, lifetime)`
 - `tfa:isSecondFactorEnabled(accountId)`
 - `tfa:isSetupRequired(accountId)`
 - `tfa:resetUser(accountId)`
@@ -32,7 +32,11 @@ Das Gateway registriert diese Capabilities über `ctx.capabilities`:
 
 Diese Oberfläche ist der unterstützte Integrationspunkt. Andere Komponenten dürfen keine TFA-Adapter-Interna direkt importieren.
 
+<<<<<<< HEAD:src/gateways/tfa/docs/TECHNICAL.de.md
 `tfa:getLoginMethods(accountId)` bereitet eine Challenge nur bei genau einer verfügbaren Methode ohne unbenutzte Wiederherstellungscodes vor. Andernfalls fordert die Login-Oberfläche über `POST /api/v1/tfa/login/resend` eine Challenge für die anfänglich gewählte Methode mit `challengeOnSelect` sowie für spätere Auswahlen ohne bestehende Challenge an. Vorbereitete Challenges werden wiederverwendet. Zustellfehler erscheinen lokalisiert; Protokolle erfassen Methode, Konto, Bereitschaft und Fehlergrund ohne Codes oder E-Mail-Inhalte.
+=======
+`tfa:getLoginMethods(accountId, lifetime)` löst eine Login-Challenge (z. B. SMTP-E-Mail) nur aus, wenn genau eine Methode für den Nutzer konfiguriert ist. Bei mehreren Methoden enthält die Antwort nur Methodenidentitäten ohne Challenge-Daten. Die Login-UI löst die Challenge über `POST /api/v1/tfa/login/resend` on-demand aus, sobald der Nutzer eine Methode explizit auswählt.
+>>>>>>> f07343ef8 (fix(tfa): bind queued SMTP codes to challenge lifetimes):src/gateways/tfa/docs/index.de.md
 
 ### API-Routen
 
@@ -126,6 +130,12 @@ Während eines serialisierten Richtlinienschreibvorgangs setzt TFA neue Sitzungs
 
 Der Richtlinienablauf verlangt einen einmaligen Vorgang und Ausführungszustand unter Kontrolle seines Eigentümers. Direkte Ablaufaufrufe und die Wiederholung erfasster Vorgänge werden vor Änderungen abgewiesen; Integrationen müssen die Richtliniencapability verwenden.
 
+<<<<<<< HEAD:src/gateways/tfa/docs/TECHNICAL.de.md
+
+### Zeitlich begrenzte Challenge-Zustellung
+
+Bei Email Code bedeutet „wartend“, dass die Zustellung noch nicht erfolgt ist. Warten Sie auf den neuesten Code. Erst ein angenommener Neuversand ersetzt den alten Code; bei Ablehnung bleibt er erhalten. Nach einem Zustellfehler innerhalb der Frist erneut senden oder einen neuen Login beginnen. Login-Versuche gelten fünf, Einrichtungen zehn Minuten. Ein Einrichtungsabbruch betrifft nur diese Einrichtung. Fortsetzen versendet keine neue E-Mail und verlängert keine Frist.
+
 ## Sicherheit
 
 Einrichtung, Bestätigung, Löschung und Login nutzen geschützte Abläufe. Adapter prüfen Challenges; unbestätigte Methoden oder Fehler gelten nicht als erfolgreiche Verifikation.
@@ -142,3 +152,12 @@ Einrichtung, Bestätigung, Löschung und Login nutzen geschützte Abläufe. Adap
 Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/adapters/social/messages/technical).
 
 Wiederherstellungscodes helfen bei nicht verfügbarem zweitem Faktor. Die Durchsetzungsanleitung hebt den Schalter statt des gesamten Bereichs hervor.
+=======
+## Zeitlich begrenzte Challenge-Zustellung
+
+Methodenadapter erhalten verpflichtend `lifetime: { id, expiresAt, signal }` für Einrichtung, Login-Challenge und Login-Prüfung. Aufrufer von `tfa:getLoginMethods(accountId, lifetime)` und `tfa:verifyLogin(accountId, methodId, payload, lifetime)` müssen migriert werden. Eine Einrichtung erhält vor dem ersten asynchronen Lesen ihre eigene Zehn-Minuten-Frist. Auth liefert die Login-Lebensdauer über `auth:getPendingLoginLifetime` Version 1. Abbruch, Ablauf, Speicherfehler, Deaktivierung, Zurücksetzen und Gateway-Bereinigung entwerten den genauen Vorgang. Alte Lesevorgänge bleiben auch nach erneuter Aktivierung ungültig. Vor Beginn des Schreibens lässt sich die Prüfung abbrechen; danach warten Abbruch und Zurücksetzen auf die weiterhin sichtbare Schreib- und Bereinigungsbarriere. Wiederherstellungscodes prüfen die Lebensdauer auch nach asynchronem Verbrauch. Neustart verliert ausstehende In-Memory-Challenges. Fortgesetzte Login-Beschreibungen sind Momentaufnahmen der Annahme, keine aktuellen Zustellbestätigungen.
+
+### Abschließende Zustandsänderungen koordinieren
+
+Abschlussvorgänge für Konto, Methode und Gateway sperren neue Vorgänge während Bereinigung und Speicherung. Überlappende Vorgänge besitzen jeweils eine eigene Sperre; der Abschluss eines Vorgangs öffnet keinen anderen. Eine fehlgeschlagene Registrierung bleibt ein Prüfungsfehler. Die Bereinigung wartet auf ihr Ende, ohne ein späteres Zurücksetzen oder Deaktivieren an dessen eigener Zustandsänderung zu hindern.
+>>>>>>> f07343ef8 (fix(tfa): bind queued SMTP codes to challenge lifetimes):src/gateways/tfa/docs/index.de.md

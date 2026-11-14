@@ -22,8 +22,8 @@
 この gateway は `ctx.capabilities` に次を登録します。
 
 - `tfa:getUserStatus(accountId)`
-- `tfa:getLoginMethods(accountId)`
-- `tfa:verifyLogin(accountId, methodId, payload)`
+- `tfa:getLoginMethods(accountId, lifetime)`
+- `tfa:verifyLogin(accountId, methodId, payload, lifetime)`
 - `tfa:isSecondFactorEnabled(accountId)`
 - `tfa:isSetupRequired(accountId)`
 - `tfa:resetUser(accountId)`
@@ -32,7 +32,11 @@
 
 これらが正式な統合面です。他コンポーネントが TFA アダプター内部を直接 import してはいけません。
 
+<<<<<<< HEAD:src/gateways/tfa/docs/TECHNICAL.ja.md
 `tfa:getLoginMethods(accountId)` は利用可能な方式が1つで未使用の復旧コードがない場合のみチャレンジを準備します。それ以外では、ログイン画面が `challengeOnSelect` を持つ初期選択方式と、既存のチャレンジがない後続の選択に対し `POST /api/v1/tfa/login/resend` でチャレンジを要求します。サーバー側で準備済みのチャレンジは再利用します。配送の失敗は選択言語で表示し、ログには方式、アカウント、準備状態、失敗理由を記録します。コードやメール本文は記録しません。
+=======
+`tfa:getLoginMethods(accountId, lifetime)` がログインチャレンジ（SMTP メール送信など）を開始するのは、ユーザーに設定済み方式がちょうど 1 つの場合のみです。複数の方式がある場合、レスポンスには方式の識別情報のみが含まれ、チャレンジデータは返されません。ログイン UI はユーザーが方式を明示的に選択したときに `POST /api/v1/tfa/login/resend` を通じてオンデマンドでチャレンジを開始します。
+>>>>>>> f07343ef8 (fix(tfa): bind queued SMTP codes to challenge lifetimes):src/gateways/tfa/docs/index.ja.md
 
 ### API Route
 
@@ -126,6 +130,12 @@ Auth と TFA の宣言は、既存のアカウントロール、外部識別情�
 
 ポリシーフローには、担当コンポーネントが保持する一回限りの操作と実行状態が必要です。フローの直接呼び出しや取得済み操作の再実行は、変更前に拒否されます。連携機能はポリシーケイパビリティを呼び出してください。
 
+<<<<<<< HEAD:src/gateways/tfa/docs/TECHNICAL.ja.md
+
+### 有効期限付きチャレンジ配送
+
+Email Codeの「送信待ち」はまだ配送が完了していない状態です。最新のコードを待ってください。再送が受け付けられた場合だけ前のコードを置換し、拒否時は維持します。配送失敗後は試行の期限内に明示的に再送するか、新しくログインしてください。ログイン試行は5分、設定は10分です。設定の中止はその設定だけに影響します。ログイン再開で追加メールを送ったり期限を延長したりしません。
+
 ## セキュリティ
 
 設定・確認・削除・ログイン検証には保護された処理を使います。方式ごとに確認を検証し、未確認の方式や失敗を成功として扱いません。
@@ -142,3 +152,12 @@ Auth と TFA の宣言は、既存のアカウントロール、外部識別情�
 公開機能 `ui:tutorials` を通じて、コンポーネント所有の定義、カタログ、対象、ライフサイクルのシグナルを登録します。ページ、表示中の領域、アクセス権により利用可否が決まります。コンポーネントを解除するとガイドも解除します。共通の表示と完了動作は[ホストのチュートリアル契約](/docs/tutorials)を参照してください。
 
 第2認証要素が使えない場合のログイン方法としてリカバリーコードを説明し、強制設定ではパネル全体ではなくスイッチを示します。
+=======
+## 有効期限付きチャレンジ配送
+
+メソッドアダプターには設定開始、ログインチャレンジ、ログイン検証で必須の `lifetime: { id, expiresAt, signal }` を渡します。`tfa:getLoginMethods(accountId, lifetime)` と `tfa:verifyLogin(accountId, methodId, payload, lifetime)` の呼び出し元は移行が必要です。設定は最初の非同期読み取りより前に固有IDと10分期限を持ちます。Authは `auth:getPendingLoginLifetime` バージョン1でログインの有効期間を提供します。中止、期限切れ、保存失敗、アカウントのメソッド無効化、リセット、ゲートウェイ破棄は対象操作を無効化します。再有効化後も古い読み取りは拒否します。登録書き込み開始前の検証は中止可能です。書き込み開始後は、表示されたままの書き込み・後処理バリアを中止とリセットが待ちます。復旧コードも非同期消費後に有効期間を確認します。再起動でメモリー内の未完了チャレンジは失われます。再開されたログイン記述は受付時の記録であり、現在の配送状況を証明しません。
+
+### 終了処理の状態変更を調整する
+
+アカウント、メソッド、ゲートウェイの終了処理は、後処理と状態書き込みが完了するまで新規受付を止めます。重複する操作はそれぞれ独立したバリアを所有し、1つの終了で別の操作を再開しません。登録書き込みの失敗は検証失敗のままですが、後処理はその終了を待ち、後続のリセットや無効化による状態変更を妨げません。
+>>>>>>> f07343ef8 (fix(tfa): bind queued SMTP codes to challenge lifetimes):src/gateways/tfa/docs/index.ja.md

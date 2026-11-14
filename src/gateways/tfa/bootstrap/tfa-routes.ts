@@ -1,3 +1,5 @@
+import { readLoginLifetime } from "./login-lifetime.js";
+import type { TfaChallengeLifetime } from "../contracts/method.js";
 import type { ApplyEnforcementPolicy } from "./enforcement-policy.js";
 import type { RouteLifetime } from "./route-lifetime.js";
 import {
@@ -105,9 +107,35 @@ export function createTfaRoutes(
                 );
                 return true;
             }
+            let challengeLifetime: TfaChallengeLifetime;
+            try {
+                challengeLifetime = readLoginLifetime(
+                    capabilities,
+                    loginAttemptId,
+                    pendingAttempt.accountId,
+                );
+            } catch (error) {
+                log?.("error", "Pending login lifetime is unavailable.", {
+                    ...logMeta,
+                    operation: "read_login_lifetime",
+                    errorName:
+                        error instanceof Error ? error.name : "UnknownError",
+                });
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "tfa_unavailable",
+                            message: "tfa_unavailable",
+                        },
+                    }),
+                );
+                return true;
+            }
             const challenge = await gateway.beginLoginChallenge(
                 pendingAttempt.accountId,
                 methodId,
+                challengeLifetime,
             );
             if (!challenge.ready) {
                 const unavailableCode =
@@ -130,6 +158,9 @@ export function createTfaRoutes(
                 JSON.stringify({
                     data: {
                         challenge: {
+                            ...(challenge.deliveryStatus
+                                ? { deliveryStatus: challenge.deliveryStatus }
+                                : {}),
                             ...(challenge.maxLength != null
                                 ? { maxLength: challenge.maxLength }
                                 : {}),
@@ -230,8 +261,38 @@ export function createTfaRoutes(
                 );
                 return true;
             }
+            let challengeLifetime: TfaChallengeLifetime;
+            try {
+                challengeLifetime = readLoginLifetime(
+                    capabilities,
+                    loginAttemptId,
+                    pendingAttempt.accountId,
+                );
+            } catch (error) {
+                log?.("error", "Pending login lifetime is unavailable.", {
+                    ...logMeta,
+                    operation: "read_login_lifetime",
+                    errorName:
+                        error instanceof Error ? error.name : "UnknownError",
+                });
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "tfa_unavailable",
+                            message: "tfa_unavailable",
+                        },
+                    }),
+                );
+                return true;
+            }
             const tfaResult = await gateway
-                .verifyLogin(pendingAttempt.accountId, methodId, body)
+                .verifyLogin(
+                    pendingAttempt.accountId,
+                    methodId,
+                    body,
+                    challengeLifetime,
+                )
                 .catch(
                     (
                         error,
@@ -251,6 +312,7 @@ export function createTfaRoutes(
                         };
                     },
                 );
+            if (rejectExpiredAssurance(res, lifetime, revision)) return true;
             if (!tfaResult.verified) {
                 res.writeHead(401, { "content-type": "application/json" });
                 res.end(
@@ -266,7 +328,6 @@ export function createTfaRoutes(
                 );
                 return true;
             }
-            if (rejectExpiredAssurance(res, lifetime, revision)) return true;
             // A concurrent verifier may have consumed this attempt while the factor was checked.
             if (!consumePendingLoginAttempt(loginAttemptId)) {
                 res.writeHead(401, { "content-type": "application/json" });

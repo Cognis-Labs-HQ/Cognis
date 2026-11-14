@@ -5,6 +5,7 @@ export function declareSmtpContracts(contracts: CapabilityContracts): void {
     for (const id of [
         "notify:registerEmailPurpose",
         "notify:sendEmail",
+        "notify:deliverEmail",
         "notify:emailDeliveryPolicy",
     ])
         contracts.define(id, {

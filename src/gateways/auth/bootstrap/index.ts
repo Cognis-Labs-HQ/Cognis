@@ -1,3 +1,4 @@
+import type { PendingLoginLifetime } from "../pending-login-lifetimes.js";
 import type { LoginContinuation } from "../login-continuation.js";
 import * as verificationCodes from "../../reuse/verification-codes.js";
 import { registerUserValidationModes } from "../user-validation.js";
@@ -132,6 +133,7 @@ export interface AuthBootstrapHookContext {
 
 export interface AuthRouteBootstrapRuntime {
     loginContinuation: LoginContinuation;
+    getPendingLoginLifetime: (id: string) => PendingLoginLifetime | null;
     buildAccessTokenCookie: (
         req: IncomingMessage,
         rawToken: string,

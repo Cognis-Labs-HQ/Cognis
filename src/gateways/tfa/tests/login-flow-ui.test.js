@@ -247,7 +247,9 @@ test("resend refreshes the selected challenge length and retains it across provi
     const host = fixture();
     await open(host);
     host.respond(() =>
-        Response.json({ data: { challenge: { maxLength: 12 } } }),
+        Response.json({
+            data: { challenge: { maxLength: 12, deliveryStatus: "sent" } },
+        }),
     );
     await host.resend().click();
     assert.deepEqual(host.requests[0], {
@@ -272,6 +274,7 @@ test("cooldown prevents duplicate resends and preserves pending challenge length
     const host = fixture();
     const providers = methods();
     providers[0].challenge.retryAfterSeconds = 30;
+    providers[0].challenge.deliveryStatus = "queued";
     await open(host, providers);
     assert.equal(host.resend().getAttribute("aria-disabled"), "true");
     assert.equal(
@@ -352,6 +355,7 @@ test("new prompts dispose cooldowns and transport errors preserve challenge inpu
     const host = fixture();
     const providers = methods();
     providers[0].challenge.retryAfterSeconds = 30;
+    providers[0].challenge.deliveryStatus = "queued";
     const client = await open(host, providers);
     assert.equal(host.timers.size, 1);
     await client.switchToTfaPrompt({
@@ -563,3 +567,41 @@ for (const resendAvailableAt of [
         assert.equal(host.warnings.length, 0);
     });
 }
+
+for (const deliveryStatus of ["queued", "sent", undefined])
+    test(`resend feedback reflects explicit ${String(deliveryStatus)} receipt status`, async () => {
+        const host = fixture();
+        await open(host);
+        host.respond(() =>
+            Response.json({ data: { challenge: { deliveryStatus } } }),
+        );
+        await host.resend().click();
+        if (deliveryStatus)
+            assert.equal(
+                host.notices.at(-1)?.text,
+                `translated:ui.app.login.tfa.resend_${deliveryStatus}`,
+            );
+        else assert.equal(host.notices.length, 0);
+    });
+
+test("resumed queued challenge never claims delivery or automatically resends", async () => {
+    const host = fixture();
+    const providers = methods();
+    providers[0].challenge = {
+        deliveryStatus: "queued",
+        resendAvailableAt: new Date(30000).toISOString(),
+        maxLength: 6,
+    };
+    await open(host, providers);
+    assert.equal(host.requests.length, 0);
+    assert.equal(
+        host.notices.at(-1)?.text,
+        "translated:ui.app.login.tfa.resend_queued",
+    );
+    host.advance(30);
+    assert.equal(host.requests.length, 0);
+    assert.equal(
+        host.notices.some((notice) => notice.text.endsWith("resend_sent")),
+        false,
+    );
+});

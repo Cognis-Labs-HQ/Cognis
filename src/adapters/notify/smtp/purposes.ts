@@ -1,3 +1,7 @@
+import {
+    assertDeliveryLifetime,
+    type DeliveryLifetime,
+} from "./delivery-lifetime.js";
 import { EMAIL_DELIVERY_RATE_LIMIT_MS } from "./rate-limit.js";
 import { createEmailTemplates } from "./email-templates.js";
 import {
@@ -14,6 +18,7 @@ import type {
     RegisterNotificationAction,
     SendEmailAction,
     EmailActionInput,
+    DeliverEmailAction,
 } from "./contracts/action-delivery.js";
 import type { SmtpNotificationSender } from "./notification-sender.js";
 
@@ -106,13 +111,16 @@ export async function registerSmtpActions(
         "validate",
         { id: "smtp:validateEmail" },
         ({ input, data }) => {
-            const request = input as EmailActionInput;
+            const request = input as EmailActionInput & {
+                lifetime?: DeliveryLifetime;
+            };
             if (
                 !ctx.capabilities.require<(id: string) => boolean>(
                     "notify:isSenderEnabled",
                 )(sender.senderId)
             )
                 throw new Error("smtp_sender_disabled");
+            if (request.lifetime) assertDeliveryLifetime(request.lifetime);
             const action = actions.get(request.purpose);
             if (!action) throw new Error("smtp_purpose_unregistered");
             if (!request.recipientEmail)
@@ -125,7 +133,9 @@ export async function registerSmtpActions(
         "render",
         { id: "smtp:renderEmailAction" },
         async ({ input, data }) => {
-            const request = input as EmailActionInput;
+            const request = input as EmailActionInput & {
+                lifetime?: DeliveryLifetime;
+            };
             data.theme = await sender.getRecipientTheme(request.recipientEmail);
             const message = await (data.action as NotificationAction)(
                 request.variables,
@@ -144,7 +154,9 @@ export async function registerSmtpActions(
         "enqueue",
         { id: "smtp:enqueueEmail" },
         async ({ input, data }) => {
-            const request = input as EmailActionInput;
+            const request = input as EmailActionInput & {
+                lifetime?: DeliveryLifetime;
+            };
             // Recheck after an async action: disabling its owner must prevent a late enqueue.
             if (actions.get(request.purpose) !== data.registration)
                 throw new Error("smtp_purpose_unregistered");
@@ -167,6 +179,7 @@ export async function registerSmtpActions(
                 request,
                 message,
                 data.theme as "light" | "dark",
+                request.lifetime,
             );
         },
     );
@@ -174,6 +187,21 @@ export async function registerSmtpActions(
         (await root.flow.run(sendFlow, input)).data.receipt as Awaited<
             ReturnType<SendEmailAction>
         >;
+    const deliver: DeliverEmailAction = async ({
+        signal,
+        expiresAt,
+        ...input
+    }) => {
+        assertDeliveryLifetime({ signal, expiresAt });
+        const result = await root.flow.run(sendFlow, {
+            ...input,
+            lifetime: { signal, expiresAt },
+        });
+        const receipt = result.data.receipt as { notificationId: string };
+        return sender.trackEmail(input.purpose, receipt.notificationId);
+    };
+    ctx.capabilities.contribute("notify:deliverEmail", deliver);
+    root.contributePublicCapability("notify:deliverEmail", deliver);
     ctx.capabilities.contribute("notify:registerEmailPurpose", register);
     ctx.capabilities.contribute("notify:sendEmail", send);
     let active = true;
@@ -218,5 +246,5 @@ export async function registerSmtpActions(
     );
     root.contributePublicCapability("notify:registerEmailPurpose", register);
     root.contributePublicCapability("notify:sendEmail", send);
-    return { register, send };
+    return { register, send, deliver };
 }

@@ -4,54 +4,35 @@ import {
     generateNumericVerificationCode,
 } from "../../../gateways/reuse/verification-codes.js";
 
-import { requireBootstrapScope } from "@cognis/core";
+import { requireBootstrapScope, type CapabilityContracts } from "@cognis/core";
 import type { TfaAdapterBootstrapContext } from "../../../gateways/tfa/gateway.js";
-import type { TfaMethodAdapter } from "../../../gateways/tfa/gateway.js";
+import type {
+    TfaMethodAdapter,
+    TfaChallengeLifetime,
+} from "../../../gateways/tfa/gateway.js";
 
 const CODE_EXPIRY_MS = 15 * 60 * 1000;
 const MAX_CODE_GENERATION_ATTEMPTS = 10;
 
-interface SmtpTfaAdapterContext {
-    canSendVerificationEmail?: () => boolean;
-    getEmailDeliveryPolicy?: () => {
-        minimumIntervalMs: number;
-        codeLength: number;
-    };
-    sendVerificationEmail?: (
-        to: string,
-        code: string,
-        verifyUrl?: string,
-        theme?: string,
-    ) => Promise<void>;
-    queueVerificationEmail?: (
-        to: string,
-        code: string,
-        verifyUrl?: string,
-        theme?: string,
-    ) => Promise<{
-        notificationId: string;
-        status: "queued" | "waiting_rate_limit" | "sending" | "sent" | "failed";
-        createdAt: string;
-        updatedAt: string;
-        availableAt?: string;
-        error?: string;
-        recipientEmail?: string;
-    }>;
-    getPrimaryEmail?: (accountId: string) => Promise<string | null>;
-    log?: (
-        level: string,
-        message: string,
-        metadata?: Record<string, unknown>,
-    ) => void;
-}
+import type {
+    SmtpTfaAdapterContext,
+    DeliveryReceipt,
+    VerificationDelivery,
+} from "./delivery.js";
 
 interface CodeChallenge {
     code: string;
     expiresAt: number;
+    controller: AbortController;
+    receipt: DeliveryReceipt;
 }
 
-function challengeKey(scope: "setup" | "login", accountId: string): string {
-    return `${scope}:${accountId}`;
+function challengeKey(
+    scope: "setup" | "login",
+    accountId: string,
+    operationId: string,
+): string {
+    return JSON.stringify([scope, accountId, operationId]);
 }
 
 class SmtpTfaAdapter implements TfaMethodAdapter {
@@ -66,7 +47,10 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
 
     private active = true;
     private readonly challenges = new Map<string, CodeChallenge>();
-    private readonly loginChallengeLastSentAt = new Map<string, number>();
+    private readonly pendingDeliveries = new Map<
+        string,
+        { controller: AbortController; promise: Promise<CodeChallenge> }
+    >();
 
     private readDeliveryPolicy() {
         const policy = this.context.getEmailDeliveryPolicy?.();
@@ -97,8 +81,12 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         this.active = ctx.isEnabled();
         const clearChallenges = () => {
             this.active = false;
+            for (const challenge of this.challenges.values())
+                challenge.controller.abort();
+            for (const pending of this.pendingDeliveries.values())
+                pending.controller.abort();
             this.challenges.clear();
-            this.loginChallengeLastSentAt.clear();
+            this.pendingDeliveries.clear();
         };
         requireBootstrapScope().registerDisposer(
             Object.assign(clearChallenges, {
@@ -125,35 +113,34 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
                 subject: "Your Cognis verification code",
                 body: `Your verification code is ${variables.code}.`,
             }));
-            const send = async (
-                to: string,
-                code: string,
-                _verifyUrl?: string,
-                _theme?: string,
+            this.context.deliverVerificationEmail = (
+                recipientEmail,
+                code,
+                lifetime,
             ) =>
-                ctx.capabilities.require<
-                    (input: {
-                        purpose: string;
-                        recipientEmail: string;
-                        variables: Record<string, string>;
-                    }) => ReturnType<
-                        NonNullable<
-                            SmtpTfaAdapterContext["queueVerificationEmail"]
-                        >
-                    >
-                >("notify:sendEmail")({
+                ctx.capabilities
+                    .require<CapabilityContracts>("system:contracts")
+                    .resolve<
+                        (input: {
+                            purpose: string;
+                            recipientEmail: string;
+                            variables: Record<string, string>;
+                            signal: AbortSignal;
+                            expiresAt: number;
+                        }) => Promise<VerificationDelivery>
+                    >(
+                        "notify:deliverEmail",
+                        1,
+                    )({
                     purpose,
-                    recipientEmail: to,
+                    recipientEmail,
                     variables: { code },
+                    ...lifetime,
                 });
             this.context.canSendVerificationEmail = () =>
                 ctx.capabilities.get<() => boolean>(
                     "notify:emailAvailable",
                 )?.() === true;
-            this.context.sendVerificationEmail = async (...args) => {
-                await send(...args);
-            };
-            this.context.queueVerificationEmail = send;
         }
         this.context.getPrimaryEmail = ctx.capabilities.get<
             (accountId: string) => Promise<string | null>
@@ -173,7 +160,7 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
     private assertEmailCodeAvailable(): void {
         if (
             !this.active ||
-            typeof this.context.sendVerificationEmail !== "function"
+            typeof this.context.deliverVerificationEmail !== "function"
         ) {
             throw new Error("email_delivery_unavailable");
         }
@@ -187,7 +174,11 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         if (!challenge) {
             return null;
         }
-        if (Date.now() > challenge.expiresAt) {
+        if (
+            Date.now() >= challenge.expiresAt ||
+            challenge.controller.signal.aborted
+        ) {
+            challenge.controller.abort();
             this.challenges.delete(key);
             return null;
         }
@@ -197,13 +188,14 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
     private cleanupExpiredChallenges(): void {
         const now = Date.now();
         for (const [key, challenge] of this.challenges.entries()) {
-            if (now > challenge.expiresAt) {
+            if (now >= challenge.expiresAt) {
+                challenge.controller.abort();
                 this.challenges.delete(key);
             }
         }
     }
 
-    private issueCode(key: string): string {
+    private generateCode(key: string): string {
         this.cleanupExpiredChallenges();
         const existingCode = this.getLiveChallenge(key)?.code;
         const codeLength = this.readDeliveryPolicy().codeLength;
@@ -216,22 +208,7 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
             code = generateNumericVerificationCode(codeLength);
             generationAttempts += 1;
         }
-        this.challenges.set(key, {
-            code,
-            expiresAt: Date.now() + CODE_EXPIRY_MS,
-        });
         return code;
-    }
-
-    private rollbackChallenge(
-        key: string,
-        challenge: CodeChallenge | null,
-    ): void {
-        if (challenge) {
-            this.challenges.set(key, challenge);
-            return;
-        }
-        this.challenges.delete(key);
     }
 
     private verifyCode(key: string, code: string): boolean {
@@ -240,32 +217,119 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
             return false;
         }
         this.challenges.delete(key);
+        challenge.controller.abort();
+        this.pendingDeliveries.get(key)?.controller.abort();
         return true;
     }
 
-    private async sendCode(
+    private sendCode(
         scope: "setup" | "login",
         input: {
             accountId: string;
             email: string;
+            lifetime: TfaChallengeLifetime;
         },
-    ): Promise<string> {
+    ): Promise<CodeChallenge> {
         this.assertEmailCodeAvailable();
-        const key = challengeKey(scope, input.accountId);
-        const previousChallenge = this.getLiveChallenge(key);
-        const code = this.issueCode(key);
-        try {
-            await this.context.sendVerificationEmail?.(input.email, code);
-        } catch (error) {
-            if (this.getLiveChallenge(key)?.code === code) {
-                this.rollbackChallenge(key, previousChallenge);
-            }
-            throw error;
-        }
-        if (!this.active || this.getLiveChallenge(key)?.code !== code) {
+        const { lifetime } = input;
+        if (
+            !lifetime?.id ||
+            !(lifetime.signal instanceof AbortSignal) ||
+            lifetime.signal.aborted ||
+            !Number.isFinite(lifetime.expiresAt) ||
+            lifetime.expiresAt <= Date.now()
+        )
             throw new Error("email_delivery_unavailable");
-        }
-        return code;
+        const key = challengeKey(scope, input.accountId, lifetime.id);
+        const pending = this.pendingDeliveries.get(key);
+        if (pending) return pending.promise;
+        const controller = new AbortController();
+        const cancel = () => controller.abort();
+        lifetime.signal.addEventListener("abort", cancel, { once: true });
+        controller.signal.addEventListener(
+            "abort",
+            () => {
+                lifetime.signal.removeEventListener("abort", cancel);
+                if (this.challenges.get(key)?.controller === controller)
+                    this.challenges.delete(key);
+            },
+            { once: true },
+        );
+        const log = this.context.log;
+        const operation = {
+            controller,
+            promise: Promise.resolve().then(async () => {
+                try {
+                    const code = this.generateCode(key);
+                    const expiresAt = Math.min(
+                        lifetime.expiresAt,
+                        Date.now() + CODE_EXPIRY_MS,
+                    );
+                    const delivery = await this.context
+                        .deliverVerificationEmail!(input.email, code, {
+                        signal: controller.signal,
+                        expiresAt,
+                    });
+                    if (
+                        !this.active ||
+                        controller.signal.aborted ||
+                        Date.now() >= expiresAt ||
+                        delivery.receipt.status === "failed"
+                    )
+                        throw new Error("email_delivery_unavailable");
+                    const challenge = {
+                        code,
+                        expiresAt,
+                        controller,
+                        receipt: delivery.receipt,
+                    };
+                    const previous = this.getLiveChallenge(key);
+                    this.challenges.set(key, challenge);
+                    previous?.controller.abort();
+                    log?.("info", "SMTP TFA challenge delivery admitted.", {
+                        component: "adapter-tfa-smtp",
+                        operation: "admit_code_delivery",
+                        accountId: input.accountId,
+                        status: delivery.receipt.status,
+                    });
+                    const complete = (receipt: DeliveryReceipt) => {
+                        challenge.receipt = receipt;
+                        if (receipt.status !== "failed") return;
+                        controller.abort();
+                        if (this.challenges.get(key) === challenge)
+                            this.challenges.delete(key);
+                        log?.(
+                            receipt.error === "smtp_delivery_cancelled" ||
+                                receipt.error === "smtp_delivery_expired"
+                                ? "info"
+                                : "error",
+                            "SMTP TFA challenge delivery did not complete.",
+                            {
+                                component: "adapter-tfa-smtp",
+                                operation: "complete_code_delivery",
+                                accountId: input.accountId,
+                            },
+                        );
+                    };
+                    void delivery.completion.then(complete, () =>
+                        complete({
+                            ...challenge.receipt,
+                            status: "failed",
+                            error: "delivery_completion_failed",
+                        }),
+                    );
+                    return challenge;
+                } catch (error) {
+                    controller.abort();
+                    throw error;
+                } finally {
+                    if (this.pendingDeliveries.get(key) === operation)
+                        this.pendingDeliveries.delete(key);
+                }
+            }),
+        };
+        this.pendingDeliveries.set(key, operation);
+        return operation.promise;
     }
 
     private extractRetryMetadata(availableAt: string | undefined): {
@@ -312,6 +376,7 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
     }
 
     async beginSetup(input: {
+        lifetime: TfaChallengeLifetime;
         accountId: string;
         displayName: string;
         issuer: string;
@@ -335,27 +400,54 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         if (!primaryEmail) {
             throw new Error("primary_email_required");
         }
-        const code = await this.sendCode("setup", {
+        const challenge = await this.sendCode("setup", {
+            lifetime: input.lifetime,
             accountId: input.accountId,
             email: primaryEmail,
         });
+        if (challenge.controller.signal.aborted)
+            throw new Error("email_delivery_unavailable");
         return {
             pendingPayload: {
                 email: primaryEmail,
+                operationId: input.lifetime.id,
+                challengeId: challenge.receipt.notificationId,
             },
             view: {
-                prompt: "adapter.tfa.smtp.setup_prompt",
+                prompt:
+                    challenge.receipt.status === "sent"
+                        ? "adapter.tfa.smtp.setup_prompt"
+                        : "adapter.tfa.smtp.setup_prompt_queued",
                 fields: [
                     {
                         key: "code",
                         label: "ui.app.login.tfa.code_label",
                         type: "text",
                         inputMode: "numeric",
-                        maxLength: code.length,
+                        maxLength: challenge.code.length,
                     },
                 ],
             },
         };
+    }
+
+    async cancelSetup(input: {
+        accountId: string;
+        pendingPayload: Record<string, unknown>;
+    }): Promise<void> {
+        const key = challengeKey(
+            "setup",
+            input.accountId,
+            String(input.pendingPayload.operationId ?? ""),
+        );
+        const challenge = this.getLiveChallenge(key);
+        if (
+            challenge?.receipt.notificationId !==
+            input.pendingPayload.challengeId
+        )
+            return;
+        this.challenges.delete(key);
+        challenge?.controller.abort();
     }
 
     verifySetup(input: {
@@ -381,10 +473,15 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
                 message: "primary_email_required",
             });
         }
-        const verified = this.verifyCode(
-            challengeKey("setup", input.accountId),
-            code,
+        const key = challengeKey(
+            "setup",
+            input.accountId,
+            String(input.pendingPayload.operationId ?? ""),
         );
+        const challenge = this.getLiveChallenge(key);
+        const verified =
+            challenge?.receipt.notificationId ===
+                input.pendingPayload.challengeId && this.verifyCode(key, code);
         if (!verified) {
             return Promise.resolve({
                 verified: false,
@@ -402,141 +499,53 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
     async beginLoginChallenge(input: {
         accountId: string;
         state: Record<string, unknown>;
+        lifetime: TfaChallengeLifetime;
     }): Promise<{
         ready: boolean;
         message?: string;
         retryAfterSeconds?: number;
         resendAvailableAt?: string;
         maxLength?: number;
+        deliveryStatus?: "queued" | "sent";
     }> {
         const email = String(input.state.email ?? "").trim();
-        if (!email) {
-            return { ready: false, message: "primary_email_required" };
-        }
-        if (
-            typeof this.context.sendVerificationEmail !== "function" &&
-            typeof this.context.queueVerificationEmail !== "function"
-        ) {
-            return { ready: false, message: "email_delivery_unavailable" };
-        }
-        if (
-            !this.active ||
-            this.context.canSendVerificationEmail?.() !== true
-        ) {
-            return { ready: false, message: "email_delivery_unavailable" };
-        }
+        if (!email) return { ready: false, message: "primary_email_required" };
         const log = this.context.log;
         try {
-            const cooldownIntervalMs = this.deliveryIntervalMs;
-            if (typeof this.context.queueVerificationEmail === "function") {
-                const challengeSentAt = Date.now();
-                const key = challengeKey("login", input.accountId);
-                const previousChallenge = this.getLiveChallenge(key);
-                const code = this.issueCode(key);
-                let queued;
-                try {
-                    queued = await this.context.queueVerificationEmail(
-                        email,
-                        code,
-                    );
-                } catch (error) {
-                    if (this.getLiveChallenge(key)?.code === code) {
-                        this.rollbackChallenge(key, previousChallenge);
-                    }
-                    throw error;
-                }
-                if (!this.active || this.getLiveChallenge(key)?.code !== code) {
-                    throw new Error("email_delivery_unavailable");
-                }
-                if (
-                    queued.status === "waiting_rate_limit" ||
-                    queued.status === "failed"
-                ) {
-                    this.rollbackChallenge(key, previousChallenge);
-                }
-                if (queued.status === "waiting_rate_limit") {
-                    const retryMetadata = this.extractRetryMetadata(
-                        queued.availableAt,
-                    );
-                    return {
-                        ready: true,
-                        message: "email_rate_limited",
-                        maxLength: previousChallenge?.code.length,
-                        retryAfterSeconds: retryMetadata.retryAfterSeconds,
-                        resendAvailableAt: retryMetadata.resendAvailableAt,
-                    };
-                }
-                if (queued.status === "failed") {
-                    log?.("error", "Failed to queue SMTP TFA challenge code.", {
-                        component: "adapter-tfa-smtp",
-                        operation: "queue_login_code",
-                        accountId: input.accountId,
-                        error: queued.error ?? "queue_delivery_failed",
-                    });
-                    return {
-                        ready: false,
-                        message: "email_delivery_unavailable",
-                    };
-                }
-                this.loginChallengeLastSentAt.set(
-                    input.accountId,
-                    challengeSentAt,
-                );
-                return {
-                    ready: true,
-                    maxLength: code.length,
-                    ...this.buildCooldownMetadata(
-                        challengeSentAt,
-                        cooldownIntervalMs,
-                    ),
-                };
-            }
-            const challengeSentAt = Date.now();
-            const code = await this.sendCode("login", {
+            const interval = this.deliveryIntervalMs;
+            const challenge = await this.sendCode("login", {
                 accountId: input.accountId,
                 email,
+                lifetime: input.lifetime,
             });
-            this.loginChallengeLastSentAt.set(input.accountId, challengeSentAt);
+            if (challenge.controller.signal.aborted)
+                throw new Error("email_delivery_unavailable");
+            const receipt = challenge.receipt;
+            const retry = this.extractRetryMetadata(receipt.availableAt);
             return {
                 ready: true,
-                maxLength: code.length,
-                ...this.buildCooldownMetadata(
-                    challengeSentAt,
-                    cooldownIntervalMs,
-                ),
+                maxLength: challenge.code.length,
+                deliveryStatus: receipt.status === "sent" ? "sent" : "queued",
+                ...(receipt.status === "waiting_rate_limit"
+                    ? { message: "email_rate_limited" }
+                    : {}),
+                ...(retry.resendAvailableAt
+                    ? retry
+                    : this.buildCooldownMetadata(Date.now(), interval)),
             };
         } catch (error) {
-            const errorMessage =
-                error instanceof Error ? error.message : String(error);
-            if (errorMessage === "email_rate_limited") {
-                const now = Date.now();
-                const lastSentAt =
-                    this.loginChallengeLastSentAt.get(input.accountId) ?? now;
-                const retryMs = Math.max(
-                    this.deliveryIntervalMs - (now - lastSentAt),
-                    0,
-                );
-                return {
-                    ready: true,
-                    message: "email_rate_limited",
-                    maxLength: this.getLiveChallenge(
-                        challengeKey("login", input.accountId),
-                    )?.code.length,
-                    retryAfterSeconds: Math.ceil(retryMs / 1000),
-                    resendAvailableAt: new Date(now + retryMs).toISOString(),
-                };
-            }
-            log?.("error", "Failed to send SMTP TFA challenge code.", {
+            log?.("error", "Failed to admit SMTP TFA challenge delivery.", {
                 component: "adapter-tfa-smtp",
                 operation: "send_login_code",
                 accountId: input.accountId,
-                error: errorMessage,
+                errorName: error instanceof Error ? error.name : "UnknownError",
             });
             return { ready: false, message: "email_delivery_unavailable" };
         }
     }
 
     verifyLogin(input: {
+        lifetime: TfaChallengeLifetime;
         accountId: string;
         state: Record<string, unknown>;
         payload: Record<string, unknown>;
@@ -548,8 +557,22 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
                 message: "code_required",
             });
         }
+        if (
+            !input.lifetime ||
+            input.lifetime.signal.aborted ||
+            input.lifetime.expiresAt <= Date.now()
+        ) {
+            if (input.lifetime?.id)
+                this.getLiveChallenge(
+                    challengeKey("login", input.accountId, input.lifetime.id),
+                );
+            return Promise.resolve({
+                verified: false,
+                message: "invalid_verification_code",
+            });
+        }
         const verified = this.verifyCode(
-            challengeKey("login", input.accountId),
+            challengeKey("login", input.accountId, input.lifetime.id),
             code,
         );
         if (!verified) {

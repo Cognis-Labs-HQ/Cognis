@@ -226,6 +226,14 @@ Login tertunda baru menggantikan percobaan dalam cookie permintaan. Tab berbagi 
 
 Integrasi SSO harus memperlakukan `tfaRequired: true` sebagai autentikasi belum selesai dan hanya mengikuti penanda eksplisit `loginUrl: "/login"` pada respons berhasil. Penanda hanya diterbitkan setelah Auth mengikat percobaan aktif dengan akun dan penyedia yang sesuai. Terapkan Auth 2.2.10 bersama X SSO 1.0.63; modul menolak kelanjutan jika host lama tidak mendukung kontrak ini. Login lokal dan SSO tanpa TFA tetap memakai alur penyelesaian semula. ID percobaan hanya disimpan dalam memori atau badan permintaan, bukan URL atau penyimpanan browser. Integrasi login menerima akar hanya-kueri yang dibatasi pada percobaan dan formulir aktif; pekerjaan terlambat tidak dapat mengubah tampilan yang sudah diganti.
 
+### Pengiriman tantangan berbatas waktu
+
+`auth:getPendingLoginLifetime` versi 1 hanya membaca `{ id, accountId, expiresAt, signal }` dari percobaan yang sudah melewati autentikasi utama. Operasi ini tidak membuat atau memperpanjang kewenangan. Auth membuat percobaan sebelum persiapan faktor otomatis tanpa menerbitkan sesi atau mengaktifkan profil. Tenggat lima menit yang tetap membatasi pengiriman. Konsumsi, pembatalan, kedaluwarsa, penggantian kelanjutan, logout, dan pembersihan pemilik membatalkan sumber daya tantangan. Kelanjutan berbasis cookie, perlindungan percobaan lama, dan melanjutkan tanpa pengiriman ulang tetap berlaku. Keberhasilan faktor membatalkan tantangan tanpa membatalkan komit sesi akhir yang terpisah. TFA menolak jika kontrak ini tidak tersedia.
+
+### Pengiriman tantangan berbatas waktu
+
+Pada Email Code, “dalam antrean” berarti pengiriman belum selesai. Tunggu kode terbaru. Kirim ulang mengganti kode sebelumnya hanya setelah diterima; penolakan mempertahankannya. Setelah kegagalan pengiriman, kirim ulang secara eksplisit sebelum kedaluwarsa atau mulai login baru. Percobaan login berlaku lima menit dan penyiapan sepuluh menit. Pembatalan penyiapan hanya memengaruhi penyiapan tersebut. Melanjutkan login tidak mengirim email lagi atau memperpanjang tenggat.
+
 ## Keamanan
 
 Autentikasi memvalidasi kredensial sebelum sesi dan TFA wajib. Otorisasi akun, peran, dan sumber daya tetap terpisah; penolakan keyring tidak mengubah identitas.

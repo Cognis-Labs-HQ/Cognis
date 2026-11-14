@@ -1,3 +1,4 @@
+import { createLoginLifetime } from "./reuse/gateway-fixture.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { CoreTfaGateway, type TfaMethodAdapter } from "../gateway.js";
@@ -19,7 +20,10 @@ test("tfa gateway ignores configured methods when their adapter is disabled", as
     await gateway.disableAdapter("totp");
 
     const status = await gateway.getUserStatus("alice");
-    const methods = await gateway.getLoginMethods("alice");
+    const methods = await gateway.getLoginMethods(
+        "alice",
+        createLoginLifetime(),
+    );
 
     assert.equal(status.hasConfiguredMethod, false);
     assert.equal(status.enabledMethods.length, 0);
@@ -68,9 +72,14 @@ test("tfa gateway dispatches low recovery-code notification after recovery login
             notifications.push(envelope);
         },
     });
-    const result = await gateway.verifyLogin("alice", "recovery_code", {
-        code: "code-1",
-    });
+    const result = await gateway.verifyLogin(
+        "alice",
+        "recovery_code",
+        {
+            code: "code-1",
+        },
+        createLoginLifetime(),
+    );
     assert.equal(result.verified, true);
     assert.equal(notifications.length, 1);
     assert.equal(notifications[0].category, "security");
@@ -111,7 +120,7 @@ test("tfa gateway excludes methods when login challenge is not ready", async () 
         state: { email: "alice@example.com" },
         configuredAt: new Date().toISOString(),
     });
-    const methods = await gateway.getLoginMethods("alice");
+    const methods = await gateway.getLoginMethods("alice", createLoginLifetime());
     assert.ok(
         logs.some(
             ({ level, metadata }) =>
@@ -156,7 +165,10 @@ test("tfa gateway includes rate-limited smtp method with challenge metadata", as
         state: { email: "alice@example.com" },
         configuredAt: new Date().toISOString(),
     });
-    const methods = await gateway.getLoginMethods("alice");
+    const methods = await gateway.getLoginMethods(
+        "alice",
+        createLoginLifetime(),
+    );
     assert.equal(methods[0]?.id, "smtp");
     assert.equal(methods[0]?.challenge?.message, "email_rate_limited");
     assert.equal(methods[0]?.challenge?.retryAfterSeconds, 45);
@@ -339,7 +351,10 @@ test("tfa gateway login methods follow configured preferred ordering", async () 
         state: { email: "alice@example.com" },
         configuredAt: new Date().toISOString(),
     });
-    const methods = await gateway.getLoginMethods("alice");
+    const methods = await gateway.getLoginMethods(
+        "alice",
+        createLoginLifetime(),
+    );
     assert.deepEqual(methods.map((method) => method.id).slice(0, 2), [
         "smtp",
         "totp",
@@ -382,7 +397,10 @@ test("tfa gateway does not initiate challenges when multiple methods are availab
         state: { secret: "abc" },
         configuredAt: new Date().toISOString(),
     });
-    const methods = await gateway.getLoginMethods("alice");
+    const methods = await gateway.getLoginMethods(
+        "alice",
+        createLoginLifetime(),
+    );
     assert.strictEqual(
         smtpChallengeCallCount,
         0,
@@ -430,7 +448,10 @@ test("tfa gateway does not initiate challenge when recovery codes are also avail
         createdAt: new Date().toISOString(),
         usedAt: null,
     });
-    const methods = await gateway.getLoginMethods("alice");
+    const methods = await gateway.getLoginMethods(
+        "alice",
+        createLoginLifetime(),
+    );
     assert.equal(
         smtpChallengeCallCount,
         0,

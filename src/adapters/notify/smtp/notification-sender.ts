@@ -1,3 +1,4 @@
+import type { DeliveryLifetime } from "./delivery-lifetime.js";
 import { clampVerificationCodeLength } from "../../../gateways/reuse/verification-codes.js";
 import { bootstrapNotifyAdapter } from "./bootstrap.js";
 
@@ -467,7 +468,12 @@ export class SmtpNotificationSender implements NotificationSender {
                         payload.verifyUrl,
                         payload.verifyButtonLabel,
                         payload.attachments ?? [],
-                        activeController.signal,
+                        payload.signal
+                            ? AbortSignal.any([
+                                  activeController.signal,
+                                  payload.signal,
+                              ])
+                            : activeController.signal,
                         payload.presentation,
                     );
                 },
@@ -515,14 +521,23 @@ export class SmtpNotificationSender implements NotificationSender {
         await this.requireQueue(purpose).waitForResult(notificationId);
     }
 
+    trackEmail(purpose: string, notificationId: string) {
+        const queue = this.requireQueue(purpose);
+        const receipt = queue.getQueueItem(notificationId);
+        if (!receipt) throw new Error("smtp_queue_item_missing");
+        return { receipt, completion: queue.completion(notificationId) };
+    }
+
     async enqueueEmail(
         input: EmailActionInput,
         message: NotificationActionMessage,
         theme?: "light" | "dark",
+        lifetime?: DeliveryLifetime,
     ): Promise<
         NotificationSenderQueueEntry & { sent: true; notificationId: string }
     > {
         const queued = this.requireQueue(input.purpose).enqueue({
+            ...lifetime,
             purpose: input.purpose,
             recipientEmail: input.recipientEmail,
             subject: message.subject,
