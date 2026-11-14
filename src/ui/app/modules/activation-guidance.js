@@ -37,10 +37,16 @@ export function normalizeActivationGuidance(value) {
     };
 }
 
-export async function presentActivationGuidance(module, i18n) {
+export async function presentActivationGuidance(
+    module,
+    i18n,
+    { isCurrent = () => true, isVisible = () => true } = {},
+) {
+    if (!isCurrent() || !isVisible()) return;
     const guidance = normalizeActivationGuidance(module.ui?.activationGuidance);
     if (!guidance) return;
     const moduleI18n = await extendI18n(i18n, module.ui?.stringsBaseUrl);
+    if (!isCurrent() || !isVisible()) return;
     const description = guidance.descriptionKey
         ? `<p>${escapeHtml(moduleI18n.t(guidance.descriptionKey))}</p>`
         : "";
@@ -68,7 +74,7 @@ export async function presentActivationGuidance(module, i18n) {
             },
         ],
     });
-    if (action === "configure") {
+    if (action === "configure" && isCurrent() && isVisible()) {
         await uiCtx.capabilities.get("ui:navigate")?.("/administration");
     }
 }

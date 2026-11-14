@@ -107,9 +107,9 @@ test("module activation invokes declared guidance after enablement", () => {
         "utf8",
     );
     assert.match(source, /presentActivationGuidance/);
-    assert.match(source, /if \(result\) await presentActivationGuidance/);
+    assert.match(source, /if \(result\) \{[\s\S]*showActivationGuidance/);
     assert.match(
         source,
-        /if \(configuredAfterEnable\) \{[\s\S]*await presentActivationGuidance/m,
+        /if \(configuredAfterEnable\) \{[\s\S]*await showActivationGuidance/m,
     );
 });

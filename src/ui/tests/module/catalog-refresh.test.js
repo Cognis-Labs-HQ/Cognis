@@ -10,6 +10,8 @@ import * as filters from "../../app/modules/filters.js";
 import * as presentation from "../../app/modules/presentation.js";
 import * as detailRendering from "../../app/modules/detail-rendering.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
+import { flowHost } from "../../reuse/tests/fixtures/flow-host.js";
+import * as dependencies from "../../app/modules/dependencies.js";
 import { replaceMountScope } from "../../reuse/mount-scope.js";
 
 const missing = (key) =>
@@ -140,12 +142,89 @@ async function fixture(context, { failTranslations = false } = {}) {
         composerOptions.toolbar[0].render();
     };
     const unused = () => assert.fail("unexpected action");
+    const api = {
+        loadMarketplaceState: async (etag) => {
+            operations.push("state-poll");
+            const current = `"fixture-${snapshotVersion}"`;
+            return etag === current
+                ? null
+                : {
+                      etag: current,
+                      sources: structuredClone(sourceList),
+                      installed: structuredClone(initial),
+                      cached: structuredClone(initial),
+                  };
+        },
+        loadAvailableModules: async (sourceUuids, forceRefresh) => {
+            operations.push("source-scan");
+            handlers.set("last-scan", { sourceUuids, forceRefresh });
+            return {
+                modules: structuredClone(initial),
+                sourceFailures: [],
+            };
+        },
+        moduleMutationUncertainty: () => undefined,
+        installModule: async (module) => {
+            operations.push(`installed:${module.id}`);
+            return { version: "4.0.2", restartRequired: true };
+        },
+        setModuleEnabled: async (id, enabled) =>
+            operations.push(`${enabled ? "enabled" : "disabled"}:${id}`),
+        saveModuleReleaseChannel: unused,
+        uninstallModule: unused,
+        deleteModuleConfig: unused,
+    };
+    const activation = {
+        activateModule: unused,
+        enableModuleWithIntegrityCheck: async () => {
+            operations.push("reenabled");
+            return true;
+        },
+        modulePreferenceLabels: unused,
+    };
+    const host = flowHost();
+    const ownedOperations = loadTestModule(
+        new URL("../../app/modules/operations.js", import.meta.url),
+        {
+            "../../reuse/escape-html.js": { escapeHtml },
+            "../../reuse/popup.js": { openPopup: unused },
+            "./api.js": api,
+            "./activation.js": activation,
+            "./preferences.js": { openModulePreferences: unused },
+            "./presentation.js": presentation,
+            "./release-channels.js": { selectReleaseChannel: unused },
+            "./uninstall.js": { confirmModuleUninstall: unused },
+        },
+    );
+    const lifecycle = loadTestModule(
+        new URL("../../app/modules/lifecycle.js", import.meta.url),
+        {
+            "../../reuse/ui-ctx.js": {
+                uiCtx: host.ctx,
+            },
+            "./operations.js": ownedOperations,
+            "./api.js": {
+                loadMarketplaceState: unused,
+                moduleMutationUncertainty: unused,
+                setModuleEnabled: unused,
+            },
+            "./dependencies.js": {
+                resolveModuleDependencyErrorMessage: () => null,
+            },
+            "../../reuse/toast.js": {
+                showToast: (message, options) =>
+                    messages.push({ message, ...options }),
+            },
+        },
+        { window, Event, CustomEvent },
+    );
     const scope = new AbortController();
     context.after(() => scope.abort());
     const page = await importTestModule(
         new URL("../../app/modules/index.js", import.meta.url),
         {
             "./guides.js": { guides },
+            "./lifecycle.js": lifecycle,
             "./catalog.js": catalog,
             "./filters.js": filters,
             "../../reuse/i18n.js": {
@@ -187,7 +266,7 @@ async function fixture(context, { failTranslations = false } = {}) {
             "../../reuse/mount-scope.js": { replaceMountScope },
             "../../reuse/hamburger-menu.js": { openHamburgerMenu: unused },
             "../../reuse/ui-ctx.js": {
-                uiCtx: { capabilities: { get: () => undefined } },
+                uiCtx: host.ctx,
             },
             "./carousel.js": {
                 initializeScreenshotCarousels: () => () =>
@@ -195,47 +274,7 @@ async function fixture(context, { failTranslations = false } = {}) {
                 revealLoadedModulePictures: () => operations.push("pictures"),
                 updateScreenshotCarousel: unused,
             },
-            "./api.js": {
-                loadMarketplaceState: async (etag) => {
-                    operations.push("state-poll");
-                    const current = `"fixture-${snapshotVersion}"`;
-                    return etag === current
-                        ? null
-                        : {
-                              etag: current,
-                              sources: structuredClone(sourceList),
-                              installed: structuredClone(initial),
-                              cached: structuredClone(initial),
-                          };
-                },
-                loadAvailableModules: async (sourceUuids, forceRefresh) => {
-                    operations.push("source-scan");
-                    handlers.set("last-scan", { sourceUuids, forceRefresh });
-                    return {
-                        modules: structuredClone(initial),
-                        sourceFailures: [],
-                    };
-                },
-                installModule: async (module) => {
-                    operations.push(`installed:${module.id}`);
-                    return { version: "4.0.2" };
-                },
-                setModuleEnabled: async (id, enabled) =>
-                    operations.push(
-                        `${enabled ? "enabled" : "disabled"}:${id}`,
-                    ),
-                saveModuleReleaseChannel: unused,
-                uninstallModule: unused,
-                deleteModuleConfig: unused,
-            },
-            "./activation.js": {
-                activateModule: unused,
-                enableModuleWithIntegrityCheck: async () => {
-                    operations.push("reenabled");
-                    return true;
-                },
-                modulePreferenceLabels: unused,
-            },
+            "./api.js": api,
             "./presentation.js": {
                 ...presentation,
                 ...localized,
@@ -252,11 +291,7 @@ async function fixture(context, { failTranslations = false } = {}) {
                 loadAuthenticatedModuleAssets: async (modules) =>
                     assert.ok(Array.isArray(modules)),
             },
-            "./dependencies.js": {
-                confirmModuleDependencies: unused,
-                resolveInstallDependencies: unused,
-                resolveModuleDependencyErrorMessage: () => null,
-            },
+            "./dependencies.js": dependencies,
             "./release-channels.js": {
                 releaseChannels: (module) => module.branches ?? [],
                 selectReleaseChannel: unused,
@@ -281,7 +316,10 @@ async function fixture(context, { failTranslations = false } = {}) {
             Event,
         },
     );
-    await page.mount(root, { signal: scope.signal });
+    await page.mount(root, { signal: scope.signal }).catch((error) => {
+        if (error?.code !== "missing_translation") throw error;
+        errors.push(error);
+    });
     for (
         let pass = 0;
         pass < 20 && !floating.innerHTML.includes("data-module-update");
@@ -352,7 +390,19 @@ test("a Japanese update can redraw safely while another module's catalog transla
         false,
     );
     assert.match(state.sidebar.outerHTML, /Speech/);
-    assert.ok(state.operations.includes("reenabled"));
+    assert.deepEqual(
+        state.operations.filter(
+            (operation) =>
+                operation.startsWith("disabled:") || operation === "reenabled",
+        ),
+        ["disabled:study-language-ja"],
+    );
+    assert.ok(
+        state.messages.some(
+            ({ message }) =>
+                message === state.i18n.t("ui.app.modules.restart_required"),
+        ),
+    );
     release();
     await new Promise(setImmediate);
 });
@@ -467,7 +517,9 @@ test("saving source settings still triggers discovery after the visible source l
 
 test("manual refresh can repair a catalog whose translations failed on first mount", async (context) => {
     const state = await fixture(context, { failTranslations: true });
-    assert.ok(state.messages.some(({ type }) => type === "error"));
+    assert.ok(
+        state.errors.some((error) => error?.code === "missing_translation"),
+    );
     const scans = () =>
         state.operations.filter((operation) => operation === "source-scan")
             .length;

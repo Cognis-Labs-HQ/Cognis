@@ -103,4 +103,14 @@
   <string name="ui.app.modules.source_save_failed">モジュールソースを保存できませんでした。変更内容はこのフォームに残っています。</string>
   <string name="ui.app.modules.source_refresh_failed">ソースは保存されましたが、一覧を更新できませんでした。設定を開き直して再試行してください。</string>
   <string name="ui.app.modules.credential_storage_unavailable">共有認証情報には永続的なサーバー暗号鍵が必要です。DATA_ENCRYPTION_KEY を設定して再試行してください。</string>
+  <string name="ui.app.modules.outcome_unknown">結果を確認できませんでした。再試行する前に現在の状態を確認してください。</string>
+  <string name="ui.app.modules.recheck_state">状態を確認</string>
+  <string name="ui.app.modules.state_reconciled">現在のモジュールの状態を確認しました。続行する前に設定を確認してください。</string>
+  <string name="ui.app.modules.state_refresh_failed">現在のモジュールの状態を更新できませんでした。続行する前にもう一度確認してください。</string>
+  <string name="ui.app.modules.lifecycle_failed">モジュールの操作が拒否されました。要件を確認してから再試行してください。</string>
+  <string name="ui.app.modules.guidance_unavailable">モジュールは有効ですが、設定ガイドを開けませんでした。モジュールの設定を確認してください。</string>
+  <string name="ui.tutorial.marketplace.check.state.title">モジュールの状態を確認</string>
+  <string name="ui.tutorial.marketplace.check.state.body">応答が失われると、結果が不明になる場合があります。「状態を確認」は操作を繰り返さずに現在の状態を読み取ります。確認が完了してから続行してください。 現在の状態だけでは処理の完了を証明できないため、結果が未確認のインストールはロックを維持します。</string>
+  <string name="ui.app.modules.setup_unconfirmed">モジュールの状態は確認できましたが、設定の完了は未確認です。依存するモジュールを続行する前に設定を確認して保存するか、無効化してから有効化してください。</string>
+  <string name="ui.app.modules.installation_unknown">インストールの結果は確認できていません。インストールの再実行やモジュールの再有効化は行わないでください。「状態を確認」で現在の状態を更新できますが、インストール処理が完了したかどうかは確認できません。</string>
 </resources>

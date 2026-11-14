@@ -103,4 +103,14 @@
   <string name="ui.app.modules.source_save_failed">Die Modulquelle konnte nicht gespeichert werden. Ihre Änderungen bleiben in diesem Formular erhalten.</string>
   <string name="ui.app.modules.source_refresh_failed">Die Quelle wurde gespeichert, aber die Quellenliste konnte nicht aktualisiert werden. Öffnen Sie die Einstellungen erneut.</string>
   <string name="ui.app.modules.credential_storage_unavailable">Gemeinsame Zugangsdaten benötigen einen dauerhaften Serverschlüssel. Konfigurieren Sie DATA_ENCRYPTION_KEY und versuchen Sie es erneut.</string>
+  <string name="ui.app.modules.outcome_unknown">Das Ergebnis ist nicht bestätigt. Prüfen Sie den aktuellen Zustand vor einem erneuten Versuch.</string>
+  <string name="ui.app.modules.recheck_state">Zustand prüfen</string>
+  <string name="ui.app.modules.state_reconciled">Der aktuelle Modulzustand wurde bestätigt. Prüfen Sie vor dem Fortfahren die Einstellungen.</string>
+  <string name="ui.app.modules.state_refresh_failed">Der aktuelle Modulzustand konnte nicht aktualisiert werden. Prüfen Sie ihn vor dem Fortfahren erneut.</string>
+  <string name="ui.app.modules.lifecycle_failed">Die Modulaktion wurde abgelehnt. Prüfen Sie die Voraussetzungen und versuchen Sie es erneut.</string>
+  <string name="ui.app.modules.guidance_unavailable">Das Modul ist aktiviert, aber die Einrichtungshinweise konnten nicht geöffnet werden. Prüfen Sie die Moduleinstellungen.</string>
+  <string name="ui.tutorial.marketplace.check.state.title">Modulzustand prüfen</string>
+  <string name="ui.tutorial.marketplace.check.state.body">Geht eine Antwort verloren, kann das Ergebnis unklar sein. Zustand prüfen liest den aktuellen Modulzustand, ohne die Aktion zu wiederholen. Warten Sie vor dem Fortfahren auf die Bestätigung. Eine unbestätigte Installation bleibt gesperrt, weil ein aktueller Zustand den Abschluss des Auftrags nicht beweist.</string>
+  <string name="ui.app.modules.setup_unconfirmed">Der Modulzustand ist bekannt, der Abschluss der Einrichtung jedoch nicht bestätigt. Prüfen und speichern Sie die Einstellungen oder deaktivieren und aktivieren Sie das Modul, bevor Sie mit abhängigen Modulen fortfahren.</string>
+  <string name="ui.app.modules.installation_unknown">Das Installationsergebnis ist nicht bestätigt. Wiederholen Sie die Installation nicht und aktivieren Sie das Modul nicht erneut. Zustand prüfen aktualisiert den aktuellen Zustand, kann aber den Abschluss des Installationsauftrags nicht bestätigen.</string>
 </resources>

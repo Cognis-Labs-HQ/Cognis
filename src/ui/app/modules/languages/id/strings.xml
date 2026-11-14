@@ -103,4 +103,14 @@
   <string name="ui.app.modules.source_save_failed">Sumber modul tidak dapat disimpan. Perubahan Anda masih tersedia dalam formulir ini.</string>
   <string name="ui.app.modules.source_refresh_failed">Sumber tersimpan, tetapi daftar sumber tidak dapat dimuat ulang. Buka kembali Pengaturan untuk mencoba lagi.</string>
   <string name="ui.app.modules.credential_storage_unavailable">Kredensial bersama memerlukan kunci enkripsi server persisten. Konfigurasikan DATA_ENCRYPTION_KEY lalu coba lagi.</string>
+  <string name="ui.app.modules.outcome_unknown">Hasil belum dikonfirmasi. Periksa status saat ini sebelum mencoba lagi.</string>
+  <string name="ui.app.modules.recheck_state">Periksa status</string>
+  <string name="ui.app.modules.state_reconciled">Status modul saat ini telah dikonfirmasi. Tinjau pengaturannya sebelum melanjutkan.</string>
+  <string name="ui.app.modules.state_refresh_failed">Status modul saat ini tidak dapat diperbarui. Periksa lagi sebelum melanjutkan.</string>
+  <string name="ui.app.modules.lifecycle_failed">Tindakan modul ditolak. Tinjau persyaratannya dan coba lagi.</string>
+  <string name="ui.app.modules.guidance_unavailable">Modul diaktifkan, tetapi panduan penyiapan tidak dapat dibuka. Tinjau pengaturan modul.</string>
+  <string name="ui.tutorial.marketplace.check.state.title">Periksa status modul</string>
+  <string name="ui.tutorial.marketplace.check.state.body">Jika respons hilang, hasil mungkin belum pasti. Periksa status membaca status modul saat ini tanpa mengulangi tindakan. Tunggu konfirmasi sebelum melanjutkan. Instalasi yang belum dikonfirmasi tetap diblokir karena status saat ini tidak dapat membuktikan bahwa pekerjaan telah selesai.</string>
+  <string name="ui.app.modules.setup_unconfirmed">Status modul diketahui, tetapi penyelesaian penyiapan belum dikonfirmasi. Tinjau dan simpan pengaturannya, atau nonaktifkan lalu aktifkan modul, sebelum melanjutkan modul yang bergantung padanya.</string>
+  <string name="ui.app.modules.installation_unknown">Hasil instalasi belum dikonfirmasi. Jangan ulangi instalasi atau aktifkan kembali modul. Periksa status memperbarui status saat ini, tetapi tidak dapat memastikan apakah pekerjaan instalasi telah selesai.</string>
 </resources>
