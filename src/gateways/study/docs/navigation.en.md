@@ -127,3 +127,7 @@ Successful online favourite changes and replay acknowledgements replace Study’
 ## Session Identity
 
 Personal activity and saved state use verified account sessions, including account names beginning with `share:`. Guest restrictions follow verified credential purpose rather than names or browser markers. Offline delivery retains its verified-session, account and instance checks.
+
+## Dashboard Class Summary
+
+The student and teacher Dashboard contributions start at five columns by two rows, proportionate to the introductory text and student My Classes action. Users can still enlarge or arrange them with Page Composer. Saved custom placements and minimum sizes stay unchanged. The existing workspace guide covers layout editing; the Classes guides continue to cover class management on their own pages.

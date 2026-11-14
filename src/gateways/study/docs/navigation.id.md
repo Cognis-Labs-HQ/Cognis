@@ -127,3 +127,7 @@ Perubahan favorit daring yang berhasil dan konfirmasi pengiriman ulang mengganti
 ## Identitas Sesi
 
 Aktivitas pribadi dan status tersimpan menggunakan sesi akun terverifikasi, termasuk nama akun yang diawali `share:`. Pembatasan tamu mengikuti tujuan kredensial terverifikasi, bukan nama atau penanda peramban. Pengiriman luring tetap memeriksa sesi terverifikasi, akun, dan instans.
+
+## Ringkasan Kelas di Dasbor
+
+Kontribusi Dasbor untuk siswa dan guru dimulai dengan lima kolom dan dua baris, sesuai teks pengantar serta tindakan Kelas Saya untuk siswa. Pengguna tetap dapat memperbesar atau mengaturnya melalui Page Composer. Penempatan tersimpan dan ukuran minimum tidak berubah. Panduan ruang kerja yang ada mencakup pengeditan tata letak; panduan Kelas tetap mencakup pengelolaan kelas pada halamannya sendiri.

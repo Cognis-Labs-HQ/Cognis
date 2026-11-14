@@ -728,7 +728,7 @@
   <string name="ui.tutorial.workspace.notifications.title">通知を確認する</string>
   <string name="ui.tutorial.workspace.notifications.body">ベルをクリックして通知パネルを開きます。</string>
   <string name="ui.tutorial.workspace.widgets.title">ダッシュボードのウィジェット</string>
-  <string name="ui.tutorial.workspace.widgets.body">ワークスペースにはアカウント情報、時計、今後の予定が表示されます。予定のウィジェットから対応するカレンダー項目を開けます。</string>
+  <string name="ui.tutorial.workspace.widgets.body">ワークスペースにはアカウント情報、デジタル時計、今後の予定が表示されます。アナログ時計はウィジェットの配置操作から任意で追加できます。予定のリンクから対応するカレンダー項目を開けます。</string>
   <string name="ui.tutorial.workspace.replay.title">ページのガイドを再生する</string>
   <string name="ui.tutorial.workspace.replay.body">ページ見出しの疑問符からガイドを再生できます。複数ある場合は、学びたい作業を選びます。</string>
   <string name="ui.tutorial.marketplace.details.title">モジュールの詳細とリリース</string>

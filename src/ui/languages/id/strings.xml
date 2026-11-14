@@ -728,7 +728,7 @@
   <string name="ui.tutorial.workspace.notifications.title">Tinjau Notifikasi</string>
   <string name="ui.tutorial.workspace.notifications.body">Klik lonceng untuk membuka panel notifikasi.</string>
   <string name="ui.tutorial.workspace.widgets.title">Widget Dasbor</string>
-  <string name="ui.tutorial.workspace.widgets.body">Ruang kerja menggabungkan detail akun, jam, dan acara mendatang. Widget acara mendatang menautkan entri kalender terkait.</string>
+  <string name="ui.tutorial.workspace.widgets.body">Ruang kerja menampilkan detail akun, jam digital, dan acara mendatang. Tambahkan jam analog opsional melalui Atur Widget Halaman. Tautan acara membuka entri kalender terkait.</string>
   <string name="ui.tutorial.workspace.replay.title">Ulangi Panduan Halaman</string>
   <string name="ui.tutorial.workspace.replay.body">Gunakan tanda tanya di samping judul halaman untuk mengulang panduan. Jika tersedia beberapa panduan, pilih tugas yang ingin dipelajari.</string>
   <string name="ui.tutorial.marketplace.details.title">Detail Modul Dan Rilis</string>

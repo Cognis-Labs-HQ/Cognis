@@ -127,3 +127,7 @@ Erfolgreiche Online-Änderungen an Favoriten und bestätigte Wiederholungen erse
 ## Sitzungsidentität
 
 Persönliche Aktivitäten und gespeicherte Zustände verwenden bestätigte Kontositzungen, auch bei Kontonamen mit `share:`. Gastbeschränkungen richten sich nach dem bestätigten Zweck der Anmeldung statt nach Namen oder Browsermarkierungen. Die Offline-Übertragung behält ihre Prüfungen für bestätigte Sitzungen, Konten und Instanzen bei.
+
+## Klassenübersicht im Dashboard
+
+Die Dashboard-Elemente für Lernende und Lehrende beginnen mit fünf Spalten und zwei Zeilen, passend zum Einführungstext und zur Aktion Meine Klassen für Lernende. Über Page Composer lassen sie sich weiterhin vergrößern oder anordnen. Gespeicherte Platzierungen und Mindestgrößen bleiben unverändert. Die vorhandene Arbeitsbereich-Anleitung erklärt die Layoutbearbeitung; die Klassenanleitungen behandeln weiterhin die Klassenverwaltung auf ihren eigenen Seiten.

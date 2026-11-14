@@ -728,7 +728,7 @@
   <string name="ui.tutorial.workspace.notifications.title">Benachrichtigungen prüfen</string>
   <string name="ui.tutorial.workspace.notifications.body">Klicken Sie auf die Glocke, um Ihre Benachrichtigungen zu öffnen.</string>
   <string name="ui.tutorial.workspace.widgets.title">Dashboard-Elemente</string>
-  <string name="ui.tutorial.workspace.widgets.body">Ihr Arbeitsbereich kombiniert Kontodetails, Uhren und anstehende Termine. Die Terminübersicht verlinkt die zugehörigen Kalendereinträge.</string>
+  <string name="ui.tutorial.workspace.widgets.body">Ihr Arbeitsbereich zeigt Kontodetails, die Digitaluhr und anstehende Termine. Fügen Sie die optionale Analoguhr über Seitenelemente anordnen hinzu. Terminlinks öffnen die zugehörigen Kalendereinträge.</string>
   <string name="ui.tutorial.workspace.replay.title">Seitenanleitungen wiederholen</string>
   <string name="ui.tutorial.workspace.replay.body">Über das Fragezeichen neben dem Seitentitel wiederholen Sie Anleitungen. Bei mehreren Anleitungen wählen Sie die gewünschte Aufgabe.</string>
   <string name="ui.tutorial.marketplace.details.title">Moduldetails und Versionen</string>

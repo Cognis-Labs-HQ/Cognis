@@ -8,7 +8,7 @@ export function createPageElement({ i18n, role }) {
         return {
             id: "teacher-classes",
             label: i18n.t("ui.app.dashboard.element.teacher_classes.label"),
-            gridSize: { default: [6, 3], min: [3, 2] },
+            gridSize: { default: [5, 2], min: [3, 2] },
             render: () => `
       <h3>${escapeHtml(i18n.t("ui.app.dashboard.element.teacher_classes.label"))}</h3>
       <p class="dashboard-teacher-classes-placeholder">
@@ -21,7 +21,7 @@ export function createPageElement({ i18n, role }) {
         return {
             id: "student-classes",
             label: i18n.t("ui.app.dashboard.element.student_classes.label"),
-            gridSize: { default: [6, 3], min: [3, 2] },
+            gridSize: { default: [5, 2], min: [3, 2] },
             render: () => `
       <h3>${escapeHtml(i18n.t("ui.app.dashboard.element.student_classes.label"))}</h3>
       <p class="dashboard-classes-placeholder">

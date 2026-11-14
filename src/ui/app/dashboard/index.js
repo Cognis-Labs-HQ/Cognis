@@ -110,7 +110,7 @@ export async function mount(root, { signal } = {}) {
         {
             id: "account-info",
             label: i18n.t("ui.app.dashboard.element.account.label"),
-            gridSize: { default: [4, 3], min: [3, 2] },
+            gridSize: { default: [4, 2], min: [3, 2] },
             render: () => `
       <h3>${i18n.t("ui.app.dashboard.element.account.label")}</h3>
       <dl class="dashboard-info-list">
@@ -124,7 +124,7 @@ export async function mount(root, { signal } = {}) {
         {
             id: "last-login",
             label: i18n.t("ui.app.dashboard.element.last_login.label"),
-            gridSize: { default: [3, 2], min: [2, 2] },
+            gridSize: { default: [4, 2], min: [2, 2] },
             render: () => `
       <h3>${i18n.t("ui.app.dashboard.element.last_login.label")}</h3>
       <p class="dashboard-last-seen">
@@ -135,7 +135,7 @@ export async function mount(root, { signal } = {}) {
         {
             id: "digital-clock",
             label: i18n.t("ui.app.dashboard.element.digital_clock.label"),
-            gridSize: { default: [5, 2], min: [4, 2], max: [6, 2] },
+            gridSize: { default: [4, 2], min: [4, 2], max: [6, 2] },
             render: () => `
       <div class="dashboard-clock dashboard-clock--digital">
         <div class="dashboard-clock-display" id="dashboard-digital-clock-display"></div>
@@ -152,6 +152,7 @@ export async function mount(root, { signal } = {}) {
         },
         {
             id: "analogue-clock",
+            defaultHidden: true,
             label: i18n.t("ui.app.dashboard.element.analogue_clock.label"),
             gridSize: { default: [4, 2], min: [3, 2], max: [5, 2] },
             render: () => `
@@ -171,7 +172,7 @@ export async function mount(root, { signal } = {}) {
         {
             id: "calendar-upcoming",
             label: i18n.t("ui.app.dashboard.element.calendar_upcoming.label"),
-            gridSize: { default: [6, 3], min: [4, 2], max: [8, 4] },
+            gridSize: { default: [5, 3], min: [4, 2], max: [8, 4] },
             render: () => `
       <h3>${i18n.t("ui.app.dashboard.element.calendar_upcoming.label")}</h3>
       ${
