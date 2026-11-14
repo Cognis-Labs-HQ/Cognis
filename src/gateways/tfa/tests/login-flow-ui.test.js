@@ -433,3 +433,133 @@ test("rendering an empty method list clears the previous selection and challenge
     assert.equal(host.code().getAttribute("maxlength"), null);
     assert.equal(host.tabs().length, 0);
 });
+
+for (const deadlineSeconds of [-1, 0, 30, 60]) {
+    test(`resuming a challenge retains the elapsed absolute deadline at ${deadlineSeconds}s`, async () => {
+        const host = fixture();
+        const providers = methods();
+        providers[0].challenge = {
+            maxLength: 6,
+            resendAvailableAt: new Date(deadlineSeconds * 1000).toISOString(),
+            retryAfterSeconds: 30,
+        };
+        providers[0].loginUi.challengeOnSelect = true;
+        host.advance(60);
+        const client = await open(host, providers);
+        for (let i = 0; i < 3; i++) {
+            assert.equal(host.resend().hidden, false);
+            assert.equal(host.resend().getAttribute("aria-disabled"), "false");
+            assert.equal(
+                host.resend().classList.contains("auth-text-action--disabled"),
+                false,
+            );
+            assert.equal(
+                host.resend().textContent,
+                "translated:ui.app.login.tfa.resend_action",
+            );
+            assert.equal(host.code().getAttribute("maxlength"), "6");
+            assert.equal(host.requests.length, 0);
+            assert.equal(host.notices.length, 0);
+            await host.tabs()[1].click();
+            await host.tabs()[0].click();
+            await client.switchToTfaPrompt({
+                loginAttemptId: "attempt",
+                methods: providers,
+            });
+        }
+        await host.resend().click();
+        assert.deepEqual(host.requests, [
+            {
+                url: "/api/v1/tfa/login/resend",
+                loginAttemptId: "attempt",
+                methodId: "first",
+            },
+        ]);
+        assert.equal(host.warnings.length, 0);
+    });
+}
+
+test("future absolute deadlines survive rendering and allow requests only after eligibility", async () => {
+    const host = fixture();
+    const providers = methods();
+    providers[0].challenge = {
+        maxLength: 6,
+        resendAvailableAt: new Date(60000).toISOString(),
+        retryAfterSeconds: 30,
+    };
+    providers[0].loginUi.challengeOnSelect = true;
+    const client = await open(host, providers);
+    host.advance(20);
+    await host.tabs()[1].click();
+    await host.tabs()[0].click();
+    await client.switchToTfaPrompt({
+        loginAttemptId: "attempt",
+        methods: providers,
+    });
+    host.code().value = "123456";
+    host.advance(39.999);
+    assert.equal(host.resend().getAttribute("aria-disabled"), "true");
+    await host.resend().click();
+    assert.equal(host.requests.length, 0);
+    assert.equal(host.code().value, "123456");
+    assert.equal(host.code().getAttribute("maxlength"), "6");
+    host.advance(0.001);
+    assert.equal(host.resend().getAttribute("aria-disabled"), "false");
+    assert.equal(host.requests.length, 0);
+    assert.equal(host.code().value, "123456");
+    host.respond(() =>
+        Response.json(
+            {
+                error: {
+                    code: "rate_limited",
+                    details: {
+                        resendAvailableAt: new Date(90000).toISOString(),
+                        retryAfterSeconds: 30,
+                    },
+                },
+            },
+            { status: 429 },
+        ),
+    );
+    await host.resend().click();
+    assert.equal(host.requests.length, 1);
+    assert.equal(host.resend().getAttribute("aria-disabled"), "true");
+    assert.equal(host.code().getAttribute("maxlength"), "6");
+    host.advance(29);
+    await host.resend().click();
+    assert.equal(host.requests.length, 1);
+    host.advance(1);
+    assert.equal(host.resend().getAttribute("aria-disabled"), "false");
+    await host.resend().click();
+    assert.equal(host.requests.length, 2);
+    assert.equal(host.warnings.length, 0);
+});
+
+for (const resendAvailableAt of [
+    undefined,
+    null,
+    "",
+    "  ",
+    "not-a-timestamp",
+]) {
+    test(`relative retry metadata applies when the absolute deadline is ${JSON.stringify(resendAvailableAt)}`, async () => {
+        const host = fixture();
+        const providers = methods();
+        providers[0].challenge = {
+            maxLength: 6,
+            resendAvailableAt,
+            retryAfterSeconds: 30,
+        };
+        host.advance(60);
+        await open(host, providers);
+        assert.equal(host.resend().getAttribute("aria-disabled"), "true");
+        host.advance(29);
+        await host.resend().click();
+        assert.equal(host.requests.length, 0);
+        host.advance(1);
+        assert.equal(host.resend().getAttribute("aria-disabled"), "false");
+        await host.resend().click();
+        assert.equal(host.requests.length, 1);
+        assert.equal(host.warnings.length, 0);
+    });
+}
