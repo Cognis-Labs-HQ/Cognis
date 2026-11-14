@@ -16,6 +16,8 @@
   <string name="gateway.registration.invite.page_title">Cognis - Einladungen</string>
   <string name="gateway.registration.invite.page_subtitle">Registrierungstoken prüfen und verwalten.</string>
   <string name="gateway.registration.invite.email">E-Mail-Adresse</string>
+  <string name="gateway.registration.invite.email_required">Gib die E-Mail-Adresse der eingeladenen Person ein.</string>
+  <string name="gateway.registration.invite.email_invalid">Gib eine gültige E-Mail-Adresse für die eingeladene Person ein.</string>
   <string name="gateway.registration.invite.target">Einladungsziel</string>
   <string name="gateway.registration.invite.status">Status</string>
   <string name="gateway.registration.invite.expires_at">Läuft ab am</string>
@@ -69,7 +71,7 @@
   <string name="gateway.registration.invite_failed">Einladung konnte nicht gesendet werden.</string>
   <string name="gateway.registration.tutorial.invitations.title">Einladungsanleitung</string>
   <string name="gateway.registration.tutorial.invitations.invite.options.title">Einladungsoptionen</string>
-  <string name="gateway.registration.tutorial.invitations.invite.options.body">Wählen Sie eine erlaubte Methode; E-Mail-Einladungen und Registrierungstoken werden unterschiedlich zugestellt.</string>
+  <string name="gateway.registration.tutorial.invitations.invite.options.body">Wählen Sie eine erlaubte Methode; E-Mail-Einladungen und Registrierungstoken werden unterschiedlich zugestellt. Wenn die E-Mail-Adresse fehlt oder ungültig ist, korrigiere das fokussierte Feld, bevor du die Einladung erstellst.</string>
   <string name="gateway.registration.tutorial.invitations.invitation.history.title">Einladungsverlauf</string>
   <string name="gateway.registration.tutorial.invitations.invitation.history.body">Prüfen Sie Status und Ablauf; kopieren Sie Token nur für vorgesehene Empfänger und widerrufen Sie unbenutzte Einladungen bei Bedarf.</string>
   <string name="gateway.registration.tutorial.policy.title">Registrierungsregeln</string>

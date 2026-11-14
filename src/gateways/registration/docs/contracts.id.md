@@ -31,4 +31,10 @@ Kegagalan penyusunan konfigurasi pendaftaran menghasilkan registration_configura
 
 ## Label Formulir Kata Sandi
 
-Registration 1.2.9 memakai kunci milik host `ui.reuse.password_requirements` dan `ui.reuse.passwords_match` bersama Keamanan. Terapkan katalog UI host yang sesuai dan perbarui integrasi yang memakai label ini ke kunci bersama. Nilai bahasa pilihan yang tidak tersedia memakai kunci XML bahasa Inggris yang sama; nilai Inggris yang hilang atau kosong menghasilkan kegagalan eksplisit. Halaman pendaftaran publik tetap berada di luar tutorial pengguna masuk; kontrol panduan undangan dan kebijakan tidak berubah.
+Registration 1.2.10 memakai kunci milik host `ui.reuse.password_requirements` dan `ui.reuse.passwords_match` bersama Keamanan. Terapkan katalog UI host yang sesuai dan perbarui integrasi yang memakai label ini ke kunci bersama. Nilai bahasa pilihan yang tidak tersedia memakai kunci XML bahasa Inggris yang sama; nilai Inggris yang hilang atau kosong menghasilkan kegagalan eksplisit. Halaman pendaftaran publik tetap berada di luar tutorial pengguna masuk; kontrol panduan undangan dan kebijakan tidak berubah.
+
+## Validasi Email Undangan
+
+Kirim Email Undangan mengumpulkan penerima melalui pembuat formulir bersama dan validitas email bawaan. Input kosong atau salah tetap berada dalam dialog, memperoleh toast terjemahan dan kesalahan yang dikaitkan dengan kolom, serta tidak dapat memanggil pembuatan undangan. Memperbaiki input menghapus kaitan kesalahannya. Spasi di awal dan akhir alamat yang valid dihapus sebelum permintaan klien yang ada; validasi server, domain yang diizinkan, respons undangan duplikat, dan otorisasi tetap menjadi penentu. Tindakan berulang berbagi satu percobaan yang sedang berjalan. Meninggalkan halaman menutup formulir email dan mencegah pemanggilan pembuatan, umpan balik, serta pembaruan riwayat yang terlambat; permintaan yang sudah dikirim tidak dibatalkan.
+
+Teks validasi yang tidak tersedia dalam bahasa pilihan menggunakan nilai bahasa Inggris untuk kunci yang sama. Jika nilai itu juga tidak tersedia, halaman meneruskan kesalahan terjemahan yang eksplisit, bukan melaporkan kegagalan pengiriman undangan. Setiap pembukaan memiliki identitas formulir dan kolom yang unik agar label dan deskripsi kesalahan tetap terkait dengan formulir aktif saat dialog sebelumnya sedang ditutup.

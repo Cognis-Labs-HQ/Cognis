@@ -6,6 +6,8 @@ Diese Anleitungen erklären die verfügbaren Aktionen dieser Komponente.
 
 Öffnen Sie eine der folgenden Seiten für eine noch nicht abgeschlossene Anleitung. Über das ? neben dem Seitentitel wiederholen Sie eine abgeschlossene Anleitung; Überspringen beendet die Wiederholung.
 
+Die Anleitung zu Einladungsoptionen erklärt die Korrektur des Empfängers. E-Mail-Einladungen verwenden ein Pflichtfeld mit lokalisierten Rückmeldungen und setzen den Fokus bei Korrekturbedarf auf dieses Feld. Einladung erstellen und die Eingabetaste verwenden dieselbe Prüfung. Beim Schließen wird die unvollständige Adresse verworfen; beim erneuten Öffnen ist das Feld leer. Registrierungstoken und Einladungsverlauf behalten ihre bisherigen Bedienelemente.
+
 ## Technische Spezifikation
 
 | Seite / Bereich                     | Anleitung            | Zugriff             |

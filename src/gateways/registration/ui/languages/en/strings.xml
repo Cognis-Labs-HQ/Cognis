@@ -16,6 +16,8 @@
   <string name="gateway.registration.invite.page_title">Cognis - Invite</string>
   <string name="gateway.registration.invite.page_subtitle">Review and manage registration tokens.</string>
   <string name="gateway.registration.invite.email">Email address</string>
+  <string name="gateway.registration.invite.email_required">Enter the invitation recipient’s email address.</string>
+  <string name="gateway.registration.invite.email_invalid">Enter a valid email address for the invitation recipient.</string>
   <string name="gateway.registration.invite.target">Invite target</string>
   <string name="gateway.registration.invite.status">Status</string>
   <string name="gateway.registration.invite.expires_at">Expires at</string>
@@ -69,7 +71,7 @@
   <string name="gateway.registration.invite_failed">Failed to send invitation.</string>
   <string name="gateway.registration.tutorial.invitations.title">Invitation Guide</string>
   <string name="gateway.registration.tutorial.invitations.invite.options.title">Invite Options</string>
-  <string name="gateway.registration.tutorial.invitations.invite.options.body">Choose an invitation method available to your role; email invitations and registration tokens have different delivery steps.</string>
+  <string name="gateway.registration.tutorial.invitations.invite.options.body">Choose an invitation method available to your role; email invitations and registration tokens have different delivery steps. If the email address is missing or invalid, correct the focused field before creating the invitation.</string>
   <string name="gateway.registration.tutorial.invitations.invitation.history.title">Invitation History</string>
   <string name="gateway.registration.tutorial.invitations.invitation.history.body">Review invitation status and expiry; copy tokens only for the intended recipient and revoke unused invitations when needed.</string>
   <string name="gateway.registration.tutorial.policy.title">Registration Policy</string>

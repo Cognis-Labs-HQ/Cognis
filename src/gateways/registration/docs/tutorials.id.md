@@ -6,6 +6,8 @@ Panduan ini menjelaskan tindakan yang tersedia dalam komponen ini.
 
 Kunjungi halaman di bawah untuk memulai panduan yang belum selesai. Gunakan ? di samping judul halaman untuk mengulang panduan yang selesai; Lewati mengakhiri pengulangan.
 
+Panduan opsi undangan menjelaskan cara memperbaiki penerima. Kirim Email Undangan menggunakan kolom email wajib dengan umpan balik terjemahan dan mengembalikan fokus ke kolom yang perlu diperbaiki. Buat undangan dan Enter memakai validasi yang sama. Menutup dialog membuang alamat yang belum selesai; membuka kembali menampilkan kolom kosong. Token pendaftaran dan riwayat undangan tetap memiliki kontrol yang sama.
+
 ## Spesifikasi Teknis
 
 | Halaman / bagian                    | Panduan               | Akses          |
