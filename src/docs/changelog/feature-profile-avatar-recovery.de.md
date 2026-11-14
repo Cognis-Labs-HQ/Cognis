@@ -16,4 +16,4 @@ Vorschauen für den Nachrichtenstil benötigen einen bereiten Darstellungsanbiet
 
 ## Commits
 
-- [2674acd9a6839f9518a23126a2b6293bae5a00fa](https://github.com/Cognis-Labs-HQ/Cognis/commit/2674acd9a6839f9518a23126a2b6293bae5a00fa)
+- [1b4eb78bd3a4ead94d2d6bfe01ddaefecf6debbb](https://github.com/Cognis-Labs-HQ/Cognis/commit/1b4eb78bd3a4ead94d2d6bfe01ddaefecf6debbb)
