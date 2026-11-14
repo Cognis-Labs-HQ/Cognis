@@ -12,4 +12,4 @@ Alur peramban Auth dan Share mengelompokkan kredensial terverifikasi, bukan awal
 
 ## Komit
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/2a5c1863cf64383bcacfcee1dabe157ad0321b21
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/92f8b7563953593f39d1844f0abd590478dd007f
