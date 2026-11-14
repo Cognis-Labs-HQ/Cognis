@@ -31,4 +31,10 @@ A failed registration-configuration composition returns registration_configurati
 
 ## Password Form Labels
 
-Registration 1.2.9 uses the host-owned `ui.reuse.password_requirements` and `ui.reuse.passwords_match` keys, shared with Security. Deploy the matching host UI catalogs and update integrations consuming these labels to the shared keys. Preferred-language values fall back to the same English XML keys; absent or empty English values fail explicitly. The public registration page remains outside authenticated tutorials; invitation and policy guide controls are unchanged.
+Registration 1.2.10 uses the host-owned `ui.reuse.password_requirements` and `ui.reuse.passwords_match` keys, shared with Security. Deploy the matching host UI catalogs and update integrations consuming these labels to the shared keys. Preferred-language values fall back to the same English XML keys; absent or empty English values fail explicitly. The public registration page remains outside authenticated tutorials; invitation and policy guide controls are unchanged.
+
+## Invitation Email Validation
+
+Send Invite Email collects the recipient through the shared form builder and native email validity. Missing or malformed input stays in the dialog, receives a localized toast and an associated field error, and cannot invoke invitation creation. Correcting the input clears its error association. A valid address is trimmed before the existing client request; server validation, permitted domains, duplicate-invitation responses and authorization remain authoritative. Repeated actions share one pending attempt. Leaving the page dismisses the email form and suppresses later creation callbacks, feedback and history refreshes; a request already sent is not rolled back.
+
+Missing preferred-language validation text uses the English value for the same key. If that value is unavailable, the page propagates the explicit missing-translation error rather than reporting an invitation transport failure. Each opening owns unique form and field identities so labels and error descriptions stay attached to the active form while a dismissed dialog finishes closing.

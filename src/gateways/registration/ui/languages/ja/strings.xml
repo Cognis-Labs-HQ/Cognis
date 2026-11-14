@@ -16,6 +16,8 @@
   <string name="gateway.registration.invite.page_title">Cognis - 招待</string>
   <string name="gateway.registration.invite.page_subtitle">登録トークンの状態を確認・管理します。</string>
   <string name="gateway.registration.invite.email">メールアドレス</string>
+  <string name="gateway.registration.invite.email_required">招待先のメールアドレスを入力してください。</string>
+  <string name="gateway.registration.invite.email_invalid">招待先の有効なメールアドレスを入力してください。</string>
   <string name="gateway.registration.invite.target">招待先</string>
   <string name="gateway.registration.invite.status">状態</string>
   <string name="gateway.registration.invite.expires_at">有効期限</string>
@@ -69,7 +71,7 @@
   <string name="gateway.registration.invite_failed">招待の送信に失敗しました。</string>
   <string name="gateway.registration.tutorial.invitations.title">招待の使い方</string>
   <string name="gateway.registration.tutorial.invitations.invite.options.title">招待方法</string>
-  <string name="gateway.registration.tutorial.invitations.invite.options.body">自分の役割で利用できる方法を選びます。メール招待と登録トークンでは渡し方が異なります。</string>
+  <string name="gateway.registration.tutorial.invitations.invite.options.body">自分の役割で利用できる方法を選びます。メール招待と登録トークンでは渡し方が異なります。 メールアドレスが未入力または無効な場合は、招待を作成する前にフォーカスされた欄を修正してください。</string>
   <string name="gateway.registration.tutorial.invitations.invitation.history.title">招待の履歴</string>
   <string name="gateway.registration.tutorial.invitations.invitation.history.body">状態と有効期限を確認します。トークンは招待する相手にだけ渡し、不要な招待は取り消せます。</string>
   <string name="gateway.registration.tutorial.policy.title">登録の方針</string>

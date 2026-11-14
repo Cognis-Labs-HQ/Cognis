@@ -1,4 +1,5 @@
 import { guides } from "./guides.js";
+import { requestInvitationEmail } from "./email-form.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import {
     applyDocumentTitle,
@@ -96,6 +97,7 @@ export async function mount(root, { signal } = {}) {
     let tokens = inviteState.inviteEnabled ? await loadTokens() : [];
     const issuedTokens = new Map();
     let composer = null;
+    let emailInvitationPending = false;
     const elements = [
         {
             id: "invite-tokens",
@@ -152,6 +154,7 @@ export async function mount(root, { signal } = {}) {
     await composer.init();
 
     const pageInteractionController = new AbortController();
+    if (signal?.aborted) pageInteractionController.abort();
     signal?.addEventListener("abort", () => pageInteractionController.abort(), {
         once: true,
     });
@@ -166,34 +169,32 @@ export async function mount(root, { signal } = {}) {
             const targetElement = event.target;
             if (!(targetElement instanceof Element)) return;
             const refreshTokens = async () => {
-                tokens = await loadTokens();
+                const refreshedTokens = await loadTokens();
+                if (pageInteractionController.signal.aborted) return;
+                tokens = refreshedTokens;
                 composer.refreshElements(["invite-tokens"]);
             };
             const emailButton = targetElement.closest("#invite-email-btn");
             if (emailButton) {
-                let inviteEmail = "";
-                const action = await openPopup({
-                    title: i18n.t("gateway.registration.send_invite_email"),
-                    body: `<label class="stack"><span>${escapeHtml(i18n.t("gateway.registration.invite.email"))}</span><input id="invite-email" type="email" placeholder="${escapeHtml(i18n.t("ui.reuse.email_placeholder"))}" required /></label>`,
-                    actions: [
-                        {
-                            id: "create",
-                            label: i18n.t("gateway.registration.create_invite"),
-                            variant: "confirm",
-                        },
-                    ],
-                    onAction: (actionId, overlay) => {
-                        if (actionId !== "create") return true;
-                        inviteEmail =
-                            overlay
-                                .querySelector("#invite-email")
-                                ?.value?.trim() ?? "";
-                        return Boolean(inviteEmail);
-                    },
-                });
-                if (action !== "create") return;
+                if (
+                    emailInvitationPending ||
+                    pageInteractionController.signal.aborted
+                )
+                    return;
+                emailInvitationPending = true;
+                let creationAttempted = false;
                 try {
+                    const inviteEmail = await requestInvitationEmail(i18n, {
+                        signal: pageInteractionController.signal,
+                    });
+                    if (
+                        inviteEmail === null ||
+                        pageInteractionController.signal.aborted
+                    )
+                        return;
                     await reprompt.runWithReprompt(async () => {
+                        if (pageInteractionController.signal.aborted) return;
+                        creationAttempted = true;
                         const response = await createRegistrationToken(
                             apiFetch,
                             {
@@ -201,10 +202,13 @@ export async function mount(root, { signal } = {}) {
                                 delivery: "email",
                             },
                         );
+                        if (pageInteractionController.signal.aborted) return;
                         if (!response.ok) {
                             const payload = await response
                                 .json()
                                 .catch(() => null);
+                            if (pageInteractionController.signal.aborted)
+                                return;
                             const code = String(
                                 payload?.error?.code ?? "invite_failed",
                             );
@@ -222,8 +226,27 @@ export async function mount(root, { signal } = {}) {
                             variant: "success",
                         });
                     });
+                } catch (error) {
+                    if (error?.code === "missing_translation") throw error;
+                    const log = console.error.bind(console);
+                    log("[registration] invitation creation failed", {
+                        component: "registration",
+                        operation: "createInvitationEmail",
+                        error: error instanceof Error ? error.name : "unknown",
+                    });
+                    if (!pageInteractionController.signal.aborted) {
+                        showToast(
+                            i18n.t("gateway.registration.invite_failed"),
+                            { variant: "error" },
+                        );
+                    }
                 } finally {
-                    await refreshTokens();
+                    emailInvitationPending = false;
+                    if (
+                        creationAttempted &&
+                        !pageInteractionController.signal.aborted
+                    )
+                        await refreshTokens();
                 }
                 return;
             }

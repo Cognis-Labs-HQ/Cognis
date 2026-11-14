@@ -16,6 +16,8 @@
   <string name="gateway.registration.invite.page_title">Cognis - Undang</string>
   <string name="gateway.registration.invite.page_subtitle">Tinjau dan kelola status token registrasi.</string>
   <string name="gateway.registration.invite.email">Alamat email</string>
+  <string name="gateway.registration.invite.email_required">Masukkan alamat email penerima undangan.</string>
+  <string name="gateway.registration.invite.email_invalid">Masukkan alamat email yang valid untuk penerima undangan.</string>
   <string name="gateway.registration.invite.target">Target undangan</string>
   <string name="gateway.registration.invite.status">Status</string>
   <string name="gateway.registration.invite.expires_at">Berakhir pada</string>
@@ -69,7 +71,7 @@
   <string name="gateway.registration.invite_failed">Gagal mengirim undangan.</string>
   <string name="gateway.registration.tutorial.invitations.title">Panduan Undangan</string>
   <string name="gateway.registration.tutorial.invitations.invite.options.title">Pilihan Undangan</string>
-  <string name="gateway.registration.tutorial.invitations.invite.options.body">Pilih metode yang tersedia bagi peran Anda; undangan email dan token pendaftaran memiliki langkah pengiriman berbeda.</string>
+  <string name="gateway.registration.tutorial.invitations.invite.options.body">Pilih metode yang tersedia bagi peran Anda; undangan email dan token pendaftaran memiliki langkah pengiriman berbeda. Jika alamat email kosong atau tidak valid, perbaiki kolom yang difokuskan sebelum membuat undangan.</string>
   <string name="gateway.registration.tutorial.invitations.invitation.history.title">Riwayat Undangan</string>
   <string name="gateway.registration.tutorial.invitations.invitation.history.body">Periksa status dan kedaluwarsa; salin token hanya untuk penerima yang dituju dan cabut undangan tak terpakai jika perlu.</string>
   <string name="gateway.registration.tutorial.policy.title">Kebijakan Pendaftaran</string>
