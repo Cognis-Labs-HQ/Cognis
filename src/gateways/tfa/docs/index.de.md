@@ -88,6 +88,8 @@ Jede Methode liefert `stringsBaseUrl` und `loginUi` mit `placeholderKey`, `suppo
 
 Antworten für Anmeldecodes können `maxLength` enthalten: eine positive ganze Zahl für die Länge des ausgegebenen Codes. Das Gateway reicht diese Metadaten auch bei erneutem Senden an die Anmeldeoberfläche weiter. Solange der Code aktiv ist, dürfen Verbraucher die Angabe nicht durch eine neuere Anbietereinstellung ersetzen. Ein Ersatzcode liefert seine eigene Länge. Diese Darstellungsmetadaten erzeugen keine Codelängeneinstellung des Gateways.
 
+Die Anmeldeoberfläche behält einen gültigen absoluten Zeitpunkt `resendAvailableAt` beim Anzeigen oder Fortsetzen einer ausgegebenen Challenge bei, auch wenn dieser Zeitpunkt bereits verstrichen ist. Nur bei fehlendem oder ungültigem absoluten Zeitpunkt verwendet sie eine positive Dauer `retryAfterSeconds` ab dem aktuellen Anzeigezeitpunkt. Bis zur Freigabe bleibt die Aktion zum erneuten Senden deaktiviert und unterdrückt Anfragen. Die Freigabe sendet keinen Code automatisch und ersetzt keine ausgegebene Challenge; der Server entscheidet weiterhin über Versandlimits und Codeprüfung.
+
 Die Vertragsregistrierung von Adaptern folgt dem [gemeinsamen Gateway-Bootstrap-Vertrag](/docs/gateways).
 
 ## Steuerung der Adapterverwaltung

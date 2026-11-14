@@ -90,6 +90,8 @@ Each method supplies `stringsBaseUrl` and `loginUi` metadata: `placeholderKey`, 
 
 Login challenge responses may include `maxLength`, a positive integer describing the issued challenge. The gateway forwards this metadata to the login UI, including resend responses; consumers must not replace it with a newer provider setting while that challenge remains active. A replacement challenge supplies its own length. This presentation metadata does not create a gateway-owned code-length setting.
 
+The login UI keeps a valid absolute `resendAvailableAt` deadline when rendering or resuming an issued challenge, even after that deadline has passed. It uses a positive `retryAfterSeconds` duration from the current render time only when the absolute deadline is missing or invalid. Before eligibility, the resend control stays disabled and suppresses requests. Eligibility does not send a code automatically or replace the issued challenge; the server remains authoritative for resend limits and code verification.
+
 Adapter contract registration follows [the shared gateway bootstrap contract](/docs/gateways).
 
 ## Adapter Management Controls

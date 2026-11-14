@@ -34,7 +34,7 @@ function parseChallengeResendTimestamp(method) {
     ).trim();
     if (resendAvailableAt) {
         const parsedTime = Date.parse(resendAvailableAt);
-        if (Number.isFinite(parsedTime) && parsedTime > Date.now()) {
+        if (Number.isFinite(parsedTime)) {
             return parsedTime;
         }
     }

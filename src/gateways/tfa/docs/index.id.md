@@ -88,6 +88,8 @@ Setiap metode menyediakan `stringsBaseUrl` dan metadata `loginUi`: `placeholderK
 
 Respons tantangan login dapat menyertakan `maxLength`, bilangan bulat positif yang menjelaskan panjang tantangan yang diterbitkan. Gateway meneruskan metadata ini ke UI login, termasuk respons pengiriman ulang; konsumen tidak boleh menggantinya dengan pengaturan penyedia yang lebih baru selama tantangan tersebut masih aktif. Tantangan pengganti menyediakan panjangnya sendiri. Metadata tampilan ini tidak membuat pengaturan panjang kode milik gateway.
 
+UI login mempertahankan waktu absolut `resendAvailableAt` yang valid saat menampilkan atau melanjutkan tantangan yang telah diterbitkan, meskipun waktunya sudah berlalu. Durasi positif `retryAfterSeconds` dihitung dari waktu tampilan saat ini hanya jika waktu absolut tidak tersedia atau tidak valid. Sebelum pengiriman ulang diizinkan, kontrolnya tetap nonaktif dan tidak mengirim permintaan. Izin pengiriman ulang tidak mengirim kode secara otomatis atau mengganti tantangan yang diterbitkan; server tetap menentukan batas pengiriman ulang dan verifikasi kode.
+
 Registrasi kontrak adapter mengikuti [kontrak bootstrap gateway bersama](/docs/gateways).
 
 ## Kontrol Pengelolaan Adaptor
