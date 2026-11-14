@@ -14,6 +14,4 @@ Nicht deklarierte Anfragen, Gast-Zugangsdaten, ausdrückliche Authorization-Head
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/d73e35d0f6f9cba9694995ec89682ce5ad12a0cb
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/16dc2c8905a60d58027478ee05145cd4763a68d8
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/c80591356ddf8445791f6eaf7edc686c24032d11
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/2413fc3523639f7c61d260ef13668decc09703b5
