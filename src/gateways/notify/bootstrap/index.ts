@@ -61,6 +61,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         notificationPrefStore,
         notifStore,
         notifStore,
+        ctx.log,
     );
 
     const notifyAdaptersRoot = path.join(ctx.adaptersRoot, "notify");
@@ -133,9 +134,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         new InMemoryVerifyTokenStore(),
     );
     const getEmailCodeLength = () =>
-        ctx.capabilities.get<() => number | undefined>(
-            "notify:emailCodeLength",
-        )?.();
+        ctx.capabilities.require<() => { codeLength: number }>(
+            "notify:emailDeliveryPolicy",
+        )().codeLength;
     const externalHost =
         process.env.EXTERNAL_HOST ??
         (process.env.HOST ? `http://${process.env.HOST}` : undefined);

@@ -23,6 +23,7 @@ async function makeNotifStore(): Promise<DbNotificationStore> {
 
 function createUserEmailRoutes(...args: Parameters<typeof createRoutes>) {
     args[5] ??= createAuthContext();
+    args[6] ??= () => 6;
     return createRoutes(...args);
 }
 

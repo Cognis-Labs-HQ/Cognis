@@ -287,6 +287,7 @@ export function createSettingsSection({ i18n, root, markDirty, signal }) {
             ? i18n.t(setup.view.prompt) || setup.view.prompt
             : "";
         const codeLabelKey = setup.view?.fields?.[0]?.label;
+        const codeMaxLength = setup.view?.fields?.[0]?.maxLength;
         const codeLabel = codeLabelKey
             ? i18n.t(codeLabelKey) || codeLabelKey
             : i18n.t("ui.app.login.tfa.code_label");
@@ -338,7 +339,7 @@ export function createSettingsSection({ i18n, root, markDirty, signal }) {
                   ${detailsHtml}
                   <label>
                     ${escapeHtml(codeLabel)}
-                    <input id="settings-tfa-code" type="text" inputmode="numeric" maxlength="12" />
+                    <input id="settings-tfa-code" type="text" inputmode="numeric" />
                   </label>
                 </div>`,
                 actions: [
@@ -356,6 +357,13 @@ export function createSettingsSection({ i18n, root, markDirty, signal }) {
                 onOpen: (overlay, requestClose, api) => {
                     dismissal.onOpen(overlay, requestClose, api);
                     codeInput = overlay.querySelector("#settings-tfa-code");
+                    if (
+                        codeInput instanceof HTMLInputElement &&
+                        Number.isInteger(codeMaxLength) &&
+                        codeMaxLength > 0
+                    ) {
+                        codeInput.maxLength = codeMaxLength;
+                    }
                     bindSecretVisibilityToggles({ root: overlay });
                 },
                 onAction: async (actionId) => {

@@ -91,6 +91,7 @@ export interface TfaLoginMethod {
         message?: string;
         retryAfterSeconds?: number;
         resendAvailableAt?: string;
+        maxLength?: number;
     };
 }
 
@@ -652,6 +653,7 @@ export class CoreTfaGateway {
         message?: string;
         retryAfterSeconds?: number;
         resendAvailableAt?: string;
+        maxLength?: number;
     }> {
         const adapter = this.adapters.get(methodId);
         if (!adapter || !this.isAdapterEnabled(methodId)) {
@@ -686,17 +688,20 @@ export class CoreTfaGateway {
         message?: string;
         retryAfterSeconds?: number;
         resendAvailableAt?: string;
+        maxLength?: number;
     }):
         | {
               message?: string;
               retryAfterSeconds?: number;
               resendAvailableAt?: string;
+              maxLength?: number;
           }
         | undefined {
         const metadata: {
             message?: string;
             retryAfterSeconds?: number;
             resendAvailableAt?: string;
+            maxLength?: number;
         } = {};
         if (challenge.message) {
             metadata.message = challenge.message;
@@ -706,6 +711,9 @@ export class CoreTfaGateway {
         }
         if (challenge.resendAvailableAt) {
             metadata.resendAvailableAt = challenge.resendAvailableAt;
+        }
+        if (Number.isInteger(challenge.maxLength) && challenge.maxLength! > 0) {
+            metadata.maxLength = challenge.maxLength;
         }
         return Object.keys(metadata).length > 0 ? metadata : undefined;
     }
@@ -718,6 +726,7 @@ export class CoreTfaGateway {
         message?: string;
         retryAfterSeconds?: number;
         resendAvailableAt?: string;
+        maxLength?: number;
     }> {
         const methods = await this.store.listUserMethods(accountId);
         const configuredMethod = methods.find(

@@ -176,17 +176,38 @@ export async function registerSmtpActions(
         >;
     ctx.capabilities.contribute("notify:registerEmailPurpose", register);
     ctx.capabilities.contribute("notify:sendEmail", send);
-    const deliveryPolicy = () => ({
-        codeLength: sender.getCodeLength(),
-        minimumIntervalMs: EMAIL_DELIVERY_RATE_LIMIT_MS,
-    });
+    let active = true;
+    requireBootstrapScope(root).registerDisposer(
+        Object.assign(
+            () => {
+                active = false;
+            },
+            {
+                reactivate: () => {
+                    active = true;
+                },
+            },
+        ),
+    );
+    const deliveryPolicy = () => {
+        if (
+            !active ||
+            !ctx.capabilities.require<(id: string) => boolean>(
+                "notify:isSenderEnabled",
+            )(sender.senderId) ||
+            !sender.isConfigured()
+        ) {
+            throw new Error("email_delivery_unavailable");
+        }
+        return {
+            codeLength: sender.getCodeLength(),
+            minimumIntervalMs: EMAIL_DELIVERY_RATE_LIMIT_MS,
+        };
+    };
     ctx.capabilities.contribute("notify:emailDeliveryPolicy", deliveryPolicy);
     root.contributePublicCapability(
         "notify:emailDeliveryPolicy",
         deliveryPolicy,
-    );
-    ctx.capabilities.contribute("notify:emailCodeLength", () =>
-        sender.getCodeLength(),
     );
     ctx.capabilities.contribute(
         "notify:emailAvailable",

@@ -80,6 +80,12 @@ for (const interruption of ["abort", "new-login", "new-resume"]) {
                 : reply({
                       ...pending,
                       loginAttemptId: "tfa_login_bbbbbbbbbbbbbbbbbbbbbbbb",
+                      methods: [
+                          {
+                              id: "synthetic-email",
+                              challenge: { maxLength: 4 },
+                          },
+                      ],
                   }),
         );
         const old = host.continuation.resume();
@@ -92,11 +98,13 @@ for (const interruption of ["abort", "new-login", "new-resume"]) {
             host.applied.length,
             interruption === "new-resume" ? 1 : 0,
         );
-        if (host.applied.length)
+        if (host.applied.length) {
             assert.equal(
                 host.applied[0].loginAttemptId,
                 "tfa_login_bbbbbbbbbbbbbbbbbbbbbbbb",
             );
+            assert.equal(host.applied[0].methods[0].challenge.maxLength, 4);
+        }
         assert.equal(host.errors.length, 0);
     });
 }

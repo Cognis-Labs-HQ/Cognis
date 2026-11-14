@@ -11,6 +11,7 @@
     <string name="adapter.smtp.config.allow_self_signed">Izinkan Sertifikat Self-Signed</string>
     <string name="adapter.smtp.config.auth_disabled">Nonaktifkan Autentikasi</string>
     <string name="adapter.smtp.config.code_length">Panjang Kode</string>
+    <string name="adapter.smtp.config.code_length_help">Digunakan bersama oleh verifikasi email dan TFA Kode Email. Bawaan: 6 digit; rentang: 4–10. Perubahan berlaku untuk kode yang baru diterbitkan. Kode yang ada mempertahankan panjangnya sampai digunakan, diganti, atau kedaluwarsa.</string>
     <string name="adapter.smtp.config.sender_name">Nama Pengirim</string>
     <string name="adapter.smtp.template.standard">Email Standar</string>
     <string name="adapter.smtp.template.code">Kode Verifikasi</string>
