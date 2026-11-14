@@ -14,7 +14,7 @@ Antarmuka publik dan aturan operasional Versi Komponen.
 
 | Komponen   | Jalur      | Versi     |
 | ---------- | ---------- | --------- |
-| API Server | `src/api/` | `0.13.36` |
+| API Server | `src/api/` | `0.13.37` |
 
 ## Konfigurasi
 

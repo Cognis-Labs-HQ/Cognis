@@ -1,9 +1,7 @@
+import { localizeModulePresentation } from "../../reuse/presentation.js";
 import test from "node:test";
 import assert from "node:assert/strict";
-import {
-    resolveLocalizedReadme,
-    localizeModulePresentation,
-} from "../../app/modules/presentation.js";
+import { resolveLocalizedReadme } from "../../app/modules/presentation.js";
 
 test("module details select localized readmes with English fallback", () => {
     const module = {

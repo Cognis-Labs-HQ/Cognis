@@ -1,5 +1,5 @@
 import { loadAuthenticatedModuleAssets } from "./assets.js";
-import { localizeModulePresentation } from "./presentation.js";
+import { localizeModulePresentation } from "../../reuse/presentation.js";
 
 async function prepareCatalog(modules, i18n, signal) {
     signal?.throwIfAborted();
