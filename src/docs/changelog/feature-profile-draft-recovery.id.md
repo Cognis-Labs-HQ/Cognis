@@ -16,4 +16,4 @@ Pemeriksaan publikasi UI menelusuri pembuat formulir kiriman yang benar-benar di
 
 ## Komit
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/cd77a0c279289628b6cd24bc358e43c8aa0e190f
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/f30d7c677fd5c8a2fcda49dff738d5c133118085
