@@ -164,6 +164,7 @@ export function createAdapterConfigPopup({
             const openSettingsPopup = createAdapterSettingsPopup(openPopup, {
                 gatewayId,
                 adapterId,
+                signal,
             });
             const configPopupScriptUrl = String(
                 payload.configPopupScriptUrl ?? "",

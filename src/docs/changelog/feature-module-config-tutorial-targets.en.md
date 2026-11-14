@@ -10,6 +10,10 @@ The public ui:moduleTutorialTargets capability exposes settings(id), field(id,ke
 
 Settings cancellation uses the protected dismissal callback supplied to onOpen; requestClose is an onAction-only operation. Tests model that distinction. Generic and custom adapter editors publish gateway and adapter identity through the injected popup wrapper, matching the selector returned by adapterSettings(). Nested confirmation dialogs retain their own identity.
 
+## Bind Adapter Editors Before Target Attachment
+
+The injected adapter popup wrapper owns the captured tutorial signal from the start of each opening. It requests protected dismissal on abort even when no later tutorial target has attached, including custom editors that do not consume the signal themselves. Cancellation during popup preparation is checked again at onOpen, and listeners are removed when the editor settles.
+
 ## Commits
 
 - [ad94587](https://github.com/Cognis-Labs-HQ/Cognis/commit/ad945875c919d504058437aab92449d254d79aa8)

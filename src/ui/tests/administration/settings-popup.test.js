@@ -120,3 +120,128 @@ test("failed editor initialization rolls back its published lifetime", async () 
         false,
     );
 });
+
+for (const kind of ["generic", "custom"]) {
+    test(`${kind} settings honor the captured branch before any target attaches`, async () => {
+        const branch = new AbortController();
+        const editor = surface();
+        let dismissals = 0;
+        let initialized = 0;
+        const openSettings = createAdapterSettingsPopup(
+            (options) => {
+                assert.equal(options.closeProtection, true);
+                return new Promise((resolve) => {
+                    options.onOpen(
+                        editor,
+                        () => {
+                            dismissals++;
+                            resolve("cancel");
+                        },
+                        {},
+                    );
+                });
+            },
+            { ...identity, signal: branch.signal },
+        );
+        const pending = openSettings({
+            closeProtection: true,
+            ...(kind === "custom"
+                ? {
+                      onOpen: () => {
+                          initialized++;
+                      },
+                  }
+                : {}),
+        });
+        assert.equal(initialized, kind === "custom" ? 1 : 0);
+        branch.abort();
+        assert.equal(dismissals, 1);
+        assert.equal(await pending, "cancel");
+    });
+}
+
+test("an abort during popup preparation dismisses on opening without initializing custom content", async () => {
+    const branch = new AbortController();
+    let options;
+    let settle;
+    let dismissals = 0;
+    const openSettings = createAdapterSettingsPopup(
+        (input) => {
+            options = input;
+            return new Promise((resolve) => {
+                settle = resolve;
+            });
+        },
+        { ...identity, signal: branch.signal },
+    );
+    const pending = openSettings({
+        onOpen: () => assert.fail("cancelled custom initialization"),
+    });
+    branch.abort();
+    options.onOpen(
+        surface(),
+        () => {
+            dismissals++;
+            settle("cancel");
+        },
+        {},
+    );
+    assert.equal(dismissals, 1);
+    assert.equal(await pending, "cancel");
+});
+
+test("branch cancellation retains the popup's protected keep/discard decision", async () => {
+    const branch = new AbortController();
+    let settle;
+    let dismissals = 0;
+    let finished = false;
+    const openSettings = createAdapterSettingsPopup(
+        (options) =>
+            new Promise((resolve) => {
+                settle = resolve;
+                options.onOpen(
+                    surface(),
+                    () => {
+                        dismissals++;
+                        return false;
+                    },
+                    {},
+                );
+            }),
+        { ...identity, signal: branch.signal },
+    );
+    const pending = openSettings({ closeProtection: true }).then(() => {
+        finished = true;
+    });
+    branch.abort();
+    await Promise.resolve();
+    assert.equal(dismissals, 1);
+    assert.equal(finished, false);
+    settle("cancel");
+    await pending;
+});
+
+test("closing an editor releases the captured abort listener", async () => {
+    const branch = new AbortController();
+    let settle;
+    let dismissals = 0;
+    const openSettings = createAdapterSettingsPopup(
+        (options) =>
+            new Promise((resolve) => {
+                settle = resolve;
+                options.onOpen(
+                    surface(),
+                    () => {
+                        dismissals++;
+                    },
+                    {},
+                );
+            }),
+        { ...identity, signal: branch.signal },
+    );
+    const pending = openSettings({});
+    settle("save");
+    await pending;
+    branch.abort();
+    assert.equal(dismissals, 0);
+});

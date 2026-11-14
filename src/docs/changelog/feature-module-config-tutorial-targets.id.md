@@ -10,6 +10,10 @@ Kapabilitas publik ui:moduleTutorialTargets menyediakan settings(id), field(id,k
 
 Pembatalan pengaturan memakai callback penutupan terlindungi dari onOpen; requestClose hanya tersedia pada onAction. Pengujian memodelkan perbedaan ini. Editor adaptor generik maupun khusus menerbitkan identitas gateway dan adaptor melalui pembungkus popup yang disuntikkan, sesuai pemilih dari adapterSettings(). Dialog konfirmasi bersarang mempertahankan identitasnya sendiri.
 
+## Ikat Editor Adaptor Sebelum Target Terpasang
+
+Pembungkus popup adaptor yang disuntikkan memiliki sinyal tutorial sejak pembukaan dimulai. Saat dibatalkan, pembungkus meminta penutupan terlindungi meskipun target tutorial berikutnya belum terpasang, termasuk editor khusus yang tidak memakai sinyal sendiri. Pembatalan selama persiapan diperiksa lagi pada onOpen, dan listener dihapus setelah editor selesai.
+
 ## Komit
 
 - [ad94587](https://github.com/Cognis-Labs-HQ/Cognis/commit/ad945875c919d504058437aab92449d254d79aa8)

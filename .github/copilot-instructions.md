@@ -715,3 +715,5 @@ Bind a transient opening to its group at the trigger step, before the user can c
 Module configuration guides consume owner-published targets, bind pending settings preparation to their branch before a click, and preserve close protection. Keep readiness separate from write permission, and test actual read-only paths/counts and delayed-popup cancellation.
 
 Popup test fakes must preserve the production API split: onOpen receives a protected dismissal callback, while requestClose is supplied to onAction. Adapter tutorial modal selectors must match identities published by the owning injected popup wrapper, including both gateway and adapter, for generic and custom editors.
+
+Adapter popup wrappers must bind captured tutorial lifetimes directly before calling the underlying popup, not rely on a later transient-target attachment or on custom editors consuming a signal. Test aborts before onOpen and after opening without attaching a target, preserve protected close decisions, and remove abort listeners on settlement.

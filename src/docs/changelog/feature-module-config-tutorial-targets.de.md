@@ -10,6 +10,10 @@ Die öffentliche Fähigkeit ui:moduleTutorialTargets bietet neben card(id) auch 
 
 Einstellungen werden über die geschützte Schließfunktion aus onOpen geschlossen; requestClose steht nur in onAction bereit. Tests bilden diese Unterscheidung ab. Generische und eigene Adaptereditoren veröffentlichen Gateway- und Adapterkennung über den übergebenen Popup-Wrapper, passend zum Selektor aus adapterSettings(). Verschachtelte Bestätigungen behalten ihre eigene Identität.
 
+## Adaptereditoren vor der Zielanbindung binden
+
+Der übergebene Adapter-Popup-Wrapper übernimmt das erfasste Tutorialsignal zu Beginn jedes Öffnungsvorgangs. Beim Abbruch fordert er geschütztes Schließen an, auch wenn noch kein späteres Tutorialziel angebunden ist und ein eigener Editor das Signal nicht selbst verarbeitet. Ein Abbruch während der Vorbereitung wird in onOpen erneut geprüft; beim Abschluss werden Listener entfernt.
+
 ## Commits
 
 - [ad94587](https://github.com/Cognis-Labs-HQ/Cognis/commit/ad945875c919d504058437aab92449d254d79aa8)
