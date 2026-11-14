@@ -58,3 +58,22 @@ export function resetFounderInviteLimit(apiFetch, username) {
         { method: "POST" },
     );
 }
+
+export async function redeemRegistrationInvite(input, fetchImpl = fetch) {
+    const response = await fetchImpl("/api/v1/registration/redeem", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(input),
+    });
+    const payload = await response.json();
+    if (!response.ok) {
+        const error = new Error(
+            String(payload?.error?.code ?? "redeem_failed"),
+        );
+        error.code = payload?.error?.code ?? "redeem_failed";
+        error.status = response.status;
+        error.accountCreated = payload?.data?.accountCreated === true;
+        throw error;
+    }
+    return payload.data;
+}

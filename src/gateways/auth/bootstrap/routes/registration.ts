@@ -1,5 +1,5 @@
 import type { AccessRole } from "@cognis/core";
-import { issueAccessToken } from "../../access-tokens.js";
+import type { OnboardingAuthority } from "../../onboarding/contracts.js";
 import { validateUsername } from "../../reuse/account-store.js";
 import type { AuthAccountStore } from "../index.js";
 import type {
@@ -135,17 +135,63 @@ export function createRegistrationRoutes({
             return true;
         }
 
+        const onboarding =
+            capabilities.get<OnboardingAuthority>("auth:onboarding");
+        let onboardingOperations: string[];
+        try {
+            if (!onboarding) throw new Error("onboarding_unavailable");
+            onboardingOperations = onboarding.listOperations();
+        } catch (error) {
+            log?.("error", "Registration onboarding is unavailable.", {
+                component: "auth",
+                operation: "registerOnboarding",
+                errorName: error instanceof Error ? error.name : "UnknownError",
+            });
+            res.writeHead(503, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    error: {
+                        code: "onboarding_unavailable",
+                        message: "onboarding_unavailable",
+                    },
+                }),
+            );
+            return true;
+        }
         const result = await registerPublic({
             username,
             password,
             email,
             displayName: displayName || undefined,
         });
-        const verifyToken = issueAccessToken(
-            result.username,
-            result.role ?? "user",
-            1800,
-        );
+        let verifyToken: string;
+        try {
+            verifyToken = await onboarding.issue(result.username);
+        } catch (error) {
+            log?.(
+                "error",
+                "Account created but onboarding authority could not be issued.",
+                {
+                    component: "auth",
+                    operation: "registerOnboarding",
+                    accountId: result.username,
+                    accountCreated: true,
+                    errorName:
+                        error instanceof Error ? error.name : "UnknownError",
+                },
+            );
+            res.writeHead(503, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    error: {
+                        code: "onboarding_unavailable",
+                        message: "onboarding_unavailable",
+                    },
+                    data: { accountCreated: true },
+                }),
+            );
+            return true;
+        }
 
         const { userValidationMode: registrationValidationMode } =
             await readSecuritySettings();
@@ -158,6 +204,7 @@ export function createRegistrationRoutes({
                 try {
                     const verified = await hasVerifiedEmail(result.username);
                     if (!verified) {
+                        onboarding.revokeForAccount(result.username);
                         await accountStore.delete(result.username);
                         log?.(
                             "info",
@@ -193,7 +240,11 @@ export function createRegistrationRoutes({
             hasDisplayName: Boolean(displayName),
         });
         res.writeHead(201, { "content-type": "application/json" });
-        res.end(JSON.stringify({ data: { ...result, verifyToken } }));
+        res.end(
+            JSON.stringify({
+                data: { ...result, verifyToken, onboardingOperations },
+            }),
+        );
         return true;
     };
 }

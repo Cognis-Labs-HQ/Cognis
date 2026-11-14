@@ -267,3 +267,91 @@ test("rejected records do not discard unrelated valid current sessions", async (
         },
     );
 });
+
+for (const patch of [
+    { expiresAt: null },
+    { expiresAt: record.issuedAt + 1801 * 1000 },
+    { expiresAt: record.issuedAt },
+    { setupPending: true },
+    { role: "admin" },
+    { providerId: "external" },
+]) {
+    test(`onboarding records require bounded least authority ${JSON.stringify(patch)}`, () => {
+        assert.equal(
+            parseTokenStoreEntry(
+                [tokenHash, { ...record, purpose: "onboarding", ...patch }],
+                now,
+            ),
+            null,
+        );
+    });
+}
+
+test("persisted onboarding credentials reload only for their purpose and retain revocation", async () => {
+    await withStore(
+        {
+            version: 2,
+            tokens: [[tokenHash, { ...record, purpose: "onboarding" }]],
+            revokedTokens: [],
+        },
+        async (load) => {
+            const first = await load();
+            assert.equal(first.verifyAccessToken(token), null);
+            assert.equal(
+                first.verifyAccessToken(token, { purpose: "onboarding" })?.sub,
+                record.subject,
+            );
+            first.revokeOnboardingAccessToken(token);
+            const reloaded = await load();
+            assert.equal(
+                reloaded.verifyAccessToken(token, { purpose: "onboarding" }),
+                null,
+            );
+            assert.equal(reloaded.lookupAccessToken(token)?.revoked, true);
+            assert.equal(reloaded.revokeOnboardingAccessToken(token), true);
+        },
+    );
+});
+
+test("onboarding revocation persistence failure remains retryable without restoring live memory authority", async () => {
+    await withStore(
+        { version: 2, tokens: [], revokedTokens: [] },
+        async (load, filename) => {
+            const current = await load();
+            const token = current.issueAccessToken(
+                "synthetic-onboarding",
+                "user",
+                1800,
+                { purpose: "onboarding" },
+            );
+            const ordinary = current.issueAccessToken(
+                "synthetic-onboarding",
+                "user",
+                60,
+            );
+            const temporary = `${filename}.${process.pid}.tmp`;
+            mkdirSync(temporary);
+            assert.throws(
+                () => current.revokeOnboardingAccessToken(token),
+                /access_token_persistence_failed/,
+            );
+            assert.equal(
+                current.verifyAccessToken(token, { purpose: "onboarding" }),
+                null,
+            );
+            assert.ok(
+                (await load()).verifyAccessToken(token, {
+                    purpose: "onboarding",
+                }),
+            );
+            rmSync(temporary, { recursive: true });
+            assert.equal(current.revokeOnboardingAccessToken(token), true);
+            const reloaded = await load();
+            assert.equal(
+                reloaded.verifyAccessToken(token, { purpose: "onboarding" }),
+                null,
+            );
+            assert.ok(reloaded.verifyAccessToken(ordinary));
+        },
+    );
+});

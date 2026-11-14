@@ -42,3 +42,11 @@ Administrator configuration tests are available before a sender is enabled. Test
 ## Typed Delivery Contracts
 
 Sender queue inspection is optional and typed by the Notify contract. Bootstrap loads the gateway-owned store directly and exposes its email and preference operations without partial constructor assertions. Broadcast validation returns validated roles and scheduling values before persistence.
+
+## Onboarding Email Verification
+
+Notify contributes notify:email:add and notify:email:verify to auth:onboarding during its bootstrap. They accept only {email} and {email, code}; account identity comes from verified onboarding context. They reuse ordinary email-add and verification rules, including duplicate-address checks, delivery availability, code lifetime and cooldown errors. They do not allow email listing, deletion, primary-address changes, other-account access or notification administration.
+
+Handlers recheck current authority before effects after asynchronous reads. Disabling or removing Notify removes the operations. Missing optional email operations may be skipped only when the selected registration policy does not require email; registered delivery failures remain errors. Verification codes and email links retain their separate lifetimes and do not create login sessions. The existing signed-in email settings tutorial is unchanged.
+
+An address may already be stored when delivery or revocation fails; a valid code may be consumed before a later authority check or database failure. Retry only after checking the current state.

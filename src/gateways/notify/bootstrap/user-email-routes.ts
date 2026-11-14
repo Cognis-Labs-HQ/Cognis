@@ -1,4 +1,10 @@
 import {
+    createEmailVerification,
+    EmailVerificationError,
+    type EmailVerificationDelivery,
+    type EmailVerification,
+} from "./email-verification.js";
+import {
     emailVerificationKey,
     parseEmailVerificationKey,
 } from "./email-verification-key.js";
@@ -31,20 +37,42 @@ export function createUserEmailRoutes(
     notifStore: NotificationUserEmailStore,
     tfaService: TfaCodeService,
     verifyTokenService: VerifyTokenService,
-    emailDelivery: {
-        purpose: string;
-        canSendVerificationEmail: () => boolean;
-        sendEmail: (input: {
-            purpose: string;
-            recipientEmail: string;
-            variables: Record<string, string>;
-        }) => Promise<unknown>;
-    },
+    emailDelivery: EmailVerificationDelivery,
     externalHost?: string,
     routeContext?: RouteContext,
     getVerificationCodeLength?: () => number | undefined,
+    verification?: EmailVerification,
 ) {
     const ctx = resolveRouteContext(routeContext);
+    const emailVerification =
+        verification ??
+        createEmailVerification(
+            notifStore,
+            tfaService,
+            verifyTokenService,
+            emailDelivery,
+            externalHost,
+            getVerificationCodeLength,
+        );
+    const respondVerification = async (
+        res: ServerResponse,
+        status: number,
+        operation: () => Promise<unknown>,
+    ) => {
+        try {
+            const data = await operation();
+            res.writeHead(status, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data }));
+        } catch (error) {
+            if (!(error instanceof EmailVerificationError)) throw error;
+            res.writeHead(error.status, { "content-type": "application/json" });
+            res.end(
+                JSON.stringify({
+                    error: { code: error.code, message: error.message },
+                }),
+            );
+        }
+    };
     const issueVerificationCode = (key: string) =>
         tfaService.issueOrGet(
             key,
@@ -155,135 +183,9 @@ export function createUserEmailRoutes(
 
             if (req.method === "POST") {
                 const body = await readJson(req);
-                const email = String(body.email ?? "")
-                    .trim()
-                    .toLowerCase();
-                if (!email) {
-                    res.writeHead(400, {
-                        "content-type": "application/json",
-                    });
-                    res.end(
-                        JSON.stringify({
-                            error: {
-                                code: "bad_request",
-                                message: "email is required",
-                            },
-                        }),
-                    );
-                    return true;
-                }
-                const existingEmails = await notifStore.getUserEmails(username);
-                const existingEntry = existingEmails.find(
-                    (emailEntry) => emailEntry.email === email,
+                await respondVerification(res, 201, () =>
+                    emailVerification.add(username, String(body.email ?? "")),
                 );
-                if (existingEntry?.verified) {
-                    res.writeHead(409, {
-                        "content-type": "application/json",
-                    });
-                    res.end(
-                        JSON.stringify({
-                            error: {
-                                code: "already_verified",
-                                message:
-                                    "This email address is already verified.",
-                            },
-                        }),
-                    );
-                    return true;
-                }
-                const takenByOther =
-                    await notifStore.isEmailRegisteredByOtherUser(
-                        email,
-                        username,
-                    );
-                if (takenByOther) {
-                    res.writeHead(409, {
-                        "content-type": "application/json",
-                    });
-                    res.end(
-                        JSON.stringify({
-                            error: {
-                                code: "email_taken",
-                                message:
-                                    "This email address is already registered by another user.",
-                            },
-                        }),
-                    );
-                    return true;
-                }
-                if (!emailDelivery.canSendVerificationEmail()) {
-                    res.writeHead(503, {
-                        "content-type": "application/json",
-                    });
-                    res.end(
-                        JSON.stringify({
-                            error: {
-                                code: "email_delivery_unavailable",
-                                message:
-                                    "Email verification is not available. Contact your administrator.",
-                            },
-                        }),
-                    );
-                    return true;
-                }
-
-                await notifStore.addUserEmail(username, email);
-
-                try {
-                    const key = emailVerificationKey(username, email);
-                    const code = issueVerificationCode(key);
-                    const watchToken = verifyTokenService.issueOrGet(key);
-                    const verifyUrl = externalHost
-                        ? `${externalHost}/verify-email?token=${watchToken}`
-                        : undefined;
-                    await emailDelivery.sendEmail({
-                        purpose: emailDelivery.purpose,
-                        recipientEmail: email,
-                        variables: { code, verifyUrl: verifyUrl ?? "" },
-                    });
-                    res.writeHead(201, {
-                        "content-type": "application/json",
-                    });
-                    res.end(
-                        JSON.stringify({
-                            data: {
-                                added: true,
-                                pendingVerification: true,
-                                ...(watchToken && { watchToken }),
-                            },
-                        }),
-                    );
-                } catch (err) {
-                    const msg =
-                        err instanceof Error ? err.message : String(err);
-                    if (msg === "email_rate_limited") {
-                        res.writeHead(429, {
-                            "content-type": "application/json",
-                        });
-                        res.end(
-                            JSON.stringify({
-                                error: {
-                                    code: "rate_limited",
-                                    message:
-                                        "Verification email sent too recently. Please wait before requesting another.",
-                                },
-                            }),
-                        );
-                    } else {
-                        res.writeHead(201, {
-                            "content-type": "application/json",
-                        });
-                        res.end(
-                            JSON.stringify({
-                                data: {
-                                    added: true,
-                                    pendingVerification: true,
-                                    verificationEmailFailed: true,
-                                },
-                            }),
-                        );
-                    }
-                }
                 return true;
             }
 
@@ -374,28 +276,13 @@ export function createUserEmailRoutes(
 
             if (req.method === "POST" && emailAction === "verify") {
                 const body = await readJson(req);
-                const code = String(body.code ?? "").trim();
-                const valid = tfaService.verify(
-                    emailVerificationKey(username, email),
-                    code,
+                await respondVerification(res, 200, () =>
+                    emailVerification.verify(
+                        username,
+                        email,
+                        String(body.code ?? ""),
+                    ),
                 );
-                if (!valid) {
-                    res.writeHead(422, {
-                        "content-type": "application/json",
-                    });
-                    res.end(
-                        JSON.stringify({
-                            error: {
-                                code: "invalid_code",
-                                message: "Invalid or expired verification code",
-                            },
-                        }),
-                    );
-                    return true;
-                }
-                await notifStore.verifyUserEmail(username, email);
-                res.writeHead(200, { "content-type": "application/json" });
-                res.end(JSON.stringify({ data: { verified: true } }));
                 return true;
             }
 

@@ -70,13 +70,13 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | コンポーネント        | パス                          | バージョン |
 | --------------------- | ----------------------------- | ---------- |
 | Database (db)         | `src/gateways/db/`            | `1.4.1`    |
-| Authentication (auth) | `src/gateways/auth/`          | `2.2.8`    |
+| Authentication (auth) | `src/gateways/auth/`          | `2.2.9`    |
 | Share                 | `src/gateways/share/`         | `1.9.10`   |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.3.9`    |
-| Notification (notify) | `src/gateways/notify/`        | `2.2.10`   |
+| Notification (notify) | `src/gateways/notify/`        | `2.2.11`   |
 | Social                | `src/gateways/social/`        | `1.4.6`    |
 | File Storage (files)  | `src/gateways/files/`         | `2.3.7`    |
-| Registration          | `src/gateways/registration/`  | `1.2.7`    |
+| Registration          | `src/gateways/registration/`  | `1.2.8`    |
 | Logging               | `src/gateways/logging/`       | `1.5.19`   |
 | Observability         | `src/gateways/observability/` | `1.0.7`    |
 | Study                 | `src/gateways/study/`         | `2.6.10`   |
