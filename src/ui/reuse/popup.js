@@ -110,6 +110,7 @@ import {
     createPopupContentApi,
     bindPopupActionIcons,
 } from "./popup/content.js";
+import { bindPopupFocus } from "./popup/focus.js";
 import { confirmPopupDiscard } from "./popup/discard-confirmation.js";
 import { createI18n } from "./i18n.js";
 import { lockPageScroll } from "./page-scroll-lock.js";
@@ -389,6 +390,7 @@ export async function openPopup({
     pages,
     initialPageId,
 } = {}) {
+    const invoker = document.activeElement;
     await ensureStylesheet();
     const i18n = await getI18n();
     if (signal?.aborted) return null;
@@ -403,7 +405,9 @@ export async function openPopup({
         overlay.style.zIndex = String(highestPopupZIndex + 10);
         overlay.setAttribute("role", "dialog");
         overlay.setAttribute("aria-modal", "true");
-        overlay.setAttribute("aria-labelledby", "popup-title");
+        const headingId = `popup-title-${window.crypto.randomUUID()}`;
+        overlay.setAttribute("aria-labelledby", headingId);
+        let focusLifecycle;
         let closeProtectionTracker = null;
         let manuallyDirty = false;
         let releaseScroll;
@@ -461,7 +465,7 @@ export async function openPopup({
                 Array.isArray(detailItemValues) && detailItemValues.length
                     ? renderHeadingItems(detailItemValues)
                     : escapeHtml(detail);
-            return `${leadingValue ? `<span class="popup-title-leading">${leadingValue}</span>` : ""}<h2 class="popup-title" id="popup-title">${titleContent}</h2>${detailContent ? `<h4 class="popup-title-detail">${detailContent}</h4>` : ""}`;
+            return `${leadingValue ? `<span class="popup-title-leading">${leadingValue}</span>` : ""}<h2 class="popup-title" id="${headingId}">${titleContent}</h2>${detailContent ? `<h4 class="popup-title-detail">${detailContent}</h4>` : ""}`;
         }
 
         function renderActionContent(action) {
@@ -499,6 +503,7 @@ export async function openPopup({
             if (dismissed) return;
             dismissed = true;
             presentationLifetime?.abort();
+            focusLifecycle?.release({ restore: !aborted });
             signal?.removeEventListener("abort", abortPopup);
             if (timeoutHandle !== null) {
                 clearTimeout(timeoutHandle);
@@ -623,7 +628,7 @@ export async function openPopup({
         const contentApi = createPopupContentApi(overlay, fitPopupTitleRow);
 
         function renderPopupPage(pageId) {
-            if (!popupPages) return false;
+            if (dismissed || !popupPages) return false;
             const nextPage = popupPages.find((page) => page.id === pageId);
             if (!nextPage) return false;
             currentPage = nextPage;
@@ -680,7 +685,7 @@ export async function openPopup({
 
         function updateBody(nextBody) {
             const bodyElement = overlay.querySelector(".popup-body");
-            if (!bodyElement) return null;
+            if (dismissed || !bodyElement) return null;
             bodyElement.innerHTML =
                 typeof nextBody === "function" ? nextBody() : nextBody;
             return bodyElement;
@@ -777,8 +782,7 @@ export async function openPopup({
         bindActionButtons(overlay);
 
         function onKeyDown(event) {
-            const overlays = document.querySelectorAll(".popup-overlay");
-            if (overlays[overlays.length - 1] !== overlay) return;
+            if (!focusLifecycle?.isTopmost()) return;
             if (event.key === "Escape") {
                 if (mandatory) return;
                 dismiss(null).catch((error) =>
@@ -810,6 +814,7 @@ export async function openPopup({
                 { observeResize: true },
             );
         }
+        focusLifecycle = bindPopupFocus(overlay, invoker);
         releaseScroll = lockPageScroll(document);
         window.addEventListener("resize", fitPopupTitleRow);
         fitPopupTitleRow();
@@ -871,10 +876,7 @@ export async function openPopup({
             overlay.classList.add("popup-overlay--visible");
         });
 
-        const firstFocusable =
-            overlay.querySelector("input, textarea, select") ??
-            overlay.querySelector("button:not(.popup-close-btn)");
-        firstFocusable?.focus({ preventScroll: true });
+        focusLifecycle.activate();
     });
 }
 
