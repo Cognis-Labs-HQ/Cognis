@@ -63,6 +63,8 @@ Handlers recheck current authority before effects after asynchronous reads. Disa
 
 An address may already be stored when delivery or revocation fails; a valid code may be consumed before a later authority check or database failure. Retry only after checking the current state.
 
+Registration validates guide titles and steps against the gateway's own catalog before making guides available. English, German, Indonesian and Japanese are supported; missing or empty preferred-language values use the same English key. Missing English text remains an explicit translation error. Registering guides on another dashboard page does not navigate to Settings or Administration.
+
 ## Security
 
 Email verification binds account ID and address. Missing delivery does not waive validation policy; purpose registration is bootstrap-scoped and disposal prevents late messages from entering a cancelled delivery lifetime.
