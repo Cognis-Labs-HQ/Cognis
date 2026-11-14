@@ -119,3 +119,15 @@ Tutorials belong to a page or URL. The first eligible visit starts the page’s 
 Floating menus use the version-one `ui:floatingMenus` capability and the staged `ui:floatingMenu:request`, `present`, `dismiss` and `release` flows. Equal priorities queue in request order; higher priorities suspend lower menus. A lease exposes `ready` (first grant or cancellation), `present(element, { visible })`, `dismiss(element)` and `dispose()`. Tutorial sessions reserve priority 100 until completion, cancellation or owner removal, including between steps. Composer slots and replay choosers use the same queue. Aborted requests and stale presentations cannot replace newer menus; empty slots yield and page teardown removes observers and reservations.
 
 Toast feedback loads its shared stylesheet without delaying notification creation or dismissal. Concurrent notifications share a loading cycle with at most two five-second attempts. A failed cycle permits a later notification to retry. Existing external links are preserved; only failed links created by the toast loader are removed. Dismissal during loading remains final. Page tutorial targets and progression are unchanged.
+
+## Keyboard Popup Navigation
+
+Every popup has its own accessible heading, including nested unsaved-change confirmations and multi-page dialogs. Tab and Shift+Tab stay inside the active dialog. Keeping a draft returns focus to its editor; closing the last dialog returns focus to its available opening control, or to the page when that control is gone. Empty dialogs keep focus until controls become available. Navigation cancellation releases popup focus ownership without moving focus back onto the old page. Closing animations do not retain keyboard ownership. These shared controls also apply to dialogs opened from guided tutorials.
+
+### Scoped Tutorial Focus
+
+The additive `ui:popupFocus` capability coordinates popup owners through `register(overlay, handlers)`, `delegate(overlay, { signal, surfaces, contains, focus, onRevoke })`, and `restore(overlay, preferred)`. Registration belongs to the popup renderer. A tutorial delegates only the exact active popup accepted by its current step; the delegate supplies its allowed targets and controls, connected same-document surfaces, and focus callback. The required abort signal, removal of a delegated surface, or popup dismissal revokes the delegation. A newer popup keeps exclusive focus, including before its opening animation. Closing or replaying a tutorial restores ordinary popup keyboard handling without reopening a dismissed page. The `openPopup` options remain unchanged.
+
+The required `onRevoke` callback removes delegated event handlers synchronously before focus is returned.
+
+Delegated callbacks are synchronous, and `contains` must return a boolean. A thrown error, invalid predicate value, asynchronous return, or recursive focus attempt revokes the delegation, records safe diagnostic metadata, and restores ordinary popup focus handling. Callback and logging failures cannot interrupt popup dismissal or leave its result pending.

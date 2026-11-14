@@ -266,9 +266,12 @@ export function createTutorialView({ document, hostI18n, loadStyles, ctx }) {
             root.remove();
         }
         const isPopup = () => {
-            return [
-                ...document.querySelectorAll(".popup-overlay--visible"),
-            ].some((popup) => !(step.popup && popup.matches(step.popup)));
+            const active = [
+                ...document.querySelectorAll(
+                    ".popup-overlay[data-popup-active]",
+                ),
+            ].at(-1);
+            return Boolean(active && active !== acceptedPopup);
         };
         const isBroadcast = (node, event) =>
             Boolean(
@@ -282,11 +285,34 @@ export function createTutorialView({ document, hostI18n, loadStyles, ctx }) {
             menu.element.contains(node) ||
             isBroadcast(node);
         const contains = (node, event) =>
-            containsControls(node) ||
-            (step.interaction !== "none" &&
-                target &&
-                (target.contains(node) ||
-                    event?.composedPath?.().includes(target)));
+            Boolean(
+                containsControls(node) ||
+                (step.interaction !== "none" &&
+                    target &&
+                    (target.contains(node) ||
+                        event?.composedPath?.().includes(target))),
+            );
+        const candidatePopup = step.popup
+            ? [
+                  ...document.querySelectorAll(
+                      ".popup-overlay[data-popup-active]",
+                  ),
+              ].at(-1)
+            : null;
+        const acceptedPopup = candidatePopup?.matches(step.popup)
+            ? candidatePopup
+            : null;
+        if (acceptedPopup) {
+            const ownership = ctx.capabilities.get("ui:popupFocus");
+            if (!ownership) throw new Error("popup_focus_owner_unavailable");
+            ownership.delegate(acceptedPopup, {
+                signal: scoped,
+                surfaces: [panel, menu.element],
+                contains,
+                focus: focusPanel,
+                onRevoke: dispose,
+            });
+        }
         const candidates = () =>
             [
                 ...(target && step.interaction !== "none"
@@ -319,6 +345,14 @@ export function createTutorialView({ document, hostI18n, loadStyles, ctx }) {
         }
         function update() {
             if (disposed || scoped.aborted) return;
+            if (
+                !root.isConnected ||
+                !panel.isConnected ||
+                !menu.element.isConnected
+            ) {
+                dispose();
+                return;
+            }
             if (isPopup()) {
                 dispose();
                 actions.modal();
