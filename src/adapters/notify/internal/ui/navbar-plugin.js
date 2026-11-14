@@ -8,22 +8,30 @@
  * user browse, dismiss, and mark notifications as read without leaving the
  * page.
  *
- * Public exports: none — side effects only on import.
+ * Public exports: mountProvider — owns the bell and inbox for its provider lifetime.
  *
  * @module notify-internal/navbar-plugin
  */
 import { transientSurfaces } from "/static/reuse/transient-surfaces.js";
 import { createI18n } from "/static/reuse/i18n.js";
-import { apiFetch } from "/static/reuse/api-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { formatRelativeTime } from "/static/reuse/timestamp.js";
-import { uiCtx } from "/static/reuse/ui-ctx.js";
-import { navigateTo } from "/static/reuse/app-router.js";
 import { registerSearchIndex } from "/static/reuse/search-util/popup.js";
 import { showToast } from "/static/reuse/toast.js";
 import { openPopup } from "/static/reuse/popup.js";
-import { hexToBytes } from "/static/reuse/crypto-utils.js";
 import { renderNotificationItem as renderItem } from "./notification-item.js";
+import {
+    navigateNotif,
+    renderNotificationActions,
+    dispatchNotificationAction,
+    isNotificationOwnedByCurrentPage,
+    decryptRoomMessage,
+    parseRoomId,
+    localizeNotification,
+} from "./notification-content.js";
+import { createArrivalLifetime } from "./arrival-lifetime.js";
+import { createCorrelationResolver } from "./correlation.js";
+import { createInbox } from "./inbox.js";
 
 const POLL_INTERVAL_VISIBLE_MS = 10_000;
 const POLL_INTERVAL_HIDDEN_MS = 30_000;
@@ -31,909 +39,872 @@ const TOAST_BODY_PREVIEW_LENGTH = 90;
 const TOAST_AUTO_DISMISS_MS = 6_000;
 const RELATIVE_TIME_TICK_MS = 1000;
 const CSS_HREF = "/static/gateways/notify-internal/notifications.css";
-const notificationTextDecoder = new TextDecoder();
 
-function waitForNotificationStyles(link) {
+function waitForNotificationStyles(link, signal) {
     return new Promise((resolve) => {
-        link.addEventListener("load", resolve, { once: true });
-        link.addEventListener(
-            "error",
-            (error) => {
-                console.error(
-                    "[notify-internal] notification styles failed to load:",
-                    error,
-                );
-                resolve();
-            },
-            { once: true },
-        );
+        const finish = () => {
+            link.removeEventListener("load", finish);
+            link.removeEventListener("error", failed);
+            signal.removeEventListener("abort", finish);
+            resolve();
+        };
+        const failed = () => {
+            console.error(
+                "[notify-internal] notification styles failed to load",
+                { component: "notify-internal", operation: "loadStyles" },
+            );
+            finish();
+        };
+        link.addEventListener("load", finish, { once: true });
+        link.addEventListener("error", failed, { once: true });
+        signal.addEventListener("abort", finish, { once: true });
+        if (signal.aborted) finish();
     });
 }
 
-function loadNotificationStyles() {
+function loadNotificationStyles(signal) {
     const existing = document.querySelector(`link[href="${CSS_HREF}"]`);
     if (existing?.sheet) return Promise.resolve();
-    if (existing) return waitForNotificationStyles(existing);
+    if (existing) return waitForNotificationStyles(existing, signal);
     const link = document.createElement("link");
     link.rel = "stylesheet";
     link.href = CSS_HREF;
-    const stylesReady = waitForNotificationStyles(link);
+    const stylesReady = waitForNotificationStyles(link, signal);
     document.head.appendChild(link);
     return stylesReady;
 }
 
-function navigateNotif(actionUrl) {
-    try {
-        const url = new URL(actionUrl, window.location.origin);
-        const actionEvent = new CustomEvent("cognis:notification-action", {
-            cancelable: true,
-            detail: { actionUrl: url.href },
+export async function mountProvider(ctx) {
+    if (!localStorage.getItem("cognis_access_token")) return;
+    const lifetime = new AbortController();
+    const signal = lifetime.signal;
+    let identity = accountIdentity();
+    let wrap;
+    let observer;
+    let inbox;
+    let correlations;
+    let disposed = false;
+    let i18n;
+    let pageRevision = 0;
+    let confirmationPending = false;
+
+    function accountIdentity() {
+        return JSON.stringify([
+            localStorage.getItem("cognis_account"),
+            localStorage.getItem("cognis_access_token"),
+        ]);
+    }
+
+    function isActive() {
+        if (disposed || signal.aborted || ctx.signal.aborted) return false;
+        if (wrap && !wrap.isConnected) {
+            dispose();
+            return false;
+        }
+        if (identity !== accountIdentity()) {
+            identity = accountIdentity();
+            resetPage();
+            return false;
+        }
+        return !!localStorage.getItem("cognis_access_token");
+    }
+
+    function resetPage() {
+        pageRevision++;
+        correlations?.reset();
+        arrivalLifetime.clear();
+        for (const timer of toastTimers) clearTimeout(timer);
+        toastTimers.clear();
+        confirmationPending = false;
+        closePanel();
+        arrivalToastContainer?.remove();
+        arrivalToastContainer = null;
+        seenIds = null;
+        inbox?.reset();
+    }
+
+    function dispose() {
+        if (disposed) return;
+        disposed = true;
+        lifetime.abort();
+        closePanel();
+        inbox?.dispose();
+        correlations?.reset();
+        arrivalLifetime.clear();
+        clearTimeout(pollTimer);
+        for (const timer of toastTimers) clearTimeout(timer);
+        observer?.disconnect();
+        unregisterSearch?.();
+        wrap?.remove();
+        arrivalToastContainer?.remove();
+        currentNotifications = [];
+    }
+
+    function reportError(key) {
+        showToast(i18n.t(`adapter.notify.internal.${key}`), {
+            variant: "error",
         });
-        if (!window.dispatchEvent(actionEvent)) return;
-        if (url.origin === window.location.origin) {
-            navigateTo(url.pathname + url.search + url.hash);
-        } else {
-            window.open(actionUrl, "_blank", "noopener,noreferrer");
-        }
-    } catch {
-        // malformed URL — no navigation
-    }
-}
-
-function actionButtonClass(consequence) {
-    if (consequence === "creative") return "btn-confirm";
-    if (consequence === "destructive") return "btn-cancel";
-    return "btn-neutral";
-}
-
-function safeActionIcon(iconSvg) {
-    if (typeof iconSvg !== "string") return "";
-    const documentNode = new DOMParser().parseFromString(
-        iconSvg,
-        "image/svg+xml",
-    );
-    const svg = documentNode.documentElement;
-    if (
-        svg.nodeName.toLowerCase() !== "svg" ||
-        svg.querySelector("parsererror")
-    )
-        return "";
-    const allowedElements = new Set([
-        "svg",
-        "path",
-        "circle",
-        "line",
-        "polyline",
-    ]);
-    const allowedAttributes = new Set([
-        "aria-hidden",
-        "d",
-        "fill",
-        "focusable",
-        "viewBox",
-        "cx",
-        "cy",
-        "r",
-        "x1",
-        "x2",
-        "y1",
-        "y2",
-        "points",
-        "stroke",
-        "stroke-width",
-    ]);
-    for (const element of svg.querySelectorAll("*")) {
-        if (!allowedElements.has(element.nodeName.toLowerCase())) {
-            element.remove();
-            continue;
-        }
-        for (const attribute of [...element.attributes]) {
-            if (!allowedAttributes.has(attribute.name)) {
-                element.removeAttribute(attribute.name);
-            }
-        }
-    }
-    for (const attribute of [...svg.attributes]) {
-        if (!allowedAttributes.has(attribute.name))
-            svg.removeAttribute(attribute.name);
-    }
-    return new XMLSerializer().serializeToString(svg);
-}
-
-function renderNotificationActions(notification) {
-    const actions = notification.metadata?.actions;
-    if (!Array.isArray(actions)) return "";
-    const buttons = actions
-        .filter(
-            (action) =>
-                action &&
-                typeof action.id === "string" &&
-                typeof action.label === "string",
-        )
-        .map(
-            (action) =>
-                `<button class="notification-action ${actionButtonClass(action.consequence)}" data-notification-action="${escapeHtml(action.id)}" type="button" aria-label="${escapeHtml(action.label)}">${safeActionIcon(action.iconSvg) || escapeHtml(action.label)}</button>`,
-        )
-        .join("");
-    return buttons
-        ? `<span class="notification-actions">${buttons}</span>`
-        : "";
-}
-
-function dispatchNotificationAction(notification, actionId) {
-    window.dispatchEvent(
-        new CustomEvent("cognis:notification-command", {
-            detail: { actionId, notification },
-        }),
-    );
-}
-
-async function getRoomKey(roomId) {
-    const loadChatRoomKey = uiCtx.capabilities.get(
-        "social:messages:loadChatRoomKey",
-    );
-    return typeof loadChatRoomKey === "function"
-        ? loadChatRoomKey(roomId)
-        : null;
-}
-
-function parseRoomId(actionUrl) {
-    if (typeof actionUrl !== "string" || actionUrl.length === 0) return null;
-    const match = actionUrl.match(/^\/messages\/([^/?#]+)/);
-    return match ? decodeURIComponent(match[1]) : null;
-}
-
-function isNotificationOwnedByCurrentPage(notification) {
-    const currentPage = window.location.pathname.split("/").filter(Boolean)[0];
-    if (!currentPage) return false;
-
-    if (notification.actionUrl) {
-        try {
-            const actionPage = new URL(
-                notification.actionUrl,
-                window.location.origin,
-            ).pathname
-                .split("/")
-                .filter(Boolean)[0];
-            if (actionPage === currentPage) return true;
-        } catch {
-            // Malformed actions are handled by navigateNotif (lines 63-79 above).
-        }
     }
 
-    return notification.category === currentPage;
-}
-
-async function decryptRoomMessage(roomId) {
-    const roomKey = await getRoomKey(roomId);
-    if (!roomKey) return null;
-    const response = await apiFetch(
-        `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}/messages?limit=1`,
-    );
-    if (!response.ok) return null;
-    const payload = await response.json().catch(() => null);
-    const latestMessage = Array.isArray(payload?.data) ? payload.data[0] : null;
-    if (
-        !latestMessage ||
-        typeof latestMessage.iv !== "string" ||
-        typeof latestMessage.ciphertext !== "string"
-    ) {
-        return null;
+    async function changeNotification(operation, id, isCurrent = () => true) {
+        const accepted = await inbox.mutate(operation, id, isCurrent);
+        if (accepted) await inbox.read({ afterMutation: true });
+        return accepted;
     }
-    try {
-        const decrypted = await crypto.subtle.decrypt(
-            {
-                name: "AES-GCM",
-                iv: hexToBytes(latestMessage.iv),
-            },
-            roomKey,
-            hexToBytes(latestMessage.ciphertext),
-        );
-        return notificationTextDecoder.decode(decrypted).trim() || null;
-    } catch {
-        console.warn(
-            "[notify-internal] Failed to decrypt latest room message.",
-        );
-        return null;
-    }
-}
 
-async function fetchNotifications() {
-    try {
-        const res = await apiFetch("/api/v1/notify/inbox");
-        if (!res.ok) return [];
-        const payload = await res.json();
-        return (payload.data ?? []).map(localizeNotification);
-    } catch {
-        return [];
-    }
-}
-
-function localizeNotification(notification) {
-    const localizedText = notification.metadata?.localizedText;
-    if (!localizedText || typeof localizedText !== "object") {
-        return notification;
-    }
-    const preferredLocales = [
-        ...(navigator.languages ?? []),
-        navigator.language,
-        "en",
-    ];
-    for (const locale of preferredLocales) {
-        const normalizedLocale = String(locale ?? "")
-            .toLowerCase()
-            .split("-")[0];
-        const copy = localizedText[normalizedLocale];
-        if (
-            copy &&
-            typeof copy.subject === "string" &&
-            typeof copy.body === "string"
-        ) {
-            return { ...notification, subject: copy.subject, body: copy.body };
-        }
-    }
-    return notification;
-}
-
-async function markAllRead() {
-    await apiFetch("/api/v1/notify/inbox/read", { method: "PUT" });
-}
-
-async function markOneRead(id) {
-    await apiFetch(`/api/v1/notify/inbox/${encodeURIComponent(id)}/read`, {
-        method: "PUT",
-    });
-}
-
-async function deleteNotification(id) {
-    await apiFetch(`/api/v1/notify/inbox/${encodeURIComponent(id)}`, {
-        method: "DELETE",
-    });
-}
-
-async function resolveCorrelatedNotifications(correlationId) {
-    if (!correlationId) return;
-    document
-        .querySelectorAll(
-            `[data-notification-correlation="${CSS.escape(correlationId)}"]`,
-        )
-        .forEach((element) => element.remove());
-    const notifications = await fetchNotifications();
-    const matches = notifications.filter(
-        (notification) =>
-            String(notification.metadata?.correlationId ?? "") ===
-            correlationId,
-    );
-    await Promise.all(
-        matches.map((notification) => deleteNotification(notification.id)),
-    );
-    for (const notification of matches) seenIds?.delete(notification.id);
-    await refreshCount();
-}
-
-async function deleteAllNotifications() {
-    const res = await apiFetch("/api/v1/notify/inbox", {
-        method: "DELETE",
-    });
-    if (!res.ok) {
-        throw new Error(`clear-all failed: ${res.status}`);
-    }
-}
-
-let panelVisible = false;
-let panelController;
-let pollTimer = null;
-let relativeTimeTimer = null;
-let badgeEl = null;
-let panelEl = null;
-let listEl = null;
-let emptyEl = null;
-let markAllBtn = null;
-let clearAllBtn = null;
-let mobileBackdropEl = null;
-let currentNotifications = [];
-let seenIds = null;
-let relativeTimeNodes = [];
-
-registerSearchIndex("notifications", collectNotificationSearchGroups);
-
-function collectNotificationSearchGroups() {
-    const items = currentNotifications.map((notification) => {
-        const timeLabel = formatRelativeTime(notification.createdAt);
-        return {
-            id: `notification:${notification.id}`,
-            label: notification.subject,
-            description: [notification.senderName, timeLabel]
-                .filter(Boolean)
-                .join(" — "),
-            url: notification.actionUrl || window.location.pathname,
-            searchText: [
-                notification.subject,
-                notification.senderName,
-                notification.body,
-                timeLabel,
-            ]
-                .filter(Boolean)
-                .join(" "),
-            resultClass: "notification",
-            visible: true,
-        };
-    });
-    return items.length ? [{ category: "Notifications", items }] : [];
-}
-
-function tickRelativeTimes() {
-    for (const node of relativeTimeNodes) {
-        const timestamp = Number(node.dataset.relativeTime);
-        if (!Number.isFinite(timestamp)) continue;
-        node.textContent = formatRelativeTime(timestamp);
-    }
-}
-
-function startRelativeTimeTicker() {
-    if (relativeTimeTimer !== null || !listEl) return;
-    relativeTimeNodes = Array.from(
-        listEl.querySelectorAll("[data-relative-time]"),
-    );
-    relativeTimeTimer = setInterval(tickRelativeTimes, RELATIVE_TIME_TICK_MS);
-}
-
-function stopRelativeTimeTicker() {
-    if (relativeTimeTimer === null) return;
-    clearInterval(relativeTimeTimer);
-    relativeTimeTimer = null;
-    relativeTimeNodes = [];
-}
-
-function updateBadge(count) {
-    if (!badgeEl) return;
-    badgeEl.textContent = String(count > 99 ? "99+" : count);
-    badgeEl.hidden = count === 0;
-}
-
-function updateClearAllButton() {
-    if (!clearAllBtn) return;
-    clearAllBtn.disabled = currentNotifications.length === 0;
-}
-
-function renderNotificationItem(notif, i18n) {
-    return renderItem(notif, i18n, {
-        renderActions: renderNotificationActions,
-        dispatchAction: dispatchNotificationAction,
-        markRead: markOneRead,
-        refreshCount,
-        dismiss: deleteNotification,
-        navigate: (url) => {
-            closePanel();
-            navigateNotif(url);
-        },
-        reportError: (key) => showToast(i18n.t(key), { variant: "error" }),
-        afterDismiss: async (id) => {
-            currentNotifications = currentNotifications.filter(
-                (n) => n.id !== id,
-            );
-            await refreshCount();
-            if (currentNotifications.length === 0 && emptyEl)
-                emptyEl.hidden = false;
-            updateClearAllButton();
+    let panelVisible = false;
+    let panelController;
+    let pollTimer = null;
+    let relativeTimeTimer = null;
+    let badgeEl = null;
+    let panelEl = null;
+    let listEl = null;
+    let emptyEl = null;
+    let markAllBtn = null;
+    let retryBtn = null;
+    let renderedRows = null;
+    const toastTimers = new Set();
+    let clearAllBtn = null;
+    let mobileBackdropEl = null;
+    let currentNotifications = [];
+    let seenIds = null;
+    let relativeTimeNodes = [];
+    const arrivalLifetime = createArrivalLifetime({
+        getRows: () => currentNotifications,
+        isActive,
+        refresh: (notification) => {
+            void showArrivalToast(notification, i18n);
         },
     });
-}
 
-async function refreshCount() {
-    const notifications = await fetchNotifications();
-    const count = notifications.filter(
-        (notification) =>
-            !notification.read && notification.metadata?.continuous !== true,
-    ).length;
-    updateBadge(count);
-}
+    let unregisterSearch;
 
-async function openPanel(i18n) {
-    if (!panelEl || !listEl) return;
-    closeProfileMenu();
-    panelController?.abort();
-    panelController = new AbortController();
-    transientSurfaces.register(panelEl, closePanel, panelController.signal);
-    panelEl.hidden = false;
-    if (mobileBackdropEl) mobileBackdropEl.hidden = false;
-    panelVisible = true;
-    currentNotifications = await fetchNotifications();
-    renderPanelContents(i18n);
-}
-
-function renderPanelContents(i18n) {
-    if (!listEl) return;
-    listEl.innerHTML = "";
-    if (emptyEl) emptyEl.hidden = true;
-
-    currentNotifications.forEach((n) => seenIds?.add(n.id));
-    const panelNotifications = currentNotifications.filter(
-        (notification) => notification.metadata?.continuous !== true,
-    );
-    const unreadCount = panelNotifications.filter((n) => !n.read).length;
-    updateBadge(unreadCount);
-
-    updateClearAllButton();
-
-    if (panelNotifications.length === 0) {
-        if (emptyEl) emptyEl.hidden = false;
-        stopRelativeTimeTicker();
-        return;
-    }
-
-    for (const notif of panelNotifications) {
-        listEl.appendChild(renderNotificationItem(notif, i18n));
-    }
-
-    stopRelativeTimeTicker();
-    startRelativeTimeTicker();
-}
-
-async function refreshOpenPanel(i18n) {
-    if (!panelVisible) return;
-    const notifs = await fetchNotifications();
-    const knownIds = new Set(currentNotifications.map((n) => n.id));
-    const arrivals = notifs.filter((n) => !knownIds.has(n.id));
-
-    if (
-        arrivals.length === 0 &&
-        notifs.length === currentNotifications.length
-    ) {
-        updateBadge(notifs.filter((n) => !n.read).length);
-        return;
-    }
-
-    currentNotifications = notifs;
-    renderPanelContents(i18n);
-}
-
-function closePanel() {
-    panelController?.abort();
-    if (!panelEl) return;
-    panelEl.hidden = true;
-    if (mobileBackdropEl) mobileBackdropEl.hidden = true;
-    panelVisible = false;
-    stopRelativeTimeTicker();
-}
-
-function closeProfileMenu() {
-    const dropdown = document.querySelector("#profile-dropdown");
-    const profileMenu = document.querySelector(".profile-menu");
-    dropdown?.classList.add("hidden");
-    profileMenu?.classList.remove("open");
-}
-
-function watchProfileMenu() {
-    const profileMenu = document.querySelector(".profile-menu");
-    if (!profileMenu) return;
-    const observer = new MutationObserver(() => {
-        if (profileMenu.classList.contains("open") && panelVisible) {
-            closePanel();
-        }
-    });
-    observer.observe(profileMenu, {
-        attributes: true,
-        attributeFilter: ["class"],
-    });
-}
-
-function buildButton(i18n) {
-    const wrap = document.createElement("div");
-    wrap.className = "notification-panel-wrap";
-
-    const btn = document.createElement("button");
-    btn.id = "notification-toggle";
-    btn.className = "notification-button";
-    btn.setAttribute("aria-label", i18n.t("ui.reuse.notifications"));
-    btn.setAttribute("type", "button");
-    btn.innerHTML =
-        '<span class="notification-badge-wrap">' +
-        '<span class="notification-icon" aria-hidden="true"><img src="/static/gateways/notify-internal/assets/bell.svg" alt="" class="notification-icon-img" /></span>' +
-        '<span id="notification-count" class="notification-count" hidden>0</span>' +
-        "</span>";
-
-    badgeEl = btn.querySelector("#notification-count");
-
-    const panel = document.createElement("div");
-    panel.className = "notification-panel";
-    panel.hidden = true;
-    panel.setAttribute("role", "dialog");
-    panel.setAttribute("aria-label", i18n.t("ui.reuse.notifications"));
-
-    const header = document.createElement("div");
-    header.className = "notification-panel-header";
-
-    const title = document.createElement("h2");
-    title.className = "notification-panel-title";
-    title.textContent = i18n.t("ui.reuse.notifications");
-    header.appendChild(title);
-
-    markAllBtn = document.createElement("button");
-    markAllBtn.className = "notification-mark-all-read";
-    markAllBtn.type = "button";
-    markAllBtn.textContent = i18n.t("adapter.notify.internal.mark_all_read");
-    markAllBtn.addEventListener("click", async () => {
-        try {
-            await markAllRead();
-            if (listEl) {
-                listEl.querySelectorAll(".notification-item").forEach((el) => {
-                    el.classList.remove("notification-item--unread");
-                    el.classList.add("notification-item--read");
-                });
-            }
-            currentNotifications.forEach((n) => {
-                n.read = true;
-            });
-            updateBadge(0);
-        } catch {
-            showToast(i18n.t("adapter.notify.internal.error_mark_all_read"), {
-                variant: "error",
-            });
-        }
-    });
-    header.appendChild(markAllBtn);
-
-    clearAllBtn = document.createElement("button");
-    clearAllBtn.className = "notification-clear-all";
-    clearAllBtn.type = "button";
-    clearAllBtn.setAttribute(
-        "aria-label",
-        i18n.t("adapter.notify.internal.clear_all"),
-    );
-    clearAllBtn.title = i18n.t("adapter.notify.internal.clear_all");
-    clearAllBtn.disabled = true;
-    clearAllBtn.innerHTML = "&#x1F5D1;";
-    clearAllBtn.addEventListener("click", async () => {
-        if (currentNotifications.length === 0) return;
-
-        const result = await openPopup({
-            title: i18n.t("adapter.notify.internal.clear_all"),
-            body: escapeHtml(
-                i18n.t("adapter.notify.internal.clear_all_confirm_body"),
-            ),
-            variant: "danger",
-            actions: [
-                {
-                    id: "confirm",
-                    label: i18n.t("adapter.notify.internal.clear_all"),
-                    variant: "confirm",
-                },
-                {
-                    id: "cancel",
-                    label: i18n.t("ui.reuse.cancel"),
-                    variant: "cancel",
-                },
-            ],
+    function collectNotificationSearchGroups() {
+        if (!isActive()) return [];
+        const items = currentNotifications.map((notification) => {
+            const timeLabel = formatRelativeTime(notification.createdAt);
+            return {
+                id: `notification:${notification.id}`,
+                label: notification.subject,
+                description: [notification.senderName, timeLabel]
+                    .filter(Boolean)
+                    .join(" — "),
+                url: notification.actionUrl || window.location.pathname,
+                searchText: [
+                    notification.subject,
+                    notification.senderName,
+                    notification.body,
+                    timeLabel,
+                ]
+                    .filter(Boolean)
+                    .join(" "),
+                resultClass: "notification",
+                visible: true,
+            };
         });
-        if (result !== "confirm") return;
+        return items.length ? [{ category: "Notifications", items }] : [];
+    }
 
-        try {
-            await deleteAllNotifications();
-            currentNotifications = [];
-            seenIds?.clear();
+    function tickRelativeTimes() {
+        for (const node of relativeTimeNodes) {
+            const timestamp = Number(node.dataset.relativeTime);
+            if (!Number.isFinite(timestamp)) continue;
+            node.textContent = formatRelativeTime(timestamp);
+        }
+    }
+
+    function startRelativeTimeTicker() {
+        if (!panelVisible || relativeTimeTimer !== null || !listEl) return;
+        relativeTimeNodes = Array.from(
+            listEl.querySelectorAll("[data-relative-time]"),
+        );
+        relativeTimeTimer = setInterval(
+            tickRelativeTimes,
+            RELATIVE_TIME_TICK_MS,
+        );
+    }
+
+    function stopRelativeTimeTicker() {
+        if (relativeTimeTimer === null) return;
+        clearInterval(relativeTimeTimer);
+        relativeTimeTimer = null;
+        relativeTimeNodes = [];
+    }
+
+    function updateBadge(count) {
+        if (!badgeEl) return;
+        badgeEl.textContent = String(count > 99 ? "99+" : count);
+        badgeEl.hidden = count === 0;
+    }
+
+    function synchronize() {
+        currentNotifications = inbox.rows ?? [];
+        arrivalLifetime.reconcile();
+        updateBadge(
+            currentNotifications.filter(
+                (notification) =>
+                    !notification.read &&
+                    notification.metadata?.continuous !== true,
+            ).length,
+        );
+        if (clearAllBtn)
+            clearAllBtn.disabled =
+                inbox.pending ||
+                inbox.failed ||
+                confirmationPending ||
+                currentNotifications.length === 0;
+        if (markAllBtn)
+            markAllBtn.disabled =
+                inbox.pending ||
+                inbox.failed ||
+                !currentNotifications.some(
+                    (notification) => !notification.read,
+                );
+        if (retryBtn) {
+            retryBtn.hidden = !inbox.failed;
+            retryBtn.disabled = inbox.pending;
+        }
+        if (panelEl)
+            panelEl.dataset.inboxState =
+                inbox.rows === null ? "unavailable" : "confirmed";
+        if (listEl) {
+            listEl.setAttribute("aria-busy", String(inbox.pending));
+            for (const button of listEl.querySelectorAll("button"))
+                button.disabled = inbox.pending || inbox.failed;
+        }
+        if (renderedRows !== inbox.rows) {
+            renderedRows = inbox.rows;
             renderPanelContents(i18n);
-        } catch {
-            showToast(i18n.t("adapter.notify.internal.error_clear_all"), {
-                variant: "error",
-            });
+            for (const button of listEl?.querySelectorAll("button") ?? [])
+                button.disabled = inbox.pending || inbox.failed;
         }
-    });
-    header.appendChild(clearAllBtn);
-
-    panel.appendChild(header);
-
-    const list = document.createElement("ul");
-    list.className = "notification-list";
-    list.setAttribute("aria-live", "polite");
-    panel.appendChild(list);
-    listEl = list;
-
-    const empty = document.createElement("p");
-    empty.className = "notification-empty";
-    empty.textContent = i18n.t("adapter.notify.internal.empty");
-    empty.hidden = true;
-    panel.appendChild(empty);
-    emptyEl = empty;
-
-    panelEl = panel;
-    wrap.appendChild(btn);
-    wrap.appendChild(panel);
-
-    const mobileBackdrop = document.createElement("div");
-    mobileBackdrop.className = "notification-mobile-backdrop";
-    mobileBackdrop.setAttribute("role", "button");
-    mobileBackdrop.tabIndex = 0;
-    mobileBackdrop.hidden = true;
-    mobileBackdrop.setAttribute("aria-label", i18n.t("ui.reuse.close"));
-    mobileBackdrop.addEventListener("click", () => closePanel());
-    mobileBackdrop.addEventListener("keydown", (event) => {
-        if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            closePanel();
-        }
-    });
-    mobileBackdropEl = mobileBackdrop;
-    wrap.appendChild(mobileBackdrop);
-
-    btn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        if (panelVisible) {
-            closePanel();
-        } else {
-            openPanel(i18n);
-        }
-    });
-
-    document.addEventListener("click", (e) => {
-        if (panelVisible && !wrap.contains(e.target)) {
-            closePanel();
-        }
-    });
-
-    document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape" && panelVisible) closePanel();
-    });
-
-    return wrap;
-}
-
-function insertButton(wrap) {
-    const accountCluster = document.querySelector(".account-cluster");
-    if (!accountCluster) return;
-    const profileMenu = accountCluster.querySelector(".profile-menu");
-    if (profileMenu) {
-        accountCluster.insertBefore(wrap, profileMenu);
-    } else {
-        accountCluster.appendChild(wrap);
     }
-}
 
-async function startPolling(i18n) {
-    const initial = await fetchNotifications();
-    seenIds = new Set(initial.map((n) => n.id));
-    const persistentArrivals = initial.filter(
-        (notification) =>
-            !notification.read && notification.metadata?.continuous === true,
-    );
-    const unread = initial.filter(
-        (notification) =>
-            !notification.read && notification.metadata?.continuous !== true,
-    ).length;
-    updateBadge(unread);
-    for (const notification of persistentArrivals) {
-        window.dispatchEvent(
-            new CustomEvent("cognis:notification-arrival", {
-                detail: { notification },
-            }),
+    function renderNotificationItem(notif, i18n) {
+        const opening = panelController;
+        return renderItem(notif, i18n, {
+            renderActions: renderNotificationActions,
+            dispatchAction: dispatchNotificationAction,
+            isCurrent: () =>
+                isActive() &&
+                panelVisible &&
+                opening === panelController &&
+                !opening.signal.aborted &&
+                !inbox.pending &&
+                !inbox.failed,
+            change: (operation, id, item) =>
+                changeNotification(
+                    operation,
+                    id,
+                    () =>
+                        item.isConnected &&
+                        panelVisible &&
+                        opening === panelController &&
+                        !opening.signal.aborted,
+                ),
+            navigate: (url) => {
+                if (
+                    !isActive() ||
+                    !panelVisible ||
+                    opening !== panelController ||
+                    opening.signal.aborted
+                )
+                    return;
+                closePanel();
+                navigateNotif(url);
+            },
+        });
+    }
+
+    async function openPanel(i18n) {
+        if (!panelEl || !listEl || !isActive()) return;
+        closeProfileMenu();
+        panelController?.abort();
+        panelController = new AbortController();
+        transientSurfaces.register(panelEl, closePanel, panelController.signal);
+        panelEl.hidden = false;
+        if (mobileBackdropEl) mobileBackdropEl.hidden = false;
+        panelVisible = true;
+        const opening = panelController;
+        renderPanelContents(i18n);
+        await inbox.read({
+            isCurrent: () =>
+                opening === panelController && !opening.signal.aborted,
+        });
+    }
+
+    function renderPanelContents(i18n) {
+        if (!listEl) return;
+        listEl.innerHTML = "";
+        if (emptyEl) emptyEl.hidden = true;
+
+        if (panelVisible)
+            currentNotifications.forEach((n) => seenIds?.add(n.id));
+        const panelNotifications = currentNotifications.filter(
+            (notification) => notification.metadata?.continuous !== true,
         );
-        void showArrivalToast(notification, i18n);
-    }
+        const unreadCount = panelNotifications.filter((n) => !n.read).length;
+        updateBadge(unreadCount);
 
-    function scheduleNext() {
-        const delay =
-            document.visibilityState === "visible"
-                ? POLL_INTERVAL_VISIBLE_MS
-                : POLL_INTERVAL_HIDDEN_MS;
-        pollTimer = setTimeout(tick, delay);
-    }
-
-    async function tick() {
-        if (panelVisible) {
-            await refreshOpenPanel(i18n);
-        } else {
-            await checkForNew(i18n);
+        if (panelNotifications.length === 0) {
+            if (emptyEl) emptyEl.hidden = inbox.rows === null;
+            stopRelativeTimeTicker();
+            return;
         }
+
+        for (const notif of panelNotifications) {
+            listEl.appendChild(renderNotificationItem(notif, i18n));
+        }
+
+        stopRelativeTimeTicker();
+        startRelativeTimeTicker();
+    }
+
+    function closePanel() {
+        panelController?.abort();
+        confirmationPending = false;
+        if (!panelEl) return;
+        panelEl.hidden = true;
+        if (mobileBackdropEl) mobileBackdropEl.hidden = true;
+        panelVisible = false;
+        stopRelativeTimeTicker();
+    }
+
+    function closeProfileMenu() {
+        const dropdown = document.querySelector("#profile-dropdown");
+        const profileMenu = document.querySelector(".profile-menu");
+        dropdown?.classList.add("hidden");
+        profileMenu?.classList.remove("open");
+    }
+
+    function watchProfileMenu() {
+        const profileMenu = document.querySelector(".profile-menu");
+        if (!profileMenu) return;
+        observer = new MutationObserver(() => {
+            if (!isActive()) return;
+            if (profileMenu.classList.contains("open") && panelVisible) {
+                closePanel();
+            }
+        });
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ["class"],
+        });
+        signal.addEventListener("abort", () => observer.disconnect(), {
+            once: true,
+        });
+    }
+
+    function buildButton(i18n) {
+        const wrap = document.createElement("div");
+        wrap.className = "notification-panel-wrap";
+
+        const btn = document.createElement("button");
+        btn.id = "notification-toggle";
+        btn.className = "notification-button";
+        btn.setAttribute("aria-label", i18n.t("ui.reuse.notifications"));
+        btn.setAttribute("type", "button");
+        btn.innerHTML =
+            '<span class="notification-badge-wrap">' +
+            '<span class="notification-icon" aria-hidden="true"><img src="/static/assets/reuse/bell.svg" alt="" class="notification-icon-img" /></span>' +
+            '<span id="notification-count" class="notification-count" hidden>0</span>' +
+            "</span>";
+
+        badgeEl = btn.querySelector("#notification-count");
+
+        const panel = document.createElement("div");
+        panel.className = "notification-panel";
+        panel.hidden = true;
+        panel.setAttribute("role", "dialog");
+        panel.setAttribute("aria-label", i18n.t("ui.reuse.notifications"));
+
+        const header = document.createElement("div");
+        header.className = "notification-panel-header";
+
+        const title = document.createElement("h2");
+        title.className = "notification-panel-title";
+        title.textContent = i18n.t("ui.reuse.notifications");
+        header.appendChild(title);
+
+        markAllBtn = document.createElement("button");
+        markAllBtn.className = "notification-mark-all-read";
+        markAllBtn.type = "button";
+        markAllBtn.textContent = i18n.t(
+            "adapter.notify.internal.mark_all_read",
+        );
+        markAllBtn.addEventListener(
+            "click",
+            () => {
+                if (!isActive() || inbox.pending || !panelVisible) return;
+                const opening = panelController;
+                void changeNotification(
+                    "readAll",
+                    undefined,
+                    () =>
+                        markAllBtn.isConnected &&
+                        opening === panelController &&
+                        !opening.signal.aborted,
+                );
+            },
+            { signal },
+        );
+        header.appendChild(markAllBtn);
+
+        clearAllBtn = document.createElement("button");
+        clearAllBtn.className = "notification-clear-all";
+        clearAllBtn.type = "button";
+        clearAllBtn.setAttribute(
+            "aria-label",
+            i18n.t("adapter.notify.internal.clear_all"),
+        );
+        clearAllBtn.title = i18n.t("adapter.notify.internal.clear_all");
+        clearAllBtn.disabled = true;
+        clearAllBtn.innerHTML = "&#x1F5D1;";
+        clearAllBtn.addEventListener(
+            "click",
+            async () => {
+                if (
+                    !isActive() ||
+                    inbox.pending ||
+                    !panelVisible ||
+                    currentNotifications.length === 0 ||
+                    clearAllBtn.disabled
+                )
+                    return;
+                const opening = panelController;
+                confirmationPending = true;
+                synchronize();
+                const result = await openPopup({
+                    title: i18n.t("adapter.notify.internal.clear_all"),
+                    body: escapeHtml(
+                        i18n.t(
+                            "adapter.notify.internal.clear_all_confirm_body",
+                        ),
+                    ),
+                    variant: "danger",
+                    signal: opening.signal,
+                    actions: [
+                        {
+                            id: "confirm",
+                            label: i18n.t("adapter.notify.internal.clear_all"),
+                            variant: "confirm",
+                        },
+                        {
+                            id: "cancel",
+                            label: i18n.t("ui.reuse.cancel"),
+                            variant: "cancel",
+                        },
+                    ],
+                });
+                if (
+                    !isActive() ||
+                    opening !== panelController ||
+                    opening.signal.aborted
+                )
+                    return;
+                confirmationPending = false;
+                synchronize();
+                if (result === "confirm")
+                    await changeNotification(
+                        "clear",
+                        undefined,
+                        () =>
+                            clearAllBtn.isConnected &&
+                            opening === panelController &&
+                            !opening.signal.aborted,
+                    );
+            },
+            { signal },
+        );
+        header.appendChild(clearAllBtn);
+
+        retryBtn = document.createElement("button");
+        retryBtn.className = "notification-retry btn-neutral";
+        retryBtn.type = "button";
+        retryBtn.textContent = i18n.t("ui.reuse.retry");
+        retryBtn.hidden = true;
+        retryBtn.addEventListener(
+            "click",
+            () => {
+                if (isActive() && panelVisible) void inbox.read();
+            },
+            { signal },
+        );
+        header.appendChild(retryBtn);
+        panel.appendChild(header);
+
+        const list = document.createElement("ul");
+        list.className = "notification-list";
+        list.setAttribute("aria-live", "polite");
+        panel.appendChild(list);
+        listEl = list;
+
+        const empty = document.createElement("p");
+        empty.className = "notification-empty";
+        empty.textContent = i18n.t("adapter.notify.internal.empty");
+        empty.hidden = true;
+        panel.appendChild(empty);
+        emptyEl = empty;
+
+        panelEl = panel;
+        wrap.appendChild(btn);
+        wrap.appendChild(panel);
+
+        const mobileBackdrop = document.createElement("div");
+        mobileBackdrop.className = "notification-mobile-backdrop";
+        mobileBackdrop.setAttribute("role", "button");
+        mobileBackdrop.tabIndex = 0;
+        mobileBackdrop.hidden = true;
+        mobileBackdrop.setAttribute("aria-label", i18n.t("ui.reuse.close"));
+        mobileBackdrop.addEventListener("click", () => closePanel());
+        mobileBackdrop.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                closePanel();
+            }
+        });
+        mobileBackdropEl = mobileBackdrop;
+        wrap.appendChild(mobileBackdrop);
+
+        btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (panelVisible) {
+                closePanel();
+            } else {
+                openPanel(i18n);
+            }
+        });
+
+        document.addEventListener(
+            "click",
+            (e) => {
+                if (panelVisible && !wrap.contains(e.target)) {
+                    closePanel();
+                }
+            },
+            { signal },
+        );
+
+        document.addEventListener(
+            "keydown",
+            (e) => {
+                if (e.key === "Escape" && panelVisible) closePanel();
+            },
+            { signal },
+        );
+
+        return wrap;
+    }
+
+    function insertButton(wrap) {
+        const accountCluster = document.querySelector(".account-cluster");
+        if (!accountCluster) return;
+        const profileMenu = accountCluster.querySelector(".profile-menu");
+        if (profileMenu) {
+            accountCluster.insertBefore(wrap, profileMenu);
+        } else {
+            accountCluster.appendChild(wrap);
+        }
+    }
+
+    async function pollInbox() {
+        if (!isActive()) return;
+        const previouslySeen = seenIds === null ? null : new Set(seenIds);
+        const result = await inbox.read();
+        if (!result || !isActive()) return;
+        const initial = previouslySeen === null;
+        const arrivals = result.rows.filter((notif) =>
+            initial
+                ? !notif.read && notif.metadata?.continuous === true
+                : !previouslySeen.has(notif.id),
+        );
+        seenIds = new Set(result.rows.map((notif) => notif.id));
+        for (const notif of arrivals) {
+            window.dispatchEvent(
+                new CustomEvent("cognis:notification-arrival", {
+                    detail: { notification: notif },
+                }),
+            );
+            if (
+                !notif.read &&
+                (notif.metadata?.continuous === true ||
+                    (!panelVisible && !isNotificationOwnedByCurrentPage(notif)))
+            )
+                void showArrivalToast(notif, i18n);
+        }
+    }
+
+    async function startPolling() {
+        function scheduleNext() {
+            if (disposed || signal.aborted) return;
+            const delay =
+                document.visibilityState === "visible"
+                    ? POLL_INTERVAL_VISIBLE_MS
+                    : POLL_INTERVAL_HIDDEN_MS;
+            pollTimer = setTimeout(tick, delay);
+        }
+        async function tick() {
+            await pollInbox();
+            scheduleNext();
+        }
+        await pollInbox();
         scheduleNext();
     }
 
-    scheduleNext();
-}
+    let arrivalToastContainer = null;
+    let cachedNavBottom = 0;
 
-async function checkForNew(i18n) {
-    const notifs = await fetchNotifications();
-    const unread = notifs.filter(
-        (n) => !n.read && n.metadata?.continuous !== true,
-    ).length;
-    updateBadge(unread);
+    function updateNavBottom() {
+        const navrow = document.querySelector(".global-navrow");
+        if (navrow) {
+            cachedNavBottom = navrow.getBoundingClientRect().bottom;
+        }
+    }
 
-    const arrivals = notifs.filter((n) => !seenIds.has(n.id));
-    for (const notif of arrivals) {
-        seenIds.add(notif.id);
-        window.dispatchEvent(
-            new CustomEvent("cognis:notification-arrival", {
-                detail: { notification: notif },
-            }),
-        );
+    function getArrivalToastContainer() {
         if (
-            !notif.read &&
-            (notif.metadata?.continuous === true ||
-                !isNotificationOwnedByCurrentPage(notif))
+            !arrivalToastContainer ||
+            !document.body.contains(arrivalToastContainer)
         ) {
-            void showArrivalToast(notif, i18n);
+            const container = document.createElement("div");
+            container.className = "arrival-toast-container";
+            document.body.appendChild(container);
+            arrivalToastContainer = container;
+            updateNavBottom();
+            window.addEventListener("resize", updateNavBottom, {
+                passive: true,
+                signal,
+            });
         }
-    }
-}
 
-let arrivalToastContainer = null;
-let cachedNavBottom = 0;
+        if (cachedNavBottom > 0) {
+            arrivalToastContainer.style.top = `${Math.round(cachedNavBottom) + 8}px`;
+        }
 
-function updateNavBottom() {
-    const navrow = document.querySelector(".global-navrow");
-    if (navrow) {
-        cachedNavBottom = navrow.getBoundingClientRect().bottom;
-    }
-}
-
-function getArrivalToastContainer() {
-    if (
-        !arrivalToastContainer ||
-        !document.body.contains(arrivalToastContainer)
-    ) {
-        const container = document.createElement("div");
-        container.className = "arrival-toast-container";
-        document.body.appendChild(container);
-        arrivalToastContainer = container;
-        updateNavBottom();
-        window.addEventListener("resize", updateNavBottom, { passive: true });
+        return arrivalToastContainer;
     }
 
-    if (cachedNavBottom > 0) {
-        arrivalToastContainer.style.top = `${Math.round(cachedNavBottom) + 8}px`;
+    async function markArrivalRead(notif) {
+        const current = currentNotifications.find(
+            (notification) => notification.id === notif.id,
+        );
+        if (current && !current.read && isActive())
+            await changeNotification("read", notif.id);
     }
 
-    return arrivalToastContainer;
-}
+    async function showArrivalToast(notif, i18n) {
+        if (!isActive()) return;
+        const expectedIdentity = identity;
+        const expectedPage = pageRevision;
+        const arrival = arrivalLifetime.begin(notif);
+        const container = getArrivalToastContainer();
+        const toast = document.createElement("div");
+        toast.className = "arrival-toast";
+        toast.setAttribute("role", "alert");
+        const correlationId = String(notif.metadata?.correlationId ?? "");
+        if (correlationId) {
+            toast.dataset.notificationCorrelation = correlationId;
+        }
 
-async function markArrivalRead(notif) {
-    if (notif.read) return;
-    try {
-        await markOneRead(notif.id);
-        notif.read = true;
-        const cached = currentNotifications.find((n) => n.id === notif.id);
-        if (cached) cached.read = true;
-        if (panelVisible && listEl) {
-            const item = listEl.querySelector(
-                `[data-id="${CSS.escape(notif.id)}"]`,
+        let toastSubject = notif.subject;
+        let toastPreview = notif.body;
+        if (notif.category === "messages") {
+            const genericMessage = i18n.t(
+                "adapter.notify.internal.new_message",
             );
-            if (item) {
-                item.classList.remove("notification-item--unread");
-                item.classList.add("notification-item--read");
+            toastSubject = genericMessage;
+            toastPreview = genericMessage;
+            const roomId = parseRoomId(notif.actionUrl);
+            if (roomId) {
+                try {
+                    const decryptedPreview = await decryptRoomMessage(roomId, {
+                        accessToken: localStorage.getItem(
+                            "cognis_access_token",
+                        ),
+                        signal,
+                        isCurrent: () =>
+                            arrival.isCurrent() &&
+                            expectedIdentity === identity &&
+                            expectedPage === pageRevision &&
+                            container === arrivalToastContainer,
+                    });
+                    if (decryptedPreview) toastPreview = decryptedPreview;
+                } catch (error) {
+                    const log = ctx.capabilities.get("ui:log");
+                    log?.("error", "Notification preview unavailable.", {
+                        component: "notify-internal",
+                        operation: "messagePreview",
+                        errorName: error?.name,
+                    });
+                    if (arrival.isCurrent() && expectedPage === pageRevision)
+                        reportError("error_preview");
+                }
             }
         }
-        await refreshCount();
-    } catch (err) {
-        // Non-fatal: arrival toast was clicked but read-marking failed.
-        // The next inbox poll will still reflect server state when the user
-        // opens the panel; do not interrupt navigation/openPanel for this.
-        console.warn("[notify-internal] Failed to mark arrival as read:", err);
-    }
-}
 
-async function showArrivalToast(notif, i18n) {
-    const container = getArrivalToastContainer();
-    const toast = document.createElement("div");
-    toast.className = "arrival-toast";
-    toast.setAttribute("role", "alert");
-    const correlationId = String(notif.metadata?.correlationId ?? "");
-    if (correlationId) {
-        toast.dataset.notificationCorrelation = correlationId;
-    }
+        if (
+            !arrival.isCurrent() ||
+            expectedIdentity !== identity ||
+            expectedPage !== pageRevision ||
+            container !== arrivalToastContainer
+        )
+            return;
+        const preview =
+            toastPreview.length > TOAST_BODY_PREVIEW_LENGTH
+                ? toastPreview.slice(0, TOAST_BODY_PREVIEW_LENGTH) + "\u2026"
+                : toastPreview;
 
-    let toastSubject = notif.subject;
-    let toastPreview = notif.body;
-    if (notif.category === "messages") {
-        const genericMessage = i18n.t("adapter.notify.internal.new_message");
-        toastSubject = genericMessage;
-        toastPreview = genericMessage;
-        const roomId = parseRoomId(notif.actionUrl);
-        if (roomId) {
-            const decryptedPreview = await decryptRoomMessage(roomId);
-            if (decryptedPreview) {
-                toastPreview = decryptedPreview;
+        const sender = notif.senderName ?? i18n.t("ui.reuse.system");
+
+        const isPersistent = notif.metadata?.continuous === true;
+        toast.classList.toggle("arrival-toast--persistent", isPersistent);
+        toast.innerHTML =
+            '<span class="arrival-toast-icon" aria-hidden="true">\uD83D\uDD14</span>' +
+            '<div class="arrival-toast-text">' +
+            `<span class="arrival-toast-subject">${escapeHtml(toastSubject)}</span>` +
+            `<span class="arrival-toast-sender">${escapeHtml(sender)}</span>` +
+            `<span class="arrival-toast-preview">${escapeHtml(preview)}</span>` +
+            "</div>" +
+            (isPersistent
+                ? renderNotificationActions(notif)
+                : `<button class="arrival-toast-dismiss" type="button" aria-label="${i18n.t("ui.reuse.dismiss")}">&#215;</button>`);
+
+        const dismiss = () => {
+            arrival.release();
+            toast.classList.add("arrival-toast--out");
+            toast.addEventListener("animationend", () => toast.remove(), {
+                once: true,
+            });
+        };
+
+        toast.addEventListener("click", (e) => {
+            if (
+                !arrival.isCurrent() ||
+                !toast.isConnected ||
+                toast.classList.contains("arrival-toast--out")
+            )
+                return;
+            const actionButton = e.target.closest("[data-notification-action]");
+            if (actionButton instanceof HTMLElement) {
+                dismiss();
+                void markArrivalRead(notif);
+                dispatchNotificationAction(
+                    notif,
+                    actionButton.dataset.notificationAction,
+                );
+                return;
             }
-        }
-    }
-
-    const preview =
-        toastPreview.length > TOAST_BODY_PREVIEW_LENGTH
-            ? toastPreview.slice(0, TOAST_BODY_PREVIEW_LENGTH) + "\u2026"
-            : toastPreview;
-
-    const sender = notif.senderName ?? i18n.t("ui.reuse.system");
-
-    const isPersistent = notif.metadata?.continuous === true;
-    toast.classList.toggle("arrival-toast--persistent", isPersistent);
-    toast.innerHTML =
-        '<span class="arrival-toast-icon" aria-hidden="true">\uD83D\uDD14</span>' +
-        '<div class="arrival-toast-text">' +
-        `<span class="arrival-toast-subject">${escapeHtml(toastSubject)}</span>` +
-        `<span class="arrival-toast-sender">${escapeHtml(sender)}</span>` +
-        `<span class="arrival-toast-preview">${escapeHtml(preview)}</span>` +
-        "</div>" +
-        (isPersistent
-            ? renderNotificationActions(notif)
-            : `<button class="arrival-toast-dismiss" type="button" aria-label="${i18n.t("ui.reuse.dismiss")}">&#215;</button>`);
-
-    const dismiss = () => {
-        toast.classList.add("arrival-toast--out");
-        toast.addEventListener("animationend", () => toast.remove(), {
-            once: true,
-        });
-    };
-
-    toast.addEventListener("click", (e) => {
-        const actionButton = e.target.closest("[data-notification-action]");
-        if (actionButton instanceof HTMLElement) {
+            if (e.target.closest(".arrival-toast-dismiss")) {
+                dismiss();
+                return;
+            }
             dismiss();
-            void markArrivalRead(notif);
-            dispatchNotificationAction(
-                notif,
-                actionButton.dataset.notificationAction,
-            );
-            return;
-        }
-        if (e.target.closest(".arrival-toast-dismiss")) {
-            dismiss();
-            return;
-        }
-        dismiss();
-        markArrivalRead(notif);
-        if (notif.actionUrl) {
-            navigateNotif(notif.actionUrl);
-        } else {
-            openPanel(i18n);
-        }
-    });
-
-    toast
-        .querySelector(".arrival-toast-dismiss")
-        ?.addEventListener("click", (e) => {
-            e.stopPropagation();
-            dismiss();
+            markArrivalRead(notif);
+            if (notif.actionUrl) {
+                navigateNotif(notif.actionUrl);
+            } else {
+                openPanel(i18n);
+            }
         });
 
-    container.appendChild(toast);
-    if (isPersistent) {
+        toast
+            .querySelector(".arrival-toast-dismiss")
+            ?.addEventListener("click", (e) => {
+                e.stopPropagation();
+                dismiss();
+            });
+
+        container.appendChild(toast);
         const metadata = notif.metadata ?? {};
         const remaining = Number(metadata.expiresAt) - Date.now();
-        setTimeout(
-            () => {
-                dismiss();
-            },
-            Math.max(0, Number.isFinite(remaining) ? remaining : 0),
-        );
-    } else {
-        setTimeout(dismiss, TOAST_AUTO_DISMISS_MS);
+        const delay = isPersistent
+            ? Math.max(0, Number.isFinite(remaining) ? remaining : 0)
+            : TOAST_AUTO_DISMISS_MS;
+        const timer = setTimeout(function expireToast() {
+            toastTimers.delete(timer);
+            if (isActive()) dismiss();
+        }, delay);
+        toastTimers.add(timer);
+        arrival.attach(toast, () => {
+            clearTimeout(timer);
+            toastTimers.delete(timer);
+        });
     }
-}
 
-window.addEventListener("cognis:notification-resolved", (event) => {
-    void resolveCorrelatedNotifications(
-        String(event.detail?.correlationId ?? ""),
-    );
-});
-
-(async function init() {
-    if (!localStorage.getItem("cognis_access_token")) return;
-
+    ctx.signal.addEventListener("abort", dispose, { once: true });
+    window.addEventListener("pagehide", dispose, { signal });
+    window.addEventListener("storage", () => isActive(), { signal });
     try {
-        await loadNotificationStyles();
-
-        const i18n = await createI18n({
+        await loadNotificationStyles(signal);
+        if (!isActive()) return dispose;
+        i18n = await createI18n({
             componentStringBaseUrls: [
                 "/static/gateways/notify-internal/languages",
             ],
         });
-
-        const wrap = buildButton(i18n);
+        if (!isActive()) return dispose;
+        inbox = createInbox({
+            ctx,
+            localize: localizeNotification,
+            isActive,
+            onChange: synchronize,
+            reportError,
+        });
+        correlations = createCorrelationResolver({
+            inbox,
+            isActive,
+            generation: () => pageRevision,
+            change: changeNotification,
+            reportError,
+            log: ctx.capabilities.get("ui:log"),
+            clearPresentation: (correlationId) =>
+                arrivalLifetime.clearCorrelation(correlationId),
+        });
+        wrap = buildButton(i18n);
         insertButton(wrap);
+        if (!isActive()) return dispose;
+        unregisterSearch = registerSearchIndex(
+            "notifications",
+            collectNotificationSearchGroups,
+        );
         watchProfileMenu();
-
-        await startPolling(i18n);
-    } catch (err) {
-        // Initialization failed — navbar plugin degrades gracefully without the
-        // notification bell.
-        console.error("[notify-internal] navbar plugin init failed:", err);
+        window.addEventListener(
+            "cognis:notification-resolved",
+            (event) => {
+                correlations.resolve(String(event.detail?.correlationId ?? ""));
+            },
+            { signal },
+        );
+        ctx.extendFlow(
+            "logout",
+            "revokeSession",
+            { id: "notify-internal:logout", order: -1000 },
+            dispose,
+        );
+        ctx.extendFlow(
+            "authenticate-session",
+            "afterSession",
+            { id: "notify-internal:session" },
+            () => {
+                isActive();
+            },
+        );
+        ctx.extendFlow(
+            "page:mounted",
+            "publish",
+            { id: "notify-internal:page" },
+            () => {
+                resetPage();
+                void pollInbox();
+            },
+        );
+        synchronize();
+        await startPolling();
+        return dispose;
+    } catch (error) {
+        dispose();
+        throw error;
     }
-})();
+}

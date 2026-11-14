@@ -8,4 +8,10 @@
   <string name="adapter.notify.internal.clear_all_confirm_body">Hierdurch werden alle Ihre Benachrichtigungen dauerhaft gelöscht. Dies kann nicht rückgängig gemacht werden.</string>
   <string name="adapter.notify.internal.error_clear_all">Benachrichtigungen konnten nicht gelöscht werden. Bitte erneut versuchen.</string>
   <string name="adapter.notify.internal.new_message">Neue Nachricht</string>
+  <string name="adapter.notify.internal.error_load">Benachrichtigungen sind nicht verfügbar. Laden Sie Ihren Posteingang mit „Erneut versuchen“.</string>
+  <string name="adapter.notify.internal.error_refresh">Benachrichtigungen konnten nicht aktualisiert werden. Der zuletzt bestätigte Posteingang bleibt sichtbar. Wählen Sie „Erneut versuchen“.</string>
+  <string name="adapter.notify.internal.error_refresh_after_change">Ihre Änderung wurde gespeichert, aber die Benachrichtigungen konnten nicht aktualisiert werden. Prüfen Sie den aktuellen Posteingang mit „Erneut versuchen“.</string>
+  <string name="adapter.notify.internal.error_change_rejected">Die Änderung der Benachrichtigung wurde abgelehnt. Aktualisieren Sie den Posteingang mit „Erneut versuchen“, bevor Sie die Änderung erneut ausführen.</string>
+  <string name="adapter.notify.internal.error_change_uncertain">Die Änderung konnte nicht bestätigt werden und wurde möglicherweise ausgeführt. Prüfen Sie den Posteingang mit „Erneut versuchen“, bevor Sie die Änderung wiederholen.</string>
+  <string name="adapter.notify.internal.error_preview">Die Nachrichtenvorschau konnte nicht geladen werden. Öffnen Sie die Nachricht, um sie zu lesen.</string>
 </resources>

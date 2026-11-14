@@ -41,6 +41,24 @@ Shared behavior: [Auth](/docs/gateways/auth/technical).
 
 This migration protects the bundled cleanup consumers. Before enabling account deletion in a deployment, update or disable external cleanup hooks that still trust mutable public flow results.
 
+- Serve a badge showing the number of unread notifications, polled every 10 seconds while visible and 30 seconds while hidden.
+
+The navbar plugin (`ui/navbar-plugin.js`) exports `mountProvider(scopedUiCtx)`. After the dashboard shell is ready, the public provider loader mounts it within the provider lifetime. It:
+
+3. Loads the inbox and starts a polling loop: every 10 seconds while the page is visible and 30 seconds while hidden.
+
+### Inbox state and recovery
+
+Open the bell to browse notifications. Retry reloads the inbox without repeating a read-marking or dismissal request. A failed first load does not mean the inbox is empty. If a refresh fails, the last confirmed rows, search results and unread count remain available. A rejected change and an unconfirmed change have different messages; an unconfirmed change may already have completed. Refresh before attempting another change. When a change is confirmed but its refresh fails, the confirmed change remains visible.
+
+The navbar exports `mountProvider(scopedUiCtx)` for the public provider loader. The adapter registers `notify:internal:readInbox` and `notify:internal:mutateInbox`, each with `request` and `reconcile` stages. Only valid inbox responses and current-route acknowledgement receipts update the in-memory snapshot. The newest eligible read wins; pending writes prevent overlapping actions and supersede older reads. Every accepted refresh reconciles content, ordering and read status, including unchanged notification IDs. No write is automatically replayed.
+
+Snapshots and pending UI completions belong to the current account, token, page and provider lifetime. Logout, account changes, page mounts and provider disposal revoke old work. Detached rows and closed confirmations cannot perform later actions. The public search registration, event listeners, timers and transient panel registration are released with their owner. No browser-persistent inbox cache is created.
+
+The workspace tutorial continues to open `#notification-toggle` and explain `.notification-panel`. Its shared transient lifetime closes the panel, including an opening with a pending read. Confirmed empty inboxes keep Clear disabled; unavailable inboxes offer Retry rather than claiming to be empty. Continuous notifications retain their existing separate popup, action, correlation and expiry behavior. This change does not define notification categories or delivery preferences.
+
+Producer correlation resolutions are serialized and deduplicated within the current owner lifetime. They wait for pending user changes and the latest read before dismissing matching notifications; an unconfirmed deletion is never automatically replayed.
+
 ## Security
 
 Notification routes authenticate the recipient and operate on that account's records. Persistent notifications require DATA_ENCRYPTION_KEY; keep that deployment key stable and secret.

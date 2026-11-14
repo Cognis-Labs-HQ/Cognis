@@ -748,7 +748,7 @@
   <string name="ui.tutorial.marketplace.details.configure.module.body">Open Settings to review this module’s configuration. Check required fields and concealed credentials before saving.</string>
   <string name="ui.tutorial.marketplace.details.manage.lifecycle.title">Manage Installation And Updates</string>
   <string name="ui.tutorial.marketplace.details.manage.lifecycle.body">Advanced actions include release-channel changes and removal where available. Review dependencies and content-deletion options before confirming a removal.</string>
-  <string name="ui.tutorial.workspace.notification.pane.body">Review updates in this pane. Open an item to follow its link, mark all items read to clear the unread count, or use Clear to dismiss notifications.</string>
+  <string name="ui.tutorial.workspace.notification.pane.body">Open an item to follow its link, mark all items read, or use Clear to dismiss notifications. A failed load does not mean your inbox is empty. Use Retry to check the latest inbox. An unconfirmed change may already be saved, so refresh before repeating it.</string>
   <string name="ui.tutorial.workspace.account.options.title">Account Menu Links</string>
   <string name="ui.tutorial.workspace.account.options.body">Settings manages your account, language and appearance preferences. Documentation opens the help library. Use the profile link, when shown, to open your profile page.</string>
   <string name="ui.tutorial.workspace.account.administration.body">Administration manages system settings and policies. Modules manages installed add-ons and their configuration; Users manages accounts and access.</string>
