@@ -48,6 +48,7 @@ export function createEventComposerBuilder({
     const fields = [
         {
             name: "title",
+            className: "calendar-event-field--full",
             labelKey: "gateway.calendar.event_title",
             required: true,
             maxCharacters: 120,
@@ -56,6 +57,7 @@ export function createEventComposerBuilder({
         },
         {
             name: "description",
+            className: "calendar-event-field--full",
             labelKey: "gateway.calendar.event_description",
             type: "textarea",
             value: String(defaultValues.description ?? ""),
@@ -123,6 +125,7 @@ export function createEventComposerBuilder({
         },
         {
             name: "calendarId",
+            className: "calendar-event-field--full",
             labelKey: "gateway.calendar.event_calendar",
             type: "select",
             required: true,

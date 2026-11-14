@@ -96,6 +96,14 @@ Die Verträge für Kalenderereignisse, Speicherung, Initialisierung und Adapter-
 
 Gemeinsames Verhalten: [Auth](/docs/gateways/auth/technical).
 
+### Anpassbare Terminplanung
+
+Neuer Termin und Ereignis bearbeiten nutzen auf Computern einen breiteren Dialog. Beginn und Ende sowie Status und Wiederholung stehen bei ausreichendem Platz nebeneinander. Titel, Beschreibung, Kalender, Teilnehmer und Erinnerungen behalten die volle Breite. Auf schmalen Bildschirmen folgen die Felder untereinander in Lesereihenfolge. Der Dialog scrollt innerhalb des sichtbaren Bereichs und behält Speichern, Abbrechen und den Schutz ungespeicherter Änderungen. Ganztägig bleibt direkt nach Ende. Datumsprüfung, schreibbare Kalender, verfügbare Besprechungen und offline vorgemerkte Änderungen folgen denselben Verträgen.
+
+Wochenüberschriften brechen innerhalb ihrer Tagesspalten um. Kompakte Beschriftungen richten sich nach der Kalenderbreite, auch neben einer Desktop-Seitenleiste. Ganztags- und Zeitraster im Tagesmodus teilen sich die minimale Zeilenhöhe. Kompakte Termine behalten engere Abstände. Ausstehende Einladungen zeigen diagonale Streifen und reduzierte Deckkraft über dem Hintergrund für Belegt, Frei oder Vorläufig sowie einen gestrichelten Rahmen. Beide Zustände bleiben beim Darüberfahren erhalten.
+
+Die Terminplanung behält ihr Ziel auf einem echten Erstellungsplatz und erklärt das breitere Formular, die kompakte Lesereihenfolge und das Scrollen. Der Terminschritt erklärt gestreifte ausstehende Einladungen. Anleitungs-IDs, sechs Schritte, highlightNext-Werte und Seitenlebensdauer bleiben unverändert. Leere Kalender behalten Datumsnavigation und Erstellungsziele.
+
 ## Sicherheit
 
 Kalenderänderungen brauchen Eigentum oder übertragenes Bearbeitungsrecht. Freigaben prüfen Bereich, Ablauf und Schutz; Erinnerungen nutzen die beim Start registrierte Kategorie.
