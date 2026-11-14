@@ -124,6 +124,18 @@ Toast feedback loads its shared stylesheet without delaying notification creatio
 
 Every popup has its own accessible heading, including nested unsaved-change confirmations and multi-page dialogs. Tab and Shift+Tab stay inside the active dialog. Keeping a draft returns focus to its editor; closing the last dialog returns focus to its available opening control, or to the page when that control is gone. Empty dialogs keep focus until controls become available. Navigation cancellation releases popup focus ownership without moving focus back onto the old page. Closing animations do not retain keyboard ownership. These shared controls also apply to dialogs opened from guided tutorials.
 
+### Popup Action Contracts
+
+Enter and Space activate the focused native control, so choosing Cancel never selects another footer action. The unsaved-changes dialog initially focuses safe Cancel; Discard uses danger styling. Holding Enter does not repeat popup activation. A pending action cannot be submitted again; explicit Close and Cancel remain available, and stale or closing controls cannot invoke callbacks.
+
+Plain Enter in a single-line text, search, email, URL, telephone or password field outside a native form uses the first available footer action declared with `variant: "confirm"`. The current action descriptor supplies this constructive outcome; CSS classes and action IDs do not grant default authority. Callers must classify destructive outcomes as `cancel` and safe dismissal as `neutral`. Native form submission, buttons, links, textareas, editable content, selects, composite widgets, modified keys and IME composition keep their own handling. Disabled, hidden, inert and removed controls are ineligible.
+
+Initial and switched-page footers render native `button type="button"` controls with exactly one shared consequence class. Neutral actions, including Done, retain popup-specific neutral appearance and participate in shared wrapping and touch-target styles. Pages may add or remove a footer, and replacement body actions use the same callback lifecycle. Existing tutorial targets, labels, completion IDs and replay behavior remain unchanged; tutorial Next and Back retain their own keyboard actions. The shared host popup has no independent component version or manifest.
+
+Registered body completion controls may be deliberately hidden and activated programmatically, as in email verification. They never become keyboard defaults and still obey enabled, inert, pending and popup-lifetime checks.
+
+Form-builder dialogs with `includeSubmitButton: false` declare `data-form-submit="external"`. Their fields may use the constructive footer action, whose callback retains validation responsibility. A native submit button or image input associated with that form takes precedence, including controls outside the form element.
+
 ### Scoped Tutorial Focus
 
 The additive `ui:popupFocus` capability coordinates popup owners through `register(overlay, handlers)`, `delegate(overlay, { signal, surfaces, contains, focus, onRevoke })`, and `restore(overlay, preferred)`. Registration belongs to the popup renderer. A tutorial delegates only the exact active popup accepted by its current step; the delegate supplies its allowed targets and controls, connected same-document surfaces, and focus callback. The required abort signal, removal of a delegated surface, or popup dismissal revokes the delegation. A newer popup keeps exclusive focus, including before its opening animation. Closing or replaying a tutorial restores ordinary popup keyboard handling without reopening a dismissed page. The `openPopup` options remain unchanged.
