@@ -1,3 +1,4 @@
+import { createOnboardingRoutes } from "./onboarding.js";
 import { parseLoginSessionTimeoutMinutes } from "../../session-timeout.js";
 import type { IncomingMessage } from "node:http";
 import type {
@@ -76,6 +77,7 @@ export function createAuthGatewayRoutes(
     >("auth:keyringRouteFactory");
     const handlers: AuthGatewayRouteHandler[] = [
         keyringRouteFactory(routeContext),
+        createOnboardingRoutes(capabilities, log),
         createSessionRoutes({
             authGateway,
             accountStore,

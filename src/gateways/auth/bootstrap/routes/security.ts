@@ -115,35 +115,45 @@ export function createSecurityRoutes({
                 modes.find((mode) => mode.id === userValidationMode)
                     ?.requiredFields ?? [];
             const registrationCtx = capabilities.get<Ctx>("system:ctx");
-            const flowResult = registrationCtx?.flow.exists(
-                "constructRegistrationUi",
-            )
-                ? await registrationCtx.flow
-                      .run("constructRegistrationUi", {})
-                      .catch((error: unknown) => {
-                          log?.(
-                              "warn",
-                              "Registration UI composition failed; serving the base registration configuration.",
-                              {
-                                  ...logMeta,
-                                  error:
-                                      error instanceof Error
-                                          ? error.message
-                                          : String(error),
-                              },
-                          );
-                          return null;
-                      })
-                : null;
-            const integrations = (
-                flowResult?.stageResults["compose-form"] ?? []
-            ).flatMap((result) => {
-                if (!result || typeof result !== "object") return [];
-                const value = result as { integrations?: unknown };
-                return Array.isArray(value.integrations)
-                    ? value.integrations
-                    : [];
-            });
+            let integrations: unknown[] = [];
+            try {
+                const flowResult = registrationCtx?.flow.exists(
+                    "constructRegistrationUi",
+                )
+                    ? await registrationCtx.flow.run(
+                          "constructRegistrationUi",
+                          {},
+                      )
+                    : null;
+                integrations = (
+                    flowResult?.stageResults["compose-form"] ?? []
+                ).flatMap((result) => {
+                    if (!result || typeof result !== "object") return [];
+                    const value = result as { integrations?: unknown };
+                    return Array.isArray(value.integrations)
+                        ? value.integrations
+                        : [];
+                });
+            } catch (error) {
+                log?.("error", "Registration UI composition failed.", {
+                    ...logMeta,
+                    operation: "constructRegistrationUi",
+                    error:
+                        error instanceof Error ? error.message : String(error),
+                });
+                res.writeHead(503, {
+                    "content-type": "application/json",
+                    "cache-control": "no-store",
+                });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "registration_configuration_unavailable",
+                        },
+                    }),
+                );
+                return true;
+            }
             log?.("debug", "Read registration config.", {
                 ...logMeta,
                 registrationsEnabled: enabled,

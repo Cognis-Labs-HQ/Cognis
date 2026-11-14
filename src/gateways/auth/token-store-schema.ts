@@ -7,7 +7,7 @@ export interface AccessTokenRecord {
     expiresAt: number | null;
     issuedAt: number;
     setupPending: boolean;
-    purpose: "session" | "password-reset" | "share";
+    purpose: "session" | "password-reset" | "share" | "onboarding";
 }
 
 const recordKeys = [
@@ -103,10 +103,20 @@ export function parseTokenStoreEntry(
     if (
         purpose !== "session" &&
         purpose !== "password-reset" &&
-        purpose !== "share"
+        purpose !== "share" &&
+        purpose !== "onboarding"
     )
         return null;
     if (setupPending && purpose !== "session") return null;
+    if (
+        purpose === "onboarding" &&
+        (role !== "user" ||
+            providerId !== "local" ||
+            expiresAt === null ||
+            expiresAt <= issuedAt ||
+            expiresAt - issuedAt > 1800 * 1000)
+    )
+        return null;
     return [
         tokenHash,
         {

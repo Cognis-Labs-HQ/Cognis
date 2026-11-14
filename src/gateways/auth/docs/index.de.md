@@ -191,3 +191,17 @@ Die Capability auth:revokeSetupPendingAccessTokens akzeptiert keine Argumente un
 ## Geltungsbereich der Anmeldung
 
 Kontoaktionen erfordern bestätigte Kontositzungen. Aktionen für freigegebene Ressourcen prüfen Gastanmeldungen ausdrücklich und kontrollieren die aktuelle Freigabe vor den Ressourcenberechtigungen. Kontonamen bestimmen niemals den Anmeldetyp. Widerrufener oder abgelaufener Zugriff wird abgelehnt.
+
+## Registrierung abschließen
+
+Öffentliche Registrierung und Einladungseinlösung geben einen auf 30 Minuten begrenzten Onboarding-Nachweis zurück, keine Sitzung. Er erlaubt weder gewöhnliche Konto-APIs noch Browseridentität, Sitzungsverlängerung oder Faktorbestätigung. Danach ist eine normale Anmeldung mit unveränderter abschließender TFA-Prüfung erforderlich.
+
+Auth besitzt den Vertrag auth:onboarding in Version 1. registerOperation({id, available?, execute}) erfasst den aktuellen Bootstrap-Bereich des aufrufenden Anbieters; die ID muss diesem Besitzer gehören. Doppelte Registrierung schlägt fehl. Entfernung, fehlgeschlagener Bootstrap und erneute Aktivierung machen laufende Arbeit ungültig. listOperations() liefert registrierte IDs einschließlich vorübergehend nicht verfügbarer Handler; diese Metadaten gewähren keine Berechtigung. issue(accountId) prüft die Existenz des Kontos. Ein Konto mit ausstehender Validierung muss nicht aktiviert sein.
+
+POST /api/v1/auth/onboarding/operations nimmt {operation, input} entgegen. Auth prüft Zweck, Ablauf, Konto und Besitzerlebensdauer, führt die Vorbereitung aus und ruft den Handler außerhalb dieses erweiterbaren Ablaufs auf. Direkte Ablaufaufrufe können keine Operation ausführen. Der Handler erhält {accountId, assertCurrent} und muss assertCurrent nach asynchroner Arbeit unmittelbar vor jeder Wirkung abwarten. Übermittelte Konto-IDs, gewöhnliche Eigentümerrechte und Gastidentitäten dürfen nicht verwendet werden. Bekannte Anbieterfehler dürfen genau {status, code} mit Status 400, 409, 422, 429 oder 503 und einem kurzen Code aus Kleinbuchstaben und Unterstrichen liefern. Unerwartete Fehler geben onboarding_operation_failed ohne interne Details zurück.
+
+POST /api/v1/auth/onboarding/complete widerruft den Nachweis beim Abschluss oder Abbruch, ohne Sitzungsaustausch. Erfolgreiche normale Anmeldung und Löschung unbestätigter Konten widerrufen nur deren Onboarding-Nachweise. Unterbrochene Anfragen bleiben zeitlich begrenzt. Speicherformat 2 prüft den Onboarding-Zweck, Benutzerrolle, lokalen Anbieter, nicht ausstehende Einrichtung und höchstens 30 Minuten Gültigkeit ausdrücklich.
+
+Tokendatei, Anbieterdatenbank und Zustellung bilden keine gemeinsame Transaktion. Bereits ausgeführte Wirkungen können nach späteren Fehlern bestehen bleiben. Browserbereinigung beim Schließen oder bei Netzfehlern ist nur ein bestmöglicher Versuch, keine Zustellgarantie.
+
+Der Widerruf wirkt sofort in diesem Prozess; ein fehlgeschlagener Dateischreibvorgang kann jedoch die vorherige Berechtigung auf dem Datenträger bis zum erfolgreichen erneuten Versuch belassen. Der Abschluss ist für einen aufbewahrten widerrufenen Onboarding-Nachweis idempotent und wiederholt dessen Speicherung. Kontolesen, asynchrone Verfügbarkeit und Anbieterwirkungen sind nicht speicherübergreifend atomar. Die Ausstellung ist eine vertrauenswürdige Serverschnittstelle, kein öffentlicher Endpunkt zur Ausstellung für übermittelte Konto-IDs.

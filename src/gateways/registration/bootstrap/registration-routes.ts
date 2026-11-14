@@ -20,11 +20,6 @@ export function createRegistrationRoutes(
     isGatewayEnabled: () => boolean = () => true,
     log?: GatewayBootstrapContext["log"],
     routeContext?: RouteContext,
-    issueAccessToken?: (
-        subject: string,
-        role: "user",
-        ttlSeconds: number,
-    ) => string,
 ) {
     const ctx = resolveRouteContext(routeContext);
     const getInvitationPolicy = () =>
@@ -205,12 +200,39 @@ export function createRegistrationRoutes(
                 );
                 return true;
             }
+            const onboarding = ctx.getCapability<{
+                issue(accountId: string): Promise<string>;
+                listOperations(): string[];
+            }>("auth:onboarding");
+            let onboardingOperations: string[];
+            try {
+                if (!onboarding) throw new Error("onboarding_unavailable");
+                onboardingOperations = onboarding.listOperations();
+            } catch (error) {
+                log?.("error", "Registration onboarding is unavailable.", {
+                    ...logMeta,
+                    operation: "redeemOnboarding",
+                    errorName:
+                        error instanceof Error ? error.name : "UnknownError",
+                });
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
+                    JSON.stringify({
+                        error: {
+                            code: "onboarding_unavailable",
+                            message: "Registration completion is unavailable",
+                        },
+                    }),
+                );
+                return true;
+            }
             const body = await readJson(req);
             const token = String(body.token ?? "").trim();
             const username = String(body.username ?? "").trim();
             const password = String(body.password ?? "");
             const displayName = String(body.displayName ?? "").trim();
             const email = String(body.email ?? "").trim();
+            let accountCreated = false;
             try {
                 const result = await gateway.redeemInvite({
                     token,
@@ -219,10 +241,9 @@ export function createRegistrationRoutes(
                     displayName,
                     email,
                 });
-                const verifyToken = issueAccessToken?.(
+                accountCreated = true;
+                const verifyToken = await onboarding.issue(
                     result.createdAccountId,
-                    "user",
-                    1800,
                 );
                 log?.("info", "Redeemed registration invite.", {
                     ...logMeta,
@@ -230,18 +251,37 @@ export function createRegistrationRoutes(
                     inviterAccountId: result.inviterAccountId,
                 });
                 res.writeHead(201, { "content-type": "application/json" });
-                res.end(JSON.stringify({ data: { ...result, verifyToken } }));
+                res.end(
+                    JSON.stringify({
+                        data: {
+                            ...result,
+                            verifyToken,
+                            onboardingOperations,
+                        },
+                    }),
+                );
             } catch (error) {
-                const code =
-                    error instanceof Error ? error.message : "redeem_failed";
+                const code = accountCreated
+                    ? "onboarding_unavailable"
+                    : error instanceof Error
+                      ? error.message
+                      : "redeem_failed";
                 log?.("warn", "Invite redemption failed.", {
                     ...logMeta,
                     code,
                     username,
+                    accountCreated,
                 });
-                const status = redeemInviteErrorStatus(code);
+                const status = accountCreated
+                    ? 503
+                    : redeemInviteErrorStatus(code);
                 res.writeHead(status, { "content-type": "application/json" });
-                res.end(JSON.stringify({ error: { code, message: code } }));
+                res.end(
+                    JSON.stringify({
+                        error: { code, message: code },
+                        data: { accountCreated },
+                    }),
+                );
             }
             return true;
         }

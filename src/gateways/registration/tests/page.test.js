@@ -41,19 +41,17 @@ test("registration completion failure sends created accounts to recover through 
     );
     assert.match(
         source,
-        /if \(accountCreated\)[\s\S]*window\.location\.href = "\/login"/,
+        /if \(error\.accountCreated\)[\s\S]*window\.location\.href = "\/login"/,
     );
 });
 
-test("registration integration load failures do not disable the base form", () => {
+test("registration page honors onboarding provider readiness", () => {
     const source = readFileSync(
         resolve(ROOT, "src/gateways/registration/ui/register/index.js"),
         "utf8",
     );
-    assert.match(
-        source,
-        /for \(const descriptor[\s\S]*try \{[\s\S]*import\([\s\S]*catch \(error\)[\s\S]*registrationIntegrationsReady = true/,
-    );
+    assert.match(source, /registrationIntegrationsReady = loaded\.ready/);
+    assert.match(source, /if \(!registrationIntegrationsReady\)/);
 });
 
 test("registration page loads auth-owned configuration through the auth client", () => {
@@ -81,7 +79,7 @@ test("registration field factories fail independently", () => {
     );
 });
 
-test("registration validators fail independently", () => {
+test("registration validator failures block account creation", () => {
     const source = readFileSync(
         resolve(ROOT, "src/gateways/registration/ui/register/index.js"),
         "utf8",
@@ -89,19 +87,18 @@ test("registration validators fail independently", () => {
 
     assert.match(
         source,
-        /try \{[\s\S]*await integration\.module\.validateRegistration[\s\S]*catch \(error\)[\s\S]*showToast[\s\S]*continue;/,
+        /try \{[\s\S]*await integration\.module\.validateRegistration[\s\S]*catch \(error\)[\s\S]*showToast[\s\S]*return;/,
     );
 });
 
-test("registration completion receives submitted values and integration context", () => {
+test("registration page runs its owned completion workflow", () => {
     const source = readFileSync(
         resolve(ROOT, "src/gateways/registration/ui/register/index.js"),
         "utf8",
     );
-
     assert.match(
         source,
-        /completeRegistration\([\s\S]*values: registrationValues,[\s\S]*i18n: integration\.i18n,[\s\S]*descriptor:/,
+        /await completion\.run\([\s\S]*values: registrationValues/,
     );
 });
 

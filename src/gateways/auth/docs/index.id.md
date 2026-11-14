@@ -191,3 +191,17 @@ Kapabilitas auth:revokeSetupPendingAccessTokens tidak menerima argumen dan menca
 ## Cakupan Kredensial
 
 Operasi akun memerlukan sesi akun yang terverifikasi. Operasi sumber daya bersama memverifikasi kredensial tamu secara eksplisit dan memeriksa kembali izin berbagi saat ini sebelum menerapkan izin sumber daya. Nama akun tidak menentukan jenis kredensial. Akses yang dicabut atau kedaluwarsa ditolak.
+
+## Penyelesaian Pendaftaran
+
+Pendaftaran publik dan penukaran undangan mengembalikan kredensial onboarding selama 30 menit, bukan sesi masuk. Kredensial ini tidak mengizinkan API akun biasa, identitas peramban, pembaruan sesi, atau konfirmasi faktor. Pengguna tetap harus masuk melalui pemeriksaan akhir dan TFA yang berlaku.
+
+Auth memiliki kontrak auth:onboarding versi 1. registerOperation({id, available?, execute}) mengambil cakupan bootstrap pemanggil saat pendaftaran; ID harus dimiliki penyedia tersebut. Pendaftaran ganda ditolak. Penghapusan, kegagalan bootstrap, dan pengaktifan ulang membatalkan pekerjaan yang masih berjalan. listOperations() mencantumkan ID terdaftar termasuk penangan yang sementara tidak tersedia; metadata ini bukan izin. issue(accountId) memeriksa keberadaan akun. Akun dengan validasi tertunda tidak harus sudah aktif.
+
+POST /api/v1/auth/onboarding/operations menerima {operation, input}. Auth memeriksa tujuan, kedaluwarsa, akun, dan masa berlaku penyedia, menjalankan persiapan, lalu memanggil penangan di luar alur yang dapat diperluas. Pemanggilan alur secara langsung tidak dapat menjalankan operasi. Penangan menerima {accountId, assertCurrent} dan wajib menunggu assertCurrent tepat sebelum setiap efek setelah pekerjaan asinkron. Jangan memakai ID akun dari permintaan, hak pemilik biasa, atau identitas tamu. Penyedia memvalidasi masukannya sendiri. Kesalahan yang dikenal dapat melempar tepat {status, code}, dengan status 400, 409, 422, 429, atau 503 dan kode pendek berhuruf kecil serta garis bawah. Kesalahan tak terduga menghasilkan onboarding_operation_failed tanpa rincian internal.
+
+POST /api/v1/auth/onboarding/complete mencabut kredensial saat selesai atau dibatalkan tanpa menukarnya dengan sesi. Login normal yang berhasil dan penghapusan akun belum terverifikasi mencabut kredensial onboarding akun tersebut saja. Permintaan terputus tetap dibatasi kedaluwarsa. Format penyimpanan 2 memvalidasi tujuan onboarding, peran pengguna, penyedia lokal, penyiapan tidak tertunda, dan batas 30 menit secara eksplisit.
+
+Berkas token, basis data penyedia, dan pengiriman bukan satu transaksi. Efek yang telah selesai dapat tetap ada setelah pemeriksaan atau penulisan berikutnya gagal. Pembersihan saat halaman ditutup atau jaringan gagal hanya upaya terbaik, bukan jaminan pengiriman.
+
+Pencabutan langsung berlaku dalam proses ini, tetapi penulisan berkas token yang gagal dapat meninggalkan otoritas lama di disk sampai percobaan ulang berhasil. Penyelesaian bersifat idempoten untuk kredensial onboarding tercabut yang masih disimpan dan mencoba ulang penulisannya. Pembacaan akun, ketersediaan penyedia asinkron, dan efek penyedia tidak atomik lintas penyimpanan. Penerbitan adalah antarmuka server tepercaya, bukan endpoint publik yang menerbitkan kredensial bagi ID akun dari permintaan.

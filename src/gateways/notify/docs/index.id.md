@@ -42,3 +42,11 @@ Administrator dapat menguji konfigurasi sebelum pengirim diaktifkan. Pengujian t
 ## Kontrak Pengiriman Bertipe
 
 Pemeriksaan antrean pengirim bersifat opsional dan memiliki tipe dalam kontrak Notify. Bootstrap memuat penyimpanan milik gateway secara langsung serta menyediakan operasi email dan preferensinya tanpa penegasan tipe konstruktor yang tidak lengkap. Validasi siaran menghasilkan peran dan jadwal yang valid sebelum penyimpanan.
+
+## Email Saat Onboarding
+
+Notify mendaftarkan notify:email:add dan notify:email:verify melalui auth:onboarding. Masukan hanya {email} dan {email, code}; identitas akun berasal dari konteks terverifikasi. Operasi memakai aturan penambahan dan verifikasi email biasa, termasuk konflik alamat, ketersediaan pengiriman, masa berlaku kode, dan jeda pengiriman. Daftar email, penghapusan, perubahan alamat utama, akses akun lain, dan administrasi tidak diizinkan.
+
+Otoritas diperiksa kembali sebelum efek setelah pembacaan asinkron. Menonaktifkan atau menghapus Notify menghapus operasi. Operasi opsional yang tidak ada hanya boleh dilewati jika kebijakan tidak mewajibkan email; kegagalan pengiriman terdaftar tetap menjadi kesalahan. Kode dan tautan email memiliki masa berlaku sendiri dan tidak membuat sesi login. Tutorial pengaturan email pengguna yang sudah masuk tidak berubah.
+
+Alamat mungkin sudah tersimpan saat pengiriman atau pencabutan gagal; kode yang valid dapat terpakai sebelum pemeriksaan otoritas atau kegagalan basis data berikutnya. Periksa keadaan terkini sebelum mencoba kembali.

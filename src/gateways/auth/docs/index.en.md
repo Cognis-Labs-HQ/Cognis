@@ -191,3 +191,17 @@ The auth:revokeSetupPendingAccessTokens capability takes no arguments and revoke
 ## Credential Scope
 
 Account operations require verified account sessions. Shared-resource operations explicitly verify guest credentials and recheck the current grant before applying resource permissions. Account names never determine credential type. Revoked or expired access is denied.
+
+## Registration Onboarding
+
+Public signup and invitation redemption return a 30-minute onboarding credential, not a login session. It cannot access ordinary account APIs, establish browser identity, refresh a session, or satisfy a factor challenge. Sign in normally afterward; the existing final login and TFA assessment still apply.
+
+Auth owns the version-1 `auth:onboarding` contract. `registerOperation({id, available?, execute})` captures the calling contributor's current bootstrap scope; the ID must belong to that owner. Duplicate registration fails. Disposal, failed bootstrap and re-enable invalidate captured work. `listOperations()` lists registered IDs, including temporarily unavailable handlers; it is presentation metadata, not authorization. `issue(accountId)` verifies account existence and issues bounded authority. Pending account validation does not require an enabled account.
+
+POST /api/v1/auth/onboarding/operations accepts {operation, input}. Auth verifies the bearer purpose, expiry, current account and owner lifetime, runs its preparation flow, then invokes the registered handler outside that extensible flow. Raw flow calls cannot execute operations. The handler receives {accountId, assertCurrent}; it must await assertCurrent immediately before each effect after asynchronous work. Never use a supplied account ID, ordinary ownership shortcuts or a shared-resource identity. Handlers validate their own input. Known owner failures may throw exactly {status, code}, with status 400, 409, 422, 429 or 503 and a short lowercase underscore-delimited code. Unexpected failures return onboarding_operation_failed without internal details.
+
+POST /api/v1/auth/onboarding/complete revokes the current credential for either completion or cancellation; it never exchanges it for a session. Successful real login and unverified-account deletion revoke that account's onboarding credentials without revoking unrelated sessions or guest access. Interrupted requests remain bounded by expiry. Persisted format 2 explicitly validates onboarding purpose, user role, local provider, non-pending setup and an expiry no more than 30 minutes after issue.
+
+Token-file writes and provider database or delivery effects are not one transaction. A completed effect can remain when a later check or persistence write fails. Errors do not promise rollback. Browser cleanup is best effort when the page closes or the network fails; no unload delivery guarantee is made.
+
+Revocation is immediately effective in this process, but a failed token-file write can leave the previous on-disk authority until a successful retry. Completion is idempotent for a retained revoked onboarding credential and retries that persistence. Account reads, asynchronous provider availability and owner effects are not cross-store atomic. The issuance capability is a trusted server surface, not a public account-ID minting endpoint.

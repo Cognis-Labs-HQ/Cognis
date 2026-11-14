@@ -42,3 +42,11 @@ Administratoren können Konfigurationen vor der Senderaktivierung testen. Tests 
 ## Typisierte Zustellverträge
 
 Die optionale Warteschlangenabfrage ist im Notify-Vertrag typisiert. Der Bootstrap lädt den Gateway-eigenen Speicher direkt und stellt dessen E-Mail- und Einstellungsmethoden ohne unvollständige Konstruktor-Typzusicherungen bereit. Die Broadcast-Prüfung liefert gültige Rollen und Zeitangaben vor dem Speichern.
+
+## E-Mail beim Onboarding
+
+Notify registriert notify:email:add und notify:email:verify über auth:onboarding. Erlaubt sind nur {email} und {email, code}; die Kontoidentität stammt aus dem geprüften Kontext. Die Operationen verwenden dieselben Regeln wie das gewöhnliche Hinzufügen und Bestätigen: Adresskonflikte, Zustellverfügbarkeit, Codegültigkeit und Wartezeiten. Auflisten, Löschen, Primäradressänderung, Fremdkontozugriff und Administration sind ausgeschlossen.
+
+Nach asynchronen Lesevorgängen wird die Berechtigung vor Wirkungen erneut geprüft. Deaktivierung oder Entfernung von Notify entfernt die Operationen. Fehlende optionale Operationen dürfen nur ohne vorgeschriebene E-Mail-Prüfung übersprungen werden; registrierte Zustellfehler bleiben Fehler. Codes und E-Mail-Links behalten eigene Lebensdauern und erzeugen keine Sitzung. Das Tutorial der angemeldeten E-Mail-Einstellungen bleibt unverändert.
+
+Eine Adresse kann bereits gespeichert sein, wenn Zustellung oder Widerruf fehlschlagen; ein gültiger Code kann vor einer späteren Berechtigungsprüfung oder einem Datenbankfehler verbraucht werden. Vor erneutem Versuch den aktuellen Zustand prüfen.
