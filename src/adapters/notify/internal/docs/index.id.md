@@ -10,7 +10,7 @@ Adaptor Internal mengirimkan notifikasi langsung ke bel notifikasi dalam aplikas
 
 - Menerima setiap notifikasi yang dikirim gateway notifikasi dan menempatkannya di kotak masuk dalam aplikasi penerima.
 - Menyuntikkan tombol bel notifikasi ke antarmuka dasbor melalui plugin navbar — menonaktifkan adaptor akan menghilangkan bel sepenuhnya.
-- Menampilkan lencana dengan jumlah notifikasi yang belum dibaca, diperbarui setiap 30 detik.
+- Menampilkan lencana dengan jumlah notifikasi yang belum dibaca, diperbarui setiap 10 detik saat halaman terlihat dan 30 detik saat tersembunyi.
 - Menyediakan panel dropdown untuk membaca, menutup, dan menandai notifikasi sebagai telah dibaca.
 
 ## Rute API
@@ -45,3 +45,15 @@ Pada `deprovision-user` → `cleanup-dependencies`, komponen memperoleh `auth:de
 Pasang bersama penyedia Auth 2.2.12 bawaan atau alternatif yang menerapkan kontrak berversi ini; hasil alur publik yang dapat diubah bukan pengganti. Pembersihan menggunakan bukti penghapusan yang sudah tersimpan, bukan melakukan otorisasi ulang setelah penghapusan. Mutasi eksternal yang sudah dimulai dapat selesai sebagian sebelum kegagalan berikutnya; pembatalan lintas komponen tidak dijamin. Kontrol antarmuka dan tutorial biasa tidak berubah.
 
 Migrasi ini melindungi konsumen pembersihan bawaan. Sebelum mengaktifkan penghapusan akun dalam penerapan, perbarui atau nonaktifkan hook pembersihan eksternal yang masih memercayai hasil alur publik yang dapat diubah.
+
+## Status dan pemulihan kotak masuk
+
+Buka lonceng untuk membaca notifikasi. Coba lagi memuat ulang kotak masuk tanpa mengulangi permintaan penandaan dibaca atau penghapusan. Kegagalan pemuatan pertama tidak berarti kotak masuk kosong. Jika pembaruan gagal, baris, hasil pencarian, dan jumlah belum dibaca yang terakhir dikonfirmasi tetap tersedia. Perubahan yang ditolak dan yang belum dikonfirmasi memiliki pesan berbeda; perubahan yang belum dikonfirmasi mungkin sudah selesai. Perbarui sebelum mencoba perubahan lagi. Perubahan yang dikonfirmasi tetap terlihat meskipun pembaruan berikutnya gagal.
+
+Bilah navigasi mengekspor `mountProvider(scopedUiCtx)` untuk pemuat penyedia publik. Adaptor mendaftarkan `notify:internal:readInbox` dan `notify:internal:mutateInbox`, masing-masing dengan tahap `request` dan `reconcile`. Hanya respons kotak masuk yang valid dan bukti konfirmasi sesuai kontrak rute saat ini yang memperbarui status dalam memori. Permintaan baca terbaru yang masih berlaku diutamakan; perubahan tertunda mencegah tindakan tumpang tindih dan menggantikan pembacaan lama. Setiap pembaruan yang diterima menyelaraskan isi, urutan, dan status dibaca, termasuk ID notifikasi yang tidak berubah. Permintaan tulis tidak pernah diulang otomatis.
+
+Status dan hasil UI tertunda hanya berlaku untuk akun, token, halaman, dan penyedia saat ini. Keluar, pergantian akun, pemasangan halaman, dan pelepasan penyedia membatalkan hasil lama. Baris yang dilepas dan konfirmasi yang ditutup tidak dapat menjalankan tindakan kemudian. Pendaftaran pencarian, pendengar peristiwa, pengatur waktu, dan panel sementara dilepas bersama pemiliknya. Tidak ada cache kotak masuk permanen di peramban.
+
+Tutorial ruang kerja tetap membuka `#notification-toggle` dan menjelaskan `.notification-panel`. Masa aktif sementara bersama menutup panel, termasuk saat pembacaan masih tertunda. Hapus tetap nonaktif untuk kotak masuk yang dikonfirmasi kosong; kotak masuk yang tidak tersedia menawarkan Coba lagi, bukan menyatakan kosong. Notifikasi berkelanjutan mempertahankan popup terpisah, tindakan, korelasi, dan perilaku kedaluwarsa. Kategori notifikasi dan preferensi pengiriman tidak ditentukan oleh perubahan ini.
+
+Penyelesaian korelasi dari produsen dijalankan berurutan tanpa duplikasi dalam masa aktif pemilik saat ini. Proses menunggu perubahan pengguna yang tertunda dan pembacaan terbaru sebelum menghapus notifikasi yang cocok. Penghapusan yang belum dikonfirmasi tidak pernah diulang otomatis.

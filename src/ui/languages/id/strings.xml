@@ -742,7 +742,7 @@
   <string name="ui.tutorial.marketplace.details.configure.module.body">Buka Pengaturan untuk meninjau konfigurasi modul. Periksa kolom wajib dan kredensial tersembunyi sebelum menyimpan.</string>
   <string name="ui.tutorial.marketplace.details.manage.lifecycle.title">Kelola Instalasi Dan Pembaruan</string>
   <string name="ui.tutorial.marketplace.details.manage.lifecycle.body">Tindakan lanjutan mencakup perubahan kanal dan penghapusan bila tersedia. Tinjau dependensi dan opsi penghapusan konten sebelum mengonfirmasi.</string>
-  <string name="ui.tutorial.workspace.notification.pane.body">Tinjau pembaruan di panel ini. Buka item melalui tautannya, tandai semua sudah dibaca untuk menghapus hitungan belum dibaca, atau gunakan Bersihkan untuk menghapus notifikasi.</string>
+  <string name="ui.tutorial.workspace.notification.pane.body">Buka item melalui tautannya, tandai semua sudah dibaca, atau gunakan Bersihkan untuk menghapus notifikasi. Kegagalan memuat tidak berarti kotak masuk kosong. Gunakan Coba lagi untuk memeriksa kotak masuk terbaru. Perubahan yang belum dikonfirmasi mungkin sudah tersimpan, jadi perbarui sebelum mengulanginya.</string>
   <string name="ui.tutorial.workspace.account.options.title">Tautan Menu Akun</string>
   <string name="ui.tutorial.workspace.account.options.body">Pengaturan mengelola akun, bahasa, dan tampilan. Dokumentasi membuka pustaka bantuan. Gunakan tautan profil jika ditampilkan untuk membuka halaman profil.</string>
   <string name="ui.tutorial.workspace.account.administration.body">Administrasi mengelola pengaturan dan kebijakan sistem. Modul mengelola pengaya serta konfigurasinya; Pengguna mengelola akun dan akses.</string>
