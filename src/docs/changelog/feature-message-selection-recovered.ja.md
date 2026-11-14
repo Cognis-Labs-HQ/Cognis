@@ -26,4 +26,4 @@ Messages 2.7.43 では、公開されたレンダラーとオフラインクラ�
 
 ## コミット
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/5e97da45b9978f41038e9ec45649457d21f8557c
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/8d9e3fb8580353271b7ced5570aa2199bbc3c5fa
