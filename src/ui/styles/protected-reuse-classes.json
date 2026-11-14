@@ -91,6 +91,8 @@
     "form-builder-floating-title",
     "form-builder-input",
     "form-builder-input--invalid",
+    "form-builder-label-content",
+    "form-builder-label-heading",
     "form-builder-label-text",
     "form-builder-radio-group",
     "form-builder-radio-input",
