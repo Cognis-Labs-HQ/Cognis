@@ -272,6 +272,7 @@ code {
     gap: 12px;
     align-items: start;
     width: 100%;
+    min-width: 0;
 }
 .main-window--with-toolbar {
     grid-template-columns: fit-content(40vw) minmax(0, 1fr);
@@ -339,15 +340,19 @@ code {
 
 @media (max-width: 900px) {
     .main-window--with-toolbar {
-        grid-template-columns: 1fr;
+        --toolbar-drawer-width: min(
+            320px,
+            calc(100vw - 52px - env(safe-area-inset-right))
+        );
+        grid-template-columns: minmax(0, 1fr);
     }
     .toolbar-mobile-toggle {
         display: inline-flex;
     }
     .main-window--with-toolbar .toolbar-mobile-toggle--drawer-open {
         position: fixed;
-        top: 12px;
-        left: calc(min(320px, 88vw) - 1px);
+        top: max(12px, env(safe-area-inset-top));
+        left: calc(var(--toolbar-drawer-width) - 1px);
         margin: 0;
         border-radius: 0 12px 12px 0;
         box-shadow: var(--shadow);
@@ -356,8 +361,12 @@ code {
         position: fixed;
         top: 0;
         left: 0;
-        width: min(320px, 88vw);
+        width: var(--toolbar-drawer-width);
         height: 100dvh;
+        max-height: 100dvh;
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+        padding-left: env(safe-area-inset-left);
         border-radius: 0 14px 14px 0;
         margin-right: 0;
         background: var(--surface-2);
@@ -365,6 +374,7 @@ code {
         transition: transform 0.26s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         z-index: 1760;
         overflow-y: auto;
+        overscroll-behavior: contain;
         pointer-events: none;
         visibility: hidden;
     }
@@ -413,4 +423,12 @@ code {
 
 .toolbar-mobile-toggle-icon--toolbar-menu {
     mask-image: url("../../public/assets/reuse/icons/toolbar-menu.svg");
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .toolbar-mobile-toggle,
+    .toolbar-mobile-backdrop,
+    .main-window--with-toolbar .toolbar {
+        transition: none;
+    }
 }

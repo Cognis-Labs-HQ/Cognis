@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" href="/static/styles/page-builder.css" />
+        <link rel="stylesheet" href="/static/styles/reuse/search-bar.css" />
+        <link rel="stylesheet" href="/fixture.css" />
+        <title>Responsive component fixture</title>
+    </head>
+    <body>
+        <div id="app"></div>
+        <template id="form-content">
+            <h2 data-i18n="ui.reuse.settings"></h2>
+            <label
+                ><span data-i18n="ui.reuse.name"></span
+                ><input name="draft" type="text"
+            /></label>
+            <label
+                ><input name="enabled" type="checkbox" /><span
+                    data-i18n="ui.reuse.enable"
+                ></span
+            ></label>
+            <label
+                ><span data-i18n="ui.reuse.more_information"></span
+                ><textarea name="notes"></textarea>
+            </label>
+            <button
+                type="button"
+                data-fixture-popup
+                data-i18n="ui.reuse.settings"
+            ></button>
+        </template>
+        <template id="long-content">
+            <h2 data-i18n="ui.reuse.more_information"></h2>
+            <div class="fixture-scroll-pane" data-fixture-scroll>
+                <p data-fixture-paragraph></p>
+            </div>
+            <button
+                type="button"
+                data-fixture-last
+                data-i18n="ui.reuse.done"
+            ></button>
+        </template>
+        <template id="toolbar-content">
+            <button
+                type="button"
+                data-composer-scroll="form"
+                data-i18n="ui.reuse.settings"
+            ></button>
+            <button
+                type="button"
+                data-composer-scroll="nested"
+                data-i18n="ui.reuse.elements"
+            ></button>
+            <button
+                type="button"
+                data-fixture-popup
+                data-i18n="ui.reuse.edit"
+            ></button>
+            <button
+                type="button"
+                data-fixture-search
+                data-i18n="ui.reuse.search"
+            ></button>
+        </template>
+        <script type="module" src="/fixture.js"></script>
+    </body>
+</html>

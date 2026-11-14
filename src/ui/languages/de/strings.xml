@@ -635,7 +635,7 @@
   <string name="ui.tutorial.error">Die Anleitung konnte nicht fortgesetzt werden. Ihre Seite bleibt verfügbar.</string>
   <string name="ui.tutorial.progress_error">Der Tutorialfortschritt konnte nicht geladen oder gespeichert werden. Prüfen Sie Ihre Verbindung und versuchen Sie es erneut.</string>
   <string name="ui.tutorial.workspace.title">Ihr Arbeitsbereich</string>
-  <string name="ui.tutorial.workspace.navigation.body">Die Hauptnavigation führt zu den für Ihr Konto verfügbaren Seiten.</string>
+  <string name="ui.tutorial.workspace.navigation.body">Die Hauptnavigation führt zu den für Ihr Konto verfügbaren Seiten. Auf kleineren Bildschirmen öffnet die Menüschaltfläche dieselben Ziele.</string>
   <string name="ui.tutorial.workspace.search.body">Öffnen Sie die Suche und suchen Sie eine Seite, Einstellung oder Aktion der aktuellen Seite.</string>
   <string name="ui.tutorial.workspace.account.title">Kontomenü</string>
   <string name="ui.tutorial.workspace.account.body">Klicken Sie auf Ihren Avatar, um das Kontomenü zu öffnen.</string>
@@ -746,7 +746,7 @@
   <string name="ui.tutorial.workspace.dock.language.body">Wechseln Sie hier die Sprache der Oberfläche. Die Reihenfolge bevorzugter Sprachen verwalten Sie in den Einstellungen.</string>
   <string name="ui.tutorial.workspace.dock.theme.body">Die Darstellungsschaltfläche wechselt zwischen hellem und dunklem Thema. Ein Rechtsklick öffnet weitere Darstellungsoptionen in den Einstellungen.</string>
   <string name="ui.tutorial.workspace.dock.layout.title">Seitenelemente anordnen</string>
-  <string name="ui.tutorial.workspace.dock.layout.body">Verschieben oder skalieren Sie Elemente im Layouteditor und fügen Sie verfügbare Elemente hinzu. Prüfen Sie die Anordnung und speichern oder verwerfen Sie sie über die schwebenden Aktionen.</string>
+  <string name="ui.tutorial.workspace.dock.layout.body">Fügen Sie verfügbare Elemente mit Hinzufügen ohne Ziehen ein. Auf Touchscreens bleiben Größenregler und Entfernen sichtbar. Fokussieren Sie ein Widget und verschieben Sie es mit Pfeiltasten oder ändern Sie die Größe mit Umschalt plus Pfeiltasten. Speichern oder verwerfen Sie anschließend die Anordnung.</string>
   <string name="ui.tutorial.restart">Tutorial neu starten</string>
   <string name="ui.tutorial.docs.read.browse.documents.title">Dokumente durchsuchen</string>
   <string name="ui.tutorial.docs.read.browse.documents.body">Wähle im Seitenmenü ein Thema oder eine Komponente. Öffne eine Gruppe, um ihre Seiten zu finden; das gewählte Dokument erscheint daneben.</string>
@@ -762,4 +762,5 @@
   <string name="ui.tutorial.admin.security.trusted.domains.body">Vertrauenswürdige Domains bestimmen, welche Ursprünge auf Cognis zugreifen dürfen. Tragen Sie die Domains Ihrer Installation ein.</string>
   <string name="ui.tutorial.admin.status.file.integrity.title">Dateiintegrität</string>
   <string name="ui.tutorial.admin.status.file.integrity.body">Vergleichen Sie hier die Dateiprüfungen. Fehlende oder geänderte Dateien können erklären, warum eine Komponente nicht geladen wird.</string>
+  <string name="ui.reuse.layout_keyboard">Mit Pfeiltasten verschieben; zum Ändern der Größe Umschalttaste halten</string>
 </resources>

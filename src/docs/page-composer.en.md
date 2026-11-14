@@ -139,3 +139,13 @@ Source: `src/ui/reuse/page-composer/init.js`
 ## Theme-aware pointer controls
 
 The shared pointer-style button uses the standard theme foreground (`--text`) for mouse, laser and crosshair icons, including in embedded component pages. Participant pointer colours remain unchanged.
+
+## Responsive Layout
+
+Page Composer uses the available content width, not device names. At 640 CSS pixels or less, ordinary cards form a full-width reading column with content-sized rows; the desktop arrangement remains intact. Embedded frameless surfaces retain their own sizing. Wider panes preserve the grid and per-column saved profiles.
+
+The layout editor remains available on phones and tablets. Touch resize handles and remove controls stay visible. Use Add in the elements panel without dragging; focus a widget and use arrow keys to move it or Shift plus arrow keys to resize. Cancelling a pointer gesture does not commit it. Nested editors use the full container width, and resizing a nested view retains its existing form controls.
+
+Below 900 CSS pixels, the toolbar opens as a drawer. Filters and other in-place buttons remain usable while it is open; navigation closes it. Escape or the backdrop dismisses the drawer and restores focus. Navigation, toolbar, search and popup surfaces share scroll locking so nested overlays do not leave the page locked or scrolling behind a dialog.
+
+The workspace tutorial highlights the visible navigation toggle on narrow screens and explains touch and keyboard layout controls. Browser regression scenarios cover 320, 390, 768, 1024 and 1440 CSS pixels, rotation, keyboard input and repeated mounts. Run `COGNIS_BROWSER_TESTS=1 node --test src/ui/tests/page-composer/responsive-browser.test.js` on a machine where Chromium can launch. Browser emulation does not establish iOS Safari, installed PWA or real-device keyboard behavior.

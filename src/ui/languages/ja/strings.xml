@@ -635,7 +635,7 @@
   <string name="ui.tutorial.error">チュートリアルを続行できませんでした。ページは引き続き利用できます。</string>
   <string name="ui.tutorial.progress_error">チュートリアルの進捗を読み込み、または保存できませんでした。接続を確認して再度お試しください。</string>
   <string name="ui.tutorial.workspace.title">ワークスペースの使い方</string>
-  <string name="ui.tutorial.workspace.navigation.body">メインナビゲーションには、アカウントで利用できるページへのリンクがあります。</string>
+  <string name="ui.tutorial.workspace.navigation.body">メインナビゲーションからアカウントで利用できるページに移動できます。小さい画面ではメニューボタンを開くと同じ移動先が表示されます。</string>
   <string name="ui.tutorial.workspace.search.body">検索を開いて、ページ、設定、現在のページの操作を探してみます。</string>
   <string name="ui.tutorial.workspace.account.title">アカウントメニュー</string>
   <string name="ui.tutorial.workspace.account.body">アバターをクリックしてアカウントメニューを開きます。</string>
@@ -746,7 +746,7 @@
   <string name="ui.tutorial.workspace.dock.language.body">言語切り替えで表示言語を変更できます。優先する言語の順番は設定で管理します。</string>
   <string name="ui.tutorial.workspace.dock.theme.body">表示ボタンでライトテーマとダークテーマを切り替えます。右クリックすると表示設定を開けます。</string>
   <string name="ui.tutorial.workspace.dock.layout.title">ページのウィジェットを配置する</string>
-  <string name="ui.tutorial.workspace.dock.layout.body">レイアウト編集でウィジェットの移動、サイズ変更、項目追加ができます。配置を確認し、フローティングメニューで保存または破棄します。</string>
+  <string name="ui.tutorial.workspace.dock.layout.body">追加ボタンでドラッグせずに項目を配置できます。タッチ画面では表示中のサイズ変更ハンドルと削除ボタンを使用します。キーボードではウィジェットにフォーカスして矢印キーで移動し、Shift と矢印キーでサイズを変更します。最後に配置を保存または破棄してください。</string>
   <string name="ui.tutorial.restart">チュートリアルを最初からやり直す</string>
   <string name="ui.tutorial.docs.read.browse.documents.title">文書を探す</string>
   <string name="ui.tutorial.docs.read.browse.documents.body">サイドメニューでトピックやコンポーネントを選びます。グループを展開すると各ページが表示され、選んだ文書がメニューの横に開きます。</string>
@@ -762,4 +762,5 @@
   <string name="ui.tutorial.admin.security.trusted.domains.body">信頼するドメインで Cognis にアクセスできるオリジンを指定します。この環境で使用するドメインを入力します。</string>
   <string name="ui.tutorial.admin.status.file.integrity.title">ファイルの整合性</string>
   <string name="ui.tutorial.admin.status.file.integrity.body">ここでファイル検査の結果を確認します。ファイルの欠落や変更は、コンポーネントが読み込めない原因になることがあります。</string>
+  <string name="ui.reuse.layout_keyboard">矢印キーで移動し、Shift キーを押しながらサイズを変更します</string>
 </resources>

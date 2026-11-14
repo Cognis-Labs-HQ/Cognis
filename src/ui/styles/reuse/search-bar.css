@@ -45,7 +45,12 @@ body[data-theme="dark"] .search-bar-toggle-icon {
     display: flex;
     align-items: flex-start;
     justify-content: center;
-    padding: max(110px, 12vh) 16px 16px;
+    padding: max(24px, 12dvh, env(safe-area-inset-top))
+        max(16px, env(safe-area-inset-right))
+        max(16px, env(safe-area-inset-bottom))
+        max(16px, env(safe-area-inset-left));
+    overflow-y: auto;
+    overscroll-behavior: contain;
     z-index: 2100;
     animation: search-overlay-in 0.15s ease;
     opacity: 1;
@@ -70,8 +75,12 @@ body[data-theme="dark"] .search-bar-toggle-icon {
     border: 1px solid var(--border);
     border-radius: 14px;
     box-shadow: var(--shadow);
-    width: min(560px, 90vw);
-    max-height: 62vh;
+    width: min(560px, 100%);
+    min-width: 0;
+    max-height: calc(
+        100dvh - max(24px, 12dvh, env(safe-area-inset-top)) -
+            max(16px, env(safe-area-inset-bottom))
+    );
     position: relative;
     display: flex;
     flex-direction: column;
@@ -133,6 +142,8 @@ body[data-theme="dark"] .search-bar-toggle-icon {
 
 .search-popup-results {
     overflow-y: auto;
+    overscroll-behavior: contain;
+    min-height: 0;
     padding: 0.5rem 0;
 }
 
@@ -486,4 +497,50 @@ body[data-theme="dark"] .search-popup-clear-icon {
 
 .search-popup-input-wrap .search-popup-close {
     margin-right: 0.65rem;
+}
+
+@media (max-width: 640px), (any-pointer: coarse) {
+    .search-bar-toggle,
+    .search-popup-close,
+    .search-popup-clear,
+    .search-popup-page-find-nav,
+    .search-popup-result-category-pill,
+    .search-popup-option,
+    .search-popup-result {
+        min-width: 44px;
+        min-height: 44px;
+    }
+    .search-bar-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .search-popup-input-wrap {
+        flex-wrap: wrap;
+    }
+    .search-popup-page-find-controls {
+        margin-left: auto;
+    }
+    .search-popup-input-wrap .search-popup-input {
+        min-width: min(8rem, 100%);
+    }
+}
+
+@media (max-height: 500px) {
+    .search-popup-overlay {
+        padding-top: max(12px, env(safe-area-inset-top));
+    }
+    .search-popup {
+        max-height: calc(
+            100dvh - max(12px, env(safe-area-inset-top)) -
+                max(16px, env(safe-area-inset-bottom))
+        );
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .search-popup-overlay {
+        animation: none;
+        transition: none;
+    }
 }

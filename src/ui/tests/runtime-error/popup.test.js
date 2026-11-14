@@ -49,7 +49,10 @@ test("popup styles constrain dialog height and apply themed scrollbars", () => {
         "utf8",
     );
 
-    assert.match(source, /max-height:\s*calc\(100dvh - 48px\);/);
+    assert.match(
+        source,
+        /max-height:\s*calc\(\s*100dvh - max\(var\(--popup-viewport-gap\), env\(safe-area-inset-top\)\) -\s*max\(var\(--popup-viewport-gap\), env\(safe-area-inset-bottom\)\)\s*\);/,
+    );
     assert.match(
         source,
         /\.popup-overlay,\s*[\s\S]*\.popup-overlay \*\s*\{\s*scrollbar-color:/m,

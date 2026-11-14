@@ -72,3 +72,13 @@ Karten mit größeren Formularen (mindestens 6 persistierbare Felder) zeigen ein
 ## Zeigersteuerung passend zum Thema
 
 Die gemeinsame Zeigerstil-Schaltfläche verwendet die normale Themen-Vordergrundfarbe (`--text`) für Maus-, Laser- und Fadenkreuzsymbole, auch auf eingebetteten Komponentenseiten. Die Zeigerfarben der Teilnehmer bleiben unverändert.
+
+## Responsives Layout
+
+Page Composer verwendet die verfügbare Inhaltsbreite statt Gerätenamen. Bis 640 CSS-Pixel bilden gewöhnliche Karten eine spaltenbreite Leseansicht mit inhaltsabhängigen Zeilen; die Desktopanordnung bleibt erhalten. Rahmenlose eingebettete Oberflächen behalten ihre eigene Größensteuerung. Breitere Bereiche verwenden weiterhin das Raster und die nach Spaltenzahl gespeicherten Profile.
+
+Der Layouteditor bleibt auf Smartphones und Tablets verfügbar. Touch-Größenregler und Entfernen-Schaltflächen bleiben sichtbar. Mit Hinzufügen im Elemente-Bereich ist kein Ziehen nötig; ein fokussiertes Widget wird mit Pfeiltasten verschoben und mit Umschalt plus Pfeiltasten skaliert. Abgebrochene Zeigergesten werden nicht übernommen. Verschachtelte Editoren nutzen die gesamte Breite; Größenänderungen erhalten bestehende Formularfelder.
+
+Unter 900 CSS-Pixel öffnet sich die Werkzeugleiste als Seitenbereich. Filter und andere lokale Aktionen bleiben darin bedienbar; Navigation schließt ihn. Escape oder der Hintergrund schließen den Bereich und stellen den Fokus wieder her. Navigation, Werkzeugleiste, Suche und Dialoge teilen die Scrollsperre, damit verschachtelte Oberflächen die Seite nicht dauerhaft sperren oder hinter Dialogen scrollen lassen.
+
+Die Arbeitsbereichseinführung markiert auf schmalen Bildschirmen die sichtbare Navigationsschaltfläche und erklärt Touch- und Tastatursteuerung. Browserregressionen prüfen 320, 390, 768, 1024 und 1440 CSS-Pixel, Drehung, Tastatureingabe und wiederholtes Einbinden. `COGNIS_BROWSER_TESTS=1 node --test src/ui/tests/page-composer/responsive-browser.test.js` benötigt einen Rechner, auf dem Chromium starten kann. Emulation bestätigt weder iOS Safari noch installierte PWAs oder Bildschirmtastaturen auf echten Geräten.

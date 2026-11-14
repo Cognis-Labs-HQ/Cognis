@@ -4,7 +4,8 @@
     left: 50%;
     bottom: calc(
         var(--footer-floating-height, 38px) +
-            var(--floating-toolbar-footer-gap, 14px)
+            var(--floating-toolbar-footer-gap, 14px) +
+            env(safe-area-inset-bottom)
     );
     transform: translateX(-50%);
     z-index: 900;

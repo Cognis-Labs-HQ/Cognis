@@ -1,0 +1,4 @@
+.fixture-scroll-pane {
+    max-height: 160px;
+    overflow: auto;
+}

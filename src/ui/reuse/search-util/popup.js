@@ -15,6 +15,7 @@
  * @module reuse/search-util/popup
  */
 
+import { lockPageScroll } from "../page-scroll-lock.js";
 import { transientSurfaces } from "../transient-surfaces.js";
 import { uiCtx } from "../ui-ctx.js";
 import { search } from "./capability.js";
@@ -310,21 +311,15 @@ registerSearchIndex(
     },
 );
 
-let searchPopupScrollLocked = false;
-let previousSearchPopupBodyOverflow = "";
+let releaseSearchScroll;
 
 function lockSearchPopupScroll() {
-    if (searchPopupScrollLocked) return;
-    previousSearchPopupBodyOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    searchPopupScrollLocked = true;
+    releaseSearchScroll ??= lockPageScroll(document);
 }
 
 function unlockSearchPopupScroll() {
-    if (!searchPopupScrollLocked) return;
-    document.body.style.overflow = previousSearchPopupBodyOverflow;
-    previousSearchPopupBodyOverflow = "";
-    searchPopupScrollLocked = false;
+    releaseSearchScroll?.();
+    releaseSearchScroll = undefined;
 }
 
 export function openSearchPopup({

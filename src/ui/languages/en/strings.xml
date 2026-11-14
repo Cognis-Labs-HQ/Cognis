@@ -635,7 +635,7 @@
   <string name="ui.tutorial.error">The tutorial could not continue. Your page remains available.</string>
   <string name="ui.tutorial.progress_error">Tutorial progress could not be loaded or saved. Check your connection and try again.</string>
   <string name="ui.tutorial.workspace.title">Your Workspace</string>
-  <string name="ui.tutorial.workspace.navigation.body">The main navigation links to the pages available to your account.</string>
+  <string name="ui.tutorial.workspace.navigation.body">The main navigation links to the pages available to your account. On smaller screens, open the menu button to see the same destinations.</string>
   <string name="ui.tutorial.workspace.search.body">Open Search to try finding a page, setting or action on the current page.</string>
   <string name="ui.tutorial.workspace.account.title">Account Menu</string>
   <string name="ui.tutorial.workspace.account.body">Click your avatar to open the account menu.</string>
@@ -746,7 +746,7 @@
   <string name="ui.tutorial.workspace.dock.language.body">Use the language switcher to change the interface language. Manage the order of your preferred languages in Settings.</string>
   <string name="ui.tutorial.workspace.dock.theme.body">The appearance button switches between light and dark themes. Right-click it to open the appearance settings for more options.</string>
   <string name="ui.tutorial.workspace.dock.layout.title">Arrange Page Widgets</string>
-  <string name="ui.tutorial.workspace.dock.layout.body">Use the layout editor to move or resize widgets and add available elements. Review the arrangement, then use the floating actions to save or discard the layout changes.</string>
+  <string name="ui.tutorial.workspace.dock.layout.body">Use Add to place available elements without dragging. On touchscreens, use the visible resize and remove controls. With a keyboard, focus a widget and use arrows to move it or Shift plus arrows to resize. Save or discard the arrangement when finished.</string>
   <string name="ui.tutorial.restart">Restart Tutorial</string>
   <string name="ui.tutorial.docs.read.browse.documents.title">Browse Documents</string>
   <string name="ui.tutorial.docs.read.browse.documents.body">Use the side menu to choose a topic or component. Expand a group to find its pages; the selected document opens beside the menu.</string>
@@ -762,4 +762,5 @@
   <string name="ui.tutorial.admin.security.trusted.domains.body">Trusted domains control which origins may access Cognis. Enter the domains your deployment uses.</string>
   <string name="ui.tutorial.admin.status.file.integrity.title">File Integrity</string>
   <string name="ui.tutorial.admin.status.file.integrity.body">Compare file-check results here. Missing or changed files can explain why a component fails to load.</string>
+  <string name="ui.reuse.layout_keyboard">Use Arrow Keys to Move; Hold Shift to Resize</string>
 </resources>
