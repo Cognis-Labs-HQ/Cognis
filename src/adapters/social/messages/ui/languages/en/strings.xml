@@ -88,7 +88,7 @@
   <string name="module.social.messages.tutorial.messages.rooms.title">Rooms</string>
   <string name="module.social.messages.tutorial.messages.rooms.body">Select a room or start a new one from the sidebar.</string>
   <string name="module.social.messages.tutorial.messages.room.history.title">Room History</string>
-  <string name="module.social.messages.tutorial.messages.room.history.body">Read the room history and check the current participants and pending requests.</string>
+  <string name="module.social.messages.tutorial.messages.room.history.body">Read the room history and check participants and pending requests. You can select message text while new messages and reactions arrive, and load earlier messages without losing your place.</string>
   <string name="module.social.messages.tutorial.messages.compose.and.preview.title">Compose And Preview</string>
   <string name="module.social.messages.tutorial.messages.compose.and.preview.body">Write and preview a draft before sending; calls use their own controls.</string>
   <string name="module.social.messages.tutorial.messages.start.room.title">Start A Room</string>

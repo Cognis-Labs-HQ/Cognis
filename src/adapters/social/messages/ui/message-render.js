@@ -6,7 +6,6 @@ import { resolveMemberDisplayName } from "/static/reuse/member-display-name.js";
 import { createAnchoredPopup, openPopup } from "/static/reuse/popup.js";
 import { formatDate, formatTime } from "/static/reuse/timestamp.js";
 import { registerSearchIndex } from "/static/reuse/search-util/popup.js";
-import { getQuickReactionEmojis } from "./emoji-helpers.js";
 import {
     decryptMessageOrReturnPlaintext,
     emojiDisplayName,
@@ -17,6 +16,13 @@ import {
 } from "./message-utils.js";
 import { messageRenderSignature } from "./room-render.js";
 import { formatRoomEvent } from "./flows.js";
+import { renderReactionRows } from "./thread-reactions.js";
+import { createThreadView } from "./thread-dom.js";
+import {
+    mergeThreadPage,
+    messageRefreshCursor,
+    confirmThreadRead,
+} from "./thread-data.js";
 
 const profileAvatars = () => {
     const capability = uiCtx.capabilities.get("ui:profileAvatarRenderer");
@@ -29,7 +35,6 @@ const hydrateProfileAvatars = (container) =>
     profileAvatars().hydrate(container);
 
 const MESSAGE_UNAVAILABLE_PLACEHOLDER = "…";
-const MAX_VISIBLE_REACTION_CHIPS = 5;
 
 const reactionHoverPopup = createAnchoredPopup({
     className: "messages-reaction-hover-popup",
@@ -37,7 +42,6 @@ const reactionHoverPopup = createAnchoredPopup({
 const readReceiptHoverPopup = createAnchoredPopup({
     className: "messages-read-receipt-popup",
 });
-const threadRenderSignatures = new Map();
 
 let searchableRooms = [];
 let searchRoomKeyResolver = null;
@@ -254,136 +258,6 @@ async function formatRoomEventText(message, i18n) {
         payload.subjectHandle ||
         payload.subjectAccountId;
     return formatRoomEvent(payload, subjectLabel, i18n);
-}
-
-function renderReactionRows(message, i18n, isOwn = false) {
-    if (!message?.id) {
-        return {
-            pickerRow: "",
-            activeRow: "",
-        };
-    }
-    const reactionRows = Array.isArray(message.reactions)
-        ? message.reactions
-        : [];
-    const mergedByEmoji = new Map();
-    for (const reaction of reactionRows) {
-        const normalizedEmoji = normalizeReactionEmoji(reaction.emoji);
-        if (!normalizedEmoji) continue;
-        const existing = mergedByEmoji.get(normalizedEmoji);
-        if (existing) {
-            existing.count += Number(reaction.count ?? 0);
-            existing.reactedByMe = existing.reactedByMe || reaction.reactedByMe;
-            const reactedByRows = Array.isArray(reaction.reactedBy)
-                ? reaction.reactedBy
-                : [];
-            for (const reactor of reactedByRows) {
-                if (
-                    existing.reactedBy.some(
-                        (entry) => entry.accountId === reactor.accountId,
-                    )
-                ) {
-                    continue;
-                }
-                existing.reactedBy.push(reactor);
-            }
-            continue;
-        }
-        mergedByEmoji.set(normalizedEmoji, {
-            emoji: normalizedEmoji,
-            count: Number(reaction.count ?? 0),
-            reactedByMe: Boolean(reaction.reactedByMe),
-            reactedBy: Array.isArray(reaction.reactedBy)
-                ? reaction.reactedBy
-                : [],
-        });
-    }
-    const hasChips = mergedByEmoji.size > 0;
-    const allReactions = Array.from(mergedByEmoji.values());
-    const visibleReactions =
-        allReactions.length > 0
-            ? allReactions.slice(0, MAX_VISIBLE_REACTION_CHIPS)
-            : [];
-    const hiddenReactionCount = Math.max(
-        0,
-        allReactions.length - visibleReactions.length,
-    );
-    const chips = visibleReactions
-        .map((reaction) => {
-            const ownClass = reaction.reactedByMe
-                ? " messages-reaction-chip--active"
-                : "";
-            const emojiName = emojiDisplayName(reaction.emoji, i18n);
-            const reactedByLabels = reaction.reactedBy
-                .map((reactor) => resolveMemberDisplayName(reactor))
-                .filter(Boolean);
-            const reactedByPayload = stableJson(reactedByLabels);
-            return `<button type="button" class="messages-reaction-chip${ownClass}" data-message-id="${escapeHtml(message.id)}" data-emoji="${escapeHtml(reaction.emoji)}" data-reaction-emoji-name="${escapeHtml(emojiName)}" data-reacted-by="${escapeHtml(reactedByPayload)}">${escapeHtml(reaction.emoji)} <span>${escapeHtml(String(reaction.count))}</span></button>`;
-        })
-        .join("");
-    const quickEmojis = getQuickReactionEmojis(
-        normalizeReactionEmoji,
-        5 + mergedByEmoji.size,
-    );
-    const quick = Array.from(new Set(quickEmojis))
-        .filter(
-            (emoji) =>
-                emoji && !mergedByEmoji.has(normalizeReactionEmoji(emoji)),
-        )
-        .slice(0, 5)
-        .map(
-            (emoji) =>
-                `<button type="button" class="messages-reaction-add-btn" title="${escapeHtml(emojiDisplayName(emoji, i18n))}" data-message-id="${escapeHtml(message.id)}" data-emoji="${escapeHtml(emoji)}">${escapeHtml(emoji)}</button>`,
-        )
-        .join("");
-    const reactionDetailsPayload = encodeURIComponent(
-        stableJson(
-            allReactions.map((reaction) => ({
-                emoji: reaction.emoji,
-                count: Number(reaction.count ?? 0),
-                reactedBy: reaction.reactedBy
-                    .map((reactor) => {
-                        const accountId = reactor?.accountId ?? null;
-                        if (!accountId) return null;
-                        const normalizedReactor = {
-                            accountId,
-                            handle: reactor?.handle ?? null,
-                            displayName: reactor?.displayName ?? null,
-                            reactedAt: reactor?.reactedAt ?? null,
-                        };
-                        const resolvedLabel =
-                            resolveMemberDisplayName(normalizedReactor);
-                        if (!resolvedLabel) return null;
-                        return {
-                            ...normalizedReactor,
-                            label: resolvedLabel,
-                        };
-                    })
-                    .filter(Boolean),
-            })),
-        ),
-    );
-    const detailsButtonLabel =
-        i18n?.t("module.social.messages.emoji_more") ?? "···";
-    const detailsButton =
-        hiddenReactionCount > 0
-            ? `<button type="button" class="messages-reaction-chip messages-reaction-more-btn messages-reaction-more-btn--details" data-reaction-details="1" data-reaction-details-payload="${escapeHtml(reactionDetailsPayload)}" data-message-id="${escapeHtml(message.id)}" title="${escapeHtml(detailsButtonLabel)}">+${escapeHtml(String(hiddenReactionCount))}</button>`
-            : "";
-    const moreLabel = i18n?.t("module.social.messages.emoji_more") ?? "···";
-    const moreBtn = `<button type="button" class="messages-reaction-more-btn" title="${escapeHtml(moreLabel)}" data-message-id="${escapeHtml(message.id)}" data-reaction-more="1">···</button>`;
-    const activeRowClass = hasChips
-        ? "messages-reactions-row messages-reactions-row--has-active"
-        : "messages-reactions-row";
-    const activeClass = hasChips
-        ? "messages-reactions-active messages-reactions-active--has-chips"
-        : "messages-reactions-active";
-    const ownClass = isOwn ? " messages-reactions-row--own" : "";
-    const pickerRow = `<div class="messages-reaction-picker-row${ownClass}"><span class="messages-reactions-available">${quick}${moreBtn}</span></div>`;
-    const activeRow = `<div class="${activeRowClass}${ownClass}"><span class="${activeClass}">${chips}${detailsButton}</span></div>`;
-    return {
-        pickerRow,
-        activeRow,
-    };
 }
 
 function renderMessageBodyMarkup(messageText) {
@@ -717,6 +591,15 @@ function formatMessageTime(iso) {
     return formatTime(iso, "");
 }
 
+function unchangedThreadResult(view) {
+    return {
+        oldestCreatedAt: view.oldestCreatedAt,
+        newestCreatedAt: view.newestCreatedAt,
+        pendingRequest: view.pendingRequest,
+        changed: false,
+    };
+}
+
 export async function renderThread(
     roomId,
     key,
@@ -724,68 +607,157 @@ export async function renderThread(
     i18n,
     currentAccountId,
     before,
-    { force = false, isCurrent = () => true, signal } = {},
+    options = {},
 ) {
-    if (!isCurrent()) return null;
+    if (options.isCurrent && !options.isCurrent()) return { obsolete: true };
+    const style = resolveMessageStyle();
+    const view = createThreadView(container, {
+        roomId,
+        accountId: currentAccountId,
+        key,
+        style,
+    });
+    const isCurrent = () => (options.isCurrent?.() ?? true) && view.isCurrent();
+    try {
+        return await renderThreadSnapshot(
+            roomId,
+            key,
+            container,
+            i18n,
+            currentAccountId,
+            before,
+            { ...options, isCurrent, style, view, requestOrder: view.order },
+        );
+    } finally {
+        view.finish();
+    }
+}
+
+async function renderThreadSnapshot(
+    roomId,
+    key,
+    container,
+    i18n,
+    currentAccountId,
+    before,
+    {
+        force = false,
+        isCurrent,
+        signal,
+        refreshMessageId,
+        style,
+        view,
+        requestOrder,
+    },
+) {
+    if (!isCurrent()) return { obsolete: true };
+    const refreshBefore = messageRefreshCursor(view.read(), refreshMessageId);
+    const pageBefore = before || refreshBefore;
     const params = new URLSearchParams({ limit: "50" });
-    if (before) params.set("before", before);
-    const response = await apiFetch(
-        `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}/messages?${params}`,
-        { signal },
-    );
-    if (!isCurrent()) return null;
-    if (!response.ok) {
-        if (!before) container.innerHTML = "";
-        return null;
+    if (pageBefore) params.set("before", pageBefore);
+    let pendingRequest;
+    let renderSignature;
+    let decoded;
+    let live;
+    try {
+        const response = await apiFetch(
+            `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}/messages?${params}`,
+            { signal },
+        );
+        if (!isCurrent()) return { obsolete: true };
+        if (!response.ok) {
+            const current = view.read();
+            if (current?.publicationOrder > requestOrder)
+                return unchangedThreadResult(current);
+            if (!pageBefore && !refreshMessageId) view.clear();
+            return null;
+        }
+        const source = response.headers?.get("x-cognis-read-source") || "live";
+        live = source === "live";
+        const payload = await response.json();
+        if (!isCurrent()) return { obsolete: true };
+        const messageList = payload?.data ?? [];
+        pendingRequest = payload?.pendingRequest ?? null;
+        renderSignature =
+            source + ":" + messageRenderSignature(messageList, pendingRequest);
+        if (
+            !pageBefore &&
+            !force &&
+            view.read()?.signature === renderSignature
+        ) {
+            confirmThreadRead(view.read(), messageList, requestOrder, live);
+            return unchangedThreadResult(view.read());
+        }
+        const ordered = messageList
+            .slice()
+            .sort((left, right) =>
+                String(left.createdAt).localeCompare(String(right.createdAt)),
+            );
+        decoded = await Promise.all(
+            ordered.map(async (messageRecord) => {
+                const text = key
+                    ? await decryptMessageOrReturnPlaintext(key, messageRecord)
+                    : null;
+                const resolved = {
+                    ...messageRecord,
+                    text,
+                    pageBefore,
+                    renderOrder: live ? requestOrder : 0,
+                    readOrder: live ? requestOrder : 0,
+                };
+                return {
+                    ...resolved,
+                    roomEventLabel: await formatRoomEventText(resolved, i18n),
+                };
+            }),
+        );
+    } catch (error) {
+        if (!isCurrent()) return { obsolete: true };
+        const current = view.read();
+        if (current?.publicationOrder > requestOrder)
+            return unchangedThreadResult(current);
+        throw error;
     }
-    const payload = await response.json();
-    if (!isCurrent()) return null;
-    const messageList = payload?.data ?? [];
-    const pendingRequest = payload?.pendingRequest ?? null;
-    const renderSignature = messageRenderSignature(messageList, pendingRequest);
-    if (
-        !before &&
-        !force &&
-        threadRenderSignatures.get(roomId) === renderSignature
-    ) {
-        return {
-            oldestCreatedAt: messageList.at(-1)?.createdAt ?? null,
-            newestCreatedAt: messageList[0]?.createdAt ?? null,
-            pendingRequest,
-            changed: false,
-        };
+    if (!isCurrent()) return { obsolete: true };
+    const previous = view.read();
+    // Latest refreshes replace a snapshot; only explicit history requests merge
+    // pages. A newer latest publication makes this entire latest result stale.
+    if (!pageBefore && previous?.latestRequestOrder > requestOrder) {
+        return unchangedThreadResult(previous);
     }
-    const ordered = messageList.slice().reverse();
-    const decoded = await Promise.all(
-        ordered.map(async (messageRecord) => {
-            const text = key
-                ? await decryptMessageOrReturnPlaintext(key, messageRecord)
-                : null;
-            const resolved = { ...messageRecord, text };
-            return {
-                ...resolved,
-                roomEventLabel: await formatRoomEventText(resolved, i18n),
-            };
-        }),
-    );
-    if (!isCurrent()) return null;
+    const page = mergeThreadPage(previous, decoded, {
+        before: pageBefore,
+        refreshOnly: Boolean(refreshBefore),
+        requestOrder,
+        live,
+    });
+    const queuedChanged =
+        messageRenderSignature(
+            previous?.messages.filter((message) => message.queued) ?? [],
+            null,
+        ) !==
+        messageRenderSignature(
+            page.messages.filter((message) => message.queued),
+            null,
+        );
+    decoded = page.messages;
     searchableRoomMessages.set(roomId, decoded);
     let previousDateLabel = "";
     const readersAtMessage = buildLastReadMap(decoded);
-    const isSpeechBubbles = resolveMessageStyle() === "speech_bubbles";
+    const isSpeechBubbles = style === "speech_bubbles";
     const html = decoded
         .map((messageRecord) => {
             const dateLabel = formatDate(messageRecord.createdAt, "");
             const showDateDivider =
                 dateLabel && dateLabel !== previousDateLabel
-                    ? `<div class="messages-date-divider"><span>${escapeHtml(dateLabel)}</span></div>`
+                    ? `<div class="messages-date-divider" data-thread-key="date-${escapeHtml(dateLabel)}"><span>${escapeHtml(dateLabel)}</span></div>`
                     : "";
             if (dateLabel) {
                 previousDateLabel = dateLabel;
             }
             const roomEventLabel = messageRecord.roomEventLabel;
             if (roomEventLabel) {
-                return `${showDateDivider}<div class="messages-room-event">${escapeHtml(roomEventLabel)}</div>`;
+                return `${showDateDivider}<div class="messages-room-event" data-thread-key="event-${escapeHtml(messageRecord.id)}">${escapeHtml(roomEventLabel)}</div>`;
             }
             const isOwn = messageRecord.senderId === currentAccountId;
             const ownClass = isOwn ? " messages-message--own" : "";
@@ -835,11 +807,11 @@ export async function renderThread(
                     : "";
             const innerMetaRow = isSpeechBubbles ? "" : metadataRow;
             const outerMetaRow = isSpeechBubbles ? metadataRow : "";
-            return `${showDateDivider}<div id="message-${escapeHtml(encodeURIComponent(messageRecord.id))}" class="messages-message-row${ownRowClass}" data-message-id="${escapeHtml(messageRecord.id)}" data-search-label="${escapeHtml(displayName)}" data-search-description="${escapeHtml(formatDate(messageRecord.createdAt, ""))}" data-search-text="${escapeHtml([messageSearchText, formatDate(messageRecord.createdAt, "")].filter(Boolean).join(" "))}">
+            return `${showDateDivider}<div id="message-${escapeHtml(encodeURIComponent(messageRecord.id))}" class="messages-message-row${ownRowClass}" data-message-id="${escapeHtml(messageRecord.id)}" data-thread-key="message-${escapeHtml(messageRecord.id)}" data-search-label="${escapeHtml(displayName)}" data-search-description="${escapeHtml(formatDate(messageRecord.createdAt, ""))}" data-search-text="${escapeHtml([messageSearchText, formatDate(messageRecord.createdAt, "")].filter(Boolean).join(" "))}">
         ${isOwn ? "" : formatMessageAvatar(messageRecord)}
         <div class="messages-message-wrap">
           ${bubbleAvatarMarkup}
-          <span data-search-exclude="true">${reactionRows.pickerRow}</span>
+          <span data-reaction-slot="picker" data-search-exclude="true">${reactionRows.pickerRow}</span>
           <div class="messages-message${ownClass}">
             ${senderLabel}
             <div class="messages-message-content">
@@ -848,52 +820,37 @@ export async function renderThread(
             </div>
           </div>
           ${outerMetaRow}
-          <span data-search-exclude="true">${reactionRows.activeRow}</span>
+          <span data-reaction-slot="active" data-search-exclude="true">${reactionRows.activeRow}</span>
         </div>
       </div>`;
         })
         .join("");
 
-    const hasMore = messageList.length === 50;
-    const oldestCreatedAt = ordered[0]?.createdAt ?? null;
+    const { oldestCreatedAt, newestCreatedAt, hasMore } = page;
+    const earlierButton =
+        hasMore && oldestCreatedAt
+            ? `<button type="button" class="messages-load-earlier-btn" data-before-time="${escapeHtml(oldestCreatedAt)}">${escapeHtml(i18n.t("module.social.messages.load_earlier"))}</button>`
+            : "";
     hideAllMessageHoverPopups();
-
-    if (before) {
-        const savedHeight = container.scrollHeight;
-        container.querySelector(".messages-load-earlier-btn")?.remove();
-        container.insertAdjacentHTML("afterbegin", html);
-        container.scrollTop += container.scrollHeight - savedHeight;
-    } else {
-        const previousTop = container.scrollTop;
-        const wasNearBottom =
-            container.scrollHeight -
-                container.scrollTop -
-                container.clientHeight <
-            40;
-        container.innerHTML = html;
-        if (wasNearBottom) {
-            container.scrollTop = container.scrollHeight;
-        } else {
-            container.scrollTop = previousTop;
-        }
-    }
-    void hydrateProfileAvatars(container);
-
-    if (hasMore && oldestCreatedAt) {
-        container.insertAdjacentHTML(
-            "afterbegin",
-            `<button type="button" class="messages-load-earlier-btn" data-before-time="${escapeHtml(oldestCreatedAt)}">${escapeHtml(i18n.t("module.social.messages.load_earlier"))}</button>`,
-        );
-    }
-
-    if (!before) threadRenderSignatures.set(roomId, renderSignature);
-
-    return {
-        oldestCreatedAt,
-        newestCreatedAt: messageList[0]?.createdAt ?? null,
+    pendingRequest =
+        previous && (pageBefore || !live)
+            ? previous.pendingRequest
+            : pendingRequest;
+    view.publish(earlierButton + html, {
+        ...page,
         pendingRequest,
-        changed: true,
-    };
+        prepend: Boolean(before),
+        signature:
+            page.remoteAdjusted ||
+            page.queuedProjectionOrder !== requestOrder ||
+            (pageBefore && (queuedChanged || !live))
+                ? null
+                : pageBefore
+                  ? previous?.signature
+                  : renderSignature,
+    });
+    void hydrateProfileAvatars(container);
+    return { oldestCreatedAt, newestCreatedAt, pendingRequest, changed: true };
 }
 
 export async function loadRooms(i18n, { getRoomKey, isCurrent = () => true }) {

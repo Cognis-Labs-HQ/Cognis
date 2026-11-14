@@ -344,3 +344,42 @@ for (const boundary of ["reaction", "key", "thread"]) {
         state.roomState.cleanup();
     });
 }
+
+for (const phase of ["open", "refresh"]) {
+    for (const fails of [false, true]) {
+        test(`obsolete ${fails ? "failed" : "successful"} ${phase} read cannot start follow-up work after same-room view replacement`, async (context) => {
+            const state = createRoomFixture();
+            context.after(() => {
+                state.roomState.cleanup();
+                state.controller.abort();
+            });
+            await state.roomState.loadInitialRooms();
+            if (phase === "refresh") await state.roomState.openRoom("A");
+            state.rooms[0].unread = 2;
+            const gate = deferred();
+            let reached = false;
+            state.decrypt = async (_key, record) => {
+                reached = true;
+                await gate.promise;
+                if (fails) throw new Error("obsolete decode");
+                return record.ciphertext;
+            };
+            const pending =
+                phase === "open"
+                    ? state.roomState.openRoom("A")
+                    : state.roomState.refreshActiveConversation();
+            await until(() => reached);
+            state.decrypt = async (_key, record) => record.ciphertext;
+            const thread = state.elements["messages-thread-list"];
+            await state.renderThread("A", {}, thread, { t: String }, "reader");
+            const body = thread.querySelector(".messages-message-body");
+            const requests = state.requests.length;
+            gate.resolve();
+            await pending;
+            assert.equal(state.requests.length, requests);
+            assert.equal(thread.querySelector(".messages-message-body"), body);
+            assert.deepEqual(state.errors, []);
+            assert.deepEqual(state.toasts, []);
+        });
+    }
+}

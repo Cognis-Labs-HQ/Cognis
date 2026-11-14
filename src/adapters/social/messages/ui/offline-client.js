@@ -3,6 +3,7 @@ import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { registerOfflineHttpClient } from "/static/reuse/offline-http-client.js";
 import { bindOfflineSnapshotRefresh } from "/static/reuse/offline-snapshot.js";
 import { createMessagesI18n } from "./i18n.js";
+import { setMessageReactionState } from "./reuse/reaction-record.js";
 
 const ROOT = "/api/v1/social/messages";
 function queuedMessage(operation) {
@@ -67,23 +68,11 @@ function project(path, payload, pending) {
             (row) => row.id === decodeURIComponent(match[1]),
         );
         if (!message) continue;
-        message.reactions ??= [];
-        let reaction = message.reactions.find(
-            (row) => row.emoji === operation.body.emoji,
+        setMessageReactionState(
+            message,
+            operation.body.emoji,
+            operation.body.active,
         );
-        if (!reaction) {
-            reaction = {
-                emoji: operation.body.emoji,
-                count: 0,
-                reactedByMe: false,
-                reactedBy: [],
-            };
-            message.reactions.push(reaction);
-        }
-        if (reaction.reactedByMe !== operation.body.active)
-            reaction.count += operation.body.active ? 1 : -1;
-        reaction.reactedByMe = operation.body.active;
-        message.reactions = message.reactions.filter((row) => row.count > 0);
     }
     return payload;
 }

@@ -2,6 +2,7 @@ import { messagesFetch as apiFetch } from "./offline-client.js";
 import { renderThread } from "./message-render.js";
 import { normalizeReactionEmoji } from "./message-utils.js";
 import { nextReactionState } from "./reaction-state.js";
+import { applyThreadReaction } from "./thread-reactions.js";
 import { showToast } from "/static/reuse/toast.js";
 
 export function createThreadActions({
@@ -32,7 +33,12 @@ export function createThreadActions({
         }
     }
 
-    async function updateThread(roomId, isCurrent, beforeTime) {
+    async function updateThread(
+        roomId,
+        isCurrent,
+        beforeTime,
+        refreshMessageId,
+    ) {
         const threadList = document.getElementById("messages-thread-list");
         if (!threadList) return;
         const key = await resolveThreadRoomKey(getSelectedRoom(), roomId);
@@ -44,8 +50,9 @@ export function createThreadActions({
             i18n,
             currentAccountId,
             beforeTime,
-            { isCurrent, signal },
+            { isCurrent, signal, refreshMessageId },
         );
+        if (result?.obsolete) return;
         if (!result && isCurrent())
             throw new Error("conversation_update_failed");
     }
@@ -55,20 +62,32 @@ export function createThreadActions({
         const normalizedEmoji = normalizeReactionEmoji(emoji);
         if (!normalizedEmoji) return;
         await runAction("toggleReaction", async (roomId, isCurrent) => {
+            const active = nextReactionState(messageId, normalizedEmoji);
             const response = await apiFetch(
                 `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}/messages/${encodeURIComponent(messageId)}/reactions`,
                 {
                     method: "POST",
                     body: JSON.stringify({
                         emoji: normalizedEmoji,
-                        active: nextReactionState(messageId, normalizedEmoji),
+                        active,
                     }),
                     signal,
                 },
             );
             if (!isCurrent()) return;
             if (!response.ok) throw new Error("reaction_update_failed");
-            await updateThread(roomId, isCurrent);
+            applyThreadReaction(
+                document.getElementById("messages-thread-list"),
+                {
+                    roomId,
+                    accountId: currentAccountId,
+                    messageId,
+                    emoji: normalizedEmoji,
+                    active,
+                    i18n,
+                },
+            );
+            await updateThread(roomId, isCurrent, undefined, messageId);
         });
     }
 
