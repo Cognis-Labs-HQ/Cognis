@@ -11,15 +11,11 @@ import { logAppEvent as log } from "../../api/reuse/logger.js";
 import type { AccessRole } from "@cognis/core";
 export type { AccessRole };
 
-interface AccessTokenRecord {
-    subject: string;
-    role: AccessRole;
-    providerId: string;
-    expiresAt: number | null;
-    issuedAt?: number;
-    setupPending?: boolean;
-    purpose?: "session" | "password-reset" | "share";
-}
+import {
+    parseTokenStoreEnvelope,
+    parseTokenStoreEntry,
+    type AccessTokenRecord,
+} from "./token-store-schema.js";
 
 const tokenStore = new Map<string, AccessTokenRecord>();
 const revokedTokenStore = new Map<string, AccessTokenRecord>();
@@ -31,16 +27,6 @@ const tokenStorePath =
     "/app/config/access-tokens.json";
 let hasWarnedPersistFailure = false;
 let hasWarnedLoadFailure = false;
-
-function isAccessRole(value: unknown): value is AccessRole {
-    return (
-        value === "user" ||
-        value === "teacher" ||
-        value === "moderator" ||
-        value === "admin" ||
-        value === "owner"
-    );
-}
 
 function persistTokenStore() {
     try {
@@ -61,16 +47,14 @@ function persistTokenStore() {
         hasWarnedPersistFailure = false;
     } catch (error) {
         if (!hasWarnedPersistFailure) {
-            const message =
-                error instanceof Error ? error.message : String(error);
-            log("warn", "Failed to persist access token store.", {
+            log("error", "Failed to persist access token store.", {
                 component: "auth",
-                path: tokenStorePath,
-                error: message,
+                operation: "persistTokenStore",
+                errorName: error instanceof Error ? error.name : "UnknownError",
             });
             hasWarnedPersistFailure = true;
         }
-        // Keep API available even if persistence is not writable in a given runtime.
+        throw new Error("access_token_persistence_failed");
     }
 }
 
@@ -80,92 +64,67 @@ function loadTokenStore(now = Date.now()) {
             return;
         }
         const raw = readFileSync(tokenStorePath, "utf8");
-        const parsed = JSON.parse(raw) as {
-            tokens?: unknown;
-            revokedTokens?: unknown;
-        };
-        if (!Array.isArray(parsed.tokens)) {
-            return;
-        }
-
+        const parsed = parseTokenStoreEnvelope(JSON.parse(raw));
+        let rejected = 0;
+        const seenHashes = new Set<string>();
+        const rejectedHashes = new Set<string>();
         const loadEntries = (
             entries: unknown[],
             store: Map<string, AccessTokenRecord>,
         ) => {
             for (const entry of entries) {
-                if (!Array.isArray(entry) || entry.length !== 2) continue;
-                const [tokenHash, record] = entry;
-                if (
-                    typeof tokenHash !== "string" ||
-                    !record ||
-                    typeof record !== "object"
-                )
-                    continue;
-
-                const subject = (record as { subject?: unknown }).subject;
-                const role = (record as { role?: unknown }).role;
-                const providerId = (record as { providerId?: unknown })
-                    .providerId;
-                const expiresAt = (record as { expiresAt?: unknown }).expiresAt;
-                const issuedAt = (record as { issuedAt?: unknown }).issuedAt;
-                const setupPending = (record as { setupPending?: unknown })
-                    .setupPending;
-                const purpose = (record as { purpose?: unknown }).purpose;
-
-                if (typeof subject !== "string" || !isAccessRole(role))
-                    continue;
-                if (typeof providerId !== "string" || !providerId.trim())
-                    continue;
-                if (expiresAt !== null && typeof expiresAt !== "number")
-                    continue;
-                if (expiresAt !== null && expiresAt < now) continue;
-                if (issuedAt !== undefined && typeof issuedAt !== "number")
-                    continue;
-                if (
-                    setupPending !== undefined &&
-                    typeof setupPending !== "boolean"
-                ) {
+                const entryHash =
+                    Array.isArray(entry) && typeof entry[0] === "string"
+                        ? entry[0]
+                        : undefined;
+                if (entryHash) {
+                    if (seenHashes.has(entryHash))
+                        rejectedHashes.add(entryHash);
+                    seenHashes.add(entryHash);
+                }
+                const parsedEntry = parseTokenStoreEntry(entry, now);
+                if (!parsedEntry) {
+                    if (entryHash) rejectedHashes.add(entryHash);
+                    rejected += 1;
                     continue;
                 }
-                if (
-                    purpose !== undefined &&
-                    purpose !== "session" &&
-                    purpose !== "password-reset" &&
-                    purpose !== "share"
-                ) {
+                const [tokenHash, record] = parsedEntry;
+                if (rejectedHashes.has(tokenHash)) {
+                    rejected += 1;
                     continue;
                 }
-
-                store.set(tokenHash, {
-                    subject,
-                    role,
-                    providerId,
-                    expiresAt,
-                    issuedAt,
-                    setupPending,
-                    purpose,
-                });
-                if (store.size >= MAX_TOKEN_STORE_SIZE) break;
+                if (record.expiresAt !== null && record.expiresAt <= now)
+                    continue;
+                if (store.size >= MAX_TOKEN_STORE_SIZE) {
+                    rejected += 1;
+                    continue;
+                }
+                store.set(tokenHash, record);
             }
         };
-
         loadEntries(parsed.tokens, tokenStore);
-
-        if (Array.isArray(parsed.revokedTokens)) {
-            loadEntries(parsed.revokedTokens, revokedTokenStore);
-        }
+        loadEntries(parsed.revokedTokens, revokedTokenStore);
+        for (const tokenHash of [
+            ...revokedTokenStore.keys(),
+            ...rejectedHashes,
+        ])
+            tokenStore.delete(tokenHash);
+        if (rejected)
+            log("warn", "Rejected invalid persisted access tokens.", {
+                component: "auth",
+                operation: "loadTokenStore",
+                rejected,
+            });
 
         hasWarnedLoadFailure = false;
     } catch (error) {
         tokenStore.clear();
         revokedTokenStore.clear();
         if (!hasWarnedLoadFailure) {
-            const message =
-                error instanceof Error ? error.message : String(error);
-            log("warn", "Failed to load access token store.", {
+            log("error", "Failed to load access token store.", {
                 component: "auth",
-                path: tokenStorePath,
-                error: message,
+                operation: "loadTokenStore",
+                errorName: error instanceof Error ? error.name : "UnknownError",
             });
             hasWarnedLoadFailure = true;
         }
@@ -357,27 +316,17 @@ export function revokeAccessTokensForSubject(subject: string): number {
     return removed;
 }
 
-export function revokeSetupPendingAccessTokens(
-    excludedSubject?: string,
-): number {
+export function revokeSetupPendingAccessTokens(): number {
     let removed = 0;
     for (const [tokenHash, record] of tokenStore.entries()) {
         if (record.setupPending !== true) continue;
-        if (
-            typeof excludedSubject === "string" &&
-            record.subject === excludedSubject
-        ) {
-            continue;
-        }
         tokenStore.delete(tokenHash);
         revokedTokenStore.set(tokenHash, record);
         verifiedAtByToken.delete(tokenHash);
         invalidatedVerificationTokens.delete(tokenHash);
         removed++;
     }
-    if (removed > 0) {
-        persistTokenStore();
-    }
+    persistTokenStore();
     return removed;
 }
 
@@ -419,7 +368,12 @@ export function issueAccessToken(
         setupPending: options?.setupPending === true,
         purpose: options?.purpose ?? "session",
     });
-    persistTokenStore();
+    try {
+        persistTokenStore();
+    } catch (error) {
+        tokenStore.delete(hashToken(token));
+        throw error;
+    }
     return token;
 }
 

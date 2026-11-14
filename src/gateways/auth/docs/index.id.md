@@ -181,3 +181,9 @@ Verifikasi faktor dan penyelesaian penyiapan sama-sama memakai penyelesaian sesi
 ## Batas Autentikasi Bertipe
 
 Deklarasi Auth dan TFA kini menjelaskan peran akun, bidang identitas eksternal, perintah basis data, dan proyeksi sesi kuki yang sudah ada. Validasi batas waktu sesi tetap menerima nilai angka yang sama. Jaminan masuk dan percobaan faktor sekali pakai tidak berubah.
+
+## Siklus token terbatas
+
+Format token tersimpan 2 mewajibkan kolom keamanan eksplisit dan menolak format yang tidak didukung serta rekaman cacat atau ambigu. Sesi yang ditolak harus masuk kembali; tidak ada konversi format otomatis. Kredensial normal, terbatas, dan dicabut yang valid mempertahankan kewenangannya setelah mulai ulang. Kegagalan penyimpanan token dilaporkan, bukan diakui sebagai penulisan yang berhasil.
+
+Kapabilitas auth:revokeSetupPendingAccessTokens tidak menerima argumen dan mencabut semua sesi tertunda; pengecualian berdasarkan akun tidak lagi didukung.

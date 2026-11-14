@@ -18,11 +18,12 @@ interface SessionCandidate {
 export function registerSessionAssessment(
     ctx: GatewayBootstrapContext,
     gateway: CoreTfaGateway,
-): void {
+): () => () => void {
     const root = ctx.capabilities.require<Ctx>("system:ctx");
     const log = ctx.log;
     let active = true;
     let revision = 0;
+    let policyChanging = false;
     const dispose = () => {
         active = false;
         revision += 1;
@@ -33,7 +34,7 @@ export function registerSessionAssessment(
     };
     requireBootstrapScope(root).registerDisposer(dispose);
     const assertActive = (expected: unknown) => {
-        if (!active || expected !== revision)
+        if (!active || policyChanging || expected !== revision)
             throw new Error("tfa_assessment_unavailable");
     };
     root.requireCapability<CapabilityContracts>("system:contracts").define(
@@ -121,9 +122,15 @@ export function registerSessionAssessment(
     ): Promise<Record<string, unknown>> => {
         const expected = revision;
         try {
-            if (!active) throw new Error("tfa_assessment_unavailable");
+            if (!active || policyChanging)
+                throw new Error("tfa_assessment_unavailable");
             const result = await root.flow.run("tfa:assessSession", candidate);
-            if (!active || revision !== expected || !result.data.result) {
+            if (
+                !active ||
+                policyChanging ||
+                revision !== expected ||
+                !result.data.result
+            ) {
                 throw new Error("tfa_assessment_unavailable");
             }
             const current = result.data.result as Record<string, unknown>;
@@ -151,6 +158,7 @@ export function registerSessionAssessment(
                       ...assessment,
                       isAssuranceCurrent: () =>
                           active &&
+                          !policyChanging &&
                           revision === expected &&
                           ctx.gatewayRegistry.get("tfa")?.status !== "disabled",
                   }
@@ -167,4 +175,12 @@ export function registerSessionAssessment(
     };
     ctx.capabilities.contribute("tfa:assessSession", assess);
     root.contributePublicCapability("tfa:assessSession", assess);
+    return () => {
+        policyChanging = true;
+        revision += 1;
+        return () => {
+            policyChanging = false;
+            revision += 1;
+        };
+    };
 }

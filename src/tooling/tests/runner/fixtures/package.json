@@ -1,0 +1,9 @@
+{
+    "name": "test-runner-fixture",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "test": "node --import tsx src/tooling/scripts/run-tests.ts",
+        "ci:test": "npm test"
+    }
+}

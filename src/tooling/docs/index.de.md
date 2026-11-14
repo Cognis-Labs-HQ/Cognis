@@ -52,3 +52,7 @@ Eingebaute `cognisctl`-Befehle können antwortungsabhängige Terminalausgabe mit
 | `COGNIS_EXTERNAL_MODULES_ROOT` | `external-modules` | Zum Entdecken von Modul-Unterbefehlen                                     |
 | `COGNIS_GATEWAY_CLI_PATHS`     | —                  | Optionale Pfadliste für Gateway-Unterbefehle                              |
 | `COGNIS_ADAPTER_CLI_PATHS`     | —                  | Optionale Pfadliste für Adapter-Unterbefehle                              |
+
+## Isolierte Testzugangsdaten
+
+`npm test` und `npm run ci:test` erstellen für jeden Lauf ein temporäres Tokenverzeichnis und für jeden Testprozess eine eigene beschreibbare Datei. Eine statische Vorabinitialisierung setzt den Pfad vor dem Laden der Testmodule und ignoriert geerbte produktive Tokenspeicherpfade. Tests dürfen anschließend ihren eigenen Pfad für Neustart- oder Fehlerfälle überschreiben. Nach erfolgreicher oder fehlgeschlagener Ausführung des Kindprozesses entfernt der Teststarter sein temporäres Verzeichnis und leitet reguläre Beendigungssignale weiter. Erzwungener Prozessabbruch oder Hostausfall kann temporäre Dateien hinterlassen, die das Betriebssystem bereinigen muss. Die produktive Tokenpersistenz bleibt unverändert und verweigert bei Fehlern den Erfolg.

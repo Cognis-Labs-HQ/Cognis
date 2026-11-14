@@ -181,3 +181,9 @@ Factor verification and setup completion both use the Auth-owned final commit. `
 ## Typed Authentication Boundaries
 
 Auth and TFA declarations now describe the existing account roles, external identity fields, database commands and cookie session projections. Session timeout validation retains the same accepted numeric values. Login assurance and single-use factor attempts remain unchanged.
+
+## Restricted token lifecycle
+
+Persisted token format 2 requires explicit security fields and rejects unsupported formats, malformed or ambiguous records. Rejected sessions require signing in again; there is no automatic format conversion. Current valid normal, restricted and revoked credentials retain their authority across restart. Token persistence failures are reported rather than acknowledged as successful writes.
+
+The auth:revokeSetupPendingAccessTokens capability takes no arguments and revokes all pending sessions; subject exemptions are no longer supported.

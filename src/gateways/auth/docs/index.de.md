@@ -181,3 +181,9 @@ Faktorprüfung und Einrichtungsabschluss verwenden beide den Auth-eigenen Sitzun
 ## Typisierte Authentifizierungsgrenzen
 
 Die Deklarationen von Auth und TFA beschreiben die bestehenden Kontorollen, externen Identitätsfelder, Datenbankbefehle und Cookie-Sitzungsdaten. Die Prüfung des Sitzungslimits akzeptiert dieselben Zahlenwerte. Die Anmeldeabsicherung und einmalig verwendbare Faktorversuche bleiben unverändert.
+
+## Eingeschränkte Zugangstoken
+
+Das gespeicherte Tokenformat 2 verlangt explizite Sicherheitsfelder und verwirft nicht unterstützte Formate sowie ungültige oder mehrdeutige Datensätze. Abgewiesene Sitzungen erfordern eine erneute Anmeldung; Formate werden nicht automatisch umgewandelt. Gültige normale, eingeschränkte und widerrufene Zugangstoken behalten ihre Berechtigungen nach einem Neustart. Speicherfehler werden gemeldet statt als erfolgreiche Schreibvorgänge bestätigt.
+
+Die Capability auth:revokeSetupPendingAccessTokens akzeptiert keine Argumente und widerruft alle ausstehenden Sitzungen; Ausnahmen für einzelne Konten werden nicht mehr unterstützt.
