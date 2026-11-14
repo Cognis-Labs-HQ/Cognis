@@ -14,5 +14,4 @@
 
 ## コミット
 
-- [共有項目の見出しと必須マークをまとめる](https://github.com/Cognis-Labs-HQ/Cognis/commit/e19109e9018847a6c7f3e62848c07a3f98c489cc)
-- [必須ラジオグループの検証状態を統一する](https://github.com/Cognis-Labs-HQ/Cognis/commit/d062b6191d45a1de33273bc8e09590a2c6b51b28)
+- [011812b](https://github.com/Cognis-Labs-HQ/Cognis/commit/011812b3a6e6419e76a61292ac0106f0ea81877b)
