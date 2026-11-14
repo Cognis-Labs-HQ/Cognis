@@ -290,6 +290,7 @@ test("form builder can omit its submit button when includeSubmitButton is false"
 test("profile bio and post editors use form builder max-character fields", () => {
     const source =
         read("src/adapters/social/profile/ui/app.js") +
+        read("src/adapters/social/profile/ui/profile-editor.js") +
         read("src/adapters/social/profile/ui/profile-edit-fields.js") +
         read("src/adapters/social/profile/ui/profile-config.js");
     const renderSource = read(
@@ -324,9 +325,12 @@ test("profile bio and post editors use form builder max-character fields", () =>
         renderSource,
         /name: "content",[\s\S]*type: "textarea",[\s\S]*maxCharacters: POST_CONTENT_MAX_CHARACTERS/m,
     );
-    assert.match(source, /onOpen: \(overlay\) => \{/);
-    assert.match(source, /profileEditFormBuilder\.attach\(popupFormElement\)/);
-    assert.match(source, /bioPreviewElement\.id = "profile-edit-bio-preview"/);
+    assert.match(source, /onOpen: \(overlay, requestClose\) => \{/);
+    assert.match(
+        source,
+        /profileEditFormBuilder\.attach\(\s*popupFormElement,\s*\{/,
+    );
+    assert.match(source, /bioPreviewElement\.id = `\$\{formId\}-bio-preview`/);
     assert.match(renderSource, /id="profile-post-preview-toggle"/);
     assert.match(renderSource, /function renderComposerMarkdownPreview/);
     assert.match(source, /ui\.app\.profile\.bio_preview_placeholder/);
