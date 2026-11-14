@@ -201,11 +201,11 @@
   <string name="gateway.calendar.tutorial.calendar.calendar.views.title">Tampilan Kalender</string>
   <string name="gateway.calendar.tutorial.calendar.calendar.views.body">Ganti tampilan dan berpindah periode untuk menemukan tanggal yang diperlukan.</string>
   <string name="gateway.calendar.tutorial.calendar.events.and.invitations.title">Acara dan Undangan</string>
-  <string name="gateway.calendar.tutorial.calendar.events.and.invitations.body">Buka acara untuk meninjau detail, peserta, dan status undangan sebelum mengubahnya.</string>
+  <string name="gateway.calendar.tutorial.calendar.events.and.invitations.body">Buka acara untuk meninjau detail, peserta, dan status undangan. Acara bergaris dengan batas putus-putus menunggu tanggapan Anda. Sibuk, Kosong, dan Tentatif tetap memiliki tampilan ketersediaannya.</string>
   <string name="gateway.calendar.tutorial.calendar.navigate.dates.title">Temukan Tanggal</string>
   <string name="gateway.calendar.tutorial.calendar.navigate.dates.body">Gunakan navigasi tanggal untuk berpindah periode, lalu pilih tampilan kalender yang sesuai dengan jadwal Anda.</string>
   <string name="gateway.calendar.tutorial.calendar.plan.event.title">Rencanakan Acara</string>
-  <string name="gateway.calendar.tutorial.calendar.plan.event.body">Pilih tanggal atau waktu untuk membuat acara. Atur kalender, waktu, pengulangan, visibilitas, dan pengingat sebelum menyimpan.</string>
+  <string name="gateway.calendar.tutorial.calendar.plan.event.body">Pilih tanggal atau waktu untuk membuat acara. Atur kalender, waktu, pengulangan, peserta, dan pengingat. Mulai dan Selesai berbagi baris jika ruang mencukupi. Pada layar sempit, gulir bidang yang bertumpuk sebelum menyimpan.</string>
   <string name="gateway.calendar.tutorial.calendar.review.upcoming.title">Tinjau Acara Mendatang</string>
   <string name="gateway.calendar.tutorial.calendar.review.upcoming.body">Buka acara mendatang untuk meninjau detail dan undangan. Untuk acara berulang, periksa apakah perubahan berlaku pada satu kejadian atau seluruh rangkaian.</string>
 </resources>

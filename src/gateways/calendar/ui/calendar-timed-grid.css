@@ -5,6 +5,7 @@
 
 .calendar-day-view {
     --calendar-day-axis-width: 5.5rem;
+    --calendar-day-slot-height: 2.8rem;
     display: grid;
     gap: 0.5rem;
     grid-template-rows: auto auto minmax(0, 1fr);
@@ -30,7 +31,6 @@
 }
 
 .calendar-day-timed-grid {
-    --calendar-day-slot-height: 2.8rem;
     display: grid;
     grid-template-columns: var(--calendar-day-axis-width) minmax(0, 1fr);
     gap: 0;
@@ -74,7 +74,7 @@
     width: auto;
 }
 
-.calendar-day-all-day-slot {
+.calendar-day-all-day-row .calendar-day-all-day-slot {
     min-height: var(--calendar-day-slot-height);
 }
 
@@ -204,9 +204,6 @@
 }
 
 .calendar-slot-event-card {
-    /* display:contents removes this wrapper from the box tree so it does not
-       affect layout, while still providing a scoping element for the
-       --calendar-event-stripe CSS variable inherited by the child button. */
     display: contents;
 }
 
@@ -237,7 +234,7 @@
     cursor: pointer;
 }
 
-.calendar-slot-event--compact {
+.calendar-view-canvas .calendar-slot-event--compact {
     padding: 0.22rem 0.38rem;
     border-radius: 8px;
     width: 100%;
@@ -312,6 +309,7 @@
 .calendar-week-view {
     --calendar-week-axis-width: 5.5rem;
     --calendar-week-scrollbar-width: 0px;
+    container: calendar-week / inline-size;
     display: grid;
     grid-template-rows: auto auto minmax(0, 1fr);
     border: 1px solid var(--field-border);
@@ -337,6 +335,7 @@
 
 .calendar-week-day-header {
     display: flex;
+    flex-wrap: wrap;
     align-items: baseline;
     justify-content: center;
     gap: 0.4rem;
@@ -373,6 +372,15 @@
 
 .calendar-week-all-day-grid {
     width: calc(100% - var(--calendar-week-scrollbar-width));
+}
+
+.calendar-week-day-name,
+.calendar-week-day-date {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    white-space: normal;
+    line-height: 1.2;
 }
 
 .calendar-week-day-name {
@@ -508,4 +516,19 @@
 .calendar-week-day-header--current {
     background: color-mix(in srgb, var(--calendar-accent) 12%, transparent);
     color: var(--calendar-accent);
+}
+
+@container calendar-week (max-width: 700px) {
+    .calendar-week-day-header {
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 0.08rem;
+        padding: 0.35rem 0.12rem;
+    }
+
+    .calendar-week-day-name,
+    .calendar-week-day-date {
+        font-size: 0.7rem;
+    }
 }

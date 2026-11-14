@@ -1,0 +1,42 @@
+.calendar-event-composer {
+    display: grid;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+.calendar-event-composer .calendar-event-form-builder {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr));
+    align-items: start;
+    gap: 0.75rem 1rem;
+}
+
+.calendar-event-composer .calendar-event-field--full,
+.calendar-event-form-builder .calendar-all-day-toggle {
+    grid-column: 1 / -1;
+}
+
+.calendar-event-composer
+    :where(input:not([type="checkbox"]), textarea, select) {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.calendar-event-composer
+    :where(label, .calendar-reminder-field, .calendar-participants-row),
+.calendar-event-form-builder > * {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+}
+
+.calendar-event-composer .calendar-checkbox-row--styled {
+    border-radius: 0.75rem;
+    box-sizing: border-box;
+}
+
+.calendar-event-composer .calendar-checkbox-row > input {
+    flex: 0 0 auto;
+}
