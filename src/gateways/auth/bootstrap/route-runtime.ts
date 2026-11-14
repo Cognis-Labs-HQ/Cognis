@@ -1,3 +1,4 @@
+import { PendingLoginLifetimes } from "../pending-login-lifetimes.js";
 import { createLoginContinuation } from "../login-continuation.js";
 import { randomBytes, randomInt } from "node:crypto";
 import type { IncomingMessage } from "node:http";
@@ -39,6 +40,11 @@ export async function waitForPasswordResetResponseFloor(
 
 export function createAuthRouteBootstrapRuntime(): AuthRouteBootstrapRuntime {
     const pendingTfaLoginAttempts = new Map<string, PendingTfaLoginAttempt>();
+    const loginLifetimes = new PendingLoginLifetimes();
+    function clearLoginAttempt(id: string): boolean {
+        loginLifetimes.cancel(id);
+        return pendingTfaLoginAttempts.delete(id);
+    }
     const pendingAccountCreationAttempts = new Map<
         string,
         PendingAccountCreationAttempt
@@ -50,7 +56,7 @@ export function createAuthRouteBootstrapRuntime(): AuthRouteBootstrapRuntime {
             entry,
         ] of pendingTfaLoginAttempts.entries()) {
             if (entry.expiresAt <= now) {
-                pendingTfaLoginAttempts.delete(loginAttemptId);
+                clearLoginAttempt(loginAttemptId);
             }
         }
     }
@@ -68,17 +74,21 @@ export function createAuthRouteBootstrapRuntime(): AuthRouteBootstrapRuntime {
             const attempt = pendingTfaLoginAttempts.get(id);
             if (!attempt) return null;
             if (attempt.expiresAt <= Date.now()) {
-                pendingTfaLoginAttempts.delete(id);
+                clearLoginAttempt(id);
                 return null;
             }
             return attempt;
         },
         (id) => {
-            pendingTfaLoginAttempts.delete(id);
+            clearLoginAttempt(id);
         },
     );
     return {
         loginContinuation,
+        getPendingLoginLifetime(id) {
+            pruneExpiredTfaLoginAttempts();
+            return loginLifetimes.get(id);
+        },
         buildPendingAccountCreationCookie(
             req: IncomingMessage,
             attemptId: string,
@@ -115,15 +125,16 @@ export function createAuthRouteBootstrapRuntime(): AuthRouteBootstrapRuntime {
             );
         },
         clearPendingTfaLoginAttempts(): void {
-            pendingTfaLoginAttempts.clear();
+            for (const id of pendingTfaLoginAttempts.keys())
+                clearLoginAttempt(id);
             loginContinuation.dispose();
         },
         consumePendingTfaLoginAttempt(loginAttemptId: string): boolean {
             pruneExpiredTfaLoginAttempts();
-            return pendingTfaLoginAttempts.delete(loginAttemptId);
+            return clearLoginAttempt(loginAttemptId);
         },
         clearPendingTfaLoginAttempt(loginAttemptId: string): void {
-            pendingTfaLoginAttempts.delete(loginAttemptId);
+            clearLoginAttempt(loginAttemptId);
         },
         clearPendingAccountCreationAttempt(attemptId: string): void {
             pendingAccountCreationAttempts.delete(attemptId);
@@ -152,7 +163,14 @@ export function createAuthRouteBootstrapRuntime(): AuthRouteBootstrapRuntime {
                 id: `tfa_login_${randomBytes(TFA_LOGIN_ATTEMPT_ID_BYTES).toString("base64url")}`,
                 expiresAt: Date.now() + TFA_LOGIN_ATTEMPT_TTL_MS,
             };
+            Object.freeze(pendingAttempt);
             pendingTfaLoginAttempts.set(pendingAttempt.id, pendingAttempt);
+            loginLifetimes.create(
+                pendingAttempt.id,
+                pendingAttempt.accountId,
+                pendingAttempt.expiresAt,
+                () => clearLoginAttempt(pendingAttempt.id),
+            );
             return pendingAttempt;
         },
         getAccessTokenTtlSeconds(): number {

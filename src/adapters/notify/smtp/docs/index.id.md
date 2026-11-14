@@ -99,3 +99,7 @@ Pembentukan koneksi SMTP dan negosiasi TLS masing-masing memiliki batas tiga pul
 ### Kontrak Pengiriman Bertipe
 
 Entri antrean SMTP mempertahankan subjek wajibnya selama pengiriman dan percobaan ulang. Opsi koneksi TLS membawa sinyal pembatalan untuk TLS langsung dan STARTTLS; kebijakan sertifikat, batas waktu, dan pembersihan koneksi tidak berubah.
+
+## Pengiriman tantangan berbatas waktu
+
+`notify:deliverEmail` versi 1 menerima tujuan terdaftar, penerima, variabel, serta `signal: AbortSignal` dan waktu absolut milidetik `expiresAt` yang wajib. Alur validate/render/enqueue dan antrean tujuan yang sudah ada digunakan kembali. Penerimaan mengembalikan `{ receipt, completion }`; `completion` menghasilkan tanda terima akhir `sent` atau `failed`. Status antrean, pembatasan laju, atau proses pengiriman bukan bukti terkirim. Pembatalan, kedaluwarsa, atau pelepasan tujuan menghentikan antrean dan transport; hasil terlambat tidak dapat menimpa kegagalan. Perilaku tertunda `notify:sendEmail` tetap sama. Dua jeda greylist bawaan masing-masing lima menit tetap dibatasi tenggat pemilik. Pesan yang sudah diterima server SMTP tujuan tidak dapat ditarik kembali.

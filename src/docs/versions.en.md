@@ -32,7 +32,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 
 | Component             | Path                                | Version  |
 | --------------------- | ----------------------------------- | -------- |
-| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.5.4`  |
+| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.5.5`  |
 | CalDAV                | `src/adapters/calendar/caldav/`     | `1.0.13` |
 | ICS                   | `src/adapters/calendar/ics/`        | `1.0.11` |
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.34` |
@@ -43,7 +43,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.38` |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.24` |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.24` |
-| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.1.2`  |
+| SMTP TFA              | `src/adapters/tfa/smtp/`            | `1.1.3`  |
 | TOTP TFA              | `src/adapters/tfa/totp/`            | `1.0.29` |
 | PostgreSQL Database   | `src/adapters/db/postgres/`         | `0.5.27` |
 | MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.32` |
@@ -70,9 +70,9 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Component             | Path                          | Version  |
 | --------------------- | ----------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`            | `1.4.1`  |
-| Authentication (auth) | `src/gateways/auth/`          | `2.2.10` |
+| Authentication (auth) | `src/gateways/auth/`          | `2.2.11` |
 | Share                 | `src/gateways/share/`         | `1.9.10` |
-| Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.3.11` |
+| Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.3.12` |
 | Notification (notify) | `src/gateways/notify/`        | `2.2.12` |
 | Social                | `src/gateways/social/`        | `1.4.6`  |
 | File Storage (files)  | `src/gateways/files/`         | `2.3.7`  |

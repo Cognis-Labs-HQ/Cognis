@@ -1,3 +1,8 @@
+import { MethodSetups } from "./method-setups.js";
+import {
+    ChallengeLifetimes,
+    assertLiveChallenge,
+} from "./challenge-lifetimes.js";
 import { discoverTfaAdapters } from "./adapter-discovery.js";
 import type { BootstrapLog } from "../shared.js";
 import type { CapabilityStore } from "@cognis/core";
@@ -9,12 +14,14 @@ import { randomBytes } from "node:crypto";
 import type { DbTfaStore } from "./reuse/tfa-store.js";
 
 import type {
+    TfaChallengeLifetime,
     TfaConfigField,
     TfaMethodSetupView,
     TfaLoginPresentation,
     TfaMethodAdapter,
 } from "./contracts/method.js";
 export type {
+    TfaChallengeLifetime,
     TfaConfigField,
     TfaMethodSetupView,
     TfaLoginPresentation,
@@ -92,6 +99,7 @@ export interface TfaLoginMethod {
         retryAfterSeconds?: number;
         resendAvailableAt?: string;
         maxLength?: number;
+        deliveryStatus?: "queued" | "sent";
     };
 }
 
@@ -103,14 +111,14 @@ type NotifyDispatch = (envelope: {
     metadata?: Record<string, unknown>;
 }) => Promise<unknown>;
 
-const TFA_SETUP_ID_BYTES = 18;
 const TFA_METHOD_ISSUER = "Cognis";
 
 export class CoreTfaGateway {
     private static readonly RECOVERY_CODE_LOW_THRESHOLD = 2;
     private readonly adapters = new Map<string, TfaMethodAdapter>();
     private readonly enabledAdapters = new Set<string>();
-    private readonly verifyingSetups = new Set<string>();
+    private readonly setups: MethodSetups;
+    private readonly challengeLifetimes = new ChallengeLifetimes();
     private readonly explicitlyDisabledAdapters = new Set<string>();
     private readonly adapterEnabledStateProviders = new Map<
         string,
@@ -142,7 +150,25 @@ export class CoreTfaGateway {
             adapterFactoryContext?: Record<string, unknown>;
             log?: BootstrapLog;
         } = {},
-    ) {}
+    ) {
+        this.setups = new MethodSetups(
+            store,
+            (methodId) =>
+                this.isAdapterEnabled(methodId)
+                    ? (this.adapters.get(methodId) ?? null)
+                    : null,
+            options.log,
+        );
+    }
+
+    private blockChallenges(accountId?: string, methodId?: string): () => void {
+        const releaseLogin = this.challengeLifetimes.block(accountId, methodId);
+        const releaseSetup = this.setups.block(accountId, methodId);
+        return () => {
+            releaseSetup();
+            releaseLogin();
+        };
+    }
 
     registerAdapter(adapter: TfaMethodAdapter): void {
         this.adapters.set(adapter.id, adapter);
@@ -218,20 +244,33 @@ export class CoreTfaGateway {
             enabledValue === true ||
             enabledValue === "true" ||
             enabledValue === 1;
-        const { enabled: _omit, ...adapterConfig } = config;
-        const wasEnabled = this.enabledAdapters.has(adapterId);
-        adapter.configure?.(adapterConfig);
-        await this.store.saveAdapterConfig(adapterId, enabled, adapterConfig);
-        if (enabled) {
-            this.enabledAdapters.add(adapterId);
-        } else {
-            this.enabledAdapters.delete(adapterId);
-        }
-        if (enabled) this.explicitlyDisabledAdapters.delete(adapterId);
-        else this.explicitlyDisabledAdapters.add(adapterId);
-        await this.notifyAdapterConfigChange(adapterId, adapterConfig);
-        if (wasEnabled !== enabled) {
-            await this.notifyAdapterEnabledChange(adapterId, enabled);
+        const release = !enabled
+            ? this.blockChallenges(undefined, adapterId)
+            : undefined;
+        try {
+            if (!enabled)
+                await this.setups.cancelMatching(undefined, adapterId);
+            const { enabled: _omit, ...adapterConfig } = config;
+            const wasEnabled = this.enabledAdapters.has(adapterId);
+            adapter.configure?.(adapterConfig);
+            await this.store.saveAdapterConfig(
+                adapterId,
+                enabled,
+                adapterConfig,
+            );
+            if (enabled) {
+                this.enabledAdapters.add(adapterId);
+            } else {
+                this.enabledAdapters.delete(adapterId);
+            }
+            if (enabled) this.explicitlyDisabledAdapters.delete(adapterId);
+            else this.explicitlyDisabledAdapters.add(adapterId);
+            await this.notifyAdapterConfigChange(adapterId, adapterConfig);
+            if (wasEnabled !== enabled) {
+                await this.notifyAdapterEnabledChange(adapterId, enabled);
+            }
+        } finally {
+            release?.();
         }
     }
 
@@ -249,15 +288,25 @@ export class CoreTfaGateway {
     }
 
     async disableAdapter(adapterId: string): Promise<void> {
-        const adapter = this.adapters.get(adapterId);
-        if (!adapter) return;
-        const wasEnabled = this.enabledAdapters.has(adapterId);
-        const existingConfig = await this.getAdapterConfig(adapterId);
-        await this.store.saveAdapterConfig(adapterId, false, existingConfig);
-        this.enabledAdapters.delete(adapterId);
-        this.explicitlyDisabledAdapters.add(adapterId);
-        if (wasEnabled) {
-            await this.notifyAdapterEnabledChange(adapterId, false);
+        const release = this.blockChallenges(undefined, adapterId);
+        try {
+            await this.setups.cancelMatching(undefined, adapterId);
+            const adapter = this.adapters.get(adapterId);
+            if (!adapter) return;
+            const wasEnabled = this.enabledAdapters.has(adapterId);
+            const existingConfig = await this.getAdapterConfig(adapterId);
+            await this.store.saveAdapterConfig(
+                adapterId,
+                false,
+                existingConfig,
+            );
+            this.enabledAdapters.delete(adapterId);
+            this.explicitlyDisabledAdapters.add(adapterId);
+            if (wasEnabled) {
+                await this.notifyAdapterEnabledChange(adapterId, false);
+            }
+        } finally {
+            release();
         }
     }
 
@@ -385,125 +434,42 @@ export class CoreTfaGateway {
         accountId: string;
         displayName: string;
         methodId: string;
-    }): Promise<{
-        setupId: string;
-        methodId: string;
-        methodName: string;
-        view: TfaMethodSetupView;
-    }> {
-        await this.store.pruneExpiredPendingSetups();
-        const adapter = this.adapters.get(input.methodId);
-        if (!adapter || !this.isAdapterEnabled(input.methodId)) {
-            throw new Error("tfa_method_unavailable");
-        }
-
-        const setupId = `tfa_setup_${randomBytes(TFA_SETUP_ID_BYTES).toString("base64url")}`;
-        const started = await adapter.beginSetup({
-            accountId: input.accountId,
-            displayName: input.displayName,
-            issuer: TFA_METHOD_ISSUER,
-        });
-        const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-
-        await this.store.savePendingSetup({
-            setupId,
-            accountId: input.accountId,
-            methodId: input.methodId,
-            payload: started.pendingPayload,
-            expiresAt,
-        });
-
-        return {
-            setupId,
-            methodId: adapter.id,
-            methodName: adapter.name,
-            view: started.view,
-        };
+    }) {
+        return this.setups.begin(input);
     }
 
     async verifyMethodSetup(input: {
         accountId: string;
         setupId: string;
         verification: Record<string, unknown>;
-    }): Promise<{ verified: boolean; message?: string }> {
-        if (this.verifyingSetups.has(input.setupId)) {
-            return { verified: false, message: "setup_verification_pending" };
-        }
-        this.verifyingSetups.add(input.setupId);
-        try {
-            return await this.completeMethodSetup(input);
-        } finally {
-            this.verifyingSetups.delete(input.setupId);
-        }
-    }
-
-    private async completeMethodSetup(input: {
-        accountId: string;
-        setupId: string;
-        verification: Record<string, unknown>;
-    }): Promise<{ verified: boolean; message?: string }> {
-        const pending = await this.store.getPendingSetup(input.setupId);
-        if (!pending || pending.accountId !== input.accountId) {
-            return { verified: false, message: "setup_not_found" };
-        }
-        const expiresAt = Date.parse(pending.expiresAt);
-        if (!Number.isFinite(expiresAt) || expiresAt < Date.now()) {
-            await this.store.deletePendingSetup(input.setupId);
-            return { verified: false, message: "setup_expired" };
-        }
-
-        const adapter = this.adapters.get(pending.methodId);
-        if (!adapter || !this.isAdapterEnabled(pending.methodId)) {
-            await this.store.deletePendingSetup(input.setupId);
-            return { verified: false, message: "tfa_method_unavailable" };
-        }
-
-        const result = await adapter.verifySetup({
-            accountId: input.accountId,
-            pendingPayload: pending.payload,
-            verification: input.verification,
-        });
-
-        if (!result.verified || !result.state) {
-            return {
-                verified: false,
-                message: result.message || "verification_failed",
-            };
-        }
-
-        const nextSortOrder = await this.store.getNextSortOrder(
-            input.accountId,
-        );
-        await this.store.upsertUserMethod({
-            accountId: input.accountId,
-            methodId: pending.methodId,
-            enabled: true,
-            sortOrder: nextSortOrder,
-            state: result.state,
-            configuredAt: new Date().toISOString(),
-        });
-        await this.store.deletePendingSetup(input.setupId);
-        return { verified: true };
+    }) {
+        return this.setups.verify(input);
     }
 
     async cancelMethodSetup(accountId: string, setupId: string): Promise<void> {
-        const pending = await this.store.getPendingSetup(setupId);
-        if (!pending || pending.accountId !== accountId) return;
-        await this.store.deletePendingSetup(setupId);
+        await this.setups.cancel(accountId, setupId);
     }
 
     async disableMethod(accountId: string, methodId: string): Promise<void> {
-        const methods = await this.store.listUserMethods(accountId);
-        const existing = methods.find((method) => method.methodId === methodId);
-        if (!existing) return;
-        await this.store.upsertUserMethod({
-            accountId,
-            methodId,
-            enabled: false,
-            sortOrder: existing.sortOrder,
-            state: existing.state,
-            configuredAt: existing.configuredAt,
-        });
+        const release = this.blockChallenges(accountId, methodId);
+        try {
+            await this.setups.cancelMatching(accountId, methodId);
+            const methods = await this.store.listUserMethods(accountId);
+            const existing = methods.find(
+                (method) => method.methodId === methodId,
+            );
+            if (!existing) return;
+            await this.store.upsertUserMethod({
+                accountId,
+                methodId,
+                enabled: false,
+                sortOrder: existing.sortOrder,
+                state: existing.state,
+                configuredAt: existing.configuredAt,
+            });
+        } finally {
+            release();
+        }
     }
 
     async enableMethod(accountId: string, methodId: string): Promise<boolean> {
@@ -601,7 +567,19 @@ export class CoreTfaGateway {
         accountId: string,
         methodId: string,
         payload: Record<string, unknown>,
+        lifetime: TfaChallengeLifetime,
     ): Promise<TfaLoginVerificationResult> {
+        assertLiveChallenge(lifetime);
+        if (
+            methodId !== "recovery_code" &&
+            (!this.adapters.has(methodId) || !this.isAdapterEnabled(methodId))
+        )
+            return { verified: false, message: "tfa_method_unavailable" };
+        const challengeLifetime = this.challengeLifetimes.acquire(
+            accountId,
+            methodId,
+            lifetime,
+        );
         if (methodId === "recovery_code") {
             const recoveryCode = String(payload.code ?? "").trim();
             if (!recoveryCode) {
@@ -611,10 +589,12 @@ export class CoreTfaGateway {
                 accountId,
                 recoveryCode,
             );
+            assertLiveChallenge(challengeLifetime);
             if (valid) {
                 await this.notifyLowRecoveryCodeCount(accountId);
                 const recoveryCodesRemaining =
                     await this.store.countUnusedRecoveryCodes(accountId);
+                assertLiveChallenge(challengeLifetime);
                 return {
                     verified: true,
                     usedRecoveryCode: true,
@@ -625,6 +605,7 @@ export class CoreTfaGateway {
         }
 
         const methods = await this.store.listUserMethods(accountId);
+        assertLiveChallenge(challengeLifetime);
         const configuredMethod = methods.find(
             (method) => method.methodId === methodId && method.enabled,
         );
@@ -637,35 +618,48 @@ export class CoreTfaGateway {
             return { verified: false, message: "tfa_method_unavailable" };
         }
 
-        return adapter.verifyLogin({
+        const result = await adapter.verifyLogin({
+            lifetime: challengeLifetime,
             accountId,
             state: configuredMethod.state,
             payload,
         });
+        assertLiveChallenge(challengeLifetime);
+        return result;
     }
 
     private async prepareLoginChallenge(
         accountId: string,
         methodId: string,
         state: Record<string, unknown>,
+        lifetime: TfaChallengeLifetime,
     ): Promise<{
         ready: boolean;
         message?: string;
         retryAfterSeconds?: number;
         resendAvailableAt?: string;
         maxLength?: number;
+        deliveryStatus?: "queued" | "sent";
     }> {
         const adapter = this.adapters.get(methodId);
         if (!adapter || !this.isAdapterEnabled(methodId)) {
             return { ready: false, message: "tfa_method_unavailable" };
         }
+        const challengeLifetime = this.challengeLifetimes.acquire(
+            accountId,
+            methodId,
+            lifetime,
+        );
         if (typeof adapter.beginLoginChallenge !== "function") {
             return { ready: true };
         }
-        return adapter.beginLoginChallenge({
+        const result = await adapter.beginLoginChallenge({
+            lifetime: challengeLifetime,
             accountId,
             state,
         });
+        assertLiveChallenge(challengeLifetime);
+        return result;
     }
 
     private buildLoginMethodChallengeMetadata(challenge: {
@@ -673,12 +667,14 @@ export class CoreTfaGateway {
         retryAfterSeconds?: number;
         resendAvailableAt?: string;
         maxLength?: number;
+        deliveryStatus?: "queued" | "sent";
     }):
         | {
               message?: string;
               retryAfterSeconds?: number;
               resendAvailableAt?: string;
               maxLength?: number;
+              deliveryStatus?: "queued" | "sent";
           }
         | undefined {
         const metadata: {
@@ -686,7 +682,10 @@ export class CoreTfaGateway {
             retryAfterSeconds?: number;
             resendAvailableAt?: string;
             maxLength?: number;
+            deliveryStatus?: "queued" | "sent";
         } = {};
+        if (challenge.deliveryStatus)
+            metadata.deliveryStatus = challenge.deliveryStatus;
         if (challenge.message) {
             metadata.message = challenge.message;
         }
@@ -705,25 +704,35 @@ export class CoreTfaGateway {
     async beginLoginChallenge(
         accountId: string,
         methodId: string,
+        lifetime: TfaChallengeLifetime,
     ): Promise<{
         ready: boolean;
         message?: string;
         retryAfterSeconds?: number;
         resendAvailableAt?: string;
         maxLength?: number;
+        deliveryStatus?: "queued" | "sent";
     }> {
-        const methods = await this.store.listUserMethods(accountId);
-        const configuredMethod = methods.find(
-            (method) => method.methodId === methodId && method.enabled,
-        );
-        if (!configuredMethod) {
-            return { ready: false, message: "method_not_configured" };
-        }
+        if (!this.adapters.has(methodId) || !this.isAdapterEnabled(methodId))
+            return { ready: false, message: "tfa_method_unavailable" };
         try {
+            const challengeLifetime = this.challengeLifetimes.acquire(
+                accountId,
+                methodId,
+                lifetime,
+            );
+            const methods = await this.store.listUserMethods(accountId);
+            assertLiveChallenge(challengeLifetime);
+            const configuredMethod = methods.find(
+                (method) => method.methodId === methodId && method.enabled,
+            );
+            if (!configuredMethod)
+                return { ready: false, message: "method_not_configured" };
             return await this.prepareLoginChallenge(
                 accountId,
                 methodId,
                 configuredMethod.state,
+                lifetime,
             );
         } catch (error) {
             this.options.log?.(
@@ -742,90 +751,109 @@ export class CoreTfaGateway {
         }
     }
 
-    async getLoginMethods(accountId: string): Promise<TfaLoginMethod[]> {
-        const configuredMethods = await this.store.listUserMethods(accountId);
-        const enabledConfiguredMethods = configuredMethods
-            .filter((method) => method.enabled)
-            .sort((left, right) => left.sortOrder - right.sortOrder);
-        const candidateMethods = enabledConfiguredMethods.filter((method) => {
-            const adapter = this.adapters.get(method.methodId);
-            return adapter != null && this.isAdapterEnabled(method.methodId);
-        });
-        const hasUnusedRecoveryCodes =
-            await this.store.hasUnusedRecoveryCodes(accountId);
-        const initiateChallenge =
-            candidateMethods.length === 1 && !hasUnusedRecoveryCodes;
-        const resolvedMethods = await Promise.all(
-            candidateMethods.map(
-                async (method): Promise<TfaLoginMethod | null> => {
-                    const adapter = this.adapters.get(method.methodId)!;
-                    if (!initiateChallenge) {
-                        return {
-                            id: adapter.id,
-                            name: adapter.name,
-                            loginUi: adapter.loginUi,
-                            stringsBaseUrl: adapter.stringsBaseUrl,
-                        };
-                    }
-                    try {
-                        const challenge = await this.prepareLoginChallenge(
-                            accountId,
-                            method.methodId,
-                            method.state,
-                        );
-                        if (!challenge.ready) {
+    async getLoginMethods(
+        accountId: string,
+        lifetime: TfaChallengeLifetime,
+    ): Promise<TfaLoginMethod[]> {
+        const admission = this.challengeLifetimes.guard(accountId, lifetime);
+        try {
+            const configuredMethods =
+                await this.store.listUserMethods(accountId);
+            assertLiveChallenge(admission.lifetime);
+            const enabledConfiguredMethods = configuredMethods
+                .filter((method) => method.enabled)
+                .sort((left, right) => left.sortOrder - right.sortOrder);
+            const candidateMethods = enabledConfiguredMethods.filter(
+                (method) => {
+                    const adapter = this.adapters.get(method.methodId);
+                    return (
+                        adapter != null &&
+                        this.isAdapterEnabled(method.methodId)
+                    );
+                },
+            );
+            const hasUnusedRecoveryCodes =
+                await this.store.hasUnusedRecoveryCodes(accountId);
+            assertLiveChallenge(admission.lifetime);
+            const initiateChallenge =
+                candidateMethods.length === 1 && !hasUnusedRecoveryCodes;
+            const resolvedMethods = await Promise.all(
+                candidateMethods.map(
+                    async (method): Promise<TfaLoginMethod | null> => {
+                        assertLiveChallenge(admission.lifetime);
+                        const adapter = this.adapters.get(method.methodId)!;
+                        if (!initiateChallenge) {
+                            return {
+                                id: adapter.id,
+                                name: adapter.name,
+                                loginUi: adapter.loginUi,
+                                stringsBaseUrl: adapter.stringsBaseUrl,
+                            };
+                        }
+                        try {
+                            const challenge = await this.prepareLoginChallenge(
+                                accountId,
+                                method.methodId,
+                                method.state,
+                                lifetime,
+                            );
+                            if (!challenge.ready) {
+                                return null;
+                            }
+                            return {
+                                id: adapter.id,
+                                name: adapter.name,
+                                loginUi: adapter.loginUi,
+                                stringsBaseUrl: adapter.stringsBaseUrl,
+                                ...(this.buildLoginMethodChallengeMetadata(
+                                    challenge,
+                                )
+                                    ? {
+                                          challenge:
+                                              this.buildLoginMethodChallengeMetadata(
+                                                  challenge,
+                                              ),
+                                      }
+                                    : {}),
+                            };
+                        } catch (error) {
+                            this.options.log?.(
+                                "error",
+                                "Failed to prepare TFA login challenge.",
+                                {
+                                    component: "tfa-gateway",
+                                    operation: "prepare_login_challenge",
+                                    accountId,
+                                    methodId: method.methodId,
+                                    error:
+                                        error instanceof Error
+                                            ? error.message
+                                            : String(error),
+                                },
+                            );
                             return null;
                         }
-                        return {
-                            id: adapter.id,
-                            name: adapter.name,
-                            loginUi: adapter.loginUi,
-                            stringsBaseUrl: adapter.stringsBaseUrl,
-                            ...(this.buildLoginMethodChallengeMetadata(
-                                challenge,
-                            )
-                                ? {
-                                      challenge:
-                                          this.buildLoginMethodChallengeMetadata(
-                                              challenge,
-                                          ),
-                                  }
-                                : {}),
-                        };
-                    } catch (error) {
-                        this.options.log?.(
-                            "error",
-                            "Failed to prepare TFA login challenge.",
-                            {
-                                component: "tfa-gateway",
-                                operation: "prepare_login_challenge",
-                                accountId,
-                                methodId: method.methodId,
-                                error:
-                                    error instanceof Error
-                                        ? error.message
-                                        : String(error),
-                            },
-                        );
-                        return null;
-                    }
-                },
-            ),
-        );
-        const methods = resolvedMethods.filter(
-            (method): method is TfaLoginMethod => method != null,
-        );
-        if (hasUnusedRecoveryCodes) {
-            methods.push({
-                id: "recovery_code",
-                name: "Recovery Code",
-                loginUi: {
-                    placeholderKey:
-                        "ui.app.login.tfa.code_placeholder_recovery",
-                },
-            });
+                    },
+                ),
+            );
+            assertLiveChallenge(admission.lifetime);
+            const methods = resolvedMethods.filter(
+                (method): method is TfaLoginMethod => method != null,
+            );
+            if (hasUnusedRecoveryCodes) {
+                methods.push({
+                    id: "recovery_code",
+                    name: "Recovery Code",
+                    loginUi: {
+                        placeholderKey:
+                            "ui.app.login.tfa.code_placeholder_recovery",
+                    },
+                });
+            }
+            return methods;
+        } finally {
+            admission.release();
         }
-        return methods;
     }
 
     async isSecondFactorEnabled(accountId: string): Promise<boolean> {
@@ -838,8 +866,23 @@ export class CoreTfaGateway {
         return status.requiresSetup;
     }
 
+    async disposeChallenges(): Promise<void> {
+        const release = this.blockChallenges();
+        try {
+            await this.setups.cancelMatching();
+        } finally {
+            release();
+        }
+    }
+
     async resetUser(accountId: string): Promise<void> {
-        await this.store.clearUserState(accountId);
+        const release = this.blockChallenges(accountId);
+        try {
+            await this.setups.cancelMatching(accountId);
+            await this.store.clearUserState(accountId);
+        } finally {
+            release();
+        }
     }
 
     async getEnforceAllUsers(): Promise<boolean> {

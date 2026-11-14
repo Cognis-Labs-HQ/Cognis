@@ -28,4 +28,8 @@ Challenge codes are stored in process memory. Restarting the app or disabling th
 
 ### Registration and Lifecycle
 
-The adapter registers its code-message action during bootstrap through `notify:registerEmailPurpose` and sends through `notify:sendEmail`. It owns registration, message content and challenge state; the TFA gateway supplies neutral adapter lifecycle hooks. Disabling the gateway cancels its SMTP queue and pending challenges. Re-enabling creates a fresh registration without restoring old challenges. Login presentation and language resources belong to this method.
+The adapter registers its code-message action during bootstrap through `notify:registerEmailPurpose` and sends through `notify:deliverEmail`. It owns registration, message content and challenge state; the TFA gateway supplies neutral adapter lifecycle hooks. Disabling the gateway cancels its SMTP queue and pending challenges. Re-enabling creates a fresh registration without restoring old challenges. Login presentation and language resources belong to this method.
+
+## Bounded challenge delivery
+
+SMTP TFA requires `notify:deliverEmail` version 1 through the public contract registry; there is no fallback to `notify:sendEmail` or an ignored optional flag. A newly admitted code replaces and cancels only its matching older delivery. Rejected admission preserves the prior code. Later delivery failure invalidates the candidate; explicitly resend while the owning attempt remains live to recover. Concurrent resends coalesce only for the same owner operation. Independent setup and login operations keep separate IDs and cancellation. Codes expire at the earlier of the owner deadline and 15 minutes, are single-use, and cannot be restored by a late callback. Queued and sent messages have distinct presentation. Deploy Notification SMTP 0.5.5, SMTP TFA 1.1.3, TFA 1.3.12 and Auth 2.2.11 together; alternative providers must implement the named contract before use.

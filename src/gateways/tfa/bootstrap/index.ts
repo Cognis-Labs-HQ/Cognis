@@ -1,3 +1,5 @@
+import { requireBootstrapScope } from "@cognis/core";
+import type { TfaChallengeLifetime } from "../contracts/method.js";
 import { registerEnforcementPolicy } from "./enforcement-policy.js";
 import { createRouteLifetime } from "./route-lifetime.js";
 import { registerSessionAssessment } from "./session-assessment.js";
@@ -52,6 +54,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         adapterFactoryContext: { log: ctx.log },
         log: ctx.log,
     });
+    requireBootstrapScope().registerDisposer(() => gateway.disposeChallenges());
     const tfaAdaptersRoot = path.join(ctx.adaptersRoot, "tfa");
     await gateway.discoverAdapters(tfaAdaptersRoot);
     await gateway.loadPersistedConfigs();
@@ -133,7 +136,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     );
     ctx.capabilities.contribute(
         "tfa:getLoginMethods",
-        async (accountId: string) => gateway.getLoginMethods(accountId),
+        async (accountId: string, lifetime: TfaChallengeLifetime) =>
+            gateway.getLoginMethods(accountId, lifetime),
     );
     ctx.capabilities.contribute(
         "tfa:verifyLogin",
@@ -141,7 +145,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             accountId: string,
             methodId: string,
             payload: Record<string, unknown>,
-        ) => gateway.verifyLogin(accountId, methodId, payload),
+            lifetime: TfaChallengeLifetime,
+        ) => gateway.verifyLogin(accountId, methodId, payload, lifetime),
     );
     ctx.capabilities.contribute(
         "tfa:isSecondFactorEnabled",

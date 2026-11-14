@@ -99,3 +99,7 @@ SMTP connection establishment and TLS negotiation each have a thirty-second dead
 ### Typed Delivery Contracts
 
 SMTP queue entries retain their required subject through delivery and retries. TLS connection options carry the cancellation signal for direct TLS and STARTTLS; certificate policy, timeout handling and connection cleanup remain unchanged.
+
+## Bounded challenge delivery
+
+`notify:deliverEmail` version 1 accepts a registered purpose, recipient, variables, required `signal: AbortSignal` and an absolute millisecond `expiresAt`. It reuses the existing validate/render/enqueue flow and purpose queue. Admission returns `{ receipt, completion }`; `completion` resolves a terminal `sent` or `failed` receipt. Queued, rate-limited and sending receipts are not proof of delivery. Abort, expiry or purpose disposal cancels queued work and the active transport; a late transport result cannot overwrite failure. Ordinary `notify:sendEmail` keeps its existing deferred behavior. The default greylist policy permits two five-minute waits, but bounded deliveries stop at their earlier owner deadline. Mail already accepted by the remote SMTP server cannot be recalled.

@@ -41,8 +41,8 @@ Bootstrap in `src/gateways/tfa/bootstrap.ts`:
 Das Gateway registriert diese Capabilities über `ctx.capabilities`:
 
 - `tfa:getUserStatus(accountId)`
-- `tfa:getLoginMethods(accountId)`
-- `tfa:verifyLogin(accountId, methodId, payload)`
+- `tfa:getLoginMethods(accountId, lifetime)`
+- `tfa:verifyLogin(accountId, methodId, payload, lifetime)`
 - `tfa:isSecondFactorEnabled(accountId)`
 - `tfa:isSetupRequired(accountId)`
 - `tfa:resetUser(accountId)`
@@ -51,7 +51,7 @@ Das Gateway registriert diese Capabilities über `ctx.capabilities`:
 
 Diese Oberfläche ist der unterstützte Integrationspunkt. Andere Komponenten dürfen keine TFA-Adapter-Interna direkt importieren.
 
-`tfa:getLoginMethods(accountId)` löst eine Login-Challenge (z. B. SMTP-E-Mail) nur aus, wenn genau eine Methode für den Nutzer konfiguriert ist. Bei mehreren Methoden enthält die Antwort nur Methodenidentitäten ohne Challenge-Daten. Die Login-UI löst die Challenge über `POST /api/v1/tfa/login/resend` on-demand aus, sobald der Nutzer eine Methode explizit auswählt.
+`tfa:getLoginMethods(accountId, lifetime)` löst eine Login-Challenge (z. B. SMTP-E-Mail) nur aus, wenn genau eine Methode für den Nutzer konfiguriert ist. Bei mehreren Methoden enthält die Antwort nur Methodenidentitäten ohne Challenge-Daten. Die Login-UI löst die Challenge über `POST /api/v1/tfa/login/resend` on-demand aus, sobald der Nutzer eine Methode explizit auswählt.
 
 ## API-Routen
 
@@ -113,3 +113,11 @@ Alle Zugänge zur TFA-Erzwingung verwenden den zuständigen Richtlinienablauf. D
 Während eines serialisierten Richtlinienschreibvorgangs setzt TFA neue Sitzungsprüfungen aus und macht zuvor erteilte Prüfzusagen ungültig. Laufende Richtlinienabfragen können nach der Bereinigung keine eingeschränkten Token ausstellen; normale Sitzungen benötigen eine aktuelle Bestätigung. Der Einrichtungsabschluss prüft vor dem endgültigen Abschluss erneut die ursprüngliche Berechtigung. Ein während der Faktorprüfung widerrufenes Token kann daher keine Sitzung erhalten.
 
 Der Richtlinienablauf verlangt einen einmaligen Vorgang und Ausführungszustand unter Kontrolle seines Eigentümers. Direkte Ablaufaufrufe und die Wiederholung erfasster Vorgänge werden vor Änderungen abgewiesen; Integrationen müssen die Richtliniencapability verwenden.
+
+## Zeitlich begrenzte Challenge-Zustellung
+
+Methodenadapter erhalten verpflichtend `lifetime: { id, expiresAt, signal }` für Einrichtung, Login-Challenge und Login-Prüfung. Aufrufer von `tfa:getLoginMethods(accountId, lifetime)` und `tfa:verifyLogin(accountId, methodId, payload, lifetime)` müssen migriert werden. Eine Einrichtung erhält vor dem ersten asynchronen Lesen ihre eigene Zehn-Minuten-Frist. Auth liefert die Login-Lebensdauer über `auth:getPendingLoginLifetime` Version 1. Abbruch, Ablauf, Speicherfehler, Deaktivierung, Zurücksetzen und Gateway-Bereinigung entwerten den genauen Vorgang. Alte Lesevorgänge bleiben auch nach erneuter Aktivierung ungültig. Vor Beginn des Schreibens lässt sich die Prüfung abbrechen; danach warten Abbruch und Zurücksetzen auf die weiterhin sichtbare Schreib- und Bereinigungsbarriere. Wiederherstellungscodes prüfen die Lebensdauer auch nach asynchronem Verbrauch. Neustart verliert ausstehende In-Memory-Challenges. Fortgesetzte Login-Beschreibungen sind Momentaufnahmen der Annahme, keine aktuellen Zustellbestätigungen.
+
+### Abschließende Zustandsänderungen koordinieren
+
+Abschlussvorgänge für Konto, Methode und Gateway sperren neue Vorgänge während Bereinigung und Speicherung. Überlappende Vorgänge besitzen jeweils eine eigene Sperre; der Abschluss eines Vorgangs öffnet keinen anderen. Eine fehlgeschlagene Registrierung bleibt ein Prüfungsfehler. Die Bereinigung wartet auf ihr Ende, ohne ein späteres Zurücksetzen oder Deaktivieren an dessen eigener Zustandsänderung zu hindern.

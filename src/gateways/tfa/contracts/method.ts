@@ -1,5 +1,11 @@
 import type { TfaAdapterBootstrapContext } from "../adapter-bootstrap.js";
 
+export interface TfaChallengeLifetime {
+    readonly id: string;
+    readonly expiresAt: number;
+    readonly signal: AbortSignal;
+}
+
 export interface TfaConfigField {
     key: string;
     label: string;
@@ -38,6 +44,7 @@ export interface TfaMethodAdapter {
     readonly stringsBaseUrl?: string;
     readonly loginUi?: TfaLoginPresentation;
     beginSetup(input: {
+        lifetime: TfaChallengeLifetime;
         accountId: string;
         displayName: string;
         issuer: string;
@@ -45,6 +52,10 @@ export interface TfaMethodAdapter {
         pendingPayload: Record<string, unknown>;
         view: TfaMethodSetupView;
     }>;
+    cancelSetup?(input: {
+        accountId: string;
+        pendingPayload: Record<string, unknown>;
+    }): Promise<void>;
     verifySetup(input: {
         accountId: string;
         pendingPayload: Record<string, unknown>;
@@ -55,11 +66,13 @@ export interface TfaMethodAdapter {
         message?: string;
     }>;
     verifyLogin(input: {
+        lifetime: TfaChallengeLifetime;
         accountId: string;
         state: Record<string, unknown>;
         payload: Record<string, unknown>;
     }): Promise<{ verified: boolean; message?: string }>;
     beginLoginChallenge?(input: {
+        lifetime: TfaChallengeLifetime;
         accountId: string;
         state: Record<string, unknown>;
     }): Promise<{
@@ -68,6 +81,7 @@ export interface TfaMethodAdapter {
         retryAfterSeconds?: number;
         resendAvailableAt?: string;
         maxLength?: number;
+        deliveryStatus?: "queued" | "sent";
     }>;
     renderMethodDetails?(input: {
         accountId: string;

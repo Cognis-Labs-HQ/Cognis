@@ -118,7 +118,16 @@ export function createStoreMock(): Omit<DbTfaStore, never> & {
             return true;
         },
         replaceRecoveryCodes: async () => undefined,
-        clearUserState: async () => undefined,
+        clearUserState: async (accountId: string) => {
+            state.methods = state.methods.filter(
+                (entry) => entry.accountId !== accountId,
+            );
+            for (let i = state.recoveryCodes.length - 1; i >= 0; i--)
+                if (state.recoveryCodes[i].accountId === accountId)
+                    state.recoveryCodes.splice(i, 1);
+            for (const [id, setup] of setups)
+                if (setup.accountId === accountId) setups.delete(id);
+        },
         getEnforceAllUsers: async () => state.enforceAllUsers,
         setEnforceAllUsers: async (required: boolean) => {
             state.enforceAllUsers = required;
@@ -151,5 +160,18 @@ export function createAdapterMock(): TfaMethodAdapter {
         beginLoginChallenge: async () => ({ ready: true }),
         getConfigSchema: () => [],
         configure: () => undefined,
+    };
+}
+
+let attemptNumber = 0;
+export function createLoginLifetime(
+    id = `synthetic-attempt-${++attemptNumber}`,
+) {
+    const controller = new AbortController();
+    return {
+        id,
+        expiresAt: Date.now() + 300_000,
+        signal: controller.signal,
+        controller,
     };
 }

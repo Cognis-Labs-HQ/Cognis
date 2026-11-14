@@ -41,8 +41,8 @@ Bootstrap di `src/gateways/tfa/bootstrap.ts` melakukan urutan berikut:
 Gateway ini mendaftarkan capability berikut melalui `ctx.capabilities`:
 
 - `tfa:getUserStatus(accountId)`
-- `tfa:getLoginMethods(accountId)`
-- `tfa:verifyLogin(accountId, methodId, payload)`
+- `tfa:getLoginMethods(accountId, lifetime)`
+- `tfa:verifyLogin(accountId, methodId, payload, lifetime)`
 - `tfa:isSecondFactorEnabled(accountId)`
 - `tfa:isSetupRequired(accountId)`
 - `tfa:resetUser(accountId)`
@@ -51,7 +51,7 @@ Gateway ini mendaftarkan capability berikut melalui `ctx.capabilities`:
 
 Capability ini adalah permukaan integrasi yang didukung. Komponen lain tidak boleh mengimpor internal adapter TFA secara langsung.
 
-`tfa:getLoginMethods(accountId)` hanya memicu challenge login (misalnya mengirim email SMTP) saat tepat satu metode dikonfigurasi untuk pengguna. Saat beberapa metode tersedia, respons hanya berisi identitas metode tanpa data challenge. UI login memicu challenge secara on-demand melalui `POST /api/v1/tfa/login/resend` ketika pengguna secara eksplisit memilih sebuah metode.
+`tfa:getLoginMethods(accountId, lifetime)` hanya memicu challenge login (misalnya mengirim email SMTP) saat tepat satu metode dikonfigurasi untuk pengguna. Saat beberapa metode tersedia, respons hanya berisi identitas metode tanpa data challenge. UI login memicu challenge secara on-demand melalui `POST /api/v1/tfa/login/resend` ketika pengguna secara eksplisit memilih sebuah metode.
 
 ## Route API
 
@@ -113,3 +113,11 @@ Semua jalur penegakan TFA memakai alur kebijakan milik komponen. Menonaktifkan p
 Selama penulisan kebijakan yang diserialkan, TFA menangguhkan penilaian sesi baru dan membatalkan jaminan penilaian sebelumnya. Pembacaan kebijakan yang masih berjalan tidak dapat menerbitkan token terbatas setelah pembersihan, dan penerbitan sesi normal membutuhkan jaminan terkini. Penyelesaian penyiapan memeriksa ulang kredensial asli sebelum komit akhir, sehingga token yang dicabut selama verifikasi faktor tidak dapat diperbarui menjadi sesi.
 
 Alur kebijakan memerlukan operasi sekali pakai dan status eksekusi yang dipegang pemiliknya. Pemanggilan alur langsung dan pengulangan operasi yang ditangkap ditolak sebelum mutasi; integrasi harus memanggil kapabilitas kebijakan.
+
+## Pengiriman tantangan berbatas waktu
+
+Adapter metode wajib menerima `lifetime: { id, expiresAt, signal }` untuk penyiapan, tantangan login, dan verifikasi login. Pemanggil `tfa:getLoginMethods(accountId, lifetime)` dan `tfa:verifyLogin(accountId, methodId, payload, lifetime)` harus dimigrasikan. Penyiapan memperoleh identitas serta tenggat sepuluh menit sebelum pembacaan asinkron pertama. Auth menyediakan masa hidup login melalui `auth:getPendingLoginLifetime` versi 1. Pembatalan, kedaluwarsa, kegagalan penyimpanan, penonaktifan metode akun, reset, dan pembersihan gateway membatalkan operasi yang tepat. Pembacaan lama tetap ditolak setelah aktivasi ulang. Verifikasi dapat dibatalkan sebelum titik komit pendaftaran; setelah penulisan dimulai, pembatalan dan reset menunggu penghalang komit/pembersihan yang tetap terlihat. Verifikasi kode pemulihan juga memeriksa masa hidup setelah konsumsi asinkron. Mulai ulang menghilangkan tantangan dalam memori. Deskripsi login yang dilanjutkan adalah cuplikan penerimaan, bukan tanda terima pengiriman terkini.
+
+### Koordinasikan transisi akhir
+
+Operasi akhir akun, metode, dan gateway memblokir penerimaan baru selama pembersihan dan penulisan status. Setiap operasi yang tumpang tindih memiliki token penghalang sendiri; penyelesaian satu operasi tidak membuka operasi lainnya. Kegagalan penulisan pendaftaran tetap menjadi kegagalan verifikasi, tetapi pembersihan menunggu penyelesaiannya tanpa menghalangi perubahan status oleh reset atau penonaktifan berikutnya.

@@ -53,7 +53,7 @@
   <string name="ui.app.login.tfa.code_placeholder">Verification Code</string>
   <string name="gateway.tfa.tutorial.methods.title">Two-Factor Security</string>
   <string name="gateway.tfa.tutorial.methods.set.up.a.method.title">Set Up A Method</string>
-  <string name="gateway.tfa.tutorial.methods.set.up.a.method.body">Choose an available method and complete its setup before relying on it for sign-in.</string>
+  <string name="gateway.tfa.tutorial.methods.set.up.a.method.body">Choose an available method and complete its setup before relying on it for sign-in. Email codes may be queued; use the latest accepted code when it arrives. Setup expires after ten minutes, and cancelling affects only that setup.</string>
   <string name="gateway.tfa.tutorial.methods.preferred.methods.title">Preferred Methods</string>
   <string name="gateway.tfa.tutorial.methods.preferred.methods.body">Order your enabled methods to choose which one is offered first.</string>
   <string name="gateway.tfa.tutorial.methods.recovery.codes.title">Recovery Codes</string>
@@ -63,4 +63,5 @@
   <string name="gateway.tfa.tutorial.enforcement.enforcement.policy.body">Review the effect on all accounts before requiring two-factor authentication.</string>
   <string name="gateway.tfa.tutorial.enforcement.apply.policy.title">Apply Policy</string>
   <string name="gateway.tfa.tutorial.enforcement.apply.policy.body">Save only after reviewing the enforcement choice and the setup users will need.</string>
+  <string name="ui.app.login.tfa.resend_queued">A new verification code is queued for delivery. Use the latest code when it arrives.</string>
 </resources>
