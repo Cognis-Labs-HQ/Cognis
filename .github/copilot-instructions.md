@@ -711,3 +711,5 @@ Capture browser provider ownership from its registering bootstrap scope, before 
 JSON endpoints that accept arrays must explicitly select their expected shape. Preserve each existing endpoint’s payload format when tightening request validation.
 
 Bind a transient opening to its group at the trigger step, before the user can click. Attaching a lifetime only after the popup target resolves leaves pending work outside cleanup. Preserve page lifetime for ordinary openings, share pending ownership through ctx across bundled and direct imports, and test cancellation during retrieval, composition and popup preparation. An older completion must not clear a newer opening.
+
+Module configuration guides consume owner-published targets, bind pending settings preparation to their branch before a click, and preserve close protection. Keep readiness separate from write permission, and test actual read-only paths/counts and delayed-popup cancellation.

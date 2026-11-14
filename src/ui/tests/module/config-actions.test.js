@@ -3,13 +3,15 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import vm from "node:vm";
 
-async function popupFixture(runActions, request) {
+async function popupFixture(runActions, request, signal) {
     const inputs = new Map();
     const children = [];
     const revoked = [];
     const failures = [];
     let paused = 0;
+    let dismissed = 0;
     const form = {
+        addEventListener() {},
         elements: { namedItem: (name) => inputs.get(name) },
         querySelector: (selector) =>
             children.find((child) =>
@@ -19,8 +21,11 @@ async function popupFixture(runActions, request) {
             ),
         append: (child) => children.push(child),
     };
-    const overlay = { querySelector: () => form };
+    const overlay = { dataset: {}, querySelector: () => form };
     const context = {
+        uiCtx: {
+            capabilities: { get: () => ({ settingsSignal: () => signal }) },
+        },
         AbortController,
         escapeHtml: String,
         renderInfoTooltip() {},
@@ -57,7 +62,10 @@ async function popupFixture(runActions, request) {
         showToast: (message) => failures.push(message),
         reportClientError() {},
         openPopup: async (options) => {
-            options.onOpen(overlay);
+            options.onOpen(overlay, () => dismissed++, {
+                requestClose: () => dismissed++,
+                markDirty() {},
+            });
             await runActions(options, overlay, inputs);
             return "cancel";
         },
@@ -68,6 +76,7 @@ async function popupFixture(runActions, request) {
         loadTestModule(
             new URL("../../app/modules/preferences.js", import.meta.url),
             {
+                "../../reuse/ui-ctx.js": context,
                 "../../reuse/toast.js": context,
                 "../../reuse/error-reporting.js": context,
                 "../../reuse/escape-html.js": context,
@@ -101,7 +110,7 @@ async function popupFixture(runActions, request) {
         },
         { i18n: { t: (key) => key } },
     );
-    return { inputs, children, revoked, failures, paused };
+    return { inputs, children, revoked, failures, paused, dismissed };
 }
 
 test("discovery selects a default while keeping manual entry available after failure", async () => {
@@ -137,4 +146,17 @@ test("test previews cancel scoped requests and release playback URLs on close", 
     assert.equal(signal.aborted, true);
     assert.deepEqual(result.revoked, ["blob:test"]);
     assert.equal(result.paused, 1);
+});
+
+test("tutorial branch cancellation dismisses the owned settings surface", async () => {
+    const controller = new AbortController();
+    const result = await popupFixture(
+        async (_popup, overlay) => {
+            assert.equal(overlay.dataset.moduleSettings, "speech");
+            controller.abort();
+        },
+        async () => ({}),
+        controller.signal,
+    );
+    assert.equal(result.dismissed, 1);
 });
