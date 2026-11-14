@@ -13,3 +13,4 @@ Settings cancellation uses the protected dismissal callback supplied to onOpen; 
 ## Commits
 
 - [ad94587](https://github.com/Cognis-Labs-HQ/Cognis/commit/ad945875c919d504058437aab92449d254d79aa8)
+- [40d61ed](https://github.com/Cognis-Labs-HQ/Cognis/commit/40d61eded176b472f7040dbfcdb34d7d0067107d)
