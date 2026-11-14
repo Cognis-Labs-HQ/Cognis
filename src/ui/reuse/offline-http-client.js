@@ -85,7 +85,12 @@ export function registerOfflineHttpClient(
     };
     outbox.register(owner, (operation) => send(operation), ctx.signal);
     const actions = registerScopedUiActions(ctx, owner.replaceAll(".", ":"), {
-        request: async ({ path, options = {}, assertAccount }) => {
+        request: async ({
+            path,
+            options = {},
+            assertAccount,
+            onReadSource,
+        }) => {
             assertAccount();
             const method = (options.method ?? "GET").toUpperCase();
             const descriptor = describe(path, method);
@@ -119,17 +124,25 @@ export function registerOfflineHttpClient(
             const pending = () => outbox.pending(owner);
             if (method === "GET") {
                 let payload;
+                onReadSource("shared");
                 try {
-                    payload = await read(path, async () => {
-                        assertAccount();
-                        const response = await request(path, options);
-                        if (!response.ok)
-                            throw Object.assign(new Error("read_failed"), {
-                                response,
-                                status: response.status,
-                            });
-                        return response.json();
-                    });
+                    payload = await read(
+                        path,
+                        async () => {
+                            assertAccount();
+                            onReadSource("live");
+                            const response = await request(path, options);
+                            if (!response.ok)
+                                throw Object.assign(new Error("read_failed"), {
+                                    response,
+                                    status: response.status,
+                                });
+                            return response.json();
+                        },
+                        undefined,
+                        false,
+                        onReadSource,
+                    );
                 } catch (error) {
                     if (
                         error?.message !== "offline_read_unavailable" ||
@@ -142,6 +155,7 @@ export function registerOfflineHttpClient(
                         }),
                     );
                     if (payload === undefined) throw error;
+                    onReadSource("cached");
                 }
                 return Response.json(
                     await project(path, payload, await pending(), ctx),
@@ -231,21 +245,35 @@ export function registerOfflineHttpClient(
     const scopedRequest = async (path, options = {}) => {
         options.signal?.throwIfAborted();
         const assertAccount = captureAccountGuard();
+        let response;
+        let source;
         try {
-            const response = await actions.request({
+            response = await actions.request({
                 path,
                 options,
                 assertAccount,
+                onReadSource: (value) => {
+                    source = value;
+                },
             });
-            assertAccount();
-            return response;
         } catch (error) {
             assertAccount();
-            if (error.response) return error.response;
-            if (error.status && error.payload)
-                return Response.json(error.payload, { status: error.status });
-            throw error;
+            if (error.response) response = error.response;
+            else if (error.status && error.payload)
+                response = Response.json(error.payload, {
+                    status: error.status,
+                });
+            else throw error;
         }
+        assertAccount();
+        if (!source || response.status === 0) return response;
+        const headers = new Headers(response.headers);
+        headers.set("x-cognis-read-source", source);
+        return new Response(response.clone().body, {
+            status: response.status,
+            statusText: response.statusText,
+            headers,
+        });
     };
     scopedRequest.hasCachedRead = read.has;
     return scopedRequest;
