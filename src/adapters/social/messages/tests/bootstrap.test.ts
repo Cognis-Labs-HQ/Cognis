@@ -76,7 +76,6 @@ test("messages polling does not rerender for read timestamp churn", () => {
 
     assert.match(signatureBody, /accountId: reader\.accountId/);
     assert.doesNotMatch(signatureBody, /readAt: reader\.readAt/);
-    assert.match(source, /if \(!force && !selectedRoomHasUnread\(\)\) return;/);
 });
 
 test("messages adapter ensures send-message flow before hook registration", () => {

@@ -69,3 +69,15 @@ Operasi akun memerlukan sesi akun yang terverifikasi. Operasi sumber daya bersam
 ## Pembungkusan Teks Pesan
 
 Teks pesan membungkus sesuai lebar percakapan yang tersedia dalam gaya bawaan, gelembung percakapan, dan IRC. Pesan pendek tetap satu baris jika muat. Pergantian baris eksplisit, format Markdown, dan teks literal menyerupai HTML tetap dipertahankan; teks panjang tanpa spasi dapat membungkus di dalam pesan. Perilaku ini berlaku untuk pesan masuk dan keluar tanpa mengubah avatar, reaksi, atau informasi pengiriman.
+
+## Pembaruan Percakapan Asinkron
+
+Hanya percakapan yang terakhir dipilih yang dapat memperbarui judul, pesan, kunci, dan tindakannya. Berpindah ruang atau meninggalkan Messages membatalkan pembaruan tampilan yang tertunda. Draf tetap terkait dengan ruang asal selama halaman saat ini aktif.
+
+Anda dapat mulai menulis draf berikutnya saat pesan dikirim. Konfirmasi atau penyimpanan permanen dalam antrean hanya menghapus versi draf yang dikirim, sehingga suntingan baru dan draf di ruang lain tetap tersimpan. Pengiriman ulang diblokir selama pengiriman berlangsung. Jika percakapan gagal diperbarui sesudahnya, pesan tetap berstatus terkirim atau dalam antrean dan notifikasi meminta Anda tidak mengirimkannya lagi.
+
+Penanda belum dibaca hanya berubah setelah konfirmasi status baca berhasil. Kegagalan mempertahankan jumlah belum dibaca dan menampilkan notifikasi terjemahan satu kali selama kegagalan berlanjut. Setelah konfirmasi berhasil, kegagalan berikutnya dapat dilaporkan kembali.
+
+Kegagalan pembaruan latar belakang menampilkan pemberitahuan terlokalisasi dan mempertahankan draf saat ini. Kegagalan berulang dicatat, tetapi pemberitahuan baru ditampilkan lagi setelah pemulihan atau pemilihan percakapan lain. Kegagalan terlambat dari ruang atau akun yang telah ditinggalkan tidak dapat menampilkan galat pengiriman lama, memulai pembacaan lanjutan, atau mengganggu percakapan saat ini. Keluar dan membuka kembali Pesan juga mengakhiri pembaruan tertunda milik tampilan lama.
+
+Perubahan reaksi dan Muat Lebih Awal tetap terkait dengan percakapan tempat tindakan dimulai. Kegagalan pada percakapan aktif menampilkan pemberitahuan terjemahan dan dicatat tanpa isi pesan; kegagalan dari ruang, akun, atau halaman yang telah ditinggalkan diabaikan. Tindakan ini tidak dicoba ulang secara otomatis. Tutorial Pratinjau mencakup format, tautan, dan jeda baris, bukan lampiran.

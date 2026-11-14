@@ -43,6 +43,9 @@
   <string name="module.social.messages.not_member_cannot_send">このルームのメンバーではなくなりました。</string>
   <string name="module.social.messages.key_unavailable">暗号化キーを利用できません。</string>
   <string name="module.social.messages.send_failed">メッセージを送信できませんでした。</string>
+  <string name="module.social.messages.update_failed">この会話を更新できませんでした。下書きは変更されていません。</string>
+  <string name="module.social.messages.read_failed">既読状態を更新できませんでした。未読数は変更されていません。</string>
+  <string name="module.social.messages.refresh_failed">メッセージは送信済みかキューに保存されていますが、会話を更新できませんでした。再送しないでください。</string>
   <string name="module.social.messages.page_subtitle">ルームとダイレクトメッセージ。</string>
   <string name="module.social.messages.request_sent">メッセージリクエストを送信しました。</string>
   <string name="module.social.messages.read_by">既読</string>
@@ -87,13 +90,13 @@
   <string name="module.social.messages.tutorial.messages.room.history.title">ルームの履歴</string>
   <string name="module.social.messages.tutorial.messages.room.history.body">会話を読み、参加者と未処理のリクエストを確認します。</string>
   <string name="module.social.messages.tutorial.messages.compose.and.preview.title">作成とプレビュー</string>
-  <string name="module.social.messages.tutorial.messages.compose.and.preview.body">送信前に下書きとプレビューを確認します。添付と通話はそれぞれの操作から利用します。</string>
+  <string name="module.social.messages.tutorial.messages.compose.and.preview.body">送信前に下書きとプレビューを確認します。通話は専用の操作から利用します。</string>
   <string name="module.social.messages.tutorial.messages.start.room.title">会話を始める</string>
   <string name="module.social.messages.tutorial.messages.start.room.body">個別の会話やルームを作り、宛先と参加者を確認してから最初のメッセージを送ります。</string>
   <string name="module.social.messages.tutorial.messages.write.message.title">メッセージを書く</string>
-  <string name="module.social.messages.tutorial.messages.write.message.body">ここにメッセージを入力します。書式や添付ファイルを使い、送信前にプレビューを確認します。</string>
+  <string name="module.social.messages.tutorial.messages.write.message.body">メッセージを入力し、送信前にプレビューを確認します。送信中も次の下書きを書けます。送信またはキューへの保存後に消去されるのは送信した版だけで、その後の編集は残ります。</string>
   <string name="module.social.messages.tutorial.messages.preview.message.title">送信前に確認する</string>
-  <string name="module.social.messages.tutorial.messages.preview.message.body">プレビューで書式、リンク、添付内容を確認し、修正するときは編集に戻ります。</string>
+  <string name="module.social.messages.tutorial.messages.preview.message.body">プレビューで書式、リンク、改行を確認し、修正するときは編集に戻ります。</string>
   <string name="module.social.messages.tutorial.messages.manage.room.title">会話を管理する</string>
   <string name="module.social.messages.tutorial.messages.manage.room.body">会話の見出しでルームと参加者を確認します。メンバー変更や退出には、表示される操作を使います。</string>
 </resources>

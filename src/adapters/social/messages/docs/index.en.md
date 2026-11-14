@@ -69,3 +69,15 @@ Account operations require verified account sessions. Shared-resource operations
 ## Message Text Wrapping
 
 Message text wraps to the available conversation width in the default, speech-bubble and IRC styles. Short messages stay on one line when they fit. Explicit line breaks, Markdown formatting and literal HTML-like text retain their existing presentation; long unbroken text can wrap inside the message. The same behavior applies to incoming and outgoing messages without changing avatars, reactions or delivery metadata.
+
+## Async Conversation Updates
+
+Only the latest selected conversation can update its header, messages, keys and actions. Switching rooms or leaving Messages invalidates pending view updates. Drafts belong to their original room for the current page lifetime.
+
+You can start the next draft while a message sends. Acknowledgement or durable queuing clears only the submitted draft revision, preserving newer edits and drafts in other rooms. Repeated submission is blocked while the send is pending. If the conversation cannot refresh afterward, the message remains sent or queued and a toast advises against resending it.
+
+Unread badges change only after a successful read-status acknowledgement. A failure preserves the unread count and shows a localized toast once for the ongoing failure; a successful acknowledgement allows a later failure to be reported again.
+
+Background update failures show a localized notice and retain the current drafts. Repeated failures are logged, but the notice is shown again only after recovery or a new conversation selection. Late failures from a room or account you have left cannot show stale send errors, start follow-up reads, or interrupt the current conversation. Leaving and reopening Messages also ends the old view’s pending updates.
+
+Reaction changes and Load Earlier keep their results within the conversation where they started. Current failures show a localized update notice and are logged without message contents; failures from a room, account or page you have left are ignored. These actions do not retry automatically. The Preview tutorial covers formatting, links and line breaks; it does not describe attachments.

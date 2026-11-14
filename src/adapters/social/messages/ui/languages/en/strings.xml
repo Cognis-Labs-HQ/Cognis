@@ -43,6 +43,9 @@
   <string name="module.social.messages.not_member_cannot_send">You are no longer a member of this room.</string>
   <string name="module.social.messages.key_unavailable">Encryption key unavailable.</string>
   <string name="module.social.messages.send_failed">Failed to send message.</string>
+  <string name="module.social.messages.update_failed">Could not update this conversation. Your drafts are unchanged.</string>
+  <string name="module.social.messages.read_failed">Could not update read status. Your unread count is unchanged.</string>
+  <string name="module.social.messages.refresh_failed">Message sent or queued, but the conversation could not refresh. Do not resend it.</string>
   <string name="module.social.messages.page_subtitle">Your rooms and direct messages.</string>
   <string name="module.social.messages.request_sent">Message request sent.</string>
   <string name="module.social.messages.read_by">Read by</string>
@@ -87,13 +90,13 @@
   <string name="module.social.messages.tutorial.messages.room.history.title">Room History</string>
   <string name="module.social.messages.tutorial.messages.room.history.body">Read the room history and check the current participants and pending requests.</string>
   <string name="module.social.messages.tutorial.messages.compose.and.preview.title">Compose And Preview</string>
-  <string name="module.social.messages.tutorial.messages.compose.and.preview.body">Write and preview a draft before sending; attachments and calls use their own controls.</string>
+  <string name="module.social.messages.tutorial.messages.compose.and.preview.body">Write and preview a draft before sending; calls use their own controls.</string>
   <string name="module.social.messages.tutorial.messages.start.room.title">Start A Room</string>
   <string name="module.social.messages.tutorial.messages.start.room.body">Create a direct or group room, select recipients, and check membership before sending the first message.</string>
   <string name="module.social.messages.tutorial.messages.write.message.title">Write A Message</string>
-  <string name="module.social.messages.tutorial.messages.write.message.body">Write your message here. Use formatting and attachments as needed, then check the preview before sending.</string>
+  <string name="module.social.messages.tutorial.messages.write.message.body">Write and preview your message before sending. You can type your next draft while it sends; only the submitted version clears after it is sent or queued, so newer edits stay.</string>
   <string name="module.social.messages.tutorial.messages.preview.message.title">Preview Before Sending</string>
-  <string name="module.social.messages.tutorial.messages.preview.message.body">Switch to Preview to check formatting, links and attached content. Return to Compose to make corrections.</string>
+  <string name="module.social.messages.tutorial.messages.preview.message.body">Switch to Preview to check formatting, links and line breaks. Return to Compose to make corrections.</string>
   <string name="module.social.messages.tutorial.messages.manage.room.title">Manage The Room</string>
   <string name="module.social.messages.tutorial.messages.manage.room.body">The room header identifies the room and its participants. Review its available actions before changing membership or leaving.</string>
 </resources>

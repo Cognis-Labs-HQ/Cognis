@@ -1,3 +1,4 @@
+import { createBackgroundRefresh } from "./reuse/background-refresh.js";
 import { guides } from "./guides.js";
 /**
  * Messages page.
@@ -38,13 +39,13 @@ import {
     openReactionDetailsPopup,
     parseEncodedPayload,
     renderComposerPreviewMarkup,
-    renderThread,
     repositionReactionHoverPopup,
     showReactionHoverPopup,
     showReadReceiptHoverPopup,
     formatRoomListAvatar,
 } from "./message-render.js";
 import { resolveMessageTemplateVariables } from "./message-templates.js";
+import { createMessageDrafts } from "./composer-drafts.js";
 import { createMessageSender } from "./send-message.js";
 import { createMessagesRoomState } from "./room-state.js";
 import { renderRoomList } from "./room-render.js";
@@ -70,14 +71,10 @@ export async function mount(root, { signal } = {}) {
     if (signal?.aborted) return;
     applyDocumentTitle(i18n, "ui.reuse.messages");
 
-    const {
-        captureFormState,
-        restoreFormState,
-        loadPersistedFormState,
-        savePersistedFormState,
-        clearPersistedFormState,
-    } = createFormDraftManager({
+    const draftManager = createFormDraftManager({
         FORM_DRAFT_STORAGE_PREFIX: "cognis_messages_draft",
+        resolveStoragePath: (roomId) =>
+            `/messages/${encodeURIComponent(roomId)}`,
         // The messages composer has a single textarea; the large-form reset
         // button is never relevant, so the threshold is set above any realistic
         // field count to suppress it entirely.
@@ -109,12 +106,19 @@ export async function mount(root, { signal } = {}) {
         : rememberedRoomId;
 
     let composerInputRef = null;
+    let composerDrafts;
 
     let syncOpenRoomPreviews = () => {};
 
     const roomState = createMessagesRoomState({
         i18n,
         currentAccountId,
+        signal,
+        onRoomSelected: (roomId) => {
+            const pathname = `/messages/${encodeURIComponent(roomId)}`;
+            if (window.location.pathname !== pathname)
+                history.pushState({}, "", pathname);
+        },
         initialSelectedRoomId,
         getRoomKey,
         requireRoomKey,
@@ -124,30 +128,9 @@ export async function mount(root, { signal } = {}) {
         typingIdleResetMs: TYPING_IDLE_RESET_MS,
         typingSendDebounceMs: TYPING_SEND_DEBOUNCE_MS,
         liveRefreshIntervalMs: LIVE_REFRESH_INTERVAL_MS,
-        onRoomOpened: async (room) => {
+        onRoomOpened: (room) => {
             syncOpenRoomPreviews();
-            const openedRoomId = room?.id != null ? String(room.id) : null;
-            if (openedRoomId) {
-                const persistedState = loadPersistedFormState(openedRoomId);
-                restoreFormState(root, persistedState);
-                // When no draft exists, restoreFormState is a no-op and the
-                // textarea retains the previous room's text. Clear it explicitly
-                // so stale content is never saved under the new room's draft key
-                // when the synthetic input event fires below.
-                // composerInputRef may be null before the first onRender fires;
-                // the instanceof guard safely skips the clear in that case
-                // (lines 294-297 below, where composerInputRef is assigned).
-                if (
-                    persistedState.size === 0 &&
-                    composerInputRef instanceof HTMLTextAreaElement
-                ) {
-                    composerInputRef.value = "";
-                }
-                // Dispatch a synthetic input event so dependent UI state
-                // (preview rendering, character counters, typing indicators)
-                // is updated after the draft value is restored programmatically.
-                composerInputRef?.dispatchEvent(new Event("input"));
-            }
+            composerDrafts.restore(room);
         },
         resolveRoomActions,
         onRoomAction: async (room, action) => {
@@ -167,16 +150,29 @@ export async function mount(root, { signal } = {}) {
         },
     });
 
+    composerDrafts = createMessageDrafts({
+        root,
+        getInput: () => composerInputRef,
+        getSelectedRoomId: roomState.getSelectedRoomId,
+        isActive: roomState.isActive,
+        manager: draftManager,
+    });
+
     let pageReady = false;
     let refreshAfterKeyringUnlock = false;
-    const refreshDecryptedContent = async () => {
-        if (!pageReady) {
-            refreshAfterKeyringUnlock = true;
-            return;
-        }
-        await roomState.reloadRoomsList();
-        await roomState.refreshActiveConversation();
-    };
+    const refreshDecryptedContent = createBackgroundRefresh({
+        captureRoom: roomState.captureRoom,
+        i18n,
+        operation: "refreshDecryptedContent",
+        run: async (isCurrent) => {
+            if (!pageReady) {
+                refreshAfterKeyringUnlock = true;
+                return;
+            }
+            await roomState.reloadRoomsList();
+            if (isCurrent()) await roomState.refreshActiveConversation();
+        },
+    });
     const roomCallPositions = new Map();
     window.addEventListener(
         "cognis:room-call-state",
@@ -215,7 +211,7 @@ export async function mount(root, { signal } = {}) {
         "cognis:call-moved-to-pip",
         (event) => {
             if (event.detail?.roomId !== roomState.getSelectedRoomId()) return;
-            void roomState.refreshActiveConversation();
+            void roomState.refreshInBackground();
         },
         { signal },
     );
@@ -235,7 +231,7 @@ export async function mount(root, { signal } = {}) {
 
     await Promise.all([loadAllEmojis(), fetchEmojiUsage(apiFetch)]);
     await roomState.loadInitialRooms();
-    if (signal?.aborted) return;
+    if (!roomState.isActive()) return;
 
     const resolveSelectedRoomTemplateContent = (content) =>
         resolveMessageTemplateVariables(
@@ -476,18 +472,7 @@ export async function mount(root, { signal } = {}) {
                         const beforeTime =
                             loadEarlierButton.getAttribute("data-before-time");
                         if (!beforeTime) return;
-                        const key = await resolveThreadRoomKey(
-                            roomState.getSelectedRoom(),
-                            selectedRoomId,
-                        );
-                        await renderThread(
-                            selectedRoomId,
-                            key,
-                            threadList,
-                            i18n,
-                            currentAccountId,
-                            beforeTime,
-                        );
+                        await roomState.loadEarlierMessages(beforeTime);
                     },
                     passiveEventOptions,
                 );
@@ -679,26 +664,20 @@ export async function mount(root, { signal } = {}) {
                     "submit",
                     createMessageSender({
                         roomState,
-                        composerInput,
                         currentAccountId,
                         requireRoomKey,
-                        clearPersistedFormState,
+                        drafts: composerDrafts,
                         renderComposerPreview,
                         i18n,
                     }),
                 );
 
                 composerInput?.addEventListener("input", () => {
+                    if (!roomState.isActive()) return;
                     const hasText = Boolean((composerInput.value ?? "").trim());
                     roomState.queueTypingUpdate(hasText);
                     renderComposerPreview();
-                    const selectedRoomId = roomState.getSelectedRoomId();
-                    if (selectedRoomId) {
-                        savePersistedFormState(
-                            selectedRoomId,
-                            captureFormState(root, { persistableOnly: true }),
-                        );
-                    }
+                    composerDrafts.record();
                 });
                 composerInput?.addEventListener("keydown", (keyboardEvent) => {
                     if (
@@ -725,7 +704,7 @@ export async function mount(root, { signal } = {}) {
                 const selectedRoomId = roomState.getSelectedRoomId();
                 if (selectedRoomId) {
                     void roomState.openRoom(selectedRoomId);
-                    void roomState.refreshTypingIndicator();
+                    void roomState.refreshTypingInBackground();
                     roomState.startTypingPolling();
                     roomState.startLiveRefreshPolling();
                 }
@@ -743,18 +722,17 @@ export async function mount(root, { signal } = {}) {
             if (!roomId) return;
             roomState.queueTypingUpdate(false);
             await roomState.openRoom(roomId);
-            if (String(roomState.getSelectedRoomId()) !== roomId) return;
+            if (
+                !roomState.isActive() ||
+                String(roomState.getSelectedRoomId()) !== roomId
+            )
+                return;
             roomsList
                 .querySelectorAll(".messages-room--active")
                 .forEach((activeItem) =>
                     activeItem.classList.remove("messages-room--active"),
                 );
             item.classList.add("messages-room--active");
-            history.pushState(
-                {},
-                "",
-                `/messages/${encodeURIComponent(roomId)}`,
-            );
             await roomState.refreshTypingIndicator();
             roomState.startTypingPolling();
             roomState.startLiveRefreshPolling();
@@ -803,7 +781,7 @@ export async function mount(root, { signal } = {}) {
                 roomState.queueTypingUpdate(false);
                 roomState.setSelectedRoomId(roomId);
                 void roomState.openRoom(roomId);
-                void roomState.refreshTypingIndicator();
+                void roomState.refreshTypingInBackground();
                 roomState.startTypingPolling();
                 roomState.startLiveRefreshPolling();
             }
@@ -817,8 +795,8 @@ export async function mount(root, { signal } = {}) {
             roomState.startTypingPolling();
             roomState.startLiveRefreshPolling();
             if (document.visibilityState === "visible") {
-                void roomState.refreshTypingIndicator();
-                void roomState.refreshActiveConversation();
+                void roomState.refreshTypingInBackground();
+                void roomState.refreshInBackground();
             }
         },
         { signal },

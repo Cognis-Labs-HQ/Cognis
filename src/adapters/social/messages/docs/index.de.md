@@ -69,3 +69,15 @@ Kontoaktionen erfordern bestätigte Kontositzungen. Aktionen für freigegebene R
 ## Zeilenumbruch im Chat
 
 Nachrichtentext wird im Standard-, Sprechblasen- und IRC-Stil an die verfügbare Gesprächsbreite angepasst. Kurze Nachrichten bleiben einzeilig, wenn sie hineinpassen. Ausdrückliche Zeilenumbrüche, Markdown-Formatierung und wörtlicher HTML-ähnlicher Text behalten ihre Darstellung; lange Zeichenfolgen ohne Leerzeichen können innerhalb der Nachricht umbrechen. Dies gilt für eingehende und ausgehende Nachrichten, ohne Avatare, Reaktionen oder Zustellinformationen zu verändern.
+
+## Asynchrone Gesprächsaktualisierung
+
+Nur das zuletzt ausgewählte Gespräch kann seine Kopfzeile, Nachrichten, Schlüssel und Aktionen aktualisieren. Beim Gesprächswechsel oder Verlassen von Messages werden ausstehende Ansichtsaktualisierungen ungültig. Entwürfe bleiben während der aktuellen Seitenlebensdauer ihrem ursprünglichen Gespräch zugeordnet.
+
+Sie können den nächsten Entwurf beginnen, während eine Nachricht gesendet wird. Eine Bestätigung oder dauerhafte Einreihung löscht nur die gesendete Entwurfsversion; neuere Änderungen und Entwürfe anderer Gespräche bleiben erhalten. Erneutes Absenden ist während des laufenden Sendevorgangs gesperrt. Schlägt die anschließende Gesprächsaktualisierung fehl, bleibt die Nachricht gesendet oder eingereiht. Ein Hinweis rät vom erneuten Senden ab.
+
+Ungelesen-Anzeigen ändern sich erst nach einer erfolgreichen Bestätigung des Lesestatus. Bei einem Fehler bleibt die Anzahl unverändert. Ein übersetzter Hinweis erscheint einmal für den anhaltenden Fehler; nach einer erfolgreichen Bestätigung kann ein späterer Fehler erneut gemeldet werden.
+
+Fehlgeschlagene Hintergrundaktualisierungen zeigen einen lokalisierten Hinweis und bewahren die aktuellen Entwürfe. Wiederholte Fehler werden protokolliert; der Hinweis erscheint erst nach einer erfolgreichen Aktualisierung oder der Auswahl eines anderen Gesprächs erneut. Verspätete Fehler aus einem verlassenen Raum oder Konto können keine veralteten Sendefehler anzeigen, weitere Lesevorgänge starten oder das aktuelle Gespräch unterbrechen. Auch das Verlassen und erneute Öffnen von Nachrichten beendet ausstehende Aktualisierungen der alten Ansicht.
+
+Reaktionsänderungen und das Laden älterer Nachrichten bleiben an das Gespräch gebunden, in dem sie begonnen wurden. Aktuelle Fehler zeigen einen übersetzten Hinweis und werden ohne Nachrichteninhalte protokolliert. Fehler aus einem verlassenen Gespräch, Konto oder einer verlassenen Seite werden ignoriert. Diese Aktionen werden nicht automatisch wiederholt. Die Vorschau-Anleitung behandelt Formatierung, Links und Zeilenumbrüche, keine Anhänge.
