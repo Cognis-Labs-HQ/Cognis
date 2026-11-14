@@ -393,12 +393,25 @@ async function replacePublicAsset(cache, key, response, previous) {
     await cache.put(key, response);
 }
 
-// Revalidate mutable public resources only on demand, at most once per minute.
+// Revalidate ordinary mutable assets on demand, at most once per minute.
 // Bound metadata and coalesce overlapping reads; failed refreshes retain the snapshot.
 const assetRefreshes = new Map();
 const ASSET_REFRESH_INTERVAL = 60_000;
 const MAX_ASSET_REFRESHES = 256;
 const assetLoads = new Map();
+
+async function waitForCatalog(pending, signal) {
+    if (!signal) return (await pending).clone();
+    return new Promise((resolve, reject) => {
+        const abort = () => reject(signal.reason);
+        signal.addEventListener("abort", abort, { once: true });
+        pending
+            .then((response) => response.clone())
+            .then(resolve, reject)
+            .finally(() => signal.removeEventListener("abort", abort));
+        if (signal.aborted) abort();
+    });
+}
 
 async function assetResponse(request, moduleAsset, event) {
     if (request.headers?.has("range"))
@@ -418,12 +431,16 @@ async function assetResponse(request, moduleAsset, event) {
     // Only content-hashed production files are immutable, never arbitrary ?v= URLs.
     const immutable = IMMUTABLE_ASSET.test(new URL(request.url).pathname);
     if (cached && immutable) return cached;
+    const mutableCatalog =
+        !moduleAsset &&
+        /\/languages\/[^/]+\/strings\.xml$/.test(new URL(request.url).pathname);
+    if (mutableCatalog) request.signal?.throwIfAborted();
     const previousSnapshot = cached?.clone();
     let cacheWrite;
     const refresh = async () => {
         try {
             const response = await fetchAvailable(
-                cached
+                cached && !mutableCatalog
                     ? request
                     : new Request(request.url, { headers: request.headers }),
                 moduleAsset
@@ -439,6 +456,8 @@ async function assetResponse(request, moduleAsset, event) {
                 )
             )
                 event.waitUntil(cache.delete(cacheKey));
+            if (mutableCatalog && cacheable(response))
+                await response.clone().arrayBuffer();
             if (
                 cacheable(response) &&
                 (!moduleAsset ||
@@ -462,7 +481,7 @@ async function assetResponse(request, moduleAsset, event) {
             }
             return response;
         } catch (error) {
-            if (request.signal?.aborted) throw error;
+            if (request.signal?.aborted && !mutableCatalog) throw error;
             if (!cached) await announceOffline();
             if (cached && (!moduleAsset || generation === catalogGeneration)) {
                 console.info("[cognis-sw] cached public asset retained", {
@@ -473,7 +492,7 @@ async function assetResponse(request, moduleAsset, event) {
             throw error;
         }
     };
-    if (!cached) {
+    if (!cached || mutableCatalog) {
         const loadKey = JSON.stringify([
             cacheKey,
             generation,
@@ -481,7 +500,10 @@ async function assetResponse(request, moduleAsset, event) {
         ]);
         let pending = assetLoads.get(loadKey);
         if (!pending) {
-            if (assetLoads.size >= MAX_ASSET_REFRESHES) return refresh();
+            if (assetLoads.size >= MAX_ASSET_REFRESHES)
+                return mutableCatalog
+                    ? waitForCatalog(refresh(), request.signal)
+                    : refresh();
             pending = refresh();
             assetLoads.set(loadKey, pending);
             const release = () => {
@@ -510,7 +532,9 @@ async function assetResponse(request, moduleAsset, event) {
                     }),
             );
         }
-        return (await pending).clone();
+        return mutableCatalog
+            ? waitForCatalog(pending, request.signal)
+            : (await pending).clone();
     }
     const previous = assetRefreshes.get(cacheKey);
     if (
