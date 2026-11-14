@@ -76,6 +76,8 @@
   <string name="ui.reuse.markdown_code_copy_failed">Kode tidak dapat disalin.</string>
   <string name="ui.reuse.confirm">Konfirmasi</string>
   <string name="ui.reuse.error">Kesalahan</string>
+  <string name="ui.reuse.healthy">Berfungsi Baik</string>
+  <string name="ui.reuse.warning">Peringatan</string>
   <string name="ui.reuse.coming_soon">Segera Hadir</string>
   <string name="ui.reuse.save_failed">Gagal Menyimpan</string>
   <string name="ui.reuse.more_information">Informasi lainnya</string>
@@ -672,7 +674,7 @@
   <string name="ui.tutorial.admin.components.gateways.and.adapters.title">Gateway dan Adapter</string>
   <string name="ui.tutorial.admin.components.gateways.and.adapters.body">Buka komponen untuk memeriksa versi, dependensi, dan konfigurasinya.</string>
   <string name="ui.tutorial.admin.components.enable.and.disable.title">Aktifkan dan Nonaktifkan</string>
-  <string name="ui.tutorial.admin.components.enable.and.disable.body">Sakelar daya ini mengaktifkan atau menonaktifkan komponen yang ditampilkan. Tinjau peringatan dependensi sebelum mengonfirmasi perubahan.</string>
+  <string name="ui.tutorial.admin.components.enable.and.disable.body">Gunakan sakelar daya ini untuk mengaktifkan atau menonaktifkan komponen yang ditampilkan. Dengan papan ketik, tekan Tab untuk memfokuskannya dan Spasi untuk mengubahnya. Tinjau peringatan dependensi sebelum mengonfirmasi perubahan.</string>
   <string name="ui.tutorial.admin.components.configuration.title">Konfigurasi</string>
   <string name="ui.tutorial.admin.components.configuration.body">Klik nama adaptor untuk membuka pengaturannya, atau tekan Berikutnya untuk melanjutkan.</string>
   <string name="ui.tutorial.admin.status.title">Status Sistem</string>

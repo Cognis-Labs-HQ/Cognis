@@ -39,7 +39,7 @@ function resolveComponentHealth(healthStatus, componentType, componentId) {
     );
 }
 
-function renderHealthLight(componentHealth, isActive, escapeHtml) {
+function renderHealthLight(componentHealth, isActive, escapeHtml, i18n) {
     if (!isActive || !componentHealth) {
         return '<span class="component-health-light-spacer" aria-hidden="true"></span>';
     }
@@ -49,7 +49,7 @@ function renderHealthLight(componentHealth, isActive, escapeHtml) {
     const title = componentHealth.message
         ? ` title="${escapeHtml(componentHealth.message)}"`
         : "";
-    return `<span class="component-health-light component-health-light--${status}" role="img" aria-label="${escapeHtml(status)}"${title}></span>`;
+    return `<span class="component-health-light component-health-light--${status}" role="img" aria-label="${escapeHtml(i18n.t(status === "ok" ? "ui.reuse.healthy" : `ui.reuse.${status}`))}"${title}></span>`;
 }
 
 function renderAdapterDetailsList(
@@ -215,9 +215,10 @@ function renderInlineAdapters(
                 titleHtml: `<span class="adapter-inline-name"><strong>${escapeHtml(adapter.name ?? adapterId)}</strong></span>`,
                 controlsHtml: `
               <span class="state-pill ${isActive ? "pill-active" : "pill-disabled"}">${isActive ? i18n.t("ui.app.admin.state.active") : i18n.t("ui.app.admin.state.disabled")}</span>
-              ${renderHealthLight(resolveComponentHealth(healthStatus, "adapter", `${gatewayId}:${adapterId}`) ?? resolveComponentHealth(healthStatus, "adapter", adapterId) ?? (isActive ? { status: "ok" } : null), isActive, escapeHtml)}
+              ${renderHealthLight(resolveComponentHealth(healthStatus, "adapter", `${gatewayId}:${adapterId}`) ?? resolveComponentHealth(healthStatus, "adapter", adapterId) ?? (isActive ? { status: "ok" } : null), isActive, escapeHtml, i18n)}
               <label class="switch switch--inline" title="${escapeHtml(i18n.t("ui.app.admin.toggle_adapter"))}">
                 <input type="checkbox" class="adapter-toggle"
+                  aria-label="${escapeHtml(i18n.t("ui.app.admin.toggle_adapter"))}: ${escapeHtml(adapter.name ?? adapterId)}"
                   data-adapter="${escapeHtml(adapterId)}"
                   data-gateway="${escapeHtml(gatewayId)}"
                   ${isActive ? "checked" : ""}
@@ -267,6 +268,7 @@ function renderGatewaysContent(gateways, allAdapters, deps) {
                 resolveComponentHealth(healthStatus, "gateway", gateway.id),
                 isEnabled,
                 escapeHtml,
+                i18n,
             );
             const managedTooltip =
                 gateway.id === "db"
@@ -289,7 +291,7 @@ function renderGatewaysContent(gateways, allAdapters, deps) {
               <span class="state-pill ${pill.className}">${pill.label}</span>
               ${healthLight}
               <label class="switch switch--inline" title="${escapeHtml(toggleTitle)}">
-                <input type="checkbox" data-gateway="${escapeHtml(gateway.id)}" ${isEnabled ? "checked" : ""} ${gateway.required ? "disabled" : ""} />
+                <input type="checkbox" aria-label="${escapeHtml(toggleTitle)}: ${escapeHtml(gateway.name)}" data-gateway="${escapeHtml(gateway.id)}" ${isEnabled ? "checked" : ""} ${gateway.required ? "disabled" : ""} />
                 <span class="slider"></span>
               </label>
               `,

@@ -76,6 +76,8 @@
   <string name="ui.reuse.markdown_code_copy_failed">コードをコピーできませんでした。</string>
   <string name="ui.reuse.confirm">確認</string>
   <string name="ui.reuse.error">エラー</string>
+  <string name="ui.reuse.healthy">正常</string>
+  <string name="ui.reuse.warning">警告</string>
   <string name="ui.reuse.coming_soon">近日公開</string>
   <string name="ui.reuse.save_failed">保存失敗</string>
   <string name="ui.reuse.more_information">詳細情報</string>
@@ -672,7 +674,7 @@
   <string name="ui.tutorial.admin.components.gateways.and.adapters.title">ゲートウェイとアダプター</string>
   <string name="ui.tutorial.admin.components.gateways.and.adapters.body">コンポーネントを開き、バージョン、依存関係、設定を確認します。</string>
   <string name="ui.tutorial.admin.components.enable.and.disable.title">有効化と無効化</string>
-  <string name="ui.tutorial.admin.components.enable.and.disable.body">この電源スイッチで表示中のコンポーネントを有効または無効にします。変更を確定する前に依存関係の警告を確認してください。</string>
+  <string name="ui.tutorial.admin.components.enable.and.disable.body">この電源スイッチで表示中のコンポーネントを有効または無効にします。キーボードでは Tab キーでフォーカスし、スペースキーで切り替えます。変更を確定する前に依存関係の警告を確認してください。</string>
   <string name="ui.tutorial.admin.components.configuration.title">設定内容</string>
   <string name="ui.tutorial.admin.components.configuration.body">アダプター名をクリックすると設定が開きます。開かずに進むには「次へ」を押します。</string>
   <string name="ui.tutorial.admin.status.title">システムの状態</string>

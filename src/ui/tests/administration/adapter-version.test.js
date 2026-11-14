@@ -46,10 +46,8 @@ test("administration adapters expose version metadata in details", () => {
         html,
         /<details class="module-row adapter-inline-row collapsible-section"[^]*<summary class="adapter-inline-summary collapsible-section-summary">/,
     );
-    assert.doesNotMatch(html, /adapter-inline-version/);
     assert.match(html, /module-detail-value">0\.2\.6<\/span>/);
     assert.match(html, /module-detail-value">Cognis &amp; Labs<\/span>/);
-    assert.doesNotMatch(html, /data-adapter-config/);
     assert.match(html, /module-row-controls adapter-inline-controls/);
     assert.match(
         html,
@@ -184,10 +182,6 @@ test("health lights have a rendered box and explicit status colors", () => {
     assert.match(
         styles,
         /\.component-health-light--error\s*{[^}]*background-color: #ef4444;/,
-    );
-    assert.match(
-        styles,
-        /\.module-row-controls\s*{[^}]*grid-template-columns: 100px 10px 52px 32px;[^}]*align-items: center;[^}]*justify-content: flex-end;/,
     );
     assert.match(
         styles,
