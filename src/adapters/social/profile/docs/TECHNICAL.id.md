@@ -132,7 +132,7 @@ Editor milik Profil menggunakan alur ctx `social:profile:request` yang ada serta
 
 ### Pemulihan Pembacaan Avatar
 
-Bilah navigasi dan pratinjau profil mempertahankan gambar yang tidak berubah saat pembaruan lain berlangsung. Kegagalan jaringan sementara serta HTTP 408, 425, 429 atau 5xx tidak menonaktifkan kunci secara permanen. Pembaruan atau pembukaan berikutnya dapat mencoba lagi; tidak ada pewaktu percobaan avatar. Penghapusan terkonfirmasi (404/410), penolakan akses (401/403), pembatalan cache eksplisit, perubahan akun/token, dan penghapusan penyedia menghapus gambar terkait. Tampilan utama halaman profil menggunakan konsumen terpisah dan tidak diubah oleh kontrak ini.
+Bilah navigasi dan pratinjau profil mempertahankan gambar yang tidak berubah saat pembaruan lain berlangsung. Kegagalan jaringan sementara serta HTTP 408, 425, 429 atau 5xx tidak menonaktifkan kunci secara permanen. Pembaruan atau pembukaan berikutnya dapat mencoba lagi; tidak ada pewaktu percobaan avatar. Penghapusan terkonfirmasi (404/410), penolakan akses (401/403), pembatalan cache eksplisit, perubahan akun/token, dan penghapusan penyedia menghapus gambar terkait. Bagian kepala profil memakai siklus hidup media milik halaman yang dijelaskan di bawah.
 
 Penyedia mandiri memiliki `ui:profileAvatarRenderer` selama masa aktifnya. `fetch(key)` tetap mengembalikan URL atau null; `hydrate(container, { signal })` menerima pembatalan opsional, dan `invalidate(key)` membersihkan satu kunci (tanpa kunci berarti semuanya). Cache dibatasi menurut akun, token akses, dan masa aktif penyedia, menggabungkan permintaan bersamaan, serta menampung paling banyak 128 kunci. Hasil berhasil dan hasil negatif terkonfirmasi diperiksa ulang sesuai kebutuhan setelah 60 detik. Digest konten mempertahankan URL untuk bita yang sama dan membuat URL baru untuk bita yang berubah. Pengeluaran entri, pembatalan cache, dan penghentian melepaskan URL objek. Elemen yang dilepas tidak disimpan.
 
@@ -142,7 +142,19 @@ Tutorial identitas profil tetap menjelaskan tautan profil dan pratinjaunya; kont
 
 Penggambar juga menyediakan penanda kesiapan `available` yang akurat bagi penyedia tampilan yang bergantung padanya, serta mengirim peristiwa miliknya `cognis:profile-avatar-renderer-changed` saat dipasang dan dicabut. Penanda menjadi salah saat cakupan dibatalkan, sebelum kapabilitas dihapus. Kegagalan pemasangan dan pengaktifan kembali memakai jalur pemberitahuan yang sama. Konsumen tidak boleh menyimpulkan kesiapan hanya dari keberadaan dalam registri.
 
+## Gambar Profil
+
+Halaman profil mempertahankan elemen avatar dan banner yang tidak berubah saat jumlah pengikut, detail profil, dan kartu lain diperbarui. Sinkronisasi eksplisit memeriksa media kembali dan mempertahankan gambar saat ini untuk profil, sesi, dan kunci yang sama ketika kesalahan jaringan atau HTTP 408, 425, 429, atau 5xx menghalangi pembacaan. Pesan kesalahan meminta pengguna mencoba lagi; pembaruan tersebut tidak dilaporkan berhasil. Percobaan berhasil dengan data identik mempertahankan URL yang sama, sedangkan data baru menggantinya.
+
+Perubahan profil atau kunci gambar, kunci kosong yang dipastikan, penghapusan yang dikonfirmasi, atau media yang ditolak/tidak tersedia (401/403/404/410) menghapus gambar sebelumnya. Menghapus avatar tidak menghapus banner, dan sebaliknya. Navigasi, pemasangan ulang, perubahan akun/token/penyedia, dan pelepasan penyedia membatalkan pekerjaan lama serta melepaskan URL objeknya. Data profil, isi respons, pembacaan gambar, hasil pemotongan, unggahan, penghapusan, dan pembaruan pengikut yang terlambat tidak dapat mengubah halaman yang lebih baru. Pemilih berkas dimiliki halaman yang membukanya.
+
+Klien Profile menerbitkan `social:profilePageSignal` sesuai masa aktifnya bersama `social:profileRequest`. Bagian kepala profil memakai alur terdaftar `social:profile:request` dan `social:profileMedia:read`, kepemilikan terbatas untuk dua gambar, serta pembaca ringkasan kriptografis Profile bersama. Hanya elemen gambar yang direkonsiliasi; bagian kepala lainnya tetap diperbarui. Kontrak composer, kerangka halaman, bilah navigasi, otorisasi pratinjau, dan editor draf tetap berlaku. Terbitkan halaman dan penyedia Profile 3.0.20 bersama-sama.
+
+Uji regresi memakai fixture jsdom statis, ekspor halaman sebenarnya, serta siklus hidup permintaan dan penyedia terdaftar. Uji memverifikasi identitas elemen, pelepasan URL, pemulihan kegagalan, dan penyelesaian tidak berurutan. Uji tidak membuktikan tampilan atau dekode gambar di peramban asli maupun pemicu laporan produksi sebelumnya.
+
 Pada profil Anda sendiri, Edit Profil membuka detail Anda. Jika penyimpanan gagal, perubahan tetap tersedia untuk diperbaiki dan dicoba kembali.
+
+Foto profil tetap terlihat saat jumlah dan detail diperbarui. Buka kembali profil untuk mencoba ulang pembaruan gambar yang gagal; penghapusan yang dikonfirmasi hanya menghapus gambar terpilih. Langkah identitas mempertahankan target, urutan, dan identitas penyelesaiannya.
 
 ## Keamanan
 

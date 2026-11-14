@@ -64,6 +64,7 @@ test("banner layout coordinates remain in scope for preference persistence", () 
     );
     const mediaBranchIndex = PROFILE_UPLOAD_SOURCE.indexOf(
         'if (kind === "avatar")',
+        panDeclarationIndex,
     );
     const preferenceIndex = PROFILE_UPLOAD_SOURCE.indexOf(
         "await saveBannerLayoutPreference",
@@ -98,7 +99,7 @@ test("profile media refreshes only the profile hero composer card", () => {
     );
     assert.match(
         PROFILE_APP_SOURCE,
-        /createProfileImageUploadActions\(\{[\s\S]*?refreshPage: refreshProfileHero,/,
+        /createProfileImageUploadActions\(\{[\s\S]*?refreshPage: refreshOwnedHero,/,
     );
 });
 

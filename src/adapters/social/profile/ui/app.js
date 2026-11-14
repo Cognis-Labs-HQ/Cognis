@@ -1,3 +1,5 @@
+import { createProfilePageLifetime } from "./profile-page-lifetime.js";
+import { createProfileHeroMedia } from "./profile-hero-media.js";
 import { guides } from "./guides.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { isOffline } from "/static/reuse/offline-state.js";
@@ -18,7 +20,6 @@ import {
     loadOwnPosts,
     loadUserProfile,
     loadUserPosts,
-    loadImageAsBlob,
     loadBannerLayoutPreference,
     saveBannerLayoutPreference,
 } from "./profile-api-loaders.js";
@@ -80,6 +81,9 @@ let pendingBannerAspectRatio = resolveBannerCropAspectRatio(bannerHeight);
 let newPostFormController = null;
 let followerCountPoller = null;
 let profileEditor = null;
+let pageLifetime = null;
+let heroMedia = null;
+const boundHeroes = new WeakSet();
 
 registerProfilePostSearchIndex(() => ({ posts, profile, urlHandle }));
 
@@ -120,17 +124,28 @@ function setState(partialState) {
     if (Object.hasOwn(partialState, "isOwnProfile")) {
         isOwnProfile = partialState.isOwnProfile;
     }
-    if (Object.hasOwn(partialState, "profile")) profile = partialState.profile;
+    if (Object.hasOwn(partialState, "profile")) {
+        const nextProfile = partialState.profile;
+        for (const kind of ["avatar", "banner"]) {
+            if (
+                !Object.hasOwn(partialState, `${kind}BlobUrl`) &&
+                (profile?.accountId !== nextProfile?.accountId ||
+                    profile?.[`${kind}Key`] !== nextProfile?.[`${kind}Key`])
+            )
+                heroMedia?.replace(kind, null, nextProfile);
+        }
+        profile = nextProfile;
+    }
     if (Object.hasOwn(partialState, "followers"))
         followers = partialState.followers;
     if (Object.hasOwn(partialState, "following"))
         following = partialState.following;
     if (Object.hasOwn(partialState, "posts")) posts = partialState.posts;
     if (Object.hasOwn(partialState, "avatarBlobUrl")) {
-        avatarBlobUrl = partialState.avatarBlobUrl;
+        heroMedia?.replace("avatar", partialState.avatarBlobUrl, profile);
     }
     if (Object.hasOwn(partialState, "bannerBlobUrl")) {
-        bannerBlobUrl = partialState.bannerBlobUrl;
+        heroMedia?.replace("banner", partialState.bannerBlobUrl, profile);
     }
     if (Object.hasOwn(partialState, "bannerHeight")) {
         bannerHeight = partialState.bannerHeight;
@@ -179,17 +194,22 @@ function stopFollowerCountPoller() {
     followerCountPoller = null;
 }
 
-function startFollowerCountPoller(signal) {
+function startFollowerCountPoller(lifetime) {
+    const { signal, isCurrent } = lifetime;
     stopFollowerCountPoller();
     if (signal?.aborted) return;
     followerCountPoller = createFollowerCountPoller({
         loadConnections: loadSocialConnectionList,
-        readState: () => ({
-            profileHandle: profile?.handle,
-            followers,
-            following,
-        }),
+        readState: () =>
+            !isCurrent()
+                ? {}
+                : {
+                      profileHandle: profile?.handle,
+                      followers,
+                      following,
+                  },
         applyConnections: (next) => {
+            if (!isCurrent()) return;
             followers = next.followers;
             following = next.following;
             refreshProfileCards([
@@ -202,6 +222,7 @@ function startFollowerCountPoller(signal) {
             bindSocialCardEvents();
         },
         reportError: () => {
+            if (!isCurrent()) return;
             showToast(i18n.t("ui.app.profile.follow_counts_refresh_failed"), {
                 variant: "error",
             });
@@ -211,68 +232,48 @@ function startFollowerCountPoller(signal) {
     followerCountPoller.start();
 }
 
-const {
-    avatarFileInput,
-    bannerFileInput,
-    clearPendingSelection,
-    requestSelection,
-} = createProfileImageSelection({
-    onFileSelected: (kind, file) =>
-        profileImageActions?.handleProfileImageUpload({
-            kind,
-            file,
-            aspectRatio:
-                kind === "avatar"
-                    ? AVATAR_CROP_WIDTH_TO_HEIGHT_RATIO
-                    : pendingBannerAspectRatio,
-        }),
-    onError: (error) => {
-        console.error("[profile] image selection failed", {
-            component: "social-profile",
-            operation: "selectImage",
-            errorName: error.name,
-        });
-        showToast(
-            i18n.t(
-                error.message === "offline_outbox_full"
-                    ? "ui.reuse.offline_buffer_full_body"
-                    : "ui.app.profile.upload_failed",
-            ),
-            { variant: "error" },
-        );
-    },
-});
+let avatarFileInput = null;
+let bannerFileInput = null;
+let requestSelection = null;
+let imageSelection = null;
 
 function bindProfileHeroEvents() {
+    const lifetime = pageLifetime;
+    if (!lifetime?.isCurrent()) return;
     const hero = root.querySelector(".profile-hero");
-    if (!hero || boundProfileControls.has(hero)) return;
-    boundProfileControls.add(hero);
-    if (bannerMenuCloseHandler) {
-        document.removeEventListener("click", bannerMenuCloseHandler, true);
-        bannerMenuCloseHandler = null;
-    }
-    root.querySelector(".profile-hero-edit-btn")?.addEventListener(
+    if (!hero || boundHeroes.has(hero)) return;
+    boundHeroes.add(hero);
+    const actions = postActions;
+    const imageActions = profileImageActions;
+    const selectImage = requestSelection;
+    const avatarInput = avatarFileInput;
+    const bannerInput = bannerFileInput;
+    const handle = urlHandle;
+    lifetime.listen(
+        root.querySelector(".profile-hero-edit-btn"),
         "click",
         profileEditor.open,
     );
     const heroFollowButton = root.querySelector(".profile-hero-follow-btn");
     if (heroFollowButton) {
         bindFollowButtonHover(heroFollowButton, i18n);
-        heroFollowButton.addEventListener("click", () =>
-            postActions?.doFollowUser(urlHandle),
+        lifetime.listen(heroFollowButton, "click", () =>
+            actions?.doFollowUser(handle),
         );
     }
-    root.querySelector(".profile-hero-block-btn")?.addEventListener(
+    lifetime.listen(
+        root.querySelector(".profile-hero-block-btn"),
         "click",
-        () => postActions?.doBlockUser(),
+        () => actions?.doBlockUser(),
     );
     root.querySelectorAll(".profile-hero-unblock-btn").forEach((button) => {
-        button.addEventListener("click", () => postActions?.doUnblockUser());
+        lifetime.listen(button, "click", () => actions?.doUnblockUser());
     });
-    root.querySelector("[data-message-target]")?.addEventListener("click", () =>
-        postActions?.doOpenMessageRoom(),
+    lifetime.listen(root.querySelector("[data-message-target]"), "click", () =>
+        actions?.doOpenMessageRoom(),
     );
-    root.querySelector(".profile-hero-banner-btn")?.addEventListener(
+    lifetime.listen(
+        root.querySelector(".profile-hero-banner-btn"),
         "click",
         (event) => {
             const bannerButton = event.currentTarget;
@@ -284,18 +285,20 @@ function bindProfileHeroEvents() {
                 bannerHeight,
                 bannerRect,
             );
-            requestSelection("banner", bannerFileInput);
+            selectImage("banner", bannerInput);
         },
     );
-    root.querySelector(".profile-hero-avatar-btn")?.addEventListener(
+    lifetime.listen(
+        root.querySelector(".profile-hero-avatar-btn"),
         "click",
         () => {
-            requestSelection("avatar", avatarFileInput);
+            selectImage("avatar", avatarInput);
         },
     );
-    root.querySelector(".profile-avatar-remove-btn")?.addEventListener(
+    lifetime.listen(
+        root.querySelector(".profile-avatar-remove-btn"),
         "click",
-        () => profileImageActions?.doRemoveAvatar(),
+        () => imageActions?.doRemoveAvatar(),
     );
 
     if (bannerMenuCloseHandler) {
@@ -315,7 +318,7 @@ function bindProfileHeroEvents() {
             }
         };
 
-        menuButton.addEventListener("click", (event) => {
+        lifetime.listen(menuButton, "click", (event) => {
             event.stopPropagation();
             const opening = dropdown.hidden;
             dropdown.hidden = !opening;
@@ -337,7 +340,7 @@ function bindProfileHeroEvents() {
 
         root.querySelectorAll(".profile-banner-height-radio").forEach(
             (bannerHeightRadio) => {
-                bannerHeightRadio.addEventListener("change", async () => {
+                lifetime.listen(bannerHeightRadio, "change", async () => {
                     const nextBannerHeight = bannerHeightRadio.value;
                     if (!nextBannerHeight) return;
                     bannerHeightRadio
@@ -365,7 +368,8 @@ function bindProfileHeroEvents() {
             },
         );
 
-        root.querySelector(".profile-banner-remove-btn")?.addEventListener(
+        lifetime.listen(
+            root.querySelector(".profile-banner-remove-btn"),
             "click",
             () => {
                 dropdown.hidden = true;
@@ -375,7 +379,7 @@ function bindProfileHeroEvents() {
                     bannerMenuCloseHandler,
                     true,
                 );
-                profileImageActions?.doRemoveBanner();
+                imageActions?.doRemoveBanner();
             },
         );
         bindExternalProfileSync({
@@ -383,25 +387,38 @@ function bindProfileHeroEvents() {
             dropdown,
             menuButton,
             i18n,
+            isCurrent: lifetime.isCurrent,
+            signal: lifetime.signal,
             applyProfile: async () => {
-                profile = await loadOwnProfile();
-                profileImageActions?.revokeProfileBlobUrls();
-                avatarBlobUrl = await loadImageAsBlob(profile?.avatarKey);
-                bannerBlobUrl = await loadImageAsBlob(profile?.bannerKey);
+                const previousProfile = profile;
+                const nextProfile = await loadOwnProfile();
+                if (!lifetime.isCurrent() || profile !== previousProfile)
+                    return false;
+                profile = nextProfile;
+                const outcome = await heroMedia.read(nextProfile);
+                if (!outcome.current) return false;
                 refreshProfileHero();
-                bindProfileHeroEvents();
+                if (outcome.retryable)
+                    throw new Error("profile_media_retryable");
+                return true;
             },
         });
     }
 }
 
 function bindSocialCardEvents() {
-    bindSocialCardFollowButtons(root, (handle) =>
-        postActions?.doFollowUser(handle),
-    );
+    const lifetime = pageLifetime;
+    const actions = postActions;
+    bindSocialCardFollowButtons(root, (handle) => {
+        if (lifetime.isCurrent()) return actions?.doFollowUser(handle);
+    });
 }
 
 function bindPageEvents() {
+    heroMedia?.reconcile();
+    const lifetime = pageLifetime;
+    const actions = postActions;
+    if (!lifetime?.isCurrent()) return;
     bindProfileHeroEvents();
     void hydrateAvailabilityIndicators(root);
     const postFormElement = root.querySelector("#new-post-form");
@@ -473,21 +490,26 @@ function bindPageEvents() {
         };
         renderPostPreview();
         syncPostComposerMode();
-        postTitleInput?.addEventListener("input", renderPostPreview);
-        postContentInput?.addEventListener("input", renderPostPreview);
-        postComposeToggle?.addEventListener("click", () => {
+        lifetime.listen(postTitleInput, "input", renderPostPreview);
+        lifetime.listen(postContentInput, "input", renderPostPreview);
+        lifetime.listen(postComposeToggle, "click", () => {
             isPostPreviewMode = false;
             syncPostComposerMode();
         });
-        postPreviewToggle?.addEventListener("click", () => {
+        lifetime.listen(postPreviewToggle, "click", () => {
             isPostPreviewMode = true;
             syncPostComposerMode();
             renderPostPreview();
         });
-        postFormElement.addEventListener("submit", (event) => {
-            event.preventDefault();
-            postActions?.doCreatePost();
-        });
+        postFormElement.addEventListener(
+            "submit",
+            (event) => {
+                if (!lifetime.isCurrent()) return;
+                event.preventDefault();
+                return actions?.doCreatePost();
+            },
+            { signal: lifetime.signal },
+        );
     } else if (!(postFormElement instanceof HTMLFormElement)) {
         newPostFormController = null;
     }
@@ -495,8 +517,8 @@ function bindPageEvents() {
         (button) => {
             if (boundProfileControls.has(button)) return;
             boundProfileControls.add(button);
-            button.addEventListener("click", () =>
-                postActions?.doDeletePost(button.dataset.postId),
+            lifetime.listen(button, "click", () =>
+                actions?.doDeletePost(button.dataset.postId),
             );
         },
     );
@@ -504,39 +526,126 @@ function bindPageEvents() {
 }
 
 export async function mount(rootEl, { signal } = {}) {
-    profileEditor?.dispose();
-    // Clean up any stale document-level listener from a previous mount.
-    if (bannerMenuCloseHandler) {
-        document.removeEventListener("click", bannerMenuCloseHandler, true);
-        bannerMenuCloseHandler = null;
-    }
-
-    function isAborted() {
-        return signal?.aborted ?? false;
-    }
-
+    pageLifetime?.dispose();
     root = rootEl;
-    i18n = await createI18n({
+    composer = null;
+    elements = [];
+    profile = null;
+    followers = [];
+    following = [];
+    posts = [];
+    avatarBlobUrl = null;
+    bannerBlobUrl = null;
+    bannerHeight = "half";
+    bannerPanX = 50;
+    bannerPanY = 50;
+    newPostFormController = null;
+    const lifetime = createProfilePageLifetime({
+        root,
+        signal,
+        onDispose: () => {
+            profileEditor?.dispose();
+            stopFollowerCountPoller();
+            imageSelection?.dispose();
+            if (bannerMenuCloseHandler) {
+                document.removeEventListener(
+                    "click",
+                    bannerMenuCloseHandler,
+                    true,
+                );
+                bannerMenuCloseHandler = null;
+            }
+            heroMedia?.clear();
+        },
+    });
+    pageLifetime = lifetime;
+    const media = createProfileHeroMedia({
+        root,
+        signal: lifetime.signal,
+        isCurrent: lifetime.isCurrent,
+        onChange: (next, { refresh = true } = {}) => {
+            avatarBlobUrl = next.avatarBlobUrl;
+            bannerBlobUrl = next.bannerBlobUrl;
+            if (refresh) refreshProfileHero();
+        },
+    });
+    heroMedia = media;
+    try {
+        await initializePage(lifetime, media);
+    } catch (error) {
+        const current = lifetime.isCurrent();
+        lifetime.dispose();
+        if (current) throw error;
+    }
+}
+
+async function initializePage(lifetime, media) {
+    if (!lifetime.isCurrent()) return;
+    const nextI18n = await createI18n({
         componentStringBaseUrls: ["/static/adapters/social/profile/languages"],
     });
+    if (!lifetime.isCurrent()) return;
+    i18n = nextI18n;
     applyDocumentTitle(i18n, "ui.page.title.profile");
-
-    profileImageActions = createProfileImageUploadActions({
+    const ownedState = {
         getState,
-        setState,
-        loadOwnProfile,
+        setState: (next) => {
+            if (lifetime.isCurrent()) setState(next);
+        },
+        isCurrent: lifetime.isCurrent,
+    };
+    const refreshOwnedHero = () => {
+        if (lifetime.isCurrent()) refreshProfileHero();
+    };
+    profileImageActions = createProfileImageUploadActions({
+        ...ownedState,
         saveBannerLayoutPreference,
-        refreshPage: refreshProfileHero,
+        refreshPage: refreshOwnedHero,
         updateNavbarAvatar,
         i18n,
-        openPopup,
+        openPopup: (options) =>
+            openPopup({ ...options, signal: lifetime.signal }),
     });
+    const ownedImageActions = profileImageActions;
+    imageSelection = createProfileImageSelection({
+        signal: lifetime.signal,
+        isCurrent: lifetime.isCurrent,
+        onFileSelected: (kind, file) =>
+            ownedImageActions.handleProfileImageUpload({
+                kind,
+                file,
+                aspectRatio:
+                    kind === "avatar"
+                        ? AVATAR_CROP_WIDTH_TO_HEIGHT_RATIO
+                        : pendingBannerAspectRatio,
+            }),
+        onError: (error) => {
+            if (error?.code === "missing_translation") throw error;
+            console.error("[profile] image selection failed", {
+                component: "social-profile",
+                operation: "selectImage",
+                errorName: error?.name,
+            });
+            if (lifetime.isCurrent())
+                showToast(
+                    i18n.t(
+                        error.message === "offline_outbox_full"
+                            ? "ui.reuse.offline_buffer_full_body"
+                            : "ui.app.profile.upload_failed",
+                    ),
+                    { variant: "error" },
+                );
+        },
+    });
+    ({ avatarFileInput, bannerFileInput, requestSelection } = imageSelection);
     postActions = createProfilePostActions({
-        getState,
-        setState,
-        refreshPage,
-        refreshProfileHero,
+        ...ownedState,
+        refreshPage: () => {
+            if (lifetime.isCurrent()) refreshPage();
+        },
+        refreshProfileHero: refreshOwnedHero,
         refreshProfileCards: (cardIds) => {
+            if (!lifetime.isCurrent()) return;
             refreshProfileCards(cardIds);
             bindSocialCardEvents();
         },
@@ -545,7 +654,6 @@ export async function mount(rootEl, { signal } = {}) {
         loadFollowers,
         loadFollowing,
     });
-
     urlHandle = decodeURIComponent(
         window.location.pathname.split("/")[2] ?? "",
     );
@@ -555,42 +663,25 @@ export async function mount(rootEl, { signal } = {}) {
         urlHandle === ownAccount ||
         uiCtx.capabilities.get("social:isOwnProfileRoute")?.(
             window.location.pathname,
-        ) === true; // empty handle means /profile with no path segment → own profile
-
+        ) === true;
     if (isOffline() && !isOwnProfile) throw new Error("offline_access_denied");
-    stopFollowerCountPoller();
 
-    profile = null;
-    followers = [];
-    following = [];
-    posts = [];
-    profileImageActions?.revokeProfileBlobUrls();
-    bannerHeight = "half";
-    bannerPanX = 50;
-    bannerPanY = 50;
-    composer = null;
-    elements = [];
-    newPostFormController = null;
-
-    if (isOwnProfile) {
-        profile = await loadOwnProfile();
-    } else {
-        const result = await loadUserProfile(urlHandle);
-        if (result?.notFound) {
-            await navigateTo("/error?code=404");
-            return;
-        }
-        profile = result;
+    const nextProfile = isOwnProfile
+        ? await loadOwnProfile()
+        : await loadUserProfile(urlHandle);
+    if (!lifetime.isCurrent()) return;
+    if (nextProfile?.notFound) {
+        await navigateTo("/error?code=404");
+        return;
     }
-
-    if (isAborted()) return;
-
-    [followers, following, posts] = await Promise.all([
+    profile = nextProfile;
+    const connections = await Promise.all([
         loadFollowers(profile?.handle),
         loadFollowing(profile?.handle),
         isOwnProfile ? loadOwnPosts() : loadUserPosts(profile?.handle),
     ]);
-
+    if (!lifetime.isCurrent()) return;
+    [followers, following, posts] = connections;
     canMessageTarget = false;
     canRequestMessageTarget = false;
     relationship = null;
@@ -599,36 +690,38 @@ export async function mount(rootEl, { signal } = {}) {
             const response = await apiFetch(
                 `/api/v1/social/users/${encodeURIComponent(profile.handle)}/relationship`,
             );
+            if (!lifetime.isCurrent()) return;
             if (response.ok) {
                 const payload = await response.json();
+                if (!lifetime.isCurrent()) return;
                 relationship = payload?.data ?? null;
                 canMessageTarget = Boolean(relationship?.canMessage);
                 canRequestMessageTarget = Boolean(
                     relationship?.canSendMessageRequest,
                 );
             }
-        } catch {
-            canMessageTarget = false;
-            canRequestMessageTarget = false;
-            relationship = null;
+        } catch (error) {
+            if (!lifetime.isCurrent()) return;
+            console.error("[profile] relationship read failed", {
+                component: "social-profile",
+                operation: "readRelationship",
+                errorName: error?.name,
+            });
         }
     }
-
-    if (isAborted()) return;
-
-    const [nextAvatarBlobUrl, nextBannerBlobUrl, bannerLayout] =
-        await Promise.all([
-            loadImageAsBlob(profile?.avatarKey),
-            loadImageAsBlob(profile?.bannerKey),
-            loadBannerLayoutPreference(profile?.accountId),
-        ]);
-    avatarBlobUrl = nextAvatarBlobUrl;
-    bannerBlobUrl = nextBannerBlobUrl;
+    if (!lifetime.isCurrent()) return;
+    const [mediaOutcome, bannerLayout] = await Promise.all([
+        media.read(profile),
+        loadBannerLayoutPreference(profile?.accountId),
+    ]);
+    if (!lifetime.isCurrent()) return;
     bannerHeight = bannerLayout.height;
     bannerPanX = bannerLayout.panX;
     bannerPanY = bannerLayout.panY;
-
-    if (isAborted()) return;
+    if (mediaOutcome.retryable)
+        showToast(i18n.t("ui.app.profile.media_refresh_failed"), {
+            variant: "error",
+        });
 
     // These heuristics reserve a small fixed padding plus estimated rows per
     // visible item so profile widgets stop clipping or creating avoidable
@@ -658,25 +751,27 @@ export async function mount(rootEl, { signal } = {}) {
                 max: "full",
             },
             render: () =>
-                renderHero({
-                    profile,
-                    avatarBlobUrl,
-                    bannerBlobUrl,
-                    bannerHeight,
-                    bannerPanX,
-                    bannerPanY,
-                    isOwnProfile,
-                    relationship,
-                    canMessageTarget,
-                    canRequestMessageTarget,
-                    posts,
-                    following,
-                    followers,
-                    externalProviderLabel: isOwnProfile
-                        ? resolveExternalProfileProvider()
-                        : null,
-                    i18n,
-                }),
+                media.prepare(
+                    renderHero({
+                        profile,
+                        avatarBlobUrl,
+                        bannerBlobUrl,
+                        bannerHeight,
+                        bannerPanX,
+                        bannerPanY,
+                        isOwnProfile,
+                        relationship,
+                        canMessageTarget,
+                        canRequestMessageTarget,
+                        posts,
+                        following,
+                        followers,
+                        externalProviderLabel: isOwnProfile
+                            ? resolveExternalProfileProvider()
+                            : null,
+                        i18n,
+                    }),
+                ),
         },
         {
             id: "followers",
@@ -751,16 +846,15 @@ export async function mount(rootEl, { signal } = {}) {
     ];
 
     profileEditor = createProfileEditor({
-        getState,
-        setState,
+        ...ownedState,
         refreshProfileCards,
         bindProfileHeroEvents,
         i18n,
-        signal,
+        signal: lifetime.signal,
     });
     composer = createPageComposer(root, {
         tutorials: guides,
-        signal,
+        signal: lifetime.signal,
         allowCustomization: isOwnProfile,
         elements,
         preferenceKey: "profile-layout",
@@ -775,7 +869,7 @@ export async function mount(rootEl, { signal } = {}) {
     });
 
     await composer.init();
-    startFollowerCountPoller(signal);
+    if (lifetime.isCurrent()) startFollowerCountPoller(lifetime);
 }
 
 await mountWhenDirect(mount);

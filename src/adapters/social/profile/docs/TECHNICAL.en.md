@@ -211,7 +211,7 @@ The Profile-owned editor uses the existing `social:profile:request` ctx flow and
 
 ### Avatar Read Recovery
 
-The navbar and hover previews keep an unchanged image mounted during unrelated refreshes. Temporary network failures and HTTP 408, 425, 429 or 5xx responses do not permanently disable a key. The next explicit refresh or opening can retry; there is no avatar retry timer. Confirmed deletion (404/410), denial (401/403), explicit invalidation, account/token changes and provider removal clear the corresponding image. Profile page hero rendering is a separate consumer and is not changed by this recovery contract.
+The navbar and hover previews keep an unchanged image mounted during unrelated refreshes. Temporary network failures and HTTP 408, 425, 429 or 5xx responses do not permanently disable a key. The next explicit refresh or opening can retry; there is no avatar retry timer. Confirmed deletion (404/410), denial (401/403), explicit invalidation, account/token changes and provider removal clear the corresponding image. The profile hero uses the page-owned media lifecycle described below.
 
 The standalone provider owns `ui:profileAvatarRenderer` until its scope ends. Existing `fetch(key)` still returns a URL or null; `hydrate(container, { signal })` accepts optional cancellation, and `invalidate(key)` clears a key (omitting the key clears all). Cache entries are scoped to the account, access token and provider lifetime, coalesce concurrent loads, and are capped at 128 keys. Successful and confirmed-negative reads are revalidated after 60 seconds on demand. A content digest keeps identical bytes on the same URL while changed bytes receive a new URL. Eviction, invalidation and disposal revoke owned object URLs. Detached elements are not retained.
 
@@ -221,7 +221,19 @@ The profile identity tutorial continues to explain profile links and their previ
 
 The renderer also exposes a required truthful `available` flag for dependent presentation providers and emits its own `cognis:profile-avatar-renderer-changed` notification on mount and revocation. Its flag becomes false on scope abort before capability removal; failed mounts and reactivation follow the same notification path. Consumers must not infer readiness merely from registry presence.
 
+## Hero Images
+
+The profile page keeps unchanged avatar and banner image nodes during follower counts, profile edits and other card updates. Explicit synchronization rechecks media and preserves the current image for the same profile, session and key when a network error or HTTP 408, 425, 429 or 5xx prevents a read. A visible error invites a retry; the page does not report that refresh as successful. A successful retry with identical bytes keeps the same URL, while changed bytes replace it.
+
+A changed profile or image key, authoritative null key, confirmed deletion, or denied/missing media (401/403/404/410) clears the former image. Removing an avatar leaves the banner intact, and vice versa. Navigation, repeated mounting, account/token/provider changes and provider disposal cancel old work and release its object URLs. Late profile records, response bodies, image reads, crop results, uploads, deletes and follower refreshes cannot update a newer page. A file picker belongs to the page that opened it.
+
+The Profile client publishes its scoped `social:profilePageSignal` alongside `social:profileRequest`. The hero uses the registered `social:profile:request` and `social:profileMedia:read` flows, bounded two-image ownership and the shared Profile digest reader. Only image nodes are reconciled; the rest of the hero continues updating normally. The composer, shell, navbar, preview authorization and draft-editor contracts remain in force. Ship the Profile 3.0.20 page and provider together.
+
+Regression tests use static jsdom fixtures, actual page exports and registered request/provider lifecycles. They verify node identity, URL release, failure recovery and out-of-order work. They do not establish native browser paint, image decoding or the original reported production trigger.
+
 On your own profile, Edit Profile opens your details. Unsuccessful saves keep your changes available to correct and retry.
+
+Profile photos remain visible while counts and details update. Retry a failed image refresh by reopening the profile; a confirmed removal clears only the selected image. The identity step keeps its existing target, progression and completion identity.
 
 ## Security
 

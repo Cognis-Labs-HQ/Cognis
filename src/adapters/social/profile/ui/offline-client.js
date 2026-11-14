@@ -127,6 +127,7 @@ export function registerProfileOfflineClient(ctx) {
     });
     const own = registerOwnProfileOffline(ctx, request, apiFetch);
     ctx.capabilities.contribute("social:profileRequest", own.fetch);
+    ctx.capabilities.contribute("social:profilePageSignal", ctx.signal);
     ctx.capabilities.get("offline:registerSessionRoutes")?.(
         ["social-profile-page"],
         ctx.signal,

@@ -25,4 +25,6 @@
   <string name="module.social.profile.tutorial.profile.preview.post.title">Preview A Post</string>
   <string name="module.social.profile.tutorial.profile.preview.post.body">Preview shows the current title and body before publishing. Return to Compose or rotate the device without losing your draft.</string>
   <string name="ui.app.profile.save_pending_closed">Closing does not undo a submitted save. Reload the Profile page to check the result.</string>
+  <string name="ui.app.profile.media_refresh_failed">Profile images could not be refreshed. Open the profile again to retry.</string>
+  <string name="ui.app.profile.remove_image_failed">The image could not be removed. Try again.</string>
 </resources>
