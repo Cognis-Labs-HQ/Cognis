@@ -18,6 +18,37 @@ const MAX_MARKETPLACE_ASSET_BYTES = 10 * 1024 * 1024;
 const CANONICAL_UUID =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+function parseChannelReferences(
+    references: Array<Record<string, unknown>>,
+): Array<{ name: string; commit: string }> {
+    return references.map((reference) => {
+        if (
+            !reference ||
+            typeof reference !== "object" ||
+            Array.isArray(reference)
+        ) {
+            throw new Error("invalid_module_channel_listing");
+        }
+        const name = reference.name;
+        const commit = reference.commit;
+        if (!commit || typeof commit !== "object" || Array.isArray(commit)) {
+            throw new Error("invalid_module_channel_listing");
+        }
+        const identity =
+            (commit as Record<string, unknown>).sha ??
+            (commit as Record<string, unknown>).id;
+        if (
+            typeof name !== "string" ||
+            !name.trim() ||
+            typeof identity !== "string" ||
+            !/^(?:[a-f0-9]{40}|[a-f0-9]{64})$/i.test(identity)
+        ) {
+            throw new Error("invalid_module_channel_listing");
+        }
+        return { name, commit: identity };
+    });
+}
+
 export class MarketplaceRepository {
     protected readonly context: Ctx;
     protected readonly credentialContext = new CredentialContext();
@@ -279,18 +310,9 @@ export class MarketplaceRepository {
             source.provider === "github"
                 ? `${source.baseUrl}/repos/${projectPath}/branches?per_page=100`
                 : `${source.baseUrl}/projects/${encodeURIComponent(projectPath)}/repository/branches?per_page=100`;
-        return (await this.fetchPaginated(endpoint, headers))
-            .map((branch) => ({
-                name: String(branch.name ?? ""),
-                commit: String(
-                    (branch.commit as Record<string, unknown> | undefined)
-                        ?.sha ??
-                        (branch.commit as Record<string, unknown> | undefined)
-                            ?.id ??
-                        "",
-                ),
-            }))
-            .filter((branch) => branch.name && branch.commit);
+        return parseChannelReferences(
+            await this.fetchPaginated(endpoint, headers),
+        );
     }
 
     protected async attachVersions<T extends { name: string; commit: string }>(
@@ -356,17 +378,9 @@ export class MarketplaceRepository {
             source.provider === "github"
                 ? `${source.baseUrl}/repos/${projectPath}/tags?per_page=100`
                 : `${source.baseUrl}/projects/${encodeURIComponent(projectPath)}/repository/tags?per_page=100`;
-        return (await this.fetchPaginated(endpoint, headers))
-            .map((tag) => ({
-                name: String(tag.name ?? ""),
-                commit: String(
-                    (tag.commit as Record<string, unknown> | undefined)?.sha ??
-                        (tag.commit as Record<string, unknown> | undefined)
-                            ?.id ??
-                        "",
-                ),
-            }))
-            .filter((tag) => tag.name && tag.commit);
+        return parseChannelReferences(
+            await this.fetchPaginated(endpoint, headers),
+        );
     }
 
     protected async fetchPaginated(
