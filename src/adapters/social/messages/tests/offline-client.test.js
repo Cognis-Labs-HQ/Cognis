@@ -1,3 +1,4 @@
+import * as reactionRecord from "../ui/reuse/reaction-record.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createOfflineClientFixture } from "../../../../tooling/reuse/offline-client-fixture.js";
@@ -14,6 +15,7 @@ test("verified authentication primes the room list without requiring an online M
         new URL("../ui/offline-client.js", import.meta.url),
         {
             ...fixture.imports,
+            "./reuse/reaction-record.js": reactionRecord,
             "./i18n.js": { createMessagesI18n: async () => ({}) },
         },
         fixture.globals,
@@ -63,6 +65,7 @@ test("encrypted messages remain visibly queued and retain their identity after a
         new URL("../ui/offline-client.js", import.meta.url),
         {
             ...fixture.imports,
+            "./reuse/reaction-record.js": reactionRecord,
             "./i18n.js": { createMessagesI18n: async () => ({}) },
         },
         fixture.globals,
@@ -107,6 +110,7 @@ test("offline reaction changes project their final state and replay without togg
         new URL("../ui/offline-client.js", import.meta.url),
         {
             ...fixture.imports,
+            "./reuse/reaction-record.js": reactionRecord,
             "./i18n.js": { createMessagesI18n: async () => ({}) },
         },
         fixture.globals,
