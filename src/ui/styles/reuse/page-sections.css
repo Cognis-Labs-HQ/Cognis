@@ -455,9 +455,26 @@ body:not([data-theme="light"]) .markdown-code-inline code {
     display: flex;
     align-items: baseline;
     gap: 2px;
+    min-width: 0;
+}
+
+.form-builder-label-text > label,
+.form-builder-label-heading {
+    min-width: 0;
+}
+
+.form-builder-label-heading {
+    display: block;
+    white-space: nowrap;
+}
+
+.form-builder-label-content {
+    white-space: normal;
+    overflow-wrap: anywhere;
 }
 
 .form-builder-required-flag {
+    white-space: nowrap;
     color: var(--color-danger-outline-text);
     font-weight: 700;
     font-size: 0.9em;

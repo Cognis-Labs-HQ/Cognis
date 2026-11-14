@@ -94,3 +94,10 @@ Overlay halaman dipasang pada badan dokumen agar posisi viewport tidak dipengaru
 Di Administrasi → Komponen, label status, indikator kesehatan, dan sakelar daya menggunakan lebar sesuai isinya. Baris komponen yang sempit menempatkan nama di atas kontrol dan mempertahankan kontrol pembuka detail di sampingnya; kontrol dapat membungkus dalam lebar baris yang tersedia. Nama panjang, label status, dan detail versi tetap dapat dibaca.
 
 Sakelar daya dan kontrol pembuka detail memiliki area tekan setinggi 44 piksel. Tab memfokuskan sakelar yang tersedia, Spasi mengubahnya, dan garis fokus mengikuti penggeser yang terlihat. Gateway wajib serta adapter terkunci atau tidak tersedia tetap memiliki kontrol yang dinonaktifkan. Tutorial Komponen menjelaskan penggunaan papan ketik dan tetap memakai target sakelar, pembuka detail, metadata, dan konfigurasi yang sama.
+
+## Judul Formulir Bersama
+
+Pembuat formulir bersama mengelompokkan setiap judul kolom dan penanda wajibnya dalam satu wadah teks. Label dapat membungkus pada formulir sempit; penanda menggunakan spasi tanpa pemisah baris dan tetap sejajar, bukan menjadi bagian kisi tersendiri. Label kontrol asli, atribut wajib, tautan pada label, dan tombol keterangan tetap berfungsi. `setFieldRequired` memperbarui judul yang sama untuk kolom teks, pilihan, area teks, kotak centang, dan tombol radio.
+Judul mencegah pemisahan antara isi dan penandanya, sementara teks label di dalamnya tetap dapat membungkus, termasuk kata panjang tanpa spasi.
+
+Judul formulir tetap berada dalam kolom yang sama. Target dan alur panduan Kalender serta Berbagi tidak berubah; tidak diperlukan tindakan atau langkah panduan baru.

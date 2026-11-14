@@ -181,7 +181,7 @@ export function createFormBuilder(ctx, options) {
         }
 
         const requiredFlagInline = required
-            ? `<span class="form-builder-required-flag" data-form-builder-required="${escapeHtml(fieldName)}" aria-hidden="true"> *</span>`
+            ? `<span class="form-builder-required-flag" data-form-builder-required="${escapeHtml(fieldName)}" aria-hidden="true">&#160;*</span>`
             : "";
         const infoTooltip = fieldConfig.infoTooltip?.text
             ? (ctx.renderInfoTooltip?.(
@@ -282,10 +282,11 @@ export function createFormBuilder(ctx, options) {
             ? `<span class="form-builder-char-counter" data-form-builder-char-counter="${escapeHtml(fieldName)}">${escapeHtml(String(value.length))} / ${escapeHtml(String(maxCharacters))}</span>`
             : "";
 
+        const headingMarkup = `<span class="form-builder-label-heading"><span class="form-builder-label-content">${labelMarkup}</span>${requiredFlagInline}</span>`;
         const fieldLabelMarkup =
             type === "radio"
-                ? `<span class="form-builder-label-text"><span>${labelMarkup}${requiredFlagInline}</span>${infoTooltip}</span>`
-                : `<span class="form-builder-label-text"><label for="${escapeHtml(inputId)}">${labelMarkup}${requiredFlagInline}</label>${infoTooltip}</span>`;
+                ? `<span class="form-builder-label-text">${headingMarkup}${infoTooltip}</span>`
+                : `<span class="form-builder-label-text"><label for="${escapeHtml(inputId)}">${headingMarkup}</label>${infoTooltip}</span>`;
 
         return `
       <div class="${fieldClassName}" data-form-builder-field="${escapeHtml(fieldName)}">
@@ -540,10 +541,12 @@ export function createFormBuilder(ctx, options) {
                     required && !fieldHasValue,
                 );
             }
-            fieldInput.classList.toggle(
-                "form-builder-input--invalid",
-                !fieldValid,
-            );
+            for (const input of fieldInputs) {
+                input.classList.toggle(
+                    "form-builder-input--invalid",
+                    !fieldValid,
+                );
+            }
             return fieldValid;
         }
 
@@ -565,10 +568,10 @@ export function createFormBuilder(ctx, options) {
             for (const fieldInput of fieldInputs) {
                 fieldInput.toggleAttribute("required", fieldConfig.required);
             }
-            const label = formElement.querySelector(
-                `[data-form-builder-field="${CSS.escape(fieldName)}"] .form-builder-label-text > label`,
+            const heading = formElement.querySelector(
+                `[data-form-builder-field="${CSS.escape(fieldName)}"] .form-builder-label-heading`,
             );
-            const existingFlag = label?.querySelector(
+            const existingFlag = heading?.querySelector(
                 "[data-form-builder-required]",
             );
             if (fieldConfig.required && !existingFlag) {
@@ -576,8 +579,8 @@ export function createFormBuilder(ctx, options) {
                 requiredFlag.className = "form-builder-required-flag";
                 requiredFlag.dataset.formBuilderRequired = fieldName;
                 requiredFlag.setAttribute("aria-hidden", "true");
-                requiredFlag.textContent = " *";
-                label?.appendChild(requiredFlag);
+                requiredFlag.textContent = "\u00a0*";
+                heading?.appendChild(requiredFlag);
             } else if (!fieldConfig.required) {
                 existingFlag?.remove();
             }
