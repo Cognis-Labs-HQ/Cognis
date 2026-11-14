@@ -24,9 +24,4 @@ Published prerelease version identifiers remain valid for presentation revisions
 
 ## Commits
 
-- [215f842f7e7ce230d29c27c47b40ef12976c2372](https://github.com/Cognis-Labs-HQ/Cognis/commit/215f842f7e7ce230d29c27c47b40ef12976c2372)
-- [25a87fd0684de8205bc8310ce0e2cd17397a76b0](https://github.com/Cognis-Labs-HQ/Cognis/commit/25a87fd0684de8205bc8310ce0e2cd17397a76b0)
-- [13a45bbe7ec03660fc40d0cc06934fef7cf6b3d9](https://github.com/Cognis-Labs-HQ/Cognis/commit/13a45bbe7ec03660fc40d0cc06934fef7cf6b3d9)
-- [f7a840d84e9dda280de54dd84e08519ed35a0a13](https://github.com/Cognis-Labs-HQ/Cognis/commit/f7a840d84e9dda280de54dd84e08519ed35a0a13)
-- [d66a4fdeccb120a7d39837df821b15e29db48143](https://github.com/Cognis-Labs-HQ/Cognis/commit/d66a4fdeccb120a7d39837df821b15e29db48143)
-- [5995ab80c44feb429ec0afd1ad046b76f1834a1e](https://github.com/Cognis-Labs-HQ/Cognis/commit/5995ab80c44feb429ec0afd1ad046b76f1834a1e)
+- [335e21ef30f7c02a2c24424d7515c27499c93d85](https://github.com/Cognis-Labs-HQ/Cognis/commit/335e21ef30f7c02a2c24424d7515c27499c93d85)
