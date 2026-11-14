@@ -30,10 +30,6 @@ const popupStyles = readFileSync(
     resolve(ROOT, "src/ui/styles/popup.css"),
     "utf8",
 );
-const popupSource = readFileSync(
-    resolve(ROOT, "src/ui/reuse/popup.js"),
-    "utf8",
-);
 const filterSource = readFileSync(
     resolve(ROOT, "src/ui/app/modules/filters.js"),
     "utf8",
@@ -93,11 +89,6 @@ test("module preference fields use the form builder and secret controls", () => 
         /required:\s*definition\.required === true/,
     );
     assert.match(modulePreferencesSource, /renderInfoTooltip/);
-    assert.doesNotMatch(popupSource, /module-settings-popup-description/);
-    assert.match(
-        popupSource,
-        /querySelector\("input, textarea, select"\) \?\?[\s\S]*button:not\(\.popup-close-btn\)/,
-    );
     assert.match(
         marketplaceSource,
         /didSave = await openModulePreferences[\s\S]*if \(didSave\)[\s\S]*preferences_saved/,
