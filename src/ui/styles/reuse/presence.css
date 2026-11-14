@@ -19,24 +19,12 @@
     align-items: center;
 }
 .profile-mini-preview__avatar {
+    text-decoration: none;
     width: 48px;
     height: 48px;
     border-radius: 999px;
     position: relative;
     flex: 0 0 auto;
-}
-.profile-mini-preview__avatar-img,
-.profile-mini-preview__avatar-initials {
-    display: flex;
-    width: 100%;
-    height: 100%;
-    align-items: center;
-    justify-content: center;
-    object-fit: cover;
-    background: var(--initials-bg, var(--accent));
-    color: #fff;
-    font-weight: 700;
-    border-radius: inherit;
 }
 .profile-mini-preview__identity {
     display: grid;

@@ -23,3 +23,7 @@ Identity and social actions precede the consecutive posts and preview stages.
 On your own profile, Edit Profile opens your details. Unsuccessful saves keep your changes available to correct and retry.
 
 Profile photos remain visible while counts and details update. Retry a failed image refresh by reopening the profile; a confirmed removal clears only the selected image. The identity step keeps its existing target, progression and completion identity.
+
+Navbar, preview and profile initials use the same name and color rules. The preview avatar opens that profile. A name change also updates initials shown after an image failure. Existing identity and avatar controls retain their tutorial targets, step order and completion IDs.
+
+The interactive preview is a named nonmodal dialog. Hovering it does not move keyboard focus; moving the pointer away leaves a focused card open. Escape closes it and returns focus to its trigger only when focus was inside the card.

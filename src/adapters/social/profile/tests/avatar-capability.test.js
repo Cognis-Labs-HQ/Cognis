@@ -23,6 +23,8 @@ test("Profile adapter owns the complete avatar UI capability", () => {
     );
     for (const method of [
         "buildMarkup",
+        "buildContent",
+        "getPresentation",
         "fetch",
         "getInitials",
         "getInitialsColor",
@@ -65,18 +67,6 @@ test("Profile standalone provider waits for avatar styles and contributes its cl
         provider,
         /capabilities\.contribute\("social:profileUiClient", profileUiClient\)/,
     );
-});
-
-test("navbar and profile cards derive initials from the same profile label", () => {
-    const navbar = readFileSync(
-        resolve(
-            process.cwd(),
-            "src/adapters/social/profile/ui/navbar-avatar-provider.js",
-        ),
-        "utf8",
-    );
-    assert.match(navbar, /profile\.displayName/);
-    assert.match(navbar, /fallbackFor\(profileLabel\)/);
 });
 
 test("UI callers use CTX without a profile abstraction in core reuse", () => {

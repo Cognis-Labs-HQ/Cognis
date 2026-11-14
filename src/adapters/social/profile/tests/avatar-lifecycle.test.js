@@ -57,7 +57,7 @@ test("concurrent repeated mounts coalesce reads; provider removal clears and can
         undefined,
     );
     assert.equal(main.querySelectorAll("img").length, 0);
-    assert.equal(state.document.querySelector(".avatar-image"), null);
+    assert.equal(state.document.querySelector(".avatar-button img"), null);
     assert.equal(
         await state.avatar.fetchProfileAvatarBlobUrl("alice/avatar-one"),
         null,
@@ -143,12 +143,12 @@ test("out-of-order navbar metadata cannot revoke a newer key", async (context) =
               }),
     );
     await state.navbar.updateNavbarAvatar();
-    const current = state.document.querySelector(".avatar-image");
+    const current = state.document.querySelector(".avatar-button img");
     old.resolve(
         Response.json({ data: { handle: "alice", avatarKey: "old-key" } }),
     );
     await first;
-    assert.equal(state.document.querySelector(".avatar-image"), current);
+    assert.equal(state.document.querySelector(".avatar-button img"), current);
     assert.ok(!state.revoked.includes(current.src));
 });
 
@@ -169,10 +169,10 @@ test("late denial from an old account cannot invalidate the new account image", 
             : Response.json({ data: { handle: "bob", avatarKey: "bob-key" } }),
     );
     await state.navbar.updateNavbarAvatar();
-    const current = state.document.querySelector(".avatar-image");
+    const current = state.document.querySelector(".avatar-button img");
     old.resolve(new Response("", { status: 403 }));
     await first;
-    assert.equal(state.document.querySelector(".avatar-image"), current);
+    assert.equal(state.document.querySelector(".avatar-button img"), current);
     assert.ok(!state.revoked.includes(current.src));
 });
 
@@ -216,9 +216,9 @@ test("a reconnected navbar target reacquires provider cleanup", async (context) 
     await state.navbar.updateNavbarAvatar();
     replacement.replaceWith(original);
     await state.navbar.updateNavbarAvatar();
-    assert.ok(original.querySelector(".avatar-image"));
+    assert.ok(original.querySelector(".avatar-button img"));
     await state.lifecycle.reconcile([]);
-    assert.equal(original.querySelector(".avatar-image"), null);
+    assert.equal(original.querySelector(".avatar-button img"), null);
 });
 
 test("renderer readiness notifications revoke before registry removal and recover after rollback", async (context) => {
