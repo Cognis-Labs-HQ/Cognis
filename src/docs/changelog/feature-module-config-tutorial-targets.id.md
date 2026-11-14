@@ -23,3 +23,4 @@ Pengaturan modul menangkap cabang tutorial sebelum mengaktifkan sementara modul 
 - [ad94587](https://github.com/Cognis-Labs-HQ/Cognis/commit/ad945875c919d504058437aab92449d254d79aa8)
 - [40d61ed](https://github.com/Cognis-Labs-HQ/Cognis/commit/40d61eded176b472f7040dbfcdb34d7d0067107d)
 - [f9fc6e2](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9fc6e2b8ac572bd04bd68a3d9e1fc7fc0e34fd7)
+- [d5936c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/d5936c995750fa83f4ea3fb15a7ee43ccc0df342)
