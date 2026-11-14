@@ -85,6 +85,7 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     const gatewayRegistry = new GatewayRegistry();
     const capabilities = new CapabilityStore();
     capabilities.contribute("auth:issueAccessToken", issueAccessToken);
+    capabilities.contribute("auth:readCredentialClaims", () => null);
     const uiRegistry = new UIRegistry();
     const dbExecutor = new MemoryExecutor();
     const adminToken = issueAccessToken("alice", "admin", 60);
@@ -172,8 +173,18 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         "auth:routeContext",
         createAuthContext(
             new Map([
-                [adminToken, { sub: "alice", role: "admin" }],
-                [bobToken, { sub: "bob", role: "user" }],
+                [
+                    adminToken,
+                    {
+                        sub: "alice",
+                        role: "admin",
+                        purpose: "session" as const,
+                    },
+                ],
+                [
+                    bobToken,
+                    { sub: "bob", role: "user", purpose: "session" as const },
+                ],
             ]),
         ),
     );

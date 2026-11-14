@@ -123,3 +123,7 @@ Tujuan yang tidak tersedia tetap terlihat dengan gaya nonaktif yang sama pada na
 ## Favorit yang Dikonfirmasi
 
 Perubahan favorit daring yang berhasil dan konfirmasi pengiriman ulang mengganti snapshot luring Study yang dibatasi ukurannya dengan respons server. Pembacaan lama yang masih berjalan tidak dapat menimpa snapshot tersebut. Membuka ulang halaman secara luring mempertahankan penambahan dan penghapusan yang telah dikonfirmasi, sementara perubahan yang masih mengantre tetap diproyeksikan di atas snapshot.
+
+## Identitas Sesi
+
+Aktivitas pribadi dan status tersimpan menggunakan sesi akun terverifikasi, termasuk nama akun yang diawali `share:`. Pembatasan tamu mengikuti tujuan kredensial terverifikasi, bukan nama atau penanda peramban. Pengiriman luring tetap memeriksa sesi terverifikasi, akun, dan instans.

@@ -77,3 +77,7 @@ Die Schlüsselbund-Einstellungen lesen beim Anzeigen den aktuellen Zustand, auch
 ## Lokalisierte Adapterfelder
 
 Die Keyring-Konfiguration deklariert ihr eigenes Sprachpaket und lokalisierte Bezeichnungen für maximale Tresorgröße und Iterationen zur Passwortableitung. Das gemeinsame Administrations-Popup löst diese Bezeichnungen über dieselben XML-Ressourcen wie der Adapter auf.
+
+## Geltungsbereich der Anmeldung
+
+Kontoaktionen erfordern bestätigte Kontositzungen. Aktionen für freigegebene Ressourcen prüfen Gastanmeldungen ausdrücklich und kontrollieren die aktuelle Freigabe vor den Ressourcenberechtigungen. Kontonamen bestimmen niemals den Anmeldetyp. Widerrufener oder abgelaufener Zugriff wird abgelehnt.

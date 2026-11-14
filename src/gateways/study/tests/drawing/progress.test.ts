@@ -33,7 +33,12 @@ function fixture() {
             requireAuth: (req: IncomingMessage, res: ServerResponse) => {
                 const account = req.headers["test-account"];
                 if (typeof account === "string")
-                    return { sub: account, role: "user" };
+                    return {
+                        sub: account,
+                        role: "user",
+                        purpose:
+                            account === "share:guest" ? "share" : "session",
+                    };
                 res.writeHead(401);
                 res.end();
                 return null;
@@ -177,6 +182,7 @@ test("drawing routes authenticate, reject share identities and invalid writes, a
     const state = fixture();
     assert.equal((await state.request(undefined)).status, 401);
     assert.equal((await state.request("share:guest")).status, 403);
+    assert.equal((await state.request("share:ordinary-account")).status, 200);
     for (const input of [
         {},
         { strokeCount: -1, mistakes: 0 },

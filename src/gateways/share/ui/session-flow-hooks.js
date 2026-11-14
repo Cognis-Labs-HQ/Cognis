@@ -23,10 +23,9 @@
  * - A `beforeunload` listener (removed via AbortSignal) restores the prior
  *   token when the user leaves the share page.
  *
- * Once activated, the guest session stays recognised as authenticated (via
- * `GUEST_SESSION_ACTIVE_STORAGE_KEY`, shared with
- * `reuse/share-button.js`'s `isViewingAsGuest()`) for the remainder of the
- * tab, even on paths that no longer match `/share/:token`. This lets
+ * Guest identity is established by Auth's verified credential contract.
+ * Storage markers retain restoration state, never authentication evidence.
+ * The verified guest remains scoped while navigating its content route. This lets
  * client-side navigation to other dashboard routes mount long enough for the
  * guest-navigation guard (see `/static/reuse/guest-blocked-popup.js` and the
  * app router) to intercept it with a "Guests cannot view this page" popup
@@ -63,6 +62,8 @@ let activeGuestSession = null;
 let activeShareSession = null;
 let accessDeniedNavigationPending = false;
 let activeGuestKeyring = null;
+let activatedGuestToken = null;
+let shareRequestRevision = 0;
 
 uiCtx.extendFlow(
     "spawn-component-page",
@@ -92,9 +93,11 @@ uiCtx.extendFlow(
 );
 
 function hasStoredAccountSession() {
-    const token = String(localStorage.getItem(ACCESS_TOKEN_KEY) ?? "").trim();
-    const accountId = String(localStorage.getItem(ACCOUNT_KEY) ?? "").trim();
-    return Boolean(token && accountId && !accountId.startsWith("share:"));
+    const identity = uiCtx.capabilities.get("session:getVerifiedIdentity")?.();
+    return (
+        identity?.purpose === "session" &&
+        identity.sub === localStorage.getItem(ACCOUNT_KEY)
+    );
 }
 
 function discardStaleGuestMarkers() {
@@ -230,9 +233,29 @@ async function activateGuestToken(
     guestAccessToken,
     guestProfile = null,
     guestKeyring = null,
+    isCurrentRequest = () => true,
 ) {
     const normalized = String(guestAccessToken ?? "").trim();
     if (!normalized) return null;
+    const startingToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+    const verifyIdentity = uiCtx.capabilities.get("session:verifyIdentity");
+    let identity;
+    try {
+        identity = await verifyIdentity?.(normalized);
+    } catch (error) {
+        console.error("[share] guest identity unavailable", {
+            operation: "verifyGuestIdentity",
+            errorName: error?.name,
+        });
+        return null;
+    }
+    if (
+        !isCurrentRequest() ||
+        localStorage.getItem(ACCESS_TOKEN_KEY) !== startingToken ||
+        identity?.purpose !== "share" ||
+        identity.sub !== guestKeyring?.accountId
+    )
+        return null;
     const guestSessionAlreadyActive = isViewingAsGuest();
     const prior = localStorage.getItem(ACCESS_TOKEN_KEY);
     const priorAccount = localStorage.getItem(ACCOUNT_KEY);
@@ -258,6 +281,7 @@ async function activateGuestToken(
     sessionStorage.setItem(GUEST_TOKEN_ACTIVE_KEY, "1");
     document.body.dataset.shareGuest = "true";
     localStorage.setItem(ACCESS_TOKEN_KEY, normalized);
+    activatedGuestToken = normalized;
     const guestKeyringAccountId = String(guestKeyring?.accountId ?? "").trim();
     const guestKeyringPassphrase = String(guestKeyring?.passphrase ?? "");
     if (guestKeyringAccountId && guestKeyringPassphrase) {
@@ -273,6 +297,11 @@ async function activateGuestToken(
             guestKeyringAccountId,
             guestKeyringPassphrase,
         );
+        if (
+            !isCurrentRequest() ||
+            localStorage.getItem(ACCESS_TOKEN_KEY) !== normalized
+        )
+            return null;
         if (!activated) {
             restoreGuestToken();
             return null;
@@ -287,9 +316,20 @@ async function activateGuestToken(
 
 function restoreGuestToken() {
     stopShareStatusMonitor();
-    if (sessionStorage.getItem(GUEST_TOKEN_ACTIVE_KEY) !== "1") return;
+    if (
+        activatedGuestToken &&
+        localStorage.getItem(ACCESS_TOKEN_KEY) !== activatedGuestToken
+    )
+        return;
+    if (
+        !isViewingAsGuest() &&
+        (!activatedGuestToken ||
+            localStorage.getItem(ACCESS_TOKEN_KEY) !== activatedGuestToken)
+    )
+        return;
     uiCtx.capabilities.get("keyring:endTemporary")?.();
     activeGuestKeyring = null;
+    activatedGuestToken = null;
     const prior = sessionStorage.getItem(PREV_ACCESS_TOKEN_KEY);
     const priorAccount = sessionStorage.getItem(PREV_ACCOUNT_KEY);
     const priorDisplayName = sessionStorage.getItem(PREV_DISPLAY_NAME_KEY);
@@ -350,16 +390,32 @@ uiCtx.extendFlow(
     "authenticate-session",
     "validate-stored-token",
     { id: "share-gateway:restore-account-session", order: -100 },
-    (stageCtx) => {
+    async (stageCtx) => {
         const shareToken = resolveShareTokenFromRoute(
             stageCtx.input?.routePath,
         );
+        try {
+            await uiCtx.capabilities.get("session:verifyIdentity")?.();
+        } catch (error) {
+            console.error("[share] session identity unavailable", {
+                operation: "verifySessionIdentity",
+                errorName: error?.name,
+            });
+            return null;
+        }
         const hasAccountSession = hasStoredAccountSession();
-        if (isViewingAsGuest() && hasAccountSession) {
+        if (
+            hasAccountSession &&
+            sessionStorage.getItem(GUEST_TOKEN_ACTIVE_KEY)
+        ) {
             discardStaleGuestMarkers();
             return null;
         }
-        if (shareToken.startsWith("shr_")) return null;
+        if (
+            shareToken.startsWith("shr_") ||
+            isActiveShareContentRoute(activeShareSession)
+        )
+            return null;
         if (isViewingAsGuest()) {
             restoreGuestToken();
         }
@@ -372,9 +428,17 @@ uiCtx.extendFlow(
     "apply-alternate-auth",
     { id: "share-gateway:apply-alternate-auth" },
     async (stageCtx) => {
+        const requestRevision = ++shareRequestRevision;
         const shareToken = resolveShareTokenFromRoute(
             stageCtx.input?.routePath,
         );
+        if (
+            activeShareSession?.session?.isGuestSession &&
+            !isViewingAsGuest()
+        ) {
+            restoreGuestToken();
+            return { authenticated: false, reason: "share_access_denied" };
+        }
         if (!shareToken) {
             if (isActiveShareContentRoute(activeShareSession)) {
                 return resolveActiveShareContentSession(activeShareSession);
@@ -403,14 +467,20 @@ uiCtx.extendFlow(
         // own account (e.g. they are the meeting owner or an invited
         // participant). Read this *before* any guest-token swap below.
         const priorSessionResult =
-            (stageCtx.stageResults?.["validate-stored-token"] ?? [])[0] ?? null;
+            (stageCtx.stageResults?.["validate-stored-token"] ?? []).find(
+                (result) => result?.purpose === "session",
+            ) ?? null;
         const ownAccountId = String(
             localStorage.getItem(ACCOUNT_KEY) ?? "",
         ).trim();
         const hasValidatedAccountSession =
             priorSessionResult?.valid === true &&
-            !isViewingAsGuest() &&
-            !ownAccountId.startsWith("share:");
+            priorSessionResult?.purpose === "session" &&
+            hasStoredAccountSession();
+        const resolvingToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+        const isCurrentRequest = () =>
+            requestRevision === shareRequestRevision &&
+            localStorage.getItem(ACCESS_TOKEN_KEY) === resolvingToken;
         let response;
         try {
             response = await resolveReceivedShare(shareToken, {
@@ -423,6 +493,8 @@ uiCtx.extendFlow(
             };
         }
 
+        if (!isCurrentRequest())
+            return { authenticated: false, reason: "session_changed" };
         if (!response) {
             return {
                 authenticated: false,
@@ -455,6 +527,8 @@ uiCtx.extendFlow(
         }
 
         const body = await response.json().catch(() => ({ data: null }));
+        if (!isCurrentRequest())
+            return { authenticated: false, reason: "session_changed" };
         const shareData = body?.data ?? null;
         if (!shareData?.resourceType) {
             return { authenticated: false, reason: "share_malformed" };
@@ -490,7 +564,7 @@ uiCtx.extendFlow(
             directAccess: shareData.directAccess === true,
         };
 
-        if (shareData.directAccess === true) {
+        if (shareData.directAccess === true && hasValidatedAccountSession) {
             // Logged-in recipients retain their full account session. The
             // renderer receives the scoped guest token separately for
             // share-only API calls, so notification navigation never swaps
@@ -517,8 +591,20 @@ uiCtx.extendFlow(
             shareData.guestAccessToken,
             shareData.guestProfile,
             shareData.guestKeyring,
+            () => requestRevision === shareRequestRevision,
         );
-        if (abortController && stageCtx.data) {
+        if (!abortController) {
+            const currentToken = localStorage.getItem(ACCESS_TOKEN_KEY);
+            const superseded =
+                requestRevision !== shareRequestRevision ||
+                (currentToken !== resolvingToken &&
+                    currentToken !== shareData.guestAccessToken);
+            return {
+                authenticated: false,
+                reason: superseded ? "session_changed" : "share_access_denied",
+            };
+        }
+        if (stageCtx.data) {
             stageCtx.data.shareAbortController = abortController;
         }
 

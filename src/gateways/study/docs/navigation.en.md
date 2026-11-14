@@ -123,3 +123,7 @@ Unavailable destinations stay visible with the same disabled styling in the prim
 ## Acknowledged Favourites
 
 Successful online favourite changes and replay acknowledgements replace Study’s bounded offline snapshot with the server response. A superseded in-flight read cannot overwrite that snapshot. Offline page remounts preserve acknowledged additions and removals while remaining queued intent stays projected over the snapshot.
+
+## Session Identity
+
+Personal activity and saved state use verified account sessions, including account names beginning with `share:`. Guest restrictions follow verified credential purpose rather than names or browser markers. Offline delivery retains its verified-session, account and instance checks.

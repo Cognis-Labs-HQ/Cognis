@@ -168,24 +168,27 @@ test("registered sharing flows authorize owners, resolve snapshots, and provide 
     assert.equal(disabled.stageResults["validate-resource"][1], null);
 });
 
-test("guest access checks the live grant, resource, capability, expiry, and adapter availability", async () => {
+test("guest access delegates exact resource and capability to Share and respects adapter availability", async () => {
     const { ctx, deck, disable } = fixture();
-    let token = {
-        resourceType: "studyDeck",
-        resourceId: "deck",
-        grantedCapabilities: [DECK_READ],
-        expiresAt: "",
-    };
-    ctx.capabilities.contribute("share:resolveGuestId", () => "share-id");
-    ctx.capabilities.contribute("share:getTokenById", async () => token);
-    const actor = { accountId: "share:share-id:guest", role: "user" };
+    let allowed = true;
+    const claims = { sub: "share:share-id:guest", purpose: "share" as const };
+    ctx.capabilities.contribute(
+        "share:resolveGuestAccess",
+        async (input: unknown) => {
+            assert.deepEqual(input, {
+                claims,
+                resourceType: "studyDeck",
+                resourceId: "deck",
+                requiredCapability: DECK_READ,
+            });
+            return { authorized: allowed };
+        },
+    );
+    const actor = { accountId: claims.sub, role: "user", claims };
     assert.equal(await canReadSharedDeck(ctx, actor, deck), true);
-    token = { ...token, resourceId: "other" };
+    allowed = false;
     assert.equal(await canReadSharedDeck(ctx, actor, deck), false);
-    token = { ...token, resourceId: "deck", expiresAt: "2000-01-01T00:00:00Z" };
-    assert.equal(await canReadSharedDeck(ctx, actor, deck), false);
-    token = { ...token, expiresAt: "", grantedCapabilities: [] };
-    assert.equal(await canReadSharedDeck(ctx, actor, deck), false);
+    allowed = true;
     disable();
     assert.equal(await canReadSharedDeck(ctx, actor, deck), false);
 });

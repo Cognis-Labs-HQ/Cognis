@@ -42,3 +42,7 @@ Enrolled learners may record their own classroom results with read access; class
 ## Durable Practice Rewards
 
 Progress projection IDs use an unambiguous JSON identity tuple without NUL bytes, which PostgreSQL text columns reject. Trusted Drawing and Flashcard results use `study:progress:recordPractice` through authorization, validation, event recording and reward stages. Raw event imports do not mint XP. The authenticated `GET /api/v1/study/progress/engagement` returns the learner’s reward summary. An independent correct attempt can earn the localized practice badge; corrections invalidate affected rewards and leaderboard evidence. Retrying interrupted delivery preserves the canonical event and reward identity.
+
+## Session Identity
+
+Personal activity and saved state use verified account sessions, including account names beginning with `share:`. Guest restrictions follow verified credential purpose rather than names or browser markers. Offline delivery retains its verified-session, account and instance checks.

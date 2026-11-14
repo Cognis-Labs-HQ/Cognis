@@ -691,7 +691,13 @@ export function createUiRoutes(
         }
 
         if (url.pathname === "/api/v1/ui/app-routes" && req.method === "GET") {
-            const claims = ctx.getAuthClaims(req);
+            const claims =
+                ctx.getAuthClaims(req) ??
+                (await ctx.getCapability<
+                    (
+                        req: IncomingMessage,
+                    ) => Promise<{ sub: string; role: "user" } | null>
+                >("share:getGuestClaims")?.(req));
             const routes = (uiRegistry?.listSpaRoutes() ?? []).filter(
                 (route) =>
                     (!route.isEnabled || route.isEnabled()) &&

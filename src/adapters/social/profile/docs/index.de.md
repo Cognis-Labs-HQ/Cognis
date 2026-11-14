@@ -119,3 +119,7 @@ Profilformulare verwenden die komponenteneigenen Grenzen für Anzeigename, Biogr
 ## Typisierte Speicherung und Routen
 
 Profilrollen und Sichtbarkeitstypen entsprechen den gespeicherten Datensätzen, einschließlich Moderatoren sowie privater, Freundes- und Community-Sichtbarkeit. Einstellungsabfragen liefern den gespeicherten JSON-Text. Persistenztests verwenden eine profileigene strukturierte Datenbanknachbildung mit Rollback.
+
+## Geltungsbereich der Anmeldung
+
+Kontoaktionen erfordern bestätigte Kontositzungen. Aktionen für freigegebene Ressourcen prüfen Gastanmeldungen ausdrücklich und kontrollieren die aktuelle Freigabe vor den Ressourcenberechtigungen. Kontonamen bestimmen niemals den Anmeldetyp. Widerrufener oder abgelaufener Zugriff wird abgelehnt.

@@ -187,3 +187,7 @@ Die Deklarationen von Auth und TFA beschreiben die bestehenden Kontorollen, exte
 Das gespeicherte Tokenformat 2 verlangt explizite Sicherheitsfelder und verwirft nicht unterstützte Formate sowie ungültige oder mehrdeutige Datensätze. Abgewiesene Sitzungen erfordern eine erneute Anmeldung; Formate werden nicht automatisch umgewandelt. Gültige normale, eingeschränkte und widerrufene Zugangstoken behalten ihre Berechtigungen nach einem Neustart. Speicherfehler werden gemeldet statt als erfolgreiche Schreibvorgänge bestätigt.
 
 Die Capability auth:revokeSetupPendingAccessTokens akzeptiert keine Argumente und widerruft alle ausstehenden Sitzungen; Ausnahmen für einzelne Konten werden nicht mehr unterstützt.
+
+## Geltungsbereich der Anmeldung
+
+Kontoaktionen erfordern bestätigte Kontositzungen. Aktionen für freigegebene Ressourcen prüfen Gastanmeldungen ausdrücklich und kontrollieren die aktuelle Freigabe vor den Ressourcenberechtigungen. Kontonamen bestimmen niemals den Anmeldetyp. Widerrufener oder abgelaufener Zugriff wird abgelehnt.

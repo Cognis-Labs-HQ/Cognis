@@ -39,7 +39,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Local File Storage         | `src/adapters/file/local/`          | `0.1.26`   |
 | File Quota                 | `src/adapters/file/quota/`          | `1.0.24`   |
 | Local Auth                 | `src/adapters/auth/local/`          | `0.4.2`    |
-| User Keyring               | `src/adapters/auth/keyring/`        | `2.1.3`    |
+| User Keyring               | `src/adapters/auth/keyring/`        | `2.1.4`    |
 | LDAP Auth                  | `src/adapters/auth/ldap/`           | `0.5.38`   |
 | OIDC Auth                  | `src/adapters/auth/oidc/`           | `0.1.24`   |
 | SAML Auth                  | `src/adapters/auth/saml/`           | `0.1.24`   |
@@ -51,16 +51,16 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Memory Database            | `src/adapters/db/memory/`           | `0.1.24`   |
 | Registration Token         | `src/adapters/registration/token/`  | `0.1.41`   |
 | Public Registration        | `src/adapters/registration/public/` | `0.1.24`   |
-| Profile (Social)           | `src/adapters/social/profile/`      | `3.0.15`   |
-| Messages (Social)          | `src/adapters/social/messages/`     | `2.7.39`   |
+| Profile (Social)           | `src/adapters/social/profile/`      | `3.0.16`   |
+| Messages (Social)          | `src/adapters/social/messages/`     | `2.7.40`   |
 | Calls (Social)             | `src/adapters/social/call/`         | `0.5.36`   |
 | Link Share                 | `src/adapters/share/link/`          | `1.1.38`   |
 | User Share                 | `src/adapters/share/user/`          | `1.1.20`   |
 | Classes (Study)            | `src/adapters/study/classes/`       | `1.4.11`   |
-| Library (Study)            | `src/adapters/study/library/`       | `4.1.24`   |
+| Library (Study)            | `src/adapters/study/library/`       | `4.1.25`   |
 | Drawing (Study)            | `src/adapters/study/drawing/`       | `1.1.3`    |
-| フラッシュカードアダプター | `src/adapters/study/flashcards/`    | `1.5.31`   |
-| Progress (Study)           | `src/adapters/study/progress/`      | `1.3.1`    |
+| フラッシュカードアダプター | `src/adapters/study/flashcards/`    | `1.5.32`   |
+| Progress (Study)           | `src/adapters/study/progress/`      | `1.3.2`    |
 | Leaderboard (Study)        | `src/adapters/study/leaderboard/`   | `1.2.11`   |
 | Console Logging            | `src/adapters/logging/console/`     | `1.1.4`    |
 | File Logging               | `src/adapters/logging/file/`        | `1.1.5`    |
@@ -70,8 +70,8 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | コンポーネント        | パス                          | バージョン |
 | --------------------- | ----------------------------- | ---------- |
 | Database (db)         | `src/gateways/db/`            | `1.4.1`    |
-| Authentication (auth) | `src/gateways/auth/`          | `2.2.7`    |
-| Share                 | `src/gateways/share/`         | `1.9.9`    |
+| Authentication (auth) | `src/gateways/auth/`          | `2.2.8`    |
+| Share                 | `src/gateways/share/`         | `1.9.10`   |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.3.9`    |
 | Notification (notify) | `src/gateways/notify/`        | `2.2.10`   |
 | Social                | `src/gateways/social/`        | `1.4.6`    |
@@ -79,8 +79,8 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Registration          | `src/gateways/registration/`  | `1.2.7`    |
 | Logging               | `src/gateways/logging/`       | `1.5.19`   |
 | Observability         | `src/gateways/observability/` | `1.0.7`    |
-| Study                 | `src/gateways/study/`         | `2.6.9`    |
-| Calendar              | `src/gateways/calendar/`      | `1.7.7`    |
+| Study                 | `src/gateways/study/`         | `2.6.10`   |
+| Calendar              | `src/gateways/calendar/`      | `1.7.8`    |
 
 ## コア契約
 
@@ -92,7 +92,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント | パス       | バージョン |
 | -------------- | ---------- | ---------- |
-| API Server     | `src/api/` | `0.13.33`  |
+| API Server     | `src/api/` | `0.13.34`  |
 
 ## ツール
 

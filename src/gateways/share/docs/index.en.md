@@ -29,3 +29,7 @@ Guest page startup checks cancellation after localization, composer initializati
 ## Owned Browser Actions
 
 Shared resources supply `page.mountScriptUrl` with an exported `mount(root, options)`. The mount receives the share context, localized strings and page cancellation signal. Missing entrypoints produce the localized renderer error.
+
+## Credential Scope
+
+Account operations require verified account sessions. Shared-resource operations explicitly verify guest credentials and recheck the current grant before applying resource permissions. Account names never determine credential type. Revoked or expired access is denied.

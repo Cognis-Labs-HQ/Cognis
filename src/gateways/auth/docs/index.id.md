@@ -187,3 +187,7 @@ Deklarasi Auth dan TFA kini menjelaskan peran akun, bidang identitas eksternal, 
 Format token tersimpan 2 mewajibkan kolom keamanan eksplisit dan menolak format yang tidak didukung serta rekaman cacat atau ambigu. Sesi yang ditolak harus masuk kembali; tidak ada konversi format otomatis. Kredensial normal, terbatas, dan dicabut yang valid mempertahankan kewenangannya setelah mulai ulang. Kegagalan penyimpanan token dilaporkan, bukan diakui sebagai penulisan yang berhasil.
 
 Kapabilitas auth:revokeSetupPendingAccessTokens tidak menerima argumen dan mencabut semua sesi tertunda; pengecualian berdasarkan akun tidak lagi didukung.
+
+## Cakupan Kredensial
+
+Operasi akun memerlukan sesi akun yang terverifikasi. Operasi sumber daya bersama memverifikasi kredensial tamu secara eksplisit dan memeriksa kembali izin berbagi saat ini sebelum menerapkan izin sumber daya. Nama akun tidak menentukan jenis kredensial. Akses yang dicabut atau kedaluwarsa ditolak.

@@ -168,8 +168,8 @@ test("deleted-account session handling clears its keyring and preserves the serv
 
 test("auth defers stored-account validation for alternate guest sessions", () => {
     const src = readFileSync(AUTH_HOOKS_PATH, "utf8");
-    assert.match(src, /capabilities\.get\("session:isGuest"\)/);
-    assert.match(src, /if \(usesAlternateSession\)/);
+    assert.match(src, /await sessionIdentity\.verify\(token\)/);
+    assert.match(src, /identity\?\.purpose === "share"/);
 });
 
 test("auth session-flow-hooks.js registers an enforce-setup-requirements hook", () => {

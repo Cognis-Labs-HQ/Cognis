@@ -27,7 +27,7 @@ export async function recordStudyResult(
     result: StudyResult,
 ): Promise<void> {
     if (
-        actor.accountId.startsWith("share:") ||
+        actor.claims?.purpose === "share" ||
         actor.accountId !== result.accountId
     )
         throw new Error("forbidden");

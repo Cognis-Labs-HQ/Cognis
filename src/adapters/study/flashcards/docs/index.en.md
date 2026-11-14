@@ -99,3 +99,7 @@ Guest Flashcard practice uses a temporary mode selection and disables account en
 ## Review and Lifecycle Hardening
 
 Guest page startup checks cancellation after localization, composer initialization, session/provider loading, styles and renderer imports. Composers, Calendar popups and resource requests use the page signal. Cancelled pages cannot overwrite a later page or report stale results. Maintenance passes also pass an abort signal into their jobs; disabling Share prevents later expiration notifications within an in-flight scan.
+
+## Credential Scope
+
+Account operations require verified account sessions. Shared-resource operations explicitly verify guest credentials and recheck the current grant before applying resource permissions. Account names never determine credential type. Revoked or expired access is denied.

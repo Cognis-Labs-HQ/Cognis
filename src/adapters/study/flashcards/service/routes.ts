@@ -19,7 +19,17 @@ export function createDeckRoutes(
             /^\/api\/v1\/study\/decks(?:\/([^/]+))?(?:\/(review))?$/,
         );
         if (!match) return false;
-        const claims = ctx.requireAuth(req, res);
+        const guestClaims =
+            req.method === "GET" && match[1] && !match[2]
+                ? await ctx.getCapability<
+                      (req: IncomingMessage) => Promise<{
+                          sub: string;
+                          role: "user";
+                          purpose: "share";
+                      } | null>
+                  >("share:getGuestClaims")?.(req)
+                : null;
+        const claims = guestClaims ?? ctx.requireAuth(req, res);
         if (!claims) return true;
         const actor = { accountId: claims.sub, role: claims.role, claims };
         const id = match[1];

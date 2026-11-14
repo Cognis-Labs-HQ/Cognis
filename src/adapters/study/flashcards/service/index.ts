@@ -153,23 +153,34 @@ export class DeckService {
         const deck =
             (await store.find(id)) ??
             (await this.providers(actor, id)).find((deck) => deck.id === id);
+        const accountAuthority =
+            !actor.claims || actor.claims.purpose === "session";
         if (
             !deck ||
-            (!deck.provider &&
-                deck.ownerAccountId !== actor.accountId &&
-                !(await this.access(actor, deck)))
+            (!accountAuthority
+                ? actor.claims?.purpose !== "share" ||
+                  !(await this.access(actor, deck))
+                : !deck.provider &&
+                  deck.ownerAccountId !== actor.accountId &&
+                  !(await this.access(actor, deck)))
         )
             throw new Error("deck_not_found");
         return {
             ...deck,
             cards: [],
             schemas: [],
-            canEdit: !deck.provider && deck.ownerAccountId === actor.accountId,
+            canEdit:
+                accountAuthority &&
+                !deck.provider &&
+                deck.ownerAccountId === actor.accountId,
             canExport:
-                deck.ownerAccountId === actor.accountId ||
-                actor.role === "admin" ||
-                actor.role === "owner",
-            progress: await store.progress(actor.accountId, id),
+                accountAuthority &&
+                (deck.ownerAccountId === actor.accountId ||
+                    actor.role === "admin" ||
+                    actor.role === "owner"),
+            progress: !accountAuthority
+                ? {}
+                : await store.progress(actor.accountId, id),
         };
     }
 
@@ -255,7 +266,7 @@ export class DeckService {
             let snapshots: DeckDetail[] = [];
             const handlers: Record<string, FlowStageHook> = {
                 authorize: async () => {
-                    if (actor.accountId.startsWith("share:"))
+                    if (actor.claims && actor.claims.purpose !== "session")
                         throw new Error("deck_read_only");
                     if (id) await store.lockProgress(actor.accountId, id);
                     if (id && !(await store.read(actor.accountId, id)))
@@ -425,7 +436,10 @@ export class DeckService {
                 {
                     handlers: {
                         authorize: async () => {
-                            if (actor.accountId.startsWith("share:"))
+                            if (
+                                actor.claims &&
+                                actor.claims.purpose !== "session"
+                            )
                                 throw new Error("deck_read_only");
                             await store.lockProgress(actor.accountId, id);
                             const current = await this.readable(

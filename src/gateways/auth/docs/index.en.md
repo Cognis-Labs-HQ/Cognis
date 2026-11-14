@@ -187,3 +187,7 @@ Auth and TFA declarations now describe the existing account roles, external iden
 Persisted token format 2 requires explicit security fields and rejects unsupported formats, malformed or ambiguous records. Rejected sessions require signing in again; there is no automatic format conversion. Current valid normal, restricted and revoked credentials retain their authority across restart. Token persistence failures are reported rather than acknowledged as successful writes.
 
 The auth:revokeSetupPendingAccessTokens capability takes no arguments and revokes all pending sessions; subject exemptions are no longer supported.
+
+## Credential Scope
+
+Account operations require verified account sessions. Shared-resource operations explicitly verify guest credentials and recheck the current grant before applying resource permissions. Account names never determine credential type. Revoked or expired access is denied.

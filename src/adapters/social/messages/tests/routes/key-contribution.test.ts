@@ -127,7 +127,7 @@ test("POST /messages/rooms/:id/key-contribution explicitly contributes a room ke
 });
 
 test("meeting share guests receive a room key without consuming member delivery state", async () => {
-    const token = issueAccessToken("share:share-1:guest-1", "user", 60);
+    const token = "synthetic-scoped-guest";
     let memberClaimed = false;
     let memberAcknowledged = false;
     const messagesStore = {
@@ -157,6 +157,14 @@ test("meeting share guests receive a room key without consuming member delivery 
         },
     };
     const capabilities = new Map<string, unknown>([
+        [
+            "share:getGuestClaims",
+            async () => ({
+                sub: "share:share-1:guest-1",
+                role: "user",
+                purpose: "share",
+            }),
+        ],
         ["share:resolveGuestId", () => "share-1"],
         [
             "social:messages:authorizeExternalRoomAccess",

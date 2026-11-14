@@ -77,3 +77,7 @@ Pengaturan Keyring membaca status terkini saat bagian ditampilkan, termasuk kunj
 ## Kolom Adaptor Terlokalisasi
 
 Konfigurasi Keyring mendeklarasikan paket bahasanya sendiri serta label terlokalisasi untuk ukuran maksimum brankas dan iterasi derivasi kata sandi. Popup Administrasi bersama menerjemahkan label tersebut melalui sumber daya XML yang sama dengan adaptor.
+
+## Cakupan Kredensial
+
+Operasi akun memerlukan sesi akun yang terverifikasi. Operasi sumber daya bersama memverifikasi kredensial tamu secara eksplisit dan memeriksa kembali izin berbagi saat ini sebelum menerapkan izin sumber daya. Nama akun tidak menentukan jenis kredensial. Akses yang dicabut atau kedaluwarsa ditolak.
