@@ -24,15 +24,4 @@
 
 ## コミット
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/62da72d2f6e896ea7d52bf4c1ce7da15802a9966
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/0dd00af82a18452217745672bdc5babbf9e817a5
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/bf23786bfcdcc5d5f4badcdb205c9438f2401be2
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/fe80f98b1ae4030a0dbbd030d7471234aafc0c5b
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/f434c53b4d1df2d09e57629266575411b0c51fb3
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/8cc2dd723c42a2552ea0653adf1e1ad8f8dd2da2
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/b9ee5c17977491ad6621c46fe96bc2a692004bb4
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/a2fc0fd084eec300b0f03b6e1a402c72c7918583
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/291480ff28497884e7d12a956a5b9dcbcf51a690
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/6c63b95a5ca6e1fc792c4e32a6a56f1e9df74b22
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/8369fb5aabb552af45f7c222e21c37f739bc2da1
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/9863f4d28c62b78bea67e0470a43b148fac6fb4c
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/d8e546ce544f6c9bd5bae4c680df2e19c8a44b69
