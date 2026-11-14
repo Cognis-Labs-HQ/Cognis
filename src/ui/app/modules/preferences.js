@@ -1,3 +1,4 @@
+import { uiCtx } from "../../reuse/ui-ctx.js";
 import { showToast } from "../../reuse/toast.js";
 import { reportClientError } from "../../reuse/error-reporting.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
@@ -79,11 +80,22 @@ export function readModulePreferenceValues(
     );
 }
 
-export async function openModulePreferences(module, labels) {
+export async function openModulePreferences(
+    module,
+    labels,
+    { signal: lifetime } = {
+        signal: uiCtx.capabilities
+            .get("ui:moduleTutorialTargets")
+            ?.settingsSignal(module.id),
+    },
+) {
     const definitions = module.ui?.preferences ?? [];
     if (!definitions.length) return;
+    if (lifetime?.aborted) return null;
     const values = await loadModuleConfig(module.id);
+    if (lifetime?.aborted) return null;
     const moduleI18n = await extendI18n(labels.i18n, module.ui?.stringsBaseUrl);
+    if (lifetime?.aborted) return null;
     const localizedDefinitions = definitions.map((definition) => ({
         ...definition,
         label: moduleI18n.t(definition.labelKey),
@@ -137,119 +149,144 @@ export async function openModulePreferences(module, labels) {
     let actionPending = false;
     let formController;
     let savedValues = null;
-    const action = await openPopup({
-        title: labels.title,
-        body: formBuilder.render(),
-        actions: [
-            ...configActions.map((action) => ({
-                id: `config:${action.id}`,
-                label: moduleI18n.t(action.labelKey),
-                variant: "neutral",
-            })),
-            { id: "save", label: labels.save, variant: "confirm" },
-            { id: "cancel", label: labels.cancel, variant: "neutral" },
-        ],
-        closeProtection: true,
-        onOpen: (overlay) => {
-            const form = overlay.querySelector("#module-preferences-form");
-            formController = formBuilder.attach(form);
-        },
-        onAction: async (action, overlay) => {
-            const configuredAction = configActions.find(
-                (item) => action === `config:${item.id}`,
-            );
-            if (configuredAction) {
-                if (actionPending) return false;
-                actionPending = true;
-                const form = overlay.querySelector("#module-preferences-form");
-                try {
-                    const result = await runModuleConfigAction(
-                        module.id,
-                        configuredAction,
-                        readModulePreferenceValues(form, localizedDefinitions),
-                        controller.signal,
-                    );
-                    if (controller.signal.aborted) return false;
-                    if (configuredAction.result === "options") {
-                        const input = form.elements.namedItem(
-                            configuredAction.fieldKey,
-                        );
-                        if (!input || !Array.isArray(result?.options))
-                            throw new Error("invalid_config_options");
-                        const listId = `module-config-options-${configuredAction.fieldKey}`;
-                        let list = form.querySelector(`#${listId}`);
-                        if (!list) {
-                            list = document.createElement("datalist");
-                            list.id = listId;
-                            form.append(list);
-                        }
-                        list.replaceChildren(
-                            ...result.options.map((option) => {
-                                const element =
-                                    document.createElement("option");
-                                element.value = option.value;
-                                element.label = option.label;
-                                return element;
-                            }),
-                        );
-                        if (!input.value && result.options[0])
-                            input.value = result.options[0].value;
-                        input.setAttribute("list", listId);
-                        input.focus();
-                    } else {
-                        const objectUrl = URL.createObjectURL(result);
-                        objectUrls.add(objectUrl);
-                        let preview = form.querySelector(
-                            "audio[data-config-preview]",
-                        );
-                        if (!preview) {
-                            preview = document.createElement("audio");
-                            preview.controls = true;
-                            preview.dataset.configPreview = "true";
-                            form.append(preview);
-                        }
-                        if (preview.src) {
-                            URL.revokeObjectURL(preview.src);
-                            objectUrls.delete(preview.src);
-                        }
-                        previewAudio = preview;
-                        preview.src = objectUrl;
-                        await preview.play();
-                    }
-                } catch (error) {
-                    if (controller.signal.aborted) return false;
-                    reportClientError({
-                        component: "modules",
-                        operation: "configAction",
-                        moduleId: module.id,
-                        errorName: error?.name,
-                    });
-                    showToast(
-                        labels.i18n.t("ui.app.modules.config_action_failed"),
-                        { variant: "error" },
-                    );
+    let dismiss;
+    const cancel = () => dismiss?.("cancel");
+    lifetime?.addEventListener("abort", cancel, { once: true });
+    let action;
+    try {
+        action = await openPopup({
+            title: labels.title,
+            body: formBuilder.render(),
+            actions: [
+                ...configActions.map((action) => ({
+                    id: `config:${action.id}`,
+                    label: moduleI18n.t(action.labelKey),
+                    variant: "neutral",
+                })),
+                { id: "save", label: labels.save, variant: "confirm" },
+                { id: "cancel", label: labels.cancel, variant: "neutral" },
+            ],
+            closeProtection: true,
+            onOpen: (overlay, close, api) => {
+                dismiss = close;
+                overlay.dataset.moduleSettings = module.id;
+                if (lifetime?.aborted) {
+                    close("cancel");
+                    return;
                 }
-                actionPending = false;
-                return false;
-            }
-            if (action !== "save") return;
-            if (!formController?.validateAll(true)) return false;
-            const form = overlay.querySelector("#module-preferences-form");
-            const submittedValues = readModulePreferenceValues(
-                form,
-                localizedDefinitions,
-            );
-            savedValues = readModulePreferenceValues(
-                form,
-                localizedDefinitions,
-                { preservePasswordMask: true },
-            );
-            await saveModuleConfig(module.id, submittedValues);
-        },
-    });
-    controller.abort();
-    previewAudio?.pause();
-    formController?.detach();
-    for (const objectUrl of objectUrls) URL.revokeObjectURL(objectUrl);
+                const form = overlay.querySelector("#module-preferences-form");
+                formController = formBuilder.attach(form);
+                for (const event of ["input", "change"])
+                    form.addEventListener(event, () => api.markDirty(), {
+                        signal: controller.signal,
+                    });
+            },
+            onAction: async (action, overlay) => {
+                const configuredAction = configActions.find(
+                    (item) => action === `config:${item.id}`,
+                );
+                if (configuredAction) {
+                    if (actionPending) return false;
+                    actionPending = true;
+                    const form = overlay.querySelector(
+                        "#module-preferences-form",
+                    );
+                    try {
+                        const result = await runModuleConfigAction(
+                            module.id,
+                            configuredAction,
+                            readModulePreferenceValues(
+                                form,
+                                localizedDefinitions,
+                            ),
+                            controller.signal,
+                        );
+                        if (controller.signal.aborted) return false;
+                        if (configuredAction.result === "options") {
+                            const input = form.elements.namedItem(
+                                configuredAction.fieldKey,
+                            );
+                            if (!input || !Array.isArray(result?.options))
+                                throw new Error("invalid_config_options");
+                            const listId = `module-config-options-${configuredAction.fieldKey}`;
+                            let list = form.querySelector(`#${listId}`);
+                            if (!list) {
+                                list = document.createElement("datalist");
+                                list.id = listId;
+                                form.append(list);
+                            }
+                            list.replaceChildren(
+                                ...result.options.map((option) => {
+                                    const element =
+                                        document.createElement("option");
+                                    element.value = option.value;
+                                    element.label = option.label;
+                                    return element;
+                                }),
+                            );
+                            if (!input.value && result.options[0])
+                                input.value = result.options[0].value;
+                            input.setAttribute("list", listId);
+                            input.focus();
+                        } else {
+                            const objectUrl = URL.createObjectURL(result);
+                            objectUrls.add(objectUrl);
+                            let preview = form.querySelector(
+                                "audio[data-config-preview]",
+                            );
+                            if (!preview) {
+                                preview = document.createElement("audio");
+                                preview.controls = true;
+                                preview.dataset.configPreview = "true";
+                                form.append(preview);
+                            }
+                            if (preview.src) {
+                                URL.revokeObjectURL(preview.src);
+                                objectUrls.delete(preview.src);
+                            }
+                            previewAudio = preview;
+                            preview.src = objectUrl;
+                            await preview.play();
+                        }
+                    } catch (error) {
+                        if (controller.signal.aborted) return false;
+                        reportClientError({
+                            component: "modules",
+                            operation: "configAction",
+                            moduleId: module.id,
+                            errorName: error?.name,
+                        });
+                        showToast(
+                            labels.i18n.t(
+                                "ui.app.modules.config_action_failed",
+                            ),
+                            { variant: "error" },
+                        );
+                    }
+                    actionPending = false;
+                    return false;
+                }
+                if (action !== "save") return;
+                if (!formController?.validateAll(true)) return false;
+                const form = overlay.querySelector("#module-preferences-form");
+                const submittedValues = readModulePreferenceValues(
+                    form,
+                    localizedDefinitions,
+                );
+                savedValues = readModulePreferenceValues(
+                    form,
+                    localizedDefinitions,
+                    { preservePasswordMask: true },
+                );
+                await saveModuleConfig(module.id, submittedValues);
+            },
+        });
+    } finally {
+        lifetime?.removeEventListener("abort", cancel);
+        controller.abort();
+        previewAudio?.pause();
+        formController?.detach();
+        for (const objectUrl of objectUrls) URL.revokeObjectURL(objectUrl);
+    }
     return action === "save" ? savedValues : null;
 }
