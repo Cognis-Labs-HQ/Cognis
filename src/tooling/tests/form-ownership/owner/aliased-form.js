@@ -1,0 +1,10 @@
+import { good } from "./factories.js";
+
+export function bind(root) {
+    const form = root.querySelector("form");
+    const alias = form;
+    alias.addEventListener = () => {};
+    const builder = good();
+    builder.attach(form);
+    form.addEventListener("submit", () => {});
+}

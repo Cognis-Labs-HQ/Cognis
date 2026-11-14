@@ -19,3 +19,5 @@ Identitas, postingan, dan tindakan akun menargetkan bagian profil hasil render, 
 Posting memakai target daftar tersendiri meski editor terlihat. Sorotan aksi sosial mengikuti ukuran tombol; pratinjau editor dihilangkan pada profil lain.
 
 Identitas dan aksi sosial muncul sebelum langkah posting dan pratinjau yang berurutan.
+
+Pada profil Anda sendiri, Edit Profil membuka detail Anda. Jika penyimpanan gagal, perubahan tetap tersedia untuk diperbaiki dan dicoba kembali.

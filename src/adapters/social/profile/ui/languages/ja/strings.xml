@@ -21,7 +21,8 @@
   <string name="module.social.profile.tutorial.profile.posts.title">投稿</string>
   <string name="module.social.profile.tutorial.profile.posts.body">表示できる投稿を読み、自分のアカウントで許可された操作を使います。</string>
   <string name="module.social.profile.tutorial.profile.social.actions.title">交流の操作</string>
-  <string name="module.social.profile.tutorial.profile.social.actions.body">プロフィールの操作からフォロー、メッセージ、関係の管理を行えます。相手を確認してから操作します。</string>
+  <string name="module.social.profile.tutorial.profile.social.actions.body">プロフィールの操作からフォロー、メッセージ、関係の管理を行えます。相手を確認してから操作します。 自分のプロフィールでは、プロフィール編集から詳細を開けます。保存に失敗しても変更内容が残り、修正して再試行できます。</string>
   <string name="module.social.profile.tutorial.profile.preview.post.title">投稿をプレビューする</string>
   <string name="module.social.profile.tutorial.profile.preview.post.body">投稿を書き、書式と添付内容をプレビューします。公開前に対象読者を確認します。</string>
+  <string name="ui.app.profile.save_pending_closed">閉じても送信済みの保存は取り消されません。プロフィールページを再読み込みして結果を確認してください。</string>
 </resources>

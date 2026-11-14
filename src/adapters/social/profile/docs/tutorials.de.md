@@ -19,3 +19,5 @@ Identität, Beiträge und Kontoaktionen verwenden die gerenderten Profilbereiche
 Beiträge haben ein eigenes Listenziel, auch bei sichtbarem Editor. Sozialaktionen umfassen nur ihre Schaltflächen; die Vorschau entfällt bei fremden Profilen.
 
 Identität und Sozialaktionen stehen vor den aufeinanderfolgenden Beitrags- und Vorschauschritten.
+
+Im eigenen Profil öffnet Profil bearbeiten Ihre Angaben. Bei einem Speicherfehler bleiben Ihre Änderungen zum Korrigieren und erneuten Versuchen erhalten.
