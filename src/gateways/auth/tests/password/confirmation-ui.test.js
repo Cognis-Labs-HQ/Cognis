@@ -36,7 +36,7 @@ test("login retains the password until TFA authentication unlocks the keyring", 
     );
     assert.match(
         loginSource,
-        /persistSession\(data\);\s*await uiCtx\.runFlow\("complete-login", \{\s*accountPassword: password,\s*\}\);\s*tfaLoginClient\.handleSetupRequired/,
+        /persistSession\(data\);\s*await uiCtx\.runFlow\("complete-login", \{\s*accountPassword: password,\s*\}\);\s*if \(isCurrent\(\)\)\s*tfaLoginClient\.handleSetupRequired/,
     );
 });
 

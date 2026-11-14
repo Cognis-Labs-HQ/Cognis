@@ -199,13 +199,13 @@ export function createSessionRoutes({
         return null;
     }
 
-    function dispatchLoginFlowResult(
+    async function dispatchLoginFlowResult(
         req: import("node:http").IncomingMessage,
         res: import("node:http").ServerResponse,
         sessionResult: LoginFlowSessionResult,
         logMeta: AuthRouteLogMeta,
         responseCookies: string[] = [],
-    ): true {
+    ): Promise<true> {
         const appendResponseCookie = (cookie: string): string | string[] =>
             responseCookies.length > 0 ? [...responseCookies, cookie] : cookie;
         const outcome = sessionResult.outcome;
@@ -312,32 +312,51 @@ export function createSessionRoutes({
             return true;
         }
         if (outcome === "tfa_required") {
-            log?.("info", "Login entered TFA challenge flow (flow).", {
-                ...logMeta,
-                accountId: sessionResult.accountId,
-                provider: sessionResult.provider,
-                role: sessionResult.role,
-            });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(
-                JSON.stringify({
-                    data: {
-                        tfaRequired: true,
-                        loginAttemptId: sessionResult.loginAttemptId,
-                        methods: sessionResult.methods,
-                        accountId: sessionResult.accountId,
-                        displayName: sessionResult.displayName,
-                        provider: sessionResult.provider,
-                        providerId: sessionResult.providerId,
-                        role: sessionResult.role,
-                        isFounder: sessionResult.isFounder,
-                        userValidationMode: sessionResult.userValidationMode,
-                        requiredUserValidation:
-                            sessionResult.requiredUserValidation,
-                    },
-                }),
-            );
+            try {
+                const root = capabilities.require<Ctx>(CTX_CAPABILITY);
+                const result = await root.flow.run("auth:loginContinuation", {
+                    req,
+                    action: "bind",
+                    sessionResult,
+                });
+                const continuation = result.data.result as {
+                    cookie: string;
+                    data: unknown;
+                };
+                if (!continuation?.cookie || !continuation.data)
+                    throw new Error("login_attempt_unavailable");
+                log?.("info", "Login entered TFA challenge flow.", {
+                    ...logMeta,
+                    accountId: sessionResult.accountId,
+                    provider: sessionResult.provider,
+                });
+                res.writeHead(200, {
+                    "content-type": "application/json",
+                    "cache-control": "no-store",
+                    "set-cookie": appendResponseCookie(continuation.cookie),
+                });
+                res.end(JSON.stringify({ data: continuation.data }));
+            } catch (error) {
+                log?.("error", "Could not retain pending login continuation.", {
+                    ...logMeta,
+                    operation: "bindLoginAttempt",
+                    errorName:
+                        error instanceof Error ? error.name : "UnknownError",
+                });
+                res.writeHead(503, {
+                    "content-type": "application/json",
+                    "cache-control": "no-store",
+                });
+                res.end(
+                    JSON.stringify({
+                        error: { code: "login_attempt_unavailable" },
+                    }),
+                );
+            }
             return true;
+        }
+        if (outcome === "success" || outcome === "tfa_setup_required") {
+            authRouteBootstrapRuntime.loginContinuation.clear(req);
         }
         if (outcome === "tfa_setup_required") {
             const token = sessionResult.token ?? "";
@@ -898,6 +917,7 @@ export function createSessionRoutes({
         }
 
         if (url.pathname === "/api/v1/auth/logout" && req.method === "POST") {
+            authRouteBootstrapRuntime.loginContinuation.clear(req);
             const cookieToken = extractCookieToken(req);
             if (cookieToken) {
                 revokeAccessToken(cookieToken);

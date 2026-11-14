@@ -80,28 +80,22 @@ test("login hides the credential provider selector before showing TFA", () => {
         source,
         /hideCredentialProviderSelector\(\);[\s\S]*tfaLoginClient\.switchToTfaPrompt\(data\)/,
     );
-    assert.match(
-        source,
-        /if \(client\) \{\s*hideCredentialProviderSelector\(\);\s*currentTfaLoginAttemptId/,
-    );
+    assert.match(source, /handleAuthResult\(\s*lastTfaPayload,/);
     assert.match(
         LOGIN_STYLE_SOURCE,
         /\.auth-provider-toggle\[hidden\]\s*\{\s*display:\s*none;/,
     );
 });
 
-test("login UI handles TFA prompt restore failures by falling back to login methods", () => {
+test("login UI reports prompt restore failures through the guarded shared handler", () => {
     const source = readFileSync(
         resolve(ROOT, "src/gateways/auth/ui/login-page/index.js"),
         "utf8",
     );
+    assert.match(source, /handleAuthResult\([\s\S]*?\.catch\(\(error\) => \{/);
     assert.match(
         source,
-        /loadTfaLoginClient\(\)[\s\S]*?\.catch\(\(error\) => {/,
-    );
-    assert.match(
-        source,
-        /\.catch\(\(error\) => \{[\s\S]*console\.error\(error\);[\s\S]*loadLoginMethods\(\);[\s\S]*runTypingShowcase\(typingSamples\);[\s\S]*\}\)/,
+        /if \(isCurrent\(\)\)\s*showToast\(\s*i18n.t\("ui.app.login.error.generic"\)/,
     );
 });
 

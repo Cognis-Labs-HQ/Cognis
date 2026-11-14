@@ -1,10 +1,53 @@
-export function createLoginClientLoaders({ loadClient, i18n, root }) {
+export function createLoginClientLoaders({
+    loadClient,
+    i18n,
+    root,
+    getAttemptId = () => null,
+    isAttemptCurrent = () => true,
+}) {
     let tfaClientPromise = null;
+    let clientRoot = null;
+    let clientAttemptId = null;
     return {
         loadTfaLoginClient() {
-            tfaClientPromise ??= loadClient("tfa", (module) =>
-                module.createTfaLoginClient({ baseI18n: i18n, root }),
-            );
+            const currentRoot = root.querySelector?.("#login-form") ?? root;
+            const attemptId = getAttemptId();
+            if (currentRoot !== clientRoot || clientAttemptId !== attemptId) {
+                clientAttemptId = attemptId;
+                clientRoot = currentRoot;
+                tfaClientPromise = null;
+            }
+            if (!tfaClientPromise) {
+                const scopedRoot = {
+                    querySelector(selector) {
+                        const mountedRoot =
+                            root.querySelector?.("#login-form") ?? root;
+                        return mountedRoot === currentRoot &&
+                            isAttemptCurrent(attemptId)
+                            ? currentRoot.querySelector(selector)
+                            : null;
+                    },
+                };
+                const pending = Promise.resolve().then(() =>
+                    loadClient("tfa", (module) =>
+                        module.createTfaLoginClient({
+                            baseI18n: i18n,
+                            root: scopedRoot,
+                        }),
+                    ),
+                );
+                tfaClientPromise = pending;
+                pending.then(
+                    (client) => {
+                        if (!client && tfaClientPromise === pending)
+                            tfaClientPromise = null;
+                    },
+                    () => {
+                        if (tfaClientPromise === pending)
+                            tfaClientPromise = null;
+                    },
+                );
+            }
             return tfaClientPromise;
         },
     };

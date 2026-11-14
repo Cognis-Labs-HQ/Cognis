@@ -1,3 +1,4 @@
+import { createLoginContinuation } from "../login-continuation.js";
 import { randomBytes, randomInt } from "node:crypto";
 import type { IncomingMessage } from "node:http";
 import {
@@ -62,7 +63,22 @@ export function createAuthRouteBootstrapRuntime(): AuthRouteBootstrapRuntime {
         }
     }
 
+    const loginContinuation = createLoginContinuation(
+        (id) => {
+            const attempt = pendingTfaLoginAttempts.get(id);
+            if (!attempt) return null;
+            if (attempt.expiresAt <= Date.now()) {
+                pendingTfaLoginAttempts.delete(id);
+                return null;
+            }
+            return attempt;
+        },
+        (id) => {
+            pendingTfaLoginAttempts.delete(id);
+        },
+    );
     return {
+        loginContinuation,
         buildPendingAccountCreationCookie(
             req: IncomingMessage,
             attemptId: string,
@@ -100,6 +116,7 @@ export function createAuthRouteBootstrapRuntime(): AuthRouteBootstrapRuntime {
         },
         clearPendingTfaLoginAttempts(): void {
             pendingTfaLoginAttempts.clear();
+            loginContinuation.dispose();
         },
         consumePendingTfaLoginAttempt(loginAttemptId: string): boolean {
             pruneExpiredTfaLoginAttempts();

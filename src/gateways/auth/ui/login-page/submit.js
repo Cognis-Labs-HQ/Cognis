@@ -3,6 +3,7 @@ import { beginPageLoading } from "/static/reuse/page-entry.js";
 /** Creates one guarded submit handler for native login and TFA verification. */
 export function createLoginSubmitHandler({
     getState,
+    beginAttempt = () => () => true,
     loadTfaLoginClient,
     finalizeAuthenticatedSession,
     handleAuthResult,
@@ -12,7 +13,8 @@ export function createLoginSubmitHandler({
     let pending = false;
     return async (event) => {
         event.preventDefault();
-        if (pending) return;
+        if (pending || getState().applyingTfa) return;
+        const isCurrent = beginAttempt();
         pending = true;
         let finishLoading = () => {};
         const {
@@ -52,6 +54,7 @@ export function createLoginSubmitHandler({
                             : "",
                 };
                 const tfaLoginClient = await loadTfaLoginClient();
+                if (!isCurrent()) return;
                 if (!tfaLoginClient) {
                     showToast(i18n.t("ui.app.login.error.generic"), {
                         variant: "error",
@@ -60,6 +63,7 @@ export function createLoginSubmitHandler({
                 }
                 const { response: tfaResponse, body: tfaBody } =
                     await tfaLoginClient.verifyCode(payload);
+                if (!isCurrent()) return;
                 if (tfaResponse.ok && tfaBody?.data) {
                     finishLoading();
                     await finalizeAuthenticatedSession(
@@ -90,9 +94,10 @@ export function createLoginSubmitHandler({
                 body: JSON.stringify(payload),
             });
             const body = await response.json().catch(() => null);
+            if (!isCurrent()) return;
             if (response.ok && body?.data) {
                 finishLoading();
-                await handleAuthResult(body.data, payload.password);
+                await handleAuthResult(body.data, payload.password, isCurrent);
                 return;
             }
             const errorKeyByCode = {
@@ -108,6 +113,7 @@ export function createLoginSubmitHandler({
                 : body?.error?.message || i18n.t("ui.app.login.error.generic");
             showToast(errorMsg, { variant: "error" });
         } catch (error) {
+            if (!isCurrent()) return;
             console.error("[auth] login submission failed", {
                 component: "auth",
                 operation: "submitLogin",
