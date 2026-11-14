@@ -72,7 +72,7 @@ test("register password criteria use floating alert in form builder config", () 
     assert.match(source, /criteriaDisplay: "floating-alert"/);
     assert.match(
         source,
-        /floatingTitleKey: "ui\.app\.register\.password_requirements"/,
+        /floatingTitleKey: "ui\.reuse\.password_requirements"/,
     );
 });
 
@@ -109,7 +109,7 @@ test("register confirm password criterion only evaluates after password input", 
     assert.match(source, /if \(passwordValue\.length === 0\)/);
     assert.match(source, /return null/);
     assert.match(source, /return value === passwordValue/);
-    assert.match(source, /messageKey: "ui\.app\.register\.passwords_match"/);
+    assert.match(source, /messageKey: "ui\.reuse\.passwords_match"/);
 });
 
 test("register confirm password revalidates reactively when password changes", () => {

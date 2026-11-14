@@ -17,3 +17,7 @@ Guides register through the public `ui:tutorials` capability with component-owne
 ## Bounded challenge delivery
 
 For Email Code, “queued” means delivery is still pending, not sent. Wait for the latest code. A resend replaces the previous code only when accepted; a rejected resend leaves it unchanged. After delivery failure, explicitly resend before the attempt expires, or start a new login. Login attempts last five minutes and setup lasts ten minutes. Cancelling setup affects only that setup. Resuming a login does not send another email or extend its deadline.
+
+## Password Form Labels
+
+The Account Security guide explains opening Change Password where supported, satisfying the displayed policy, confirming the same new password, and choosing Save or Cancel. Successful Save signs out the account; Cancel preserves the decision to discard edits. The two existing guide targets and completion identity remain unchanged.
