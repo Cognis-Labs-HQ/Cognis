@@ -9,3 +9,9 @@ GitHub kann die folgenden gekürzten Implementierungs-Hashes aus den bisherigen 
 ## Study: Zuverlässigkeit und Isolation
 
 Zeichnungsversuchsbelege und Wörterbuch-Ergebniscaches begrenzen, ohne Wiederholungskennungen zu verlieren. Die umfassendere TypeScript-Abdeckung bleibt in #520 erfasst. Bei Persistenzänderungen die unterstützten Datenbankanbieter prüfen.
+
+## Lebenszyklus bei Seitenrückkehr
+
+`src/ui/reuse/page-entry.js:337-345` bricht den Controller einer direkt geladenen Seite bei jedem `pagehide` ab, auch beim Zwischenspeichern im Vorwärts-/Rückwärts-Cache. `mountWhenDirect` besitzt keinen erneuten Mount über `pageshow`; `src/ui/reuse/page-composer/init.js:148-165` zerstört den Composer beim Abbruch seines Besitzers. Das Wiederherstellen des Dokuments stellt daher seine seitengebundenen Ressourcen einschließlich der Uhren nicht wieder her. SPA und direkt geladene Seiten benötigen dafür einen gemeinsamen Vertrag des Hosts.
+
+**Folgeaufgabe:** Aussetzen und Wiederherstellen beim zuständigen Seiten-Einstieg beziehungsweise Router definieren und die tatsächlichen direkten und SPA-Pfade mit gespeichertem `pagehide`/`pageshow`, unterbrochener Navigation und Anbieter-Bereinigung prüfen. Ein neuer Dashboard-Mount erzeugt bereits neue Uhren-Ressourcen. Die Uhr-Bereinigung darf Ressourcen nach Abbruch des Seitensignals nicht wiederbeleben; eine Änderung der gemeinsamen Hülle nur zum Neustart einer Funktion würde die Zuständigkeitsgrenze des Komponenten-Lebenszyklus verletzen.

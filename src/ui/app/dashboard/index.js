@@ -12,11 +12,12 @@ import {
     createDateTimeFormatters,
     mountLiveClock,
 } from "../../reuse/clock-display.js";
-import { getRoleLabel } from "../../reuse/access-role.js";
 import { loadDynamicContributions } from "../../reuse/dynamic-contribution-loader.js";
 import { uiCtx } from "../../reuse/ui-ctx.js";
+import { replaceMountScope } from "../../reuse/mount-scope.js";
 
 const read = createOfflineReadCache();
+const mountScopes = new WeakMap();
 
 async function loadAccountInfo(account) {
     if (!account) return null;
@@ -57,6 +58,10 @@ async function loadDashboardExtensions({ i18n, account, role }) {
 }
 
 export async function mount(root, { signal } = {}) {
+    if (!root || signal?.aborted) return;
+    const mountScope = replaceMountScope(mountScopes.get(root), signal);
+    mountScopes.set(root, mountScope);
+    signal = mountScope.signal;
     const calendarEvents = uiCtx.capabilities.get("calendar:dashboardEvents");
     calendarEvents?.loadEventStatusStyles();
     const i18n = await createI18n();
@@ -144,6 +149,8 @@ export async function mount(root, { signal } = {}) {
     `,
             onRender: () => {
                 mountLiveClock({
+                    root,
+                    signal,
                     displayId: "dashboard-digital-clock-display",
                     tzId: "dashboard-digital-clock-tz",
                     renderClock: buildDigitalClockMarkup,
@@ -163,6 +170,8 @@ export async function mount(root, { signal } = {}) {
     `,
             onRender: () => {
                 mountLiveClock({
+                    root,
+                    signal,
                     displayId: "dashboard-analogue-clock-display",
                     tzId: "dashboard-analogue-clock-tz",
                     renderClock: buildAnalogueClockMarkup,

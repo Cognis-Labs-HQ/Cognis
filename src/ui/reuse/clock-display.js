@@ -10,7 +10,7 @@
  *   createDateTimeFormatters(options) — returns date/datetime formatter callbacks with configured fallbacks.
  *   buildDigitalClockMarkup(now, tz)  — returns digital clock markup for the given timezone.
  *   buildAnalogueClockMarkup(now, tz) — returns analogue clock SVG markup for the given timezone.
- *   mountLiveClock(options)           — mounts a ticking clock display and updates timezone label.
+ *   mountLiveClock(options)           — mounts one owned clock and returns its cleanup function.
  *
  * Usage:
  *   const { formatDateValue, formatDateTimeValue } = createDateTimeFormatters({
@@ -159,25 +159,92 @@ export function buildDigitalClockMarkup(now, timezone) {
     `;
 }
 
+const clocksByRoot = new WeakMap();
+
 /**
- * @param {{ displayId: string, tzId?: string, renderClock: (now: Date, timezone: string) => string }} options
- * @returns {void}
+ * @param {{ root?: Document | Element, displayId: string, tzId?: string,
+ *   renderClock: (now: Date, timezone: string) => string, signal?: AbortSignal }} options
+ * @returns {(() => void) | undefined} Idempotent cleanup for the mounted clock.
  */
-export function mountLiveClock({ displayId, tzId, renderClock }) {
-    const displayEl = document.querySelector(`#${displayId}`);
-    const tzEl = tzId ? document.querySelector(`#${tzId}`) : null;
-    if (!displayEl) return;
+export function mountLiveClock({
+    root = document,
+    displayId,
+    tzId,
+    renderClock,
+    signal,
+}) {
+    if (signal?.aborted) return;
+    const displayElement = root.querySelector(`#${displayId}`);
+    const timezoneElement = tzId ? root.querySelector(`#${tzId}`) : null;
+    let clocks = clocksByRoot.get(root);
+    const current = clocks?.get(displayId);
+    if (
+        current &&
+        displayElement?.isConnected &&
+        root.contains(displayElement) &&
+        current.displayElement === displayElement &&
+        current.timezoneElement === timezoneElement &&
+        current.renderClock === renderClock &&
+        current.signal === signal
+    ) {
+        return current.dispose;
+    }
+    current?.dispose();
+    if (!displayElement?.isConnected) return;
+    clocks = clocksByRoot.get(root) ?? new Map();
+    let disposed = false;
+    let intervalId = null;
+    let observer = null;
+
+    function dispose() {
+        if (disposed) return;
+        disposed = true;
+        clearInterval(intervalId);
+        observer?.disconnect();
+        signal?.removeEventListener("abort", dispose);
+        window.removeEventListener("pagehide", dispose);
+        if (clocks.get(displayId)?.dispose === dispose) {
+            clocks.delete(displayId);
+            if (clocks.size === 0) clocksByRoot.delete(root);
+        }
+    }
+
+    function isActive() {
+        return (
+            !disposed &&
+            !signal?.aborted &&
+            displayElement.isConnected &&
+            root.contains(displayElement)
+        );
+    }
 
     function tick() {
+        if (!isActive()) return dispose();
         const timezone = getEffectiveTimezone();
-        const now = new Date();
-        if (tzEl) tzEl.textContent = timezone;
-        displayEl.innerHTML = renderClock(now, timezone);
+        const markup = renderClock(new Date(), timezone);
+        if (!isActive()) return dispose();
+        if (timezoneElement?.isConnected && root.contains(timezoneElement)) {
+            timezoneElement.textContent = timezone;
+        }
+        displayElement.innerHTML = markup;
     }
 
     tick();
-    const intervalId = setInterval(tick, 1000);
-    window.addEventListener("pagehide", () => clearInterval(intervalId), {
-        once: true,
+    if (disposed) return dispose;
+    intervalId = setInterval(tick, 1000);
+    observer = new MutationObserver(() => {
+        if (!isActive()) dispose();
     });
+    observer.observe(root, { childList: true, subtree: true });
+    signal?.addEventListener("abort", dispose, { once: true });
+    window.addEventListener("pagehide", dispose, { once: true });
+    clocks.set(displayId, {
+        displayElement,
+        timezoneElement,
+        renderClock,
+        signal,
+        dispose,
+    });
+    clocksByRoot.set(root, clocks);
+    return dispose;
 }
