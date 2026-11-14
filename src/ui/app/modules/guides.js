@@ -31,12 +31,21 @@ export const guides = [
                         id: "install-and-update",
                         when: ({ targetAvailable }) => targetAvailable,
                         selector:
-                            ".module-store-card-actions>button:not(:disabled)",
+                            ".module-store-card-actions>button:not(:disabled):not([data-module-recheck])",
                         targetMatch: "first",
                         titleKey:
                             "ui.tutorial.marketplace.browse.install.and.update.title",
                         bodyKey:
                             "ui.tutorial.marketplace.browse.install.and.update.body",
+                    },
+                    {
+                        highlightNext: true,
+                        id: "check-state",
+                        when: ({ targetAvailable }) => targetAvailable,
+                        selector: "[data-module-recheck]:not(:disabled)",
+                        targetMatch: "first",
+                        titleKey: "ui.tutorial.marketplace.check.state.title",
+                        bodyKey: "ui.tutorial.marketplace.check.state.body",
                     },
                     {
                         highlightNext: true,
@@ -75,6 +84,15 @@ export const guides = [
                             "ui.tutorial.marketplace.details.configure.module.title",
                         bodyKey:
                             "ui.tutorial.marketplace.details.configure.module.body",
+                    },
+                    {
+                        highlightNext: true,
+                        id: "check-state",
+                        when: ({ targetAvailable }) => targetAvailable,
+                        selector: "[data-module-recheck]:not(:disabled)",
+                        targetMatch: "first",
+                        titleKey: "ui.tutorial.marketplace.check.state.title",
+                        bodyKey: "ui.tutorial.marketplace.check.state.body",
                     },
                     {
                         highlightNext: true,

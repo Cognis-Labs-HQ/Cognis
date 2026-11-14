@@ -30,6 +30,13 @@ function isSatisfied({ module }) {
     return module?.installed && module.status === "enabled";
 }
 
+export function moduleActionNeedsDependencies(module, action) {
+    if (action === "configure") return module.status !== "enabled";
+    if (["update", "force-update", "change-channel"].includes(action))
+        return module.status === "enabled";
+    return ["install", "enable"].includes(action);
+}
+
 export function dependencyLifecycleAction(module) {
     return module.installed ? "enable" : "install";
 }
@@ -171,6 +178,8 @@ export async function confirmModuleDependencies(
                             card?.classList.add("is-satisfied");
                             updateDependencyAction(overlay, action, hard, soft);
                         } catch (error) {
+                            if (error?.code === "missing_translation")
+                                throw error;
                             showToast(
                                 resolveModuleDependencyErrorMessage(
                                     error,
@@ -208,7 +217,12 @@ function updateDependencyAction(overlay, action, hard, soft) {
 }
 
 export function resolveInstallDependencies(module, modules, selectedSoft) {
-    return [...references(module, "hard"), ...selectedSoft]
-        .map((reference) => findDependency(modules, reference))
-        .filter(Boolean);
+    return [...references(module, "hard"), ...selectedSoft].map((reference) => {
+        const dependency = findDependency(modules, reference);
+        if (!dependency)
+            throw Object.assign(new Error("module_dependency_unavailable"), {
+                code: "module_dependency_unavailable",
+            });
+        return dependency;
+    });
 }

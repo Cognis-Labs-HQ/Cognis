@@ -51,14 +51,17 @@ test("required module configuration distinguishes unset values from valid false 
         resolve(ROOT, "src/ui/app/modules/index.js"),
         "utf8",
     );
-    assert.match(marketplaceSource, /action === "enable"[\s\S]*activateModule/);
+    assert.match(
+        readFileSync(resolve(ROOT, "src/ui/app/modules/operations.js"), "utf8"),
+        /action === "enable"[\s\S]*activateModule/,
+    );
     const activationSource = readFileSync(
         resolve(ROOT, "src/ui/app/modules/activation.js"),
         "utf8",
     );
     assert.match(
         activationSource,
-        /enableModuleWithIntegrityCheck\(module\.id, i18n\);[\s\S]*if \(!result\) return null;[\s\S]*openModulePreferences/,
+        /enableModuleWithIntegrityCheck\([\s\S]*module\.id,[\s\S]*i18n,[\s\S]*options,[\s\S]*\);[\s\S]*if \(!result\) return null;[\s\S]*openModulePreferences/,
     );
     const inputs = {
         apiKey: { value: "secret-value" },
@@ -151,8 +154,8 @@ test("disabled modules configure required settings before enable when their rout
     );
     assert.match(modulePreferencesSource, /readModulePreferenceValues/);
     assert.match(
-        marketplaceSource,
-        /if \(wasDisabled\)[\s\S]*enableModuleWithIntegrityCheck[\s\S]*openModulePreferences[\s\S]*wasDisabled && !didSave/,
+        readFileSync(resolve(ROOT, "src/ui/app/modules/operations.js"), "utf8"),
+        /action === "configure"[\s\S]*wasDisabled[\s\S]*await enable\(\)[\s\S]*openModulePreferences[\s\S]*wasDisabled && !didSave/,
     );
 });
 
@@ -169,14 +172,17 @@ test("module enablement presents and acknowledges SHASUM integrity risks", () =>
         resolve(ROOT, "src/ui/app/modules/api.js"),
         "utf8",
     );
-    assert.match(marketplaceSource, /action === "enable"[\s\S]*activateModule/);
+    assert.match(
+        readFileSync(resolve(ROOT, "src/ui/app/modules/operations.js"), "utf8"),
+        /action === "enable"[\s\S]*activateModule/,
+    );
     assert.match(integritySource, /entry\.status === "missing_shasum"/);
     assert.match(integritySource, /entry\.status === "missing"/);
     assert.match(integritySource, /labels\.mismatch/);
     assert.match(integritySource, /variant: "cancel"/);
     assert.match(
         integritySource,
-        /await setModuleEnabled\(moduleId, true\);[\s\S]*return true/,
+        /await setModuleEnabled\(moduleId, true, \{ isCurrent \}\);[\s\S]*return true/,
     );
     assert.match(
         apiSource,

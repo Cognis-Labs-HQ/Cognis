@@ -1,3 +1,15 @@
+import {
+    captureModuleAuthority,
+    captureModuleOwner,
+    moduleActivationReady,
+    modulePendingAction,
+    moduleLifecycleUnsettled,
+    reconcileObservedModuleStates,
+    dispatchModuleLifecycleRefresh as dispatchLifecycleRefresh,
+    runModuleLifecycleAction,
+    reportModuleStateReadFailure,
+    reportModuleActionFailure,
+} from "./lifecycle.js";
 import { guides } from "./guides.js";
 import { formatModuleTag } from "./filters.js";
 import {
@@ -11,7 +23,6 @@ import {
     restoreWindowScrollPosition,
 } from "../../reuse/page-composer/dom-position.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
-import { openPopup } from "../../reuse/popup.js";
 import { showToast } from "../../reuse/toast.js";
 import { renderMarkdown } from "../../reuse/markdown-renderer.js";
 import { beginButtonLoading } from "../../reuse/button-loading.js";
@@ -25,19 +36,10 @@ import {
     updateScreenshotCarousel,
 } from "./carousel.js";
 import {
-    installModule,
     loadAvailableModules,
     loadMarketplaceState,
     saveModuleReleaseChannel,
-    setModuleEnabled,
-    uninstallModule,
-    deleteModuleConfig,
 } from "./api.js";
-import {
-    activateModule,
-    enableModuleWithIntegrityCheck,
-    modulePreferenceLabels,
-} from "./activation.js";
 import {
     applyModuleFilterSelection,
     createModuleFilters,
@@ -48,22 +50,18 @@ import {
     compareVersions,
     detailModuleUuid,
     formatVersion,
-    hasModuleUpdate,
-    moduleChangeDirection,
     resolveModuleRepositoryUrl,
     resolveLocalizedReadme,
     resolveSelectedBranch,
 } from "./presentation.js";
-import { openModulePreferences } from "./preferences.js";
-import { confirmModuleUninstall } from "./uninstall.js";
 import { openMarketplaceSettings } from "./source-settings.js";
 import { resolveModuleAssetUrl } from "./assets.js";
 import {
     confirmModuleDependencies,
+    moduleActionNeedsDependencies,
     resolveInstallDependencies,
-    resolveModuleDependencyErrorMessage,
 } from "./dependencies.js";
-import { releaseChannels, selectReleaseChannel } from "./release-channels.js";
+import { releaseChannels } from "./release-channels.js";
 import {
     createModulesPagePolling,
     createSerializedOperationQueue,
@@ -71,6 +69,7 @@ import {
 } from "./polling.js";
 import {
     renderAvailableVersion as renderVersion,
+    renderLifecycleActions as renderModuleLifecycleActions,
     createSelectedBranchResolver,
     renderRepositoryLink as renderRepository,
     renderRestartWarning as renderRestart,
@@ -91,7 +90,10 @@ let refreshScreenshotCarousels = () => {};
 let pageMountController = null;
 const selectedBranches = new Map();
 const pendingModuleActions = new Map();
+const pendingActionOwners = new Map();
 const pendingDependencyChecks = new Set();
+const uncertainModuleActions = new Map();
+let pageAuthority = () => false;
 const screenshotIndexes = new Map();
 const selectedBranch = createSelectedBranchResolver(
     selectedBranches,
@@ -169,49 +171,17 @@ function renderRestartWarning(module) {
 }
 
 function renderLifecycleActions(module) {
-    if (module.restartRequired) {
-        return `<button type="button" class="btn-neutral" disabled>${escapeHtml(i18n.t("ui.app.modules.restart_required"))}</button>`;
-    }
-    if (!module.installed && !module.status) {
-        return renderLifecycleButton(module, "install", "confirm");
-    }
-    const pendingAction = pendingModuleActions.get(module.uuid);
-    const installedLabel =
-        pendingAction === "change-channel"
-            ? i18n.t("ui.app.modules.changing_release_channel")
-            : pendingAction === "force-update"
-              ? i18n.t("ui.app.modules.installing")
-              : i18n.t("ui.reuse.installed");
-    const installedPending = ["change-channel", "force-update"].includes(
-        pendingAction,
-    );
-    const installedState = `<button type="button" class="btn-neutral${installedPending ? " button-loading" : ""}" disabled${installedPending ? ' aria-busy="true"' : ""}>${escapeHtml(installedLabel)}</button>`;
-    if (module.status === "enabled") {
-        return `${installedState}${hasModuleUpdate(module, selectedBranch(module)) ? renderLifecycleButton(module, "update", "confirm") : ""}${renderLifecycleButton(module, "disable", "cancel")}`;
-    }
-    return `${installedState}${hasModuleUpdate(module, selectedBranch(module)) ? renderLifecycleButton(module, "update", "confirm") : ""}${renderLifecycleButton(module, "enable", "confirm")}${renderLifecycleButton(module, "uninstall", "cancel")}`;
-}
-
-function renderLifecycleButton(module, action, consequence) {
-    const pendingAction = pendingModuleActions.get(module.uuid);
-    const isPending = pendingAction === action;
-    const isBlocked = Boolean(pendingAction);
-    const updateDirection =
-        action === "update"
-            ? moduleChangeDirection(module, selectedBranch(module))
-            : action;
-    const pendingLabelKey =
-        {
-            enable: "ui.app.modules.enabling",
-            disable: "ui.app.modules.disabling",
-            uninstall: "ui.app.modules.uninstalling",
-            upgrade: "ui.app.modules.upgrading",
-            downgrade: "ui.app.modules.downgrading",
-        }[updateDirection] ?? "ui.app.modules.installing";
-    const labelKey = isPending
-        ? pendingLabelKey
-        : `ui.${["upgrade", "downgrade"].includes(updateDirection) ? "app.modules" : "reuse"}.${updateDirection}`;
-    return `<button type="button" class="btn-${consequence}${isPending ? " button-loading" : ""}" data-module-${action}="${escapeHtml(module.uuid)}"${isBlocked ? " disabled" : ""}${isPending ? ' aria-busy="true"' : ""}>${escapeHtml(i18n.t(labelKey))}</button>`;
+    return renderModuleLifecycleActions({
+        module,
+        i18n,
+        pendingAction:
+            pendingModuleActions.get(module.uuid) ??
+            modulePendingAction(module),
+        uncertain: uncertainModuleActions.get(module.uuid)?.current(),
+        uncertaintyKind: uncertainModuleActions.get(module.uuid)
+            ?.uncertaintyKind,
+        selectedBranch,
+    });
 }
 
 function renderModuleDetails(module) {
@@ -260,11 +230,11 @@ function renderModuleDetails(module) {
     const release = `<div class="module-detail-release"><p><strong>${escapeHtml(i18n.t("ui.app.modules.release_channel"))}:</strong> ${escapeHtml(displayedChannel ?? "")}${displayedVersion ? `, ${escapeHtml(formatVersion(displayedVersion))}` : ""}${renderRestartWarning(module)}</p>${renderAvailableVersion(module)}</div>`;
     const advanced =
         module.installed && !module.restartRequired
-            ? `<button type="button" class="btn-neutral module-icon-button module-detail-advanced" data-module-menu="${escapeHtml(module.uuid)}" aria-label="${escapeHtml(i18n.t("ui.app.modules.advanced_options"))}"${pendingModuleActions.has(module.uuid) ? " disabled" : ""}>☰</button>`
+            ? `<button type="button" class="btn-neutral module-icon-button module-detail-advanced" data-module-menu="${escapeHtml(module.uuid)}" aria-label="${escapeHtml(i18n.t("ui.app.modules.advanced_options"))}"${pendingModuleActions.has(module.uuid) || moduleLifecycleUnsettled(module) ? " disabled" : ""}>☰</button>`
             : "";
     const settings =
         module.installed && module.ui?.preferences?.length
-            ? `<button type="button" class="btn-neutral module-icon-button module-detail-settings" data-module-preferences="${escapeHtml(module.uuid)}" title="${escapeHtml(i18n.t("ui.reuse.settings"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.settings"))}"><span class="module-icon module-icon-settings" aria-hidden="true"></span></button>`
+            ? `<button type="button" class="btn-neutral module-icon-button module-detail-settings" data-module-preferences="${escapeHtml(module.uuid)}" title="${escapeHtml(i18n.t("ui.reuse.settings"))}" aria-label="${escapeHtml(i18n.t("ui.reuse.settings"))}"${pendingModuleActions.has(module.uuid) || moduleLifecycleUnsettled(module) ? " disabled" : ""}><span class="module-icon module-icon-settings" aria-hidden="true"></span></button>`
             : "";
     const headerActions =
         advanced || settings
@@ -301,179 +271,159 @@ function renderStore() {
       </section>`;
 }
 
-async function ensureModuleDependenciesReady(module) {
-    const dependencySelection = await confirmModuleDependencies(
-        module,
-        modules,
-        i18n,
-        installAndEnableDependency,
-    );
+async function ensureModuleDependenciesReady(module, owner, selection) {
+    const dependencySelection =
+        selection ??
+        (await confirmModuleDependencies(module, modules, i18n, (dependency) =>
+            installAndEnableDependency(dependency, owner),
+        ));
     if (!dependencySelection) return false;
     for (const dependency of resolveInstallDependencies(
         module,
         modules,
         dependencySelection.soft,
     )) {
+        if (!moduleActivationReady(dependency, owner)) return false;
         if (!dependency.installed) {
-            const installed = await runLifecycleAction(dependency, "install");
+            const installed = await runLifecycleAction(dependency, "install", {
+                owner,
+            });
             if (!installed) return false;
         }
         if (dependency.status !== "enabled") {
-            const enabled = await runLifecycleAction(dependency, "enable");
+            const enabled = await runLifecycleAction(dependency, "enable", {
+                owner,
+            });
             if (!enabled) return false;
         }
     }
-    return true;
+    return dependencySelection;
 }
 
 async function runLifecycleAction(
     module,
     action,
-    { dependenciesReady = false } = {},
+    { dependencySelection, owner = lifecycleOwner() } = {},
 ) {
-    if (module.restartRequired) return false;
-    if (
-        ["install", "enable"].includes(action) &&
-        !dependenciesReady &&
-        !(await ensureModuleDependenciesReady(module))
-    ) {
+    if (module.restartRequired || !owner.current()) return false;
+    discoverySequence++;
+    if (moduleActionNeedsDependencies(module, action)) {
+        dependencySelection = await ensureModuleDependenciesReady(
+            module,
+            owner,
+            dependencySelection,
+        );
+        if (!dependencySelection) return false;
+    }
+    const result = await runModuleLifecycleAction(module, action, owner, {
+        branch: selectedBranch(module),
+        onBranchSelected: (branch) => selectedBranches.set(module.uuid, branch),
+        beforeEnable() {
+            for (const dependency of resolveInstallDependencies(
+                module,
+                modules,
+                dependencySelection?.soft ?? [],
+            )) {
+                if (
+                    !moduleActivationReady(dependency, owner) ||
+                    !dependency.installed ||
+                    dependency.status !== "enabled"
+                )
+                    throw Object.assign(
+                        new Error("module_dependency_disabled"),
+                        { code: "module_dependency_disabled" },
+                    );
+            }
+        },
+    });
+    const { outcome } = result;
+    if (["cancelled", "obsolete"].includes(outcome)) return false;
+    if (outcome === "unknown") {
+        uncertainModuleActions.set(module.uuid, {
+            current: owner.current,
+            expectedStatus: result.expectedStatus,
+            uncertaintyKind: result.uncertaintyKind,
+        });
+        if (owner.visible()) {
+            refreshMarketplace();
+            showToast(
+                owner.i18n.t(
+                    result.uncertaintyKind === "installation"
+                        ? "ui.app.modules.installation_unknown"
+                        : "ui.app.modules.outcome_unknown",
+                ),
+                {
+                    type: "warning",
+                },
+            );
+        }
         return false;
     }
-    if (action === "enable") {
-        const result = await activateModule(module, i18n);
-        if (!result) return false;
-    }
-    if (
-        ["install", "update", "force-update", "change-channel"].includes(action)
-    ) {
-        let branch = selectedBranch(module);
-        if (action === "change-channel") {
-            const releaseChannel = await selectReleaseChannel(
-                module,
-                selectedBranch(module),
-                i18n,
-            );
-            if (!releaseChannel) return false;
-            if (releaseChannel === module.installedBranch) return false;
-            branch = releaseChannel;
-        }
-        const restoreEnabledState =
-            ["update", "force-update", "change-channel"].includes(action) &&
-            module.status === "enabled";
-        const changeDirection = moduleChangeDirection(module, branch);
-        if (module.installed && changeDirection === "downgrade") {
-            const result = await openPopup({
-                title: i18n.t("ui.app.modules.downgrade_title"),
-                body: escapeHtml(i18n.t("ui.app.modules.downgrade_warning")),
-                variant: "warning",
-                actions: [
-                    {
-                        id: "confirm",
-                        label: i18n.t("ui.app.modules.downgrade"),
-                        variant: "cancel",
-                    },
-                    {
-                        id: "cancel",
-                        label: i18n.t("ui.reuse.cancel"),
-                        variant: "neutral",
-                    },
-                ],
-            });
-            if (result !== "confirm") return false;
-        }
-        if (restoreEnabledState) {
-            await setModuleEnabled(module.id, false, {
-                preserveEnabledState: true,
+    action = result.action ?? action;
+    if (result.status) module.status = result.status;
+    if (!owner.current()) return false;
+    uncertainModuleActions.delete(module.uuid);
+    dispatchLifecycleRefresh(
+        module,
+        outcome === "reconciled"
+            ? result.status === "enabled"
+                ? "enable"
+                : "disable"
+            : action,
+        outcome === "reconciled" ? "observed-state" : "acknowledged-response",
+    );
+    if (owner.visible()) {
+        selectedModule =
+            selectedModule?.uuid === module.uuid ? module : selectedModule;
+        refreshMarketplace();
+        showToast(
+            owner.i18n.t(
+                outcome === "reconciled"
+                    ? "ui.app.modules.state_reconciled"
+                    : action === "configure"
+                      ? "ui.app.modules.preferences_saved"
+                      : `ui.app.modules.${action}_complete`,
+            ),
+            { type: outcome === "reconciled" ? "info" : "success" },
+        );
+        if (module.restartRequired) {
+            showToast(owner.i18n.t("ui.app.modules.restart_required"), {
+                type: "warning",
             });
         }
-        try {
-            const installedManifest = await installModule(
-                module,
-                branch,
-                restoreEnabledState,
-            );
-            module.version = installedManifest.version;
-            module.restartRequired = installedManifest.restartRequired;
-        } finally {
-            if (restoreEnabledState && !module.restartRequired) {
-                const enabled = await enableModuleWithIntegrityCheck(
-                    module.id,
-                    i18n,
-                );
-                if (enabled) module.status = "enabled";
-            }
-        }
-        module.installed = true;
-        if (module.restartRequired || !restoreEnabledState) {
-            module.status = "disabled";
-        }
-        module.installedBranch = branch;
-        module.installedCommit = [
-            ...(module.branches ?? []),
-            ...(module.releases ?? []),
-        ].find((entry) => entry.name === branch)?.commit;
-        module.installedVersion = module.version;
-        module.updateAvailable = false;
-        selectedBranches.set(module.uuid, branch);
-        if (action === "update" && changeDirection !== "none") {
-            action = changeDirection;
-        }
+        void refreshAfterLifecycle(owner);
     }
-    if (action === "disable") {
-        await setModuleEnabled(module.id, false);
-    }
-    if (action === "enable" || action === "disable") {
-        module.status = action === "enable" ? "enabled" : "disabled";
-    }
-    if (action === "uninstall") {
-        const options = await confirmModuleUninstall(i18n);
-        if (!options) return false;
-        await uninstallModule(module.uuid, options);
-        await deleteModuleConfig(module.id);
-        module.installed = false;
-        delete module.status;
-    }
-    selectedModule =
-        selectedModule?.uuid === module.uuid ? module : selectedModule;
-    refreshMarketplace();
-    dispatchLifecycleRefresh(module, action);
-    showToast(i18n.t(`ui.app.modules.${action}_complete`), { type: "success" });
-    if (module.restartRequired) {
-        showToast(i18n.t("ui.app.modules.restart_required"), {
-            type: "warning",
-        });
-    }
-    void loadKnownModules().catch((error) => {
-        showToast(error.message, { type: "error" });
-    });
-    return true;
+    // An observed state does not acknowledge activation or required setup.
+    return outcome === "confirmed";
 }
 
-async function installAndEnableDependency(dependency) {
+async function installAndEnableDependency(dependency, owner) {
+    if (!moduleActivationReady(dependency, owner)) return false;
     if (!dependency.installed) {
-        const installed = await runLifecycleAction(dependency, "install");
+        const installed = await runLifecycleAction(dependency, "install", {
+            owner,
+        });
         if (!installed) return false;
     }
     if (dependency.status === "enabled") return true;
-    return runLifecycleAction(dependency, "enable");
+    return runLifecycleAction(dependency, "enable", { owner });
 }
 
-function dispatchLifecycleRefresh(module, action) {
-    window.dispatchEvent(
-        new CustomEvent("cognis:module-lifecycle-changed", {
-            detail: {
-                action,
-                moduleId: module.id,
-                moduleUuid: module.uuid,
-                status: module.status ?? "available",
-            },
-        }),
+const lifecycleOwner = (signal = pageMountController?.signal) =>
+    captureModuleOwner({
+        signal,
+        i18n,
+        currentSignal: () => pageMountController?.signal,
+    });
+
+function refreshAfterLifecycle(owner) {
+    return loadKnownModules(false, owner.signal).catch((error) =>
+        reportModuleStateReadFailure(error, owner),
     );
-    window.dispatchEvent(new Event("cognis:navbar-plugins-refresh"));
-    window.dispatchEvent(new Event("cognis:navbar-refresh"));
 }
 
 function refreshMarketplace() {
+    if (pageMountController?.signal.aborted || !pageAuthority()) return;
     const scrollPosition = {
         left: window.scrollX,
         top: window.scrollY,
@@ -498,6 +448,7 @@ function refreshMarketplace() {
 }
 
 function refreshDetailActions() {
+    if (pageMountController?.signal.aborted || !pageAuthority()) return;
     const actions = getFloatingSlot(pageRoot, "module-actions");
     if (actions) {
         actions.innerHTML = selectedModule
@@ -511,23 +462,29 @@ async function loadKnownModules(
     restoreDetailRoute = false,
     signal = pageMountController?.signal,
 ) {
+    const current = pageAuthority;
     const sequence = ++discoverySequence;
     const selectedModuleUuid =
         selectedModule?.uuid ??
         (restoreDetailRoute ? detailModuleUuid() : null);
     const snapshot = await loadMarketplaceState(marketplaceEtag, { signal });
-    if (sequence !== discoverySequence || signal?.aborted) return;
+    if (sequence !== discoverySequence || signal?.aborted || !current()) return;
     if (!snapshot) return { sourceRevision: marketplaceSourceRevision };
     const { sources: loadedSources, installed, cached } = snapshot;
     const sourceRevision = JSON.stringify(loadedSources);
     const prepared = await prepareInstalledCatalog(cached, installed, i18n, {
         signal,
     });
-    if (sequence !== discoverySequence || signal?.aborted) return;
+    if (sequence !== discoverySequence || signal?.aborted || !current()) return;
     sources = loadedSources;
     marketplaceEtag = snapshot.etag;
     marketplaceSourceRevision = sourceRevision;
     modules = prepared;
+    reconcileObservedModuleStates(
+        uncertainModuleActions,
+        modules,
+        dispatchLifecycleRefresh,
+    );
     selectedModule = selectedModuleUuid
         ? (modules.find(
               (module) =>
@@ -576,6 +533,7 @@ async function refreshMarketplaceData(signal) {
 }
 
 function bindInteractions(root, signal) {
+    const owner = lifecycleOwner(signal);
     root.addEventListener(
         "load",
         (event) => {
@@ -625,6 +583,20 @@ function bindInteractions(root, signal) {
                 event.target.closest("button") ??
                 event.target.closest(".module-store-card");
             if (!target) return;
+            if (!owner.current()) return;
+            if (target.dataset.moduleRecheck) {
+                target.disabled = true;
+                try {
+                    const state = await loadKnownModules(false, signal);
+                    if (!state || !owner.visible()) return;
+                    refreshMarketplace();
+                } catch (error) {
+                    reportModuleStateReadFailure(error, owner);
+                } finally {
+                    if (owner.visible()) target.disabled = false;
+                }
+                return;
+            }
             if (target.dataset.screenshotStep) {
                 updateScreenshotCarousel(
                     target.closest("[data-screenshot-carousel]"),
@@ -671,54 +643,24 @@ function bindInteractions(root, signal) {
                 );
                 return;
             }
-            if (target.dataset.modulePreferences) {
-                const module = modules.find(
-                    (entry) => entry.uuid === target.dataset.modulePreferences,
-                );
-                if (module) {
-                    const wasDisabled = module.status !== "enabled";
-                    if (wasDisabled) {
-                        const enabled = await enableModuleWithIntegrityCheck(
-                            module.id,
-                            i18n,
-                        );
-                        if (!enabled) return;
-                    }
-                    let didSave;
-                    try {
-                        didSave = await openModulePreferences(
-                            module,
-                            modulePreferenceLabels(i18n),
-                        );
-                    } finally {
-                        if (wasDisabled && !didSave) {
-                            await setModuleEnabled(module.id, false);
-                        }
-                    }
-                    if (didSave) {
-                        module.status = "enabled";
-                        refreshMarketplace();
-                        showToast(i18n.t("ui.app.modules.preferences_saved"), {
-                            type: "success",
-                        });
-                    }
-                }
-                return;
-            }
-            let action = [
-                "install",
-                "update",
-                "force-update",
-                "change-channel",
-                "enable",
-                "disable",
-                "uninstall",
-            ].find((name) => target.hasAttribute(`data-module-${name}`));
-            const moduleUuid = target.dataset.moduleMenu
-                ? target.dataset.moduleMenu
-                : action
-                  ? target.getAttribute(`data-module-${action}`)
-                  : target.dataset.moduleUuid;
+            let action = target.dataset.modulePreferences
+                ? "configure"
+                : [
+                      "install",
+                      "update",
+                      "force-update",
+                      "change-channel",
+                      "enable",
+                      "disable",
+                      "uninstall",
+                  ].find((name) => target.hasAttribute(`data-module-${name}`));
+            const moduleUuid =
+                target.dataset.modulePreferences ??
+                (target.dataset.moduleMenu
+                    ? target.dataset.moduleMenu
+                    : action
+                      ? target.getAttribute(`data-module-${action}`)
+                      : target.dataset.moduleUuid);
             const module = modules.find((entry) => entry.uuid === moduleUuid);
             if (target.dataset.moduleMenu && module) {
                 const items = [
@@ -744,22 +686,24 @@ function bindInteractions(root, signal) {
             if (action && module) {
                 if (
                     pendingModuleActions.has(module.uuid) ||
+                    moduleLifecycleUnsettled(module) ||
                     pendingDependencyChecks.has(module.uuid)
                 )
                     return;
-                let dependenciesReady = false;
-                if (["install", "enable"].includes(action)) {
+                let dependencySelection;
+                if (moduleActionNeedsDependencies(module, action)) {
                     pendingDependencyChecks.add(module.uuid);
                     try {
-                        dependenciesReady =
-                            await ensureModuleDependenciesReady(module);
+                        dependencySelection =
+                            await ensureModuleDependenciesReady(module, owner);
                     } finally {
                         pendingDependencyChecks.delete(module.uuid);
                     }
-                    if (!dependenciesReady) return;
+                    if (!dependencySelection) return;
                 }
                 discoverySequence += 1;
                 pendingModuleActions.set(module.uuid, action);
+                pendingActionOwners.set(module.uuid, owner);
                 const finishLoading = target.dataset.moduleMenu
                     ? null
                     : beginButtonLoading(target);
@@ -767,43 +711,34 @@ function bindInteractions(root, signal) {
                 try {
                     const completed = await queueModuleLifecycleAction(() =>
                         runLifecycleAction(module, action, {
-                            dependenciesReady,
+                            dependencySelection,
+                            owner,
                         }),
                     );
-                    if (completed === false && action === "install") {
+                    if (
+                        owner.visible() &&
+                        completed === false &&
+                        action === "install"
+                    ) {
                         showToast(i18n.t("ui.app.modules.install_cancelled"), {
                             type: "info",
                         });
                     }
                 } catch (error) {
-                    console.error("module_lifecycle_action_failed", {
-                        action,
-                        moduleId: module.id,
-                        moduleUuid: module.uuid,
-                        code: error.code,
-                        status: error.status,
-                        conflict: error.conflict,
-                        error,
-                    });
-                    const dependencyMessage =
-                        resolveModuleDependencyErrorMessage(error, i18n);
-                    showToast(
-                        dependencyMessage ??
-                            (error.code === "github_connection_timeout"
-                                ? i18n.t(
-                                      "ui.app.modules.github_timeout_warning",
-                                  )
-                                : error.code === "module_install_timeout"
-                                  ? i18n.t("ui.app.modules.install_timeout")
-                                  : error.code === "module_validation_failed"
-                                    ? i18n.t("ui.app.modules.validation_failed")
-                                    : error.message),
-                        { type: "error" },
-                    );
+                    reportModuleActionFailure(error, module, action, owner);
                 } finally {
+                    if (pendingActionOwners.get(module.uuid) !== owner) return;
                     pendingModuleActions.delete(module.uuid);
-                    finishLoading?.();
-                    refreshDetailActions();
+                    pendingActionOwners.delete(module.uuid);
+                    if (owner.visible()) {
+                        finishLoading?.();
+                        refreshMarketplace();
+                    } else if (
+                        owner.current() &&
+                        !pageMountController?.signal.aborted
+                    ) {
+                        void refreshAfterLifecycle(lifecycleOwner());
+                    }
                 }
                 return;
             }
@@ -838,14 +773,28 @@ export async function mount(root, { signal } = {}) {
     if (globalThis.__spaRouter && !signal) return;
     pageMountController = replaceMountScope(pageMountController, signal);
     const mountSignal = pageMountController.signal;
+    for (const [uuid, owner] of pendingActionOwners) {
+        if (!owner.current()) {
+            pendingActionOwners.delete(uuid);
+            pendingModuleActions.delete(uuid);
+        }
+    }
+    pageAuthority = captureModuleAuthority();
+    const current = pageAuthority;
+    modules = [];
+    selectedModule = null;
+    discoverySequence++;
     marketplaceEtag = undefined;
     marketplaceSourceRevision = undefined;
     const finishPageLoading = beginPageLoading();
     try {
         pageRoot = root;
-        i18n = await createI18n({
+        const mountI18n = await createI18n({
             componentStringBaseUrls: ["/static/app/modules/languages"],
         });
+        if (mountSignal.aborted || !current()) return;
+        i18n = mountI18n;
+        const owner = lifecycleOwner(mountSignal);
         applyDocumentTitle(i18n, "ui.page.title.modules");
         composer = createPageComposer(root, {
             tutorials: guides,
@@ -875,15 +824,16 @@ export async function mount(root, { signal } = {}) {
             signal: mountSignal,
         });
         await composer.init();
+        if (mountSignal.aborted || !current()) return;
         bindInteractions(root, mountSignal);
         refreshScreenshotCarousels = initializeScreenshotCarousels(
             root,
             mountSignal,
             screenshotIndexes,
         );
-        void loadKnownModules(true, mountSignal).catch((error) => {
-            showToast(error.message, { type: "error" });
-        });
+        await loadKnownModules(true, mountSignal).catch((error) =>
+            reportModuleStateReadFailure(error, owner),
+        );
         startMarketplacePolling(mountSignal);
     } finally {
         finishPageLoading();

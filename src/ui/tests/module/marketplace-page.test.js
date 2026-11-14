@@ -5,12 +5,6 @@ import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-    applyModuleFilterSelection,
-    createModuleFilters,
-    filterModules,
-    renderModuleFilters,
-} from "../../app/modules/filters.js";
-import {
     assertRequiredModulePreferences,
     missingRequiredModulePreferenceKeys,
     readModulePreferenceValues,
@@ -22,6 +16,10 @@ import {
 } from "../../app/modules/presentation.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
+const operationsSource = readFileSync(
+    resolve(ROOT, "src/ui/app/modules/operations.js"),
+    "utf8",
+);
 const marketplaceStyles = readFileSync(
     resolve(ROOT, "src/ui/styles/modules.css"),
     "utf8",
@@ -90,8 +88,8 @@ test("module preference fields use the form builder and secret controls", () => 
     );
     assert.match(modulePreferencesSource, /renderInfoTooltip/);
     assert.match(
-        marketplaceSource,
-        /didSave = await openModulePreferences[\s\S]*if \(didSave\)[\s\S]*preferences_saved/,
+        operationsSource,
+        /didSave = await openModulePreferences[\s\S]*if \(!didSave\) return null/,
     );
 });
 
@@ -107,76 +105,14 @@ test("module settings use manifest translations and module-owned config routes",
     assert.match(modulePreferencesSource, /module\.ui\?\.stringsBaseUrl/);
 });
 
-test("module filters include modules matching any active category", () => {
-    const filters = createModuleFilters();
-    assert.equal(
-        applyModuleFilterSelection(filters, { storeCategory: "productivity" }),
-        true,
-    );
-    const modules = [
-        {
-            id: "notes",
-            tags: ["productivity", "collaboration"],
-        },
-        { id: "tasks", tags: ["productivity"] },
-        { id: "meetings", tags: ["collaboration"] },
-    ];
-
-    assert.deepEqual(
-        filterModules(modules, filters).map((module) => module.id),
-        ["notes", "tasks"],
-    );
-    applyModuleFilterSelection(filters, { storeCategory: "collaboration" });
-    assert.deepEqual(
-        filterModules(modules, filters).map((module) => module.id),
-        ["notes", "tasks", "meetings"],
-    );
-    applyModuleFilterSelection(filters, { storeCategory: "collaboration" });
-    assert.deepEqual(
-        filterModules(modules, filters).map((module) => module.id),
-        ["notes", "tasks"],
-    );
-});
-
-test("module filters expose every selected state", () => {
-    const filters = createModuleFilters();
-    applyModuleFilterSelection(filters, { storeView: "installed" });
-    applyModuleFilterSelection(filters, { storeCategory: "productivity" });
-    applyModuleFilterSelection(filters, { storeCategory: "collaboration" });
-    const html = renderModuleFilters(
-        ["productivity", "collaboration"],
-        filters,
-        {
-            i18n: { t: (key) => key },
-            escapeHtml: (value) => value,
-            formatTag: (value) => value,
-        },
-    );
-
-    assert.match(html, /data-store-view="installed" aria-pressed="true"/);
-    assert.match(
-        html,
-        /data-store-category="productivity" aria-pressed="true"/,
-    );
-    assert.match(
-        html,
-        /data-store-category="collaboration" aria-pressed="true"/,
-    );
-    assert.match(
-        marketplaceStyles,
-        /\[data-module-sidebar\] button\.is-active\s*{[^}]*border-color: var\(--accent-color\)/,
-    );
-    assert.match(
-        marketplaceStyles,
-        /\[data-module-sidebar\] button:not\(\.is-active\)\s*{[^}]*border-color: transparent/,
-    );
-});
-
 test("module marketplace passes root and options to the page composer", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/index.js"),
-        "utf8",
-    );
+    const source =
+        readFileSync(resolve(ROOT, "src/ui/app/modules/index.js"), "utf8") +
+        readFileSync(
+            resolve(ROOT, "src/ui/app/modules/detail-rendering.js"),
+            "utf8",
+        ) +
+        operationsSource;
     assert.match(source, /createPageComposer\(root, \{/);
     assert.match(source, /if \(globalThis\.__spaRouter && !signal\) return/);
     assert.match(source, /allowCustomization: false/);
@@ -205,10 +141,13 @@ test("module marketplace cards keep consistent content and action geometry", () 
 });
 
 test("module marketplace content keeps a stable Modules heading", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/index.js"),
-        "utf8",
-    );
+    const source =
+        readFileSync(resolve(ROOT, "src/ui/app/modules/index.js"), "utf8") +
+        readFileSync(
+            resolve(ROOT, "src/ui/app/modules/detail-rendering.js"),
+            "utf8",
+        ) +
+        operationsSource;
 
     assert.match(
         marketplaceSource,
@@ -251,10 +190,13 @@ test("module cards and details show upgrade and downgrade versions", () => {
 });
 
 test("module details preserve position and update enabled modules atomically", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/index.js"),
-        "utf8",
-    );
+    const source =
+        readFileSync(resolve(ROOT, "src/ui/app/modules/index.js"), "utf8") +
+        readFileSync(
+            resolve(ROOT, "src/ui/app/modules/detail-rendering.js"),
+            "utf8",
+        ) +
+        operationsSource;
     const presentationSource = readFileSync(
         resolve(ROOT, "src/ui/app/modules/presentation.js"),
         "utf8",
@@ -272,7 +214,7 @@ test("module details preserve position and update enabled modules atomically", (
     );
     assert.match(
         source,
-        /await setModuleEnabled\(module\.id, false, \{[\s\S]*preserveEnabledState: true[\s\S]*await installModule[\s\S]*await enableModuleWithIntegrityCheck\(/,
+        /await disable\(\{ preserveEnabledState: true \}\)[\s\S]*await installModule[\s\S]*await enable\(\)/,
     );
     assert.doesNotMatch(source, /disable_before_update/);
     assert.doesNotMatch(
@@ -282,10 +224,13 @@ test("module details preserve position and update enabled modules atomically", (
 });
 
 test("module details use composer refreshes and SPA deep links", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/index.js"),
-        "utf8",
-    );
+    const source =
+        readFileSync(resolve(ROOT, "src/ui/app/modules/index.js"), "utf8") +
+        readFileSync(
+            resolve(ROOT, "src/ui/app/modules/detail-rendering.js"),
+            "utf8",
+        ) +
+        operationsSource;
     const presentationSource = readFileSync(
         resolve(ROOT, "src/ui/app/modules/presentation.js"),
         "utf8",
@@ -367,10 +312,13 @@ test("module presentation resolves manifest localization keys", async () => {
         categories: ["Localized category"],
         tags: ["Localized tag"],
     });
-    const marketplaceSource = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/index.js"),
-        "utf8",
-    );
+    const marketplaceSource =
+        readFileSync(resolve(ROOT, "src/ui/app/modules/index.js"), "utf8") +
+        readFileSync(
+            resolve(ROOT, "src/ui/app/modules/detail-rendering.js"),
+            "utf8",
+        ) +
+        operationsSource;
     assert.match(
         marketplaceSource,
         /presentation = module\.localizedPresentation \?\? module/,
@@ -422,10 +370,13 @@ test("module presentation respects catalog suppression of unavailable strings", 
 });
 
 test("module marketplace does not resolve repository-relative avatars against the page URL", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/index.js"),
-        "utf8",
-    );
+    const source =
+        readFileSync(resolve(ROOT, "src/ui/app/modules/index.js"), "utf8") +
+        readFileSync(
+            resolve(ROOT, "src/ui/app/modules/detail-rendering.js"),
+            "utf8",
+        ) +
+        operationsSource;
     const assetSource = readFileSync(
         resolve(ROOT, "src/ui/app/modules/assets.js"),
         "utf8",
@@ -489,10 +440,13 @@ test("module details render safe full source repository URLs below their titles"
 });
 
 test("module marketplace replaces unavailable icons with the unknown icon", () => {
-    const pageSource = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/index.js"),
-        "utf8",
-    );
+    const pageSource =
+        readFileSync(resolve(ROOT, "src/ui/app/modules/index.js"), "utf8") +
+        readFileSync(
+            resolve(ROOT, "src/ui/app/modules/detail-rendering.js"),
+            "utf8",
+        ) +
+        operationsSource;
     const errorHandlerSource = readFileSync(
         resolve(ROOT, "src/ui/reuse/runtime-error-popup.js"),
         "utf8",
@@ -516,10 +470,13 @@ test("module marketplace replaces unavailable icons with the unknown icon", () =
 });
 
 test("module pictures remain hidden until their refreshed image is ready", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/index.js"),
-        "utf8",
-    );
+    const source =
+        readFileSync(resolve(ROOT, "src/ui/app/modules/index.js"), "utf8") +
+        readFileSync(
+            resolve(ROOT, "src/ui/app/modules/detail-rendering.js"),
+            "utf8",
+        ) +
+        operationsSource;
     const carouselSource = readFileSync(
         resolve(ROOT, "src/ui/app/modules/carousel.js"),
         "utf8",
@@ -543,10 +500,13 @@ test("module pictures remain hidden until their refreshed image is ready", () =>
 });
 
 test("module marketplace refreshes every configured source on demand", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/index.js"),
-        "utf8",
-    );
+    const source =
+        readFileSync(resolve(ROOT, "src/ui/app/modules/index.js"), "utf8") +
+        readFileSync(
+            resolve(ROOT, "src/ui/app/modules/detail-rendering.js"),
+            "utf8",
+        ) +
+        operationsSource;
     assert.match(source, /id="module-source-refresh"/);
     assert.match(source, /ui\.reuse\.refresh/);
     assert.match(source, /async function loadKnownModules/);
@@ -598,21 +558,27 @@ test("module installation failures stay local to the marketplace action", () => 
 });
 
 test("cancelled module installations notify the administrator", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/index.js"),
-        "utf8",
-    );
+    const source =
+        readFileSync(resolve(ROOT, "src/ui/app/modules/index.js"), "utf8") +
+        readFileSync(
+            resolve(ROOT, "src/ui/app/modules/detail-rendering.js"),
+            "utf8",
+        ) +
+        operationsSource;
     assert.match(
         source,
-        /completed === false && action === "install"[\s\S]*ui\.app\.modules\.install_cancelled/,
+        /completed === false[\s\S]*&&[\s\S]*action === "install"[\s\S]*ui\.app\.modules\.install_cancelled/,
     );
 });
 
 test("module sources use an independent list and editor", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/index.js"),
-        "utf8",
-    );
+    const source =
+        readFileSync(resolve(ROOT, "src/ui/app/modules/index.js"), "utf8") +
+        readFileSync(
+            resolve(ROOT, "src/ui/app/modules/detail-rendering.js"),
+            "utf8",
+        ) +
+        operationsSource;
     assert.match(sourceSettingsSource, /function renderSourceManager/);
     assert.match(sourceSettingsSource, /function renderSourceForm/);
     assert.match(sourceSettingsSource, /function renderSourceManager\(i18n\)/);
@@ -629,10 +595,13 @@ test("module sources use an independent list and editor", () => {
 });
 
 test("module marketplace opens repository readmes in a full detail view", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/index.js"),
-        "utf8",
-    );
+    const source =
+        readFileSync(resolve(ROOT, "src/ui/app/modules/index.js"), "utf8") +
+        readFileSync(
+            resolve(ROOT, "src/ui/app/modules/detail-rendering.js"),
+            "utf8",
+        ) +
+        operationsSource;
     const presentationSource = readFileSync(
         resolve(ROOT, "src/ui/app/modules/presentation.js"),
         "utf8",
@@ -678,10 +647,10 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     assert.match(source, /renderLifecycleButton\(module, "disable"/);
     assert.match(source, /renderLifecycleButton\(module, "uninstall"/);
     assert.match(source, /confirmModuleUninstall\(i18n\)/);
-    assert.match(source, /uninstallModule\(module\.uuid, options\)/);
+    assert.match(source, /uninstallModule\(module\.uuid, confirmation\)/);
     assert.match(
         source,
-        /uninstallModule\(module\.uuid, options\);[\s\S]*deleteModuleConfig\(module\.id\)/,
+        /uninstallModule\(module\.uuid, confirmation\);[\s\S]*deleteModuleConfig\(module\.id\)/,
     );
     assert.match(source, /renderLifecycleButton\(module, "update"/);
     assert.match(source, /data-module-branch/);
@@ -708,18 +677,18 @@ test("module marketplace opens repository readmes in a full detail view", () => 
     assert.match(releaseChannelSource, /class="module-release-channel-list"/);
     assert.match(releaseChannelSource, /data-release-channel/);
     assert.match(source, /selectedBranches\.set\(module\.uuid, branch\)/);
+    assert.match(source, /channel === module\.installedBranch/);
     assert.match(
         source,
-        /if \(releaseChannel === module\.installedBranch\) return/,
+        /if \(module\.restartRequired \|\| !owner\.current\(\)\) return/,
     );
-    assert.match(source, /if \(module\.restartRequired\) return/);
     assert.match(
         source,
         /\["update", "force-update", "change-channel"\]\.includes\(action\)[\s\S]*module\.status === "enabled"/,
     );
     assert.match(
         source,
-        /setModuleEnabled\(module\.id, false, \{[\s\S]*preserveEnabledState: true[\s\S]*installModule\([\s\S]*module,[\s\S]*branch,[\s\S]*\)[\s\S]*enableModuleWithIntegrityCheck\(/,
+        /await disable\(\{ preserveEnabledState: true \}\)[\s\S]*installModule\([\s\S]*module,[\s\S]*branch,[\s\S]*await enable\(\)/,
     );
     assert.doesNotMatch(source, /class="theme-select" data-module-branch/);
     assert.match(source, /createSelectedBranchResolver/);
@@ -736,10 +705,13 @@ test("module marketplace opens repository readmes in a full detail view", () => 
 });
 
 test("module marketplace uses curated recommendations and compact details", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/index.js"),
-        "utf8",
-    );
+    const source =
+        readFileSync(resolve(ROOT, "src/ui/app/modules/index.js"), "utf8") +
+        readFileSync(
+            resolve(ROOT, "src/ui/app/modules/detail-rendering.js"),
+            "utf8",
+        ) +
+        operationsSource;
     assert.match(sourceSettingsSource, /loadModuleMarketplaceSettings/);
     assert.match(sourceSettingsSource, /recommendedModulesUrl/);
     assert.match(sourceSettingsSource, /renderInfoTooltip/);
@@ -755,9 +727,18 @@ test("module marketplace uses curated recommendations and compact details", () =
     assert.match(source, /module-icon-back/);
     assert.match(source, /module-detail-license/);
     assert.match(source, /module\.status = "disabled"/);
-    assert.match(source, /cognis:navbar-plugins-refresh/);
-    assert.match(source, /cognis:module-lifecycle-changed/);
-    assert.match(source, /void loadKnownModules\(\)\.catch/);
+    assert.match(
+        readFileSync(resolve(ROOT, "src/ui/app/modules/lifecycle.js"), "utf8"),
+        /cognis:navbar-plugins-refresh/,
+    );
+    assert.match(
+        readFileSync(resolve(ROOT, "src/ui/app/modules/lifecycle.js"), "utf8"),
+        /cognis:module-lifecycle-changed/,
+    );
+    assert.match(
+        source,
+        /return loadKnownModules\(false, owner\.signal\)\.catch/,
+    );
     assert.match(marketplaceStyles, /\.module-detail[\s\S]*width: 100%/);
     assert.match(marketplaceStyles, /arrow-back-light\.svg/);
     assert.match(marketplaceStyles, /arrow-back-dark\.svg/);
@@ -767,17 +748,14 @@ test("module marketplace uses curated recommendations and compact details", () =
     assert.match(marketplaceStyles, /settings-cog-dark\.svg/);
 });
 
-test("module marketplace defaults to all statuses", () => {
-    const filters = createModuleFilters();
-    assert.equal(filters.view, "all");
-    assert.equal(filters.categories.size, 0);
-});
-
 test("module marketplace exposes releases and pending action feedback", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/index.js"),
-        "utf8",
-    );
+    const source =
+        readFileSync(resolve(ROOT, "src/ui/app/modules/index.js"), "utf8") +
+        readFileSync(
+            resolve(ROOT, "src/ui/app/modules/detail-rendering.js"),
+            "utf8",
+        ) +
+        operationsSource;
     const loadingSource = readFileSync(
         resolve(ROOT, "src/ui/reuse/button-loading.js"),
         "utf8",
@@ -795,7 +773,10 @@ test("module marketplace exposes releases and pending action feedback", () => {
     assert.match(source, /beginButtonLoading\(target\)/);
     assert.match(source, /pendingModuleActions\.set\(module\.uuid, action\)/);
     assert.match(presentationSource, /function moduleChangeDirection/);
-    assert.match(source, /action = changeDirection/);
+    assert.match(
+        source,
+        /changeDirection !== "none"\s*\? changeDirection\s*: action/,
+    );
     assert.match(
         readFileSync(
             resolve(ROOT, "src/ui/app/modules/languages/en/strings.xml"),
@@ -820,19 +801,29 @@ test("module marketplace exposes releases and pending action feedback", () => {
         marketplaceStyles,
         /\.module-release-channel-list[\s\S]*overflow-y: auto/,
     );
-    assert.match(source, /module_lifecycle_action_failed/);
-    assert.match(source, /ui\.app\.modules\.validation_failed/);
-    assert.match(source, /github_connection_timeout/);
-    assert.match(source, /github_timeout_warning/);
+    assert.match(
+        readFileSync(resolve(ROOT, "src/ui/app/modules/lifecycle.js"), "utf8"),
+        /module_lifecycle_action_failed/,
+    );
+    const lifecycleSource = readFileSync(
+        resolve(ROOT, "src/ui/app/modules/lifecycle.js"),
+        "utf8",
+    );
+    assert.match(lifecycleSource, /validation_failed/);
+    assert.match(lifecycleSource, /github_connection_timeout/);
+    assert.match(lifecycleSource, /github_timeout_warning/);
     assert.match(loadingSource, /classList\.add\("button-loading"\)/);
     assert.match(loadingStyles, /@keyframes button-loading-spin/);
 });
 
 test("module details rotate bounded screenshots with manual navigation", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/index.js"),
-        "utf8",
-    );
+    const source =
+        readFileSync(resolve(ROOT, "src/ui/app/modules/index.js"), "utf8") +
+        readFileSync(
+            resolve(ROOT, "src/ui/app/modules/detail-rendering.js"),
+            "utf8",
+        ) +
+        operationsSource;
     const carouselSource = readFileSync(
         resolve(ROOT, "src/ui/app/modules/carousel.js"),
         "utf8",
@@ -854,10 +845,13 @@ test("module marketplace omits template manifests", () => {
 });
 
 test("module marketplace refresh actions emit one completion result", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/ui/app/modules/index.js"),
-        "utf8",
-    );
+    const source =
+        readFileSync(resolve(ROOT, "src/ui/app/modules/index.js"), "utf8") +
+        readFileSync(
+            resolve(ROOT, "src/ui/app/modules/detail-rendering.js"),
+            "utf8",
+        ) +
+        operationsSource;
     assert.match(source, /if \(isMarketplaceRefreshPending\(\)\) return/);
     assert.match(source, /marketplaceRefreshPending = true/);
     assert.match(

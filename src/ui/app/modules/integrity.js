@@ -19,9 +19,15 @@ function renderFailure(entry, labels) {
 export async function enableModuleWithIntegrityAcknowledgement(
     moduleId,
     labels,
+    {
+        isCurrent = () => true,
+        isVisible = () => true,
+        beforeEnable = () => {},
+    } = {},
 ) {
     try {
-        await setModuleEnabled(moduleId, true);
+        beforeEnable();
+        await setModuleEnabled(moduleId, true, { isCurrent });
         return true;
     } catch (error) {
         if (
@@ -31,6 +37,8 @@ export async function enableModuleWithIntegrityAcknowledgement(
         ) {
             throw error;
         }
+        if (!isCurrent()) throw new Error("module_authority_changed");
+        if (!isVisible()) return null;
         const failures = error.integrityFailures;
         const action = await openPopup({
             title: labels.title,
@@ -47,9 +55,11 @@ export async function enableModuleWithIntegrityAcknowledgement(
                 { id: "cancel", label: labels.cancel, variant: "neutral" },
             ],
         });
-        if (action !== "acknowledge") return null;
+        if (action !== "acknowledge" || !isVisible()) return null;
+        beforeEnable();
         await setModuleEnabled(moduleId, true, {
             integrityAcknowledgementToken: error.integrityToken,
+            isCurrent,
         });
         return true;
     }

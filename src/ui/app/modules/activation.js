@@ -1,3 +1,5 @@
+import { uiCtx } from "../../reuse/ui-ctx.js";
+import { showToast } from "../../reuse/toast.js";
 import { setModuleEnabled } from "./api.js";
 import { enableModuleWithIntegrityAcknowledgement } from "./integrity.js";
 import {
@@ -17,73 +19,129 @@ export function modulePreferenceLabels(i18n) {
     };
 }
 
-export function enableModuleWithIntegrityCheck(moduleId, i18n) {
-    return enableModuleWithIntegrityAcknowledgement(moduleId, {
-        title: i18n.t("ui.app.modules.integrity_title"),
-        warning: i18n.t("ui.app.modules.integrity_warning"),
-        missingShasum: i18n.t("ui.app.modules.integrity_missing_shasum"),
-        missingFile: i18n.t("ui.app.modules.integrity_missing_file"),
-        mismatch: i18n.t("ui.app.modules.integrity_mismatch"),
-        expected: i18n.t("ui.app.modules.integrity_expected"),
-        actual: i18n.t("ui.app.modules.integrity_actual"),
-        acknowledge: i18n.t("ui.app.modules.integrity_acknowledge"),
-        cancel: i18n.t("ui.reuse.cancel"),
-    });
+export function enableModuleWithIntegrityCheck(moduleId, i18n, options) {
+    return enableModuleWithIntegrityAcknowledgement(
+        moduleId,
+        {
+            title: i18n.t("ui.app.modules.integrity_title"),
+            warning: i18n.t("ui.app.modules.integrity_warning"),
+            missingShasum: i18n.t("ui.app.modules.integrity_missing_shasum"),
+            missingFile: i18n.t("ui.app.modules.integrity_missing_file"),
+            mismatch: i18n.t("ui.app.modules.integrity_mismatch"),
+            expected: i18n.t("ui.app.modules.integrity_expected"),
+            actual: i18n.t("ui.app.modules.integrity_actual"),
+            acknowledge: i18n.t("ui.app.modules.integrity_acknowledge"),
+            cancel: i18n.t("ui.reuse.cancel"),
+        },
+        options,
+    );
 }
 
-export async function activateModule(module, i18n) {
+export async function activateModule(
+    module,
+    i18n,
+    {
+        isCurrent = () => true,
+        isVisible = () => true,
+        onAcknowledgedState,
+        beforeEnable,
+    } = {},
+) {
+    const options = { isCurrent, isVisible, beforeEnable };
+    const check = () => {
+        if (!isCurrent()) throw new Error("module_authority_changed");
+    };
+    const rollback = async () => {
+        await setModuleEnabled(module.id, false, options);
+        check();
+        onAcknowledgedState?.("disabled");
+    };
+    check();
     const requiredMessage = i18n.t("ui.app.modules.config_required");
     const configRouteAvailable = await prepareRequiredModulePreferences(
         module,
         i18n,
         requiredMessage,
+        options,
     );
+    check();
     if (configRouteAvailable === null) return null;
     if (!configRouteAvailable) {
-        const result = await enableModuleWithIntegrityCheck(module.id, i18n);
+        const result = await enableModuleWithIntegrityCheck(
+            module.id,
+            i18n,
+            options,
+        );
+        check();
         if (!result) return null;
+        onAcknowledgedState?.("enabled");
+        let configuredAfterEnable;
         try {
-            const configuredAfterEnable = await assertRequiredModulePreferences(
+            configuredAfterEnable = await assertRequiredModulePreferences(
                 module,
                 requiredMessage,
             );
-            if (configuredAfterEnable) {
-                await presentActivationGuidance(module, i18n);
-                return result;
-            }
+            check();
         } catch (configError) {
+            check();
             if (configError.code !== "module_config_required") {
-                await setModuleEnabled(module.id, false);
+                await rollback();
                 throw configError;
             }
         }
+        if (configuredAfterEnable) {
+            await showActivationGuidance(module, i18n, options);
+            return result;
+        }
+        check();
+        if (!isVisible()) {
+            await rollback();
+            return null;
+        }
+        let savedValues;
         try {
-            const savedValues = await openModulePreferences(
+            savedValues = await openModulePreferences(
                 module,
                 modulePreferenceLabels(i18n),
+                options,
             );
-            if (!savedValues) {
-                await setModuleEnabled(module.id, false);
-                return null;
-            }
-            assertSavedRequiredPreferences(
-                module,
-                savedValues,
-                requiredMessage,
-            );
+            check();
+            if (savedValues)
+                assertSavedRequiredPreferences(
+                    module,
+                    savedValues,
+                    requiredMessage,
+                );
         } catch (setupError) {
-            await setModuleEnabled(module.id, false);
+            await rollback();
             throw setupError;
         }
-        await presentActivationGuidance(module, i18n);
+        if (!savedValues) {
+            await rollback();
+            return null;
+        }
+        await showActivationGuidance(module, i18n, options);
         return result;
     }
-    const result = await enableModuleWithIntegrityCheck(module.id, i18n);
-    if (result) await presentActivationGuidance(module, i18n);
+    const result = await enableModuleWithIntegrityCheck(
+        module.id,
+        i18n,
+        options,
+    );
+    check();
+    if (result) {
+        onAcknowledgedState?.("enabled");
+        await showActivationGuidance(module, i18n, options);
+    }
     return result;
 }
 
-async function prepareRequiredModulePreferences(module, i18n, message) {
+async function prepareRequiredModulePreferences(
+    module,
+    i18n,
+    message,
+    options,
+) {
     try {
         const available = await assertRequiredModulePreferences(
             module,
@@ -93,9 +151,12 @@ async function prepareRequiredModulePreferences(module, i18n, message) {
         return true;
     } catch (error) {
         if (error.code !== "module_config_required") throw error;
+        if (!options.isCurrent()) throw new Error("module_authority_changed");
+        if (!options.isVisible()) return null;
         const savedValues = await openModulePreferences(
             module,
             modulePreferenceLabels(i18n),
+            options,
         );
         if (!savedValues) return null;
         assertSavedRequiredPreferences(module, savedValues, message);
@@ -112,4 +173,25 @@ function assertSavedRequiredPreferences(module, values, message) {
     const validationError = new Error(message);
     validationError.code = "module_config_required";
     throw validationError;
+}
+
+async function showActivationGuidance(module, i18n, owner) {
+    if (!owner.isCurrent() || !owner.isVisible()) return;
+    try {
+        await presentActivationGuidance(module, i18n, owner);
+    } catch (error) {
+        if (error?.code === "missing_translation") throw error;
+        if (!owner.isCurrent() || !owner.isVisible()) return;
+        uiCtx.capabilities.get("ui:log")?.(
+            "warn",
+            "module_activation_guidance_unavailable",
+            {
+                moduleId: module.id,
+                name: error?.name,
+            },
+        );
+        showToast(i18n.t("ui.app.modules.guidance_unavailable"), {
+            type: "warning",
+        });
+    }
 }
