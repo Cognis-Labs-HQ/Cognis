@@ -311,7 +311,7 @@ export function createFormBuilder(ctx, options) {
             ? `<button type="submit" class="${escapeHtml(submitButtonClassName)}">${escapeHtml(i18n.t(submitLabelKey))}</button>`
             : "";
         return `
-      <form id="${escapeHtml(formId)}" class="form-builder stack${formClassAttribute}"${formAttributes}>
+      <form id="${escapeHtml(formId)}" class="form-builder stack${formClassAttribute}"${includeSubmitButton ? "" : ' data-form-submit="external"'}${formAttributes}>
         ${trustedContentHtml}
         ${renderedFields}
         ${submitButtonMarkup}
