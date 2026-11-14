@@ -28,4 +28,8 @@ Kode tantangan disimpan dalam memori proses. Memulai ulang aplikasi atau menonak
 
 ### Registrasi dan Siklus Hidup
 
-Adapter mendaftarkan aksi pesan kodenya saat bootstrap melalui `notify:registerEmailPurpose` dan mengirim melalui `notify:sendEmail`. Adapter memiliki registrasi, isi pesan, dan status tantangan; gateway TFA menyediakan hook siklus hidup adapter yang netral. Penonaktifan gateway membatalkan antrean SMTP dan tantangan tertundanya. Aktivasi ulang membuat registrasi baru tanpa memulihkan tantangan lama. Tampilan login dan sumber bahasa dimiliki metode ini.
+Adapter mendaftarkan aksi pesan kodenya saat bootstrap melalui `notify:registerEmailPurpose` dan mengirim melalui `notify:deliverEmail`. Adapter memiliki registrasi, isi pesan, dan status tantangan; gateway TFA menyediakan hook siklus hidup adapter yang netral. Penonaktifan gateway membatalkan antrean SMTP dan tantangan tertundanya. Aktivasi ulang membuat registrasi baru tanpa memulihkan tantangan lama. Tampilan login dan sumber bahasa dimiliki metode ini.
+
+## Pengiriman tantangan berbatas waktu
+
+SMTP TFA mewajibkan `notify:deliverEmail` versi 1 melalui registri kontrak publik, tanpa pengganti `notify:sendEmail` atau opsi yang diabaikan. Kode baru yang diterima mengganti dan membatalkan hanya pengiriman lama yang sesuai. Penolakan penerimaan mempertahankan kode sebelumnya. Kegagalan pengiriman berikutnya membatalkan kode baru; kirim ulang secara eksplisit selama percobaan masih berlaku untuk memulihkan. Permintaan kirim ulang bersamaan digabung hanya dalam operasi pemilik yang sama. Penyiapan dan login mandiri memiliki ID serta pembatalan terpisah. Kode sekali pakai berakhir pada batas lebih awal antara tenggat pemilik dan 15 menit; callback terlambat tidak memulihkannya. Status antrean dan terkirim ditampilkan berbeda. Terapkan Notification SMTP 0.5.5, SMTP TFA 1.1.3, TFA 1.3.12, dan Auth 2.2.11 bersama; penyedia alternatif harus menerapkan kontrak tersebut.

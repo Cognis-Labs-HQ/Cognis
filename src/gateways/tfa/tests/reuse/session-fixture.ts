@@ -6,6 +6,8 @@ import {
     GatewayRegistry,
     createCtx,
     runBootstrapScope,
+    requireBootstrapScope,
+    type CapabilityContracts,
 } from "@cognis/core";
 import { IncomingMessage, ServerResponse } from "node:http";
 import { Socket } from "node:net";
@@ -27,7 +29,9 @@ export const candidate = {
     requiredUserValidation: false,
 };
 
-export async function createSessionFixture() {
+export async function createSessionFixture(
+    options: { lifetimeAvailable?: boolean } = {},
+) {
     const root = createCtx();
     const capabilities = new CapabilityStore();
     const gatewayRegistry = new GatewayRegistry();
@@ -39,6 +43,38 @@ export async function createSessionFixture() {
     gateway.registerAdapter(adapter);
     await gateway.enableAdapter(adapter.id);
     const attempts = new Map<string, typeof candidate>();
+    let attemptCounter = 0;
+    const lifetimes = new Map<
+        string,
+        {
+            id: string;
+            accountId: string;
+            expiresAt: number;
+            signal: AbortSignal;
+            controller: AbortController;
+        }
+    >();
+    const clearAttempt = (id: string) => {
+        lifetimes.get(id)?.controller.abort();
+        lifetimes.delete(id);
+        return attempts.delete(id);
+    };
+    if (options.lifetimeAvailable !== false) {
+        await runBootstrapScope(root, "gateway:auth:synthetic", async () => {
+            root.requireCapability<CapabilityContracts>(
+                "system:contracts",
+            ).define("auth:getPendingLoginLifetime", {
+                version: 1,
+                kind: "function",
+                description:
+                    "Synthetic public owner contract for isolated lifetime testing.",
+            });
+            root.contributePublicCapability(
+                "auth:getPendingLoginLifetime",
+                (id: string) => lifetimes.get(id) ?? null,
+            );
+        });
+    }
     const state = {
         authenticated: true,
         commits: 0,
@@ -102,7 +138,15 @@ export async function createSessionFixture() {
     capabilities.contribute(
         "tfa:createPendingLoginAttempt",
         (input: typeof candidate) => {
-            const id = `attempt-${attempts.size}`;
+            const id = `attempt-${attemptCounter++}`;
+            const controller = new AbortController();
+            lifetimes.set(id, {
+                id,
+                accountId: input.accountId,
+                expiresAt: Date.now() + 300_000,
+                signal: controller.signal,
+                controller,
+            });
             attempts.set(id, { ...input });
             return { id };
         },
@@ -111,9 +155,8 @@ export async function createSessionFixture() {
         "tfa:getPendingLoginAttempt",
         (id: string) => attempts.get(id) ?? null,
     );
-    capabilities.contribute("auth:consumePendingLoginAttempt", (id: string) =>
-        attempts.delete(id),
-    );
+    capabilities.contribute("auth:consumePendingLoginAttempt", clearAttempt);
+    capabilities.contribute("tfa:clearPendingLoginAttempt", clearAttempt);
     const context: GatewayBootstrapContext = {
         capabilities,
         gatewayRegistry,
@@ -133,6 +176,9 @@ export async function createSessionFixture() {
         root,
         "gateway:tfa",
         async () => {
+            requireBootstrapScope(root).registerDisposer(() =>
+                gateway.disposeChallenges(),
+            );
             const suspendAssessments = registerSessionAssessment(
                 context,
                 gateway,
@@ -163,6 +209,7 @@ export async function createSessionFixture() {
         adapter,
         state,
         attempts,
+        lifetimes,
         disposers,
         assess: () =>
             capabilities.require<

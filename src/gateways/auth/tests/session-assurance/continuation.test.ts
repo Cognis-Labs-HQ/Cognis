@@ -150,15 +150,18 @@ test("continuation requires the HttpOnly owner cookie and rejects malformed dupl
 });
 
 for (const ending of ["expiry", "consume", "cancel", "cleanup"]) {
-    test(`continuation cannot recreate or extend an attempt after ${ending}`, async () => {
+    test(`continuation cannot recreate or extend an attempt after ${ending}`, async (context) => {
         const host = await fixture();
         const pending = await host.request();
         const attempt = host.attempts[0];
         const originalExpiry = attempt.expiresAt;
+        const lifetime = host.runtime.getPendingLoginLifetime(attempt.id)!;
         const headers = { cookie: cookie(pending) };
         await host.request({}, { path, method: "GET", headers });
         assert.equal(attempt.expiresAt, originalExpiry);
-        if (ending === "expiry") attempt.expiresAt = Date.now() - 1;
+        if (ending === "expiry") {
+            context.mock.timers.enable({ apis: ["Date"], now: originalExpiry });
+        }
         if (ending === "consume") {
             const consume = host.capabilities.require<(id: string) => boolean>(
                 "auth:consumePendingLoginAttempt",
@@ -188,6 +191,7 @@ for (const ending of ["expiry", "consume", "cancel", "cleanup"]) {
             false,
         );
         assert.equal(host.deliveries(), 1);
+        assert.equal(lifetime.signal.aborted, true);
     });
 }
 
@@ -294,6 +298,10 @@ test("explicit logout abandons the matching factor attempt without erasing a new
         { path: "/api/v1/auth/logout", headers },
     );
     assert.equal(logout.status, 200);
+    assert.equal(
+        host.runtime.getPendingLoginLifetime(host.attempts[0].id),
+        null,
+    );
     assert.match(String(logout.headers["set-cookie"]), /^cognis_access_token=/);
     const response = await host.request({}, { path, method: "GET", headers });
     assert.equal(JSON.parse(response.payload).data, null);

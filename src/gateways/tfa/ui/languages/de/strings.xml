@@ -53,7 +53,7 @@
   <string name="ui.app.login.tfa.code_placeholder">Bestätigungscode</string>
   <string name="gateway.tfa.tutorial.methods.title">Zwei-Faktor-Sicherheit</string>
   <string name="gateway.tfa.tutorial.methods.set.up.a.method.title">Methode einrichten</string>
-  <string name="gateway.tfa.tutorial.methods.set.up.a.method.body">Wählen Sie eine verfügbare Methode und schließen Sie deren Einrichtung vor der Anmeldung ab.</string>
+  <string name="gateway.tfa.tutorial.methods.set.up.a.method.body">Wählen Sie eine verfügbare Methode und schließen Sie die Einrichtung vor der Anmeldung ab. E-Mail-Codes können warten; verwenden Sie den zuletzt angenommenen Code nach dem Empfang. Die Einrichtung läuft nach zehn Minuten ab. Ein Abbruch betrifft nur diese Einrichtung.</string>
   <string name="gateway.tfa.tutorial.methods.preferred.methods.title">Bevorzugte Methoden</string>
   <string name="gateway.tfa.tutorial.methods.preferred.methods.body">Ordnen Sie aktive Methoden, um die zuerst angebotene auszuwählen.</string>
   <string name="gateway.tfa.tutorial.methods.recovery.codes.title">Wiederherstellungscodes</string>
@@ -63,4 +63,5 @@
   <string name="gateway.tfa.tutorial.enforcement.enforcement.policy.body">Prüfen Sie Folgen für alle Konten vor dem Verpflichten zur Zwei-Faktor-Authentifizierung.</string>
   <string name="gateway.tfa.tutorial.enforcement.apply.policy.title">Regel übernehmen</string>
   <string name="gateway.tfa.tutorial.enforcement.apply.policy.body">Speichern Sie erst nach Prüfung der Pflichtoption und der nötigen Benutzereinrichtung.</string>
+  <string name="ui.app.login.tfa.resend_queued">Ein neuer Bestätigungscode wartet auf den Versand. Verwenden Sie den neuesten Code, sobald er eintrifft.</string>
 </resources>

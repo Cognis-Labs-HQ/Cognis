@@ -1,3 +1,4 @@
+import { createLoginLifetime } from "./reuse/gateway-fixture.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import path from "node:path";
@@ -6,11 +7,15 @@ import {
     createCtx,
     runBootstrapScope,
     type BootstrapDisposer,
+    type CapabilityContracts,
 } from "@cognis/core";
 import { CoreTfaGateway } from "../gateway.js";
 import { createStoreMock } from "./reuse/gateway-fixture.js";
 
-async function fixture(context: import("node:test").TestContext) {
+async function fixture(
+    context: import("node:test").TestContext,
+    boundedDelivery = true,
+) {
     const root = createCtx();
     const capabilities = new CapabilityStore();
     const store = createStoreMock();
@@ -29,18 +34,35 @@ async function fixture(context: import("node:test").TestContext) {
         codeLength: length,
         minimumIntervalMs: 0,
     }));
-    capabilities.contribute(
-        "notify:sendEmail",
-        async (input: { variables: { code: string } }) => {
-            delivered.push(input.variables.code);
-            return {
-                notificationId: String(delivered.length),
-                status: "sent",
-                createdAt: "",
-                updatedAt: "",
-            };
-        },
-    );
+    const contracts =
+        root.requireCapability<CapabilityContracts>("system:contracts");
+    capabilities.contribute("system:contracts", contracts);
+    let legacyCalls = 0;
+    capabilities.contribute("notify:sendEmail", async () => {
+        legacyCalls++;
+    });
+    if (boundedDelivery)
+        await runBootstrapScope(root, "adapter:notify:synthetic", async () => {
+            contracts.define("notify:deliverEmail", {
+                version: 1,
+                kind: "function",
+                description:
+                    "Synthetic public owner contract for isolated lifetime testing.",
+            });
+            root.contributePublicCapability(
+                "notify:deliverEmail",
+                async (input: { variables: { code: string } }) => {
+                    delivered.push(input.variables.code);
+                    const receipt = {
+                        notificationId: String(delivered.length),
+                        status: "sent",
+                        createdAt: "",
+                        updatedAt: "",
+                    };
+                    return { receipt, completion: Promise.resolve(receipt) };
+                },
+            );
+        });
     capabilities.contribute(
         "notify:getPrimaryEmail",
         async () => "alice@example.test",
@@ -74,6 +96,7 @@ async function fixture(context: import("node:test").TestContext) {
         delivered,
         activation,
         capabilities,
+        legacyCalls: () => legacyCalls,
         setLength: (value: number) => {
             length = value;
         },
@@ -111,7 +134,10 @@ test("TFA registered adapters consume owner policy across changes and conflictin
     await host.dispose();
     host.setLength(8);
     gateway = await host.start();
-    const methods = await gateway.getLoginMethods("alice");
+    const methods = await gateway.getLoginMethods(
+        "alice",
+        createLoginLifetime(),
+    );
     assert.equal(methods[0].challenge?.maxLength, 8);
     assert.equal(host.delivered.at(-1)!.length, 8);
     assert.deepEqual(host.activation, [true, true]);
@@ -146,4 +172,18 @@ test("TFA disable and scope cleanup discard pending codes while policy changes p
     await assert.rejects(begin(), /email_delivery_unavailable/);
     await host.dispose();
     await assert.rejects(begin(), /email_delivery_unavailable/);
+});
+
+test("an alternative provider with only sendEmail cannot silently bypass bounded delivery", async (context) => {
+    const host = await fixture(context, false);
+    const gateway = await host.start();
+    await assert.rejects(
+        gateway.beginMethodSetup({
+            accountId: "alice",
+            displayName: "Alice",
+            methodId: "smtp",
+        }),
+    );
+    assert.equal(host.legacyCalls(), 0);
+    assert.equal(host.delivered.length, 0);
 });

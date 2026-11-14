@@ -1,4 +1,5 @@
 <resources>
   <string name="adapter.tfa.smtp.setup_prompt">確認コードをメインのメールアドレスに送信しました。セットアップを完了するにはコードを入力してください。</string>
   <string name="ui.app.login.tfa.code_placeholder_smtp">メールコード</string>
+  <string name="adapter.tfa.smtp.setup_prompt_queued">確認コードはメインのメールアドレスへの送信待ちです。届いたらコードを入力して設定を完了してください。</string>
 </resources>

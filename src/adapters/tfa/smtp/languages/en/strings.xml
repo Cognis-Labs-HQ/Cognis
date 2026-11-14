@@ -1,4 +1,5 @@
 <resources>
   <string name="adapter.tfa.smtp.setup_prompt">A verification code was sent to your primary email address. Enter the code to complete setup.</string>
   <string name="ui.app.login.tfa.code_placeholder_smtp">Email Code</string>
+  <string name="adapter.tfa.smtp.setup_prompt_queued">A verification code is queued for delivery to your primary email address. Enter it when it arrives to complete setup.</string>
 </resources>

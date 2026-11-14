@@ -263,12 +263,17 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
 
             const showDeliveryToastOnce = ({
                 skipDeliveryToast = false,
+                deliveryStatus,
             } = {}) => {
-                if (deliveryToastShownOnce || skipDeliveryToast) {
+                if (
+                    deliveryToastShownOnce ||
+                    skipDeliveryToast ||
+                    !["queued", "sent"].includes(deliveryStatus)
+                ) {
                     return;
                 }
                 deliveryToastShownOnce = true;
-                showToast(i18n.t("ui.app.login.tfa.resend_sent"), {
+                showToast(i18n.t(`ui.app.login.tfa.resend_${deliveryStatus}`), {
                     variant: "success",
                 });
             };
@@ -305,7 +310,10 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                         ? Math.max(Math.ceil((resendAt - Date.now()) / 1000), 0)
                         : 0;
                     if (remainingSeconds > 0) {
-                        showDeliveryToastOnce({ skipDeliveryToast });
+                        showDeliveryToastOnce({
+                            skipDeliveryToast,
+                            deliveryStatus: method?.challenge?.deliveryStatus,
+                        });
                         resendLocked = true;
                         syncDisabledResendState();
                         resendLink.textContent = i18n
@@ -374,9 +382,10 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                             );
                         }
                         if (isSelectedMethod(methodId)) {
-                            deliveryToastShownOnce = true;
-                            showToast(i18n.t("ui.app.login.tfa.resend_sent"), {
-                                variant: "success",
+                            deliveryToastShownOnce = false;
+                            showDeliveryToastOnce({
+                                deliveryStatus:
+                                    body?.data?.challenge?.deliveryStatus,
                             });
                         }
                         setResendStateForMethod(resolveMethod(methodId), {
@@ -395,7 +404,9 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                                 body?.error?.resendAvailableAt ??
                                 body?.error?.details?.resendAvailableAt,
                         });
-                        setResendStateForMethod(resolveMethod(methodId));
+                        setResendStateForMethod(resolveMethod(methodId), {
+                            skipDeliveryToast: true,
+                        });
                     } else {
                         resendLocked = false;
                         syncDisabledResendState();
@@ -404,7 +415,9 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                     pendingMethodIds.delete(methodId);
                     console.error(error);
                     if (isSelectedMethod(methodId)) {
-                        setResendStateForMethod(resolveMethod(methodId));
+                        setResendStateForMethod(resolveMethod(methodId), {
+                            skipDeliveryToast: true,
+                        });
                         showToast(i18n.t("ui.app.login.error.generic"), {
                             variant: "error",
                         });

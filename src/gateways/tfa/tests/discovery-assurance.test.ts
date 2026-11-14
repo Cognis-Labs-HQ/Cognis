@@ -1,3 +1,4 @@
+import { createLoginLifetime } from "./reuse/gateway-fixture.js";
 import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -47,16 +48,24 @@ for (const metadata of ["missing", "malformed"]) {
                 true,
             );
             assert.deepEqual(
-                (await gateway.getLoginMethods("alice")).map(
-                    (method) => method.id,
-                ),
+                (
+                    await gateway.getLoginMethods(
+                        "alice",
+                        createLoginLifetime(),
+                    )
+                ).map((method) => method.id),
                 ["discovery-proof"],
             );
             assert.equal(
                 (
-                    await gateway.verifyLogin("alice", "discovery-proof", {
-                        code: "123456",
-                    })
+                    await gateway.verifyLogin(
+                        "alice",
+                        "discovery-proof",
+                        {
+                            code: "123456",
+                        },
+                        createLoginLifetime(),
+                    )
                 ).verified,
                 true,
             );

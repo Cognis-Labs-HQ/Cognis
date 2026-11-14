@@ -41,8 +41,8 @@ Bootstrap in `src/gateways/tfa/bootstrap.ts` performs this sequence:
 The gateway contributes these capabilities through `ctx.capabilities`:
 
 - `tfa:getUserStatus(accountId)`
-- `tfa:getLoginMethods(accountId)`
-- `tfa:verifyLogin(accountId, methodId, payload)`
+- `tfa:getLoginMethods(accountId, lifetime)`
+- `tfa:verifyLogin(accountId, methodId, payload, lifetime)`
 - `tfa:isSecondFactorEnabled(accountId)`
 - `tfa:isSetupRequired(accountId)`
 - `tfa:resetUser(accountId)`
@@ -51,7 +51,7 @@ The gateway contributes these capabilities through `ctx.capabilities`:
 
 These capabilities are the supported integration surface for auth and UI code. Other components must not import TFA adapter internals directly.
 
-`tfa:getLoginMethods(accountId)` only initiates a login challenge (e.g. sends an SMTP email) when exactly one method is configured for the user. When multiple methods are available, the response includes method identity only — no challenge data. The login UI triggers challenge initiation on demand via `POST /api/v1/tfa/login/resend` when the user explicitly selects a method.
+`tfa:getLoginMethods(accountId, lifetime)` only initiates a login challenge (e.g. sends an SMTP email) when exactly one method is configured for the user. When multiple methods are available, the response includes method identity only — no challenge data. The login UI triggers challenge initiation on demand via `POST /api/v1/tfa/login/resend` when the user explicitly selects a method.
 
 ## API Routes
 
@@ -115,3 +115,11 @@ All TFA enforcement entry points use the owning policy flow. Disabling enforceme
 During a serialized policy write, TFA suspends new session assessments and invalidates previous assessment leases. In-flight policy reads cannot issue a restricted token after cleanup, and ordinary session commitment must obtain current assurance. Setup completion rechecks the original credential before final commitment, so a token revoked during factor verification cannot refresh into a session.
 
 The policy flow requires a single-use operation and execution state held by its owner. Direct raw-flow calls and captured-operation replay are rejected before mutation; integrations must call the policy capability.
+
+## Bounded challenge delivery
+
+Method adapters receive required `lifetime: { id, expiresAt, signal }` inputs for setup, login challenge and login verification. Callers of `tfa:getLoginMethods(accountId, lifetime)` and `tfa:verifyLogin(accountId, methodId, payload, lifetime)` must migrate. Setup owns a distinct ten-minute lifetime before its first asynchronous read. Auth supplies the immutable login lifetime through `auth:getPendingLoginLifetime` version 1. Cancellation, expiry, failed persistence, account-method disable, reset and gateway cleanup invalidate the exact operation. Admission guards reject old reads even after re-enable. Verification before the enrollment commit point can be cancelled; after the write starts, cancellation and reset await the visible commit/cleanup barrier before returning. Recovery-code verification also checks lifetime after asynchronous consumption. Disposing or restarting loses pending in-memory challenges. SMTP completion and retained login descriptors are separate: a resumed descriptor is an admission snapshot, not a live delivery receipt.
+
+### Serialize terminal transitions
+
+Account, method and gateway terminal operations block new admissions throughout cleanup and their state write. Each overlapping operation owns its own barrier token; finishing one does not reopen another. A failed enrollment write remains a verification failure, but cleanup waits for its settlement without preventing a later reset or disable from applying its own state change.

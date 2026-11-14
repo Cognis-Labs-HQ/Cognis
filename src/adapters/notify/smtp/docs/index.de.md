@@ -99,3 +99,7 @@ Für den SMTP-Verbindungsaufbau und die TLS-Aushandlung gilt jeweils eine Frist 
 ### Typisierte Zustellverträge
 
 SMTP-Warteschlangeneinträge behalten ihren erforderlichen Betreff bei Zustellung und Wiederholungen. TLS-Verbindungsoptionen enthalten das Abbruchsignal für direktes TLS und STARTTLS; Zertifikatsprüfung, Zeitlimits und Verbindungsbereinigung bleiben unverändert.
+
+## Zeitlich begrenzte Challenge-Zustellung
+
+`notify:deliverEmail` Version 1 erwartet einen registrierten Zweck, Empfänger, Variablen sowie verpflichtend `signal: AbortSignal` und den absoluten Millisekundenwert `expiresAt`. Die vorhandenen Schritte validate/render/enqueue und die Zweck-Warteschlange werden wiederverwendet. Die Annahme liefert `{ receipt, completion }`; `completion` liefert den Endstatus `sent` oder `failed`. Wartende oder laufende Zustellung ist kein Versandnachweis. Abbruch, Ablauf oder Entfernung des Zwecks beendet Warteschlange und Transport; verspäteter Erfolg überschreibt keinen Fehler. Das bisherige Verhalten von `notify:sendEmail` bleibt erhalten. Die standardmäßigen zwei Greylist-Wartezeiten von je fünf Minuten enden bei begrenzten Zustellungen spätestens an der Frist des Besitzers. Bereits vom entfernten SMTP-Server angenommene Nachrichten lassen sich nicht zurückrufen.
