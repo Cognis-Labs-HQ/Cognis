@@ -10,7 +10,7 @@ The Internal adapter delivers notifications directly to the in-app notification 
 
 - Accept every notification dispatched by the notification gateway and place it in the recipient's in-app inbox.
 - Inject the notification bell button into the dashboard toolbar via a navbar plugin — removing the adapter makes the bell disappear entirely.
-- Serve a badge showing the number of unread notifications, polled every 30 seconds.
+- Serve a badge showing the number of unread notifications, polled every 10 seconds while visible and 30 seconds while hidden.
 - Provide a dropdown panel for reading, dismissing, and marking notifications as read.
 
 Not responsible for: email delivery (handled by the SMTP adapter), persistence across server restarts, or user-level opt-out through notification preferences (the adapter is always-on and bypasses the preference matrix).
@@ -25,11 +25,11 @@ Not responsible for: email delivery (handled by the SMTP adapter), persistence a
 2. Registers the inbox API routes via `ctx.registerRoute(...)`.
 3. Registers the navbar plugin and its static directory so the bell is served to the browser.
 
-The navbar plugin (`ui/navbar-plugin.js`) is a self-contained ES module loaded by the dashboard layout after each page render. On import it:
+The navbar plugin (`ui/navbar-plugin.js`) exports `mountProvider(scopedUiCtx)`. After the dashboard shell is ready, the public provider loader mounts it within the provider lifetime. It:
 
 1. Injects `notifications.css` into the document head.
 2. Creates the notification bell button and inserts it into `.account-cluster` before `.profile-menu`.
-3. Fetches the initial unread count and starts a 30-second polling loop.
+3. Loads the inbox and starts a polling loop: every 10 seconds while the page is visible and 30 seconds while hidden.
 4. Opens a dropdown panel on click, loading the full notification list from the API.
 
 ## API Routes
@@ -49,8 +49,6 @@ The adapter has no configuration. It is active as long as the notify gateway loa
 
 Notification producers may mark an entry as continuous and provide action-button descriptors containing an identifier, accessible label, optional SVG icon, and consequence. Continuous entries remain visible until their supplied lifetime ends. The adapter validates and renders those generic descriptors, then emits the selected identifier and notification payload; it does not interpret the producer's domain or invoke producer capabilities.
 
-Notification producers may mark an entry as continuous and provide action-button descriptors containing an identifier, accessible label, optional SVG icon, and consequence. Continuous entries remain visible until their supplied lifetime ends. The adapter validates and renders those generic descriptors, then emits the selected identifier and notification payload; it does not interpret the producer’s domain or invoke producer capabilities.
-
 Producers may correlate a continuous notification with another UI prompt. A generic `cognis:notification-resolved` event removes and deletes every notification with the matching correlation identifier without teaching the adapter what produced it.
 
 Producers may attach a `metadata.localizedText` map keyed by locale, with `subject` and `body` strings. The internal browser adapter selects the first supported browser locale and otherwise uses the original envelope text; it does not interpret the producer’s domain.
@@ -66,3 +64,15 @@ During `deprovision-user` → `cleanup-dependencies`, the component resolves `au
 Deploy with the bundled Auth 2.2.12 provider or an alternative implementing this versioned contract; mutable public flow results are not a fallback. Cleanup uses the committed receipt rather than reauthorizing after deletion. An external mutation already started may partially complete before a later failure; cross-component rollback is not guaranteed. Normal UI controls and tutorials are unchanged.
 
 This migration protects the bundled cleanup consumers. Before enabling account deletion in a deployment, update or disable external cleanup hooks that still trust mutable public flow results.
+
+## Inbox state and recovery
+
+Open the bell to browse notifications. Retry reloads the inbox without repeating a read-marking or dismissal request. A failed first load does not mean the inbox is empty. If a refresh fails, the last confirmed rows, search results and unread count remain available. A rejected change and an unconfirmed change have different messages; an unconfirmed change may already have completed. Refresh before attempting another change. When a change is confirmed but its refresh fails, the confirmed change remains visible.
+
+The navbar exports `mountProvider(scopedUiCtx)` for the public provider loader. The adapter registers `notify:internal:readInbox` and `notify:internal:mutateInbox`, each with `request` and `reconcile` stages. Only valid inbox responses and current-route acknowledgement receipts update the in-memory snapshot. The newest eligible read wins; pending writes prevent overlapping actions and supersede older reads. Every accepted refresh reconciles content, ordering and read status, including unchanged notification IDs. No write is automatically replayed.
+
+Snapshots and pending UI completions belong to the current account, token, page and provider lifetime. Logout, account changes, page mounts and provider disposal revoke old work. Detached rows and closed confirmations cannot perform later actions. The public search registration, event listeners, timers and transient panel registration are released with their owner. No browser-persistent inbox cache is created.
+
+The workspace tutorial continues to open `#notification-toggle` and explain `.notification-panel`. Its shared transient lifetime closes the panel, including an opening with a pending read. Confirmed empty inboxes keep Clear disabled; unavailable inboxes offer Retry rather than claiming to be empty. Continuous notifications retain their existing separate popup, action, correlation and expiry behavior. This change does not define notification categories or delivery preferences.
+
+Producer correlation resolutions are serialized and deduplicated within the current owner lifetime. They wait for pending user changes and the latest read before dismissing matching notifications; an unconfirmed deletion is never automatically replayed.

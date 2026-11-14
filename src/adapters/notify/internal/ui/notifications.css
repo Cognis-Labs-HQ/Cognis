@@ -94,6 +94,7 @@
 
 .notification-panel-header {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     padding: 12px 16px 10px;
@@ -428,4 +429,8 @@
         background: rgba(3, 7, 18, 0.48);
         z-index: 1200;
     }
+}
+
+.notification-retry[hidden] {
+    display: none;
 }

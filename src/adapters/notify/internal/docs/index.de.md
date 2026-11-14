@@ -10,7 +10,7 @@ Der interne Adapter leitet Benachrichtigungen direkt an die In-App-Benachrichtig
 
 - Jede vom Benachrichtigungs-Gateway gesendete Benachrichtigung entgegennehmen und in den In-App-Posteingang des Empfängers ablegen.
 - Die Benachrichtigungsglocke über ein Navbar-Plugin in die Dashboard-Oberfläche einfügen – beim Deaktivieren des Adapters verschwindet die Glocke vollständig.
-- Ein Badge mit der Anzahl ungelesener Benachrichtigungen anzeigen, das alle 30 Sekunden aktualisiert wird.
+- Ein Badge mit der Anzahl ungelesener Benachrichtigungen anzeigen, das bei sichtbarer Seite alle 10 Sekunden und bei ausgeblendeter Seite alle 30 Sekunden aktualisiert wird.
 - Ein Dropdown-Panel zum Lesen, Verwerfen und Markieren von Benachrichtigungen als gelesen bereitstellen.
 
 ## API-Routen
@@ -45,3 +45,15 @@ In `deprovision-user` → `cleanup-dependencies` löst die Komponente `auth:depr
 Für die Bereitstellung ist der mitgelieferte Auth-Anbieter 2.2.12 oder eine Alternative erforderlich, die diesen versionierten Vertrag implementiert; veränderbare öffentliche Flow-Ergebnisse dienen nicht als Ersatz. Die Bereinigung verwendet die bestätigte Löschung, statt nach der Löschung erneut zu autorisieren. Eine bereits gestartete externe Änderung kann vor einem späteren Fehler teilweise abgeschlossen sein; ein komponentenübergreifendes Zurückrollen ist nicht garantiert. Bestehende Oberflächenbedienelemente und Tutorials bleiben unverändert.
 
 Diese Umstellung schützt die Bereinigung durch die mitgelieferten Komponenten. Bevor die Kontolöschung in einer Bereitstellung aktiviert wird, müssen externe Bereinigungs-Hooks aktualisiert oder deaktiviert werden, die weiterhin veränderbaren öffentlichen Flow-Ergebnissen vertrauen.
+
+## Posteingang und Wiederherstellung
+
+Öffnen Sie die Glocke, um Benachrichtigungen zu lesen. „Erneut versuchen“ lädt den Posteingang neu, ohne eine Lese- oder Löschanfrage zu wiederholen. Ein fehlgeschlagenes erstes Laden bedeutet nicht, dass der Posteingang leer ist. Bei einer fehlgeschlagenen Aktualisierung bleiben die zuletzt bestätigten Einträge, Suchergebnisse und ungelesenen Zähler erhalten. Abgelehnte und unbestätigte Änderungen haben unterschiedliche Meldungen; eine unbestätigte Änderung kann bereits ausgeführt worden sein. Aktualisieren Sie vor einem weiteren Änderungsversuch. Eine bestätigte Änderung bleibt sichtbar, auch wenn die anschließende Aktualisierung fehlschlägt.
+
+Die Navigationsleiste exportiert `mountProvider(scopedUiCtx)` für den öffentlichen Provider-Lader. Der Adapter registriert `notify:internal:readInbox` und `notify:internal:mutateInbox` mit den Stufen `request` und `reconcile`. Nur gültige Antworten und Bestätigungen des aktuellen Routenvertrags aktualisieren den Arbeitsspeicher. Die neueste gültige Leseanfrage hat Vorrang; laufende Änderungen verhindern überlappende Aktionen und verdrängen ältere Leseanfragen. Jede erfolgreiche Aktualisierung gleicht Inhalt, Reihenfolge und Lesestatus auch bei unveränderten Benachrichtigungs-IDs ab. Schreibanfragen werden nicht automatisch wiederholt.
+
+Der gespeicherte Zustand und ausstehende UI-Ergebnisse gehören zur aktuellen Konto-, Token-, Seiten- und Provider-Lebensdauer. Abmeldung, Kontowechsel, Seitenmontage und Provider-Entfernung entziehen älteren Vorgängen ihre Gültigkeit. Entfernte Zeilen und geschlossene Bestätigungen können keine späteren Aktionen auslösen. Suchregistrierung, Ereignislistener, Zeitgeber und temporäres Panel werden mit ihrem Besitzer freigegeben. Es entsteht kein dauerhafter Posteingangs-Cache im Browser.
+
+Das Arbeitsbereich-Tutorial öffnet weiterhin `#notification-toggle` und erklärt `.notification-panel`. Seine gemeinsame temporäre Lebensdauer schließt das Panel auch während einer ausstehenden Leseanfrage. Bei bestätigtem leerem Posteingang bleibt Löschen deaktiviert; bei Nichtverfügbarkeit erscheint „Erneut versuchen“ statt einer leeren Liste. Kontinuierliche Benachrichtigungen behalten ihr separates Popup sowie Aktionen, Korrelation und Ablaufverhalten. Kategorien und Zustellungseinstellungen werden hier nicht definiert.
+
+Korrelationsauflösungen von Produzenten werden innerhalb der aktuellen Besitzerlebensdauer nacheinander und ohne Duplikate ausgeführt. Sie warten auf laufende Benutzeränderungen und die neueste Leseanfrage, bevor passende Benachrichtigungen entfernt werden. Eine unbestätigte Löschung wird niemals automatisch wiederholt.
