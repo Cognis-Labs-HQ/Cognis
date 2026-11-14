@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import type { BootstrapLog } from "@cognis/core";
+import type { BootstrapLog, Ctx } from "@cognis/core";
 import type { LocalAccountStore } from "@cognis/core";
 import type { UserPreferenceStore } from "../../reuse/preference-store.js";
 import { readJson } from "../../reuse/read-json.js";
@@ -7,6 +7,16 @@ import {
     resolveRouteContext,
     type RouteContext,
 } from "../../reuse/route-context.js";
+import {
+    authorizeManagementTarget,
+    rejectAccountTarget,
+    type ManagementTargetAuthorization,
+} from "./account-target.js";
+
+import {
+    bindDeprovisionOutcome,
+    type DeprovisionOutcome,
+} from "./deprovision-outcome.js";
 
 const VALID_ROLES = new Set(["user", "teacher", "moderator", "admin", "owner"]);
 
@@ -181,14 +191,26 @@ export function createUserRoutes(
             /^\/api\/v1\/users\/([^/]+)(?:\/(role|password|enable|disable|dearchive|isfounder|preferences\/clear))?$/,
         );
         if (!match) return false;
-        const adminClaims = ctx.requireAuth(req, res, "admin");
-        if (!adminClaims) return true;
+        const verifiedClaims = ctx.requireAuth(req, res, "admin");
+        if (!verifiedClaims) return true;
+        const adminClaims = Object.freeze({
+            sub: verifiedClaims.sub,
+            role: verifiedClaims.role,
+        });
 
-        const username = decodeURIComponent(match[1]);
+        let username: string;
+        try {
+            username = decodeURIComponent(match[1]);
+        } catch {
+            rejectAccountTarget(res, {
+                allowed: false,
+                status: 400,
+                code: "bad_request",
+            });
+            return true;
+        }
         const action = match[2];
-        const callerClaims = ctx.getAuthClaims(req);
-        const callerIsOwner = callerClaims?.role === "owner";
-        const callerIsAdmin = callerClaims?.role === "admin";
+        const callerClaims = adminClaims;
         let targetInfoCache:
             Awaited<ReturnType<LocalAccountStore["getInfo"]>> | undefined;
 
@@ -213,113 +235,65 @@ export function createUserRoutes(
                 ADMIN_PROTECTED_ACTIONS.has(action)) ||
             (req.method === "DELETE" && !action);
 
-        if (isProtectedManagementAction && callerClaims) {
-            const targetInfo = await getTargetInfo();
-            const targetRole = resolveEffectiveRole(
-                targetInfo?.role,
-                Boolean(targetInfo?.isFounder),
+        let authorization: ManagementTargetAuthorization | undefined;
+        if (isProtectedManagementAction) {
+            authorization = await authorizeManagementTarget(
+                ctx,
+                req,
+                res,
+                username,
+                adminClaims,
+                log,
             );
-            if (callerClaims.sub === username) {
-                log?.("warn", "Blocked self-management attempt.", {
-                    ...logMeta,
-                    accountId: callerClaims.sub,
-                    targetAccountId: username,
-                    action,
-                    targetRole,
-                });
-                res.writeHead(403, {
-                    "content-type": "application/json",
-                });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "protected_self_account",
-                            message: "Accounts cannot modify themselves here",
-                        },
-                    }),
-                );
-                return true;
-            }
-            if (
-                callerIsAdmin &&
-                (targetRole === "admin" || targetRole === "owner")
-            ) {
-                log?.(
-                    "warn",
-                    "Blocked admin attempt to modify privileged account.",
-                    {
-                        ...logMeta,
-                        accountId: callerClaims.sub,
-                        targetAccountId: username,
-                        action,
-                        targetRole,
-                    },
-                );
-                res.writeHead(403, {
-                    "content-type": "application/json",
-                });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: "protected_admin_account",
-                            message:
-                                "Only owner can modify admin or owner accounts",
-                        },
-                    }),
-                );
-                return true;
-            }
+            if (!authorization?.check()) return true;
         }
 
-        const FOUNDER_PROTECTED_ACTIONS = new Set([
-            "role",
-            "password",
-            "disable",
-            "dearchive",
-            "isfounder",
-        ]);
-        const isFounderProtectedRequest =
-            (req.method === "POST" &&
-                action !== undefined &&
-                FOUNDER_PROTECTED_ACTIONS.has(action)) ||
-            (req.method === "DELETE" && !action);
-        if (isFounderProtectedRequest) {
-            if (
-                callerClaims &&
-                !callerIsOwner &&
-                callerClaims.sub !== username
-            ) {
-                const targetInfo = await getTargetInfo();
-                const targetRole = resolveEffectiveRole(
-                    targetInfo?.role,
-                    Boolean(targetInfo?.isFounder),
-                );
-                if (targetRole === "owner") {
-                    log?.(
-                        "warn",
-                        "Blocked modification of protected founder account.",
-                        {
-                            ...logMeta,
-                            accountId: callerClaims.sub,
-                            targetAccountId: username,
-                            action,
-                        },
-                    );
-                    res.writeHead(403, {
-                        "content-type": "application/json",
-                    });
-                    res.end(
-                        JSON.stringify({
-                            error: {
-                                code: "protected_account",
-                                message:
-                                    "This account cannot be modified by other admins",
-                            },
-                        }),
-                    );
-                    return true;
-                }
+        // Authorization is point-in-time. Refresh after preparation, before the
+        // mutation sequence starts; retain its lifecycle/actor lease within that
+        // sequence so our own role write does not block required profile sync.
+        async function refreshPreparedAuthorization(): Promise<void> {
+            if (!authorization?.check()) {
+                authorization = undefined;
+                return;
             }
+            authorization = await authorizeManagementTarget(
+                ctx,
+                req,
+                res,
+                username,
+                adminClaims,
+                log,
+            );
+        }
+
+        function deprovisionPersisted(
+            outcome: DeprovisionOutcome,
+            expectedAction: "delete" | "archive",
+        ): outcome is Extract<DeprovisionOutcome, { persisted: true }> {
+            if (
+                outcome.persisted &&
+                outcome.username === username &&
+                outcome.action === expectedAction
+            )
+                return true;
+            const denial = outcome.persisted
+                ? {
+                      allowed: false as const,
+                      status: 503 as const,
+                      code: "account_policy_unavailable",
+                  }
+                : {
+                      allowed: false as const,
+                      status: outcome.status,
+                      code: outcome.reason,
+                  };
+            log?.("error", "User deprovision did not persist.", {
+                component: "api-users",
+                operation: "deprovision-user",
+                reason: denial.code,
+            });
+            rejectAccountTarget(res, denial);
+            return false;
         }
 
         if (req.method === "POST" && !action) {
@@ -430,9 +404,13 @@ export function createUserRoutes(
                 );
                 return true;
             }
+            await refreshPreparedAuthorization();
+            if (!authorization?.check()) return true;
             const revokedCount = ctx.revokeAccessTokensForSubject(username);
             await accountStore.setRole(username, role as any);
+            if (!authorization?.check()) return true;
             await setProfileRole?.(username, role);
+            if (!authorization?.check()) return true;
             if (role === "teacher" || role === "admin" || role === "owner") {
                 await setProfileVisibility?.(username, "friends");
                 log?.("warn", "Updated privileged role visibility default.", {
@@ -470,6 +448,8 @@ export function createUserRoutes(
                 return true;
             }
             const body = await readJson(req);
+            await refreshPreparedAuthorization();
+            if (!authorization?.check()) return true;
             await accountStore.setPassword(
                 username,
                 String(body.password ?? "changeme"),
@@ -537,43 +517,52 @@ export function createUserRoutes(
                 );
                 return true;
             }
+            const readOutcome = bindDeprovisionOutcome(() =>
+                ctx.getCapability<Ctx>("system:ctx"),
+            );
+            if (!readOutcome) {
+                deprovisionPersisted(
+                    {
+                        persisted: false,
+                        status: 503,
+                        reason: "account_policy_unavailable",
+                    },
+                    "archive",
+                );
+                return true;
+            }
             const targetInfo = await getTargetInfo();
             const targetRole = resolveEffectiveRole(
                 targetInfo?.role,
                 Boolean(targetInfo?.isFounder),
             );
-            const disableResult = await ctx.flow.run("deprovision-user", {
+            await refreshPreparedAuthorization();
+            if (!authorization?.check()) return true;
+            const deprovisionInput = Object.freeze({
                 username,
                 action: "archive" as const,
-                callerRole: callerClaims?.role ?? "admin",
+                actor: callerClaims,
+                callerRole: callerClaims.role,
                 targetRole,
                 targetIsFounder: Boolean(targetInfo?.isFounder),
+                isAuthorizationCurrent: authorization.isCurrent,
             });
-            const authorizeResult = (disableResult.stageResults[
-                "authorize-request"
-            ] ?? [])[0] as
-                { authorized?: boolean; reason?: string } | undefined;
-            if (authorizeResult?.authorized === false) {
-                res.writeHead(403, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: authorizeResult.reason ?? "forbidden",
-                            message: "Not authorized to disable this account",
-                        },
-                    }),
-                );
-                return true;
-            }
+            const disableResult = await ctx.flow.run(
+                "deprovision-user",
+                deprovisionInput,
+            );
+            const outcome = readOutcome(
+                deprovisionInput,
+                disableResult.stageResults,
+            );
+            if (!deprovisionPersisted(outcome, "archive")) return true;
+            if (!authorization?.check()) return true;
             await setProfileLifecycleState(username, "archived");
-            const cleanupResult = (disableResult.stageResults[
-                "cleanup-dependencies"
-            ] ?? [])[0] as { revokedTokenCount?: number } | undefined;
             log?.("warn", "Archived user account from admin disable control.", {
                 ...logMeta,
                 accountId: adminClaims.sub,
                 targetAccountId: username,
-                revokedTokenCount: cleanupResult?.revokedTokenCount ?? 0,
+                revokedTokenCount: outcome.revokedTokenCount ?? 0,
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { updated: true } }));
@@ -606,6 +595,8 @@ export function createUserRoutes(
 
         if (req.method === "POST" && action === "isfounder") {
             const body = await readJson(req);
+            await refreshPreparedAuthorization();
+            if (!authorization?.check()) return true;
             await accountStore.setFounder(username, Boolean(body.isFounder));
             log?.("warn", "Updated founder status.", {
                 ...logMeta,
@@ -649,42 +640,50 @@ export function createUserRoutes(
                 );
                 return true;
             }
+            const readOutcome = bindDeprovisionOutcome(() =>
+                ctx.getCapability<Ctx>("system:ctx"),
+            );
+            if (!readOutcome) {
+                deprovisionPersisted(
+                    {
+                        persisted: false,
+                        status: 503,
+                        reason: "account_policy_unavailable",
+                    },
+                    "delete",
+                );
+                return true;
+            }
             const targetInfo = await getTargetInfo();
             const targetRole = resolveEffectiveRole(
                 targetInfo?.role,
                 Boolean(targetInfo?.isFounder),
             );
-            const deleteResult = await ctx.flow.run("deprovision-user", {
+            await refreshPreparedAuthorization();
+            if (!authorization?.check()) return true;
+            const deprovisionInput = Object.freeze({
                 username,
                 action: "delete" as const,
-                callerRole: callerClaims?.role ?? "admin",
+                actor: callerClaims,
+                callerRole: callerClaims.role,
                 targetRole,
                 targetIsFounder: Boolean(targetInfo?.isFounder),
+                isAuthorizationCurrent: authorization.isCurrent,
             });
-            const authorizeDeleteResult = (deleteResult.stageResults[
-                "authorize-request"
-            ] ?? [])[0] as
-                { authorized?: boolean; reason?: string } | undefined;
-            if (authorizeDeleteResult?.authorized === false) {
-                res.writeHead(403, { "content-type": "application/json" });
-                res.end(
-                    JSON.stringify({
-                        error: {
-                            code: authorizeDeleteResult.reason ?? "forbidden",
-                            message: "Not authorized to delete this account",
-                        },
-                    }),
-                );
-                return true;
-            }
-            const deleteCleanupResult = (deleteResult.stageResults[
-                "cleanup-dependencies"
-            ] ?? [])[0] as { revokedTokenCount?: number } | undefined;
+            const deleteResult = await ctx.flow.run(
+                "deprovision-user",
+                deprovisionInput,
+            );
+            const outcome = readOutcome(
+                deprovisionInput,
+                deleteResult.stageResults,
+            );
+            if (!deprovisionPersisted(outcome, "delete")) return true;
             log?.("warn", "Deleted user account.", {
                 ...logMeta,
                 accountId: adminClaims.sub,
                 targetAccountId: username,
-                revokedTokenCount: deleteCleanupResult?.revokedTokenCount ?? 0,
+                revokedTokenCount: outcome.revokedTokenCount ?? 0,
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { deleted: true } }));

@@ -34,7 +34,11 @@ import {
     type RouteContext,
 } from "../../../api/reuse/route-context.js";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
-import { CTX_CAPABILITY, type Ctx } from "@cognis/core";
+import {
+    CTX_CAPABILITY,
+    type CapabilityContracts,
+    type Ctx,
+} from "@cognis/core";
 
 const ADAPTER_UI_ROOT = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
@@ -206,20 +210,19 @@ export async function bootstrapSocialAdapter(
         "cleanup-dependencies",
         { id: "social-profile:delete-user-activity" },
         async (stageCtx) => {
-            const input = (stageCtx.input ?? {}) as {
-                username?: string;
-                action?: string;
-            };
-            const persistResult = (stageCtx.stageResults["persist-state"] ??
-                []) as Array<{ persisted?: boolean }>;
-            if (
-                input.action !== "delete" ||
-                !input.username ||
-                !persistResult[0]?.persisted
-            ) {
+            const username = stageCtx.ctx
+                .requireCapability<CapabilityContracts>("system:contracts")
+                .resolve<{
+                    deletedAccount(
+                        input: unknown,
+                        stageResults: object,
+                    ): string | undefined;
+                }>("auth:deprovisionOutcome", 1)
+                .deletedAccount(stageCtx.input, stageCtx.stageResults);
+            if (typeof username !== "string" || !username.trim()) {
                 return { cleaned: false };
             }
-            const accountId = input.username.trim().toLowerCase();
+            const accountId = username.trim().toLowerCase();
             await deleteAccountActivity(accountId);
             return { cleaned: true, accountId };
         },

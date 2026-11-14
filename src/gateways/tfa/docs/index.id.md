@@ -121,3 +121,7 @@ Adapter metode wajib menerima `lifetime: { id, expiresAt, signal }` untuk penyia
 ### Koordinasikan transisi akhir
 
 Operasi akhir akun, metode, dan gateway memblokir penerimaan baru selama pembersihan dan penulisan status. Setiap operasi yang tumpang tindih memiliki token penghalang sendiri; penyelesaian satu operasi tidak membuka operasi lainnya. Kegagalan penulisan pendaftaran tetap menjadi kegagalan verifikasi, tetapi pembersihan menunggu penyelesaiannya tanpa menghalangi perubahan status oleh reset atau penonaktifan berikutnya.
+
+## Otorisasi Target Akun
+
+Pengelolaan lintas akun serta semua pembacaan TFA dengan pilihan target, operasi kode pemulihan, preferensi metode, pengaktifan/penonaktifan, dan pengaturan ulang administrator memerlukan kebijakan Auth `auth:authorizeAccountTarget` v1. Administrator tidak dapat mengelola administrator lain, pemilik, atau administrator pendiri. Operasi yang diizinkan bagi pemilik tetap tersedia. Kebijakan yang hilang atau metadata akun yang tidak dapat dibaca menyebabkan penolakan sebelum akses penyimpanan lanjutan. Pengelolaan pengguna tetap melarang pengelolaan diri; TFA menerima target pribadi yang tidak ditentukan atau ditentukan secara persis. Penyiapan dan detail metode tetap khusus akun sendiri. Parameter target kosong, ganda, atau tidak valid ditolak. Gunakan Pengaturan untuk keamanan akun sendiri dan administrasi Pengguna untuk akun lain yang memenuhi syarat.

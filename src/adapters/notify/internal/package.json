@@ -1,11 +1,11 @@
 {
     "name": "@cognis/adapter-notify-internal",
-    "version": "0.5.34",
+    "version": "0.5.35",
     "private": true,
     "type": "module",
     "main": "index.ts",
     "dependencies": {
-        "@cognis/core": "<=0.6.5",
+        "@cognis/core": "<=0.6.6",
         "@cognis/gateways": "<=0.4.3"
     }
 }

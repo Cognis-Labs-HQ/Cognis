@@ -49,3 +49,9 @@ Anrufrouten prüfen bei jeder lesenden oder zustandsändernden Operation die akt
 Der Anrufverlauf nutzt die allgemeine Capability `social:messages:appendRoomEvent` und erweitert den Flow `messages:formatRoomEvent` um seine lokalisierte Ereignisformatierung. Namen, Details, Übersetzungen und Darstellung von Anrufereignissen bleiben dadurch Eigentum des Call-Adapters und gelangen nicht in den Messages-Speicher oder -Renderer.
 
 Nur beigetretene Teilnehmende dürfen einen aktiven Anruf beenden. Eingeladene Personen, einschließlich des ursprünglichen Anrufers nach dem Verlassen, treten vor dem erneuten Verbinden dem Signalisierungsstatus bei. Fehlgeschlagene Verlassen-Anfragen behalten den Beitrittsstatus und werden erneut versucht, bevor die lokale Stufe verworfen wird. Calls – nicht Notifications – übersetzt allgemeine Benachrichtigungseingänge in den Raum-Anrufstatus. Die eingebettete Symbolleiste enthält nur die PiP-Steuerung und wiederholt den Fenstertitel des Anbieters nicht.
+
+### Bereitstellung mit Messages
+
+Die getestete Obergrenze der Messages-Abhängigkeit ist 2.7.44. Stellen Sie sie gemeinsam mit einem Auth-Anbieter bereit, der `auth:deprovisionOutcome` Version 1 implementiert; der mitgelieferte Auth-Anbieter 2.2.12 stellt diesen Vertrag bereit. Die Messages-Bereinigung nach Kontolöschung benötigt die Auth-eigene Bestätigung der ausgeführten Löschung; veränderbare öffentliche Ergebnisse können sie nicht ersetzen. Alternative Auth-Anbieter müssen den Vertrag implementieren. Anrufsignalisierung, bestehende Oberflächenbedienelemente und Tutorials bleiben unverändert.
+
+Diese Umstellung schützt die Bereinigung durch die mitgelieferten Komponenten. Bevor die Kontolöschung in einer Bereitstellung aktiviert wird, müssen externe Bereinigungs-Hooks aktualisiert oder deaktiviert werden, die weiterhin veränderbaren öffentlichen Flow-Ergebnissen vertrauen.

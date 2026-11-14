@@ -11,7 +11,7 @@ import {
     type KeyringVaultStore,
 } from "./store.js";
 import type { AuthProviderAdapter } from "../../../gateways/auth/gateway.js";
-import type { FlowApi } from "@cognis/core";
+import type { CapabilityContracts, FlowApi } from "@cognis/core";
 
 export { createKeyringRoutes, DbKeyringVaultStore, type KeyringVaultStore };
 
@@ -139,24 +139,19 @@ export async function bootstrapAuthAdapter(input: {
         "cleanup-dependencies",
         { id: "auth-keyring:purge-deleted-user", order: 1_000 },
         async (stageContext) => {
-            const request = (stageContext.input ?? {}) as {
-                username?: string;
-                action?: string;
-            };
-            const persisted = (
-                stageContext.stageResults["persist-state"] ?? []
-            ).some(
-                (result) =>
-                    (result as { persisted?: boolean }).persisted === true,
-            );
-            if (
-                !persisted ||
-                request.action !== "delete" ||
-                !request.username
-            ) {
+            const username = stageContext.ctx
+                .requireCapability<CapabilityContracts>("system:contracts")
+                .resolve<{
+                    deletedAccount(
+                        input: unknown,
+                        stageResults: object,
+                    ): string | undefined;
+                }>("auth:deprovisionOutcome", 1)
+                .deletedAccount(stageContext.input, stageContext.stageResults);
+            if (typeof username !== "string" || !username.trim()) {
                 return { purged: false };
             }
-            const accountId = request.username.trim().toLowerCase();
+            const accountId = username.trim().toLowerCase();
             await store.delete(accountId);
             input.log?.("info", "Deleted user keyring vault.", {
                 component: "auth-keyring-adapter",

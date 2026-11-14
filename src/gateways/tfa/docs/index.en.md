@@ -123,3 +123,7 @@ Method adapters receive required `lifetime: { id, expiresAt, signal }` inputs fo
 ### Serialize terminal transitions
 
 Account, method and gateway terminal operations block new admissions throughout cleanup and their state write. Each overlapping operation owns its own barrier token; finishing one does not reopen another. A failed enrollment write remains a verification failure, but cleanup waits for its settlement without preventing a later reset or disable from applying its own state change.
+
+## Account Target Authorization
+
+Cross-account account management and all target-selectable TFA reads, recovery-code operations, method preferences, enable/disable and administrator resets require Auth’s `auth:authorizeAccountTarget` v1 policy. An administrator cannot manage another admin, owner or founder-admin. Owner-authorized operations remain available. Missing policy or unreadable account metadata fails closed before downstream storage. Users keeps its self-management prohibition; TFA accepts omitted or exact explicit self targets. Setup and method-details operations remain self-only. Blank, duplicate or malformed target parameters are rejected. Use Settings for your own security and Users administration for an eligible other account.

@@ -47,3 +47,9 @@ Call routes revalidate current, non-archived Messages membership for every state
 Call history uses the generic `social:messages:appendRoomEvent` capability and contributes its localized event formatter to the `messages:formatRoomEvent` flow. Call event names, details, translations, and presentation therefore remain owned by the Call adapter rather than the Messages store or renderer.
 
 Only joined participants may end an active call. Any invited participant, including the original caller after leaving, joins signaling state before reconnecting. Failed leave requests retain joined state and retry before discarding the local stage. Calls—not Notifications—translate generic notification arrivals into room call state. The inline toolbar contains only the PiP control and does not repeat the provider window title.
+
+### Messages dependency rollout
+
+The tested Messages dependency ceiling is 2.7.44. Deploy it together with an Auth provider implementing `auth:deprovisionOutcome` version 1, supplied by bundled Auth 2.2.12. Messages account-deletion cleanup requires its Auth-owned committed receipt; mutable public results cannot substitute for it. Alternative Auth providers must implement the contract. Call signaling, ordinary UI controls and tutorials are unchanged.
+
+This migration protects the bundled cleanup consumers. Before enabling account deletion in a deployment, update or disable external cleanup hooks that still trust mutable public flow results.

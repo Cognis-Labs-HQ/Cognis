@@ -81,3 +81,11 @@ Operasi akun memerlukan sesi akun yang terverifikasi. Operasi sumber daya bersam
 Acara Baru dan Edit Acara menggunakan dialog yang lebih lebar di komputer. Mulai dan Selesai, lalu Status dan Pengulangan, berbagi baris saat ruang mencukupi. Judul, Deskripsi, Kalender, peserta, dan pengingat tetap selebar formulir. Layar sempit menumpuk bidang sesuai urutan baca. Dialog dapat digulir di dalam layar dengan tindakan Simpan, Batal, dan perlindungan perubahan yang belum disimpan tetap tersedia. Sepanjang Hari tetap tepat setelah Selesai. Validasi tanggal, penyaringan kalender yang dapat ditulis, ketersediaan rapat, dan antrean perubahan luring mengikuti kontrak yang sama.
 
 Judul minggu membungkus di dalam kolom harinya dan menggunakan label bertumpuk berdasarkan lebar panel kalender, termasuk di samping bilah sisi desktop. Baris sepanjang hari dan kisi waktu dalam tampilan hari berbagi tinggi slot minimum. Acara ringkas mempertahankan jarak yang lebih rapat. Undangan tertunda menambahkan garis diagonal dan opasitas rendah di atas latar Sibuk, Kosong, atau Tentatif, dengan batas putus-putus. Kedua status tetap terlihat saat penunjuk berada di atasnya.
+
+## Bukti penghapusan akun
+
+Pada `deprovision-user` → `cleanup-dependencies`, komponen memperoleh `auth:deprovisionOutcome` versi 1 melalui `system:contracts` dan memanggil `deletedAccount(input, stageResults)` dengan objek asli dari pemanggilan tersebut. Hanya bukti milik Auth yang mengonfirmasi penghapusan tersimpan yang mengizinkan penghapusan aktivitas kalender akun. Hasil salinan, hasil penonaktifan/pengarsipan, serta bukti yang hilang atau tidak tersedia tidak mengizinkan pembersihan ini.
+
+Pasang bersama penyedia Auth 2.2.12 bawaan atau alternatif yang menerapkan kontrak berversi ini; hasil alur publik yang dapat diubah bukan pengganti. Pembersihan menggunakan bukti penghapusan yang sudah tersimpan, bukan melakukan otorisasi ulang setelah penghapusan. Mutasi eksternal yang sudah dimulai dapat selesai sebagian sebelum kegagalan berikutnya; pembatalan lintas komponen tidak dijamin. Kontrol antarmuka dan tutorial biasa tidak berubah.
+
+Migrasi ini melindungi konsumen pembersihan bawaan. Sebelum mengaktifkan penghapusan akun dalam penerapan, perbarui atau nonaktifkan hook pembersihan eksternal yang masih memercayai hasil alur publik yang dapat diubah.

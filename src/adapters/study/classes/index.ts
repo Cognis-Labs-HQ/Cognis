@@ -1,3 +1,4 @@
+import type { CapabilityContracts } from "@cognis/core";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { IncomingMessage, ServerResponse } from "node:http";
@@ -186,20 +187,19 @@ export async function bootstrapStudyAdapter(
         "cleanup-dependencies",
         { id: "study-classes:delete-user-activity" },
         async (stageCtx) => {
-            const input = (stageCtx.input ?? {}) as {
-                username?: string;
-                action?: string;
-            };
-            const persistResult = (stageCtx.stageResults["persist-state"] ??
-                []) as Array<{ persisted?: boolean }>;
-            if (
-                input.action !== "delete" ||
-                !input.username ||
-                !persistResult[0]?.persisted
-            ) {
+            const username = stageCtx.ctx
+                .requireCapability<CapabilityContracts>("system:contracts")
+                .resolve<{
+                    deletedAccount(
+                        input: unknown,
+                        stageResults: object,
+                    ): string | undefined;
+                }>("auth:deprovisionOutcome", 1)
+                .deletedAccount(stageCtx.input, stageCtx.stageResults);
+            if (typeof username !== "string" || !username.trim()) {
                 return { cleaned: false };
             }
-            const accountId = input.username.trim().toLowerCase();
+            const accountId = username.trim().toLowerCase();
             await deleteAccountActivity(accountId);
             return { cleaned: true, accountId };
         },

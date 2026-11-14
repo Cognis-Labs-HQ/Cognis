@@ -38,6 +38,8 @@ Ein Flow wird einmal mit expliziten Stage-IDs registriert. Stage-Hooks werden da
 
 Flows können andere Flows über `context.ctx.runFlow(...)` aufrufen und so Verhalten verschachteln. Beispiel: Ein Login-Seiten-Flow ruft Login-Flow-Logik auf; Login-Flow-Hooks rufen den LDAP-Flow auf, wenn Adapter-Bedingungen erfüllt sind.
 
+Die Laufzeit friert den Ausführungskontext jeder Stufe oberflächlich ein, bevor sie die Eigentümerfunktion oder Erweiterungshooks aufruft. Die Bindungen `ctx`, `flowId`, `stageId`, `input`, `meta`, `data` und `stageResults` können weder ersetzt noch gelöscht werden; neue Kontextfelder lassen sich nicht hinzufügen. Eigentümerfunktion und Hooks teilen innerhalb einer Stufe denselben Kontext; jede Stufe und jeder Aufruf erhält einen eigenen Kontext. Nutzdaten werden nicht rekursiv eingefroren: `input`, `data` und `stageResults` behalten ihre bisherigen Identitäten und veränderbaren Inhalte. Nachfolgende Stufen sehen die gesammelten Ergebnisse weiterhin über dasselbe `stageResults`-Objekt. Metadaten bleiben eine oberflächlich eingefrorene Kopie der übergebenen `meta`; verschachtelte Metadatenwerte werden nicht eingefroren.
+
 ## Konfiguration
 
 Diese Komponente hat keine Laufzeit-Umgebungsvariablen.

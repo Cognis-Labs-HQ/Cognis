@@ -2,6 +2,7 @@ import path from "node:path";
 import {
     registerCanonicalFlow,
     SHARE_FLOW_CATALOG,
+    type CapabilityContracts,
     type Ctx,
 } from "@cognis/core";
 import {
@@ -97,21 +98,21 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 "cleanup-dependencies",
                 { id: "calendar-gateway:delete-user-activity" },
                 async (stageCtx) => {
-                    const input = (stageCtx.input ?? {}) as {
-                        username?: string;
-                        action?: string;
-                    };
-                    const persistResult = (stageCtx.stageResults[
-                        "persist-state"
-                    ] ?? []) as Array<{ persisted?: boolean }>;
-                    if (
-                        input.action !== "delete" ||
-                        !input.username ||
-                        !persistResult[0]?.persisted
-                    ) {
+                    const username = stageCtx.ctx
+                        .requireCapability<CapabilityContracts>(
+                            "system:contracts",
+                        )
+                        .resolve<{
+                            deletedAccount(
+                                input: unknown,
+                                stageResults: object,
+                            ): string | undefined;
+                        }>("auth:deprovisionOutcome", 1)
+                        .deletedAccount(stageCtx.input, stageCtx.stageResults);
+                    if (typeof username !== "string" || !username.trim()) {
                         return { cleaned: false };
                     }
-                    const accountId = input.username.trim().toLowerCase();
+                    const accountId = username.trim().toLowerCase();
                     await deleteAccountActivity(accountId);
                     return { cleaned: true, accountId };
                 },
