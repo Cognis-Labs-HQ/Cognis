@@ -793,4 +793,8 @@
   <string name="ui.tutorial.settings.appearance.message.preview.body">架空の会話で、受信と送信のメッセージ、名前、時刻を確認できます。保存する前にメッセージスタイルを切り替えて表示を比べましょう。</string>
   <string name="ui.search.selection_failed">選択を完了できませんでした。再試行前に操作先を確認してください。</string>
   <string name="ui.search.selection_unavailable">この結果は利用できなくなりました。もう一度検索してください。</string>
+  <string name="ui.reuse.layout_save_rejected">レイアウトの保存を確認できませんでした。変更内容は保持されています。「完了」で再試行するか、「破棄」で編集前のローカルレイアウトに戻してください。</string>
+  <string name="ui.reuse.layout_save_unconfirmed">レイアウトの保存を確認できませんでした。すでにサーバーに届いている可能性があります。変更内容は保持されています。「完了」で再試行するか、「破棄」でこの画面を編集前のローカルレイアウトに戻してください。「破棄」では、サーバーに保存済みの変更を元に戻せません。</string>
+  <string name="ui.reuse.layout_save_unavailable">アカウントのセッションが有効でないため、レイアウトを保存できません。変更内容は保持されています。セッションを復元して「完了」で再試行するか、「破棄」を選んでください。</string>
+  <string name="ui.reuse.saving">保存中</string>
 </resources>

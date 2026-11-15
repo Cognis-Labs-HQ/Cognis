@@ -387,6 +387,7 @@ export function createComposerRenderer({
             .querySelectorAll("[data-composer-element][draggable]")
             .forEach((card) => {
                 card.addEventListener("dragstart", (event) => {
+                    if (state.savePending) return;
                     state.dragSourceId = card.dataset.composerElement;
                     card.classList.add("composer-dragging");
                     event.dataTransfer.effectAllowed = "move";
@@ -403,6 +404,7 @@ export function createComposerRenderer({
                 });
 
                 card.addEventListener("dragover", (event) => {
+                    if (state.savePending) return;
                     event.preventDefault();
                     event.dataTransfer.dropEffect = "move";
                     if (card.dataset.composerElement !== state.dragSourceId) {
@@ -416,6 +418,7 @@ export function createComposerRenderer({
                 });
 
                 card.addEventListener("drop", async (event) => {
+                    if (state.savePending) return;
                     event.preventDefault();
                     card.classList.remove("composer-drag-over");
                     const targetId = card.dataset.composerElement;

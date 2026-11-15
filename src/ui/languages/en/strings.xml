@@ -793,4 +793,8 @@
   <string name="ui.tutorial.settings.appearance.message.preview.body">This fictional exchange shows incoming and outgoing messages with names and times. Change Message Style to compare layouts before saving.</string>
   <string name="ui.search.selection_failed">The selection could not be completed. Check the destination before trying again.</string>
   <string name="ui.search.selection_unavailable">This result is no longer available. Search again.</string>
+  <string name="ui.reuse.layout_save_rejected">The layout save was not confirmed. Your changes are kept. Choose Done to retry or Discard to restore the previous local layout.</string>
+  <string name="ui.reuse.layout_save_unconfirmed">The layout save could not be confirmed and may already have reached the server. Your changes are kept. Choose Done to retry or Discard to restore the previous local layout. Discard does not undo a possible server save.</string>
+  <string name="ui.reuse.layout_save_unavailable">The layout cannot be saved without an active account session. Your changes are kept. Restore your session and choose Done to retry, or choose Discard.</string>
+  <string name="ui.reuse.saving">Saving</string>
 </resources>

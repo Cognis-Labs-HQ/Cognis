@@ -1,8 +1,9 @@
 /**
  * Renders and positions the composer element panel and its save/discard actions.
  * Exports createEditorPanelHandlers for one main composer instance.
+ * Save, discard and reset use the composer-owned state.editSession.
  * @example const panel = createEditorPanelHandlers(dependencies); panel.createElementsPanel();
- * @param {object} dependencies Composer state, rendering and persistence callbacks.
+ * @param {object} dependencies Composer-owned state.editSession and rendering callbacks.
  * @returns {object} Panel creation and positioning operations.
  */
 import { fitComposerPanel } from "./responsive-layout.js";
@@ -10,9 +11,6 @@ export function createEditorPanelHandlers({
     state,
     i18n,
     bindPanelItemDrag,
-    compactPlacements,
-    endEditMode,
-    saveLayout,
     renderGridComposer,
     initializePlacements,
 }) {
@@ -169,37 +167,19 @@ export function createEditorPanelHandlers({
                 ).textContent = minimized ? "+" : "−";
             });
 
-        panel
-            .querySelector(".composer-done-btn")
-            .addEventListener("click", async (event) => {
+        for (const [selector, action] of [
+            [".composer-done-btn", () => state.editSession.save()],
+            [".composer-discard-btn", () => state.editSession.discard()],
+            [
+                ".composer-reset-btn",
+                () => state.editSession.save({ reset: true }),
+            ],
+        ]) {
+            panel.querySelector(selector).addEventListener("click", (event) => {
                 event.preventDefault();
-                compactPlacements();
-                state.editing = false;
-                endEditMode();
-                await saveLayout();
-                renderGridComposer();
+                void action();
             });
-
-        panel
-            .querySelector(".composer-discard-btn")
-            .addEventListener("click", (event) => {
-                event.preventDefault();
-                state.layout = state.layoutSnapshot;
-                state.editing = false;
-                endEditMode();
-                renderGridComposer();
-            });
-
-        panel
-            .querySelector(".composer-reset-btn")
-            .addEventListener("click", async (event) => {
-                event.preventDefault();
-                state.layout = { placements: [], hidden: [] };
-                initializePlacements();
-                state.layoutSnapshot = JSON.parse(JSON.stringify(state.layout));
-                await saveLayout();
-                renderGridComposer();
-            });
+        }
 
         panel.querySelectorAll("[data-composer-panel-item]").forEach((item) => {
             const elId = item.dataset.composerPanelItem;
