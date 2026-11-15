@@ -257,3 +257,28 @@ The five-second bound applies only to the stylesheet attempt, not total `openPop
 A floating window accepts one move or resize gesture at a time. Additional touches cannot replace it. Releasing or cancelling the owning pointer, or losing its capture, ends only that gesture and keeps the current position and size. A later gesture can start normally.
 
 The returned `release()` function and an optional caller-owned abort signal remove floating behavior and release its pointer capture; they do not remove caller content or invoke the close callback. Only the explicit Close control invokes that callback. Choose the signal for the intended window lifetime: persistent Call PiP intentionally omits a page signal, and route notifications alone do not close it.
+
+## Structured content buttons
+
+Use `renderStructuredContent(groups)` from `src/ui/reuse/structured-content.js` for declarative Settings and Administration contributions. Supply localized text and accessible labels from the owning component.
+
+```js
+renderStructuredContent([
+    {
+        items: [
+            {
+                type: "button",
+                id: "inspect",
+                text: inspectLabel,
+                variant: "neutral",
+            },
+        ],
+    },
+]);
+```
+
+The button descriptor maps `variant: 'confirm'` to `btn-confirm` and `variant: 'danger'` to `btn-cancel`. Omitted, `neutral`, and other variant values use `btn-neutral`; unknown values are not rejected. Each button has exactly one consequence class alongside `structured-content__button` and `btn-animated`. Owners explicitly choose creative or destructive variants; labels and IDs never determine consequences.
+
+Native `type="button"`, escaped text and attributes (`id`, `name`, `ariaLabel`, `disabled`, `checked`), groups and dividers are preserved. The renderer returns markup without invoking actions or submitting forms. Event handling and temporary disabled state remain caller-owned; descriptors do not expose loading or arbitrary class APIs. The host must load the existing shared button and structured-content styles. Canonical classes participate in shared wrapping, inherited-font and coarse-pointer sizing rules.
+
+Settings and Administration guides keep their existing targets and progression: this renderer adds no action or tutorial step. Contribution owners remain responsible for their own actions and guides.

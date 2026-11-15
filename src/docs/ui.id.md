@@ -202,3 +202,28 @@ Batas lima detik hanya berlaku untuk percobaan stylesheet, bukan seluruh persiap
 Jendela mengambang menerima satu gestur pemindahan atau perubahan ukuran pada satu waktu. Sentuhan tambahan tidak menggantikannya. Melepas atau membatalkan penunjuk pemilik, atau kehilangan tangkapannya, hanya mengakhiri gestur tersebut dan mempertahankan posisi serta ukuran saat ini. Gestur berikutnya dapat dimulai seperti biasa.
 
 Fungsi `release()` yang dikembalikan dan sinyal pembatalan opsional milik pemanggil menghapus perilaku mengambang serta melepaskan tangkapan penunjuk; keduanya tidak menghapus konten pemanggil atau memanggil callback penutupan. Hanya kontrol Tutup yang eksplisit memanggil callback tersebut. Pilih sinyal sesuai masa hidup jendela: PiP Panggilan yang persisten sengaja tidak memakai sinyal halaman, dan pemberitahuan rute saja tidak menutupnya.
+
+## Tombol Konten Terstruktur
+
+Gunakan `renderStructuredContent(groups)` dari `src/ui/reuse/structured-content.js` untuk kontribusi deklaratif Pengaturan dan Administrasi. Sediakan teks dan label aksesibilitas yang dilokalkan oleh komponen pemilik.
+
+```js
+renderStructuredContent([
+    {
+        items: [
+            {
+                type: "button",
+                id: "inspect",
+                text: inspectLabel,
+                variant: "neutral",
+            },
+        ],
+    },
+]);
+```
+
+Deskriptor tombol memetakan `variant: 'confirm'` ke `btn-confirm` dan `variant: 'danger'` ke `btn-cancel`. Varian yang dihilangkan, `neutral`, dan nilai lainnya menggunakan `btn-neutral`; nilai yang tidak dikenal tidak ditolak. Setiap tombol memiliki tepat satu kelas konsekuensi selain `structured-content__button` dan `btn-animated`. Pemilik memilih varian pembuatan atau penghapusan secara eksplisit; label dan ID tidak pernah menentukan konsekuensi.
+
+`type="button"` bawaan, teks dan atribut yang di-escape (`id`, `name`, `ariaLabel`, `disabled`, `checked`), grup, serta pemisah tetap dipertahankan. Renderer mengembalikan markup tanpa menjalankan tindakan atau mengirim formulir. Penanganan peristiwa dan status nonaktif sementara tetap menjadi tanggung jawab pemanggil; deskriptor tidak menyediakan API pemuatan atau kelas bebas. Host harus memuat gaya tombol bersama dan konten terstruktur yang sudah tersedia. Kelas baku mengikuti aturan bersama untuk pembungkusan teks, pewarisan fon, dan ukuran bagi perangkat penunjuk kasar.
+
+Panduan Pengaturan dan Administrasi mempertahankan target serta alurnya: renderer ini tidak menambahkan tindakan atau langkah tutorial. Pemilik kontribusi tetap bertanggung jawab atas tindakan dan panduannya sendiri.
