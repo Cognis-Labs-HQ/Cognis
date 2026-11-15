@@ -105,3 +105,14 @@ Formularüberschriften bleiben in ihren bisherigen Feldern. Ziele und Ablauf der
 ## Passwortformular-Texte
 
 Komponentenübergreifende Passwortformulare verwenden `ui.reuse.password_requirements` und `ui.reuse.passwords_match` aus den Host-XML-Katalogen. Auth und Registration nutzen dieselben Schlüssel auf Englisch, Deutsch, Indonesisch und Japanisch. Liefern Sie die Host-Kataloge mit Auth 2.2.13 und Registration 1.2.9 aus; Integrationen müssen diese gemeinsamen Schlüssel übernehmen. Die Auflösung desselben englischen Schlüssels bleibt strikt und meldet fehlende oder leere englische Werte ausdrücklich als Fehler.
+
+## Kontexthilfe
+
+Verwenden Sie `renderInfoTooltip(localizedText, localizedLabel, optionalId)` neben der vorhandenen Beschriftung oder Überschrift. Hilfetext und Schaltflächenbeschriftung stammen aus dem zuständigen XML-Katalog; Beschreibungen bleiben reiner Text. Die gemeinsame Hilfekomponente hat keine eigene Komponentenversion.
+
+Bewegen Sie den Zeiger auf die Informationsschaltfläche oder fokussieren Sie sie, um die Hilfe zu lesen. Sie bleibt geöffnet, solange die Schaltfläche fokussiert ist oder der Zeiger auf ihr oder dem Hilfefeld liegt. Eine andere Hilfeschaltfläche zeigt ihre Erklärung; beim Verlassen erscheint wieder eine noch fokussierte oder mit dem Zeiger berührte Erklärung. Escape schließt die Hilfe, ohne den Fokus zu verschieben oder andere Escape-Handler zu unterdrücken. Die geschlossene Interaktion muss enden, bevor dieselbe Schaltfläche die Hilfe erneut öffnet. Scrollen und Größenänderungen schließen das Hilfefeld weiterhin.
+Wechselt der Tastaturfokus die Erklärung, während der Zeiger auf dem gemeinsamen Hilfefeld bleibt, gehört diese Zeigerinteraktion zur neu angezeigten Erklärung, bis der Zeiger das Feld verlässt oder die Hilfe geschlossen wird.
+
+Das nicht fokussierbare Hilfefeld verwendet `role="tooltip"`; die aktive Schaltfläche ergänzt dessen ID in `aria-describedby`, ohne andere Beschreibungen zu ersetzen. Wird die Schaltfläche entfernt, verschwindet ihre Hilfe. Ein Dokumentwechsel entfernt alte Listener und Beobachter; beim Verlassen der Seite wird die aktive Hilfe geschlossen. Das feste, themenabhängige Hilfefeld behält seine Platzierungsregeln und überbrückt den Abstand mit einer transparenten Zeigerfläche ohne verzögerte Rückrufe.
+
+Vorhandene Seitentutorials behalten Beschriftungen, Ziele und Ablauf: Die Hilfe bleibt neben denselben Bedienelementen verfügbar, ohne neue Aktion oder Tutorialschritt. Orientierung bieten [W3C-Inhalte bei Zeigerkontakt oder Fokus](https://www.w3.org/WAI/WCAG22/Understanding/content-on-hover-or-focus.html) und das [APG-Tooltip-Muster](https://www.w3.org/WAI/ARIA/apg/patterns/tooltip/). Das APG-Muster ist noch in Arbeit und hat keinen Konsens der Arbeitsgruppe. DOM-Ereignistests bestätigen weder Konformität noch tatsächliche Geometrie, Berührungsbedienung oder die Ausgabe assistiver Technologien.
