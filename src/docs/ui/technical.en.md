@@ -184,6 +184,10 @@ Native `type="button"`, escaped text and attributes (`id`, `name`, `ariaLabel`, 
 
 Settings and Administration guides keep their existing targets and progression: this renderer adds no action or tutorial step. Contribution owners remain responsible for their own actions and guides.
 
+### Native layout actions
+
+Main and nested layout panels use native `button type="button"` controls for Done, Discard and Reset. These actions do not submit an enclosing form or navigate. Pending layout submissions disable them through the existing editor lock; failed submissions restore the controls for an explicit retry. Done still saves and closes after acknowledgement, Discard restores the local baseline without writing, and Reset saves the default layout while editing continues. Existing action classes and the workspace tutorial target `#composer-edit-toggle` remain unchanged.
+
 ## Security
 
 Hidden navigation is not access control. Browser providers resolve owner capabilities and abort pending work on unmount or account changes; private reads remain account-scoped.

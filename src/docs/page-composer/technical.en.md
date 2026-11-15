@@ -195,6 +195,10 @@ Shared text wraps within the available width before and after a font loads, with
 
 The public form draft manager accepts an optional `resolveStoragePath(scopeKey)` dependency. Resource pages can return their canonical owned path so reading, saving and consuming a draft still address the same resource after navigation. The default remains the current page path. The authenticated account stays part of every storage key; the resolver does not change account isolation or field exclusions.
 
+### Native layout actions
+
+Main and nested layout panels use native `button type="button"` controls for Done, Discard and Reset. These actions do not submit an enclosing form or navigate. Pending layout submissions disable them through the existing editor lock; failed submissions restore the controls for an explicit retry. Done still saves and closes after acknowledgement, Discard restores the local baseline without writing, and Reset saves the default layout while editing continues. Existing action classes and the workspace tutorial target `#composer-edit-toggle` remain unchanged.
+
 ## Security
 
 Composer controls presentation and owned DOM lifetime, not resource authorization. Page actions still require their owner's flows; markup and stylesheet contributions must respect the shared panel and menu boundaries.
