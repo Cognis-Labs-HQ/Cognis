@@ -38,8 +38,8 @@ test("adapter commands generate tokens and send invitation emails through the au
             args: ["person@example.com"],
         });
         assert.deepEqual(bodies, [
-            { deliverEmail: false },
-            { email: "person@example.com", deliverEmail: true },
+            { delivery: "manual" },
+            { email: "person@example.com", delivery: "email" },
         ]);
         deny = true;
         await assert.rejects(

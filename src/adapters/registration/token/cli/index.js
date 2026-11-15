@@ -12,7 +12,7 @@ export function registerCommands({ register }) {
             return apiRequest(apiBaseUrl, "/api/v1/registration/tokens", {
                 method: "POST",
                 apiToken: await getApiToken(),
-                body: { deliverEmail: false },
+                body: { delivery: "manual" },
             });
         },
         {
@@ -40,7 +40,7 @@ export function registerCommands({ register }) {
             return apiRequest(apiBaseUrl, "/api/v1/registration/tokens", {
                 method: "POST",
                 apiToken: await getApiToken(),
-                body: { email, deliverEmail: true },
+                body: { email, delivery: "email" },
             });
         },
         {
