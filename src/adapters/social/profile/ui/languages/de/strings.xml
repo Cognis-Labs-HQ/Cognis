@@ -19,12 +19,15 @@
   <string name="module.social.profile.tutorial.profile.profile.identity.title">Profilidentität</string>
   <string name="module.social.profile.tutorial.profile.profile.identity.body">Prüfen Sie Identität und Verfügbarkeit; Ihr eigenes Profil bietet Bearbeitungsfunktionen. Bewegen Sie den Zeiger über einen Profillink, um eine Vorschau zu sehen, und wählen Sie ihn aus, um das Profil zu öffnen.</string>
   <string name="module.social.profile.tutorial.profile.posts.title">Beiträge</string>
-  <string name="module.social.profile.tutorial.profile.posts.body">Lesen Sie sichtbare Beiträge und nutzen Sie die für Ihr Konto erlaubten Aktionen.</string>
+  <string name="module.social.profile.tutorial.profile.posts.body">Lesen Sie sichtbare Beiträge und nutzen Sie die für Ihr Konto erlaubten Aktionen. Löschen erfordert eine Bestätigung. Abbrechen behält den Beitrag.</string>
   <string name="module.social.profile.tutorial.profile.social.actions.title">Soziale Aktionen</string>
-  <string name="module.social.profile.tutorial.profile.social.actions.body">Folgen, Nachrichten und Beziehungen steuern Sie am Profil; prüfen Sie zuvor die ausgewählte Person. Im eigenen Profil öffnet Profil bearbeiten Ihre Angaben. Bei einem Speicherfehler bleiben Ihre Änderungen zum Korrigieren und erneuten Versuchen erhalten.</string>
+  <string name="module.social.profile.tutorial.profile.social.actions.body">Folgen, Nachrichten und Beziehungen steuern Sie am Profil; prüfen Sie zuvor die ausgewählte Person. Im eigenen Profil öffnet Profil bearbeiten Ihre Angaben. Bei einem Speicherfehler bleiben Ihre Änderungen zum Korrigieren und erneuten Versuchen erhalten. Entfolgen und Blockieren erfordern eine Bestätigung. Abbrechen behält die aktuelle Beziehung.</string>
   <string name="module.social.profile.tutorial.profile.preview.post.title">Beitrag prüfen</string>
   <string name="module.social.profile.tutorial.profile.preview.post.body">Verfassen Sie einen Beitrag und prüfen Sie Formatierung und Anhänge in der Vorschau. Kontrollieren Sie vor dem Veröffentlichen die Zielgruppe.</string>
   <string name="ui.app.profile.save_pending_closed">Das Schließen macht einen gesendeten Speichervorgang nicht rückgängig. Laden Sie die Profilseite neu, um das Ergebnis zu prüfen.</string>
   <string name="ui.app.profile.media_refresh_failed">Die Profilbilder konnten nicht aktualisiert werden. Öffnen Sie das Profil erneut, um es noch einmal zu versuchen.</string>
   <string name="ui.app.profile.remove_image_failed">Das Bild konnte nicht entfernt werden. Versuche es erneut.</string>
+  <string name="ui.app.profile.action_failed">Die Profilaktion wurde nicht abgeschlossen. Versuchen Sie es erneut.</string>
+  <string name="ui.app.profile.action_uncertain">Das Ergebnis der Profilaktion konnte nicht bestätigt werden. Öffnen Sie das Profil erneut und prüfen Sie es, bevor Sie es noch einmal versuchen.</string>
+  <string name="ui.app.profile.action_refresh_failed">Die Profiländerung wurde angenommen, aber die Ansicht konnte nicht aktualisiert werden. Öffnen Sie das Profil erneut, um den aktuellen Stand zu sehen.</string>
 </resources>

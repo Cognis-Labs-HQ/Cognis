@@ -19,12 +19,15 @@
   <string name="module.social.profile.tutorial.profile.profile.identity.title">プロフィールの情報</string>
   <string name="module.social.profile.tutorial.profile.profile.identity.body">本人情報と連絡可能な状態を確認します。自分のプロフィールには編集操作があります。 プロフィールへのリンクにポインターを合わせるとプレビューが表示され、選択するとプロフィールが開きます。</string>
   <string name="module.social.profile.tutorial.profile.posts.title">投稿</string>
-  <string name="module.social.profile.tutorial.profile.posts.body">表示できる投稿を読み、自分のアカウントで許可された操作を使います。</string>
+  <string name="module.social.profile.tutorial.profile.posts.body">表示できる投稿を読み、自分のアカウントで許可された操作を使います。 削除には確認が必要です。キャンセルすると投稿は残ります。</string>
   <string name="module.social.profile.tutorial.profile.social.actions.title">交流の操作</string>
-  <string name="module.social.profile.tutorial.profile.social.actions.body">プロフィールの操作からフォロー、メッセージ、関係の管理を行えます。相手を確認してから操作します。 自分のプロフィールでは、プロフィール編集から詳細を開けます。保存に失敗しても変更内容が残り、修正して再試行できます。</string>
+  <string name="module.social.profile.tutorial.profile.social.actions.body">プロフィールの操作からフォロー、メッセージ、関係の管理を行えます。相手を確認してから操作します。 自分のプロフィールでは、プロフィール編集から詳細を開けます。保存に失敗しても変更内容が残り、修正して再試行できます。 フォロー解除とブロックには確認が必要です。キャンセルすると現在の関係が維持されます。</string>
   <string name="module.social.profile.tutorial.profile.preview.post.title">投稿をプレビューする</string>
   <string name="module.social.profile.tutorial.profile.preview.post.body">投稿を書き、書式と添付内容をプレビューします。公開前に対象読者を確認します。</string>
   <string name="ui.app.profile.save_pending_closed">閉じても送信済みの保存は取り消されません。プロフィールページを再読み込みして結果を確認してください。</string>
   <string name="ui.app.profile.media_refresh_failed">プロフィール画像を更新できませんでした。プロフィールを開き直して再試行してください。</string>
   <string name="ui.app.profile.remove_image_failed">画像を削除できませんでした。もう一度お試しください。</string>
+  <string name="ui.app.profile.action_failed">プロフィールの操作を完了できませんでした。再試行してください。</string>
+  <string name="ui.app.profile.action_uncertain">プロフィールの操作結果を確認できませんでした。再試行する前にプロフィールを開き直して確認してください。</string>
+  <string name="ui.app.profile.action_refresh_failed">プロフィールの変更は受け付けられましたが、表示を更新できませんでした。プロフィールを開き直して最新の状態を確認してください。</string>
 </resources>

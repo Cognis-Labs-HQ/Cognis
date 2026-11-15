@@ -201,7 +201,8 @@ export function createOfflineOutbox({
             signal.addEventListener("abort", dispose, { once: true });
             return dispose;
         },
-        async submit(owner, id, payload) {
+        async submit(owner, id, payload, { signal } = {}) {
+            signal?.throwIfAborted();
             const actor = identity();
             if (
                 !enabled() ||
@@ -215,6 +216,7 @@ export function createOfflineOutbox({
             if (typeof id !== "string" || !/^[a-zA-Z0-9:._-]{1,200}$/.test(id))
                 throw new Error("invalid_offline_delivery_id");
             await withLock(() => {
+                signal?.throwIfAborted();
                 if (!current(actor)) throw new Error("offline_account_changed");
                 if (!enabled() || !allowed() || !handlers.has(owner))
                     throw new Error("offline_delivery_unavailable");

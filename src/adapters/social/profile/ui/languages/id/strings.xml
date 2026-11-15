@@ -19,12 +19,15 @@
   <string name="module.social.profile.tutorial.profile.profile.identity.title">Identitas Profil</string>
   <string name="module.social.profile.tutorial.profile.profile.identity.body">Periksa identitas dan ketersediaan profil; profil sendiri menyediakan kontrol penyuntingan. Arahkan penunjuk ke tautan profil untuk melihat pratinjau, lalu pilih tautan untuk membuka profilnya.</string>
   <string name="module.social.profile.tutorial.profile.posts.title">Postingan</string>
-  <string name="module.social.profile.tutorial.profile.posts.body">Jelajahi postingan yang terlihat dan gunakan aksi yang diizinkan bagi akun Anda.</string>
+  <string name="module.social.profile.tutorial.profile.posts.body">Jelajahi postingan yang terlihat dan gunakan aksi yang diizinkan bagi akun Anda. Hapus meminta konfirmasi. Batal mempertahankan postingan.</string>
   <string name="module.social.profile.tutorial.profile.social.actions.title">Aksi Sosial</string>
-  <string name="module.social.profile.tutorial.profile.social.actions.body">Ikuti, kirim pesan, atau kelola hubungan melalui kontrol profil; periksa orang yang dipilih sebelum bertindak. Pada profil Anda sendiri, Edit Profil membuka detail Anda. Jika penyimpanan gagal, perubahan tetap tersedia untuk diperbaiki dan dicoba kembali.</string>
+  <string name="module.social.profile.tutorial.profile.social.actions.body">Ikuti, kirim pesan, atau kelola hubungan melalui kontrol profil; periksa orang yang dipilih sebelum bertindak. Pada profil Anda sendiri, Edit Profil membuka detail Anda. Jika penyimpanan gagal, perubahan tetap tersedia untuk diperbaiki dan dicoba kembali. Berhenti Mengikuti dan Blokir meminta konfirmasi. Batal mempertahankan hubungan saat ini.</string>
   <string name="module.social.profile.tutorial.profile.preview.post.title">Pratinjau Kiriman</string>
   <string name="module.social.profile.tutorial.profile.preview.post.body">Tulis kiriman, lalu pratinjau format dan lampirannya. Periksa audiens sebelum menerbitkan.</string>
   <string name="ui.app.profile.save_pending_closed">Menutup editor tidak membatalkan penyimpanan yang telah dikirim. Muat ulang halaman Profil untuk memeriksa hasilnya.</string>
   <string name="ui.app.profile.media_refresh_failed">Gambar profil tidak dapat diperbarui. Buka kembali profil untuk mencoba lagi.</string>
   <string name="ui.app.profile.remove_image_failed">Gambar tidak dapat dihapus. Coba lagi.</string>
+  <string name="ui.app.profile.action_failed">Tindakan Profil tidak selesai. Coba lagi.</string>
+  <string name="ui.app.profile.action_uncertain">Hasil tindakan Profil tidak dapat dikonfirmasi. Buka kembali profil untuk memeriksanya sebelum mencoba lagi.</string>
+  <string name="ui.app.profile.action_refresh_failed">Perubahan Profil diterima, tetapi tampilan tidak dapat diperbarui. Buka kembali profil untuk melihat keadaan terbaru.</string>
 </resources>
