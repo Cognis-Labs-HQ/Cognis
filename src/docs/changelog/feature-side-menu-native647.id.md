@@ -8,4 +8,4 @@ Pilihan menu samping bersama kini secara eksplisit menggunakan tombol yang tidak
 
 ## Komit
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/a04bd8dfcc7f736b2faa143678a4bb078987e782
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/723dc1234cb234e912731336c943ff30d652ebfd
