@@ -73,6 +73,14 @@ Toast-Hinweise laden ihr gemeinsames Stylesheet, ohne Erstellung oder Schließen
 
 Jeder Dialog hat eine eigene zugängliche Überschrift, auch verschachtelte Rückfragen zu ungespeicherten Änderungen und mehrseitige Dialoge. Tab und Umschalt+Tab bleiben im aktiven Dialog. Beim Behalten eines Entwurfs kehrt der Fokus zum Editor zurück; beim Schließen des letzten Dialogs zur verfügbaren öffnenden Schaltfläche oder zur Seite, wenn diese fehlt. Leere Dialoge halten den Fokus, bis Bedienelemente verfügbar werden. Ein Abbruch beim Seitenwechsel gibt den Fokus frei, ohne ihn auf die alte Seite zurückzusetzen. Schließanimationen behalten keine Tastatursteuerung. Diese gemeinsamen Bedienelemente gelten auch für Dialoge aus geführten Tutorials.
 
+### Lebensdauer beim Öffnen
+
+`onOpen` läuft synchron, nachdem der Dialog eingefügt wurde und bevor seine Öffnungsanimation beginnt. Wirft die anfängliche Einrichtung einen Fehler, lehnt `openPopup` mit demselben Fehler ab, nachdem der fehlgeschlagene Dialog entfernt und sein Fokus, seine Ereignislistener, Timer, Änderungserfassung und Bildlaufsperre freigegeben wurden. Eine fehlgeschlagene Einrichtung fordert keine Abbruchfreigabe und zeigt keine Verwerfungsbestätigung. Ein bereits abgeschlossenes Schließen oder ein Abbruch durch den Besitzer bleibt endgültig. Auf Promises aus Initialisierungsfunktionen wird nicht gewartet.
+
+Ein aktiver übergeordneter Dialog oder eine neuere Öffnung behält seinen eigenen Fokus und seine Bildlaufsperre. Die Bildvorschau nutzt dieselbe Bereinigung bei fehlgeschlagener synchroner Einrichtung; Übersetzungsfehler werden weiterhin weitergegeben. Normale Öffnungs- und Schließanimationen, verpflichtende Dialoge, Aktions-Callbacks, Änderungsbestätigungen und wiederholte Seiten-Callbacks behalten ihre Verträge. Fehler späterer Seiten-Callbacks sind keine Fehler der anfänglichen Öffnung.
+
+Bestehende Tutorial-Ziele, Besitzer- und Abschlusskennungen, Weiter, Zurück, Neustart und Wiederholung bleiben unverändert. Ein fehlgeschlagener untergeordneter Dialog gibt die Kontrolle an das akzeptierte aktive übergeordnete Tutorial zurück; die Bereinigung macht den fehlgeschlagenen Dialog nicht zu einem neuen Tutorial-Ziel. Die gemeinsame UI besitzt kein eigenständig versioniertes Paket oder Manifest.
+
 ### Aktionsvertrag für Dialoge
 
 Eingabe und Leertaste aktivieren das fokussierte native Bedienelement. Abbrechen wählt daher keine andere Fußzeilenaktion aus. Bei ungespeicherten Änderungen erhält das sichere Abbrechen zunächst den Fokus; Verwerfen verwendet die Gefahrendarstellung. Gedrückthalten der Eingabetaste wiederholt keine Dialogaktion. Eine laufende Aktion kann nicht erneut gesendet werden; ausdrückliches Schließen und Abbrechen bleiben möglich. Veraltete oder bereits schließende Bedienelemente rufen keine Aktionen mehr auf.
