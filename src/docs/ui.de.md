@@ -136,3 +136,15 @@ Schließen, Escape, Routenwechsel oder Seitenabbau, das Ende der Anbieterlebensd
 Die Auswahl in der Navigationsleiste gibt ein von `navigateTo` vor dem Routenabbau zurückgegebenes `false` weiter. Bei verweigerter Navigation bleibt die Suche ohne Fehler offen. Sobald `route-will-change` oder `pagehide` ausgelöst wird, schließt die Suche aufgrund ihres Lebenszyklus, auch wenn die Zielseite anschließend nicht eingebunden werden kann. Rückmeldungen zum Ergebnis gehören dann zur Zielseite oder zum Router, nicht zum geschlossenen Suchdialog.
 
 Die Arbeitsplatzanleitung erklärt Auswahl, Warten und sichere Wiederholung. Ziele, Abschlusskennungen, Weiter, Zurück und erneute Wiedergabe bleiben erhalten. Die Suche gehört zur gemeinsamen UI und besitzt kein eigenständig versioniertes Paket oder Manifest.
+
+## Formularvalidierung
+
+Als ungültig ausgewertete Felder erhalten `aria-invalid="true"`. Ihr `aria-describedby` verweist auf die vorhandenen übersetzten Kriterien, die aktuell nicht erfüllt sind, sowie auf Beschreibungen des Aufrufers. Nach einer Korrektur entfernt der Formularersteller nur seinen eigenen Ungültigkeitszustand und seine Beschreibungsverweise. Unberührte Steuerelemente und unbestimmte Kriterien (`null`) erhalten vor der Auswertung keinen ungültigen ARIA-Zustand. Bestehende Regeln für Pflichtfelder, optionale Felder und Rückgabewerte gelten weiterhin; native Gültigkeitsprüfungen und die Registerauswahl bleiben von benutzerdefinierten Kriterien getrennt.
+
+Jedes dargestellte Kriterium hat eine eindeutige ID, auch bei mehreren Formularen mit denselben Feldnamen. `detach()` des Controllers und das Abbruchsignal der Anbindung entfernen die eigenen Ereignislistener und ARIA-Zustände; ausdrückliche Validierungsaufrufe bleiben möglich. Seiten und Dialoge müssen die Anbindung mit der Lebensdauer ihres Formulars beenden. Diese Darstellung zeichnet keine Feldwerte auf.
+
+Änderungen des Aufrufers an `aria-invalid`, einschließlich des Entfernens, bleiben über spätere ungültige Prüfungen sowie Korrektur oder Bereinigung hinweg erhalten. Schreibt der Aufrufer denselben Wert `true`, ist dies vom vorhandenen Wert des Formularerstellers nicht unterscheidbar. Beendet ein benutzerdefiniertes Kriterium die Anbindung, liefert die unterbrochene Feld- oder Gesamtformularprüfung weiterhin ihr Ergebnis, aktualisiert nach der Bereinigung aber nicht mehr die Darstellung. Ein ausdrücklicher Validierungsaufruf nach der Bereinigung beginnt eine neue Prüfung, die erneut bereinigt werden kann.
+
+### Tutorial-Abdeckung
+
+Beachten Sie die Anforderungen am Feld, korrigieren Sie unerfüllte Kriterien und wiederholen Sie die Aktion. Die Tutorials zur Registrierungsverwaltung und Sicherheit behalten ihre bisherigen Steuerelemente, Ziele, Abschlusskennungen und Navigation. Die Sicherheitsanleitung erläutert bereits Passwortanforderungen, Bestätigung und Abbruch. Die gemeinsame Validierung fügt keine Tutorial-Aktion und keinen Schritt hinzu. Die gemeinsame UI hat kein separat versioniertes Paket oder Manifest.
