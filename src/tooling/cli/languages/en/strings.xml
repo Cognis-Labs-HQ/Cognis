@@ -21,4 +21,7 @@
   <string name="cli.terminal.input.query">Missing required JSON query field: {field}. Use --help to inspect the command's fields.</string>
   <string name="cli.terminal.input.duplicate">Duplicate command input field: {field}. The command owner must use unique field names.</string>
   <string name="cli.terminal.input.array">Enter a comma-separated list or a JSON string array. Use [] for an empty list.</string>
+  <string name="cli.terminal.delete.committed">Account deleted, but cleanup is incomplete. Do not repeat deletion. Review the server failure and repair the affected cleanup.</string>
+  <string name="cli.terminal.delete.rejected">Deletion was rejected before the account was removed. Review the refusal before trying again.</string>
+  <string name="cli.terminal.delete.unknown">Deletion outcome unknown. Verify the account and server records before deciding whether to retry. No retry was sent.</string>
 </resources>

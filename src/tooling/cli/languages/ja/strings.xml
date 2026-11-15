@@ -21,4 +21,7 @@
   <string name="cli.terminal.input.query">JSON クエリの必須項目がありません: {field}。コマンドの項目は --help で確認できます。</string>
   <string name="cli.terminal.input.duplicate">コマンドの入力項目名が重複しています: {field}。コマンドの提供元は一意の項目名を指定する必要があります。</string>
   <string name="cli.terminal.input.array">カンマ区切りの一覧または JSON 文字列配列を入力してください。空の一覧には [] を使用します。</string>
+  <string name="cli.terminal.delete.committed">アカウントは削除されましたが、後処理は未完了です。削除を再実行せず、サーバーの失敗記録を確認して該当する後処理を修復してください。</string>
+  <string name="cli.terminal.delete.rejected">アカウントが削除される前に操作が拒否されました。再試行する前に拒否の内容を確認してください。</string>
+  <string name="cli.terminal.delete.unknown">削除結果は不明です。再試行するか決める前にアカウントとサーバー記録を確認してください。再試行は送信していません。</string>
 </resources>
