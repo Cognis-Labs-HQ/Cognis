@@ -8,4 +8,4 @@ Pengujian pemilihan pencarian kini menunggu hingga lapisan pencarian dihapus dal
 
 ## Komit
 
-- [Tunggu penghapusan lapisan pencarian dalam pengujian penyelesaian](https://github.com/Cognis-Labs-HQ/Cognis/commit/def5d8af2582d609a5529c43240bb47cdcf497ab)
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/386a5bec660d2014e932752f9efa6c09a1837fad
