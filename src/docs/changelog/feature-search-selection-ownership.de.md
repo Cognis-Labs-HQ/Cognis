@@ -14,5 +14,4 @@ Die Auswahl in der Navigationsleiste gibt ein von `navigateTo` vor dem Routenabb
 
 ## Commits
 
-- [0f07907ee725d17e798dd597f3a0971fd76333f3](https://github.com/Cognis-Labs-HQ/Cognis/commit/0f07907ee725d17e798dd597f3a0971fd76333f3)
-- [6913cf63b8b84af2df6a8c8a50f9fb06543d3df7](https://github.com/Cognis-Labs-HQ/Cognis/commit/6913cf63b8b84af2df6a8c8a50f9fb06543d3df7)
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/3f0063375d8479a949f75847239ac7ed89223692
