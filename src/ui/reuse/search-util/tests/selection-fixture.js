@@ -42,6 +42,30 @@ export function deferred() {
 export const wait = (duration = 0) =>
     new Promise((resolve) => setTimeout(resolve, duration));
 
+export function waitForRemoval(element, timeoutMs = 1000) {
+    if (!element.isConnected) return Promise.resolve();
+    return new Promise((resolve, reject) => {
+        const observer = new MutationObserver(() => {
+            if (element.isConnected) return;
+            clearTimeout(deadline);
+            observer.disconnect();
+            resolve();
+        });
+        const deadline = setTimeout(() => {
+            observer.disconnect();
+            reject(
+                new Error(
+                    `Search overlay was not removed within ${timeoutMs}ms`,
+                ),
+            );
+        }, timeoutMs);
+        observer.observe(element.ownerDocument, {
+            childList: true,
+            subtree: true,
+        });
+    });
+}
+
 export async function selectionFixture(context) {
     const hooks = registerHooks({
         resolve(specifier, parent, next) {

@@ -2,7 +2,12 @@ import assert from "node:assert/strict";
 import { registerHooks } from "node:module";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
-import { deferred, selectionFixture, wait } from "./selection-fixture.js";
+import {
+    deferred,
+    selectionFixture,
+    wait,
+    waitForRemoval,
+} from "./selection-fixture.js";
 import { navigation } from "./fixtures/router.js";
 
 // Public router and authentication dependencies are static contract fixtures.
@@ -126,7 +131,7 @@ test("the actual navbar preserves a destination veto before route teardown", asy
         false,
     );
     pending.resolve(true);
-    await wait(170);
+    await waitForRemoval(overlay);
     assert.equal(overlay.isConnected, false);
     fixture.results.splice(0, fixture.results.length, {
         id: "local-target",
@@ -146,7 +151,7 @@ test("the actual navbar preserves a destination veto before route teardown", asy
         input: localOverlay.querySelector("input"),
     };
     (await fixture.query(localPopup))[0].click();
-    await wait(170);
+    await waitForRemoval(localOverlay);
     assert.equal(
         navigation.calls.length,
         2,
