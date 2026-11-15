@@ -162,6 +162,12 @@ Panduan Pengaturan dan Administrasi mempertahankan target serta alurnya: rendere
 
 Perilaku bersama: [Page Composer](/docs/page-composer/technical).
 
+### Pilihan menu samping
+
+Kapabilitas `ui:sideMenu` menyediakan `createSideMenu` untuk pilihan berkelompok. Setiap item dirender sebagai `button type="button"` bawaan: pemilihan memperbarui status aktif, memanggil `onSelect` dengan ID item, dan menggulir ke `targetId` opsional tanpa mengirim formulir yang membungkusnya. Label dan pengenal di-escape. Tautan navigasi tetap menjadi tanggung jawab pemanggil.
+
+Berikan sinyal pembatalan masa hidup pemilik ke `mount(root, { signal })` dan batalkan sebelum memasang ulang. Grup yang dapat dilipat menyimpan status terbukanya di bawah `storageKeyPrefix`; grup tetap tidak memiliki pengalih. Panduan Dokumentasi, Catatan Perubahan, Kartu Belajar, dan Pustaka mempertahankan target navigasi dan langkah yang ada.
+
 ## Keamanan
 
 Navigasi tersembunyi bukan kontrol akses. Penyedia memakai kapabilitas pemilik dan membatalkan pekerjaan saat unmount atau pergantian akun; data privat terikat akun.

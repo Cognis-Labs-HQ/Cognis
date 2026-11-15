@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { createSideMenu } from "../side-menu.js";
+import { createSideMenu } from "../../side-menu.js";
 
 test("side menu renders structured groups and tracks active items", () => {
     globalThis.localStorage = {

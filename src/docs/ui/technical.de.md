@@ -100,6 +100,12 @@ Die Anleitungen für Einstellungen und Administration behalten ihre Ziele und Ab
 
 Gemeinsames Verhalten: [Page Composer](/docs/page-composer/technical).
 
+### Seitenmenü-Auswahl
+
+Die Fähigkeit `ui:sideMenu` stellt `createSideMenu` für gruppierte Auswahlen bereit. Jeder Eintrag wird als natives `button type="button"` dargestellt: Die Auswahl aktualisiert den aktiven Zustand, ruft `onSelect` mit der ID auf und scrollt zum optionalen `targetId`, ohne ein umgebendes Formular abzusenden. Beschriftungen und Kennungen werden maskiert. Echte Navigationslinks bleiben in der Verantwortung der Aufrufer.
+
+Übergeben Sie das Abbruchsignal des zuständigen Lebenszyklus an `mount(root, { signal })` und brechen Sie es vor erneutem Einbinden ab. Aufklappbare Gruppen speichern ihren Öffnungszustand unter `storageKeyPrefix`; feste Gruppen haben keinen Umschalter. Die Anleitungen für Dokumentation, Änderungsprotokolle, Lernkarten und Bibliothek behalten ihre bisherigen Navigationsziele und Schritte.
+
 ## Sicherheit
 
 Verborgene Navigation ist kein Zugriffsschutz. Anbieter nutzen Eigentümerfähigkeiten und brechen bei Seitenende oder Kontowechsel ab; private Daten bleiben kontogebunden.
