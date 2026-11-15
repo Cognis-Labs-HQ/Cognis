@@ -120,20 +120,34 @@ test("messages omits availability lights from primary chat avatars", async (cont
     assert.equal(state.avatarOptions.length, 3);
     assert.ok(
         state.avatarOptions.every(
-            (options) => options.showAvailability === false,
-        ),
-    );
-    assert.ok(
-        state.avatarOptions.some(
-            (options) => options.avatarClass === "messages-message-avatar",
-        ),
-    );
-    assert.ok(
-        state.avatarOptions.some(
             (options) =>
-                options.avatarClass === "messages-message-bubble-avatar",
+                options.size === "small" && options.profile.handle === "sender",
         ),
     );
+    assert.equal(
+        state.container.querySelectorAll(
+            '.messages-message-avatar > [data-profile-avatar-size="small"]',
+        ).length,
+        1,
+    );
+    assert.equal(
+        state.container.querySelectorAll(
+            '.messages-message-bubble-avatar > [data-profile-avatar-size="small"]',
+        ).length,
+        2,
+    );
+    assert.equal(
+        state.container.querySelectorAll(".availability-indicator").length,
+        0,
+    );
+    const avatars = state.container.querySelectorAll(".messages-avatar-link");
+    assert.equal(avatars.length, 3);
+    for (const avatar of avatars) {
+        assert.equal(avatar.tagName, "A");
+        assert.equal(avatar.getAttribute("href"), "/profile/sender");
+        assert.equal(avatar.getAttribute("aria-label"), "Sender");
+        assert.equal(avatar.dataset.hydrated, "true");
+    }
 });
 
 test("rejecting a request navigates away from the removed room", () => {

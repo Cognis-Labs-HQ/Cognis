@@ -29,3 +29,7 @@ Langkah riwayat menjelaskan pemilihan teks selama pembaruan percakapan dan pemua
 ## Kepemilikan Konfirmasi
 
 Langkah pengelolaan ruang menjelaskan konfirmasi Keluar dan pembatalan yang aman. Target judul, ketersediaan opsional, urutan, dan identitas penyelesaian tetap sama. Editor dan penghapusan templat tetap menggunakan kontrol bilah samping; dialognya tidak berlaku setelah halaman, pilihan, atau daftar tersimpan berubah.
+
+## Avatar Percakapan
+
+Langkah riwayat ruang menjelaskan inisial yang sesuai dengan profil serta tindakan arahkan penunjuk dan klik pada gaya yang menampilkan avatar. Area, ketersediaan opsional, urutan dan identitas penyelesaiannya tidak berubah.

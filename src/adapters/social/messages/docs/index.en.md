@@ -131,3 +131,11 @@ Template editors and Delete confirmations belong to the original page, room sele
 Messages 2.8.2 is a browser ownership patch. Server routes, membership policy and the version 2 read-only presentation contract are unchanged. Profile remains 4.0.0. The broader confirmation audits remain partial.
 
 The registered Messages request client accepts an optional synchronous `beforeDispatch()` assertion for live transport. It runs after request-flow preparation and is removed before HTTP; it is never stored or replayed. Leave uses it to recheck the original view, account, session, member, handle and request provider immediately before dispatch. A cancelled preparation remains not dispatched and permits a fresh confirmation; only a started transport can have an uncertain outcome.
+
+## Conversation Avatars
+
+Conversation authors use the current Profile renderer for initials, colour and the small avatar size (32px). Initials follow the display name, then the handle; an account identifier remains the label when neither is available. Existing avatar images and profile links remain available in avatar-bearing styles. Hover opens the standard profile preview and clicking opens the profile. IRC continues to hide avatars.
+
+The Settings Message Style preview uses the same small presentation with synthetic records, without profile links, images, hydration or writes. Missing, disabled or incomplete Profile providers make the preview unavailable; returning providers restore it. Conversation rows keep their current page and account ownership, selection, drafts and read outcomes. Room headers, participant summaries and other avatar surfaces are unchanged; the broader avatar audit remains partial.
+
+Messages 2.8.3 / Profile 4.0.0.
