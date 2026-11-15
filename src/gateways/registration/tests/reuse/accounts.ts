@@ -1,4 +1,4 @@
-import type { LocalAccountStore } from "../../../auth/reuse/account-store.js";
+import type { LocalAccountStore } from "@cognis/core";
 
 function unexpectedAccountOperation(): never {
     throw new Error("Unexpected registration account operation");
@@ -6,7 +6,6 @@ function unexpectedAccountOperation(): never {
 
 export function createAccountStore(): LocalAccountStore {
     return {
-        getUsername: unexpectedAccountOperation,
         register: async (username, _password, role = "user") => ({
             username,
             role,
