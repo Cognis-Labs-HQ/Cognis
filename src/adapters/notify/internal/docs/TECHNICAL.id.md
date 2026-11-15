@@ -57,6 +57,14 @@ Tutorial ruang kerja tetap membuka `#notification-toggle` dan menjelaskan `.noti
 
 Penyelesaian korelasi dari produsen dijalankan berurutan tanpa duplikasi dalam masa aktif pemilik saat ini. Proses menunggu perubahan pengguna yang tertunda dan pembacaan terbaru sebelum menghapus notifikasi yang cocok. Penghapusan yang belum dikonfirmasi tidak pernah diulang otomatis.
 
+### Tujuan dengan keyboard
+
+Gunakan Tab untuk mencapai tautan notifikasi, lalu Enter untuk membuka tujuannya. Notifikasi belum dibaca tanpa tujuan memiliki tombol Tandai Notifikasi sebagai Dibaca; notifikasi yang baru muncul tanpa tujuan memiliki tombol Buka Kotak Masuk Notifikasi. Tombol memakai perilaku Enter dan Spasi bawaan. Perintah, Hapus dan Tutup tetap berupa kontrol terpisah dengan fokus keyboard yang terlihat. Membuka notifikasi baru tanpa tautan membuat kotak masuk tetap terbuka.
+
+Tautan mempertahankan perilaku browser untuk klik dengan tombol pengubah dan klik tengah. Aktivasi ini tidak mengubah kotak masuk saat ini atau status dibaca. Aktivasi biasa mempertahankan kebijakan konfirmasi baca dan navigasi yang ada; membuka tujuan bukan bukti bahwa penandaan dibaca berhasil. Hanya tujuan HTTP dan HTTPS yang menjadi tautan. Tujuan eksternal memakai konteks browser terpisah dengan perlindungan terhadap akses jendela pembuka dan tanpa referrer.
+
+Peristiwa `cognis:notification-action` yang dapat dibatalkan berlaku untuk aktivasi tautan biasa dan dengan tombol pengubah. Pemilik menangani klik biasa secara sinkron sebelum menunggu perubahan kotak masuk agar router publik tidak menavigasi dua kali. Kontrol baris yang tertunda atau tidak tersedia kehilangan target tautannya sampai penyegaran berhasil; kontrol lama menolak aktivasi. Panduan ruang kerja mempertahankan target lonceng dan panel serta menjelaskan tautan, tombol tandai dibaca, kontrol keyboard dan Coba lagi yang hanya membaca. Perintah, kedaluwarsa dan masa aktif korelasi notifikasi berkelanjutan tetap sama.
+
 ## Keamanan
 
 Rute notifikasi mengautentikasi penerima dan mengakses rekaman akunnya. Persistensi memerlukan DATA_ENCRYPTION_KEY; jaga kunci tetap stabil dan rahasia.

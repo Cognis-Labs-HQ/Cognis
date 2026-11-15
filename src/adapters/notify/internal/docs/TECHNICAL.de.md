@@ -53,6 +53,14 @@ Das Arbeitsbereich-Tutorial öffnet weiterhin `#notification-toggle` und erklär
 
 Korrelationsauflösungen von Produzenten werden innerhalb der aktuellen Besitzerlebensdauer nacheinander und ohne Duplikate ausgeführt. Sie warten auf laufende Benutzeränderungen und die neueste Leseanfrage, bevor passende Benachrichtigungen entfernt werden. Eine unbestätigte Löschung wird niemals automatisch wiederholt.
 
+### Ziele per Tastatur
+
+Erreichen Sie einen Benachrichtigungslink mit Tab und öffnen Sie sein Ziel mit Enter. Eine ungelesene Benachrichtigung ohne Ziel hat die Schaltfläche „Benachrichtigung als gelesen markieren“; eine neue Meldung ohne Ziel bietet „Benachrichtigungen öffnen“. Schaltflächen verwenden das native Verhalten von Enter und Leertaste. Befehle, Entfernen und Schließen bleiben separate Bedienelemente mit sichtbarem Tastaturfokus. Beim Öffnen einer Meldung ohne Link bleibt der Posteingang offen.
+
+Links behalten das Browserverhalten für Klicks mit Zusatztasten und der mittleren Maustaste bei. Diese Aktionen lassen den aktuellen Posteingang und Lesestatus unverändert. Gewöhnliche Aktivierung behält die bestehende Bestätigung und Navigation bei; ein geöffnetes Ziel beweist nicht, dass die Gelesen-Markierung erfolgreich war. Nur HTTP- und HTTPS-Ziele werden zu Links. Externe Ziele öffnen einen getrennten Browserkontext mit Schutz vor Zugriff durch das öffnende Fenster und ohne Referrer.
+
+Das abbrechbare Ereignis `cognis:notification-action` gilt für gewöhnliche und modifizierte Linkaktivierungen. Der Eigentümer übernimmt gewöhnliche Klicks synchron, bevor er auf Posteingangsänderungen wartet, damit der öffentliche Router nicht doppelt navigiert. Bei ausstehenden oder nicht verfügbaren Zeilenaktionen werden Linkziele bis zur erfolgreichen Aktualisierung entfernt; veraltete Bedienelemente lehnen Aktivierungen ab. Das Arbeitsbereich-Tutorial behält seine Glocken- und Panelziele und erklärt Links, Gelesen-Schaltflächen, Tastaturbedienung und die rein lesende Wiederholung. Befehle, Ablauf und Korrelationslebensdauer kontinuierlicher Meldungen bleiben unverändert.
+
 ## Sicherheit
 
 Benachrichtigungsrouten prüfen den Empfänger und bearbeiten dessen Einträge. Dauerhafte Nachrichten benötigen DATA_ENCRYPTION_KEY; halte den Schlüssel stabil und geheim.
