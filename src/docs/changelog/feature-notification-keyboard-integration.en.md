@@ -12,4 +12,4 @@ Internal Notifications 0.5.37 preserves modified and middle-click link defaults,
 
 ## Commits
 
-- [10acb0157bb3c7a20494fbedc6c56bdefaf58757](https://github.com/Cognis-Labs-HQ/Cognis/commit/10acb0157bb3c7a20494fbedc6c56bdefaf58757)
+- [cde203828684905be37f1701f1c83c78aa92f20d](https://github.com/Cognis-Labs-HQ/Cognis/commit/cde203828684905be37f1701f1c83c78aa92f20d)
