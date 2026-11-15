@@ -1,10 +1,11 @@
+import "./static-contracts.js";
 import assert from "node:assert/strict";
 import test from "node:test";
-import {
+const {
     createLoginReasonNotifier,
     createRouteScopedToast,
     showLoginReasonToast,
-} from "../../ui/login-page/client-loaders.js";
+} = await import("../../ui/login-page/client-loaders.js");
 
 test("login route toasts dismiss when navigation aborts the page", () => {
     const controller = new AbortController();

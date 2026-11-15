@@ -65,4 +65,8 @@
   <string name="gateway.tfa.tutorial.enforcement.apply.policy.body">Simpan setelah meninjau pilihan kewajiban dan penyiapan yang diperlukan pengguna.</string>
   <string name="ui.app.login.tfa.challenge_unavailable">Kode verifikasi tidak dapat dikirim. Coba lagi atau pilih metode verifikasi lain.</string>
   <string name="ui.app.login.tfa.resend_queued">Kode verifikasi baru berada dalam antrean pengiriman. Gunakan kode terbaru setelah diterima.</string>
+  <string name="ui.app.login.tfa.resend_pending">Meminta kode…</string>
+  <string name="ui.app.login.tfa.resend_expired">Upaya masuk ini telah kedaluwarsa. Batalkan dan masuk kembali untuk meminta kode baru.</string>
+  <string name="ui.app.login.tfa.resend_unconfirmed">Hasil permintaan ulang tidak dapat dipastikan. Periksa apakah kode sudah diterima sebelum mencoba lagi.</string>
+  <string name="ui.app.login.tfa.resend_received">Metode verifikasi telah merespons, tetapi belum mengonfirmasi pengiriman.</string>
 </resources>

@@ -102,6 +102,18 @@ Antworten für Anmeldecodes können `maxLength` enthalten: eine positive ganze Z
 
 Die Anmeldeoberfläche behält einen gültigen absoluten Zeitpunkt `resendAvailableAt` beim Anzeigen oder Fortsetzen einer ausgegebenen Challenge bei, auch wenn dieser Zeitpunkt bereits verstrichen ist. Nur bei fehlendem oder ungültigem absoluten Zeitpunkt verwendet sie eine positive Dauer `retryAfterSeconds` ab dem aktuellen Anzeigezeitpunkt. Bis zur Freigabe bleibt die Aktion zum erneuten Senden deaktiviert und unterdrückt Anfragen. Die Freigabe sendet keinen Code automatisch und ersetzt keine ausgegebene Challenge; der Server entscheidet weiterhin über Versandlimits und Codeprüfung.
 
+Wenn die erneute Anforderung der aktiven Methode abgeschlossen ist, zeigt die Anmeldemaske ihr Ergebnis. Eine Bestätigung mit dem Status „wartend“ oder „gesendet“ beschreibt den gemeldeten Zustellungsstand. Eine gültige Antwort ohne Bestätigung zeigt nur, dass die Methode geantwortet hat. Ein abgelehntes, fehlerhaftes oder unterbrochenes Ergebnis beweist nicht, ob eine Zustellung erfolgt ist. Prüfen Sie vor einem weiteren Versuch, ob ein Code angekommen ist. Ist der Anmeldeversuch abgelaufen, brechen Sie ihn ab und melden Sie sich erneut an. Wartezeiten bestimmt weiterhin der Server, laufende Anfragen bleiben gesperrt und es erfolgen keine automatischen Wiederholungen oder E-Mail-Sendungen.
+
+Erneute Anforderungen und ausstehende Rückmeldungen bleiben an das Browserkonto und die Sitzung gebunden, mit denen die Eingabemaske geöffnet wurde. Ein Konto- oder Tokenwechsel verhindert, dass eine ältere Anfrage die Maske aktualisiert oder erneut sendet. Fehlende erforderliche englische Übersetzungen bleiben ausdrückliche Darstellungsfehler und werden nicht als ungewisse Übertragungsergebnisse behandelt.
+
+Bei der Rückkehr zu einer Methode wird jede abgeschlossene Neuanforderung genau einmal bestätigt; erneutes Wechseln wiederholt diese Bestätigung nicht.
+
+Die Auth-Anmeldeseite übergibt ein Abbruchsignal an `createTfaLoginClient({ baseI18n, root, signal, lifecycleVersion })`. Beim Verlassen der Seite, Ersetzen des Formulars oder Anmeldeversuchs sowie nach erfolgreichem Abbrechen werden Speicherereignis-Listener, der Handler zum erneuten Senden und Wartezeit-Timer sofort entfernt, auch wenn eine Anfrage noch offen ist. Ein fehlgeschlagener Abbruch erhält die aktuelle Abfrage. Die UI-Bereinigung macht eine abgeschickte Anfrage nicht rückgängig und garantiert keinen Versandstopp.
+
+Auth 2.2.14 und TFA 1.3.14 müssen mit ihren JavaScript-Dateien und Assets gemeinsam bereitgestellt werden. Das TFA-Integrationsmodul muss `loginLifecycleVersion = 1` exportieren. Seine Fabrik verlangt `lifecycleVersion: 1` und ein echtes `AbortSignal`; der Client muss `lifecycle: { version: 1, signal }` mit demselben Signal sowie `refreshPrompt()` bereitstellen. Fehlende oder abweichende Verträge werden vor dem Versand mit einem Anmeldefehler und einer strukturierten Lebenszyklusdiagnose abgelehnt. Auth 2.2.13 und TFA 1.3.13 unterstützen diesen Vertrag nicht. Beide Pakete samt ausgelieferten und gebündelten Assets gemeinsam aktualisieren und ältere Anmelde-Tabs neu laden. Drittanbieter-Ersatzmodule für die TFA-Anmeldeintegration müssen den Vertrag vor Aktivierung dieser Version implementieren; es gibt keinen Kompatibilitätspfad ohne Bereinigung. Anmeldung ohne TFA und Methodenbeschreibungen bleiben unverändert.
+
+Solange eine Neuanforderung offen ist, zeigt die Aktion „Code wird angefordert…“ und einen Beschäftigt-Zustand. Sie bleibt gesperrt, ohne eine neue Frist zu erfinden oder automatisch zu wiederholen. Wird die Neuanforderung während eines Abbruchs fertig und schlägt der Abbruch danach fehl, gleicht dieselbe Maske Ergebnis, Sperre und ausgegebene Frist ab. Eine relative Serverwartezeit beginnt beim Empfang der Antwort; das Warten auf den Abbruch startet sie nicht neu.
+
 Die Vertragsregistrierung von Adaptern folgt dem [gemeinsamen Gateway-Bootstrap-Vertrag](/docs/gateways).
 
 ### Steuerung der Adapterverwaltung
@@ -133,6 +145,12 @@ Bei Email Code bedeutet „wartend“, dass die Zustellung noch nicht erfolgt is
 ### Autorisierung des Kontoziels
 
 Kontenübergreifende Verwaltung sowie alle TFA-Lesezugriffe mit Zielauswahl, Wiederherstellungscode-Aktionen, Methodenpräferenzen, Aktivierungen/Deaktivierungen und Administrator-Zurücksetzungen erfordern Auths Richtlinie `auth:authorizeAccountTarget` v1. Administratoren dürfen keine anderen Administratoren, Eigentümer oder Gründeradministratoren verwalten. Vom Eigentümer erlaubte Aktionen bleiben verfügbar. Fehlende Richtlinien oder unlesbare Kontometadaten führen vor nachgelagerten Speicherzugriffen zur Ablehnung. Die Benutzerverwaltung verbietet weiterhin Selbstverwaltung; TFA akzeptiert ein weggelassenes oder exakt angegebenes eigenes Ziel. Einrichtung und Methodendetails bleiben auf das eigene Konto beschränkt. Leere, doppelte oder fehlerhafte Zielparameter werden abgelehnt. Verwenden Sie Einstellungen für Ihre eigene Sicherheit und die Benutzerverwaltung für ein zulässiges anderes Konto.
+
+### Rückmeldung zur Neuanforderung
+
+Wenn die erneute Anforderung der aktiven Methode abgeschlossen ist, zeigt die Anmeldemaske ihr Ergebnis. Eine Bestätigung mit dem Status „wartend“ oder „gesendet“ beschreibt den gemeldeten Zustellungsstand. Eine gültige Antwort ohne Bestätigung zeigt nur, dass die Methode geantwortet hat. Ein abgelehntes, fehlerhaftes oder unterbrochenes Ergebnis beweist nicht, ob eine Zustellung erfolgt ist. Prüfen Sie vor einem weiteren Versuch, ob ein Code angekommen ist. Ist der Anmeldeversuch abgelaufen, brechen Sie ihn ab und melden Sie sich erneut an. Wartezeiten bestimmt weiterhin der Server, laufende Anfragen bleiben gesperrt und es erfolgen keine automatischen Wiederholungen oder E-Mail-Sendungen.
+
+Solange eine Neuanforderung offen ist, zeigt die Aktion „Code wird angefordert…“ und einen Beschäftigt-Zustand. Sie bleibt gesperrt, ohne eine neue Frist zu erfinden oder automatisch zu wiederholen. Wird die Neuanforderung während eines Abbruchs fertig und schlägt der Abbruch danach fehl, gleicht dieselbe Maske Ergebnis, Sperre und ausgegebene Frist ab. Eine relative Serverwartezeit beginnt beim Empfang der Antwort; das Warten auf den Abbruch startet sie nicht neu.
 
 ## Sicherheit
 
