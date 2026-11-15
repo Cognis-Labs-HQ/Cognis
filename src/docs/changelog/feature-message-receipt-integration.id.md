@@ -12,4 +12,4 @@ Pilih **Dibaca oleh** di samping pesan terkirim untuk melihat pembaca dan waktu 
 
 ## Komit
 
-- [16fac9bdcdf56e9fb797d789b7580d01f394004d](https://github.com/Cognis-Labs-HQ/Cognis/commit/16fac9bdcdf56e9fb797d789b7580d01f394004d)
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/65a8200a22add13a4a09a11228ac9bf40d213582
