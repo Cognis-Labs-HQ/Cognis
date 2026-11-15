@@ -121,13 +121,14 @@ import { createFormDirtyTracker } from "./unsaved-changes.js";
 
 /** @typedef {ReturnType<typeof createPopupContentApi> & {updateBody: (body: string | (() => string)) => HTMLElement | null, setPage: (id: string) => boolean, pageId?: string, markDirty: () => void, requestClose?: () => void}} PopupApi */
 
-let stylesheetReady = null;
-let stylesheetRefresh = null;
-let i18nReady = null;
+import { uiCtx } from "./ui-ctx.js";
+import { showToast } from "./toast.js";
+import {
+    popupPreparation,
+    waitForPopupPreparation,
+} from "./popup/preparation.js";
 
-const POPUP_STYLESHEET_URL = "/static/styles/popup.css";
-const POPUP_STYLESHEET_CACHE = "cognis-popup-styles-v1";
-const CACHED_STYLESHEET_ID = "popup-cached-styles";
+let i18nReady = null;
 
 function getI18n() {
     // Store the Promise, not the resolved value, so concurrent calls
@@ -140,102 +141,33 @@ function getI18n() {
     return i18nReady;
 }
 
-async function getPopupStylesheetCache() {
-    if (typeof globalThis.caches === "undefined") return null;
-    try {
-        return await globalThis.caches.open(POPUP_STYLESHEET_CACHE);
-    } catch (error) {
-        console.error(
-            `[popup] Failed to open stylesheet cache "${POPUP_STYLESHEET_CACHE}":`,
-            error,
-        );
-        return null;
-    }
-}
-
-async function refreshPopupStylesheet() {
-    const stylesheetCache = await getPopupStylesheetCache();
-    if (!stylesheetCache || typeof globalThis.fetch !== "function") return;
-
-    try {
-        const response = await globalThis.fetch(POPUP_STYLESHEET_URL, {
-            cache: "no-cache",
-            credentials: "same-origin",
-        });
-        if (!response.ok) return;
-
-        await stylesheetCache.put(POPUP_STYLESHEET_URL, response.clone());
-        const installedStylesheet = globalThis.document?.querySelector(
-            `#${CACHED_STYLESHEET_ID}`,
-        );
-        if (installedStylesheet) {
-            installedStylesheet.textContent = await response.text();
-        }
-    } catch (error) {
-        console.error(
-            `[popup] Failed to refresh stylesheet cache for "${POPUP_STYLESHEET_URL}":`,
-            error,
-        );
-    }
-}
-
-/**
- * Refreshes the complete popup stylesheet held in browser Cache Storage.
- *
- * @returns {Promise<void>}
- */
+/** @returns {Promise<void>} Complete-sheet cache refresh; failures are logged. */
 export function primePopupStylesheet() {
-    if (!stylesheetRefresh) {
-        stylesheetRefresh = refreshPopupStylesheet().finally(() => {
-            stylesheetRefresh = null;
+    return popupPreparation(uiCtx).primeStylesheet();
+}
+
+async function preparePopup(signal, requiresLocale = true) {
+    let failure;
+    try {
+        await waitForPopupPreparation(
+            popupPreparation(uiCtx).ensureStylesheet(),
+            signal,
+        );
+    } catch (error) {
+        failure = error;
+    }
+    if (signal?.aborted) return null;
+    if (!failure && !requiresLocale) return true;
+    const i18n = await waitForPopupPreparation(getI18n(), signal);
+    if (signal?.aborted) return null;
+    if (failure) {
+        const message = i18n.t("ui.reuse.error");
+        popupPreparation(uiCtx).reportFailure(failure, () => {
+            showToast(message, { variant: "error" });
         });
+        throw failure;
     }
-    return stylesheetRefresh;
-}
-
-async function installCachedStylesheet() {
-    const existing = document.querySelector(`#${CACHED_STYLESHEET_ID}`);
-    if (existing) return true;
-    const stylesheetCache = await getPopupStylesheetCache();
-    const cachedResponse = await stylesheetCache?.match(POPUP_STYLESHEET_URL);
-    if (!cachedResponse?.ok) return false;
-    const cachedStylesheet = document.createElement("style");
-    cachedStylesheet.id = CACHED_STYLESHEET_ID;
-    cachedStylesheet.textContent = await cachedResponse.text();
-    document.head.appendChild(cachedStylesheet);
-    return true;
-}
-
-function installNetworkStylesheet() {
-    return new Promise((resolve) => {
-        const link = document.createElement("link");
-        link.rel = "stylesheet";
-        link.href = POPUP_STYLESHEET_URL;
-        link.addEventListener("load", resolve, { once: true });
-        link.addEventListener("error", resolve, { once: true });
-        document.head.appendChild(link);
-    });
-}
-
-function ensureStylesheet() {
-    if (stylesheetReady) return stylesheetReady;
-    const existing = document.querySelector(
-        `link[href="${POPUP_STYLESHEET_URL}"]`,
-    );
-    if (existing?.sheet) {
-        stylesheetReady = Promise.resolve();
-        return stylesheetReady;
-    }
-    if (typeof globalThis.caches === "undefined") {
-        stylesheetReady = installNetworkStylesheet();
-        return stylesheetReady;
-    }
-    stylesheetReady = (async () => {
-        await stylesheetRefresh;
-        if (await installCachedStylesheet()) return;
-        await installNetworkStylesheet();
-    })();
-    return stylesheetReady;
+    return i18n;
 }
 
 function positionAnchoredPopup(anchorElement, popupElement) {
@@ -280,12 +212,12 @@ export function createAnchoredPopup({
 } = {}) {
     let popupElement = null;
     let anchorElement = null;
+    let preparationController = null;
 
     function getPopupElement() {
         if (popupElement instanceof HTMLElement) {
             return popupElement;
         }
-        void ensureStylesheet();
         popupElement = document.createElement(tagName);
         popupElement.className = className.trim();
         popupElement.setAttribute("role", role);
@@ -295,6 +227,8 @@ export function createAnchoredPopup({
     }
 
     function hide() {
+        preparationController?.abort();
+        preparationController = null;
         anchorElement = null;
         if (!(popupElement instanceof HTMLElement)) return;
         popupElement.hidden = true;
@@ -304,6 +238,9 @@ export function createAnchoredPopup({
     return {
         show(anchor, body) {
             if (!(anchor instanceof HTMLElement)) return;
+            preparationController?.abort();
+            const controller = new AbortController();
+            preparationController = controller;
             let resolvedBody = body ?? "";
             if (typeof body === "function") {
                 try {
@@ -317,6 +254,16 @@ export function createAnchoredPopup({
                 hide();
                 return;
             }
+            void preparePopup(controller.signal, false).catch((error) => {
+                if (controller.signal.aborted) return;
+                hide();
+                const log = console.error.bind(console);
+                log("[popup] Anchored preparation failed", {
+                    component: "ui.popup",
+                    operation: "prepareAnchoredPopup",
+                    errorName: error?.name,
+                });
+            });
             const element = getPopupElement();
             anchorElement = anchor;
             element.innerHTML = resolvedBody;
@@ -392,9 +339,9 @@ export async function openPopup({
     pages,
     initialPageId,
 } = {}) {
+    if (signal?.aborted) return null;
     const invoker = document.activeElement;
-    await ensureStylesheet();
-    const i18n = await getI18n();
+    const i18n = await preparePopup(signal);
     if (signal?.aborted) return null;
     return new Promise((resolve) => {
         const overlay = document.createElement("div");
