@@ -590,6 +590,7 @@
   <string name="ui.app.admin.security.login_session_timeout_hint">ユーザーが選択できる最長のログインセッションです。</string>
   <string name="ui.app.admin.security.login_session_timeout_never">なし</string>
   <string name="ui.app.admin.security.login_session_timeout_never_warning">本番環境でセッション期限を無効にすることは推奨されません。</string>
+  <string name="ui.reuse.unit">単位</string>
   <string name="ui.reuse.duration.minutes">分</string>
   <string name="ui.reuse.duration.hours">時間</string>
   <string name="ui.reuse.duration.days">日</string>

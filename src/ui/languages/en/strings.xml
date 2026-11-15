@@ -590,6 +590,7 @@
   <string name="ui.app.admin.security.login_session_timeout_hint">The longest login session users may choose.</string>
   <string name="ui.app.admin.security.login_session_timeout_never">Never</string>
   <string name="ui.app.admin.security.login_session_timeout_never_warning">Disabling session timeouts is not recommended in production.</string>
+  <string name="ui.reuse.unit">Unit</string>
   <string name="ui.reuse.duration.minutes">Minutes</string>
   <string name="ui.reuse.duration.hours">Hours</string>
   <string name="ui.reuse.duration.days">Days</string>

@@ -439,12 +439,13 @@ export function initSecuritySection(root, { i18n, onDirtyChange, signal }) {
         <div class="security-settings-form">
           <div class="components-section">
             <h3 class="components-section-heading">
-              ${escapeHtml(i18n.t("ui.app.admin.security.login_session_timeout_label"))}
+              <label for="security-login-session-timeout" id="security-login-session-timeout-label">${escapeHtml(i18n.t("ui.app.admin.security.login_session_timeout_label"))}</label>
               ${renderInfoTooltip(i18n.t("ui.app.admin.security.login_session_timeout_hint"), tooltipAria)}
             </h3>
             <div class="security-field-row">
               <input ${initialized ? "" : "disabled"} id="security-login-session-timeout" class="security-policy-number-input" type="number" min="1" step="1" />
-              <select ${initialized ? "" : "disabled"} id="security-login-session-timeout-unit" class="theme-select">
+              <label id="security-login-session-timeout-unit-label" for="security-login-session-timeout-unit">${escapeHtml(i18n.t("ui.reuse.unit"))}</label>
+              <select ${initialized ? "" : "disabled"} id="security-login-session-timeout-unit" class="theme-select" aria-labelledby="security-login-session-timeout-label security-login-session-timeout-unit-label">
                 <option value="minutes">${escapeHtml(i18n.t("ui.reuse.duration.minutes"))}</option>
                 <option value="hours">${escapeHtml(i18n.t("ui.reuse.duration.hours"))}</option>
                 <option value="days">${escapeHtml(i18n.t("ui.reuse.duration.days"))}</option>
@@ -470,7 +471,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange, signal }) {
           </div>
           <div class="components-section">
             <h3 class="components-section-heading">
-              ${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode_label"))}
+              <label for="security-user-validation-mode">${escapeHtml(i18n.t("ui.app.admin.security.user_validation_mode_label"))}</label>
               ${renderInfoTooltip(i18n.t("ui.app.admin.security.user_validation_mode_hint"), tooltipAria)}
             </h3>
             <div class="security-field-row">
@@ -481,7 +482,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange, signal }) {
           </div>
           <div class="components-section">
             <h3 class="components-section-heading">
-              ${escapeHtml(i18n.t("ui.app.admin.security.require_teacher_approval_label"))}
+              <label for="security-require-teacher-approval">${escapeHtml(i18n.t("ui.app.admin.security.require_teacher_approval_label"))}</label>
               ${renderInfoTooltip(i18n.t("ui.app.admin.security.require_teacher_approval_hint"), tooltipAria)}
             </h3>
             <div class="security-field-row">
@@ -493,7 +494,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange, signal }) {
           </div>
           <div class="components-section">
             <h3 class="components-section-heading">
-              ${escapeHtml(i18n.t("ui.app.admin.security.tfa_enforce_all_users_label"))}
+              <label for="security-enforce-tfa-for-all-users">${escapeHtml(i18n.t("ui.app.admin.security.tfa_enforce_all_users_label"))}</label>
               ${renderInfoTooltip(i18n.t("ui.app.admin.security.tfa_enforce_all_users_hint"), tooltipAria)}
             </h3>
             <div class="security-field-row">
