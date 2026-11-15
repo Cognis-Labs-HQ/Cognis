@@ -22,10 +22,11 @@ export async function popupFixture(
         assert.deepEqual(errors, [], "DOM event handlers must not throw"),
     );
     const document = window.document;
-    Object.defineProperty(document.querySelector("link"), "sheet", {
-        value: {},
-        configurable: true,
-    });
+    if (!existingWindow)
+        Object.defineProperty(document.querySelector("link"), "sheet", {
+            value: {},
+            configurable: true,
+        });
     window.matchMedia = () => ({ matches: false });
     const sandbox = vm.createContext({
         window,
@@ -48,9 +49,11 @@ export async function popupFixture(
         requestAnimationFrame: window.requestAnimationFrame.bind(window),
         getComputedStyle: window.getComputedStyle.bind(window),
         ...options.clock,
-        fetch: () => {
-            throw new Error("Unexpected network request");
-        },
+        fetch:
+            options.fetch ??
+            (() => {
+                throw new Error("Unexpected network request");
+            }),
     });
     const translations = {
         "ui.reuse.unsaved_changes": "Unsaved Changes",
@@ -59,6 +62,7 @@ export async function popupFixture(
         "ui.reuse.cancel": "Cancel",
         "ui.reuse.close": "Close",
         "ui.reuse.done": "Done",
+        "ui.reuse.error": "Error",
     };
     const ctx = {
         capabilities: {
