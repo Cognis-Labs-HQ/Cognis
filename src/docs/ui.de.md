@@ -235,3 +235,9 @@ Die Anleitungen für Einstellungen und Administration behalten ihre Ziele und Ab
 ## Native Layout-Aktionen
 
 Die Haupt- und verschachtelten Layout-Panels verwenden native Steuerelemente vom Typ `button type="button"` für Fertig, Verwerfen und Zurücksetzen. Diese Aktionen senden kein umgebendes Formular ab und lösen keine Navigation aus. Laufende Layout-Speicherungen deaktivieren sie über die bestehende Editorsperre; fehlgeschlagene Speicherungen geben sie für einen ausdrücklichen neuen Versuch wieder frei. Fertig speichert weiterhin und schließt nach Bestätigung, Verwerfen stellt den lokalen Ausgangszustand ohne Schreibzugriff wieder her, und Zurücksetzen speichert das Standardlayout bei fortgesetzter Bearbeitung. Bestehende Aktionsklassen und das Ziel `#composer-edit-toggle` der Arbeitsbereichsanleitung bleiben unverändert.
+
+## Seitenmenü-Auswahl
+
+Die Fähigkeit `ui:sideMenu` stellt `createSideMenu` für gruppierte Auswahlen bereit. Jeder Eintrag wird als natives `button type="button"` dargestellt: Die Auswahl aktualisiert den aktiven Zustand, ruft `onSelect` mit der ID auf und scrollt zum optionalen `targetId`, ohne ein umgebendes Formular abzusenden. Beschriftungen und Kennungen werden maskiert. Echte Navigationslinks bleiben in der Verantwortung der Aufrufer.
+
+Übergeben Sie das Abbruchsignal des zuständigen Lebenszyklus an `mount(root, { signal })` und brechen Sie es vor erneutem Einbinden ab. Aufklappbare Gruppen speichern ihren Öffnungszustand unter `storageKeyPrefix`; feste Gruppen haben keinen Umschalter. Die Anleitungen für Dokumentation, Änderungsprotokolle, Lernkarten und Bibliothek behalten ihre bisherigen Navigationsziele und Schritte.

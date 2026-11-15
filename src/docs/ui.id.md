@@ -231,3 +231,9 @@ Panduan Pengaturan dan Administrasi mempertahankan target serta alurnya: rendere
 ## Aksi tata letak native
 
 Panel tata letak utama dan bersarang menggunakan kontrol native `button type="button"` untuk Selesai, Buang, dan Atur Ulang. Aksi ini tidak mengirim formulir yang membungkusnya atau melakukan navigasi. Pengiriman tata letak yang masih berlangsung menonaktifkannya melalui penguncian editor yang sudah ada; pengiriman yang gagal memulihkan kontrol untuk percobaan ulang secara eksplisit. Selesai tetap menyimpan dan menutup setelah konfirmasi, Buang memulihkan keadaan awal lokal tanpa menulis, dan Atur Ulang menyimpan tata letak bawaan sambil melanjutkan penyuntingan. Kelas aksi yang ada dan target tutorial ruang kerja `#composer-edit-toggle` tetap sama.
+
+## Pilihan menu samping
+
+Kapabilitas `ui:sideMenu` menyediakan `createSideMenu` untuk pilihan berkelompok. Setiap item dirender sebagai `button type="button"` bawaan: pemilihan memperbarui status aktif, memanggil `onSelect` dengan ID item, dan menggulir ke `targetId` opsional tanpa mengirim formulir yang membungkusnya. Label dan pengenal di-escape. Tautan navigasi tetap menjadi tanggung jawab pemanggil.
+
+Berikan sinyal pembatalan masa hidup pemilik ke `mount(root, { signal })` dan batalkan sebelum memasang ulang. Grup yang dapat dilipat menyimpan status terbukanya di bawah `storageKeyPrefix`; grup tetap tidak memiliki pengalih. Panduan Dokumentasi, Catatan Perubahan, Kartu Belajar, dan Pustaka mempertahankan target navigasi dan langkah yang ada.
