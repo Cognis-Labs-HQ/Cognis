@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { deferred, selectionFixture, wait } from "./selection-fixture.js";
+import {
+    deferred,
+    selectionFixture,
+    wait,
+    waitForRemoval,
+} from "./selection-fixture.js";
 
 test("Search selection owns callback outcomes through its registered flow", async (context) => {
     const fixture = await selectionFixture(context);
@@ -64,7 +69,7 @@ test("Search selection owns callback outcomes through its registered flow", asyn
                     );
                     assert.equal(popup.input.value, "Fixture");
                     pending.resolve();
-                    await wait(170);
+                    await waitForRemoval(popup.overlay);
                     assert.equal(popup.overlay.isConnected, false);
                 },
             );
@@ -115,7 +120,7 @@ test("Search selection owns callback outcomes through its registered flow", asyn
                         /private-selection-details/,
                     );
                     row.click();
-                    await wait(170);
+                    await waitForRemoval(popup.overlay);
                     assert.equal(calls, 2);
                     assert.equal(popup.overlay.isConnected, false);
                 },
@@ -148,7 +153,7 @@ test("Search selection owns callback outcomes through its registered flow", asyn
             await fixture.reset();
             const popup = fixture.open({}, true);
             (await fixture.query(popup))[0].click();
-            await wait(170);
+            await waitForRemoval(popup.overlay);
             assert.equal(popup.overlay.isConnected, false);
         },
     );
@@ -162,7 +167,7 @@ test("Search selection owns callback outcomes through its registered flow", asyn
             const current = document.querySelector(
                 ".search-popup-overlay:not(.search-popup-overlay--closing)",
             );
-            await wait(170);
+            await waitForRemoval(popup.overlay);
             popup.toggle.click();
             assert.equal(
                 current.classList.contains("search-popup-overlay--closing"),
@@ -251,7 +256,7 @@ test("Search selection owns callback outcomes through its registered flow", asyn
                 if (cancellation === "replacement")
                     replacement = fixture.open();
                 pending.reject(new Error("old selection rejected"));
-                await wait(170);
+                await waitForRemoval(popup.overlay);
                 assert.equal(document.querySelectorAll(".toast").length, 0);
                 assert.equal(callbackSignal.aborted, true);
                 assert.equal(popup.overlay.isConnected, false);
@@ -280,7 +285,7 @@ test("Search selection owns callback outcomes through its registered flow", asyn
                 localStorage.setItem(key, "fixture-changed-identity");
                 row.click();
                 const next = fixture.open();
-                await wait(170);
+                await waitForRemoval(popup.overlay);
                 assert.equal(calls, 0);
                 assert.equal(popup.overlay.isConnected, false);
                 assert.equal(
@@ -305,7 +310,7 @@ test("Search selection owns callback outcomes through its registered flow", asyn
             localStorage.setItem("cognis_account", "fixture-next-account");
             const next = fixture.open();
             pending.reject(new Error("old-account outcome"));
-            await wait(170);
+            await waitForRemoval(popup.overlay);
             assert.equal(popup.overlay.isConnected, false);
             assert.equal(
                 next.overlay.classList.contains(
