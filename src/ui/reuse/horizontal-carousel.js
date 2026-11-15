@@ -5,6 +5,7 @@
  * - `renderHorizontalCarousel`: renders carousel markup for a collection of items.
  * - `mountHorizontalCarousels`: binds scrolling, ordered selection, and add actions.
  * - `appendHorizontalCarouselItem`: appends a newly created item using the canonical item markup.
+ * - `clearHorizontalCarouselSelection`: clears selected items and their counter.
  *
  * @example
  * root.innerHTML = renderHorizontalCarousel({ id: "words", label: "Words", items });
@@ -102,6 +103,7 @@ export function mountHorizontalCarousels(
         selectionOrder = ({ localIndex }) => localIndex,
     } = {},
 ) {
+    if (signal?.aborted) return;
     const previewOverlay = createAnchoredPopup({
         className: "horizontal-carousel-preview is-portal",
     });
@@ -140,12 +142,14 @@ export function mountHorizontalCarousels(
     const values = (carousel) =>
         selectedItems(carousel).map((item) => item.dataset.carouselValue);
     const refresh = (carousel) => {
+        if (signal?.aborted) return;
         carousel.querySelectorAll("[data-carousel-value]").forEach((item) => {
+            if (signal?.aborted) return;
             const selected = item.classList.contains("is-selected");
             item.setAttribute("aria-pressed", String(selected));
             const localIndex =
                 values(carousel).indexOf(item.dataset.carouselValue) + 1;
-            item.querySelector("[data-carousel-order]").textContent = selected
+            const order = selected
                 ? String(
                       selectionOrder({
                           id: carousel.dataset.horizontalCarousel,
@@ -154,7 +158,10 @@ export function mountHorizontalCarousels(
                       }) ?? localIndex,
                   )
                 : "";
+            if (signal?.aborted) return;
+            item.querySelector("[data-carousel-order]").textContent = order;
         });
+        if (signal?.aborted) return;
         const output = carousel.querySelector("[data-carousel-selection]");
         if (output) output.textContent = values(carousel).length || "";
     };
@@ -203,7 +210,7 @@ export function mountHorizontalCarousels(
             const activation = requestedActivation?.then
                 ? await requestedActivation
                 : requestedActivation;
-            if (activation === false) return;
+            if (signal?.aborted || activation === false) return;
             if (activation?.value)
                 item.dataset.carouselValue = activation.value;
             if (activation?.label)
@@ -214,6 +221,7 @@ export function mountHorizontalCarousels(
                     String(selectedItems(carousel).length + 1);
             item.classList.toggle("is-selected");
             refresh(carousel);
+            if (signal?.aborted) return;
             onChange({
                 id: carousel.dataset.horizontalCarousel,
                 values: [

@@ -129,6 +129,14 @@ Refresh checks the list without repeating a mutation. Accepted and unknown outco
 
 The existing General tutorial keeps its email-list target, owner and completion ID in populated and empty states, with updated pending, queued and Refresh guidance in all four languages. Verification, resend, Add, password and account-lifecycle action handlers retain their existing behavior. Shared UI assets have no separate package version.
 
+### Carousel Activation Lifetime
+
+Horizontal carousels keep selection order, pressed state and selection counts together. Carousels with the same identifier aggregate their selected values, and the Add action can append an item without selecting it. Focus and pointer previews remain owned by the mounted carousel.
+
+Pass the owner's `AbortSignal` to `mountHorizontalCarousels`. `onActivate` may return immediately or resolve a promise with an item's value and label; returning `false` vetoes selection. Synchronous results remain synchronous. Once that signal is aborted, pending activation results cannot change item identity, labels, selection, ARIA state or counters, and cannot notify the retired owner through `onChange`. Retirement inside activation, ordering or change callbacks also stops subsequent widget work, preserving a newer mount on the same retained root. A signal already aborted at mount leaves the root untouched. This does not cancel or roll back work performed inside owner callbacks.
+
+Existing creation tutorials retain their editor content, section and footer targets, completion identifiers and Next, Back and replay progression. Carousel selection adds no separate guide or action. Shared carousel assets have no independent component package version.
+
 ## Security
 
 Hidden navigation is not access control. Browser providers resolve owner capabilities and abort pending work on unmount or account changes; private reads remain account-scoped.
