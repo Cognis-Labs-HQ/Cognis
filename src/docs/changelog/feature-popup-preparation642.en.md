@@ -18,7 +18,4 @@ The five-second bound applies only to the stylesheet attempt, not total `openPop
 
 ## Commits
 
-- [33e8f9f12643e14ccf632fee5d992da52ce68dca](https://github.com/Cognis-Labs-HQ/Cognis/commit/33e8f9f12643e14ccf632fee5d992da52ce68dca)
-- [fbe80a7378cf5f8bd256dd7a9a4360459595215a](https://github.com/Cognis-Labs-HQ/Cognis/commit/fbe80a7378cf5f8bd256dd7a9a4360459595215a)
-- [a0a9bfede9e87c3df4a970548fb474fe2b373492](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0a9bfede9e87c3df4a970548fb474fe2b373492)
-- [eb0d8aacccf0a89ca338795364d82e5f57700125](https://github.com/Cognis-Labs-HQ/Cognis/commit/eb0d8aacccf0a89ca338795364d82e5f57700125)
+- [998119a731a765af23d75ecd2368c07223851fc3](https://github.com/Cognis-Labs-HQ/Cognis/commit/998119a731a765af23d75ecd2368c07223851fc3)
