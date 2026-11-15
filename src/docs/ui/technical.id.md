@@ -53,6 +53,10 @@ Semua teks yang terlihat pengguna melewati sistem i18n di `src/ui/reuse/i18n.js`
 
 Kapabilitas global `ui:imagePreview` menyediakan tampilan gambar mini, pengikatan interaksi, dan tindakan `open` melalui alur terdaftar `ui:imagePreview:open`. Fitur ini juga tersedia melalui `ui:reuse` sebagai `image-preview.js`; penyedianya memuat lembar gaya bersama sebelum menerbitkan kontrol. Tombol gambar membuka gambar asli dalam ukuran alaminya, dibatasi area layar, dengan hanya tombol X standar yang terlihat. Aktivasi papan ketik, Escape, pemulihan fokus, dan penutupan saat tampilan atau penyedia dilepas memakai siklus hidup popup bersama. Pemanggil mengelola URL gambar dan tindakan penghapusan opsional. Library memakai kontrol ini untuk gambar unggahan dan bawaan dalam editor serta galeri detail.
 
+Pembatalan pemanggil atau penghapusan penyedia menghentikan pratinjau gambar yang tertunda tanpa menunggu persiapan bahasa atau stylesheet popup. Hasil persiapan yang terlambat tidak membuka kembali penampil yang dibatalkan atau menampilkan pesan kegagalannya. Pemanggil lain tetap berbagi persiapan secara normal.
+
+Tindakan open publik ditolak dengan AbortError saat dibatalkan; penutupan yang disengaja tetap selesai secara normal. Mengganti thumbnail dengan sinyal pemanggil yang masih aktif mempertahankan tampilan gambar aslinya. Tanpa sinyal pemanggil, penampil tetap dimiliki penyedia; perubahan rute yang tidak terkait tidak menutupnya. URL gambar tetap dimiliki pemanggil. Target dan tindakan tutorial Library yang ada tidak berubah; pembatalan tidak menambah langkah pengguna.
+
 Penyedia pratinjau gambar bersama memuat lembar gayanya sebelum menerbitkan kontrol. Popup khusus gambar menghapus elemen judul dan menyesuaikan gambar asli lanskap, potret, serta panorama ke area layar tanpa gulir horizontal maupun vertikal. Pratinjau detail Library tetap dibatasi 20rem × 18rem; gambar mini editor tetap 8rem × 6rem.
 
 ### Navigasi Sesi Responsif

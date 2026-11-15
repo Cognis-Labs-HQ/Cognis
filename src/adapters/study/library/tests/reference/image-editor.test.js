@@ -2,6 +2,7 @@ import { loadTestModule } from "../../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 import vm from "node:vm";
+import { waitForPopupPreparation } from "../../../../../ui/reuse/popup/preparation.js";
 
 function fixture(entry = { label: "dog", fields: {} }) {
     const listeners = {};
@@ -69,6 +70,7 @@ function fixture(entry = { label: "dog", fields: {} }) {
             {
                 "./escape-html.js": context,
                 "./popup.js": context,
+                "./popup/preparation.js": { waitForPopupPreparation },
                 "./page-styles.js": context,
                 "./i18n.js": context,
                 "./ui-ctx.js": context,
