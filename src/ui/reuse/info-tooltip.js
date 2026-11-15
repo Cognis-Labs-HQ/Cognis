@@ -34,12 +34,19 @@ import { escapeHtml } from "./escape-html.js";
 let tooltipSequence = 0;
 let activeTooltipButton = null;
 let tooltipOverlayElement = null;
+let focusedTooltipButton = null;
+let hoveredTooltipButton = null;
+let hoveredPanelButton = null;
+let dismissedTooltipButtons = new WeakSet();
+let addedDescription = false;
+let runtimeDocument = null;
 let runtimeEventAbortController = null;
+let runtimeObserver = null;
 const tooltipTextById = new Map();
 
 function getOrCreateTooltipOverlay() {
     if (typeof document === "undefined") return null;
-    if (tooltipOverlayElement instanceof HTMLElement) {
+    if (tooltipOverlayElement?.isConnected) {
         return tooltipOverlayElement;
     }
     const existingTooltipOverlay = document.getElementById(
@@ -67,6 +74,7 @@ function positionTooltipOverlay(tooltipButtonElement, tooltipOverlay) {
     const overlayHeight = tooltipOverlay.offsetHeight;
     const viewportPadding = 8;
     const tooltipGap = 8;
+    tooltipOverlay.style.setProperty("--info-tooltip-gap", `${tooltipGap}px`);
     let leftPosition =
         buttonBounds.left + buttonBounds.width / 2 - overlayWidth / 2;
     leftPosition = Math.max(
@@ -95,138 +103,286 @@ function positionTooltipOverlay(tooltipButtonElement, tooltipOverlay) {
 }
 
 function hideInfoTooltip() {
-    if (!(activeTooltipButton instanceof HTMLElement)) return;
-    const tooltipOverlay = getOrCreateTooltipOverlay();
-    if (tooltipOverlay instanceof HTMLElement) {
-        tooltipOverlay.hidden = true;
-        tooltipOverlay.textContent = "";
-        delete tooltipOverlay.dataset.placement;
+    if (tooltipOverlayElement) {
+        tooltipOverlayElement.hidden = true;
+        if (tooltipOverlayElement.hasChildNodes())
+            tooltipOverlayElement.textContent = "";
+        delete tooltipOverlayElement.dataset.placement;
     }
-    activeTooltipButton.removeAttribute("aria-describedby");
+    releaseActiveTooltip();
+    hoveredPanelButton = null;
+}
+
+function releaseActiveTooltip() {
+    if (activeTooltipButton && addedDescription) {
+        const descriptions = descriptionTokens(activeTooltipButton).filter(
+            (token) => token !== tooltipOverlayElement.id,
+        );
+        if (descriptions.length) {
+            activeTooltipButton.setAttribute(
+                "aria-describedby",
+                descriptions.join(" "),
+            );
+        } else {
+            activeTooltipButton.removeAttribute("aria-describedby");
+        }
+    }
+    addedDescription = false;
     activeTooltipButton = null;
 }
 
-function showInfoTooltip(tooltipButtonElement) {
+function descriptionTokens(button) {
+    return (button.getAttribute("aria-describedby") ?? "")
+        .split(/\s+/)
+        .filter(Boolean);
+}
+
+function showInfoTooltip(button) {
+    if (activeTooltipButton === button && !tooltipOverlayElement?.hidden)
+        return;
     const tooltipId = String(
-        tooltipButtonElement.getAttribute("data-info-tooltip-id") ?? "",
+        button.getAttribute("data-info-tooltip-id") ?? "",
     ).trim();
     const tooltipText = String(tooltipTextById.get(tooltipId) ?? "").trim();
     if (!tooltipText) {
         hideInfoTooltip();
         return;
     }
-    const tooltipOverlay = getOrCreateTooltipOverlay();
-    if (!(tooltipOverlay instanceof HTMLElement)) return;
-    if (
-        activeTooltipButton instanceof HTMLElement &&
-        activeTooltipButton !== tooltipButtonElement
-    ) {
-        activeTooltipButton.removeAttribute("aria-describedby");
+    const overlay = getOrCreateTooltipOverlay();
+    if (!overlay) return;
+    releaseActiveTooltip();
+    activeTooltipButton = button;
+    if (hoveredPanelButton) hoveredPanelButton = button;
+    overlay.textContent = tooltipText;
+    const descriptions = descriptionTokens(button);
+    addedDescription = !descriptions.includes(overlay.id);
+    if (addedDescription) {
+        button.setAttribute(
+            "aria-describedby",
+            [...descriptions, overlay.id].join(" "),
+        );
     }
-    activeTooltipButton = tooltipButtonElement;
-    tooltipOverlay.textContent = tooltipText;
-    tooltipOverlay.hidden = false;
-    tooltipButtonElement.setAttribute("aria-describedby", tooltipOverlay.id);
-    positionTooltipOverlay(tooltipButtonElement, tooltipOverlay);
+    positionTooltipOverlay(button, overlay);
+}
+
+function hasInteraction(button) {
+    return (
+        button &&
+        (button === focusedTooltipButton ||
+            button === hoveredTooltipButton ||
+            button === hoveredPanelButton)
+    );
+}
+
+function releaseDismissal(button) {
+    if (button && !hasInteraction(button))
+        dismissedTooltipButtons.delete(button);
+}
+
+function isConnectedOwner(button) {
+    return button?.isConnected && button.ownerDocument === runtimeDocument;
+}
+
+function connectedInteraction(button) {
+    if (isConnectedOwner(button)) return button;
+    if (button) dismissedTooltipButtons.delete(button);
+    return null;
+}
+
+function reconcileInfoTooltip(preferredButton) {
+    focusedTooltipButton = connectedInteraction(focusedTooltipButton);
+    hoveredTooltipButton = connectedInteraction(hoveredTooltipButton);
+    hoveredPanelButton = connectedInteraction(hoveredPanelButton);
+    if (
+        !isConnectedOwner(activeTooltipButton) ||
+        !tooltipOverlayElement?.isConnected
+    ) {
+        hideInfoTooltip();
+    }
+    const nextButton = [
+        preferredButton,
+        activeTooltipButton,
+        focusedTooltipButton,
+        hoveredTooltipButton,
+        hoveredPanelButton,
+    ].find(
+        (button) =>
+            isConnectedOwner(button) &&
+            hasInteraction(button) &&
+            !dismissedTooltipButtons.has(button),
+    );
+    if (nextButton) showInfoTooltip(nextButton);
+    else hideInfoTooltip();
+}
+
+function dismissInfoTooltip() {
+    const panelButton = hoveredPanelButton;
+    for (const button of [
+        focusedTooltipButton,
+        hoveredTooltipButton,
+        hoveredPanelButton,
+    ]) {
+        if (button) dismissedTooltipButtons.add(button);
+    }
+    hideInfoTooltip();
+    releaseDismissal(panelButton);
+}
+
+function resetInfoTooltip() {
+    hideInfoTooltip();
+    focusedTooltipButton = null;
+    hoveredTooltipButton = null;
+    hoveredPanelButton = null;
+    dismissedTooltipButtons = new WeakSet();
+}
+
+function tooltipButtonAt(target) {
+    if (!target) return null;
+    const ownerWindow = runtimeDocument.defaultView;
+    const element =
+        target instanceof ownerWindow.Element ? target : target.parentElement;
+    const button = element?.closest(".info-tooltip__btn");
+    return button instanceof ownerWindow.HTMLButtonElement ? button : null;
+}
+
+function isTooltipPanel(target) {
+    return (
+        target instanceof runtimeDocument.defaultView.Node &&
+        tooltipOverlayElement?.contains(target)
+    );
+}
+
+function enterInfoTooltip(event) {
+    const button = tooltipButtonAt(event.target);
+    if (button) {
+        if (tooltipButtonAt(event.relatedTarget) === button) return;
+        const previousButton = hoveredTooltipButton;
+        hoveredTooltipButton = button;
+        hoveredPanelButton = null;
+        releaseDismissal(previousButton);
+        reconcileInfoTooltip(button);
+    } else if (isTooltipPanel(event.target) && !tooltipOverlayElement.hidden) {
+        if (isTooltipPanel(event.relatedTarget)) return;
+        const previousButton = hoveredTooltipButton;
+        hoveredTooltipButton = null;
+        hoveredPanelButton = activeTooltipButton;
+        releaseDismissal(previousButton);
+        reconcileInfoTooltip();
+    }
+}
+
+function leaveInfoTooltip(event) {
+    const button = tooltipButtonAt(event.target);
+    const nextButton = tooltipButtonAt(event.relatedTarget);
+    if (button) {
+        if (nextButton === button) return;
+        if (hoveredTooltipButton === button) hoveredTooltipButton = nextButton;
+        if (
+            activeTooltipButton === button &&
+            isTooltipPanel(event.relatedTarget)
+        ) {
+            hoveredPanelButton = button;
+        }
+        releaseDismissal(button);
+        reconcileInfoTooltip(nextButton);
+    } else if (isTooltipPanel(event.target)) {
+        if (isTooltipPanel(event.relatedTarget)) return;
+        const previousButton = hoveredPanelButton;
+        hoveredPanelButton = null;
+        hoveredTooltipButton = nextButton;
+        releaseDismissal(previousButton);
+        reconcileInfoTooltip(nextButton);
+    }
 }
 
 function initInfoTooltipRuntime() {
     if (typeof document === "undefined") return;
-    if (document.body?.dataset.infoTooltipRuntimeReady === "true") return;
-    runtimeEventAbortController?.abort();
-    runtimeEventAbortController = new AbortController();
-    const runtimeEventSignal = runtimeEventAbortController.signal;
-    if (document.body) {
-        document.body.dataset.infoTooltipRuntimeReady = "true";
-    } else {
-        document.addEventListener(
-            "DOMContentLoaded",
-            () => {
-                document.body.dataset.infoTooltipRuntimeReady = "true";
-            },
-            { once: true },
-        );
+    if (runtimeDocument === document) {
+        reconcileInfoTooltip();
+        return;
     }
-    document.addEventListener(
-        "mouseover",
-        (event) => {
-            const hoveredElement = event.target;
-            if (!(hoveredElement instanceof Element)) return;
-            const tooltipButtonElement =
-                hoveredElement.closest(".info-tooltip__btn");
-            if (!(tooltipButtonElement instanceof HTMLButtonElement)) return;
-            showInfoTooltip(tooltipButtonElement);
-        },
-        { signal: runtimeEventSignal },
-    );
-    document.addEventListener(
-        "mouseout",
-        (event) => {
-            const originElement = event.target;
-            if (!(originElement instanceof Element)) return;
-            const tooltipButtonElement =
-                originElement.closest(".info-tooltip__btn");
-            if (!(tooltipButtonElement instanceof HTMLButtonElement)) return;
-            const relatedElement = event.relatedTarget;
-            if (
-                relatedElement instanceof Element &&
-                relatedElement.closest(".info-tooltip__btn") ===
-                    tooltipButtonElement
-            ) {
-                return;
-            }
-            hideInfoTooltip();
-        },
-        { signal: runtimeEventSignal },
-    );
+    resetInfoTooltip();
+    runtimeEventAbortController?.abort();
+    runtimeObserver?.disconnect();
+    tooltipOverlayElement = null;
+    if (runtimeDocument) tooltipTextById.clear();
+    runtimeDocument = document;
+    runtimeEventAbortController = new window.AbortController();
+    const runtimeEventSignal = runtimeEventAbortController.signal;
+    document.addEventListener("mouseover", enterInfoTooltip, {
+        signal: runtimeEventSignal,
+    });
+    document.addEventListener("mouseout", leaveInfoTooltip, {
+        signal: runtimeEventSignal,
+    });
     document.addEventListener(
         "focusin",
         (event) => {
-            const focusedElement = event.target;
-            if (!(focusedElement instanceof Element)) return;
-            const tooltipButtonElement =
-                focusedElement.closest(".info-tooltip__btn");
-            if (!(tooltipButtonElement instanceof HTMLButtonElement)) return;
-            showInfoTooltip(tooltipButtonElement);
+            const previousButton = focusedTooltipButton;
+            focusedTooltipButton = tooltipButtonAt(event.target);
+            releaseDismissal(previousButton);
+            reconcileInfoTooltip(focusedTooltipButton);
         },
         { signal: runtimeEventSignal },
     );
     document.addEventListener(
         "focusout",
         (event) => {
-            const blurredElement = event.target;
-            if (!(blurredElement instanceof Element)) return;
-            const tooltipButtonElement =
-                blurredElement.closest(".info-tooltip__btn");
-            if (!(tooltipButtonElement instanceof HTMLButtonElement)) return;
-            const nextFocusedElement = event.relatedTarget;
-            if (
-                nextFocusedElement instanceof Element &&
-                nextFocusedElement.closest(".info-tooltip__btn") ===
-                    tooltipButtonElement
-            ) {
-                return;
-            }
-            hideInfoTooltip();
+            const button = tooltipButtonAt(event.target);
+            const nextButton = tooltipButtonAt(event.relatedTarget);
+            if (!button || button === nextButton) return;
+            if (focusedTooltipButton === button)
+                focusedTooltipButton = nextButton;
+            releaseDismissal(button);
+            reconcileInfoTooltip(nextButton);
         },
         { signal: runtimeEventSignal },
     );
-    window.addEventListener("scroll", hideInfoTooltip, {
+    window.addEventListener("scroll", dismissInfoTooltip, {
         capture: true,
         signal: runtimeEventSignal,
     });
-    window.addEventListener("resize", hideInfoTooltip, {
+    window.addEventListener("resize", dismissInfoTooltip, {
         signal: runtimeEventSignal,
     });
-    document.addEventListener(
-        "keydown",
-        (event) => {
-            if (event.key === "Escape") {
-                hideInfoTooltip();
-            }
+    window.addEventListener(
+        "pagehide",
+        () => {
+            runtimeObserver.disconnect();
+            resetInfoTooltip();
         },
         { signal: runtimeEventSignal },
     );
+    window.addEventListener(
+        "pageshow",
+        () => {
+            runtimeObserver.observe(runtimeDocument, {
+                childList: true,
+                subtree: true,
+            });
+        },
+        { signal: runtimeEventSignal },
+    );
+    document.addEventListener(
+        "keydown",
+        (event) => {
+            if (event.key === "Escape") dismissInfoTooltip();
+        },
+        { signal: runtimeEventSignal },
+    );
+    runtimeObserver = new window.MutationObserver(() => {
+        if (
+            focusedTooltipButton &&
+            tooltipButtonAt(runtimeDocument.activeElement) !==
+                focusedTooltipButton
+        ) {
+            const previousButton = focusedTooltipButton;
+            focusedTooltipButton = null;
+            releaseDismissal(previousButton);
+        }
+        reconcileInfoTooltip();
+    });
+    runtimeObserver.observe(document, { childList: true, subtree: true });
 }
 
 export function renderInfoTooltip(text, ariaLabel = "More information", id) {
@@ -234,12 +390,12 @@ export function renderInfoTooltip(text, ariaLabel = "More information", id) {
     const baseTooltipId = id ?? "info-tooltip";
     const tooltipId = `${baseTooltipId}-${++tooltipSequence}`;
     tooltipTextById.set(tooltipId, String(text ?? ""));
-    return `<span class="info-tooltip" data-info-tooltip="${tooltipId}">
+    return `<span class="info-tooltip" data-info-tooltip="${escapeHtml(tooltipId)}">
       <button
         class="info-tooltip__btn"
         type="button"
         aria-label="${escapeHtml(ariaLabel)}"
-        data-info-tooltip-id="${tooltipId}"
+        data-info-tooltip-id="${escapeHtml(tooltipId)}"
         tabindex="0"
       >ℹ</button>
     </span>`;
