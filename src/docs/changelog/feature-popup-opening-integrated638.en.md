@@ -12,6 +12,4 @@ Live parent dialogs and newer openings retain their own ownership. Reentrant clo
 
 ## Commits
 
-- [d3cde8f4eb18f2b646fe2fdd9128513db9d5365d](https://github.com/Cognis-Labs-HQ/Cognis/commit/d3cde8f4eb18f2b646fe2fdd9128513db9d5365d)
-- [c6f12076f510b9853f0a9a63a1777f4a1138cd48](https://github.com/Cognis-Labs-HQ/Cognis/commit/c6f12076f510b9853f0a9a63a1777f4a1138cd48)
-- [31ad1f9de89eb8a9daf6afd13dbeec42b6cee9fc](https://github.com/Cognis-Labs-HQ/Cognis/commit/31ad1f9de89eb8a9daf6afd13dbeec42b6cee9fc)
+- [9333cb1accf7b3960590206134fc1394b6ca3e56](https://github.com/Cognis-Labs-HQ/Cognis/commit/9333cb1accf7b3960590206134fc1394b6ca3e56)
