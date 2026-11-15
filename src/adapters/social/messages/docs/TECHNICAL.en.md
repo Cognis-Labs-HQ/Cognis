@@ -280,6 +280,18 @@ The registered Messages request client accepts an optional synchronous `beforeDi
 
 The room-management step explains the Leave confirmation and safe cancellation. Its existing header target, optional availability, step order and completion identity are unchanged. Template editing and deletion retain their sidebar controls; their dialogs stop applying when the initiating page, selection or saved list changes.
 
+## Conversation Avatars
+
+The room-history step explains profile-matched initials and avatar hover/click actions in styles that show avatars. Its region, optionality, step order and completion identity remain unchanged.
+
+### Conversation Avatars
+
+Conversation authors use the current Profile renderer for initials, colour and the small avatar size (32px). Initials follow the display name, then the handle; an account identifier remains the label when neither is available. Existing avatar images and profile links remain available in avatar-bearing styles. Hover opens the standard profile preview and clicking opens the profile. IRC continues to hide avatars.
+
+The Settings Message Style preview uses the same small presentation with synthetic records, without profile links, images, hydration or writes. Missing, disabled or incomplete Profile providers make the preview unavailable; returning providers restore it. Conversation rows keep their current page and account ownership, selection, drafts and read outcomes. Room headers, participant summaries and other avatar surfaces are unchanged; the broader avatar audit remains partial.
+
+Messages 2.8.3 / Profile 4.0.0.
+
 ## Security
 
 Room eligibility, membership changes and message reads are authorized independently. Encrypted rooms depend on client-held keys; the threat model below distinguishes protected content from visible routing metadata.

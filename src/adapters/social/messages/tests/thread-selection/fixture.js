@@ -1,3 +1,4 @@
+import { createAvatarRenderer } from "../fixtures/avatar-renderer.js";
 import { loadPresentation } from "../fixtures/presentation.js";
 import * as reactionRecord from "../../ui/reuse/reaction-record.js";
 import * as threadDom from "../../ui/thread-dom.js";
@@ -129,6 +130,9 @@ export function createRenderer({
                     [
                         "ui:profileAvatarRenderer",
                         {
+                            ...createAvatarRenderer({
+                                contentRequests: state.avatarOptions,
+                            }),
                             buildMarkup: (options) => {
                                 state.avatarOptions.push(options);
                                 return `<a class="${options.avatarClass}" href="/profile/${escapeHtml(options.profileHandle ?? options.label)}">${escapeHtml(options.label)}</a>`;

@@ -9,27 +9,28 @@ function renderMessageBodyMarkup(messageText) {
 
 export function renderConversationMarkup(
     { records, style, currentAccountId },
-    { buildAvatar, decorateMessage, interactive = true },
+    { avatars, decorateMessage, interactive = true },
 ) {
+    if (avatars?.available !== true)
+        throw new Error("profile_avatar_presentation_unavailable");
     const renderAvatar = (message, bubble) => {
         const avatarClass = bubble
             ? "messages-message-bubble-avatar"
             : "messages-message-avatar";
-        const label =
-            message.senderDisplayName ||
-            message.senderHandle ||
-            message.senderId;
-        return buildAvatar({
-            avatarKey: interactive ? message.senderAvatarKey || null : null,
-            label,
-            colorSeed: message.senderHandle || message.senderId || label,
-            avatarClass,
-            imageClass: `${avatarClass}-img`,
-            fallbackClass: `${avatarClass}-fallback`,
-            profileHandle: interactive ? message.senderHandle || null : null,
-            linkClass: "messages-avatar-link",
-            showAvailability: false,
+        const profile = {
+            displayName: message.senderDisplayName || "",
+            handle: message.senderHandle || message.senderId || "",
+        };
+        const { label } = avatars.getPresentation(profile);
+        const content = avatars.buildContent({
+            profile,
+            size: "small",
+            avatarKey: interactive ? message.senderAvatarKey || "" : "",
         });
+        const handle = interactive ? message.senderHandle : null;
+        if (!handle) return `<span class="${avatarClass}">${content}</span>`;
+        const href = `/profile/${encodeURIComponent(String(handle).replace(/^@/, ""))}`;
+        return `<a class="${avatarClass} messages-avatar-link" href="${escapeHtml(href)}" aria-label="${escapeHtml(label)}">${content}</a>`;
     };
     let previousDateLabel = "";
     const isSpeechBubbles = style === "speech_bubbles";

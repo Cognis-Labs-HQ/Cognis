@@ -227,6 +227,18 @@ Klien permintaan Pesan terdaftar menerima pemeriksaan sinkron opsional `beforeDi
 
 Langkah pengelolaan ruang menjelaskan konfirmasi Keluar dan pembatalan yang aman. Target judul, ketersediaan opsional, urutan, dan identitas penyelesaian tetap sama. Editor dan penghapusan templat tetap menggunakan kontrol bilah samping; dialognya tidak berlaku setelah halaman, pilihan, atau daftar tersimpan berubah.
 
+## Avatar Percakapan
+
+Langkah riwayat ruang menjelaskan inisial yang sesuai dengan profil serta tindakan arahkan penunjuk dan klik pada gaya yang menampilkan avatar. Area, ketersediaan opsional, urutan dan identitas penyelesaiannya tidak berubah.
+
+### Avatar Percakapan
+
+Penulis pesan menggunakan perender Profile saat ini untuk inisial, warna, dan ukuran avatar kecil (32px). Inisial mengikuti nama tampilan, lalu handle; pengenal akun tetap menjadi label jika keduanya tidak tersedia. Gambar avatar dan tautan profil yang ada tetap tersedia pada gaya yang menampilkan avatar. Arahkan penunjuk untuk membuka pratinjau profil standar, lalu klik untuk membuka profil. IRC tetap menyembunyikan avatar.
+
+Pratinjau Gaya Pesan di Pengaturan menggunakan tampilan kecil yang sama dengan data contoh, tanpa tautan profil, gambar, pemuatan avatar atau penulisan data. Penyedia Profile yang tidak ada, dinonaktifkan atau tidak lengkap membuat pratinjau tidak tersedia; penyedia yang kembali memulihkannya. Baris percakapan mempertahankan kepemilikan halaman dan akun, pilihan teks, draf, serta hasil pembacaan. Header ruang, ringkasan peserta dan tampilan avatar lain tidak berubah; audit avatar yang lebih luas masih sebagian terbuka.
+
+Messages 2.8.3 / Profile 4.0.0.
+
 ## Keamanan
 
 Kelayakan ruang, keanggotaan, dan pembacaan pesan diperiksa terpisah. Ruang terenkripsi bergantung pada kunci klien; model ancaman membedakan konten dan metadata perutean.
