@@ -18,4 +18,4 @@ Teilweise ausgeführte, abgelehnte und unbekannte Ergebnisse verwenden lokalisie
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/a7245ec254d03ff6760c2a84cb31f62b736b9588
+- [f9f217e23dd3c2b9e5854320602e72f333ca4fbc](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9f217e23dd3c2b9e5854320602e72f333ca4fbc)
