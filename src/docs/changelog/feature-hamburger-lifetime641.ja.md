@@ -16,6 +16,4 @@
 
 ## コミット
 
-- [アクションメニューをページの有効期間とキーボードフォーカスに関連付け](https://github.com/Cognis-Labs-HQ/Cognis/commit/f06b861265f7eec19d4638b3c116dc8494f1d03a)
-- [待機中とポップアップ内のアクションメニューのフォーカス管理を維持](https://github.com/Cognis-Labs-HQ/Cognis/commit/2c26ef2ce4aec3df5306d4e7ff8f45db419286c6)
-- [メニューの領域制約テストをメニューテスト群にまとめる](https://github.com/Cognis-Labs-HQ/Cognis/commit/afc479630e96877af589cd5f940dbc9b5ffbc261)
+- [アクションメニューをページの有効期間とキーボードフォーカスに関連付け](https://github.com/Cognis-Labs-HQ/Cognis/commit/138bd8e414cf2353f76ddf9ebb8cd53073f10af7)
