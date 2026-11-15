@@ -12,4 +12,4 @@ Notification actions, polling, arrival lifetimes and the workspace tutorial rema
 
 ## Commits
 
-- [8c7de04038c52b7e323a3f550a16526bb753d213](https://github.com/Cognis-Labs-HQ/Cognis/commit/8c7de04038c52b7e323a3f550a16526bb753d213)
+- [e13e0df42cf4e5f067992a3e289de9cf303c9223](https://github.com/Cognis-Labs-HQ/Cognis/commit/e13e0df42cf4e5f067992a3e289de9cf303c9223)
