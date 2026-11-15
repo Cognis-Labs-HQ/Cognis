@@ -300,12 +300,13 @@ code {
     width: 100%;
 }
 
-.toolbar-mobile-toggle {
+.toolbar-mobile-toggle.btn-neutral {
     display: none;
     align-items: center;
     justify-content: center;
     width: 44px;
     height: 44px;
+    padding: 0;
     margin: 0 0 10px;
     border: 1px solid var(--border);
     background: var(--surface-2);
@@ -346,7 +347,7 @@ code {
         );
         grid-template-columns: minmax(0, 1fr);
     }
-    .toolbar-mobile-toggle {
+    .toolbar-mobile-toggle.btn-neutral:not([hidden]) {
         display: inline-flex;
     }
     .main-window--with-toolbar .toolbar-mobile-toggle--drawer-open {

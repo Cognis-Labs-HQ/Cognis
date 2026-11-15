@@ -95,6 +95,8 @@ try {
         if (event.target.closest("[data-fixture-search]")) openFixtureSearch();
     });
     await composer.init();
+    // This component fixture mounts directly without the application's page-entry loader.
+    document.body.dataset.pageReady = "true";
     const topnav = root.querySelector(".topnav");
     for (const key of [
         "administration",

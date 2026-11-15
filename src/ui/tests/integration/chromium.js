@@ -66,7 +66,7 @@ export async function launchChromium(executable) {
                 resolve();
             else processHandle.once("exit", resolve);
         });
-        await rm(directory, { recursive: true, force: true });
+        await rm(directory, { recursive: true, force: true, maxRetries: 3 });
     }
     try {
         let port;

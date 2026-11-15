@@ -15,6 +15,7 @@ const skip = !browserEnabled
       ? "Chromium is not installed. Set COGNIS_TEST_CHROMIUM to its executable."
       : false;
 const viewports = [
+    [1860, 540],
     [1440, 900],
     [1024, 768],
     [768, 1024],
@@ -22,6 +23,63 @@ const viewports = [
     [320, 568],
     [568, 320],
 ];
+
+for (const buttonStylesOrder of ["before", "after"]) {
+    test(
+        `desktop toolbar and content share a row with button styles ${buttonStylesOrder}`,
+        { skip, timeout: 30000 },
+        async (context) => {
+            const { browser } = await startFixture(context, "", [1860, 540]);
+            await browser.evaluate(`(() => {
+            const buttons = document.querySelector('link[href="/static/styles/reuse/buttons.css"]');
+            const composer = document.querySelector('link[href="/static/styles/page-builder.css"]');
+            composer.${buttonStylesOrder}(buttons);
+        })()`);
+            for (const [width, height] of [
+                [1860, 540],
+                [900, 540],
+                [901, 540],
+                [1440, 900],
+            ]) {
+                await browser.resize(width, height);
+                const [toggle] = await rectangles(
+                    browser,
+                    ".toolbar-mobile-toggle",
+                );
+                if (width <= 900) {
+                    assertHorizontallyContained(
+                        toggle,
+                        width,
+                        "Mobile toolbar toggle",
+                    );
+                    continue;
+                }
+                assert.equal(
+                    toggle.width,
+                    0,
+                    "Desktop toggle does not occupy a grid cell",
+                );
+                const [toolbar] = await rectangles(browser, ".toolbar");
+                const [content] = await rectangles(
+                    browser,
+                    ".main-window > .content-grid",
+                );
+                assert.ok(
+                    content.left >= toolbar.right,
+                    "Content sits beside the toolbar",
+                );
+                assert.ok(
+                    Math.abs(content.top - toolbar.top) <= 1,
+                    "Content starts on the toolbar row",
+                );
+                await captureScreenshot(
+                    browser,
+                    `desktop-layout-${width}-${height}`,
+                );
+            }
+        },
+    );
+}
 
 async function startFixture(context, suffix = "", viewport = [1440, 900]) {
     const server = await serveBrowserFixture(fixtureDirectory);
@@ -34,6 +92,9 @@ async function startFixture(context, suffix = "", viewport = [1440, 900]) {
     assert.equal(await browser.evaluate("window.fixture.error ?? null"), null);
     await browser.waitFor(
         'document.querySelectorAll("[data-composer-element]").length === 2',
+    );
+    await browser.evaluate(
+        `document.fonts.ready.then(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))))`,
     );
     return { browser, server };
 }
@@ -54,9 +115,12 @@ async function captureScreenshot(browser, name) {
 async function rectangles(browser, selector) {
     return browser.evaluate(`Array.from(document.querySelectorAll(${JSON.stringify(selector)}), element => {
     const bounds = element.getBoundingClientRect();
+    const parentStyle = getComputedStyle(element.parentElement);
     return {
       left: bounds.left, right: bounds.right, top: bounds.top, bottom: bounds.bottom,
-      width: bounds.width, height: bounds.height, parentWidth: element.parentElement.clientWidth,
+      width: bounds.width, height: bounds.height,
+      parentWidth: element.parentElement.clientWidth - parseFloat(parentStyle.paddingLeft) - parseFloat(parentStyle.paddingRight),
+      compact: Boolean(element.closest('.composer-view-grid--compact, .sub-composer--compact')),
       clientHeight: element.clientHeight, scrollHeight: element.scrollHeight,
       id: element.dataset.composerElement ?? element.id,
     };
@@ -117,7 +181,7 @@ for (const mode of ["grid", "nested"]) {
                     assert.equal(cards.length, 2);
                     for (const card of cards) {
                         assertHorizontallyContained(card, width, card.id);
-                        if (card.parentWidth <= 640) {
+                        if (card.compact) {
                             assert.ok(
                                 Math.abs(card.width - card.parentWidth) <= 2,
                                 `${card.id} uses compact container width`,
@@ -148,9 +212,10 @@ for (const mode of ["grid", "nested"]) {
                         sameScrollPane: true,
                         scrollTop: 80,
                     });
-                    const reachable = await browser.evaluate(`(() => {
+                    const reachable = await browser.evaluate(`(async () => {
           const action = document.querySelector('[data-fixture-last]');
           action.scrollIntoView({ block: 'center', behavior: 'instant' });
+          await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
           const bounds = action.getBoundingClientRect();
           return action.contains(document.elementFromPoint(bounds.left + bounds.width / 2, bounds.top + bounds.height / 2));
         })()`);
@@ -254,7 +319,7 @@ test(
             key: "Tab",
             code: "Tab",
             windowsVirtualKeyCode: 9,
-            modifiers: 8,
+            modifiers: 0,
         });
         assert.equal(
             await browser.evaluate(
@@ -289,6 +354,9 @@ test(
             );
             await browser.waitFor(
                 'document.querySelector(".toolbar-mobile-toggle").getAttribute("aria-expanded") === "true"',
+            );
+            await browser.evaluate(
+                `Promise.all(document.querySelector('.toolbar').getAnimations().map(animation => animation.finished))`,
             );
             const [toolbar] = await rectangles(browser, ".toolbar");
             const [toggle] = await rectangles(
@@ -347,6 +415,9 @@ test(
             await browser.evaluate("void window.fixture.openFixturePopup()");
             await browser.waitFor(
                 'Boolean(document.querySelector(".popup-overlay--visible"))',
+            );
+            await browser.evaluate(
+                `Promise.all(document.querySelector('.popup-overlay').getAnimations({subtree: true}).map(animation => animation.finished))`,
             );
             const [dialog] = await rectangles(browser, ".popup-dialog");
             assertHorizontallyContained(dialog, width, "Popup");

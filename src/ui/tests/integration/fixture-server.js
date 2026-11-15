@@ -77,6 +77,13 @@ export async function serveBrowserFixture(fixtureDirectory) {
                 directory = /^(templates|assets)\//.test(relativePath)
                     ? resolve(uiDirectory, "public")
                     : uiDirectory;
+                const component = relativePath.match(
+                    /^(gateways\/[^/]+|adapters\/[^/]+\/[^/]+)\/(.*)$/,
+                );
+                if (component) {
+                    directory = resolve(uiDirectory, "..", component[1], "ui");
+                    relativePath = component[2];
+                }
             }
             const filename = resolve(directory, relativePath);
             if (!filename.startsWith(resolve(directory) + sep)) {
