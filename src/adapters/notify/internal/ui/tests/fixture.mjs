@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 import { JSDOM } from "jsdom";
+import { build } from "esbuild";
 
 export const settle = async () => {
     await new Promise((resolve) => setImmediate(resolve));
@@ -28,7 +29,11 @@ export async function fixture(options = {}) {
     const { window } = dom;
     const { document } = window;
     const context = dom.getInternalVMContext();
-    if (!options.deferStyles)
+    if (options.styles === "absent") document.querySelector("link").remove();
+    if (
+        (options.styles ?? (options.deferStyles ? "pending" : "loaded")) ===
+        "loaded"
+    )
         Object.defineProperty(document.querySelector("link"), "sheet", {
             value: {},
         });
@@ -38,6 +43,7 @@ export async function fixture(options = {}) {
     );
     const requests = [];
     const notices = [];
+    const dismissedNotices = [];
     const logs = [];
     const search = new Map();
     const timers = new Map();
@@ -132,57 +138,61 @@ export async function fixture(options = {}) {
     const i18n = { t: (key) => key };
     capabilities.set("ui:log", (...args) => logs.push(args));
     const providerController = new window.AbortController();
-    const flows = new Map();
     const flowCalls = [];
-    const uiCtx = {
-        signal: providerController.signal,
-        capabilities: {
-            get: (name) => capabilities.get(name),
-            contribute: (name, value) => {
-                capabilities.set(name, value);
+    function createScope(controller) {
+        const flows = new Map();
+        const uiCtx = {
+            signal: controller.signal,
+            capabilities: {
+                get: (name) => capabilities.get(name),
+                contribute: (name, value) => {
+                    capabilities.set(name, value);
+                    return true;
+                },
+            },
+            registerFlow(name, stages) {
+                assert.ok(!flows.has(name), `duplicate flow ${name}`);
+                flows.set(name, new Map(stages.map((stage) => [stage, []])));
+            },
+            extendFlow(name, stage, hook, handler) {
+                assert.ok(
+                    flows.get(name)?.has(stage),
+                    `undeclared stage ${name}/${stage}`,
+                );
+                flows
+                    .get(name)
+                    .get(stage)
+                    .push({ ...hook, handler });
                 return true;
             },
-        },
-        registerFlow(name, stages) {
-            assert.ok(!flows.has(name), `duplicate flow ${name}`);
-            flows.set(name, new Map(stages.map((stage) => [stage, []])));
-        },
-        extendFlow(name, stage, hook, handler) {
-            assert.ok(
-                flows.get(name)?.has(stage),
-                `undeclared stage ${name}/${stage}`,
-            );
-            flows
-                .get(name)
-                .get(stage)
-                .push({ ...hook, handler });
-            return true;
-        },
-        async runFlow(name, input) {
-            assert.ok(flows.has(name), `undeclared flow ${name}`);
-            flowCalls.push(name);
-            const data = {};
-            const stageResults = {};
-            for (const [stage, hooks] of flows.get(name)) {
-                stageResults[stage] = [];
-                for (const hook of hooks.toSorted(
-                    (left, right) => (left.order ?? 0) - (right.order ?? 0),
-                )) {
-                    stageResults[stage].push(
-                        await hook.handler({ input, data, stageResults }),
-                    );
+            async runFlow(name, input) {
+                assert.ok(flows.has(name), `undeclared flow ${name}`);
+                flowCalls.push(name);
+                const data = {};
+                const stageResults = {};
+                for (const [stage, hooks] of flows.get(name)) {
+                    stageResults[stage] = [];
+                    for (const hook of hooks.toSorted(
+                        (left, right) => (left.order ?? 0) - (right.order ?? 0),
+                    )) {
+                        stageResults[stage].push(
+                            await hook.handler({ input, data, stageResults }),
+                        );
+                    }
                 }
-            }
-            return { data, stageResults };
-        },
-    };
-    uiCtx.registerFlow("logout", [
-        "revokeSession",
-        "clearSession",
-        "redirectToLogin",
-    ]);
-    uiCtx.registerFlow("authenticate-session", ["afterSession"]);
-    uiCtx.registerFlow("page:mounted", ["publish"]);
+                return { data, stageResults };
+            },
+        };
+        uiCtx.registerFlow("logout", [
+            "revokeSession",
+            "clearSession",
+            "redirectToLogin",
+        ]);
+        uiCtx.registerFlow("authenticate-session", ["afterSession"]);
+        uiCtx.registerFlow("page:mounted", ["publish"]);
+        return uiCtx;
+    }
+    const uiCtx = createScope(providerController);
     const stubs = {
         "/static/reuse/i18n.js": { createI18n: async () => i18n },
         "/static/reuse/timestamp.js": {
@@ -199,7 +209,10 @@ export async function fixture(options = {}) {
             },
         },
         "/static/reuse/toast.js": {
-            showToast: (...args) => notices.push(args),
+            showToast: (...args) => {
+                notices.push(args);
+                return () => dismissedNotices.push(args);
+            },
         },
         "/static/reuse/popup.js": {
             openPopup: async (args) => {
@@ -304,18 +317,69 @@ export async function fixture(options = {}) {
         new URL("src/adapters/notify/internal/ui/navbar-plugin.js", root).href,
     );
     await plugin.evaluate();
-    const mounting = plugin.namespace.mountProvider(uiCtx);
-    if (options.deferStyles) {
-        await settle();
-        assert.equal(document.querySelector("#notification-toggle"), null);
-        document.querySelector("link").dispatchEvent(new window.Event("load"));
+    let bundled;
+    if (options.bundle) {
+        const result = await build({
+            entryPoints: [
+                new URL("../navbar-plugin.js", import.meta.url).pathname,
+            ],
+            bundle: true,
+            write: false,
+            format: "esm",
+            external: ["/static/*"],
+            logLevel: "silent",
+        });
+        bundled = new vm.SourceTextModule(result.outputFiles[0].text, {
+            context,
+            identifier: new URL("./navbar-bundle.js", import.meta.url).href,
+        });
+        await bundled.link((child, referring) =>
+            moduleFor(child, referring.identifier),
+        );
+        await bundled.evaluate();
     }
-    const dispose = await mounting;
-    await settle();
-    assert.ok(
-        document.querySelector("#notification-toggle"),
-        JSON.stringify(logs),
-    );
+    const mounts = [];
+    function mount({
+        bundle = false,
+        controller = new window.AbortController(),
+        scope = createScope(controller),
+    } = {}) {
+        const record = {
+            controller,
+            ctx: scope,
+            completed: false,
+            dispose: undefined,
+        };
+        record.promise = (bundle ? bundled : plugin).namespace
+            .mountProvider(scope)
+            .then((dispose) => {
+                record.completed = true;
+                record.dispose = dispose;
+                return dispose;
+            });
+        mounts.push(record);
+        return record;
+    }
+    let dispose;
+    if (!options.deferMount) {
+        const mounting = mount({
+            controller: providerController,
+            scope: uiCtx,
+        });
+        if (options.deferStyles) {
+            await settle();
+            assert.equal(document.querySelector("#notification-toggle"), null);
+            document
+                .querySelector("link")
+                .dispatchEvent(new window.Event("load"));
+        }
+        dispose = await mounting.promise;
+        await settle();
+        assert.ok(
+            document.querySelector("#notification-toggle"),
+            JSON.stringify(logs),
+        );
+    }
     const snapshot = () => ({
         rows: document.querySelectorAll(".notification-item").length,
         unread: document.querySelectorAll(".notification-item--unread").length,
@@ -335,6 +399,7 @@ export async function fixture(options = {}) {
         document,
         requests,
         notices,
+        dismissedNotices,
         logs,
         sourceFiles,
         snapshot,
@@ -342,6 +407,7 @@ export async function fixture(options = {}) {
         flowCalls,
         search,
         dispose,
+        mount,
         providerController,
         capabilities,
         timers,
@@ -374,7 +440,10 @@ export async function fixture(options = {}) {
             return resolver.t(key);
         },
         close: () => {
-            dispose?.();
+            for (const mounting of mounts) {
+                mounting.controller.abort();
+                mounting.dispose?.();
+            }
             dom.window.close();
         },
     };

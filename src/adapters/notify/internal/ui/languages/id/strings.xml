@@ -11,6 +11,7 @@
   <string name="adapter.notify.internal.error_clear_all">Tidak dapat menghapus notifikasi. Silakan coba lagi.</string>
   <string name="adapter.notify.internal.new_message">Pesan baru</string>
   <string name="adapter.notify.internal.error_load">Notifikasi tidak tersedia. Gunakan Coba lagi untuk memuat kotak masuk.</string>
+  <string name="adapter.notify.internal.error_styles">Tampilan notifikasi tidak dapat dimuat. Kotak masuk tersedia, tetapi tata letaknya mungkin belum lengkap. Buka kembali aplikasi untuk mencoba lagi.</string>
   <string name="adapter.notify.internal.error_refresh">Notifikasi tidak dapat diperbarui. Kotak masuk terakhir yang telah dikonfirmasi tetap ditampilkan. Gunakan Coba lagi untuk memeriksa kembali.</string>
   <string name="adapter.notify.internal.error_refresh_after_change">Perubahan Anda tersimpan, tetapi notifikasi tidak dapat diperbarui. Gunakan Coba lagi untuk memeriksa kotak masuk terbaru.</string>
   <string name="adapter.notify.internal.error_change_rejected">Perubahan notifikasi ditolak. Gunakan Coba lagi untuk memperbarui kotak masuk sebelum mengulangi perubahan.</string>

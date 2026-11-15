@@ -32,6 +32,7 @@ import {
 import { createArrivalLifetime } from "./arrival-lifetime.js";
 import { createCorrelationResolver } from "./correlation.js";
 import { createInbox } from "./inbox.js";
+import { loadNotificationStyles } from "./stylesheet.js";
 import {
     createPrimaryAction,
     claimPrimaryActivation,
@@ -43,44 +44,10 @@ const POLL_INTERVAL_HIDDEN_MS = 30_000;
 const TOAST_BODY_PREVIEW_LENGTH = 90;
 const TOAST_AUTO_DISMISS_MS = 6_000;
 const RELATIVE_TIME_TICK_MS = 1000;
-const CSS_HREF = "/static/gateways/notify-internal/notifications.css";
-
-function waitForNotificationStyles(link, signal) {
-    return new Promise((resolve) => {
-        const finish = () => {
-            link.removeEventListener("load", finish);
-            link.removeEventListener("error", failed);
-            signal.removeEventListener("abort", finish);
-            resolve();
-        };
-        const failed = () => {
-            console.error(
-                "[notify-internal] notification styles failed to load",
-                { component: "notify-internal", operation: "loadStyles" },
-            );
-            finish();
-        };
-        link.addEventListener("load", finish, { once: true });
-        link.addEventListener("error", failed, { once: true });
-        signal.addEventListener("abort", finish, { once: true });
-        if (signal.aborted) finish();
-    });
-}
-
-function loadNotificationStyles(signal) {
-    const existing = document.querySelector(`link[href="${CSS_HREF}"]`);
-    if (existing?.sheet) return Promise.resolve();
-    if (existing) return waitForNotificationStyles(existing, signal);
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href = CSS_HREF;
-    const stylesReady = waitForNotificationStyles(link, signal);
-    document.head.appendChild(link);
-    return stylesReady;
-}
 
 export async function mountProvider(ctx) {
-    if (!localStorage.getItem("cognis_access_token")) return;
+    if (ctx.signal.aborted || !localStorage.getItem("cognis_access_token"))
+        return;
     const lifetime = new AbortController();
     const signal = lifetime.signal;
     let identity = accountIdentity();
@@ -92,6 +59,7 @@ export async function mountProvider(ctx) {
     let i18n;
     let pageRevision = 0;
     let confirmationPending = false;
+    let dismissStyleError;
 
     function accountIdentity() {
         return JSON.stringify([
@@ -132,6 +100,7 @@ export async function mountProvider(ctx) {
         if (disposed) return;
         disposed = true;
         lifetime.abort();
+        dismissStyleError?.();
         closePanel();
         inbox?.dispose();
         correlations?.reset();
@@ -860,7 +829,7 @@ export async function mountProvider(ctx) {
     window.addEventListener("pagehide", dispose, { signal });
     window.addEventListener("storage", () => isActive(), { signal });
     try {
-        await loadNotificationStyles(signal);
+        const styleStatus = await loadNotificationStyles(signal);
         if (!isActive()) return dispose;
         i18n = await createI18n({
             componentStringBaseUrls: [
@@ -868,6 +837,12 @@ export async function mountProvider(ctx) {
             ],
         });
         if (!isActive()) return dispose;
+        if (styleStatus !== "loaded") {
+            dismissStyleError = showToast(
+                i18n.t("adapter.notify.internal.error_styles"),
+                { variant: "error" },
+            );
+        }
         inbox = createInbox({
             ctx,
             localize: localizeNotification,

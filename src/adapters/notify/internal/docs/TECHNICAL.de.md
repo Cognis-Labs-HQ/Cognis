@@ -61,6 +61,16 @@ Links behalten das Browserverhalten für Klicks mit Zusatztasten und der mittler
 
 Das abbrechbare Ereignis `cognis:notification-action` gilt für gewöhnliche und modifizierte Linkaktivierungen. Der Eigentümer übernimmt gewöhnliche Klicks synchron, bevor er auf Posteingangsänderungen wartet, damit der öffentliche Router nicht doppelt navigiert. Bei ausstehenden oder nicht verfügbaren Zeilenaktionen werden Linkziele bis zur erfolgreichen Aktualisierung entfernt; veraltete Bedienelemente lehnen Aktivierungen ab. Das Arbeitsbereich-Tutorial behält seine Glocken- und Panelziele und erklärt Links, Gelesen-Schaltflächen, Tastaturbedienung und die rein lesende Wiederholung. Befehle, Ablauf und Korrelationslebensdauer kontinuierlicher Meldungen bleiben unverändert.
 
+### Stylesheet wieder laden
+
+Der Anbieter wartet höchstens fünf Sekunden auf einen gemeinsam genutzten Ladeversuch des Stylesheets. Ein Ladeereignis oder ein bereits geladenes Stylesheet ermöglicht die gestaltete Darstellung. Ein Fehler oder Zeitablauf bedeutet, dass die Gestaltung nicht verfügbar ist, nicht dass sie erfolgreich geladen wurde: Glocke und Posteingang bleiben verfügbar. Eine übersetzte Fehlermeldung weist darauf hin, dass das Layout unvollständig sein kann. „Erneut versuchen“ im Posteingang lädt nur Benachrichtigungsdaten. Beim erneuten Öffnen der App kann eine neue Anbieterinstanz das Stylesheet erneut anfordern; die aktuelle Instanz wiederholt den Versuch nicht automatisch.
+
+Jedes Link-Element besitzt den Zustand seines ausstehenden, geladenen, fehlgeschlagenen oder abgelaufenen Versuchs. Direkt ausgelieferter und gebündelter Code teilen diesen Zustand. Ressourcenereignisse und Zeitlimit bleiben nach dem Abbruch einzelner wartender Instanzen aktiv und werden beim Abschluss freigegeben. Ein Abbruch beendet nur das eigene Warten und entfernt keine noch nützliche Anfrage einer anderen Instanz. Abgebrochene Anbieter erzeugen später weder Glocke noch Posteingangsabfrage oder Fehlermeldung. Beim Beenden wird die eigene Stylesheet-Fehlermeldung geschlossen.
+
+Funktionsfähige externe Links und ihre Attribute bleiben erhalten. Fehlgeschlagene oder abgelaufene, vom Anbieter erzeugte Links werden entfernt. Übernommene Links bleiben beim ursprünglichen Besitzer und werden bei weiteren Versuchen übersprungen, solange kein geladenes Stylesheet vorliegt. Die nächste aktuelle Instanz erzeugt höchstens einen Ersatz; gleichzeitige Instanzen teilen dessen Zeitlimit. Späte Ereignisse eines abgeschlossenen Versuchs können den Ersatz nicht abschließen. Es werden keine Eigentumsmarkierungen für Seiten-Stylesheets ergänzt; ein Routenwechsel übernimmt diese Anbieterressource daher nicht. Glocke, Posteingang und eingehende Meldungen bleiben an den jeweiligen ctx gebunden.
+
+Die bestehende Arbeitsplatz-Anleitung verwendet weiterhin `#notification-toggle` und `.notification-panel`, auch nach einem eingeschränkt dargestellten Start oder erfolgreicher Wiederherstellung. Bedienelemente und Ablauf ändern sich nicht; eine gesonderte Anleitung ist nicht erforderlich. Die Wiederherstellung ändert weder Erzeuger, Kategorien, Zustellregeln noch die Unterdrückung eingehender Meldungen.
+
 ## Sicherheit
 
 Benachrichtigungsrouten prüfen den Empfänger und bearbeiten dessen Einträge. Dauerhafte Nachrichten benötigen DATA_ENCRYPTION_KEY; halte den Schlüssel stabil und geheim.

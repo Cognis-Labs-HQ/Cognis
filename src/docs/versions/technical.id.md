@@ -53,7 +53,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Komponen              | Jalur                               | Versi    |
 | --------------------- | ----------------------------------- | -------- |
 | SMTP Notification     | `src/adapters/notify/smtp/`         | `0.5.5`  |
-| Internal Notification | `src/adapters/notify/internal/`     | `0.5.39` |
+| Internal Notification | `src/adapters/notify/internal/`     | `0.5.40` |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.26` |
 | File Quota            | `src/adapters/file/quota/`          | `1.0.24` |
 | Local Auth            | `src/adapters/auth/local/`          | `0.4.2`  |

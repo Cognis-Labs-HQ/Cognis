@@ -11,6 +11,7 @@
   <string name="adapter.notify.internal.error_clear_all">Couldn't clear notifications. Please try again.</string>
   <string name="adapter.notify.internal.new_message">New message</string>
   <string name="adapter.notify.internal.error_load">Notifications are unavailable. Use Retry to load your inbox.</string>
+  <string name="adapter.notify.internal.error_styles">Notification styling couldn't load. The inbox is available, but its layout may be incomplete. Reopen the app to try again.</string>
   <string name="adapter.notify.internal.error_refresh">Couldn't refresh notifications. Your last confirmed inbox is still shown. Use Retry to check again.</string>
   <string name="adapter.notify.internal.error_refresh_after_change">Your change was saved, but notifications couldn't be refreshed. Use Retry to check the latest inbox.</string>
   <string name="adapter.notify.internal.error_change_rejected">The notification change was rejected. Use Retry to refresh the inbox before trying again.</string>
