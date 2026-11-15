@@ -6,6 +6,10 @@ Drawing progress retains every delivered attempt ID alongside its count, so retr
 
 Flashcards uses `/study/<iso>/flashcards` and `/study/<iso>/flashcards/<deck-id>`. The sub-navigation language controls select the corresponding gallery; a deck from another language is not carried across. `/study/flashcards` resolves the current language. Library and Requests remain shared pages.
 
+## Compact Navigation
+
+On phones and tablets, Study page links use a horizontally scrollable row and reveal the selected page after resizing or font changes. Language, dictionary search and settings share the next row. The search icon opens a dialog that retains the original form, selected provider and draft. Closing restores focus; navigation or a resize to desktop closes the dialog. The overview uses document scrolling. While scrolling, the compact header keeps primary navigation available and folds the brand row.
+
 ## Usage examples
 
 Open `/study/ja/flashcards` to browse Japanese decks; selecting English opens `/study/en/flashcards`.

@@ -2,8 +2,10 @@ import { isOffline } from "/static/reuse/offline-state.js";
 import { fetchStudyPreferences } from "./navigation-client.js";
 import { languageExploreUrl, languageFlashcardsUrl } from "./reuse/explore.js";
 import { replaceMountScope } from "/static/reuse/mount-scope.js";
-import { showToast } from "/static/reuse/toast.js";
-import { createFormBuilder } from "/static/reuse/form-builder.js";
+import {
+    mountDictionarySearch,
+    renderDictionarySearch,
+} from "./sub-navigation-search.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { loadSpaRoutes } from "/static/reuse/spa-route-registry.js";
@@ -14,7 +16,6 @@ import {
     parseLanguageCode,
 } from "/static/gateways/study/language.js";
 import {
-    dictionarySearchContext,
     fetchLibrarySchemas,
     fetchSearchableDictionaryProviders,
 } from "/static/gateways/study/library-client.js";
@@ -58,6 +59,7 @@ export function bindStudySubNavigation(
     );
     navigationScopes.set(root, controller);
     const signal = controller.signal;
+    if (signal.aborted) return;
     const updateManagementLinks = () => {
         for (const link of root.querySelectorAll('a[href^="/study/library"]')) {
             if (!isManagementPage(link.getAttribute("href"))) continue;
@@ -81,55 +83,39 @@ export function bindStudySubNavigation(
         () => controller.abort(),
         { signal, once: true },
     );
-    root.addEventListener(
-        "change",
-        (event) => {
-            const select = event.target.closest(
-                "[data-study-dictionary-search] select[name=provider]",
-            );
-            if (!select) return;
-            const button = select.form.querySelector("button[type=submit]");
-            const label = select.selectedOptions[0].dataset.searchLabel;
-            button.title = label;
-            button.setAttribute("aria-label", label);
-        },
-        { signal },
-    );
-    root.addEventListener(
-        "submit",
-        async (event) => {
-            const form = event.target.closest("[data-study-dictionary-search]");
-            if (!form) return;
-            event.preventDefault();
-            const query = form.elements.query.value.trim();
-            if (!query) return;
-            const provider = JSON.parse(form.elements.provider.value);
-            const button = form.querySelector("button[type=submit]");
-            if (button.disabled) return;
-            button.disabled = true;
-            try {
-                await dictionarySearchContext({
-                    query,
-                    providerId: provider.id,
-                    schemaId: provider.schemaId,
-                    language: form.dataset.language,
-                });
-                if (!signal?.aborted)
-                    uiCtx.capabilities.get("ui:navigate")?.(
-                        "/study/library/search",
-                    );
-            } catch {
-                showToast(
-                    i18n?.t("gateway.study.library_dictionary_error") ??
-                        form.elements.query.getAttribute("aria-label"),
-                    { variant: "error" },
-                );
-            } finally {
-                button.disabled = false;
-            }
-        },
-        { signal },
-    );
+    mountDictionarySearch(root, { signal, i18n });
+    const lists = [
+        ...root.querySelectorAll(
+            ".study-subnav-modules, .study-subnav-language-options",
+        ),
+    ];
+    const revealActive = () => {
+        if (signal.aborted) return;
+        for (const list of lists) {
+            const active = list.querySelector(".active");
+            if (!active) continue;
+            const bounds = list.getBoundingClientRect();
+            const selected = active.getBoundingClientRect();
+            if (selected.right > bounds.right)
+                list.scrollLeft += selected.right - bounds.right;
+            else if (selected.left < bounds.left)
+                list.scrollLeft += selected.left - bounds.left;
+        }
+    };
+    if (lists.length) {
+        const observer = new ResizeObserver(revealActive);
+        for (const list of lists) {
+            observer.observe(list);
+            for (const link of list.querySelectorAll("a"))
+                observer.observe(link);
+        }
+        signal.addEventListener("abort", () => observer.disconnect(), {
+            once: true,
+        });
+        document.fonts.ready.then(revealActive);
+        revealActive();
+    }
+
     root.addEventListener(
         "click",
         (event) => {
@@ -421,19 +407,20 @@ export function createStudySubNavigationSlot(model, i18n) {
  */
 export function renderStudySubNavigation({ model, currentPath, i18n }) {
     const selectedLanguageCode = model.selectedLanguageCode ?? "";
-    const providerSearchLabel = (provider) =>
-        i18n
-            .t("gateway.study.dictionary_search_with")
-            .replace(
-                "{{ provider }}",
-                provider.metadata.labels?.[document.documentElement.lang] ||
-                    provider.metadata.labels?.en ||
-                    provider.id,
-            );
     const libraryUrl = buildLibraryUrl();
     const hasLibraryModule = (model.modules ?? []).some(
         (component) => String(component?.id ?? "").trim() === "library",
     );
+    const activePageUrl = [
+        ...(model.modules ?? []).map((component) => component.pageUrl),
+        ...(isAdminScope() && !hasLibraryModule ? [libraryUrl] : []),
+    ]
+        .filter(
+            (url) =>
+                typeof url === "string" &&
+                (currentPath === url || currentPath.startsWith(`${url}/`)),
+        )
+        .sort((left, right) => right.length - left.length)[0];
     const moduleLinks = (model.modules ?? [])
         .map((component) => {
             const rawPageUrl = String(component?.pageUrl ?? "").trim();
@@ -446,11 +433,7 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
                 translatedLabel && translatedLabel !== component?.labelKey
                     ? translatedLabel
                     : String(component?.label ?? pageUrl);
-            const activeClass =
-                rawPageUrl === currentPath ||
-                currentPath.startsWith(`${rawPageUrl}/`)
-                    ? " active"
-                    : "";
+            const activeClass = rawPageUrl === activePageUrl ? " active" : "";
             return `
                 <li>
                     <a class="dropdown-item${activeClass}" href="${escapeHtml(pageUrl)}"${isManagementPage(pageUrl) ? managementDisabledAttributes() : ""} data-search-category="Pages" data-search-label="${escapeHtml(label)}" data-search-description="${escapeHtml(i18n.t("ui.reuse.study"))}">
@@ -464,7 +447,7 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
         isAdminScope() && !hasLibraryModule
             ? `
             <li>
-                <a class="dropdown-item${currentPath === "/study/library" ? " active" : ""}" href="${escapeHtml(libraryUrl)}"${managementDisabledAttributes()} data-search-category="Pages" data-search-label="${escapeHtml(i18n.t("gateway.study.library_label"))}" data-search-description="${escapeHtml(i18n.t("ui.reuse.study"))}">
+                <a class="dropdown-item${activePageUrl === libraryUrl ? " active" : ""}" href="${escapeHtml(libraryUrl)}"${managementDisabledAttributes()} data-search-category="Pages" data-search-label="${escapeHtml(i18n.t("gateway.study.library_label"))}" data-search-description="${escapeHtml(i18n.t("ui.reuse.study"))}">
                     ${escapeHtml(i18n.t("gateway.study.library_label"))}
                 </a>
             </li>
@@ -508,26 +491,7 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
             <ul class="page-subnav-list study-subnav-language-options">
                 ${languageOptions}
             </ul>
-            ${
-                model.dictionaryProviders?.length
-                    ? createFormBuilder(
-                          { i18n, escapeHtml },
-                          {
-                              formId: "study-dictionary-search",
-                              formClassName: "study-dictionary-search",
-                              formAttributes: {
-                                  "data-study-dictionary-search": true,
-                                  "data-language": model.selectedLanguageCode,
-                              },
-                              includeSubmitButton: false,
-                              fields: [],
-                              trustedContentHtml: `<select class="theme-select" name="provider" aria-label="${escapeHtml(i18n.t("gateway.study.dictionary_provider"))}"${model.dictionaryProviders.length === 1 ? " hidden" : ""}>${model.dictionaryProviders.map((provider) => `<option data-search-label="${escapeHtml(providerSearchLabel(provider))}" value="${escapeHtml(JSON.stringify({ id: provider.id, schemaId: provider.schemaId }))}">${escapeHtml(provider.metadata.labels?.[document.documentElement.lang] || provider.metadata.labels?.en || provider.id)}</option>`).join("")}</select>
-                <input name="query" maxlength="100" required autocomplete="off" aria-label="${escapeHtml(i18n.t("gateway.study.dictionary_search"))}" placeholder="${escapeHtml(i18n.t("gateway.study.dictionary_search"))}">
-                <button type="submit" class="btn-neutral" aria-label="${escapeHtml(providerSearchLabel(model.dictionaryProviders[0]))}" title="${escapeHtml(providerSearchLabel(model.dictionaryProviders[0]))}"><span class="study-dictionary-search-icon" aria-hidden="true"></span></button>`,
-                          },
-                      ).render()
-                    : ""
-            }
+            ${renderDictionarySearch(model, i18n)}
             <ul class="page-subnav-list study-subnav-settings">
                 <li>
                     <a

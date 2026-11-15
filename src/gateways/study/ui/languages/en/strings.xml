@@ -85,7 +85,7 @@
   <string name="gateway.study.tutorial.preferences.available.activities.title">Available Activities</string>
   <string name="gateway.study.tutorial.preferences.available.activities.body">Your language selection determines the learning activities and navigation available to you.</string>
   <string name="gateway.study.tutorial.dictionary.title">Look Up Content</string>
-  <string name="gateway.study.tutorial.dictionary.body">Use the dictionary search to look up a word or expression with an available provider. Results can help you find or build cards.</string>
+  <string name="gateway.study.tutorial.dictionary.body">Use the dictionary search to look up a word or expression with an available provider. Results can help you find or build cards. On small screens, the search button opens a dialog with the query and provider controls.</string>
   <string name="gateway.study.tutorial.settings.title">Manage Study Languages</string>
   <string name="gateway.study.tutorial.settings.body">Open Study settings to choose the languages you learn or teach. Language walkthroughs are offered for languages you have enrolled in.</string>
 </resources>

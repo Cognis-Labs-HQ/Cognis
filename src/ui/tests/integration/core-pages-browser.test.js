@@ -1,17 +1,12 @@
+import { captureScreenshot } from "./artifacts.js";
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFile, writeFile, mkdir } from "node:fs/promises";
-import { resolve } from "node:path";
-import { findChromium, launchChromium } from "./chromium.js";
+import {
+    liveBrowserSkip as skip,
+    startLiveApp,
+    settleLivePage as settle,
+} from "./live-app.js";
 
-const origin = process.env.COGNIS_CORE_BROWSER_URL;
-const credentialsFile = process.env.COGNIS_BROWSER_CREDENTIALS;
-const executable =
-    process.env.COGNIS_BROWSER_TESTS === "1" ? findChromium() : null;
-const skip =
-    !executable || !origin || !credentialsFile
-        ? "Requires COGNIS_BROWSER_TESTS=1, Chromium, COGNIS_CORE_BROWSER_URL and COGNIS_BROWSER_CREDENTIALS for an isolated Cognis instance."
-        : false;
 const pages = [
     "/dashboard",
     "/calendar",
@@ -29,59 +24,20 @@ const pages = [
     "/my-classes",
 ];
 
-async function settle(browser) {
-    await browser.waitFor(
-        'document.readyState === "complete" && Boolean(document.body)',
-    );
-    await browser.waitFor(
-        'document.body?.dataset.pageReady === "true" || Boolean(document.querySelector(".tutorial-actions,.popup-close-btn"))',
-    );
-    for (let attempt = 0; attempt < 60; attempt++) {
-        const active = await browser.evaluate(`(() => {
-      const close = document.querySelector('.popup-close-btn');
-      if(close) { close.click(); return true; }
-      const next = document.querySelector('.tutorial-actions [data-action="next"]');
-      if(next) { next.click(); return true; }
-      return document.body?.dataset.pageReady !== 'true';
-    })()`);
-        if (!active) break;
-        await browser.evaluate(
-            "new Promise(resolve => setTimeout(resolve, 100))",
-        );
-    }
-    await browser.waitFor(
-        'document.body?.dataset.pageReady === "true" && !document.querySelector(".tutorial-actions,.popup-overlay") && Boolean(document.querySelector("[data-composer-element]"))',
-    );
-    await browser.evaluate("document.fonts.ready");
-    await browser.evaluate(
-        "new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))",
-    );
-}
-
 test(
     "built-in pages fit phones, tablets and desktop through direct and SPA navigation",
-    { skip, timeout: 240000 },
+    { skip, timeout: 600000 },
     async (context) => {
-        const browser = await launchChromium(executable);
-        context.after(() => browser.close());
-        const credentials = JSON.parse(await readFile(credentialsFile, "utf8"));
-        await browser.command("Page.navigate", {
-            url: new URL("/login", origin).href,
-        });
-        await browser.waitFor(
-            'Boolean(document.querySelector("#login-username"))',
-        );
-        await browser.evaluate(`(async()=>{
-    const response=await fetch('/api/v1/auth/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(${JSON.stringify(credentials)})});
-    if(!response.ok) throw new Error('Core browser QA authentication failed');
-    const {persistLoginSession}=await import('/static/gateways/auth/login-client.js');
-    persistLoginSession((await response.json()).data);
-  })()`);
+        const { browser, origin } = await startLiveApp(context);
         for (const [width, height] of [
             [320, 568],
             [390, 844],
+            [568, 320],
+            [844, 390],
             [768, 1024],
+            [1024, 768],
             [1440, 900],
+            [1920, 1080],
         ]) {
             await browser.resize(width, height);
             for (const path of pages)
@@ -147,25 +103,15 @@ test(
                                 "Calendar day controls have usable touch targets",
                             );
                     }
-                    const directory = process.env.COGNIS_BROWSER_ARTIFACTS;
-                    if (directory) {
-                        await mkdir(directory, { recursive: true });
-                        const shot = await browser.command(
-                            "Page.captureScreenshot",
-                            { format: "png" },
-                        );
-                        await writeFile(
-                            resolve(
-                                directory,
-                                `core-${width}-${path.replaceAll("/", "_")}.png`,
-                            ),
-                            Buffer.from(shot.data, "base64"),
-                        );
-                    }
+                    await captureScreenshot(
+                        browser,
+                        `core-${width}-${height}-${path.replaceAll("/", "_")}`,
+                    );
                 });
             for (const path of ["/settings", "/calendar", "/dashboard"]) {
-                await browser.evaluate(
-                    `(async()=>{const{navigateTo}=await import('/static/reuse/app-router.js');await navigateTo(${JSON.stringify(path)});})()`,
+                await browser.callFunction(
+                    `async function(path){const{navigateTo}=await import('/static/reuse/app-router.js');await navigateTo(path);}`,
+                    [path],
                 );
                 await settle(browser);
                 assert.equal(

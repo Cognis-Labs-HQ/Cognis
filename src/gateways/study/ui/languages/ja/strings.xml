@@ -85,7 +85,7 @@
   <string name="gateway.study.tutorial.preferences.available.activities.title">利用できる学習機能</string>
   <string name="gateway.study.tutorial.preferences.available.activities.body">選択した言語に応じて、利用できる学習機能と移動先が決まります。</string>
   <string name="gateway.study.tutorial.dictionary.title">内容を検索する</string>
-  <string name="gateway.study.tutorial.dictionary.body">利用できる辞書で単語や表現を調べます。検索結果はカードを探したり作成したりする際に役立ちます。</string>
+  <string name="gateway.study.tutorial.dictionary.body">利用できる辞書で単語や表現を調べます。検索結果はカードを探したり作成したりする際に役立ちます。 小さい画面では検索ボタンからダイアログを開き、検索語と辞書を選びます。</string>
   <string name="gateway.study.tutorial.settings.title">学習する言語を管理する</string>
   <string name="gateway.study.tutorial.settings.body">学習設定で学ぶ言語と教える言語を選びます。登録済みの学習言語には専用のガイドが表示されます。</string>
 </resources>

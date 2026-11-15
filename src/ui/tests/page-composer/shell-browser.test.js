@@ -1,9 +1,9 @@
+import { captureScreenshot } from "../integration/artifacts.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
     skip,
     startFixture,
-    captureScreenshot,
     rectangles,
     assertHorizontallyContained,
     assertNoDocumentOverflow,
@@ -170,3 +170,30 @@ for (const language of ["en", "de", "id", "ja"]) {
         },
     );
 }
+
+test(
+    "browser function arguments remain opaque data",
+    { skip, timeout: 30000 },
+    async (context) => {
+        const { browser } = await startFixture(context);
+        const payload = {
+            query: "'); document.body.replaceChildren(); //\n\"` ${value} \\ \u2028\u2029 <script>",
+            provider: { id: 'quoted"provider' },
+        };
+        const actual = await browser.callFunction(
+            `function(value) {
+        const field=document.querySelector('[name="notes"]');
+        field.value=value.query;
+        return {query:field.value,provider:value.provider};
+    }`,
+            [payload],
+        );
+        assert.deepEqual(actual, payload);
+        assert.equal(
+            await browser.evaluate(
+                'document.querySelectorAll("[data-composer-element]").length',
+            ),
+            2,
+        );
+    },
+);

@@ -132,12 +132,7 @@ export async function launchChromium(executable) {
                 socket.send(JSON.stringify({ id, method, params }));
             });
         }
-        async function evaluate(expression) {
-            const result = await command("Runtime.evaluate", {
-                expression,
-                awaitPromise: true,
-                returnByValue: true,
-            });
+        function valueFromResult(result) {
             if (result.exceptionDetails) {
                 throw new Error(
                     result.exceptionDetails.exception?.description ??
@@ -145,6 +140,29 @@ export async function launchChromium(executable) {
                 );
             }
             return result.result.value;
+        }
+        async function evaluate(expression) {
+            return valueFromResult(
+                await command("Runtime.evaluate", {
+                    expression,
+                    awaitPromise: true,
+                    returnByValue: true,
+                }),
+            );
+        }
+        async function callFunction(functionDeclaration, args = []) {
+            const global = await command("Runtime.evaluate", {
+                expression: "globalThis",
+            });
+            return valueFromResult(
+                await command("Runtime.callFunctionOn", {
+                    objectId: global.result.objectId,
+                    functionDeclaration,
+                    arguments: args.map((value) => ({ value })),
+                    awaitPromise: true,
+                    returnByValue: true,
+                }),
+            );
         }
         async function resize(width, height) {
             await command("Emulation.setDeviceMetricsOverride", {
@@ -160,8 +178,9 @@ export async function launchChromium(executable) {
             });
             await delay(180);
         }
-        async function waitFor(expression) {
-            for (let attempt = 0; attempt < 100; attempt++) {
+        async function waitFor(expression, { timeoutMs = 5000 } = {}) {
+            const deadline = Date.now() + timeoutMs;
+            while (Date.now() < deadline) {
                 if (await evaluate(expression)) return;
                 await delay(50);
             }
@@ -171,7 +190,15 @@ export async function launchChromium(executable) {
         }
         await command("Runtime.enable");
         await command("Page.enable");
-        return { command, evaluate, resize, waitFor, close, events };
+        return {
+            command,
+            evaluate,
+            callFunction,
+            resize,
+            waitFor,
+            close,
+            events,
+        };
     } catch (error) {
         await close();
         throw error;

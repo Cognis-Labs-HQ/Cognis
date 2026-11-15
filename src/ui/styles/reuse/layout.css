@@ -131,6 +131,7 @@
     opacity: 0;
     transform: translateY(-8px);
     pointer-events: none;
+    visibility: hidden;
 }
 .app-shell--subnav-priority .page-subnav {
     border-bottom-left-radius: 14px;
@@ -198,6 +199,14 @@
 }
 .nav-compact-toggle:hover {
     background: var(--surface-soft);
+}
+.nav-compact-toggle-icon {
+    display: block;
+    width: 20px;
+    height: 20px;
+    background: currentColor;
+    mask: url("/static/assets/reuse/icons/toolbar-menu.svg") center / contain
+        no-repeat;
 }
 .global-navrow--compact .nav-compact-toggle {
     display: flex;
@@ -590,6 +599,23 @@ button.dropdown-item {
     text-align: center;
 }
 @media (max-width: 900px) {
+    .app-shell--subnav-priority .global-topbar {
+        min-height: 0;
+        max-height: 0;
+        padding-block: 0;
+        border-width: 0;
+        overflow: hidden;
+        visibility: hidden;
+    }
+    .app-shell--subnav-priority .global-navrow {
+        max-height: 120px;
+        padding-block: 10px;
+        border-width: 1px;
+        opacity: 1;
+        transform: none;
+        pointer-events: auto;
+        visibility: visible;
+    }
     .workspace {
         backdrop-filter: none;
     }
@@ -624,6 +650,9 @@ button.dropdown-item {
     }
 }
 @media (max-width: 640px) {
+    .app-shell--subnav-priority .global-navrow {
+        padding-block: 8px;
+    }
     .app-shell {
         --floating-toolbar-footer-gap: 10px;
     }

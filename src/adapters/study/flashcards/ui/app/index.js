@@ -139,7 +139,7 @@ export async function mount(root, { signal: routerSignal } = {}) {
     if (isOffline() && decks.length === 0)
         showOfflineContentNotice(i18n, signal);
     const languageCode = model.selectedLanguageCode;
-    if (route.language !== languageCode && languageCode) {
+    if (route.language && route.language !== languageCode && languageCode) {
         await navigateTo(languageFlashcardsUrl(languageCode));
         return;
     }

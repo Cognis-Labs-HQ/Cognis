@@ -1,3 +1,4 @@
+import { loadDictionarySearch } from "../../../../gateways/study/tests/reuse/dictionary-search.js";
 import { guides } from "../ui/app/guides.js";
 import {
     loadTestModule,
@@ -51,6 +52,7 @@ test("a directly opened Explore card path opens the requested preview without hi
         ),
         {
             "/static/reuse/offline-state.js": { isOffline: () => false },
+            "./sub-navigation-search.js": loadDictionarySearch(context),
             "./navigation-client.js": {
                 fetchStudyPreferences: () => {
                     throw new Error("unexpected_study_preferences_read");

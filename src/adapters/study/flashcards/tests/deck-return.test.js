@@ -1,3 +1,4 @@
+import { loadDictionarySearch } from "../../../../gateways/study/tests/reuse/dictionary-search.js";
 import { guides } from "../ui/app/guides.js";
 import * as offlineState from "../../../../ui/reuse/offline-state.js";
 import {
@@ -161,6 +162,7 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
         ),
         {
             "/static/reuse/offline-state.js": offlineState,
+            "./sub-navigation-search.js": loadDictionarySearch(environment),
             "./navigation-client.js": {
                 fetchStudyPreferences: () => {
                     throw new Error("unexpected_study_preferences_read");

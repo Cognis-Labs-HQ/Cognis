@@ -85,7 +85,7 @@
   <string name="gateway.study.tutorial.preferences.available.activities.title">Aktivitas Tersedia</string>
   <string name="gateway.study.tutorial.preferences.available.activities.body">Pilihan bahasa menentukan aktivitas belajar dan navigasi yang tersedia.</string>
   <string name="gateway.study.tutorial.dictionary.title">Cari Konten</string>
-  <string name="gateway.study.tutorial.dictionary.body">Cari kata atau ungkapan melalui penyedia kamus yang tersedia. Hasil dapat membantu menemukan atau membuat kartu.</string>
+  <string name="gateway.study.tutorial.dictionary.body">Cari kata atau ungkapan melalui penyedia kamus yang tersedia. Hasil dapat membantu menemukan atau membuat kartu. Pada layar kecil, tombol pencarian membuka dialog berisi kueri dan pilihan penyedia.</string>
   <string name="gateway.study.tutorial.settings.title">Kelola Bahasa Belajar</string>
   <string name="gateway.study.tutorial.settings.body">Buka pengaturan Belajar untuk memilih bahasa yang dipelajari atau diajarkan. Panduan bahasa ditawarkan untuk bahasa yang sudah didaftarkan.</string>
 </resources>

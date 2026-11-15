@@ -1,7 +1,5 @@
 /** Shared real-browser fixture lifecycle, screenshots, and geometry assertions for composer tests. */
 import assert from "node:assert/strict";
-import { mkdir, writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { findChromium, launchChromium } from "../../integration/chromium.js";
 import { serveBrowserFixture } from "../../integration/fixture-server.js";
@@ -38,21 +36,9 @@ export async function startFixture(
     return { browser, server };
 }
 
-export async function captureScreenshot(browser, name) {
-    const directory = process.env.COGNIS_BROWSER_ARTIFACTS;
-    if (!directory) return;
-    await mkdir(directory, { recursive: true });
-    const screenshot = await browser.command("Page.captureScreenshot", {
-        format: "png",
-    });
-    await writeFile(
-        resolve(directory, `${name}.png`),
-        Buffer.from(screenshot.data, "base64"),
-    );
-}
-
 export async function rectangles(browser, selector) {
-    return browser.evaluate(`Array.from(document.querySelectorAll(${JSON.stringify(selector)}), element => {
+    return browser.callFunction(
+        `function(selector) { return Array.from(document.querySelectorAll(selector), element => {
     const bounds = element.getBoundingClientRect();
     const parentStyle = getComputedStyle(element.parentElement);
     return {
@@ -63,7 +49,9 @@ export async function rectangles(browser, selector) {
       clientHeight: element.clientHeight, scrollHeight: element.scrollHeight,
       id: element.dataset.composerElement ?? element.id,
     };
-  })`);
+  }); }`,
+        [selector],
+    );
 }
 
 export function assertHorizontallyContained(bounds, width, label) {

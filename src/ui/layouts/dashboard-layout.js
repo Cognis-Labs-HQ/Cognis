@@ -1,4 +1,5 @@
 import { bindCompactNavigation } from "./compact-navigation.js";
+import { replaceMountScope } from "../reuse/mount-scope.js";
 import { registerPageReadinessBlocker } from "../reuse/page-readiness.js";
 import { mountOfflineStatus } from "../reuse/offline-status.js";
 import { isOffline } from "../reuse/offline-state.js";
@@ -384,6 +385,8 @@ function applyCompactNav(root, signal) {
     });
 }
 
+const headerScrollScopes = new WeakMap();
+
 function syncHeaderScrollState(root) {
     const shell = root.querySelector(".app-shell");
     if (!shell) return;
@@ -396,9 +399,14 @@ function syncHeaderScrollState(root) {
     );
     const primaryNavigationHeight =
         Number(primaryNavigation?.scrollHeight) || 0;
+    const compact = window.matchMedia("(max-width:900px)").matches;
+    const collapsingRegion = compact
+        ? shell.querySelector(".global-topbar")
+        : primaryNavigation;
     const shouldPrioritizeSubnav =
         hasSubNavigation &&
         hasPrimaryNavigation &&
+        !collapsingRegion?.contains(document.activeElement) &&
         (currentlyPrioritized
             ? window.scrollY > 12
             : window.scrollY > primaryNavigationHeight + 12);
@@ -410,17 +418,23 @@ function syncHeaderScrollState(root) {
     );
 }
 
-function bindHeaderScrollState(root) {
-    if (root.dataset.headerScrollStateBound === "true") {
-        syncHeaderScrollState(root);
-        return;
-    }
+function bindHeaderScrollState(root, externalSignal) {
+    const controller = replaceMountScope(
+        headerScrollScopes.get(root),
+        externalSignal,
+    );
+    headerScrollScopes.set(root, controller);
+    const { signal } = controller;
+    const syncState = () => {
+        if (!signal.aborted) syncHeaderScrollState(root);
+    };
 
-    root.dataset.headerScrollStateBound = "true";
-    const syncState = () => syncHeaderScrollState(root);
-
-    window.addEventListener("scroll", syncState, { passive: true });
-    window.addEventListener("resize", syncState);
+    window.addEventListener("scroll", syncState, { passive: true, signal });
+    window.addEventListener("resize", syncState, { signal });
+    root.addEventListener("focusin", syncState, { signal });
+    root.addEventListener("focusout", () => queueMicrotask(syncState), {
+        signal,
+    });
     syncState();
 }
 
@@ -582,7 +596,7 @@ export async function renderDashboardLayout(root, slots = {}) {
                 signal: slots.signal,
             });
         }
-        bindHeaderScrollState(root);
+        bindHeaderScrollState(root, slots.signal);
         if (!componentWindow)
             mountOfflineStatus(root, { i18n, signal: slots.signal });
         if (!componentWindow) {
@@ -651,7 +665,7 @@ export async function renderDashboardLayout(root, slots = {}) {
             signal: slots.signal,
         });
     }
-    bindHeaderScrollState(root);
+    bindHeaderScrollState(root, slots.signal);
     if (!componentWindow)
         mountOfflineStatus(root, { i18n, signal: slots.signal });
     if (!componentWindow) {

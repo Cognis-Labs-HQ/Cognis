@@ -6,6 +6,10 @@ Kemajuan menggambar menyimpan setiap ID percobaan yang telah dikirim bersama pen
 
 Flashcards memakai `/study/<iso>/flashcards` dan `/study/<iso>/flashcards/<deck-id>`. Kontrol bahasa membuka galeri terkait tanpa membawa dek bahasa lain. `/study/flashcards` menentukan bahasa saat ini. Pustaka dan Permintaan tetap merupakan halaman bersama.
 
+## Navigasi Ringkas
+
+Pada ponsel dan tablet, tautan halaman Study memakai baris bergulir mendatar dan menampilkan halaman terpilih setelah ukuran atau fon berubah. Bahasa, pencarian kamus, dan pengaturan berbagi baris berikutnya. Ikon pencarian membuka dialog yang mempertahankan formulir asli, penyedia terpilih, dan isian. Penutupan mengembalikan fokus; navigasi atau perubahan ke ukuran desktop menutup dialog. Ikhtisar memakai pengguliran dokumen. Saat digulir, navigasi utama tetap tersedia dan baris merek dilipat.
+
 ## Contoh penggunaan
 
 Buka `/study/ja/flashcards` untuk deck Jepang; memilih Inggris membuka `/study/en/flashcards`.

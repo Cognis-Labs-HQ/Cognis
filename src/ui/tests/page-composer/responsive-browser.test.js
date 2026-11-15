@@ -1,9 +1,9 @@
+import { captureScreenshot } from "../integration/artifacts.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
     skip,
     startFixture,
-    captureScreenshot,
     rectangles,
     assertHorizontallyContained,
     assertNoDocumentOverflow,
@@ -25,11 +25,14 @@ for (const buttonStylesOrder of ["before", "after"]) {
         { skip, timeout: 30000 },
         async (context) => {
             const { browser } = await startFixture(context, "", [1860, 540]);
-            await browser.evaluate(`(() => {
+            await browser.callFunction(
+                `function(buttonStylesOrder) {
             const buttons = document.querySelector('link[href="/static/styles/reuse/buttons.css"]');
             const composer = document.querySelector('link[href="/static/styles/page-builder.css"]');
-            composer.${buttonStylesOrder}(buttons);
-        })()`);
+            composer[buttonStylesOrder](buttons);
+        }`,
+                [buttonStylesOrder],
+            );
             for (const [width, height] of [
                 [1860, 540],
                 [900, 540],

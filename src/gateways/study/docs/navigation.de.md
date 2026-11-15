@@ -6,6 +6,10 @@ Der Zeichenfortschritt speichert jede zugestellte Versuchskennung zusammen mit d
 
 Flashcards verwendet `/study/<iso>/flashcards` und `/study/<iso>/flashcards/<deck-id>`. Die Sprachsteuerung öffnet die entsprechende Galerie und übernimmt kein fremdsprachiges Deck. `/study/flashcards` löst die aktuelle Sprache auf. Bibliothek und Anfragen bleiben gemeinsame Seiten.
 
+## Kompakte Navigation
+
+Auf Telefonen und Tablets stehen Study-Seitenlinks in einer horizontal scrollbaren Zeile; nach Größen- oder Schriftänderungen bleibt die aktive Seite sichtbar. Sprache, Wörterbuchsuche und Einstellungen teilen sich die nächste Zeile. Das Suchsymbol öffnet einen Dialog, der das ursprüngliche Formular, den gewählten Anbieter und die Eingabe erhält. Schließen gibt den Fokus zurück; Navigation oder Desktopgröße schließen den Dialog. Die Übersicht verwendet den Dokumentlauf. Beim Scrollen bleibt die Hauptnavigation erreichbar und die Markenzeile klappt ein.
+
 ## Anwendungsbeispiele
 
 Öffnen Sie `/study/ja/flashcards` für japanische Decks; Englisch öffnet `/study/en/flashcards`.
