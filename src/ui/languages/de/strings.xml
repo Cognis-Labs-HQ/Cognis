@@ -728,7 +728,7 @@
   <string name="ui.tutorial.workspace.options.title">Suche eingrenzen</string>
   <string name="ui.tutorial.workspace.options.body">Passen Sie Großschreibung, ganze Wörter oder Muster an. Die Seitensuche findet Text und verfügbare Bedienelemente auf der aktuellen Seite. Klicken Sie auf eine Filter-Schaltfläche, um die Suche anzupassen und fortzufahren.</string>
   <string name="ui.tutorial.workspace.results.title">Suchtreffer nutzen</string>
-  <string name="ui.tutorial.workspace.results.body">Prüfen Sie Kategorien und Beschriftungen. Wählen Sie nach der Anleitung eine Seite zum Öffnen oder einen Seitentreffer für das Bedienelement.</string>
+  <string name="ui.tutorial.workspace.results.body">Prüfen Sie Kategorien und Beschriftungen. Wählen Sie nach der Anleitung einen Treffer mit dem Zeiger oder der Eingabetaste und warten Sie auf den Abschluss. Bleibt die Suche nach einer fehlgeschlagenen Auswahl offen, prüfen Sie vor einem erneuten Versuch das Ziel.</string>
   <string name="ui.tutorial.workspace.close.title">Suche schließen</string>
   <string name="ui.tutorial.workspace.close.body">Schließen Sie die Suche, um zum Arbeitsbereich zurückzukehren.</string>
   <string name="ui.tutorial.workspace.notifications.title">Benachrichtigungen prüfen</string>
@@ -782,4 +782,6 @@
   <string name="ui.app.settings.message_preview_failed">Die Beispielunterhaltung konnte nicht angezeigt werden.</string>
   <string name="ui.tutorial.settings.appearance.message.preview.title">Nachrichtenstile vergleichen</string>
   <string name="ui.tutorial.settings.appearance.message.preview.body">Dieser erfundene Austausch zeigt eingehende und ausgehende Nachrichten mit Namen und Uhrzeiten. Ändere den Nachrichtenstil, um die Layouts vor dem Speichern zu vergleichen.</string>
+  <string name="ui.search.selection_failed">Die Auswahl konnte nicht abgeschlossen werden. Prüfen Sie vor einem erneuten Versuch das Ziel.</string>
+  <string name="ui.search.selection_unavailable">Dieser Treffer ist nicht mehr verfügbar. Suchen Sie erneut.</string>
 </resources>

@@ -175,3 +175,15 @@ The shared UI offline client carries a caller’s AbortSignal through registered
 The additive contracts are `deliverOrQueue(ctx, owner, id, payload, send, { signal } = {})` and `outbox.submit(owner, id, payload, { signal } = {})`. Existing callers without a signal and durable replay keep their behavior. A later abort never removes an accepted queue record or undoes a request already sent; a lost acknowledgement may leave an uncertain result and must not invite blind resubmission.
 
 These contracts belong to shared UI assets, not a gateway or adapter package. Ship the updated shared assets with Profile 4.0.1. Profile, Messages, Calendar and Notify email use the shared HTTP client; Study drawing, library, favourites and Flashcards also use the optional delivery helper. Their no-signal calls keep the existing contract. No Calendar runtime behavior is customized.
+
+## Search Selection Contract
+
+Select a result with the pointer or Enter and wait for its action to finish. Each popup permits only one selection callback while pending. While Search’s owner remains active, a thrown error or rejected promise keeps the query, category and multi-selection intact and shows a localized toast. Check the destination before retrying: failed feedback does not prove that an operation was not dispatched. An unavailable result asks you to search again.
+
+`openSearchPopup` and `createSearchBar` accept an optional `signal` and pass a selection context as the callback’s second argument, including `context.signal`. Synchronous callbacks and successful `undefined` returns keep their existing behavior; promises are awaited before successful dismissal. Strict `false` is an additive cancellation result that keeps Search open without an error while its owner remains active. Footer actions use native `click` activation, including keyboard and browser activation; `mousedown` does not invoke the selection callback.
+
+Close, Escape, route or page teardown, provider lifetime ending and account changes invalidate pending UI settlement. Unregistering a result provider invalidates selections it owns. A stale completion cannot close a replacement popup or show late feedback, but cancellation cannot undo an already dispatched operation. Callers must pass their owner signal and honor the callback signal before dispatching work.
+
+Navbar selection propagates `navigateTo` returning `false` before route teardown, preserving Search without an error when navigation is refused. Once `route-will-change` or `pagehide` fires, Search is dismissed as lifecycle cancellation even if the destination later fails to mount. Outcome feedback then belongs to the destination or router, not the dismissed Search popup.
+
+The workspace tutorial explains selection, waiting and safe retry while preserving its targets, completion IDs, Next, Back and replay. Search is shared UI without an independently versioned package or manifest.
