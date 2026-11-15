@@ -7,6 +7,7 @@ export async function popupFixture(
     context,
     existingWindow,
     capabilities = new Map(),
+    options = {},
 ) {
     const window =
         existingWindow ??
@@ -29,11 +30,12 @@ export async function popupFixture(
     const sandbox = vm.createContext({
         window,
         document,
-        console,
+        console: options.console ?? console,
         Function,
         AbortController: window.AbortController,
         AbortSignal: window.AbortSignal,
         crypto: window.crypto,
+        URL,
         HTMLElement: window.HTMLElement,
         HTMLInputElement: window.HTMLInputElement,
         HTMLTextAreaElement: window.HTMLTextAreaElement,
@@ -45,6 +47,7 @@ export async function popupFixture(
         clearInterval: window.clearInterval.bind(window),
         requestAnimationFrame: window.requestAnimationFrame.bind(window),
         getComputedStyle: window.getComputedStyle.bind(window),
+        ...options.clock,
         fetch: () => {
             throw new Error("Unexpected network request");
         },
@@ -67,12 +70,14 @@ export async function popupFixture(
         [
             "i18n.js",
             {
-                createI18n: async () => ({
-                    t: (key) => {
-                        assert.ok(translations[key], key);
-                        return translations[key];
-                    },
-                }),
+                createI18n:
+                    options.createI18n ??
+                    (async () => ({
+                        t: (key) => {
+                            assert.ok(translations[key], key);
+                            return translations[key];
+                        },
+                    })),
             },
         ],
         [
@@ -97,6 +102,9 @@ export async function popupFixture(
             ),
         ],
     ]);
+    for (const [identifier, boundary] of options.boundaries ?? []) {
+        boundaries.set(identifier, boundary);
+    }
     const root = new URL("../../", import.meta.url);
     const modules = new Map();
     async function load(identifier) {

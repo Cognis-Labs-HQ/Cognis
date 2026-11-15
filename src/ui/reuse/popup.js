@@ -471,6 +471,7 @@ export async function openPopup({
 
         let dismissed = false;
         let discardDecision;
+        const discardController = new AbortController();
         let timeoutHandle = null;
         let countdownInterval = null;
         async function dismiss(actionId, aborted = false) {
@@ -486,43 +487,57 @@ export async function openPopup({
                 !aborted &&
                 hasUnsavedChanges
             ) {
-                discardDecision ??= confirmPopupDiscard(i18n, signal);
+                discardDecision ??= confirmPopupDiscard(
+                    i18n,
+                    discardController.signal,
+                );
                 const confirmed = await discardDecision;
                 discardDecision = undefined;
                 if (!confirmed) return false;
             }
             if (dismissed) return;
-            dismissed = true;
-            focusLifecycle?.release({ restore: !aborted });
-            signal?.removeEventListener("abort", abortPopup);
-            if (timeoutHandle !== null) {
-                clearTimeout(timeoutHandle);
-                timeoutHandle = null;
-            }
-            if (countdownInterval !== null) {
-                clearInterval(countdownInterval);
-                countdownInterval = null;
-            }
-            document.removeEventListener("keydown", onKeyDown);
-            window.removeEventListener("resize", fitPopupTitleRow);
-            closeProtectionTracker?.destroy();
-            closeProtectionTracker = null;
-            let removed = false;
-            function removeOverlay() {
-                if (!removed) {
-                    removed = true;
-                    overlay.remove();
-                    releaseScroll?.();
-                }
-            }
-            if (aborted) removeOverlay();
-            overlay.addEventListener("transitionend", removeOverlay, {
-                once: true,
-            });
-            setTimeout(removeOverlay, 500); // fallback if no transition fires (line 109 above)
-            overlay.classList.remove("popup-overlay--visible");
+            releasePopup({ restore: !aborted, immediate: aborted });
             resolve(actionId ?? null);
             return true;
+        }
+
+        function releasePopup({ restore = true, immediate = false } = {}) {
+            if (dismissed) return;
+            dismissed = true;
+            try {
+                focusLifecycle?.release({ restore });
+            } finally {
+                discardController.abort();
+                signal?.removeEventListener("abort", abortPopup);
+                if (timeoutHandle !== null) {
+                    clearTimeout(timeoutHandle);
+                    timeoutHandle = null;
+                }
+                if (countdownInterval !== null) {
+                    clearInterval(countdownInterval);
+                    countdownInterval = null;
+                }
+                document.removeEventListener("keydown", onKeyDown);
+                window.removeEventListener("resize", fitPopupTitleRow);
+                closeProtectionTracker?.destroy();
+                closeProtectionTracker = null;
+                let removed = false;
+                function removeOverlay() {
+                    if (!removed) {
+                        removed = true;
+                        overlay.remove();
+                        releaseScroll?.();
+                    }
+                }
+                if (immediate) removeOverlay();
+                else {
+                    overlay.addEventListener("transitionend", removeOverlay, {
+                        once: true,
+                    });
+                    setTimeout(removeOverlay, 500); // fallback for the transitionend handler above
+                }
+                overlay.classList.remove("popup-overlay--visible");
+            }
         }
 
         const abortPopup = () => void dismiss(null, true);
@@ -719,6 +734,7 @@ export async function openPopup({
         }
 
         function fitPopupTitleRow() {
+            if (dismissed) return;
             const heading = overlay.querySelector(".popup-heading");
             const titleElement = heading?.querySelector(".popup-title");
             const detailElement = heading?.querySelector(".popup-title-detail");
@@ -803,72 +819,86 @@ export async function openPopup({
                 }
             }
         }
-        document.addEventListener("keydown", onKeyDown);
+        try {
+            document.addEventListener("keydown", onKeyDown);
 
-        document.body.appendChild(overlay);
-        focusLifecycle = bindPopupFocus(overlay, invoker);
-        releaseScroll = lockPageScroll(document);
-        window.addEventListener("resize", fitPopupTitleRow);
-        fitPopupTitleRow();
-        document.fonts?.ready.then(fitPopupTitleRow);
+            document.body.appendChild(overlay);
+            focusLifecycle = bindPopupFocus(overlay, invoker);
+            releaseScroll = lockPageScroll(document);
+            window.addEventListener("resize", fitPopupTitleRow);
+            fitPopupTitleRow();
+            document.fonts?.ready.then(fitPopupTitleRow);
 
-        signal?.addEventListener("abort", abortPopup, { once: true });
-        if (signal?.aborted) {
-            abortPopup();
-            return;
-        }
-        if (typeof onOpen === "function") {
-            onOpen(overlay, () => dismiss(null), {
-                updateBody,
-                ...contentApi,
-                setPage: renderPopupPage,
-                pageId: currentPage?.id,
-                markDirty: () => {
-                    manuallyDirty = true;
-                },
-            });
-        }
-        if (dismissed) return;
-        if (closeProtection) {
-            closeProtectionTracker = createFormDirtyTracker(overlay, {
-                quiet: true,
-            });
-        }
-        if (Number.isFinite(timeoutMs) && timeoutMs > 0) {
-            timeoutHandle = setTimeout(() => {
-                dismiss(timeoutActionId).catch((error) =>
-                    console.error("[popup] timeout dismiss failed:", error),
-                );
-            }, timeoutMs);
-
-            const timeoutButton = timeoutActionId
-                ? overlay.querySelector(
-                      `[data-popup-action="${CSS.escape(timeoutActionId)}"]`,
-                  )
-                : null;
-            if (timeoutButton instanceof HTMLButtonElement) {
-                const originalLabel = timeoutButton.textContent ?? "";
-                const startedAt = Date.now();
-                const updateCountdown = () => {
-                    const remainingSeconds = Math.max(
-                        0,
-                        Math.ceil(
-                            (timeoutMs - (Date.now() - startedAt)) / 1000,
-                        ),
+            signal?.addEventListener("abort", abortPopup, { once: true });
+            if (signal?.aborted) {
+                abortPopup();
+                return;
+            }
+            if (typeof onOpen === "function") {
+                onOpen(overlay, () => dismiss(null), {
+                    updateBody,
+                    ...contentApi,
+                    setPage: renderPopupPage,
+                    pageId: currentPage?.id,
+                    markDirty: () => {
+                        manuallyDirty = true;
+                    },
+                });
+            }
+            if (dismissed) return;
+            if (closeProtection) {
+                closeProtectionTracker = createFormDirtyTracker(overlay, {
+                    quiet: true,
+                });
+            }
+            if (Number.isFinite(timeoutMs) && timeoutMs > 0) {
+                timeoutHandle = setTimeout(() => {
+                    dismiss(timeoutActionId).catch((error) =>
+                        console.error("[popup] timeout dismiss failed:", error),
                     );
-                    timeoutButton.textContent = `${originalLabel} (${remainingSeconds})`;
-                };
-                updateCountdown();
-                countdownInterval = setInterval(updateCountdown, 1000);
+                }, timeoutMs);
+
+                const timeoutButton = timeoutActionId
+                    ? overlay.querySelector(
+                          `[data-popup-action="${CSS.escape(timeoutActionId)}"]`,
+                      )
+                    : null;
+                if (timeoutButton instanceof HTMLButtonElement) {
+                    const originalLabel = timeoutButton.textContent ?? "";
+                    const startedAt = Date.now();
+                    const updateCountdown = () => {
+                        const remainingSeconds = Math.max(
+                            0,
+                            Math.ceil(
+                                (timeoutMs - (Date.now() - startedAt)) / 1000,
+                            ),
+                        );
+                        timeoutButton.textContent = `${originalLabel} (${remainingSeconds})`;
+                    };
+                    updateCountdown();
+                    countdownInterval = setInterval(updateCountdown, 1000);
+                }
+            }
+
+            requestAnimationFrame(() => {
+                if (dismissed) return;
+                overlay.classList.add("popup-overlay--visible");
+            });
+
+            focusLifecycle.activate();
+        } catch (error) {
+            try {
+                releasePopup({ immediate: true });
+                const log = console.error.bind(console);
+                log("[popup] Initial opening failed", {
+                    component: "ui.popup",
+                    operation: "openPopup",
+                    errorName: error?.name,
+                });
+            } finally {
+                throw error;
             }
         }
-
-        requestAnimationFrame(() => {
-            if (dismissed) return;
-            overlay.classList.add("popup-overlay--visible");
-        });
-
-        focusLifecycle.activate();
     });
 }
 
