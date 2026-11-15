@@ -742,7 +742,7 @@
   <string name="ui.tutorial.marketplace.details.configure.module.body">設定からモジュールの構成を確認します。必須項目と認証情報を確認してから保存します。</string>
   <string name="ui.tutorial.marketplace.details.manage.lifecycle.title">インストールと更新を管理する</string>
   <string name="ui.tutorial.marketplace.details.manage.lifecycle.body">詳細操作からチャンネル変更や削除を行えます。削除前に依存関係とデータ削除の選択を確認します。</string>
-  <string name="ui.tutorial.workspace.notification.pane.body">項目のリンクを開く、すべて既読にする、クリアで通知を削除する操作ができます。読み込み失敗は受信トレイが空という意味ではありません。「再試行」で最新の受信トレイを確認してください。確認できない変更は既に保存されている可能性があるため、やり直す前に更新してください。</string>
+  <string name="ui.tutorial.workspace.notification.pane.body">Tab で通知リンクに移動し、Enter で開きます。リンクのない未読項目には「通知を既読にする」を使います。ボタンはスペースでも操作できます。すべて既読にするか、クリアで削除できます。読み込み失敗は受信トレイが空という意味ではありません。「再試行」は変更を繰り返さずに最新の受信トレイを確認します。確認できない変更は既に保存されている可能性があるため、やり直す前に更新してください。</string>
   <string name="ui.tutorial.workspace.account.options.title">アカウントメニューのリンク</string>
   <string name="ui.tutorial.workspace.account.options.body">設定からアカウント、言語、表示を調整し、ドキュメントからヘルプを開けます。プロフィールのリンクが表示されていれば、自分のページを開けます。</string>
   <string name="ui.tutorial.workspace.account.administration.body">管理画面ではシステム設定とポリシー、モジュールでは拡張機能と構成、ユーザーではアカウントとアクセスを管理します。</string>
