@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import { escapeHtml } from "../../reuse/escape-html.js";
+import { createEmailActions } from "../../app/settings/email-actions.js";
 
 for (const notifyState of ["absent", "failed", "available"]) {
     test(`Settings account actions remain bound with Notify ${notifyState}`, async () => {
@@ -28,6 +29,9 @@ for (const notifyState of ["absent", "failed", "available"]) {
                     ? {
                           closest: () => section,
                           innerHTML: "",
+                          setAttribute() {},
+                          querySelectorAll: () => [],
+                          querySelector: () => null,
                       }
                     : null,
         };
@@ -45,6 +49,7 @@ for (const notifyState of ["absent", "failed", "available"]) {
             new URL("../../app/settings/general-prefs.js", import.meta.url),
             {
                 "../../reuse/escape-html.js": { escapeHtml },
+                "./email-actions.js": { createEmailActions },
                 "../../reuse/ui-ctx.js": {
                     uiCtx: { capabilities: { get: () => emailClient } },
                 },
