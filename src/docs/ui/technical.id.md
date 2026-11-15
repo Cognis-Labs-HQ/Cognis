@@ -83,6 +83,18 @@ Pemilihan pada bilah navigasi meneruskan hasil `false` dari `navigateTo` sebelum
 
 Tutorial ruang kerja menjelaskan pemilihan, penantian, dan percobaan ulang yang aman, dengan tetap mempertahankan target, ID penyelesaian, Berikutnya, Kembali, dan pemutaran ulang. Pencarian merupakan UI bersama tanpa paket atau manifes berversi tersendiri.
 
+### Validasi Formulir
+
+Kolom yang telah diperiksa dan dinyatakan tidak valid memiliki `aria-invalid="true"`. Atribut `aria-describedby` menghubungkan kriteria terjemahan yang belum terpenuhi, bersama deskripsi yang diberikan pemanggil. Setelah kolom diperbaiki, pembuat formulir hanya menghapus status tidak valid dan rujukan deskripsinya sendiri. Kontrol yang belum disentuh dan kriteria yang belum dapat ditentukan (`null`) tidak mendapat status ARIA tidak valid sebelum diperiksa. Aturan kolom wajib, opsional, dan nilai hasil validasi tetap berlaku; validitas bawaan peramban dan pemilihan tab tetap terpisah dari kriteria khusus.
+
+Setiap kriteria yang ditampilkan memiliki ID unik, termasuk saat beberapa formulir menggunakan nama kolom yang sama. `detach()` pada pengontrol dan sinyal pembatalan pengaitan menghapus pendengar peristiwa dan status ARIA miliknya; pemanggilan validasi secara eksplisit tetap tersedia. Pemilik halaman dan dialog harus mengakhiri pengaitan saat masa aktif formulir berakhir. Perilaku tampilan ini tidak mencatat nilai kolom.
+
+Perubahan `aria-invalid` oleh pemanggil, termasuk penghapusan, tetap dipertahankan setelah pemeriksaan tidak valid berikutnya serta perbaikan atau pembersihan. Penulisan nilai `true` yang sama oleh pemanggil tidak dapat dibedakan dari nilai pembuat formulir yang sudah ada. Jika kriteria khusus mengakhiri pengaitan, pemeriksaan kolom atau seluruh formulir yang terputus tetap mengembalikan hasil validasinya, tetapi tidak memperbarui tampilan setelah pembersihan. Pemanggilan validasi secara sengaja setelah pembersihan memulai pemeriksaan baru yang dapat dibersihkan kembali.
+
+### Cakupan tutorial
+
+Ikuti persyaratan kolom, perbaiki kriteria yang belum terpenuhi, lalu coba kembali tindakan pada formulir. Tutorial administrasi pendaftaran dan Keamanan mempertahankan kontrol, target, ID penyelesaian, dan navigasi yang ada. Panduan Keamanan sudah menjelaskan persyaratan kata sandi, konfirmasi, dan pembatalan. Validasi bersama tidak menambah tindakan atau langkah tutorial. UI bersama tidak memiliki paket atau manifes dengan versi tersendiri.
+
 ## Keamanan
 
 Navigasi tersembunyi bukan kontrol akses. Penyedia memakai kapabilitas pemilik dan membatalkan pekerjaan saat unmount atau pergantian akun; data privat terikat akun.
