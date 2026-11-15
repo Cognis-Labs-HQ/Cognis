@@ -1,3 +1,6 @@
+import { uiCtx } from "../../reuse/ui-ctx.js";
+import { createToggleBindings } from "./reuse/toggle-bindings.js";
+
 function refreshAdministrationComposer(getComposer, getElements) {
     getComposer()?.refresh(getElements());
 }
@@ -6,6 +9,8 @@ export function bindModuleToggles(
     root,
     {
         getState,
+        toggleBindings,
+        signal,
         openPopup,
         showToast,
         escapeHtml,
@@ -18,101 +23,100 @@ export function bindModuleToggles(
         getElements,
     },
 ) {
+    const bindings =
+        toggleBindings ??
+        createToggleBindings({
+            root,
+            ctx: uiCtx,
+            signal,
+            openPopup,
+            getI18n: () => getState().i18n,
+            showToast,
+            log: (...args) => console.error(...args),
+        });
     root.querySelectorAll('input[type="checkbox"][data-module]').forEach(
         (toggle) => {
             if (!(toggle instanceof HTMLInputElement)) return;
-            toggle.addEventListener("change", async () => {
-                const moduleId = toggle.dataset.module;
-                if (!moduleId) return;
+            bindings.bind(
+                toggle,
+                `module:${toggle.dataset.module}`,
+                async (operation) => {
+                    const moduleId = toggle.dataset.module;
+                    if (!moduleId) return;
 
-                const { i18n, moduleById, gatewayById } = getState();
-                const previousState = !toggle.checked;
-                const action = toggle.checked ? "enable" : "disable";
+                    const { i18n, moduleById, gatewayById } = getState();
+                    const previousState = !toggle.checked;
+                    const action = toggle.checked ? "enable" : "disable";
 
-                if (action === "enable") {
-                    const moduleRecord = moduleById.get(moduleId);
-                    const disabledDependencies = (
-                        moduleRecord?.requires ?? []
-                    ).filter((dependencyId) => {
-                        const dependencyGateway = gatewayById.get(dependencyId);
-                        return (
-                            dependencyGateway &&
-                            dependencyGateway.status === "disabled"
-                        );
-                    });
-                    if (disabledDependencies.length > 0) {
-                        const dependencyNames = disabledDependencies.map(
-                            (dependencyId) => {
-                                const dependencyGateway =
-                                    gatewayById.get(dependencyId);
-                                return dependencyGateway
-                                    ? dependencyGateway.name
-                                    : dependencyId;
-                            },
-                        );
-                        const result = await openPopup({
-                            title: i18n.t("ui.app.admin.enable_confirm_module"),
-                            body: `<p>${i18n.t("ui.app.admin.enable_deps_will_enable")}</p><ul>${dependencyNames.map((dependencyName) => `<li><strong>${escapeHtml(dependencyName)}</strong></li>`).join("")}</ul>`,
-                            actions: [
-                                {
-                                    id: "confirm",
-                                    label: i18n.t("ui.reuse.enable"),
-                                    variant: "confirm",
+                    if (action === "enable") {
+                        const moduleRecord = moduleById.get(moduleId);
+                        const disabledDependencies = (
+                            moduleRecord?.requires ?? []
+                        ).filter((dependencyId) => {
+                            const dependencyGateway =
+                                gatewayById.get(dependencyId);
+                            return (
+                                dependencyGateway &&
+                                dependencyGateway.status === "disabled"
+                            );
+                        });
+                        if (disabledDependencies.length > 0) {
+                            const dependencyNames = disabledDependencies.map(
+                                (dependencyId) => {
+                                    const dependencyGateway =
+                                        gatewayById.get(dependencyId);
+                                    return dependencyGateway
+                                        ? dependencyGateway.name
+                                        : dependencyId;
                                 },
-                                {
-                                    id: "cancel",
-                                    label: i18n.t("ui.reuse.cancel"),
-                                    variant: "cancel",
-                                },
-                            ],
+                            );
+                            const result = await operation.confirm({
+                                title: i18n.t(
+                                    "ui.app.admin.enable_confirm_module",
+                                ),
+                                body: `<p>${i18n.t("ui.app.admin.enable_deps_will_enable")}</p><ul>${dependencyNames.map((dependencyName) => `<li><strong>${escapeHtml(dependencyName)}</strong></li>`).join("")}</ul>`,
+                                label: i18n.t("ui.reuse.enable"),
+                                destructive: false,
+                                cancelId: "cancel",
+                            });
+                            if (result !== "confirm") {
+                                toggle.checked = previousState;
+                                return;
+                            }
+                            for (const dependencyId of disabledDependencies) {
+                                await operation.mutate(
+                                    toggleGateway,
+                                    dependencyId,
+                                    "enable",
+                                );
+                            }
+                            await operation.call(reloadGateways);
+                        }
+                    }
+
+                    if (action === "disable") {
+                        const result = await operation.confirm({
+                            title: i18n.t("ui.app.admin.disable_confirm"),
+                            body: `<strong>${escapeHtml(moduleId)}</strong>`,
+                            variant: "danger",
+                            label: i18n.t("ui.reuse.disable"),
+                            destructive: true,
+                            cancelId: "cancel",
                         });
                         if (result !== "confirm") {
                             toggle.checked = previousState;
                             return;
                         }
-                        for (const dependencyId of disabledDependencies) {
-                            await toggleGateway(dependencyId, "enable");
-                        }
-                        await reloadGateways();
                     }
-                }
 
-                if (action === "disable") {
-                    const result = await openPopup({
-                        title: i18n.t("ui.app.admin.disable_confirm"),
-                        body: `<strong>${moduleId}</strong>`,
-                        variant: "danger",
-                        actions: [
-                            {
-                                id: "confirm",
-                                label: i18n.t("ui.reuse.disable"),
-                                variant: "confirm",
-                            },
-                            {
-                                id: "cancel",
-                                label: i18n.t("ui.reuse.cancel"),
-                                variant: "cancel",
-                            },
-                        ],
-                    });
-                    if (result !== "confirm") {
-                        toggle.checked = previousState;
-                        return;
-                    }
-                }
-
-                const response = await toggleModule(moduleId, action);
-                if (!response.ok) {
-                    toggle.checked = previousState;
-                    showToast(i18n.t("ui.app.admin.setup_required"), {
-                        variant: "warning",
-                    });
-                    return;
-                }
-                await reloadModules();
-                if (action === "enable") await reloadHealthStatus();
-                refreshAdministrationComposer(getComposer, getElements);
-            });
+                    await operation.mutate(toggleModule, moduleId, action);
+                    await operation.call(reloadModules);
+                    if (action === "enable")
+                        await operation.call(reloadHealthStatus);
+                    refreshAdministrationComposer(getComposer, getElements);
+                },
+                { key: "ui.app.admin.setup_required", variant: "warning" },
+            );
         },
     );
 }
