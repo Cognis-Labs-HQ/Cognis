@@ -21,4 +21,7 @@
   <string name="cli.terminal.input.query">Bidang kueri JSON wajib belum diisi: {field}. Gunakan --help untuk melihat bidang perintah.</string>
   <string name="cli.terminal.input.duplicate">Nama kolom masukan perintah berulang: {field}. Penyedia perintah harus menggunakan nama kolom yang unik.</string>
   <string name="cli.terminal.input.array">Masukkan daftar yang dipisahkan koma atau larik string JSON. Gunakan [] untuk daftar kosong.</string>
+  <string name="cli.terminal.delete.committed">Akun telah dihapus, tetapi pembersihan belum selesai. Jangan ulangi penghapusan. Periksa kegagalan server dan perbaiki pembersihan terkait.</string>
+  <string name="cli.terminal.delete.rejected">Penghapusan ditolak sebelum akun dihapus. Periksa penolakan sebelum mencoba lagi.</string>
+  <string name="cli.terminal.delete.unknown">Hasil penghapusan tidak diketahui. Verifikasi akun dan catatan server sebelum memutuskan untuk mencoba lagi. Tidak ada percobaan ulang.</string>
 </resources>

@@ -12,7 +12,8 @@ import {
     renderUserMutation,
     renderUsersList,
 } from "./formatters.ts";
-import { apiGet, apiPost, apiRequest } from "./http.ts";
+import { apiGet, apiPost } from "./http.ts";
+import { deleteUserAccount } from "./user-deletion.ts";
 import { register } from "./registry.ts";
 
 const usernameField = { name: "username", required: true, sensitive: false };
@@ -265,17 +266,10 @@ export function registerUserCommands(): void {
             requireArgs(args, ["username"], "cognisctl user:delete <username>");
 
             await ensureUserExists(apiBaseUrl, getApiToken, username);
-            const payload = await apiRequest(
+            const payload = await deleteUserAccount(
                 apiBaseUrl,
-                `/api/v1/users/${encodeURIComponent(username)}`,
-                { method: "DELETE", apiToken: await getApiToken() },
-            );
-
-            ensureBooleanAcknowledgement(
-                payload,
-                "deleted",
-                true,
-                `User "${username}" deletion failed`,
+                username,
+                await getApiToken(),
             );
 
             return mergePayloadFields(payload, { username });
