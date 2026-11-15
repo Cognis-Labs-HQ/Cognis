@@ -286,3 +286,9 @@ Settings and Administration guides keep their existing targets and progression: 
 ## Native layout actions
 
 Main and nested layout panels use native `button type="button"` controls for Done, Discard and Reset. These actions do not submit an enclosing form or navigate. Pending layout submissions disable them through the existing editor lock; failed submissions restore the controls for an explicit retry. Done still saves and closes after acknowledgement, Discard restores the local baseline without writing, and Reset saves the default layout while editing continues. Existing action classes and the workspace tutorial target `#composer-edit-toggle` remain unchanged.
+
+## Side-menu selection
+
+The `ui:sideMenu` capability exposes `createSideMenu` for grouped selections. Each item renders a native `button type="button"`: selecting an item updates its active state, calls `onSelect` with its ID and scrolls to its optional `targetId`, without submitting an enclosing form. Labels and identifiers are escaped. Genuine navigation links remain owned by their callers.
+
+Pass the owning lifetime’s abort signal to `mount(root, { signal })` and abort it before mounting again. Collapsible groups retain their open state under `storageKeyPrefix`; fixed groups have no toggle. Docs, Changelogs, Flashcards and Library guides retain their existing navigation targets and steps.
