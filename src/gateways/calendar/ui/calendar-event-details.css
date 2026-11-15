@@ -198,8 +198,34 @@
 }
 
 @media (max-width: 700px) {
+    .calendar-view-canvas {
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+    }
+
     .calendar-month-table {
         border-spacing: 0.18rem;
+        min-width: 32rem;
+    }
+
+    .calendar-month-table td {
+        padding: 2px;
+    }
+
+    .calendar-month-day header {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 4px;
+    }
+
+    .calendar-month-day :is(.calendar-day-jump, .calendar-all-day-create),
+    .calendar-week-jump {
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    .calendar-year-grid {
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .calendar-month-table th {
@@ -214,6 +240,7 @@
 
     .calendar-week-view {
         --calendar-week-axis-width: 4.4rem;
+        min-width: 36rem;
     }
 
     .calendar-week-day-header {

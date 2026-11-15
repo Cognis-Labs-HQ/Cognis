@@ -314,7 +314,6 @@ code {
     font-size: 1.1rem;
     line-height: 1;
     cursor: pointer;
-    z-index: 1770;
     transition:
         left 0.22s ease,
         top 0.22s ease,
@@ -357,6 +356,7 @@ code {
         margin: 0;
         border-radius: 0 12px 12px 0;
         box-shadow: var(--shadow);
+        z-index: 1770;
     }
     .main-window--with-toolbar .toolbar {
         position: fixed;

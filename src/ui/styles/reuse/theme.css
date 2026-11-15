@@ -133,6 +133,11 @@ button {
     font-size: inherit;
 }
 
+html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
 body {
     margin: 0;
     background: var(--bg);
@@ -145,6 +150,13 @@ body {
         Arial, sans-serif;
     font-size: var(--app-font-size);
     line-height: 1.45;
+}
+
+@media (max-width: 640px) {
+    :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+        font-size: max(1em, 16px);
+        max-width: 100%;
+    }
 }
 
 a {

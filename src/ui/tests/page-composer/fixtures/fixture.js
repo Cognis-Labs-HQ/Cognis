@@ -3,12 +3,16 @@ import { createI18n, applyStaticTranslations } from "/static/reuse/i18n.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { openSearchPopup } from "/static/reuse/search-util/popup.js";
 import { bindCompactNavigation } from "/static/layouts/compact-navigation.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 
 try {
     const scenarios = await (await fetch("/scenarios.json")).json();
     const options = new URLSearchParams(location.search);
     const scenario = scenarios[options.get("scenario") ?? "default"];
-    const i18n = await createI18n({ preferredLanguages: ["en"] });
+    document.documentElement.lang = options.get("lang") ?? "en";
+    const i18n = await createI18n({
+        preferredLanguages: [document.documentElement.lang],
+    });
     const root = document.querySelector("#app");
     const lifetime = new AbortController();
     localStorage.setItem("cognis_account", "fixture");
@@ -117,11 +121,40 @@ try {
         .fill(i18n.t("ui.reuse.display_name"))
         .join(" ");
     bindCompactNavigation(root, { signal: lifetime.signal });
+    const owner = uiCtx.capabilities
+        .get("ui:tutorials")
+        .owner("responsive.fixture", {
+            signal: lifetime.signal,
+            i18n,
+        });
+    await owner.target("form", {
+        resolve: () => root.querySelector('[data-composer-element="form"]'),
+    });
+    const guide = await owner.register({
+        version: 1,
+        id: "layout",
+        page: "/",
+        automatic: false,
+        titleKey: "ui.reuse.settings",
+        steps: ["first", "second", "third"].map((id) => ({
+            id,
+            target: "responsive.fixture:form",
+            titleKey: "ui.reuse.settings",
+            bodyKey: "ui.app.settings.page_subtitle",
+            effects: { callout: true, spotlight: true, arrow: true },
+        })),
+    });
     window.fixture = {
         composer,
         lifetime,
         openFixturePopup,
         openFixtureSearch,
+        async openGuide() {
+            const session = await guide.start();
+            await session.ready;
+            await session.next();
+            return session.state();
+        },
         ready: true,
     };
 } catch (error) {

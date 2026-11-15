@@ -32,8 +32,16 @@
 
 @media (max-width: 640px) {
     .floating-toolbar {
-        width: 80vw;
-        max-width: 80vw;
+        width: fit-content;
+        max-width: calc(
+            100vw - 16px - env(safe-area-inset-left) -
+                env(safe-area-inset-right)
+        );
+        padding: 6px;
+        gap: 6px;
         flex-wrap: wrap;
+    }
+    .floating-toolbar :is(.btn-neutral, .btn-confirm, .btn-cancel) {
+        padding: 6px 10px;
     }
 }

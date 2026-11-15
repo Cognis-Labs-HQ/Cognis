@@ -19,12 +19,23 @@ const contentTypes = {
 export async function serveBrowserFixture(fixtureDirectory) {
     const layouts = new Map();
     const requests = [];
+    const completions = new Set();
     const server = createServer(async (request, response) => {
         const pathname = new URL(request.url, "http://localhost").pathname;
         requests.push({ method: request.method, pathname });
         try {
             if (pathname.startsWith("/api/")) {
                 response.setHeader("content-type", "application/json");
+                if (pathname === "/api/v1/tutorials/completions") {
+                    if (request.method === "POST") {
+                        let body = "";
+                        for await (const chunk of request) body += chunk;
+                        for (const id of JSON.parse(body).ids)
+                            completions.add(id);
+                    }
+                    response.end(JSON.stringify({ data: [...completions] }));
+                    return;
+                }
                 if (
                     /^\/api\/v1\/social\/users\/fixture\/preferences\/[^/]+$/.test(
                         pathname,

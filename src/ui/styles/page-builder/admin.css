@@ -296,6 +296,41 @@ body[data-theme="light"] .slider::before {
         gap: 10px;
     }
 
+    .module-row > summary > .collapsible-section-title {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .module-row > summary > .collapsible-section-chevron {
+        grid-column: 2;
+        grid-row: 1;
+        min-width: 44px;
+        min-height: 44px;
+    }
+
+    .module-row > summary > .module-row-controls {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        grid-template-columns: minmax(0, 1fr) 10px 52px;
+        gap: 8px;
+        width: 100%;
+    }
+
+    .module-row-controls > .state-pill {
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .module-row-title {
+        white-space: normal;
+        overflow-wrap: anywhere;
+        max-width: 100%;
+    }
+
+    .module-row-title strong {
+        min-width: 0;
+    }
+
     .module-detail-item {
         grid-template-columns: 92px minmax(0, 1fr);
         gap: 10px;

@@ -2,12 +2,28 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
     clipRect,
+    calloutViewport,
     shadeRegions,
     tutorialViewport,
     visibleTargetRect,
 } from "../geometry.js";
 
 const viewport = { offsetLeft: 60, offsetTop: 150, width: 390, height: 400 };
+
+test("short-screen explanations reclaim header space without moving the footer boundary", () => {
+    const short = { offsetLeft: 0, offsetTop: 126, width: 568, height: 138 };
+    assert.deepEqual(calloutViewport(short, {}), {
+        offsetLeft: 0,
+        offsetTop: 0,
+        width: 568,
+        height: 264,
+    });
+    assert.deepEqual(
+        calloutViewport(short, { visualViewport: { offsetTop: 20 } }),
+        { offsetLeft: 0, offsetTop: 20, width: 568, height: 244 },
+    );
+    assert.equal(calloutViewport(viewport, {}), viewport);
+});
 
 function target(bounds, parent) {
     return {
