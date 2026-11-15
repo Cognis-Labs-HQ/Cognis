@@ -239,6 +239,12 @@ Pratinjau Gaya Pesan di Pengaturan menggunakan tampilan kecil yang sama dengan d
 
 Messages 2.8.3 / Profile 4.0.0.
 
+### Rincian Tanda Baca
+
+Pilih **Dibaca oleh** di samping pesan terkirim untuk melihat pembaca dan waktu baca. Panel dapat dibuka dengan sentuhan, klik, atau papan ketik. Tutup atau Escape mengembalikan fokus ke tombol saat ini; Escape menutup pratinjau profil aktif terlebih dahulu. Tab mengikuti urutan halaman biasa. Arahkan penunjuk atau fokuskan avatar pembaca untuk pratinjau profil; pilih untuk membuka profil. Catatan tanpa nama pengguna profil menampilkan avatar bernama tanpa tautan. Avatar pembaca tidak menunjukkan ketersediaan. Lingkaran kecil mempertahankan ukurannya di dalam sasaran 44px yang terpisah dan tidak tumpang tindih. Daftar panjang membungkus dan panel rincian dapat digulir dalam layar.
+
+Halaman mengikat `social:messageReceipts` ke masa aktif penyedia Messages dan halaman. Pembukaan menjalankan `messages:openReadReceipts` melalui `validate` dan `present`. Cuplikan percakapan baru, perubahan ruang atau sesi, penghapusan penyedia, gulir, navigasi, atau penutupan halaman menutup panel dan membatalkan pekerjaan tertunda tanpa memfokuskan kontrol lama. Profile mengelola pemuatan gambar, pemulihan kesalahan, dan warna kanonis nama tampilan. Messages 2.9.0 memerlukan ukuran konten dan CSS yang sesuai dari Profile 4.1.0; rilis kedua set aset bersama-sama. Penggambar lama ditolak, bukan diubah ukuran atau diganti. Kontrak hanya baca `social:messagePresentation` v2 tetap sama. Langkah tutorial Riwayat Ruang menjelaskan tombol rincian pembaca dan avatar profil, termasuk saat tanda baca belum tersedia.
+
 ## Keamanan
 
 Kelayakan ruang, keanggotaan, dan pembacaan pesan diperiksa terpisah. Ruang terenkripsi bergantung pada kunci klien; model ancaman membedakan konten dan metadata perutean.

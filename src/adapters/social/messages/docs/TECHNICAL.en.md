@@ -292,6 +292,12 @@ The Settings Message Style preview uses the same small presentation with synthet
 
 Messages 2.8.3 / Profile 4.0.0.
 
+### Read Receipt Details
+
+Select **Seen by** beside a sent message to see its readers and read times. The panel works with a tap, click or keyboard activation. Close or Escape returns to the current button; Escape dismisses an active profile preview first. Tab follows the normal page order. Hover or focus a reader avatar for the standard profile preview; select it to open that profile. Records without a profile handle show a named, unlinked avatar. Reader icons do not show availability. Small circles retain their visual size inside separate, nonoverlapping 44px targets; long lists wrap and the detail panel scrolls within the viewport.
+
+The page binds `social:messageReceipts` to the Messages provider and page lifetime. Opening runs `messages:openReadReceipts` through `validate` and `present`. A new thread snapshot, room/session change, provider removal, scroll, navigation or page disposal closes the panel and cancels pending work without returning focus to obsolete controls. Profile owns image hydration, error recovery and the canonical display-label colour. Messages 2.9.0 requires Profile 4.1.0 content sizes and matching CSS; release both asset sets together. An older renderer is rejected rather than resized or replaced. The read-only `social:messagePresentation` v2 contract remains unchanged. The Room History tutorial explains both the reader-detail button and profile avatars, including when no receipts are present.
+
 ## Security
 
 Room eligibility, membership changes and message reads are authorized independently. Encrypted rooms depend on client-held keys; the threat model below distinguishes protected content from visible routing metadata.

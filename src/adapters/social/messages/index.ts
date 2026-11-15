@@ -672,7 +672,11 @@ export async function bootstrapSocialAdapter(
     ctx.registerAdapterStaticDir?.("social", "messages", uiDir);
     ctx.registerSpaRoute?.({
         id: "social-messages-page",
-        requiredCapabilities: ["social:messagesRequest"],
+        requiredCapabilities: [
+            "social:messagesRequest",
+            "social:messageReceipts",
+            "ui:profileAvatarRenderer",
+        ],
         pattern: "^/messages(?:/[^/]+)?$",
         base: "/messages",
         scriptUrl: "/static/adapters/social/messages/app.js",
@@ -691,6 +695,11 @@ export async function bootstrapSocialAdapter(
     ctx.registerCapabilityProvider?.({
         scriptUrl: "/static/adapters/social/messages/presentation-provider.js",
         providesCapabilities: ["social:messagePresentation"],
+        isEnabled: () => ctx.isGatewayEnabled() && ctx.isAdapterEnabled(),
+    });
+    ctx.registerCapabilityProvider?.({
+        scriptUrl: "/static/adapters/social/messages/read-receipts.js",
+        providesCapabilities: ["social:messageReceipts"],
         isEnabled: () => ctx.isGatewayEnabled() && ctx.isAdapterEnabled(),
     });
     ctx.registerCapabilityProvider?.({

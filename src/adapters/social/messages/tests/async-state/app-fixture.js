@@ -115,6 +115,32 @@ export async function mountFixture() {
         handleProfileAvatarError() {},
         hydrateProfileAvatars: async () => {},
     };
+    state.receiptBindings = [];
+    const capabilities =
+        dependencies["/static/reuse/ui-ctx.js"].uiCtx.capabilities;
+    const resolveCapability = capabilities.get;
+    capabilities.get = (id) =>
+        id === "social:messageReceipts"
+            ? {
+                  bind(options) {
+                      const binding = { options, closes: 0, disposed: false };
+                      state.receiptBindings.push(binding);
+                      const dispose = () => {
+                          binding.disposed = true;
+                      };
+                      options.signal?.addEventListener("abort", dispose, {
+                          once: true,
+                      });
+                      return {
+                          close: () => {
+                              binding.closes++;
+                          },
+                          dispose,
+                      };
+                  },
+              }
+            : resolveCapability(id);
+    dependencies["./read-receipts.js"] = state.load("read-receipts.js");
     const app = await importTestModule(
         new URL("../../ui/app.js", import.meta.url),
         dependencies,

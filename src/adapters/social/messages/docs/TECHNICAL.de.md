@@ -214,6 +214,12 @@ Die Vorschau des Nachrichtenstils in den Einstellungen nutzt dieselbe kleine Dar
 
 Messages 2.8.3 / Profile 4.0.0.
 
+### Lesebestätigungen
+
+Wählen Sie **Gesehen von** neben einer gesendeten Nachricht, um Leser und Lesezeiten zu sehen. Das Fenster lässt sich per Tippen, Klicken oder Tastatur öffnen. Schließen oder Escape führt zum aktuellen Knopf zurück; Escape schließt zuerst eine aktive Profilvorschau. Tab folgt der normalen Seitenreihenfolge. Zeigen Sie auf einen Leseravatar oder fokussieren Sie ihn für die Profilvorschau; wählen Sie ihn zum Öffnen des Profils. Ohne Profilkennung bleibt der benannte Avatar unverlinkt. Leseravatare zeigen keine Verfügbarkeit. Kleine Kreise behalten ihre Größe in getrennten, nicht überlappenden 44px-Zielen. Lange Listen umbrechen; das Detailfenster scrollt innerhalb des Bildschirms.
+
+Die Seite bindet `social:messageReceipts` an den Nachrichtenanbieter und ihre Lebensdauer. Das Öffnen führt `messages:openReadReceipts` durch `validate` und `present`. Neue Verlaufsdaten, Raum- oder Sitzungswechsel, Anbieterentfernung, Scrollen, Navigation oder Seitenende schließen das Fenster und verwerfen ausstehende Arbeit, ohne veraltete Bedienelemente zu fokussieren. Profile verwaltet Bilder, Fehlerbehandlung und die kanonische Farbe des Anzeigenamens. Messages 2.9.0 benötigt die Inhaltsgrößen und das passende CSS von Profile 4.1.0; beide Asset-Sätze müssen zusammen ausgeliefert werden. Ältere Renderer werden abgelehnt statt ersetzt oder skaliert. Der schreibgeschützte Vertrag `social:messagePresentation` v2 bleibt unverändert. Der Tutorialschritt Raumverlauf erklärt den Detailknopf und Profilavatare auch ohne vorhandene Lesebestätigungen.
+
 ## Sicherheit
 
 Raumzugang, Mitgliedschaft und Nachrichtenlesen werden getrennt geprüft. Verschlüsselte Räume benötigen Clientschlüssel; das Bedrohungsmodell unterscheidet Inhalte von sichtbaren Routingdaten.

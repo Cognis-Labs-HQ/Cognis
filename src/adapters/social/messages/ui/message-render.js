@@ -1,3 +1,4 @@
+import { renderReceiptAvatars, receiptHeading } from "./receipt-avatars.js";
 import { renderConversationMarkup } from "./reuse/conversation-presentation.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { messagesFetch as apiFetch } from "./offline-client.js";
@@ -36,9 +37,6 @@ const hydrateProfileAvatars = (container) =>
 
 const reactionHoverPopup = createAnchoredPopup({
     className: "messages-reaction-hover-popup",
-});
-const readReceiptHoverPopup = createAnchoredPopup({
-    className: "messages-read-receipt-popup",
 });
 
 let searchableRooms = [];
@@ -210,21 +208,12 @@ function renderMessageStatus(
                 ),
             ),
         );
-        const avatarMarkup = readersHere
-            .map((reader) => {
-                const label =
-                    reader.displayName || reader.handle || reader.accountId;
-                return buildProfileAvatarMarkup({
-                    avatarKey: reader.avatarKey || null,
-                    label,
-                    colorSeed: reader.handle || reader.accountId || label,
-                    avatarClass: "messages-status-avatar",
-                    imageClass: "messages-status-avatar-img",
-                    fallbackClass: "messages-status-avatar-fallback",
-                });
-            })
-            .join("");
-        return `<span class="messages-message-status messages-message-status--read" data-readers="${readerPayload}">${avatarMarkup}</span>`;
+        const avatarMarkup = renderReceiptAvatars(
+            readersHere,
+            profileAvatars(),
+        );
+        const heading = escapeHtml(receiptHeading(readersHere, i18n));
+        return `<span class="messages-message-status messages-message-status--read">${avatarMarkup}<button type="button" class="btn btn-neutral messages-receipt-details" data-readers="${readerPayload}" aria-expanded="false" aria-haspopup="dialog">${heading}</button></span>`;
     }
     if (hadPriorReaders) {
         return "";
@@ -334,53 +323,8 @@ export function showReactionHoverPopup(reactionChipButton) {
     );
 }
 
-export function hideReadReceiptHoverPopup() {
-    readReceiptHoverPopup.hide();
-}
-
-export function showReadReceiptHoverPopup(statusElement, readers, i18n) {
-    if (!(statusElement instanceof HTMLElement)) return;
-    if (!readers.length) {
-        hideReadReceiptHoverPopup();
-        return;
-    }
-    const heading = i18n
-        .t("module.social.messages.receipt_seen_by_count")
-        .replace("{count}", String(readers.length));
-    const readerItems = readers
-        .map((reader) => {
-            const readerLabel =
-                reader.displayName || reader.handle || reader.accountId;
-            const readDay = formatDate(reader.readAt, "");
-            const readTime = formatTime(reader.readAt, "");
-            const timeLabel = [readDay, readTime].filter(Boolean).join(" ");
-            const avatarMarkup = buildProfileAvatarMarkup({
-                avatarKey: reader.avatarKey || null,
-                label: readerLabel,
-                colorSeed: reader.handle || reader.accountId || readerLabel,
-                avatarClass: "messages-receipt-popup-avatar",
-                imageClass: "messages-receipt-popup-avatar-img",
-                fallbackClass: "messages-receipt-popup-avatar-fallback",
-            });
-            return `<li class="messages-receipt-popup-reader">
-        ${avatarMarkup}
-        <span class="messages-receipt-popup-reader-meta">
-          <span class="messages-receipt-popup-reader-name">${escapeHtml(readerLabel)}</span>
-          ${timeLabel ? `<span class="messages-receipt-popup-reader-time">${escapeHtml(timeLabel)}</span>` : ""}
-        </span>
-      </li>`;
-        })
-        .join("");
-    readReceiptHoverPopup.show(
-        statusElement,
-        `<h3 class="messages-receipt-popup-title">${escapeHtml(heading)}</h3><ul class="messages-receipt-popup-list">${readerItems}</ul>`,
-    );
-    void hydrateProfileAvatars(document.body);
-}
-
 export function hideAllMessageHoverPopups() {
     hideReactionHoverPopup();
-    hideReadReceiptHoverPopup();
 }
 
 export function repositionReactionHoverPopup() {
@@ -389,7 +333,6 @@ export function repositionReactionHoverPopup() {
 
 export function destroyMessageHoverPopups() {
     reactionHoverPopup.destroy();
-    readReceiptHoverPopup.destroy();
 }
 
 export function parseEncodedPayload(rawPayload) {
@@ -733,6 +676,11 @@ async function renderThreadSnapshot(
             ? `<button type="button" class="messages-load-earlier-btn" data-before-time="${escapeHtml(oldestCreatedAt)}">${escapeHtml(i18n.t("module.social.messages.load_earlier"))}</button>`
             : "";
     hideAllMessageHoverPopups();
+    container.dispatchEvent(
+        new container.ownerDocument.defaultView.Event(
+            "cognis:messages-thread-replacing",
+        ),
+    );
     pendingRequest =
         previous && (pageBefore || !live)
             ? previous.pendingRequest

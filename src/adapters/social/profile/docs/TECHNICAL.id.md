@@ -180,6 +180,10 @@ Tindakan yang ditolak atau diketahui belum terkirim dapat dikonfirmasi lagi. Bil
 
 Kontrol ini memakai alur social:profile:request dan masa aktif halaman yang ada. Pengujian DOM sintetis menjalankan pemasangan halaman, popup, tahap permintaan terdaftar, dan transportasi terkendali yang sebenarnya. Pengujian ini tidak membuktikan tata letak browser asli atau perilaku server dan basis data langsung.
 
+### Ukuran Konten Ringkas
+
+Profile 4.1.0 menambahkan `tiny` (1.22rem, inisial 0.5rem) dan `compact` (1.65rem, inisial 0.6rem) pada `buildContent`. Daftar tetap `contentSizes` mengumumkan kelima nama ukuran. Ukuran ini adalah ukuran gambar, bukan sasaran penunjuk. Pemanggil mengelola sasaran yang dapat diakses secara terpisah, jarak, dan cincin pemisah luar. Arti `small`, `medium`, `large`, dan opsi `buildMarkup` tetap sama. Konsumen ukuran baru harus memeriksa daftar yang diumumkan serta merilis JavaScript dan CSS Profile yang sesuai. Messages 2.9.0 memakai kedua ukuran; rilis asetnya bersama-sama. Tutorial Profile tetap menggunakan kontrol dan ukuran avatar saat ini.
+
 ## Keamanan
 
 ### Privasi akun dan isolasi keyring

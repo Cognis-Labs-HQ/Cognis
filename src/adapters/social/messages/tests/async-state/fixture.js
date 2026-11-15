@@ -235,6 +235,7 @@ export function createRoomFixture() {
     dependencies["./reuse/conversation-presentation.js"] = load(
         "reuse/conversation-presentation.js",
     );
+    dependencies["./receipt-avatars.js"] = load("receipt-avatars.js");
     dependencies["./message-render.js"] = load("message-render.js");
     dependencies["./thread-actions.js"] = load("thread-actions.js");
     dependencies["./reuse/action-ownership.js"] = load(

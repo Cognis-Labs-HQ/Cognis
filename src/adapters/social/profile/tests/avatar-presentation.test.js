@@ -361,3 +361,68 @@ test("pointer transit preserves the card without stealing focus and Escape leave
     assert.equal(preview.hidden, true);
     assert.equal(state.document.activeElement, outside);
 });
+
+test("advertised content sizes preserve existing footprints and add compact owner geometry", async (context) => {
+    const state = await fixture(context);
+    const renderer = state.uiCtx.capabilities.get("ui:profileAvatarRenderer");
+    assert.deepEqual(
+        [...renderer.contentSizes],
+        ["tiny", "compact", "small", "medium", "large"],
+    );
+    assert.equal(Object.isFrozen(renderer.contentSizes), true);
+    const stylesheet = state.document.createElement("style");
+    stylesheet.textContent = readFileSync(
+        new URL("../ui/availability.css", import.meta.url),
+        "utf8",
+    );
+    state.document.head.appendChild(stylesheet);
+    for (const [size, width, fontSize] of [
+        ["tiny", "1.22rem", "0.5rem"],
+        ["compact", "1.65rem", "0.6rem"],
+        ["small", "32px", "0.7rem"],
+        ["medium", "48px", "1.05rem"],
+        ["large", "80px", "1.75rem"],
+    ]) {
+        const container = state.document.createElement("div");
+        container.innerHTML = renderer.buildContent({
+            profile: namedProfile,
+            size,
+            avatarKey: "synthetic",
+        });
+        state.document.body.appendChild(container);
+        const content = container.firstElementChild;
+        const computed = state.window.getComputedStyle(content);
+        assert.equal(computed.width, width);
+        assert.equal(computed.height, width);
+        assert.equal(computed.fontSize, fontSize);
+        assert.equal(content.textContent, "TF");
+        assert.equal(
+            content.firstElementChild.dataset.avatarColorSeed,
+            "The Firehawk",
+        );
+        assert.equal(
+            content.querySelector("a, button, .availability-indicator"),
+            null,
+        );
+    }
+    const existing = state.document.createElement("div");
+    existing.innerHTML = renderer.buildMarkup({
+        label: "The Firehawk",
+        colorSeed: "le-firehawk",
+        avatarClass: "existing-avatar",
+        imageClass: "existing-image",
+        fallbackClass: "existing-fallback",
+        profileHandle: "le-firehawk",
+    });
+    assert.equal(
+        existing.firstElementChild.getAttribute("href"),
+        "/profile/le-firehawk",
+    );
+    assert.equal(
+        existing
+            .querySelector(".existing-fallback")
+            .style.getPropertyValue("--initials-bg"),
+        renderer.getInitialsColor("le-firehawk"),
+    );
+    assert.ok(existing.querySelector(".availability-indicator"));
+});
