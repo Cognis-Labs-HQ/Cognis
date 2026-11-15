@@ -12,5 +12,4 @@ Tindakan open publik ditolak dengan AbortError saat dibatalkan; penutupan yang d
 
 ## Komit
 
-- [fe51fe39b951d3e084ab19d0dcb909be0157480d](https://github.com/Cognis-Labs-HQ/Cognis/commit/fe51fe39b951d3e084ab19d0dcb909be0157480d)
-- [b7ecbc93b5014f8a916cd8d87631e39cb3db39a6](https://github.com/Cognis-Labs-HQ/Cognis/commit/b7ecbc93b5014f8a916cd8d87631e39cb3db39a6)
+- [69917e531b9105ad2aa0bd9e3a5188095a63846a](https://github.com/Cognis-Labs-HQ/Cognis/commit/69917e531b9105ad2aa0bd9e3a5188095a63846a)
