@@ -95,6 +95,12 @@ Di Administrasi → Komponen, label status, indikator kesehatan, dan sakelar day
 
 Sakelar daya dan kontrol pembuka detail memiliki area tekan setinggi 44 piksel. Tab memfokuskan sakelar yang tersedia, Spasi mengubahnya, dan garis fokus mengikuti penggeser yang terlihat. Gateway wajib serta adapter terkunci atau tidak tersedia tetap memiliki kontrol yang dinonaktifkan. Tutorial Komponen menjelaskan penggunaan papan ketik dan tetap memakai target sakelar, pembuka detail, metadata, dan konfigurasi yang sama.
 
+Bagian Keamanan menghubungkan batas waktu sesi, mode validasi, dan sakelar persetujuan dengan judul terjemahan yang terlihat. Nilai angka tetap memakai nama batas waktu sesi masuk bawaan; pemilih Satuan menyertakan konteks tersebut beserta labelnya sendiri. Tombol informasi berada di luar label kontrol. Nilai keamanan tetap mengikuti alur Simpan dan Buang yang sudah ada.
+
+Gaya sakelar bersama tetap mengekspos kotak centang asli alih-alih memakai `display: none`, dengan garis fokus pada penggeser yang terlihat. Ini juga berlaku untuk Siaran, yang label dan draf dalam memorinya tidak berubah. Status tercentang dan nonaktif asli tetap menjadi acuan; ukuran baris komponen dan aturan perlindungan sakelar tetap dipertahankan.
+
+Tutorial Keamanan, Komponen, dan Siaran mempertahankan langkah, target, dan alurnya. Perubahan nama dan tampilan tidak menambah tindakan baru. Panduan mengikuti [label formulir W3C](https://www.w3.org/WAI/tutorials/forms/labels/) dan [contoh sakelar kotak centang APG](https://www.w3.org/WAI/ARIA/apg/patterns/switch/examples/switch-checkbox/). Pengujian perender dan CSS tidak membuktikan navigasi papan ketik asli, tampilan fokus, keluaran pembaca layar, atau kompatibilitas perangkat.
+
 ## Judul Formulir Bersama
 
 Pembuat formulir bersama mengelompokkan setiap judul kolom dan penanda wajibnya dalam satu wadah teks. Label dapat membungkus pada formulir sempit; penanda menggunakan spasi tanpa pemisah baris dan tetap sejajar, bukan menjadi bagian kisi tersendiri. Label kontrol asli, atribut wajib, tautan pada label, dan tombol keterangan tetap berfungsi. `setFieldRequired` memperbarui judul yang sama untuk kolom teks, pilihan, area teks, kotak centang, dan tombol radio.

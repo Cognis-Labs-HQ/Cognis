@@ -95,6 +95,12 @@ In Administration → Components, each status label, health light and power swit
 
 Power switches and disclosure controls have 44-pixel-high targets. Tab focuses an enabled switch, Space changes it, and the focus ring follows the visible slider. Required gateways and locked or unavailable adapters retain their disabled controls. The Components tutorial explains keyboard operation and continues to use the same power, disclosure, metadata and configuration targets.
 
+Security associates the session timeout, validation mode and approval switches with their visible translated headings. The timeout amount keeps the Default Login Session Timeout name; its Unit selector includes that context and its own visible label. Information buttons stay outside the control labels. Security values still follow the existing Save and Discard workflow.
+
+The shared switch styling keeps the native checkbox exposed rather than using `display: none`, with a focus outline on the visible slider. This also applies to Broadcasts, whose existing labels and in-memory drafts remain unchanged. Native checked and disabled states remain authoritative; component-row sizes and protected switches retain their existing rules.
+
+The Security, Components and Broadcasts tutorials retain their steps, targets and progression. Naming and presentation changes introduce no new action. Guidance follows [W3C form labels](https://www.w3.org/WAI/tutorials/forms/labels/) and the [APG checkbox switch example](https://www.w3.org/WAI/ARIA/apg/patterns/switch/examples/switch-checkbox/). Renderer and CSS tests do not establish native keyboard traversal, painted focus, screen-reader output or device compatibility.
+
 ## Shared Form Headings
 
 The shared form builder groups each field heading and its required marker in one text container. Labels can wrap in narrow forms; the marker uses a nonbreaking space and stays inline instead of becoming a separate grid item. Native control labels, required attributes, rich label links and tooltip buttons retain their roles. `setFieldRequired` updates the same heading for text, select, textarea, checkbox and radio fields.

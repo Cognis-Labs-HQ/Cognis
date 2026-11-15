@@ -95,6 +95,12 @@ Unter Administration → Komponenten nutzen Statusbeschriftung, Zustandsanzeige 
 
 Ein-/Ausschalter und Aufklappsteuerung haben 44 Pixel hohe Bedienflächen. Tab fokussiert einen verfügbaren Schalter, die Leertaste schaltet ihn um, und ein Fokusring markiert den sichtbaren Schieber. Erforderliche Gateways sowie gesperrte oder nicht verfügbare Adapter behalten deaktivierte Schalter. Die Komponenten-Anleitung erklärt die Tastaturbedienung und verwendet weiterhin dieselben Ziele für Schalter, Aufklappen, Metadaten und Konfiguration.
 
+Im Bereich Sicherheit sind Sitzungsdauer, Validierungsmodus und Genehmigungsschalter mit ihren sichtbaren übersetzten Überschriften verknüpft. Der Zahlenwert behält den Namen der Standard-Anmeldesitzungsdauer; die Auswahl Einheit ergänzt diesen Kontext um ihre eigene sichtbare Beschriftung. Informationsschaltflächen stehen außerhalb der Feldbeschriftungen. Sicherheitswerte verwenden weiterhin den bisherigen Ablauf zum Speichern und Verwerfen.
+
+Die gemeinsame Schalterdarstellung hält das native Kontrollkästchen zugänglich, statt `display: none` zu verwenden, und zeigt einen Fokusrahmen am sichtbaren Schieber. Das gilt auch für Mitteilungen, deren Beschriftungen und Entwürfe im Arbeitsspeicher unverändert bleiben. Die nativen Zustände für Auswahl und Deaktivierung bleiben maßgeblich; Abmessungen der Komponentenzeilen und Schutzregeln für Schalter bleiben erhalten.
+
+Die Anleitungen für Sicherheit, Komponenten und Mitteilungen behalten Schritte, Ziele und Ablauf. Die Änderungen an Beschriftung und Darstellung führen keine neue Aktion ein. Grundlage sind die [W3C-Hinweise zu Formularbeschriftungen](https://www.w3.org/WAI/tutorials/forms/labels/) und das [APG-Beispiel für Kontrollkästchen als Schalter](https://www.w3.org/WAI/ARIA/apg/patterns/switch/examples/switch-checkbox/). Renderer- und CSS-Tests belegen weder native Tastaturnavigation noch gezeichneten Fokus, Screenreader-Ausgabe oder Gerätekompatibilität.
+
 ## Gemeinsame Formularüberschriften
 
 Der gemeinsame Formularbaukasten fasst jede Feldüberschrift und ihre Pflichtfeldmarkierung in einem Textcontainer zusammen. Beschriftungen können in schmalen Formularen umbrechen; die Markierung verwendet ein geschütztes Leerzeichen und bleibt im Textfluss, statt eine eigene Rasterzelle zu bilden. Native Feldbeschriftungen, Pflichtattribute, Links in Beschriftungen und Hilfeschaltflächen behalten ihre Funktionen. `setFieldRequired` aktualisiert dieselbe Überschrift für Textfelder, Auswahllisten, mehrzeilige Felder, Kontrollkästchen und Optionsfelder.
