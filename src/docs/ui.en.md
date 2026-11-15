@@ -199,3 +199,11 @@ Caller changes to `aria-invalid`, including removal, are retained across later i
 ### Tutorial coverage
 
 Follow the requirements shown for a field, correct unmet criteria and retry the owner's action. Registration administration and Security tutorials retain their existing controls, targets, completion IDs and navigation. The Security guide already explains meeting password requirements, confirmation and cancellation. Shared validation adds no new tutorial action or step. The shared UI has no independently versioned package or manifest.
+
+## Settings Email Actions
+
+Set as primary uses constructive styling and Remove uses destructive styling. Both actions share one pending lock across the email list, including same-page redraws. Explicit rejection, an acknowledged change, a queued change and an unconfirmed result have distinct localized toasts. A saved change is not reported as failed when refreshing its list fails. Leaving the page, changing account or removing the provider suppresses stale completion feedback.
+
+Refresh checks the list without repeating a mutation. Accepted and unknown outcomes use the public Notify client's online-only, non-buffered read with `cache: "no-store"`, excluding cached bodies, shared pending reads and outbox projections. A valid list must show the requested removal or primary selection before the action lock clears. Queued outcomes continue to use Notify's normal projected list and are never presented as server-confirmed. Failed, malformed, offline or unchanged recovery reads retain the lock and guidance. If an unknown result remains unresolved, reopen Settings and review the current list before starting a new change. This lock belongs to the current page; reopening does not prove the earlier outcome, and no durable mutation receipt is added.
+
+The existing General tutorial keeps its email-list target, owner and completion ID in populated and empty states, with updated pending, queued and Refresh guidance in all four languages. Verification, resend, Add, password and account-lifecycle action handlers retain their existing behavior. Shared UI assets have no separate package version.
