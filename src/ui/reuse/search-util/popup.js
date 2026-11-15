@@ -18,6 +18,8 @@
 import { lockPageScroll } from "../page-scroll-lock.js";
 import { transientSurfaces } from "../transient-surfaces.js";
 import { uiCtx } from "../ui-ctx.js";
+import { captureAccountGuard } from "../offline-identity.js";
+import { selectSearchResult } from "./selection.js";
 import { search } from "./capability.js";
 import {
     DEBOUNCE_MS,
@@ -85,6 +87,7 @@ async function runSearch({
     searchOptions,
     searchingText,
     errorText,
+    selectionState,
 }) {
     if (query.length < MIN_SEARCH_QUERY_LENGTH) {
         renderSearchPendingMessage(resultsContainer, categoriesContainer);
@@ -118,6 +121,8 @@ async function runSearch({
                 onSelect,
                 closeOverlay,
                 categoriesContainer,
+                multiSelectState,
+                selectionState,
             );
             return;
         }
@@ -130,6 +135,7 @@ async function runSearch({
                 closeOverlay,
                 multiSelectState,
                 categoriesContainer,
+                selectionState,
             );
             return;
         }
@@ -150,6 +156,7 @@ async function runSearch({
                 closeOverlay,
                 multiSelectState,
                 categoriesContainer,
+                selectionState,
             );
         }
     };
@@ -322,6 +329,7 @@ function unlockSearchPopupScroll() {
     releaseSearchScroll = undefined;
 }
 
+/** @param {object} options Search callbacks, presentation and optional owner signal. @returns {Function} Dismiss this Search surface. */
 export function openSearchPopup({
     endpoint,
     onSelect,
@@ -338,8 +346,12 @@ export function openSearchPopup({
     showOptions = true,
     searchingText = "Searching…",
     errorText = "Search failed. Please try again.",
+    signal,
 }) {
-    const existingOverlay = document.querySelector(".search-popup-overlay");
+    if (signal?.aborted) return () => {};
+    const existingOverlay = document.querySelector(
+        ".search-popup-overlay:not(.search-popup-overlay--closing)",
+    );
     if (existingOverlay) {
         existingOverlay.__closeSearchPopup?.();
     }
@@ -436,6 +448,7 @@ export function openSearchPopup({
             button.textContent = label;
             button.setAttribute("aria-pressed", "false");
             button.addEventListener("click", () => {
+                if (selectionState.pending) return;
                 searchOptions[optionName] = !searchOptions[optionName];
                 button.classList.toggle(
                     "search-popup-option--active",
@@ -458,6 +471,33 @@ export function openSearchPopup({
 
     let multiSelectState = null;
     let confirmFooter = null;
+    const assertAccount = captureAccountGuard();
+    let lockedQuery = "";
+    const selectionState = {
+        signal: eventController.signal,
+        invalidate: () => closeOverlay(),
+        assertCurrent() {
+            assertAccount();
+            if (!overlay.isConnected)
+                throw new DOMException("Search closed", "AbortError");
+        },
+        setPending(pending) {
+            if (pending) lockedQuery = input.value;
+            overlay.setAttribute("aria-busy", String(pending));
+            input.disabled = pending;
+            clearButton.disabled = pending;
+            for (const region of [
+                resultsContainer,
+                categoriesContainer,
+                confirmFooter,
+                popup.querySelector(".search-popup-options"),
+            ]) {
+                if (region) region.inert = pending;
+            }
+            const confirm = confirmFooter?.querySelector("button");
+            if (confirm) confirm.disabled = pending;
+        },
+    };
 
     if (multiSelect) {
         confirmFooter = document.createElement("div");
@@ -466,7 +506,8 @@ export function openSearchPopup({
 
         const confirmBtn = document.createElement("button");
         confirmBtn.type = "button";
-        confirmBtn.className = "search-popup-confirm-btn btn-animated";
+        confirmBtn.className =
+            "search-popup-confirm-btn btn-confirm btn-animated";
         confirmBtn.textContent = confirmLabel;
         confirmFooter.appendChild(confirmBtn);
         popup.appendChild(confirmFooter);
@@ -485,6 +526,7 @@ export function openSearchPopup({
                 const key = checkbox.dataset.key ?? "";
                 const isChecked = multiSelectState.selected.has(key);
                 checkbox.checked = isChecked;
+                item.setAttribute("aria-checked", String(isChecked));
                 item.classList.toggle(
                     "search-popup-result--checked",
                     isChecked,
@@ -498,12 +540,22 @@ export function openSearchPopup({
             onSelectionChange: updateFooter,
         };
 
-        confirmBtn.addEventListener("mousedown", (event) => {
-            event.preventDefault();
-            const selectedItems = Array.from(multiSelectState.itemMap.values());
-            closeOverlay();
-            onSelectMultiple?.(selectedItems);
-        });
+        confirmBtn.addEventListener(
+            "click",
+            () => {
+                if (!multiSelectState.selected.size) return;
+                const selectedItems = Array.from(
+                    multiSelectState.itemMap.values(),
+                );
+                void selectSearchResult(
+                    selectedItems,
+                    onSelectMultiple,
+                    closeOverlay,
+                    selectionState,
+                );
+            },
+            { signal: eventController.signal },
+        );
     }
 
     const pageFindState = { highlights: [], currentIndex: -1 };
@@ -551,6 +603,12 @@ export function openSearchPopup({
 
     transientSurfaces.register(overlay, closeOverlay, eventController.signal);
     overlay.__closeSearchPopup = closeOverlay;
+    if (signal) transientSurfaces.attachLifetime(overlay, signal);
+    for (const event of ["cognis:route-will-change", "pagehide"]) {
+        window.addEventListener(event, closeOverlay, {
+            signal: eventController.signal,
+        });
+    }
 
     const onKeyDown = (event) => {
         if (event.key === "Escape") {
@@ -568,6 +626,7 @@ export function openSearchPopup({
     };
 
     const runCurrentSearch = () => {
+        if (selectionState.pending || eventController.signal.aborted) return;
         latestSearchRunId += 1;
         activeSearchController?.abort();
         clearTimeout(debounceTimer);
@@ -602,6 +661,7 @@ export function openSearchPopup({
                     searchOptions,
                     searchingText,
                     errorText,
+                    selectionState,
                 }),
             DEBOUNCE_MS,
         );
@@ -612,6 +672,7 @@ export function openSearchPopup({
     });
 
     clearButton.addEventListener("click", () => {
+        if (selectionState.pending) return;
         input.value = "";
         currentQuery = "";
         clearButton.classList.remove("search-popup-clear--visible");
@@ -630,6 +691,10 @@ export function openSearchPopup({
     });
 
     input.addEventListener("input", () => {
+        if (selectionState.pending) {
+            input.value = lockedQuery;
+            return;
+        }
         const query = input.value.trim();
         if (query === currentQuery) return;
         currentQuery = query;
@@ -653,11 +718,14 @@ export function openSearchPopup({
     document.addEventListener("keydown", onKeyDown, {
         signal: eventController.signal,
     });
-    requestAnimationFrame(() => input.focus());
+    requestAnimationFrame(() => {
+        if (!eventController.signal.aborted) input.focus();
+    });
 
     return closeOverlay;
 }
 
+/** @param {object} options Search callbacks, presentation and optional owner signal. @returns {HTMLElement} Navbar control wrapper. */
 export function createSearchBar({
     endpoint,
     onSelect,
@@ -667,6 +735,7 @@ export function createSearchBar({
     noResultsText = "No results found.",
     typeFilter = "",
     localGroups = [],
+    signal,
 }) {
     const wrapper = document.createElement("div");
     wrapper.className = "search-bar-wrap";
@@ -684,31 +753,37 @@ export function createSearchBar({
     bindSearchShortcut();
 
     let closePopup = null;
+    let opening = null;
 
-    toggleBtn.addEventListener("click", (event) => {
-        event.stopPropagation();
-        if (typeof closePopup === "function") {
-            closePopup();
-            closePopup = null;
-            return;
-        }
-        closePopup = openSearchPopup({
-            endpoint,
-            onSelect: (result) => {
+    toggleBtn.addEventListener(
+        "click",
+        (event) => {
+            event.stopPropagation();
+            if (!wrapper.isConnected) return;
+            if (typeof closePopup === "function") {
+                closePopup();
                 closePopup = null;
-                onSelect(result);
-            },
-            onClose: () => {
-                closePopup = null;
-            },
-            placeholder,
-            category,
-            ariaLabel,
-            noResultsText,
-            typeFilter,
-            localGroups,
-        });
-    });
+                return;
+            }
+            const currentOpening = {};
+            opening = currentOpening;
+            closePopup = openSearchPopup({
+                endpoint,
+                onSelect,
+                signal,
+                onClose: () => {
+                    if (opening === currentOpening) closePopup = null;
+                },
+                placeholder,
+                category,
+                ariaLabel,
+                noResultsText,
+                typeFilter,
+                localGroups,
+            });
+        },
+        signal ? { signal } : undefined,
+    );
 
     return wrapper;
 }

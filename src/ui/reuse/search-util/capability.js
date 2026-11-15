@@ -1,5 +1,7 @@
 /**
  * CTX-backed search capability registration and stage execution.
+ * Exports: search — register avenues, execute providers and resolve result lifetimes.
+ * @example const remove = search.registerAvenue("example", { id: "pages", provider });
  *
  * @module reuse/search-util/capability
  */
@@ -18,6 +20,20 @@ function normalizeSearchOptions(options = {}) {
 
 function createSearchCapability() {
     const avenuesByComponent = new Map();
+    const lifetimes = new WeakMap();
+    const resultLifetime = Symbol("searchResultLifetime");
+
+    function bindResults(result, signal) {
+        if (!signal || !result || typeof result !== "object") return result;
+        if (Array.isArray(result))
+            return result.map((item) => bindResults(item, signal));
+        return {
+            ...result,
+            ...(Array.isArray(result.items)
+                ? { items: bindResults(result.items, signal) }
+                : { [resultLifetime]: signal }),
+        };
+    }
 
     function normalizeComponentId(componentId) {
         return String(componentId ?? "").trim();
@@ -51,16 +67,22 @@ function createSearchCapability() {
         if (!normalizedAvenue) return () => {};
         const componentAvenues =
             avenuesByComponent.get(normalizedAvenue.componentId) ?? [];
+        for (const existing of componentAvenues) {
+            if (existing.id === normalizedAvenue.id)
+                lifetimes.get(existing)?.abort();
+        }
+        lifetimes.set(normalizedAvenue, new AbortController());
         const nextAvenues = componentAvenues.filter(
             (existingAvenue) => existingAvenue.id !== normalizedAvenue.id,
         );
         nextAvenues.push(normalizedAvenue);
         avenuesByComponent.set(normalizedAvenue.componentId, nextAvenues);
         return () => {
+            lifetimes.get(normalizedAvenue).abort();
             const currentAvenues =
                 avenuesByComponent.get(normalizedAvenue.componentId) ?? [];
             const remainingAvenues = currentAvenues.filter(
-                (existingAvenue) => existingAvenue.id !== normalizedAvenue.id,
+                (existingAvenue) => existingAvenue !== normalizedAvenue,
             );
             if (remainingAvenues.length) {
                 avenuesByComponent.set(
@@ -81,7 +103,11 @@ function createSearchCapability() {
 
     async function runAvenue(avenue, providerContext) {
         const controller = new AbortController();
-        const parentSignal = providerContext?.signal;
+        const ownerSignal = lifetimes.get(avenue)?.signal;
+        const parentSignal = AbortSignal.any([
+            ...(providerContext?.signal ? [providerContext.signal] : []),
+            ...(ownerSignal ? [ownerSignal] : []),
+        ]);
         const abort = () => controller.abort(parentSignal.reason);
         if (parentSignal?.aborted) abort();
         else parentSignal?.addEventListener("abort", abort, { once: true });
@@ -109,7 +135,7 @@ function createSearchCapability() {
                     3_000,
                 );
             });
-            return await Promise.race([
+            const result = await Promise.race([
                 Promise.resolve().then(() => {
                     controller.signal.throwIfAborted();
                     return avenue.provider({
@@ -117,7 +143,9 @@ function createSearchCapability() {
                         signal: controller.signal,
                         onResults: (results) => {
                             if (!controller.signal.aborted)
-                                providerContext?.onResults?.(results);
+                                providerContext?.onResults?.(
+                                    bindResults(results, ownerSignal),
+                                );
                         },
                         componentId: avenue.componentId,
                         categoryId: avenue.categoryId,
@@ -127,6 +155,7 @@ function createSearchCapability() {
                 }),
                 deadline,
             ]);
+            return bindResults(result, ownerSignal);
         } finally {
             controller.abort();
             clearTimeout(timeout);
@@ -167,6 +196,13 @@ function createSearchCapability() {
         getAvenues,
         runAvenue,
         runStage,
+        selectionSignal(items) {
+            return AbortSignal.any(
+                (Array.isArray(items) ? items : [items])
+                    .map((item) => item?.[resultLifetime])
+                    .filter(Boolean),
+            );
+        },
     };
 }
 

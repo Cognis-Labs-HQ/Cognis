@@ -734,7 +734,7 @@
   <string name="ui.tutorial.workspace.options.title">Persempit Pencarian</string>
   <string name="ui.tutorial.workspace.options.body">Gunakan opsi untuk mencocokkan huruf besar, kata utuh, atau pola. Pencari halaman menemukan teks dan kontrol yang tersedia di halaman ini. Klik pil filter mana pun untuk mencoba penyempurnaan pencarian dan melanjutkan.</string>
   <string name="ui.tutorial.workspace.results.title">Gunakan Hasil Pencarian</string>
-  <string name="ui.tutorial.workspace.results.body">Tinjau kategori dan label hasil. Setelah panduan, pilih halaman untuk membukanya atau hasil di halaman ini untuk menemukan kontrolnya.</string>
+  <string name="ui.tutorial.workspace.results.body">Tinjau kategori dan label hasil. Setelah panduan, pilih hasil dengan penunjuk atau Enter dan tunggu hingga selesai. Jika Pencarian tetap terbuka setelah pemilihan gagal, periksa tujuan sebelum mencoba lagi.</string>
   <string name="ui.tutorial.workspace.close.title">Tutup Pencarian</string>
   <string name="ui.tutorial.workspace.close.body">Tutup Pencarian untuk kembali ke ruang kerja.</string>
   <string name="ui.tutorial.workspace.notifications.title">Tinjau Notifikasi</string>
@@ -797,4 +797,6 @@
   <string name="ui.tutorial.settings.appearance.message.preview.title">Bandingkan Gaya Pesan</string>
   <string name="ui.app.settings.message_preview_participant">Pelajar Contoh</string>
   <string name="ui.app.settings.message_preview_failed">Percakapan contoh tidak dapat ditampilkan.</string>
+  <string name="ui.search.selection_failed">Pemilihan tidak dapat diselesaikan. Periksa tujuan sebelum mencoba lagi.</string>
+  <string name="ui.search.selection_unavailable">Hasil ini tidak lagi tersedia. Cari kembali.</string>
 </resources>
