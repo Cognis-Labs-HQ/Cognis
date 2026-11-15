@@ -84,3 +84,7 @@ Tutorial ruang kerja menyorot tombol navigasi yang terlihat di layar sempit dan 
 ## Jalur Draf Sumber Daya
 
 Pengelola draf formulir publik menerima dependensi opsional `resolveStoragePath(scopeKey)`. Halaman sumber daya dapat mengembalikan jalur kanonis miliknya agar pembacaan, penyimpanan, dan penghapusan draf terkirim tetap mengarah ke sumber daya yang sama setelah navigasi. Nilai bawaan tetap jalur halaman saat ini. Akun yang terautentikasi tetap menjadi bagian dari setiap kunci penyimpanan; resolver tidak mengubah isolasi akun atau pengecualian kolom.
+
+## Aksi tata letak native
+
+Panel tata letak utama dan bersarang menggunakan kontrol native `button type="button"` untuk Selesai, Buang, dan Atur Ulang. Aksi ini tidak mengirim formulir yang membungkusnya atau melakukan navigasi. Pengiriman tata letak yang masih berlangsung menonaktifkannya melalui penguncian editor yang sudah ada; pengiriman yang gagal memulihkan kontrol untuk percobaan ulang secara eksplisit. Selesai tetap menyimpan dan menutup setelah konfirmasi, Buang memulihkan keadaan awal lokal tanpa menulis, dan Atur Ulang menyimpan tata letak bawaan sambil melanjutkan penyuntingan. Kelas aksi yang ada dan target tutorial ruang kerja `#composer-edit-toggle` tetap sama.
