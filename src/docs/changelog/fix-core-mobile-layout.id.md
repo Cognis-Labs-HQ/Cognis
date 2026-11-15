@@ -13,3 +13,4 @@ Administrasi memisahkan nama gateway dari kontrolnya. Kode kesalahan muat dalam 
 ## Komit
 
 - [1b93fa1da99374dea18074514c79f0b2d78fdc8e](https://github.com/Cognis-Labs-HQ/Cognis/commit/1b93fa1da99374dea18074514c79f0b2d78fdc8e)
+- [d1b5fe1ac497bc516a04d1f06717007512a6a40e](https://github.com/Cognis-Labs-HQ/Cognis/commit/d1b5fe1ac497bc516a04d1f06717007512a6a40e)
