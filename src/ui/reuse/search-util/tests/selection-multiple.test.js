@@ -1,6 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { deferred, selectionFixture, wait } from "./selection-fixture.js";
+import {
+    deferred,
+    selectionFixture,
+    wait,
+    waitForRemoval,
+} from "./selection-fixture.js";
 
 test("Search batch selection uses native activation and preserves its selection", async (context) => {
     const fixture = await selectionFixture(context);
@@ -93,7 +98,7 @@ test("Search batch selection uses native activation and preserves its selection"
                 assert.equal(popup.input.value, "Fixture");
                 assert.equal(checkbox.checked, true);
                 confirm.click();
-                await wait(170);
+                await waitForRemoval(popup.overlay);
                 assert.deepEqual(received, [
                     ["one", "two"],
                     ["one", "two"],
