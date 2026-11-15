@@ -12,9 +12,4 @@ Individually locked adapters remain managed by their gateway. Gateway actions do
 
 ## Commits
 
-- [cbeb8ddade3166c6f2831b5371bf354b4c6c8b1a](https://github.com/Cognis-Labs-HQ/Cognis/commit/cbeb8ddade3166c6f2831b5371bf354b4c6c8b1a)
-- [da2f1f42738a2b3d61fa73a9624fb670557382ad](https://github.com/Cognis-Labs-HQ/Cognis/commit/da2f1f42738a2b3d61fa73a9624fb670557382ad)
-- [40d08231edb4630d69d1178097a50b06f3f05fd9](https://github.com/Cognis-Labs-HQ/Cognis/commit/40d08231edb4630d69d1178097a50b06f3f05fd9)
-- [5be1992292d6d641d75805fe58a48c5555cc7940](https://github.com/Cognis-Labs-HQ/Cognis/commit/5be1992292d6d641d75805fe58a48c5555cc7940)
-- [cc01b0af6c503b4e1b54b4e0cc040d22363d1c89](https://github.com/Cognis-Labs-HQ/Cognis/commit/cc01b0af6c503b4e1b54b4e0cc040d22363d1c89)
-- [a0dd4227a060dddb0c73d043e39dfb0cbe4e90ae](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0dd4227a060dddb0c73d043e39dfb0cbe4e90ae)
+- [678a421d31da62c65ea132772d4069d5468b8cc9](https://github.com/Cognis-Labs-HQ/Cognis/commit/678a421d31da62c65ea132772d4069d5468b8cc9)
