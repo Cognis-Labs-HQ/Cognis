@@ -149,6 +149,14 @@ Tutorial targets, completion IDs, actions, Next, Back, Restart and replay are un
 
 The five-second bound applies only to the stylesheet attempt, not total `openPopup` preparation. Strict locale initialization retains its existing lifetime without a new timeout; it can delay localized failure feedback and rejection, but the opening signal still cancels promptly. Healthy anchored previews do not initialize modal locale resources.
 
+### Floating window gestures
+
+`ui:makeFloatingWindow`
+
+A floating window accepts one move or resize gesture at a time. Additional touches cannot replace it. Releasing or cancelling the owning pointer, or losing its capture, ends only that gesture and keeps the current position and size. A later gesture can start normally.
+
+The returned `release()` function and an optional caller-owned abort signal remove floating behavior and release its pointer capture; they do not remove caller content or invoke the close callback. Only the explicit Close control invokes that callback. Choose the signal for the intended window lifetime: persistent Call PiP intentionally omits a page signal, and route notifications alone do not close it.
+
 ## Security
 
 Hidden navigation is not access control. Browser providers resolve owner capabilities and abort pending work on unmount or account changes; private reads remain account-scoped.

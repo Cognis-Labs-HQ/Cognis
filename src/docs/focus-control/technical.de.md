@@ -84,13 +84,19 @@ Eine Oberfläche, die `pip` deklariert, wird mit dem wiederverwendbaren Verhalte
 
 Ein Anbieter kann `minSize: { width, height }` in seinen Oberflächenmetadaten angeben, um die Mindestabmessungen des PiP in Pixeln festzulegen. Beide Maße müssen positive endliche Zahlen sein. Der Host übergibt sie zur Durchsetzung beim Skalieren an die Floating-Window-Steuerung; ohne `minSize` gelten die Host-Standardwerte. Ein Anbieter, der ein schwebendes Fenster direkt erstellt, kann `release.updateMinimumSize({ width, height })` an der zurückgegebenen Bereinigungsfunktion aufrufen. Gültige Aktualisierungen vergrößern ein zu kleines Fenster sofort und halten es innerhalb des verfügbaren Bereichs; bei ungültigen Aktualisierungen oder nach der Bereinigung gibt die Methode `false` zurück. Wird das Fenster beim Skalieren schmaler als seine Mindestbreite und zugleich höher als seine Mindesthöhe gezogen, wechseln diese Mindestmaße in eine vertikale Ausrichtung. Wird ein vertikal ausgerichtetes Fenster breiter als seine Mindestbreite und zugleich niedriger als seine Mindesthöhe gezogen, wechselt es zurück in die standardmäßige horizontale Ausrichtung.
 
-Ein Modul mit einem eigenen PiP-Element, beispielsweise einem Meeting-Frame, bezieht `ui:makeFloatingWindow` über `uiCtx.capabilities`, übergibt Element, Ziehbereich und Seitensignal und bewahrt die zurückgegebene Bereinigungsfunktion auf. Die Utility darf nicht direkt importiert werden.
+Ein Modul mit einem eigenen PiP-Element, beispielsweise einem Meeting-Frame, bezieht `ui:makeFloatingWindow` über `uiCtx.capabilities`, übergibt Element, Ziehbereich und ein optionales Lebensdauersignal und bewahrt die zurückgegebene Bereinigungsfunktion auf. Die Utility darf nicht direkt importiert werden.
 
 Cognis hebt das vorhandene Anbieter-Element in die oberste Browser-Ebene, ohne es in ein anderes DOM-Elternelement zu verschieben. Dadurch bleiben aktive Iframe- und Meeting-Verbindungen beim Öffnen und Schließen von PiP erhalten. Browser ohne Unterstützung für die oberste Ebene behalten das Element in seiner ursprünglichen Komponentenbühne und begrenzen es auf dieses Elternelement, statt es neu einzuhängen.
 
 Mit `boundaryElement` kann ein Aufrufer ein positioniertes, scrollbares Containerelement als Begrenzung angeben. Das Fenster verwendet dann absolute Positionierung und die Scrollkoordinaten des Containers; Portalverschiebung und Darstellung in der obersten Ebene sind standardmäßig deaktiviert. Verschieben und Größenändern bleiben innerhalb der Inhaltsbreite und scrollbaren Höhe, während der Überlauf des Containers das Fenster regulär beschneidet.
 
 Schließen-Steuerelemente schwebender Fenster verwenden das ausgelieferte gemeinsame Schließen-SVG mit themenabhängiger Farbe. Ihr sichtbarer Hover-Hinweis verwendet dieselbe lokalisierte Aktionsbezeichnung wie der zugängliche Name statt eines geerbten Oberflächentitels.
+
+Ein schwebendes Fenster akzeptiert jeweils eine Verschiebe- oder Größenänderungsgeste. Weitere Berührungen ersetzen sie nicht. Das Loslassen oder Abbrechen des zugehörigen Zeigers oder der Verlust seiner Erfassung beendet nur diese Geste und behält Position und Größe bei. Danach kann eine neue Geste beginnen.
+
+Die zurückgegebene Funktion `release()` und ein optionales Abbruchsignal des Aufrufers entfernen das schwebende Verhalten und geben die Zeigererfassung frei; sie entfernen keine Inhalte des Aufrufers und rufen nicht den Schließen-Rückruf auf. Nur das ausdrückliche Schließen-Steuerelement ruft diesen Rückruf auf. Das Signal muss zur vorgesehenen Fensterlebensdauer passen: Dauerhaftes Anruf-PiP lässt das Seitensignal bewusst weg; Routenmeldungen allein schließen es nicht.
+
+Bestehende Ziele, Schritte und Aktionen der Fokus- und Zeichentutorials bleiben unverändert; unterbrochene Gesten benötigen keinen neuen Tutorialzweig.
 
 ## Sicherheit
 
