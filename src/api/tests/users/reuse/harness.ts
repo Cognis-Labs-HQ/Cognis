@@ -68,6 +68,11 @@ export async function createHarness(options: HarnessOptions = {}) {
             actorId?: string;
             body?: unknown;
             onBody?: () => void;
+            recover?: (
+                error: unknown,
+                req: IncomingMessage,
+                res: ServerResponse,
+            ) => Promise<void>;
         } = {},
     ) {
         const actorId = input.actorId ?? "administrator";
@@ -88,20 +93,30 @@ export async function createHarness(options: HarnessOptions = {}) {
         const path =
             input.path ??
             `/api/v1/users/${encodeURIComponent(input.accountId ?? "target")}${input.action ? `/${input.action}` : ""}`;
-        const handled = await route(
-            req,
-            {
-                writeHead(code: number) {
-                    status = code;
-                    headerCount += 1;
-                },
-                end(body: string) {
-                    payload = body;
-                    responseCount += 1;
-                },
-            } as ServerResponse,
-            new URL(path, "http://localhost"),
-        );
+        const res = {
+            get headersSent() {
+                return headerCount > 0;
+            },
+            get writableEnded() {
+                return responseCount > 0;
+            },
+            writeHead(code: number) {
+                status = code;
+                headerCount += 1;
+            },
+            end(body: string) {
+                payload = body;
+                responseCount += 1;
+            },
+        } as ServerResponse;
+        let handled: boolean;
+        try {
+            handled = await route(req, res, new URL(path, "http://localhost"));
+        } catch (error) {
+            if (!input.recover) throw error;
+            await input.recover(error, req, res);
+            handled = true;
+        }
         return {
             handled,
             status,

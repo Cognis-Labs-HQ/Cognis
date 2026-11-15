@@ -92,13 +92,13 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 
 | Komponen   | Jalur      | Versi     |
 | ---------- | ---------- | --------- |
-| API Server | `src/api/` | `0.13.36` |
+| API Server | `src/api/` | `0.13.37` |
 
 ## Peralatan
 
 | Komponen   | Jalur              | Versi   |
 | ---------- | ------------------ | ------- |
-| Cognis CLI | `src/tooling/cli/` | `0.4.7` |
+| Cognis CLI | `src/tooling/cli/` | `0.4.8` |
 
 [c]: https://github.com/Cognis-Labs-HQ/Cognis/blob/master/src/core/package.json
 [a]: https://github.com/Cognis-Labs-HQ/Cognis/blob/master/src/api/package.json

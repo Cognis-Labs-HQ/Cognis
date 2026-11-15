@@ -58,6 +58,7 @@ export function isAccountTargetDenial(
 export function rejectAccountTarget(
     res: ServerResponse,
     decision: Extract<AccountTargetDecision, { allowed: false }>,
+    data?: Readonly<Record<string, unknown>>,
 ): void {
     res.writeHead(decision.status, { "content-type": "application/json" });
     res.end(
@@ -66,6 +67,7 @@ export function rejectAccountTarget(
                 code: decision.code,
                 message: ERROR_MESSAGES[decision.code] ?? decision.code,
             },
+            ...(data === undefined ? {} : { data }),
         }),
     );
 }

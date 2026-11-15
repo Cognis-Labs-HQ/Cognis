@@ -92,13 +92,13 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 | Komponente | Pfad       | Version   |
 | ---------- | ---------- | --------- |
-| API Server | `src/api/` | `0.13.36` |
+| API Server | `src/api/` | `0.13.37` |
 
 ## Werkzeuge
 
 | Komponente | Pfad               | Version |
 | ---------- | ------------------ | ------- |
-| Cognis CLI | `src/tooling/cli/` | `0.4.7` |
+| Cognis CLI | `src/tooling/cli/` | `0.4.8` |
 
 [c]: https://github.com/Cognis-Labs-HQ/Cognis/blob/master/src/core/package.json
 [a]: https://github.com/Cognis-Labs-HQ/Cognis/blob/master/src/api/package.json

@@ -21,4 +21,7 @@
   <string name="cli.terminal.input.query">Erforderliches JSON-Abfragefeld fehlt: {field}. Die Felder des Befehls werden mit --help angezeigt.</string>
   <string name="cli.terminal.input.duplicate">Doppeltes Eingabefeld im Befehl: {field}. Der Befehlsanbieter muss eindeutige Feldnamen verwenden.</string>
   <string name="cli.terminal.input.array">Eine kommagetrennte Liste oder ein JSON-Array aus Zeichenfolgen eingeben. [] ergibt eine leere Liste.</string>
+  <string name="cli.terminal.delete.committed">Das Konto wurde gelöscht, aber die Bereinigung ist unvollständig. Nicht erneut löschen. Prüfen Sie den Serverfehler und reparieren Sie die betroffene Bereinigung.</string>
+  <string name="cli.terminal.delete.rejected">Die Löschung wurde abgelehnt, bevor das Konto entfernt wurde. Prüfen Sie die Ablehnung vor einem neuen Versuch.</string>
+  <string name="cli.terminal.delete.unknown">Ergebnis der Löschung unbekannt. Prüfen Sie Konto und Serverprotokolle, bevor Sie einen neuen Versuch erwägen. Es wurde nicht erneut versucht.</string>
 </resources>
