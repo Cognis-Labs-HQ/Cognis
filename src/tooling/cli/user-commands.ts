@@ -15,6 +15,10 @@ import {
 import { apiGet, apiPost, apiRequest } from "./http.ts";
 import { register } from "./registry.ts";
 
+const usernameField = { name: "username", required: true, sensitive: false };
+const passwordField = { name: "password", required: true, sensitive: true };
+const roleField = { name: "role", required: true, sensitive: false };
+
 export function registerUserCommands(): void {
     register(
         "user:list",
@@ -47,6 +51,7 @@ export function registerUserCommands(): void {
         },
         {
             usage: "cognisctl user:create <username> <password> <role>",
+            wizardFields: [usernameField, passwordField, roleField],
             description: "Create a user.",
             render: renderUserCreate,
         },
@@ -81,6 +86,7 @@ export function registerUserCommands(): void {
         },
         {
             usage: "cognisctl user:role <username> <role>",
+            wizardFields: [usernameField, roleField],
             description: "Update a user role.",
             render: (payload) =>
                 renderUserMutation("User Role Updated", payload, (response) => [
@@ -118,6 +124,7 @@ export function registerUserCommands(): void {
         },
         {
             usage: "cognisctl user:set-password <username> <password>",
+            wizardFields: [usernameField, passwordField],
             description: "Set a user password.",
             render: (payload) =>
                 renderUserMutation("User Password Updated", payload),
@@ -153,6 +160,7 @@ export function registerUserCommands(): void {
         },
         {
             usage: "cognisctl user:disable <username>",
+            wizardFields: [usernameField],
             description: "Disable a user.",
             render: (payload) =>
                 renderUserMutation("User Disabled", payload, () => [
@@ -186,6 +194,7 @@ export function registerUserCommands(): void {
         },
         {
             usage: "cognisctl user:enable <username>",
+            wizardFields: [usernameField],
             description: "Enable a user.",
             render: (payload) =>
                 renderUserMutation("User Enabled", payload, () => [
@@ -273,6 +282,7 @@ export function registerUserCommands(): void {
         },
         {
             usage: "cognisctl user:delete <username>",
+            wizardFields: [usernameField],
             description: "Delete a user.",
             render: (payload) => renderUserMutation("User Deleted", payload),
         },
@@ -307,6 +317,7 @@ export function registerUserCommands(): void {
         },
         {
             usage: "cognisctl user:preferences:clear <username>",
+            wizardFields: [usernameField],
             description: "Clear saved user preferences.",
             render: (payload) =>
                 renderUserMutation("User Preferences Cleared", payload),

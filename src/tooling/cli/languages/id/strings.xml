@@ -1,0 +1,24 @@
+<resources>
+  <string name="cli.terminal.intro">Panduan interaktif {command}. Setiap kolom menunjukkan apakah masukan terlihat atau tersembunyi. Tekan enter untuk melewati kolom opsional.</string>
+  <string name="cli.terminal.visible">terlihat</string>
+  <string name="cli.terminal.hidden">tersembunyi</string>
+  <string name="cli.terminal.required">wajib</string>
+  <string name="cli.terminal.optional">opsional</string>
+  <string name="cli.terminal.noninteractive">Masukan interaktif memerlukan terminal pada stdin dan stderr. Berikan argumen perintah; gunakan --help untuk petunjuk.</string>
+  <string name="cli.terminal.eof">Masukan berakhir sebelum perintah dikirim.</string>
+  <string name="cli.terminal.cancelled">Perintah dibatalkan sebelum dikirim.</string>
+  <string name="cli.terminal.missing">Kolom panduan wajib belum diisi: {field}</string>
+  <string name="cli.terminal.invalid">Kolom masukan tidak valid: {field}</string>
+  <string name="cli.terminal.working">{command}: sedang diproses…</string>
+  <string name="cli.terminal.waiting">{command}: masih diproses ({seconds} detik berlalu)…</string>
+  <string name="cli.terminal.input.json">Objek JSON diperlukan. Gunakan --help untuk melihat bidang perintah.</string>
+  <string name="cli.terminal.input.extra">Terlalu banyak argumen. Gunakan --help untuk melihat penggunaan perintah.</string>
+  <string name="cli.terminal.input.argument">Argumen wajib belum diisi: {field}</string>
+  <string name="cli.terminal.input.body">Bidang wajib pada isi JSON belum diisi: {field}. Gunakan --help untuk melihat bidang perintah.</string>
+  <string name="cli.terminal.input.arguments">Argumen</string>
+  <string name="cli.terminal.input.bodyfields">Bidang isi JSON</string>
+  <string name="cli.terminal.input.queryfields">Bidang kueri JSON</string>
+  <string name="cli.terminal.input.query">Bidang kueri JSON wajib belum diisi: {field}. Gunakan --help untuk melihat bidang perintah.</string>
+  <string name="cli.terminal.input.duplicate">Nama kolom masukan perintah berulang: {field}. Penyedia perintah harus menggunakan nama kolom yang unik.</string>
+  <string name="cli.terminal.input.array">Masukkan daftar yang dipisahkan koma atau larik string JSON. Gunakan [] untuk daftar kosong.</string>
+</resources>

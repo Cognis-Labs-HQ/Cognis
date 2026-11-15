@@ -33,5 +33,7 @@ export function register(
         section: options?.section ?? defaultSection(name),
         render: options?.render,
         exitCode: options?.exitCode,
+        input: options?.input,
+        wizardFields: options?.wizardFields,
     });
 }

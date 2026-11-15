@@ -1,6 +1,19 @@
 import { formatField, formatHeading } from "./formatters.ts";
 import { registry } from "./registry.ts";
 import type { CommandSpec } from "./types.ts";
+import type { WizardField } from "./wizard.ts";
+import { cliText } from "./reuse/locale.ts";
+
+function printInputFields(title: string, fields: WizardField[]): void {
+    if (!fields.length) return;
+    printOutput(title + ":");
+    for (const field of fields) {
+        const required = cliText(field.required ? "required" : "optional");
+        printOutput(
+            `  ${field.name} (${field.type ?? "string"}, ${required})${field.description ? `: ${field.description}` : ""}`,
+        );
+    }
+}
 
 function formatCommandGroupSummary(commandCount: number): string {
     return `${commandCount} command${commandCount === 1 ? "" : "s"} available.`;
@@ -141,6 +154,20 @@ export function printCommandHelp(commandName: string): void {
     console.log(`Command: ${command.name}`);
     console.log(`Description: ${command.description}`);
     console.log(`Usage: ${command.usage}`);
+    if (command.input) {
+        printInputFields(
+            cliText("input.arguments"),
+            command.input.params.map((name) => ({ name, required: true })),
+        );
+        printInputFields(
+            cliText("input.bodyfields"),
+            command.input.bodyFields ?? [],
+        );
+        printInputFields(
+            cliText("input.queryfields"),
+            command.input.queryFields ?? [],
+        );
+    }
     console.log("Options: -v, --verbose (full response); -h, --help");
     console.log(
         "Progress is written to stderr; the final result is written to stdout.",
