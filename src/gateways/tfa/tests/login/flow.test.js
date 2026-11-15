@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
+import { captureAccountGuard } from "../../../../ui/reuse/offline-identity.js";
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 
 class Element {
     attributes = new Map();
@@ -66,6 +67,7 @@ function fixture() {
     const requests = [];
     const warnings = [];
     const timers = new Map();
+    const windowEvents = new EventTarget();
     let clock = 0;
     let timerId = 0;
     let respond = () => Response.json({ data: { challenge: {} } });
@@ -96,8 +98,9 @@ function fixture() {
     const root = { querySelector: (selector) => nodes.get(selector) ?? null };
     const i18n = { t: (key) => `translated:${key}` };
     const module = loadTestModule(
-        new URL("../ui/login-flow.js", import.meta.url),
+        new URL("../../ui/login-flow.js", import.meta.url),
         {
+            "/static/reuse/offline-identity.js": { captureAccountGuard },
             "/static/reuse/auth-setup-route.js": {
                 redirectToRequiredTfaSetup() {},
             },
@@ -111,11 +114,16 @@ function fixture() {
             },
         },
         {
+            AbortSignal,
             HTMLElement: Element,
             HTMLInputElement: Input,
             HTMLAnchorElement: Anchor,
             document: { createElement: () => new Anchor() },
             window: {
+                addEventListener:
+                    windowEvents.addEventListener.bind(windowEvents),
+                removeEventListener:
+                    windowEvents.removeEventListener.bind(windowEvents),
                 setInterval(handler) {
                     timers.set(++timerId, handler);
                     return timerId;
@@ -150,7 +158,12 @@ function fixture() {
         root,
         module,
         async client() {
-            return module.createTfaLoginClient({ root, baseI18n: i18n });
+            return module.createTfaLoginClient({
+                root,
+                baseI18n: i18n,
+                signal: new AbortController().signal,
+                lifecycleVersion: 1,
+            });
         },
         respond(handler) {
             respond = handler;
@@ -295,7 +308,12 @@ test("cooldown prevents duplicate resends and preserves pending challenge length
     await host.resend().click();
     assert.equal(host.code().getAttribute("maxlength"), "6");
     assert.equal(host.resend().getAttribute("aria-disabled"), "true");
-    assert.equal(host.notices.length, 1);
+    assert.equal(host.notices.length, 2);
+    assert.equal(
+        host.notices[1].text,
+        "translated:ui.app.login.tfa.resend_unconfirmed",
+    );
+    assert.equal(host.notices[1].variant, "error");
 });
 
 test("an in-flight challenge cannot overwrite another method and duplicate selection stays locked", async () => {
@@ -536,7 +554,12 @@ test("future absolute deadlines survive rendering and allow requests only after 
     assert.equal(host.resend().getAttribute("aria-disabled"), "false");
     await host.resend().click();
     assert.equal(host.requests.length, 2);
-    assert.equal(host.warnings.length, 0);
+    assert.equal(host.warnings.length, 2);
+    for (const [, metadata] of host.warnings) {
+        assert.equal(metadata.component, "tfa");
+        assert.equal(metadata.operation, "resendLoginChallenge");
+        assert.equal(metadata.status, 429);
+    }
 });
 
 for (const resendAvailableAt of [
@@ -581,7 +604,14 @@ for (const deliveryStatus of ["queued", "sent", undefined])
                 host.notices.at(-1)?.text,
                 `translated:ui.app.login.tfa.resend_${deliveryStatus}`,
             );
-        else assert.equal(host.notices.length, 0);
+        else {
+            assert.equal(host.notices.length, 1);
+            assert.equal(
+                host.notices[0].text,
+                "translated:ui.app.login.tfa.resend_received",
+            );
+            assert.equal(host.notices[0].variant, "info");
+        }
     });
 
 test("resumed queued challenge never claims delivery or automatically resends", async () => {

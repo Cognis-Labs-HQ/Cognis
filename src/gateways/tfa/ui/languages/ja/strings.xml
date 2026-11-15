@@ -64,4 +64,8 @@
   <string name="gateway.tfa.tutorial.enforcement.apply.policy.title">方針を適用</string>
   <string name="gateway.tfa.tutorial.enforcement.apply.policy.body">必須設定と利用者に必要な準備を見直してから保存します。</string>
   <string name="ui.app.login.tfa.resend_queued">新しい確認コードは送信待ちです。届いたら最新のコードを使用してください。</string>
+  <string name="ui.app.login.tfa.resend_pending">コードをリクエスト中…</string>
+  <string name="ui.app.login.tfa.resend_expired">このログイン試行は期限切れです。キャンセルしてもう一度ログインし、新しいコードをリクエストしてください。</string>
+  <string name="ui.app.login.tfa.resend_unconfirmed">再送信の結果を確認できませんでした。再試行する前にコードが届いているか確認してください。</string>
+  <string name="ui.app.login.tfa.resend_received">認証方法から応答がありましたが、配信は確認されていません。</string>
 </resources>

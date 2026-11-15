@@ -64,4 +64,8 @@
   <string name="gateway.tfa.tutorial.enforcement.apply.policy.title">Apply Policy</string>
   <string name="gateway.tfa.tutorial.enforcement.apply.policy.body">Save only after reviewing the enforcement choice and the setup users will need.</string>
   <string name="ui.app.login.tfa.resend_queued">A new verification code is queued for delivery. Use the latest code when it arrives.</string>
+  <string name="ui.app.login.tfa.resend_pending">Requesting code…</string>
+  <string name="ui.app.login.tfa.resend_expired">This sign-in attempt has expired. Cancel and sign in again to request a new code.</string>
+  <string name="ui.app.login.tfa.resend_unconfirmed">The resend result could not be confirmed. Check for a code before trying again.</string>
+  <string name="ui.app.login.tfa.resend_received">The verification method responded, but did not confirm delivery.</string>
 </resources>

@@ -64,4 +64,8 @@
   <string name="gateway.tfa.tutorial.enforcement.apply.policy.title">Regel übernehmen</string>
   <string name="gateway.tfa.tutorial.enforcement.apply.policy.body">Speichern Sie erst nach Prüfung der Pflichtoption und der nötigen Benutzereinrichtung.</string>
   <string name="ui.app.login.tfa.resend_queued">Ein neuer Bestätigungscode wartet auf den Versand. Verwenden Sie den neuesten Code, sobald er eintrifft.</string>
+  <string name="ui.app.login.tfa.resend_pending">Code wird angefordert…</string>
+  <string name="ui.app.login.tfa.resend_expired">Dieser Anmeldeversuch ist abgelaufen. Brechen Sie ihn ab und melden Sie sich erneut an, um einen neuen Code anzufordern.</string>
+  <string name="ui.app.login.tfa.resend_unconfirmed">Das Ergebnis der erneuten Anforderung konnte nicht bestätigt werden. Prüfen Sie vor einem weiteren Versuch, ob ein Code angekommen ist.</string>
+  <string name="ui.app.login.tfa.resend_received">Die Verifizierungsmethode hat geantwortet, aber die Zustellung nicht bestätigt.</string>
 </resources>

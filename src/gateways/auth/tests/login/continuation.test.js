@@ -1,7 +1,9 @@
+import "./static-contracts.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
-import { createLoginClientLoaders } from "../../ui/login-page/client-loaders.js";
+const { createLoginClientLoaders } =
+    await import("../../ui/login-page/client-loaders.js");
 
 const pending = {
     tfaRequired: true,
@@ -189,7 +191,11 @@ test("scoped TFA client cannot mutate a superseded attempt after its asynchronou
         isAttemptCurrent: (id) => id === attemptId,
         loadClient: async (_id, create) =>
             create({
-                createTfaLoginClient: async ({ root }) => ({
+                loginLifecycleVersion: 1,
+                createTfaLoginClient: async ({ root, signal }) => ({
+                    lifecycle: { version: 1, signal },
+                    refreshPrompt: () =>
+                        Boolean(root.querySelector("#login-tfa-fields")),
                     async switchToTfaPrompt(data) {
                         await preparation.promise;
                         const fields = root.querySelector("#login-tfa-fields");
@@ -217,7 +223,15 @@ test("failed integration loading is evicted and repeated page renders receive th
         i18n: {},
         loadClient: async (_id, create) => {
             if (++calls === 1) throw new Error("synthetic-import-failure");
-            return create({ createTfaLoginClient: ({ root }) => root });
+            return create({
+                loginLifecycleVersion: 1,
+                createTfaLoginClient: ({ root, signal }) => ({
+                    ...root,
+                    lifecycle: { version: 1, signal },
+                    refreshPrompt: () =>
+                        Boolean(root.querySelector("#control")),
+                }),
+            });
         },
     });
     await assert.rejects(loaders.loadTfaLoginClient());
@@ -228,3 +242,57 @@ test("failed integration loading is evicted and repeated page renders receive th
     assert.equal(oldClient.querySelector("#control"), null);
     assert.equal(currentClient.querySelector("#control"), "new-form");
 });
+
+for (const ending of ["dispose", "page-abort", "new-attempt", "new-form"]) {
+    test(`TFA client lifetime ends before pending construction completes on ${ending}`, async () => {
+        const controller = new AbortController();
+        const preparation = deferred();
+        const scopes = [];
+        let attempt = "first";
+        let form = { querySelector: () => "first-control" };
+        const loaders = createLoginClientLoaders({
+            signal: controller.signal,
+            root: { querySelector: () => form },
+            getAttemptId: () => attempt,
+            isAttemptCurrent: (id) => id === attempt,
+            loadClient: async (_id, create) =>
+                create({
+                    loginLifecycleVersion: 1,
+                    async createTfaLoginClient(options) {
+                        scopes.push(options);
+                        if (scopes.length === 1) await preparation.promise;
+                        return {
+                            ...options,
+                            lifecycle: { version: 1, signal: options.signal },
+                            refreshPrompt: () =>
+                                Boolean(options.root.querySelector("#control")),
+                        };
+                    },
+                }),
+        });
+        const oldClient = loaders.loadTfaLoginClient();
+        await new Promise((resolve) => setImmediate(resolve));
+        assert.equal(scopes[0].signal.aborted, false);
+        if (ending === "page-abort") controller.abort();
+        if (ending === "dispose") loaders.disposeTfaLoginClient();
+        if (ending === "new-attempt") attempt = "second";
+        if (ending === "new-form")
+            form = { querySelector: () => "next-control" };
+        let nextClient;
+        if (ending !== "page-abort")
+            nextClient = await loaders.loadTfaLoginClient();
+        assert.equal(scopes[0].signal.aborted, true);
+        assert.equal(scopes[0].root.querySelector("#control"), null);
+        preparation.resolve();
+        await oldClient;
+        if (ending === "page-abort") {
+            assert.equal(await loaders.loadTfaLoginClient(), null);
+            assert.equal(scopes.length, 1);
+        } else {
+            assert.equal(nextClient.signal.aborted, false);
+            assert.equal(await loaders.loadTfaLoginClient(), nextClient);
+            controller.abort();
+            assert.equal(nextClient.signal.aborted, true);
+        }
+    });
+}
