@@ -186,10 +186,16 @@ export function createRenderer({
     const globals = {
         URLSearchParams,
         document,
+        Event: document.defaultView.Event,
         HTMLElement: document.defaultView.HTMLElement,
         HTMLButtonElement: document.defaultView.HTMLButtonElement,
         console: { error: (...args) => state.errors.push(args) },
     };
+    dependencies["./receipt-avatars.js"] = loadTestModule(
+        new URL("../../ui/receipt-avatars.js", import.meta.url),
+        dependencies,
+        globals,
+    );
     dependencies["./room-render.js"] = loadTestModule(
         new URL("../../ui/room-render.js", import.meta.url),
         dependencies,
@@ -246,7 +252,16 @@ export function createRenderer({
     };
     return Object.assign(
         state,
-        { offline, client, dependencies, globals },
+        {
+            offline,
+            client,
+            dependencies,
+            globals,
+            receipts: dependencies["./receipt-avatars.js"],
+            avatars: dependencies[
+                "/static/reuse/ui-ctx.js"
+            ].uiCtx.capabilities.get("ui:profileAvatarRenderer"),
+        },
         renderer,
     );
 }

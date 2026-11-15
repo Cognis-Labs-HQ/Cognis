@@ -155,6 +155,16 @@
     text-transform: none;
     user-select: none;
 }
+.profile-avatar-content[data-profile-avatar-size="tiny"] {
+    width: 1.22rem;
+    height: 1.22rem;
+    font-size: 0.5rem;
+}
+.profile-avatar-content[data-profile-avatar-size="compact"] {
+    width: 1.65rem;
+    height: 1.65rem;
+    font-size: 0.6rem;
+}
 .profile-avatar-content[data-profile-avatar-size="small"] {
     width: 32px;
     height: 32px;

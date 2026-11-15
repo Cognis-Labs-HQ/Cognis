@@ -55,7 +55,7 @@
   <string name="module.social.messages.receipt_sent">Terkirim</string>
   <string name="module.social.messages.receipt_delivered">Tersampaikan</string>
   <string name="module.social.messages.receipt_read_single">Dibaca: {day} {time}</string>
-  <string name="module.social.messages.receipt_seen_by_count">Dilihat oleh {count} orang</string>
+  <string name="module.social.messages.receipt_seen_by_count">Dibaca oleh {count}</string>
   <string name="module.social.messages.typing">sedang mengetik…</string>
   <string name="module.social.messages.typing_users">{names} sedang mengetik…</string>
   <string name="module.social.messages.requests">Permintaan pesan</string>
@@ -91,7 +91,7 @@
   <string name="module.social.messages.tutorial.messages.rooms.title">Ruang</string>
   <string name="module.social.messages.tutorial.messages.rooms.body">Pilih percakapan atau mulai percakapan baru dari bilah samping.</string>
   <string name="module.social.messages.tutorial.messages.room.history.title">Riwayat Ruang</string>
-  <string name="module.social.messages.tutorial.messages.room.history.body">Baca percakapan dan periksa peserta serta permintaan tertunda. Anda dapat memilih teks saat pesan dan reaksi baru tiba, serta memuat pesan sebelumnya tanpa kehilangan posisi. Pada gaya yang menampilkan avatar, inisial sesuai dengan profil. Arahkan penunjuk ke avatar untuk pratinjau atau klik untuk membuka profil.</string>
+  <string name="module.social.messages.tutorial.messages.room.history.body">Baca percakapan dan periksa peserta serta permintaan tertunda. Anda dapat memilih teks saat pesan dan reaksi baru tiba, serta memuat pesan sebelumnya tanpa kehilangan posisi. Pada gaya yang menampilkan avatar, inisial sesuai dengan profil. Arahkan penunjuk ke avatar untuk pratinjau atau klik untuk membuka profil. Pilih Dibaca oleh di samping pesan terkirim untuk melihat pembaca dan waktu baca, lalu Tutup untuk kembali. Avatar pembaca juga membuka pratinjau profil dan profil.</string>
   <string name="module.social.messages.tutorial.messages.compose.and.preview.title">Tulis dan Pratinjau</string>
   <string name="module.social.messages.tutorial.messages.compose.and.preview.body">Tulis dan pratinjau draf sebelum mengirim; panggilan memiliki kontrol tersendiri.</string>
   <string name="module.social.messages.tutorial.messages.start.room.title">Mulai Percakapan</string>

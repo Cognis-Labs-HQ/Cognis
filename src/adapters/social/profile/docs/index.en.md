@@ -250,3 +250,7 @@ Profile confirmation dialogs use a neutral Cancel. Delete, Unfollow and Block ar
 A rejected or known-unsent action can be confirmed again. When delivery is uncertain, the current page does not resend it: reopen the profile to check the result. A successful server response or durable offline acceptance updates the current view. A failed follow-up refresh reports that the change was accepted; it is not a failed write. Connection refreshes keep successfully loaded lists and retain existing lists on failure.
 
 These controls use the existing social:profile:request flow and page lifetime. Synthetic DOM tests exercise real page mounts, popups, registered request stages and controlled transport. Native browser layout and live server/database behavior are not established by these tests.
+
+### Compact Content Sizes
+
+Profile 4.1.0 adds `tiny` (1.22rem, 0.5rem initials) and `compact` (1.65rem, 0.6rem initials) to `buildContent`. The immutable `contentSizes` list advertises all five supported names. These are graphical footprints, not pointer-target sizes. The caller owns separate accessible targets, spacing and any outer separator ring. Existing `small`, `medium`, `large` and `buildMarkup` options retain their meanings. Consumers requiring the new sizes must validate the advertised list and ship with matching Profile JavaScript and CSS. Messages 2.9.0 uses both sizes; release these assets together. Existing Profile tutorials retain their current avatar controls and sizes.
