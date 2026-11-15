@@ -163,6 +163,39 @@
     transition: background 0.15s;
 }
 
+.notification-primary {
+    display: flex;
+    flex: 1;
+    align-items: flex-start;
+    gap: 10px;
+    min-width: 0;
+    border: 0;
+    padding: 0;
+    border-radius: 4px;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: start;
+    text-decoration: none;
+}
+
+.notification-primary:is(a, button) {
+    cursor: pointer;
+}
+
+.notification-primary:disabled,
+.notification-primary[aria-disabled="true"] {
+    cursor: not-allowed;
+}
+
+.notification-primary:focus-visible,
+.notification-dismiss:focus-visible,
+.arrival-toast-dismiss:focus-visible,
+.notification-action:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
 .notification-item:last-child {
     border-bottom: none;
 }
@@ -271,7 +304,8 @@
         color 0.15s;
 }
 
-.notification-item:hover .notification-dismiss {
+.notification-item:hover .notification-dismiss,
+.notification-item:focus-within .notification-dismiss {
     opacity: 1;
 }
 

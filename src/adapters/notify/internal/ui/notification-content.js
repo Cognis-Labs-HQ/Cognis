@@ -4,20 +4,18 @@ import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 import { hexToBytes } from "/static/reuse/crypto-utils.js";
 
+import { resolveDestination, allowNavigation } from "./reuse/primary-action.js";
+
 const notificationTextDecoder = new TextDecoder();
 
 export function navigateNotif(actionUrl) {
     try {
-        const url = new URL(actionUrl, window.location.origin);
-        const actionEvent = new CustomEvent("cognis:notification-action", {
-            cancelable: true,
-            detail: { actionUrl: url.href },
-        });
-        if (!window.dispatchEvent(actionEvent)) return;
+        const url = resolveDestination(actionUrl);
+        if (!url || !allowNavigation(url)) return;
         if (url.origin === window.location.origin) {
             navigateTo(url.pathname + url.search + url.hash);
         } else {
-            window.open(actionUrl, "_blank", "noopener,noreferrer");
+            window.open(url.href, "_blank", "noopener,noreferrer");
         }
     } catch {
         // malformed URL — no navigation

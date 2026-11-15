@@ -76,3 +76,11 @@ Snapshots and pending UI completions belong to the current account, token, page 
 The workspace tutorial continues to open `#notification-toggle` and explain `.notification-panel`. Its shared transient lifetime closes the panel, including an opening with a pending read. Confirmed empty inboxes keep Clear disabled; unavailable inboxes offer Retry rather than claiming to be empty. Continuous notifications retain their existing separate popup, action, correlation and expiry behavior. This change does not define notification categories or delivery preferences.
 
 Producer correlation resolutions are serialized and deduplicated within the current owner lifetime. They wait for pending user changes and the latest read before dismissing matching notifications; an unconfirmed deletion is never automatically replayed.
+
+## Keyboard destinations
+
+Use Tab to reach a notification link, then Enter to open its destination. An unread notification without a destination has a Mark Notification as Read button; an arrival without a destination has an Open Notification Inbox button. Buttons use their native Enter and Space behavior. Commands, Remove and Dismiss remain separate controls with visible keyboard focus. Opening a nonlinked arrival keeps the inbox open.
+
+Links preserve the browser’s modified-click and middle-click behavior. These activations leave the current inbox and read status unchanged. Ordinary activation keeps the existing read acknowledgement and navigation policy; following a destination is not evidence that marking it read succeeded. Only HTTP and HTTPS destinations become links. External destinations use a separate browsing context with opener and referrer protection.
+
+The cancelable `cognis:notification-action` event applies to ordinary and modified link activation. The owner synchronously claims ordinary clicks before awaiting inbox changes, so the public router cannot navigate twice. Pending or unavailable row controls lose their link targets until a successful refresh; retired controls reject activation. The workspace guide retains its bell and panel targets and explains links, mark-read buttons, keyboard controls and read-only Retry. Continuous arrival commands, expiry and correlation lifetimes remain unchanged.

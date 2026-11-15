@@ -9,6 +9,8 @@ const keys = [
     "error_change_rejected",
     "error_change_uncertain",
     "error_preview",
+    "mark_read",
+    "open_inbox",
 ].map((key) => `adapter.notify.internal.${key}`);
 
 for (const locale of ["en", "de", "id", "ja"]) {
@@ -49,3 +51,30 @@ test("missing preferred and English copy throws rather than hiding the error", a
         (error) => error.code === "missing_translation" && error.key === key,
     );
 });
+
+for (const name of ["mark_read", "open_inbox"]) {
+    const key = `adapter.notify.internal.${name}`;
+    test(`${name} label falls back from preferred locale to English XML`, async (context) => {
+        const environment = await fixture({
+            realI18n: true,
+            missingTranslations: { de: [key] },
+        });
+        context.after(environment.close);
+        assert.equal(
+            await environment.translate(key, "de"),
+            await environment.translate(key, "en"),
+        );
+    });
+    test(`${name} label rejects missing preferred and English XML`, async (context) => {
+        const environment = await fixture({
+            realI18n: true,
+            missingTranslations: { de: [key], en: [key] },
+        });
+        context.after(environment.close);
+        await assert.rejects(
+            environment.translate(key, "de"),
+            (error) =>
+                error.code === "missing_translation" && error.key === key,
+        );
+    });
+}
