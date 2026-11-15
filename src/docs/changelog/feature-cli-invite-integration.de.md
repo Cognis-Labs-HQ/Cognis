@@ -12,6 +12,4 @@ Tests mit den tatsächlichen Routen prüfen anonyme und adressgebundene Ausstell
 
 ## Commits
 
-- [4b8d1785cf568c361b88e0eb43709e268ffd26a6](https://github.com/Cognis-Labs-HQ/Cognis/commit/4b8d1785cf568c361b88e0eb43709e268ffd26a6)
-- [67c4b5ab64feb16d7e5afc1a9aa47b508690861d](https://github.com/Cognis-Labs-HQ/Cognis/commit/67c4b5ab64feb16d7e5afc1a9aa47b508690861d)
-- [bc15ea040864c918c3c39840ff519cc094f144e1](https://github.com/Cognis-Labs-HQ/Cognis/commit/bc15ea040864c918c3c39840ff519cc094f144e1)
+- https://github.com/Cognis-Labs-HQ/Cognis/commit/b460321c4fa15861829de7ca1502cfa9bdfc18a9
