@@ -596,6 +596,7 @@
   <string name="ui.app.admin.security.login_session_timeout_hint">Sesi login terlama yang dapat dipilih pengguna.</string>
   <string name="ui.app.admin.security.login_session_timeout_never">Tidak pernah</string>
   <string name="ui.app.admin.security.login_session_timeout_never_warning">Menonaktifkan batas waktu sesi tidak disarankan di lingkungan produksi.</string>
+  <string name="ui.reuse.unit">Satuan</string>
   <string name="ui.reuse.duration.minutes">Menit</string>
   <string name="ui.reuse.duration.hours">Jam</string>
   <string name="ui.reuse.duration.days">Hari</string>

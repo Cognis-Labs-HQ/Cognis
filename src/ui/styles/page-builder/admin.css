@@ -252,6 +252,7 @@
 }
 
 .switch {
+    position: relative;
     display: inline-flex;
     align-items: center;
     gap: 10px;
@@ -259,7 +260,23 @@
 }
 
 .switch input {
-    display: none;
+    display: block;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.switch input:disabled {
+    cursor: not-allowed;
+}
+
+.switch input:focus-visible + .slider {
+    outline: 2px solid var(--accent, #3b82f6);
+    outline-offset: 3px;
 }
 
 .slider {
