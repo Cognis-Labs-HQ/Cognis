@@ -123,14 +123,12 @@ export function createLayoutPersistence({ apiFetch }) {
         const account = localStorage.getItem("cognis_account");
         const token = localStorage.getItem("cognis_access_token");
         if (!account || !token) {
-            return normalizeLayoutProfiles(profiles);
+            throw saveFailure("unavailable");
         }
-        const nextProfiles = setLayoutForGrid(
-            profiles,
-            gridColumnCount,
-            nextLayout,
+        const nextProfiles = cloneLayoutData(
+            setLayoutForGrid(profiles, gridColumnCount, nextLayout),
         );
-        await apiFetch(
+        const response = await apiFetch(
             `/api/v1/social/users/${encodeURIComponent(account)}/preferences/${encodeURIComponent(key)}`,
             {
                 method: "PUT",
@@ -138,7 +136,21 @@ export function createLayoutPersistence({ apiFetch }) {
                 body: JSON.stringify({ layout: nextProfiles }),
             },
         );
+        if (!response.ok) throw saveFailure("rejected", response.status);
+        if (response.status !== 200)
+            throw saveFailure("unknown", response.status);
+        const acknowledgement = await response.json();
+        if (acknowledgement?.data?.saved !== true) {
+            throw saveFailure("unknown", response.status);
+        }
         return nextProfiles;
+    }
+
+    function saveFailure(outcome, status) {
+        return Object.assign(new Error("Layout save was not acknowledged"), {
+            layoutSaveOutcome: outcome,
+            status,
+        });
     }
 
     async function loadLayout() {

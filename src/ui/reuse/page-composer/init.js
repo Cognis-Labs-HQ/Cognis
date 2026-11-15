@@ -33,6 +33,8 @@
  * }} options
  * @returns {{ init(): Promise<void>, refresh(elements: Array): void, refreshElements(elementIds: string[]): void, getFloatingSlot(id: string): HTMLElement|null, showToast(message: string, options?: object): () => void }}
  */
+import { createLayoutEditSession } from "./edit-session.js";
+
 import { apiFetch, configureConnectionRecoveryPrompt } from "../api-client.js";
 import { renderDashboardLayout } from "../../layouts/dashboard-layout.js";
 import { prefersReducedMotion } from "../motion.js";
@@ -143,12 +145,14 @@ export function createPageComposer(
     let focusControl = null;
     let subComposerHandlers = null;
     let gridOverlayHandlers = null;
+    let editSession = null;
     const tutorialLifetime = new AbortController();
 
     function destroy() {
         if (composerDestroyed) return;
         composerDestroyed = true;
         tutorialLifetime.abort();
+        editSession?.destroy();
         activePresenceTracker?.destroy();
         activePresenceTracker = null;
         resizeObserver?.disconnect();
@@ -221,15 +225,6 @@ export function createPageComposer(
         return Object.keys(layoutProfiles?.layoutsByGrid ?? {}).length > 0;
     }
 
-    async function saveLayout() {
-        layoutProfiles = await saveLayoutByKey(
-            preferenceKey,
-            layoutProfiles,
-            gridCols,
-            layout,
-        );
-    }
-
     function applyLayoutForCurrentGridColumns() {
         const selected = getLayoutForGrid(layoutProfiles, gridCols);
         if (!selected.layout) return false;
@@ -260,6 +255,13 @@ export function createPageComposer(
         allowCustomization,
         frameless,
         preferenceKey,
+        savePending: false,
+        get layoutProfiles() {
+            return layoutProfiles;
+        },
+        set layoutProfiles(value) {
+            layoutProfiles = value;
+        },
         persistLayoutPreferences,
         subPageNavigation,
         onRender,
@@ -341,8 +343,6 @@ export function createPageComposer(
         escapeHtml,
         getGridSize,
         renderGridComposer: () => renderer.renderGridComposer(),
-        saveLayout,
-        endEditMode,
     });
 
     subComposerHandlers = createSubComposerHandlers({
@@ -359,6 +359,8 @@ export function createPageComposer(
         buildDropZoneLine: gridOverlayHandlers.buildDropZoneLine,
         loadLayoutFor: loadLayoutByKey,
         saveLayoutFor: saveLayoutByKey,
+        getEditToggleButton: getComposerEditToggleButton,
+        log: uiCtx.capabilities.get("ui:log"),
         cloneLayoutData,
         captureFormState,
         restoreFormState,
@@ -414,6 +416,27 @@ export function createPageComposer(
         syncSubLayoutToCurrentGridColumns,
     } = renderer;
 
+    editSession = composerState.editSession = createLayoutEditSession({
+        state: composerState,
+        i18n,
+        saveLayoutByKey,
+        cloneLayoutData,
+        compact: () => {
+            if (!subPageNavigation) compactPlacements();
+        },
+        initialize: () => gridOverlayHandlers.initializePlacements(),
+        render: () => render(),
+        endEditMode,
+        getControls: () => ({
+            grid: contentGrid,
+            panel: composerState.elementsPanel,
+            toggle: getComposerEditToggleButton(),
+        }),
+        isMounted: () =>
+            !composerDestroyed && Boolean(contentGrid?.isConnected),
+        log: uiCtx.capabilities.get("ui:log"),
+    });
+
     function syncSubEditToggle(state) {
         const editBtn = getComposerEditToggleButton();
         if (!editBtn) return;
@@ -426,8 +449,10 @@ export function createPageComposer(
             return;
         }
         editBtn.hidden = false;
+        editToggleAbortController?.abort();
         state.editToggleAbortController?.abort();
         state.editToggleAbortController = new AbortController();
+        editToggleAbortController = state.editToggleAbortController;
         const { signal } = state.editToggleAbortController;
         if (!state.editing) {
             editBtn.innerHTML =
@@ -451,17 +476,8 @@ export function createPageComposer(
             editBtn.title = i18n.t("ui.reuse.done");
             editBtn.addEventListener(
                 "click",
-                async () => {
-                    compactSubPlacements(state);
-                    state.editing = false;
-                    endEditMode();
-                    state.layoutProfiles = await saveLayoutByKey(
-                        state.preferenceKey,
-                        state.layoutProfiles,
-                        state.gridCols,
-                        state.layout,
-                    );
-                    renderSubGrid(state);
+                () => {
+                    void state.editSession.save();
                 },
                 { signal },
             );
@@ -503,18 +519,13 @@ export function createPageComposer(
             editBtn.title = i18n.t("ui.reuse.done");
             editBtn.addEventListener(
                 "click",
-                async () => {
-                    if (!subPageNavigation) {
-                        compactPlacements();
-                    }
-                    editing = false;
-                    endEditMode();
-                    await saveLayout();
-                    render();
+                () => {
+                    void editSession.save();
                 },
                 { signal },
             );
         }
+        editSession?.syncControls();
     }
 
     function getComposerEditToggleButton() {
@@ -713,6 +724,7 @@ export function createPageComposer(
 
         if (!subPageNavigation && contentGrid) {
             resizeObserver = new ResizeObserver(() => {
+                if (composerState.savePending) return;
                 if (!contentGrid || !document.contains(contentGrid)) return;
                 const newCols = getPreferredGridColumnCount();
                 const compact = isCompactComposer(contentGrid);
@@ -795,6 +807,12 @@ export function createPageComposer(
     }
 
     function refresh(newElements) {
+        if (
+            composerDestroyed ||
+            composerState.savePending ||
+            subComposerHandlers.hasPendingSave()
+        )
+            return;
         const previousScrollLeft = window.scrollX;
         const previousScrollTop = window.scrollY;
         if (editing) endEditMode();

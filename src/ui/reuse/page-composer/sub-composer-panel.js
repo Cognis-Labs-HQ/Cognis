@@ -14,9 +14,6 @@ export function createSubComposerPanelHandlers({
     clampComposerPanelLeft,
     getComposerPanelHorizontalBounds,
     canSubPlace,
-    compactSubPlacements,
-    endEditMode,
-    saveLayoutFor,
     initializeSubPlacements,
     renderSubGrid,
 }) {
@@ -222,47 +219,19 @@ export function createSubComposerPanelHandlers({
                 ).textContent = minimized ? "+" : "−";
             });
 
-        panel
-            .querySelector(".composer-done-btn")
-            .addEventListener("click", async (event) => {
+        for (const [selector, action] of [
+            [".composer-done-btn", () => state.editSession.save()],
+            [".composer-discard-btn", () => state.editSession.discard()],
+            [
+                ".composer-reset-btn",
+                () => state.editSession.save({ reset: true }),
+            ],
+        ]) {
+            panel.querySelector(selector).addEventListener("click", (event) => {
                 event.preventDefault();
-                compactSubPlacements(state);
-                state.editing = false;
-                endEditMode();
-                state.layoutProfiles = await saveLayoutFor(
-                    state.preferenceKey,
-                    state.layoutProfiles,
-                    state.gridCols,
-                    state.layout,
-                );
-                renderSubGrid(state);
+                void action();
             });
-
-        panel
-            .querySelector(".composer-discard-btn")
-            .addEventListener("click", (event) => {
-                event.preventDefault();
-                state.layout = state.layoutSnapshot;
-                state.editing = false;
-                endEditMode();
-                renderSubGrid(state);
-            });
-
-        panel
-            .querySelector(".composer-reset-btn")
-            .addEventListener("click", async (event) => {
-                event.preventDefault();
-                state.layout = { placements: [], hidden: [] };
-                initializeSubPlacements(state);
-                state.layoutSnapshot = JSON.parse(JSON.stringify(state.layout));
-                state.layoutProfiles = await saveLayoutFor(
-                    state.preferenceKey,
-                    state.layoutProfiles,
-                    state.gridCols,
-                    state.layout,
-                );
-                renderSubGrid(state);
-            });
+        }
 
         panel.querySelectorAll("[data-composer-panel-item]").forEach((item) => {
             const elId = item.dataset.composerPanelItem;
