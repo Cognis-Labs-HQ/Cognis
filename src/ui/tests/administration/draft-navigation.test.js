@@ -57,7 +57,7 @@ test("Administration Stay retains an unsent contribution and guards the next nav
     assert.equal(popups.length, 2);
     assert.deepEqual(
         Array.from(popups[0].options.actions, (action) => action.id),
-        ["discard", "stay"],
+        ["stay", "discard"],
     );
 });
 

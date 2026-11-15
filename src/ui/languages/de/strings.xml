@@ -192,6 +192,8 @@
   <string name="ui.app.admin.got">erhalten</string>
   <string name="ui.app.admin.missing">fehlt</string>
   <string name="ui.app.admin.page_subtitle">Werkzeuge und Steuerung nur für Admins.</string>
+  <string name="ui.app.admin.toggle_uncertain">Die Änderung konnte nicht bestätigt werden. Lade die Verwaltung neu, um vor einem erneuten Versuch den Komponentenstatus zu prüfen.</string>
+  <string name="ui.app.admin.toggle_incomplete">Einige Komponentenänderungen wurden angenommen, aber der Vorgang wurde nicht abgeschlossen. Lade die Verwaltung neu, um ihren Status zu prüfen, bevor du fortfährst.</string>
   <string name="ui.app.admin.disable_confirm">Modul deaktivieren</string>
   <string name="ui.app.admin.disable_confirm_gateway">Gateway deaktivieren</string>
   <string name="ui.app.admin.disable_confirm_adapter">Adapter deaktivieren</string>
@@ -684,7 +686,7 @@
   <string name="ui.tutorial.admin.components.gateways.and.adapters.title">Gateways und Adapter</string>
   <string name="ui.tutorial.admin.components.gateways.and.adapters.body">Öffnen Sie eine Komponente, um Version, Abhängigkeiten und Konfiguration zu prüfen.</string>
   <string name="ui.tutorial.admin.components.enable.and.disable.title">Aktivieren und deaktivieren</string>
-  <string name="ui.tutorial.admin.components.enable.and.disable.body">Mit diesem Schalter aktivieren oder deaktivieren Sie die angezeigte Komponente. Mit der Tastatur erreichen Sie ihn über Tab und ändern ihn mit der Leertaste. Prüfen Sie Abhängigkeitswarnungen, bevor Sie eine Änderung bestätigen.</string>
+  <string name="ui.tutorial.admin.components.enable.and.disable.body">Mit diesem Schalter aktivieren oder deaktivieren Sie die angezeigte Komponente. Mit Tab erhält er den Fokus, mit der Leertaste ändern Sie ihn. Prüfen Sie Abhängigkeitswarnungen. Deaktivieren beendet die Funktion; Abbrechen lässt sie weiterlaufen. Laden Sie bei einem unklaren Ergebnis die Verwaltung neu, um den Status vor einem weiteren Versuch zu prüfen.</string>
   <string name="ui.tutorial.admin.components.configuration.title">Konfiguration</string>
   <string name="ui.tutorial.admin.components.configuration.body">Klicken Sie auf einen Adapternamen, um seine Einstellungen zu öffnen, oder auf Weiter, um fortzufahren.</string>
   <string name="ui.tutorial.admin.status.title">Systemstatus</string>
@@ -696,7 +698,7 @@
   <string name="ui.tutorial.admin.security.session.policy.title">Sitzungsregeln</string>
   <string name="ui.tutorial.admin.security.session.policy.body">Prüfen Sie Sitzungsdauer und Sicherheitsgrenzen vor Änderungen der Zugriffsregeln.</string>
   <string name="ui.tutorial.admin.security.save.deliberately.title">Bewusst speichern</string>
-  <string name="ui.tutorial.admin.security.save.deliberately.body">Sicherheitsänderungen können andere Nutzer betreffen; prüfen Sie Werte und verwenden Sie Speichern oder Verwerfen.</string>
+  <string name="ui.tutorial.admin.security.save.deliberately.body">Sicherheitsänderungen können andere Nutzer betreffen; prüfen Sie Werte und verwenden Sie Speichern oder Verwerfen. Beim Verlassen eines geänderten Abschnitts behält Bleiben den Entwurf; Verwerfen und fortfahren entfernt ihn.</string>
   <string name="ui.tutorial.users.directory.title">Benutzerverwaltung</string>
   <string name="ui.tutorial.users.directory.account.directory.title">Kontoverzeichnis</string>
   <string name="ui.tutorial.users.directory.account.directory.body">Suchen Sie ein Konto und öffnen Sie Details zu Identität und Status.</string>

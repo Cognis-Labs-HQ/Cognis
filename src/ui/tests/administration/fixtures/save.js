@@ -1,3 +1,8 @@
+import { installAuthenticationFlow } from "./flows.js";
+import { createToggleBindings } from "../../../app/administration/reuse/toggle-bindings.js";
+import { createComponentToggleBindings } from "../../../app/administration/toggle-controls.js";
+import { createSubPageGuard } from "../../../app/administration/subpage-guard.js";
+import { captureAccountGuard } from "../../../reuse/offline-identity.js";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import {
@@ -6,7 +11,6 @@ import {
 } from "../../../../tooling/reuse/test-module.ts";
 import {
     createAdministrationSave,
-    confirmAdministrationSectionSwitch,
 } from "../../../app/administration/save.js";
 import * as duration from "../../../reuse/duration-input.js";
 import { createAdministrationReloaders } from "../../../app/administration/reloaders.js";
@@ -136,6 +140,7 @@ export async function environment({ createContribution } = {}) {
                     : undefined,
         },
     };
+    installAuthenticationFlow(uiCtx);
     const globals = {
         HTMLInputElement: Input,
         HTMLSelectElement: Select,
@@ -184,6 +189,14 @@ export async function environment({ createContribution } = {}) {
         globals,
     );
     const overrides = {
+        createToggleBindings,
+        createComponentToggleBindings,
+        createSubPageGuard,
+        createAdministrationLifetime: loadTestModule(
+            new URL("../../../app/administration/lifetime.js", import.meta.url),
+            { "../../reuse/offline-identity.js": { captureAccountGuard } },
+            globals,
+        ).createAdministrationLifetime,
         uiCtx,
         guides: [],
         apiFetch,
@@ -191,8 +204,7 @@ export async function environment({ createContribution } = {}) {
         escapeHtml: String,
         createAdministrationReloaders,
         createAdministrationSave,
-        confirmAdministrationSectionSwitch,
-        initSecuritySection: (...args) =>
+            initSecuritySection: (...args) =>
             (section = security.initSecuritySection(...args)),
         createUnsavedChangesBar: unsaved.createUnsavedChangesBar,
         mountWhenDirect: async () => {},

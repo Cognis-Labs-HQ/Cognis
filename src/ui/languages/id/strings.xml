@@ -192,6 +192,8 @@
   <string name="ui.app.admin.got">didapat</string>
   <string name="ui.app.admin.missing">hilang</string>
   <string name="ui.app.admin.page_subtitle">Alat dan kontrol khusus admin.</string>
+  <string name="ui.app.admin.toggle_uncertain">Perubahan tidak dapat dikonfirmasi. Muat ulang Administrasi untuk memeriksa status komponen sebelum mencoba lagi.</string>
+  <string name="ui.app.admin.toggle_incomplete">Beberapa perubahan komponen telah diterima, tetapi operasi belum selesai. Muat ulang Administrasi untuk memeriksa statusnya sebelum melanjutkan.</string>
   <string name="ui.app.admin.disable_confirm">Nonaktifkan modul</string>
   <string name="ui.app.admin.disable_confirm_gateway">Nonaktifkan gateway</string>
   <string name="ui.app.admin.disable_confirm_adapter">Nonaktifkan adaptor</string>
@@ -684,7 +686,7 @@
   <string name="ui.tutorial.admin.components.gateways.and.adapters.title">Gateway dan Adapter</string>
   <string name="ui.tutorial.admin.components.gateways.and.adapters.body">Buka komponen untuk memeriksa versi, dependensi, dan konfigurasinya.</string>
   <string name="ui.tutorial.admin.components.enable.and.disable.title">Aktifkan dan Nonaktifkan</string>
-  <string name="ui.tutorial.admin.components.enable.and.disable.body">Gunakan sakelar daya ini untuk mengaktifkan atau menonaktifkan komponen yang ditampilkan. Dengan papan ketik, tekan Tab untuk memfokuskannya dan Spasi untuk mengubahnya. Tinjau peringatan dependensi sebelum mengonfirmasi perubahan.</string>
+  <string name="ui.tutorial.admin.components.enable.and.disable.body">Gunakan sakelar daya ini untuk mengaktifkan atau menonaktifkan komponen. Tekan Tab untuk memfokuskannya dan Spasi untuk mengubahnya. Tinjau peringatan dependensi. Nonaktifkan menghentikan komponen; Batal membiarkannya berjalan. Jika hasilnya belum pasti, muat ulang Administrasi untuk memeriksa status sebelum mencoba lagi.</string>
   <string name="ui.tutorial.admin.components.configuration.title">Konfigurasi</string>
   <string name="ui.tutorial.admin.components.configuration.body">Klik nama adaptor untuk membuka pengaturannya, atau tekan Berikutnya untuk melanjutkan.</string>
   <string name="ui.tutorial.admin.status.title">Status Sistem</string>
@@ -696,7 +698,7 @@
   <string name="ui.tutorial.admin.security.session.policy.title">Kebijakan Sesi</string>
   <string name="ui.tutorial.admin.security.session.policy.body">Tinjau durasi sesi dan batas keamanan sebelum mengubah kebijakan akses.</string>
   <string name="ui.tutorial.admin.security.save.deliberately.title">Simpan dengan Cermat</string>
-  <string name="ui.tutorial.admin.security.save.deliberately.body">Perubahan keamanan dapat memengaruhi pengguna lain; periksa nilai lalu gunakan Simpan atau Buang.</string>
+  <string name="ui.tutorial.admin.security.save.deliberately.body">Perubahan keamanan dapat memengaruhi pengguna lain; periksa nilai lalu gunakan Simpan atau Buang. Saat meninggalkan bagian yang diubah, Tetap mempertahankan draf dan Buang dan Lanjutkan menghapusnya.</string>
   <string name="ui.tutorial.users.directory.title">Administrasi Pengguna</string>
   <string name="ui.tutorial.users.directory.account.directory.title">Direktori Akun</string>
   <string name="ui.tutorial.users.directory.account.directory.body">Temukan akun lalu buka detail untuk memeriksa identitas dan status.</string>
