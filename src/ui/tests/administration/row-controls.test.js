@@ -1,3 +1,5 @@
+import { installAuthenticationFlow } from "./fixtures/flows.js";
+import { createToggleBindings } from "../../app/administration/reuse/toggle-bindings.js";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
@@ -163,17 +165,28 @@ test("pending power confirmation leaves disclosure available and cancellation re
     row.input.dataset.module = "example-module";
     let finishConfirmation;
     let requested = false;
+    const uiCtx = {};
+    installAuthenticationFlow(uiCtx);
     const { bindModuleToggles } = loadTestModule(
         new URL(
             "../../app/administration/bind-module-controls.js",
             import.meta.url,
         ),
-        {},
+        {
+            "./reuse/toggle-bindings.js": { createToggleBindings },
+            "../../reuse/ui-ctx.js": { uiCtx },
+        },
         { HTMLInputElement: Control },
     );
-    const root = { querySelectorAll: () => [row.input] };
+    const root = {
+        querySelectorAll: () => [row.input],
+        contains: (element) => element === row.input,
+    };
     bindModuleToggles(root, {
         getState: () => ({ i18n: { t: (key) => key } }),
+        escapeHtml,
+        showToast: () =>
+            assert.fail("Safe cancellation must not report a failure"),
         openPopup: () =>
             new Promise((resolve) => {
                 finishConfirmation = resolve;
@@ -186,6 +199,7 @@ test("pending power confirmation leaves disclosure available and cancellation re
     state.bindings.bindDetailsToggleClicks(state.root);
     row.input.checked = false;
     const pending = row.input.fire("change");
+    await new Promise(setImmediate);
     assert.equal(typeof finishConfirmation, "function");
     await row.disclosure.fire("keydown", { key: "Enter" });
     assert.equal(row.open, true);

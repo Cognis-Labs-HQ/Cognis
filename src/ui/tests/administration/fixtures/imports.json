@@ -57,5 +57,9 @@
     "./control-bindings.js": ["createAdministrationControlBindings"],
     "./reloaders.js": ["createAdministrationReloaders"],
     "./runtime-toggles.js": ["syncRuntimeToggleControls"],
-    "./save.js": ["createAdministrationSave"]
+    "./save.js": ["createAdministrationSave"],
+    "./lifetime.js": ["createAdministrationLifetime"],
+    "./reuse/toggle-bindings.js": ["createToggleBindings"],
+    "./toggle-controls.js": ["createComponentToggleBindings"],
+    "./subpage-guard.js": ["createSubPageGuard"]
 }

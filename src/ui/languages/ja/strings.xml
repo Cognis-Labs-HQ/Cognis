@@ -186,6 +186,8 @@
   <string name="ui.app.admin.got">実際値</string>
   <string name="ui.app.admin.missing">欠落</string>
   <string name="ui.app.admin.page_subtitle">管理者専用ツールとコントロール。</string>
+  <string name="ui.app.admin.toggle_uncertain">変更を確認できませんでした。再試行する前に管理画面を再読み込みして、コンポーネントの状態を確認してください。</string>
+  <string name="ui.app.admin.toggle_incomplete">一部のコンポーネントの変更は受け付けられましたが、操作は完了していません。続行する前に管理画面を再読み込みして、状態を確認してください。</string>
   <string name="ui.app.admin.disable_confirm">モジュールを無効化</string>
   <string name="ui.app.admin.disable_confirm_gateway">ゲートウェイを無効化</string>
   <string name="ui.app.admin.disable_confirm_adapter">アダプターを無効化</string>
@@ -678,7 +680,7 @@
   <string name="ui.tutorial.admin.components.gateways.and.adapters.title">ゲートウェイとアダプター</string>
   <string name="ui.tutorial.admin.components.gateways.and.adapters.body">コンポーネントを開き、バージョン、依存関係、設定を確認します。</string>
   <string name="ui.tutorial.admin.components.enable.and.disable.title">有効化と無効化</string>
-  <string name="ui.tutorial.admin.components.enable.and.disable.body">この電源スイッチで表示中のコンポーネントを有効または無効にします。キーボードでは Tab キーでフォーカスし、スペースキーで切り替えます。変更を確定する前に依存関係の警告を確認してください。</string>
+  <string name="ui.tutorial.admin.components.enable.and.disable.body">この電源スイッチでコンポーネントを有効または無効にします。Tab キーでフォーカスし、スペースキーで切り替えます。依存関係の警告を確認してください。無効にすると動作が停止し、キャンセルすると動作を続けます。結果が不明な場合は、再試行する前に管理画面を再読み込みして状態を確認してください。</string>
   <string name="ui.tutorial.admin.components.configuration.title">設定内容</string>
   <string name="ui.tutorial.admin.components.configuration.body">アダプター名をクリックすると設定が開きます。開かずに進むには「次へ」を押します。</string>
   <string name="ui.tutorial.admin.status.title">システムの状態</string>
@@ -690,7 +692,7 @@
   <string name="ui.tutorial.admin.security.session.policy.title">セッションの方針</string>
   <string name="ui.tutorial.admin.security.session.policy.body">アクセス方針を変える前に、セッション期間とセキュリティー上限を確認します。</string>
   <string name="ui.tutorial.admin.security.save.deliberately.title">内容を確認して保存</string>
-  <string name="ui.tutorial.admin.security.save.deliberately.body">セキュリティーの変更は他の利用者にも影響します。値を見直してから保存または破棄します。</string>
+  <string name="ui.tutorial.admin.security.save.deliberately.body">セキュリティーの変更は他の利用者にも影響します。値を見直してから保存または破棄してください。変更したセクションを離れる際、留まるを選ぶと下書きが保持され、破棄して移動を選ぶと削除されます。</string>
   <string name="ui.tutorial.users.directory.title">ユーザー管理</string>
   <string name="ui.tutorial.users.directory.account.directory.title">アカウント一覧</string>
   <string name="ui.tutorial.users.directory.account.directory.body">アカウントを探し、詳細を開いて本人情報と状態を確認します。</string>

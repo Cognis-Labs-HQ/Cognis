@@ -25,7 +25,7 @@ export function getGatewayAdapters(allAdapters, gatewayId) {
 
 export function getGatewayEnableableAdapters(allAdapters, gatewayId) {
     return getGatewayAdapters(allAdapters, gatewayId).filter(
-        (adapter) => !isAdapterActive(adapter),
+        (adapter) => !adapter.locked && !isAdapterActive(adapter),
     );
 }
 

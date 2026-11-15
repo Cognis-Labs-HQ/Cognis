@@ -1,3 +1,8 @@
+import { installAuthenticationFlow } from "./flows.js";
+import { createToggleBindings } from "../../../app/administration/reuse/toggle-bindings.js";
+import { createComponentToggleBindings } from "../../../app/administration/toggle-controls.js";
+import { createSubPageGuard } from "../../../app/administration/subpage-guard.js";
+import { captureAccountGuard } from "../../../reuse/offline-identity.js";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import {
@@ -133,6 +138,7 @@ export async function environment({ createContribution } = {}) {
                     : undefined,
         },
     };
+    installAuthenticationFlow(uiCtx);
     const globals = {
         HTMLInputElement: Input,
         HTMLSelectElement: Select,
@@ -181,6 +187,14 @@ export async function environment({ createContribution } = {}) {
         globals,
     );
     const overrides = {
+        createToggleBindings,
+        createComponentToggleBindings,
+        createSubPageGuard,
+        createAdministrationLifetime: loadTestModule(
+            new URL("../../../app/administration/lifetime.js", import.meta.url),
+            { "../../reuse/offline-identity.js": { captureAccountGuard } },
+            globals,
+        ).createAdministrationLifetime,
         uiCtx,
         guides: [],
         apiFetch,
