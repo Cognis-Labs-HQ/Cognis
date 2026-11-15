@@ -206,3 +206,28 @@ Die Fünf-Sekunden-Grenze gilt nur für den Stylesheet-Versuch, nicht für die g
 Ein schwebendes Fenster akzeptiert jeweils eine Verschiebe- oder Größenänderungsgeste. Weitere Berührungen ersetzen sie nicht. Das Loslassen oder Abbrechen des zugehörigen Zeigers oder der Verlust seiner Erfassung beendet nur diese Geste und behält Position und Größe bei. Danach kann eine neue Geste beginnen.
 
 Die zurückgegebene Funktion `release()` und ein optionales Abbruchsignal des Aufrufers entfernen das schwebende Verhalten und geben die Zeigererfassung frei; sie entfernen keine Inhalte des Aufrufers und rufen nicht den Schließen-Rückruf auf. Nur das ausdrückliche Schließen-Steuerelement ruft diesen Rückruf auf. Das Signal muss zur vorgesehenen Fensterlebensdauer passen: Dauerhaftes Anruf-PiP lässt das Seitensignal bewusst weg; Routenmeldungen allein schließen es nicht.
+
+## Strukturierte Schaltflächen
+
+Verwenden Sie `renderStructuredContent(groups)` aus `src/ui/reuse/structured-content.js` für deklarative Beiträge zu Einstellungen und Administration. Texte und zugängliche Beschriftungen stammen aus den Übersetzungen der zuständigen Komponente.
+
+```js
+renderStructuredContent([
+    {
+        items: [
+            {
+                type: "button",
+                id: "inspect",
+                text: inspectLabel,
+                variant: "neutral",
+            },
+        ],
+    },
+]);
+```
+
+Der Schaltflächendeskriptor ordnet `variant: 'confirm'` der Klasse `btn-confirm` und `variant: 'danger'` der Klasse `btn-cancel` zu. Fehlende Varianten, `neutral` und andere Werte erhalten `btn-neutral`; unbekannte Werte werden nicht abgelehnt. Jede Schaltfläche besitzt genau eine Konsequenzklasse neben `structured-content__button` und `btn-animated`. Die zuständige Komponente wählt erzeugende oder destruktive Varianten ausdrücklich; Beschriftungen und IDs bestimmen niemals die Konsequenz.
+
+Natives `type="button"`, maskierte Texte und Attribute (`id`, `name`, `ariaLabel`, `disabled`, `checked`), Gruppen und Trennlinien bleiben erhalten. Der Renderer liefert Markup, ohne Aktionen auszuführen oder Formulare abzusenden. Ereignisbehandlung und vorübergehende Deaktivierung bleiben beim Aufrufer; Deskriptoren bieten keine Schnittstellen für Ladezustände oder beliebige Klassen. Der Host muss die vorhandenen gemeinsamen Schaltflächen- und Strukturstile laden. Die kanonischen Klassen greifen auf gemeinsame Regeln für Umbruch, Schriftvererbung und Größen bei groben Zeigegeräten zu.
+
+Die Anleitungen für Einstellungen und Administration behalten ihre Ziele und Abläufe: Dieser Renderer ergänzt weder eine Aktion noch einen Anleitungsschritt. Die beitragenden Komponenten bleiben für ihre eigenen Aktionen und Anleitungen verantwortlich.

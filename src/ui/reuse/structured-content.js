@@ -11,7 +11,7 @@
  *       items: [
  *         { type: "title", text: "Notifications" },
  *         { type: "text", text: "Choose when to be notified." },
- *         { type: "button", id: "save-notifications", text: "Save" },
+ *         { type: "button", id: "inspect-notifications", text: "Inspect" },
  *       ],
  *     },
  *   ]);
@@ -45,8 +45,15 @@ function renderItem(item) {
             return `<h4 class="structured-content__subheading">${text}</h4>`;
         case "text":
             return `<p class="structured-content__text">${text}</p>`;
-        case "button":
-            return `<button class="structured-content__button btn-animated${item.variant === "confirm" ? " btn-confirm" : ""}${item.variant === "danger" ? " btn-cancel" : ""}" type="button" ${renderAttributes(item)}>${text}</button>`;
+        case "button": {
+            const consequenceClass =
+                item.variant === "confirm"
+                    ? "btn-confirm"
+                    : item.variant === "danger"
+                      ? "btn-cancel"
+                      : "btn-neutral";
+            return `<button class="structured-content__button btn-animated ${consequenceClass}" type="button" ${renderAttributes(item)}>${text}</button>`;
+        }
         case "toggle":
             return `<label class="structured-content__control switch"${item.label ? ` aria-label="${escapeHtml(item.label)}"` : ""}><input type="checkbox" ${renderAttributes(item)} /><span class="slider"></span></label>`;
         case "divider":

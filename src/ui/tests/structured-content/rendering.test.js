@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
 
-import { renderStructuredContent } from "../reuse/structured-content.js";
+import { renderStructuredContent } from "../../reuse/structured-content.js";
 
 test("structured content applies canonical classes and group dividers", () => {
     const markup = renderStructuredContent([
@@ -44,7 +44,7 @@ test("structured content ignores unknown item types", () => {
 
 test("structured content dividers use the theme's muted border", () => {
     const styles = readFileSync(
-        new URL("../styles/reuse/structured-content.css", import.meta.url),
+        new URL("../../styles/reuse/structured-content.css", import.meta.url),
         "utf8",
     );
 
