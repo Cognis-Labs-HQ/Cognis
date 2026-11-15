@@ -28,4 +28,4 @@ Saat kembali ke suatu metode, setiap konfirmasi kirim ulang yang selesai ditampi
 
 ## Komit
 
-- [c903046d8a47df05b96f87f59b12e6870b3bbe16](https://github.com/Cognis-Labs-HQ/Cognis/commit/c903046d8a47df05b96f87f59b12e6870b3bbe16)
+- [781658c2c3040c882e8ccbb4c1a7f2f5a1dfcb5a](https://github.com/Cognis-Labs-HQ/Cognis/commit/781658c2c3040c882e8ccbb4c1a7f2f5a1dfcb5a)
