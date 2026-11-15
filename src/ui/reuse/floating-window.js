@@ -169,8 +169,8 @@ export function makeFloatingWindow(
     let minWidth = initialMinWidth;
     let minHeight = initialMinHeight;
     let minimumOrientation = "horizontal";
-    let drag = null;
-    let resizeDrag = null;
+    let gesture = null;
+    const log = console.error.bind(console);
     let released = false;
     const hadPopoverAttribute = element.hasAttribute?.("popover") ?? false;
     const previousPopoverValue = element.getAttribute?.("popover");
@@ -366,21 +366,51 @@ export function makeFloatingWindow(
         element.style.minWidth = `${minWidth}px`;
         element.style.minHeight = `${minHeight}px`;
     };
-    const stopDragging = (event) => {
-        if (
-            event?.pointerId !== undefined &&
-            event.pointerId !== drag?.pointerId
-        )
+    const stopGesture = (event) => {
+        const current = gesture;
+        if (!current || (event && event.pointerId !== current.pointerId))
             return;
-        drag = null;
+        if (event?.type === "lostpointercapture") {
+            if (event.target !== current.captureElement) return;
+            try {
+                if (
+                    current.captureElement.hasPointerCapture?.(
+                        current.pointerId,
+                    )
+                )
+                    return;
+            } catch (error) {
+                log("floating_window_capture_failed", {
+                    component: "floating-window",
+                    operation: "inspect",
+                    errorName: error?.name,
+                });
+            }
+        }
+        gesture = null;
+        if (event?.type === "lostpointercapture" || !current.captured) return;
+        try {
+            if (current.captureElement.hasPointerCapture?.(current.pointerId)) {
+                current.captureElement.releasePointerCapture?.(
+                    current.pointerId,
+                );
+            }
+        } catch (error) {
+            log("floating_window_capture_failed", {
+                component: "floating-window",
+                operation: "release",
+                errorName: error?.name,
+            });
+        }
     };
-    const startDragging = (event) => {
-        if (event.button !== undefined && event.button !== 0) return;
-        if (event.target?.closest?.(".floating-window-resize-handle")) return;
-        if (event.target?.closest?.("button, a, input, select, textarea"))
-            return;
+    const startGesture = (event, kind, captureElement, edge) => {
+        if (released || gesture) return false;
         const rect = element.getBoundingClientRect();
-        drag = {
+        gesture = {
+            kind,
+            edge,
+            captureElement,
+            captured: false,
             pointerId: event.pointerId,
             x: event.clientX,
             y: event.clientY,
@@ -389,11 +419,33 @@ export function makeFloatingWindow(
             width: rect.width,
             height: rect.height,
         };
-        event.currentTarget?.setPointerCapture?.(event.pointerId);
+        try {
+            if (typeof captureElement?.setPointerCapture === "function") {
+                gesture.captured = true;
+                captureElement.setPointerCapture(event.pointerId);
+            }
+        } catch (error) {
+            gesture = null;
+            log("floating_window_capture_failed", {
+                component: "floating-window",
+                operation: "capture",
+                errorName: error?.name,
+            });
+            return false;
+        }
+        return true;
+    };
+    const startDragging = (event) => {
+        if (event.button !== undefined && event.button !== 0) return;
+        if (event.target?.closest?.(".floating-window-resize-handle")) return;
+        if (event.target?.closest?.("button, a, input, select, textarea"))
+            return;
+        if (!startGesture(event, "drag", event.currentTarget)) return;
         event.preventDefault?.();
     };
     const moveDragging = (event) => {
-        if (!drag || event.pointerId !== drag.pointerId) return;
+        const drag = gesture;
+        if (drag?.kind !== "drag" || event.pointerId !== drag.pointerId) return;
         const boundary = getBoundary();
         const viewportLeft = Math.max(
             boundary.left,
@@ -424,31 +476,20 @@ export function makeFloatingWindow(
         dragHandle.addEventListener("pointermove", moveDragging, {
             signal: controller.signal,
         });
-        dragHandle.addEventListener("pointerup", stopDragging, {
+        dragHandle.addEventListener("pointerup", stopGesture, {
             signal: controller.signal,
         });
-        dragHandle.addEventListener("pointercancel", stopDragging, {
+        dragHandle.addEventListener("lostpointercapture", stopGesture, {
+            signal: controller.signal,
+        });
+        dragHandle.addEventListener("pointercancel", stopGesture, {
             signal: controller.signal,
         });
     }
-    const stopResizing = (event) => {
-        if (
-            event?.pointerId !== undefined &&
-            event.pointerId !== resizeDrag?.pointerId
-        )
-            return;
-        resizeDrag = null;
-    };
-    window.addEventListener("pointerup", stopDragging, {
+    window.addEventListener("pointerup", stopGesture, {
         signal: controller.signal,
     });
-    window.addEventListener("pointercancel", stopDragging, {
-        signal: controller.signal,
-    });
-    window.addEventListener("pointerup", stopResizing, {
-        signal: controller.signal,
-    });
-    window.addEventListener("pointercancel", stopResizing, {
+    window.addEventListener("pointercancel", stopGesture, {
         signal: controller.signal,
     });
     for (const resizeHandle of chrome.resizeHandles) {
@@ -456,19 +497,15 @@ export function makeFloatingWindow(
             "pointerdown",
             (event) => {
                 if (event.button !== undefined && event.button !== 0) return;
-                drag = null;
-                const rect = element.getBoundingClientRect();
-                resizeDrag = {
-                    edge: resizeHandle.dataset.resizeEdge,
-                    pointerId: event.pointerId,
-                    x: event.clientX,
-                    y: event.clientY,
-                    left: rect.left,
-                    top: rect.top,
-                    width: rect.width,
-                    height: rect.height,
-                };
-                resizeHandle.setPointerCapture?.(event.pointerId);
+                if (
+                    !startGesture(
+                        event,
+                        "resize",
+                        resizeHandle,
+                        resizeHandle.dataset.resizeEdge,
+                    )
+                )
+                    return;
                 event.stopPropagation?.();
                 event.preventDefault?.();
             },
@@ -477,7 +514,11 @@ export function makeFloatingWindow(
         resizeHandle.addEventListener(
             "pointermove",
             (event) => {
-                if (!resizeDrag || event.pointerId !== resizeDrag.pointerId)
+                const resizeDrag = gesture;
+                if (
+                    resizeDrag?.kind !== "resize" ||
+                    event.pointerId !== resizeDrag.pointerId
+                )
                     return;
                 event.stopPropagation?.();
                 const boundary = getBoundary();
@@ -533,13 +574,13 @@ export function makeFloatingWindow(
             },
             { signal: controller.signal },
         );
-        resizeHandle.addEventListener("pointerup", stopResizing, {
+        resizeHandle.addEventListener("pointerup", stopGesture, {
             signal: controller.signal,
         });
-        resizeHandle.addEventListener("pointercancel", stopResizing, {
+        resizeHandle.addEventListener("pointercancel", stopGesture, {
             signal: controller.signal,
         });
-        resizeHandle.addEventListener("lostpointercapture", stopResizing, {
+        resizeHandle.addEventListener("lostpointercapture", stopGesture, {
             signal: controller.signal,
         });
     }
@@ -568,6 +609,7 @@ export function makeFloatingWindow(
     const release = () => {
         if (released) return;
         released = true;
+        stopGesture();
         controller.abort();
         resizeObserver?.disconnect();
         parentObserver?.disconnect();

@@ -194,3 +194,11 @@ Dialogstile teilen `ui:popupPreparation` zwischen gebündelten und direkt gelade
 Tutorial-Ziele, Abschlusskennungen, Aktionen, Weiter, Zurück, Neustart und Wiederholung bleiben unverändert. Fokus, verschachtelte Dialoge, Verwerfungsbestätigung, Aktionen, Zeitlimits und Rückabwicklung sichtbarer Dialoge behalten ihre Verträge. Die gemeinsame UI besitzt keine eigene Paketversion.
 
 Die Fünf-Sekunden-Grenze gilt nur für den Stylesheet-Versuch, nicht für die gesamte Vorbereitung von `openPopup`. Die strikte Sprachinitialisierung behält ihre bisherige Lebensdauer ohne neues Zeitlimit. Sie kann die lokalisierte Fehlermeldung und Ablehnung verzögern; das Öffnungssignal bricht dennoch sofort ab. Erfolgreiche verankerte Vorschauen initialisieren keine Sprachressourcen des Dialogs.
+
+## Gesten schwebender Fenster
+
+`ui:makeFloatingWindow`
+
+Ein schwebendes Fenster akzeptiert jeweils eine Verschiebe- oder Größenänderungsgeste. Weitere Berührungen ersetzen sie nicht. Das Loslassen oder Abbrechen des zugehörigen Zeigers oder der Verlust seiner Erfassung beendet nur diese Geste und behält Position und Größe bei. Danach kann eine neue Geste beginnen.
+
+Die zurückgegebene Funktion `release()` und ein optionales Abbruchsignal des Aufrufers entfernen das schwebende Verhalten und geben die Zeigererfassung frei; sie entfernen keine Inhalte des Aufrufers und rufen nicht den Schließen-Rückruf auf. Nur das ausdrückliche Schließen-Steuerelement ruft diesen Rückruf auf. Das Signal muss zur vorgesehenen Fensterlebensdauer passen: Dauerhaftes Anruf-PiP lässt das Seitensignal bewusst weg; Routenmeldungen allein schließen es nicht.

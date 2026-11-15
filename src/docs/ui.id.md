@@ -190,3 +190,11 @@ Gaya dialog berbagi `ui:popupPreparation` antara pemanggil bundel dan pemanggil 
 Target tutorial, ID penyelesaian, tindakan, Berikutnya, Kembali, Mulai Ulang, dan pemutaran ulang tidak berubah. Kontrak fokus dialog yang terlihat, dialog bertingkat, konfirmasi pembuangan, tindakan, batas waktu, dan pemulihan tetap sama. UI bersama tidak memiliki versi paket tersendiri.
 
 Batas lima detik hanya berlaku untuk percobaan stylesheet, bukan seluruh persiapan `openPopup`. Inisialisasi bahasa yang ketat mempertahankan masa hidupnya tanpa batas waktu baru; proses ini dapat menunda pemberitahuan kegagalan terlokalisasi dan penolakan, tetapi sinyal pembukaan tetap segera membatalkan. Pratinjau berjangkar yang berhasil tidak menginisialisasi sumber daya bahasa dialog.
+
+## Gestur jendela mengambang
+
+`ui:makeFloatingWindow`
+
+Jendela mengambang menerima satu gestur pemindahan atau perubahan ukuran pada satu waktu. Sentuhan tambahan tidak menggantikannya. Melepas atau membatalkan penunjuk pemilik, atau kehilangan tangkapannya, hanya mengakhiri gestur tersebut dan mempertahankan posisi serta ukuran saat ini. Gestur berikutnya dapat dimulai seperti biasa.
+
+Fungsi `release()` yang dikembalikan dan sinyal pembatalan opsional milik pemanggil menghapus perilaku mengambang serta melepaskan tangkapan penunjuk; keduanya tidak menghapus konten pemanggil atau memanggil callback penutupan. Hanya kontrol Tutup yang eksplisit memanggil callback tersebut. Pilih sinyal sesuai masa hidup jendela: PiP Panggilan yang persisten sengaja tidak memakai sinyal halaman, dan pemberitahuan rute saja tidak menutupnya.
