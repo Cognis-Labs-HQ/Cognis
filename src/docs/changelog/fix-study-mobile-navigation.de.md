@@ -21,3 +21,4 @@ Chromium-Tests übergeben Zugangsdaten, Selektoren und Navigationswerte als stru
 ## Commits
 
 - [d1b5fe1ac](https://github.com/Cognis-Labs-HQ/Cognis/commit/d1b5fe1ac497bc516a04d1f06717007512a6a40e)
+- [f4f6d3a84](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4f6d3a84b587d4eb169b5db76b850956544ad31)
