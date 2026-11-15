@@ -160,6 +160,10 @@ Inisial pada navigasi, pratinjau, dan profil memakai aturan nama dan warna yang 
 
 Pratinjau interaktif adalah dialog nonmodal bernama. Mengarahkan penunjuk tidak memindahkan fokus keyboard; kartu yang sedang fokus tetap terbuka saat penunjuk menjauh. Escape menutupnya dan mengembalikan fokus ke pemicu hanya jika fokus sebelumnya berada di dalam kartu.
 
+## Konfirmasi Tindakan Profil
+
+Hapus, Berhenti Mengikuti, dan Blokir meminta konfirmasi. Batal mempertahankan postingan atau hubungan. Langkah postingan dan tindakan sosial menjelaskan pilihan ini dalam semua bahasa yang didukung. Target, urutan, progres, dan ID penyelesaiannya tetap sama.
+
 ### Konten Avatar Seragam
 
 `ui:profileAvatarRenderer.getPresentation(profile)` menghasilkan `label`, `initials`, `colorSeed`, dan `color` dari `displayName || handle` yang sudah diotorisasi. `buildContent({ profile, size, avatarKey, blobUrl, imageClass, imageAlt })` membuat markup bagian dalam yang tidak interaktif. Ukuran eksplisitnya adalah `small` (32px, 0.7rem), `medium` (48px, 1.05rem), dan `large` (80px, 1.75rem); ukuran tak dikenal ditolak. CSS Profile mengelola geometri, tipografi, warna, garis tepi, dan padding. Tautan luar, tombol menu atau unggah, posisi, dan ketersediaan tetap dikelola pemanggil. URL gambar dan data identitas harus sudah diotorisasi; API tampilan ini tidak mengambil data atau memberikan akses.
@@ -167,6 +171,14 @@ Pratinjau interaktif adalah dialog nonmodal bernama. Mengarahkan penunjuk tidak 
 Bilah navigasi, pratinjau profil, dan kepala profil memakai aturan yang sama. Gambar valid yang tidak berubah tetap terpasang setelah pembaruan nama; kesalahan dekode berikutnya menampilkan inisial nama terkini. Avatar pratinjau menautkan profil dengan nama aksesibel terkini. Fokus atau arah penunjuk tidak memulai ulang pratinjau. Media kepala profil tetap dimiliki halaman dan tidak memakai cache avatar.
 
 Arti `buildMarkup`, `colorSeed`, kelas khusus, ketersediaan, pemuatan gambar, dan tautan profil tidak berubah. Messages, pratinjau Settings, Share, Library, dan Calendar tetap dapat memakai kontrak tersebut; rilis ini tidak memigrasikan tampilannya atau modul eksternal. Batas dependensi teruji Messages dan Calendar meningkat ke Profile 4.0.0. Batas modul eksternal belum diverifikasi dan perlu pengujian pendamping sebelum peningkatan versi. Pengujian DOM sintetis mencakup urutan gaya pada kedua tema, bukan penggambaran atau geometri tata letak browser native.
+
+### Konfirmasi Tindakan Profil
+
+Dialog konfirmasi Profil memakai Batal netral. Hapus, Berhenti Mengikuti, dan Blokir bersifat destruktif; Buka Blokir bersifat netral. Tindakan berulang untuk postingan atau hubungan yang sama berbagi keputusan dan permintaan tertunda. Batal, Tutup, dan Escape tidak mengubah apa pun. Meninggalkan halaman, mengganti akun atau sesi, atau menghapus penyedia membatalkan keputusan tertunda dan kontrol lama.
+
+Tindakan yang ditolak atau diketahui belum terkirim dapat dikonfirmasi lagi. Bila pengiriman tidak pasti, halaman saat ini tidak mengirim ulang: buka kembali profil untuk memeriksa hasilnya. Respons server yang berhasil atau penerimaan luring yang tersimpan memperbarui tampilan. Kegagalan penyegaran berikutnya melaporkan bahwa perubahan telah diterima, bukan kegagalan penulisan. Penyegaran koneksi memperbarui daftar yang berhasil dimuat dan mempertahankan daftar sebelumnya saat gagal.
+
+Kontrol ini memakai alur social:profile:request dan masa aktif halaman yang ada. Pengujian DOM sintetis menjalankan pemasangan halaman, popup, tahap permintaan terdaftar, dan transportasi terkendali yang sebenarnya. Pengujian ini tidak membuktikan tata letak browser asli atau perilaku server dan basis data langsung.
 
 ## Keamanan
 

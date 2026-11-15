@@ -172,6 +172,10 @@ Initialen in Navigation, Vorschau und Profil folgen denselben Namens- und Farbre
 
 Die interaktive Vorschau ist ein benannter nichtmodaler Dialog. Beim Darüberfahren wird der Tastaturfokus nicht verschoben; ein fokussiertes Fenster bleibt beim Wegbewegen des Zeigers offen. Escape schließt es und setzt den Fokus nur dann auf den Auslöser zurück, wenn er zuvor in der Vorschau lag.
 
+## Profilaktionen bestätigen
+
+Löschen, Entfolgen und Blockieren erfordern eine Bestätigung. Abbrechen behält Beitrag oder Beziehung. Die Schritte für Beiträge und soziale Aktionen erklären diese Auswahl in allen unterstützten Sprachen. Ziele, Reihenfolge, Fortschritt und Abschlusskennungen bleiben unverändert.
+
 ### Einheitlicher Avatarinhalt
 
 `ui:profileAvatarRenderer.getPresentation(profile)` leitet `label`, `initials`, `colorSeed` und `color` aus dem bereits autorisierten `displayName || handle` ab. `buildContent({ profile, size, avatarKey, blobUrl, imageClass, imageAlt })` erzeugt nicht interaktiven inneren Inhalt. Die Größen sind `small` (32px, 0.7rem), `medium` (48px, 1.05rem) und `large` (80px, 1.75rem); unbekannte Größen schlagen fehl. Profile-CSS besitzt Geometrie, Schrift, Farbe, Rahmen und Innenabstand. Äußere Links, Menü- und Uploadknöpfe, Platzierung und Verfügbarkeit bleiben beim Aufrufer. Bild-URLs und Identitätsdaten müssen bereits autorisiert sein; diese Darstellung liest keine Daten und erteilt keine Zugriffsrechte.
@@ -179,6 +183,14 @@ Die interaktive Vorschau ist ein benannter nichtmodaler Dialog. Beim Darüberfah
 Navigation, Kurzvorschau und Profilkopf verwenden dieselben Regeln. Ein unverändertes gültiges Bild bleibt bei Namensänderungen erhalten; ein späterer Dekodierungsfehler zeigt Initialen des aktuellen Namens. Der Vorschauavatar verlinkt das benannte Profil mit aktuellem zugänglichem Namen. Fokus oder Mauszeiger starten die Vorschau nicht erneut. Die Bilder im Profilkopf bleiben seitengebunden und nutzen nicht den Avatarcache.
 
 `buildMarkup`, `colorSeed`, eigene Klassen, Verfügbarkeit, Bildladen und Profillinks behalten ihre Bedeutung. Messages, Einstellungsvorschauen, Share, Library und Calendar können diesen Vertrag weiter nutzen; ihre Darstellung und externe Module werden nicht umgestellt. Die getesteten Abhängigkeitsgrenzen von Messages und Calendar steigen auf Profile 4.0.0. Grenzen externer Module sind nicht geprüft und benötigen vor einem Upgrade eigene Tests. Synthetische DOM-Tests prüfen die Stilreihenfolge in beiden Designs, nicht native Browserdarstellung oder Layoutgeometrie.
+
+### Profilaktionen bestätigen
+
+Profilbestätigungen verwenden ein neutrales Abbrechen. Löschen, Entfolgen und Blockieren sind destruktiv; Entsperren ist neutral. Wiederholte Aktionen für denselben Beitrag oder dieselbe Beziehung teilen eine ausstehende Entscheidung und Anfrage. Abbrechen, Schließen und Escape ändern nichts. Seitenwechsel, Konto- oder Sitzungswechsel und Anbieterentfernung machen ausstehende Entscheidungen und alte Bedienelemente unwirksam.
+
+Abgelehnte oder nachweislich ungesendete Aktionen können erneut bestätigt werden. Bei ungewisser Übertragung sendet die aktuelle Seite nicht erneut: Öffnen Sie das Profil zur Prüfung erneut. Eine erfolgreiche Serverantwort oder dauerhafte Offline-Annahme aktualisiert die Ansicht. Eine fehlgeschlagene Folgeaktualisierung meldet die bereits angenommene Änderung statt eines Schreibfehlers. Verbindungslisten werden bei Fehlern beibehalten und bei erfolgreichen Abrufen aktualisiert.
+
+Die Bedienelemente verwenden den bestehenden Ablauf social:profile:request und die Seitenlebensdauer. Synthetische DOM-Tests prüfen echte Seitenaufrufe, Popups, registrierte Anfragestufen und kontrollierten Transport. Sie belegen weder natives Browserlayout noch das Verhalten produktiver Server oder Datenbanken.
 
 ## Sicherheit
 

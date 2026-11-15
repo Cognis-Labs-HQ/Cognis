@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { createProviderLifecycle } from "../../../../ui/reuse/provider-lifecycle.js";
 import { JSDOM } from "jsdom";
+import { popupFixture } from "../../../../ui/reuse/tests/popup/dom-fixture.js";
 import { createOfflineClientFixture } from "../../../../tooling/reuse/offline-client-fixture.js";
 import {
     loadTestModule,
@@ -30,12 +31,17 @@ export const profileFor = (handle = "learner") => ({
 });
 export async function heroFixture(
     context,
-    { useProviderLifecycle = false } = {},
+    { useProviderLifecycle = false, withPopup = false } = {},
 ) {
-    const window = new JSDOM('<body><main id="app"></main></body>', {
-        url: "https://fixture.invalid/profile",
-    }).window;
+    const popup = withPopup ? await popupFixture(context) : null;
+    const window =
+        popup?.window ??
+        new JSDOM('<body><main id="app"></main></body>', {
+            url: "https://fixture.invalid/profile",
+        }).window;
     const document = window.document;
+    if (popup)
+        document.body.insertAdjacentHTML("beforeend", '<main id="app"></main>');
     const pendingActions = new Set();
     const addListener = window.HTMLButtonElement.prototype.addEventListener;
     window.HTMLButtonElement.prototype.addEventListener = function (
@@ -69,6 +75,7 @@ export async function heroFixture(
         new Blob(["cropped-image"], { type: "image/png" });
     let providerId = "fixture-provider";
     let translationFailure;
+    let refreshFailure;
     const logs = [];
     const requests = [],
         stages = [],
@@ -261,7 +268,9 @@ export async function heroFixture(
             showToast: (message, options) =>
                 notices.push({ message, ...options }),
         },
-        "/static/reuse/popup.js": { openPopup: async () => "confirm" },
+        "/static/reuse/popup.js": popup
+            ? await popup.importModule("popup.js")
+            : { openPopup: async () => "confirm" },
         "/static/reuse/app-router.js": {
             navigateTo: (path) => {
                 throw new Error(`unexpected navigation ${path}`);
@@ -356,6 +365,7 @@ export async function heroFixture(
     imports["/static/reuse/page-composer/index.js"] = {
         createPageComposer: (root, options) => {
             const render = (ids) => {
+                if (refreshFailure) throw refreshFailure;
                 for (const element of options.elements.filter(
                     (item) => !ids || ids.includes(item.id),
                 )) {
@@ -413,6 +423,7 @@ export async function heroFixture(
     return {
         window,
         document,
+        popup,
         host,
         app,
         mount,
@@ -437,6 +448,9 @@ export async function heroFixture(
         },
         setOverride: (value) => {
             override = value;
+        },
+        setRefreshFailure: (error) => {
+            refreshFailure = error;
         },
         setTranslationFailure: (key) => {
             translationFailure = key;

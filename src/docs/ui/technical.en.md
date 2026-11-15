@@ -89,6 +89,14 @@ Logout clears private session data without waiting for public service-worker rou
 
 See the [shared contract](/docs/api/technical) for this behavior.
 
+### Cancel Before Submission
+
+The shared UI offline client carries a caller’s AbortSignal through registered request stages, pending-queue reads and delivery waits. Cancellation before a network request or durable queue write starts prevents that new action. The outbox checks cancellation again inside its storage lock.
+
+The additive contracts are `deliverOrQueue(ctx, owner, id, payload, send, { signal } = {})` and `outbox.submit(owner, id, payload, { signal } = {})`. Existing callers without a signal and durable replay keep their behavior. A later abort never removes an accepted queue record or undoes a request already sent; a lost acknowledgement may leave an uncertain result and must not invite blind resubmission.
+
+These contracts belong to shared UI assets, not a gateway or adapter package. Ship the updated shared assets with Profile 4.0.1. Profile, Messages, Calendar and Notify email use the shared HTTP client; Study drawing, library, favourites and Flashcards also use the optional delivery helper. Their no-signal calls keep the existing contract. No Calendar runtime behavior is customized.
+
 ## Security
 
 Hidden navigation is not access control. Browser providers resolve owner capabilities and abort pending work on unmount or account changes; private reads remain account-scoped.

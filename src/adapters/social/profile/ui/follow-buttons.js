@@ -17,9 +17,10 @@ export function bindSocialCardFollowButtons(root, followUser) {
         (button) => {
             if (button.dataset.followActionBound === "true") return;
             button.dataset.followActionBound = "true";
-            button.addEventListener("click", () =>
-                followUser(button.dataset.handle),
-            );
+            button.addEventListener("click", () => {
+                if (root.contains(button) && !button.disabled)
+                    return followUser(button.dataset.handle);
+            });
         },
     );
 }
