@@ -11,6 +11,7 @@
   <string name="adapter.notify.internal.error_clear_all">Benachrichtigungen konnten nicht gelöscht werden. Bitte erneut versuchen.</string>
   <string name="adapter.notify.internal.new_message">Neue Nachricht</string>
   <string name="adapter.notify.internal.error_load">Benachrichtigungen sind nicht verfügbar. Laden Sie Ihren Posteingang mit „Erneut versuchen“.</string>
+  <string name="adapter.notify.internal.error_styles">Die Darstellung der Benachrichtigungen konnte nicht geladen werden. Der Posteingang ist verfügbar, sein Layout kann jedoch unvollständig sein. Öffnen Sie die App erneut, um es noch einmal zu versuchen.</string>
   <string name="adapter.notify.internal.error_refresh">Benachrichtigungen konnten nicht aktualisiert werden. Der zuletzt bestätigte Posteingang bleibt sichtbar. Wählen Sie „Erneut versuchen“.</string>
   <string name="adapter.notify.internal.error_refresh_after_change">Ihre Änderung wurde gespeichert, aber die Benachrichtigungen konnten nicht aktualisiert werden. Prüfen Sie den aktuellen Posteingang mit „Erneut versuchen“.</string>
   <string name="adapter.notify.internal.error_change_rejected">Die Änderung der Benachrichtigung wurde abgelehnt. Aktualisieren Sie den Posteingang mit „Erneut versuchen“, bevor Sie die Änderung erneut ausführen.</string>
