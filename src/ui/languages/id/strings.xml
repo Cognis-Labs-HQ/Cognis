@@ -420,6 +420,14 @@
   <string name="ui.app.settings.emails_add_placeholder">kamu@contoh.com</string>
   <string name="ui.app.settings.emails_none">Tidak ada alamat email yang ditambahkan.</string>
   <string name="ui.app.settings.emails_remove_failed">Tidak dapat menghapus alamat email.</string>
+  <string name="ui.app.settings.emails_primary_failed">Tidak dapat mengubah alamat email utama.</string>
+  <string name="ui.app.settings.emails_remove_completed">Alamat email dihapus.</string>
+  <string name="ui.app.settings.emails_primary_completed">Alamat email utama diubah.</string>
+  <string name="ui.app.settings.emails_queued">Perubahan email masuk antrean. Server belum mengonfirmasinya.</string>
+  <string name="ui.app.settings.emails_saved_refresh_failed">Perubahan email tersimpan, tetapi daftar email terbaru belum dapat dipastikan. Gunakan Segarkan sebelum melakukan perubahan lain.</string>
+  <string name="ui.app.settings.emails_queued_refresh_failed">Perubahan email masuk antrean, tetapi daftar dengan perubahan tertunda tidak dapat dimuat. Gunakan Segarkan tanpa mengulangi perubahan.</string>
+  <string name="ui.app.settings.emails_outcome_unknown">Perubahan email belum dikonfirmasi dan mungkin sudah tersimpan. Segarkan memeriksa tanpa mengirim ulang. Jika tetap belum dikonfirmasi, buka kembali Pengaturan dan periksa daftar sebelum membuat perubahan baru.</string>
+  <string name="ui.app.settings.emails_refreshed">Daftar alamat email dimuat ulang.</string>
   <string name="ui.app.settings.emails_add_failed">Tidak dapat menambahkan alamat email.</string>
   <string name="ui.app.settings.emails_unverified">Belum diverifikasi</string>
   <string name="ui.app.settings.emails_verified">Sah</string>
@@ -656,7 +664,7 @@
   <string name="ui.tutorial.replay">Ulangi Tutorial Halaman Ini</string>
   <string name="ui.tutorial.settings.general.title">Preferensi Akun</string>
   <string name="ui.tutorial.settings.general.email.addresses.title">Alamat Email</string>
-  <string name="ui.tutorial.settings.general.email.addresses.body">Periksa alamat email dan status verifikasinya sebelum menambah atau menghapus alamat.</string>
+  <string name="ui.tutorial.settings.general.email.addresses.body">Periksa alamat email dan status verifikasinya sebelum menambah atau menghapus alamat. Jadikan utama mengubah alamat utama; Hapus menghapus alamat tambahan. Tunggu saat tindakan sedang berlangsung. Perubahan dalam antrean belum dikonfirmasi server. Jika hasil atau daftar belum dipastikan, gunakan Segarkan untuk memeriksa tanpa mengirim ulang. Buka kembali Pengaturan dan periksa daftar jika hasil tetap belum dikonfirmasi.</string>
   <string name="ui.tutorial.settings.general.offline.access.title">Akses Luring</string>
   <string name="ui.tutorial.settings.general.offline.access.body">Pilih apakah browser ini menyiapkan konten yang diizinkan untuk penggunaan luring.</string>
   <string name="ui.tutorial.settings.general.account.lifecycle.title">Siklus Akun</string>

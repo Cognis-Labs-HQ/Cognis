@@ -420,6 +420,14 @@
   <string name="ui.app.settings.emails_add_placeholder">you@example.com</string>
   <string name="ui.app.settings.emails_none">メールアドレスが追加されていません。</string>
   <string name="ui.app.settings.emails_remove_failed">メールアドレスを削除できませんでした。</string>
+  <string name="ui.app.settings.emails_primary_failed">主メールアドレスを変更できませんでした。</string>
+  <string name="ui.app.settings.emails_remove_completed">メールアドレスを削除しました。</string>
+  <string name="ui.app.settings.emails_primary_completed">主メールアドレスを変更しました。</string>
+  <string name="ui.app.settings.emails_queued">メールアドレスの変更を送信待ちにしました。サーバーではまだ確認されていません。</string>
+  <string name="ui.app.settings.emails_saved_refresh_failed">メールアドレスの変更は保存されましたが、最新の一覧を確認できませんでした。次の変更を行う前に「更新」を選んでください。</string>
+  <string name="ui.app.settings.emails_queued_refresh_failed">メールアドレスの変更を送信待ちにしましたが、保留中の変更を含む一覧を読み込めませんでした。変更を繰り返さずに「更新」を選んでください。</string>
+  <string name="ui.app.settings.emails_outcome_unknown">メールアドレスの変更は未確認ですが、すでに保存されている可能性があります。「更新」は再送信せずに状態を確認します。未確認のままの場合は、設定を開き直し、一覧を確認してから新しい変更を行ってください。</string>
+  <string name="ui.app.settings.emails_refreshed">メールアドレスの一覧を更新しました。</string>
   <string name="ui.app.settings.emails_add_failed">メールアドレスを追加できませんでした。</string>
   <string name="ui.app.settings.emails_unverified">未確認</string>
   <string name="ui.app.settings.emails_verified">有効</string>
@@ -656,7 +664,7 @@
   <string name="ui.tutorial.replay">このページのチュートリアルを再生</string>
   <string name="ui.tutorial.settings.general.title">アカウント設定</string>
   <string name="ui.tutorial.settings.general.email.addresses.title">メールアドレス</string>
-  <string name="ui.tutorial.settings.general.email.addresses.body">追加や削除の前に、メールアドレスと確認状況を見直します。</string>
+  <string name="ui.tutorial.settings.general.email.addresses.body">追加や削除の前にメールアドレスと確認状況を見直します。「主に設定」は主アドレスを変更し、「削除」は追加のアドレスを削除します。処理中はお待ちください。送信待ちの変更はサーバーではまだ確認されていません。結果や一覧が未確認の場合は「更新」で再送信せずに確認します。結果が未確認のままの場合は設定を開き直し、一覧を確認してください。</string>
   <string name="ui.tutorial.settings.general.offline.access.title">オフライン利用</string>
   <string name="ui.tutorial.settings.general.offline.access.body">このブラウザーで許可されたコンテンツをオフライン用に準備するか選びます。</string>
   <string name="ui.tutorial.settings.general.account.lifecycle.title">アカウントの管理</string>
