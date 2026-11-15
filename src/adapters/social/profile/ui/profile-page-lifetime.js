@@ -60,7 +60,8 @@ export function createProfilePageLifetime({ root, signal, onDispose }) {
         element?.addEventListener(
             type,
             (event) => {
-                if (isCurrent()) return listener(event);
+                if (isCurrent() && root.contains(element))
+                    return listener(event);
             },
             { signal: controller.signal },
         );

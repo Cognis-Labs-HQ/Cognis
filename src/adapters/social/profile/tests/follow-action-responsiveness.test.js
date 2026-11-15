@@ -4,27 +4,38 @@ import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { heroFixture, settle, deferred, profileFor } from "./hero-fixture.js";
+
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../../..");
 
-test("follow actions repaint before refreshing connection lists", () => {
-    const source = readFileSync(
-        resolve(ROOT, "src/adapters/social/profile/ui/profile-post-actions.js"),
-        "utf8",
+test("follow actions repaint before refreshing connection lists", async (context) => {
+    const fixture = await heroFixture(context);
+    fixture.setProfile(profileFor("other"));
+    await fixture.mount("/profile/other");
+    const pending = deferred();
+    fixture.setOverride((path, options) =>
+        options.method
+            ? Response.json({ data: {} })
+            : path.endsWith("/follow") || path.endsWith("/following")
+              ? pending.promise
+              : undefined,
     );
-
-    const immediateRefresh = source.indexOf("refreshProfileHero();");
-    const connectionRefresh = source.indexOf(
-        "const [followersResult, followingResult] =",
-        immediateRefresh,
-    );
-    assert.ok(immediateRefresh >= 0);
-    assert.ok(connectionRefresh > immediateRefresh);
-    assert.match(source, /pendingFollowHandles\.has\(handle\)/);
-    assert.match(source, /followButton\.disabled = true/);
+    const button = fixture.document.querySelector(".profile-hero-follow-btn");
+    button.click();
+    button.dispatchEvent(new fixture.window.Event("click"));
+    await settle();
+    assert.equal(button.disabled, true);
     assert.ok(
-        source.indexOf("refreshProfileCards([") < connectionRefresh,
-        "social totals and cards should repaint before list requests settle",
+        fixture.document.querySelector(
+            '.profile-hero-follow-btn[data-following="true"]',
+        ),
     );
+    assert.equal(
+        fixture.requests.filter(({ method }) => method === "POST").length,
+        1,
+    );
+    pending.resolve(Response.json({ data: [] }));
+    await settle();
 });
 
 test("profile media and layout preferences load concurrently", () => {

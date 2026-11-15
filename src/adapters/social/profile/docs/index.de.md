@@ -169,3 +169,11 @@ Regressionstests verwenden statische jsdom-Testdaten, die tatsächlichen Seitene
 Navigation, Kurzvorschau und Profilkopf verwenden dieselben Regeln. Ein unverändertes gültiges Bild bleibt bei Namensänderungen erhalten; ein späterer Dekodierungsfehler zeigt Initialen des aktuellen Namens. Der Vorschauavatar verlinkt das benannte Profil mit aktuellem zugänglichem Namen. Fokus oder Mauszeiger starten die Vorschau nicht erneut. Die Bilder im Profilkopf bleiben seitengebunden und nutzen nicht den Avatarcache.
 
 `buildMarkup`, `colorSeed`, eigene Klassen, Verfügbarkeit, Bildladen und Profillinks behalten ihre Bedeutung. Messages, Einstellungsvorschauen, Share, Library und Calendar können diesen Vertrag weiter nutzen; ihre Darstellung und externe Module werden nicht umgestellt. Die getesteten Abhängigkeitsgrenzen von Messages und Calendar steigen auf Profile 4.0.0. Grenzen externer Module sind nicht geprüft und benötigen vor einem Upgrade eigene Tests. Synthetische DOM-Tests prüfen die Stilreihenfolge in beiden Designs, nicht native Browserdarstellung oder Layoutgeometrie.
+
+## Profilaktionen bestätigen
+
+Profilbestätigungen verwenden ein neutrales Abbrechen. Löschen, Entfolgen und Blockieren sind destruktiv; Entsperren ist neutral. Wiederholte Aktionen für denselben Beitrag oder dieselbe Beziehung teilen eine ausstehende Entscheidung und Anfrage. Abbrechen, Schließen und Escape ändern nichts. Seitenwechsel, Konto- oder Sitzungswechsel und Anbieterentfernung machen ausstehende Entscheidungen und alte Bedienelemente unwirksam.
+
+Abgelehnte oder nachweislich ungesendete Aktionen können erneut bestätigt werden. Bei ungewisser Übertragung sendet die aktuelle Seite nicht erneut: Öffnen Sie das Profil zur Prüfung erneut. Eine erfolgreiche Serverantwort oder dauerhafte Offline-Annahme aktualisiert die Ansicht. Eine fehlgeschlagene Folgeaktualisierung meldet die bereits angenommene Änderung statt eines Schreibfehlers. Verbindungslisten werden bei Fehlern beibehalten und bei erfolgreichen Abrufen aktualisiert.
+
+Die Bedienelemente verwenden den bestehenden Ablauf social:profile:request und die Seitenlebensdauer. Synthetische DOM-Tests prüfen echte Seitenaufrufe, Popups, registrierte Anfragestufen und kontrollierten Transport. Sie belegen weder natives Browserlayout noch das Verhalten produktiver Server oder Datenbanken.

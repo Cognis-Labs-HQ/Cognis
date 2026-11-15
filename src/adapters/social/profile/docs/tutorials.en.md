@@ -27,3 +27,7 @@ Profile photos remain visible while counts and details update. Retry a failed im
 Navbar, preview and profile initials use the same name and color rules. The preview avatar opens that profile. A name change also updates initials shown after an image failure. Existing identity and avatar controls retain their tutorial targets, step order and completion IDs.
 
 The interactive preview is a named nonmodal dialog. Hovering it does not move keyboard focus; moving the pointer away leaves a focused card open. Escape closes it and returns focus to its trigger only when focus was inside the card.
+
+## Confirm Profile Actions
+
+Delete, Unfollow and Block ask for confirmation. Cancel keeps the post or relationship. The posts and social-actions steps explain these choices in all supported languages. Their targets, ordering, progression and completion IDs remain unchanged.

@@ -159,3 +159,11 @@ Uji regresi memakai fixture jsdom statis, ekspor halaman sebenarnya, serta siklu
 Bilah navigasi, pratinjau profil, dan kepala profil memakai aturan yang sama. Gambar valid yang tidak berubah tetap terpasang setelah pembaruan nama; kesalahan dekode berikutnya menampilkan inisial nama terkini. Avatar pratinjau menautkan profil dengan nama aksesibel terkini. Fokus atau arah penunjuk tidak memulai ulang pratinjau. Media kepala profil tetap dimiliki halaman dan tidak memakai cache avatar.
 
 Arti `buildMarkup`, `colorSeed`, kelas khusus, ketersediaan, pemuatan gambar, dan tautan profil tidak berubah. Messages, pratinjau Settings, Share, Library, dan Calendar tetap dapat memakai kontrak tersebut; rilis ini tidak memigrasikan tampilannya atau modul eksternal. Batas dependensi teruji Messages dan Calendar meningkat ke Profile 4.0.0. Batas modul eksternal belum diverifikasi dan perlu pengujian pendamping sebelum peningkatan versi. Pengujian DOM sintetis mencakup urutan gaya pada kedua tema, bukan penggambaran atau geometri tata letak browser native.
+
+## Konfirmasi Tindakan Profil
+
+Dialog konfirmasi Profil memakai Batal netral. Hapus, Berhenti Mengikuti, dan Blokir bersifat destruktif; Buka Blokir bersifat netral. Tindakan berulang untuk postingan atau hubungan yang sama berbagi keputusan dan permintaan tertunda. Batal, Tutup, dan Escape tidak mengubah apa pun. Meninggalkan halaman, mengganti akun atau sesi, atau menghapus penyedia membatalkan keputusan tertunda dan kontrol lama.
+
+Tindakan yang ditolak atau diketahui belum terkirim dapat dikonfirmasi lagi. Bila pengiriman tidak pasti, halaman saat ini tidak mengirim ulang: buka kembali profil untuk memeriksa hasilnya. Respons server yang berhasil atau penerimaan luring yang tersimpan memperbarui tampilan. Kegagalan penyegaran berikutnya melaporkan bahwa perubahan telah diterima, bukan kegagalan penulisan. Penyegaran koneksi memperbarui daftar yang berhasil dimuat dan mempertahankan daftar sebelumnya saat gagal.
+
+Kontrol ini memakai alur social:profile:request dan masa aktif halaman yang ada. Pengujian DOM sintetis menjalankan pemasangan halaman, popup, tahap permintaan terdaftar, dan transportasi terkendali yang sebenarnya. Pengujian ini tidak membuktikan tata letak browser asli atau perilaku server dan basis data langsung.

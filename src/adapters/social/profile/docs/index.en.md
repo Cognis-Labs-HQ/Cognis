@@ -242,3 +242,11 @@ Regression tests use static jsdom fixtures, actual page exports and registered r
 Navbar, hover preview and profile hero use these shared rules. An unchanged valid image stays mounted after a display-name update, while a later decode error restores initials for the current name. The preview avatar links to the named profile and keeps its accessible name current; focusing or hovering it does not restart the preview. Hero media remains page-owned and does not join the avatar cache.
 
 The existing `buildMarkup`, `colorSeed`, custom classes, availability, hydration and profile-link options keep their meaning. Messages and Settings previews, Share, Library and Calendar can continue using that contract; this release does not migrate their presentation or external modules. Messages and Calendar tested dependency ceilings advance to Profile 4.0.0. External module ceilings have not been validated and require companion testing before an upgrade. Synthetic DOM tests cover style ordering in both themes, not native browser paint or layout geometry.
+
+## Confirm Profile Actions
+
+Profile confirmation dialogs use a neutral Cancel. Delete, Unfollow and Block are destructive; Unblock is neutral. Repeated actions for the same post or relationship share a pending decision and request. Cancel, Close and Escape make no change. Leaving the page, changing account/session or removing the provider invalidates pending decisions and retained controls.
+
+A rejected or known-unsent action can be confirmed again. When delivery is uncertain, the current page does not resend it: reopen the profile to check the result. A successful server response or durable offline acceptance updates the current view. A failed follow-up refresh reports that the change was accepted; it is not a failed write. Connection refreshes keep successfully loaded lists and retain existing lists on failure.
+
+These controls use the existing social:profile:request flow and page lifetime. Synthetic DOM tests exercise real page mounts, popups, registered request stages and controlled transport. Native browser layout and live server/database behavior are not established by these tests.

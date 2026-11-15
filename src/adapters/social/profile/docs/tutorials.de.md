@@ -27,3 +27,7 @@ Profilfotos bleiben sichtbar, während Zahlen und Details aktualisiert werden. �
 Initialen in Navigation, Vorschau und Profil folgen denselben Namens- und Farbregeln. Der Vorschauavatar öffnet dieses Profil. Nach einer Namensänderung zeigen auch Ersatzinitialen bei Bildfehlern den aktuellen Namen. Bestehende Identitäts- und Avataraktionen behalten ihre Tutorialziele, Schrittfolge und Abschlusskennungen.
 
 Die interaktive Vorschau ist ein benannter nichtmodaler Dialog. Beim Darüberfahren wird der Tastaturfokus nicht verschoben; ein fokussiertes Fenster bleibt beim Wegbewegen des Zeigers offen. Escape schließt es und setzt den Fokus nur dann auf den Auslöser zurück, wenn er zuvor in der Vorschau lag.
+
+## Profilaktionen bestätigen
+
+Löschen, Entfolgen und Blockieren erfordern eine Bestätigung. Abbrechen behält Beitrag oder Beziehung. Die Schritte für Beiträge und soziale Aktionen erklären diese Auswahl in allen unterstützten Sprachen. Ziele, Reihenfolge, Fortschritt und Abschlusskennungen bleiben unverändert.

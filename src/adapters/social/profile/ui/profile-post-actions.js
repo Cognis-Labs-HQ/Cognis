@@ -3,7 +3,9 @@ import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { showToast } from "/static/reuse/toast.js";
 import { navigateTo } from "/static/reuse/app-router.js";
+import { isOffline } from "/static/reuse/offline-state.js";
 
+/** Create page-owned post and relationship actions. @returns {object} Action callbacks. */
 export function createProfilePostActions({
     getState,
     isCurrent,
@@ -12,11 +14,131 @@ export function createProfilePostActions({
     refreshProfileHero = refreshPage,
     refreshProfileCards = refreshPage,
     i18n,
+    signal,
     loadOwnPosts,
     loadFollowers,
     loadFollowing,
 }) {
-    const pendingFollowHandles = new Set();
+    const mutations = new Map();
+    const log = (level, operation, metadata = {}) =>
+        console[level]("[profile] relationship or post action", {
+            component: "social-profile",
+            operation,
+            ...metadata,
+        });
+
+    function runAction({
+        key,
+        operation,
+        title,
+        body = "",
+        label,
+        destructive = true,
+        path,
+        method,
+        apply,
+        retain = false,
+    }) {
+        if (!isCurrent() || signal?.aborted) return Promise.resolve();
+        const existing = mutations.get(key);
+        if (existing) {
+            if (existing.uncertain)
+                showToast(i18n.t("ui.app.profile.action_uncertain"), {
+                    variant: "error",
+                });
+            return existing.promise;
+        }
+        const entry = { uncertain: false, accepted: false, promise: null };
+        mutations.set(key, entry);
+        entry.promise = Promise.resolve().then(async () => {
+            let submitted = false;
+            let startedOffline = false;
+            try {
+                if (!isCurrent() || signal?.aborted) return;
+                if (title) {
+                    const result = await openPopup({
+                        title: i18n.t(title),
+                        body,
+                        signal,
+                        variant: destructive ? "danger" : "info",
+                        actions: [
+                            {
+                                id: "cancel",
+                                label: i18n.t("ui.reuse.cancel"),
+                                variant: "neutral",
+                            },
+                            {
+                                id: "confirm",
+                                label: i18n.t(label),
+                                variant: destructive ? "cancel" : "neutral",
+                            },
+                        ],
+                    });
+                    if (result !== "confirm") return;
+                }
+                if (!isCurrent() || signal?.aborted) return;
+                startedOffline = isOffline();
+                submitted = true;
+                log("info", operation, { phase: "submit" });
+                const response = await apiFetch(path, { method, signal });
+                if (!isCurrent() || signal?.aborted) return;
+                if (!response.ok) {
+                    entry.uncertain =
+                        response.status >= 500 || response.status === 408;
+                    log("error", operation, {
+                        status: response.status,
+                        uncertain: entry.uncertain,
+                    });
+                    showToast(
+                        i18n.t(
+                            entry.uncertain
+                                ? "ui.app.profile.action_uncertain"
+                                : "ui.app.profile.action_failed",
+                        ),
+                        { variant: "error" },
+                    );
+                    return;
+                }
+                entry.accepted = true;
+                log("info", operation, { phase: "accepted" });
+                await apply();
+            } catch (error) {
+                if (error?.code === "missing_translation") throw error;
+                const knownUnsent =
+                    [
+                        "offline_delivery_pending",
+                        "offline_operation_unavailable",
+                        "profile_client_unavailable",
+                    ].includes(error?.message) ||
+                    (startedOffline &&
+                        [
+                            "offline_outbox_full",
+                            "offline_delivery_unavailable",
+                        ].includes(error?.message));
+                entry.uncertain = submitted && !entry.accepted && !knownUnsent;
+                log("error", operation, {
+                    errorName: error?.name,
+                    accepted: entry.accepted,
+                    uncertain: entry.uncertain,
+                });
+                if (!isCurrent() || signal?.aborted) return;
+                showToast(
+                    i18n.t(
+                        entry.accepted
+                            ? "ui.app.profile.action_refresh_failed"
+                            : entry.uncertain
+                              ? "ui.app.profile.action_uncertain"
+                              : "ui.app.profile.action_failed",
+                    ),
+                    { variant: "error" },
+                );
+            } finally {
+                if (!entry.uncertain && !(retain && entry.accepted))
+                    mutations.delete(key);
+            }
+        });
+        return entry.promise;
+    }
 
     async function doCreatePost() {
         if (!isCurrent()) return;
@@ -92,111 +214,122 @@ export function createProfilePostActions({
         }
     }
 
-    async function doDeletePost(postId) {
-        if (!isCurrent()) return;
-        const result = await openPopup({
-            title: i18n.t("ui.app.profile.delete_post_confirm"),
-            body: "",
-            variant: "danger",
-            actions: [
-                {
-                    id: "cancel",
-                    label: i18n.t("ui.reuse.discard"),
-                    variant: "cancel",
-                },
-                {
-                    id: "confirm",
-                    label: i18n.t("ui.app.profile.delete_post"),
-                    variant: "confirm",
-                },
-            ],
+    let connectionRefresh = 0;
+
+    async function refreshConnections(handle) {
+        const generation = ++connectionRefresh;
+        const [followersResult, followingResult] = await Promise.allSettled([
+            loadFollowers(handle),
+            loadFollowing(handle),
+        ]);
+        if (!isCurrent() || signal?.aborted || generation !== connectionRefresh)
+            return;
+        setState({
+            ...(followersResult.status === "fulfilled"
+                ? { followers: followersResult.value }
+                : {}),
+            ...(followingResult.status === "fulfilled"
+                ? { following: followingResult.value }
+                : {}),
         });
-        if (!isCurrent() || result !== "confirm") return;
-        const response = await apiFetch(
-            `/api/v1/social/posts/${encodeURIComponent(postId)}`,
-            {
-                method: "DELETE",
-            },
-        );
-        if (!isCurrent()) return;
-        if (response.ok) {
-            setState({ posts: await loadOwnPosts() });
-            refreshPage();
-        }
+        refreshPage();
+        if (
+            followersResult.status === "rejected" ||
+            followingResult.status === "rejected"
+        )
+            throw new Error("connection_refresh_failed");
     }
 
-    async function doFollowUser(handle) {
-        if (!isCurrent()) return;
-        if (!handle || pendingFollowHandles.has(handle)) return;
-        const { relationship, profile } = getState();
-        const isFollowingTarget = Boolean(relationship?.following);
-        if (isFollowingTarget) {
-            const result = await openPopup({
-                title: i18n.t("ui.app.profile.unfollow_confirm_title"),
-                body: `<p>${escapeHtml(i18n.t("ui.app.profile.unfollow_confirm_body"))}</p><strong>${escapeHtml(handle)}</strong>`,
-                variant: "danger",
-                actions: [
-                    {
-                        id: "cancel",
-                        label: i18n.t("ui.reuse.cancel"),
-                        variant: "cancel",
-                    },
-                    {
-                        id: "confirm",
-                        label: i18n.t("ui.app.profile.unfollow"),
-                        variant: "confirm",
-                    },
-                ],
-            });
-            if (!isCurrent() || result !== "confirm") return;
-        }
-
-        pendingFollowHandles.add(handle);
-        const followButton = getState().root?.querySelector(
-            ".profile-hero-follow-btn",
-        );
-        if (followButton instanceof HTMLButtonElement) {
-            followButton.disabled = true;
-            followButton.setAttribute("aria-busy", "true");
-        }
-        try {
-            const response = await apiFetch(
-                `/api/v1/social/users/${encodeURIComponent(handle)}/follow`,
-                { method: isFollowingTarget ? "DELETE" : "POST" },
-            );
-
-            if (!isCurrent()) return;
-            if (response.ok) {
-                const currentState = getState();
-                const matchingUser = [
-                    ...(currentState.followers ?? []),
-                    ...(currentState.following ?? []),
-                ].find((user) => user.handle === handle);
-                const nextFollowers = isFollowingTarget
-                    ? currentState.followers.filter(
-                          (user) => user.handle !== currentState.ownAccount,
-                      )
-                    : currentState.followers.some(
-                            (user) => user.handle === currentState.ownAccount,
-                        )
-                      ? currentState.followers
-                      : [
-                            ...currentState.followers,
-                            { handle: currentState.ownAccount },
-                        ];
-                const nextFollowing = isFollowingTarget
-                    ? currentState.following
-                    : matchingUser
-                      ? [...currentState.following, matchingUser]
-                      : currentState.following;
+    function doDeletePost(postId) {
+        if (!postId) return Promise.resolve();
+        return runAction({
+            key: `post:${postId}`,
+            operation: "deletePost",
+            title: "ui.app.profile.delete_post_confirm",
+            label: "ui.app.profile.delete_post",
+            path: `/api/v1/social/posts/${encodeURIComponent(postId)}`,
+            method: "DELETE",
+            retain: true,
+            apply: () => {
                 setState({
-                    relationship: {
-                        ...(relationship ?? {}),
-                        following: !isFollowingTarget,
-                    },
-                    followers: nextFollowers,
-                    following: nextFollowing,
+                    posts: (getState().posts ?? []).filter(
+                        (post) => post.id !== postId,
+                    ),
                 });
+                refreshPage();
+            },
+        });
+    }
+
+    function doFollowUser(handle) {
+        if (!handle || !isCurrent()) return Promise.resolve();
+        const { relationship, profile } = getState();
+        const isProfileTarget = profile?.handle === handle;
+        const isFollowingTarget =
+            isProfileTarget && Boolean(relationship?.following);
+        const followButton = isProfileTarget
+            ? getState().root?.querySelector(".profile-hero-follow-btn")
+            : null;
+        if (
+            followButton &&
+            (followButton.dataset.following === "true") !== isFollowingTarget
+        )
+            return Promise.resolve();
+        const pending = mutations.has(`relationship:${handle}`);
+        const work = runAction({
+            key: `relationship:${handle}`,
+            operation: isFollowingTarget ? "unfollow" : "follow",
+            retain: !isProfileTarget,
+            title: isFollowingTarget
+                ? "ui.app.profile.unfollow_confirm_title"
+                : null,
+            body: isFollowingTarget
+                ? `<p>${escapeHtml(i18n.t("ui.app.profile.unfollow_confirm_body"))}</p><strong>${escapeHtml(handle)}</strong>`
+                : "",
+            label: "ui.app.profile.unfollow",
+            path: `/api/v1/social/users/${encodeURIComponent(handle)}/follow`,
+            method: isFollowingTarget ? "DELETE" : "POST",
+            apply: async () => {
+                const currentState = getState();
+                if (isProfileTarget) {
+                    const nextFollowers = isFollowingTarget
+                        ? currentState.followers.filter(
+                              (user) => user.handle !== currentState.ownAccount,
+                          )
+                        : currentState.followers.some(
+                                (user) =>
+                                    user.handle === currentState.ownAccount,
+                            )
+                          ? currentState.followers
+                          : [
+                                ...currentState.followers,
+                                { handle: currentState.ownAccount },
+                            ];
+                    setState({
+                        relationship: {
+                            ...getState().relationship,
+                            following: !isFollowingTarget,
+                        },
+                        followers: nextFollowers,
+                    });
+                } else if (currentState.isOwnProfile) {
+                    const matchingUser = currentState.followers.find(
+                        (user) => user.handle === handle,
+                    );
+                    if (
+                        matchingUser &&
+                        !currentState.following.some(
+                            (user) => user.handle === handle,
+                        )
+                    ) {
+                        setState({
+                            following: [
+                                ...currentState.following,
+                                matchingUser,
+                            ],
+                        });
+                    }
+                }
                 refreshProfileHero();
                 refreshProfileCards(["followers", "following", "suggested"]);
                 showToast(
@@ -207,120 +340,75 @@ export function createProfilePostActions({
                     ),
                     { variant: "success" },
                 );
-
-                const [followersResult, followingResult] =
-                    await Promise.allSettled([
-                        loadFollowers(profile?.handle),
-                        loadFollowing(profile?.handle),
-                    ]);
-                if (!isCurrent()) return;
-                setState({
-                    ...(followersResult.status === "fulfilled"
-                        ? { followers: followersResult.value }
-                        : {}),
-                    ...(followingResult.status === "fulfilled"
-                        ? { following: followingResult.value }
-                        : {}),
-                });
-                refreshPage();
-                return;
-            }
-            if (response.status === 403) {
-                showToast(i18n.t("ui.app.profile.follow_hidden_toast"), {
-                    variant: "error",
-                });
-                return;
-            }
-            showToast(i18n.t("ui.app.profile.follow_unavailable_toast"), {
-                variant: "error",
-            });
-        } finally {
-            pendingFollowHandles.delete(handle);
-            if (followButton instanceof HTMLButtonElement) {
+                await refreshConnections(profile?.handle);
+            },
+        });
+        if (pending) return work;
+        if (followButton instanceof HTMLButtonElement) {
+            followButton.disabled = true;
+            followButton.setAttribute("aria-busy", "true");
+        }
+        return work.finally(() => {
+            if (
+                isCurrent() &&
+                followButton instanceof HTMLButtonElement &&
+                followButton.isConnected
+            ) {
                 followButton.disabled = false;
                 followButton.removeAttribute("aria-busy");
             }
-        }
+        });
     }
 
-    async function doBlockUser() {
-        if (!isCurrent()) return;
-        const { urlHandle, relationship, profile } = getState();
-        const result = await openPopup({
-            title: i18n.t("ui.app.profile.block_user"),
-            body: escapeHtml(i18n.t("ui.app.profile.block_user_confirm")),
-            variant: "danger",
-            actions: [
-                {
-                    id: "cancel",
-                    label: i18n.t("ui.reuse.discard"),
-                    variant: "cancel",
-                },
-                {
-                    id: "confirm",
-                    label: i18n.t("ui.app.profile.block_user_action"),
-                    variant: "confirm",
-                },
-            ],
-        });
-        if (!isCurrent() || result !== "confirm") return;
-        const response = await apiFetch(
-            `/api/v1/social/users/${encodeURIComponent(urlHandle)}/block`,
-            { method: "POST" },
-        );
-        if (!isCurrent() || !response.ok) return;
-        const [nextFollowers, nextFollowing] = await Promise.all([
-            loadFollowers(profile?.handle),
-            loadFollowing(profile?.handle),
-        ]);
-        if (!isCurrent()) return;
-        setState({
-            relationship: {
-                ...(relationship ?? {}),
-                blocked: true,
-                following: false,
-            },
-            canMessageTarget: false,
-            canRequestMessageTarget: false,
-            followers: nextFollowers,
-            following: nextFollowing,
-        });
-        refreshPage();
-    }
-
-    async function doUnblockUser() {
-        if (!isCurrent()) return;
-        const { urlHandle, relationship } = getState();
-        const result = await openPopup({
-            title: i18n.t("ui.app.profile.unblock_user"),
-            body: escapeHtml(i18n.t("ui.app.profile.unblock_user_confirm")),
-            variant: "danger",
-            actions: [
-                {
-                    id: "cancel",
-                    label: i18n.t("ui.reuse.cancel"),
-                    variant: "cancel",
-                },
-                {
-                    id: "confirm",
-                    label: i18n.t("ui.app.profile.unblock_user_action"),
-                    variant: "confirm",
-                },
-            ],
-        });
-        if (!isCurrent() || result !== "confirm") return;
-        const response = await apiFetch(
-            `/api/v1/social/users/${encodeURIComponent(urlHandle)}/block`,
-            { method: "DELETE" },
-        );
-        if (!isCurrent() || !response.ok) return;
-        setState({
-            relationship: { ...(relationship ?? {}), blocked: false },
-            canRequestMessageTarget: Boolean(
-                relationship?.canSendMessageRequest,
+    function changeBlock(blocked) {
+        if (!isCurrent()) return Promise.resolve();
+        const { urlHandle, profile, relationship } = getState();
+        if (Boolean(relationship?.blocked) === blocked)
+            return Promise.resolve();
+        if (!urlHandle) return Promise.resolve();
+        return runAction({
+            key: `relationship:${urlHandle}`,
+            operation: blocked ? "block" : "unblock",
+            title: blocked
+                ? "ui.app.profile.block_user"
+                : "ui.app.profile.unblock_user",
+            body: escapeHtml(
+                i18n.t(
+                    blocked
+                        ? "ui.app.profile.block_user_confirm"
+                        : "ui.app.profile.unblock_user_confirm",
+                ),
             ),
+            label: blocked
+                ? "ui.app.profile.block_user_action"
+                : "ui.app.profile.unblock_user_action",
+            destructive: blocked,
+            path: `/api/v1/social/users/${encodeURIComponent(urlHandle)}/block`,
+            method: blocked ? "POST" : "DELETE",
+            apply: async () => {
+                const relationship = getState().relationship;
+                setState({
+                    relationship: {
+                        ...relationship,
+                        blocked,
+                        ...(blocked ? { following: false } : {}),
+                    },
+                    ...(blocked
+                        ? {
+                              canMessageTarget: false,
+                              canRequestMessageTarget: false,
+                          }
+                        : {
+                              canRequestMessageTarget: Boolean(
+                                  relationship?.canSendMessageRequest,
+                              ),
+                          }),
+                });
+                refreshPage();
+                if (!blocked) return;
+                await refreshConnections(profile?.handle);
+            },
         });
-        refreshPage();
     }
 
     async function doOpenMessageRoom() {
@@ -368,8 +456,8 @@ export function createProfilePostActions({
         doCreatePost,
         doDeletePost,
         doFollowUser,
-        doBlockUser,
-        doUnblockUser,
+        doBlockUser: () => changeBlock(true),
+        doUnblockUser: () => changeBlock(false),
         doOpenMessageRoom,
     };
 }

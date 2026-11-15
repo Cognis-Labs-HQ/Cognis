@@ -19,12 +19,15 @@
   <string name="module.social.profile.tutorial.profile.profile.identity.title">Profile Identity</string>
   <string name="module.social.profile.tutorial.profile.profile.identity.body">Review the profile identity and availability; your own profile provides editing controls. Hover over a profile link to preview the person, then select it to open their profile.</string>
   <string name="module.social.profile.tutorial.profile.posts.title">Posts</string>
-  <string name="module.social.profile.tutorial.profile.posts.body">Browse visible posts and use the post actions allowed for your account.</string>
+  <string name="module.social.profile.tutorial.profile.posts.body">Browse visible posts and use the post actions allowed for your account. Delete asks for confirmation. Cancel keeps the post.</string>
   <string name="module.social.profile.tutorial.profile.social.actions.title">Social Actions</string>
-  <string name="module.social.profile.tutorial.profile.social.actions.body">Follow, message or manage relationships from the profile controls; review the selected person before acting. On your own profile, Edit Profile opens your details. Unsuccessful saves keep your changes available to correct and retry.</string>
+  <string name="module.social.profile.tutorial.profile.social.actions.body">Follow, message or manage relationships from the profile controls; review the selected person before acting. On your own profile, Edit Profile opens your details. Unsuccessful saves keep your changes available to correct and retry. Unfollow and Block ask for confirmation. Cancel keeps the current relationship.</string>
   <string name="module.social.profile.tutorial.profile.preview.post.title">Preview A Post</string>
   <string name="module.social.profile.tutorial.profile.preview.post.body">Compose a post, then preview its formatting and attachments. Check the audience before publishing.</string>
   <string name="ui.app.profile.save_pending_closed">Closing does not undo a submitted save. Reload the Profile page to check the result.</string>
   <string name="ui.app.profile.media_refresh_failed">Profile images could not be refreshed. Open the profile again to retry.</string>
   <string name="ui.app.profile.remove_image_failed">The image could not be removed. Try again.</string>
+  <string name="ui.app.profile.action_failed">The Profile action was not completed. Try again.</string>
+  <string name="ui.app.profile.action_uncertain">The result of the Profile action could not be confirmed. Reopen the profile to check before trying again.</string>
+  <string name="ui.app.profile.action_refresh_failed">The Profile change was accepted, but the view could not be refreshed. Reopen the profile to see the latest state.</string>
 </resources>

@@ -7,6 +7,7 @@
  * @param {string} id Stable operation identity.
  * @param {object} payload Non-secret queued activity.
  * @param {(payload: object) => Promise<unknown>} send Owning component transport.
+ * @param {object} options Optional per-attempt AbortSignal; accepted writes are never undone.
  * @returns {Promise<unknown>} Server result or explicit queued result.
  */
 import { captureAccountGuard } from "./offline-identity.js";
@@ -27,13 +28,26 @@ export async function recordQueuedActivity(ctx, activity) {
     }
 }
 
-export async function deliverOrQueue(ctx, owner, id, payload, send) {
-    const assertAccount = captureAccountGuard();
+export async function deliverOrQueue(
+    ctx,
+    owner,
+    id,
+    payload,
+    send,
+    { signal } = {},
+) {
+    const assertIdentity = captureAccountGuard();
+    const assertAccount = () => {
+        signal?.throwIfAborted();
+        assertIdentity();
+    };
+    assertAccount();
     const outbox = ctx.capabilities.get("offline:outbox");
     let pending = outbox ? await outbox.pending(owner) : [];
     assertAccount();
     if (!isOffline() && pending.length && !offlineEnabled()) {
         await outbox.flush();
+        assertAccount();
         pending = await outbox.pending(owner);
         assertAccount();
         if (pending.length) throw new Error("offline_delivery_pending");
@@ -55,7 +69,7 @@ export async function deliverOrQueue(ctx, owner, id, payload, send) {
     }
     if (!outbox) throw new Error("offline_delivery_unavailable");
     assertAccount();
-    const result = await outbox.submit(owner, id, payload);
+    const result = await outbox.submit(owner, id, payload, { signal });
     assertAccount();
     return result;
 }
