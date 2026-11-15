@@ -680,7 +680,7 @@ function bindInteractions(root, signal) {
                           ]
                         : []),
                 ];
-                action = await openHamburgerMenu(target, { items });
+                action = await openHamburgerMenu(target, { items, signal });
                 if (!action) return;
             }
             if (action && module) {
