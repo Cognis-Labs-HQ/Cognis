@@ -1,4 +1,5 @@
 import { createBackgroundRefresh } from "./reuse/background-refresh.js";
+import { createRoomLeaveAction } from "./room-leave.js";
 import { createTypingState } from "./typing-state.js";
 import { captureAccountGuard } from "/static/reuse/offline-identity.js";
 import { createReadAcknowledgements } from "./read-state.js";
@@ -103,10 +104,23 @@ export function createMessagesRoomState({
     function setSelectedRoomId(roomId) {
         if (!isActive() || selectedRoomId === roomId) return;
         queueTypingUpdate(false);
+        leaveAction.invalidate();
         generation += 1;
         selectedRoomId = roomId;
         readyRoomId = null;
     }
+
+    const leaveAction = createRoomLeaveAction({
+        i18n,
+        currentAccountId,
+        signal,
+        isActive,
+        captureRoom,
+        getSelectedRoom,
+        reloadRoomsList,
+        openFallbackAfterRoomRemoval,
+        log,
+    });
 
     const markRoomRead = createReadAcknowledgements({
         i18n,
@@ -272,6 +286,7 @@ export function createMessagesRoomState({
         );
         if (!threadList) return;
         setSelectedRoomId(roomId);
+        leaveAction.invalidate();
         generation += 1;
         const isCurrent = captureRoom();
         readyRoomId = null;
@@ -695,11 +710,7 @@ export function createMessagesRoomState({
             if (update.ok) await openRoom(selectedRoomId);
         });
 
-        const leaveButton = document.getElementById("messages-room-leave-btn");
-        leaveButton?.addEventListener("click", async () => {
-            const leaveHandle = leaveButton.getAttribute("data-leave-handle");
-            await leaveSelectedRoom(leaveHandle);
-        });
+        leaveAction.bind(document.getElementById("messages-room-leave-btn"));
 
         const memberSummaryButton = document.getElementById(
             "messages-member-summary-btn",
@@ -745,11 +756,19 @@ export function createMessagesRoomState({
         });
     }
 
-    async function reloadRoomsList() {
+    async function reloadRoomsList({
+        requireLive = false,
+        isCurrent: ownsAction = () => true,
+    } = {}) {
         if (!isActive()) return;
         const expected = ++listGeneration;
-        const isCurrent = captureRoom();
-        const loaded = await loadRooms(i18n, { getRoomKey, isCurrent });
+        const ownsRoom = captureRoom();
+        const isCurrent = () => ownsRoom() && ownsAction();
+        const loaded = await loadRooms(i18n, {
+            getRoomKey,
+            isCurrent,
+            requireLive,
+        });
         if (!isCurrent() || expected !== listGeneration) return;
         rooms = loaded;
         const selectedRoom = getSelectedRoom();
@@ -783,44 +802,6 @@ export function createMessagesRoomState({
             `/messages/${encodeURIComponent(fallbackRoom.id)}`,
         );
         await openRoom(fallbackRoom.id);
-    }
-
-    async function leaveSelectedRoom(handle) {
-        if (!selectedRoomId || !handle) return;
-        const leaveResult = await openPopup({
-            title: i18n.t("module.social.messages.leave_confirm_title"),
-            body: `<p>${escapeHtml(i18n.t("module.social.messages.leave_confirm_body").replace("{name}", handle))}</p>`,
-            variant: "danger",
-            actions: [
-                {
-                    id: "cancel",
-                    label: i18n.t("ui.reuse.cancel"),
-                    variant: "confirm",
-                },
-                {
-                    id: "confirm",
-                    label: i18n.t("module.social.messages.leave_room"),
-                    variant: "cancel",
-                },
-            ],
-        });
-        if (leaveResult !== "confirm") return;
-        const roomIdToLeave = selectedRoomId;
-        const response = await apiFetch(
-            `/api/v1/social/messages/rooms/${encodeURIComponent(roomIdToLeave)}/members/${encodeURIComponent(handle)}`,
-            { method: "DELETE" },
-        );
-        if (!response.ok) {
-            showToast(i18n.t("module.social.messages.leave_failed"), {
-                variant: "error",
-            });
-            return;
-        }
-        await reloadRoomsList();
-        await openFallbackAfterRoomRemoval(roomIdToLeave);
-        await refreshTypingIndicator();
-        startTypingPolling();
-        startLiveRefreshPolling();
     }
 
     const pendingConversationHandles = new Set();
@@ -882,6 +863,7 @@ export function createMessagesRoomState({
     function cleanup() {
         if (disposed) return;
         disposed = true;
+        leaveAction.invalidate();
         generation += 1;
         signal?.removeEventListener("abort", cleanup);
         window.removeEventListener(

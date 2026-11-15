@@ -754,13 +754,39 @@ async function renderThreadSnapshot(
     return { oldestCreatedAt, newestCreatedAt, pendingRequest, changed: true };
 }
 
-export async function loadRooms(i18n, { getRoomKey, isCurrent = () => true }) {
+export async function loadRooms(
+    i18n,
+    { getRoomKey, isCurrent = () => true, requireLive = false },
+) {
+    if (!isCurrent()) return [];
     const response = await apiFetch("/api/v1/social/messages/rooms");
+    if (!isCurrent()) return [];
+    if (
+        requireLive &&
+        (!response.ok ||
+            response.headers.get("x-cognis-read-source") !== "live")
+    ) {
+        throw new Error("messages_room_refresh_unavailable");
+    }
     if (!response.ok) return [];
     const payload = await response.json();
+    if (!isCurrent()) return [];
+    if (
+        requireLive &&
+        (!Array.isArray(payload?.data) ||
+            payload.data.some(
+                (room) =>
+                    !room ||
+                    typeof room.id !== "string" ||
+                    !room.id ||
+                    !Array.isArray(room.members),
+            ))
+    )
+        throw new Error("invalid_messages_room_refresh");
     const rooms = payload?.data ?? [];
     const decodedRooms = await Promise.all(
         rooms.map(async (room) => {
+            if (!isCurrent()) return room;
             const lastMessage = room.lastMessage ?? null;
             if (!lastMessage) return room;
             if (
@@ -775,9 +801,11 @@ export async function loadRooms(i18n, { getRoomKey, isCurrent = () => true }) {
                 };
             }
             const roomKey = await getRoomKey(room.id);
+            if (!isCurrent()) return room;
             const previewText = roomKey
                 ? await decryptMessageOrReturnPlaintext(roomKey, lastMessage)
                 : null;
+            if (!isCurrent()) return room;
             return {
                 ...room,
                 lastMessagePreview: previewText

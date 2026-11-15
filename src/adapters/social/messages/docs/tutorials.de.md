@@ -25,3 +25,7 @@ Der Schritt zum Nachrichtenverlauf zeigt im Standard-, Sprechblasen- und IRC-Sti
 Der Schritt zur Nachrichteneingabe erklärt, dass Sie während des Sendens den nächsten Entwurf beginnen können. Nur die abgesendete Version wird nach Bestätigung oder dauerhafter Einreihung gelöscht; neuere Änderungen bleiben erhalten. Eingabe und Vorschau behalten ihre getrennten Ziele und die bestehende Reihenfolge.
 
 Der Verlaufsschritt erklärt die Textauswahl während Aktualisierungen und das Laden früherer Nachrichten unter Beibehaltung der Position. Bereich, Reihenfolge, Abschlusskennung und Zugriffsregeln bleiben gleich.
+
+## Gebundene Bestätigungen
+
+Der Schritt zur Raumverwaltung erklärt die Austrittsbestätigung und das sichere Abbrechen. Kopfbereich, optionale Verfügbarkeit, Reihenfolge und Abschlussidentität bleiben gleich. Vorlagen behalten ihre Seitenleistenaktionen; ihre Dialoge werden nach Änderungen der auslösenden Seite, Auswahl oder gespeicherten Liste unwirksam.

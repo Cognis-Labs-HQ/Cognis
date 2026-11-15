@@ -25,3 +25,7 @@ Langkah riwayat percakapan mencakup area percakapan yang sama dalam gaya bawaan,
 Langkah input pesan menjelaskan bahwa Anda dapat mulai menulis draf berikutnya saat pesan dikirim. Hanya versi yang dikirim yang dihapus setelah konfirmasi atau penyimpanan permanen dalam antrean; suntingan baru tetap tersimpan. Input dan pratinjau mempertahankan target terpisah dan urutan yang ada.
 
 Langkah riwayat menjelaskan pemilihan teks selama pembaruan percakapan dan pemuatan pesan sebelumnya sambil mempertahankan posisi. Wilayah, urutan, identitas penyelesaian, dan aturan akses tetap sama.
+
+## Kepemilikan Konfirmasi
+
+Langkah pengelolaan ruang menjelaskan konfirmasi Keluar dan pembatalan yang aman. Target judul, ketersediaan opsional, urutan, dan identitas penyelesaian tetap sama. Editor dan penghapusan templat tetap menggunakan kontrol bilah samping; dialognya tidak berlaku setelah halaman, pilihan, atau daftar tersimpan berubah.
