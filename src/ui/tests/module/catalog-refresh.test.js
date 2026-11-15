@@ -18,7 +18,7 @@ const missing = (key) =>
         key,
     });
 
-async function fixture(context, { failTranslations = false } = {}) {
+async function fixture(context, { failTranslations = false, settings } = {}) {
     const strings = new Map();
     for (const path of [
         "../../languages/en/strings.xml",
@@ -68,6 +68,7 @@ async function fixture(context, { failTranslations = false } = {}) {
         module("study-language-ja", "4.0.1"),
         module("elevenlabs-tts", "2.0.1"),
     ];
+    if (settings) initial[0].status = "disabled";
     let waitForStrings = () =>
         failTranslations
             ? Promise.reject(missing("module.example.name"))
@@ -187,7 +188,14 @@ async function fixture(context, { failTranslations = false } = {}) {
             "../../reuse/mount-scope.js": { replaceMountScope },
             "../../reuse/hamburger-menu.js": { openHamburgerMenu: unused },
             "../../reuse/ui-ctx.js": {
-                uiCtx: { capabilities: { get: () => undefined } },
+                uiCtx: {
+                    capabilities: {
+                        get: (id) =>
+                            id === "ui:moduleTutorialTargets"
+                                ? { settingsSignal: () => settings?.signal }
+                                : undefined,
+                    },
+                },
             },
             "./carousel.js": {
                 initializeScreenshotCarousels: () => () =>
@@ -232,16 +240,25 @@ async function fixture(context, { failTranslations = false } = {}) {
                 activateModule: unused,
                 enableModuleWithIntegrityCheck: async () => {
                     operations.push("reenabled");
+                    if (settings) await settings.enable;
                     return true;
                 },
-                modulePreferenceLabels: unused,
+                modulePreferenceLabels: () => ({ i18n }),
             },
             "./presentation.js": {
                 ...presentation,
                 ...localized,
                 detailModuleUuid: () => "study-language-ja",
             },
-            "./preferences.js": { openModulePreferences: unused },
+            "./preferences.js": {
+                openModulePreferences: async (_module, _labels, options) => {
+                    assert.ok(settings, "unexpected preferences opening");
+                    assert.equal(options?.signal, settings.captured);
+                    assert.equal(options.signal.aborted, true);
+                    operations.push("cancelled-preferences");
+                    return null;
+                },
+            },
             "./uninstall.js": { confirmModuleUninstall: unused },
             "./source-settings.js": {
                 openMarketplaceSettings: async () =>
@@ -320,9 +337,9 @@ async function fixture(context, { failTranslations = false } = {}) {
             sourceList = [{ uuid: "new-source" }];
             snapshotVersion++;
         },
-        clickButton: async ({ id = "", attribute } = {}) => {
+        clickButton: async ({ id = "", attribute, dataset = {} } = {}) => {
             const target = {
-                dataset: {},
+                dataset,
                 id,
                 hasAttribute: (name) => name === attribute,
                 getAttribute: () => "study-language-ja",
@@ -496,4 +513,29 @@ test("manual refresh can repair a catalog whose translations failed on first mou
         ),
     );
     assert.match(state.sidebar.outerHTML, /Speech/);
+});
+
+test("settings capture branch ownership before enabling a disabled module and restore its state on cancellation", async (context) => {
+    const branch = new AbortController();
+    let finishEnable;
+    const settings = {
+        signal: branch.signal,
+        captured: branch.signal,
+        enable: new Promise((resolve) => {
+            finishEnable = resolve;
+        }),
+    };
+    const state = await fixture(context, { settings });
+    const opening = state.clickButton({
+        dataset: { modulePreferences: "study-language-ja" },
+    });
+    await new Promise(setImmediate);
+    assert.ok(state.operations.includes("reenabled"));
+    branch.abort();
+    settings.signal = undefined;
+    finishEnable();
+    await opening;
+    assert.ok(state.operations.includes("cancelled-preferences"));
+    assert.ok(state.operations.includes("disabled:study-language-ja"));
+    assert.deepEqual(state.errors, []);
 });

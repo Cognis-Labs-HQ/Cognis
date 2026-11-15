@@ -627,9 +627,12 @@ function bindDependencyLinks() {
 
 // prettier-ignore
 async function openAdapterConfig(gatewayId, adapterId, name, adapterOverride = null) {
+    const signal = uiCtx.capabilities.get("ui:moduleTutorialTargets")?.settingsSignal(adapterId);
+    if (signal?.aborted) return false;
     const configUrl = resolveAdapterControlUrl(gatewayId, adapterId, "config", adapterOverride);
     const testUrl = resolveAdapterControlUrl(gatewayId, adapterId, "test", adapterOverride);
     const adapterI18n = await extendI18n(i18n, adapterOverride?.stringsBaseUrl);
+    if (signal?.aborted) return false;
     const adapterConfigPopup = createAdapterConfigPopup({
         i18n: adapterI18n,
         escapeHtml,
@@ -638,6 +641,9 @@ async function openAdapterConfig(gatewayId, adapterId, name, adapterOverride = n
         showToast,
     });
     return adapterConfigPopup.openAdapterConfig(name, {
+        signal,
+        gatewayId,
+        adapterId,
         configUrl,
         testUrl,
         enableUrl: resolveAdapterControlUrl(gatewayId, adapterId, "enable", adapterOverride),

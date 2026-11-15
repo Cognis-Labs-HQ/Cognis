@@ -135,6 +135,9 @@ export function createAdapterConfigPopup({
         async openAdapterConfig(
             name,
             {
+                signal,
+                gatewayId,
+                adapterId,
                 configUrl,
                 testUrl,
                 enableUrl,
@@ -144,13 +147,25 @@ export function createAdapterConfigPopup({
                 onSaved,
             } = {},
         ) {
-            if (!configUrl) return false;
-            const response = await apiFetch(configUrl);
+            if (!configUrl || signal?.aborted) return false;
+            let response;
+            try {
+                response = await apiFetch(configUrl, { signal });
+            } catch (error) {
+                if (signal?.aborted) return false;
+                throw error;
+            }
+            if (signal?.aborted) return false;
             if (!response.ok) return false;
             const payload = await response.json();
             if (payload.stringsBaseUrl)
                 i18n = await extendI18n(i18n, [payload.stringsBaseUrl]);
-            const openSettingsPopup = createAdapterSettingsPopup(openPopup);
+            if (signal?.aborted) return false;
+            const openSettingsPopup = createAdapterSettingsPopup(openPopup, {
+                gatewayId,
+                adapterId,
+                signal,
+            });
             const configPopupScriptUrl = String(
                 payload.configPopupScriptUrl ?? "",
             ).trim();
@@ -158,6 +173,7 @@ export function createAdapterConfigPopup({
                 const extension = await import(configPopupScriptUrl).catch(
                     () => null,
                 );
+                if (signal?.aborted) return false;
                 if (typeof extension?.openAdapterConfig !== "function") {
                     showToast(i18n.t("ui.reuse.load_failed"), {
                         variant: "error",
@@ -165,6 +181,7 @@ export function createAdapterConfigPopup({
                     return false;
                 }
                 await extension.openAdapterConfig({
+                    signal,
                     configUrl,
                     configPayload: payload,
                     enableUrl,

@@ -711,3 +711,11 @@ Capture browser provider ownership from its registering bootstrap scope, before 
 JSON endpoints that accept arrays must explicitly select their expected shape. Preserve each existing endpoint’s payload format when tightening request validation.
 
 Bind a transient opening to its group at the trigger step, before the user can click. Attaching a lifetime only after the popup target resolves leaves pending work outside cleanup. Preserve page lifetime for ordinary openings, share pending ownership through ctx across bundled and direct imports, and test cancellation during retrieval, composition and popup preparation. An older completion must not clear a newer opening.
+
+Module configuration guides consume owner-published targets, bind pending settings preparation to their branch before a click, and preserve close protection. Keep readiness separate from write permission, and test actual read-only paths/counts and delayed-popup cancellation.
+
+Popup test fakes must preserve the production API split: onOpen receives a protected dismissal callback, while requestClose is supplied to onAction. Adapter tutorial modal selectors must match identities published by the owning injected popup wrapper, including both gateway and adapter, for generic and custom editors.
+
+Adapter popup wrappers must bind captured tutorial lifetimes directly before calling the underlying popup, not rely on a later transient-target attachment or on custom editors consuming a signal. Test aborts before onOpen and after opening without attaching a target, preserve protected close decisions, and remove abort listeners on settlement.
+
+Capture settings branch ownership in the click handler before temporary module enablement, and pass the captured signal explicitly through preparation even after its registry binding is removed. Restore temporary enablement on cancellation. Popup onOpen runs for every setPage: limit pre-opening abort guards to the first opening, and preserve later custom page initialization after a protected keep decision. Keep existing adapter opener fixtures synchronized with required gateway/adapter identity so provider translation coverage remains executable.
