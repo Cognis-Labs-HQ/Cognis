@@ -35,7 +35,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | SMTP Notification     | `src/adapters/notify/smtp/`         | `0.5.5`  |
 | CalDAV                | `src/adapters/calendar/caldav/`     | `1.0.13` |
 | ICS                   | `src/adapters/calendar/ics/`        | `1.0.11` |
-| Internal Notification | `src/adapters/notify/internal/`     | `0.5.37` |
+| Internal Notification | `src/adapters/notify/internal/`     | `0.5.38` |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.26` |
 | File Quota            | `src/adapters/file/quota/`          | `1.0.24` |
 | Local Auth            | `src/adapters/auth/local/`          | `0.4.2`  |
