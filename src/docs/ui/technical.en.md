@@ -149,6 +149,14 @@ Toast feedback loads its shared stylesheet without delaying notification creatio
 
 Every popup has its own accessible heading, including nested unsaved-change confirmations and multi-page dialogs. Tab and Shift+Tab stay inside the active dialog. Keeping a draft returns focus to its editor; closing the last dialog returns focus to its available opening control, or to the page when that control is gone. Empty dialogs keep focus until controls become available. Navigation cancellation releases popup focus ownership without moving focus back onto the old page. Closing animations do not retain keyboard ownership. These shared controls also apply to dialogs opened from guided tutorials.
 
+### Popup Opening Lifetime
+
+`onOpen` runs synchronously after the dialog is attached and before its opening animation. If initial construction throws, `openPopup` rejects with that same error after removing the failed dialog and releasing its focus, event handlers, timers, dirty tracker and scroll lease. Failed construction does not request cancellation approval or show a discard confirmation. A close or owner abort that already settled the result remains final. Promise-returning initializers are not awaited.
+
+A live parent dialog or a newer opening retains its own focus and scroll ownership. Image Preview uses this same cleanup when its synchronous setup fails; translation errors remain explicit. Normal opening and closing animations, mandatory dialogs, action callbacks, dirty confirmation and repeated page callbacks retain their existing contracts. Exceptions from later page callbacks are not initial-opening failures.
+
+Existing tutorial targets, owner and completion IDs, Next, Back, Restart and replay remain unchanged. A failed child returns ownership to the accepted live parent tutorial; cleanup never enrolls a failed dialog as a new tutorial target. Shared UI has no independently versioned package or manifest.
+
 ### Popup Action Contracts
 
 Enter and Space activate the focused native control, so choosing Cancel never selects another footer action. The unsaved-changes dialog initially focuses safe Cancel; Discard uses danger styling. Holding Enter does not repeat popup activation. A pending action cannot be submitted again; explicit Close and Cancel remain available, and stale or closing controls cannot invoke callbacks.
