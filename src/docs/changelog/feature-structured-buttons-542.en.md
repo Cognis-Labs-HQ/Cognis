@@ -12,4 +12,4 @@ Public-renderer and synthetic Administration tests cover variants, escaping, dis
 
 ## Commits
 
-- [62db969cde47a8da850f8fc5c926f8a66bc90ac5](https://github.com/Cognis-Labs-HQ/Cognis/commit/62db969cde47a8da850f8fc5c926f8a66bc90ac5)
+- [59bae80056379b38b2b9ffd787a4650cbe66c52b](https://github.com/Cognis-Labs-HQ/Cognis/commit/59bae80056379b38b2b9ffd787a4650cbe66c52b)
