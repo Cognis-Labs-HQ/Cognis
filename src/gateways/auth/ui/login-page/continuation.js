@@ -8,6 +8,7 @@ export function createLoginContinuation({
     apply,
     onError,
     onCancelled,
+    onCancelFailed,
 }) {
     let revision = 0;
     let currentAttemptId = null;
@@ -44,15 +45,20 @@ export function createLoginContinuation({
             const expected = currentAttemptId;
             const isCurrent = () =>
                 !signal?.aborted && currentAttemptId === expected;
+            let failure = null;
             try {
                 await cancelPendingLoginAttempt(expected, { signal });
                 if (!isCurrent()) return;
                 currentAttemptId = null;
                 onCancelled();
             } catch (error) {
-                if (isCurrent()) onError(error);
+                failure = error;
             } finally {
                 cancelling = false;
+            }
+            if (failure && isCurrent()) {
+                const ownsPrompt = await onCancelFailed?.();
+                if (isCurrent() && ownsPrompt !== false) onError(failure);
             }
         },
     };

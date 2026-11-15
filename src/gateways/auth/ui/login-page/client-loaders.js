@@ -1,50 +1,87 @@
+import { replaceMountScope } from "/static/reuse/mount-scope.js";
+
 export function createLoginClientLoaders({
     loadClient,
     i18n,
     root,
+    signal,
     getAttemptId = () => null,
     isAttemptCurrent = () => true,
 }) {
+    const log = console.error.bind(console);
+    const rejectLifecycle = () => {
+        log("[auth] TFA login lifecycle unsupported", {
+            component: "auth",
+            operation: "loadTfaLoginClient",
+            code: "tfa_login_lifecycle_unsupported",
+        });
+        throw new Error("tfa_login_lifecycle_unsupported");
+    };
     let tfaClientPromise = null;
+    let clientLifetime = null;
+    const disposeTfaLoginClient = () => {
+        clientLifetime?.abort();
+        clientLifetime = null;
+        tfaClientPromise = null;
+    };
     let clientRoot = null;
     let clientAttemptId = null;
     return {
+        disposeTfaLoginClient,
         loadTfaLoginClient() {
+            if (signal?.aborted) return Promise.resolve(null);
             const currentRoot = root.querySelector?.("#login-form") ?? root;
             const attemptId = getAttemptId();
             if (currentRoot !== clientRoot || clientAttemptId !== attemptId) {
                 clientAttemptId = attemptId;
                 clientRoot = currentRoot;
-                tfaClientPromise = null;
+                disposeTfaLoginClient();
             }
             if (!tfaClientPromise) {
+                clientLifetime = replaceMountScope(clientLifetime, signal);
+                const clientSignal = clientLifetime.signal;
                 const scopedRoot = {
                     querySelector(selector) {
                         const mountedRoot =
                             root.querySelector?.("#login-form") ?? root;
-                        return mountedRoot === currentRoot &&
+                        return !clientSignal.aborted &&
+                            mountedRoot === currentRoot &&
                             isAttemptCurrent(attemptId)
                             ? currentRoot.querySelector(selector)
                             : null;
                     },
                 };
                 const pending = Promise.resolve().then(() =>
-                    loadClient("tfa", (module) =>
-                        module.createTfaLoginClient({
+                    loadClient("tfa", async (module) => {
+                        if (module.loginLifecycleVersion !== 1) {
+                            rejectLifecycle();
+                        }
+                        const client = await module.createTfaLoginClient({
                             baseI18n: i18n,
                             root: scopedRoot,
-                        }),
-                    ),
+                            signal: clientSignal,
+                            lifecycleVersion: 1,
+                        });
+                        if (clientSignal.aborted) return null;
+                        if (
+                            client?.lifecycle?.version !== 1 ||
+                            client.lifecycle.signal !== clientSignal ||
+                            typeof client.refreshPrompt !== "function"
+                        ) {
+                            rejectLifecycle();
+                        }
+                        return client;
+                    }),
                 );
                 tfaClientPromise = pending;
                 pending.then(
                     (client) => {
                         if (!client && tfaClientPromise === pending)
-                            tfaClientPromise = null;
+                            disposeTfaLoginClient();
                     },
                     () => {
                         if (tfaClientPromise === pending)
-                            tfaClientPromise = null;
+                            disposeTfaLoginClient();
                     },
                 );
             }

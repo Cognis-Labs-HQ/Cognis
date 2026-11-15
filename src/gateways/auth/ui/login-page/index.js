@@ -1,3 +1,4 @@
+import { replaceMountScope } from "/static/reuse/mount-scope.js";
 import { createLoginContinuation } from "./continuation.js";
 import { createLoginSubmitHandler } from "./submit.js";
 import { renderInPageCallout } from "/static/reuse/in-page-callout.js";
@@ -41,6 +42,8 @@ import {
 import "/static/reuse/flow-registry.js";
 import "/static/adapters/auth/keyring/keyring.js";
 
+const mountControllers = new WeakMap();
+
 const AUTH_SOURCE_PREFERENCE_KEY = "cognis_login_auth_source";
 
 /**
@@ -50,9 +53,14 @@ const AUTH_SOURCE_PREFERENCE_KEY = "cognis_login_auth_source";
  * @returns {Promise<void>} Resolves when the page has finished initialising.
  */
 export async function mount(root, { signal } = {}) {
+    const lifetime = replaceMountScope(mountControllers.get(root), signal);
+    mountControllers.set(root, lifetime);
+    signal = lifetime.signal;
+    if (signal.aborted) return;
     const i18n = await createI18n({
         componentStringBaseUrls: ["/static/gateways/auth/languages"],
     });
+    if (signal.aborted) return;
     const showToast = createRouteScopedToast(showGlobalToast, signal);
     applyDocumentTitle(i18n, "ui.page.title.login");
     await loadAuthFooterPlugins().catch(() => {
@@ -68,13 +76,15 @@ export async function mount(root, { signal } = {}) {
         loadConfig: loadLoginUiConfig,
         loadClient: loadLoginIntegrationClient,
     } = createLoginIntegrationLoader();
-    const { loadTfaLoginClient } = createLoginClientLoaders({
-        loadClient: loadLoginIntegrationClient,
-        i18n,
-        root,
-        getAttemptId: () => currentTfaLoginAttemptId,
-        isAttemptCurrent: (id) => continuation.isAttemptCurrent(id),
-    });
+    const { loadTfaLoginClient, disposeTfaLoginClient } =
+        createLoginClientLoaders({
+            signal,
+            loadClient: loadLoginIntegrationClient,
+            i18n,
+            root,
+            getAttemptId: () => currentTfaLoginAttemptId,
+            isAttemptCurrent: (id) => continuation.isAttemptCurrent(id),
+        });
 
     const continuation = createLoginContinuation({
         signal,
@@ -91,7 +101,14 @@ export async function mount(root, { signal } = {}) {
                 variant: "error",
             });
         },
-        onCancelled: () => window.location.replace("/login"),
+        onCancelFailed: async () => {
+            const client = await loadTfaLoginClient();
+            return client?.refreshPrompt() ?? false;
+        },
+        onCancelled: () => {
+            lifetime.abort();
+            window.location.replace("/login");
+        },
     });
 
     const typingSamples = await loadAuthTypingSamples(i18n);
@@ -810,6 +827,8 @@ export async function mount(root, { signal } = {}) {
                 },
                 render: () => renderLoginShell(),
                 onRender: () => {
+                    disposeTfaLoginClient();
+                    if (signal.aborted) return;
                     mountAuthFooter(root, { i18n, signal });
                     resetPasswordResetMode();
                     const isCurrent = continuation.begin();
@@ -910,7 +929,7 @@ export async function mount(root, { signal } = {}) {
         ],
     });
 
-    await composer.init();
+    if (!signal.aborted) await composer.init();
 }
 
 await mountWhenDirect(mount);

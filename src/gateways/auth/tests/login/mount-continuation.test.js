@@ -1,7 +1,10 @@
+import "./static-contracts.js";
+import { replaceMountScope } from "../../../../ui/reuse/mount-scope.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { importTestModule } from "../../../../tooling/reuse/test-module.ts";
-import { createLoginClientLoaders } from "../../ui/login-page/client-loaders.js";
+const { createLoginClientLoaders } =
+    await import("../../ui/login-page/client-loaders.js");
 import { createLoginContinuation } from "../../ui/login-page/continuation.js";
 test("mounted login keeps newer prompt busy when an older render finishes", async () => {
     const gates = [];
@@ -40,6 +43,7 @@ test("mounted login keeps newer prompt busy when an older render finishes", asyn
     const i18n = { t: (key) => key };
     const noop = () => {};
     const imports = {
+        "/static/reuse/mount-scope.js": { replaceMountScope },
         "./continuation.js": { createLoginContinuation },
         "./submit.js": {
             createLoginSubmitHandler: (options) => {
@@ -90,7 +94,13 @@ test("mounted login keeps newer prompt busy when an older render finishes", asyn
                 loadConfig: async () => ({ methods: [] }),
                 loadClient: async (_id, create) =>
                     create({
-                        createTfaLoginClient: async ({ root }) => ({
+                        loginLifecycleVersion: 1,
+                        createTfaLoginClient: async ({ root, signal }) => ({
+                            lifecycle: { version: 1, signal },
+                            refreshPrompt: () =>
+                                Boolean(
+                                    root.querySelector("#login-tfa-fields"),
+                                ),
                             async switchToTfaPrompt(payload) {
                                 let release;
                                 const waiting = new Promise((done) => {

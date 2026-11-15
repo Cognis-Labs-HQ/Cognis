@@ -90,6 +90,18 @@ Respons tantangan login dapat menyertakan `maxLength`, bilangan bulat positif ya
 
 UI login mempertahankan waktu absolut `resendAvailableAt` yang valid saat menampilkan atau melanjutkan tantangan yang telah diterbitkan, meskipun waktunya sudah berlalu. Durasi positif `retryAfterSeconds` dihitung dari waktu tampilan saat ini hanya jika waktu absolut tidak tersedia atau tidak valid. Sebelum pengiriman ulang diizinkan, kontrolnya tetap nonaktif dan tidak mengirim permintaan. Izin pengiriman ulang tidak mengirim kode secara otomatis atau mengganti tantangan yang diterbitkan; server tetap menentukan batas pengiriman ulang dan verifikasi kode.
 
+Saat permintaan ulang dari metode aktif selesai, layar masuk menampilkan hasilnya. Konfirmasi antrean atau pengiriman menjelaskan status pengiriman yang dilaporkan; respons valid tanpa konfirmasi hanya menunjukkan bahwa metode telah merespons. Hasil yang ditolak, tidak valid, atau terputus tidak membuktikan apakah pengiriman terjadi. Periksa apakah kode sudah diterima sebelum mencoba lagi. Jika upaya masuk kedaluwarsa, batalkan dan masuk kembali. Waktu tunggu tetap ditentukan server, permintaan yang belum selesai tetap terkunci, dan percobaan ulang atau email tidak dikirim otomatis.
+
+Tindakan pengiriman ulang dan umpan balik yang tertunda tetap terikat pada akun browser dan sesi saat layar verifikasi dibuka. Perubahan akun atau token mencegah permintaan lama memperbarui layar atau mengirim ulang lagi. Terjemahan bahasa Inggris wajib yang hilang tetap menjadi kesalahan tampilan yang jelas, bukan dianggap sebagai hasil jaringan yang tidak pasti.
+
+Saat kembali ke suatu metode, setiap konfirmasi kirim ulang yang selesai ditampilkan sekali; berpindah lalu kembali lagi tidak mengulanginya.
+
+Pemilik halaman login Auth memberikan sinyal pembatalan ke `createTfaLoginClient({ baseI18n, root, signal, lifecycleVersion })`. Meninggalkan halaman, mengganti formulir atau percobaan login, atau berhasil membatalkan langsung melepas pendengar peristiwa penyimpanan, penangan kirim ulang, dan penghitung waktu tunggu, meskipun permintaan belum selesai. Pembatalan yang gagal mempertahankan formulir aktif. Pembersihan UI tidak membatalkan efek permintaan yang sudah dikirim atau menjamin pengiriman berhenti.
+
+Auth 2.2.14 dan TFA 1.3.14 memerlukan penerapan JavaScript dan aset secara bersama. Modul integrasi TFA wajib mengekspor `loginLifecycleVersion = 1`. Pembuat klien memerlukan `lifecycleVersion: 1` dan `AbortSignal` asli; klien harus menyediakan `lifecycle: { version: 1, signal }` dengan sinyal yang sama serta `refreshPrompt()`. Kontrak yang hilang atau tidak cocok ditolak sebelum formulir dapat mengirim permintaan, disertai kesalahan login dan diagnostik masa aktif terstruktur. Auth 2.2.13 dan TFA 1.3.13 belum memiliki kontrak ini. Perbarui kedua paket beserta aset yang disajikan dan dibundel, lalu muat ulang tab Login lama. Pengganti integrasi login TFA dari pihak ketiga harus menerapkan kontrak sebelum rilis ini diaktifkan; tidak ada jalur kompatibilitas tanpa pembersihan. Login tanpa TFA dan deskriptor penyedia metode tidak berubah.
+
+Selama kirim ulang belum selesai, tindakan menampilkan “Meminta kode…” dan status sibuk. Tindakan tetap terkunci tanpa membuat tenggat baru atau mencoba ulang otomatis. Jika kirim ulang selesai saat pembatalan berlangsung lalu pembatalan gagal, formulir yang sama menyelaraskan hasil, kunci permintaan, dan tenggat yang diterbitkan. Waktu tunggu relatif dari server dihitung sejak respons diterima, sehingga menunggu pembatalan tidak memulainya lagi.
+
 Registrasi kontrak adapter mengikuti [kontrak bootstrap gateway bersama](/docs/gateways).
 
 ## Kontrol Pengelolaan Adaptor
