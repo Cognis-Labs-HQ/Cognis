@@ -12,6 +12,4 @@ Escape はフォーカスを移動せずにヘルプを閉じ、他の Escape �
 
 ## コミット
 
-- [100268968c85fe529e1215e29e9ac7246ce581fa](https://github.com/Cognis-Labs-HQ/Cognis/commit/100268968c85fe529e1215e29e9ac7246ce581fa)
-- [e44cf48b67b519ee541933617a55c720d19b9630](https://github.com/Cognis-Labs-HQ/Cognis/commit/e44cf48b67b519ee541933617a55c720d19b9630)
-- [ae862db9893c92ea7d2dd48f8969c534ea34b6ef](https://github.com/Cognis-Labs-HQ/Cognis/commit/ae862db9893c92ea7d2dd48f8969c534ea34b6ef)
+- [6e0c9ae21d5dfba3257c1a0ac1d712f7739eac09](https://github.com/Cognis-Labs-HQ/Cognis/commit/6e0c9ae21d5dfba3257c1a0ac1d712f7739eac09)
