@@ -728,7 +728,7 @@
   <string name="ui.tutorial.workspace.options.title">Refine Your Search</string>
   <string name="ui.tutorial.workspace.options.body">Use search options to match case, whole words or patterns. The page finder locates text and available controls on the current page. Click any filter pill to try a search refinement and continue.</string>
   <string name="ui.tutorial.workspace.results.title">Use Search Results</string>
-  <string name="ui.tutorial.workspace.results.body">Review result categories and labels. After the guide, select a page to navigate or an on-page result to locate its control.</string>
+  <string name="ui.tutorial.workspace.results.body">Review result categories and labels. After the guide, select a result with the pointer or Enter and wait for completion. If Search stays open after a failed selection, check the destination before trying again.</string>
   <string name="ui.tutorial.workspace.close.title">Close Search</string>
   <string name="ui.tutorial.workspace.close.body">Close Search to return to your workspace.</string>
   <string name="ui.tutorial.workspace.notifications.title">Review Notifications</string>
@@ -782,4 +782,6 @@
   <string name="ui.app.settings.message_preview_failed">The sample conversation could not be displayed.</string>
   <string name="ui.tutorial.settings.appearance.message.preview.title">Compare Message Styles</string>
   <string name="ui.tutorial.settings.appearance.message.preview.body">This fictional exchange shows incoming and outgoing messages with names and times. Change Message Style to compare layouts before saving.</string>
+  <string name="ui.search.selection_failed">The selection could not be completed. Check the destination before trying again.</string>
+  <string name="ui.search.selection_unavailable">This result is no longer available. Search again.</string>
 </resources>

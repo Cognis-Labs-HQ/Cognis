@@ -14,6 +14,9 @@
 
 import { createSearchMatchResolver, escapeHtml } from "./matching.js";
 import { MIN_SEARCH_QUERY_LENGTH } from "./state.js";
+import { selectSearchResult } from "./selection.js";
+
+export { selectSearchResult } from "./selection.js";
 
 export function renderResultContent(listItem, item) {
     const label = document.createElement("span");
@@ -43,16 +46,6 @@ export function renderResultContent(listItem, item) {
         snippet.innerHTML = item.matchSnippet;
         listItem.appendChild(snippet);
     }
-}
-
-export function selectSearchResult(item, onSelect, closeOverlay) {
-    Promise.resolve(onSelect(item))
-        .catch((error) => {
-            console.warn("[search-bar]:result-selection-failed", { error });
-        })
-        .finally(() => {
-            requestAnimationFrame(() => closeOverlay());
-        });
 }
 
 export function resolveResultCategories(groups) {
@@ -85,6 +78,7 @@ export function renderResultCategorySummary(
     categoriesContainer,
     groups,
     onCategoryFilterChange,
+    selectionState,
 ) {
     if (!categoriesContainer) return;
     categoriesContainer.innerHTML = "";
@@ -110,6 +104,8 @@ export function renderResultCategorySummary(
         categoryPill.textContent = category;
         categoryPill.setAttribute("aria-pressed", String(isSelected));
         categoryPill.addEventListener("click", () => {
+            if (selectionState?.pending || selectionState?.signal?.aborted)
+                return;
             if (selectedCategories.has(category)) {
                 selectedCategories.delete(category);
             } else {
@@ -127,6 +123,8 @@ export function renderGroupedResults(
     onSelect,
     closeOverlay,
     categoriesContainer = null,
+    multiSelectState = null,
+    selectionState,
 ) {
     const renderFilteredGroups = () =>
         renderGroupedResults(
@@ -135,11 +133,14 @@ export function renderGroupedResults(
             onSelect,
             closeOverlay,
             categoriesContainer,
+            multiSelectState,
+            selectionState,
         );
     renderResultCategorySummary(
         categoriesContainer,
         groups,
         renderFilteredGroups,
+        selectionState,
     );
     const visibleGroups = filterGroupsBySelectedCategories(
         groups,
@@ -153,28 +154,13 @@ export function renderGroupedResults(
         heading.textContent = group.category;
         resultsContainer.appendChild(heading);
 
-        const list = document.createElement("ul");
-        list.className = "search-popup-result-list";
-
-        for (const item of group.items) {
-            const listItem = document.createElement("li");
-            listItem.className = `search-popup-result search-popup-result--${item.resultClass}`;
-            listItem.dataset.searchResultClass = item.resultClass;
-            listItem.setAttribute("role", "button");
-            listItem.tabIndex = 0;
-            renderResultContent(listItem, item);
-            listItem.addEventListener("click", (event) => {
-                event.preventDefault();
-                selectSearchResult(item, onSelect, closeOverlay);
-            });
-            listItem.addEventListener("keydown", (event) => {
-                if (event.key === "Enter") {
-                    event.preventDefault();
-                    selectSearchResult(item, onSelect, closeOverlay);
-                }
-            });
-            list.appendChild(listItem);
-        }
+        const list = createResultList(
+            group.items,
+            onSelect,
+            closeOverlay,
+            multiSelectState,
+            selectionState,
+        );
 
         resultsContainer.appendChild(list);
     }
@@ -332,6 +318,7 @@ export function renderFlatResults(
     closeOverlay,
     multiSelectState,
     categoriesContainer = null,
+    selectionState,
 ) {
     if (categoriesContainer) {
         categoriesContainer.innerHTML = "";
@@ -347,11 +334,33 @@ export function renderFlatResults(
         return;
     }
 
+    resultsContainer.appendChild(
+        createResultList(
+            items,
+            onSelect,
+            closeOverlay,
+            multiSelectState,
+            selectionState,
+        ),
+    );
+}
+
+function createResultList(
+    items,
+    onSelect,
+    closeOverlay,
+    multiSelectState,
+    selectionState,
+) {
     const list = document.createElement("ul");
     list.className = "search-popup-result-list";
 
     function toggleMultiSelectItem(uniqueItemKey, item) {
-        if (!multiSelectState) {
+        if (
+            !multiSelectState ||
+            selectionState?.pending ||
+            selectionState?.signal?.aborted
+        ) {
             return;
         }
         if (multiSelectState.selected.has(uniqueItemKey)) {
@@ -388,13 +397,22 @@ export function renderFlatResults(
             renderResultContent(content, item);
             listItem.appendChild(content);
             listItem.addEventListener("click", (event) => {
-                event.preventDefault();
+                if (
+                    selectionState?.pending ||
+                    selectionState?.signal?.aborted
+                ) {
+                    event.preventDefault();
+                    return;
+                }
+                if (event.target !== checkbox) event.preventDefault();
+                if (!listItem.isConnected) return;
                 toggleMultiSelectItem(uniqueItemKey, item);
             });
             listItem.addEventListener("keydown", (event) => {
                 if (event.key === " " || event.key === "Enter") {
                     event.preventDefault();
-                    toggleMultiSelectItem(uniqueItemKey, item);
+                    if (listItem.isConnected)
+                        toggleMultiSelectItem(uniqueItemKey, item);
                 }
             });
         } else {
@@ -405,12 +423,24 @@ export function renderFlatResults(
             renderResultContent(listItem, item);
             listItem.addEventListener("click", (event) => {
                 event.preventDefault();
-                selectSearchResult(item, onSelect, closeOverlay);
+                if (listItem.isConnected)
+                    void selectSearchResult(
+                        item,
+                        onSelect,
+                        closeOverlay,
+                        selectionState,
+                    );
             });
             listItem.addEventListener("keydown", (event) => {
-                if (event.key === "Enter") {
+                if (event.key === "Enter" || event.key === " ") {
                     event.preventDefault();
-                    selectSearchResult(item, onSelect, closeOverlay);
+                    if (listItem.isConnected)
+                        void selectSearchResult(
+                            item,
+                            onSelect,
+                            closeOverlay,
+                            selectionState,
+                        );
                 }
             });
         }
@@ -418,5 +448,5 @@ export function renderFlatResults(
         list.appendChild(listItem);
     }
 
-    resultsContainer.appendChild(list);
+    return list;
 }

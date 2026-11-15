@@ -784,13 +784,11 @@ function initSearchBar(i18n) {
         noResultsText: i18n.t("ui.layout.search.no_results"),
         localGroups: [navigationSearchGroup, settingsLocalSearchGroup],
         onSelect: async (result) => {
-            if (result?.handle) {
-                await navigateTo(
-                    `/profile/${encodeURIComponent(result.handle)}`,
-                );
-            } else if (result?.url) {
-                await navigateTo(result.url);
-            }
+            const destination = result?.handle
+                ? `/profile/${encodeURIComponent(result.handle)}`
+                : result?.url;
+            if (destination && (await navigateTo(destination)) === false)
+                return false;
             requestAnimationFrame(() => highlightSearchTarget(result));
         },
     });
