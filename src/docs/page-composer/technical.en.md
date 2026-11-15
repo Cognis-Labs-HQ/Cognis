@@ -20,6 +20,8 @@ Pages that enable customisation present their elements in a free-form resizable 
 
 The composer also handles sub-page navigation (one element visible at a time, deep-linkable via URL hash), nested sub-composers for complex sections, persistent toolbar slots, and floating menu overlays. All of these are opt-in through the options object passed to `createPageComposer`.
 
+The documented `createPageComposer` entrypoint remains supported and unchanged. The low-level `createEditorPanelHandlers` helper now requires the composer-owned `state.editSession` instead of separate save and end-edit callbacks. Deep importers should migrate to `createPageComposer` or update their owned composition with the same core release.
+
 ### Responsibilities
 
 - Render a set of named elements into a parent DOM node.
@@ -109,7 +111,15 @@ DOM parking is disabled by default. Set `enableDomParking: true` on the page com
 
 ### Persistence
 
-Layouts are stored via `PUT /api/v1/users/:username/preferences` under the key supplied as `preferenceKey`. The stored value is `{ placements: [{id, col, row, w, h}], hidden: [] }`.
+Layouts use `GET` and `PUT /api/v1/social/users/:account/preferences/:key`, where `:key` is the encoded `preferenceKey`. The PUT body is `{ layout: { layoutsByGrid: { "cols-N": { placements: [{id, col, row, w, h}], hidden: [] } } } }`, with `N` identifying the grid column count. GET returns the serialized profile collection in `data.layoutJson`. Saving one column profile preserves the other profiles.
+
+**Done** submits an immutable snapshot of the current layout. In both main and nested editors, the editing session and leave protection remain active until the response acknowledges success. While Done or layout **Reset** is pending, layout mutations and repeated submissions are blocked, including add, hide, move, resize, reset and discard. A successful Done closes editing; a successful Reset establishes the submitted default layout as the new saved baseline while editing continues.
+
+A save is acknowledged only by HTTP `200` with JSON `data.saved === true`. Other responses, including `202`, `204` and malformed acknowledgements, do not establish success. Without an account or access token, saving is refused without sending a write.
+
+Failed or unconfirmed saves keep the draft protected and show a localized toast with recovery guidance in the owning view. Once the request finishes, retry deliberately with Done as a new request or discard the local draft. A request rejection or lost response leaves the server outcome unknown: it does not prove that no write occurred. Discard restores the previous local baseline and does not undo a possible server write. That baseline may come from default layout fallback rather than a confirmed server read. Failed or malformed initial reads still use the existing fallback; this is not evidence of server state. The composer does not automatically replay the request or reconcile it with a read. Resizing the viewport alone does not save a layout.
+
+A retained nested editor can finish saving while its subpage is inactive without showing a late toast or changing another subpage's controls. Completion after the entire composer is torn down does not update the disposed view.
 
 Form drafts are also persisted in `localStorage` per user, page path, and composer preference key. This keeps typed inputs when the page reloads or when a responsive re-render rebuilds the element cards. Persistent form draft storage is opt-in: only fields whose closest ancestor carries `data-composer-include-form-memory="true"` are written to localStorage. Fields without an opted-in ancestor are still captured in the transient in-memory snapshot so they survive responsive re-renders within the same session, but they are never written to persistent storage. Sensitive fields (`password`, `file`, `hidden`, and identifiers containing `password`/`secret`/`token`) are always excluded from persistent draft storage regardless of opt-in status.
 

@@ -808,4 +808,8 @@
   <string name="ui.app.settings.message_preview_failed">Die Beispielunterhaltung konnte nicht angezeigt werden.</string>
   <string name="ui.search.selection_failed">Die Auswahl konnte nicht abgeschlossen werden. Prüfen Sie vor einem erneuten Versuch das Ziel.</string>
   <string name="ui.search.selection_unavailable">Dieser Treffer ist nicht mehr verfügbar. Suchen Sie erneut.</string>
+  <string name="ui.reuse.layout_save_rejected">Das Speichern des Layouts wurde nicht bestätigt. Deine Änderungen bleiben erhalten. Wähle Fertig für einen erneuten Versuch oder Verwerfen, um das vorherige lokale Layout wiederherzustellen.</string>
+  <string name="ui.reuse.layout_save_unconfirmed">Das Speichern des Layouts konnte nicht bestätigt werden und hat den Server möglicherweise bereits erreicht. Deine Änderungen bleiben erhalten. Wähle Fertig für einen erneuten Versuch oder Verwerfen, um das vorherige lokale Layout wiederherzustellen. Verwerfen macht eine mögliche Speicherung auf dem Server nicht rückgängig.</string>
+  <string name="ui.reuse.layout_save_unavailable">Ohne aktive Kontositzung kann das Layout nicht gespeichert werden. Deine Änderungen bleiben erhalten. Stelle die Sitzung wieder her und wähle Fertig für einen erneuten Versuch oder Verwerfen.</string>
+  <string name="ui.reuse.saving">Wird gespeichert</string>
 </resources>

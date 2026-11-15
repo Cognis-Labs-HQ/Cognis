@@ -424,3 +424,12 @@
     max-width: 100%;
     overflow-wrap: anywhere;
 }
+
+.composer-close-btn[aria-disabled="true"],
+.composer-resize-handle[aria-disabled="true"],
+.composer-panel-actions [aria-disabled="true"],
+[data-composer-panel-item][aria-disabled="true"],
+.composer-edit-toggle[aria-disabled="true"] {
+    opacity: 0.55;
+    cursor: wait;
+}

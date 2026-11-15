@@ -808,4 +808,8 @@
   <string name="ui.app.settings.message_preview_failed">Percakapan contoh tidak dapat ditampilkan.</string>
   <string name="ui.search.selection_failed">Pemilihan tidak dapat diselesaikan. Periksa tujuan sebelum mencoba lagi.</string>
   <string name="ui.search.selection_unavailable">Hasil ini tidak lagi tersedia. Cari kembali.</string>
+  <string name="ui.reuse.layout_save_rejected">Penyimpanan tata letak belum dikonfirmasi. Perubahan Anda tetap disimpan dalam editor. Pilih Selesai untuk mencoba lagi atau Buang untuk memulihkan tata letak lokal sebelumnya.</string>
+  <string name="ui.reuse.layout_save_unconfirmed">Penyimpanan tata letak tidak dapat dikonfirmasi dan mungkin sudah diterima server. Perubahan Anda tetap disimpan dalam editor. Pilih Selesai untuk mencoba lagi atau Buang untuk memulihkan tata letak lokal sebelumnya. Buang tidak membatalkan penyimpanan yang mungkin telah terjadi di server.</string>
+  <string name="ui.reuse.layout_save_unavailable">Tata letak tidak dapat disimpan tanpa sesi akun aktif. Perubahan Anda tetap disimpan dalam editor. Pulihkan sesi Anda lalu pilih Selesai untuk mencoba lagi, atau pilih Buang.</string>
+  <string name="ui.reuse.saving">Menyimpan</string>
 </resources>
