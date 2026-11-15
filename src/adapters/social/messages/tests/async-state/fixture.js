@@ -235,6 +235,10 @@ export function createRoomFixture() {
     );
     dependencies["./message-render.js"] = load("message-render.js");
     dependencies["./thread-actions.js"] = load("thread-actions.js");
+    dependencies["./reuse/action-ownership.js"] = load(
+        "reuse/action-ownership.js",
+    );
+    dependencies["./room-leave.js"] = load("room-leave.js");
     state.renderThread = dependencies["./message-render.js"].renderThread;
     state.create = () =>
         load("room-state.js").createMessagesRoomState({

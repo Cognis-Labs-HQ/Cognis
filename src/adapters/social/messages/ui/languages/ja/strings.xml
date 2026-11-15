@@ -98,7 +98,10 @@
   <string name="module.social.messages.tutorial.messages.preview.message.title">送信前に確認する</string>
   <string name="module.social.messages.tutorial.messages.preview.message.body">プレビューで書式、リンク、改行を確認し、修正するときは編集に戻ります。</string>
   <string name="module.social.messages.tutorial.messages.manage.room.title">会話を管理する</string>
-  <string name="module.social.messages.tutorial.messages.manage.room.body">会話の見出しでルームと参加者を確認します。メンバー変更や退出には、表示される操作を使います。</string>
+  <string name="module.social.messages.tutorial.messages.manage.room.body">会話の見出しでルームと参加者を確認します。退出には確認が必要です。キャンセルすると参加したままになります。会話を切り替えると保留中の選択は無効になります。</string>
   <string name="module.social.messages.conversations">会話</string>
   <string name="module.social.messages.choose_conversation">会話を選択してメッセージを読んだり送信したりできます。</string>
+  <string name="module.social.messages.leave_refresh_failed">会話から退出しましたが、ルーム一覧を更新できませんでした。メッセージを開き直して更新してください。退出リクエストは繰り返さないでください。</string>
+  <string name="module.social.messages.leave_succeeded">会話から退出しました。</string>
+  <string name="module.social.messages.leave_uncertain">退出リクエストの結果を確認できませんでした。再試行する前に会話を確認してください。自動的に再送されることはありません。</string>
 </resources>

@@ -264,6 +264,22 @@ The version 2 contract requires an `available` boolean. It is true only while th
 
 Release matching Settings assets, Messages 2.8.1 and Profile 3.0.19 together. Settings accepts version 2 with `available: true`; version 1 and missing readiness fields are not compatibility fallbacks. The shared live-thread renderer and its selection/update behavior are unchanged.
 
+### Confirmation Ownership
+
+Leave applies only to the conversation and membership shown when you open its confirmation. Switching rooms, leaving the page, changing account or session, or losing membership makes that choice inactive. Repeated openings share one pending action. Cancel, Escape, the close control and the backdrop do not leave a room. Safe Cancel is neutral; Leave and template Delete use the destructive style.
+
+A confirmed leave is sent once through the registered Messages client. A known rejection permits a new confirmation. An uncertain response is not replayed, and an acknowledged leave stays acknowledged if refreshing fails. The page retains known rooms when it cannot obtain a fresh successful list; reopen Messages to reconcile the result. Late results cannot navigate or notify a replacement view.
+
+Template editors and Delete confirmations belong to the original page, room selection, account, session and saved-template snapshot. Only one template popup is active at a time. Newer or reset preferences make older controls inactive, preserving the newer list rather than overwriting it. Successful persistence happens once.
+
+Messages 2.8.2 is a browser ownership patch. Server routes, membership policy and the version 2 read-only presentation contract are unchanged. Profile remains 4.0.0. The broader confirmation audits remain partial.
+
+The registered Messages request client accepts an optional synchronous `beforeDispatch()` assertion for live transport. It runs after request-flow preparation and is removed before HTTP; it is never stored or replayed. Leave uses it to recheck the original view, account, session, member, handle and request provider immediately before dispatch. A cancelled preparation remains not dispatched and permits a fresh confirmation; only a started transport can have an uncertain outcome.
+
+### Confirmation Ownership
+
+The room-management step explains the Leave confirmation and safe cancellation. Its existing header target, optional availability, step order and completion identity are unchanged. Template editing and deletion retain their sidebar controls; their dialogs stop applying when the initiating page, selection or saved list changes.
+
 ## Security
 
 Room eligibility, membership changes and message reads are authorized independently. Encrypted rooms depend on client-held keys; the threat model below distinguishes protected content from visible routing metadata.

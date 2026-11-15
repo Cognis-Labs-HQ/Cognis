@@ -76,8 +76,8 @@ test("room leave controls use explicit destructive button styling", () => {
         resolve(ROOT, "src/adapters/social/messages/ui/room-render.js"),
         "utf8",
     );
-    const roomStateSource = readFileSync(
-        resolve(ROOT, "src/adapters/social/messages/ui/room-state.js"),
+    const leaveSource = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/room-leave.js"),
         "utf8",
     );
     const englishStrings = readFileSync(
@@ -95,7 +95,7 @@ test("room leave controls use explicit destructive button styling", () => {
     assert.ok(leaveButtonMarkup);
     assert.doesNotMatch(leaveButtonMarkup, /<svg/);
     assert.match(
-        roomStateSource,
+        leaveSource,
         /id: "confirm",[\s\S]*leave_room[\s\S]*variant: "cancel"/,
     );
     assert.match(englishStrings, />Leave Room</);
@@ -340,7 +340,7 @@ test("messages templates are opened from sidebar in a popup", () => {
     );
     assert.match(
         appSource,
-        /templatesButton\?\.addEventListener\("click",[\s\S]*templateUi\.openTemplatesPopup/,
+        /templatesButton\?\.addEventListener\(\s*"click",[\s\S]*templateUi\.openTemplatesPopup/,
     );
     assert.match(
         appSource,

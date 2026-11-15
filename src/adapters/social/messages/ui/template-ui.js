@@ -1,3 +1,4 @@
+import { createMessageActionOwner } from "./reuse/action-ownership.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { openPopup } from "/static/reuse/popup.js";
@@ -13,16 +14,62 @@ import { renderComposerPreviewMarkup } from "./message-render.js";
 export function createMessageTemplatesUi({
     i18n,
     currentAccountId,
+    signal,
+    isActive,
+    captureOwner,
     resolveTemplateContent,
     onUseTemplate,
 }) {
-    let savedMessageTemplates = loadSavedMessageTemplates(currentAccountId);
+    let savedMessageTemplates = [];
+    let templatesAvailable = false;
     let activeTemplateId = null;
     let templateTitleInput = null;
     let templateBodyInput = null;
     let templatePreview = null;
+    const owner = createMessageActionOwner({ isActive, captureOwner, signal });
+
+    function beginAction() {
+        if (!templatesAvailable) return null;
+        const snapshot = JSON.stringify(savedMessageTemplates);
+        return owner.begin(() => {
+            try {
+                return (
+                    snapshot ===
+                    JSON.stringify(loadSavedMessageTemplates(currentAccountId))
+                );
+            } catch (error) {
+                templatesAvailable = false;
+                reportFailure(error);
+                return false;
+            }
+        });
+    }
+
+    const log = (level, message, context) =>
+        console[level](message, {
+            component: "social-messages",
+            ...context,
+        });
+
+    function reportFailure(error) {
+        log("error", "[messages] template persistence failed", {
+            operation: "saveTemplates",
+            errorName: error.name,
+        });
+        if (isActive())
+            showToast(i18n.t("ui.reuse.error"), { variant: "error" });
+    }
 
     function renderSidebarTemplateList() {
+        if (!isActive()) return;
+        try {
+            savedMessageTemplates = loadSavedMessageTemplates(currentAccountId);
+            templatesAvailable = true;
+        } catch (error) {
+            templatesAvailable = false;
+            reportFailure(error);
+            return;
+        }
         const listElement = document.getElementById(
             "messages-sidebar-template-list",
         );
@@ -123,7 +170,8 @@ export function createMessageTemplatesUi({
         renderTemplateEditorPreview();
     }
 
-    function bindTemplatePopupEvents(overlay) {
+    function bindTemplatePopupEvents(overlay, action) {
+        let submitted = false;
         const templateEditor = overlay.querySelector(
             "#messages-template-editor",
         );
@@ -133,6 +181,7 @@ export function createMessageTemplatesUi({
         renderTemplateEditorPreview();
         templateEditor?.addEventListener("submit", (submitEvent) => {
             submitEvent.preventDefault();
+            if (submitted || !action.current()) return;
             const titleValue =
                 templateTitleInput instanceof HTMLInputElement
                     ? templateTitleInput.value.trim()
@@ -176,20 +225,33 @@ export function createMessageTemplatesUi({
                     ...savedMessageTemplates,
                 ];
             }
-            persistSavedMessageTemplates(
-                savedMessageTemplates,
-                currentAccountId,
-            );
+            submitted = true;
+            try {
+                persistSavedMessageTemplates(
+                    savedMessageTemplates,
+                    currentAccountId,
+                );
+            } catch (error) {
+                reportFailure(error);
+                renderSidebarTemplateList();
+                action.finish();
+                return;
+            }
+            log("info", "[messages] template saved", {
+                operation: "saveTemplate",
+            });
             renderSidebarTemplateList();
             showToast(i18n.t("module.social.messages.template_saved"), {
                 variant: "success",
             });
-            overlay.querySelector('[data-popup-action="close"]')?.click();
+            action.finish();
         });
         templateBodyInput?.addEventListener("input", () => {
+            if (!action.current()) return;
             renderTemplateEditorPreview();
         });
         overlay.addEventListener("click", (clickEvent) => {
+            if (!action.current()) return;
             const tokenButton = clickEvent.target.closest(
                 "[data-template-token]",
             );
@@ -213,35 +275,57 @@ export function createMessageTemplatesUi({
     }
 
     async function openTemplatesPopup(preloadTemplateId = null) {
+        if (
+            preloadTemplateId !== null &&
+            !savedMessageTemplates.some(
+                (entry) => entry.id === preloadTemplateId,
+            )
+        )
+            return;
+        const action = beginAction();
+        if (!action) return;
         activeTemplateId = null;
         const isEditing = preloadTemplateId !== null;
-        await openPopup({
-            title: i18n.t("module.social.messages.templates"),
-            body: renderTemplatePopupBody(isEditing),
-            maxWidth: "600px",
-            actions: [
-                {
-                    id: "close",
-                    label: i18n.t("ui.reuse.close"),
-                    variant: "cancel",
+        try {
+            await openPopup({
+                signal: action.signal,
+                title: i18n.t("module.social.messages.templates"),
+                body: renderTemplatePopupBody(isEditing),
+                maxWidth: "600px",
+                actions: [
+                    {
+                        id: "close",
+                        label: i18n.t("ui.reuse.close"),
+                        variant: "cancel",
+                    },
+                ],
+                onOpen: (overlay) => {
+                    if (!action.current()) return;
+                    bindTemplatePopupEvents(overlay, action);
+                    if (isEditing) {
+                        editTemplateById(preloadTemplateId);
+                    } else if (templateTitleInput instanceof HTMLInputElement) {
+                        templateTitleInput.focus();
+                    }
                 },
-            ],
-            onOpen: (overlay) => {
-                bindTemplatePopupEvents(overlay);
-                if (isEditing) {
-                    editTemplateById(preloadTemplateId);
-                } else if (templateTitleInput instanceof HTMLInputElement) {
-                    templateTitleInput.focus();
-                }
-            },
-        });
+            });
+        } catch (error) {
+            if (action.current()) reportFailure(error);
+        } finally {
+            action.finish();
+        }
     }
 
     async function handleSidebarTemplateClick(clickEvent) {
         const actionButton = clickEvent.target.closest(
             "[data-template-action]",
         );
-        if (!(actionButton instanceof HTMLButtonElement)) return;
+        if (
+            !(actionButton instanceof HTMLButtonElement) ||
+            !actionButton.isConnected ||
+            !isActive()
+        )
+            return;
         const templateId = actionButton.dataset.templateId;
         if (!templateId) return;
         const action = actionButton.dataset.templateAction;
@@ -262,42 +346,60 @@ export function createMessageTemplatesUi({
             (entry) => String(entry.id) === String(templateId),
         );
         if (!templateRecord) return;
-        const escapedTemplateTitle = escapeHtml(templateRecord.title);
-        const deleteConfirmBodyTemplate = i18n
-            .t("module.social.messages.template_delete_confirm_body")
-            .replace("{name}", "{templateName}");
-        const deleteConfirmBody = escapeHtml(deleteConfirmBodyTemplate).replace(
-            "{templateName}",
-            escapedTemplateTitle,
-        );
-        const deleteResult = await openPopup({
-            title: i18n.t(
-                "module.social.messages.template_delete_confirm_title",
-            ),
-            body: deleteConfirmBody,
-            variant: "danger",
-            actions: [
-                {
-                    id: "cancel",
-                    label: i18n.t("ui.reuse.cancel"),
-                    variant: "cancel",
-                },
-                {
-                    id: "confirm",
-                    label: i18n.t("module.social.messages.template_delete"),
-                    variant: "confirm",
-                },
-            ],
-        });
-        if (deleteResult !== "confirm") return;
-        savedMessageTemplates = savedMessageTemplates.filter(
-            (entry) => String(entry.id) !== String(templateId),
-        );
-        persistSavedMessageTemplates(savedMessageTemplates, currentAccountId);
-        renderSidebarTemplateList();
-        showToast(i18n.t("module.social.messages.template_deleted"), {
-            variant: "success",
-        });
+        const actionOwner = beginAction();
+        if (!actionOwner) return;
+        try {
+            const escapedTemplateTitle = escapeHtml(templateRecord.title);
+            const deleteConfirmBodyTemplate = i18n
+                .t("module.social.messages.template_delete_confirm_body")
+                .replace("{name}", "{templateName}");
+            const deleteConfirmBody = escapeHtml(
+                deleteConfirmBodyTemplate,
+            ).replace("{templateName}", escapedTemplateTitle);
+            const deleteResult = await openPopup({
+                signal: actionOwner.signal,
+                onOpen: () => actionOwner.current(),
+                title: i18n.t(
+                    "module.social.messages.template_delete_confirm_title",
+                ),
+                body: deleteConfirmBody,
+                variant: "danger",
+                actions: [
+                    {
+                        id: "cancel",
+                        label: i18n.t("ui.reuse.cancel"),
+                        variant: "neutral",
+                    },
+                    {
+                        id: "confirm",
+                        label: i18n.t("module.social.messages.template_delete"),
+                        variant: "cancel",
+                    },
+                ],
+            });
+            if (deleteResult !== "confirm" || !actionOwner.current()) return;
+            savedMessageTemplates = savedMessageTemplates.filter(
+                (entry) => String(entry.id) !== String(templateId),
+            );
+            persistSavedMessageTemplates(
+                savedMessageTemplates,
+                currentAccountId,
+            );
+            log("info", "[messages] template deleted", {
+                operation: "deleteTemplate",
+            });
+            renderSidebarTemplateList();
+            showToast(i18n.t("module.social.messages.template_deleted"), {
+                variant: "success",
+            });
+        } catch (error) {
+            if (actionOwner.current()) {
+                reportFailure(error);
+                renderSidebarTemplateList();
+            }
+        } finally {
+            actionOwner.finish();
+        }
     }
 
     return {
