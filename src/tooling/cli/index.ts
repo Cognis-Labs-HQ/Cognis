@@ -55,29 +55,16 @@ async function resolveCommandArgs(
     if (args.length > 0) return args;
     const spec = registry.get(command);
     if (!spec) return args;
-    const featureSections = new Set([
-        "TFA",
-        "Notifications",
-        "Email",
-        "Invites",
-        "Calendar",
-        "Study",
-        "Messages",
-        "Shares",
-        "Search",
-        "Docs",
-        "UI",
-        "Files",
-        "Social",
-    ]);
-    if (featureSections.has(spec.section)) return args;
-    const fields = parseRequiredUsageFields(spec.usage);
+    if (spec.input) return args;
+    const fields =
+        spec.wizardFields ??
+        parseRequiredUsageFields(spec.usage).map((name) => ({
+            name,
+            required: true,
+        }));
     if (fields.length === 0) return args;
-    const values = await collectWizardFields(
-        command,
-        fields.map((name) => ({ name, required: true })),
-    );
-    return fields.map((name) => String(values[name] ?? ""));
+    const values = await collectWizardFields(command, fields);
+    return fields.map((field) => String(values[field.name] ?? ""));
 }
 
 export async function executeRegisteredCommand(

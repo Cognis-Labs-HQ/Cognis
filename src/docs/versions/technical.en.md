@@ -96,7 +96,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 
 | Component  | Path               | Version |
 | ---------- | ------------------ | ------- |
-| Cognis CLI | `src/tooling/cli/` | `0.4.3` |
+| Cognis CLI | `src/tooling/cli/` | `0.4.7` |
 
 [c]: https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/core/package.json
 [a]: https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/api/package.json

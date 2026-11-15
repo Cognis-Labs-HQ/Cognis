@@ -1,0 +1,24 @@
+<resources>
+  <string name="cli.terminal.intro">Interactive {command} wizard. Each field indicates whether input is visible or hidden. Press enter to skip optional fields.</string>
+  <string name="cli.terminal.visible">visible</string>
+  <string name="cli.terminal.hidden">hidden</string>
+  <string name="cli.terminal.required">required</string>
+  <string name="cli.terminal.optional">optional</string>
+  <string name="cli.terminal.noninteractive">Interactive input requires a terminal on stdin and stderr. Supply command arguments instead; use --help for usage.</string>
+  <string name="cli.terminal.eof">Input ended before the command was submitted.</string>
+  <string name="cli.terminal.cancelled">Command cancelled before submission.</string>
+  <string name="cli.terminal.missing">Missing required wizard field: {field}</string>
+  <string name="cli.terminal.invalid">Invalid input field: {field}</string>
+  <string name="cli.terminal.working">{command}: working…</string>
+  <string name="cli.terminal.waiting">{command}: still working ({seconds}s elapsed)…</string>
+  <string name="cli.terminal.input.json">Expected a JSON object. Use --help to inspect the command's fields.</string>
+  <string name="cli.terminal.input.extra">Too many arguments. Use --help to inspect the command's usage.</string>
+  <string name="cli.terminal.input.argument">Missing required argument: {field}</string>
+  <string name="cli.terminal.input.body">Missing required JSON body field: {field}. Use --help to inspect the command's fields.</string>
+  <string name="cli.terminal.input.arguments">Arguments</string>
+  <string name="cli.terminal.input.bodyfields">JSON body fields</string>
+  <string name="cli.terminal.input.queryfields">JSON query fields</string>
+  <string name="cli.terminal.input.query">Missing required JSON query field: {field}. Use --help to inspect the command's fields.</string>
+  <string name="cli.terminal.input.duplicate">Duplicate command input field: {field}. The command owner must use unique field names.</string>
+  <string name="cli.terminal.input.array">Enter a comma-separated list or a JSON string array. Use [] for an empty list.</string>
+</resources>

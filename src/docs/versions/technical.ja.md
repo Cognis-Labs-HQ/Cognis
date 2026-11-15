@@ -104,7 +104,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント | パス               | バージョン |
 | -------------- | ------------------ | ---------- |
-| Cognis CLI     | `src/tooling/cli/` | `0.4.3`    |
+| Cognis CLI     | `src/tooling/cli/` | `0.4.7`    |
 
 [c]: https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/core/package.json
 [a]: https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/api/package.json

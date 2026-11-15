@@ -1,3 +1,11 @@
+import type { WizardField } from "./wizard.ts";
+
+export interface CommandInputSpec {
+    params: string[];
+    bodyFields?: WizardField[];
+    queryFields?: WizardField[];
+}
+
 export interface CommandContext {
     args: string[];
     apiBaseUrl: string;
@@ -24,6 +32,8 @@ export interface CommandSpec {
     handler: CommandHandler;
     render?: CommandRenderer;
     exitCode?: (payload: unknown) => number;
+    input?: CommandInputSpec;
+    wizardFields?: WizardField[];
 }
 
 export interface RegisterCommandOptions {
@@ -32,4 +42,6 @@ export interface RegisterCommandOptions {
     section?: string;
     render?: CommandRenderer;
     exitCode?: (payload: unknown) => number;
+    input?: CommandInputSpec;
+    wizardFields?: WizardField[];
 }
