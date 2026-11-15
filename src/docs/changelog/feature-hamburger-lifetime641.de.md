@@ -16,6 +16,4 @@ Auch ausstehende Menüs werden beim Fokuswechsel abgebrochen, damit eine verzög
 
 ## Commits
 
-- [Aktionsmenüs an Seitenlebensdauer und Tastaturfokus binden](https://github.com/Cognis-Labs-HQ/Cognis/commit/f06b861265f7eec19d4638b3c116dc8494f1d03a)
-- [Fokusverwaltung wartender Aktionsmenüs und Popup-Menüs erhalten](https://github.com/Cognis-Labs-HQ/Cognis/commit/2c26ef2ce4aec3df5306d4e7ff8f45db419286c6)
-- [Test der Menübegrenzung mit den Menütests gruppieren](https://github.com/Cognis-Labs-HQ/Cognis/commit/afc479630e96877af589cd5f940dbc9b5ffbc261)
+- [Aktionsmenüs an Seitenlebensdauer und Tastaturfokus binden](https://github.com/Cognis-Labs-HQ/Cognis/commit/138bd8e414cf2353f76ddf9ebb8cd53073f10af7)

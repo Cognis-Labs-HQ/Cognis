@@ -16,6 +16,4 @@ Pending menus also cancel when focus leaves, so delayed preparation cannot take 
 
 ## Commits
 
-- [Bind action menus to page lifetime and keyboard focus](https://github.com/Cognis-Labs-HQ/Cognis/commit/f06b861265f7eec19d4638b3c116dc8494f1d03a)
-- [Preserve pending and popup action menu focus ownership](https://github.com/Cognis-Labs-HQ/Cognis/commit/2c26ef2ce4aec3df5306d4e7ff8f45db419286c6)
-- [Group hamburger containment test with menu coverage](https://github.com/Cognis-Labs-HQ/Cognis/commit/afc479630e96877af589cd5f940dbc9b5ffbc261)
+- [Bind action menus to page lifetime and keyboard focus](https://github.com/Cognis-Labs-HQ/Cognis/commit/138bd8e414cf2353f76ddf9ebb8cd53073f10af7)
