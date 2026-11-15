@@ -1,0 +1,20 @@
+# メッセージ確認の適用範囲
+
+**機能ブランチ:** feature-messages-confirmation-ownership
+
+## 元の対象に選択を限定
+
+メッセージ2.8.2は退出とテンプレート確認を元の対象に限定します。安全な閉じ方では変更せず、重複や古い操作で書き込みを繰り返しません。新しいルーム、アカウント、セッション、テンプレート設定を維持します。
+
+## 確認済みの結果を通知
+
+退出は拒否、不確定な送信結果、確認済み退出後の更新失敗を区別し、自動再送しません。後続の読み取りには最新の正常な一覧が必要です。テンプレートは一度だけ保存し、新しい編集を保持します。4言語のガイドと結果通知を更新します。サーバー方針と表示バージョン2は変わらず、プロフィール4.0.0と内部通知0.5.36を維持します。
+
+これは#542と#330のメッセージ部分に限定した継続作業です。両方の広範な監査は一部未完了です。
+
+## コミット
+
+- [44a383823bb5df1be0a03267d066af1de856f6ac](https://github.com/Cognis-Labs-HQ/Cognis/commit/44a383823bb5df1be0a03267d066af1de856f6ac)
+- [acd169da920a98241254fddfa1a6b69580a0ed3a](https://github.com/Cognis-Labs-HQ/Cognis/commit/acd169da920a98241254fddfa1a6b69580a0ed3a)
+- [6aeeab93379e5850f88aa9d49ac16f6144d8c0c6](https://github.com/Cognis-Labs-HQ/Cognis/commit/6aeeab93379e5850f88aa9d49ac16f6144d8c0c6)
+- [7d135897d848c17f844d74f7ededacd4c574126c](https://github.com/Cognis-Labs-HQ/Cognis/commit/7d135897d848c17f844d74f7ededacd4c574126c)

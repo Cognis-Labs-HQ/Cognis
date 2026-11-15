@@ -119,3 +119,15 @@ Penyedia peramban menyediakan `social:messagePresentation` versi 2 melalui ctx d
 Kontrak versi 2 mewajibkan boolean `available`. Nilainya benar hanya saat cakupan Messages dan penggambar avatar Profile saat ini aktif. Profile memiliki `cognis:profile-avatar-renderer-changed`; Messages meneruskan perubahan melalui `cognis:message-presentation-changed`. Pencabutan terlihat sebelum penghapusan dari registri. Hasil penggambaran yang masih berjalan diperiksa menurut generasi dependensi, termasuk saat objek penggambar yang sama dihapus lalu dikembalikan. Profile yang tidak tersedia atau gagal dipasang membuat pratinjau tersembunyi. Saat aktif kembali, gaya pilihan yang belum disimpan dipulihkan tanpa memuat ulang Settings atau menulis preferensi. Penerusan peristiwa dihapus saat Messages berakhir.
 
 Rilis aset Settings yang sesuai bersama Messages 2.8.1 dan Profile 3.0.19. Settings menerima versi 2 dengan `available: true`; versi 1 dan bidang kesiapan yang tidak ada bukan jalur kompatibilitas. Penggambar bersama untuk percakapan langsung serta perilaku seleksi dan pembaruannya tidak berubah.
+
+## Kepemilikan Konfirmasi
+
+Keluar hanya berlaku untuk percakapan dan keanggotaan saat konfirmasi dibuka. Berpindah ruang, meninggalkan halaman, mengganti akun atau sesi, atau kehilangan keanggotaan menonaktifkan pilihan tersebut. Pembukaan berulang berbagi satu tindakan tertunda. Batal, Escape, tutup, dan latar tidak mengeluarkan Anda dari ruang. Batal bersifat netral; Keluar dan Hapus templat memakai gaya destruktif.
+
+Keluar yang dikonfirmasi dikirim sekali melalui klien Pesan terdaftar. Penolakan yang pasti memungkinkan konfirmasi baru. Respons yang belum pasti tidak diputar ulang, dan keluar yang sudah diakui tetap diakui saat pembaruan gagal. Ruang yang diketahui dipertahankan jika daftar baru yang berhasil tidak tersedia; buka kembali Pesan untuk mencocokkan hasilnya. Hasil terlambat tidak dapat menavigasi atau memberi pemberitahuan pada tampilan pengganti.
+
+Editor templat dan konfirmasi Hapus dimiliki oleh halaman, pilihan ruang, akun, sesi, dan salinan templat tersimpan semula. Hanya satu dialog templat yang aktif. Preferensi baru atau yang diatur ulang menonaktifkan kontrol lama, sehingga daftar baru tidak tertimpa. Penyimpanan yang berhasil terjadi sekali.
+
+Pesan 2.8.2 memperbaiki kepemilikan di browser. Rute server, kebijakan keanggotaan, dan kontrak presentasi hanya-baca versi 2 tidak berubah. Profil tetap 4.0.0. Audit konfirmasi yang lebih luas masih sebagian.
+
+Klien permintaan Pesan terdaftar menerima pemeriksaan sinkron opsional `beforeDispatch()` untuk transportasi langsung. Pemeriksaan berjalan setelah persiapan alur permintaan dan dihapus sebelum HTTP; tidak pernah disimpan atau diputar ulang. Keluar memakainya untuk memeriksa kembali tampilan, akun, sesi, anggota, handle, dan penyedia permintaan semula tepat sebelum pengiriman. Persiapan yang dibatalkan tetap belum terkirim dan mengizinkan konfirmasi baru; hanya transportasi yang telah dimulai dapat menghasilkan status belum pasti.

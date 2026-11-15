@@ -89,7 +89,11 @@ export function mountProvider(ctx) {
     const request = registerOfflineHttpClient(ctx, {
         owner: "social.messages",
         describe,
-        request: apiFetch,
+        request: (path, options = {}) => {
+            const { beforeDispatch, ...transportOptions } = options;
+            beforeDispatch?.();
+            return apiFetch(path, transportOptions);
+        },
         project,
     });
     ctx.capabilities.contribute("social:messagesRequest", request);

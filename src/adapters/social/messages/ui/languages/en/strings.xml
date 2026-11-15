@@ -34,6 +34,9 @@
   <string name="module.social.messages.set_avatar">Set avatar</string>
   <string name="module.social.messages.leave_room">Leave Room</string>
   <string name="module.social.messages.leave_failed">Failed to leave room.</string>
+  <string name="module.social.messages.leave_succeeded">You left the conversation.</string>
+  <string name="module.social.messages.leave_uncertain">The leave request could not be confirmed. Check your conversations before trying again; it will not be sent again automatically.</string>
+  <string name="module.social.messages.leave_refresh_failed">You left the conversation, but the room list could not refresh. Reopen Messages to update it; do not repeat the leave request.</string>
   <string name="module.social.messages.leave_confirm_title">Leave This Room?</string>
   <string name="module.social.messages.leave_confirm_body">Are you sure you want to leave this room with {name}?</string>
   <string name="module.social.messages.requests_section">Message Requests</string>
@@ -98,5 +101,5 @@
   <string name="module.social.messages.tutorial.messages.preview.message.title">Preview Before Sending</string>
   <string name="module.social.messages.tutorial.messages.preview.message.body">Switch to Preview to check formatting, links and line breaks. Return to Compose to make corrections.</string>
   <string name="module.social.messages.tutorial.messages.manage.room.title">Manage The Room</string>
-  <string name="module.social.messages.tutorial.messages.manage.room.body">The room header identifies the room and its participants. Review its available actions before changing membership or leaving.</string>
+  <string name="module.social.messages.tutorial.messages.manage.room.body">The room header identifies the room and its participants. Leave asks for confirmation. Cancel keeps you in the room; switching conversations cancels the pending choice.</string>
 </resources>

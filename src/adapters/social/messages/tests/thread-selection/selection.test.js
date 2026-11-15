@@ -122,9 +122,19 @@ test("queued projection preserves loaded history, server cursors and selected no
         null,
     );
     assertSelection(snapshot);
-    assert.equal(
-        state.container.querySelectorAll(".messages-date-divider").length,
-        1,
+    const expectedDates = [
+        ...new Set(
+            [
+                ...state.messages,
+                ...projected.data.filter((record) => record.queued),
+            ].map((record) => record.createdAt.slice(0, 10)),
+        ),
+    ].sort();
+    assert.deepEqual(
+        [...state.container.querySelectorAll(".messages-date-divider")].map(
+            (divider) => divider.textContent,
+        ),
+        expectedDates,
     );
 });
 
@@ -350,6 +360,33 @@ for (const change of ["room", "account"]) {
         assert.equal((await pending).obsolete, true);
         assert.equal(state.body("replacement"), body);
         assert.equal(state.body("earlier"), null);
+        assertSelection(snapshot);
+    });
+}
+
+for (const [day, expectedDates] of [
+    ["2026-11-14", ["2026-11-14"]],
+    ["2026-11-15", ["2026-11-14", "2026-11-15"]],
+]) {
+    test(`date grouping preserves selection across ${day} content`, async (context) => {
+        const state = createRenderer();
+        context.after(state.dispose);
+        state.messages = [message("first")];
+        await state.render();
+        const snapshot = select(
+            state.document,
+            state.body("first").querySelector("strong").firstChild,
+        );
+        state.messages.push(
+            message("next", 1, { createdAt: `${day}T01:00:00.000Z` }),
+        );
+        await state.render();
+        assert.deepEqual(
+            [...state.container.querySelectorAll(".messages-date-divider")].map(
+                (divider) => divider.textContent,
+            ),
+            expectedDates,
+        );
         assertSelection(snapshot);
     });
 }

@@ -25,3 +25,7 @@ The room-history step covers the same conversation region in the default, speech
 The message-input step explains that you can start the next draft while a message sends. Only the submitted version clears after acknowledgement or durable queuing; newer edits remain. The input and preview keep their separate targets and existing order.
 
 The room-history step explains selecting text during conversation updates and loading earlier messages while retaining your place. Its region, sequence, completion identity and access rules are unchanged.
+
+## Confirmation Ownership
+
+The room-management step explains the Leave confirmation and safe cancellation. Its existing header target, optional availability, step order and completion identity are unchanged. Template editing and deletion retain their sidebar controls; their dialogs stop applying when the initiating page, selection or saved list changes.

@@ -34,6 +34,9 @@
   <string name="module.social.messages.set_avatar">アバターを設定</string>
   <string name="module.social.messages.leave_room">ルームから退出</string>
   <string name="module.social.messages.leave_failed">ルームから退出できませんでした。</string>
+  <string name="module.social.messages.leave_succeeded">会話から退出しました。</string>
+  <string name="module.social.messages.leave_uncertain">退出リクエストの結果を確認できませんでした。再試行する前に会話を確認してください。自動的に再送されることはありません。</string>
+  <string name="module.social.messages.leave_refresh_failed">会話から退出しましたが、ルーム一覧を更新できませんでした。メッセージを開き直して更新してください。退出リクエストは繰り返さないでください。</string>
   <string name="module.social.messages.leave_confirm_title">このルームから退出しますか？</string>
   <string name="module.social.messages.leave_confirm_body">{name}さんとのこのルームから本当に退出しますか？</string>
   <string name="module.social.messages.requests_section">メッセージリクエスト</string>
@@ -98,5 +101,5 @@
   <string name="module.social.messages.tutorial.messages.preview.message.title">送信前に確認する</string>
   <string name="module.social.messages.tutorial.messages.preview.message.body">プレビューで書式、リンク、改行を確認し、修正するときは編集に戻ります。</string>
   <string name="module.social.messages.tutorial.messages.manage.room.title">会話を管理する</string>
-  <string name="module.social.messages.tutorial.messages.manage.room.body">会話の見出しでルームと参加者を確認します。メンバー変更や退出には、表示される操作を使います。</string>
+  <string name="module.social.messages.tutorial.messages.manage.room.body">会話の見出しでルームと参加者を確認します。退出には確認が必要です。キャンセルすると参加したままになります。会話を切り替えると保留中の選択は無効になります。</string>
 </resources>

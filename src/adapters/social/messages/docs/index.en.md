@@ -119,3 +119,15 @@ The browser provider exposes `social:messagePresentation` version 2 through its 
 The version 2 contract requires an `available` boolean. It is true only while the Messages scope and the current Profile avatar renderer are active. Profile owns `cognis:profile-avatar-renderer-changed`; Messages relays changes through `cognis:message-presentation-changed`. Revocation is visible before registry removal. Pending renders are fenced by dependency generation, including removal and return of the same renderer object. Missing or rolled-back Profile providers therefore hide the preview rather than presenting an available capability that cannot render. Reactivation restores the currently selected unsaved style without a Settings reload or preference write. The relay is removed when Messages ends.
 
 Release matching Settings assets, Messages 2.8.1 and Profile 3.0.19 together. Settings accepts version 2 with `available: true`; version 1 and missing readiness fields are not compatibility fallbacks. The shared live-thread renderer and its selection/update behavior are unchanged.
+
+## Confirmation Ownership
+
+Leave applies only to the conversation and membership shown when you open its confirmation. Switching rooms, leaving the page, changing account or session, or losing membership makes that choice inactive. Repeated openings share one pending action. Cancel, Escape, the close control and the backdrop do not leave a room. Safe Cancel is neutral; Leave and template Delete use the destructive style.
+
+A confirmed leave is sent once through the registered Messages client. A known rejection permits a new confirmation. An uncertain response is not replayed, and an acknowledged leave stays acknowledged if refreshing fails. The page retains known rooms when it cannot obtain a fresh successful list; reopen Messages to reconcile the result. Late results cannot navigate or notify a replacement view.
+
+Template editors and Delete confirmations belong to the original page, room selection, account, session and saved-template snapshot. Only one template popup is active at a time. Newer or reset preferences make older controls inactive, preserving the newer list rather than overwriting it. Successful persistence happens once.
+
+Messages 2.8.2 is a browser ownership patch. Server routes, membership policy and the version 2 read-only presentation contract are unchanged. Profile remains 4.0.0. The broader confirmation audits remain partial.
+
+The registered Messages request client accepts an optional synchronous `beforeDispatch()` assertion for live transport. It runs after request-flow preparation and is removed before HTTP; it is never stored or replayed. Leave uses it to recheck the original view, account, session, member, handle and request provider immediately before dispatch. A cancelled preparation remains not dispatched and permits a fresh confirmation; only a started transport can have an uncertain outcome.

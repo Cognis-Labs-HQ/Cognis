@@ -34,6 +34,9 @@
   <string name="module.social.messages.set_avatar">Atur avatar</string>
   <string name="module.social.messages.leave_room">Tinggalkan Ruang</string>
   <string name="module.social.messages.leave_failed">Gagal meninggalkan ruang.</string>
+  <string name="module.social.messages.leave_succeeded">Anda telah keluar dari percakapan.</string>
+  <string name="module.social.messages.leave_uncertain">Permintaan keluar belum dapat dikonfirmasi. Periksa percakapan sebelum mencoba lagi; permintaan tidak akan dikirim ulang secara otomatis.</string>
+  <string name="module.social.messages.leave_refresh_failed">Anda telah keluar dari percakapan, tetapi daftar ruang tidak dapat diperbarui. Buka kembali Pesan untuk memperbaruinya; jangan ulangi permintaan keluar.</string>
   <string name="module.social.messages.leave_confirm_title">Tinggalkan Ruang Ini?</string>
   <string name="module.social.messages.leave_confirm_body">Apakah Anda yakin ingin meninggalkan ruang ini dengan {name}?</string>
   <string name="module.social.messages.requests_section">Permintaan Pesan</string>
@@ -98,5 +101,5 @@
   <string name="module.social.messages.tutorial.messages.preview.message.title">Pratinjau Sebelum Mengirim</string>
   <string name="module.social.messages.tutorial.messages.preview.message.body">Beralih ke Pratinjau untuk memeriksa format, tautan, dan jeda baris. Kembali ke Tulis untuk memperbaikinya.</string>
   <string name="module.social.messages.tutorial.messages.manage.room.title">Kelola Percakapan</string>
-  <string name="module.social.messages.tutorial.messages.manage.room.body">Judul percakapan menunjukkan ruang dan pesertanya. Periksa tindakan yang tersedia sebelum mengubah anggota atau keluar.</string>
+  <string name="module.social.messages.tutorial.messages.manage.room.body">Judul percakapan menunjukkan ruang dan pesertanya. Keluar memerlukan konfirmasi. Batal mempertahankan keanggotaan Anda; berpindah percakapan membatalkan pilihan yang tertunda.</string>
 </resources>
