@@ -6,6 +6,7 @@ export function createAvatarRenderer({
 } = {}) {
     return {
         available: true,
+        contentSizes: ["tiny", "compact", "small", "medium", "large"],
         calls,
         getPresentation(profile) {
             calls.push({ operation: "presentation", profile });

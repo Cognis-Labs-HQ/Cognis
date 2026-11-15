@@ -80,6 +80,16 @@ function createRenderer(style, theme, messageList) {
         new URL("../ui/room-render.js", import.meta.url),
         commonImports,
     );
+    commonImports["./receipt-avatars.js"] = loadTestModule(
+        new URL("../ui/receipt-avatars.js", import.meta.url),
+        {
+            ...commonImports,
+            "/static/reuse/timestamp.js": {
+                formatDate: (value) => value?.slice(0, 10) ?? "",
+                formatTime: (value) => value?.slice(11, 16) ?? "",
+            },
+        },
+    );
     const renderer = loadTestModule(
         new URL("../ui/message-render.js", import.meta.url),
         {

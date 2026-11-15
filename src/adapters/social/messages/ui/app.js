@@ -1,3 +1,4 @@
+import { bindReadReceiptPanel } from "./read-receipts.js";
 import { createBackgroundRefresh } from "./reuse/background-refresh.js";
 import { guides } from "./guides.js";
 /**
@@ -35,13 +36,11 @@ import {
 import {
     hideAllMessageHoverPopups,
     hideReactionHoverPopup,
-    hideReadReceiptHoverPopup,
     openReactionDetailsPopup,
     parseEncodedPayload,
     renderComposerPreviewMarkup,
     repositionReactionHoverPopup,
     showReactionHoverPopup,
-    showReadReceiptHoverPopup,
     formatRoomListAvatar,
 } from "./message-render.js";
 import { resolveMessageTemplateVariables } from "./message-templates.js";
@@ -105,6 +104,7 @@ export async function mount(root, { signal } = {}) {
         ? decodeURIComponent(initialRoomMatch[1])
         : rememberedRoomId;
 
+    let receiptPanel = null;
     let composerInputRef = null;
     let composerDrafts;
 
@@ -115,6 +115,7 @@ export async function mount(root, { signal } = {}) {
         currentAccountId,
         signal,
         onRoomSelected: (roomId) => {
+            receiptPanel?.close();
             const pathname = `/messages/${encodeURIComponent(roomId)}`;
             if (window.location.pathname !== pathname)
                 history.pushState({}, "", pathname);
@@ -574,94 +575,14 @@ export async function mount(root, { signal } = {}) {
                     { signal },
                 );
 
-                threadList?.addEventListener(
-                    "mouseover",
-                    (mouseEvent) => {
-                        const hoveredElement = mouseEvent.target;
-                        if (!(hoveredElement instanceof Element)) return;
-                        const statusElement = hoveredElement.closest(
-                            ".messages-message-status--read",
-                        );
-                        if (!(statusElement instanceof HTMLElement)) return;
-                        const relatedElement = mouseEvent.relatedTarget;
-                        if (
-                            relatedElement instanceof Element &&
-                            statusElement.contains(relatedElement)
-                        ) {
-                            return;
-                        }
-                        const rawReaders =
-                            statusElement.getAttribute("data-readers") ?? "[]";
-                        const readers = parseEncodedPayload(rawReaders);
-                        showReadReceiptHoverPopup(statusElement, readers, i18n);
-                    },
-                    passiveEventOptions,
-                );
-
-                threadList?.addEventListener(
-                    "mouseout",
-                    (mouseEvent) => {
-                        const originElement = mouseEvent.target;
-                        if (!(originElement instanceof Element)) return;
-                        const statusElement = originElement.closest(
-                            ".messages-message-status--read",
-                        );
-                        if (!(statusElement instanceof HTMLElement)) return;
-                        const relatedElement = mouseEvent.relatedTarget;
-                        if (
-                            relatedElement instanceof Element &&
-                            statusElement.contains(relatedElement)
-                        ) {
-                            return;
-                        }
-                        hideReadReceiptHoverPopup();
-                    },
-                    passiveEventOptions,
-                );
-
-                threadList?.addEventListener(
-                    "focusin",
-                    (focusEvent) => {
-                        const focusedElement = focusEvent.target;
-                        if (!(focusedElement instanceof Element)) return;
-                        const statusElement = focusedElement.closest(
-                            ".messages-message-status--read",
-                        );
-                        if (!(statusElement instanceof HTMLElement)) return;
-                        const rawReaders =
-                            statusElement.getAttribute("data-readers") ?? "[]";
-                        const readers = parseEncodedPayload(rawReaders);
-                        showReadReceiptHoverPopup(statusElement, readers, i18n);
-                    },
-                    passiveEventOptions,
-                );
-
-                threadList?.addEventListener(
-                    "focusout",
-                    (focusEvent) => {
-                        const blurredElement = focusEvent.target;
-                        if (!(blurredElement instanceof Element)) return;
-                        const statusElement = blurredElement.closest(
-                            ".messages-message-status--read",
-                        );
-                        if (!(statusElement instanceof HTMLElement)) return;
-                        const nextFocusedElement = focusEvent.relatedTarget;
-                        if (
-                            nextFocusedElement instanceof Element &&
-                            statusElement.contains(nextFocusedElement)
-                        ) {
-                            return;
-                        }
-                        hideReadReceiptHoverPopup();
-                    },
-                    passiveEventOptions,
-                );
-
-                threadList?.addEventListener(
-                    "scroll",
-                    hideReadReceiptHoverPopup,
-                    passiveEventOptions,
-                );
+                receiptPanel?.dispose();
+                receiptPanel = bindReadReceiptPanel({
+                    root: threadList,
+                    i18n,
+                    signal,
+                    captureRoom: roomState.captureRoom,
+                    isActive: roomState.isActive,
+                });
 
                 form?.addEventListener(
                     "submit",

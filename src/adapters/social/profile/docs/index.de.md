@@ -177,3 +177,7 @@ Profilbestätigungen verwenden ein neutrales Abbrechen. Löschen, Entfolgen und 
 Abgelehnte oder nachweislich ungesendete Aktionen können erneut bestätigt werden. Bei ungewisser Übertragung sendet die aktuelle Seite nicht erneut: Öffnen Sie das Profil zur Prüfung erneut. Eine erfolgreiche Serverantwort oder dauerhafte Offline-Annahme aktualisiert die Ansicht. Eine fehlgeschlagene Folgeaktualisierung meldet die bereits angenommene Änderung statt eines Schreibfehlers. Verbindungslisten werden bei Fehlern beibehalten und bei erfolgreichen Abrufen aktualisiert.
 
 Die Bedienelemente verwenden den bestehenden Ablauf social:profile:request und die Seitenlebensdauer. Synthetische DOM-Tests prüfen echte Seitenaufrufe, Popups, registrierte Anfragestufen und kontrollierten Transport. Sie belegen weder natives Browserlayout noch das Verhalten produktiver Server oder Datenbanken.
+
+### Kompakte Inhaltsgrößen
+
+Profile 4.1.0 ergänzt `buildContent` um `tiny` (1.22rem, Initialen 0.5rem) und `compact` (1.65rem, Initialen 0.6rem). Die unveränderliche Liste `contentSizes` nennt alle fünf unterstützten Namen. Dies sind Grafikgrößen, keine Bedienflächen. Der Aufrufer besitzt getrennte zugängliche Ziele, Abstände und äußere Trennringe. `small`, `medium`, `large` und die Optionen von `buildMarkup` behalten ihre Bedeutung. Verbraucher der neuen Größen müssen die Liste prüfen und passendes Profile-JavaScript und CSS ausliefern. Messages 2.9.0 nutzt beide Größen; veröffentlichen Sie die Assets gemeinsam. Bestehende Profile-Tutorials behalten ihre Avatarbedienung und Größen.
