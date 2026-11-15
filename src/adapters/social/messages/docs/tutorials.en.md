@@ -29,3 +29,7 @@ The room-history step explains selecting text during conversation updates and lo
 ## Confirmation Ownership
 
 The room-management step explains the Leave confirmation and safe cancellation. Its existing header target, optional availability, step order and completion identity are unchanged. Template editing and deletion retain their sidebar controls; their dialogs stop applying when the initiating page, selection or saved list changes.
+
+## Conversation Avatars
+
+The room-history step explains profile-matched initials and avatar hover/click actions in styles that show avatars. Its region, optionality, step order and completion identity remain unchanged.

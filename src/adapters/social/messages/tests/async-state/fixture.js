@@ -1,3 +1,4 @@
+import { createAvatarRenderer } from "../fixtures/avatar-renderer.js";
 import * as reactionRecord from "../../ui/reuse/reaction-record.js";
 import assert from "node:assert/strict";
 import vm from "node:vm";
@@ -125,6 +126,7 @@ export function createRoomFixture() {
         return Response.json({ data: match ? room : rooms });
     };
     const avatars = {
+        ...createAvatarRenderer(),
         hydrate: async () => {},
         buildMarkup: () => "",
         handleError() {},

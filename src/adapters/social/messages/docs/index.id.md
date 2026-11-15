@@ -131,3 +131,11 @@ Editor templat dan konfirmasi Hapus dimiliki oleh halaman, pilihan ruang, akun, 
 Pesan 2.8.2 memperbaiki kepemilikan di browser. Rute server, kebijakan keanggotaan, dan kontrak presentasi hanya-baca versi 2 tidak berubah. Profil tetap 4.0.0. Audit konfirmasi yang lebih luas masih sebagian.
 
 Klien permintaan Pesan terdaftar menerima pemeriksaan sinkron opsional `beforeDispatch()` untuk transportasi langsung. Pemeriksaan berjalan setelah persiapan alur permintaan dan dihapus sebelum HTTP; tidak pernah disimpan atau diputar ulang. Keluar memakainya untuk memeriksa kembali tampilan, akun, sesi, anggota, handle, dan penyedia permintaan semula tepat sebelum pengiriman. Persiapan yang dibatalkan tetap belum terkirim dan mengizinkan konfirmasi baru; hanya transportasi yang telah dimulai dapat menghasilkan status belum pasti.
+
+## Avatar Percakapan
+
+Penulis pesan menggunakan perender Profile saat ini untuk inisial, warna, dan ukuran avatar kecil (32px). Inisial mengikuti nama tampilan, lalu handle; pengenal akun tetap menjadi label jika keduanya tidak tersedia. Gambar avatar dan tautan profil yang ada tetap tersedia pada gaya yang menampilkan avatar. Arahkan penunjuk untuk membuka pratinjau profil standar, lalu klik untuk membuka profil. IRC tetap menyembunyikan avatar.
+
+Pratinjau Gaya Pesan di Pengaturan menggunakan tampilan kecil yang sama dengan data contoh, tanpa tautan profil, gambar, pemuatan avatar atau penulisan data. Penyedia Profile yang tidak ada, dinonaktifkan atau tidak lengkap membuat pratinjau tidak tersedia; penyedia yang kembali memulihkannya. Baris percakapan mempertahankan kepemilikan halaman dan akun, pilihan teks, draf, serta hasil pembacaan. Header ruang, ringkasan peserta dan tampilan avatar lain tidak berubah; audit avatar yang lebih luas masih sebagian terbuka.
+
+Messages 2.8.3 / Profile 4.0.0.

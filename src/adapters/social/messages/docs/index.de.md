@@ -131,3 +131,11 @@ Vorlageneditoren und Löschbestätigungen gehören zur ursprünglichen Seite, Ra
 Nachrichten 2.8.2 korrigiert die Browserzuordnung. Serverrouten, Mitgliedschaftsregeln und der schreibgeschützte Darstellungsvertrag Version 2 bleiben unverändert. Profil bleibt 4.0.0. Die umfassenderen Bestätigungsprüfungen bleiben teilweise offen.
 
 Der registrierte Nachrichtenclient akzeptiert eine optionale synchrone Prüfung `beforeDispatch()` für den direkten Transport. Sie läuft nach der Vorbereitung im Anfrageablauf und wird vor HTTP entfernt; sie wird nie gespeichert oder wiederholt. Der Austritt prüft damit unmittelbar vor dem Versand Ansicht, Konto, Sitzung, Mitglied, Handle und Anfrageanbieter erneut. Eine abgebrochene Vorbereitung bleibt ungesendet und erlaubt eine neue Bestätigung; nur ein gestarteter Transport kann ein ungewisses Ergebnis haben.
+
+## Avatare im Gespräch
+
+Nachrichtenautoren verwenden den aktuellen Profile-Renderer für Initialen, Farbe und die kleine Avatargröße (32px). Initialen folgen dem Anzeigenamen, danach dem Handle; fehlt beides, bleibt die Kontokennung als Beschriftung erhalten. Vorhandene Avatarbilder und Profillinks bleiben in Stilen mit Avataren verfügbar. Darüberfahren öffnet die übliche Profilvorschau, Anklicken das Profil. IRC blendet Avatare weiterhin aus.
+
+Die Vorschau des Nachrichtenstils in den Einstellungen nutzt dieselbe kleine Darstellung mit Beispieldaten, ohne Profillinks, Bilder, nachträgliches Laden oder Schreibvorgänge. Fehlende, deaktivierte oder unvollständige Profile-Anbieter machen die Vorschau unverfügbar; zurückkehrende Anbieter stellen sie wieder her. Gesprächszeilen behalten ihre Seiten- und Kontozuordnung, Textauswahl, Entwürfe und Leseergebnisse. Raumköpfe, Teilnehmerübersichten und andere Avatarflächen bleiben unverändert; die übergreifende Avatarprüfung bleibt teilweise offen.
+
+Messages 2.8.3 / Profile 4.0.0.

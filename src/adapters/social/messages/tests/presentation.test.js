@@ -1,3 +1,4 @@
+import { createAvatarRenderer } from "./fixtures/avatar-renderer.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { JSDOM } from "jsdom";
@@ -27,7 +28,7 @@ async function fixture(context, { avatarInitially = true } = {}) {
     const avatarCalls = [];
     const errors = [];
     const avatars = {
-        available: true,
+        ...createAvatarRenderer({ contentRequests: avatarCalls }),
         buildMarkup: (options) => {
             avatarCalls.push(options);
             return `<span class="${options.avatarClass}"><span class="${options.fallbackClass}">${escapeHtml(options.label)}</span></span>`;
@@ -134,10 +135,7 @@ test("registered provider executes its real validation/render stages for every s
     ]);
     assert.ok(
         state.avatarCalls.every(
-            (options) =>
-                options.avatarKey === null &&
-                options.profileHandle === null &&
-                options.showAvailability === false,
+            (options) => options.avatarKey === "" && options.size === "small",
         ),
     );
     assert.deepEqual(state.errors, []);
