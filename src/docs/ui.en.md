@@ -282,3 +282,7 @@ The button descriptor maps `variant: 'confirm'` to `btn-confirm` and `variant: '
 Native `type="button"`, escaped text and attributes (`id`, `name`, `ariaLabel`, `disabled`, `checked`), groups and dividers are preserved. The renderer returns markup without invoking actions or submitting forms. Event handling and temporary disabled state remain caller-owned; descriptors do not expose loading or arbitrary class APIs. The host must load the existing shared button and structured-content styles. Canonical classes participate in shared wrapping, inherited-font and coarse-pointer sizing rules.
 
 Settings and Administration guides keep their existing targets and progression: this renderer adds no action or tutorial step. Contribution owners remain responsible for their own actions and guides.
+
+## Native layout actions
+
+Main and nested layout panels use native `button type="button"` controls for Done, Discard and Reset. These actions do not submit an enclosing form or navigate. Pending layout submissions disable them through the existing editor lock; failed submissions restore the controls for an explicit retry. Done still saves and closes after acknowledgement, Discard restores the local baseline without writing, and Reset saves the default layout while editing continues. Existing action classes and the workspace tutorial target `#composer-edit-toggle` remain unchanged.

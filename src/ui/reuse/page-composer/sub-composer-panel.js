@@ -141,9 +141,9 @@ export function createSubComposerPanelHandlers({
         <ul class="composer-library-list">${listHtml}</ul>
       </div>
       <div class="composer-panel-actions">
-        <a href="#" class="composer-discard-btn btn-cancel btn-animated" role="button">${i18n.t("ui.reuse.discard")}</a>
-        <a href="#" class="composer-done-btn btn-confirm btn-animated" role="button">${i18n.t("ui.reuse.done")}</a>
-        <a href="#" class="composer-reset-btn btn-neutral btn-animated" role="button">↺ ${i18n.t("ui.reuse.reset_layout")}</a>
+        <button type="button" class="composer-discard-btn btn-cancel btn-animated">${i18n.t("ui.reuse.discard")}</button>
+        <button type="button" class="composer-done-btn btn-confirm btn-animated">${i18n.t("ui.reuse.done")}</button>
+        <button type="button" class="composer-reset-btn btn-neutral btn-animated">↺ ${i18n.t("ui.reuse.reset_layout")}</button>
       </div>
     `;
 

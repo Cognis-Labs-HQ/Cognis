@@ -227,3 +227,7 @@ Deskriptor tombol memetakan `variant: 'confirm'` ke `btn-confirm` dan `variant: 
 `type="button"` bawaan, teks dan atribut yang di-escape (`id`, `name`, `ariaLabel`, `disabled`, `checked`), grup, serta pemisah tetap dipertahankan. Renderer mengembalikan markup tanpa menjalankan tindakan atau mengirim formulir. Penanganan peristiwa dan status nonaktif sementara tetap menjadi tanggung jawab pemanggil; deskriptor tidak menyediakan API pemuatan atau kelas bebas. Host harus memuat gaya tombol bersama dan konten terstruktur yang sudah tersedia. Kelas baku mengikuti aturan bersama untuk pembungkusan teks, pewarisan fon, dan ukuran bagi perangkat penunjuk kasar.
 
 Panduan Pengaturan dan Administrasi mempertahankan target serta alurnya: renderer ini tidak menambahkan tindakan atau langkah tutorial. Pemilik kontribusi tetap bertanggung jawab atas tindakan dan panduannya sendiri.
+
+## Aksi tata letak native
+
+Panel tata letak utama dan bersarang menggunakan kontrol native `button type="button"` untuk Selesai, Buang, dan Atur Ulang. Aksi ini tidak mengirim formulir yang membungkusnya atau melakukan navigasi. Pengiriman tata letak yang masih berlangsung menonaktifkannya melalui penguncian editor yang sudah ada; pengiriman yang gagal memulihkan kontrol untuk percobaan ulang secara eksplisit. Selesai tetap menyimpan dan menutup setelah konfirmasi, Buang memulihkan keadaan awal lokal tanpa menulis, dan Atur Ulang menyimpan tata letak bawaan sambil melanjutkan penyuntingan. Kelas aksi yang ada dan target tutorial ruang kerja `#composer-edit-toggle` tetap sama.

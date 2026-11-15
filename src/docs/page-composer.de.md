@@ -100,3 +100,7 @@ Die Arbeitsbereichseinführung markiert auf schmalen Bildschirmen die sichtbare 
 ## Ressourcen-Entwurfspfade
 
 Der öffentliche Formularentwurfsmanager akzeptiert die optionale Abhängigkeit `resolveStoragePath(scopeKey)`. Ressourcenseiten können ihren kanonischen eigenen Pfad zurückgeben, damit Lesen, Speichern und Entfernen eines gesendeten Entwurfs auch nach einer Navigation dieselbe Ressource betreffen. Standardmäßig gilt weiterhin der aktuelle Seitenpfad. Das angemeldete Konto bleibt Bestandteil jedes Speicherschlüssels; die Auflösung ändert weder die Kontotrennung noch ausgeschlossene Felder.
+
+## Native Layout-Aktionen
+
+Die Haupt- und verschachtelten Layout-Panels verwenden native Steuerelemente vom Typ `button type="button"` für Fertig, Verwerfen und Zurücksetzen. Diese Aktionen senden kein umgebendes Formular ab und lösen keine Navigation aus. Laufende Layout-Speicherungen deaktivieren sie über die bestehende Editorsperre; fehlgeschlagene Speicherungen geben sie für einen ausdrücklichen neuen Versuch wieder frei. Fertig speichert weiterhin und schließt nach Bestätigung, Verwerfen stellt den lokalen Ausgangszustand ohne Schreibzugriff wieder her, und Zurücksetzen speichert das Standardlayout bei fortgesetzter Bearbeitung. Bestehende Aktionsklassen und das Ziel `#composer-edit-toggle` der Arbeitsbereichsanleitung bleiben unverändert.
