@@ -12,7 +12,7 @@
 .calendar-section:has(.calendar-view-canvas) {
     grid-template-rows: auto 1fr;
     height: 100%;
-    min-height: 0;
+    min-height: 18rem;
     align-content: unset;
 }
 
@@ -569,4 +569,121 @@ body[data-theme="dark"] .calendar-visibility-icon--public {
 
 .calendar-view-canvas .calendar-year-day-dot--outside {
     opacity: 0.55;
+}
+
+.calendar-view-canvas {
+    overflow: auto;
+    overscroll-behavior: contain;
+}
+
+.calendar-agenda,
+.calendar-agenda-events {
+    display: grid;
+    gap: 0.5rem;
+    min-width: 0;
+}
+
+.calendar-agenda-day {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 0.65rem;
+    min-width: 0;
+}
+
+.calendar-agenda-heading {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.calendar-agenda-heading h3 {
+    margin: 0;
+    font-size: 1em;
+}
+
+.calendar-agenda :is(button, .calendar-slot-event) {
+    min-height: 44px;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
+    .calendar-view-header {
+    display: grid;
+    gap: 0.5rem;
+}
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
+    .calendar-view-nav {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+}
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
+    .calendar-nav-month-label {
+    grid-column: 1 / -1;
+    text-align: center;
+}
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
+    .calendar-view-switcher {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+}
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
+    .calendar-view-header
+    button {
+    min-width: 0;
+    min-height: 44px;
+    padding-inline: 0.25rem;
+    overflow-wrap: anywhere;
+}
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
+    .calendar-year-mini-grid {
+    display: none;
+}
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
+    .calendar-year-month-title {
+    min-height: 44px;
+}
+
+.calendar-view-select,
+.calendar-date-select {
+    display: none;
+}
+
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
+    .calendar-view-switcher
+    > button {
+    display: none;
+}
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
+    .calendar-view-select,
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
+    .calendar-date-select {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    min-height: 44px;
+}
+
+.calendar-agenda .calendar-slot-event-title {
+    white-space: normal;
+    overflow: visible;
+    overflow-wrap: anywhere;
+}
+
+.calendar-date-select {
+    box-sizing: border-box;
+    max-width: 100%;
+    font: inherit;
+}
+
+[data-composer-touch="true"] .calendar-year-mini-grid {
+    display: none;
+}
+
+[data-composer-touch="true"] .calendar-year-month-title {
+    min-height: 44px;
 }

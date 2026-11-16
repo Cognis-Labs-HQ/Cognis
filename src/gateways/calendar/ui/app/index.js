@@ -1,3 +1,4 @@
+import { renderCalendarViewSwitcher } from "../calendar-view-controls.js";
 import { guides } from "./guides.js";
 import { calendarFetch as apiFetch } from "../offline-client.js";
 import { isOffline } from "/static/reuse/offline-state.js";
@@ -27,6 +28,7 @@ export async function mount(root, { signal, shareContext = null } = {}) {
         return mountSharedCalendar(root, { shareContext, i18n, signal });
     }
 
+    const log = uiCtx.capabilities.get("ui:log");
     let calendars = [];
     const routeCalendarId = calendarUi.parseCalendarSelection();
     const routeEventId = calendarUi.parseEventSelection();
@@ -65,6 +67,12 @@ export async function mount(root, { signal, shareContext = null } = {}) {
 
     function setSelectedView(nextView) {
         if (!calendarUi.CALENDAR_VIEWS.includes(nextView)) return;
+        if (selectedView !== nextView)
+            log?.("info", "Calendar view changed.", {
+                component: "calendar",
+                operation: "selectCalendarView",
+                view: nextView,
+            });
         selectedView = nextView;
         try {
             window.localStorage.setItem(SELECTED_VIEW_STORAGE_KEY, nextView);
@@ -74,14 +82,19 @@ export async function mount(root, { signal, shareContext = null } = {}) {
     selectedView = loadSelectedViewPreference();
 
     function refreshCalendarComposer() {
-        root.querySelectorAll(
-            '[data-composer-element="calendar-view"]',
-        ).forEach((card) => {
-            if (!card.classList.contains("composer-cell")) {
-                card.remove();
-            }
-        });
-        composer?.refresh();
+        const focused = document.activeElement;
+        const focusSelector = focused?.matches("[data-calendar-date]")
+            ? "[data-calendar-date]"
+            : focused?.matches("[data-calendar-view-select]")
+              ? "[data-calendar-view-select]"
+              : focused?.matches("[data-calendar-nav]")
+                ? `[data-calendar-nav="${CSS.escape(focused.dataset.calendarNav)}"]`
+                : focused?.matches("[data-calendar-view]")
+                  ? `[data-calendar-view="${CSS.escape(focused.dataset.calendarView)}"]`
+                  : null;
+        composer?.refreshElements(["calendar-view"]);
+        if (focusSelector)
+            root.querySelector(focusSelector)?.focus({ preventScroll: true });
     }
 
     function ensureSelectedCalendarId() {
@@ -480,10 +493,31 @@ export async function mount(root, { signal, shareContext = null } = {}) {
         { signal },
     );
 
+    root.addEventListener(
+        "change",
+        (event) => {
+            const dateInput = event.target.closest("[data-calendar-date]");
+            if (dateInput) {
+                const date = new Date(dateInput.value + "T12:00:00");
+                if (Number.isFinite(date.getTime())) {
+                    activeDate = date;
+                    refreshCalendarComposer();
+                }
+                return;
+            }
+            const select = event.target.closest("[data-calendar-view-select]");
+            if (!select) return;
+            setSelectedView(select.value);
+            refreshCalendarComposer();
+        },
+        { signal },
+    );
+
     composer = createPageComposer(root, {
         tutorials: guides,
         signal,
         allowCustomization: false,
+        fillViewport: true,
         requireAccountSession: !shareContext,
         elements: [
             {
@@ -491,7 +525,10 @@ export async function mount(root, { signal, shareContext = null } = {}) {
                 label: i18n.t("gateway.calendar.calendar_view"),
                 pinned: true,
                 gridSize: { default: [12, 9], min: [6, 6], max: "full" },
-                render: () => {
+                responsive: true,
+                onResize: syncWeekViewLayout,
+                render: ({ layout }) => {
+                    const compact = layout !== "regular";
                     const weekLabel =
                         selectedView === "week"
                             ? ` · ${i18n.t("gateway.calendar.week_number_prefix")}${calendarUi.getISOWeekNumber(activeDate)}`
@@ -509,20 +546,15 @@ export async function mount(root, { signal, shareContext = null } = {}) {
                 <button type="button" data-calendar-nav="next" aria-label="${escapeHtml(i18n.t("gateway.calendar.next"))}">&gt;</button>
                 <span class="calendar-nav-month-label">${periodLabel}</span>
               </div>
-              <div class="calendar-view-switcher">
-                ${calendarUi.CALENDAR_VIEWS.map((view) => `<button type="button" data-calendar-view="${view}" class="${selectedView === view ? "active" : ""}">${i18n.t(`gateway.calendar.view_${view}`)}</button>`).join("")}
-              </div>
+              ${renderCalendarViewSwitcher(calendarUi.CALENDAR_VIEWS, selectedView, i18n, activeDate)}
             </header>
-            <div class="calendar-view-canvas">${calendarUi.renderCalendarView(allCalendarEvents(), selectedView, activeDate, i18n, currentAccountId)}</div>
+            <div class="calendar-view-canvas">${calendarUi.renderCalendarView(allCalendarEvents(), selectedView, activeDate, i18n, currentAccountId, { compact })}</div>
           </section>
         `;
                 },
                 onRender: () => {
                     syncWeekViewLayout();
                     requestAnimationFrame(scrollTimedViewsToCurrentSlot);
-                    window.addEventListener("resize", syncWeekViewLayout, {
-                        signal,
-                    });
 
                     root.querySelectorAll("[data-month-create-date]").forEach(
                         (button) => {

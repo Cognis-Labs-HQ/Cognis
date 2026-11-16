@@ -19,3 +19,7 @@ Das Routersignal begrenzt Tutorialregistrierungen und den Seiten-Composer. Beim 
 Die Anleitung erklärt das Verfassen einmal und zeigt Eingabe und Vorschau getrennt.
 
 Die Gesprächsverwaltung entfällt aus Ablauf und Anzahl, solange kein Gesprächskopf verfügbar ist.
+
+## Anpassbare Arbeitsflächen
+
+Messages passt Verlauf und Eingabe an den sichtbaren Bildschirmausschnitt an. Unterhaltungen öffnet auf Telefonen und Tablets die Raumliste. Escape gibt den Fokus zurück, eine Auswahl schließt die Liste und Drehungen erhalten Entwürfe. Auf niedrigen Bildschirmen bleibt die Arbeitsfläche scrollbar, statt Bedienelemente abzuschneiden.

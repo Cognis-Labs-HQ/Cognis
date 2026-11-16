@@ -417,15 +417,12 @@ test("calendar year view day dots inherit calendar event colors", () => {
     );
 });
 
-test("calendar mobile headers render compactly on narrow viewports", () => {
+test("calendar compact controls follow the composer presentation", () => {
     assert.match(
         CSS_SOURCE,
-        /@media \(max-width:\s*700px\)[\s\S]*\.calendar-week-day-header\s*\{[\s\S]*flex-direction:\s*column;/s,
+        /data-composer-layout="compact"[\s\S]*calendar-view-select[\s\S]*display:\s*block/,
     );
-    assert.match(
-        CSS_SOURCE,
-        /@media \(max-width:\s*700px\)[\s\S]*\.calendar-month-header-day\s*\{[\s\S]*font-size:\s*0\.68rem;/s,
-    );
+    assert.match(CSS_SOURCE, /calendar-agenda[\s\S]*min-height:\s*44px/);
 });
 
 test("calendar timed views auto-scroll to the current timeslot", () => {
@@ -740,7 +737,10 @@ test("calendar share renderer displays one calendar and enables scoped writes", 
         /root\.addEventListener\([\s\S]*data-shared-calendar-id[\s\S]*data-calendar-view[\s\S]*data-calendar-nav/,
     );
     assert.match(SHARE_RENDERER_SOURCE, /CALENDAR_VIEWS/);
-    assert.match(SHARE_RENDERER_SOURCE, /calendar-view-switcher/);
+    assert.match(
+        SHARE_RENDERER_SOURCE,
+        /renderCalendarViewSwitcher\(CALENDAR_VIEWS/,
+    );
     assert.match(SHARE_RENDERER_SOURCE, /data-calendar-nav/);
     assert.match(SHARE_RENDERER_SOURCE, /shiftActiveDate/);
     assert.match(SHARE_RENDERER_SOURCE, /scrollTimedViewsToCurrentSlot/);

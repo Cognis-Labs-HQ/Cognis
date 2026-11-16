@@ -19,3 +19,7 @@ The router signal bounds tutorial registrations and the page composer. Scrolling
 The walkthrough explains composing once, targeting the message input and then its preview control separately.
 
 Room management is excluded from the path and count until a room header is available.
+
+## Responsive Workspaces
+
+Messages sizes its thread and composer from the visible viewport. Conversations opens the room drawer on phones and tablets; Escape restores focus, choosing a room closes the drawer, and orientation changes retain drafts. Short screens scroll a usable workspace instead of clipping controls.

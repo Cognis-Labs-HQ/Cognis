@@ -763,4 +763,5 @@
   <string name="ui.tutorial.admin.status.file.integrity.title">Dateiintegrität</string>
   <string name="ui.tutorial.admin.status.file.integrity.body">Vergleichen Sie hier die Dateiprüfungen. Fehlende oder geänderte Dateien können erklären, warum eine Komponente nicht geladen wird.</string>
   <string name="ui.reuse.layout_keyboard">Mit Pfeiltasten verschieben; zum Ändern der Größe Umschalttaste halten</string>
+  <string name="ui.reuse.date">Datum</string>
 </resources>

@@ -57,3 +57,7 @@ Messages menyiapkan daftar ruang, terjemahan, dan katalog emoji setelah masuk te
 ## Penggunaan Emoji Terpisah
 
 Pemilih reaksi Messages yang dapat digunakan kembali mencatat frekuensi emoji secara terpisah dari perubahan reaksi. Hanya permintaan reaksi pesan yang menyertakan keadaan aktif akhir. Kegagalan pencatatan penggunaan dicatat tanpa menghalangi reaksi yang dipilih atau fungsi pembaruannya.
+
+## Ruang Kerja Responsif
+
+Pesan menyesuaikan utas dan kolom penulisan dengan area layar yang terlihat. Percakapan membuka daftar ruang pada ponsel dan tablet. Escape mengembalikan fokus, pemilihan menutup daftar, dan perubahan orientasi mempertahankan draf. Layar pendek menggulir ruang kerja yang dapat digunakan alih-alih memotong kontrol.

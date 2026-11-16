@@ -199,7 +199,7 @@
   <string name="gateway.calendar.tutorial.calendar.calendars.title">Kalender</string>
   <string name="gateway.calendar.tutorial.calendar.calendars.body">Wählen Sie einen Kalender und prüfen Sie seine Sichtbarkeit vor dem Anlegen eines Termins.</string>
   <string name="gateway.calendar.tutorial.calendar.calendar.views.title">Kalenderansichten</string>
-  <string name="gateway.calendar.tutorial.calendar.calendar.views.body">Wechseln Sie Ansichten und Zeiträume, um das gewünschte Datum zu finden.</string>
+  <string name="gateway.calendar.tutorial.calendar.calendar.views.body">Wähle Tag, Woche, Monat oder Jahr. Auf Telefonen zeigen Tag, Woche und Monat eine lesbare Terminliste mit allen Ereignissen und einer Aktion zum Hinzufügen für jedes Datum.</string>
   <string name="gateway.calendar.tutorial.calendar.events.and.invitations.title">Termine und Einladungen</string>
   <string name="gateway.calendar.tutorial.calendar.events.and.invitations.body">Öffnen Sie Termine und prüfen Sie Details, Teilnehmer und Einladungsstatus vor Änderungen.</string>
   <string name="gateway.calendar.tutorial.calendar.navigate.dates.title">Zum passenden Datum</string>

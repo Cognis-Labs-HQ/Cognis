@@ -55,6 +55,13 @@ export async function settleLivePage(browser) {
 export async function startLiveApp(context) {
     const browser = await launchChromium(executable);
     context.after(() => browser.close());
+    // Rendering checks can isolate layout from service-worker cache lifecycle tests.
+    if (process.env.COGNIS_BROWSER_BYPASS_SERVICE_WORKER === "1") {
+        await browser.command("Network.enable");
+        await browser.command("Network.setBypassServiceWorker", {
+            bypass: true,
+        });
+    }
     const credentials = JSON.parse(await readFile(credentialsFile, "utf8"));
     await browser.command("Page.navigate", {
         url: new URL("/login", origin).href,

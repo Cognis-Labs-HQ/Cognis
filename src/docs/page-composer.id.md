@@ -70,3 +70,19 @@ Tutorial ruang kerja menyorot tombol navigasi yang terlihat di layar sempit dan 
 Pada ponsel, merek dan judul halaman berbagi baris pertama header; navigasi dan kontrol akun menempati baris kedua. Subjudul tetap tersedia bagi teknologi bantu, dan layar terkecil menampilkan ikon merek agar judul panjang mendapat ruang. Kontrol bilah alat yang tertutup bergulir di bawah header melekat. Menu tindakan mengambang memakai jarak ringkas dengan sasaran sentuh 44 piksel. Kontrol tutorial memiliki latar buram penuh dan sasaran bergaris jelas; pada layar pendek, penjelasan dapat memakai ruang header tanpa menutupi footer. Teks seluler mengikuti pilihan font dan ukuran pengguna, bukan mengecilkan seluruh halaman.
 
 Jalankan pemeriksaan header dan tutorial bersama dengan `COGNIS_BROWSER_TESTS=1 node --test src/ui/tests/page-composer/*.test.js`. Untuk memeriksa navigasi langsung dan SPA pada halaman bawaan, sediakan instans terisolasi yang berjalan melalui `COGNIS_CORE_BROWSER_URL` dan berkas kredensial JSON (`username`, `password`, `provider`) melalui `COGNIS_BROWSER_CREDENTIALS`, lalu jalankan `COGNIS_BROWSER_TESTS=1 node --test src/ui/tests/integration/core-pages-browser.test.js`. Pengujian mengharapkan akun admin khusus serta gateway bawaan aktif; halaman modul eksternal dikecualikan.
+
+## Ruang Kerja Responsif
+
+Page composer menentukan presentasi. Setiap perender elemen menerima konteks tetap berisi `compact`, `layout`, `drawer`, dan `touch`. Pemilihan memakai lebar dalam kartu yang tersedia, termasuk perubahan akibat bilah samping atau tata letak bersarang. Gunakan `responsive: true` untuk markup berbeda saat presentasi berubah; elemen biasa yang menyimpan keadaan mempertahankan DOM. Gunakan `onResize(presentation)` untuk pembaruan geometri. Kode halaman tidak memerlukan kueri layar atau penangan perubahan ukuran sendiri.
+
+Bilah alat desktop memakai kolom bersama yang dibatasi agar konten memperoleh ruang yang cukup. Kolom mengikuti ukuran teks pilihan; ponsel dan tablet memakai panel Composer.
+
+Nilai `layout` bersama adalah `compact` (hingga 640px), `medium` (hingga 900px), dan `regular`, berdasarkan lebar dalam kartu. Tampilan padat seperti Kalender memakai agenda pada kedua presentasi terbatas.
+
+Atribut gaya `data-composer-layout`, `data-composer-drawer`, dan `data-composer-touch` dikelola composer untuk tata letak dan masukan. Komposisi biasa maupun bersarang menerima konteks yang sama. Composer mengamati konten dan kartu, memulihkan nilai formulir, serta melepaskan pengamat dan penangan peristiwa saat halaman berakhir.
+
+Halaman composer tetap dengan satu elemen dapat memakai `fillViewport: true`. Kepala halaman, kaki halaman, dok tindakan, fon pilihan, dan perubahan area layar terlihat menentukan ruang tersedia. Tinggi minimum 16rem menjaga area tetap berguna dan dapat digulir. Pemilik halaman dapat memakai `openToolbar(trigger)` dan `closeToolbar()` dengan `showToolbarToggle: false` untuk navigasi sendiri. Pengamat dan penangan peristiwa mengikuti masa aktif halaman.
+
+Perubahan tata letak memberi notifikasi melalui `onResize`; `onRender` memasang perilaku pada konten yang dihasilkan. Perubahan tata letak saja mempertahankan pengikatan kontrol yang tidak berubah. Penyegaran konten eksplisit memasang elemen yang diminta satu kali.
+
+Untuk memeriksa tampilan pada instans berjalan yang terisolasi, atur `COGNIS_BROWSER_TESTS=1`, `COGNIS_CORE_BROWSER_URL`, dan `COGNIS_BROWSER_CREDENTIALS`. Opsi `COGNIS_BROWSER_BYPASS_SERVICE_WORKER=1` memisahkan perenderan dari cache service worker; perilaku luring dan PWA memerlukan pemeriksaan tersendiri.

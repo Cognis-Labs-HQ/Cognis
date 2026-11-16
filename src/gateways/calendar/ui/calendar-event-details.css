@@ -191,73 +191,77 @@
     align-items: flex-start;
 }
 
-@media (max-width: 900px) {
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
     .calendar-timeslot-row {
-        grid-template-columns: 4.5rem 1fr;
-    }
+    grid-template-columns: 4.5rem 1fr;
 }
 
-@media (max-width: 700px) {
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
     .calendar-view-canvas {
-        overflow-x: auto;
-        overscroll-behavior-x: contain;
-    }
-
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+}
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
     .calendar-month-table {
-        border-spacing: 0.18rem;
-        min-width: 32rem;
-    }
-
-    .calendar-month-table td {
-        padding: 2px;
-    }
-
-    .calendar-month-day header {
-        flex-wrap: wrap;
-        justify-content: center;
-        gap: 4px;
-    }
-
-    .calendar-month-day :is(.calendar-day-jump, .calendar-all-day-create),
+    border-spacing: 0.18rem;
+    min-width: 32rem;
+}
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
+    .calendar-month-table
+    td {
+    padding: 2px;
+}
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
+    .calendar-month-day
+    header {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+}
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
+    .calendar-month-day
+    :is(.calendar-day-jump, .calendar-all-day-create),
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
     .calendar-week-jump {
-        min-width: 44px;
-        min-height: 44px;
-    }
-
+    min-width: 44px;
+    min-height: 44px;
+}
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
     .calendar-year-grid {
-        grid-template-columns: minmax(0, 1fr);
-    }
-
-    .calendar-month-table th {
-        padding-inline: 0.08rem;
-    }
-
+    grid-template-columns: minmax(0, 1fr);
+}
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
+    .calendar-month-table
+    th {
+    padding-inline: 0.08rem;
+}
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
     .calendar-month-header-day {
-        font-size: 0.68rem;
-        white-space: nowrap;
-        line-height: 1.1;
-    }
-
+    font-size: 0.68rem;
+    white-space: nowrap;
+    line-height: 1.1;
+}
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
     .calendar-week-view {
-        --calendar-week-axis-width: 4.4rem;
-        min-width: 36rem;
-    }
-
+    --calendar-week-axis-width: 4.4rem;
+    min-width: 36rem;
+}
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
     .calendar-week-day-header {
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        gap: 0.08rem;
-        padding: 0.35rem 0.12rem;
-        min-width: 2.3rem;
-    }
-
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 0.08rem;
+    padding: 0.35rem 0.12rem;
+    min-width: 2.3rem;
+}
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
     .calendar-week-day-name,
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
     .calendar-week-day-date {
-        font-size: 0.7rem;
-        line-height: 1.1;
-        white-space: nowrap;
-    }
+    font-size: 0.7rem;
+    line-height: 1.1;
+    white-space: nowrap;
 }
 
 .calendar-timeslot-table,

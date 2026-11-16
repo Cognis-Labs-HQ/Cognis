@@ -89,13 +89,23 @@ test(
                             "Error code fits one line",
                         );
                     }
+                    if (path === "/calendar") {
+                        const presentation = await browser.evaluate(
+                            `({layout:document.querySelector('[data-composer-element="calendar-view"]').dataset.composerLayout,agenda:Boolean(document.querySelector('.calendar-agenda'))})`,
+                        );
+                        assert.equal(
+                            presentation.agenda,
+                            presentation.layout !== "regular",
+                            "Calendar follows the Composer presentation",
+                        );
+                    }
                     if (path === "/calendar" && width <= 640) {
                         const buttons = await browser.evaluate(
-                            `Array.from(document.querySelectorAll('.calendar-month-day .calendar-day-jump,.calendar-month-day .calendar-all-day-create'),element=>({width:element.getBoundingClientRect().width,height:element.getBoundingClientRect().height}))`,
+                            `Array.from(document.querySelectorAll('.calendar-agenda [data-timeslot-add]'),element=>({width:element.getBoundingClientRect().width,height:element.getBoundingClientRect().height}))`,
                         );
                         assert.ok(
                             buttons.length > 0,
-                            "Month controls are rendered",
+                            "Agenda creation controls are rendered",
                         );
                         for (const button of buttons)
                             assert.ok(

@@ -83,7 +83,7 @@
   <string name="module.social.messages.decline_call">Decline call</string>
   <string name="module.social.messages.tutorial.messages.title">Messaging Guide</string>
   <string name="module.social.messages.tutorial.messages.rooms.title">Rooms</string>
-  <string name="module.social.messages.tutorial.messages.rooms.body">Select a room or start a new one from the sidebar.</string>
+  <string name="module.social.messages.tutorial.messages.rooms.body">Select a room or start a new conversation from the sidebar. On phones and tablets, open Conversations above the thread to choose a room.</string>
   <string name="module.social.messages.tutorial.messages.room.history.title">Room History</string>
   <string name="module.social.messages.tutorial.messages.room.history.body">Read the room history and check the current participants and pending requests.</string>
   <string name="module.social.messages.tutorial.messages.compose.and.preview.title">Compose And Preview</string>
@@ -96,4 +96,6 @@
   <string name="module.social.messages.tutorial.messages.preview.message.body">Switch to Preview to check formatting, links and attached content. Return to Compose to make corrections.</string>
   <string name="module.social.messages.tutorial.messages.manage.room.title">Manage The Room</string>
   <string name="module.social.messages.tutorial.messages.manage.room.body">The room header identifies the room and its participants. Review its available actions before changing membership or leaving.</string>
+  <string name="module.social.messages.conversations">Conversations</string>
+  <string name="module.social.messages.choose_conversation">Choose a conversation to read and send messages.</string>
 </resources>

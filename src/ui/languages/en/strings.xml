@@ -763,4 +763,5 @@
   <string name="ui.tutorial.admin.status.file.integrity.title">File Integrity</string>
   <string name="ui.tutorial.admin.status.file.integrity.body">Compare file-check results here. Missing or changed files can explain why a component fails to load.</string>
   <string name="ui.reuse.layout_keyboard">Use Arrow Keys to Move; Hold Shift to Resize</string>
+  <string name="ui.reuse.date">Date</string>
 </resources>

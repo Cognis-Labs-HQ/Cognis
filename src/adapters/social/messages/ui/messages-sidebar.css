@@ -153,3 +153,15 @@ button.messages-sidebar-template-load-btn:hover:not(:disabled):not(
 .messages-sidebar-menu-btn:hover {
     filter: brightness(1.1);
 }
+
+[data-composer-touch="true"]
+    .messages-sidebar-template-list
+    .messages-sidebar-template-edit-btn,
+[data-composer-touch="true"]
+    .messages-sidebar-template-list
+    .messages-sidebar-template-delete-btn {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+}

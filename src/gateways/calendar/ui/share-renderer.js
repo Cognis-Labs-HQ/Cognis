@@ -1,3 +1,4 @@
+import { renderCalendarViewSwitcher } from "./calendar-view-controls.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
@@ -237,6 +238,27 @@ export async function mount(
         }
     };
 
+    let presentation;
+    root.addEventListener(
+        "change",
+        (event) => {
+            const dateInput = event.target.closest("[data-calendar-date]");
+            if (dateInput) {
+                const date = new Date(dateInput.value + "T12:00:00");
+                if (Number.isFinite(date.getTime())) {
+                    activeDate = date;
+                    renderCalendar();
+                }
+                return;
+            }
+            const select = event.target.closest("[data-calendar-view-select]");
+            if (!select || !CALENDAR_VIEWS.includes(select.value)) return;
+            selectedView = select.value;
+            renderCalendar();
+        },
+        { signal },
+    );
+
     function renderCalendar() {
         const sharedCalendar = root.querySelector(
             `[data-shared-calendar-id="${CSS.escape(calendarId)}"]`,
@@ -256,6 +278,13 @@ export async function mount(
                     button.getAttribute("data-calendar-view") === selectedView,
                 );
             });
+        const viewSelect = sharedCalendar.querySelector(
+            "[data-calendar-view-select]",
+        );
+        if (viewSelect) viewSelect.value = selectedView;
+        const dateInput = sharedCalendar.querySelector("[data-calendar-date]");
+        if (dateInput)
+            dateInput.value = toDateTimeLocalValue(activeDate).slice(0, 10);
         const canvas = sharedCalendar.querySelector(".calendar-view-canvas");
         if (canvas instanceof HTMLElement) {
             canvas.innerHTML = renderCalendarView(
@@ -263,6 +292,11 @@ export async function mount(
                 selectedView,
                 activeDate,
                 i18n,
+                null,
+                {
+                    compact: presentation.layout !== "regular",
+                    canCreate: canWrite,
+                },
             );
         }
         requestAnimationFrame(scrollTimedViewsToCurrentSlot);
@@ -312,7 +346,10 @@ export async function mount(
                 min: [1, 3],
                 max: ["fill", "fill"],
             },
-            render: () => `<section class="calendar-section shared-calendar" data-shared-calendar-id="${escapeHtml(calendarId)}">
+            responsive: true,
+            render: (context) => {
+                presentation = context;
+                return `<section class="calendar-section shared-calendar" data-shared-calendar-id="${escapeHtml(calendarId)}">
                 <h2 class="shared-calendar-title">${escapeHtml(calendar.name || i18n.t("gateway.calendar.page_title"))}</h2>
                 <header class="calendar-view-header">
                     <div class="calendar-view-nav">
@@ -321,12 +358,11 @@ export async function mount(
                         <button type="button" data-calendar-nav="next" aria-label="${escapeHtml(i18n.t("gateway.calendar.next"))}">&gt;</button>
                         <span class="calendar-nav-month-label">${escapeHtml(periodLabel)}</span>
                     </div>
-                    <div class="calendar-view-switcher">
-                        ${CALENDAR_VIEWS.map((view) => `<button type="button" data-calendar-view="${view}" class="${selectedView === view ? "active" : ""}">${escapeHtml(i18n.t(`gateway.calendar.view_${view}`))}</button>`).join("")}
-                    </div>
+                    ${renderCalendarViewSwitcher(CALENDAR_VIEWS, selectedView, i18n, activeDate)}
                 </header>
-                <div class="calendar-view-canvas">${renderCalendarView(events, selectedView, activeDate, i18n)}</div>
-            </section>`,
+                <div class="calendar-view-canvas">${renderCalendarView(events, selectedView, activeDate, i18n, null, { compact: presentation.layout !== "regular", canCreate: canWrite })}</div>
+            </section>`;
+            },
         };
     }
 

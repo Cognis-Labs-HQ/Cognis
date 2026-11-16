@@ -254,14 +254,6 @@ test("messages reactions and receipts include advanced interaction safeguards", 
         /\.messages-message-status--read[\s\S]*flex-direction:\s*row;/,
     );
     assert.match(
-        messagesCssSource,
-        /\.messages-page \.main-window--with-toolbar\s*\{[\s\S]*height:\s*min\(100%,\s*calc\(100dvh - 176px\)\);/,
-    );
-    assert.match(
-        messagesCssSource,
-        /@media \(max-width:\s*900px\)\s*\{[\s\S]*\.messages-page \.main-window--with-toolbar\s*\{[\s\S]*height:\s*min\(100%,\s*calc\(100dvh - 130px\)\);/,
-    );
-    assert.match(
         appSource,
         /function statusBadgeSvgMarkup\(includeDeliveredTick = false\)/,
     );

@@ -47,7 +47,7 @@ import {
 import { resolveMessageTemplateVariables } from "./message-templates.js";
 import { createMessageSender } from "./send-message.js";
 import { createMessagesRoomState } from "./room-state.js";
-import { renderRoomList } from "./room-render.js";
+import { renderRoomList, renderConversationPrompt } from "./room-render.js";
 import { activateRoomAction, resolveRoomActions } from "./flows.js";
 import {
     LAST_OPENED_ROOM_KEY,
@@ -316,9 +316,10 @@ export async function mount(root, { signal } = {}) {
             gridSize: { default: [12, 8], min: [4, 4], max: "full" },
             render: () =>
                 `<section class="messages-thread">
+          <div class="messages-mobile-navigation"><button type="button" class="messages-room-picker btn-neutral" aria-haspopup="dialog">${escapeHtml(i18n.t("module.social.messages.conversations"))}</button></div>
           <div id="messages-thread-header-slot"></div>
           <div id="messages-request-banner-slot"></div>
-          <div class="messages-thread-list" id="messages-thread-list"></div>
+          <div class="messages-thread-list" id="messages-thread-list">${roomState.getSelectedRoomId() ? "" : renderConversationPrompt(i18n)}</div>
           <div class="messages-typing-status" id="messages-typing-status"></div>
           ${messageFormBuilder.render()}
         </section>`,
@@ -737,7 +738,9 @@ export async function mount(root, { signal } = {}) {
         const roomsList = document.getElementById("messages-rooms-list");
         if (roomsList) void hydrateProfileAvatars(roomsList);
         roomsList?.addEventListener("click", async (clickEvent) => {
-            const item = clickEvent.target.closest("[data-room-id]");
+            const item = clickEvent.target
+                .closest(".messages-room-select")
+                ?.closest("[data-room-id]");
             if (!(item instanceof HTMLElement)) return;
             const roomId = item.getAttribute("data-room-id");
             if (!roomId) return;
@@ -749,7 +752,16 @@ export async function mount(root, { signal } = {}) {
                 .forEach((activeItem) =>
                     activeItem.classList.remove("messages-room--active"),
                 );
+            roomsList
+                .querySelectorAll(".messages-room-select")
+                .forEach((button) =>
+                    button.setAttribute(
+                        "aria-pressed",
+                        String(item.contains(button)),
+                    ),
+                );
             item.classList.add("messages-room--active");
+            composer.closeToolbar();
             history.pushState(
                 {},
                 "",
@@ -837,6 +849,9 @@ export async function mount(root, { signal } = {}) {
         tutorials: guides,
         signal,
         allowCustomization: false,
+        fillViewport: true,
+        toolbarScrollable: true,
+        showToolbarToggle: false,
         elements,
         preferenceKey: "messages-layout",
         i18n,
@@ -855,6 +870,14 @@ export async function mount(root, { signal } = {}) {
     });
 
     await composer.init();
+    root.addEventListener(
+        "click",
+        (event) => {
+            const picker = event.target.closest(".messages-room-picker");
+            if (picker) composer.openToolbar(picker);
+        },
+        { signal },
+    );
     await activateRoomAction({ id: "page:mounted" }, null, { signal });
     pageReady = true;
     if (refreshAfterKeyringUnlock) {

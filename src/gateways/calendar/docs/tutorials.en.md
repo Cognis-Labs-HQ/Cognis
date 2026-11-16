@@ -15,3 +15,7 @@ Visit a page below to start its unseen guide. Use the ? beside the page title to
 Guides register through the public `ui:tutorials` capability with component-owned definitions, catalogs, targets and lifetime signals. Page matching, visible sections and access requirements determine availability. Removal of the component releases its guides. Shared presentation and completion behavior are documented in the [host tutorial contract](/docs/tutorials).
 
 Date navigation highlights the visible date controls even with no events. Event planning highlights one actual creation slot rather than repeating the whole calendar.
+
+## Responsive Workspaces
+
+Narrow Calendar panels show an agenda containing every event and the selected date, with a compact view selector and date jump. Wide panels retain calendar grids. The date field reaches empty dates without scrolling through a month. Shared calendars use the same presentations and enforce read-only access.

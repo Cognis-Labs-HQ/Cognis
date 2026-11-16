@@ -1,3 +1,7 @@
+import {
+    composerPresentation,
+    applyComposerPresentation,
+} from "./presentation.js";
 /**
  * Rendering helpers for page composer grid and sub-page views.
  *
@@ -41,8 +45,15 @@ export function createComposerRenderer({
     loadPersistedFormState,
     bindFormDraftPersistence,
 }) {
-    const { parkPreservedElementNodes, renderElementContent, refreshElements } =
-        createDomPreservation(state);
+    const {
+        parkPreservedElementNodes,
+        renderElementContent,
+        refreshElements: refreshElementMarkup,
+        consumeElementRender,
+        syncElementPresentation,
+    } = createDomPreservation(state, {
+        redraw: () => renderGridComposer({ layoutOnly: true }),
+    });
 
     const {
         computeViewPlacements,
@@ -81,6 +92,10 @@ export function createComposerRenderer({
     }
     function applySectionGridMetrics(section, placements) {
         if (state.frameless) return 1;
+        section.classList.toggle(
+            "composer-view-grid--viewport",
+            state.fillViewport === true,
+        );
         const compact = !state.editing && isCompactComposer(state.contentGrid);
         section.classList.toggle("composer-view-grid--compact", compact);
         const scale = getPlacementScale(placements);
@@ -97,6 +112,11 @@ export function createComposerRenderer({
     }
     function applyCardPlacement(card, placement, scale) {
         if (state.frameless) return;
+        if (state.fillViewport) {
+            card.style.gridColumn = "1 / -1";
+            card.style.gridRow = "1";
+            return;
+        }
         if (!state.editing && isCompactComposer(state.contentGrid)) {
             card.style.gridColumn = "1 / -1";
             card.style.gridRow = "auto";
@@ -133,7 +153,11 @@ export function createComposerRenderer({
             if (!card) {
                 card = document.createElement("section");
                 card.dataset.composerElement = placement.id;
+                card.className = isMissing
+                    ? "widget-card widget-card--missing"
+                    : "widget-card";
                 section.appendChild(card);
+                applyCardPlacement(card, placement, scale);
                 if (isMissing) {
                     card.innerHTML = renderMissingElementContent(placement.id);
                 } else {
@@ -144,6 +168,7 @@ export function createComposerRenderer({
                 ? "widget-card widget-card--missing"
                 : "widget-card";
             applyCardPlacement(card, placement, scale);
+            if (element) syncElementPresentation(card, element);
             const position = placements.indexOf(placement);
             if (section.children[position] !== card) {
                 section.insertBefore(card, section.children[position] ?? null);
@@ -172,7 +197,12 @@ export function createComposerRenderer({
             section.appendChild(cell);
         }
     }
-    function renderGridComposer() {
+    function renderGridComposer({ layoutOnly = false } = {}) {
+        applyComposerPresentation(
+            state.root,
+            state.contentGrid,
+            composerPresentation(state.contentGrid),
+        );
         if (!document.contains(state.contentGrid)) return;
         document.getElementById("composer-elements-panel")?.remove();
         if (!state.layout || (state.layout.order && !state.layout.placements)) {
@@ -225,13 +255,31 @@ export function createComposerRenderer({
         syncEditToggle();
         restoreFormState(state.contentGrid, gridFormSnapshot);
         bindFormDraftPersistence(state.contentGrid, state.preferenceKey);
-        const renderedElementIds = visiblePlacements.map((p) => p.id);
-        for (const id of renderedElementIds) {
+        let contentRendered = false;
+        for (const id of visiblePlacements.map((placement) => placement.id)) {
             const element = state.elements.find((entry) => entry.id === id);
-            element?.onRender?.();
+            const host = state.contentGrid.querySelector(
+                `[data-composer-element="${CSS.escape(id)}"]`,
+            );
+            const mounted = Boolean(host && consumeElementRender(host));
+            contentRendered ||= mounted;
+            if (!layoutOnly || mounted) element?.onRender?.();
+        }
+        if (!layoutOnly || contentRendered) state.onRender?.();
+    }
+
+    function refreshElements(elementIds) {
+        refreshElementMarkup(elementIds);
+        for (const id of elementIds) {
+            const element = state.elements.find((entry) => entry.id === id);
+            const host = state.contentGrid.querySelector(
+                `[data-composer-element="${CSS.escape(id)}"]`,
+            );
+            if (host && consumeElementRender(host)) element?.onRender?.();
         }
         state.onRender?.();
     }
+
     function getEffectiveLayout() {
         const allIds = state.elements.map((e) => e.id);
         const pinnedIds = state.elements
@@ -293,7 +341,7 @@ export function createComposerRenderer({
                         : "";
                     return `<div class="content-section${activeClass}"${hiddenAttr} id="${element.id}">${headingHtml}<div class="sub-composer-inner"></div></div>`;
                 }
-                return `<div class="content-section${activeClass}"${hiddenAttr} id="${element.id}"><section class="widget-card${editingClass}" data-composer-element="${element.id}"${dragAttrs}>${dragHandle}${focusButton}${element.render()}</section></div>`;
+                return `<div class="content-section${activeClass}"${hiddenAttr} id="${element.id}"><section class="widget-card${editingClass}" data-composer-element="${element.id}"${dragAttrs}>${dragHandle}${focusButton}${element.render(composerPresentation(state.contentGrid))}</section></div>`;
             })
             .join("");
     }
@@ -338,6 +386,15 @@ export function createComposerRenderer({
         for (const id of effectiveLayout.order) {
             if (effectiveLayout.hidden.includes(id)) continue;
             const element = state.elements.find((entry) => entry.id === id);
+            const host = state.contentGrid.querySelector(
+                `[data-composer-element="${CSS.escape(id)}"]`,
+            );
+            if (host)
+                applyComposerPresentation(
+                    state.root,
+                    host,
+                    composerPresentation(host),
+                );
             element?.onRender?.();
         }
         state.onRender?.();

@@ -153,3 +153,19 @@ The workspace tutorial highlights the visible navigation toggle on narrow screen
 On phones, branding and the page title share the first header row; navigation and account controls occupy the second. The subtitle remains available to assistive technology, and the smallest screens show the brand icon to leave room for long titles. Closed toolbar controls scroll beneath the sticky header. Floating action menus use compact spacing while retaining 44-pixel touch targets. Tutorial controls have an opaque background and a clearly outlined target; short screens allow the explanation to use header space while preserving the footer boundary. Mobile text follows the selected font and size rather than shrinking the whole page.
 
 Run the shared shell and tutorial checks with `COGNIS_BROWSER_TESTS=1 node --test src/ui/tests/page-composer/*.test.js`. To check built-in pages through direct and SPA navigation, provide an isolated running instance through `COGNIS_CORE_BROWSER_URL` and a JSON credentials file (`username`, `password`, `provider`) through `COGNIS_BROWSER_CREDENTIALS`, then run `COGNIS_BROWSER_TESTS=1 node --test src/ui/tests/integration/core-pages-browser.test.js`. This suite expects a dedicated admin account and enabled built-in gateways; it excludes external module pages.
+
+## Responsive Workspaces
+
+The page composer owns presentation selection. Every element renderer receives an immutable context with `compact`, `layout`, `drawer` and `touch`. Selection uses the card’s available inner width, including changes caused by sidebars or nested layouts. Declare `responsive: true` when an element needs different markup at a presentation boundary; ordinary stateful elements keep their DOM. Use `onResize(presentation)` for geometry updates. Page code does not need viewport queries or resize listeners.
+
+Desktop toolbars use a bounded shared column so content retains useful space. The column respects the selected text size; phones and tablets use the Composer drawer.
+
+The shared `layout` values are `compact` (up to 640px), `medium` (up to 900px), and `regular`, measured inside the card. Dense surfaces such as Calendar use the agenda in both constrained presentations.
+
+Composer-owned `data-composer-layout`, `data-composer-drawer` and `data-composer-touch` styling hooks cover layout and input changes. Both standard and nested composition receive the same context. The composer observes content and cards, restores form state, and releases observers and listeners when the page ends.
+
+Single fixed composer pages can use `fillViewport: true`. Header, footer, action dock, selected font and visual viewport changes determine available space. A minimum height of 16rem keeps short screens scrollable. Owners may use `openToolbar(trigger)` and `closeToolbar()` with `showToolbarToggle: false` for their own navigation control. Observers and listeners follow page lifetime.
+
+Layout updates notify `onResize`; `onRender` attaches behavior to generated content. Layout-only changes retain the bindings of unchanged controls. Explicit content refreshes mount the requested elements once.
+
+For live viewport checks against an isolated instance, set `COGNIS_BROWSER_TESTS=1`, `COGNIS_CORE_BROWSER_URL` and `COGNIS_BROWSER_CREDENTIALS`. The optional `COGNIS_BROWSER_BYPASS_SERVICE_WORKER=1` isolates rendering from the service-worker cache; offline and PWA behavior require separate checks.

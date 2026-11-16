@@ -763,4 +763,5 @@
   <string name="ui.tutorial.admin.status.file.integrity.title">Integritas Berkas</string>
   <string name="ui.tutorial.admin.status.file.integrity.body">Bandingkan hasil pemeriksaan berkas di sini. Berkas yang hilang atau berubah dapat menjelaskan kegagalan pemuatan komponen.</string>
   <string name="ui.reuse.layout_keyboard">Gunakan tombol panah untuk memindahkan; tahan Shift untuk mengubah ukuran</string>
+  <string name="ui.reuse.date">Tanggal</string>
 </resources>

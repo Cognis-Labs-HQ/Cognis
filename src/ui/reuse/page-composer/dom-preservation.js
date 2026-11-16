@@ -1,3 +1,7 @@
+import {
+    composerPresentation,
+    applyComposerPresentation,
+} from "./presentation.js";
 /**
  * Preserves stateful element DOM nodes while the page composer rerenders.
  *
@@ -9,9 +13,53 @@
  *   preservation.parkPreservedElementNodes();
  *
  * @param {object} state - Mutable page composer rendering state.
- * @returns {{ parkPreservedElementNodes: Function, refreshElements: Function }}
+ * @returns {{ parkPreservedElementNodes: Function, renderElementContent: Function, refreshElements: Function, syncElementPresentation: Function, consumeElementRender: Function }}
  */
-export function createDomPreservation(state) {
+export function createDomPreservation(state, { redraw } = {}) {
+    const renderedLayouts = new WeakMap();
+    const pendingMounts = new WeakSet();
+    const tracked = new WeakMap();
+    let observer;
+    let frame;
+    function trackPresentation(host, element) {
+        if (state.signal.aborted) return;
+        if (!observer) {
+            const window = host.ownerDocument.defaultView;
+            observer = new window.ResizeObserver((entries) => {
+                for (const { target } of entries) {
+                    if (!target.isConnected) {
+                        observer.unobserve(target);
+                        tracked.delete(target);
+                        continue;
+                    }
+                    const current = tracked.get(target);
+                    if (!current) continue;
+                    const presentation = composerPresentation(target);
+                    applyComposerPresentation(state.root, target, presentation);
+                    if (
+                        current.responsive &&
+                        renderedLayouts.get(target) !== presentation.layout
+                    ) {
+                        if (frame === undefined)
+                            frame = window.requestAnimationFrame(() => {
+                                frame = undefined;
+                                if (!state.signal.aborted) redraw();
+                            });
+                    } else current.onResize?.(presentation);
+                }
+            });
+            state.signal.addEventListener(
+                "abort",
+                () => {
+                    observer.disconnect();
+                    window.cancelAnimationFrame(frame);
+                },
+                { once: true },
+            );
+        }
+        tracked.set(host, element);
+        observer.observe(host);
+    }
     const MEDIA_PRESERVE_SELECTOR =
         'iframe,img,video,audio,canvas,object,embed,[data-composer-preserve="true"]';
 
@@ -73,13 +121,18 @@ export function createDomPreservation(state) {
             });
     }
     function renderElementContent(host, element) {
+        const presentation = composerPresentation(host);
+        applyComposerPresentation(state.root, host, presentation);
+        renderedLayouts.set(host, presentation.layout);
+        pendingMounts.add(host);
+        trackPresentation(host, element);
         const preservedNodes = getPreservedElementNodes();
         let preserved = preservedNodes.get(element.id);
         if (preserved) {
             host.replaceChildren(preserved);
             return;
         }
-        const html = element.render();
+        const html = element.render(presentation);
         if (shouldPreserveRenderedHtml(element, html)) {
             preserved = document.createElement("div");
             preserved.className = "composer-preserved-element-content";
@@ -103,7 +156,24 @@ export function createDomPreservation(state) {
             }
         }
     }
+    function syncElementPresentation(host, element) {
+        const presentation = composerPresentation(host);
+        applyComposerPresentation(state.root, host, presentation);
+        if (
+            element.responsive &&
+            renderedLayouts.get(host) !== presentation.layout
+        )
+            renderElementContent(host, element);
+        element.onResize?.(presentation);
+    }
+    function consumeElementRender(host) {
+        const rendered = pendingMounts.has(host);
+        pendingMounts.delete(host);
+        return rendered;
+    }
     return {
+        consumeElementRender,
+        syncElementPresentation,
         parkPreservedElementNodes,
         renderElementContent,
         refreshElements,

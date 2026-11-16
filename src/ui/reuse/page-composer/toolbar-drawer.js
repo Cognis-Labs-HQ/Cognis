@@ -1,3 +1,4 @@
+import { COMPOSER_DRAWER_BREAKPOINT } from "./responsive-layout.js";
 /**
  * Owns responsive toolbar visibility, accessibility, sizing, and cleanup.
  * Public export: mountComposerToolbarDrawer creates a page-scoped drawer.
@@ -5,7 +6,7 @@
  * const drawer = mountComposerToolbarDrawer({ root, i18n, signal });
  * drawer?.closeMobileDrawerIfNeeded();
  * @param {object} options - Composer root, translations, and lifecycle options.
- * @returns {{closeMobileDrawerIfNeeded(): void, destroy(): void}|null} Drawer lifecycle.
+ * @returns {{open(trigger?: HTMLElement): void, closeMobileDrawerIfNeeded(): void, destroy(): void}|null} Drawer lifecycle.
  */
 import { beginDrawerSession } from "../drawer-session.js";
 import { renderToolbarToggleIcon } from "./toolbar-icons.js";
@@ -16,7 +17,8 @@ export function mountComposerToolbarDrawer({
     root,
     i18n,
     toolbarScrollable = false,
-    breakpoint = 900,
+    showToggle = true,
+    breakpoint = COMPOSER_DRAWER_BREAKPOINT,
     signal,
     log,
 }) {
@@ -72,11 +74,11 @@ export function mountComposerToolbarDrawer({
     let session = null;
     let layoutObserver = null;
 
-    function setOpen(nextOpen, { restoreFocus = true } = {}) {
+    function setOpen(nextOpen, { restoreFocus = true, trigger = toggle } = {}) {
         if (destroyed) return;
         const wasOpen = open;
         open = mobileMedia.matches && Boolean(nextOpen);
-        toggle.hidden = !mobileMedia.matches;
+        toggle.hidden = !showToggle || !mobileMedia.matches;
         if (!open) {
             session?.({ restoreFocus });
             session = null;
@@ -115,7 +117,7 @@ export function mountComposerToolbarDrawer({
         if (open && !wasOpen) {
             session = beginDrawerSession({
                 panel: toolbar,
-                trigger: toggle,
+                trigger,
                 backdrop,
                 signal: lifetime.signal,
                 onDismiss: () => setOpen(false),
@@ -218,7 +220,11 @@ export function mountComposerToolbarDrawer({
         syncToolbarPosition();
     }
     setOpen(false, { restoreFocus: false });
-    const controller = { closeMobileDrawerIfNeeded, destroy };
+    const controller = {
+        open: (trigger) => setOpen(true, { trigger }),
+        closeMobileDrawerIfNeeded,
+        destroy,
+    };
     mountedToolbars.set(toolbar, controller);
     return controller;
 }

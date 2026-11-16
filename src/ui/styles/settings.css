@@ -252,11 +252,9 @@ body[data-theme="light"] .email-badge-unverified {
     flex: 0 0 auto;
 }
 
-@media (max-width: 640px) {
-    .email-add-row .btn-confirm,
-    .email-verify-row .btn-confirm {
-        width: 100%;
-    }
+[data-composer-layout="compact"] .email-add-row .btn-confirm,
+[data-composer-layout="compact"] .email-verify-row .btn-confirm {
+    width: 100%;
 }
 
 .notif-matrix {

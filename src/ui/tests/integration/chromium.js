@@ -99,13 +99,17 @@ export async function launchChromium(executable) {
             throw new Error(
                 `Chromium did not expose its debugging endpoint: ${diagnostics}`,
             );
-        const targets = await (
-            await fetch(`http://127.0.0.1:${port}/json/list`)
-        ).json();
-        socket = new WebSocket(
-            targets.find((target) => target.type === "page")
-                .webSocketDebuggerUrl,
-        );
+        let target;
+        for (let attempt = 0; attempt < 100; attempt++) {
+            const targets = await (
+                await fetch(`http://127.0.0.1:${port}/json/list`)
+            ).json();
+            target = targets.find((candidate) => candidate.type === "page");
+            if (target) break;
+            await delay(50);
+        }
+        if (!target) throw new Error("Chromium did not create a page target.");
+        socket = new WebSocket(target.webSocketDebuggerUrl);
         await new Promise((resolve, reject) => {
             socket.addEventListener("open", resolve, { once: true });
             socket.addEventListener("error", reject, { once: true });

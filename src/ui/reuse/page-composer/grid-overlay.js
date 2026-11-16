@@ -1,3 +1,7 @@
+import {
+    composerPresentation,
+    applyComposerPresentation,
+} from "./presentation.js";
 /**
  * Main grid overlay helpers for page composer edit mode.
  * Export: createGridOverlayHandlers(deps). @param {object} deps @returns {object}
@@ -480,7 +484,9 @@ export function createGridOverlayHandlers({
         if (includeContent) {
             const content = document.createElement("div");
             content.className = "widget-card composer-cell-content";
-            content.innerHTML = el.render();
+            const presentation = composerPresentation(state.contentGrid);
+            applyComposerPresentation(state.root, content, presentation);
+            content.innerHTML = el.render(presentation);
             cell.appendChild(content);
         }
         if (state.editing) {

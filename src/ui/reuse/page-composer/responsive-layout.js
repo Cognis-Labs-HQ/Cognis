@@ -7,10 +7,23 @@
  * @example const visible = stackComposerPlacements(placements, columns);
  */
 
+export const COMPOSER_COMPACT_BREAKPOINT = 640;
+export const COMPOSER_MEDIUM_BREAKPOINT = 900;
+export const COMPOSER_DRAWER_BREAKPOINT = COMPOSER_MEDIUM_BREAKPOINT;
+
+/** @param {number} width Available inner width. @returns {boolean} */
+export function isCompactWidth(width) {
+    return (
+        Number.isFinite(width) &&
+        width > 0 &&
+        width <= COMPOSER_COMPACT_BREAKPOINT
+    );
+}
+
 /** @param {HTMLElement|null} container @returns {boolean} */
 export function isCompactComposer(container) {
     const width = container?.getBoundingClientRect().width;
-    return Number.isFinite(width) && width > 0 && width <= 640;
+    return isCompactWidth(width);
 }
 
 /**

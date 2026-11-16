@@ -1,3 +1,4 @@
+import { renderCalendarAgenda } from "./calendar-agenda.js";
 import { formatDateTime, formatTime } from "/static/reuse/timestamp.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import {
@@ -834,7 +835,49 @@ function renderCalendarView(
     activeDate,
     i18n,
     currentAccountId = null,
+    { compact = false, canCreate = true } = {},
 ) {
+    if (compact && selectedView !== "year") {
+        const start =
+            selectedView === "month"
+                ? startOfMonth(activeDate)
+                : selectedView === "week"
+                  ? startOfWeek(activeDate)
+                  : startOfDay(activeDate);
+        const count =
+            selectedView === "month"
+                ? new Date(
+                      start.getFullYear(),
+                      start.getMonth() + 1,
+                      0,
+                  ).getDate()
+                : selectedView === "week"
+                  ? 7
+                  : 1;
+        const days = Array.from({ length: count }, (_, index) => {
+            const date = addDays(start, index);
+            return {
+                date,
+                events: listEventsInWindow(events, date, addDays(date, 1)),
+            };
+        });
+        return renderCalendarAgenda(
+            days.filter(
+                ({ date, events }) =>
+                    events.length > 0 ||
+                    date.toDateString() ===
+                        startOfDay(activeDate).toDateString(),
+            ),
+            i18n,
+            (event) =>
+                renderEventButton(event, {
+                    showTime: true,
+                    i18n,
+                    currentAccountId,
+                }),
+            { canCreate },
+        );
+    }
     if (selectedView === "day") {
         const dayStart = startOfDay(activeDate);
         const dayEnd = addDays(dayStart, 1);

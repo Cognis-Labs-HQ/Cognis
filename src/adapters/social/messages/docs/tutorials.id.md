@@ -19,3 +19,7 @@ Sinyal router membatasi registrasi tutorial dan komposer halaman. Menggulir memp
 Panduan menjelaskan penulisan sekali, lalu menyorot input pesan dan kontrol pratinjau secara terpisah.
 
 Pengelolaan ruang tidak dimasukkan dalam alur dan jumlah langkah sampai judul ruang tersedia.
+
+## Ruang Kerja Responsif
+
+Pesan menyesuaikan utas dan kolom penulisan dengan area layar yang terlihat. Percakapan membuka daftar ruang pada ponsel dan tablet. Escape mengembalikan fokus, pemilihan menutup daftar, dan perubahan orientasi mempertahankan draf. Layar pendek menggulir ruang kerja yang dapat digunakan alih-alih memotong kontrol.

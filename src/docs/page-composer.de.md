@@ -86,3 +86,19 @@ Die Arbeitsbereichseinführung markiert auf schmalen Bildschirmen die sichtbare 
 Auf Smartphones teilen sich Marke und Seitentitel die erste Kopfzeile; Navigation und Kontosteuerung stehen in der zweiten. Der Untertitel bleibt für Hilfstechnologien verfügbar. Auf den kleinsten Bildschirmen lässt das Markensymbol Platz für lange Titel. Geschlossene Werkzeugleistenschalter scrollen unter der angehefteten Kopfzeile. Schwebende Aktionsmenüs verwenden kompakte Abstände und behalten 44 Pixel große Touchflächen. Tutorialaktionen haben einen deckenden Hintergrund und das Ziel eine deutliche Umrandung. Auf niedrigen Bildschirmen darf die Erklärung den Kopfbereich nutzen, ohne die Fußzeile zu verdecken. Mobiler Text folgt der gewählten Schrift und Größe, statt die gesamte Seite zu verkleinern.
 
 Die gemeinsamen Kopfzeilen- und Tutorialtests laufen mit `COGNIS_BROWSER_TESTS=1 node --test src/ui/tests/page-composer/*.test.js`. Für direkte und SPA-Navigation durch integrierte Seiten benötigt `COGNIS_CORE_BROWSER_URL` eine isolierte laufende Instanz und `COGNIS_BROWSER_CREDENTIALS` eine JSON-Datei mit `username`, `password` und `provider`. Anschließend `COGNIS_BROWSER_TESTS=1 node --test src/ui/tests/integration/core-pages-browser.test.js` ausführen. Die Tests erwarten ein eigenes Administratorkonto und aktivierte integrierte Gateways; Seiten externer Module sind ausgeschlossen.
+
+## Anpassbare Arbeitsflächen
+
+Der Page Composer steuert die Auswahl der Darstellung. Jede Elementfunktion erhält einen unveränderlichen Kontext mit `compact`, `layout`, `drawer` und `touch`. Entscheidend ist die innere Breite der Karte, einschließlich Änderungen durch Seitenleisten oder verschachtelte Layouts. Mit `responsive: true` erhält ein Element bei einem Darstellungswechsel neues Markup; normale zustandsbehaftete Elemente behalten ihren DOM. `onResize(presentation)` dient Geometrieanpassungen. Seitencode benötigt keine eigenen Bildschirmabfragen oder Größenereignisse.
+
+Desktop-Werkzeugleisten verwenden eine begrenzte gemeinsame Spalte, damit für Inhalte genügend Platz bleibt. Die Spalte berücksichtigt die gewählte Textgröße; Telefone und Tablets nutzen die Composer-Seitenleiste.
+
+Die gemeinsamen `layout`-Werte sind `compact` (bis 640px), `medium` (bis 900px) und `regular`, gemessen innerhalb der Karte. Dichte Flächen wie der Kalender nutzen in beiden eingeschränkten Darstellungen die Terminliste.
+
+Die vom Composer verwalteten Attribute `data-composer-layout`, `data-composer-drawer` und `data-composer-touch` steuern Layout und Eingabe. Normale und verschachtelte Komposition erhalten denselben Kontext. Der Composer überwacht Inhalt und Karten, stellt Formularwerte wieder her und entfernt Beobachter und Ereignisbehandlung beim Verlassen der Seite.
+
+Feste Composer-Seiten mit einem Element können `fillViewport: true` verwenden. Kopf- und Fußzeile, Aktionsleiste, gewählte Schrift und sichtbarer Bildschirmausschnitt bestimmen den Platz. Mindestens 16rem erhalten eine nutzbare, scrollbare Fläche. Für eigene Navigation stehen `openToolbar(trigger)` und `closeToolbar()` mit `showToolbarToggle: false` bereit. Beobachter und Ereignisbehandlung folgen der Seitenlebensdauer.
+
+Layoutänderungen melden sich über `onResize`; `onRender` bindet das Verhalten gerenderter Inhalte. Reine Layoutänderungen behalten die Ereignisbindung unveränderter Bedienelemente. Eine ausdrückliche Inhaltsaktualisierung initialisiert die gewählten Elemente einmal.
+
+Für Bildschirmtests mit einer isolierten laufenden Instanz setzt du `COGNIS_BROWSER_TESTS=1`, `COGNIS_CORE_BROWSER_URL` und `COGNIS_BROWSER_CREDENTIALS`. Optional trennt `COGNIS_BROWSER_BYPASS_SERVICE_WORKER=1` die Darstellung vom Service-Worker-Cache; Offline- und PWA-Verhalten erfordern eigene Prüfungen.

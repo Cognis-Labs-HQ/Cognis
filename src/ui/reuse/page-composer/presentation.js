@@ -1,0 +1,65 @@
+import {
+    isCompactWidth,
+    COMPOSER_MEDIUM_BREAKPOINT,
+    COMPOSER_DRAWER_BREAKPOINT,
+} from "./responsive-layout.js";
+/**
+ * Composer-owned presentation context and public styling hooks for element renderers.
+ * @param {HTMLElement} host Rendered card or composition container.
+ * @returns {Readonly<{compact: boolean, layout: string, drawer: boolean, touch: boolean}>} Current presentation.
+ */
+export function composerPresentation(host) {
+    const window = host.ownerDocument.defaultView;
+    const style = window.getComputedStyle(host);
+    const width =
+        host.getBoundingClientRect().width -
+        Number.parseFloat(style.paddingLeft || "0") -
+        Number.parseFloat(style.paddingRight || "0");
+    const compact = isCompactWidth(width);
+    const drawer = window.matchMedia(
+        `(max-width:${COMPOSER_DRAWER_BREAKPOINT}px)`,
+    ).matches;
+    const touch = drawer || window.matchMedia("(pointer:coarse)").matches;
+    return Object.freeze({
+        compact,
+        layout: compact
+            ? "compact"
+            : width <= COMPOSER_MEDIUM_BREAKPOINT
+              ? "medium"
+              : "regular",
+        drawer,
+        touch,
+    });
+}
+
+/** @param {HTMLElement} root Page root. @param {HTMLElement} host Element host. @param {object} presentation Current context. @returns {void} */
+export function applyComposerPresentation(root, host, presentation) {
+    host.dataset.composerLayout = presentation.layout;
+    root.dataset.composerDrawer = String(presentation.drawer);
+    root.dataset.composerTouch = String(presentation.touch);
+}
+
+/** @param {HTMLElement} root Page root. @param {HTMLElement} container Content host. @param {AbortSignal} signal Composer lifetime. @returns {() => void} Cleanup. */
+export function watchComposerPresentation(root, container, signal) {
+    const window = container.ownerDocument.defaultView;
+    const queries = [
+        `(max-width:${COMPOSER_DRAWER_BREAKPOINT}px)`,
+        "(pointer:coarse)",
+    ].map((query) => window.matchMedia(query));
+    const synchronize = () => {
+        for (const host of [
+            container,
+            ...container.querySelectorAll("[data-composer-element]"),
+        ])
+            applyComposerPresentation(root, host, composerPresentation(host));
+    };
+    const dispose = () => {
+        for (const query of queries)
+            query.removeEventListener("change", synchronize);
+        signal.removeEventListener("abort", dispose);
+    };
+    for (const query of queries) query.addEventListener("change", synchronize);
+    signal.addEventListener("abort", dispose, { once: true });
+    synchronize();
+    return dispose;
+}

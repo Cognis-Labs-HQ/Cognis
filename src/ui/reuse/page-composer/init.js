@@ -1,3 +1,5 @@
+import { watchComposerPresentation } from "./presentation.js";
+import { mountViewportLayout } from "./viewport-layout.js";
 /**
  * Page composer orchestration.
  * Export: createPageComposer(root, options).
@@ -18,7 +20,7 @@
  *   pageContext?: { title: string, subtitle: string },
  *   tutorials?: Array<{ owner: string, minRole?: string, definitions: object[], i18n?: object }>,
  *   toolbar?: Array<{ id: string, label: string, render: () => string }>,
- *   toolbarScrollable?: boolean, contentScrolling?: boolean, enableDomParking?: boolean,
+ *   toolbarScrollable?: boolean, showToolbarToggle?: boolean, contentScrolling?: boolean, fillViewport?: boolean, enableDomParking?: boolean,
  *   subNavigation?: Array<{ id: string, label: string, render: () => string }>,
  *   floatingMenu?: Array<{ id: string, label: string, render: () => string }>,
  *   subPageNavigation?: boolean, columns?: number,
@@ -31,7 +33,7 @@
  *   pageManifest?: { features?: { pointerTracking?: boolean } },
  *   signal?: AbortSignal,
  * }} options
- * @returns {{ init(): Promise<void>, refresh(elements: Array): void, refreshElements(elementIds: string[]): void, getFloatingSlot(id: string): HTMLElement|null, showToast(message: string, options?: object): () => void }}
+ * @returns {{ init(): Promise<void>, refresh(elements: Array): void, refreshElements(elementIds: string[]): void, openToolbar(trigger?: HTMLElement): void, closeToolbar(): void, getFloatingSlot(id: string): HTMLElement|null, showToast(message: string, options?: object): () => void }}
  */
 import { apiFetch, configureConnectionRecoveryPrompt } from "../api-client.js";
 import { renderDashboardLayout } from "../../layouts/dashboard-layout.js";
@@ -53,6 +55,7 @@ import {
 import { createPresenceTracker } from "./presence-tracker.js";
 import {
     isCompactComposer,
+    COMPOSER_COMPACT_BREAKPOINT,
     resolveComposerResize,
 } from "./responsive-layout.js";
 import { pageActions } from "../page-actions.js";
@@ -75,7 +78,9 @@ export function createPageComposer(
         tutorials = [],
         toolbar = [],
         toolbarScrollable = false,
+        showToolbarToggle = true,
         contentScrolling = true,
+        fillViewport = false,
         enableDomParking = false,
         subNavigation = [],
         floatingMenu = [],
@@ -125,6 +130,9 @@ export function createPageComposer(
     let editing = false;
     let dragSourceId = null;
     let contentGrid = null;
+    let viewportCleanup;
+    let presentationCleanup;
+    let toolbarController;
     let activeSubPageId = null;
     let panelPosition = null;
     let layoutSnapshot = null;
@@ -149,6 +157,10 @@ export function createPageComposer(
         if (composerDestroyed) return;
         composerDestroyed = true;
         tutorialLifetime.abort();
+        delete root.dataset.composerDrawer;
+        delete root.dataset.composerTouch;
+        viewportCleanup?.();
+        presentationCleanup?.();
         activePresenceTracker?.destroy();
         activePresenceTracker = null;
         resizeObserver?.disconnect();
@@ -165,7 +177,6 @@ export function createPageComposer(
     else signal?.addEventListener("abort", destroy, { once: true });
 
     const UNIT = PAGE_COMPOSER_GRID_UNIT; // grid cell size in pixels
-    const MOBILE_LAYOUT_WIDTH_RECLAIM_BREAKPOINT = 640;
     // Treat narrow grids as compact so single-pane rows expand and avoid
     // visibly wasted horizontal space on small screens.
     const COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS = 10;
@@ -257,8 +268,10 @@ export function createPageComposer(
 
     const composerState = {
         root,
+        signal: tutorialLifetime.signal,
         allowCustomization,
         frameless,
+        fillViewport,
         preferenceKey,
         persistLayoutPreferences,
         subPageNavigation,
@@ -374,7 +387,7 @@ export function createPageComposer(
     renderer = createComposerRenderer({
         state: composerState,
         UNIT,
-        MOBILE_LAYOUT_WIDTH_RECLAIM_BREAKPOINT,
+        MOBILE_LAYOUT_WIDTH_RECLAIM_BREAKPOINT: COMPOSER_COMPACT_BREAKPOINT,
         COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS,
         i18n,
         escapeHtml,
@@ -632,9 +645,23 @@ export function createPageComposer(
 
         const mainWindow = root.querySelector(".main-window");
         contentGrid = root.querySelector(".content-grid");
+        presentationCleanup?.();
+        presentationCleanup = watchComposerPresentation(
+            root,
+            contentGrid,
+            tutorialLifetime.signal,
+        );
         if (columns === 2)
             contentGrid?.classList.add("content-grid--two-column");
         let closeMobileDrawerIfNeeded = () => {};
+        viewportCleanup?.();
+        if (fillViewport) {
+            if (elements.length !== 1 || allowCustomization)
+                throw new Error("viewport_layout_requires_one_fixed_element");
+            viewportCleanup = mountViewportLayout(root, {
+                signal: tutorialLifetime.signal,
+            });
+        }
 
         if (!contentScrolling) {
             root.querySelector(".workspace")?.classList.add(
@@ -656,9 +683,11 @@ export function createPageComposer(
                 root,
                 i18n,
                 toolbarScrollable,
+                showToggle: showToolbarToggle,
                 signal: tutorialLifetime.signal,
                 log: uiCtx.capabilities.get("ui:log"),
             });
+            toolbarController = toolbarDrawer;
             if (toolbarDrawer)
                 closeMobileDrawerIfNeeded =
                     toolbarDrawer.closeMobileDrawerIfNeeded;
@@ -736,10 +765,11 @@ export function createPageComposer(
                     } else if (!editing && persistLayoutPreferences) {
                         applyLayoutForCurrentGridColumns();
                     }
-                    renderGridComposer();
+                    renderGridComposer({ layoutOnly: true });
                 }
             });
             resizeObserver.observe(contentGrid.parentElement ?? contentGrid);
+            resizeObserver.observe(contentGrid);
         }
 
         render();
@@ -808,13 +838,14 @@ export function createPageComposer(
 
     function refreshElements(elementIds) {
         renderer.refreshElements(elementIds);
-        onRender?.();
     }
 
     return {
         init,
         refresh,
         refreshElements,
+        openToolbar: (trigger) => toolbarController?.open(trigger),
+        closeToolbar: () => toolbarController?.closeMobileDrawerIfNeeded(),
         getFloatingSlot: (id) => findFloatingSlot(root, id),
         showToast,
         refreshPresence: () => activePresenceTracker?.refresh(),

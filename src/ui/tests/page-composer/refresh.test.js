@@ -60,7 +60,7 @@ test("page composer refreshes only explicitly selected card content", () => {
     );
     assert.match(
         source,
-        /renderer\.refreshElements\(elementIds\);\s*onRender\?\.\(\);/,
+        /function refreshElements\(elementIds\)[\s\S]*refreshElementMarkup\(elementIds\);[\s\S]*element\?\.onRender\?\.\(\);[\s\S]*state\.onRender\?\.\(\);/,
     );
 });
 
@@ -69,11 +69,11 @@ test("page composer renderer receives the element content renderer", () => {
 
     assert.match(
         source,
-        /return \{\s*parkPreservedElementNodes,\s*renderElementContent,\s*refreshElements,\s*\};/m,
+        /return \{\s*consumeElementRender,\s*syncElementPresentation,\s*parkPreservedElementNodes,\s*renderElementContent,\s*refreshElements,\s*\};/m,
     );
     assert.match(
         source,
-        /const \{[^}]*renderElementContent[^}]*\}\s*=\s*createDomPreservation\(state\);/m,
+        /const \{[^}]*renderElementContent[^}]*\}\s*=\s*createDomPreservation\(state,\s*\{[\s\S]*?redraw:[\s\S]*?\}\);/m,
     );
 });
 
@@ -195,7 +195,11 @@ test("page composer tears down stale presence before mounting a page", () => {
 test("page composer expands compact single-pane rows to full width", () => {
     const source = readPageComposerBundle();
 
-    assert.match(source, /MOBILE_LAYOUT_WIDTH_RECLAIM_BREAKPOINT\s*=/);
+    assert.match(source, /COMPOSER_COMPACT_BREAKPOINT\s*=\s*640/);
+    assert.match(
+        source,
+        /MOBILE_LAYOUT_WIDTH_RECLAIM_BREAKPOINT:\s*COMPOSER_COMPACT_BREAKPOINT/,
+    );
     assert.match(source, /COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS\s*=/);
     assert.match(source, /function shouldUseMobileWidthReclaim\(\)/);
     assert.match(source, /window\.matchMedia\(/);

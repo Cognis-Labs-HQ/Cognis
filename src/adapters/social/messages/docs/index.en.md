@@ -57,3 +57,7 @@ Messages prepares its room list, translations and emoji catalogs after verified 
 ## Independent Emoji Usage
 
 The reusable Messages reaction picker records emoji frequency independently of reaction changes. Only the message-reaction request includes the final active state. Usage-recording failures are logged without preventing the selected reaction or its update callback.
+
+## Responsive Workspaces
+
+Messages sizes its thread and composer from the visible viewport. Conversations opens the room drawer on phones and tablets; Escape restores focus, choosing a room closes the drawer, and orientation changes retain drafts. Short screens scroll a usable workspace instead of clipping controls.

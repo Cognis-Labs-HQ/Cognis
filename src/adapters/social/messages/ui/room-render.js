@@ -179,6 +179,11 @@ function renderRoomAvatar(room, currentAccountId) {
     });
 }
 
+/** @param {object} i18n Localized labels. @returns {string} Conversation selection prompt. */
+export function renderConversationPrompt(i18n) {
+    return `<p class="messages-empty">${escapeHtml(i18n.t("module.social.messages.choose_conversation"))}</p>`;
+}
+
 export function renderThreadHeader(
     room,
     currentAccountId,
@@ -278,12 +283,12 @@ export function renderRoomList({
                 return `
           <li class="messages-room ${isActive ? "messages-room--active" : ""}${archivedClass}${unreadClass}" data-chat-id="${escapeHtml(room.id)}" data-room-id="${escapeHtml(room.id)}" data-search-label="${escapeHtml(titleSource)}" data-search-text="${escapeHtml(`${titleSource} ${preview}`)}">
             ${avatar}
-            <span class="messages-room-meta">
+            <button type="button" class="messages-room-select" aria-label="${escapeHtml(titleSource)}" aria-pressed="${isActive}"><span class="messages-room-meta">
               <span class="messages-room-title" title="${escapeHtml(titleSource)}">${escapeHtml(titleSource)}</span>
               <span class="messages-room-preview">${escapeHtml(preview)}</span>
               ${archivedHint}
             </span>
-            ${unreadBadge}
+            ${unreadBadge}</button>
           </li>
         `;
             })

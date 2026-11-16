@@ -16,7 +16,10 @@ const contentTypes = {
     ".woff2": "font/woff2",
 };
 
-export async function serveBrowserFixture(fixtureDirectory) {
+export async function serveBrowserFixture(
+    fixtureDirectory,
+    { staticRoots = {} } = {},
+) {
     const layouts = new Map();
     const requests = [];
     const completions = new Set();
@@ -88,10 +91,17 @@ export async function serveBrowserFixture(fixtureDirectory) {
                 directory = /^(templates|assets)\//.test(relativePath)
                     ? resolve(uiDirectory, "public")
                     : uiDirectory;
+                const configuredRoot = Object.entries(staticRoots).find(
+                    ([prefix]) => pathname.startsWith(prefix),
+                );
+                if (configuredRoot) {
+                    directory = configuredRoot[1];
+                    relativePath = pathname.slice(configuredRoot[0].length);
+                }
                 const component = relativePath.match(
                     /^(gateways\/[^/]+|adapters\/[^/]+\/[^/]+)\/(.*)$/,
                 );
-                if (component) {
+                if (component && !configuredRoot) {
                     directory = resolve(uiDirectory, "..", component[1], "ui");
                     relativePath = component[2];
                 }

@@ -1,3 +1,7 @@
+import {
+    composerPresentation,
+    applyComposerPresentation,
+} from "./presentation.js";
 /** Sub-composer helpers for nested page composer sections.
  * Export: createSubComposerHandlers(deps). @param {object} deps @returns {object}
  */
@@ -610,7 +614,9 @@ export function createSubComposerHandlers({
         content.className = "widget-card composer-cell-content";
         content.inert = state.editing;
         cell.setAttribute("aria-label", el.label ?? el.id);
-        content.innerHTML = el.render();
+        const presentation = composerPresentation(state.container);
+        applyComposerPresentation(state.container, content, presentation);
+        content.innerHTML = el.render(presentation);
         cell.appendChild(content);
 
         if (state.editing) {
@@ -736,8 +742,15 @@ export function createSubComposerHandlers({
                     card = document.createElement("div");
                     card.className = "widget-card";
                     card.dataset.composerElement = element.id;
-                    card.innerHTML = element.render();
+                    card.innerHTML = element.render(
+                        composerPresentation(state.container),
+                    );
                 }
+                applyComposerPresentation(
+                    state.container,
+                    card,
+                    composerPresentation(state.container),
+                );
                 const position = sorted.indexOf(placement);
                 if (state.container.children[position] !== card) {
                     state.container.insertBefore(
