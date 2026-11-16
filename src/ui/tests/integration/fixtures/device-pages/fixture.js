@@ -57,7 +57,6 @@ const composer = createPageComposer(root, {
     requireAccountSession: false,
     enableAccountEnhancements: false,
     toolbarScrollable: true,
-    showToolbarToggle: mode !== "messages",
     preferenceKey: "device-page-" + mode,
     pageContext: {
         title: i18n.t(
@@ -83,8 +82,8 @@ const composer = createPageComposer(root, {
             render: (context) => {
                 presentation = context;
                 return mode === "calendar"
-                    ? `<section class="calendar-section"><header class="calendar-view-header">${renderCalendarViewSwitcher(CALENDAR_VIEWS, view, i18n, new Date(data.date))}</header><div class="calendar-view-canvas">${calendarBody()}</div></section>`
-                    : `<section class="messages-thread"><div class="messages-mobile-navigation"><button class="btn-neutral messages-room-picker">${escapeHtml(i18n.t("module.social.messages.conversations"))}</button></div><div>${renderThreadHeader(data.room, "fixture", i18n)}</div><div></div><div class="messages-thread-list">${Array.from({ length: 40 }, (_, index) => `<div class="messages-message-row"><article class="messages-message-wrap"><div class="messages-message"><span class="messages-message-body">${index + 1}. ${escapeHtml(data.message)}</span></div></article></div>`).join("")}</div><div></div><form id="messages-composer" class="messages-composer"><div class="messages-composer-pane--compose"><textarea id="messages-composer-input" class="messages-composer-input" aria-label="${escapeHtml(i18n.t("module.social.messages.placeholder"))}"></textarea><button class="messages-composer-send">${escapeHtml(i18n.t("module.social.messages.send"))}</button></div></form></section>`;
+                    ? `<section class="calendar-section"><header class="calendar-view-header" data-composer-header>${renderCalendarViewSwitcher(CALENDAR_VIEWS, view, i18n, new Date(data.date))}</header><div class="calendar-view-canvas">${calendarBody()}</div></section>`
+                    : `<section class="messages-thread"><div class="messages-thread-topbar" data-composer-header><div id="messages-thread-header-slot">${renderThreadHeader(data.room, "fixture", i18n)}</div></div><div></div><div class="messages-thread-list">${Array.from({ length: 40 }, (_, index) => `<div class="messages-message-row"><article class="messages-message-wrap"><div class="messages-message"><span class="messages-message-body">${index + 1}. ${escapeHtml(data.message)}</span></div></article></div>`).join("")}</div><div></div><form id="messages-composer" class="messages-composer"><div class="messages-composer-pane--compose"><textarea id="messages-composer-input" class="messages-composer-input" aria-label="${escapeHtml(i18n.t("module.social.messages.placeholder"))}"></textarea><button class="messages-composer-send">${escapeHtml(i18n.t("module.social.messages.send"))}</button></div></form></section>`;
             },
         },
     ],
@@ -103,8 +102,6 @@ root.addEventListener("click", (event) => {
         view = viewButton.dataset.calendarView;
         composer.refreshElements([mode]);
     }
-    const picker = event.target.closest(".messages-room-picker");
-    if (picker) composer.openToolbar(picker);
     if (event.target.closest(".messages-room-select")) composer.closeToolbar();
 });
 

@@ -45,7 +45,7 @@ Saat `subPageNavigation: true`, hanya satu elemen yang terlihat pada satu waktu.
 
 ### Parkir DOM
 
-Parkir DOM dinonaktifkan secara bawaan. Tetapkan `enableDomParking: true` pada page composer hanya ketika DOM media harus bertahan selama perenderan ulang composer. Saat aktif, kartu yang berisi iframe atau media lain diparkir dan dipulihkan sebagai DOM yang tetap utuh; fitur ini ditujukan untuk sematan berstatus seperti Jitsi Meet. Halaman biasa sebaiknya mengandalkan perenderan baru dan pemulihan status formulir sementara agar konten yang diperbarui tidak tertutup oleh pohon terparkir yang usang. Setiap pemanggilan `refresh()` secara bawaan merender ulang semua kartu terlihat yang sudah ada agar perubahan status tampil tanpa penggantian DOM khusus halaman.
+Parkir DOM dinonaktifkan secara bawaan. Tetapkan `enableDomParking: true` pada page composer hanya ketika DOM media harus bertahan selama perenderan ulang composer. Saat aktif, kartu yang berisi iframe atau media lain diparkir dan dipulihkan sebagai DOM yang tetap utuh; fitur ini ditujukan untuk sematan berstatus seperti Jitsi Meet. Halaman biasa sebaiknya mengandalkan perenderan baru dan pemulihan status formulir sementara agar konten yang diperbarui tidak tertutup oleh pohon terparkir yang usang. `refresh(elements)` memperbarui definisi dan penempatan elemen sambil mempertahankan DOM kartu. Gunakan `refreshElements(ids)` untuk merender ulang konten yang berubah melalui Composer; perubahan tata letak saja mempertahankan kontrol dan draf.
 
 ### Persistensi
 
@@ -81,8 +81,20 @@ Nilai `layout` bersama adalah `compact` (hingga 640px), `medium` (hingga 900px),
 
 Atribut gaya `data-composer-layout`, `data-composer-drawer`, dan `data-composer-touch` dikelola composer untuk tata letak dan masukan. Komposisi biasa maupun bersarang menerima konteks yang sama. Composer mengamati konten dan kartu, memulihkan nilai formulir, serta melepaskan pengamat dan penangan peristiwa saat halaman berakhir.
 
-Halaman composer tetap dengan satu elemen dapat memakai `fillViewport: true`. Kepala halaman, kaki halaman, dok tindakan, fon pilihan, dan perubahan area layar terlihat menentukan ruang tersedia. Tinggi minimum 16rem menjaga area tetap berguna dan dapat digulir. Pemilik halaman dapat memakai `openToolbar(trigger)` dan `closeToolbar()` dengan `showToolbarToggle: false` untuk navigasi sendiri. Pengamat dan penangan peristiwa mengikuti masa aktif halaman.
-
 Perubahan tata letak memberi notifikasi melalui `onResize`; `onRender` memasang perilaku pada konten yang dihasilkan. Perubahan tata letak saja mempertahankan pengikatan kontrol yang tidak berubah. Penyegaran konten eksplisit memasang elemen yang diminta satu kali.
 
 Untuk memeriksa tampilan pada instans berjalan yang terisolasi, atur `COGNIS_BROWSER_TESTS=1`, `COGNIS_CORE_BROWSER_URL`, dan `COGNIS_BROWSER_CREDENTIALS`. Opsi `COGNIS_BROWSER_BYPASS_SERVICE_WORKER=1` memisahkan perenderan dari cache service worker; perilaku luring dan PWA memerlukan pemeriksaan tersendiri.
+
+## Navigasi Halaman dan Panel
+
+Gunakan kisi Halaman pada kepala utama untuk berpindah tujuan. Pemilih halaman ringkas mempertahankan fokus papan ketik dan ditutup dengan Escape. Page Composer menyediakan tombol SVG sudut ganda yang sama di kiri atas untuk semua panel samping. Pesan memakai tombol ini untuk percakapan.
+
+`stackAt: "medium"` meminta satu kolom mengalir hingga batas tablet bersama. `readingOrder` menentukan urutan elemen pada tampilan itu tanpa mengubah tata letak desktop tersimpan. Elemen formulir dan draf bertahan saat tata letak berubah.
+
+Halaman tetap dengan satu elemen dapat memakai `fillViewport: true`. Composer mengukur kepala, kaki, dan area layar terlihat dengan minimum 20rem. Tombol panel bersama selalu disediakan Composer. `openToolbar(trigger)` dan `closeToolbar()` tetap tersedia untuk tindakan aplikasi yang disengaja.
+
+Dialog bersama menerima `surface: "reader"` untuk konten bacaan. Permukaan ini memakai penanda presentasi Composer, menjaga kepala dan kaki di luar isi bergulir, serta melepas pengamat presentasi saat ditutup.
+
+Kepala dan kaki halaman memakai satu lebar kerangka sehingga tepi luarnya sejajar pada ponsel, tablet, dan desktop.
+
+Elemen dapat mendeklarasikan wadah stabil `data-composer-header`. Composer menempatkan kontrol panel di sana dan mempertahankan tombol serta perilaku fokus saat digambar ulang. Konten yang diganti asinkron ditempatkan di anak wadah tersebut. Penanda gaya `data-composer-sidebar-trigger` menunjukkan kontrol bersama. Kalender dan Pesan memakai tempat ini agar lebih banyak ruang vertikal tersedia untuk konten.

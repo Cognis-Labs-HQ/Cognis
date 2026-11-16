@@ -236,7 +236,7 @@
   <string name="adapter.study.library.tutorial.requests.follow.request.outcome.title">Pantau Permintaan</string>
   <string name="adapter.study.library.tutorial.requests.follow.request.outcome.body">Buka permintaan untuk meninjau perubahan yang diusulkan dan keputusannya. Periksa umpan balik sebelum mengirim permintaan yang diperbaiki.</string>
   <string name="adapter.study.library.tutorial.explore.read.details.title">Baca Detail Kartu</string>
-  <string name="adapter.study.library.tutorial.explore.read.details.body">Tampilan detail menggabungkan arti, bacaan, contoh, dan rekaman terkait. Ikuti hubungan tersebut untuk memahami penggunaan kartu.</string>
+  <string name="adapter.study.library.tutorial.explore.read.details.body">Baca arti, bacaan, contoh, dan rekaman terkait di sini. Gulir rincian panjang sementara Sebelumnya dan Berikutnya tetap tersedia, lalu ikuti hubungan untuk memahami penggunaan kartu.</string>
   <string name="adapter.study.library.tutorial.explore.listen.title">Dengarkan Pelafalan</string>
   <string name="adapter.study.library.tutorial.explore.listen.body">Putar audio kartu untuk mendengar bunyinya. Dengarkan kembali sebelum melatih pelafalan sendiri.</string>
   <string name="adapter.study.library.tutorial.explore.draw.strokes.title">Ikuti Goresan</string>

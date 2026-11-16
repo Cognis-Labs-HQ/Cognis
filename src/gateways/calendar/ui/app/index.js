@@ -537,12 +537,17 @@ export async function mount(root, { signal, shareContext = null } = {}) {
                         selectedView === "year"
                             ? escapeHtml(formatYearLabel(activeDate))
                             : `${escapeHtml(formatMonthYearLabel(activeDate))}${escapeHtml(weekLabel)}`;
+                    const todayLabel = escapeHtml(
+                        compact
+                            ? i18n.t("gateway.calendar.today")
+                            : getTodayNavLabel(selectedView),
+                    );
                     return `
           <section class="calendar-section">
-            <header class="calendar-view-header">
+            <header class="calendar-view-header" data-composer-header>
               <div class="calendar-view-nav">
                 <button type="button" data-calendar-nav="prev" aria-label="${escapeHtml(i18n.t("gateway.calendar.previous"))}">&lt;</button>
-                <button type="button" data-calendar-nav="today">${escapeHtml(getTodayNavLabel(selectedView))}</button>
+                <button type="button" data-calendar-nav="today" aria-label="${todayLabel}" title="${todayLabel}">${todayLabel}</button>
                 <button type="button" data-calendar-nav="next" aria-label="${escapeHtml(i18n.t("gateway.calendar.next"))}">&gt;</button>
                 <span class="calendar-nav-month-label">${periodLabel}</span>
               </div>

@@ -39,8 +39,14 @@ export function applyComposerPresentation(root, host, presentation) {
     root.dataset.composerTouch = String(presentation.touch);
 }
 
-/** @param {HTMLElement} root Page root. @param {HTMLElement} container Content host. @param {AbortSignal} signal Composer lifetime. @returns {() => void} Cleanup. */
-export function watchComposerPresentation(root, container, signal) {
+/** @param {HTMLElement} root Page root. @param {HTMLElement} container Content host. @param {AbortSignal} signal Surface lifetime. @param {{observeResize?: boolean}} options Observe standalone surfaces; grid composers already observe their own size. @returns {() => void} Cleanup. */
+export function watchComposerPresentation(
+    root,
+    container,
+    signal,
+    { observeResize = false } = {},
+) {
+    if (signal.aborted) return () => {};
     const window = container.ownerDocument.defaultView;
     const queries = [
         `(max-width:${COMPOSER_DRAWER_BREAKPOINT}px)`,
@@ -54,10 +60,15 @@ export function watchComposerPresentation(root, container, signal) {
             applyComposerPresentation(root, host, composerPresentation(host));
     };
     const dispose = () => {
+        observer?.disconnect();
         for (const query of queries)
             query.removeEventListener("change", synchronize);
         signal.removeEventListener("abort", dispose);
     };
+    const observer = observeResize
+        ? new window.ResizeObserver(synchronize)
+        : null;
+    observer?.observe(container);
     for (const query of queries) query.addEventListener("change", synchronize);
     signal.addEventListener("abort", dispose, { once: true });
     synchronize();

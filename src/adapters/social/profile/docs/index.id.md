@@ -105,3 +105,11 @@ Penulisan preferensi Profile yang berhasil memperbarui salinan baca terbatas mil
 Formulir profil memakai batas komponen untuk nama tampilan, biografi, lokasi, dan situs web. Sinkronisasi peran mencari nama publik profil dari ID akun yang tetap sebelum memperbarui peran dan visibilitas.
 
 `profile:setRole(accountId, role)` → `Promise<void>`.
+
+## Konten Seluler yang Terbaca
+
+Pada ponsel dan tablet, identitas profil, penulisan pos, dan linimasa mendahului bagian sosial lain. Nama panjang, biografi, dan pos mengikuti lebar tersedia. Tampilan spanduk penuh menempatkan identitas di bawah gambar; kolom dan draf bertahan saat ukuran berubah.
+
+Pratinjau menampilkan judul dan isi terkini sebelum diterbitkan. Kembali ke mode Tulis atau putar perangkat tanpa kehilangan draf.
+
+Pos yang diterbitkan langsung tampil, dan penghapusan memperbarui linimasa tanpa memuat ulang halaman.

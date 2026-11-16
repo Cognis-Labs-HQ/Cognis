@@ -1,0 +1,26 @@
+{
+    "profile": {
+        "handle": "a-very-long-profile-handle-for-mobile-layouts",
+        "displayName": "A profile with a complete descriptive display name",
+        "bio": "A readable biography with enough content to wrap naturally on a narrow phone screen. Links and details should remain accessible without overlapping the banner or the profile actions.",
+        "visibility": "community",
+        "location": "Adelaide, Australia",
+        "website": "https://example.test/long-profile-link"
+    },
+    "posts": [
+        {
+            "id": "post-one",
+            "title": "A long post title that remains readable at every screen size",
+            "content": "A social timeline should make the content easy to read.\n\nThis second paragraph also contains a verylongunbrokenwordthatmustwrapwithintheavailablewidthwithoutscrollingthepagehorizontally.",
+            "visibility": "community",
+            "createdAt": "2026-11-16T01:00:00Z"
+        },
+        {
+            "id": "post-two",
+            "title": "Another post",
+            "content": "More content in the profile timeline.",
+            "visibility": "community",
+            "createdAt": "2026-11-15T01:00:00Z"
+        }
+    ]
+}

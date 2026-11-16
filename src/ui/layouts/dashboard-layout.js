@@ -115,7 +115,7 @@ async function refreshDisplayNameFromProfile() {
 function applyActiveNavigation() {
     const currentPath = window.location.pathname;
     document
-        .querySelectorAll(".topnav a, .nav-drawer-nav a")
+        .querySelectorAll(".topnav a, .nav-launcher-nav a")
         .forEach((link) => {
             const isActive = isNavigationLinkActive(
                 currentPath,

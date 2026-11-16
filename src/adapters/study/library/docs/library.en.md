@@ -645,3 +645,5 @@ Library request and content notifications address recipients by immutable `accou
 ## Study Notification Delivery
 
 Study request, content and deletion notifications use the category registered by Library bootstrap. Runtime delivery resolves the current notification capability and never performs registration, so SMTP bootstrap restrictions do not suppress delivery or visibility-change notices.
+
+Study card previews use the shared reader surface. The dialog follows the available width, keeps heading and Previous/Next actions visible, and scrolls long content independently. Tablet and touch controls retain 44px targets; compact detail facts stack without squeezing their values.

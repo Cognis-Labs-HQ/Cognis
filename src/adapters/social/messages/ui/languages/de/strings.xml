@@ -83,7 +83,7 @@
   <string name="module.social.messages.decline_call">Anruf ablehnen</string>
   <string name="module.social.messages.tutorial.messages.title">Nachrichtenanleitung</string>
   <string name="module.social.messages.tutorial.messages.rooms.title">Räume</string>
-  <string name="module.social.messages.tutorial.messages.rooms.body">Wähle einen Raum oder beginne eine neue Unterhaltung in der Seitenleiste. Auf Telefonen und Tablets öffnest du Unterhaltungen oberhalb des Verlaufs, um einen Raum auszuwählen.</string>
+  <string name="module.social.messages.tutorial.messages.rooms.body">Wähle einen Raum oder beginne eine Unterhaltung in der Seitenleiste. Auf Telefonen und Tablets öffnest du sie über die Schaltfläche mit doppeltem Winkel oben links.</string>
   <string name="module.social.messages.tutorial.messages.room.history.title">Raumverlauf</string>
   <string name="module.social.messages.tutorial.messages.room.history.body">Lesen Sie den Verlauf und prüfen Sie Teilnehmer sowie offene Anfragen.</string>
   <string name="module.social.messages.tutorial.messages.compose.and.preview.title">Verfassen und Vorschau</string>

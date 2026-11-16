@@ -96,7 +96,9 @@ export function createComposerRenderer({
             "composer-view-grid--viewport",
             state.fillViewport === true,
         );
-        const compact = !state.editing && isCompactComposer(state.contentGrid);
+        const compact =
+            !state.editing &&
+            isCompactComposer(state.contentGrid, state.stackAt);
         section.classList.toggle("composer-view-grid--compact", compact);
         const scale = getPlacementScale(placements);
         section.classList.add("composer-view-grid");
@@ -117,7 +119,10 @@ export function createComposerRenderer({
             card.style.gridRow = "1";
             return;
         }
-        if (!state.editing && isCompactComposer(state.contentGrid)) {
+        if (
+            !state.editing &&
+            isCompactComposer(state.contentGrid, state.stackAt)
+        ) {
             card.style.gridColumn = "1 / -1";
             card.style.gridRow = "auto";
             return;
@@ -239,7 +244,10 @@ export function createComposerRenderer({
         section.classList.toggle("composer-grid-active", state.editing);
         section.classList.toggle("composer-view-grid", !state.frameless);
         const visiblePlacements = getVisibleComposerPlacements();
-        if (!state.editing && isCompactComposer(state.contentGrid)) {
+        if (
+            !state.editing &&
+            isCompactComposer(state.contentGrid, state.stackAt)
+        ) {
             state.contentGrid.style.minHeight = "";
         }
         const scale = applySectionGridMetrics(section, visiblePlacements);

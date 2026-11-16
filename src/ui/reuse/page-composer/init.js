@@ -20,7 +20,8 @@ import { mountViewportLayout } from "./viewport-layout.js";
  *   pageContext?: { title: string, subtitle: string },
  *   tutorials?: Array<{ owner: string, minRole?: string, definitions: object[], i18n?: object }>,
  *   toolbar?: Array<{ id: string, label: string, render: () => string }>,
- *   toolbarScrollable?: boolean, showToolbarToggle?: boolean, contentScrolling?: boolean, fillViewport?: boolean, enableDomParking?: boolean,
+ *   toolbarScrollable?: boolean, contentScrolling?: boolean, fillViewport?: boolean, enableDomParking?: boolean,
+ *   stackAt?: "compact" | "medium", readingOrder?: string[],
  *   subNavigation?: Array<{ id: string, label: string, render: () => string }>,
  *   floatingMenu?: Array<{ id: string, label: string, render: () => string }>,
  *   subPageNavigation?: boolean, columns?: number,
@@ -78,9 +79,10 @@ export function createPageComposer(
         tutorials = [],
         toolbar = [],
         toolbarScrollable = false,
-        showToolbarToggle = true,
         contentScrolling = true,
         fillViewport = false,
+        stackAt = "compact",
+        readingOrder = [],
         enableDomParking = false,
         subNavigation = [],
         floatingMenu = [],
@@ -272,10 +274,15 @@ export function createPageComposer(
         allowCustomization,
         frameless,
         fillViewport,
+        stackAt,
+        readingOrder,
         preferenceKey,
         persistLayoutPreferences,
         subPageNavigation,
-        onRender,
+        onRender: () => {
+            toolbarController?.syncTogglePlacement();
+            onRender?.();
+        },
         get elements() {
             return elements;
         },
@@ -683,7 +690,6 @@ export function createPageComposer(
                 root,
                 i18n,
                 toolbarScrollable,
-                showToggle: showToolbarToggle,
                 signal: tutorialLifetime.signal,
                 log: uiCtx.capabilities.get("ui:log"),
             });
@@ -735,7 +741,7 @@ export function createPageComposer(
 
         gridCols = getPreferredGridColumnCount();
         lastObservedCols = gridCols;
-        lastObservedCompact = isCompactComposer(contentGrid);
+        lastObservedCompact = isCompactComposer(contentGrid, stackAt);
         lastObservedWidth = contentGrid?.getBoundingClientRect().width ?? 0;
 
         layout = null;
@@ -744,7 +750,7 @@ export function createPageComposer(
             resizeObserver = new ResizeObserver(() => {
                 if (!contentGrid || !document.contains(contentGrid)) return;
                 const newCols = getPreferredGridColumnCount();
-                const compact = isCompactComposer(contentGrid);
+                const compact = isCompactComposer(contentGrid, stackAt);
                 const width = contentGrid.getBoundingClientRect().width;
                 const resize = resolveComposerResize(
                     {

@@ -19,3 +19,11 @@ Identity, posts and account actions target the rendered profile regions, includi
 Posts use a distinct list target even when the composer is present. Social actions fit their buttons; composer-only preview is omitted on other profiles.
 
 Identity and social actions precede the consecutive posts and preview stages.
+
+## Readable Mobile Content
+
+On phones and tablets, profile identity, post composition and the post timeline come before secondary social sections. Long names, biographies and posts wrap within the available width. The full-banner presentation keeps identity below the image; existing fields and drafts survive resizing.
+
+Preview shows the current title and body before publishing. Return to Compose or rotate the device without losing your draft.
+
+Published posts appear immediately, and deletions update the timeline without reloading.

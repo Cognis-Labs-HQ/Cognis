@@ -113,10 +113,10 @@
   <string name="ui.reuse.role_owner">Owner</string>
   <string name="ui.layout.brand.aria">Cognis home</string>
   <string name="ui.layout.nav.primary">Primary navigation</string>
-  <string name="ui.layout.nav.open_menu">Open navigation menu</string>
-  <string name="ui.layout.nav.close_menu">Close navigation menu</string>
-  <string name="ui.layout.toolbar.collapse">Collapse toolbar</string>
-  <string name="ui.layout.toolbar.expand">Expand toolbar</string>
+  <string name="ui.layout.nav.open_menu">Open page switcher</string>
+  <string name="ui.layout.nav.close_menu">Close page switcher</string>
+  <string name="ui.layout.toolbar.collapse">Close sidebar</string>
+  <string name="ui.layout.toolbar.expand">Open sidebar</string>
   <string name="ui.layout.greeting">Hello,</string>
   <string name="ui.layout.search.aria">Search</string>
   <string name="ui.layout.search.placeholder">Search users…</string>
@@ -635,7 +635,7 @@
   <string name="ui.tutorial.error">The tutorial could not continue. Your page remains available.</string>
   <string name="ui.tutorial.progress_error">Tutorial progress could not be loaded or saved. Check your connection and try again.</string>
   <string name="ui.tutorial.workspace.title">Your Workspace</string>
-  <string name="ui.tutorial.workspace.navigation.body">The main navigation links to the pages available to your account. On smaller screens, open the menu button to see the same destinations.</string>
+  <string name="ui.tutorial.workspace.navigation.body">Use the Pages grid to switch between destinations available to your account. Page sidebars have their own double-chevron control in the top left.</string>
   <string name="ui.tutorial.workspace.search.body">Open Search to try finding a page, setting or action on the current page.</string>
   <string name="ui.tutorial.workspace.account.title">Account Menu</string>
   <string name="ui.tutorial.workspace.account.body">Click your avatar to open the account menu.</string>
@@ -764,4 +764,5 @@
   <string name="ui.tutorial.admin.status.file.integrity.body">Compare file-check results here. Missing or changed files can explain why a component fails to load.</string>
   <string name="ui.reuse.layout_keyboard">Use Arrow Keys to Move; Hold Shift to Resize</string>
   <string name="ui.reuse.date">Date</string>
+  <string name="ui.reuse.pages">Pages</string>
 </resources>

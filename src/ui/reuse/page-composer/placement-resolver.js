@@ -452,8 +452,19 @@ export function createPlacementResolver({
         const visible = state.layout.placements
             .filter((p) => !state.layout.hidden.includes(p.id))
             .sort((a, b) => a.row - b.row || a.col - b.col);
-        if (!state.frameless && isCompactComposer(state.contentGrid)) {
-            return stackComposerPlacements(visible, state.gridCols);
+        if (
+            !state.frameless &&
+            isCompactComposer(state.contentGrid, state.stackAt)
+        ) {
+            const order = state.readingOrder ?? [];
+            const rank = (id) => {
+                const index = order.indexOf(id);
+                return index < 0 ? order.length : index;
+            };
+            return stackComposerPlacements(
+                [...visible].sort((a, b) => rank(a.id) - rank(b.id)),
+                state.gridCols,
+            );
         }
         const normalizedRows = normalizePlacementRowsForGridWidth(
             visible,

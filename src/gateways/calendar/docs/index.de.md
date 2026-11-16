@@ -71,3 +71,7 @@ Calendar erkennt `meetings:createMeeting` beim aktiven Browseranbieter. Der Anbi
 ## Anpassbare Arbeitsflächen
 
 Schmale Kalenderflächen zeigen eine Terminliste mit allen Ereignissen und dem gewählten Datum sowie einer kompakten Ansichts- und Datumsauswahl. Breite Flächen behalten Kalendergitter. Das Datumsfeld erreicht leere Tage ohne Scrollen durch einen Monat. Geteilte Kalender nutzen dieselben Darstellungen und beachten Nur-Lese-Rechte.
+
+## Lesbare mobile Inhalte
+
+Der Kalender hält die Bedienung über einer unabhängig scrollbaren Terminliste. Das Symbol zum Hinzufügen neben jedem Datum bietet eine 44px große Touchfläche und eine zugängliche Beschriftung.

@@ -19,3 +19,7 @@ Date navigation highlights the visible date controls even with no events. Event 
 ## Responsive Workspaces
 
 Narrow Calendar panels show an agenda containing every event and the selected date, with a compact view selector and date jump. Wide panels retain calendar grids. The date field reaches empty dates without scrolling through a month. Shared calendars use the same presentations and enforce read-only access.
+
+## Readable Mobile Content
+
+Calendar keeps its controls above an independently scrolling agenda. The Add Event icon beside each date provides a 44px touch target and an accessible label.

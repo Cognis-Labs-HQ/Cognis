@@ -272,7 +272,7 @@ export function renderHero({
           aria-label="${escapeHtml(i18n.t("ui.app.profile.banner_menu_label"))}"
           aria-haspopup="true"
           aria-expanded="false"
-        >&#9776;</button>
+        ><span class="profile-banner-options-icon" aria-hidden="true"></span></button>
         <div class="profile-banner-menu-dropdown" hidden>
           <label class="profile-banner-menu-item profile-banner-height-label">
             <input

@@ -6,7 +6,7 @@ import { COMPOSER_DRAWER_BREAKPOINT } from "./responsive-layout.js";
  * const drawer = mountComposerToolbarDrawer({ root, i18n, signal });
  * drawer?.closeMobileDrawerIfNeeded();
  * @param {object} options - Composer root, translations, and lifecycle options.
- * @returns {{open(trigger?: HTMLElement): void, closeMobileDrawerIfNeeded(): void, destroy(): void}|null} Drawer lifecycle.
+ * @returns {{open(trigger?: HTMLElement): void, closeMobileDrawerIfNeeded(): void, syncTogglePlacement(): void, destroy(): void}|null} Drawer lifecycle.
  */
 import { beginDrawerSession } from "../drawer-session.js";
 import { renderToolbarToggleIcon } from "./toolbar-icons.js";
@@ -17,7 +17,6 @@ export function mountComposerToolbarDrawer({
     root,
     i18n,
     toolbarScrollable = false,
-    showToggle = true,
     breakpoint = COMPOSER_DRAWER_BREAKPOINT,
     signal,
     log,
@@ -53,6 +52,7 @@ export function mountComposerToolbarDrawer({
     const toggle = document.createElement("button");
     toggle.type = "button";
     toggle.className = "toolbar-mobile-toggle btn-neutral";
+    toggle.setAttribute("data-composer-sidebar-trigger", "true");
     const backdrop = document.createElement("div");
     backdrop.className = "toolbar-mobile-backdrop";
     backdrop.setAttribute("aria-hidden", "true");
@@ -74,11 +74,30 @@ export function mountComposerToolbarDrawer({
     let session = null;
     let layoutObserver = null;
 
+    function syncTogglePlacement() {
+        if (destroyed) return;
+        const heading =
+            !open &&
+            [...root.querySelectorAll("[data-composer-header]")].find(
+                (element) => element.getClientRects().length > 0,
+            );
+        const focused = document.activeElement === toggle;
+        if (heading && toggle.parentElement !== heading)
+            heading.prepend(toggle);
+        else if (!heading && toggle.parentElement !== mainWindow)
+            toolbar.after(toggle);
+        toggle.classList.toggle(
+            "toolbar-mobile-toggle--in-header",
+            Boolean(heading),
+        );
+        if (focused) toggle.focus({ preventScroll: true });
+    }
+
     function setOpen(nextOpen, { restoreFocus = true, trigger = toggle } = {}) {
         if (destroyed) return;
         const wasOpen = open;
         open = mobileMedia.matches && Boolean(nextOpen);
-        toggle.hidden = !showToggle || !mobileMedia.matches;
+        toggle.hidden = !mobileMedia.matches;
         if (!open) {
             session?.({ restoreFocus });
             session = null;
@@ -105,7 +124,7 @@ export function mountComposerToolbarDrawer({
         backdrop.hidden = !open;
         toggle.setAttribute("aria-expanded", String(open));
         toggle.classList.toggle("toolbar-mobile-toggle--drawer-open", open);
-        toggle.innerHTML = renderToolbarToggleIcon(open);
+        toggle.innerHTML = renderToolbarToggleIcon();
         toggle.setAttribute(
             "aria-label",
             i18n.t(
@@ -114,6 +133,7 @@ export function mountComposerToolbarDrawer({
                     : "ui.layout.toolbar.expand",
             ),
         );
+        syncTogglePlacement();
         if (open && !wasOpen) {
             session = beginDrawerSession({
                 panel: toolbar,
@@ -221,6 +241,7 @@ export function mountComposerToolbarDrawer({
     }
     setOpen(false, { restoreFocus: false });
     const controller = {
+        syncTogglePlacement,
         open: (trigger) => setOpen(true, { trigger }),
         closeMobileDrawerIfNeeded,
         destroy,

@@ -113,10 +113,10 @@
   <string name="ui.reuse.role_owner">オーナー</string>
   <string name="ui.layout.brand.aria">Cognis ホーム</string>
   <string name="ui.layout.nav.primary">メインナビゲーション</string>
-  <string name="ui.layout.nav.open_menu">ナビゲーションメニューを開く</string>
-  <string name="ui.layout.nav.close_menu">ナビゲーションメニューを閉じる</string>
-  <string name="ui.layout.toolbar.collapse">ツールバーを折りたたむ</string>
-  <string name="ui.layout.toolbar.expand">ツールバーを展開する</string>
+  <string name="ui.layout.nav.open_menu">ページ選択を開く</string>
+  <string name="ui.layout.nav.close_menu">ページ選択を閉じる</string>
+  <string name="ui.layout.toolbar.collapse">サイドバーを閉じる</string>
+  <string name="ui.layout.toolbar.expand">サイドバーを開く</string>
   <string name="ui.layout.greeting">こんにちは、</string>
   <string name="ui.layout.search.aria">検索</string>
   <string name="ui.layout.search.placeholder">ユーザーを検索…</string>
@@ -635,7 +635,7 @@
   <string name="ui.tutorial.error">チュートリアルを続行できませんでした。ページは引き続き利用できます。</string>
   <string name="ui.tutorial.progress_error">チュートリアルの進捗を読み込み、または保存できませんでした。接続を確認して再度お試しください。</string>
   <string name="ui.tutorial.workspace.title">ワークスペースの使い方</string>
-  <string name="ui.tutorial.workspace.navigation.body">メインナビゲーションからアカウントで利用できるページに移動できます。小さい画面ではメニューボタンを開くと同じ移動先が表示されます。</string>
+  <string name="ui.tutorial.workspace.navigation.body">ページグリッドでアカウントが利用できる移動先を切り替えます。ページのサイドバーには左上に専用の二重山括弧ボタンがあります。</string>
   <string name="ui.tutorial.workspace.search.body">検索を開いて、ページ、設定、現在のページの操作を探してみます。</string>
   <string name="ui.tutorial.workspace.account.title">アカウントメニュー</string>
   <string name="ui.tutorial.workspace.account.body">アバターをクリックしてアカウントメニューを開きます。</string>
@@ -764,4 +764,5 @@
   <string name="ui.tutorial.admin.status.file.integrity.body">ここでファイル検査の結果を確認します。ファイルの欠落や変更は、コンポーネントが読み込めない原因になることがあります。</string>
   <string name="ui.reuse.layout_keyboard">矢印キーで移動し、Shift キーを押しながらサイズを変更します</string>
   <string name="ui.reuse.date">日付</string>
+  <string name="ui.reuse.pages">ページ</string>
 </resources>

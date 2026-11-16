@@ -56,6 +56,8 @@ import {
     bindSocialCardFollowButtons,
 } from "./follow-buttons.js";
 
+const boundProfileControls = new WeakSet();
+
 let root = null;
 let i18n = null;
 let urlHandle = "";
@@ -160,7 +162,9 @@ function setState(partialState) {
 }
 
 function refreshPage() {
-    composer?.refresh(elements);
+    composer?.refreshElements(
+        elements.filter(({ id }) => id !== "posts-new").map(({ id }) => id),
+    );
 }
 
 function refreshProfileHero() {
@@ -335,6 +339,13 @@ async function openEditPopup() {
 }
 
 function bindProfileHeroEvents() {
+    const hero = root.querySelector(".profile-hero");
+    if (!hero || boundProfileControls.has(hero)) return;
+    boundProfileControls.add(hero);
+    if (bannerMenuCloseHandler) {
+        document.removeEventListener("click", bannerMenuCloseHandler, true);
+        bannerMenuCloseHandler = null;
+    }
     root.querySelector(".profile-hero-edit-btn")?.addEventListener(
         "click",
         openEditPopup,
@@ -489,7 +500,11 @@ function bindPageEvents() {
     bindProfileHeroEvents();
     void hydrateAvailabilityIndicators(root);
     const postFormElement = root.querySelector("#new-post-form");
-    if (postFormElement instanceof HTMLFormElement) {
+    if (
+        postFormElement instanceof HTMLFormElement &&
+        !boundProfileControls.has(postFormElement)
+    ) {
+        boundProfileControls.add(postFormElement);
         const profileVis = profile?.visibility ?? "hidden";
         const postFormBuilder = createPostFormBuilderForVisibility(
             profileVis,
@@ -503,8 +518,9 @@ function bindPageEvents() {
             "#profile-post-compose-toggle",
         );
         const postPreviewElement = root.querySelector("#profile-post-preview");
-        const postTitleInput = postFormElement.querySelector("#post-title");
-        const postContentInput = postFormElement.querySelector("#post-content");
+        const postTitleInput = postFormElement.querySelector('[name="title"]');
+        const postContentInput =
+            postFormElement.querySelector('[name="content"]');
         let isPostPreviewMode = false;
         const renderPostPreview = () => {
             if (!(postPreviewElement instanceof HTMLElement)) return;
@@ -567,11 +583,13 @@ function bindPageEvents() {
             event.preventDefault();
             postActions?.doCreatePost();
         });
-    } else {
+    } else if (!(postFormElement instanceof HTMLFormElement)) {
         newPostFormController = null;
     }
     root.querySelectorAll(".post-delete-btn[data-post-id]").forEach(
         (button) => {
+            if (boundProfileControls.has(button)) return;
+            boundProfileControls.add(button);
             button.addEventListener("click", () =>
                 postActions?.doDeletePost(button.dataset.postId),
             );
@@ -832,6 +850,8 @@ export async function mount(rootEl, { signal } = {}) {
         allowCustomization: isOwnProfile,
         elements,
         preferenceKey: "profile-layout",
+        stackAt: "medium",
+        readingOrder: ["hero", "posts-new", "posts", "followers", "following"],
         i18n,
         pageContext: {
             title: i18n.t("ui.reuse.profile"),

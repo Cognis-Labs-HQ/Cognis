@@ -115,8 +115,7 @@ test("page composer includes mobile toolbar drawer behavior", () => {
         source,
         /closeMobileDrawerIfNeeded\s*=\s*toolbarDrawer.closeMobileDrawerIfNeeded/,
     );
-    assert.match(source, /toolbar-mobile-toggle-icon--toolbar-close/);
-    assert.match(source, /toolbar-mobile-toggle-icon--toolbar-menu/);
+    assert.match(source, /toolbar-mobile-toggle-icon/);
     const toolbarIconsSource = readFileSync(
         resolve(ROOT, "src/ui/reuse/page-composer/toolbar-icons.js"),
         "utf8",

@@ -18,14 +18,14 @@ function fixture() {
     trigger.id = "nav-compact-toggle";
     navrow.append(trigger, topnav);
     const panel = document.createElement("aside");
-    panel.id = "nav-drawer";
+    panel.id = "nav-launcher";
     const closeButton = document.createElement("button");
-    closeButton.id = "nav-drawer-close";
+    closeButton.id = "nav-launcher-close";
     const navigation = document.createElement("nav");
-    navigation.className = "nav-drawer-nav";
+    navigation.className = "nav-launcher-nav";
     panel.append(closeButton, navigation);
     const backdrop = document.createElement("div");
-    backdrop.id = "nav-drawer-backdrop";
+    backdrop.id = "nav-launcher-backdrop";
     root.append(navrow, panel, backdrop);
     document.body.append(root);
     const logs = [];
@@ -64,7 +64,7 @@ test("overflowing shell navigation opens accessibly and closes by Escape or back
     assert.equal(state.panel.inert, true);
     assert.equal(state.navigation.innerHTML, state.topnav.innerHTML);
     state.trigger.click();
-    assert.equal(state.panel.classList.contains("nav-drawer--open"), true);
+    assert.equal(state.panel.classList.contains("nav-launcher--open"), true);
     assert.equal(state.panel.inert, false);
     assert.equal(state.trigger.getAttribute("aria-expanded"), "true");
     assert.equal(state.document.activeElement, state.closeButton);

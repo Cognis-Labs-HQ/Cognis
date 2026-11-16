@@ -351,10 +351,10 @@ export async function mount(
                 presentation = context;
                 return `<section class="calendar-section shared-calendar" data-shared-calendar-id="${escapeHtml(calendarId)}">
                 <h2 class="shared-calendar-title">${escapeHtml(calendar.name || i18n.t("gateway.calendar.page_title"))}</h2>
-                <header class="calendar-view-header">
+                <header class="calendar-view-header" data-composer-header>
                     <div class="calendar-view-nav">
                         <button type="button" data-calendar-nav="prev" aria-label="${escapeHtml(i18n.t("gateway.calendar.previous"))}">&lt;</button>
-                        <button type="button" data-calendar-nav="today">${escapeHtml(i18n.t("gateway.calendar.today"))}</button>
+                        <button type="button" data-calendar-nav="today" aria-label="${escapeHtml(i18n.t("gateway.calendar.today"))}" title="${escapeHtml(i18n.t("gateway.calendar.today"))}">${escapeHtml(i18n.t("gateway.calendar.today"))}</button>
                         <button type="button" data-calendar-nav="next" aria-label="${escapeHtml(i18n.t("gateway.calendar.next"))}">&gt;</button>
                         <span class="calendar-nav-month-label">${escapeHtml(periodLabel)}</span>
                     </div>

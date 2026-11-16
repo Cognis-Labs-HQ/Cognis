@@ -115,3 +115,11 @@ Erfolgreiche Profile-Einstellungsschreibvorgänge aktualisieren vor weiteren Les
 Profilformulare verwenden die komponenteneigenen Grenzen für Anzeigename, Biografie, Ort und Webseite. Die Rollensynchronisierung ermittelt den öffentlichen Profilnamen anhand der unveränderlichen Konto-ID, bevor Rolle und Sichtbarkeit aktualisiert werden.
 
 `profile:setRole(accountId, role)` → `Promise<void>`.
+
+## Lesbare mobile Inhalte
+
+Auf Telefonen und Tablets stehen Profilidentität, Beitragserstellung und Beiträge vor weiteren sozialen Bereichen. Lange Namen, Biografien und Beiträge passen sich der verfügbaren Breite an. Beim vollen Banner steht die Identität unter dem Bild; Felder und Entwürfe bleiben bei Größenänderungen erhalten.
+
+Die Vorschau zeigt vor dem Veröffentlichen den aktuellen Titel und Text. Wechsle zurück zum Schreiben oder drehe das Gerät, ohne den Entwurf zu verlieren.
+
+Veröffentlichte Beiträge erscheinen sofort; nach dem Löschen wird die Beitragsliste ohne Neuladen aktualisiert.

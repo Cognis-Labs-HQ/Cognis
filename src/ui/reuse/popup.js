@@ -1,3 +1,4 @@
+import { watchComposerPresentation } from "./page-composer/presentation.js";
 /**
  * Reusable popup / modal dialog.
  *
@@ -92,6 +93,7 @@
  *   variant?: 'info' | 'warning' | 'danger' | 'confirm',
  *   actions?: Array<{ id: string, label: string, variant?: string, disabled?: boolean, icon?: { light: string, dark?: string, position?: 'before' | 'after', flip?: boolean } }>,
  *   maxWidth?: string,
+ *   surface?: "dialog" | "reader",
  *   onOpen?: (overlay: HTMLElement, dismiss: () => void, api: PopupApi) => void,
  *   onAction?: (actionId: string | null, overlay: HTMLElement, api: PopupApi) => Promise<boolean | void> | boolean | void,
  *   closeProtection?: boolean,
@@ -373,6 +375,7 @@ export async function openPopup({
     headerActions = [],
     body,
     variant = "info",
+    surface = "dialog",
     actions,
     maxWidth,
     onOpen,
@@ -391,6 +394,7 @@ export async function openPopup({
     if (signal?.aborted) return null;
     return new Promise((resolve) => {
         const overlay = document.createElement("div");
+        let presentationLifetime;
         overlay.className = "popup-overlay";
         const highestPopupZIndex = Array.from(
             document.querySelectorAll(".popup-overlay"),
@@ -494,6 +498,7 @@ export async function openPopup({
             }
             if (dismissed) return;
             dismissed = true;
+            presentationLifetime?.abort();
             signal?.removeEventListener("abort", abortPopup);
             if (timeoutHandle !== null) {
                 clearTimeout(timeoutHandle);
@@ -576,7 +581,7 @@ export async function openPopup({
             .join("");
 
         overlay.innerHTML = `
-      <div class="popup-dialog popup-dialog--${escapeHtml(variant)}">
+      <div class="popup-dialog popup-dialog--${escapeHtml(variant)}${surface === "reader" ? " popup-dialog--reader" : ""}">
         <div class="popup-header">
           <div class="popup-heading${headingLayout === "annotated" ? " popup-heading--annotated" : ""}">${renderPopupHeading(
               currentPage?.title ?? title,
@@ -796,6 +801,15 @@ export async function openPopup({
         document.addEventListener("keydown", onKeyDown);
 
         document.body.appendChild(overlay);
+        if (surface === "reader") {
+            presentationLifetime = new AbortController();
+            watchComposerPresentation(
+                overlay,
+                overlay.querySelector(".popup-dialog"),
+                presentationLifetime.signal,
+                { observeResize: true },
+            );
+        }
         releaseScroll = lockPageScroll(document);
         window.addEventListener("resize", fitPopupTitleRow);
         fitPopupTitleRow();

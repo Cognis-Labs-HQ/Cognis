@@ -242,7 +242,7 @@ test(
             'document.querySelector("#nav-compact-toggle").click()',
         );
         await browser.waitFor(
-            'document.querySelector("#nav-drawer").getAttribute("aria-hidden") === "false"',
+            'document.querySelector("#nav-launcher").getAttribute("aria-hidden") === "false"',
         );
         await browser.command("Input.dispatchKeyEvent", {
             type: "keyDown",
@@ -253,7 +253,7 @@ test(
         });
         assert.equal(
             await browser.evaluate(
-                'document.querySelector("#nav-drawer").contains(document.activeElement)',
+                'document.querySelector("#nav-launcher").contains(document.activeElement)',
             ),
             true,
         );
@@ -269,7 +269,7 @@ test(
         );
         assert.equal(
             await browser.evaluate(
-                'document.querySelector("#nav-drawer").inert',
+                'document.querySelector("#nav-launcher").inert',
             ),
             true,
         );

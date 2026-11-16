@@ -213,7 +213,7 @@ export function renderThreadHeader(
     <header class="messages-thread-header" id="messages-thread-header">
       ${renderRoomAvatar(room, currentAccountId)}
       <div class="messages-thread-title-wrap">
-        <h2 class="messages-thread-title">${escapeHtml(selectedRoomTitle(room, currentAccountId))}</h2>
+        <h2 class="messages-thread-title" title="${escapeHtml(selectedRoomTitle(room, currentAccountId))}">${escapeHtml(selectedRoomTitle(room, currentAccountId))}</h2>
         ${renderMemberCountControl(room, members, i18n)}
       </div>
       <div class="messages-thread-actions">

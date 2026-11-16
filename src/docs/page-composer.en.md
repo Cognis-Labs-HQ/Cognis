@@ -93,7 +93,7 @@ slot.hidden = false;
 
 ### DOM parking
 
-DOM parking is disabled by default. Set `enableDomParking: true` on the page composer only when media DOM must survive composer re-renders. When enabled, cards containing iframes or other media are parked and restored as intact DOM; this is intended for stateful embeds such as Jitsi Meet. Ordinary pages should rely on fresh rendering and transient form-state restoration so updated content is not hidden by a stale parked tree. Each `refresh()` call re-renders every existing visible card by default, so state changes are reflected without page-specific DOM replacement code.
+DOM parking is disabled by default. Set `enableDomParking: true` on the page composer only when media DOM must survive composer re-renders. When enabled, cards containing iframes or other media are parked and restored as intact DOM; this is intended for stateful embeds such as Jitsi Meet. Ordinary pages should rely on fresh rendering and transient form-state restoration so updated content is not hidden by a stale parked tree. `refresh(elements)` updates element definitions and placement while retaining existing card DOM. Use `refreshElements(ids)` to regenerate changed content through Composer; layout-only updates retain controls and drafts.
 
 ### Persistence
 
@@ -164,8 +164,20 @@ The shared `layout` values are `compact` (up to 640px), `medium` (up to 900px), 
 
 Composer-owned `data-composer-layout`, `data-composer-drawer` and `data-composer-touch` styling hooks cover layout and input changes. Both standard and nested composition receive the same context. The composer observes content and cards, restores form state, and releases observers and listeners when the page ends.
 
-Single fixed composer pages can use `fillViewport: true`. Header, footer, action dock, selected font and visual viewport changes determine available space. A minimum height of 16rem keeps short screens scrollable. Owners may use `openToolbar(trigger)` and `closeToolbar()` with `showToolbarToggle: false` for their own navigation control. Observers and listeners follow page lifetime.
-
 Layout updates notify `onResize`; `onRender` attaches behavior to generated content. Layout-only changes retain the bindings of unchanged controls. Explicit content refreshes mount the requested elements once.
 
 For live viewport checks against an isolated instance, set `COGNIS_BROWSER_TESTS=1`, `COGNIS_CORE_BROWSER_URL` and `COGNIS_BROWSER_CREDENTIALS`. The optional `COGNIS_BROWSER_BYPASS_SERVICE_WORKER=1` isolates rendering from the service-worker cache; offline and PWA behavior require separate checks.
+
+## Page and Sidebar Navigation
+
+Use the Pages grid in the main header to switch destinations. It opens a compact page switcher with keyboard focus containment and Escape dismissal. Page sidebars use the same double-chevron SVG control in the top left, supplied by Page Composer. Messages uses this control for conversations.
+
+`stackAt: "medium"` requests a flowing single column through the shared tablet boundary. `readingOrder` declares the element order for that presentation without changing saved desktop layouts. Existing form nodes and drafts survive layout changes.
+
+Single fixed pages may use `fillViewport: true`; Composer measures header, footer and the visible viewport, with a 20rem minimum. The common sidebar button is always supplied by Composer. `openToolbar(trigger)` and `closeToolbar()` remain available for deliberate application actions.
+
+Shared popups accept `surface: "reader"` for reading content. This surface consumes Composer presentation hooks, keeps its header and footer outside the scrolling body, and releases presentation observers when dismissed.
+
+The header and footer share one shell width, so their outer edges align on phones, tablets and desktop.
+
+Elements can declare a stable `data-composer-header` host. Composer places its sidebar control there, retaining the same button and focus behavior across redraws. Keep asynchronously replaced content inside a child of that host. The `data-composer-sidebar-trigger` styling hook identifies the shared control. Calendar and Messages use this slot to leave more vertical space for content.

@@ -23,7 +23,7 @@ export function renderCalendarAgenda(
             end.setHours(10);
             return `<section class="calendar-agenda-day">
             <header class="calendar-agenda-heading"><h3>${escapeHtml(formatDate(date))}</h3>
-            ${canCreate ? `<button type="button" class="btn-neutral" data-timeslot-add data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}">${escapeHtml(i18n.t("gateway.calendar.add_event"))}</button>` : ""}</header>
+            ${canCreate ? `<button type="button" class="btn-neutral calendar-agenda-add" aria-label="${escapeHtml(i18n.t("gateway.calendar.add_event"))}" title="${escapeHtml(i18n.t("gateway.calendar.add_event"))}" data-timeslot-add data-slot-start="${start.toISOString()}" data-slot-end="${end.toISOString()}"><span class="calendar-agenda-add-icon" aria-hidden="true"></span></button>` : ""}</header>
             ${
                 events.length
                     ? `<div class="calendar-agenda-events">${[...events]

@@ -316,8 +316,7 @@ export async function mount(root, { signal } = {}) {
             gridSize: { default: [12, 8], min: [4, 4], max: "full" },
             render: () =>
                 `<section class="messages-thread">
-          <div class="messages-mobile-navigation"><button type="button" class="messages-room-picker btn-neutral" aria-haspopup="dialog">${escapeHtml(i18n.t("module.social.messages.conversations"))}</button></div>
-          <div id="messages-thread-header-slot"></div>
+          <div class="messages-thread-topbar" data-composer-header><div id="messages-thread-header-slot"></div></div>
           <div id="messages-request-banner-slot"></div>
           <div class="messages-thread-list" id="messages-thread-list">${roomState.getSelectedRoomId() ? "" : renderConversationPrompt(i18n)}</div>
           <div class="messages-typing-status" id="messages-typing-status"></div>
@@ -851,7 +850,6 @@ export async function mount(root, { signal } = {}) {
         allowCustomization: false,
         fillViewport: true,
         toolbarScrollable: true,
-        showToolbarToggle: false,
         elements,
         preferenceKey: "messages-layout",
         i18n,
@@ -870,14 +868,6 @@ export async function mount(root, { signal } = {}) {
     });
 
     await composer.init();
-    root.addEventListener(
-        "click",
-        (event) => {
-            const picker = event.target.closest(".messages-room-picker");
-            if (picker) composer.openToolbar(picker);
-        },
-        { signal },
-    );
     await activateRoomAction({ id: "page:mounted" }, null, { signal });
     pageReady = true;
     if (refreshAfterKeyringUnlock) {

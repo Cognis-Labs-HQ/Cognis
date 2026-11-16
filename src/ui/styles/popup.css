@@ -627,3 +627,22 @@ body[data-theme="light"] .popup-summary-checkbox-row input[type="checkbox"] {
         transition: none;
     }
 }
+
+.popup-dialog--reader {
+    background: rgb(from var(--surface-2) r g b / 1);
+    max-width: 56rem;
+    overflow: hidden;
+}
+.popup-dialog--reader .popup-header,
+.popup-dialog--reader .popup-footer {
+    flex-shrink: 0;
+}
+.popup-dialog--reader .popup-body {
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+[data-composer-touch="true"] .popup-dialog--reader button {
+    min-width: 44px;
+    min-height: 44px;
+}

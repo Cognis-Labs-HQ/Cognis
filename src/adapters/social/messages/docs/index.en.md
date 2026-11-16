@@ -60,4 +60,6 @@ The reusable Messages reaction picker records emoji frequency independently of r
 
 ## Responsive Workspaces
 
-Messages sizes its thread and composer from the visible viewport. Conversations opens the room drawer on phones and tablets; Escape restores focus, choosing a room closes the drawer, and orientation changes retain drafts. Short screens scroll a usable workspace instead of clipping controls.
+## Readable Mobile Content
+
+Open conversations with the common double-chevron sidebar button at the top left. Room headings use two visible lines while retaining their full accessible title; more space remains for message history and drafts survive rotation.

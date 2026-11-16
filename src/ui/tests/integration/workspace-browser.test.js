@@ -61,6 +61,9 @@ for (const mode of ["calendar", "messages"])
                 { timeoutMs: 20000 },
             );
             await browser.evaluate("document.fonts.ready");
+            await browser.evaluate(
+                'window.originalSidebarToggle=document.querySelector(".toolbar-mobile-toggle")',
+            );
             await browser.command("Emulation.setTouchEmulationEnabled", {
                 enabled: true,
                 maxTouchPoints: 1,
@@ -77,6 +80,13 @@ for (const mode of ["calendar", "messages"])
                     );
                     assert.ok(state.width <= width + 1, JSON.stringify(state));
                     assert.ok(state.main.height > 0);
+                    assert.equal(
+                        await browser.evaluate(
+                            `document.querySelector('.toolbar-mobile-toggle')===window.originalSidebarToggle && document.querySelector('[data-composer-header]').contains(window.originalSidebarToggle)`,
+                        ),
+                        true,
+                        "Composer retains one sidebar control inside the content header",
+                    );
                     if (height >= 480)
                         assert.ok(
                             state.main.bottom <= height + 1,
@@ -84,7 +94,7 @@ for (const mode of ["calendar", "messages"])
                         );
                     else
                         assert.ok(
-                            state.main.height >= 256,
+                            state.main.height >= 320,
                             "Short screens retain a scrollable usable workspace",
                         );
                     assert.ok(
@@ -117,7 +127,7 @@ for (const mode of ["calendar", "messages"])
                     } else {
                         if (width <= 900) {
                             const picker = await browser.evaluate(
-                                `(()=>{const rect=document.querySelector('.messages-room-picker').getBoundingClientRect();return{x:rect.left+rect.width/2,y:rect.top+rect.height/2};})()`,
+                                `(()=>{const rect=document.querySelector('.toolbar-mobile-toggle').getBoundingClientRect();return{x:rect.left+rect.width/2,y:rect.top+rect.height/2};})()`,
                             );
                             await browser.command("Input.dispatchTouchEvent", {
                                 type: "touchStart",
@@ -138,7 +148,7 @@ for (const mode of ["calendar", "messages"])
                             });
                             assert.equal(
                                 await browser.evaluate(
-                                    'document.activeElement.classList.contains("messages-room-picker")',
+                                    'document.activeElement.classList.contains("toolbar-mobile-toggle")',
                                 ),
                                 true,
                             );
@@ -224,7 +234,7 @@ for (const mode of ["calendar", "messages"])
                 );
             } else {
                 await browser.evaluate(
-                    'document.querySelector(".messages-room-picker").focus()',
+                    'document.querySelector(".toolbar-mobile-toggle").focus()',
                 );
                 await pressEnter(browser);
                 await browser.waitFor(

@@ -11,10 +11,10 @@ export function bindCompactNavigation(
     const navrow = root.querySelector(".global-navrow");
     const topnav = navrow?.querySelector(".topnav");
     const trigger = navrow?.querySelector("#nav-compact-toggle");
-    const panel = root.querySelector("#nav-drawer");
-    const closeButton = root.querySelector("#nav-drawer-close");
-    const navigation = panel?.querySelector(".nav-drawer-nav");
-    const backdrop = root.querySelector("#nav-drawer-backdrop");
+    const panel = root.querySelector("#nav-launcher");
+    const closeButton = root.querySelector("#nav-launcher-close");
+    const navigation = panel?.querySelector(".nav-launcher-nav");
+    const backdrop = root.querySelector("#nav-launcher-backdrop");
     if (!navrow || !topnav || !trigger || !panel || !backdrop) return;
     bindings.get(navrow)?.();
 
@@ -32,15 +32,15 @@ export function bindCompactNavigation(
         session?.({ restoreFocus });
         session = undefined;
         opening?.abort();
-        panel.classList.remove("nav-drawer--open");
+        panel.classList.remove("nav-launcher--open");
         panel.setAttribute("aria-hidden", "true");
         panel.inert = true;
         trigger.setAttribute("aria-expanded", "false");
         backdrop.hidden = true;
         if (wasOpen)
-            log?.("info", "navigation_drawer_closed", {
+            log?.("info", "navigation_launcher_closed", {
                 component: "ui",
-                operation: "closeNavigationDrawer",
+                operation: "closeNavigationLauncher",
             });
     }
 
@@ -72,7 +72,7 @@ export function bindCompactNavigation(
         redrawNavigation();
         if (trigger.hidden) return;
         panel.inert = false;
-        panel.classList.add("nav-drawer--open");
+        panel.classList.add("nav-launcher--open");
         panel.setAttribute("aria-hidden", "false");
         trigger.setAttribute("aria-expanded", "true");
         backdrop.hidden = false;
@@ -85,9 +85,9 @@ export function bindCompactNavigation(
             onDismiss: close,
         });
         registerSurface?.(panel, close, opening.signal);
-        log?.("info", "navigation_drawer_opened", {
+        log?.("info", "navigation_launcher_opened", {
             component: "ui",
-            operation: "openNavigationDrawer",
+            operation: "openNavigationLauncher",
         });
     }
 

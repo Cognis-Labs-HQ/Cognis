@@ -10,9 +10,9 @@
 }
 
 .calendar-section:has(.calendar-view-canvas) {
-    grid-template-rows: auto 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
     height: 100%;
-    min-height: 18rem;
+    min-height: 0;
     align-content: unset;
 }
 
@@ -285,6 +285,8 @@ body[data-theme="dark"] .calendar-visibility-icon--public {
 }
 
 .calendar-view-header {
+    min-width: 0;
+    align-content: start;
     display: flex;
     align-items: center;
     gap: 0.6rem;
@@ -584,6 +586,7 @@ body[data-theme="dark"] .calendar-visibility-icon--public {
 }
 
 .calendar-agenda-day {
+    background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 10px;
     padding: 0.65rem;
@@ -591,8 +594,8 @@ body[data-theme="dark"] .calendar-visibility-icon--public {
 }
 
 .calendar-agenda-heading {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
     gap: 0.5rem;
     align-items: center;
     justify-content: space-between;
@@ -628,8 +631,8 @@ body[data-theme="dark"] .calendar-visibility-icon--public {
 }
 :is([data-composer-layout="compact"], [data-composer-layout="medium"])
     .calendar-view-switcher {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+    display: flex;
+    flex-wrap: wrap;
 }
 :is([data-composer-layout="compact"], [data-composer-layout="medium"])
     .calendar-view-header
@@ -686,4 +689,86 @@ body[data-theme="dark"] .calendar-visibility-icon--public {
 
 [data-composer-touch="true"] .calendar-year-month-title {
     min-height: 44px;
+}
+
+.calendar-agenda-events {
+    align-content: start;
+}
+.calendar-agenda .calendar-slot-event {
+    width: 100%;
+    text-align: left;
+    padding: 0.65rem 0.75rem;
+    border-radius: 8px;
+}
+
+.calendar-agenda-add {
+    width: 44px;
+    padding: 0;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+}
+.calendar-agenda-add-icon {
+    display: block;
+    flex: 0 0 20px;
+    width: 20px;
+    height: 20px;
+    background: currentColor;
+    mask: url("/static/assets/reuse/icons/add.svg") center / contain no-repeat;
+}
+
+[data-composer-header].calendar-view-header:has(
+        [data-composer-sidebar-trigger]:not([hidden])
+    ) {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+}
+[data-composer-header].calendar-view-header .calendar-view-switcher {
+    grid-column: 1 / -1;
+}
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
+    .calendar-view-select {
+    flex: 1 1 5rem;
+}
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
+    .calendar-date-select {
+    flex: 2 1 9rem;
+}
+
+[data-composer-layout="compact"] .calendar-view-header {
+    gap: 0.25rem;
+}
+[data-composer-layout="compact"] .calendar-view-nav {
+    gap: 0.125rem;
+}
+[data-composer-layout="compact"] .calendar-nav-month-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
+[data-composer-touch="true"] .calendar-view-nav button {
+    min-width: 44px;
+}
+
+[data-composer-layout="compact"] [data-calendar-nav="today"] {
+    font-size: 0;
+}
+[data-composer-layout="compact"] [data-calendar-nav="today"]::before {
+    content: "";
+    display: block;
+    width: 20px;
+    height: 20px;
+    margin: auto;
+    background: var(--text);
+    mask: url("/static/assets/reuse/icons/calendar-today.svg") center / contain
+        no-repeat;
+}
+body[data-theme="dark"] .calendar-date-select {
+    color-scheme: dark;
+}
+body[data-theme="light"] .calendar-date-select {
+    color-scheme: light;
 }

@@ -632,3 +632,5 @@ Anfrage- und Inhaltsbenachrichtigungen der Library verwenden die unveränderlich
 ## Study-Benachrichtigungen
 
 Benachrichtigungen zu Study-Anfragen, Inhalten und Löschungen verwenden die beim Library-Bootstrap registrierte Kategorie. Zur Laufzeit wird nur die aktuelle Benachrichtigungsfunktion aufgelöst. Es erfolgt keine Registrierung, sodass SMTP-Bootstrap-Beschränkungen weder die Zustellung noch Hinweise zu Sichtbarkeitsänderungen unterdrücken.
+
+Studienkarten verwenden die gemeinsame Lesefläche. Der Dialog folgt der verfügbaren Breite, hält Überschrift sowie Zurück/Weiter sichtbar und scrollt lange Inhalte unabhängig. Tablet- und Touchflächen bleiben 44px groß; schmale Detailangaben stehen untereinander.

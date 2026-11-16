@@ -28,7 +28,7 @@ export function mountViewportLayout(root, { signal } = {}) {
                 ? Math.min(bottom - footerHeight - 24, dockBounds.top - 12)
                 : bottom - footerHeight - 24;
         const available = Math.max(
-            16 *
+            20 *
                 Number.parseFloat(
                     window.getComputedStyle(document.documentElement).fontSize,
                 ),

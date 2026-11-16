@@ -19,3 +19,11 @@ Identitas, postingan, dan tindakan akun menargetkan bagian profil hasil render, 
 Posting memakai target daftar tersendiri meski editor terlihat. Sorotan aksi sosial mengikuti ukuran tombol; pratinjau editor dihilangkan pada profil lain.
 
 Identitas dan aksi sosial muncul sebelum langkah posting dan pratinjau yang berurutan.
+
+## Konten Seluler yang Terbaca
+
+Pada ponsel dan tablet, identitas profil, penulisan pos, dan linimasa mendahului bagian sosial lain. Nama panjang, biografi, dan pos mengikuti lebar tersedia. Tampilan spanduk penuh menempatkan identitas di bawah gambar; kolom dan draf bertahan saat ukuran berubah.
+
+Pratinjau menampilkan judul dan isi terkini sebelum diterbitkan. Kembali ke mode Tulis atau putar perangkat tanpa kehilangan draf.
+
+Pos yang diterbitkan langsung tampil, dan penghapusan memperbarui linimasa tanpa memuat ulang halaman.

@@ -291,3 +291,13 @@ body[data-theme="dark"] .library-speaker-icon-dark {
 .library-admin-editor--read-only .image-preview-remove {
     display: none;
 }
+
+[data-composer-layout="compact"] .library-detail :is(dl, .library-detail-fact) {
+    grid-template-columns: minmax(0, 1fr);
+}
+.library-detail-section,
+.library-detail-summary,
+.library-related-entries {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}

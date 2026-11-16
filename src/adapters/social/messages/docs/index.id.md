@@ -60,4 +60,6 @@ Pemilih reaksi Messages yang dapat digunakan kembali mencatat frekuensi emoji se
 
 ## Ruang Kerja Responsif
 
-Pesan menyesuaikan utas dan kolom penulisan dengan area layar yang terlihat. Percakapan membuka daftar ruang pada ponsel dan tablet. Escape mengembalikan fokus, pemilihan menutup daftar, dan perubahan orientasi mempertahankan draf. Layar pendek menggulir ruang kerja yang dapat digunakan alih-alih memotong kontrol.
+## Konten Seluler yang Terbaca
+
+Buka percakapan melalui tombol panel sudut ganda bersama di kiri atas. Judul ruang memakai dua baris terlihat sambil mempertahankan judul lengkap yang aksesibel. Riwayat pesan memperoleh lebih banyak ruang dan draf bertahan saat orientasi berubah.

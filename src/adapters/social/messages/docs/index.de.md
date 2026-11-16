@@ -60,4 +60,6 @@ Die wiederverwendbare Reaktionsauswahl in Nachrichten erfasst die Emoji-Häufigk
 
 ## Anpassbare Arbeitsflächen
 
-Messages passt Verlauf und Eingabe an den sichtbaren Bildschirmausschnitt an. Unterhaltungen öffnet auf Telefonen und Tablets die Raumliste. Escape gibt den Fokus zurück, eine Auswahl schließt die Liste und Drehungen erhalten Entwürfe. Auf niedrigen Bildschirmen bleibt die Arbeitsfläche scrollbar, statt Bedienelemente abzuschneiden.
+## Lesbare mobile Inhalte
+
+Öffne Unterhaltungen über die gemeinsame Schaltfläche mit doppeltem Winkel oben links. Raumüberschriften verwenden zwei sichtbare Zeilen, während der vollständige zugängliche Titel erhalten bleibt. Mehr Platz bleibt für Nachrichten; Entwürfe überstehen Drehungen.

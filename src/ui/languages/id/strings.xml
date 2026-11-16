@@ -113,10 +113,10 @@
   <string name="ui.reuse.role_owner">Pemilik</string>
   <string name="ui.layout.brand.aria">Beranda Cognis</string>
   <string name="ui.layout.nav.primary">Navigasi utama</string>
-  <string name="ui.layout.nav.open_menu">Buka menu navigasi</string>
-  <string name="ui.layout.nav.close_menu">Tutup menu navigasi</string>
-  <string name="ui.layout.toolbar.collapse">Ciutkan bilah alat</string>
-  <string name="ui.layout.toolbar.expand">Perluas bilah alat</string>
+  <string name="ui.layout.nav.open_menu">Buka pemilih halaman</string>
+  <string name="ui.layout.nav.close_menu">Tutup pemilih halaman</string>
+  <string name="ui.layout.toolbar.collapse">Tutup panel samping</string>
+  <string name="ui.layout.toolbar.expand">Buka panel samping</string>
   <string name="ui.layout.greeting">Halo,</string>
   <string name="ui.layout.search.aria">Cari</string>
   <string name="ui.layout.search.placeholder">Cari pengguna…</string>
@@ -635,7 +635,7 @@
   <string name="ui.tutorial.error">Tutorial tidak dapat dilanjutkan. Halaman Anda tetap tersedia.</string>
   <string name="ui.tutorial.progress_error">Progres tutorial tidak dapat dimuat atau disimpan. Periksa koneksi Anda dan coba lagi.</string>
   <string name="ui.tutorial.workspace.title">Ruang Kerja Anda</string>
-  <string name="ui.tutorial.workspace.navigation.body">Navigasi utama menghubungkan halaman yang tersedia untuk akun Anda. Pada layar kecil, buka tombol menu untuk melihat tujuan yang sama.</string>
+  <string name="ui.tutorial.workspace.navigation.body">Gunakan kisi Halaman untuk berpindah antara tujuan yang tersedia bagi akun Anda. Panel samping halaman memiliki tombol sudut ganda sendiri di kiri atas.</string>
   <string name="ui.tutorial.workspace.search.body">Buka Pencarian untuk mencoba menemukan halaman, pengaturan, atau tindakan di halaman ini.</string>
   <string name="ui.tutorial.workspace.account.title">Menu Akun</string>
   <string name="ui.tutorial.workspace.account.body">Klik avatar untuk membuka menu akun.</string>
@@ -764,4 +764,5 @@
   <string name="ui.tutorial.admin.status.file.integrity.body">Bandingkan hasil pemeriksaan berkas di sini. Berkas yang hilang atau berubah dapat menjelaskan kegagalan pemuatan komponen.</string>
   <string name="ui.reuse.layout_keyboard">Gunakan tombol panah untuk memindahkan; tahan Shift untuk mengubah ukuran</string>
   <string name="ui.reuse.date">Tanggal</string>
+  <string name="ui.reuse.pages">Halaman</string>
 </resources>

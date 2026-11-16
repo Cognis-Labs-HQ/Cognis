@@ -23,5 +23,5 @@
   <string name="module.social.profile.tutorial.profile.social.actions.title">Soziale Aktionen</string>
   <string name="module.social.profile.tutorial.profile.social.actions.body">Folgen, Nachrichten und Beziehungen steuern Sie am Profil; prüfen Sie zuvor die ausgewählte Person.</string>
   <string name="module.social.profile.tutorial.profile.preview.post.title">Beitrag prüfen</string>
-  <string name="module.social.profile.tutorial.profile.preview.post.body">Verfassen Sie einen Beitrag und prüfen Sie Formatierung und Anhänge in der Vorschau. Kontrollieren Sie vor dem Veröffentlichen die Zielgruppe.</string>
+  <string name="module.social.profile.tutorial.profile.preview.post.body">Die Vorschau zeigt vor dem Veröffentlichen den aktuellen Titel und Text. Wechsle zurück zum Schreiben oder drehe das Gerät, ohne den Entwurf zu verlieren.</string>
 </resources>

@@ -20,10 +20,14 @@ export function isCompactWidth(width) {
     );
 }
 
-/** @param {HTMLElement|null} container @returns {boolean} */
-export function isCompactComposer(container) {
+/** @param {HTMLElement|null} container Available content. @param {"compact"|"medium"} stackAt Shared stacking boundary. @returns {boolean} */
+export function isCompactComposer(container, stackAt = "compact") {
     const width = container?.getBoundingClientRect().width;
-    return isCompactWidth(width);
+    return stackAt === "medium"
+        ? Number.isFinite(width) &&
+              width > 0 &&
+              width <= COMPOSER_MEDIUM_BREAKPOINT
+        : isCompactWidth(width);
 }
 
 /**

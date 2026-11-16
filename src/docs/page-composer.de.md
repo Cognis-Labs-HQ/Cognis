@@ -61,7 +61,7 @@ Wenn `subPageNavigation: true`, ist jeweils nur ein Element sichtbar. Toolbar-Sc
 
 ### DOM-Parking
 
-DOM-Parking ist standardmäßig deaktiviert. Setzen Sie `enableDomParking: true` im Page Composer nur dann, wenn Medien-DOM Composer-Neudarstellungen überstehen muss. Ist die Option aktiv, werden Karten mit Iframes oder anderen Medien als intaktes DOM geparkt und wiederhergestellt; dies ist für zustandsbehaftete Einbettungen wie Jitsi Meet gedacht. Normale Seiten sollten neu gerendert werden und die temporäre Formularzustandswiederherstellung nutzen, damit aktualisierte Inhalte nicht durch einen veralteten geparkten Baum verdeckt werden. Jeder Aufruf von `refresh()` rendert standardmäßig alle vorhandenen sichtbaren Karten neu, damit Zustandsänderungen ohne seitenspezifischen DOM-Austausch erscheinen.
+DOM-Parking ist standardmäßig deaktiviert. Setzen Sie `enableDomParking: true` im Page Composer nur dann, wenn Medien-DOM Composer-Neudarstellungen überstehen muss. Ist die Option aktiv, werden Karten mit Iframes oder anderen Medien als intaktes DOM geparkt und wiederhergestellt; dies ist für zustandsbehaftete Einbettungen wie Jitsi Meet gedacht. Normale Seiten sollten neu gerendert werden und die temporäre Formularzustandswiederherstellung nutzen, damit aktualisierte Inhalte nicht durch einen veralteten geparkten Baum verdeckt werden. `refresh(elements)` aktualisiert Elementdefinitionen und Platzierung und erhält vorhandenes Karten-DOM. Mit `refreshElements(ids)` werden geänderte Inhalte durch Composer neu erzeugt; reine Layoutänderungen erhalten Bedienelemente und Entwürfe.
 
 ### Persistenz
 
@@ -97,8 +97,20 @@ Die gemeinsamen `layout`-Werte sind `compact` (bis 640px), `medium` (bis 900px) 
 
 Die vom Composer verwalteten Attribute `data-composer-layout`, `data-composer-drawer` und `data-composer-touch` steuern Layout und Eingabe. Normale und verschachtelte Komposition erhalten denselben Kontext. Der Composer überwacht Inhalt und Karten, stellt Formularwerte wieder her und entfernt Beobachter und Ereignisbehandlung beim Verlassen der Seite.
 
-Feste Composer-Seiten mit einem Element können `fillViewport: true` verwenden. Kopf- und Fußzeile, Aktionsleiste, gewählte Schrift und sichtbarer Bildschirmausschnitt bestimmen den Platz. Mindestens 16rem erhalten eine nutzbare, scrollbare Fläche. Für eigene Navigation stehen `openToolbar(trigger)` und `closeToolbar()` mit `showToolbarToggle: false` bereit. Beobachter und Ereignisbehandlung folgen der Seitenlebensdauer.
-
 Layoutänderungen melden sich über `onResize`; `onRender` bindet das Verhalten gerenderter Inhalte. Reine Layoutänderungen behalten die Ereignisbindung unveränderter Bedienelemente. Eine ausdrückliche Inhaltsaktualisierung initialisiert die gewählten Elemente einmal.
 
 Für Bildschirmtests mit einer isolierten laufenden Instanz setzt du `COGNIS_BROWSER_TESTS=1`, `COGNIS_CORE_BROWSER_URL` und `COGNIS_BROWSER_CREDENTIALS`. Optional trennt `COGNIS_BROWSER_BYPASS_SERVICE_WORKER=1` die Darstellung vom Service-Worker-Cache; Offline- und PWA-Verhalten erfordern eigene Prüfungen.
+
+## Seiten und Seitenleisten
+
+Über das Seitenraster im Hauptkopf wechselst du zu anderen Bereichen. Die kompakte Seitenauswahl hält den Tastaturfokus und schließt mit Escape. Page Composer stellt für alle Seitenleisten dieselbe SVG-Schaltfläche mit doppeltem Winkel oben links bereit. Messages öffnet damit die Unterhaltungen.
+
+`stackAt: "medium"` fordert bis zur gemeinsamen Tabletgrenze eine fließende einzelne Spalte an. `readingOrder` legt deren Elementreihenfolge fest, ohne gespeicherte Desktoplayouts zu ändern. Formularfelder und Entwürfe bleiben bei Layoutänderungen erhalten.
+
+Feste Seiten mit einem Element können `fillViewport: true` verwenden. Composer berücksichtigt Kopfzeile, Fußzeile und sichtbaren Bildschirm mit mindestens 20rem. Composer stellt die gemeinsame Seitenleistenschaltfläche immer bereit. `openToolbar(trigger)` und `closeToolbar()` bleiben für gezielte Anwendungsaktionen verfügbar.
+
+Gemeinsame Dialoge akzeptieren `surface: "reader"` für Leseinhalte. Die Fläche nutzt Composer-Darstellungshaken, hält Kopf- und Fußzeile außerhalb des scrollbaren Inhalts und beendet ihre Größenbeobachtung beim Schließen.
+
+Kopf- und Fußzeile verwenden dieselbe Rahmenbreite. Ihre Außenkanten stimmen auf Telefonen, Tablets und Desktopbildschirmen überein.
+
+Elemente können einen stabilen Bereich mit `data-composer-header` deklarieren. Composer platziert dort seine Seitenleistenschaltfläche und erhält dieselbe Schaltfläche samt Fokusverhalten bei Neuzeichnungen. Asynchron ersetzte Inhalte gehören in ein Kindelement dieses Bereichs. `data-composer-sidebar-trigger` kennzeichnet die gemeinsame Schaltfläche für Stile. Kalender und Messages gewinnen dadurch mehr Höhe für Inhalte.

@@ -197,3 +197,113 @@ test(
         );
     },
 );
+
+test(
+    "page launcher and Composer sidebar have distinct accessible controls in every compact layout",
+    { skip, timeout: 60000 },
+    async (context) => {
+        const { browser } = await startFixture(context);
+        for (const [width, height] of [
+            [253, 600],
+            [320, 568],
+            [390, 844],
+            [568, 320],
+            [768, 1024],
+            [844, 390],
+        ]) {
+            await browser.resize(width, height);
+            await browser.evaluate(
+                'document.querySelector("#nav-compact-toggle").click()',
+            );
+            await browser.waitFor(
+                'getComputedStyle(document.querySelector("#nav-launcher")).opacity === "1"',
+            );
+            const [panel] = await rectangles(browser, "#nav-launcher");
+            assertHorizontallyContained(panel, width, "Page switcher");
+            assert.ok(
+                panel.top >= 0 && panel.bottom <= height,
+                "Page switcher fits the visible height",
+            );
+            const links = await rectangles(
+                browser,
+                ".nav-launcher-nav a:not([hidden])",
+            );
+            for (const link of links)
+                assert.ok(
+                    link.height >= 44,
+                    "Page destinations have touch targets",
+                );
+            await captureScreenshot(
+                browser,
+                `page-launcher-${width}-${height}`,
+            );
+            await browser.command("Input.dispatchKeyEvent", {
+                type: "keyDown",
+                key: "Escape",
+                code: "Escape",
+                windowsVirtualKeyCode: 27,
+            });
+            await browser.evaluate(
+                'document.querySelector(".toolbar-mobile-toggle").click()',
+            );
+            const [toggle] = await rectangles(
+                browser,
+                ".toolbar-mobile-toggle",
+            );
+            assert.ok(
+                toggle.left <= 20 && toggle.top <= 20,
+                "Sidebar control stays in the top left while open",
+            );
+            const icons = await browser.evaluate(
+                `({primary:getComputedStyle(document.querySelector('.nav-compact-toggle-icon')).maskImage,sidebar:getComputedStyle(document.querySelector('.toolbar-mobile-toggle-icon')).maskImage})`,
+            );
+            assert.ok(icons.primary.includes("navigation-pages.svg"));
+            assert.ok(icons.sidebar.includes("sidebar-collapse.svg"));
+            await captureScreenshot(
+                browser,
+                `composer-sidebar-${width}-${height}`,
+            );
+            await browser.command("Input.dispatchKeyEvent", {
+                type: "keyDown",
+                key: "Escape",
+                code: "Escape",
+                windowsVirtualKeyCode: 27,
+            });
+            assert.equal(
+                await browser.evaluate(
+                    'document.activeElement.classList.contains("toolbar-mobile-toggle")',
+                ),
+                true,
+            );
+        }
+    },
+);
+
+test(
+    "header and footer share the same outer edges on phones, tablets and desktop",
+    { skip, timeout: 30000 },
+    async (context) => {
+        const { browser } = await startFixture(context);
+        await browser.evaluate(
+            'document.querySelector(".content-panel").style.paddingBottom="110vh"',
+        );
+        for (const [width, height] of [
+            [253, 600],
+            [320, 568],
+            [390, 844],
+            [768, 1024],
+            [1024, 768],
+            [1440, 900],
+            [1920, 1080],
+        ]) {
+            await browser.resize(width, height);
+            const [header] = await rectangles(browser, ".site-header");
+            const [footer] = await rectangles(browser, ".global-footer");
+            assert.ok(
+                Math.abs(header.left - footer.left) <= 1 &&
+                    Math.abs(header.right - footer.right) <= 1,
+                `Header and footer edges match at ${width}px`,
+            );
+        }
+    },
+);

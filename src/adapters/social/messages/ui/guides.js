@@ -10,7 +10,7 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "compact-conversations",
-                        selector: ".messages-room-picker",
+                        selector: ".toolbar-mobile-toggle",
                         titleKey:
                             "module.social.messages.tutorial.messages.rooms.title",
                         bodyKey:
