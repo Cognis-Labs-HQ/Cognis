@@ -114,3 +114,5 @@ Gemeinsame Dialoge akzeptieren `surface: "reader"` für Leseinhalte. Die Fläche
 Kopf- und Fußzeile verwenden dieselbe Rahmenbreite. Ihre Außenkanten stimmen auf Telefonen, Tablets und Desktopbildschirmen überein.
 
 Elemente können einen stabilen Bereich mit `data-composer-header` deklarieren. Composer platziert dort seine Seitenleistenschaltfläche und erhält dieselbe Schaltfläche samt Fokusverhalten bei Neuzeichnungen. Asynchron ersetzte Inhalte gehören in ein Kindelement dieses Bereichs. `data-composer-sidebar-trigger` kennzeichnet die gemeinsame Schaltfläche für Stile. Kalender und Messages gewinnen dadurch mehr Höhe für Inhalte.
+
+Composer deaktiviert die automatische Scroll-Verankerung des Browsers im gesamten Rasterinhalt, damit sich verschachtelte Scroll-Positionen bei Breitenänderungen nicht verschieben. Die Inhaltskomponenten steuern das Scrollen beim Anfügen oder Ersetzen von Inhalten.

@@ -27,6 +27,16 @@ export async function serveBrowserFixture(
         const pathname = new URL(request.url, "http://localhost").pathname;
         requests.push({ method: request.method, pathname });
         try {
+            if (pathname === "/static/gateways/auth/session-flow-hooks.js") {
+                response.setHeader("content-type", "text/javascript");
+                response.end(
+                    await readFile(
+                        new URL("./fixtures/session.js", import.meta.url),
+                        "utf8",
+                    ),
+                );
+                return;
+            }
             if (pathname.startsWith("/api/")) {
                 response.setHeader("content-type", "application/json");
                 if (pathname === "/api/v1/tutorials/completions") {
@@ -97,13 +107,6 @@ export async function serveBrowserFixture(
                 if (configuredRoot) {
                     directory = configuredRoot[1];
                     relativePath = pathname.slice(configuredRoot[0].length);
-                }
-                const component = relativePath.match(
-                    /^(gateways\/[^/]+|adapters\/[^/]+\/[^/]+)\/(.*)$/,
-                );
-                if (component && !configuredRoot) {
-                    directory = resolve(uiDirectory, "..", component[1], "ui");
-                    relativePath = component[2];
                 }
             }
             const filename = resolve(directory, relativePath);

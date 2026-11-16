@@ -1,7 +1,3 @@
-import {
-    composerPresentation,
-    applyComposerPresentation,
-} from "./presentation.js";
 /**
  * Preserves stateful element DOM nodes while the page composer rerenders.
  *
@@ -15,6 +11,10 @@ import {
  * @param {object} state - Mutable page composer rendering state.
  * @returns {{ parkPreservedElementNodes: Function, renderElementContent: Function, refreshElements: Function, syncElementPresentation: Function, consumeElementRender: Function }}
  */
+import {
+    composerPresentation,
+    applyComposerPresentation,
+} from "./presentation.js";
 export function createDomPreservation(state, { redraw } = {}) {
     const renderedLayouts = new WeakMap();
     const pendingMounts = new WeakSet();

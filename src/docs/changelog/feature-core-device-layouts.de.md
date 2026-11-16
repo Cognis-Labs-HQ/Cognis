@@ -38,6 +38,12 @@ Veröffentlichte Beiträge erscheinen sofort; nach dem Löschen wird die Beitrag
 
 Elemente können einen stabilen Bereich mit `data-composer-header` deklarieren. Composer platziert dort seine Seitenleistenschaltfläche und erhält dieselbe Schaltfläche samt Fokusverhalten bei Neuzeichnungen. Asynchron ersetzte Inhalte gehören in ein Kindelement dieses Bereichs. `data-composer-sidebar-trigger` kennzeichnet die gemeinsame Schaltfläche für Stile. Kalender und Messages gewinnen dadurch mehr Höhe für Inhalte.
 
+## Komponentenisolierung
+
+Die Ansichtsgrößentests von Kalender und Nachrichten liegen bei ihren jeweiligen Komponenten. Browser-Testumgebungen stellen Komponentenressourcen ausdrücklich bereit und ersetzen externe Verträge durch Testimplementierungen. Prüfungen für gefüllte Ansichten, Entwürfe, Touch-Bedienelemente und die Ressourcenfreigabe bleiben erhalten. Nachrichten-Tutorials verwenden den öffentlichen Composer-Seitenleistenanker.
+
+Composer deaktiviert die automatische Scroll-Verankerung des Browsers im gesamten Rasterinhalt, damit sich verschachtelte Scroll-Positionen bei Breitenänderungen nicht verschieben. Die Inhaltskomponenten steuern das Scrollen beim Anfügen oder Ersetzen von Inhalten.
+
 ## Commits
 
 - [f4f6d3a84](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4f6d3a84b587d4eb169b5db76b850956544ad31)

@@ -18,6 +18,9 @@ test(
             fileURLToPath(new URL("./fixtures/responsive", import.meta.url)),
             {
                 staticRoots: {
+                    "/static/adapters/study/library/": fileURLToPath(
+                        new URL("../ui/", import.meta.url),
+                    ),
                     "/static/gateways/study/": fileURLToPath(
                         new URL(
                             "../../../../gateways/study/ui/",

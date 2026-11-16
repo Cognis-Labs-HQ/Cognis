@@ -1,0 +1,102 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import { fileURLToPath } from "node:url";
+import {
+    checkWorkspace,
+    workspaceBrowserSkip,
+} from "../../../ui/tests/integration/reuse/workspace.js";
+
+test(
+    "calendar has a usable populated workspace across devices",
+    { skip: workspaceBrowserSkip, timeout: 120000 },
+    async (context) => {
+        await checkWorkspace(context, {
+            fixtureDirectory: fileURLToPath(
+                new URL("./fixtures/responsive", import.meta.url),
+            ),
+            staticRoots: {
+                "/static/gateways/calendar/": fileURLToPath(
+                    new URL("../", import.meta.url),
+                ),
+            },
+            screenshotPrefix: "workspace-calendar",
+            verifyViewport: async (browser, width) => {
+                const availableWidth = await browser.evaluate(
+                    `(()=>{const host=document.querySelector('[data-composer-element]');const style=getComputedStyle(host);return host.getBoundingClientRect().width-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight);})()`,
+                );
+                assert.equal(
+                    await browser.evaluate(
+                        'Boolean(document.querySelector(".calendar-agenda"))',
+                    ),
+                    availableWidth <= 900,
+                );
+                if (width <= 640) {
+                    assert.equal(
+                        await browser.evaluate(
+                            'document.querySelectorAll(".calendar-agenda-day").length',
+                        ),
+                        3,
+                    );
+                    assert.ok(
+                        await browser.evaluate(
+                            'document.querySelectorAll(".calendar-agenda [data-calendar-event]").length>=5',
+                        ),
+                    );
+                }
+            },
+            afterMatrix: async (browser) => {
+                await browser.resize(1920, 1080);
+                await browser.waitFor(
+                    '!document.querySelector(".calendar-agenda")',
+                );
+                await browser.evaluate(
+                    'document.querySelector(".main-window").style.gridTemplateColumns="minmax(0,1fr) 420px"',
+                );
+                await browser.waitFor(
+                    'Boolean(document.querySelector(".calendar-agenda"))',
+                );
+                assert.equal(
+                    await browser.evaluate("innerWidth"),
+                    1920,
+                    "A narrow composer pane chooses its presentation without a viewport resize",
+                );
+                await browser.evaluate(
+                    'document.querySelector(".main-window").style.gridTemplateColumns=""',
+                );
+                await browser.waitFor(
+                    '!document.querySelector(".calendar-agenda")',
+                );
+                await browser.resize(390, 844);
+                for (const [view, count] of [
+                    ["day", 1],
+                    ["week", 3],
+                    ["month", 3],
+                ]) {
+                    await browser.callFunction(
+                        `function(view){const select=document.querySelector('[data-calendar-view-select]');select.value=view;select.dispatchEvent(new Event('change',{bubbles:true}));}`,
+                        [view],
+                    );
+                    assert.equal(
+                        await browser.evaluate(
+                            'document.querySelectorAll(".calendar-agenda-day").length',
+                        ),
+                        count,
+                    );
+                    assert.ok(
+                        await browser.evaluate(
+                            '[...document.querySelectorAll(".calendar-agenda [data-timeslot-add]")].every(button=>button.getBoundingClientRect().height>=44)',
+                        ),
+                    );
+                }
+                const readonly = await browser.evaluate(
+                    `(async()=>{const{renderCalendarView}=await import('/static/gateways/calendar/ui/calendar-ui-helpers.js');const{data,i18n}=window.fixture;const host=document.createElement('div');host.innerHTML=renderCalendarView(data.events,'month',new Date(data.date),i18n,null,{compact:true,canCreate:false});return{events:new Set([...host.querySelectorAll('[data-calendar-event]')].map(button=>button.dataset.calendarEvent)).size,create:host.querySelectorAll('[data-timeslot-add]').length};})()`,
+                );
+                assert.deepEqual(
+                    readonly,
+                    { events: 7, create: 0 },
+                    "Read-only calendars retain events without offering writes",
+                );
+            },
+        });
+    },
+);

@@ -1,13 +1,16 @@
+/**
+ * Shares viewport and input presentation with Composer elements and reader surfaces.
+ * Exports composerPresentation to measure a host, applyComposerPresentation to
+ * publish styling hooks, and watchComposerPresentation to track a surface lifetime.
+ * @example const presentation = composerPresentation(element);
+ * @param {HTMLElement} host Rendered card or composition container.
+ * @returns {Readonly<{compact: boolean, layout: string, drawer: boolean, touch: boolean}>} Current presentation.
+ */
 import {
     isCompactWidth,
     COMPOSER_MEDIUM_BREAKPOINT,
     COMPOSER_DRAWER_BREAKPOINT,
 } from "./responsive-layout.js";
-/**
- * Composer-owned presentation context and public styling hooks for element renderers.
- * @param {HTMLElement} host Rendered card or composition container.
- * @returns {Readonly<{compact: boolean, layout: string, drawer: boolean, touch: boolean}>} Current presentation.
- */
 export function composerPresentation(host) {
     const window = host.ownerDocument.defaultView;
     const style = window.getComputedStyle(host);

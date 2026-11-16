@@ -1,5 +1,7 @@
 /**
- * Fit a single composer surface to the visible viewport, including keyboard resizes.
+ * Fits a single composer surface to the visible viewport, including keyboard resizes.
+ * Exports mountViewportLayout to bind sizing to a surface lifetime.
+ * @example const dispose = mountViewportLayout(root, { signal });
  * @param {HTMLElement} root Page root.
  * @param {{signal?: AbortSignal}} options Page lifetime.
  * @returns {() => void} Idempotent cleanup.

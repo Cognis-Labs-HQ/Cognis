@@ -1,4 +1,3 @@
-import { COMPOSER_DRAWER_BREAKPOINT } from "./responsive-layout.js";
 /**
  * Owns responsive toolbar visibility, accessibility, sizing, and cleanup.
  * Public export: mountComposerToolbarDrawer creates a page-scoped drawer.
@@ -8,6 +7,7 @@ import { COMPOSER_DRAWER_BREAKPOINT } from "./responsive-layout.js";
  * @param {object} options - Composer root, translations, and lifecycle options.
  * @returns {{open(trigger?: HTMLElement): void, closeMobileDrawerIfNeeded(): void, syncTogglePlacement(): void, destroy(): void}|null} Drawer lifecycle.
  */
+import { COMPOSER_DRAWER_BREAKPOINT } from "./responsive-layout.js";
 import { beginDrawerSession } from "../drawer-session.js";
 import { renderToolbarToggleIcon } from "./toolbar-icons.js";
 

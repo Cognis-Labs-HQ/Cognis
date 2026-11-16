@@ -15,6 +15,13 @@ test(
     async (context) => {
         const server = await serveBrowserFixture(
             fileURLToPath(new URL("./fixtures/responsive", import.meta.url)),
+            {
+                staticRoots: {
+                    "/static/adapters/social/profile/": fileURLToPath(
+                        new URL("../ui/", import.meta.url),
+                    ),
+                },
+            },
         );
         context.after(() => server.close());
         const browser = await launchChromium(executable);

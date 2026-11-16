@@ -49,15 +49,15 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Memory Database       | `src/adapters/db/memory/`           | `0.1.24` |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.40` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.23` |
-| Profile (Social)      | `src/adapters/social/profile/`      | `3.0.15` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.40` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `3.0.16` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.41` |
 | Calls (Social)        | `src/adapters/social/call/`         | `0.5.36` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.38` |
 | User Share            | `src/adapters/share/user/`          | `1.1.20` |
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.4.11` |
-| Library (Study)       | `src/adapters/study/library/`       | `4.1.25` |
+| Library (Study)       | `src/adapters/study/library/`       | `4.1.26` |
 | Drawing (Study)       | `src/adapters/study/drawing/`       | `1.1.3`  |
-| Adaptor Kartu Belajar | `src/adapters/study/flashcards/`    | `1.5.32` |
+| Adaptor Kartu Belajar | `src/adapters/study/flashcards/`    | `1.5.33` |
 | Progress (Study)      | `src/adapters/study/progress/`      | `1.3.1`  |
 | Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.2.11` |
 | Console Logging       | `src/adapters/logging/console/`     | `1.1.4`  |
@@ -78,7 +78,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Logging               | `src/gateways/logging/`       | `1.5.19` |
 | Observability         | `src/gateways/observability/` | `1.0.7`  |
 | Study                 | `src/gateways/study/`         | `2.6.10` |
-| Calendar              | `src/gateways/calendar/`      | `1.7.9`  |
+| Calendar              | `src/gateways/calendar/`      | `1.7.10` |
 
 ## Kontrak inti
 

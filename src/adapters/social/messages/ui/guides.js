@@ -10,7 +10,7 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "compact-conversations",
-                        selector: ".toolbar-mobile-toggle",
+                        selector: "[data-composer-sidebar-trigger]",
                         titleKey:
                             "module.social.messages.tutorial.messages.rooms.title",
                         bodyKey:

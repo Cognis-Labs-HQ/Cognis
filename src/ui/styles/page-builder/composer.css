@@ -1,5 +1,9 @@
-.composer-view-grid {
+.composer-view-grid,
+.composer-view-grid * {
     overflow-anchor: none;
+}
+
+.composer-view-grid {
     display: grid;
     grid-template-columns: repeat(var(--grid-cols, 1), minmax(0, 1fr));
     grid-auto-rows: var(--composer-grid-row-size, 90px);

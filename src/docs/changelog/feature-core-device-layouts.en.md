@@ -38,6 +38,12 @@ Published posts appear immediately, and deletions update the timeline without re
 
 Elements can declare a stable `data-composer-header` host. Composer places its sidebar control there, retaining the same button and focus behavior across redraws. Keep asynchronously replaced content inside a child of that host. The `data-composer-sidebar-trigger` styling hook identifies the shared control. Calendar and Messages use this slot to leave more vertical space for content.
 
+## Component Isolation
+
+Calendar and Messages viewport fixtures live with their owning components. Browser fixtures explicitly supply component assets and fake external contracts, retaining checks for populated layouts, drafts, touch controls and cleanup. Messages tutorials target the public Composer sidebar hook.
+
+Composer disables browser scroll anchoring throughout its grid content so width changes retain nested scroll offsets. Content owners control scrolling when they append or replace content.
+
 ## Commits
 
 - [f4f6d3a84](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4f6d3a84b587d4eb169b5db76b850956544ad31)

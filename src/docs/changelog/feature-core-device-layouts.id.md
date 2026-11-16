@@ -38,6 +38,12 @@ Pos yang diterbitkan langsung tampil, dan penghapusan memperbarui linimasa tanpa
 
 Elemen dapat mendeklarasikan wadah stabil `data-composer-header`. Composer menempatkan kontrol panel di sana dan mempertahankan tombol serta perilaku fokus saat digambar ulang. Konten yang diganti asinkron ditempatkan di anak wadah tersebut. Penanda gaya `data-composer-sidebar-trigger` menunjukkan kontrol bersama. Kalender dan Pesan memakai tempat ini agar lebih banyak ruang vertikal tersedia untuk konten.
 
+## Isolasi Komponen
+
+Fixture ukuran tampilan Kalender dan Pesan berada di komponen pemiliknya. Fixture browser menyediakan aset komponen secara eksplisit dan menggunakan implementasi uji untuk kontrak eksternal, sambil mempertahankan pemeriksaan tata letak berisi data, draf, kontrol sentuh, dan pelepasan sumber daya. Tutorial Pesan menggunakan penanda bilah samping publik Composer.
+
+Composer menonaktifkan penjangkaran gulir browser di seluruh konten kisi agar perubahan lebar mempertahankan posisi gulir di dalamnya. Komponen pemilik konten mengatur pengguliran saat menambahkan atau mengganti konten.
+
 ## Komit
 
 - [f4f6d3a84](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4f6d3a84b587d4eb169b5db76b850956544ad31)

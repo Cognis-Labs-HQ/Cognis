@@ -1,11 +1,11 @@
-import {
-    composerPresentation,
-    applyComposerPresentation,
-} from "./presentation.js";
 /**
  * Main grid overlay helpers for page composer edit mode.
  * Export: createGridOverlayHandlers(deps). @param {object} deps @returns {object}
  */
+import {
+    composerPresentation,
+    applyComposerPresentation,
+} from "./presentation.js";
 import {
     PAGE_COMPOSER_GRID_GAP,
     buildOccupiedSet,

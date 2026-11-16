@@ -69,12 +69,23 @@ export async function startLiveApp(context) {
     await browser.waitFor('Boolean(document.querySelector("#login-username"))');
     await browser.callFunction(
         `async function(credentials) {
-        const response = await fetch('/api/v1/auth/login', { method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify(credentials) });
-        if (!response.ok) throw new Error('Core browser QA authentication failed');
-        const {persistLoginSession} = await import('/static/gateways/auth/login-client.js');
-        persistLoginSession((await response.json()).data);
+        const username = document.querySelector('#login-username');
+        const password = document.querySelector('#login-password');
+        const provider = document.querySelector('#login-provider');
+        username.value = credentials.username;
+        password.value = credentials.password;
+        if (provider) provider.value = credentials.provider ?? 'local';
+        for (const input of [username, password, provider].filter(Boolean))
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+        username.form.requestSubmit();
     }`,
         [credentials],
+    );
+    await browser.waitFor(
+        'Boolean(localStorage.getItem("cognis_access_token"))',
+        {
+            timeoutMs: 20000,
+        },
     );
     return { browser, origin };
 }

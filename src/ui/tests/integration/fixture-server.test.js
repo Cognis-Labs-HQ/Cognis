@@ -88,3 +88,25 @@ test("fixture translation keys resolve from the real English catalog", async () 
         }
     }
 });
+
+test("fixture components require an explicitly supplied static root", async (context) => {
+    const server = await serveBrowserFixture(directory, {
+        staticRoots: { "/static/adapters/example/owned/": directory },
+    });
+    context.after(() => server.close());
+    const allowed = await fetch(
+        server.url + "/static/adapters/example/owned/fixture.js",
+    );
+    assert.equal(allowed.status, 200);
+    assert.equal(
+        await allowed.text(),
+        await readFile(
+            new URL("../page-composer/fixtures/fixture.js", import.meta.url),
+            "utf8",
+        ),
+    );
+    const denied = await fetch(
+        server.url + "/static/adapters/example/other/fixture.js",
+    );
+    assert.equal(denied.status, 404);
+});
