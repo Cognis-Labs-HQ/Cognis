@@ -20,3 +20,9 @@ Der Leitfaden auf `/study` erklärt die Aktivitätsnavigation, gewählte Lernspr
 `study:tutorialTargets` veröffentlicht Navigation und Zeichenziele aus Study sowie die gekapselten Aktionen `route` und `attachDrawing`. `isEnrolled(language)` liest bestätigte Einstellungen über `study:navigation`, kontogebunden und bei Änderungen ungültig gemacht. Ein Sprachbesuch ist keine Anmeldung.
 
 Sprachleitfäden sind im ?-Menü der Übersicht wählbar. Diese bewusste Auswahl öffnet die Explore-Inhalte der Sprache. Automatisch starten sie nur auf den eigenen Inhaltsseiten und behalten eine bereits geöffnete Ebene bei. Library besitzt den interaktiven Kartenablauf und den allgemeinen Ersatzleitfaden; siehe Komponentendokumentation.
+
+## Flexible Study-Navigation
+
+Sprachnamen werden bei Platzmangel zunächst auf den Sprachcode und dann auf die Flagge verkürzt. Der vollständige Name bleibt als zugängliche Beschriftung und Kurzinfo erhalten. Ohne Flagge bleibt der Code sichtbar. Bei mehr Platz erscheinen wieder die Namen.
+
+Links und Schaltflächen der Unternavigation verwenden im normalen, aktiven, schwebenden und per Tastatur fokussierten Zustand dieselbe Unterstreichungsstärke. Diese Darstellung einschließlich Rangliste gehört zur gemeinsamen Seitenhülle. Study steuert nur seine Sprachbeschriftungen.

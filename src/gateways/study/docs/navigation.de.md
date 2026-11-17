@@ -127,3 +127,9 @@ Nicht verfügbare Ziele bleiben in der Hauptnavigation, im Benutzermenü und im 
 ## Bestätigte Favoriten
 
 Erfolgreiche Online-Änderungen an Favoriten und bestätigte Wiederholungen ersetzen Studys begrenzte Offline-Momentaufnahme durch die Serverantwort. Eine überholte laufende Abfrage kann sie nicht überschreiben. Erneuter Seitenaufbau offline erhält bestätigte Ergänzungen und Entfernungen; noch gepufferte Absichten werden weiterhin darübergelegt.
+
+## Flexible Study-Navigation
+
+Sprachnamen werden bei Platzmangel zunächst auf den Sprachcode und dann auf die Flagge verkürzt. Der vollständige Name bleibt als zugängliche Beschriftung und Kurzinfo erhalten. Ohne Flagge bleibt der Code sichtbar. Bei mehr Platz erscheinen wieder die Namen.
+
+Links und Schaltflächen der Unternavigation verwenden im normalen, aktiven, schwebenden und per Tastatur fokussierten Zustand dieselbe Unterstreichungsstärke. Diese Darstellung einschließlich Rangliste gehört zur gemeinsamen Seitenhülle. Study steuert nur seine Sprachbeschriftungen.

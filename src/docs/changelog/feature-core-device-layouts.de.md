@@ -50,6 +50,12 @@ Nachrichten zeigt Neuer Raum, Unterhaltungen und Vorlagen direkt untereinander u
 
 Die gemeinsamen Seitenabstände passen sich der Breite an. Auf dem Desktop bleibt ein einzelner Abstand zur Hauptfläche; die Schubladenbreite in rem berücksichtigt größere Schrift. Komponenten können ihre Bedienelemente passend dimensionieren und behalten ausreichend große Touch-Flächen.
 
+## Flexible Study-Navigation
+
+Sprachnamen werden bei Platzmangel zunächst auf den Sprachcode und dann auf die Flagge verkürzt. Der vollständige Name bleibt als zugängliche Beschriftung und Kurzinfo erhalten. Ohne Flagge bleibt der Code sichtbar. Bei mehr Platz erscheinen wieder die Namen.
+
+Links und Schaltflächen der Unternavigation verwenden im normalen, aktiven, schwebenden und per Tastatur fokussierten Zustand dieselbe Unterstreichungsstärke. Diese Darstellung einschließlich Rangliste gehört zur gemeinsamen Seitenhülle. Study steuert nur seine Sprachbeschriftungen.
+
 ## Commits
 
 - [f4f6d3a84](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4f6d3a84b587d4eb169b5db76b850956544ad31)

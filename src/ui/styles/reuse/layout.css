@@ -154,12 +154,14 @@
     flex: 0 0 auto;
 }
 .page-subnav-list a,
-.page-subnav-list button {
+.page-subnav-list button,
+.app-shell .page-subnav-list :is(a, button) {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    border: 1px solid transparent;
-    border-radius: 10px;
+    border: 0;
+    border-bottom: 2px solid var(--border);
+    border-radius: 0;
     padding: 7px 12px;
     text-decoration: none;
     color: var(--text-muted);
@@ -168,15 +170,23 @@
     font-size: 0.9rem;
     font-weight: 600;
 }
-.page-subnav-list a:hover,
-.page-subnav-list button:hover {
-    border-color: var(--border);
+.page-subnav-list :is(a, button):is(:hover, :focus-visible),
+.app-shell .page-subnav-list :is(a, button):is(:hover, :focus-visible) {
+    border-bottom-color: var(--accent-2);
     color: var(--text);
     background: var(--surface-soft);
+    transform: none;
+    outline: none;
+}
+.page-subnav-list :is(a, button):focus-visible,
+.app-shell .page-subnav-list :is(a, button):focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
 }
 .page-subnav-list a.active,
-.page-subnav-list button.active {
-    border-color: color-mix(in srgb, var(--accent-2) 35%, transparent);
+.page-subnav-list button.active,
+.app-shell .page-subnav-list :is(a, button).active {
+    border-bottom-color: var(--accent-2);
     color: var(--text);
     background: color-mix(in srgb, var(--accent-2) 22%, transparent);
 }

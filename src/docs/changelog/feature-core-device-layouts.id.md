@@ -50,6 +50,12 @@ Pesan menampilkan Ruang Baru, percakapan, dan Templat berdekatan dengan mengguna
 
 Jarak tepi bilah samping bersama menyesuaikan lebar yang tersedia. Desktop memakai satu jarak ke konten utama, sedangkan lebar panel dalam rem mengikuti ukuran teks yang lebih besar. Kontrol komponen dapat menyesuaikan ukurannya sambil mempertahankan sasaran sentuh yang nyaman.
 
+## Navigasi Study Adaptif
+
+Nama bahasa dipersingkat menjadi kode bahasa lalu bendera ketika ruang terbatas. Nama lengkap tetap tersedia sebagai label aksesibel dan tooltip. Bahasa tanpa bendera tetap menampilkan kode. Saat ruang bertambah, nama lengkap ditampilkan kembali.
+
+Tautan dan tombol subnavigasi menggunakan ketebalan garis bawah yang sama pada keadaan biasa, aktif, saat diarahkan, dan saat difokuskan dengan papan ketik. Gaya ini, termasuk Peringkat, dimiliki kerangka halaman bersama. Study hanya mengatur tampilan label bahasanya.
+
 ## Komit
 
 - [f4f6d3a84](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4f6d3a84b587d4eb169b5db76b850956544ad31)

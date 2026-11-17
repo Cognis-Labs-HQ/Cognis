@@ -1,0 +1,27 @@
+{
+    "modules": [
+        { "id": "explore", "label": "Explore", "pageUrl": "/study/explore" },
+        {
+            "id": "flashcards",
+            "label": "Flashcards",
+            "pageUrl": "/study/flashcards"
+        },
+        {
+            "id": "leaderboard",
+            "label": "Leaderboard",
+            "pageUrl": "/study/leaderboard"
+        }
+    ],
+    "languages": [
+        { "code": "ja", "flag": "🇯🇵", "name": "Japanese" },
+        { "code": "de", "flag": "🇩🇪", "name": "German" },
+        { "code": "en", "flag": "", "name": "English" }
+    ],
+    "dictionaryProviders": [
+        {
+            "id": "fixture",
+            "schemaId": "fixture",
+            "metadata": { "labels": { "en": "Dictionary" } }
+        }
+    ]
+}

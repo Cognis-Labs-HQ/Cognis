@@ -1,3 +1,4 @@
+import { mountLanguageLabels } from "./language-labels.js";
 import { isOffline } from "/static/reuse/offline-state.js";
 import { fetchStudyPreferences } from "./navigation-client.js";
 import { languageExploreUrl, languageFlashcardsUrl } from "./reuse/explore.js";
@@ -84,6 +85,7 @@ export function bindStudySubNavigation(
         { signal, once: true },
     );
     mountDictionarySearch(root, { signal, i18n });
+    mountLanguageLabels(root, signal);
     const lists = [
         ...root.querySelectorAll(
             ".study-subnav-modules, .study-subnav-language-options",
@@ -406,7 +408,6 @@ export function createStudySubNavigationSlot(model, i18n) {
  * @returns {string} HTML string for the Study child-page sub-navigation.
  */
 export function renderStudySubNavigation({ model, currentPath, i18n }) {
-    const selectedLanguageCode = model.selectedLanguageCode ?? "";
     const libraryUrl = buildLibraryUrl();
     const hasLibraryModule = (model.modules ?? []).some(
         (component) => String(component?.id ?? "").trim() === "library",
@@ -470,9 +471,19 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
                 model.languagePageUrlsByCode?.get(languageCode) || "/study";
             return `
                 <li>
-                    <a class="dropdown-item btn-no-animation${activeClass}" href="${escapeHtml(languageHubUrl)}" data-language-code="${escapeHtml(languageCode)}"${model.enrolledLanguages?.includes(languageCode) ? " data-study-enrolled" : ""} data-search-category="Pages" data-search-label="${escapeHtml(language.name)}" data-search-description="${escapeHtml(i18n.t("ui.reuse.study"))}">
-                        ${escapeHtml(language.flag)}
-                        <span>${escapeHtml(language.name)}</span>
+                    <a class="dropdown-item btn-no-animation${activeClass}"
+                        href="${escapeHtml(languageHubUrl)}"
+                        data-language-code="${escapeHtml(languageCode)}"
+                        aria-label="${escapeHtml(language.name)}"
+                        title="${escapeHtml(language.name)}"
+                        data-language-has-flag="${Boolean(language.flag?.trim())}"
+                        ${model.enrolledLanguages?.includes(languageCode) ? "data-study-enrolled" : ""}
+                        data-search-category="Pages"
+                        data-search-label="${escapeHtml(language.name)}"
+                        data-search-description="${escapeHtml(i18n.t("ui.reuse.study"))}">
+                        <span class="study-language-flag" aria-hidden="true">${escapeHtml(language.flag)}</span>
+                        <span class="study-language-name" aria-hidden="true">${escapeHtml(language.name)}</span>
+                        <span class="study-language-code" aria-hidden="true">${escapeHtml(languageCode.toUpperCase())}</span>
                     </a>
                 </li>
             `;

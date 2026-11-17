@@ -3,7 +3,7 @@
   <string name="gateway.study.tutorial.navigation.title">学習ツールを選ぶ</string>
   <string name="gateway.study.tutorial.navigation.body">Explore では登録した言語を閲覧できます。フラッシュカードなどのツールはアカウントで利用可能な場合にここへ表示されます。</string>
   <string name="gateway.study.tutorial.languages.title">学習する言語</string>
-  <string name="gateway.study.tutorial.languages.body">登録した言語を切り替えます。登録の変更には Study の設定を使います。</string>
+  <string name="gateway.study.tutorial.languages.body">登録済みの言語を切り替えます。表示領域が狭い場合は、言語名の代わりにコードまたは旗が表示されます。登録内容はStudyの設定で変更できます。</string>
   <string name="gateway.study.tutorial.modules.title">学習モジュールを開く</string>
   <string name="gateway.study.tutorial.modules.body">これらのカードから学習ツールを開けます。各言語のガイドでは、そのコレクションとカード操作を案内します。</string>
   <string name="gateway.study.picker.title">学習言語を選択</string>

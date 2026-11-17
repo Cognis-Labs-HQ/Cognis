@@ -50,6 +50,12 @@ Messages keeps New Room, conversations and Templates together, filling the avail
 
 Shared sidebar insets adapt to available width, with one desktop gap and a rem-sized drawer that respects larger text. Feature controls can size themselves within the sidebar while retaining touch targets.
 
+## Adaptive Study Navigation
+
+Language names shorten to their language code and then their flag when the available space is tight. The full language name remains the accessible label and tooltip. Languages without a flag retain their code. More space restores the full names.
+
+Sub-navigation links and buttons share the same underline thickness for resting, active, hover and keyboard-focus states. The shared shell owns this styling, including Leaderboard; Study only owns its language-label presentation.
+
 ## Commits
 
 - [f4f6d3a84](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4f6d3a84b587d4eb169b5db76b850956544ad31)

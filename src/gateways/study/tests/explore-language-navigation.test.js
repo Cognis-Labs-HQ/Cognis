@@ -1,3 +1,4 @@
+import { mountLanguageLabels } from "../ui/language-labels.js";
 import { loadDictionarySearch } from "./reuse/dictionary-search.js";
 import { replaceMountScope } from "../../../ui/reuse/mount-scope.js";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
@@ -123,6 +124,7 @@ function navigationContext({
             {
                 "./navigation-client.js": context,
                 "./sub-navigation-search.js": search,
+                "./language-labels.js": { mountLanguageLabels },
                 "/static/reuse/offline-state.js": {
                     isOffline: () => context.offline === true,
                 },

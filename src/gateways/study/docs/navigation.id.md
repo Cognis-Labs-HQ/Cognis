@@ -127,3 +127,9 @@ Tujuan yang tidak tersedia tetap terlihat dengan gaya nonaktif yang sama pada na
 ## Favorit yang Dikonfirmasi
 
 Perubahan favorit daring yang berhasil dan konfirmasi pengiriman ulang mengganti snapshot luring Study yang dibatasi ukurannya dengan respons server. Pembacaan lama yang masih berjalan tidak dapat menimpa snapshot tersebut. Membuka ulang halaman secara luring mempertahankan penambahan dan penghapusan yang telah dikonfirmasi, sementara perubahan yang masih mengantre tetap diproyeksikan di atas snapshot.
+
+## Navigasi Study Adaptif
+
+Nama bahasa dipersingkat menjadi kode bahasa lalu bendera ketika ruang terbatas. Nama lengkap tetap tersedia sebagai label aksesibel dan tooltip. Bahasa tanpa bendera tetap menampilkan kode. Saat ruang bertambah, nama lengkap ditampilkan kembali.
+
+Tautan dan tombol subnavigasi menggunakan ketebalan garis bawah yang sama pada keadaan biasa, aktif, saat diarahkan, dan saat difokuskan dengan papan ketik. Gaya ini, termasuk Peringkat, dimiliki kerangka halaman bersama. Study hanya mengatur tampilan label bahasanya.

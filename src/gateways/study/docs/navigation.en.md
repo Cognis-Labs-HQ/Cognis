@@ -127,3 +127,9 @@ Unavailable destinations stay visible with the same disabled styling in the prim
 ## Acknowledged Favourites
 
 Successful online favourite changes and replay acknowledgements replace Study’s bounded offline snapshot with the server response. A superseded in-flight read cannot overwrite that snapshot. Offline page remounts preserve acknowledged additions and removals while remaining queued intent stays projected over the snapshot.
+
+## Adaptive Study Navigation
+
+Language names shorten to their language code and then their flag when the available space is tight. The full language name remains the accessible label and tooltip. Languages without a flag retain their code. More space restores the full names.
+
+Sub-navigation links and buttons share the same underline thickness for resting, active, hover and keyboard-focus states. The shared shell owns this styling, including Leaderboard; Study only owns its language-label presentation.

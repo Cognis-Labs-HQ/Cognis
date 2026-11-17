@@ -20,14 +20,6 @@
     }
 }
 
-.study-page-subnav a:is(:hover, :focus-visible) {
-    border-block-end: 3px solid var(--accent-2);
-    border-radius: 0;
-    outline: none;
-    background: transparent;
-    transform: none;
-}
-
 .study-bounce-in {
     animation: studyBounceIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
@@ -238,10 +230,6 @@ body[data-theme="light"] .study-hub-module-link:focus-visible {
     overflow-x: auto;
 }
 
-.study-subnav-language-options {
-    margin-inline-start: auto;
-}
-
 .study-subnav-settings a {
     min-width: 2.5rem;
     justify-content: center;
@@ -257,11 +245,12 @@ body[data-theme="light"] .study-hub-module-link:focus-visible {
 }
 
 .study-subnav-language-options {
+    margin-inline-start: auto;
     display: flex;
     align-items: center;
     gap: 8px;
     flex-wrap: nowrap;
-    flex: 0 0 auto;
+    flex: 0 1 var(--study-language-width, auto);
     max-width: 35%;
 }
 
@@ -515,4 +504,31 @@ body[data-theme="light"] .study-hub-module-link:focus-visible {
 .study-browse-search {
     width: min(18rem, 35vw);
     min-width: 6rem;
+}
+
+.study-language-code,
+.study-language-flag:empty {
+    display: none;
+}
+
+.study-subnav-language-options:is(
+        [data-language-display="code"],
+        [data-language-display="flag"]
+    )
+    .study-language-name {
+    display: none;
+}
+
+.study-subnav-language-options:is(
+        [data-language-display="code"],
+        [data-language-display="flag"]
+    )
+    .study-language-code {
+    display: inline;
+}
+
+.study-subnav-language-options[data-language-display="flag"]
+    [data-language-has-flag="true"]
+    .study-language-code {
+    display: none;
 }
