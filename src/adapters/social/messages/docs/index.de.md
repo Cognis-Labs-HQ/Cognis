@@ -58,8 +58,10 @@ Messages bereitet Raumliste, Übersetzungen und Emoji-Kataloge nach bestätigter
 
 Die wiederverwendbare Reaktionsauswahl in Nachrichten erfasst die Emoji-Häufigkeit unabhängig von Reaktionsänderungen. Nur die Nachrichtenreaktion enthält den abschließenden Aktivzustand. Fehler bei der Nutzungserfassung werden protokolliert und verhindern weder die gewählte Reaktion noch ihre Aktualisierungsfunktion.
 
-## Anpassbare Arbeitsflächen
-
 ## Lesbare mobile Inhalte
 
 Öffne Unterhaltungen über die gemeinsame Schaltfläche mit doppeltem Winkel oben links. Raumüberschriften verwenden zwei sichtbare Zeilen, während der vollständige zugängliche Titel erhalten bleibt. Mehr Platz bleibt für Nachrichten; Entwürfe überstehen Drehungen.
+
+## Kompakte Seitenleisten
+
+Nachrichten zeigt Neuer Raum, Unterhaltungen und Vorlagen direkt untereinander und nutzt die verfügbare Breite. Leere und kurze Listen werden nicht mehr auf die gesamte Schubladenhöhe gestreckt. Lange Raum- und Vorlagenlisten verwenden die gemeinsame Scroll-Fläche von Composer.

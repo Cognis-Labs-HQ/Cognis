@@ -20,8 +20,10 @@ The walkthrough explains composing once, targeting the message input and then it
 
 Room management is excluded from the path and count until a room header is available.
 
-## Responsive Workspaces
-
 ## Readable Mobile Content
 
 Open conversations with the common double-chevron sidebar button at the top left. Room headings use two visible lines while retaining their full accessible title; more space remains for message history and drafts survive rotation.
+
+## Compact Sidebars
+
+Messages keeps New Room, conversations and Templates together, filling the available sidebar width. Empty and short lists no longer stretch to the drawer height; long room and template lists use Composer’s single scroll surface.

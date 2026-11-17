@@ -8,6 +8,10 @@ import {
     renderRoomList,
 } from "/static/adapters/social/messages/room-render.js";
 
+import { renderMessagesSidebar } from "/static/adapters/social/messages/sidebar.js";
+import { createMessageTemplatesUi } from "/static/adapters/social/messages/template-ui.js";
+import { persistSavedMessageTemplates } from "/static/adapters/social/messages/message-templates.js";
+
 const finishLoading = beginPageLoading();
 const data = await (await fetch("/data.json")).json();
 const i18n = await createI18n({
@@ -22,12 +26,13 @@ uiCtx.capabilities.contribute("ui:profileAvatarRenderer", {
     isUnavailable: () => false,
     buildMarkup: () => '<span class="messages-thread-avatar">AS</span>',
 });
-const sidebar = renderRoomList({
+const sidebar = await renderMessagesSidebar({
     rooms: [data.room],
     currentAccountId: "fixture",
     selectedRoomId: "fixture-room",
     i18n,
     formatRoomListAvatar: () => "",
+    signal: lifetime.signal,
 });
 const composer = createPageComposer(root, {
     i18n,
@@ -45,7 +50,7 @@ const composer = createPageComposer(root, {
     toolbar: [
         {
             id: "rooms",
-            render: () => `<ul class="messages-rooms-list">${sidebar}</ul>`,
+            render: () => sidebar,
         },
     ],
     elements: [
@@ -80,6 +85,25 @@ const composer = createPageComposer(root, {
     ],
 });
 await composer.init();
+function setSidebarState({ roomCount = 1, templates = [] } = {}) {
+    const rooms = Array.from({ length: roomCount }, (_, index) => ({
+        ...data.room,
+        id: `fixture-room-${index}`,
+    }));
+    document.querySelector("#messages-rooms-list").innerHTML = renderRoomList({
+        rooms,
+        currentAccountId: "fixture",
+        selectedRoomId: "fixture-room-0",
+        i18n,
+        formatRoomListAvatar: () => "",
+    });
+    persistSavedMessageTemplates(templates, "fixture");
+    createMessageTemplatesUi({
+        i18n,
+        currentAccountId: "fixture",
+    }).renderSidebarTemplateList();
+}
+setSidebarState();
 root.addEventListener(
     "click",
     (event) => {
@@ -90,6 +114,7 @@ root.addEventListener(
 );
 window.fixture = {
     composer,
+    setSidebarState,
     lifetime,
     data,
     i18n,

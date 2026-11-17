@@ -1,22 +1,16 @@
 .messages-sidebar-content {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-}
-
-.messages-rooms {
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    border-right: 1px solid var(--color-border);
+    display: grid;
+    align-content: start;
+    gap: 0.5rem;
+    width: 100%;
+    min-width: 0;
 }
 
 .messages-rooms-header {
     display: flex;
     align-items: center;
-    padding: 0.5rem 1rem;
+    padding: 0;
     border-bottom: 1px solid var(--color-border);
-    flex-shrink: 0;
 }
 
 .messages-new-btn {
@@ -25,8 +19,9 @@
     border-radius: 0.25rem;
     color: var(--color-accent);
     cursor: pointer;
-    font-size: 0.85rem;
-    padding: 0.25rem 0.75rem;
+    padding: 0.5rem 0.75rem;
+    font: inherit;
+    white-space: normal;
 }
 
 .messages-new-btn:hover {
@@ -38,9 +33,7 @@
     list-style: none;
     margin: 0;
     padding: 0;
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
+    min-width: 0;
 }
 
 .toolbar .messages-rooms-list {
@@ -54,7 +47,7 @@
     align-items: center;
     position: relative;
     gap: 0.6rem;
-    padding: 0.75rem 1rem;
+    padding: 0.5rem 0;
     cursor: pointer;
     border-bottom: 1px solid var(--color-border);
 }
@@ -173,9 +166,10 @@
 }
 
 .messages-empty {
-    padding: 1rem;
+    padding: 0.75rem 0;
     color: var(--color-text-muted);
-    text-align: center;
+    text-align: start;
+    line-height: 1.5;
 }
 
 .messages-thread {
@@ -567,11 +561,6 @@
     color: inherit;
     text-align: left;
     font: inherit;
-}
-
-.messages-sidebar-content {
-    width: clamp(13rem, 24vw, 20rem);
-    max-width: 100%;
 }
 
 [data-composer-drawer="true"] .messages-message-meta {

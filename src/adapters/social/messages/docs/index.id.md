@@ -58,8 +58,10 @@ Messages menyiapkan daftar ruang, terjemahan, dan katalog emoji setelah masuk te
 
 Pemilih reaksi Messages yang dapat digunakan kembali mencatat frekuensi emoji secara terpisah dari perubahan reaksi. Hanya permintaan reaksi pesan yang menyertakan keadaan aktif akhir. Kegagalan pencatatan penggunaan dicatat tanpa menghalangi reaksi yang dipilih atau fungsi pembaruannya.
 
-## Ruang Kerja Responsif
-
 ## Konten Seluler yang Terbaca
 
 Buka percakapan melalui tombol panel sudut ganda bersama di kiri atas. Judul ruang memakai dua baris terlihat sambil mempertahankan judul lengkap yang aksesibel. Riwayat pesan memperoleh lebih banyak ruang dan draf bertahan saat orientasi berubah.
+
+## Bilah Samping Ringkas
+
+Pesan menampilkan Ruang Baru, percakapan, dan Templat berdekatan dengan menggunakan seluruh lebar bilah samping. Daftar kosong dan pendek tidak lagi direntangkan setinggi panel. Daftar ruang dan templat yang panjang memakai satu area gulir Composer.

@@ -58,8 +58,10 @@ Messages prepares its room list, translations and emoji catalogs after verified 
 
 The reusable Messages reaction picker records emoji frequency independently of reaction changes. Only the message-reaction request includes the final active state. Usage-recording failures are logged without preventing the selected reaction or its update callback.
 
-## Responsive Workspaces
-
 ## Readable Mobile Content
 
 Open conversations with the common double-chevron sidebar button at the top left. Room headings use two visible lines while retaining their full accessible title; more space remains for message history and drafts survive rotation.
+
+## Compact Sidebars
+
+Messages keeps New Room, conversations and Templates together, filling the available sidebar width. Empty and short lists no longer stretch to the drawer height; long room and template lists use Composer’s single scroll surface.

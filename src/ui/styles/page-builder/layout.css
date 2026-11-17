@@ -154,28 +154,40 @@ button:hover:not(:disabled):not(.dropdown-item):not([class*="btn-"]) {
     background: var(--toolbar-bg);
 }
 
-.toolbar > *,
 .content-panel > * {
     padding-left: 28px;
     padding-right: 28px;
     min-width: 0;
 }
 
-.toolbar > :first-child,
 .content-panel > :first-child {
     padding-top: 28px;
 }
 
-.toolbar > :last-child,
 .content-panel > :last-child {
     padding-bottom: 28px;
 }
 
 .toolbar {
+    --toolbar-content-inset: clamp(12px, 2vw, 20px);
     margin-bottom: 0;
 }
 
-.toolbar ul {
+.toolbar > * {
+    padding-left: var(--toolbar-content-inset);
+    padding-right: var(--toolbar-content-inset);
+    min-width: 0;
+}
+
+.toolbar > :first-child {
+    padding-top: var(--toolbar-content-inset);
+}
+
+.toolbar > :last-child {
+    padding-bottom: var(--toolbar-content-inset);
+}
+
+.toolbar :where(ul) {
     list-style: none;
     margin: 0;
     padding: 0 6px;
@@ -183,10 +195,10 @@ button:hover:not(:disabled):not(.dropdown-item):not([class*="btn-"]) {
     gap: 10px;
 }
 
-.toolbar button {
+.toolbar :where(button) {
     min-height: 44px;
     width: 100%;
-    min-width: 150px;
+    min-width: 0;
     text-align: left;
     background: transparent;
     border: 1px solid transparent;
@@ -277,9 +289,6 @@ code {
 .main-window--with-toolbar {
     grid-template-columns: minmax(0, min(20rem, 32vw)) minmax(0, 1fr);
 }
-.main-window--with-toolbar .toolbar {
-    margin-right: 12px;
-}
 .main-window--content-only {
     grid-template-columns: minmax(0, 1fr);
 }
@@ -341,7 +350,7 @@ code {
 @media (max-width: 900px) {
     .main-window--with-toolbar {
         --toolbar-drawer-width: min(
-            320px,
+            22rem,
             calc(100vw - 52px - env(safe-area-inset-right))
         );
         grid-template-columns: minmax(0, 1fr);
@@ -365,7 +374,7 @@ code {
         width: var(--toolbar-drawer-width);
         height: 100dvh;
         max-height: 100dvh;
-        padding-top: calc(64px + env(safe-area-inset-top));
+        padding-top: calc(56px + env(safe-area-inset-top));
         padding-bottom: env(safe-area-inset-bottom);
         padding-left: env(safe-area-inset-left);
         border-radius: 0 14px 14px 0;
@@ -387,21 +396,15 @@ code {
 }
 
 @media (max-width: 640px) {
-    .toolbar > *,
     .content-panel > * {
         padding-left: 14px;
         padding-right: 14px;
     }
-    .toolbar > :first-child,
     .content-panel > :first-child {
         padding-top: 14px;
     }
-    .toolbar > :last-child,
     .content-panel > :last-child {
         padding-bottom: 14px;
-    }
-    .toolbar button {
-        min-width: 0;
     }
     .workspace.app-page--frameless {
         padding: 0;

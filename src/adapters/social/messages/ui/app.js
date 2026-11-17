@@ -1,4 +1,3 @@
-import { guides } from "./guides.js";
 /**
  * Messages page.
  *
@@ -9,6 +8,8 @@ import { guides } from "./guides.js";
  * Messages are encrypted client-side with per-room AES-GCM keys resolved from
  * the authenticated user's encrypted keyring and cached for the page lifetime.
  */
+
+import { guides } from "./guides.js";
 
 import { messagesFetch as apiFetch } from "./offline-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
@@ -48,6 +49,7 @@ import { resolveMessageTemplateVariables } from "./message-templates.js";
 import { createMessageSender } from "./send-message.js";
 import { createMessagesRoomState } from "./room-state.js";
 import { renderRoomList, renderConversationPrompt } from "./room-render.js";
+import { renderMessagesSidebar } from "./sidebar.js";
 import { activateRoomAction, resolveRoomActions } from "./flows.js";
 import {
     LAST_OPENED_ROOM_KEY,
@@ -259,28 +261,15 @@ export async function mount(root, { signal } = {}) {
         },
     });
 
-    const sidebarHtml = `<div class="messages-sidebar-content">
-    <header class="messages-rooms-header">
-      <button type="button" class="messages-new-btn" id="messages-new-btn">
-        ${escapeHtml(i18n.t("module.social.messages.new"))}
-      </button>
-    </header>
-    <ul class="messages-rooms-list" id="messages-rooms-list">
-      ${renderRoomList({
-          rooms: roomState.getRooms(),
-          currentAccountId,
-          selectedRoomId: roomState.getSelectedRoomId(),
-          i18n,
-          formatRoomListAvatar,
-      })}
-    </ul>
-    <section class="messages-sidebar-section">
-      <button type="button" class="messages-sidebar-section-label messages-sidebar-section-label--btn" id="messages-open-templates-btn">
-        ${escapeHtml(i18n.t("module.social.messages.templates"))}
-      </button>
-      <ul class="messages-sidebar-template-list" id="messages-sidebar-template-list"></ul>
-    </section>
-  </div>`;
+    const sidebarHtml = await renderMessagesSidebar({
+        rooms: roomState.getRooms(),
+        currentAccountId,
+        selectedRoomId: roomState.getSelectedRoomId(),
+        i18n,
+        formatRoomListAvatar,
+        signal,
+    });
+    if (signal?.aborted) return;
 
     const messageFormBuilder = createFormBuilder(
         { i18n, escapeHtml },

@@ -20,8 +20,10 @@ Panduan menjelaskan penulisan sekali, lalu menyorot input pesan dan kontrol prat
 
 Pengelolaan ruang tidak dimasukkan dalam alur dan jumlah langkah sampai judul ruang tersedia.
 
-## Ruang Kerja Responsif
-
 ## Konten Seluler yang Terbaca
 
 Buka percakapan melalui tombol panel sudut ganda bersama di kiri atas. Judul ruang memakai dua baris terlihat sambil mempertahankan judul lengkap yang aksesibel. Riwayat pesan memperoleh lebih banyak ruang dan draf bertahan saat orientasi berubah.
+
+## Bilah Samping Ringkas
+
+Pesan menampilkan Ruang Baru, percakapan, dan Templat berdekatan dengan menggunakan seluruh lebar bilah samping. Daftar kosong dan pendek tidak lagi direntangkan setinggi panel. Daftar ruang dan templat yang panjang memakai satu area gulir Composer.

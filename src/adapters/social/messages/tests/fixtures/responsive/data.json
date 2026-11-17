@@ -14,5 +14,34 @@
             }
         ]
     },
-    "message": "A populated conversation containing a longer message, a link and enough text to wrap naturally within the available column."
+    "message": "A populated conversation containing a longer message, a link and enough text to wrap naturally within the available column.",
+    "templates": [
+        {
+            "id": "template-one",
+            "title": "A saved reply with a long descriptive title",
+            "content": "A reusable reply."
+        },
+        {
+            "id": "template-two",
+            "title": "A second saved reply",
+            "content": "Another reusable reply."
+        }
+    ],
+    "sidebarStates": [
+        {
+            "id": "empty",
+            "roomCount": 0,
+            "savedTemplates": false
+        },
+        {
+            "id": "short",
+            "roomCount": 1,
+            "savedTemplates": true
+        },
+        {
+            "id": "long",
+            "roomCount": 40,
+            "savedTemplates": true
+        }
+    ]
 }

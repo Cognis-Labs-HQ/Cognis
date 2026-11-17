@@ -243,7 +243,7 @@ export function renderRoomList({
     formatRoomListAvatar,
 }) {
     if (!rooms.length) {
-        return `<div class="messages-empty">${escapeHtml(i18n.t("module.social.messages.empty"))}</div>`;
+        return `<li class="messages-empty">${escapeHtml(i18n.t("module.social.messages.empty"))}</li>`;
     }
     const renderRoomItems = (roomItems) =>
         roomItems

@@ -20,8 +20,10 @@ Die Anleitung erklärt das Verfassen einmal und zeigt Eingabe und Vorschau getre
 
 Die Gesprächsverwaltung entfällt aus Ablauf und Anzahl, solange kein Gesprächskopf verfügbar ist.
 
-## Anpassbare Arbeitsflächen
-
 ## Lesbare mobile Inhalte
 
 Öffne Unterhaltungen über die gemeinsame Schaltfläche mit doppeltem Winkel oben links. Raumüberschriften verwenden zwei sichtbare Zeilen, während der vollständige zugängliche Titel erhalten bleibt. Mehr Platz bleibt für Nachrichten; Entwürfe überstehen Drehungen.
+
+## Kompakte Seitenleisten
+
+Nachrichten zeigt Neuer Raum, Unterhaltungen und Vorlagen direkt untereinander und nutzt die verfügbare Breite. Leere und kurze Listen werden nicht mehr auf die gesamte Schubladenhöhe gestreckt. Lange Raum- und Vorlagenlisten verwenden die gemeinsame Scroll-Fläche von Composer.

@@ -278,6 +278,10 @@ test("messages reactions and receipts include advanced interaction safeguards", 
 
 test("messages templates are opened from sidebar in a popup", () => {
     const appSource = readMessagesUiBundle();
+    const sidebarTemplate = readFileSync(
+        resolve(ROOT, "src/adapters/social/messages/ui/templates/sidebar.html"),
+        "utf8",
+    );
     const messagesCssSource = readMessagesCssBundle();
     const templatesCssSource = readFileSync(
         resolve(
@@ -293,7 +297,7 @@ test("messages templates are opened from sidebar in a popup", () => {
 
     assert.match(appSource, /id="messages-composer-compose-toggle"/);
     assert.match(appSource, /id="messages-composer-preview-toggle"/);
-    assert.match(appSource, /id="messages-open-templates-btn"/);
+    assert.match(sidebarTemplate, /id="messages-open-templates-btn"/);
     assert.match(appSource, /id="messages-composer-preview-pane"/);
     assert.match(appSource, /id="messages-composer-preview"/);
     assert.match(
@@ -326,7 +330,7 @@ test("messages templates are opened from sidebar in a popup", () => {
         appSource,
         /resolveMessageTemplateVariables\([\s\S]*currentRoom[\s\S]*currentAccountId/,
     );
-    assert.match(appSource, /id="messages-sidebar-template-list"/);
+    assert.match(sidebarTemplate, /id="messages-sidebar-template-list"/);
     assert.match(appSource, /data-template-action="use"/);
     assert.match(appSource, /data-template-action="edit"/);
     assert.match(appSource, /data-template-action="delete"/);
