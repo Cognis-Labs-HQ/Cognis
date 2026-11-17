@@ -63,3 +63,4 @@ Sub-navigation links and buttons share the same underline thickness for resting,
 - [883db306dce10da3bf67b4fac29ca6c89f2ae5b9](https://github.com/Cognis-Labs-HQ/Cognis/commit/883db306dce10da3bf67b4fac29ca6c89f2ae5b9)
 - [a0e4d976a436221c63c31eb622a55524de1b6bf0](https://github.com/Cognis-Labs-HQ/Cognis/commit/a0e4d976a436221c63c31eb622a55524de1b6bf0)
 - [7127b6fa0650fb93631a2650e8014ceb8daffa6c](https://github.com/Cognis-Labs-HQ/Cognis/commit/7127b6fa0650fb93631a2650e8014ceb8daffa6c)
+- [2920069afb9d94aa4a1d4f36cbfa479c33460bdc](https://github.com/Cognis-Labs-HQ/Cognis/commit/2920069afb9d94aa4a1d4f36cbfa479c33460bdc)
