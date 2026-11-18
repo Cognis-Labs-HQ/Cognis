@@ -20,6 +20,14 @@
     }
 }
 
+.study-page-subnav a:is(:hover, :focus-visible) {
+    border-block-end: 3px solid var(--accent-2);
+    border-radius: 0;
+    outline: none;
+    background: transparent;
+    transform: none;
+}
+
 .study-bounce-in {
     animation: studyBounceIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
@@ -244,13 +252,6 @@ body[data-theme="light"] .study-hub-module-link:focus-visible {
 }
 
 .study-subnav-language-options {
-    --navigation-item-margin: 0;
-    --navigation-indicator: var(--accent-2);
-    --navigation-active-background: color-mix(
-        in srgb,
-        var(--accent-2) 22%,
-        transparent
-    );
     margin-inline-start: auto;
     display: flex;
     align-items: center;
@@ -261,7 +262,6 @@ body[data-theme="light"] .study-hub-module-link:focus-visible {
 }
 
 .study-subnav-settings {
-    --navigation-item-margin: 0;
     flex: 0 0 auto;
 }
 

@@ -54,7 +54,7 @@ Die gemeinsamen Seitenabstände passen sich der Breite an. Auf dem Desktop bleib
 
 Sprachnamen werden bei Platzmangel zunächst auf den Sprachcode und dann auf die Flagge verkürzt. Der vollständige Name bleibt als zugängliche Beschriftung und Kurzinfo erhalten. Ohne Flagge bleibt der Code sichtbar. Bei mehr Platz erscheinen wieder die Namen.
 
-Seitenlinks verwenden die Darstellung der Hauptnavigation mit der aktuellen Textfarbe für Auswahl, Hover und Tastaturfokus. Sie haben keine grüne Füllung und im Ruhezustand keine Unterstreichung. Nur die Sprachauswahl behält die grüne Auswahlmarkierung. Gemeinsame Seitenmenüs zeigen einfache Einträge mit einer Markierung der gewählten Zeile statt umrandeter Schaltflächen.
+Die Unternavigation behält ihre ursprüngliche kompakte Schrift, Abstände, abgerundeten Bedienelemente und Interaktionsstile. Responsive Anordnung, Touch-Zielflächen und die Verkürzung von Sprachname über Code bis Flagge bleiben erhalten. Gemeinsame Seitenmenüs zeigen schlichte Einträge mit Auswahlmarkierung statt umrandeter Schaltflächen.
 
 ## Commits
 

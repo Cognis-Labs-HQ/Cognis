@@ -33,7 +33,7 @@ async function startNavigation(context, suffix = "") {
 }
 
 test(
-    "Study language labels fit their available space and only languages retain the green treatment",
+    "Study language labels fit their available space with upstream navigation styling",
     {
         skip: !executable && "Requires COGNIS_BROWSER_TESTS=1 and Chromium",
         timeout: 120000,
@@ -76,30 +76,30 @@ test(
                 );
             });
         }
-        const styles =
+        const resting =
             await browser.evaluate(`Array.from(document.querySelectorAll('.study-subnav-modules a'), link => {
-        const style = getComputedStyle(link); return { width: style.borderBottomWidth, style: style.borderBottomStyle, color: style.borderBottomColor };
-    })`);
-        assert.equal(styles.length, 3);
-        for (const style of styles) assert.deepEqual(style, styles[0]);
-        assert.equal(styles[0].width, "2px");
+            const style = getComputedStyle(link); return { radius: style.borderRadius, padding: style.padding, fontSize: style.fontSize };
+        })`);
+        assert.equal(resting.length, 3);
+        for (const style of resting) assert.deepEqual(style, resting[0]);
+        assert.equal(resting[0].radius, "10px");
+        assert.equal(resting[0].padding, "7px 12px");
+        assert.equal(resting[0].fontSize, "14.4px");
         await browser.evaluate(
             `document.querySelector('.study-subnav-modules a:last-child').classList.add('active')`,
         );
-        const activeColor = await browser.evaluate(
-            `getComputedStyle(document.querySelector('.study-subnav-modules a:last-child')).borderBottomColor`,
+        await browser.evaluate(
+            `Promise.all(document.querySelector('.study-subnav-modules a.active').getAnimations().map(animation => animation.finished))`,
         );
-        assert.notEqual(activeColor, styles[0].color);
         const treatment = await browser.evaluate(`(() => {
             const page = getComputedStyle(document.querySelector('.study-subnav-modules a.active'));
             const language = getComputedStyle(document.querySelector('[data-language-code="ja"].active'));
-            return { pageColor: page.color, pageIndicator: page.borderBottomColor, pageBackground: page.backgroundColor,
+            return { pageIndicator: page.borderBottomColor, pageBackground: page.backgroundColor,
                 languageIndicator: language.borderBottomColor, languageBackground: language.backgroundColor };
         })()`);
-        assert.equal(treatment.pageIndicator, treatment.pageColor);
-        assert.equal(treatment.pageBackground, "rgba(0, 0, 0, 0)");
-        assert.notEqual(treatment.languageIndicator, treatment.pageIndicator);
-        assert.notEqual(treatment.languageBackground, treatment.pageBackground);
+        assert.equal(treatment.pageIndicator, treatment.languageIndicator);
+        assert.equal(treatment.pageBackground, treatment.languageBackground);
+        assert.notEqual(treatment.pageBackground, "rgba(0, 0, 0, 0)");
         await browser.command("Input.dispatchKeyEvent", {
             type: "keyDown",
             key: "Tab",
@@ -113,14 +113,14 @@ test(
             windowsVirtualKeyCode: 9,
         });
         const focusStyle = await browser.evaluate(`(() => {
-            const link = document.querySelector('.study-subnav-modules a');
+            const link = document.querySelector('.study-subnav-modules a:not(.active)');
             link.focus();
             const style = getComputedStyle(link);
             return { width: style.borderBottomWidth, color: style.borderBottomColor, outline: style.outlineStyle, transform: style.transform };
         })()`);
-        assert.equal(focusStyle.width, "2px");
-        assert.equal(focusStyle.color, activeColor);
-        assert.equal(focusStyle.outline, "solid");
+        assert.equal(focusStyle.width, "3px");
+        assert.equal(focusStyle.color, treatment.languageIndicator);
+        assert.equal(focusStyle.outline, "none");
         assert.equal(focusStyle.transform, "none");
         await browser.callFunction(
             `function(width) { document.querySelector('.study-page-subnav').style.width = width + 'px'; }`,

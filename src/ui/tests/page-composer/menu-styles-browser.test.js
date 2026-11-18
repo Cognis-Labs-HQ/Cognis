@@ -4,7 +4,7 @@ import { skip, startFixture } from "./reuse/browser.js";
 import { captureScreenshot } from "../integration/artifacts.js";
 
 test(
-    "page navigation shares primary appearance and sidebar choices remain menu entries",
+    "page navigation retains upstream appearance and sidebar choices remain menu entries",
     { skip, timeout: 60000 },
     async (context) => {
         const { browser } = await startFixture(context, "?menus");
@@ -18,27 +18,32 @@ test(
             await context.test(`${width}x${height}`, async () => {
                 await browser.resize(width, height);
                 const appearance = await browser.evaluate(`(() => {
-                const primary = document.querySelector('.topnav a');
-                const secondary = document.querySelector('[data-fixture-nav]');
-                const properties = ['color','backgroundColor','padding','marginRight','fontFamily','fontSize','fontWeight','letterSpacing','borderRadius','borderBottomWidth','borderBottomColor','opacity'];
-                const read = element => Object.fromEntries(properties.map(key => [key,getComputedStyle(element)[key]]));
-                const resting = { primary: read(primary), secondary: read(secondary) };
-                primary.classList.add('active'); secondary.classList.add('active');
-                const active = { primary: read(primary), secondary: read(secondary) };
-                primary.classList.remove('active'); secondary.classList.remove('active');
-                return { resting, active };
-            })()`);
-                assert.deepEqual(
-                    appearance.resting.secondary,
-                    appearance.resting.primary,
+                    const link = document.querySelector('[data-fixture-nav]');
+                    const read = () => {const style = getComputedStyle(link); return {
+                        radius: style.borderRadius, padding: style.padding,
+                        border: style.borderTopWidth, weight: style.fontWeight,
+                        size: Number.parseFloat(style.fontSize), background: style.backgroundColor
+                    }};
+                    const resting = read();
+                    link.classList.add('active');
+                    const active = read();
+                    link.classList.remove('active');
+                    return {resting, active, rootSize: Number.parseFloat(getComputedStyle(document.documentElement).fontSize)};
+                })()`);
+                assert.equal(appearance.resting.radius, "10px");
+                assert.equal(appearance.resting.padding, "7px 12px");
+                assert.equal(appearance.resting.border, "1px");
+                assert.equal(appearance.resting.weight, "600");
+                assert.equal(
+                    appearance.resting.size,
+                    appearance.rootSize * 0.9,
                 );
-                const { borderBottomColor: secondaryIndicator, ...secondary } =
-                    appearance.active.secondary;
-                const { borderBottomColor: primaryIndicator, ...primary } =
-                    appearance.active.primary;
-                assert.deepEqual(secondary, primary);
-                assert.equal(secondaryIndicator, secondary.color);
-                assert.notEqual(primaryIndicator, secondaryIndicator);
+                assert.equal(appearance.resting.background, "rgba(0, 0, 0, 0)");
+                assert.equal(appearance.active.radius, "10px");
+                assert.notEqual(
+                    appearance.active.background,
+                    appearance.resting.background,
+                );
                 await browser.evaluate(
                     "window.fixture.menu.setActive('');window.fixture.composer.openToolbar()",
                 );

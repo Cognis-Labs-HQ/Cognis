@@ -186,4 +186,4 @@ Composer disables browser scroll anchoring throughout its grid content so width 
 
 Shared sidebar insets adapt to available width, with one desktop gap and a rem-sized drawer that respects larger text. Feature controls can size themselves within the sidebar while retaining touch targets.
 
-Navigation and menu styling live in the shared shell. Sub-navigation matches the primary links and uses current text color for its indicator; language selectors opt into the green treatment. The dedicated shared side-menu stylesheet loads with the shell and presents menu entries without button borders.
+Sub-navigation retains its original compact text, spacing, rounded controls and interaction styling. Responsive placement, touch targets and language name/code/flag compression remain available. Shared side menus render plain entries with a selected-row marker rather than bordered buttons.

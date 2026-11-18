@@ -77,7 +77,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Registration          | `src/gateways/registration/`  | `1.2.6`  |
 | Logging               | `src/gateways/logging/`       | `1.5.19` |
 | Observability         | `src/gateways/observability/` | `1.0.7`  |
-| Study                 | `src/gateways/study/`         | `2.6.12` |
+| Study                 | `src/gateways/study/`         | `2.6.13` |
 | Calendar              | `src/gateways/calendar/`      | `1.7.10` |
 
 ## Core contracts

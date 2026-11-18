@@ -141,10 +141,9 @@
     border-bottom-right-radius: 14px;
 }
 .page-subnav-list {
-    --navigation-indicator: currentColor;
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 8px;
     list-style: none;
     margin: 0;
     padding: 0;
@@ -155,6 +154,33 @@
 }
 .page-subnav-list > li {
     flex: 0 0 auto;
+}
+.page-subnav-list a,
+.page-subnav-list button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    padding: 7px 12px;
+    text-decoration: none;
+    color: var(--text-muted);
+    background: transparent;
+    white-space: nowrap;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+.page-subnav-list a:hover,
+.page-subnav-list button:hover {
+    border-color: var(--border);
+    color: var(--text);
+    background: var(--surface-soft);
+}
+.page-subnav-list a.active,
+.page-subnav-list button.active {
+    border-color: color-mix(in srgb, var(--accent-2) 35%, transparent);
+    color: var(--text);
+    background: color-mix(in srgb, var(--accent-2) 22%, transparent);
 }
 .nav-compact-toggle {
     display: none;
@@ -308,9 +334,7 @@
     overflow: hidden;
     min-width: 0;
 }
-.topnav a,
-.page-subnav-list :is(a, button),
-.app-shell .page-subnav-list :is(a, button) {
+.topnav a {
     display: inline-flex;
     align-items: center;
     gap: 6px;
@@ -320,7 +344,7 @@
     padding: 6px 2px;
     white-space: nowrap;
     cursor: pointer;
-    margin-right: var(--navigation-item-margin, 14px);
+    margin-right: 14px;
     border: 0;
     border-bottom: 2px solid transparent;
     border-radius: 0;
@@ -330,22 +354,16 @@
     font-weight: 600;
     letter-spacing: 0.01em;
 }
-.topnav a:is(:hover, :focus-visible, .active),
-.page-subnav-list :is(a, button):is(:hover, :focus-visible, .active),
-.app-shell
-    .page-subnav-list
-    :is(a, button):is(:hover, :focus-visible, .active) {
+.topnav a:is(:hover, :focus-visible, .active) {
     color: var(--text);
     opacity: 1;
-    border-bottom-color: var(--navigation-indicator, var(--accent-2));
-    background: var(--navigation-active-background, transparent);
+    border-bottom-color: var(--accent-2);
+    background: transparent;
     transform: none;
     outline: none;
 }
-.topnav a:focus-visible,
-.page-subnav-list :is(a, button):focus-visible,
-.app-shell .page-subnav-list :is(a, button):focus-visible {
-    outline: 2px solid var(--navigation-indicator, var(--accent-2));
+.topnav a:focus-visible {
+    outline: 2px solid var(--accent-2);
     outline-offset: -2px;
 }
 .topnav a[aria-disabled="true"],

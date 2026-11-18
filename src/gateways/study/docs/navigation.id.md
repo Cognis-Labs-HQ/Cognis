@@ -132,4 +132,4 @@ Perubahan favorit daring yang berhasil dan konfirmasi pengiriman ulang mengganti
 
 Nama bahasa dipersingkat menjadi kode bahasa lalu bendera ketika ruang terbatas. Nama lengkap tetap tersedia sebagai label aksesibel dan tooltip. Bahasa tanpa bendera tetap menampilkan kode. Saat ruang bertambah, nama lengkap ditampilkan kembali.
 
-Tautan halaman mengikuti tampilan navigasi utama dengan warna teks saat ini untuk penanda aktif, sorot, dan fokus papan ketik. Tautan tidak memakai latar hijau atau garis bawah saat tidak aktif. Hanya pilihan bahasa yang mempertahankan penanda aktif hijau. Menu samping bersama menampilkan entri sederhana dengan penanda baris terpilih, bukan tombol berbingkai.
+Subnavigasi mempertahankan teks ringkas, jarak, kontrol membulat, dan gaya interaksi aslinya. Penempatan responsif, area sentuh, serta pemendekan nama bahasa menjadi kode lalu bendera tetap tersedia. Menu samping bersama menampilkan entri sederhana dengan penanda pilihan, bukan tombol berbingkai.

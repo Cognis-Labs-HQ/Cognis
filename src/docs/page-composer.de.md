@@ -119,4 +119,4 @@ Composer deaktiviert die automatische Scroll-Verankerung des Browsers im gesamte
 
 Die gemeinsamen Seitenabstände passen sich der Breite an. Auf dem Desktop bleibt ein einzelner Abstand zur Hauptfläche; die Schubladenbreite in rem berücksichtigt größere Schrift. Komponenten können ihre Bedienelemente passend dimensionieren und behalten ausreichend große Touch-Flächen.
 
-Die gemeinsame Seitenhülle steuert Navigation und Menüs. Die Unternavigation entspricht den Hauptlinks und verwendet die aktuelle Textfarbe für ihre Markierung; die Sprachauswahl nutzt die grüne Darstellung. Das eigene gemeinsame Seitenmenü-Stylesheet wird mit der Seitenhülle geladen und zeigt Menüeinträge ohne Schaltflächenrahmen.
+Die Unternavigation behält ihre ursprüngliche kompakte Schrift, Abstände, abgerundeten Bedienelemente und Interaktionsstile. Responsive Anordnung, Touch-Zielflächen und die Verkürzung von Sprachname über Code bis Flagge bleiben erhalten. Gemeinsame Seitenmenüs zeigen schlichte Einträge mit Auswahlmarkierung statt umrandeter Schaltflächen.

@@ -103,4 +103,4 @@ Composer menonaktifkan penjangkaran gulir browser di seluruh konten kisi agar pe
 
 Jarak tepi bilah samping bersama menyesuaikan lebar yang tersedia. Desktop memakai satu jarak ke konten utama, sedangkan lebar panel dalam rem mengikuti ukuran teks yang lebih besar. Kontrol komponen dapat menyesuaikan ukurannya sambil mempertahankan sasaran sentuh yang nyaman.
 
-Gaya navigasi dan menu dimiliki kerangka halaman bersama. Subnavigasi mengikuti tautan utama dan memakai warna teks saat ini untuk penandanya; pemilih bahasa memakai gaya hijau. Stylesheet menu samping khusus dimuat bersama kerangka halaman dan menampilkan entri menu tanpa bingkai tombol.
+Subnavigasi mempertahankan teks ringkas, jarak, kontrol membulat, dan gaya interaksi aslinya. Penempatan responsif, area sentuh, serta pemendekan nama bahasa menjadi kode lalu bendera tetap tersedia. Menu samping bersama menampilkan entri sederhana dengan penanda pilihan, bukan tombol berbingkai.
