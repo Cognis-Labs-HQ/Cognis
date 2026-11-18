@@ -37,4 +37,4 @@ Search results, requests and Library administration omit record-specific steps w
 
 The Library-owned trigger step calls the scoped `bindOpening({ target, signal: groupSignal })` action before enabling the card click. Library interactions capture `openingSignal(target, pageSignal)` before their first asynchronous operation. That signal guards detail retrieval and composition and is passed to the popup API, including its asynchronous preparation. Aborted openings release the detail lock immediately, suppress cancellation feedback and cannot clear a newer attempt. Ordinary openings retain their page signal. The capability owns these bindings so bundled and direct scripts share the same lifetime state.
 
-Study card previews use the shared reader surface. The dialog follows the available width, keeps heading and Previous/Next actions visible, and scrolls long content independently. Tablet and touch controls retain 44px targets; compact detail facts stack without squeezing their values.
+The card-detail branch uses the reader described in [Library](/docs/adapters/study/library/library); its layout and touch controls apply when the guide opens a card.

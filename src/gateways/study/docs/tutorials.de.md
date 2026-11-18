@@ -21,8 +21,4 @@ Der Leitfaden auf `/study` erklärt die Aktivitätsnavigation, gewählte Lernspr
 
 Sprachleitfäden sind im ?-Menü der Übersicht wählbar. Diese bewusste Auswahl öffnet die Explore-Inhalte der Sprache. Automatisch starten sie nur auf den eigenen Inhaltsseiten und behalten eine bereits geöffnete Ebene bei. Library besitzt den interaktiven Kartenablauf und den allgemeinen Ersatzleitfaden; siehe Komponentendokumentation.
 
-## Flexible Study-Navigation
-
-Sprachnamen werden bei Platzmangel zunächst auf den Sprachcode und dann auf die Flagge verkürzt. Der vollständige Name bleibt als zugängliche Beschriftung und Kurzinfo erhalten. Ohne Flagge bleibt der Code sichtbar. Bei mehr Platz erscheinen wieder die Namen.
-
-Die Unternavigation behält ihre ursprüngliche kompakte Schrift, Abstände, abgerundeten Bedienelemente und Interaktionsstile. Responsive Anordnung, Touch-Zielflächen und die Verkürzung von Sprachname über Code bis Flagge bleiben erhalten. Gemeinsame Seitenmenüs zeigen schlichte Einträge mit Auswahlmarkierung statt umrandeter Schaltflächen.
+Die Navigationsschritte verwenden die sichtbaren Seiten- und Sprachsteuerelemente. Verkürzte Beschriftungen und die kompakte Suche beschreibt [Study-Navigation](/docs/gateways/study/navigation).

@@ -10,6 +10,8 @@ Flashcards memakai `/study/<iso>/flashcards` dan `/study/<iso>/flashcards/<deck-
 
 Pada ponsel dan tablet, tautan halaman Study memakai baris bergulir mendatar dan menampilkan halaman terpilih setelah ukuran atau fon berubah. Bahasa, pencarian kamus, dan pengaturan berbagi baris berikutnya. Ikon pencarian membuka dialog yang mempertahankan formulir asli, penyedia terpilih, dan isian. Penutupan mengembalikan fokus; navigasi atau perubahan ke ukuran desktop menutup dialog. Ikhtisar memakai pengguliran dokumen. Saat digulir, navigasi utama tetap tersedia dan baris merek dilipat.
 
+Nama bahasa dipersingkat menjadi kode bahasa lalu bendera ketika ruang terbatas. Nama lengkap tetap tersedia sebagai label aksesibel dan tooltip. Bahasa tanpa bendera tetap menampilkan kode. Saat ruang bertambah, nama lengkap ditampilkan kembali.
+
 ## Contoh penggunaan
 
 Buka `/study/ja/flashcards` untuk deck Jepang; memilih Inggris membuka `/study/en/flashcards`.
@@ -127,9 +129,3 @@ Tujuan yang tidak tersedia tetap terlihat dengan gaya nonaktif yang sama pada na
 ## Favorit yang Dikonfirmasi
 
 Perubahan favorit daring yang berhasil dan konfirmasi pengiriman ulang mengganti snapshot luring Study yang dibatasi ukurannya dengan respons server. Pembacaan lama yang masih berjalan tidak dapat menimpa snapshot tersebut. Membuka ulang halaman secara luring mempertahankan penambahan dan penghapusan yang telah dikonfirmasi, sementara perubahan yang masih mengantre tetap diproyeksikan di atas snapshot.
-
-## Navigasi Study Adaptif
-
-Nama bahasa dipersingkat menjadi kode bahasa lalu bendera ketika ruang terbatas. Nama lengkap tetap tersedia sebagai label aksesibel dan tooltip. Bahasa tanpa bendera tetap menampilkan kode. Saat ruang bertambah, nama lengkap ditampilkan kembali.
-
-Subnavigasi mempertahankan teks ringkas, jarak, kontrol membulat, dan gaya interaksi aslinya. Penempatan responsif, area sentuh, serta pemendekan nama bahasa menjadi kode lalu bendera tetap tersedia. Menu samping bersama menampilkan entri sederhana dengan penanda pilihan, bukan tombol berbingkai.

@@ -21,8 +21,4 @@ Panduan `/study` menjelaskan subnavigasi aktivitas, bahasa yang diikuti, modul t
 
 Panduan modul bahasa dapat dipilih dari menu ? pada ringkasan. Pilihan sadar ini membuka konten Explore bahasa tersebut. Panduan hanya otomatis dimulai pada kontennya sendiri dan mempertahankan lapisan aktif. Library memiliki alur kartu interaktif dan panduan umum cadangan; lihat dokumentasi komponennya.
 
-## Navigasi Study Adaptif
-
-Nama bahasa dipersingkat menjadi kode bahasa lalu bendera ketika ruang terbatas. Nama lengkap tetap tersedia sebagai label aksesibel dan tooltip. Bahasa tanpa bendera tetap menampilkan kode. Saat ruang bertambah, nama lengkap ditampilkan kembali.
-
-Subnavigasi mempertahankan teks ringkas, jarak, kontrol membulat, dan gaya interaksi aslinya. Penempatan responsif, area sentuh, serta pemendekan nama bahasa menjadi kode lalu bendera tetap tersedia. Menu samping bersama menampilkan entri sederhana dengan penanda pilihan, bukan tombol berbingkai.
+Langkah navigasi memakai kontrol halaman dan bahasa yang terlihat. Pemendekan label dan pencarian ringkas dijelaskan dalam [Navigasi Study](/docs/gateways/study/navigation).

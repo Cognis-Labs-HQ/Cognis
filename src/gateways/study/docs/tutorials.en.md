@@ -21,8 +21,4 @@ The `/study` guide covers the activity subnav, enrolled languages, available mod
 
 Language-module guides can be selected from the overview's ? menu. Choosing one intentionally enters that language's Explore content. They start automatically only on their own content pages and preserve the current layer when already there. Library owns the interactive card walkthrough and its generic fallback; see its component documentation.
 
-## Adaptive Study Navigation
-
-Language names shorten to their language code and then their flag when the available space is tight. The full language name remains the accessible label and tooltip. Languages without a flag retain their code. More space restores the full names.
-
-Sub-navigation retains its original compact text, spacing, rounded controls and interaction styling. Responsive placement, touch targets and language name/code/flag compression remain available. Shared side menus render plain entries with a selected-row marker rather than bordered buttons.
+The navigation steps use the visible page and language controls. Label compression and compact search behavior are described in [Study navigation](/docs/gateways/study/navigation).

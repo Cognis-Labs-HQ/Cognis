@@ -119,4 +119,4 @@ Composer deaktiviert die automatische Scroll-Verankerung des Browsers im gesamte
 
 Die gemeinsamen Seitenabstände passen sich der Breite an. Auf dem Desktop bleibt ein einzelner Abstand zur Hauptfläche; die Schubladenbreite in rem berücksichtigt größere Schrift. Komponenten können ihre Bedienelemente passend dimensionieren und behalten ausreichend große Touch-Flächen.
 
-Die Unternavigation behält ihre ursprüngliche kompakte Schrift, Abstände, abgerundeten Bedienelemente und Interaktionsstile. Responsive Anordnung, Touch-Zielflächen und die Verkürzung von Sprachname über Code bis Flagge bleiben erhalten. Gemeinsame Seitenmenüs zeigen schlichte Einträge mit Auswahlmarkierung statt umrandeter Schaltflächen.
+Gemeinsame Seitenmenüeinträge kennzeichnen Auswahl und Tastaturfokus. Abstände und Scrollverhalten der Seitenleisten gehören zu Composer statt zu einzelnen Seiten.

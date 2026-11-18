@@ -633,4 +633,6 @@ Notifikasi permintaan dan konten Library menggunakan `accountId` yang tetap agar
 
 Notifikasi permintaan, konten, dan penghapusan Study memakai kategori yang didaftarkan saat bootstrap Library. Pengiriman runtime hanya mencari kemampuan notifikasi terkini tanpa melakukan registrasi, sehingga pembatasan bootstrap SMTP tidak menghalangi pengiriman atau pemberitahuan perubahan visibilitas.
 
+## Tampilan Baca Kartu
+
 Pratinjau kartu belajar memakai permukaan pembaca bersama. Dialog mengikuti lebar tersedia, menjaga judul dan tindakan Sebelumnya/Berikutnya terlihat, serta menggulir konten panjang secara terpisah. Kontrol tablet dan sentuh tetap bersasaran 44px; rincian sempit disusun vertikal.

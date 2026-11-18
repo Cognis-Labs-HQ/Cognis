@@ -4,57 +4,31 @@
 
 ## Anpassbare Arbeitsflächen
 
-Schmale Kalenderflächen zeigen eine Terminliste mit allen Ereignissen und dem gewählten Datum sowie einer kompakten Ansichts- und Datumsauswahl. Breite Flächen behalten Kalendergitter. Das Datumsfeld erreicht leere Tage ohne Scrollen durch einen Monat. Geteilte Kalender nutzen dieselben Darstellungen und beachten Nur-Lese-Rechte.
-
-Messages passt Verlauf und Eingabe an den sichtbaren Bildschirmausschnitt an. Die gemeinsame Seitenleistenschaltfläche öffnet auf Telefonen und Tablets die Raumliste. Escape gibt den Fokus zurück, eine Auswahl schließt die Liste und Drehungen erhalten Entwürfe. Auf niedrigen Bildschirmen bleibt die Arbeitsfläche scrollbar, statt Bedienelemente abzuschneiden.
+Der Kalender bietet Agenden für schmale Bereiche; Nachrichten passt Unterhaltungen an den sichtbaren Bereich an und erhält Entwürfe.
 
 ## Composer
 
-Der Page Composer steuert die Auswahl der Darstellung. Jede Elementfunktion erhält einen unveränderlichen Kontext mit `compact`, `layout`, `drawer` und `touch`. Entscheidend ist die innere Breite der Karte, einschließlich Änderungen durch Seitenleisten oder verschachtelte Layouts. Mit `responsive: true` erhält ein Element bei einem Darstellungswechsel neues Markup; normale zustandsbehaftete Elemente behalten ihren DOM. `onResize(presentation)` dient Geometrieanpassungen. Seitencode benötigt keine eigenen Bildschirmabfragen oder Größenereignisse.
-
-Desktop-Werkzeugleisten verwenden eine begrenzte gemeinsame Spalte, damit für Inhalte genügend Platz bleibt. Die Spalte berücksichtigt die gewählte Textgröße; Telefone und Tablets nutzen die Composer-Seitenleiste.
-
-Die gemeinsamen `layout`-Werte sind `compact` (bis 640px), `medium` (bis 900px) und `regular`, gemessen innerhalb der Karte. Dichte Flächen wie der Kalender nutzen in beiden eingeschränkten Darstellungen die Terminliste.
-
-Die vom Composer verwalteten Attribute `data-composer-layout`, `data-composer-drawer` und `data-composer-touch` steuern Layout und Eingabe. Normale und verschachtelte Komposition erhalten denselben Kontext. Der Composer überwacht Inhalt und Karten, stellt Formularwerte wieder her und entfernt Beobachter und Ereignisbehandlung beim Verlassen der Seite.
+Breiten- und Eingabedarstellung, responsive Lesereihenfolge, Inhaltsaktualisierung und Lesedialoge liegen gemeinsam in [Page Composer](/docs/page-composer).
 
 ## Seiten und Seitenleisten
 
-Über das Seitenraster im Hauptkopf wechselst du zu anderen Bereichen. Die kompakte Seitenauswahl hält den Tastaturfokus und schließt mit Escape. Page Composer stellt für alle Seitenleisten dieselbe SVG-Schaltfläche mit doppeltem Winkel oben links bereit. Messages öffnet damit die Unterhaltungen.
+Ein Seitenwähler wechselt auf kleinen Bildschirmen das Ziel. Seitenleisten teilen eine Doppelwinkel-Schaltfläche und das Schließen per Tastatur.
 
 ## Lesbare mobile Inhalte
 
-Der Kalender hält die Bedienung über einer unabhängig scrollbaren Terminliste. Neben jedem Datum steht ein zugängliches Symbol zum Hinzufügen eines Ereignisses. Messages begrenzt lange Raumüberschriften auf zwei sichtbare Zeilen; der vollständige Titel bleibt zugänglich. Profile zeigen auf Telefonen und Tablets zuerst Identität, Beitragserstellung und Beiträge, danach weitere soziale Bereiche. Biografien und Beiträge brechen natürlich um.
-
-`stackAt: "medium"` fordert bis zur gemeinsamen Tabletgrenze eine fließende einzelne Spalte an. `readingOrder` legt deren Elementreihenfolge fest, ohne gespeicherte Desktoplayouts zu ändern. Formularfelder und Entwürfe bleiben bei Layoutänderungen erhalten.
-
-Studienkarten verwenden die gemeinsame Lesefläche. Der Dialog folgt der verfügbaren Breite, hält Überschrift sowie Zurück/Weiter sichtbar und scrollt lange Inhalte unabhängig. Tablet- und Touchflächen bleiben 44px groß; schmale Detailangaben stehen untereinander.
-
-Kopf- und Fußzeile verwenden dieselbe Rahmenbreite. Ihre Außenkanten stimmen auf Telefonen, Tablets und Desktopbildschirmen überein.
-
-Die Vorschau zeigt vor dem Veröffentlichen den aktuellen Titel und Text. Wechsle zurück zum Schreiben oder drehe das Gerät, ohne den Entwurf zu verlieren.
-
-Veröffentlichte Beiträge erscheinen sofort; nach dem Löschen wird die Beitragsliste ohne Neuladen aktualisiert.
-
-Elemente können einen stabilen Bereich mit `data-composer-header` deklarieren. Composer platziert dort seine Seitenleistenschaltfläche und erhält dieselbe Schaltfläche samt Fokusverhalten bei Neuzeichnungen. Asynchron ersetzte Inhalte gehören in ein Kindelement dieses Bereichs. `data-composer-sidebar-trigger` kennzeichnet die gemeinsame Schaltfläche für Stile. Kalender und Messages gewinnen dadurch mehr Höhe für Inhalte.
+Profile priorisieren Identität und Beiträge auf Telefonen und Tablets. Study-Karten bleiben auf kurzen Bildschirmen lesbar und bedienbar. Kopf- und Fußzeile sind bündig.
 
 ## Komponentenisolierung
 
-Die Ansichtsgrößentests von Kalender und Nachrichten liegen bei ihren jeweiligen Komponenten. Browser-Testumgebungen stellen Komponentenressourcen ausdrücklich bereit und ersetzen externe Verträge durch Testimplementierungen. Prüfungen für gefüllte Ansichten, Entwürfe, Touch-Bedienelemente und die Ressourcenfreigabe bleiben erhalten. Nachrichten-Tutorials verwenden den öffentlichen Composer-Seitenleistenanker.
-
-Composer deaktiviert die automatische Scroll-Verankerung des Browsers im gesamten Rasterinhalt, damit sich verschachtelte Scroll-Positionen bei Breitenänderungen nicht verschieben. Die Inhaltskomponenten steuern das Scrollen beim Anfügen oder Ersetzen von Inhalten.
+Viewport-Fixtures bleiben in ihren Komponenten und verwenden explizite Ressourcenpfade sowie externe Vertragsattrappen. Funktionsreferenzen beschreiben das Verhalten; Tutorial-Referenzen erläutern Ziele und verlinken die Details.
 
 ## Kompakte Seitenleisten
 
-Nachrichten zeigt Neuer Raum, Unterhaltungen und Vorlagen direkt untereinander und nutzt die verfügbare Breite. Leere und kurze Listen werden nicht mehr auf die gesamte Schubladenhöhe gestreckt. Lange Raum- und Vorlagenlisten verwenden die gemeinsame Scroll-Fläche von Composer.
-
-Die gemeinsamen Seitenabstände passen sich der Breite an. Auf dem Desktop bleibt ein einzelner Abstand zur Hauptfläche; die Schubladenbreite in rem berücksichtigt größere Schrift. Komponenten können ihre Bedienelemente passend dimensionieren und behalten ausreichend große Touch-Flächen.
+Weniger Leerraum in Schubladen und eine gemeinsame Scroll-Fläche für lange Unterhaltungslisten. Decks erscheinen als Menüeinträge statt als Schaltflächen.
 
 ## Flexible Study-Navigation
 
-Sprachnamen werden bei Platzmangel zunächst auf den Sprachcode und dann auf die Flagge verkürzt. Der vollständige Name bleibt als zugängliche Beschriftung und Kurzinfo erhalten. Ohne Flagge bleibt der Code sichtbar. Bei mehr Platz erscheinen wieder die Namen.
-
-Die Unternavigation behält ihre ursprüngliche kompakte Schrift, Abstände, abgerundeten Bedienelemente und Interaktionsstile. Responsive Anordnung, Touch-Zielflächen und die Verkürzung von Sprachname über Code bis Flagge bleiben erhalten. Gemeinsame Seitenmenüs zeigen schlichte Einträge mit Auswahlmarkierung statt umrandeter Schaltflächen.
+Sprachbeschriftungen verkürzen sich bei Platzmangel und behalten zugängliche Namen. Die ursprüngliche Unternavigation bleibt erhalten.
 
 ## Commits
 

@@ -10,6 +10,8 @@ Flashcards verwendet `/study/<iso>/flashcards` und `/study/<iso>/flashcards/<dec
 
 Auf Telefonen und Tablets stehen Study-Seitenlinks in einer horizontal scrollbaren Zeile; nach Größen- oder Schriftänderungen bleibt die aktive Seite sichtbar. Sprache, Wörterbuchsuche und Einstellungen teilen sich die nächste Zeile. Das Suchsymbol öffnet einen Dialog, der das ursprüngliche Formular, den gewählten Anbieter und die Eingabe erhält. Schließen gibt den Fokus zurück; Navigation oder Desktopgröße schließen den Dialog. Die Übersicht verwendet den Dokumentlauf. Beim Scrollen bleibt die Hauptnavigation erreichbar und die Markenzeile klappt ein.
 
+Sprachnamen werden bei Platzmangel zunächst auf den Sprachcode und dann auf die Flagge verkürzt. Der vollständige Name bleibt als zugängliche Beschriftung und Kurzinfo erhalten. Ohne Flagge bleibt der Code sichtbar. Bei mehr Platz erscheinen wieder die Namen.
+
 ## Anwendungsbeispiele
 
 Öffnen Sie `/study/ja/flashcards` für japanische Decks; Englisch öffnet `/study/en/flashcards`.
@@ -127,9 +129,3 @@ Nicht verfügbare Ziele bleiben in der Hauptnavigation, im Benutzermenü und im 
 ## Bestätigte Favoriten
 
 Erfolgreiche Online-Änderungen an Favoriten und bestätigte Wiederholungen ersetzen Studys begrenzte Offline-Momentaufnahme durch die Serverantwort. Eine überholte laufende Abfrage kann sie nicht überschreiben. Erneuter Seitenaufbau offline erhält bestätigte Ergänzungen und Entfernungen; noch gepufferte Absichten werden weiterhin darübergelegt.
-
-## Flexible Study-Navigation
-
-Sprachnamen werden bei Platzmangel zunächst auf den Sprachcode und dann auf die Flagge verkürzt. Der vollständige Name bleibt als zugängliche Beschriftung und Kurzinfo erhalten. Ohne Flagge bleibt der Code sichtbar. Bei mehr Platz erscheinen wieder die Namen.
-
-Die Unternavigation behält ihre ursprüngliche kompakte Schrift, Abstände, abgerundeten Bedienelemente und Interaktionsstile. Responsive Anordnung, Touch-Zielflächen und die Verkürzung von Sprachname über Code bis Flagge bleiben erhalten. Gemeinsame Seitenmenüs zeigen schlichte Einträge mit Auswahlmarkierung statt umrandeter Schaltflächen.

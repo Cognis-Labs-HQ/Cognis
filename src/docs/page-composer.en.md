@@ -186,4 +186,4 @@ Composer disables browser scroll anchoring throughout its grid content so width 
 
 Shared sidebar insets adapt to available width, with one desktop gap and a rem-sized drawer that respects larger text. Feature controls can size themselves within the sidebar while retaining touch targets.
 
-Sub-navigation retains its original compact text, spacing, rounded controls and interaction styling. Responsive placement, touch targets and language name/code/flag compression remain available. Shared side menus render plain entries with a selected-row marker rather than bordered buttons.
+Shared side-menu entries use selected-row and keyboard-focus indicators. Sidebar spacing and scrolling belong to Composer rather than individual pages.

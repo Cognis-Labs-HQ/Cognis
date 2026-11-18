@@ -10,6 +10,8 @@ Flashcards uses `/study/<iso>/flashcards` and `/study/<iso>/flashcards/<deck-id>
 
 On phones and tablets, Study page links use a horizontally scrollable row and reveal the selected page after resizing or font changes. Language, dictionary search and settings share the next row. The search icon opens a dialog that retains the original form, selected provider and draft. Closing restores focus; navigation or a resize to desktop closes the dialog. The overview uses document scrolling. While scrolling, the compact header keeps primary navigation available and folds the brand row.
 
+Language names shorten to their language code and then their flag when the available space is tight. The full language name remains the accessible label and tooltip. Languages without a flag retain their code. More space restores the full names.
+
 ## Usage examples
 
 Open `/study/ja/flashcards` to browse Japanese decks; selecting English opens `/study/en/flashcards`.
@@ -127,9 +129,3 @@ Unavailable destinations stay visible with the same disabled styling in the prim
 ## Acknowledged Favourites
 
 Successful online favourite changes and replay acknowledgements replace Study’s bounded offline snapshot with the server response. A superseded in-flight read cannot overwrite that snapshot. Offline page remounts preserve acknowledged additions and removals while remaining queued intent stays projected over the snapshot.
-
-## Adaptive Study Navigation
-
-Language names shorten to their language code and then their flag when the available space is tight. The full language name remains the accessible label and tooltip. Languages without a flag retain their code. More space restores the full names.
-
-Sub-navigation retains its original compact text, spacing, rounded controls and interaction styling. Responsive placement, touch targets and language name/code/flag compression remain available. Shared side menus render plain entries with a selected-row marker rather than bordered buttons.

@@ -16,10 +16,4 @@ Panduan didaftarkan melalui kapabilitas publik `ui:tutorials` dengan definisi, k
 
 Navigasi tanggal menyorot kontrol tanggal yang terlihat meski tanpa acara. Perencanaan acara menyorot satu tempat pembuatan nyata, bukan mengulangi seluruh kalender.
 
-## Ruang Kerja Responsif
-
-Panel Kalender sempit menampilkan agenda berisi setiap acara dan tanggal terpilih, dengan pemilih tampilan serta tanggal yang ringkas. Panel lebar mempertahankan kisi kalender. Kolom tanggal mencapai tanggal kosong tanpa menggulir satu bulan. Kalender bersama memakai presentasi yang sama dan menegakkan akses baca saja.
-
-## Konten Seluler yang Terbaca
-
-Kalender menjaga kontrol di atas agenda yang dapat digulir tersendiri. Ikon Tambah Acara di samping setiap tanggal memiliki sasaran sentuh 44px dan label yang aksesibel.
+Langkah tanggal dan pembuatan acara memakai kontrol pada tampilan Kalender yang aktif. Perilaku agenda dan kisi dijelaskan dalam [Kalender](/docs/gateways/calendar).
