@@ -40,6 +40,7 @@ export const COMMON_STYLESHEETS = Object.freeze([
     "presence.css",
     "search-bar.css",
     "secret-visibility-toggle.css",
+    "side-menu.css",
     "state-pill.css",
     "structured-content.css",
     "theme.css",

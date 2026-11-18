@@ -118,3 +118,5 @@ Elemente können einen stabilen Bereich mit `data-composer-header` deklarieren. 
 Composer deaktiviert die automatische Scroll-Verankerung des Browsers im gesamten Rasterinhalt, damit sich verschachtelte Scroll-Positionen bei Breitenänderungen nicht verschieben. Die Inhaltskomponenten steuern das Scrollen beim Anfügen oder Ersetzen von Inhalten.
 
 Die gemeinsamen Seitenabstände passen sich der Breite an. Auf dem Desktop bleibt ein einzelner Abstand zur Hauptfläche; die Schubladenbreite in rem berücksichtigt größere Schrift. Komponenten können ihre Bedienelemente passend dimensionieren und behalten ausreichend große Touch-Flächen.
+
+Die gemeinsame Seitenhülle steuert Navigation und Menüs. Die Unternavigation entspricht den Hauptlinks und verwendet die aktuelle Textfarbe für ihre Markierung; die Sprachauswahl nutzt die grüne Darstellung. Das eigene gemeinsame Seitenmenü-Stylesheet wird mit der Seitenhülle geladen und zeigt Menüeinträge ohne Schaltflächenrahmen.

@@ -54,7 +54,7 @@ Shared sidebar insets adapt to available width, with one desktop gap and a rem-s
 
 Language names shorten to their language code and then their flag when the available space is tight. The full language name remains the accessible label and tooltip. Languages without a flag retain their code. More space restores the full names.
 
-Sub-navigation links and buttons share the same underline thickness for resting, active, hover and keyboard-focus states. The shared shell owns this styling, including Leaderboard; Study only owns its language-label presentation.
+Page links use the primary navigation appearance with the current text color for their active, hover and keyboard-focus indicator. They have no green fill or resting underline. Only language choices retain the green active treatment. Shared side menus render plain entries with a selected-row marker rather than bordered buttons.
 
 ## Commits
 

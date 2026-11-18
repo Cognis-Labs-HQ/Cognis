@@ -132,4 +132,4 @@ Perubahan favorit daring yang berhasil dan konfirmasi pengiriman ulang mengganti
 
 Nama bahasa dipersingkat menjadi kode bahasa lalu bendera ketika ruang terbatas. Nama lengkap tetap tersedia sebagai label aksesibel dan tooltip. Bahasa tanpa bendera tetap menampilkan kode. Saat ruang bertambah, nama lengkap ditampilkan kembali.
 
-Tautan dan tombol subnavigasi menggunakan ketebalan garis bawah yang sama pada keadaan biasa, aktif, saat diarahkan, dan saat difokuskan dengan papan ketik. Gaya ini, termasuk Peringkat, dimiliki kerangka halaman bersama. Study hanya mengatur tampilan label bahasanya.
+Tautan halaman mengikuti tampilan navigasi utama dengan warna teks saat ini untuk penanda aktif, sorot, dan fokus papan ketik. Tautan tidak memakai latar hijau atau garis bawah saat tidak aktif. Hanya pilihan bahasa yang mempertahankan penanda aktif hijau. Menu samping bersama menampilkan entri sederhana dengan penanda baris terpilih, bukan tombol berbingkai.

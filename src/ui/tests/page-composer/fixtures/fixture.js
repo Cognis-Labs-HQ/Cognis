@@ -1,3 +1,4 @@
+import { createSideMenu } from "/static/reuse/side-menu.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { createI18n, applyStaticTranslations } from "/static/reuse/i18n.js";
 import { openPopup } from "/static/reuse/popup.js";
@@ -37,6 +38,25 @@ try {
         render: () => renderTemplate(element.template),
     }));
     const nested = options.get("mode") === "nested";
+    const menus = options.has("menus");
+    const menuChoices = [];
+    const menu = createSideMenu({
+        groups: [
+            {
+                id: "fixture",
+                collapsible: false,
+                items: [
+                    { id: "first", label: i18n.t("ui.reuse.settings") },
+                    {
+                        id: "second",
+                        label: i18n.t("ui.reuse.more_information"),
+                    },
+                ],
+            },
+        ],
+        storageKeyPrefix: "fixture-menu",
+        onSelect: (id) => menuChoices.push(id),
+    });
     const composer = createPageComposer(root, {
         i18n,
         preferenceKey: nested ? "responsive-nested" : "responsive-grid",
@@ -52,9 +72,18 @@ try {
         toolbar: [
             {
                 id: "fixture-toolbar",
-                render: () => renderTemplate("toolbar-content"),
+                render: () =>
+                    menus ? menu.render() : renderTemplate("toolbar-content"),
             },
         ],
+        subNavigation: menus
+            ? [
+                  {
+                      id: "fixture-nav",
+                      render: () => renderTemplate("subnav-content"),
+                  },
+              ]
+            : [],
         subPageNavigation: nested,
         elements: nested
             ? [
@@ -99,6 +128,7 @@ try {
         if (event.target.closest("[data-fixture-search]")) openFixtureSearch();
     });
     await composer.init();
+    if (menus) menu.mount(root, { signal: lifetime.signal });
     // This component fixture mounts directly without the application's page-entry loader.
     document.body.dataset.pageReady = "true";
     const topnav = root.querySelector(".topnav");
@@ -145,6 +175,8 @@ try {
         })),
     });
     window.fixture = {
+        menu,
+        menuChoices,
         composer,
         lifetime,
         openFixturePopup,

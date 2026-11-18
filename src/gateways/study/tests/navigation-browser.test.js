@@ -33,7 +33,7 @@ async function startNavigation(context, suffix = "") {
 }
 
 test(
-    "Study language labels fit their available space and navigation shares one underline style",
+    "Study language labels fit their available space and only languages retain the green treatment",
     {
         skip: !executable && "Requires COGNIS_BROWSER_TESTS=1 and Chromium",
         timeout: 120000,
@@ -90,6 +90,16 @@ test(
             `getComputedStyle(document.querySelector('.study-subnav-modules a:last-child')).borderBottomColor`,
         );
         assert.notEqual(activeColor, styles[0].color);
+        const treatment = await browser.evaluate(`(() => {
+            const page = getComputedStyle(document.querySelector('.study-subnav-modules a.active'));
+            const language = getComputedStyle(document.querySelector('[data-language-code="ja"].active'));
+            return { pageColor: page.color, pageIndicator: page.borderBottomColor, pageBackground: page.backgroundColor,
+                languageIndicator: language.borderBottomColor, languageBackground: language.backgroundColor };
+        })()`);
+        assert.equal(treatment.pageIndicator, treatment.pageColor);
+        assert.equal(treatment.pageBackground, "rgba(0, 0, 0, 0)");
+        assert.notEqual(treatment.languageIndicator, treatment.pageIndicator);
+        assert.notEqual(treatment.languageBackground, treatment.pageBackground);
         await browser.command("Input.dispatchKeyEvent", {
             type: "keyDown",
             key: "Tab",

@@ -54,7 +54,7 @@ Die gemeinsamen Seitenabstände passen sich der Breite an. Auf dem Desktop bleib
 
 Sprachnamen werden bei Platzmangel zunächst auf den Sprachcode und dann auf die Flagge verkürzt. Der vollständige Name bleibt als zugängliche Beschriftung und Kurzinfo erhalten. Ohne Flagge bleibt der Code sichtbar. Bei mehr Platz erscheinen wieder die Namen.
 
-Links und Schaltflächen der Unternavigation verwenden im normalen, aktiven, schwebenden und per Tastatur fokussierten Zustand dieselbe Unterstreichungsstärke. Diese Darstellung einschließlich Rangliste gehört zur gemeinsamen Seitenhülle. Study steuert nur seine Sprachbeschriftungen.
+Seitenlinks verwenden die Darstellung der Hauptnavigation mit der aktuellen Textfarbe für Auswahl, Hover und Tastaturfokus. Sie haben keine grüne Füllung und im Ruhezustand keine Unterstreichung. Nur die Sprachauswahl behält die grüne Auswahlmarkierung. Gemeinsame Seitenmenüs zeigen einfache Einträge mit einer Markierung der gewählten Zeile statt umrandeter Schaltflächen.
 
 ## Commits
 

@@ -1,3 +1,5 @@
+@import url("./side-menu.css");
+
 @import url("./presence.css");
 @import url("./floating-menu.css");
 
@@ -139,9 +141,10 @@
     border-bottom-right-radius: 14px;
 }
 .page-subnav-list {
+    --navigation-indicator: currentColor;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 4px;
     list-style: none;
     margin: 0;
     padding: 0;
@@ -152,43 +155,6 @@
 }
 .page-subnav-list > li {
     flex: 0 0 auto;
-}
-.page-subnav-list a,
-.page-subnav-list button,
-.app-shell .page-subnav-list :is(a, button) {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    border: 0;
-    border-bottom: 2px solid var(--border);
-    border-radius: 0;
-    padding: 7px 12px;
-    text-decoration: none;
-    color: var(--text-muted);
-    background: transparent;
-    white-space: nowrap;
-    font-size: 0.9rem;
-    font-weight: 600;
-}
-.page-subnav-list :is(a, button):is(:hover, :focus-visible),
-.app-shell .page-subnav-list :is(a, button):is(:hover, :focus-visible) {
-    border-bottom-color: var(--accent-2);
-    color: var(--text);
-    background: var(--surface-soft);
-    transform: none;
-    outline: none;
-}
-.page-subnav-list :is(a, button):focus-visible,
-.app-shell .page-subnav-list :is(a, button):focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: -2px;
-}
-.page-subnav-list a.active,
-.page-subnav-list button.active,
-.app-shell .page-subnav-list :is(a, button).active {
-    border-bottom-color: var(--accent-2);
-    color: var(--text);
-    background: color-mix(in srgb, var(--accent-2) 22%, transparent);
 }
 .nav-compact-toggle {
     display: none;
@@ -342,20 +308,45 @@
     overflow: hidden;
     min-width: 0;
 }
-.topnav a {
+.topnav a,
+.page-subnav-list :is(a, button),
+.app-shell .page-subnav-list :is(a, button) {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     color: var(--text);
     text-decoration: none;
     opacity: 0.92;
     padding: 6px 2px;
     white-space: nowrap;
     cursor: pointer;
-    margin-right: 14px;
+    margin-right: var(--navigation-item-margin, 14px);
+    border: 0;
+    border-bottom: 2px solid transparent;
+    border-radius: 0;
+    background: transparent;
+    font: inherit;
+    font-size: 0.97rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
 }
-.topnav a:hover,
-.topnav a.active {
+.topnav a:is(:hover, :focus-visible, .active),
+.page-subnav-list :is(a, button):is(:hover, :focus-visible, .active),
+.app-shell
+    .page-subnav-list
+    :is(a, button):is(:hover, :focus-visible, .active) {
     color: var(--text);
     opacity: 1;
-    border-bottom: 2px solid var(--accent-2);
+    border-bottom-color: var(--navigation-indicator, var(--accent-2));
+    background: var(--navigation-active-background, transparent);
+    transform: none;
+    outline: none;
+}
+.topnav a:focus-visible,
+.page-subnav-list :is(a, button):focus-visible,
+.app-shell .page-subnav-list :is(a, button):focus-visible {
+    outline: 2px solid var(--navigation-indicator, var(--accent-2));
+    outline-offset: -2px;
 }
 .topnav a[aria-disabled="true"],
 .nav-launcher-nav a[aria-disabled="true"],

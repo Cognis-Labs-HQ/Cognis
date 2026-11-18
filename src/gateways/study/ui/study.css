@@ -222,7 +222,6 @@ body[data-theme="light"] .study-hub-module-link:focus-visible {
 .study-subnav-modules {
     display: flex;
     align-items: center;
-    gap: 8px;
     flex-wrap: nowrap;
     margin-right: auto;
     flex: 1 1 auto;
@@ -245,6 +244,13 @@ body[data-theme="light"] .study-hub-module-link:focus-visible {
 }
 
 .study-subnav-language-options {
+    --navigation-item-margin: 0;
+    --navigation-indicator: var(--accent-2);
+    --navigation-active-background: color-mix(
+        in srgb,
+        var(--accent-2) 22%,
+        transparent
+    );
     margin-inline-start: auto;
     display: flex;
     align-items: center;
@@ -255,6 +261,7 @@ body[data-theme="light"] .study-hub-module-link:focus-visible {
 }
 
 .study-subnav-settings {
+    --navigation-item-margin: 0;
     flex: 0 0 auto;
 }
 

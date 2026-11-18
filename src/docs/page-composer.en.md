@@ -185,3 +185,5 @@ Elements can declare a stable `data-composer-header` host. Composer places its s
 Composer disables browser scroll anchoring throughout its grid content so width changes retain nested scroll offsets. Content owners control scrolling when they append or replace content.
 
 Shared sidebar insets adapt to available width, with one desktop gap and a rem-sized drawer that respects larger text. Feature controls can size themselves within the sidebar while retaining touch targets.
+
+Navigation and menu styling live in the shared shell. Sub-navigation matches the primary links and uses current text color for its indicator; language selectors opt into the green treatment. The dedicated shared side-menu stylesheet loads with the shell and presents menu entries without button borders.

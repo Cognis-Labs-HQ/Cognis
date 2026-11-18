@@ -102,3 +102,5 @@ Elemen dapat mendeklarasikan wadah stabil `data-composer-header`. Composer menem
 Composer menonaktifkan penjangkaran gulir browser di seluruh konten kisi agar perubahan lebar mempertahankan posisi gulir di dalamnya. Komponen pemilik konten mengatur pengguliran saat menambahkan atau mengganti konten.
 
 Jarak tepi bilah samping bersama menyesuaikan lebar yang tersedia. Desktop memakai satu jarak ke konten utama, sedangkan lebar panel dalam rem mengikuti ukuran teks yang lebih besar. Kontrol komponen dapat menyesuaikan ukurannya sambil mempertahankan sasaran sentuh yang nyaman.
+
+Gaya navigasi dan menu dimiliki kerangka halaman bersama. Subnavigasi mengikuti tautan utama dan memakai warna teks saat ini untuk penandanya; pemilih bahasa memakai gaya hijau. Stylesheet menu samping khusus dimuat bersama kerangka halaman dan menampilkan entri menu tanpa bingkai tombol.
