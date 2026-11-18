@@ -10,6 +10,8 @@ Der Kalender bietet Agenden für schmale Bereiche; Nachrichten passt Unterhaltun
 
 Breiten- und Eingabedarstellung, responsive Lesereihenfolge, Inhaltsaktualisierung und Lesedialoge liegen gemeinsam in [Page Composer](/docs/page-composer).
 
+Konto- und freigegebene Kalender verwenden dieselben validierten Datums- und Ansichtsaktionen, auch im Viewport-Fixture.
+
 ## Seiten und Seitenleisten
 
 Ein Seitenwähler wechselt auf kleinen Bildschirmen das Ziel. Seitenleisten teilen eine Doppelwinkel-Schaltfläche und das Schließen per Tastatur.

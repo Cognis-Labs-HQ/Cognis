@@ -1,4 +1,7 @@
-import { renderCalendarViewSwitcher } from "../calendar-view-controls.js";
+import {
+    renderCalendarViewSwitcher,
+    mountCalendarViewControls,
+} from "../calendar-view-controls.js";
 import { guides } from "./guides.js";
 import { calendarFetch as apiFetch } from "../offline-client.js";
 import { isOffline } from "/static/reuse/offline-state.js";
@@ -493,25 +496,18 @@ export async function mount(root, { signal, shareContext = null } = {}) {
         { signal },
     );
 
-    root.addEventListener(
-        "change",
-        (event) => {
-            const dateInput = event.target.closest("[data-calendar-date]");
-            if (dateInput) {
-                const date = new Date(dateInput.value + "T12:00:00");
-                if (Number.isFinite(date.getTime())) {
-                    activeDate = date;
-                    refreshCalendarComposer();
-                }
-                return;
-            }
-            const select = event.target.closest("[data-calendar-view-select]");
-            if (!select) return;
-            setSelectedView(select.value);
+    mountCalendarViewControls(root, {
+        views: calendarUi.CALENDAR_VIEWS,
+        signal,
+        onDateChange(date) {
+            activeDate = date;
             refreshCalendarComposer();
         },
-        { signal },
-    );
+        onViewChange(view) {
+            setSelectedView(view);
+            refreshCalendarComposer();
+        },
+    });
 
     composer = createPageComposer(root, {
         tutorials: guides,

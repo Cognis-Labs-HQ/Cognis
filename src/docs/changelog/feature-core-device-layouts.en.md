@@ -10,6 +10,8 @@ Calendar adds agendas for constrained panes, and Messages fits conversations to 
 
 Centralize width and input presentation, responsive reading order, content refresh and reader dialogs in [Page Composer](/docs/page-composer).
 
+Account and shared Calendar pages now reuse the same validated date/view interactions, including in the viewport fixture.
+
 ## Page and Sidebar Navigation
 
 A Pages launcher switches destinations on compact screens; sidebars share one double-chevron control and keyboard dismissal.

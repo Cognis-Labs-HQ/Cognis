@@ -1,4 +1,7 @@
-import { renderCalendarViewSwitcher } from "./calendar-view-controls.js";
+import {
+    renderCalendarViewSwitcher,
+    mountCalendarViewControls,
+} from "./calendar-view-controls.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
@@ -239,25 +242,18 @@ export async function mount(
     };
 
     let presentation;
-    root.addEventListener(
-        "change",
-        (event) => {
-            const dateInput = event.target.closest("[data-calendar-date]");
-            if (dateInput) {
-                const date = new Date(dateInput.value + "T12:00:00");
-                if (Number.isFinite(date.getTime())) {
-                    activeDate = date;
-                    renderCalendar();
-                }
-                return;
-            }
-            const select = event.target.closest("[data-calendar-view-select]");
-            if (!select || !CALENDAR_VIEWS.includes(select.value)) return;
-            selectedView = select.value;
+    mountCalendarViewControls(root, {
+        views: CALENDAR_VIEWS,
+        signal,
+        onDateChange(date) {
+            activeDate = date;
             renderCalendar();
         },
-        { signal },
-    );
+        onViewChange(view) {
+            selectedView = view;
+            renderCalendar();
+        },
+    });
 
     function renderCalendar() {
         const sharedCalendar = root.querySelector(

@@ -72,6 +72,8 @@ Calendar menemukan `meetings:createMeeting` dari penyedia browser yang aktif. Pe
 
 Panel Kalender sempit menampilkan agenda berisi setiap acara dan tanggal terpilih, dengan pemilih tampilan serta tanggal yang ringkas. Panel lebar mempertahankan kisi kalender. Kolom tanggal mencapai tanggal kosong tanpa menggulir satu bulan. Kalender bersama memakai presentasi yang sama dan menegakkan akses baca saja.
 
+Lompatan tanggal dan pemilihan tampilan bawaan memakai satu pengikatan kontrol milik Kalender untuk halaman akun maupun berbagi. Masukan tidak valid tidak mengubah tampilan, dan pendengar dilepas saat masa hidup halaman berakhir.
+
 ## Konten Seluler yang Terbaca
 
 Kalender menjaga kontrol di atas agenda yang dapat digulir tersendiri. Ikon Tambah Acara di samping setiap tanggal memiliki sasaran sentuh 44px dan label yang aksesibel.

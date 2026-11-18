@@ -10,6 +10,8 @@ Kalender menyediakan agenda untuk panel sempit, sedangkan Pesan menyesuaikan per
 
 Penyajian lebar dan masukan, urutan baca responsif, pembaruan konten, serta dialog baca dipusatkan dalam [Page Composer](/docs/page-composer).
 
+Halaman Kalender akun dan berbagi kini memakai interaksi tanggal/tampilan tervalidasi yang sama, termasuk pada fixture area pandang.
+
 ## Navigasi Halaman dan Panel
 
 Pemilih Halaman beralih tujuan pada layar ringkas; panel samping memakai satu kontrol chevron ganda dan penutupan lewat papan ketik.

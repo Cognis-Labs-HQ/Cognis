@@ -22,3 +22,31 @@ export function renderCalendarViewSwitcher(
         ${views.map((view) => `<button type="button" data-calendar-view="${view}" class="${selectedView === view ? "active" : ""}" aria-pressed="${selectedView === view}">${label(view)}</button>`).join("")}
     </div>`;
 }
+
+/**
+ * Binds native date and view controls for signed-in and shared Calendar pages.
+ * @param {HTMLElement} root Calendar page root.
+ * @param {object} options Allowed views, state callbacks and page lifetime.
+ * @returns {void}
+ */
+export function mountCalendarViewControls(
+    root,
+    { views, onDateChange, onViewChange, signal },
+) {
+    if (signal?.aborted) return;
+    root.addEventListener(
+        "change",
+        (event) => {
+            const dateInput = event.target.closest("[data-calendar-date]");
+            if (dateInput) {
+                const date = new Date(dateInput.value + "T12:00:00");
+                if (Number.isFinite(date.getTime())) onDateChange(date);
+                return;
+            }
+            const select = event.target.closest("[data-calendar-view-select]");
+            if (select && views.includes(select.value))
+                onViewChange(select.value);
+        },
+        { signal },
+    );
+}

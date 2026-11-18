@@ -5,7 +5,10 @@ import {
     renderCalendarView,
     CALENDAR_VIEWS,
 } from "/static/gateways/calendar/ui/calendar-ui-helpers.js";
-import { renderCalendarViewSwitcher } from "/static/gateways/calendar/ui/calendar-view-controls.js";
+import {
+    renderCalendarViewSwitcher,
+    mountCalendarViewControls,
+} from "/static/gateways/calendar/ui/calendar-view-controls.js";
 
 const finishLoading = beginPageLoading();
 const data = await (await fetch("/data.json")).json();
@@ -15,6 +18,7 @@ const i18n = await createI18n({
 const lifetime = new AbortController();
 const root = document.querySelector("#app");
 let view = "month";
+let activeDate = new Date(data.date);
 const composer = createPageComposer(root, {
     i18n,
     signal: lifetime.signal,
@@ -42,26 +46,28 @@ const composer = createPageComposer(root, {
             render: (presentation) => `
       <section class="calendar-section">
         <header class="calendar-view-header" data-composer-header>
-          ${renderCalendarViewSwitcher(CALENDAR_VIEWS, view, i18n, new Date(data.date))}
+          ${renderCalendarViewSwitcher(CALENDAR_VIEWS, view, i18n, activeDate)}
         </header>
         <div class="calendar-view-canvas">
-          ${renderCalendarView(data.events, view, new Date(data.date), i18n, "fixture", { compact: presentation.layout !== "regular" })}
+          ${renderCalendarView(data.events, view, activeDate, i18n, "fixture", { compact: presentation.layout !== "regular" })}
         </div>
       </section>`,
         },
     ],
 });
 await composer.init();
-root.addEventListener(
-    "change",
-    (event) => {
-        if (event.target.matches("[data-calendar-view-select]")) {
-            view = event.target.value;
-            composer.refreshElements(["calendar"]);
-        }
+mountCalendarViewControls(root, {
+    views: CALENDAR_VIEWS,
+    signal: lifetime.signal,
+    onDateChange(date) {
+        activeDate = date;
+        composer.refreshElements(["calendar"]);
     },
-    { signal: lifetime.signal },
-);
+    onViewChange(nextView) {
+        view = nextView;
+        composer.refreshElements(["calendar"]);
+    },
+});
 root.addEventListener(
     "click",
     (event) => {
