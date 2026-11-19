@@ -91,9 +91,9 @@ Gunakan kisi Halaman pada kepala utama untuk berpindah tujuan. Pemilih halaman r
 
 `stackAt: "medium"` meminta satu kolom mengalir hingga batas tablet bersama. `readingOrder` menentukan urutan elemen pada tampilan itu tanpa mengubah tata letak desktop tersimpan. Elemen formulir dan draf bertahan saat tata letak berubah.
 
-Halaman tetap dengan satu elemen dapat memakai `fillViewport: true`. Composer mengukur kepala, kaki, dan area layar terlihat dengan minimum 20rem. Tombol panel bersama selalu disediakan Composer. `openToolbar(trigger)` dan `closeToolbar()` tetap tersedia untuk tindakan aplikasi yang disengaja.
+Halaman tetap dengan satu elemen memakai `fillViewport: true`. Tandai area baca utama dengan `data-composer-viewport-body`; Composer menyediakan 20rem untuk area tersebut dan mengukur jarak serta kontrol di sekitarnya secara terpisah. Halaman menyesuaikan ruang layar yang tersisa bila cukup dan dapat digulir jika tinggi minimum tidak muat. Perubahan ukuran kontrol, penggantian konten, dan pembesaran teks menghitung ulang minimum. Pengguliran dokumen tidak menambah tinggi yang telah disesuaikan. Composer menyediakan tombol panel samping; `openToolbar(trigger)` dan `closeToolbar()` tetap tersedia untuk tindakan yang disengaja.
 
-Gunakan `contentScrolling: false` untuk konten dokumen yang perlu tumbuh melampaui area tampilan, seperti agenda dan kisi waktu Kalender. Gunakan `fillViewport: true` untuk ruang kerja terbatas seperti Pesan, tempat percakapan mengatur pengguliran internal.
+Gunakan `contentScrolling: false` untuk dokumen biasa yang tumbuh mengikuti kontennya. Kalender dan Pesan menyesuaikan area tampilan dengan pengguliran internal pada area baca.
 
 Dialog bersama menerima `surface: "reader"` untuk konten bacaan. Permukaan ini memakai penanda presentasi Composer, menjaga kepala dan kaki di luar isi bergulir, serta melepas pengamat presentasi saat ditutup.
 

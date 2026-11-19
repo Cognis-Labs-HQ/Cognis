@@ -6,7 +6,7 @@ Calendar erweitert das Share-Gateway über `ctx`-Flow-Hooks und Fähigkeiten. Di
 
 ## Öffentliche Freigabedarstellung
 
-Calendar stellt `/static/gateways/calendar/ui/share-renderer.js` als `mountScriptUrl` für Kalenderlinks bereit. Share übergibt den aufgelösten Kalenderinhalt, gewährte Fähigkeiten, das begrenzte Gast-Token, Übersetzungen und das Abbruchsignal an `mount(root, options)`. Der Adapter-Renderer zeigt eine einzelne Kalenderkarte mit Tages-, Wochen-, Monats- und Jahresumschaltung sowie der üblichen Zeitrastertabelle; andere Kalender und Dashboard-Steuerelemente der empfangenden Person werden nie geladen. Der vollständige Kalender wächst mit seinem Inhalt und scrollt mit dem Dokument, entsprechend der angemeldeten Kalenderseite. Lesefreigaben zeigen Ereignisse. Freigaben mit `calendar:write` können über `/api/v1/calendar/shared/:calendarId/events` und das Gast-Token Ereignisse anlegen, bearbeiten und löschen.
+Calendar stellt `/static/gateways/calendar/ui/share-renderer.js` als `mountScriptUrl` für Kalenderlinks bereit. Share übergibt den aufgelösten Kalenderinhalt, gewährte Fähigkeiten, das begrenzte Gast-Token, Übersetzungen und das Abbruchsignal an `mount(root, options)`. Der Adapter-Renderer zeigt eine einzelne Kalenderkarte mit Tages-, Wochen-, Monats- und Jahresumschaltung sowie der üblichen Zeitrastertabelle; andere Kalender und Dashboard-Steuerelemente der empfangenden Person werden nie geladen. Der Kalender passt sich dem Bildschirm an und behält eine nutzbare Mindesthöhe, entsprechend der angemeldeten Kalenderseite. Lesefreigaben zeigen Ereignisse. Freigaben mit `calendar:write` können über `/api/v1/calendar/shared/:calendarId/events` und das Gast-Token Ereignisse anlegen, bearbeiten und löschen.
 
 ## Interaktionsgrenze des Kalenders
 
@@ -76,6 +76,6 @@ Datumssprünge und die native Ansichtsauswahl verwenden dieselbe Calendar-eigene
 
 ## Lesbare mobile Inhalte
 
-Der Kalender verwendet den Dokumentbildlauf von Composer, damit lange Terminlisten und vollständige Zeitraster über die Bildschirmhöhe hinaus wachsen. Das Symbol zum Hinzufügen neben jedem Datum bietet eine 44px große Touchfläche und eine zugängliche Beschriftung.
+Der Kalender behält auch auf niedrigen Bildschirmen genügend Platz für Terminlisten und Zeitraster; Ereignisse scrollen intern. Das Symbol zum Hinzufügen neben jedem Datum bietet eine 44px große Touchfläche und eine zugängliche Beschriftung.
 
 Kalenderzeilen in der Seitenleiste bleiben Menüeinträge. Neuer Kalender behält ein 44px-Touchziel und themengerechtes Hover-Feedback.

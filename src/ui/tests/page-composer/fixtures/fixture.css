@@ -14,9 +14,16 @@
     background: purple !important;
     border: 6px solid purple !important;
     border-radius: 30px !important;
+    padding: 0 !important;
 }
 
 .content-panel > .content-section {
     padding: 0 !important;
     --composer-grid-inset: 0px !important;
+}
+
+.fixture-owned-sidebar h3 {
+    text-align: center !important;
+    padding: 0 !important;
+    margin-inline-start: 40px !important;
 }

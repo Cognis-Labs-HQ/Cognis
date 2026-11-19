@@ -487,7 +487,7 @@ export async function mount(root, { signal, shareContext = null } = {}) {
         tutorials: guides,
         signal,
         allowCustomization: false,
-        contentScrolling: false,
+        fillViewport: true,
         requireAccountSession: !shareContext,
         elements: [
             {
@@ -523,7 +523,7 @@ export async function mount(root, { signal, shareContext = null } = {}) {
               </div>
               ${renderCalendarViewSwitcher(calendarUi.CALENDAR_VIEWS, selectedView, i18n, activeDate)}
             </header>
-            <div class="calendar-view-canvas">${calendarUi.renderCalendarView(allCalendarEvents(), selectedView, activeDate, i18n, currentAccountId, { compact })}</div>
+            <div class="calendar-view-canvas" data-composer-viewport-body>${calendarUi.renderCalendarView(allCalendarEvents(), selectedView, activeDate, i18n, currentAccountId, { compact })}</div>
           </section>
         `;
                 },

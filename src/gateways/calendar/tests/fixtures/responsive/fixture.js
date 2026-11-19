@@ -20,12 +20,15 @@ const lifetime = new AbortController();
 const root = document.querySelector("#app");
 let view = "month";
 let activeDate = new Date(data.date);
-function renderSidebar() {
-    const content = document
-        .querySelector("#calendar-sidebar")
-        .content.cloneNode(true);
-    content.querySelector("[data-fixture-calendar-list]").innerHTML =
-        renderCalendarToolbarList(data.calendars, data.calendars[0].id, i18n);
+function renderSidebar(id = "calendar-sidebar") {
+    const content = document.querySelector(`#${id}`).content.cloneNode(true);
+    const list = content.querySelector("[data-fixture-calendar-list]");
+    if (list)
+        list.innerHTML = renderCalendarToolbarList(
+            data.calendars,
+            data.calendars[0].id,
+            i18n,
+        );
     applyStaticTranslations(i18n, content);
     const holder = document.createElement("div");
     holder.append(content);
@@ -36,7 +39,7 @@ const composer = createPageComposer(root, {
     i18n,
     signal: lifetime.signal,
     allowCustomization: false,
-    contentScrolling: false,
+    fillViewport: true,
     requireAccountSession: false,
     enableAccountEnhancements: false,
     toolbarScrollable: true,
@@ -48,8 +51,9 @@ const composer = createPageComposer(root, {
     toolbar: [
         {
             id: "calendars",
-            render: renderSidebar,
+            render: () => renderSidebar(),
         },
+        { id: "upcoming", render: () => renderSidebar("calendar-upcoming") },
     ],
     elements: [
         {
@@ -61,7 +65,7 @@ const composer = createPageComposer(root, {
         <header class="calendar-view-header" data-composer-header>
           ${renderCalendarViewSwitcher(CALENDAR_VIEWS, view, i18n, activeDate)}
         </header>
-        <div class="calendar-view-canvas">
+        <div class="calendar-view-canvas" data-composer-viewport-body>
           ${renderCalendarView(data.events, view, activeDate, i18n, "fixture", { compact: presentation.layout !== "regular" })}
         </div>
       </section>`,

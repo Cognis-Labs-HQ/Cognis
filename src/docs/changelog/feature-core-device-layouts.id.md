@@ -40,7 +40,7 @@ Composer menyamakan transparansi panel samping dan utama, melindungi tampilan me
 
 Pulihkan jarak dalam konten bersama pada halaman yang memenuhi area tampilan dan hapus pembungkus daftar buram pada entri menu Kalender. Composer melindungi kedua aturan.
 
-Tampilan Kalender akun dan bersama kini memakai pengguliran dokumen Composer. Agenda panjang dan kisi waktu lengkap meluas melewati area tampilan tanpa menyusut menjadi area gulir bertingkat.
+Kalender dan Pesan menyesuaikan area tampilan sambil mempertahankan area baca minimum di luar kontrol dan jarak dalam. Composer menyelaraskan judul panel samping serta melindungi jarak dalam dan penanda pilihan entri menu Kalender.
 
 ## Komit
 

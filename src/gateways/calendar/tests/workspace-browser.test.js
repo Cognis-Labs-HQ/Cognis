@@ -21,7 +21,6 @@ test(
                 ),
             },
             screenshotPrefix: "workspace-calendar",
-            scrolling: "document",
             verifyViewport: async (browser, width) => {
                 const availableWidth = await browser.evaluate(
                     `(()=>{const host=document.querySelector('[data-composer-element]');const style=getComputedStyle(host);return host.getBoundingClientRect().width-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight);})()`,
@@ -46,15 +45,6 @@ test(
                     );
                 }
 
-                const canvas = await browser.evaluate(`(() => {
-                    const canvas=document.querySelector('.calendar-view-canvas');
-                    return {height:canvas.clientHeight,content:canvas.scrollHeight};
-                })()`);
-                assert.ok(
-                    canvas.content <= canvas.height + 1,
-                    JSON.stringify(canvas),
-                );
-
                 await browser.evaluate("window.fixture.composer.openToolbar()");
                 await browser.evaluate(
                     "Promise.all(document.querySelector('.toolbar').getAnimations().map(animation => animation.finished))",
@@ -64,10 +54,20 @@ test(
                     const action=document.querySelector('.calendar-toolbar-add').getBoundingClientRect();
                     const probe=document.createElement('div');probe.style.background='var(--surface-soft)';item.append(probe);const selectedBackground=getComputedStyle(probe).backgroundColor;probe.remove();
                     const row=getComputedStyle(item.closest('li'));
-                    return {background:style.backgroundColor,selectedBackground,border:style.borderTopWidth,rowBackground:row.backgroundColor,rowBorder:row.borderTopWidth,rowPadding:row.padding,itemHeight:item.getBoundingClientRect().height,actionHeight:action.height};
+                    return {background:style.backgroundColor,selectedBackground,border:style.borderTopWidth,rowBackground:row.backgroundColor,rowBorder:row.borderTopWidth,rowPadding:row.padding,padding:style.paddingInlineStart,accent:style.borderInlineStartColor,accentWidth:style.borderInlineStartWidth,headings:[...document.querySelectorAll(".calendar-toolbar-heading h3")].map(h=>({left:h.getBoundingClientRect().left,textAlign:getComputedStyle(h).textAlign})),itemHeight:item.getBoundingClientRect().height,actionHeight:action.height};
                 })()`);
                 assert.equal(sidebar.background, sidebar.selectedBackground);
                 assert.equal(sidebar.border, "0px");
+                assert.equal(sidebar.padding, "14px");
+                assert.equal(sidebar.accentWidth, "3px");
+                assert.equal(sidebar.headings.length, 2);
+                assert.equal(
+                    sidebar.headings[0].left,
+                    sidebar.headings[1].left,
+                );
+                assert.ok(
+                    sidebar.headings.every((h) => h.textAlign === "start"),
+                );
                 assert.equal(sidebar.rowBackground, "rgba(0, 0, 0, 0)");
                 assert.equal(sidebar.rowBorder, "0px");
                 assert.equal(sidebar.rowPadding, "0px");
@@ -147,8 +147,8 @@ test(
                             return {canvas:canvas.getBoundingClientRect().toJSON(),card:card.getBoundingClientRect().toJSON(),content:canvas.scrollHeight,height:canvas.clientHeight,timed:timed ? {height:timed.clientHeight,content:timed.scrollHeight}:null,page:document.scrollingElement.scrollHeight};
                         })()`);
                         assert.ok(
-                            geometry.content <= geometry.height + 1,
-                            JSON.stringify({ width, height, view, geometry }),
+                            geometry.height >= 319,
+                            JSON.stringify(geometry),
                         );
                         assert.ok(
                             geometry.canvas.bottom <= geometry.card.bottom + 1,
@@ -156,30 +156,30 @@ test(
                         );
                         if (geometry.timed) {
                             assert.ok(
-                                geometry.timed.content <=
-                                    geometry.timed.height + 1,
+                                geometry.timed.height >= 120,
                                 JSON.stringify(geometry),
                             );
                             assert.ok(
-                                geometry.card.height > height,
-                                "The complete timed view grows past the viewport",
+                                geometry.timed.content > geometry.timed.height,
+                                "The complete timed view scrolls within its viewport",
+                            );
+                            const reachable = await browser.evaluate(`(() => {
+                                const grid=document.querySelector('[data-calendar-week-scroll-grid], .calendar-day-timed-grid');
+                                grid.scrollTop=grid.scrollHeight;
+                                return grid.scrollTop > 0 && grid.scrollTop + grid.clientHeight >= grid.scrollHeight - 1;
+                            })()`);
+                            assert.equal(
+                                reachable,
+                                true,
+                                "The final timeslot is reachable without expanding the calendar",
                             );
                         }
                         await browser.evaluate(
-                            "scrollTo(0, document.scrollingElement.scrollHeight)",
-                        );
-                        await browser.evaluate(
-                            "new Promise(resolve=>requestAnimationFrame(resolve))",
-                        );
-                        assert.ok(
-                            await browser.evaluate(
-                                `document.querySelector('.calendar-view-canvas').getBoundingClientRect().bottom <= document.querySelector('.global-footer').getBoundingClientRect().top + 1`,
-                            ),
-                            "The end of the calendar is reachable above the footer",
+                            "document.querySelector('.calendar-view-canvas').scrollTop=0",
                         );
                         await captureScreenshot(
                             browser,
-                            `calendar-document-${view}-${width}-${height}`,
+                            `calendar-fitted-${view}-${width}-${height}`,
                         );
                         await browser.evaluate("scrollTo(0,0)");
                     }

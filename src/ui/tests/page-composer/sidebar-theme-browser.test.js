@@ -65,6 +65,17 @@ test(
                         assert.equal(value, "rgba(0, 0, 0, 0)");
                     assert.equal(panels.sectionBorder, "0px");
                     assert.equal(panels.sectionShadow, "none");
+                    const geometry = await browser.evaluate(`(() => {
+                        const heading=getComputedStyle(document.querySelector('.fixture-owned-sidebar h3'));
+                        const entry=getComputedStyle(document.querySelector('.side-menu-link'));
+                        return {align:heading.textAlign,margin:heading.marginInlineStart,padding:entry.paddingInlineStart,border:entry.borderInlineStartWidth};
+                    })()`);
+                    assert.deepEqual(geometry, {
+                        align: "start",
+                        margin: "0px",
+                        padding: "14px",
+                        border: "3px",
+                    });
                     const rootControls = await browser.evaluate(`(() => {
                         const field=getComputedStyle(document.querySelector('[data-theme-root-field]'));
                         const nested=getComputedStyle(document.querySelector('[data-theme-field]'));
@@ -161,10 +172,11 @@ test(
                         "Promise.all(document.querySelector('.toolbar').getAnimations({subtree:true}).map(animation=>animation.finished))",
                     );
                     const selected = await browser.evaluate(
-                        `(() => {const style=getComputedStyle(document.querySelector('[data-side-menu-item="first"]'));return{background:style.backgroundColor,border:style.borderInlineStartWidth}})()`,
+                        `(() => {const style=getComputedStyle(document.querySelector('[data-side-menu-item="first"]'));return{background:style.backgroundColor,border:style.borderInlineStartWidth,color:style.borderInlineStartColor}})()`,
                     );
                     assert.equal(selected.background, state.expected.surface);
-                    assert.equal(selected.border, "0px");
+                    assert.equal(selected.border, "3px");
+                    assert.equal(selected.color, state.expected.accent);
                     await captureScreenshot(
                         browser,
                         `sidebar-theme-${theme}-${width}-${height}`,

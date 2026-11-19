@@ -40,7 +40,7 @@ Unify sidebar and main-panel transparency through Composer, protect shared menu 
 
 Restore the shared content inset on viewport-filling pages and remove opaque list wrappers around Calendar menu entries. Protect both through Composer.
 
-Calendar account and shared views now use Composer document scrolling. Long agendas and complete time grids expand beyond the viewport instead of collapsing into nested scroll areas.
+Calendar and Messages fit the viewport while preserving a minimum reading area after controls and padding. Composer aligns sidebar headings and protects padded calendar menu entries and their selection indicator.
 
 ## Commits
 

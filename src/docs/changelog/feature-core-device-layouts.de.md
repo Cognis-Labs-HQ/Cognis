@@ -40,7 +40,7 @@ Composer vereinheitlicht die Transparenz von Seitenleiste und Hauptbereich, sch�
 
 Den gemeinsamen Inhaltsabstand auf bildschirmfüllenden Seiten wiederherstellen und undurchsichtige Listenhüllen um Kalendermenüeinträge entfernen. Composer schützt beide Regeln.
 
-Eigene und geteilte Kalender verwenden jetzt den Dokumentbildlauf von Composer. Lange Terminlisten und vollständige Zeitraster wachsen über die Bildschirmhöhe hinaus, statt in verschachtelten Scrollbereichen zusammenzufallen.
+Kalender und Nachrichten passen sich dem Bildschirm an und bewahren einen Mindestlesebereich zusätzlich zu Bedienelementen und Abständen. Composer richtet Seitenleistenüberschriften aus und schützt Abstände und Auswahlmarkierung der Kalendermenüeinträge.
 
 ## Commits
 

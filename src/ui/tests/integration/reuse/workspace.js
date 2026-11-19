@@ -25,7 +25,6 @@ export async function checkWorkspace(
         staticRoots,
         screenshotPrefix,
         setup,
-        scrolling = "viewport",
         verifyViewport,
         afterMatrix,
     },
@@ -80,22 +79,23 @@ export async function checkWorkspace(
                     true,
                     "Composer retains one sidebar control inside the content header",
                 );
-                if (scrolling === "document")
-                    assert.ok(
-                        await browser.evaluate(
-                            "document.scrollingElement.scrollHeight >= document.querySelector('.main-window').getBoundingClientRect().bottom + scrollY - 1",
-                        ),
-                        "Document scrolling contains the full workspace",
-                    );
-                else if (height >= 480)
+                const body = await browser.evaluate(`(() => {
+                    const body=document.querySelector('[data-composer-viewport-body]');
+                    return {height:body.getBoundingClientRect().height,minimum:20*parseFloat(getComputedStyle(document.documentElement).fontSize)};
+                })()`);
+                assert.ok(
+                    body.height >= body.minimum - 1,
+                    JSON.stringify(body),
+                );
+                if (body.height > body.minimum + 1)
                     assert.ok(
                         state.main.bottom <= height + 1,
                         JSON.stringify(state),
                     );
                 else
                     assert.ok(
-                        state.main.height >= 320,
-                        "Short screens retain a scrollable usable workspace",
+                        state.main.height >= body.minimum,
+                        "Short screens retain the minimum reading area",
                     );
                 assert.ok(
                     state.card.bottom <= state.main.bottom + 1,
@@ -117,6 +117,31 @@ export async function checkWorkspace(
         }
     }
     await afterMatrix(browser);
+    await browser.resize(1819, 463);
+    const minimumHeight = await browser.evaluate(
+        "document.querySelector('.main-window').getBoundingClientRect().height",
+    );
+    await browser.evaluate(
+        "scrollTo(0,document.scrollingElement.scrollHeight);dispatchEvent(new Event('resize'))",
+    );
+    await browser.evaluate(
+        "new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))",
+    );
+    assert.ok(
+        Math.abs(
+            (await browser.evaluate(
+                "document.querySelector('.main-window').getBoundingClientRect().height",
+            )) - minimumHeight,
+        ) <= 1,
+        "Scrolling a short page does not expand its fitted workspace",
+    );
+    assert.ok(
+        await browser.evaluate(
+            "document.querySelector('[data-composer-element]').getBoundingClientRect().bottom <= document.querySelector('.global-footer').getBoundingClientRect().top + 1",
+        ),
+        "The full workspace remains reachable above the footer at its minimum height",
+    );
+    await browser.evaluate("scrollTo(0,0)");
     await browser.resize(320, 568);
     await browser.evaluate('document.documentElement.style.fontSize="24px"');
     await browser.evaluate(
@@ -127,6 +152,12 @@ export async function checkWorkspace(
             "document.documentElement.scrollWidth<=innerWidth+1",
         ),
         "Enlarged text fits the content column",
+    );
+    assert.ok(
+        await browser.evaluate(
+            "document.querySelector('[data-composer-viewport-body]').getBoundingClientRect().height >= 479",
+        ),
+        "Enlarged text retains the reading-area minimum",
     );
     await browser.evaluate("window.fixture.composer.destroy()");
     assert.equal(

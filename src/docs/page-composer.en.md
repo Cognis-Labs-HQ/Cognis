@@ -174,9 +174,9 @@ Use the Pages grid in the main header to switch destinations. It opens a compact
 
 `stackAt: "medium"` requests a flowing single column through the shared tablet boundary. `readingOrder` declares the element order for that presentation without changing saved desktop layouts. Existing form nodes and drafts survive layout changes.
 
-Single fixed pages may use `fillViewport: true`; Composer measures header, footer and the visible viewport, with a 20rem minimum. The common sidebar button is always supplied by Composer. `openToolbar(trigger)` and `closeToolbar()` remain available for deliberate application actions.
+Single fixed pages use `fillViewport: true`. Mark their primary reading area with `data-composer-viewport-body`; Composer reserves 20rem for that area and measures the surrounding padding and controls separately. It fits the remaining viewport when space permits and lets the page scroll when the minimum cannot fit. Resizing controls, replacing content and enlarging text recalculate the minimum. Scrolling the document does not increase the fitted height. Composer owns the sidebar button; `openToolbar(trigger)` and `closeToolbar()` remain available for deliberate actions.
 
-Use `contentScrolling: false` for document content that must grow beyond the viewport, such as Calendar agendas and time grids. Reserve `fillViewport: true` for bounded workspaces such as Messages, where the conversation owns internal scrolling.
+Use `contentScrolling: false` for ordinary documents that grow with their content. Calendar and Messages use viewport fitting with internal reading-area scrolling.
 
 Shared popups accept `surface: "reader"` for reading content. This surface consumes Composer presentation hooks, keeps its header and footer outside the scrolling body, and releases presentation observers when dismissed.
 

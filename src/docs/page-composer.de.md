@@ -107,9 +107,9 @@ Für Bildschirmtests mit einer isolierten laufenden Instanz setzt du `COGNIS_BRO
 
 `stackAt: "medium"` fordert bis zur gemeinsamen Tabletgrenze eine fließende einzelne Spalte an. `readingOrder` legt deren Elementreihenfolge fest, ohne gespeicherte Desktoplayouts zu ändern. Formularfelder und Entwürfe bleiben bei Layoutänderungen erhalten.
 
-Feste Seiten mit einem Element können `fillViewport: true` verwenden. Composer berücksichtigt Kopfzeile, Fußzeile und sichtbaren Bildschirm mit mindestens 20rem. Composer stellt die gemeinsame Seitenleistenschaltfläche immer bereit. `openToolbar(trigger)` und `closeToolbar()` bleiben für gezielte Anwendungsaktionen verfügbar.
+Feste Seiten mit einem Element verwenden `fillViewport: true`. Ihr primärer Lesebereich erhält `data-composer-viewport-body`; Composer reserviert dafür 20rem und misst umliegende Abstände und Bedienelemente gesondert. Wenn möglich passt die Seite in den verbleibenden Bildschirm, andernfalls scrollt das Dokument bei erhaltener Mindesthöhe. Größenänderungen der Bedienelemente, ausgetauschte Inhalte und größere Schrift berechnen das Minimum neu. Dokumentbildlauf vergrößert die angepasste Höhe nicht. Composer stellt die Seitenleistenschaltfläche bereit; `openToolbar(trigger)` und `closeToolbar()` bleiben für gezielte Aktionen verfügbar.
 
-Für Dokumentinhalte, die über die Bildschirmhöhe hinaus wachsen müssen, etwa Kalenderlisten und Zeitraster, gilt `contentScrolling: false`. `fillViewport: true` ist für begrenzte Arbeitsbereiche wie Nachrichten vorgesehen, in denen die Unterhaltung intern scrollt.
+Gewöhnliche Dokumente, die mit ihrem Inhalt wachsen, verwenden `contentScrolling: false`. Kalender und Nachrichten passen sich dem Bildschirm an und scrollen ihren Lesebereich intern.
 
 Gemeinsame Dialoge akzeptieren `surface: "reader"` für Leseinhalte. Die Fläche nutzt Composer-Darstellungshaken, hält Kopf- und Fußzeile außerhalb des scrollbaren Inhalts und beendet ihre Größenbeobachtung beim Schließen.
 

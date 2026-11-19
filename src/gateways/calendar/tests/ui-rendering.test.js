@@ -227,7 +227,7 @@ test("calendar CSS styles timed event lanes and current week highlights", () => 
     );
     assert.match(
         TIMED_GRID_CSS_SOURCE,
-        /\.calendar-day-view\s*\{[\s\S]*grid-template-rows:\s*auto auto auto;/s,
+        /\.calendar-day-view\s*\{[\s\S]*grid-template-rows:\s*auto auto minmax\(0, 1fr\);/s,
     );
     assert.match(
         TIMED_GRID_CSS_SOURCE,
@@ -425,9 +425,9 @@ test("calendar compact controls follow the composer presentation", () => {
     assert.match(CSS_SOURCE, /calendar-agenda[\s\S]*min-height:\s*44px/);
 });
 
-test("calendar uses Composer document scrolling for complete timed views", () => {
-    assert.match(APP_SOURCE, /contentScrolling: false/);
-    assert.match(SHARE_RENDERER_SOURCE, /contentScrolling: false/);
+test("calendar uses Composer viewport fitting for complete timed views", () => {
+    assert.match(APP_SOURCE, /fillViewport: true/);
+    assert.match(SHARE_RENDERER_SOURCE, /fillViewport: true/);
 });
 
 test("calendar toolbar includes pending quick responses with shared-calendar target exemption", () => {
@@ -681,22 +681,15 @@ test("shared events stay visible in Upcoming and calendar layout is fixed", () =
         /event\.calendarVisibility === "shared"\) return true/,
     );
     assert.match(APP_SOURCE, /allowCustomization:\s*false/);
-    assert.match(
-        CSS_SOURCE,
-        /\.calendar-toolbar-heading h3\s*\{[\s\S]*text-align:\s*center/,
+    const surfaces = readFileSync(
+        resolve(ROOT, "src/ui/styles/page-builder/surfaces.css"),
+        "utf8",
     );
     assert.match(
-        CSS_SOURCE,
-        /\.calendar-toolbar-heading\s*\{[\s\S]*grid-template-columns:\s*minmax\(0, 1fr\) auto/,
+        surfaces,
+        /composer-sidebar-section :is\(h2, h3, h4\)[^}]*text-align: start !important/s,
     );
-    assert.doesNotMatch(
-        CSS_SOURCE,
-        /\.toolbar \.calendar-toolbar-add\s*\{[^}]*position:\s*absolute/,
-    );
-    assert.match(
-        CSS_SOURCE,
-        /\.calendar-toolbar-subsection h4\s*\{[\s\S]*text-align:\s*center/,
-    );
+    assert.match(HELPERS_SOURCE, /side-menu-link/);
 });
 
 test("calendar link guests can inspect events and writable guests can open empty slots", () => {
@@ -739,7 +732,7 @@ test("calendar share renderer displays one calendar and enables scoped writes", 
     );
     assert.match(SHARE_RENDERER_SOURCE, /data-calendar-nav/);
     assert.match(SHARE_RENDERER_SOURCE, /shiftActiveDate/);
-    assert.match(SHARE_RENDERER_SOURCE, /contentScrolling: false/);
+    assert.match(SHARE_RENDERER_SOURCE, /fillViewport: true/);
     assert.match(SHARE_RENDERER_SOURCE, /\{ signal \}/);
     assert.match(SHARE_RENDERER_SOURCE, /CALENDAR_VIEWS\.includes/);
     assert.match(SHARE_RENDERER_SOURCE, /data-timeslot-add/);

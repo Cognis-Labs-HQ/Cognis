@@ -91,9 +91,9 @@ Composerが管理する`data-composer-layout`、`data-composer-drawer`、`data-c
 
 `stackAt: "medium"`で共通のタブレット境界まで一列のフローレイアウトを指定できます。`readingOrder`は保存済みのデスクトップ配置を変えずに表示順を指定します。レイアウトを変更してもフォームの要素と下書きは保持されます。
 
-単一の固定要素を持つページは`fillViewport: true`を指定できます。Composerはヘッダー、フッター、見える画面領域を測定し、最低20remを確保します。共通のサイドバーボタンは常にComposerが提供します。`openToolbar(trigger)`と`closeToolbar()`は明示的なアプリ操作に使用できます。
+単一の固定要素を持つページでは `fillViewport: true` を使用します。主な閲覧領域に `data-composer-viewport-body` を付けると、Composerはその領域に20remを確保し、周囲の余白と操作部を別に測定します。空きがあれば画面内に収め、最低高さが収まらない場合はページをスクロールできます。操作部のサイズ変更、内容の置換、文字の拡大で最低高さを再計算します。ドキュメントのスクロールでは表示の高さを増やしません。サイドバーボタンはComposerが提供し、`openToolbar(trigger)` と `closeToolbar()` は明示的な操作に使用できます。
 
-カレンダーの予定一覧や時間グリッドなど、画面の高さを超えて伸びるドキュメント内容には `contentScrolling: false` を指定します。`fillViewport: true` は、会話内でスクロールするメッセージのように高さを制限する作業領域に使用します。
+内容に合わせて伸びる通常のドキュメントには `contentScrolling: false` を使用します。カレンダーとメッセージは画面に合わせ、閲覧領域の内部でスクロールします。
 
 共通のダイアログは閲覧用の`surface: "reader"`を指定できます。Composerの表示属性を使い、ヘッダーとフッターの外側で本文だけをスクロールし、閉じるとサイズ監視を解除します。
 

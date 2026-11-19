@@ -64,7 +64,7 @@ const composer = createPageComposer(root, {
           <div id="messages-thread-header-slot">${renderThreadHeader(data.room, "fixture", i18n)}</div>
         </div>
         <div></div>
-        <div class="messages-thread-list">
+        <div class="messages-thread-list" data-composer-viewport-body>
           ${Array.from(
               { length: 40 },
               (_, index) => `

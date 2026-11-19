@@ -328,7 +328,7 @@ export async function mount(
                     </div>
                     ${renderCalendarViewSwitcher(CALENDAR_VIEWS, selectedView, i18n, activeDate)}
                 </header>
-                <div class="calendar-view-canvas">${renderCalendarView(events, selectedView, activeDate, i18n, null, { compact: presentation.layout !== "regular", canCreate: canWrite })}</div>
+                <div class="calendar-view-canvas" data-composer-viewport-body>${renderCalendarView(events, selectedView, activeDate, i18n, null, { compact: presentation.layout !== "regular", canCreate: canWrite })}</div>
             </section>`;
             },
         };
@@ -405,7 +405,7 @@ export async function mount(
     composer = createPageComposer(root, {
         signal,
         allowCustomization: false,
-        contentScrolling: false,
+        fillViewport: true,
         enableDomParking: false,
         elements: [buildCalendarElement()],
         preferenceKey: "shared-calendar-layout",

@@ -307,7 +307,7 @@ export async function mount(root, { signal } = {}) {
                 `<section class="messages-thread">
           <div class="messages-thread-topbar" data-composer-header><div id="messages-thread-header-slot"></div></div>
           <div id="messages-request-banner-slot"></div>
-          <div class="messages-thread-list" id="messages-thread-list">${roomState.getSelectedRoomId() ? "" : renderConversationPrompt(i18n)}</div>
+          <div class="messages-thread-list" data-composer-viewport-body id="messages-thread-list">${roomState.getSelectedRoomId() ? "" : renderConversationPrompt(i18n)}</div>
           <div class="messages-typing-status" id="messages-typing-status"></div>
           ${messageFormBuilder.render()}
         </section>`,
