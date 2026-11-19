@@ -1,3 +1,8 @@
+import {
+    createModuleFilters,
+    renderModuleFilters,
+} from "/static/app/modules/filters.js";
+import { escapeHtml } from "/static/reuse/escape-html.js";
 import { createSideMenu } from "/static/reuse/side-menu.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { createI18n, applyStaticTranslations } from "/static/reuse/i18n.js";
@@ -13,6 +18,9 @@ try {
     document.documentElement.lang = options.get("lang") ?? "en";
     const i18n = await createI18n({
         preferredLanguages: [document.documentElement.lang],
+        componentStringBaseUrls: options.has("module-sidebar")
+            ? ["/static/app/modules/languages"]
+            : [],
     });
     const root = document.querySelector("#app");
     const lifetime = new AbortController();
@@ -73,9 +81,17 @@ try {
             {
                 id: "fixture-toolbar",
                 render: () =>
-                    menus
-                        ? menu.render() + renderTemplate("sidebar-controls")
-                        : renderTemplate("toolbar-content"),
+                    options.has("module-sidebar")
+                        ? renderModuleFilters([], createModuleFilters(), {
+                              i18n,
+                              escapeHtml,
+                              formatTag: (value) => value,
+                          })
+                        : options.has("empty-toolbar")
+                          ? ""
+                          : menus
+                            ? menu.render() + renderTemplate("sidebar-controls")
+                            : renderTemplate("toolbar-content"),
             },
         ],
         subNavigation: menus

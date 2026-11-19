@@ -602,7 +602,14 @@ export function createPageComposer(
 
         const toolbarHtml =
             Array.isArray(toolbar) && toolbar.length > 0
-                ? toolbar.map((t) => t.render()).join("")
+                ? toolbar
+                      .map((item) => {
+                          const content = item.render();
+                          return content
+                              ? `<section class="composer-sidebar-section">${content}</section>`
+                              : "";
+                      })
+                      .join("")
                 : undefined;
         const subNavigationHtml =
             Array.isArray(subNavigation) && subNavigation.length > 0

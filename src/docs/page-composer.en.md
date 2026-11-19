@@ -189,3 +189,7 @@ Shared sidebar insets adapt to available width, with one desktop gap and a rem-s
 Shared side-menu entries use selected-row and keyboard-focus indicators. Sidebar spacing and scrolling belong to Composer rather than individual pages.
 
 Toolbar menu buttons retain their own transparent resting surfaces and themed hover, selection and keyboard focus. Form fields keep their field styling; action buttons keep their semantic colors. Light surfaces use a text-tinted hover layer.
+
+## Composer Panel Appearance
+
+Composer uses the Messages panel surface for both the sidebar and main content. Each toolbar contribution is wrapped in a protected `composer-sidebar-section`; its outer content stays transparent and uses Composer spacing. Main cards do not add opaque backgrounds or shadows over the panel. Native menu rows share text, hover, selection and focus styling; explicit confirmation, cancel and neutral controls retain their semantic styles. Frameless and borderless embeds retain transparent surfaces. Page styles must not override protected panel classes or assign the shared `--toolbar-bg` token. The `composerSurfaces` cascade layer is reserved for the host.

@@ -122,3 +122,7 @@ Die gemeinsamen Seitenabstände passen sich der Breite an. Auf dem Desktop bleib
 Gemeinsame Seitenmenüeinträge kennzeichnen Auswahl und Tastaturfokus. Abstände und Scrollverhalten der Seitenleisten gehören zu Composer statt zu einzelnen Seiten.
 
 Menüschaltflächen der Seitenleiste behalten transparente Ruheflächen sowie themengerechte Hover-, Auswahl- und Tastaturfokus-Stile. Formularfelder behalten ihre Feldstile, Aktionsschaltflächen ihre semantischen Farben. Helle Flächen verwenden eine mit der Textfarbe getönte Hover-Ebene.
+
+## Composer-Flächen
+
+Composer verwendet die Nachrichten-Fläche für Seitenleiste und Hauptinhalt. Jeder Toolbar-Beitrag erhält einen geschützten Rahmen `composer-sidebar-section`; sein äußerer Inhalt bleibt transparent und nutzt Composer-Abstände. Hauptkarten legen keine undurchsichtigen Hintergründe oder Schatten über die Fläche. Menüzeilen teilen Text-, Hover-, Auswahl- und Fokusdarstellung; ausdrückliche Bestätigungs-, Abbruch- und neutrale Bedienelemente behalten ihre semantischen Stile. Rahmenlose Einbettungen bleiben transparent. Seitenstile dürfen weder geschützte Flächenklassen überschreiben noch das gemeinsame Token `--toolbar-bg` setzen. Die Kaskadenebene `composerSurfaces` ist dem Host vorbehalten.

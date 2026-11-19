@@ -31,18 +31,22 @@ test(
                     const room = getComputedStyle(document.querySelector('.messages-room-select'));
                     const action = getComputedStyle(document.querySelector('.messages-new-btn'));
                     const probe = document.createElement('div');
-                    probe.style.cssText = 'border-color:var(--color-success-border);color:var(--color-success-outline-text)';
+                    probe.style.cssText = 'border-color:var(--text);color:var(--text);background:var(--surface-soft)';
                     document.querySelector('.app-shell').append(probe);
                     const expected = getComputedStyle(probe);
-                    const result = {roomBorder:room.borderTopWidth,roomBackground:room.backgroundColor,actionBorder:action.borderTopColor,actionColor:action.color,expectedBorder:expected.borderTopColor,expectedColor:expected.color};
+                    const result = {roomBorder:room.borderTopWidth,roomBackground:room.backgroundColor,actionBorder:action.borderTopWidth,actionColor:action.color,expectedBorder:expected.borderTopColor,expectedColor:expected.color,expectedBackground:expected.backgroundColor,roomParentBackground:getComputedStyle(document.querySelector('.messages-room')).backgroundColor};
                     probe.remove();return result;
                 })()`);
                 assert.equal(sidebarTheme.roomBorder, "0px");
-                assert.equal(sidebarTheme.roomBackground, "rgba(0, 0, 0, 0)");
                 assert.equal(
-                    sidebarTheme.actionBorder,
-                    sidebarTheme.expectedBorder,
+                    sidebarTheme.roomBackground,
+                    sidebarTheme.expectedBackground,
                 );
+                assert.equal(
+                    sidebarTheme.roomParentBackground,
+                    "rgba(0, 0, 0, 0)",
+                );
+                assert.equal(sidebarTheme.actionBorder, "0px");
                 assert.equal(
                     sidebarTheme.actionColor,
                     sidebarTheme.expectedColor,

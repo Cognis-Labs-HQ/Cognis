@@ -71,16 +71,6 @@ test("module marketplace polls Cognis for current recommendations", () => {
     );
     assert.match(marketplaceSource, /window\.clearInterval\(interval\)/);
 });
-test("modules navigation derives its width from its content", () => {
-    assert.match(
-        marketplaceStyles,
-        /\[data-module-sidebar\]\s*{[^}]*width: max-content;[^}]*max-width: 100%/,
-    );
-    assert.match(
-        marketplaceStyles,
-        /\[data-module-sidebar\] button\s*{[^}]*width: fit-content;[^}]*min-width: 0/,
-    );
-});
 
 test("module preference fields use the form builder and secret controls", () => {
     assert.match(modulePreferencesSource, /createFormBuilder/);
@@ -171,14 +161,7 @@ test("module filters expose every selected state", () => {
         html,
         /data-store-category="collaboration" aria-pressed="true"/,
     );
-    assert.match(
-        marketplaceStyles,
-        /\[data-module-sidebar\] button\.is-active\s*{[^}]*border-color: var\(--accent-color\)/,
-    );
-    assert.match(
-        marketplaceStyles,
-        /\[data-module-sidebar\] button:not\(\.is-active\)\s*{[^}]*border-color: transparent/,
-    );
+    assert.equal((html.match(/class="is-active"/g) ?? []).length, 3);
 });
 
 test("module marketplace passes root and options to the page composer", () => {

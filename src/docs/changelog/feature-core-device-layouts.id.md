@@ -34,6 +34,10 @@ Gaya formulir tidak lagi merembes ke menu panel; kontrol tindakan dan kolom teta
 
 Label bahasa dipersingkat saat ruang terbatas sambil mempertahankan nama aksesibel. Gaya subnavigasi asli tetap dipertahankan.
 
+## Tampilan Panel Composer
+
+Composer menyamakan transparansi panel samping dan utama, melindungi tampilan menu dari gaya halaman, serta menghapus permukaan tambahan Kalender, Pesan, dan Modul.
+
 ## Komit
 
 - [f4f6d3a84](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4f6d3a84b587d4eb169b5db76b850956544ad31)

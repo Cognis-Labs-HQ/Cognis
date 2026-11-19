@@ -73,7 +73,9 @@ test(
                         );
                         const geometry = await browser.evaluate(`(() => {
                     const sidebar = document.querySelector('.messages-sidebar-content');
-                    const toolbar = sidebar.parentElement;
+                    const toolbar = sidebar.closest('.toolbar');
+                    const slot = sidebar.parentElement;
+                    const slotStyle = getComputedStyle(slot);
                     const list = document.querySelector('#messages-rooms-list');
                     const templates = document.querySelector('.messages-sidebar-section');
                     const header = sidebar.querySelector('header');
@@ -84,7 +86,7 @@ test(
                         overflow: document.documentElement.scrollWidth - innerWidth,
                         toolbarOverflow: toolbar.scrollWidth - toolbar.clientWidth,
                         sectionGap: templates.getBoundingClientRect().top - list.getBoundingClientRect().bottom,
-                        width: bounds.width, available: toolbar.clientWidth,
+                        width: bounds.width, available: slot.clientWidth - parseFloat(slotStyle.paddingLeft) - parseFloat(slotStyle.paddingRight),
                         innerWidth: sidebar.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight),
                         headerWidth: header.getBoundingClientRect().width,
                         start: button.top, height: button.height,

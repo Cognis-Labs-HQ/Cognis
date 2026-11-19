@@ -12,25 +12,27 @@
     <body>
         <div id="app"></div>
         <template id="form-content">
-            <h2 data-i18n="ui.reuse.settings"></h2>
-            <label
-                ><span data-i18n="ui.reuse.name"></span
-                ><input name="draft" type="text"
-            /></label>
-            <label
-                ><input name="enabled" type="checkbox" /><span
-                    data-i18n="ui.reuse.enable"
-                ></span
-            ></label>
-            <label
-                ><span data-i18n="ui.reuse.more_information"></span
-                ><textarea name="notes"></textarea>
-            </label>
-            <button
-                type="button"
-                data-fixture-popup
-                data-i18n="ui.reuse.settings"
-            ></button>
+            <section class="fixture-owned-content">
+                <h2 data-i18n="ui.reuse.settings"></h2>
+                <label
+                    ><span data-i18n="ui.reuse.name"></span
+                    ><input name="draft" type="text"
+                /></label>
+                <label
+                    ><input name="enabled" type="checkbox" /><span
+                        data-i18n="ui.reuse.enable"
+                    ></span
+                ></label>
+                <label
+                    ><span data-i18n="ui.reuse.more_information"></span
+                    ><textarea name="notes"></textarea>
+                </label>
+                <button
+                    type="button"
+                    data-fixture-popup
+                    data-i18n="ui.reuse.settings"
+                ></button>
+            </section>
         </template>
         <template id="long-content">
             <h2 data-i18n="ui.reuse.more_information"></h2>
@@ -62,30 +64,49 @@
             </ul>
         </template>
         <template id="sidebar-controls">
-            <ul>
-                <li>
-                    <button
-                        type="button"
-                        data-theme-menu-entry
-                        data-i18n="ui.reuse.settings"
-                    ></button>
-                </li>
-                <li>
-                    <button
-                        type="button"
-                        data-theme-menu-entry
-                        data-i18n="ui.reuse.more_information"
-                    ></button>
-                </li>
-            </ul>
-            <label
-                ><span data-i18n="ui.reuse.search"></span
-                ><input data-theme-field
-            /></label>
+            <section class="fixture-owned-sidebar">
+                <ul>
+                    <li>
+                        <button
+                            type="button"
+                            class="fixture-owned-menu"
+                            data-theme-menu-entry
+                            data-i18n="ui.reuse.settings"
+                        ></button>
+                    </li>
+                    <li>
+                        <button
+                            type="button"
+                            class="fixture-owned-menu"
+                            data-theme-menu-entry
+                            data-i18n="ui.reuse.more_information"
+                        ></button>
+                    </li>
+                </ul>
+                <label
+                    ><span data-i18n="ui.reuse.search"></span
+                    ><input data-theme-field
+                /></label>
+                <button
+                    type="button"
+                    class="btn-neutral"
+                    data-theme-action
+                    data-i18n="ui.reuse.search"
+                ></button>
+            </section>
+            <span
+                id="fixture-root-field-label"
+                data-i18n="ui.reuse.search"
+            ></span>
+            <input
+                data-theme-root-field
+                aria-labelledby="fixture-root-field-label"
+                size="1"
+            />
             <button
-                type="button"
                 class="btn-neutral"
-                data-theme-action
+                type="button"
+                data-theme-root-action
                 data-i18n="ui.reuse.search"
             ></button>
         </template>

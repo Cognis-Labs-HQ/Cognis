@@ -106,3 +106,7 @@ Jarak tepi bilah samping bersama menyesuaikan lebar yang tersedia. Desktop memak
 Entri menu samping bersama menandai pilihan dan fokus papan ketik. Jarak dan pengguliran panel samping dikelola Composer, bukan setiap halaman.
 
 Tombol menu panel mempertahankan permukaan transparan saat diam serta sorotan, pilihan, dan fokus papan ketik sesuai tema. Kolom formulir mempertahankan gaya kolom; tombol tindakan mempertahankan warna semantiknya. Permukaan terang memakai lapisan sorotan berwarna teks.
+
+## Tampilan Panel Composer
+
+Composer memakai permukaan panel Pesan untuk panel samping dan konten utama. Setiap kontribusi bilah alat dibungkus `composer-sidebar-section` yang dilindungi; konten luarnya tetap transparan dan memakai jarak Composer. Kartu utama tidak menambahkan latar buram atau bayangan di atas panel. Baris menu berbagi gaya teks, sorotan, pilihan, dan fokus; kontrol konfirmasi, batal, dan netral yang eksplisit tetap memakai gaya semantiknya. Sematan tanpa bingkai atau batas tetap transparan. Gaya halaman tidak boleh menimpa kelas panel yang dilindungi atau menetapkan token bersama `--toolbar-bg`. Lapisan kaskade `composerSurfaces` dikhususkan untuk host.
