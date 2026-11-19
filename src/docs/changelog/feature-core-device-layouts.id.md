@@ -42,6 +42,8 @@ Pulihkan jarak dalam konten bersama pada halaman yang memenuhi area tampilan dan
 
 Kalender dan Pesan menyesuaikan area tampilan sambil mempertahankan area baca minimum di luar kontrol dan jarak dalam. Composer menyelaraskan judul panel samping serta melindungi jarak dalam dan penanda pilihan entri menu Kalender.
 
+Lapisan Jelajah Study yang bertambah memakai penyesuaian area tampilan dan area baca minimum Composer. Bagan tetap dari penyedia mempertahankan tata letaknya, dan entri baru diperbarui melalui Composer.
+
 ## Komit
 
 - [f4f6d3a84](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4f6d3a84b587d4eb169b5db76b850956544ad31)

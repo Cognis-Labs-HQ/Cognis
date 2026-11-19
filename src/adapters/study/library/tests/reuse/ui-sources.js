@@ -10,10 +10,14 @@ const indexSource = readFileSync(
     resolve(ROOT, "src/adapters/study/library/ui/app/index.js"),
     "utf8",
 );
-const layerPageSource = readFileSync(
-    resolve(ROOT, "src/adapters/study/library/ui/app/layer/index.js"),
-    "utf8",
-);
+const layerPageSource = ["index.js", "workspace.js"]
+    .map((file) =>
+        readFileSync(
+            resolve(ROOT, "src/adapters/study/library/ui/app/layer/" + file),
+            "utf8",
+        ),
+    )
+    .join("\n");
 const requestsPageSource = readFileSync(
     resolve(ROOT, "src/adapters/study/library/ui/app/requests/index.js"),
     "utf8",

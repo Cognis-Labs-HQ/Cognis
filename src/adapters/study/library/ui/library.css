@@ -889,3 +889,31 @@ body[data-theme="dark"] .library-entry-variant-shell::before {
     filter: blur(0.55rem);
     user-select: none;
 }
+
+.library-browser--viewport {
+    padding: 0;
+    height: 100%;
+    min-height: 0;
+    grid-template-rows: minmax(0, 1fr);
+}
+
+.library-browser--viewport > .library-schema--layer-page {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    min-height: 0;
+    grid-template-rows: auto minmax(0, 1fr);
+}
+
+.library-browser--viewport .library-layer-panel {
+    display: grid;
+    min-height: 0;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+}
+
+.library-browser--viewport .library-entry-grid {
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+    align-content: start;
+}

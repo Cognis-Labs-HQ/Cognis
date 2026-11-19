@@ -53,6 +53,13 @@ test("a directly opened Explore card path opens the requested preview without hi
         openEntryPopup: async (...args) => opened.push(args),
         mountWhenDirect: async () => {},
     });
+    const workspace = await importTestModule(
+        new URL("../ui/app/layer/workspace.js", import.meta.url),
+        {
+            "../layer-cards.js": { renderBrowser: context.renderBrowser },
+        },
+        context,
+    );
     context.mountLayer = (
         await importTestModule(
             new URL("../ui/app/layer/index.js", import.meta.url),
@@ -97,7 +104,7 @@ test("a directly opened Explore card path opens the requested preview without hi
                         context.createStudySubNavigationSlot,
                 },
                 "../data.js": { loadLibrary: context.loadLibrary },
-                "../layer-cards.js": { renderBrowser: context.renderBrowser },
+                "./workspace.js": workspace,
                 "../filters.js": {
                     refreshLibraryFilterResults:
                         context.refreshLibraryFilterResults,

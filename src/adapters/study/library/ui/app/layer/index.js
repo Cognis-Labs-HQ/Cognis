@@ -17,7 +17,7 @@ import {
     createStudySubNavigationSlot,
 } from "/static/gateways/study/sub-navigation.js";
 import { loadLibrary } from "../data.js";
-import { renderBrowser } from "../layer-cards.js";
+import { createLayerWorkspace } from "./workspace.js";
 import { refreshLibraryFilterResults } from "../filters.js";
 import { bindLibraryInteractions } from "../interactions.js";
 import { localizedLabel } from "../presentation.js";
@@ -59,7 +59,7 @@ export async function mount(root, { signal } = {}) {
         i18n,
         { signal },
     );
-    const entries = loadedEntries;
+    let entries = loadedEntries;
     const browseable = exploreLayers(schemas);
     const selected =
         browseable.find(
@@ -99,28 +99,21 @@ export async function mount(root, { signal } = {}) {
         fetchLibraryForms(),
     ]);
     const canCreate = Boolean(schema) && canCreateLayerEntries(layer);
-    const view = null;
-    const title = view
-        ? localizedLabel(view.metadata, schema.language) || view.id
-        : layer
-          ? localizedLabel(layer.metadata, schema.language) || layer.id
-          : i18n.t("gateway.study.explore");
+    const title = layer
+        ? localizedLabel(layer.metadata, schema.language) || layer.id
+        : i18n.t("gateway.study.explore");
     applyDocumentTitle(i18n, "gateway.study.library_label");
     const composer = createPageComposer(root, {
         signal,
         allowCustomization: false,
-        contentScrolling: false,
-        elements: [
-            {
-                id: "study-library-layer",
-                label: title,
-                pinned: true,
-                width: "fill",
-                gridSize: { default: [12, 8], min: [4, 4], max: "full" },
-                render: () =>
-                    `<section class="library-browser">${renderBrowser(schemas, entries, i18n, selectedLayer)}</section>`,
-            },
-        ],
+        ...createLayerWorkspace({
+            layer,
+            title,
+            schemas,
+            getEntries: () => entries,
+            i18n,
+            selectedLayer,
+        }),
         preferenceKey: "study-library-layer-layout",
         i18n,
         pageContext: {
@@ -183,8 +176,7 @@ export async function mount(root, { signal } = {}) {
                 });
                 if (!created) return;
                 entries.push(created);
-                root.querySelector(".library-browser").innerHTML =
-                    renderBrowser(schemas, entries, i18n, selectedLayer);
+                composer.refreshElements(["study-library-layer"]);
             },
             { signal },
         );
@@ -199,6 +191,10 @@ export async function mount(root, { signal } = {}) {
     }
     bindLibraryInteractions(root, {
         entries,
+        refreshEntries(updated) {
+            entries = updated;
+            composer.refreshElements(["study-library-layer"]);
+        },
         i18n,
         languageCode,
         requests,

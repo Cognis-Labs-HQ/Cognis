@@ -93,11 +93,12 @@ test("Study Library presents browsable layers as filterable card tabs", () => {
     assert.match(stylesheet, /\.library-entry-grid/);
     assert.match(source, /layer\.minimal/);
     assert.match(source, /library-entry-grid--minimal/);
-    for (const pageSource of [
-        indexSource,
+    assert.match(layerPageSource, /contentScrolling: fillViewport/);
+    assert.match(
         layerPageSource,
-        requestsPageSource,
-    ]) {
+        /const fillViewport = Boolean\(layer\) && !layer\.grid/,
+    );
+    for (const pageSource of [indexSource, requestsPageSource]) {
         assert.match(pageSource, /contentScrolling: false/);
     }
     assert.match(source, /library-entry-minimal-content/);

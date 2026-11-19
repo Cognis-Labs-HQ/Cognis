@@ -1,0 +1,503 @@
+{
+    "layers": [
+        {
+            "id": "layer-0",
+            "semanticRole": "atomicWritingUnit",
+            "metadata": {
+                "labels": {
+                    "en": "Characters"
+                }
+            }
+        },
+        {
+            "id": "layer-1",
+            "semanticRole": "compoundWritingUnit",
+            "metadata": {
+                "labels": {
+                    "en": "Combinations"
+                }
+            }
+        },
+        {
+            "id": "layer-2",
+            "semanticRole": "lexicalUnit",
+            "metadata": {
+                "labels": {
+                    "en": "Words"
+                }
+            }
+        },
+        {
+            "id": "layer-3",
+            "semanticRole": "orderedLexicalSequence",
+            "metadata": {
+                "labels": {
+                    "en": "Sentences"
+                }
+            }
+        },
+        {
+            "id": "layer-4",
+            "semanticRole": "passage",
+            "metadata": {
+                "labels": {
+                    "en": "Passages"
+                }
+            }
+        },
+        {
+            "id": "layer-5",
+            "semanticRole": "practicePrompt",
+            "metadata": {
+                "labels": {
+                    "en": "Practice"
+                }
+            }
+        },
+        {
+            "id": "layer-6",
+            "metadata": {
+                "labels": {
+                    "en": "Provider Layer"
+                }
+            }
+        },
+        {
+            "id": "chart",
+            "semanticRole": "atomicWritingUnit",
+            "minimal": true,
+            "grid": {
+                "rowSize": 5,
+                "items": []
+            },
+            "metadata": {
+                "labels": {
+                    "en": "Alphabet"
+                }
+            }
+        }
+    ],
+    "entries": [
+        {
+            "id": "5d35409d-704e-5ce0-bf96-9b2b86df7644",
+            "label": "Study item 00",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "0871b29d-f19b-5ebd-8d02-948fb15d4331",
+            "label": "Study item 01",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "087f9725-cc09-5b1c-ac8d-a40ec6c57f97",
+            "label": "Study item 02",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "0ff28d9d-3cbd-53f8-9bf8-f9bc7a873dab",
+            "label": "Study item 03",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "228da82c-8dff-5ab1-a828-946d3de822d9",
+            "label": "Study item 04",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "f9323f38-e9e6-59c4-aa46-ac1dfc58f6ef",
+            "label": "Study item 05",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "92054cf9-5af0-50e0-b2ef-bda414e3862d",
+            "label": "Study item 06",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "6398f1a2-3c4f-5cab-97c0-3758c12b89fa",
+            "label": "Study item 07",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "7a69d9de-0e08-5dea-b131-206fa041d376",
+            "label": "Study item 08",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "06923eb1-a643-5ee8-ae5f-9f9245d9b406",
+            "label": "Study item 09",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "5453bf49-bb05-5f8e-ab01-6db00f005155",
+            "label": "Study item 10",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "3578fec4-e814-5a95-8ba0-aa511b21403d",
+            "label": "Study item 11",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "97ec6dd2-c3f7-5672-a268-32e8841cc172",
+            "label": "Study item 12",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "55f3a64e-fcfa-53b1-b4de-b6d8a36190d8",
+            "label": "Study item 13",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "870f597c-b24f-5ce7-8ba6-214ddca38c4a",
+            "label": "Study item 14",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "3be2d6ef-9c93-5183-b140-a4dee54f6c26",
+            "label": "Study item 15",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "b2d176b6-4398-514a-bf0a-39ab75210ccf",
+            "label": "Study item 16",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "35951098-6668-5309-b2b5-27974216fd3c",
+            "label": "Study item 17",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "e146668d-08b3-5f36-98da-b8f837847a15",
+            "label": "Study item 18",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "95276608-97d0-52da-8895-5af6e356db22",
+            "label": "Study item 19",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "653633ca-7102-59f0-b3ec-af09a30845e7",
+            "label": "Study item 20",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "39cd7e12-4837-5210-afce-3ba93aa65104",
+            "label": "Study item 21",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "1b3e02e5-1253-59fb-999a-dd8f0618eace",
+            "label": "Study item 22",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "4e8f2578-e8ad-5287-bc18-ab859af90980",
+            "label": "Study item 23",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "e6d7e867-c167-5647-bdd8-d77cb6c5cb49",
+            "label": "Study item 24",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "d8d485ef-70b1-503e-bc1e-a8a51c639ab2",
+            "label": "Study item 25",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "65861b13-8b3d-5ff4-ad59-cf3380ad728d",
+            "label": "Study item 26",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "a36b7c13-a0f6-571c-8002-3772d500369d",
+            "label": "Study item 27",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "97602213-973c-5ddd-927a-9fb27675cbdc",
+            "label": "Study item 28",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "e0f00fb4-c281-5831-9a0a-654c7b106201",
+            "label": "Study item 29",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "9b82ef5f-6fa1-5eb1-b2f3-3666a2880552",
+            "label": "Study item 30",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "6acee99b-e209-5619-bed3-43e64bff6afe",
+            "label": "Study item 31",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "b5906eef-f07e-56b2-a5bb-79e4f18ef320",
+            "label": "Study item 32",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "43041741-c721-5587-be99-614294b25b67",
+            "label": "Study item 33",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "9572b767-f22c-516d-a454-da3d95ff8d0f",
+            "label": "Study item 34",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "82e5499d-d7c0-5905-af05-e07f76595f99",
+            "label": "Study item 35",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "0395ae14-d6f7-5051-9891-9964af9b63bc",
+            "label": "Study item 36",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "1d7d2db4-c49e-58a8-8488-b795f1c3e02c",
+            "label": "Study item 37",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "7f37604d-7fe9-5976-91f4-a66be4866ce0",
+            "label": "Study item 38",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "4d672bad-0c81-53d5-93c1-eb5cb946e225",
+            "label": "Study item 39",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "968ea0fb-95e1-5956-9893-fdf6b3586669",
+            "label": "Study item 40",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "89ecf8ec-c732-5256-9899-48ea48b1b641",
+            "label": "Study item 41",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "d096818a-f4a5-5b1d-8723-df5bcc6b1b89",
+            "label": "Study item 42",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "6d36d0f7-5ab0-565c-ab47-0ac63270211c",
+            "label": "Study item 43",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "7784b401-d77d-54e8-bc8a-b7c393ed083d",
+            "label": "Study item 44",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "5f8f6862-1aa4-5873-a2ee-9a3abb6a4801",
+            "label": "Study item 45",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "efa0fc1a-0833-5edd-82ff-6f2037bf654b",
+            "label": "Study item 46",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "af58096b-2de0-5adb-8b17-fabc03dce061",
+            "label": "Study item 47",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "4042ef30-5772-5f2a-a0fe-0547e10d8cae",
+            "label": "Study item 48",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "ffc01a41-e617-5e14-9153-d9722ab22f11",
+            "label": "Study item 49",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "b4cd9499-de1c-5f1d-9efb-b6c3b96fba77",
+            "label": "Study item 50",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "6a1fcd15-d3f3-59e0-8514-5108ddcda637",
+            "label": "Study item 51",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "41f20059-179e-5126-9057-43e0e1b4cc12",
+            "label": "Study item 52",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "c5c74c93-db72-593e-ad6d-8f91c4cc8297",
+            "label": "Study item 53",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "0ab50eef-6707-5188-bdc7-e259e9d10904",
+            "label": "Study item 54",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "a4fc1fee-828b-5686-b5ca-2ac6ad7d3976",
+            "label": "Study item 55",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "11acaf69-dac6-5e8f-a6f7-ed28e6099efe",
+            "label": "Study item 56",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "6280dc51-9806-59cd-a558-ef0b77b4d9cd",
+            "label": "Study item 57",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "c5e8a179-d0fa-5167-8172-43c20feaacb9",
+            "label": "Study item 58",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        },
+        {
+            "id": "7fbb36e9-e4d5-5bac-b2b3-aec24aba2702",
+            "label": "Study item 59",
+            "scope": "global",
+            "fields": {},
+            "references": []
+        }
+    ],
+    "hostCatalogs": ["/static/gateways/study/languages"]
+}
