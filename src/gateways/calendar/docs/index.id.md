@@ -77,3 +77,5 @@ Lompatan tanggal dan pemilihan tampilan bawaan memakai satu pengikatan kontrol m
 ## Konten Seluler yang Terbaca
 
 Kalender menjaga kontrol di atas agenda yang dapat digulir tersendiri. Ikon Tambah Acara di samping setiap tanggal memiliki sasaran sentuh 44px dan label yang aksesibel.
+
+Baris Kalender pada panel samping tetap berupa entri menu. Kontrol Kalender Baru mempertahankan area sentuh 44px dan sorotan sesuai tema.

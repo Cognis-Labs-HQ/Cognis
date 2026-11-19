@@ -340,7 +340,7 @@ body[data-theme="dark"] .calendar-visibility-icon--public {
     width: auto;
     height: 2.25rem;
     min-width: max-content;
-    min-height: 2.25rem;
+    min-height: 44px;
     padding: 0 0.65rem;
     font-size: 1rem;
     font-weight: 600;
@@ -352,7 +352,7 @@ body[data-theme="dark"] .calendar-visibility-icon--public {
 }
 
 .toolbar .calendar-toolbar-add:hover {
-    border-color: var(--btn-confirm-bg, #1f8ceb);
+    border-color: var(--accent);
 }
 
 .calendar-toolbar-section {

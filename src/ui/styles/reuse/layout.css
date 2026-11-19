@@ -587,7 +587,10 @@
     gap: 14px;
     min-width: 0;
 }
-.app-shell button:not(:where(.btn-confirm, .btn-cancel, .btn-neutral)),
+.app-shell
+    button:not(
+        :where(.btn-confirm, .btn-cancel, .btn-neutral, .toolbar button)
+    ),
 .app-shell select,
 .app-shell input,
 .app-shell textarea {
@@ -614,7 +617,9 @@ button.dropdown-item {
 .app-shell
     button:hover:not(.dropdown-item):not([class*="btn-"]):not(
         .theme-toggle
-    ):not(.font-size-btn):not(:disabled),
+    ):not(.font-size-btn):not(.toolbar button):not(.side-menu-link):not(
+        :disabled
+    ),
 .app-shell select:hover {
     background: var(--control-hover-bg);
 }

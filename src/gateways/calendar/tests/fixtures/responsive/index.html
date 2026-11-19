@@ -12,6 +12,20 @@
     </head>
     <body>
         <div id="app"></div>
+        <template id="calendar-sidebar">
+            <section class="toolbar-section calendar-toolbar-section">
+                <header class="calendar-toolbar-heading">
+                    <h3 data-i18n="gateway.calendar.my_calendars"></h3>
+                    <button
+                        type="button"
+                        class="calendar-toolbar-add"
+                        data-i18n="gateway.calendar.new_calendar_short"
+                    ></button>
+                </header>
+                <div data-fixture-calendar-list></div>
+                <div data-fixture-calendars></div>
+            </section>
+        </template>
         <script type="module" src="/fixture.js"></script>
     </body>
 </html>

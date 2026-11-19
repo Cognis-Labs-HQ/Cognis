@@ -57,5 +57,13 @@
             "endAt": "2026-06-15T09:00:00Z",
             "status": "accepted"
         }
+    ],
+    "calendars": [
+        {
+            "id": "fixture-calendar",
+            "name": "Personal calendar",
+            "color": "#c926d4",
+            "visibility": "only_me"
+        }
     ]
 }

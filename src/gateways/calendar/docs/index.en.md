@@ -77,3 +77,5 @@ Date jumps and native view selection use one Calendar-owned control binding for 
 ## Readable Mobile Content
 
 Calendar keeps its controls above an independently scrolling agenda. The Add Event icon beside each date provides a 44px touch target and an accessible label.
+
+Calendar sidebar rows remain menu entries, and the New Calendar control retains a 44px touch target with theme-colored hover feedback.

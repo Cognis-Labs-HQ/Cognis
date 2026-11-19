@@ -1,9 +1,10 @@
 import { beginPageLoading } from "/static/reuse/page-entry.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
-import { createI18n } from "/static/reuse/i18n.js";
+import { createI18n, applyStaticTranslations } from "/static/reuse/i18n.js";
 import {
     renderCalendarView,
     CALENDAR_VIEWS,
+    renderCalendarToolbarList,
 } from "/static/gateways/calendar/ui/calendar-ui-helpers.js";
 import {
     renderCalendarViewSwitcher,
@@ -19,6 +20,18 @@ const lifetime = new AbortController();
 const root = document.querySelector("#app");
 let view = "month";
 let activeDate = new Date(data.date);
+function renderSidebar() {
+    const content = document
+        .querySelector("#calendar-sidebar")
+        .content.cloneNode(true);
+    content.querySelector("[data-fixture-calendar-list]").innerHTML =
+        renderCalendarToolbarList(data.calendars, data.calendars[0].id, i18n);
+    applyStaticTranslations(i18n, content);
+    const holder = document.createElement("div");
+    holder.append(content);
+    return holder.innerHTML;
+}
+
 const composer = createPageComposer(root, {
     i18n,
     signal: lifetime.signal,
@@ -35,7 +48,7 @@ const composer = createPageComposer(root, {
     toolbar: [
         {
             id: "calendars",
-            render: () => `<h3>${i18n.t("gateway.calendar.my_calendars")}</h3>`,
+            render: renderSidebar,
         },
     ],
     elements: [

@@ -77,3 +77,5 @@ Datumssprünge und die native Ansichtsauswahl verwenden dieselbe Calendar-eigene
 ## Lesbare mobile Inhalte
 
 Der Kalender hält die Bedienung über einer unabhängig scrollbaren Terminliste. Das Symbol zum Hinzufügen neben jedem Datum bietet eine 44px große Touchfläche und eine zugängliche Beschriftung.
+
+Kalenderzeilen in der Seitenleiste bleiben Menüeinträge. Neuer Kalender behält ein 44px-Touchziel und themengerechtes Hover-Feedback.

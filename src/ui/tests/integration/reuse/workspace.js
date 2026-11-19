@@ -59,41 +59,47 @@ export async function checkWorkspace(
         [1440, 900],
         [1920, 1080],
     ];
-    for (const [width, height] of sizes) {
-        await context.test(`${width}x${height}`, async () => {
-            await browser.resize(width, height);
-            const state = await browser.evaluate(
-                `({width:document.documentElement.scrollWidth,viewport:innerWidth,main:document.querySelector('.main-window').getBoundingClientRect().toJSON(),footer:document.querySelector('.global-footer').getBoundingClientRect().toJSON(),card:document.querySelector('[data-composer-element]').getBoundingClientRect().toJSON()})`,
-            );
-            assert.ok(state.width <= width + 1, JSON.stringify(state));
-            assert.ok(state.main.height > 0);
-            assert.equal(
-                await browser.evaluate(
-                    `document.querySelector('[data-composer-sidebar-trigger]')===window.originalSidebarToggle && document.querySelector('[data-composer-header]').contains(window.originalSidebarToggle)`,
-                ),
-                true,
-                "Composer retains one sidebar control inside the content header",
-            );
-            if (height >= 480)
+    for (const theme of ["dark", "light"]) {
+        await browser.callFunction(
+            "function(theme) { document.body.dataset.theme = theme; }",
+            [theme],
+        );
+        for (const [width, height] of sizes) {
+            await context.test(`${theme} ${width}x${height}`, async () => {
+                await browser.resize(width, height);
+                const state = await browser.evaluate(
+                    `({width:document.documentElement.scrollWidth,viewport:innerWidth,main:document.querySelector('.main-window').getBoundingClientRect().toJSON(),footer:document.querySelector('.global-footer').getBoundingClientRect().toJSON(),card:document.querySelector('[data-composer-element]').getBoundingClientRect().toJSON()})`,
+                );
+                assert.ok(state.width <= width + 1, JSON.stringify(state));
+                assert.ok(state.main.height > 0);
+                assert.equal(
+                    await browser.evaluate(
+                        `document.querySelector('[data-composer-sidebar-trigger]')===window.originalSidebarToggle && document.querySelector('[data-composer-header]').contains(window.originalSidebarToggle)`,
+                    ),
+                    true,
+                    "Composer retains one sidebar control inside the content header",
+                );
+                if (height >= 480)
+                    assert.ok(
+                        state.main.bottom <= height + 1,
+                        JSON.stringify(state),
+                    );
+                else
+                    assert.ok(
+                        state.main.height >= 320,
+                        "Short screens retain a scrollable usable workspace",
+                    );
                 assert.ok(
-                    state.main.bottom <= height + 1,
+                    state.card.bottom <= state.main.bottom + 1,
                     JSON.stringify(state),
                 );
-            else
-                assert.ok(
-                    state.main.height >= 320,
-                    "Short screens retain a scrollable usable workspace",
+                await verifyViewport(browser, width, height);
+                await captureScreenshot(
+                    browser,
+                    `${screenshotPrefix}-${theme}-${width}-${height}`,
                 );
-            assert.ok(
-                state.card.bottom <= state.main.bottom + 1,
-                JSON.stringify(state),
-            );
-            await verifyViewport(browser, width, height);
-            await captureScreenshot(
-                browser,
-                `${screenshotPrefix}-${width}-${height}`,
-            );
-        });
+            });
+        }
     }
     await afterMatrix(browser);
     await browser.resize(320, 568);

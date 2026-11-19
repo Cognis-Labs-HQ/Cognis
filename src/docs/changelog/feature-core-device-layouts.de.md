@@ -28,6 +28,8 @@ Viewport-Fixtures bleiben in ihren Komponenten und verwenden explizite Ressource
 
 Weniger Leerraum in Schubladen und eine gemeinsame Scroll-Fläche für lange Unterhaltungslisten. Decks erscheinen als Menüeinträge statt als Schaltflächen.
 
+Formularstile greifen nicht mehr auf Seitenmenüs über; Aktions- und Feldsteuerungen behalten ihr Theme. Helle und dunkle Seitenleisten werden für Telefon-, Tablet- und Desktopgrößen geprüft.
+
 ## Flexible Study-Navigation
 
 Sprachbeschriftungen verkürzen sich bei Platzmangel und behalten zugängliche Namen. Die ursprüngliche Unternavigation bleibt erhalten.

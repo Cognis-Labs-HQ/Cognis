@@ -187,3 +187,5 @@ Composer disables browser scroll anchoring throughout its grid content so width 
 Shared sidebar insets adapt to available width, with one desktop gap and a rem-sized drawer that respects larger text. Feature controls can size themselves within the sidebar while retaining touch targets.
 
 Shared side-menu entries use selected-row and keyboard-focus indicators. Sidebar spacing and scrolling belong to Composer rather than individual pages.
+
+Toolbar menu buttons retain their own transparent resting surfaces and themed hover, selection and keyboard focus. Form fields keep their field styling; action buttons keep their semantic colors. Light surfaces use a text-tinted hover layer.

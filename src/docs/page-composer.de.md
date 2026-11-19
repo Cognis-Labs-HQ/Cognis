@@ -120,3 +120,5 @@ Composer deaktiviert die automatische Scroll-Verankerung des Browsers im gesamte
 Die gemeinsamen Seitenabstände passen sich der Breite an. Auf dem Desktop bleibt ein einzelner Abstand zur Hauptfläche; die Schubladenbreite in rem berücksichtigt größere Schrift. Komponenten können ihre Bedienelemente passend dimensionieren und behalten ausreichend große Touch-Flächen.
 
 Gemeinsame Seitenmenüeinträge kennzeichnen Auswahl und Tastaturfokus. Abstände und Scrollverhalten der Seitenleisten gehören zu Composer statt zu einzelnen Seiten.
+
+Menüschaltflächen der Seitenleiste behalten transparente Ruheflächen sowie themengerechte Hover-, Auswahl- und Tastaturfokus-Stile. Formularfelder behalten ihre Feldstile, Aktionsschaltflächen ihre semantischen Farben. Helle Flächen verwenden eine mit der Textfarbe getönte Hover-Ebene.

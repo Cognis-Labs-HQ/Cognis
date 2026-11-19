@@ -73,7 +73,9 @@ try {
             {
                 id: "fixture-toolbar",
                 render: () =>
-                    menus ? menu.render() : renderTemplate("toolbar-content"),
+                    menus
+                        ? menu.render() + renderTemplate("sidebar-controls")
+                        : renderTemplate("toolbar-content"),
             },
         ],
         subNavigation: menus

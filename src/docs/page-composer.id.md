@@ -104,3 +104,5 @@ Composer menonaktifkan penjangkaran gulir browser di seluruh konten kisi agar pe
 Jarak tepi bilah samping bersama menyesuaikan lebar yang tersedia. Desktop memakai satu jarak ke konten utama, sedangkan lebar panel dalam rem mengikuti ukuran teks yang lebih besar. Kontrol komponen dapat menyesuaikan ukurannya sambil mempertahankan sasaran sentuh yang nyaman.
 
 Entri menu samping bersama menandai pilihan dan fokus papan ketik. Jarak dan pengguliran panel samping dikelola Composer, bukan setiap halaman.
+
+Tombol menu panel mempertahankan permukaan transparan saat diam serta sorotan, pilihan, dan fokus papan ketik sesuai tema. Kolom formulir mempertahankan gaya kolom; tombol tindakan mempertahankan warna semantiknya. Permukaan terang memakai lapisan sorotan berwarna teks.

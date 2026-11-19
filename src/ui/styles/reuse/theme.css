@@ -190,6 +190,7 @@ body[data-theme="light"] {
     --bg-attachment: fixed, scroll;
     --surface: rgba(255, 255, 255, 0.92);
     --surface-2: rgba(248, 250, 255, 0.96);
+    --surface-soft: color-mix(in srgb, var(--text) 6%, transparent);
     --text: #0f172a;
     --text-muted: #475569;
     --border: rgba(100, 116, 139, 0.3);

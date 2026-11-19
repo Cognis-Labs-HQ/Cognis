@@ -27,6 +27,26 @@ test(
                 );
             },
             verifyViewport: async (browser, width) => {
+                const sidebarTheme = await browser.evaluate(`(() => {
+                    const room = getComputedStyle(document.querySelector('.messages-room-select'));
+                    const action = getComputedStyle(document.querySelector('.messages-new-btn'));
+                    const probe = document.createElement('div');
+                    probe.style.cssText = 'border-color:var(--color-success-border);color:var(--color-success-outline-text)';
+                    document.querySelector('.app-shell').append(probe);
+                    const expected = getComputedStyle(probe);
+                    const result = {roomBorder:room.borderTopWidth,roomBackground:room.backgroundColor,actionBorder:action.borderTopColor,actionColor:action.color,expectedBorder:expected.borderTopColor,expectedColor:expected.color};
+                    probe.remove();return result;
+                })()`);
+                assert.equal(sidebarTheme.roomBorder, "0px");
+                assert.equal(sidebarTheme.roomBackground, "rgba(0, 0, 0, 0)");
+                assert.equal(
+                    sidebarTheme.actionBorder,
+                    sidebarTheme.expectedBorder,
+                );
+                assert.equal(
+                    sidebarTheme.actionColor,
+                    sidebarTheme.expectedColor,
+                );
                 if (width <= 900) {
                     const picker = await browser.evaluate(
                         `(()=>{const rect=document.querySelector('.toolbar-mobile-toggle').getBoundingClientRect();return{x:rect.left+rect.width/2,y:rect.top+rect.height/2};})()`,

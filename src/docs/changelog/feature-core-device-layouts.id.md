@@ -28,6 +28,8 @@ Fixture area pandang tetap dimiliki komponennya dengan akar aset eksplisit dan t
 
 Ruang kosong laci berkurang dan daftar percakapan panjang memakai satu area gulir. Dek tampil sebagai entri menu, bukan tombol.
 
+Gaya formulir tidak lagi merembes ke menu panel; kontrol tindakan dan kolom tetap sesuai tema. Tampilan panel terang dan gelap diperiksa pada ukuran ponsel, tablet, dan desktop.
+
 ## Navigasi Study Adaptif
 
 Label bahasa dipersingkat saat ruang terbatas sambil mempertahankan nama aksesibel. Gaya subnavigasi asli tetap dipertahankan.

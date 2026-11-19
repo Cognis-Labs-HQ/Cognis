@@ -28,6 +28,8 @@ Keep viewport fixtures with their components and use explicit asset roots and ex
 
 Reduce empty drawer space and retain one scroll surface for long conversation lists. Decks use menu entries rather than button surfaces.
 
+Fix form-style leakage into sidebar menus and retain themed action and field controls. Verify light and dark sidebar rendering across phone, tablet and desktop sizes.
+
 ## Adaptive Study Navigation
 
 Compress language labels under width pressure while retaining accessible names. Preserve upstream sub-navigation styling.

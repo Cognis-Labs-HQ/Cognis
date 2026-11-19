@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { fileURLToPath } from "node:url";
+import { captureScreenshot } from "../../../ui/tests/integration/artifacts.js";
 import {
     checkWorkspace,
     workspaceBrowserSkip,
@@ -43,6 +44,30 @@ test(
                         ),
                     );
                 }
+
+                await browser.evaluate("window.fixture.composer.openToolbar()");
+                await browser.evaluate(
+                    "Promise.all(document.querySelector('.toolbar').getAnimations().map(animation => animation.finished))",
+                );
+                const sidebar = await browser.evaluate(`(() => {
+                    const item=document.querySelector('.calendar-item-btn');const style=getComputedStyle(item);
+                    const action=document.querySelector('.calendar-toolbar-add').getBoundingClientRect();
+                    return {background:style.backgroundColor,border:style.borderTopWidth,itemHeight:item.getBoundingClientRect().height,actionHeight:action.height};
+                })()`);
+                assert.equal(sidebar.background, "rgba(0, 0, 0, 0)");
+                assert.equal(sidebar.border, "0px");
+                assert.ok(sidebar.itemHeight >= 44);
+                assert.ok(sidebar.actionHeight >= 44);
+                const theme = await browser.evaluate(
+                    "document.body.dataset.theme",
+                );
+                await captureScreenshot(
+                    browser,
+                    `calendar-sidebar-${theme}-${width}`,
+                );
+                await browser.evaluate(
+                    "window.fixture.composer.closeToolbar()",
+                );
             },
             afterMatrix: async (browser) => {
                 await browser.resize(1920, 1080);

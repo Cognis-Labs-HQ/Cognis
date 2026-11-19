@@ -61,7 +61,9 @@ button {
 button:disabled {
     cursor: not-allowed;
 }
-button:hover:not(:disabled):not(.dropdown-item):not([class*="btn-"]) {
+button:hover:not(:disabled):not(.dropdown-item):not([class*="btn-"]):not(
+        .toolbar button
+    ) {
     border-color: var(--accent-2);
     transform: translateY(-1px);
 }
@@ -206,13 +208,18 @@ button:hover:not(:disabled):not(.dropdown-item):not([class*="btn-"]) {
     padding: 10px 14px;
 }
 
-.toolbar button:hover {
+:where(.toolbar button):hover {
     color: var(--text);
     border-color: var(--border);
     background: var(--surface-soft);
 }
 
-.toolbar button.active {
+.toolbar :where(button):focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: -2px;
+}
+
+.toolbar :where(button).active {
     color: var(--text);
     border-color: transparent;
     background-color: var(--surface-soft);
