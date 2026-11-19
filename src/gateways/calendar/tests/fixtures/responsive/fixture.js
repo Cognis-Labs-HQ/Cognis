@@ -36,7 +36,7 @@ const composer = createPageComposer(root, {
     i18n,
     signal: lifetime.signal,
     allowCustomization: false,
-    fillViewport: true,
+    contentScrolling: false,
     requireAccountSession: false,
     enableAccountEnhancements: false,
     toolbarScrollable: true,

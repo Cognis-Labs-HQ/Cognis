@@ -25,6 +25,7 @@ export async function checkWorkspace(
         staticRoots,
         screenshotPrefix,
         setup,
+        scrolling = "viewport",
         verifyViewport,
         afterMatrix,
     },
@@ -79,7 +80,14 @@ export async function checkWorkspace(
                     true,
                     "Composer retains one sidebar control inside the content header",
                 );
-                if (height >= 480)
+                if (scrolling === "document")
+                    assert.ok(
+                        await browser.evaluate(
+                            "document.scrollingElement.scrollHeight >= document.querySelector('.main-window').getBoundingClientRect().bottom + scrollY - 1",
+                        ),
+                        "Document scrolling contains the full workspace",
+                    );
+                else if (height >= 480)
                     assert.ok(
                         state.main.bottom <= height + 1,
                         JSON.stringify(state),

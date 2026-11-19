@@ -93,6 +93,8 @@ Composerが管理する`data-composer-layout`、`data-composer-drawer`、`data-c
 
 単一の固定要素を持つページは`fillViewport: true`を指定できます。Composerはヘッダー、フッター、見える画面領域を測定し、最低20remを確保します。共通のサイドバーボタンは常にComposerが提供します。`openToolbar(trigger)`と`closeToolbar()`は明示的なアプリ操作に使用できます。
 
+カレンダーの予定一覧や時間グリッドなど、画面の高さを超えて伸びるドキュメント内容には `contentScrolling: false` を指定します。`fillViewport: true` は、会話内でスクロールするメッセージのように高さを制限する作業領域に使用します。
+
 共通のダイアログは閲覧用の`surface: "reader"`を指定できます。Composerの表示属性を使い、ヘッダーとフッターの外側で本文だけをスクロールし、閉じるとサイズ監視を解除します。
 
 ヘッダーとフッターは共通の枠幅を使い、スマートフォン、タブレット、デスクトップで両端を揃えます。

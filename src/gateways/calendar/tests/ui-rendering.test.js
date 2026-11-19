@@ -227,7 +227,7 @@ test("calendar CSS styles timed event lanes and current week highlights", () => 
     );
     assert.match(
         TIMED_GRID_CSS_SOURCE,
-        /\.calendar-day-view\s*\{[\s\S]*height:\s*100%;/s,
+        /\.calendar-day-view\s*\{[\s\S]*grid-template-rows:\s*auto auto auto;/s,
     );
     assert.match(
         TIMED_GRID_CSS_SOURCE,
@@ -425,13 +425,9 @@ test("calendar compact controls follow the composer presentation", () => {
     assert.match(CSS_SOURCE, /calendar-agenda[\s\S]*min-height:\s*44px/);
 });
 
-test("calendar timed views auto-scroll to the current timeslot", () => {
-    assert.match(APP_SOURCE, /scrollTimedViewsToCurrentSlot/);
-    assert.match(
-        APP_SOURCE,
-        /requestAnimationFrame\(scrollTimedViewsToCurrentSlot\)/,
-    );
-    assert.match(APP_SOURCE, /calendar-week-slot--current-time/);
+test("calendar uses Composer document scrolling for complete timed views", () => {
+    assert.match(APP_SOURCE, /contentScrolling: false/);
+    assert.match(SHARE_RENDERER_SOURCE, /contentScrolling: false/);
 });
 
 test("calendar toolbar includes pending quick responses with shared-calendar target exemption", () => {
@@ -743,8 +739,7 @@ test("calendar share renderer displays one calendar and enables scoped writes", 
     );
     assert.match(SHARE_RENDERER_SOURCE, /data-calendar-nav/);
     assert.match(SHARE_RENDERER_SOURCE, /shiftActiveDate/);
-    assert.match(SHARE_RENDERER_SOURCE, /scrollTimedViewsToCurrentSlot/);
-    assert.match(SHARE_RENDERER_SOURCE, /requestAnimationFrame/);
+    assert.match(SHARE_RENDERER_SOURCE, /contentScrolling: false/);
     assert.match(SHARE_RENDERER_SOURCE, /\{ signal \}/);
     assert.match(SHARE_RENDERER_SOURCE, /CALENDAR_VIEWS\.includes/);
     assert.match(SHARE_RENDERER_SOURCE, /data-timeslot-add/);

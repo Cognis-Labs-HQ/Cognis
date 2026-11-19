@@ -21,6 +21,7 @@ test(
                 ),
             },
             screenshotPrefix: "workspace-calendar",
+            scrolling: "document",
             verifyViewport: async (browser, width) => {
                 const availableWidth = await browser.evaluate(
                     `(()=>{const host=document.querySelector('[data-composer-element]');const style=getComputedStyle(host);return host.getBoundingClientRect().width-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight);})()`,
@@ -44,6 +45,15 @@ test(
                         ),
                     );
                 }
+
+                const canvas = await browser.evaluate(`(() => {
+                    const canvas=document.querySelector('.calendar-view-canvas');
+                    return {height:canvas.clientHeight,content:canvas.scrollHeight};
+                })()`);
+                assert.ok(
+                    canvas.content <= canvas.height + 1,
+                    JSON.stringify(canvas),
+                );
 
                 await browser.evaluate("window.fixture.composer.openToolbar()");
                 await browser.evaluate(
@@ -117,6 +127,62 @@ test(
                             '[...document.querySelectorAll(".calendar-agenda [data-timeslot-add]")].every(button=>button.getBoundingClientRect().height>=44)',
                         ),
                     );
+                }
+                for (const [width, height] of [
+                    [390, 844],
+                    [844, 390],
+                    [1440, 900],
+                    [1819, 463],
+                ]) {
+                    await browser.resize(width, height);
+                    for (const view of ["day", "week", "month", "year"]) {
+                        await browser.callFunction(
+                            `function(view){const select=document.querySelector('[data-calendar-view-select]');select.value=view;select.dispatchEvent(new Event('change',{bubbles:true}));}`,
+                            [view],
+                        );
+                        const geometry = await browser.evaluate(`(() => {
+                            const canvas=document.querySelector('.calendar-view-canvas');
+                            const card=document.querySelector('[data-composer-element]');
+                            const timed=document.querySelector('[data-calendar-week-scroll-grid], .calendar-day-timed-grid');
+                            return {canvas:canvas.getBoundingClientRect().toJSON(),card:card.getBoundingClientRect().toJSON(),content:canvas.scrollHeight,height:canvas.clientHeight,timed:timed ? {height:timed.clientHeight,content:timed.scrollHeight}:null,page:document.scrollingElement.scrollHeight};
+                        })()`);
+                        assert.ok(
+                            geometry.content <= geometry.height + 1,
+                            JSON.stringify({ width, height, view, geometry }),
+                        );
+                        assert.ok(
+                            geometry.canvas.bottom <= geometry.card.bottom + 1,
+                            JSON.stringify(geometry),
+                        );
+                        if (geometry.timed) {
+                            assert.ok(
+                                geometry.timed.content <=
+                                    geometry.timed.height + 1,
+                                JSON.stringify(geometry),
+                            );
+                            assert.ok(
+                                geometry.card.height > height,
+                                "The complete timed view grows past the viewport",
+                            );
+                        }
+                        await browser.evaluate(
+                            "scrollTo(0, document.scrollingElement.scrollHeight)",
+                        );
+                        await browser.evaluate(
+                            "new Promise(resolve=>requestAnimationFrame(resolve))",
+                        );
+                        assert.ok(
+                            await browser.evaluate(
+                                `document.querySelector('.calendar-view-canvas').getBoundingClientRect().bottom <= document.querySelector('.global-footer').getBoundingClientRect().top + 1`,
+                            ),
+                            "The end of the calendar is reachable above the footer",
+                        );
+                        await captureScreenshot(
+                            browser,
+                            `calendar-document-${view}-${width}-${height}`,
+                        );
+                        await browser.evaluate("scrollTo(0,0)");
+                    }
                 }
                 const readonly = await browser.evaluate(
                     `(async()=>{const{renderCalendarView}=await import('/static/gateways/calendar/ui/calendar-ui-helpers.js');const{data,i18n}=window.fixture;const host=document.createElement('div');host.innerHTML=renderCalendarView(data.events,'month',new Date(data.date),i18n,null,{compact:true,canCreate:false});return{events:new Set([...host.querySelectorAll('[data-calendar-event]')].map(button=>button.dataset.calendarEvent)).size,create:host.querySelectorAll('[data-timeslot-add]').length};})()`,

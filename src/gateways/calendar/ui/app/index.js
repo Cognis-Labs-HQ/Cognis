@@ -356,32 +356,6 @@ export async function mount(root, { signal, shareContext = null } = {}) {
         });
     }
 
-    function scrollTimedViewsToCurrentSlot() {
-        root.querySelectorAll(".calendar-day-timed-lane").forEach((lane) => {
-            if (!(lane instanceof HTMLElement)) return;
-            const currentSlot = lane.querySelector(
-                ".calendar-timeslot-events--current",
-            );
-            if (!(currentSlot instanceof HTMLElement)) return;
-            const targetOffset =
-                currentSlot.offsetTop - lane.clientHeight * 0.3;
-            lane.scrollTop = Math.max(0, targetOffset);
-        });
-
-        root.querySelectorAll("[data-calendar-week-scroll-grid]").forEach(
-            (scrollGrid) => {
-                if (!(scrollGrid instanceof HTMLElement)) return;
-                const currentSlot = scrollGrid.querySelector(
-                    ".calendar-week-slot--current-time",
-                );
-                if (!(currentSlot instanceof HTMLElement)) return;
-                const targetOffset =
-                    currentSlot.offsetTop - scrollGrid.clientHeight * 0.3;
-                scrollGrid.scrollTop = Math.max(0, targetOffset);
-            },
-        );
-    }
-
     const popupManager = createCalendarPopupManager({
         root,
         signal,
@@ -513,7 +487,7 @@ export async function mount(root, { signal, shareContext = null } = {}) {
         tutorials: guides,
         signal,
         allowCustomization: false,
-        fillViewport: true,
+        contentScrolling: false,
         requireAccountSession: !shareContext,
         elements: [
             {
@@ -555,7 +529,6 @@ export async function mount(root, { signal, shareContext = null } = {}) {
                 },
                 onRender: () => {
                     syncWeekViewLayout();
-                    requestAnimationFrame(scrollTimedViewsToCurrentSlot);
 
                     root.querySelectorAll("[data-month-create-date]").forEach(
                         (button) => {

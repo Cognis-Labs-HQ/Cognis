@@ -109,6 +109,8 @@ Für Bildschirmtests mit einer isolierten laufenden Instanz setzt du `COGNIS_BRO
 
 Feste Seiten mit einem Element können `fillViewport: true` verwenden. Composer berücksichtigt Kopfzeile, Fußzeile und sichtbaren Bildschirm mit mindestens 20rem. Composer stellt die gemeinsame Seitenleistenschaltfläche immer bereit. `openToolbar(trigger)` und `closeToolbar()` bleiben für gezielte Anwendungsaktionen verfügbar.
 
+Für Dokumentinhalte, die über die Bildschirmhöhe hinaus wachsen müssen, etwa Kalenderlisten und Zeitraster, gilt `contentScrolling: false`. `fillViewport: true` ist für begrenzte Arbeitsbereiche wie Nachrichten vorgesehen, in denen die Unterhaltung intern scrollt.
+
 Gemeinsame Dialoge akzeptieren `surface: "reader"` für Leseinhalte. Die Fläche nutzt Composer-Darstellungshaken, hält Kopf- und Fußzeile außerhalb des scrollbaren Inhalts und beendet ihre Größenbeobachtung beim Schließen.
 
 Kopf- und Fußzeile verwenden dieselbe Rahmenbreite. Ihre Außenkanten stimmen auf Telefonen, Tablets und Desktopbildschirmen überein.

@@ -176,6 +176,8 @@ Use the Pages grid in the main header to switch destinations. It opens a compact
 
 Single fixed pages may use `fillViewport: true`; Composer measures header, footer and the visible viewport, with a 20rem minimum. The common sidebar button is always supplied by Composer. `openToolbar(trigger)` and `closeToolbar()` remain available for deliberate application actions.
 
+Use `contentScrolling: false` for document content that must grow beyond the viewport, such as Calendar agendas and time grids. Reserve `fillViewport: true` for bounded workspaces such as Messages, where the conversation owns internal scrolling.
+
 Shared popups accept `surface: "reader"` for reading content. This surface consumes Composer presentation hooks, keeps its header and footer outside the scrolling body, and releases presentation observers when dismissed.
 
 The header and footer share one shell width, so their outer edges align on phones, tablets and desktop.

@@ -93,6 +93,8 @@ Gunakan kisi Halaman pada kepala utama untuk berpindah tujuan. Pemilih halaman r
 
 Halaman tetap dengan satu elemen dapat memakai `fillViewport: true`. Composer mengukur kepala, kaki, dan area layar terlihat dengan minimum 20rem. Tombol panel bersama selalu disediakan Composer. `openToolbar(trigger)` dan `closeToolbar()` tetap tersedia untuk tindakan aplikasi yang disengaja.
 
+Gunakan `contentScrolling: false` untuk konten dokumen yang perlu tumbuh melampaui area tampilan, seperti agenda dan kisi waktu Kalender. Gunakan `fillViewport: true` untuk ruang kerja terbatas seperti Pesan, tempat percakapan mengatur pengguliran internal.
+
 Dialog bersama menerima `surface: "reader"` untuk konten bacaan. Permukaan ini memakai penanda presentasi Composer, menjaga kepala dan kaki di luar isi bergulir, serta melepas pengamat presentasi saat ditutup.
 
 Kepala dan kaki halaman memakai satu lebar kerangka sehingga tepi luarnya sejajar pada ponsel, tablet, dan desktop.

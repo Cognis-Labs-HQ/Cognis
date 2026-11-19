@@ -40,6 +40,8 @@ Composer menyamakan transparansi panel samping dan utama, melindungi tampilan me
 
 Pulihkan jarak dalam konten bersama pada halaman yang memenuhi area tampilan dan hapus pembungkus daftar buram pada entri menu Kalender. Composer melindungi kedua aturan.
 
+Tampilan Kalender akun dan bersama kini memakai pengguliran dokumen Composer. Agenda panjang dan kisi waktu lengkap meluas melewati area tampilan tanpa menyusut menjadi area gulir bertingkat.
+
 ## Komit
 
 - [f4f6d3a84](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4f6d3a84b587d4eb169b5db76b850956544ad31)

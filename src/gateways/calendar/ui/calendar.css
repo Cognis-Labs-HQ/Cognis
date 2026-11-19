@@ -9,18 +9,6 @@
     align-content: start;
 }
 
-.calendar-section:has(.calendar-view-canvas) {
-    grid-template-rows: auto minmax(0, 1fr);
-    height: 100%;
-    min-height: 0;
-    align-content: unset;
-}
-
-.calendar-view-canvas {
-    min-height: 0;
-    height: 100%;
-}
-
 .calendar-create-row {
     display: flex;
     align-items: center;
@@ -558,11 +546,6 @@ body[data-theme="dark"] .calendar-visibility-icon--public {
 
 .calendar-view-canvas .calendar-year-day-dot--outside {
     opacity: 0.55;
-}
-
-.calendar-view-canvas {
-    overflow: auto;
-    overscroll-behavior: contain;
 }
 
 .calendar-agenda,

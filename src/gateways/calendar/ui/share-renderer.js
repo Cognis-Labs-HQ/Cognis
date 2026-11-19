@@ -295,40 +295,12 @@ export async function mount(
                 },
             );
         }
-        requestAnimationFrame(scrollTimedViewsToCurrentSlot);
     }
 
     function resolvePeriodLabel() {
         return selectedView === "year"
             ? String(activeDate.getFullYear())
             : formatMonthYear(activeDate);
-    }
-
-    function scrollTimedViewsToCurrentSlot() {
-        root.querySelectorAll(".calendar-day-timed-lane").forEach((lane) => {
-            if (!(lane instanceof HTMLElement)) return;
-            const currentSlot = lane.querySelector(
-                ".calendar-timeslot-events--current",
-            );
-            if (!(currentSlot instanceof HTMLElement)) return;
-            lane.scrollTop = Math.max(
-                0,
-                currentSlot.offsetTop - lane.clientHeight * 0.3,
-            );
-        });
-        root.querySelectorAll("[data-calendar-week-scroll-grid]").forEach(
-            (grid) => {
-                if (!(grid instanceof HTMLElement)) return;
-                const currentSlot = grid.querySelector(
-                    ".calendar-week-slot--current-time",
-                );
-                if (!(currentSlot instanceof HTMLElement)) return;
-                grid.scrollTop = Math.max(
-                    0,
-                    currentSlot.offsetTop - grid.clientHeight * 0.3,
-                );
-            },
-        );
     }
 
     function buildCalendarElement() {
@@ -433,6 +405,7 @@ export async function mount(
     composer = createPageComposer(root, {
         signal,
         allowCustomization: false,
+        contentScrolling: false,
         enableDomParking: false,
         elements: [buildCalendarElement()],
         preferenceKey: "shared-calendar-layout",
@@ -452,6 +425,4 @@ export async function mount(
     });
 
     await composer.init();
-    if (signal.aborted) return;
-    requestAnimationFrame(scrollTimedViewsToCurrentSlot);
 }

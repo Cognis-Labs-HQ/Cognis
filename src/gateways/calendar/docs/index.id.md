@@ -6,7 +6,7 @@ Calendar berkontribusi ke gateway Share melalui hook alur dan kapabilitas `ctx`.
 
 ## Perender berbagi publik
 
-Calendar menyediakan `/static/gateways/calendar/ui/share-renderer.js` sebagai `mountScriptUrl` untuk tautan kalender. Share meneruskan payload kalender yang telah diselesaikan, kapabilitas yang diberikan, token tamu terbatas, terjemahan, dan sinyal pembatalan kepada `mount(root, options)`. Perender adapter memasang satu kartu kalender dengan pilihan tampilan hari, minggu, bulan, dan tahun serta tabel slot waktu standar; kalender lain dan kontrol dasbor penerima tidak pernah dimuat. Hanya kisi slot waktu yang bergulir secara vertikal, sesuai dengan kartu Kalender pengguna. Berbagi baca menampilkan acara. Berbagi `calendar:write` dapat membuat, mengedit, dan menghapus acara melalui `/api/v1/calendar/shared/:calendarId/events` dengan token tamu terbatas.
+Calendar menyediakan `/static/gateways/calendar/ui/share-renderer.js` sebagai `mountScriptUrl` untuk tautan kalender. Share meneruskan payload kalender yang telah diselesaikan, kapabilitas yang diberikan, token tamu terbatas, terjemahan, dan sinyal pembatalan kepada `mount(root, options)`. Perender adapter memasang satu kartu kalender dengan pilihan tampilan hari, minggu, bulan, dan tahun serta tabel slot waktu standar; kalender lain dan kontrol dasbor penerima tidak pernah dimuat. Kalender lengkap tumbuh mengikuti kontennya dan bergulir bersama dokumen, sesuai dengan halaman Kalender pengguna. Berbagi baca menampilkan acara. Berbagi `calendar:write` dapat membuat, mengedit, dan menghapus acara melalui `/api/v1/calendar/shared/:calendarId/events` dengan token tamu terbatas.
 
 ## Batas interaksi Kalender
 
@@ -76,6 +76,6 @@ Lompatan tanggal dan pemilihan tampilan bawaan memakai satu pengikatan kontrol m
 
 ## Konten Seluler yang Terbaca
 
-Kalender menjaga kontrol di atas agenda yang dapat digulir tersendiri. Ikon Tambah Acara di samping setiap tanggal memiliki sasaran sentuh 44px dan label yang aksesibel.
+Kalender memakai pengguliran dokumen Composer agar agenda panjang dan kisi waktu lengkap tetap terbuka melampaui tinggi area tampilan. Ikon Tambah Acara di samping setiap tanggal memiliki sasaran sentuh 44px dan label yang aksesibel.
 
 Baris Kalender pada panel samping tetap berupa entri menu. Kontrol Kalender Baru mempertahankan area sentuh 44px dan sorotan sesuai tema.
