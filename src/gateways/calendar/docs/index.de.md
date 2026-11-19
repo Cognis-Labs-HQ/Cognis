@@ -79,3 +79,5 @@ Datumssprünge und die native Ansichtsauswahl verwenden dieselbe Calendar-eigene
 Der Kalender behält auch auf niedrigen Bildschirmen genügend Platz für Terminlisten und Zeitraster; Ereignisse scrollen intern. Das Symbol zum Hinzufügen neben jedem Datum bietet eine 44px große Touchfläche und eine zugängliche Beschriftung.
 
 Kalenderzeilen in der Seitenleiste bleiben Menüeinträge. Neuer Kalender behält ein 44px-Touchziel und themengerechtes Hover-Feedback.
+
+Die Zeitraumüberschrift geteilter Kalender folgt auch nach responsivem Neuzeichnen dem aktuellen Datum und der gewählten Ansicht.

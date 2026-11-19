@@ -20,4 +20,4 @@ The walkthrough explains composing once, targeting the message input and then it
 
 Room management is excluded from the path and count until a room header is available.
 
-The conversation step targets the visible Composer sidebar control. Sidebar sizing and draft retention are described in [Messages](/docs/adapters/social/messages).
+The compact conversation-picker step targets the visible Composer sidebar control. Desktop sessions omit this hidden action from both progression and the displayed step count. Sidebar sizing and draft retention are described in [Messages](/docs/adapters/social/messages).

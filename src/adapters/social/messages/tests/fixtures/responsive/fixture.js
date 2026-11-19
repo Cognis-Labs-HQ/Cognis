@@ -1,3 +1,4 @@
+import { guides } from "/static/adapters/social/messages/guides.js";
 import { beginPageLoading } from "/static/reuse/page-entry.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { createI18n } from "/static/reuse/i18n.js";
@@ -112,7 +113,40 @@ root.addEventListener(
     },
     { signal: lifetime.signal },
 );
+let guideMounted = false;
+
 window.fixture = {
+    async openGuide() {
+        localStorage.setItem("cognis_account", "fixture");
+        if (!uiCtx.capabilities.get("session:isAuthenticated"))
+            uiCtx.capabilities.contribute(
+                "session:isAuthenticated",
+                () => localStorage.getItem("cognis_account") === "fixture",
+            );
+        const api = uiCtx.capabilities.get("ui:tutorials");
+        if (!guideMounted) {
+            await api.mountPage({
+                ...guides[0],
+                root,
+                signal: lifetime.signal,
+                i18n,
+                definitions: guides[0].definitions.map((definition) => ({
+                    ...definition,
+                    page: "/",
+                    automatic: false,
+                })),
+            });
+            guideMounted = true;
+        }
+        const plays = await api.list({ page: { pathname: "/" } });
+        const guide = plays.find((play) =>
+            play.id.includes("social.messages.page"),
+        );
+        const session = await api.start(guide.id, { firstTime: false });
+        await session.ready;
+        window.fixture.guideSession = session;
+        return session.state();
+    },
     composer,
     setSidebarState,
     lifetime,

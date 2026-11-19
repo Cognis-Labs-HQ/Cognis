@@ -44,6 +44,8 @@ Calendar and Messages fit the viewport while preserving a minimum reading area a
 
 Growing Study Explore layers reuse Composer viewport fitting and its reading-area minimum. Provider-authored fixed charts retain their layout, and newly created entries refresh through Composer.
 
+Omit hidden compact Messages tutorial actions from the desktop count, dismiss drawers for semantic side-menu navigation, and preserve the selected shared-calendar period heading during responsive redraws.
+
 ## Commits
 
 - [f4f6d3a84](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4f6d3a84b587d4eb169b5db76b850956544ad31)

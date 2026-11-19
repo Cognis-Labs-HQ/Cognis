@@ -120,12 +120,23 @@ test("opening, keyboard cycling, and Escape retain focus in the drawer then rest
     }
 });
 
-test("filters stay open while links and successful composer navigation can close the drawer", () => {
+test("filters stay open while semantic navigation dismisses the drawer", () => {
     const { toolbar, toggle, filter, link, controller } =
         createToolbarFixture();
     try {
         toggle.click();
         filter.click();
+        assert.equal(toggle.getAttribute("aria-expanded"), "true");
+        const destination = toolbar.ownerDocument.createElement("button");
+        destination.setAttribute("data-side-menu-item", "document");
+        toolbar.append(destination);
+        destination.click();
+        assert.equal(toggle.getAttribute("aria-expanded"), "false");
+        toggle.click();
+        destination.addEventListener("click", (event) =>
+            event.preventDefault(),
+        );
+        destination.click();
         assert.equal(toggle.getAttribute("aria-expanded"), "true");
         link.click();
         assert.equal(toggle.getAttribute("aria-expanded"), "false");

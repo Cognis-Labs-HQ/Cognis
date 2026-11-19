@@ -10,6 +10,7 @@ export const guides = [
                     {
                         highlightNext: true,
                         id: "compact-conversations",
+                        when: ({ targetAvailable }) => targetAvailable,
                         selector: "[data-composer-sidebar-trigger]",
                         titleKey:
                             "module.social.messages.tutorial.messages.rooms.title",

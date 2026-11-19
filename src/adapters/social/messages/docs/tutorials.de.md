@@ -20,4 +20,4 @@ Die Anleitung erklärt das Verfassen einmal und zeigt Eingabe und Vorschau getre
 
 Die Gesprächsverwaltung entfällt aus Ablauf und Anzahl, solange kein Gesprächskopf verfügbar ist.
 
-Der Unterhaltungsschritt zeigt auf die sichtbare Composer-Schaltfläche der Seitenleiste. Größe und Entwurfserhalt beschreibt [Nachrichten](/docs/adapters/social/messages).
+Der Schritt zur kompakten Unterhaltungsauswahl zeigt auf die sichtbare Composer-Schaltfläche der Seitenleiste. Auf dem Desktop entfällt diese verborgene Aktion sowohl aus dem Ablauf als auch aus der angezeigten Schrittzahl. Größe und Entwurfserhalt beschreibt [Nachrichten](/docs/adapters/social/messages).

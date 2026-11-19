@@ -219,7 +219,10 @@ export function mountComposerToolbarDrawer({
     toolbar.addEventListener(
         "click",
         (event) => {
-            if (!event.defaultPrevented && event.target.closest?.("a[href]")) {
+            if (
+                !event.defaultPrevented &&
+                event.target.closest?.("a[href], button[data-side-menu-item]")
+            ) {
                 closeMobileDrawerIfNeeded();
             }
         },

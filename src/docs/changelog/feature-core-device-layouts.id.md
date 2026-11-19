@@ -44,6 +44,8 @@ Kalender dan Pesan menyesuaikan area tampilan sambil mempertahankan area baca mi
 
 Lapisan Jelajah Study yang bertambah memakai penyesuaian area tampilan dan area baca minimum Composer. Bagan tetap dari penyedia mempertahankan tata letaknya, dan entri baru diperbarui melalui Composer.
 
+Hilangkan tindakan ringkas Pesan yang tersembunyi dari jumlah langkah desktop, tutup panel untuk navigasi menu samping, dan pertahankan judul periode kalender bersama saat perenderan responsif.
+
 ## Komit
 
 - [f4f6d3a84](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4f6d3a84b587d4eb169b5db76b850956544ad31)

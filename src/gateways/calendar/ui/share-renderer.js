@@ -304,7 +304,6 @@ export async function mount(
     }
 
     function buildCalendarElement() {
-        const periodLabel = resolvePeriodLabel();
         return {
             id: "shared-calendar",
             label: calendar.name || i18n.t("gateway.calendar.page_title"),
@@ -317,6 +316,7 @@ export async function mount(
             responsive: true,
             render: (context) => {
                 presentation = context;
+                const periodLabel = resolvePeriodLabel();
                 return `<section class="calendar-section shared-calendar" data-shared-calendar-id="${escapeHtml(calendarId)}">
                 <h2 class="shared-calendar-title">${escapeHtml(calendar.name || i18n.t("gateway.calendar.page_title"))}</h2>
                 <header class="calendar-view-header" data-composer-header>

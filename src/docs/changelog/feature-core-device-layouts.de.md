@@ -44,6 +44,8 @@ Kalender und Nachrichten passen sich dem Bildschirm an und bewahren einen Mindes
 
 Wachsende Study-Explore-Ebenen verwenden die Bildschirmanpassung und den Mindestlesebereich von Composer. Feste Diagramme der Anbieter behalten ihr Layout; neu erstellte Einträge werden über Composer aktualisiert.
 
+Verborgene kompakte Nachrichtenaktionen aus der Desktop-Tutorialzählung entfernen, Seitenbereiche bei semantischer Menünavigation schließen und gewählte Zeitraumüberschriften geteilter Kalender beim responsiven Neuzeichnen erhalten.
+
 ## Commits
 
 - [f4f6d3a84](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4f6d3a84b587d4eb169b5db76b850956544ad31)

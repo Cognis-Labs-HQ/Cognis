@@ -20,4 +20,4 @@ Panduan menjelaskan penulisan sekali, lalu menyorot input pesan dan kontrol prat
 
 Pengelolaan ruang tidak dimasukkan dalam alur dan jumlah langkah sampai judul ruang tersedia.
 
-Langkah percakapan menargetkan kontrol panel samping Composer yang terlihat. Ukuran panel dan penyimpanan draf dijelaskan dalam [Pesan](/docs/adapters/social/messages).
+Langkah pemilih percakapan ringkas menargetkan kontrol panel samping Composer yang terlihat. Pada desktop, tindakan tersembunyi ini tidak masuk dalam alur maupun jumlah langkah yang ditampilkan. Ukuran panel dan penyimpanan draf dijelaskan dalam [Pesan](/docs/adapters/social/messages).

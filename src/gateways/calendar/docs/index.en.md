@@ -79,3 +79,5 @@ Date jumps and native view selection use one Calendar-owned control binding for 
 Calendar retains usable space for agendas and time grids on short screens while scrolling its events internally. The Add Event icon beside each date provides a 44px touch target and an accessible label.
 
 Calendar sidebar rows remain menu entries, and the New Calendar control retains a 44px touch target with theme-colored hover feedback.
+
+Shared-calendar period headings follow the current date and view through responsive redraws.

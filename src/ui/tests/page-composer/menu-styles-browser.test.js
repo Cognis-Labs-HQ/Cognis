@@ -91,6 +91,20 @@ test(
                     ),
                     "page",
                 );
+                if (width <= 900) {
+                    assert.equal(
+                        await browser.evaluate(
+                            "document.querySelector('[data-composer-sidebar-trigger]').getAttribute('aria-expanded')",
+                        ),
+                        "false",
+                    );
+                    assert.equal(
+                        await browser.evaluate(
+                            "document.querySelector('.content-grid').inert",
+                        ),
+                        false,
+                    );
+                }
                 await captureScreenshot(
                     browser,
                     `navigation-menu-${width}-${height}`,

@@ -79,3 +79,5 @@ Lompatan tanggal dan pemilihan tampilan bawaan memakai satu pengikatan kontrol m
 Kalender mempertahankan ruang yang cukup untuk agenda dan kisi waktu pada layar pendek dengan pengguliran acara secara internal. Ikon Tambah Acara di samping setiap tanggal memiliki sasaran sentuh 44px dan label yang aksesibel.
 
 Baris Kalender pada panel samping tetap berupa entri menu. Kontrol Kalender Baru mempertahankan area sentuh 44px dan sorotan sesuai tema.
+
+Judul periode kalender bersama mengikuti tanggal dan tampilan saat ini saat tata letak responsif dirender ulang.
