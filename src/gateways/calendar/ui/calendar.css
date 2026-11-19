@@ -181,16 +181,11 @@
     gap: 0.1rem;
 }
 
-.calendar-events-list li,
-.calendar-calendars-list li {
+.calendar-events-list li {
     border: 1px solid var(--field-border);
     border-radius: 10px;
     padding: 0.5rem 0.6rem;
     background: var(--surface, transparent);
-}
-
-.calendar-calendars-list li {
-    padding: 0.3rem 0.5rem;
 }
 
 .calendar-events-list--compact li {

@@ -38,6 +38,8 @@ Compress language labels under width pressure while retaining accessible names. 
 
 Unify sidebar and main-panel transparency through Composer, protect shared menu appearance from page styles, and remove the extra Calendar, Messages and Modules styling.
 
+Restore the shared content inset on viewport-filling pages and remove opaque list wrappers around Calendar menu entries. Protect both through Composer.
+
 ## Commits
 
 - [f4f6d3a84](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4f6d3a84b587d4eb169b5db76b850956544ad31)

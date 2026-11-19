@@ -110,3 +110,5 @@ Tombol menu panel mempertahankan permukaan transparan saat diam serta sorotan, p
 ## Tampilan Panel Composer
 
 Composer memakai permukaan panel Pesan untuk panel samping dan konten utama. Setiap kontribusi bilah alat dibungkus `composer-sidebar-section` yang dilindungi; konten luarnya tetap transparan dan memakai jarak Composer. Kartu utama tidak menambahkan latar buram atau bayangan di atas panel. Baris menu berbagi gaya teks, sorotan, pilihan, dan fokus; kontrol konfirmasi, batal, dan netral yang eksplisit tetap memakai gaya semantiknya. Sematan tanpa bingkai atau batas tetap transparan. Gaya halaman tidak boleh menimpa kelas panel yang dilindungi atau menetapkan token bersama `--toolbar-bg`. Lapisan kaskade `composerSurfaces` dikhususkan untuk host.
+
+Composer mengatur jarak dalam bagian konten: 28px pada layar lebar dan 14px pada lebar 640px atau kurang, termasuk halaman yang memenuhi area tampilan. Sematan tanpa bingkai atau batas tetap rata. Pembungkus daftar bilah samping tetap transparan tanpa jarak dalam agar entri menu tidak mendapat permukaan kartu tambahan. Gaya halaman tidak boleh menetapkan `--composer-grid-inset` atau menimpa jarak dalam host.

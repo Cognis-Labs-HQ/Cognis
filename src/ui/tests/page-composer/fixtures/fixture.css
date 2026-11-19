@@ -15,3 +15,8 @@
     border: 6px solid purple !important;
     border-radius: 30px !important;
 }
+
+.content-panel > .content-section {
+    padding: 0 !important;
+    --composer-grid-inset: 0px !important;
+}

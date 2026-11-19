@@ -69,6 +69,7 @@ try {
         i18n,
         preferenceKey: nested ? "responsive-nested" : "responsive-grid",
         allowCustomization: true,
+        frameless: options.has("frameless"),
         requireAccountSession: false,
         enableAccountEnhancements: false,
         toolbarScrollable: true,

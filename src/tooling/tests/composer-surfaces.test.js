@@ -34,14 +34,18 @@ function violations(source) {
             );
             if (
                 classes.some((name) => surfaces.has(name)) &&
-                /(?:^|;)\s*(?:background(?:-[\w-]+)?|border(?:-[\w-]+)?|outline(?:-[\w-]+)?|box-shadow|opacity|color|font(?:-[\w-]+)?|backdrop-filter)\s*:/.test(
+                /(?:^|;)\s*(?:background(?:-[\w-]+)?|border(?:-[\w-]+)?|outline(?:-[\w-]+)?|box-shadow|opacity|color|font(?:-[\w-]+)?|backdrop-filter|padding(?:-[\w-]+)?)\s*:/.test(
                     declarations,
                 )
             )
                 results.push(selector.trim());
         }
-        if (/(?:^|;)\s*--toolbar-bg\s*:/.test(declarations))
-            results.push("--toolbar-bg");
+        if (
+            /(?:^|;)\s*--(?:toolbar-bg|composer-grid-inset)\s*:/.test(
+                declarations,
+            )
+        )
+            results.push("protected Composer token");
     }
     return results;
 }
@@ -61,7 +65,13 @@ test("Composer surface protection distinguishes owned controls from host overrid
         [".feature .widget-card"],
     );
     assert.deepEqual(violations(".feature { --toolbar-bg: red; }"), [
-        "--toolbar-bg",
+        "protected Composer token",
+    ]);
+    assert.deepEqual(violations(".content-section { padding: 0; }"), [
+        ".content-section",
+    ]);
+    assert.deepEqual(violations(".feature { --composer-grid-inset: 0px; }"), [
+        "protected Composer token",
     ]);
     assert.deepEqual(
         violations("@layer composerSurfaces { .feature { color: red; } }"),

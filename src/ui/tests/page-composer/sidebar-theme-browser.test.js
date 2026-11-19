@@ -45,6 +45,13 @@ test(
                         return {sidebar:sidebar.backgroundColor,main:main.backgroundColor,card:card.backgroundColor,
                             section:section.backgroundColor,content:content.backgroundColor,sectionBorder:section.borderTopWidth,sectionShadow:section.boxShadow,mainOpacity:main.opacity,sectionOpacity:section.opacity,contentOpacity:content.opacity};
                     })()`);
+                    const sectionPadding = await browser.evaluate(
+                        "getComputedStyle(document.querySelector('.content-panel > .content-section')).paddingTop",
+                    );
+                    assert.equal(
+                        sectionPadding,
+                        width <= 640 ? "14px" : "28px",
+                    );
                     assert.equal(panels.main, panels.sidebar);
                     assert.equal(panels.mainOpacity, "1");
                     assert.equal(panels.sectionOpacity, "1");
@@ -234,5 +241,20 @@ test(
                 });
             }
         }
+    },
+);
+
+test(
+    "Composer keeps frameless content flush with its frame",
+    { skip },
+    async (context) => {
+        const { browser } = await startFixture(
+            context,
+            "?frameless&empty-toolbar",
+        );
+        const padding = await browser.evaluate(
+            `(() => {const style=getComputedStyle(document.querySelector('.content-panel > .content-section'));return[style.paddingTop,style.paddingRight,style.paddingBottom,style.paddingLeft]})()`,
+        );
+        assert.deepEqual(padding, ["0px", "0px", "0px", "0px"]);
     },
 );

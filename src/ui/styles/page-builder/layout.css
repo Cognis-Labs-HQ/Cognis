@@ -157,17 +157,17 @@ button:hover:not(:disabled):not(.dropdown-item):not([class*="btn-"]):not(
 }
 
 .content-panel > * {
-    padding-left: 28px;
-    padding-right: 28px;
+    padding-left: var(--composer-grid-inset);
+    padding-right: var(--composer-grid-inset);
     min-width: 0;
 }
 
 .content-panel > :first-child {
-    padding-top: 28px;
+    padding-top: var(--composer-grid-inset);
 }
 
 .content-panel > :last-child {
-    padding-bottom: 28px;
+    padding-bottom: var(--composer-grid-inset);
 }
 
 .toolbar {
@@ -403,16 +403,6 @@ code {
 }
 
 @media (max-width: 640px) {
-    .content-panel > * {
-        padding-left: 14px;
-        padding-right: 14px;
-    }
-    .content-panel > :first-child {
-        padding-top: 14px;
-    }
-    .content-panel > :last-child {
-        padding-bottom: 14px;
-    }
     .workspace.app-page--frameless {
         padding: 0;
     }
@@ -458,10 +448,6 @@ code {
 
 .app-page--viewport .main-window {
     grid-template-rows: minmax(0, 1fr);
-}
-
-.app-page--viewport .content-panel > .content-section {
-    padding: 0;
 }
 
 @media (max-width: 900px) {

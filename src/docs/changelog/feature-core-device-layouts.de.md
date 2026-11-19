@@ -38,6 +38,8 @@ Sprachbeschriftungen verkürzen sich bei Platzmangel und behalten zugängliche N
 
 Composer vereinheitlicht die Transparenz von Seitenleiste und Hauptbereich, schützt die Menüdarstellung vor Seitenstilen und entfernt zusätzliche Kalender-, Nachrichten- und Modul-Stile.
 
+Den gemeinsamen Inhaltsabstand auf bildschirmfüllenden Seiten wiederherstellen und undurchsichtige Listenhüllen um Kalendermenüeinträge entfernen. Composer schützt beide Regeln.
+
 ## Commits
 
 - [f4f6d3a84](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4f6d3a84b587d4eb169b5db76b850956544ad31)

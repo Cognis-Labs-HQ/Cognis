@@ -69,7 +69,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | --------------------- | ----------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`            | `1.4.0`  |
 | Authentication (auth) | `src/gateways/auth/`          | `2.2.5`  |
-| Share                 | `src/gateways/share/`         | `1.9.7`  |
+| Share                 | `src/gateways/share/`         | `1.9.8`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.3.6`  |
 | Notification (notify) | `src/gateways/notify/`        | `2.2.9`  |
 | Social                | `src/gateways/social/`        | `1.4.5`  |
@@ -78,7 +78,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Logging               | `src/gateways/logging/`       | `1.5.19` |
 | Observability         | `src/gateways/observability/` | `1.0.7`  |
 | Study                 | `src/gateways/study/`         | `2.6.13` |
-| Calendar              | `src/gateways/calendar/`      | `1.7.13` |
+| Calendar              | `src/gateways/calendar/`      | `1.7.14` |
 
 ## Core contracts
 

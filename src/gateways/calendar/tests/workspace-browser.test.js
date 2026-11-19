@@ -53,10 +53,14 @@ test(
                     const item=document.querySelector('.calendar-item-btn');const style=getComputedStyle(item);
                     const action=document.querySelector('.calendar-toolbar-add').getBoundingClientRect();
                     const probe=document.createElement('div');probe.style.background='var(--surface-soft)';item.append(probe);const selectedBackground=getComputedStyle(probe).backgroundColor;probe.remove();
-                    return {background:style.backgroundColor,selectedBackground,border:style.borderTopWidth,itemHeight:item.getBoundingClientRect().height,actionHeight:action.height};
+                    const row=getComputedStyle(item.closest('li'));
+                    return {background:style.backgroundColor,selectedBackground,border:style.borderTopWidth,rowBackground:row.backgroundColor,rowBorder:row.borderTopWidth,rowPadding:row.padding,itemHeight:item.getBoundingClientRect().height,actionHeight:action.height};
                 })()`);
                 assert.equal(sidebar.background, sidebar.selectedBackground);
                 assert.equal(sidebar.border, "0px");
+                assert.equal(sidebar.rowBackground, "rgba(0, 0, 0, 0)");
+                assert.equal(sidebar.rowBorder, "0px");
+                assert.equal(sidebar.rowPadding, "0px");
                 assert.ok(sidebar.itemHeight >= 44);
                 assert.ok(sidebar.actionHeight >= 44);
                 const theme = await browser.evaluate(

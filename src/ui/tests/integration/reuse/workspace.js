@@ -93,6 +93,13 @@ export async function checkWorkspace(
                     state.card.bottom <= state.main.bottom + 1,
                     JSON.stringify(state),
                 );
+                const insets = await browser.evaluate(
+                    `(() => {const style=getComputedStyle(document.querySelector('.content-panel > .content-section'));return [style.paddingTop,style.paddingRight,style.paddingBottom,style.paddingLeft]})()`,
+                );
+                assert.deepEqual(
+                    insets,
+                    Array(4).fill(width <= 640 ? "14px" : "28px"),
+                );
                 await verifyViewport(browser, width, height);
                 await captureScreenshot(
                     browser,
