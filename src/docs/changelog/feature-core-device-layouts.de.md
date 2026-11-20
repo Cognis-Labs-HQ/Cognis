@@ -48,6 +48,10 @@ Verborgene kompakte Nachrichtenaktionen aus der Desktop-Tutorialzählung entfern
 
 Aktionsklassen von Seitenleistenfiltern und Aktionen erhalten; Composer verwaltet die Menüdarstellung. Öffentliche UI-Vorlagen für erste Offline-Aufrufe vorbereiten und gedrückte Kalenderzustände mit der gewählten Ansicht synchronisieren.
 
+## Laden von Schriftarten
+
+Verhindert Überläufe durch breitere geladene Schriftarten auf Mobilgeräten. Gemeinsamer Textumbruch erhält die Schriftpräferenzen; Anmeldelinks und Anbieterbeschriftungen bleiben innerhalb ihres Bereichs.
+
 ## Commits
 
 - [f4f6d3a84](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4f6d3a84b587d4eb169b5db76b850956544ad31)

@@ -167,3 +167,7 @@ Einladungspflichtige SSO-Identitäten werden vor dem Anlegen von Konto, Profil o
 `auth:userValidationModes.register` erhält Kennung, übersetzte Beschriftung, optionale Ressourcenbasis, erforderliche Registrierungsfelder, Verfügbarkeitsfunktion, Prüffunktion und optionale Einrichtung. Registrierung ist nur beim Bootstrap möglich und an den Lebenszyklus des Besitzers gebunden. Auth prüft die gewählte Funktion durch `auth:evaluateUserValidation` (`resolvePolicy`, `validateAccount`, `verifyResult`), ohne Methodenkennungen fest einzubauen. Fehlende oder nicht verfügbare konfigurierte Richtlinien verweigern den Zugriff. Die Wiederherstellung durch den Gründeradministrator bleibt ausgenommen. Administration zeigt registrierte Metadaten; eine gespeicherte nicht verfügbare Auswahl bleibt erhalten.
 
 Die Vertragsregistrierung von Adaptern folgt dem [gemeinsamen Gateway-Bootstrap-Vertrag](/docs/gateways).
+
+## Laden von Schriftarten
+
+Links im Anmeldefußbereich bilden zugängliche Zeilen; Anbieterbeschriftungen bleiben auf schmalen Bildschirmen lesbar.

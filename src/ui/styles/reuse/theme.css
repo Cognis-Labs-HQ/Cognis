@@ -150,6 +150,7 @@ body {
         Arial, sans-serif;
     font-size: var(--app-font-size);
     line-height: 1.45;
+    overflow-wrap: anywhere;
 }
 
 @media (max-width: 640px) {

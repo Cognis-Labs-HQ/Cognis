@@ -167,3 +167,7 @@ Identitas SSO yang memerlukan undangan ditahan sebelum akun, profil, atau surel 
 `auth:userValidationModes.register` menerima ID, label terjemahan, basis sumber opsional, bidang registrasi wajib, fungsi ketersediaan, fungsi validasi, dan integrasi penyiapan opsional. Registrasi hanya selama bootstrap dan mengikuti siklus hidup pemilik. Auth menjalankan fungsi terpilih melalui `auth:evaluateUserValidation` (`resolvePolicy`, `validateAccount`, `verifyResult`), tanpa percabangan berdasarkan ID metode. Kebijakan terkonfigurasi yang hilang atau tidak tersedia menolak akses. Pemulihan administrator pendiri tetap dikecualikan. Administration menampilkan metadata terdaftar; pilihan tersimpan yang tidak tersedia dipertahankan.
 
 Registrasi kontrak adapter mengikuti [kontrak bootstrap gateway bersama](/docs/gateways).
+
+## Pemuatan Font
+
+Tautan footer autentikasi membentuk baris yang mudah diakses, dan label penyedia tetap terbaca pada layar sempit.

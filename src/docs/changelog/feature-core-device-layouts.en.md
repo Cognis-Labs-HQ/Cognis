@@ -48,6 +48,10 @@ Omit hidden compact Messages tutorial actions from the desktop count, dismiss dr
 
 Preserve consequence classes on sidebar filters and actions while Composer owns menu appearance. Prepare public UI templates for offline first visits, and keep shared-calendar pressed states synchronized with the selected view.
 
+## Font Loading
+
+Prevent wider loaded fonts from causing mobile overflow. Shared wrapping preserves font preferences; sign-in links and provider labels stay within their panel.
+
 ## Commits
 
 - [f4f6d3a84](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4f6d3a84b587d4eb169b5db76b850956544ad31)

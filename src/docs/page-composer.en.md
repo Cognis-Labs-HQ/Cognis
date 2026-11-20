@@ -197,3 +197,7 @@ Toolbar menu buttons retain their own transparent resting surfaces and themed ho
 Composer uses the Messages panel surface for both the sidebar and main content. Each toolbar contribution is wrapped in a protected `composer-sidebar-section`; its outer content stays transparent and uses Composer spacing. Main cards do not add opaque backgrounds or shadows over the panel. Native menu rows share text, hover, selection and focus styling; explicit confirmation, cancel and neutral controls retain their semantic styles. Frameless and borderless embeds retain transparent surfaces. Page styles must not override protected panel classes or assign the shared `--toolbar-bg` token. The `composerSurfaces` cascade layer is reserved for the host.
 
 Composer owns the content-section inset: 28px on wider screens and 14px at 640px or below, including viewport-filling pages. Frameless and borderless embeds remain flush. Sidebar list wrappers stay transparent and unpadded so menu entries do not acquire extra card surfaces. Page styles cannot assign `--composer-grid-inset` or override host padding.
+
+## Font Loading
+
+Shared text wraps within the available width before and after a font loads, without reducing the selected font size.

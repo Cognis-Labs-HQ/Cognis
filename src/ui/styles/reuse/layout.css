@@ -571,6 +571,28 @@
     border-radius: 8px;
     white-space: nowrap;
 }
+.auth-footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.25rem 0.5rem;
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
+    padding: 0.75rem 0;
+}
+.auth-footer [data-footer-links] {
+    display: contents;
+}
+.auth-footer .global-footer-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
+}
 .global-footer-link:hover,
 .global-footer-link:focus-visible,
 .global-footer-link.active {

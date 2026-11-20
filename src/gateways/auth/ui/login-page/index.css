@@ -316,10 +316,10 @@ p.auth-intro {
 }
 
 .sso-login-btn__label {
-    overflow: hidden;
+    min-width: 0;
     text-align: center;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    white-space: normal;
+    overflow-wrap: anywhere;
 }
 
 .sso-login-btn__spacer {
@@ -502,28 +502,4 @@ body[data-theme="light"] .auth-secondary-action {
 body[data-theme="light"] .auth-secondary-action:hover:not(:disabled) {
     background: rgba(147, 197, 253, 0.3);
     border-color: rgba(37, 99, 235, 0.6);
-}
-
-.auth-footer {
-    display: flex;
-    justify-content: center;
-    flex-wrap: nowrap;
-    gap: 1rem;
-    width: 100%;
-    padding: 0.75rem 1rem;
-    box-sizing: border-box;
-}
-
-.auth-footer [data-footer-links] {
-    display: flex;
-    flex: 0 0 auto;
-    flex-wrap: nowrap;
-    justify-content: center;
-    gap: 1rem;
-    width: max-content;
-}
-
-.auth-footer .global-footer-link {
-    flex: 0 0 auto;
-    white-space: nowrap;
 }

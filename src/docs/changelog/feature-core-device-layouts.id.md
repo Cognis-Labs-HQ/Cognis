@@ -48,6 +48,10 @@ Hilangkan tindakan ringkas Pesan yang tersembunyi dari jumlah langkah desktop, t
 
 Pertahankan kelas konsekuensi pada filter dan tindakan panel samping dengan tampilan menu yang dikelola Composer. Siapkan templat UI publik untuk kunjungan luring pertama dan selaraskan status ditekan kalender bersama dengan tampilan terpilih.
 
+## Pemuatan Font
+
+Mencegah luapan pada perangkat seluler akibat font yang lebih lebar setelah dimuat. Pembungkusan bersama mempertahankan preferensi font; tautan masuk dan label penyedia tetap berada di dalam panel.
+
 ## Komit
 
 - [f4f6d3a84](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4f6d3a84b587d4eb169b5db76b850956544ad31)

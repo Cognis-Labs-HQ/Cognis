@@ -130,3 +130,7 @@ Menüschaltflächen der Seitenleiste behalten transparente Ruheflächen sowie th
 Composer verwendet die Nachrichten-Fläche für Seitenleiste und Hauptinhalt. Jeder Toolbar-Beitrag erhält einen geschützten Rahmen `composer-sidebar-section`; sein äußerer Inhalt bleibt transparent und nutzt Composer-Abstände. Hauptkarten legen keine undurchsichtigen Hintergründe oder Schatten über die Fläche. Menüzeilen teilen Text-, Hover-, Auswahl- und Fokusdarstellung; ausdrückliche Bestätigungs-, Abbruch- und neutrale Bedienelemente behalten ihre semantischen Stile. Rahmenlose Einbettungen bleiben transparent. Seitenstile dürfen weder geschützte Flächenklassen überschreiben noch das gemeinsame Token `--toolbar-bg` setzen. Die Kaskadenebene `composerSurfaces` ist dem Host vorbehalten.
 
 Composer verwaltet den Innenabstand der Inhaltssektion: 28px auf breiteren Bildschirmen und 14px bis einschließlich 640px, auch bei bildschirmfüllenden Seiten. Rahmenlose Einbettungen bleiben bündig. Listenhüllen in Seitenleisten bleiben transparent und ohne Innenabstand, damit Menüeinträge keine zusätzlichen Kartenflächen erhalten. Seitenstile dürfen weder `--composer-grid-inset` setzen noch die Host-Abstände überschreiben.
+
+## Laden von Schriftarten
+
+Gemeinsame Texte umbrechen vor und nach dem Laden einer Schriftart innerhalb der verfügbaren Breite, ohne die gewählte Schriftgröße zu verringern.
