@@ -72,3 +72,4 @@ Prevent wider loaded fonts from causing mobile overflow. Shared wrapping preserv
 - [c17ca37c9e28e0c7ac0aca0d0a95884f1abee0e5](https://github.com/Cognis-Labs-HQ/Cognis/commit/c17ca37c9e28e0c7ac0aca0d0a95884f1abee0e5)
 - [5107cce0fcb6f13d4dbc9e9e52d0f50f12fbedc2](https://github.com/Cognis-Labs-HQ/Cognis/commit/5107cce0fcb6f13d4dbc9e9e52d0f50f12fbedc2)
 - [368eb2f7e2c7b0a9268d6589a3647050b9c4fec5](https://github.com/Cognis-Labs-HQ/Cognis/commit/368eb2f7e2c7b0a9268d6589a3647050b9c4fec5)
+[4d000cf1d4e2caaad3c3e25127ae7ef5bf1b0ce6](https://github.com/Cognis-Labs-HQ/Cognis/commit/4d000cf1d4e2caaad3c3e25127ae7ef5bf1b0ce6)
