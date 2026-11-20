@@ -46,6 +46,8 @@ Growing Study Explore layers reuse Composer viewport fitting and its reading-are
 
 Omit hidden compact Messages tutorial actions from the desktop count, dismiss drawers for semantic side-menu navigation, and preserve the selected shared-calendar period heading during responsive redraws.
 
+Preserve consequence classes on sidebar filters and actions while Composer owns menu appearance. Prepare public UI templates for offline first visits, and keep shared-calendar pressed states synchronized with the selected view.
+
 ## Commits
 
 - [f4f6d3a84](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4f6d3a84b587d4eb169b5db76b850956544ad31)

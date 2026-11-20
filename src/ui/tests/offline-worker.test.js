@@ -226,6 +226,18 @@ test("hashed production bundles are cache-first; private documents use the neutr
     assert.equal(fixture.request("/api/v1/account"), undefined);
 });
 
+test("public UI templates in the build manifest work offline before their page is visited", async () => {
+    const path = "/static/adapters/example/templates/sidebar.html";
+    const fixture = workerFixture({ bootAssets: [path] });
+    await fixture.lifecycle("install");
+    assert.ok(
+        fixture.writes.some(({ url }) => url.endsWith(path)),
+        "The template is cached by installation before page navigation",
+    );
+    fixture.unavailable = true;
+    assert.equal(await (await fixture.request(path)).text(), "public asset");
+});
+
 test("unvisited assets fail honestly and mutable assets refresh online", async () => {
     const fixture = workerFixture();
     await fixture.lifecycle("install");

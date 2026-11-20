@@ -233,11 +233,12 @@ test(
                     const probe=document.createElement('div');probe.style.background='var(--surface-soft)';sidebar.append(probe);
                     const selectedBackground=getComputedStyle(probe).backgroundColor;probe.remove();
                     return{width:sidebar.getBoundingClientRect().width,selectedBackground,items:[...sidebar.querySelectorAll('button')].map(button=> {
-                        const style=getComputedStyle(button);return{width:button.getBoundingClientRect().width,border:style.borderTopWidth,background:style.backgroundColor,selected:button.getAttribute('aria-pressed')==='true'};
+                        const style=getComputedStyle(button);return{width:button.getBoundingClientRect().width,border:style.borderTopWidth,background:style.backgroundColor,selected:button.getAttribute('aria-pressed')==='true',neutral:button.classList.contains('btn-neutral')};
                     })};
                 })()`);
                     assert.equal(state.items.length, 5);
                     for (const item of state.items) {
+                        assert.equal(item.neutral, true);
                         assert.ok(Math.abs(item.width - state.width) <= 1);
                         assert.equal(item.border, "0px");
                         assert.equal(

@@ -92,6 +92,7 @@ export function mountProvider(ctx) {
         .get("offline:assets")
         .register(
             [
+                "/static/adapters/social/messages/templates/sidebar.html",
                 "/static/gateways/social/emojis/common.json",
                 "/static/gateways/social/emojis/extended.json",
             ],

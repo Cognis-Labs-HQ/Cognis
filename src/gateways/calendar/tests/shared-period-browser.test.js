@@ -39,13 +39,31 @@ test(
             "(async()=>{const {formatMonthYear}=await import('/static/reuse/timestamp.js');return formatMonthYear(new Date(2032,4,6));})()",
         );
         for (const [view, expected] of [
+            ["day", month],
+            ["week", month],
             ["month", month],
             ["year", "2032"],
         ]) {
             await browser.callFunction(
-                `function(view){const select=document.querySelector('[data-calendar-view-select]');select.value=view;select.dispatchEvent(new Event('change',{bubbles:true}));}`,
+                `function(view){if(view==='day'){document.querySelector('[data-calendar-view="day"]').click();return;}const select=document.querySelector('[data-calendar-view-select]');select.value=view;select.dispatchEvent(new Event('change',{bubbles:true}));}`,
                 [view],
             );
+            const assertSelection = async () => {
+                const selections = await browser.evaluate(
+                    "[...document.querySelectorAll('[data-calendar-view]')].map(button=>({view:button.dataset.calendarView,active:button.classList.contains('active'),pressed:button.getAttribute('aria-pressed'),neutral:button.classList.contains('btn-neutral')}))",
+                );
+                assert.equal(
+                    selections.filter((button) => button.pressed === "true")
+                        .length,
+                    1,
+                );
+                for (const button of selections) {
+                    assert.equal(button.neutral, true);
+                    assert.equal(button.active, button.view === view);
+                    assert.equal(button.pressed, String(button.view === view));
+                }
+            };
+            await assertSelection();
             for (const [width, height] of [
                 [390, 844],
                 [768, 1024],
@@ -53,6 +71,7 @@ test(
                 [390, 844],
             ]) {
                 await browser.resize(width, height);
+                await assertSelection();
                 assert.equal(
                     await browser.evaluate(
                         "document.querySelector('.calendar-nav-month-label').textContent",

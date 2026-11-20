@@ -269,10 +269,10 @@ export async function mount(
         sharedCalendar
             .querySelectorAll("[data-calendar-view]")
             .forEach((button) => {
-                button.classList.toggle(
-                    "active",
-                    button.getAttribute("data-calendar-view") === selectedView,
-                );
+                const active =
+                    button.getAttribute("data-calendar-view") === selectedView;
+                button.classList.toggle("active", active);
+                button.setAttribute("aria-pressed", String(active));
             });
         const viewSelect = sharedCalendar.querySelector(
             "[data-calendar-view-select]",
@@ -321,9 +321,9 @@ export async function mount(
                 <h2 class="shared-calendar-title">${escapeHtml(calendar.name || i18n.t("gateway.calendar.page_title"))}</h2>
                 <header class="calendar-view-header" data-composer-header>
                     <div class="calendar-view-nav">
-                        <button type="button" data-calendar-nav="prev" aria-label="${escapeHtml(i18n.t("gateway.calendar.previous"))}">&lt;</button>
-                        <button type="button" data-calendar-nav="today" aria-label="${escapeHtml(i18n.t("gateway.calendar.today"))}" title="${escapeHtml(i18n.t("gateway.calendar.today"))}">${escapeHtml(i18n.t("gateway.calendar.today"))}</button>
-                        <button type="button" data-calendar-nav="next" aria-label="${escapeHtml(i18n.t("gateway.calendar.next"))}">&gt;</button>
+                        <button type="button" class="btn-neutral" data-calendar-nav="prev" aria-label="${escapeHtml(i18n.t("gateway.calendar.previous"))}">&lt;</button>
+                        <button type="button" class="btn-neutral" data-calendar-nav="today" aria-label="${escapeHtml(i18n.t("gateway.calendar.today"))}" title="${escapeHtml(i18n.t("gateway.calendar.today"))}">${escapeHtml(i18n.t("gateway.calendar.today"))}</button>
+                        <button type="button" class="btn-neutral" data-calendar-nav="next" aria-label="${escapeHtml(i18n.t("gateway.calendar.next"))}">&gt;</button>
                         <span class="calendar-nav-month-label">${escapeHtml(periodLabel)}</span>
                     </div>
                     ${renderCalendarViewSwitcher(CALENDAR_VIEWS, selectedView, i18n, activeDate)}

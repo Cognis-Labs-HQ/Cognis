@@ -161,7 +161,21 @@ test("module filters expose every selected state", () => {
         html,
         /data-store-category="collaboration" aria-pressed="true"/,
     );
-    assert.equal((html.match(/class="is-active"/g) ?? []).length, 3);
+    const controls = [...html.matchAll(/<button[^>]*class="([^"]*)"/g)].map(
+        (match) => match[1].split(/\s+/),
+    );
+    assert.equal(controls.length, 7);
+    assert.ok(
+        controls.every(
+            (classes) =>
+                classes.includes("btn-neutral") &&
+                classes.includes("side-menu-link"),
+        ),
+    );
+    assert.equal(
+        controls.filter((classes) => classes.includes("is-active")).length,
+        3,
+    );
 });
 
 test("module marketplace passes root and options to the page composer", () => {

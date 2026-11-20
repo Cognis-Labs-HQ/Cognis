@@ -296,26 +296,12 @@ body[data-theme="dark"] .calendar-visibility-icon--public {
 }
 
 .toolbar .calendar-toolbar-add {
-    border: 1px solid var(--field-border);
-    border-radius: 8px;
-    background: transparent;
-    color: inherit;
-    width: auto;
     height: 2.25rem;
+    padding: 0 0.65rem;
+    width: auto;
     min-width: max-content;
     min-height: 44px;
-    padding: 0 0.65rem;
-    font-size: 1rem;
-    font-weight: 600;
-    line-height: 1;
     flex: 0 0 auto;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.toolbar .calendar-toolbar-add:hover {
-    border-color: var(--accent);
 }
 
 .calendar-month-grid {

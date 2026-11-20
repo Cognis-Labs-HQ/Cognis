@@ -516,9 +516,9 @@ export async function mount(root, { signal, shareContext = null } = {}) {
           <section class="calendar-section">
             <header class="calendar-view-header" data-composer-header>
               <div class="calendar-view-nav">
-                <button type="button" data-calendar-nav="prev" aria-label="${escapeHtml(i18n.t("gateway.calendar.previous"))}">&lt;</button>
-                <button type="button" data-calendar-nav="today" aria-label="${todayLabel}" title="${todayLabel}">${todayLabel}</button>
-                <button type="button" data-calendar-nav="next" aria-label="${escapeHtml(i18n.t("gateway.calendar.next"))}">&gt;</button>
+                <button type="button" class="btn-neutral" data-calendar-nav="prev" aria-label="${escapeHtml(i18n.t("gateway.calendar.previous"))}">&lt;</button>
+                <button type="button" class="btn-neutral" data-calendar-nav="today" aria-label="${todayLabel}" title="${todayLabel}">${todayLabel}</button>
+                <button type="button" class="btn-neutral" data-calendar-nav="next" aria-label="${escapeHtml(i18n.t("gateway.calendar.next"))}">&gt;</button>
                 <span class="calendar-nav-month-label">${periodLabel}</span>
               </div>
               ${renderCalendarViewSwitcher(calendarUi.CALENDAR_VIEWS, selectedView, i18n, activeDate)}
@@ -637,7 +637,7 @@ export async function mount(root, { signal, shareContext = null } = {}) {
           <section class="toolbar-section calendar-toolbar-section">
             <header class="calendar-toolbar-heading">
               <h3>${i18n.t("gateway.calendar.my_calendars")}</h3>
-              <button type="button" class="calendar-toolbar-add" id="calendar-create-trigger" aria-label="${i18n.t("gateway.calendar.create_calendar")}">${i18n.t("gateway.calendar.new_calendar_short")}</button>
+              <button type="button" class="calendar-toolbar-add btn-confirm" id="calendar-create-trigger" aria-label="${i18n.t("gateway.calendar.create_calendar")}">${i18n.t("gateway.calendar.new_calendar_short")}</button>
             </header>
             <div id="calendar-toolbar-list">${calendarUi.renderCalendarToolbarList(calendars, selectedCalendarId, i18n)}</div>
             <div id="calendar-toolbar-summary">${calendarUi.renderPendingEvents(allPendingEvents(), i18n)}</div>

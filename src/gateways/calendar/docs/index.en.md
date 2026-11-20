@@ -81,3 +81,5 @@ Calendar retains usable space for agendas and time grids on short screens while 
 Calendar sidebar rows remain menu entries, and the New Calendar control retains a 44px touch target with theme-colored hover feedback.
 
 Shared-calendar period headings follow the current date and view through responsive redraws.
+
+View buttons update their visible selection and pressed state together for every date presentation. View buttons keep their visible and pressed selection states synchronized.

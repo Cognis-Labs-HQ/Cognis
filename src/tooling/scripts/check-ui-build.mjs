@@ -74,6 +74,30 @@ for (const flag of await readdir(
             `Offline language flag: ${flag}`,
         );
 }
+for (const template of await walk(path.resolve("src"))) {
+    if (
+        !template.includes(`${path.sep}ui${path.sep}`) ||
+        template.includes(
+            `${path.sep}ui${path.sep}public${path.sep}pages${path.sep}`,
+        ) ||
+        !template.endsWith(".html") ||
+        template.includes(`${path.sep}tests${path.sep}`)
+    )
+        continue;
+    const relative = path
+        .relative(path.resolve("src"), template)
+        .split(path.sep)
+        .join("/");
+    const logical =
+        "/static/" +
+        (relative.startsWith("ui/")
+            ? relative.slice(3)
+            : relative.replace("/ui/", "/"));
+    assert.ok(
+        offlineAssets.has(logical),
+        `Public offline template: ${logical}`,
+    );
+}
 const publicPages = await readdir(path.join(outputRoot, "public", "pages"));
 for (const publicAssetPath of await walk(
     path.join(outputRoot, "public", "assets"),

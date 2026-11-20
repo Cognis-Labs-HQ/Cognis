@@ -81,3 +81,5 @@ Der Kalender behält auch auf niedrigen Bildschirmen genügend Platz für Termin
 Kalenderzeilen in der Seitenleiste bleiben Menüeinträge. Neuer Kalender behält ein 44px-Touchziel und themengerechtes Hover-Feedback.
 
 Die Zeitraumüberschrift geteilter Kalender folgt auch nach responsivem Neuzeichnen dem aktuellen Datum und der gewählten Ansicht.
+
+Ansichtsschaltflächen aktualisieren ihre sichtbare Auswahl und den gedrückten Zustand für jede Datumsdarstellung gemeinsam. Ansichtsschaltflächen halten ihre sichtbaren und gedrückten Auswahlzustände synchron.

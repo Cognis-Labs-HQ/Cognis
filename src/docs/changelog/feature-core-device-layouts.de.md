@@ -46,6 +46,8 @@ Wachsende Study-Explore-Ebenen verwenden die Bildschirmanpassung und den Mindest
 
 Verborgene kompakte Nachrichtenaktionen aus der Desktop-Tutorialzählung entfernen, Seitenbereiche bei semantischer Menünavigation schließen und gewählte Zeitraumüberschriften geteilter Kalender beim responsiven Neuzeichnen erhalten.
 
+Aktionsklassen von Seitenleistenfiltern und Aktionen erhalten; Composer verwaltet die Menüdarstellung. Öffentliche UI-Vorlagen für erste Offline-Aufrufe vorbereiten und gedrückte Kalenderzustände mit der gewählten Ansicht synchronisieren.
+
 ## Commits
 
 - [f4f6d3a84](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4f6d3a84b587d4eb169b5db76b850956544ad31)

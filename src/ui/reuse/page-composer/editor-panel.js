@@ -128,7 +128,7 @@ export function createEditorPanelHandlers({
         panel.innerHTML = `
       <div id="composer-panel-drag-handle" class="composer-panel-header">
         <span class="composer-panel-title">${i18n.t("ui.reuse.elements")}</span>
-        <button class="composer-panel-minimize-btn" type="button">−</button>
+        <button class="composer-panel-minimize-btn btn-neutral" type="button">−</button>
       </div>
       <div class="composer-panel-body">
         <ul class="composer-library-list">${listHtml}</ul>

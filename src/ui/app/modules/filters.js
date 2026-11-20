@@ -57,20 +57,20 @@ export function renderModuleFilters(
             const label = i18n.t(
                 item === "all" ? "ui.reuse.all" : `ui.app.modules.${item}`,
             );
-            return `<button type="button" class="${active ? "is-active" : ""}" data-store-view="${item}" aria-pressed="${active}">${escapeHtml(label)}</button>`;
+            return `<button type="button" class="btn-neutral side-menu-link${active ? " is-active" : ""}" data-store-view="${item}" aria-pressed="${active}">${escapeHtml(label)}</button>`;
         })
         .join("");
     const categoryButtons = categories
         .map((item) => {
             const active = filters.categories.has(item);
-            return `<button type="button" class="${active ? "is-active" : ""}" data-store-category="${escapeHtml(item)}" aria-pressed="${active}">${escapeHtml(formatTag(item))}</button>`;
+            return `<button type="button" class="btn-neutral side-menu-link${active ? " is-active" : ""}" data-store-category="${escapeHtml(item)}" aria-pressed="${active}">${escapeHtml(formatTag(item))}</button>`;
         })
         .join("");
     const allCategoriesActive = filters.categories.size === 0;
     return `<aside data-module-sidebar>
       ${viewButtons}
       <h3>${escapeHtml(i18n.t("ui.app.modules.categories"))}</h3>
-      <button type="button" class="${allCategoriesActive ? "is-active" : ""}" data-store-category="all" aria-pressed="${allCategoriesActive}">${escapeHtml(i18n.t("ui.reuse.all"))}</button>
+      <button type="button" class="btn-neutral side-menu-link${allCategoriesActive ? " is-active" : ""}" data-store-category="all" aria-pressed="${allCategoriesActive}">${escapeHtml(i18n.t("ui.reuse.all"))}</button>
       ${categoryButtons}
     </aside>`;
 }

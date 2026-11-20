@@ -19,7 +19,7 @@ export function renderCalendarViewSwitcher(
     return `<div class="calendar-view-switcher">
         <select class="theme-select calendar-view-select" data-calendar-view-select aria-label="${escapeHtml(i18n.t("gateway.calendar.calendar_view"))}">${views.map((view) => `<option value="${view}"${view === selectedView ? " selected" : ""}>${label(view)}</option>`).join("")}</select>
         <input type="date" class="calendar-date-select" data-calendar-date value="${escapeHtml(toDateTimeLocalValue(activeDate).slice(0, 10))}" aria-label="${escapeHtml(i18n.t("ui.reuse.date"))}">
-        ${views.map((view) => `<button type="button" data-calendar-view="${view}" class="${selectedView === view ? "active" : ""}" aria-pressed="${selectedView === view}">${label(view)}</button>`).join("")}
+        ${views.map((view) => `<button type="button" data-calendar-view="${view}" class="btn-neutral${selectedView === view ? " active" : ""}" aria-pressed="${selectedView === view}">${label(view)}</button>`).join("")}
     </div>`;
 }
 

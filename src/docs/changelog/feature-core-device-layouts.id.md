@@ -46,6 +46,8 @@ Lapisan Jelajah Study yang bertambah memakai penyesuaian area tampilan dan area 
 
 Hilangkan tindakan ringkas Pesan yang tersembunyi dari jumlah langkah desktop, tutup panel untuk navigasi menu samping, dan pertahankan judul periode kalender bersama saat perenderan responsif.
 
+Pertahankan kelas konsekuensi pada filter dan tindakan panel samping dengan tampilan menu yang dikelola Composer. Siapkan templat UI publik untuk kunjungan luring pertama dan selaraskan status ditekan kalender bersama dengan tampilan terpilih.
+
 ## Komit
 
 - [f4f6d3a84](https://github.com/Cognis-Labs-HQ/Cognis/commit/f4f6d3a84b587d4eb169b5db76b850956544ad31)

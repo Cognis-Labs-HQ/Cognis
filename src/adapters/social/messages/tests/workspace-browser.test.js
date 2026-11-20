@@ -31,7 +31,7 @@ test(
                     const room = getComputedStyle(document.querySelector('.messages-room-select'));
                     const action = getComputedStyle(document.querySelector('.messages-new-btn'));
                     const probe = document.createElement('div');
-                    probe.style.cssText = 'border-color:var(--text);color:var(--text);background:var(--surface-soft)';
+                    probe.style.cssText = 'border-color:var(--text);color:var(--color-success-outline-text, var(--color-success-text));background:var(--surface-soft)';
                     document.querySelector('.app-shell').append(probe);
                     const expected = getComputedStyle(probe);
                     const result = {roomBorder:room.borderTopWidth,roomBackground:room.backgroundColor,actionBorder:action.borderTopWidth,actionColor:action.color,expectedBorder:expected.borderTopColor,expectedColor:expected.color,expectedBackground:expected.backgroundColor,roomParentBackground:getComputedStyle(document.querySelector('.messages-room')).backgroundColor};
@@ -46,7 +46,7 @@ test(
                     sidebarTheme.roomParentBackground,
                     "rgba(0, 0, 0, 0)",
                 );
-                assert.equal(sidebarTheme.actionBorder, "0px");
+                assert.equal(sidebarTheme.actionBorder, "1px");
                 assert.equal(
                     sidebarTheme.actionColor,
                     sidebarTheme.expectedColor,

@@ -81,3 +81,5 @@ Kalender mempertahankan ruang yang cukup untuk agenda dan kisi waktu pada layar 
 Baris Kalender pada panel samping tetap berupa entri menu. Kontrol Kalender Baru mempertahankan area sentuh 44px dan sorotan sesuai tema.
 
 Judul periode kalender bersama mengikuti tanggal dan tampilan saat ini saat tata letak responsif dirender ulang.
+
+Tombol tampilan memperbarui pilihan visual dan status ditekan secara bersamaan untuk setiap penyajian tanggal. Tombol tampilan menjaga pilihan visual dan status ditekan tetap selaras.

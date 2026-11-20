@@ -115,7 +115,11 @@
         opacity: 1 !important;
     }
 
-    .toolbar button:not(:where(.btn-confirm, .btn-cancel, .btn-neutral)) {
+    .toolbar
+        :where(
+            button:not(.btn-confirm, .btn-cancel, .btn-neutral),
+            button.side-menu-link.btn-neutral
+        ) {
         background: transparent !important;
         border: 0 !important;
         border-radius: 0 !important;
@@ -125,7 +129,10 @@
     }
 
     .toolbar
-        button:not(:where(.btn-confirm, .btn-cancel, .btn-neutral)):is(
+        :where(
+            button:not(.btn-confirm, .btn-cancel, .btn-neutral),
+            button.side-menu-link.btn-neutral
+        ):is(
             :hover,
             :focus-visible,
             .active,
@@ -138,8 +145,9 @@
     }
 
     .toolbar
-        button:not(
-            :where(.btn-confirm, .btn-cancel, .btn-neutral)
+        :where(
+            button:not(.btn-confirm, .btn-cancel, .btn-neutral),
+            button.side-menu-link.btn-neutral
         ):focus-visible {
         outline: 2px solid var(--text) !important;
         outline-offset: -2px !important;
