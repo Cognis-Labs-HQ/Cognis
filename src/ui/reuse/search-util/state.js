@@ -1,5 +1,8 @@
 /**
  * Global search popup keyboard and shared state helpers.
+ * Exports: query timing/length constants, category hooks, bindSearchShortcut and
+ * setActiveSearchToggleButton — bind the find shortcut to the current live control.
+ * @example setActiveSearchToggleButton(button); bindSearchShortcut();
  *
  * @module reuse/search-util/state
  */
@@ -16,7 +19,9 @@ export function setActiveSearchToggleButton(button) {
 }
 
 function focusOpenSearchInput() {
-    const input = document.querySelector(".search-popup-input");
+    const input = document.querySelector(
+        ".search-popup-overlay:not(.search-popup-overlay--closing) .search-popup-input",
+    );
     if (!(input instanceof HTMLInputElement)) return false;
     input.focus();
     input.select();
@@ -31,6 +36,7 @@ export function bindSearchShortcut() {
         if (String(event.key ?? "").toLowerCase() !== "f") return;
         event.preventDefault();
         if (focusOpenSearchInput()) return;
-        activeSearchToggleButton?.click();
+        if (activeSearchToggleButton?.isConnected)
+            activeSearchToggleButton?.click();
     });
 }

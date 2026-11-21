@@ -71,6 +71,18 @@ Kontrak tambahan adalah `deliverOrQueue(ctx, owner, id, payload, send, { signal 
 
 Kontrak ini dimiliki aset UI bersama, bukan paket gateway atau adaptor. Rilis aset bersama yang diperbarui bersama Profile 4.0.1. Profil, Pesan, Kalender, dan email Notify memakai klien HTTP bersama; gambar Study, pustaka, favorit, dan Flashcards juga memakai pembantu pengiriman opsional. Panggilan tanpa sinyal mempertahankan kontrak yang ada. Perilaku waktu jalan Kalender tidak disesuaikan secara khusus.
 
+### Kontrak Pemilihan Pencarian
+
+Pilih hasil dengan penunjuk atau Enter, lalu tunggu tindakannya selesai. Setiap popup hanya mengizinkan satu callback pemilihan selama proses berjalan. Selama pemilik Pencarian masih aktif, galat yang dilempar atau promise yang ditolak mempertahankan kueri, kategori, dan pilihan jamak serta menampilkan toast terjemahan. Periksa tujuan sebelum mencoba lagi: pesan kegagalan tidak membuktikan bahwa operasi belum dikirim. Hasil yang tidak lagi tersedia meminta Anda mencari kembali.
+
+`openSearchPopup` dan `createSearchBar` menerima `signal` opsional dan memberikan konteks pemilihan sebagai argumen kedua callback, termasuk `context.signal`. Callback sinkron dan hasil sukses `undefined` mempertahankan perilakunya; promise ditunggu sebelum popup ditutup setelah sukses. Hanya `false` yang menjadi hasil pembatalan tambahan untuk membiarkan Pencarian terbuka tanpa galat selama pemiliknya masih aktif. Tindakan bagian bawah memakai aktivasi `click` asli, termasuk aktivasi papan ketik dan browser; `mousedown` tidak memanggil callback pemilihan.
+
+Tutup, Escape, perpindahan rute atau pelepasan halaman, berakhirnya masa aktif penyedia, dan pergantian akun membatalkan kewenangan penyelesaian UI yang tertunda. Membatalkan registrasi penyedia hasil membatalkan kewenangan pemilihan miliknya. Penyelesaian lama tidak dapat menutup popup pengganti atau menampilkan pesan terlambat, tetapi pembatalan tidak dapat mengurungkan operasi yang sudah dikirim. Pemanggil harus memberikan sinyal masa aktifnya dan mematuhi sinyal callback sebelum mengirim pekerjaan.
+
+Pemilihan pada bilah navigasi meneruskan hasil `false` dari `navigateTo` sebelum pelepasan rute, sehingga Pencarian tetap terbuka tanpa galat jika navigasi ditolak. Setelah `route-will-change` atau `pagehide` terjadi, Pencarian ditutup sebagai pembatalan siklus hidup meskipun halaman tujuan kemudian gagal dimuat. Umpan balik hasil selanjutnya menjadi tanggung jawab tujuan atau router, bukan popup Pencarian yang sudah ditutup.
+
+Tutorial ruang kerja menjelaskan pemilihan, penantian, dan percobaan ulang yang aman, dengan tetap mempertahankan target, ID penyelesaian, Berikutnya, Kembali, dan pemutaran ulang. Pencarian merupakan UI bersama tanpa paket atau manifes berversi tersendiri.
+
 ## Keamanan
 
 Navigasi tersembunyi bukan kontrol akses. Penyedia memakai kapabilitas pemilik dan membatalkan pekerjaan saat unmount atau pergantian akun; data privat terikat akun.
