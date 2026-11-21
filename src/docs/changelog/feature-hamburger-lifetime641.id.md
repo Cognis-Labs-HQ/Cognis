@@ -16,4 +16,5 @@ Menu tertunda juga dibatalkan saat fokus berpindah, sehingga persiapan yang terl
 
 ## Komit
 
-- [Ikat menu tindakan ke masa aktif halaman dan fokus papan ketik](https://github.com/Cognis-Labs-HQ/Cognis/commit/138bd8e414cf2353f76ddf9ebb8cd53073f10af7)
+- [d437ae0479f6a2ecc6ca83926275b4779014fdf3](https://github.com/Cognis-Labs-HQ/Cognis/commit/d437ae0479f6a2ecc6ca83926275b4779014fdf3)
+- [d3d62fbdd0397e2a982bf1e05cdd1b0126d45597](https://github.com/Cognis-Labs-HQ/Cognis/commit/d3d62fbdd0397e2a982bf1e05cdd1b0126d45597)
