@@ -12,5 +12,5 @@ Wählen Sie **Gesehen von** neben einer gesendeten Nachricht, um Leser und Lesez
 
 ## Commits
 
-- [64ebb0f5ad05df2b9a1d2076f6342bfc533d7683](https://github.com/Cognis-Labs-HQ/Cognis/commit/64ebb0f5ad05df2b9a1d2076f6342bfc533d7683)
-- [f867dd84140cc015e9fa0c940c1178ab86d788e6](https://github.com/Cognis-Labs-HQ/Cognis/commit/f867dd84140cc015e9fa0c940c1178ab86d788e6)
+- [87188a48af8072d9c3ed6c1bb63af3086245ef27](https://github.com/Cognis-Labs-HQ/Cognis/commit/87188a48af8072d9c3ed6c1bb63af3086245ef27)
+- [14a38834154bac5af948c178c2788e7f5c0eb3dd](https://github.com/Cognis-Labs-HQ/Cognis/commit/14a38834154bac5af948c178c2788e7f5c0eb3dd)
