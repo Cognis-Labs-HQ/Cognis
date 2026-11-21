@@ -16,4 +16,5 @@ Delegated callbacks are synchronous, and `contains` must return a boolean. A thr
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/21ec6fd954055e9850d2883e2561caebf04ac2b4
+- [c068853abee3bd2c64816643f2d115489bccb577](https://github.com/Cognis-Labs-HQ/Cognis/commit/c068853abee3bd2c64816643f2d115489bccb577)
+- [a9b2eb92c58054b2ac5cba82625e1dbbf60a11af](https://github.com/Cognis-Labs-HQ/Cognis/commit/a9b2eb92c58054b2ac5cba82625e1dbbf60a11af)
