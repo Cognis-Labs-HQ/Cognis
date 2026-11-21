@@ -28,8 +28,8 @@ import { watchComposerPresentation } from "./page-composer/presentation.js";
  *     body: `Are you sure you want to disable "my-module"?`,
  *     variant: 'danger',
  *     actions: [
- *       { id: 'confirm', label: 'Disable', variant: 'confirm' },
- *       { id: 'cancel',  label: 'Cancel',  variant: 'cancel'  },
+ *       { id: 'confirm', label: 'Disable', variant: 'cancel' },
+ *       { id: 'cancel',  label: 'Cancel',  variant: 'neutral' },
  *     ],
  *   });
  *   if (result === 'confirm') { ... }
@@ -47,7 +47,7 @@ import { watchComposerPresentation } from "./page-composer/presentation.js";
  *   variant  — visual style hint: 'info' | 'warning' | 'danger' | 'confirm'.
  *              Defaults to 'info'.
  *   actions  — Array<{ id: string, label: string, variant?: 'confirm' | 'cancel' | 'neutral', disabled?: boolean, icon?: { light: string, dark?: string, position?: 'before' | 'after', flip?: boolean } }>.
- *              When omitted, a single green 'Done' (confirm) button is rendered. An empty array renders no footer actions.
+ *              When omitted, a single neutral 'Done' button is rendered. An empty array renders no footer actions.
  *   closeButtonVariant — Optional variant for the × header close button.
  *   mandatory — When true, hides the header close button and disables
  *              backdrop and Escape-key dismissal. Explicit actions still work.
@@ -111,6 +111,11 @@ import {
     bindPopupActionIcons,
 } from "./popup/content.js";
 import { bindPopupFocus } from "./popup/focus.js";
+import {
+    renderPopupActions,
+    isPopupControlAvailable,
+    popupEnterAction,
+} from "./popup/controls.js";
 import { confirmPopupDiscard } from "./popup/discard-confirmation.js";
 import { createI18n } from "./i18n.js";
 import { lockPageScroll } from "./page-scroll-lock.js";
@@ -468,16 +473,6 @@ export async function openPopup({
             return `${leadingValue ? `<span class="popup-title-leading">${leadingValue}</span>` : ""}<h2 class="popup-title" id="${headingId}">${titleContent}</h2>${detailContent ? `<h4 class="popup-title-detail">${detailContent}</h4>` : ""}`;
         }
 
-        function renderActionContent(action) {
-            const label = escapeHtml(action.label);
-            if (!action.icon?.light) return label;
-            const dark = action.icon.dark ?? action.icon.light;
-            const icon = `<picture class="popup-action-icon${action.icon.flip ? " popup-action-icon--flip" : ""}" aria-hidden="true"><source media="(prefers-color-scheme: dark)" srcset="${escapeHtml(dark)}"><img src="${escapeHtml(action.icon.light)}" alt=""></picture>`;
-            return action.icon.position === "after"
-                ? `${label}${icon}`
-                : `${icon}${label}`;
-        }
-
         let dismissed = false;
         let discardDecision;
         let timeoutHandle = null;
@@ -563,7 +558,7 @@ export async function openPopup({
                     {
                         id: "close",
                         label: i18n.t("ui.reuse.done"),
-                        variant: "confirm",
+                        variant: "neutral",
                     },
                 ];
 
@@ -572,18 +567,7 @@ export async function openPopup({
                 ? "popup-close-btn btn-close btn-neutral"
                 : "popup-close-btn btn-close btn-cancel";
 
-        const actionButtons = effectiveActions
-            .map((action) => {
-                const btnVariant = action.variant ?? "neutral";
-                const btnClass =
-                    btnVariant === "confirm"
-                        ? "btn-confirm btn-animated popup-action-btn"
-                        : btnVariant === "cancel"
-                          ? "btn-cancel btn-animated popup-action-btn"
-                          : "popup-action-btn popup-action-btn--neutral btn-animated";
-                return `<button class="${btnClass}" data-popup-action="${escapeHtml(action.id)}" type="button"${action.disabled ? " disabled" : ""}>${renderActionContent(action)}</button>`;
-            })
-            .join("");
+        const actionButtons = renderPopupActions(effectiveActions);
 
         overlay.innerHTML = `
       <div class="popup-dialog popup-dialog--${escapeHtml(variant)}${surface === "reader" ? " popup-dialog--reader" : ""}">
@@ -615,8 +599,6 @@ export async function openPopup({
         ${actionButtons ? `<div class="popup-footer">${actionButtons}</div>` : ""}
       </div>
     `;
-        bindPopupActionIcons(overlay);
-
         if (maxWidth && !window.matchMedia("(max-width: 640px)").matches) {
             overlay.querySelector(".popup-dialog").style.maxWidth = maxWidth;
         }
@@ -634,7 +616,7 @@ export async function openPopup({
             currentPage = nextPage;
             const headingEl = overlay.querySelector(".popup-heading");
             const bodyEl = overlay.querySelector(".popup-body");
-            const footerEl = overlay.querySelector(".popup-footer");
+            let footerEl = overlay.querySelector(".popup-footer");
             if (headingEl) {
                 headingEl.innerHTML = renderPopupHeading(
                     currentPage.title ?? title,
@@ -647,8 +629,10 @@ export async function openPopup({
                 bindActionButtons(headingEl);
                 fitPopupTitleRow();
             }
-            if (bodyEl)
+            if (bodyEl) {
                 bodyEl.innerHTML = resolvePageValue(currentPage.body, body);
+                bindActionButtons(bodyEl);
+            }
             if (closeProtection) {
                 closeProtectionTracker?.destroy();
                 closeProtectionTracker = createFormDirtyTracker(overlay, {
@@ -656,21 +640,15 @@ export async function openPopup({
                 });
             }
             const pageActions = currentPage.actions ?? actions ?? [];
-            if (footerEl) {
-                footerEl.innerHTML = pageActions
-                    .map((action) => {
-                        const btnVariant = action.variant ?? "neutral";
-                        const btnClass =
-                            btnVariant === "confirm"
-                                ? "btn-confirm btn-animated popup-action-btn"
-                                : btnVariant === "cancel"
-                                  ? "btn-cancel btn-animated popup-action-btn"
-                                  : "popup-action-btn popup-action-btn--neutral btn-animated";
-                        return `<button class="${btnClass}" data-popup-action="${escapeHtml(action.id)}" type="button"${action.disabled ? " disabled" : ""}>${renderActionContent(action)}</button>`;
-                    })
-                    .join("");
+            if (pageActions.length) {
+                if (!footerEl) {
+                    footerEl = document.createElement("div");
+                    footerEl.className = "popup-footer";
+                    overlay.querySelector(".popup-dialog").append(footerEl);
+                }
+                footerEl.innerHTML = renderPopupActions(pageActions);
                 bindActionButtons(footerEl);
-            }
+            } else footerEl?.remove();
             onOpen?.(overlay, () => dismiss(null), {
                 setPage: renderPopupPage,
                 pageId: currentPage.id,
@@ -688,37 +666,59 @@ export async function openPopup({
             if (dismissed || !bodyElement) return null;
             bodyElement.innerHTML =
                 typeof nextBody === "function" ? nextBody() : nextBody;
+            bindActionButtons(bodyElement);
             return bodyElement;
         }
 
+        const pendingActions = new Set();
+
         function bindActionButtons(root) {
+            bindPopupActionIcons(root);
             root.querySelectorAll("[data-popup-action]").forEach((btn) => {
                 btn.addEventListener("click", async () => {
                     const actionId = btn.dataset.popupAction;
                     const resolvedActionId =
                         actionId === "close" ? null : actionId;
-                    if (typeof onAction === "function") {
-                        try {
-                            const shouldDismiss = await onAction(
-                                resolvedActionId,
-                                overlay,
-                                {
-                                    setPage: renderPopupPage,
-                                    pageId: currentPage?.id,
-                                    requestClose: () => dismiss(null),
-                                    updateBody,
-                                    ...contentApi,
-                                    markDirty: () => {
-                                        manuallyDirty = true;
+                    const closing =
+                        resolvedActionId === null ||
+                        resolvedActionId === "cancel";
+                    if (
+                        dismissed ||
+                        !focusLifecycle?.isTopmost() ||
+                        !overlay.contains(btn) ||
+                        !isPopupControlAvailable(btn, { visible: false }) ||
+                        btn.closest('[aria-disabled="true"]') ||
+                        pendingActions.has(actionId) ||
+                        (pendingActions.size && !closing)
+                    )
+                        return;
+                    pendingActions.add(actionId);
+                    try {
+                        if (typeof onAction === "function") {
+                            try {
+                                const shouldDismiss = await onAction(
+                                    resolvedActionId,
+                                    overlay,
+                                    {
+                                        setPage: renderPopupPage,
+                                        pageId: currentPage?.id,
+                                        requestClose: () => dismiss(null),
+                                        updateBody,
+                                        ...contentApi,
+                                        markDirty: () => {
+                                            manuallyDirty = true;
+                                        },
                                     },
-                                },
-                            );
-                            if (shouldDismiss === false) return;
-                        } catch {
-                            return;
+                                );
+                                if (shouldDismiss === false) return;
+                            } catch {
+                                return;
+                            }
                         }
+                        await dismiss(resolvedActionId);
+                    } finally {
+                        pendingActions.delete(actionId);
                     }
-                    await dismiss(resolvedActionId);
                 });
             });
         }
@@ -782,7 +782,12 @@ export async function openPopup({
         bindActionButtons(overlay);
 
         function onKeyDown(event) {
-            if (!focusLifecycle?.isTopmost()) return;
+            if (
+                dismissed ||
+                event.defaultPrevented ||
+                !focusLifecycle?.isTopmost()
+            )
+                return;
             if (event.key === "Escape") {
                 if (mandatory) return;
                 dismiss(null).catch((error) =>
@@ -791,14 +796,15 @@ export async function openPopup({
                 return;
             }
             if (event.key === "Enter") {
-                if (document.activeElement instanceof HTMLTextAreaElement)
-                    return;
-                const confirmBtn = overlay.querySelector(
-                    '[data-popup-action="confirm"], [data-popup-action="save"], [data-popup-action].btn-confirm',
+                const defaultAction = popupEnterAction(
+                    overlay,
+                    event,
+                    currentPage?.actions ??
+                        (popupPages ? (actions ?? []) : effectiveActions),
                 );
-                if (confirmBtn instanceof HTMLButtonElement) {
+                if (defaultAction) {
                     event.preventDefault();
-                    confirmBtn.click();
+                    defaultAction.click();
                 }
             }
         }

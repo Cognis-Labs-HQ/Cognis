@@ -6,6 +6,10 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../../..");
 const source = readFileSync(resolve(ROOT, "src/ui/reuse/popup.js"), "utf8");
+const controls = readFileSync(
+    resolve(ROOT, "src/ui/reuse/popup/controls.js"),
+    "utf8",
+);
 const stylesheet = readFileSync(
     resolve(ROOT, "src/ui/styles/popup.css"),
     "utf8",
@@ -50,8 +54,8 @@ test("popup supports leading title content, standard close controls, and action 
     assert.match(source, /titleLeading/);
     assert.match(source, /class="popup-heading/);
     assert.match(source, /popup-close-btn btn-close btn-neutral/);
-    assert.match(source, /function renderActionContent/);
-    assert.match(source, /class="popup-action-icon/);
+    assert.match(controls, /function renderActionContent/);
+    assert.match(controls, /class="popup-action-icon/);
     assert.match(stylesheet, /\.popup-heading/);
     assert.match(stylesheet, /\.popup-action-icon--flip/);
 });
