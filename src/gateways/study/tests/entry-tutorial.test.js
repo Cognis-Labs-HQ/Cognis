@@ -1,3 +1,4 @@
+import * as tutorialTargets from "../../../ui/reuse/tutorials/targets.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { tutorialHost } from "../../../ui/reuse/tutorials/tests/fixtures/host.js";
@@ -39,9 +40,16 @@ for (const dictionary of [true, false]) {
             selectors.map((selector) => [selector, host.element()]),
         );
         host.document.querySelector = (selector) =>
-            targets.get(selector) ?? null;
+            selector
+                .split(",")
+                .map((part) => targets.get(part.trim()))
+                .find(Boolean) ?? null;
         host.document.querySelectorAll = (selector) =>
-            targets.has(selector) ? [targets.get(selector)] : [];
+            selector
+                .split(",")
+                .flatMap((part) =>
+                    targets.has(part.trim()) ? [targets.get(part.trim())] : [],
+                );
         host.document.documentElement = { lang: "en" };
         host.document.body = {
             ...host.element(),
@@ -62,6 +70,7 @@ for (const dictionary of [true, false]) {
         );
         host.ctx.capabilities.contribute("ui:reuse", {
             importModule: async (name) => {
+                if (name === "tutorials/targets.js") return tutorialTargets;
                 if (name === "tutorials/pages.js")
                     return { mountTutorialProvider };
                 if (name === "i18n.js")
