@@ -8,8 +8,8 @@ import {
     renderModuleFilters,
 } from "../../app/modules/filters.js";
 
-const marketplaceStyles = readFileSync(
-    new URL("../../styles/modules.css", import.meta.url),
+const composerSidebarStyles = readFileSync(
+    new URL("../../styles/page-builder/surfaces.css", import.meta.url),
     "utf8",
 );
 
@@ -69,12 +69,12 @@ test("module filters expose every selected state", () => {
         /data-store-category="collaboration" aria-pressed="true"/,
     );
     assert.match(
-        marketplaceStyles,
-        /\[data-module-sidebar\] button\.is-active\s*{[^}]*border-color: var\(--accent-color\)/,
+        composerSidebarStyles,
+        /\.side-menu-link:is\([\s\S]*?\[aria-pressed="true"\][\s\S]*?border-inline-start-color: var\(--accent-2\)/,
     );
     assert.match(
-        marketplaceStyles,
-        /\[data-module-sidebar\] button:not\(\.is-active\)\s*{[^}]*border-color: transparent/,
+        composerSidebarStyles,
+        /\.toolbar \.side-menu-link\s*\{[^}]*border-inline-start: 3px solid transparent/,
     );
 });
 
