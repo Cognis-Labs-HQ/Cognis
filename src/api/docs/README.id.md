@@ -8,6 +8,8 @@ Baca dokumentasi komponen dan gunakan fitur berbasis server.
 
 Buka Dokumentasi, perluas grup modul berdasarkan nama tampilannya, lalu pilih halaman. Modul dengan nama tampilan yang sama tetap menjadi grup terpisah. Deskripsi dan teks pencarian memakai nama terjemahan yang sama.
 
+Penghapusan akun dan penyelesaian pembersihan dependensi merupakan hasil yang berbeda. Respons gagal saja tidak membuktikan bahwa akun masih ada.
+
 ## Sebelum Memulai
 
 Operator menerapkan server; pembaca tidak perlu akses administrator untuk dokumentasi publik.
