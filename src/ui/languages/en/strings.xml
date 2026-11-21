@@ -192,6 +192,8 @@
   <string name="ui.app.admin.got">got</string>
   <string name="ui.app.admin.missing">missing</string>
   <string name="ui.app.admin.page_subtitle">Admin-only tools and controls.</string>
+  <string name="ui.app.admin.toggle_uncertain">The change could not be confirmed. Reload Administration to check component status before trying again.</string>
+  <string name="ui.app.admin.toggle_incomplete">Some component changes were accepted, but the operation did not finish. Reload Administration to check their status before continuing.</string>
   <string name="ui.app.admin.disable_confirm">Disable module</string>
   <string name="ui.app.admin.disable_confirm_gateway">Disable gateway</string>
   <string name="ui.app.admin.disable_confirm_adapter">Disable adapter</string>
@@ -684,7 +686,7 @@
   <string name="ui.tutorial.admin.components.gateways.and.adapters.title">Gateways And Adapters</string>
   <string name="ui.tutorial.admin.components.gateways.and.adapters.body">Expand a component to inspect its version, dependencies, and available configuration.</string>
   <string name="ui.tutorial.admin.components.enable.and.disable.title">Enable And Disable</string>
-  <string name="ui.tutorial.admin.components.enable.and.disable.body">Use this power switch to enable or disable the displayed component. With a keyboard, press Tab to focus it and Space to change it. Review dependency warnings before confirming a change.</string>
+  <string name="ui.tutorial.admin.components.enable.and.disable.body">Use this power switch to enable or disable the displayed component. Press Tab to focus it and Space to change it. Review dependency warnings. Disable is destructive; Cancel keeps the component running. If an outcome is uncertain, reload Administration to check its status before trying again.</string>
   <string name="ui.tutorial.admin.components.configuration.title">Configuration</string>
   <string name="ui.tutorial.admin.components.configuration.body">Click an adapter name to open its settings, or press Next to continue without opening them.</string>
   <string name="ui.tutorial.admin.status.title">System Status</string>
@@ -696,7 +698,7 @@
   <string name="ui.tutorial.admin.security.session.policy.title">Session Policy</string>
   <string name="ui.tutorial.admin.security.session.policy.body">Review session duration and security limits before changing access policy.</string>
   <string name="ui.tutorial.admin.security.save.deliberately.title">Save Deliberately</string>
-  <string name="ui.tutorial.admin.security.save.deliberately.body">Security changes can affect other users; review pending values and use the page’s Save or Discard controls.</string>
+  <string name="ui.tutorial.admin.security.save.deliberately.body">Security changes can affect other users; review pending values and use Save or Discard. When leaving a changed section, Stay keeps your draft and Discard and Leave removes it.</string>
   <string name="ui.tutorial.users.directory.title">User Administration</string>
   <string name="ui.tutorial.users.directory.account.directory.title">Account Directory</string>
   <string name="ui.tutorial.users.directory.account.directory.body">Find an account and expand its details to inspect identity and status.</string>

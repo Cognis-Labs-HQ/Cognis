@@ -341,6 +341,12 @@ Die Systemsicherheitsantwort enthält `userValidationModes` aus Auth. Eine geän
 
 Die Verwaltung speichert nur Bereiche mit ausstehenden Änderungen. Sicherheitsfelder werden erst nach dem erfolgreichen Laden der Sicherheitseinstellungen und der Passwortrichtlinie bearbeitbar. Beim erneuten Darstellen bleiben Änderungen erhalten; beim Verlassen eines geänderten Bereichs ist weiterhin die Bestätigung zum Verwerfen erforderlich. Nach einem teilweise erfolgreichen Speichern bleiben fehlgeschlagene oder neuere Änderungen offen. Ein erneuter Versuch sendet bereits gespeicherte Einstellungen nicht erneut. Die Sicherheitsanleitung erklärt weiterhin Sitzungsrichtlinien und vertrauenswürdige Domains.
 
+### Verwaltungsentscheidungen
+
+Dialoge zum Deaktivieren stellen das neutrale Abbrechen voran und kennzeichnen Deaktivieren als destruktiv. Aktivieren bleibt eine positive Aktion. Abbrechen, Schließen und Escape ändern den Komponentenstatus nicht. Laufende Steuerelemente starten denselben Vorgang nicht erneut. Das Verlassen der Komponentenansicht, eine neue Verwaltungsseite oder ein Sitzungswechsel bricht noch nicht gesendete Arbeit ab. Bereits gesendete Anfragen lassen sich nicht rückgängig machen. Abgelehnte Anfragen stoppen abhängige Änderungen. Bei einem unklaren Ergebnis oder einem Lesefehler nach angenommenen Änderungen bleibt das Steuerelement bis zum erneuten Laden der Verwaltung gesperrt. Bei ungespeicherten Änderungen ist Bleiben neutral und Verwerfen und fortfahren destruktiv; nur Letzteres entfernt den Entwurf.
+
+Einzeln gesperrte Adapter werden weiterhin von ihrem Gateway verwaltet. Gateway-Aktionen senden für sie keine einzelnen Änderungen und bieten sie nicht zur Aktivierung einzelner Adapter an.
+
 ## Sicherheit
 
 ### Authentifizierungsmodell
