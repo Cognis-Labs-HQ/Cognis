@@ -202,7 +202,7 @@ Der registrierte Nachrichtenclient akzeptiert eine optionale synchrone Prüfung 
 
 Der Schritt zur Raumverwaltung erklärt die Austrittsbestätigung und das sichere Abbrechen. Kopfbereich, optionale Verfügbarkeit, Reihenfolge und Abschlussidentität bleiben gleich. Vorlagen behalten ihre Seitenleistenaktionen; ihre Dialoge werden nach Änderungen der auslösenden Seite, Auswahl oder gespeicherten Liste unwirksam.
 
-## Avatare im Gespräch
+### Avatare im Gespräch
 
 Der Verlaufsschritt erklärt profilgleiche Initialen sowie Vorschau und Navigation per Avatar in Stilen mit Avataren. Bereich, optionale Verfügbarkeit, Reihenfolge und Abschlussidentität bleiben unverändert.
 
