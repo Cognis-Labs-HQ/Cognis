@@ -16,5 +16,5 @@ Pembatalan halaman kini mencapai batas permintaan dan buffer permanen bersama se
 
 ## Komit
 
-- [650363e807a2137916b481fae3b1d109acb53b97](https://github.com/Cognis-Labs-HQ/Cognis/commit/650363e807a2137916b481fae3b1d109acb53b97)
-- [e502e635b2639f5a992314deca8c6428f31b3c6a](https://github.com/Cognis-Labs-HQ/Cognis/commit/e502e635b2639f5a992314deca8c6428f31b3c6a)
+- [447e2ef705547e9e4f42ead1ef49574752b80c10](https://github.com/Cognis-Labs-HQ/Cognis/commit/447e2ef705547e9e4f42ead1ef49574752b80c10)
+- [cc32cb6dd56ee033cdcb869d405ee2cb479d6611](https://github.com/Cognis-Labs-HQ/Cognis/commit/cc32cb6dd56ee033cdcb869d405ee2cb479d6611)
