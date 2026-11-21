@@ -16,6 +16,8 @@ createPageComposer menerima elements, pageManifest, i18n, signal, dan opsi tata 
 
 `createPageComposer` adalah utilitas orkestrasi layout yang digunakan oleh semua halaman Cognis. Modul halaman individual mendeklarasikan _apa_ yang akan dirender — daftar blok konten bernama yang disebut elemen — dan composer menangani _bagaimana_ blok-blok tersebut disusun, dipersistensikan, dinavigasi, dan di-render ulang.
 
+Titik masuk terdokumentasi `createPageComposer` tetap didukung dan tidak berubah. Fungsi tingkat rendah `createEditorPanelHandlers` kini memerlukan `state.editSession` yang dimiliki composer, bukan callback terpisah untuk menyimpan dan mengakhiri penyuntingan. Pengguna yang mengimpor fungsi ini secara langsung perlu beralih ke `createPageComposer` atau memperbarui komposisi yang mereka kelola bersama rilis inti yang sama.
+
 ### Tanggung Jawab
 
 - Merender kumpulan elemen bernama ke dalam node DOM induk.
@@ -59,7 +61,17 @@ Parkir DOM dinonaktifkan secara bawaan. Tetapkan `enableDomParking: true` pada p
 
 ### Persistensi
 
-Layout tetap disimpan melalui API preferensi menggunakan `preferenceKey`. Selain itu, draf formulir kini disimpan di `localStorage` per pengguna, path halaman, dan kunci composer agar input tetap muncul setelah halaman dimuat ulang atau setelah render ulang responsif. Penyimpanan draf formulir yang persisten bersifat opt-in: hanya field yang leluhur terdekatnya memiliki atribut `data-composer-include-form-memory="true"` yang ditulis ke localStorage. Field tanpa leluhur opt-in tetap diambil dalam snapshot sementara di memori agar bertahan selama render ulang responsif dalam sesi yang sama, namun tidak pernah ditulis ke penyimpanan persisten. Field sensitif (`password`, `file`, `hidden`, dan pengenal yang memuat `password`/`secret`/`token`) selalu dikecualikan dari penyimpanan draf persisten terlepas dari status opt-in.
+Layout menggunakan `GET` dan `PUT /api/v1/social/users/:account/preferences/:key`, dengan `:key` berupa `preferenceKey` yang dikodekan. Isi PUT adalah `{ layout: { layoutsByGrid: { "cols-N": { placements: [{id, col, row, w, h}], hidden: [] } } } }`, dengan `N` menunjukkan jumlah kolom grid. GET mengembalikan kumpulan profil terserialisasi dalam `data.layoutJson`. Menyimpan satu profil kolom mempertahankan profil lainnya.
+
+**Selesai** mengirim snapshot tetap dari layout saat ini. Pada editor utama maupun bersarang, sesi penyuntingan dan perlindungan saat meninggalkan halaman tetap aktif hingga respons mengonfirmasi keberhasilan. Selama Selesai atau **Setel ulang** layout masih menunggu respons, perubahan layout dan pengiriman berulang diblokir, termasuk tambah, sembunyikan, pindahkan, ubah ukuran, setel ulang, dan buang. Selesai yang berhasil menutup penyuntingan; Setel ulang yang berhasil menjadikan layout bawaan yang dikirim sebagai acuan tersimpan baru sementara penyuntingan tetap terbuka.
+
+Penyimpanan hanya dikonfirmasi oleh HTTP `200` dengan JSON `data.saved === true`. Respons lain, termasuk `202`, `204`, dan konfirmasi dengan format tidak valid, tidak membuktikan keberhasilan. Tanpa akun atau token akses, penyimpanan ditolak tanpa mengirim permintaan tulis.
+
+Penyimpanan yang gagal atau belum terkonfirmasi mempertahankan perlindungan draf dan menampilkan toast terlokalisasi dengan petunjuk pemulihan pada tampilan pemiliknya. Setelah permintaan selesai, pilih Selesai untuk mencoba kembali secara sengaja sebagai permintaan baru atau buang draf lokal. Penolakan permintaan atau respons yang hilang membuat hasil di server tidak diketahui: hal tersebut tidak membuktikan bahwa tidak ada penulisan. Membuang draf memulihkan acuan lokal sebelumnya dan tidak membatalkan kemungkinan penulisan di server. Acuan tersebut dapat berasal dari layout bawaan pengganti, bukan pembacaan server yang terkonfirmasi. Pembacaan awal yang gagal atau tidak valid tetap memakai tampilan pengganti yang ada; hal ini bukan bukti status server. Composer tidak mengulangi permintaan secara otomatis atau mencocokkan hasilnya melalui pembacaan ulang. Mengubah lebar tampilan saja tidak menyimpan layout.
+
+Editor bersarang yang dipertahankan dapat menyelesaikan penyimpanan saat subhalamannya tidak aktif tanpa menampilkan toast terlambat atau mengubah kontrol subhalaman lain. Penyelesaian setelah seluruh composer dilepas tidak memperbarui tampilan yang telah dilepas.
+
+Selain itu, draf formulir kini disimpan di `localStorage` per pengguna, path halaman, dan kunci composer agar input tetap muncul setelah halaman dimuat ulang atau setelah render ulang responsif. Penyimpanan draf formulir yang persisten bersifat opt-in: hanya field yang leluhur terdekatnya memiliki atribut `data-composer-include-form-memory="true"` yang ditulis ke localStorage. Field tanpa leluhur opt-in tetap diambil dalam snapshot sementara di memori agar bertahan selama render ulang responsif dalam sesi yang sama, namun tidak pernah ditulis ke penyimpanan persisten. Field sensitif (`password`, `file`, `hidden`, dan pengenal yang memuat `password`/`secret`/`token`) selalu dikecualikan dari penyimpanan draf persisten terlepas dari status opt-in.
 
 Kartu dengan formulir besar (minimal 6 field yang dapat dipersistensikan) menampilkan tombol **Setel ulang draf**. Tombol ini menghapus draf tersimpan untuk kartu tersebut dan mengembalikan field saat ini ke nilai bawaan.
 

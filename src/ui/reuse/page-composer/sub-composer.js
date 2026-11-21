@@ -5,6 +5,8 @@ import {
 /** Sub-composer helpers for nested page composer sections.
  * Export: createSubComposerHandlers(deps). @param {object} deps @returns {object}
  */
+import { createLayoutEditSession } from "./edit-session.js";
+
 import {
     buildOccupiedSet,
     checkPlacement,
@@ -35,6 +37,8 @@ export function createSubComposerHandlers({
     buildDropZoneLine,
     loadLayoutFor,
     saveLayoutFor,
+    getEditToggleButton,
+    log,
     cloneLayoutData,
     captureFormState,
     restoreFormState,
@@ -383,7 +387,7 @@ export function createSubComposerHandlers({
             });
 
             cell.addEventListener("pointerdown", (e) => {
-                if (e.button !== 0) return;
+                if (state.savePending || e.button !== 0) return;
                 if (e.target.closest("button")) return;
                 e.preventDefault();
                 cell.setPointerCapture(e.pointerId);
@@ -660,9 +664,6 @@ export function createSubComposerHandlers({
         clampComposerPanelLeft,
         getComposerPanelHorizontalBounds,
         canSubPlace,
-        compactSubPlacements,
-        endEditMode,
-        saveLayoutFor,
         initializeSubPlacements,
         renderSubGrid,
     });
@@ -770,6 +771,7 @@ export function createSubComposerHandlers({
         restoreFormState(state.container, subGridFormSnapshot);
         bindFormDraftPersistence(state.container, state.preferenceKey);
 
+        state.editSession.syncControls();
         if (renderedNewContent) state.onRender?.();
     }
 
@@ -780,6 +782,7 @@ export function createSubComposerHandlers({
                 layout: null,
                 layoutProfiles: { layoutsByGrid: {} },
                 editing: false,
+                savePending: false,
                 layoutSnapshot: null,
                 gridCols: 1,
                 gridRows: 6,
@@ -807,6 +810,25 @@ export function createSubComposerHandlers({
             );
             state.layout = cloneLayoutData(loaded.layout);
             state.layoutProfiles = loaded.profiles;
+            state.editSession = createLayoutEditSession({
+                state,
+                i18n,
+                saveLayoutByKey: saveLayoutFor,
+                cloneLayoutData,
+                compact: () => compactSubPlacements(state),
+                initialize: () => initializeSubPlacements(state),
+                render: () => renderSubGrid(state),
+                endEditMode,
+                getControls: () => ({
+                    grid: state.container,
+                    panel: document.getElementById(
+                        getSubPanelId(state.preferenceKey),
+                    ),
+                    toggle: getEditToggleButton(),
+                }),
+                isMounted: () => Boolean(state.container?.isConnected),
+                log,
+            });
             subStates.set(el.id, state);
         }
 
@@ -828,6 +850,7 @@ export function createSubComposerHandlers({
             state.resizeObserver.disconnect();
         }
         state.resizeObserver = new ResizeObserver(() => {
+            if (state.savePending) return;
             if (!state.container || !document.contains(state.container)) {
                 state.resizeObserver?.disconnect();
                 state.resizeObserver = null;
@@ -883,14 +906,21 @@ export function createSubComposerHandlers({
             state.container.innerHTML = "";
         }
         state.container = null;
+        state.editToggleAbortController?.abort();
+        state.editSession.syncControls();
     }
 
     function destroy() {
-        for (const id of subStates.keys()) unmountSubComposer({ id });
+        for (const [id, state] of subStates) {
+            state.editSession.destroy();
+            unmountSubComposer({ id });
+        }
         subStates.clear();
     }
 
     return {
+        hasPendingSave: () =>
+            [...subStates.values()].some((state) => state.savePending),
         destroy,
         mountSubComposer,
         unmountSubComposer,

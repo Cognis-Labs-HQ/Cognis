@@ -1,6 +1,8 @@
 import test from "node:test";
-import { createEditorPanelHandlers } from "../../reuse/page-composer/editor-panel.js";
-import { installEditorDocument } from "./fixtures/editor.js";
+import {
+    composerFixture,
+    settle,
+} from "../page-composer/fixtures/save-runtime.js";
 import assert from "node:assert/strict";
 import { mountDashboard, loadDashboard } from "./fixtures/mount.js";
 import { createGridOverlayHandlers } from "../../reuse/page-composer/grid-overlay.js";
@@ -150,55 +152,68 @@ test("existing saved sizes, hidden choices and manually placed analogue clock re
 
 test("the available-elements Add control reveals the analogue clock and saves its placement", async (context) => {
     const page = await mountDashboard();
-    const { state, grid } = layoutFor(page.elements, 12);
-    const controls = installEditorDocument(context);
-    const previousWindow = globalThis.window;
-    globalThis.window = { innerWidth: 1200 };
-    context.after(() => {
-        globalThis.window = previousWindow;
-    });
-    state.root = { querySelector: () => null };
-    state.panelPosition = null;
-    state.contentGrid.getBoundingClientRect = () => ({
-        width: 1080,
-        top: 20,
-        right: 1100,
-    });
     let renders = 0;
-    let saved;
-    const panel = createEditorPanelHandlers({
-        state,
-        i18n: page.i18n,
-        bindPanelItemDrag() {},
-        initializePlacements: grid.initializePlacements,
-        renderGridComposer: () => {
+    const fixture = await composerFixture({
+        mode: "deferred",
+        initialProfiles: { layoutsByGrid: {} },
+        elements: page.elements,
+        onRender: () => {
             renders++;
         },
-        compactPlacements: grid.compactPlacements,
-        endEditMode() {},
-        saveLayout: async () => {
-            saved = structuredClone(state.layout);
-        },
     });
-    panel.createElementsPanel();
-    assert.match(state.elementsPanel.innerHTML, /analogue_clock.label/);
-    assert.ok(controls.has("analogue-clock"));
-    controls.get("analogue-clock").dispatchEvent(new Event("click"));
-    assert.equal(renders, 1);
-    assert.ok(!state.layout.hidden.includes("analogue-clock"));
-    assert.ok(
-        state.layout.placements.some(({ id }) => id === "analogue-clock"),
+    context.after(() => fixture.dispose());
+    context.after(() => assert.deepEqual(fixture.errors, []));
+    fixture.edit();
+    const panel = fixture.document.querySelector(".composer-panel");
+    assert.match(panel.innerHTML, /analogue_clock.label/);
+    const add = panel.querySelector(
+        '[data-composer-panel-item="analogue-clock"] .composer-add-btn',
     );
-    controls
-        .get(".composer-done-btn")
-        .dispatchEvent(new Event("click", { cancelable: true }));
-    await new Promise((resolve) => setImmediate(resolve));
-    assert.ok(saved);
-    const added = structuredClone(state.layout);
-    grid.initializePlacements();
-    assert.deepEqual(state.layout, added);
-    assertBounded(state.layout.placements, 12);
-    assert.deepEqual(layoutFor(page.elements, 12, saved).state.layout, added);
+    assert.ok(add);
+    assert.equal(add.textContent, fixture.i18n.t("ui.reuse.add"));
+    assert.equal(add.disabled, false);
+    const previousRenders = renders;
+    add.click();
+    assert.equal(renders, previousRenders + 1);
+    assert.ok(
+        fixture.root.querySelector('[data-composer-element="analogue-clock"]'),
+    );
+    assert.equal(fixture.snapshot().leaveProtected, true);
+    fixture.done("panel");
+    await settle();
+    assert.equal(fixture.snapshot().writes, 1);
+    assert.equal(fixture.snapshot().editorPresent, true);
+    assert.equal(fixture.snapshot().leaveProtected, true);
+    assert.equal(
+        fixture.document
+            .querySelector(".composer-done-btn")
+            .getAttribute("aria-disabled"),
+        "true",
+    );
+    fixture.done("panel");
+    await settle();
+    assert.equal(fixture.snapshot().writes, 1);
+    const saved = structuredClone(
+        fixture.pending[0].body.layout.layoutsByGrid["cols-12"],
+    );
+    assert.ok(!saved.hidden.includes("analogue-clock"));
+    assert.ok(saved.placements.some(({ id }) => id === "analogue-clock"));
+    assertBounded(saved.placements, 12);
+    assert.deepEqual(
+        layoutFor(page.elements, 12, structuredClone(saved)).state.layout,
+        saved,
+    );
+    fixture.complete();
+    await settle();
+    assert.equal(fixture.snapshot().editorPresent, false);
+    assert.equal(fixture.snapshot().leaveProtected, false);
+    assert.deepEqual(fixture.stored().layoutsByGrid["cols-12"], saved);
+    await fixture.remount();
+    assert.ok(
+        fixture.root.querySelector('[data-composer-element="analogue-clock"]'),
+    );
+    assert.equal(fixture.snapshot().writes, 1);
+    assert.deepEqual(fixture.stored().layoutsByGrid["cols-12"], saved);
 });
 
 for (const width of [320, 390, 640]) {

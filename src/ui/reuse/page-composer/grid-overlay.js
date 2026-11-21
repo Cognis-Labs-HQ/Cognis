@@ -28,8 +28,6 @@ export function createGridOverlayHandlers({
     escapeHtml,
     getGridSize,
     renderGridComposer,
-    saveLayout,
-    endEditMode,
 }) {
     const {
         computeGridDimensions,
@@ -287,7 +285,7 @@ export function createGridOverlayHandlers({
                 i18n,
             });
             cell.addEventListener("pointerdown", (e) => {
-                if (e.button !== 0) return;
+                if (state.savePending || e.button !== 0) return;
                 if (e.target.closest("button")) return;
                 e.preventDefault();
                 cell.setPointerCapture(e.pointerId);
@@ -751,9 +749,6 @@ export function createGridOverlayHandlers({
         state,
         i18n,
         bindPanelItemDrag,
-        compactPlacements,
-        endEditMode,
-        saveLayout,
         renderGridComposer,
         initializePlacements,
     });
