@@ -410,7 +410,7 @@ test("visible search indexes calendar notifications and posts", () => {
         notificationSource,
         /dataset\.searchCategory = "Notifications"/,
     );
-    assert.match(notificationSource, /registerSearchIndex\("notifications"/);
+    assert.match(notificationSource, /registerSearchIndex\(\s*"notifications"/);
     assert.match(
         notificationSource,
         /function collectNotificationSearchGroups/,

@@ -24,7 +24,12 @@ export function renderNotificationItem(notif, i18n, actions) {
             : "") +
         `<button class="notification-dismiss" data-search-exclude="true" type="button" aria-label="${i18n.t("ui.reuse.remove")}">&#215;</button>`;
     item.addEventListener("click", async (event) => {
-        if (event.target.closest(".notification-dismiss")) return;
+        if (
+            !item.isConnected ||
+            !actions.isCurrent() ||
+            event.target.closest(".notification-dismiss")
+        )
+            return;
         const actionButton = event.target.closest("[data-notification-action]");
         if (actionButton instanceof HTMLElement) {
             actions.dispatchAction(
@@ -34,17 +39,8 @@ export function renderNotificationItem(notif, i18n, actions) {
             return;
         }
         if (!notif.read) {
-            try {
-                await actions.markRead(notif.id);
-                item.classList.replace(
-                    "notification-item--unread",
-                    "notification-item--read",
-                );
-                notif.read = true;
-                await actions.refreshCount();
-            } catch {
-                actions.reportError("adapter.notify.internal.error_mark_read");
-            }
+            const accepted = await actions.change("read", notif.id, item);
+            if (!accepted && !item.isConnected) return;
         }
         if (notif.actionUrl) actions.navigate(notif.actionUrl);
     });
@@ -52,13 +48,8 @@ export function renderNotificationItem(notif, i18n, actions) {
         "click",
         async (event) => {
             event.stopPropagation();
-            try {
-                await actions.dismiss(notif.id);
-                item.remove();
-                actions.afterDismiss(notif.id);
-            } catch {
-                actions.reportError("adapter.notify.internal.error_dismiss");
-            }
+            if (!item.isConnected || !actions.isCurrent()) return;
+            await actions.change("dismiss", notif.id, item);
         },
     );
     return item;
