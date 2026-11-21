@@ -14,4 +14,5 @@ Bestehende Ziele, Schritte und Aktionen der Fokus- und Zeichentutorials bleiben 
 
 ## Commits
 
-- [6eca739a6bbb506a468725429cdb19a191d715e1](https://github.com/Cognis-Labs-HQ/Cognis/commit/6eca739a6bbb506a468725429cdb19a191d715e1)
+- [73040a8f0a1c14ddc0be243655e450d3a7db8598](https://github.com/Cognis-Labs-HQ/Cognis/commit/73040a8f0a1c14ddc0be243655e450d3a7db8598)
+- [e8f4f04019d75da644ce3d37df4e2624f10f4e32](https://github.com/Cognis-Labs-HQ/Cognis/commit/e8f4f04019d75da644ce3d37df4e2624f10f4e32)
