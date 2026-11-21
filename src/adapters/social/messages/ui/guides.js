@@ -9,6 +9,16 @@ export const guides = [
                 steps: [
                     {
                         highlightNext: true,
+                        id: "compact-conversations",
+                        when: ({ targetAvailable }) => targetAvailable,
+                        selector: "[data-composer-sidebar-trigger]",
+                        titleKey:
+                            "module.social.messages.tutorial.messages.rooms.title",
+                        bodyKey:
+                            "module.social.messages.tutorial.messages.rooms.body",
+                    },
+                    {
+                        highlightNext: true,
                         id: "rooms",
                         selector: "#messages-rooms-list",
                         titleKey:

@@ -33,6 +33,7 @@ test("side menu renders structured groups and tracks active items", () => {
         storageKeyPrefix: "legal-menu",
     });
 
+    assert.match(menu.render(), /class="side-menu-link btn-neutral"/);
     assert.match(menu.render(), /Legal &amp; Safety/);
     assert.match(menu.render(), /Terms &lt;Current&gt;/);
     menu.setActive("terms", root);

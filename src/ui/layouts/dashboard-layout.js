@@ -1,3 +1,5 @@
+import { bindCompactNavigation } from "./compact-navigation.js";
+import { replaceMountScope } from "../reuse/mount-scope.js";
 import { registerPageReadinessBlocker } from "../reuse/page-readiness.js";
 import { mountOfflineStatus } from "../reuse/offline-status.js";
 import { isOffline } from "../reuse/offline-state.js";
@@ -113,7 +115,7 @@ async function refreshDisplayNameFromProfile() {
 function applyActiveNavigation() {
     const currentPath = window.location.pathname;
     document
-        .querySelectorAll(".topnav a, .nav-drawer-nav a")
+        .querySelectorAll(".topnav a, .nav-launcher-nav a")
         .forEach((link) => {
             const isActive = isNavigationLinkActive(
                 currentPath,
@@ -370,82 +372,20 @@ function scheduleNavbarEnhancements() {
     setTimeout(runEnhancements, 0);
 }
 
-function applyCompactNav(root) {
-    const navrow = root.querySelector(".global-navrow");
-    const topnav = navrow?.querySelector(".topnav");
-    const compactToggle = navrow?.querySelector("#nav-compact-toggle");
-    const drawer = root.querySelector("#nav-drawer");
-    const drawerClose = root.querySelector("#nav-drawer-close");
-    const drawerNav = drawer?.querySelector(".nav-drawer-nav");
-    const backdrop = root.querySelector("#nav-drawer-backdrop");
-    if (!navrow || !topnav || !compactToggle || !drawer || !backdrop) return;
-
-    if (navrow.dataset.compactNavBound === "true") return;
-    navrow.dataset.compactNavBound = "true";
-
-    let drawerOpen = false;
-
-    function redrawNavigation() {
-        sortNavigationEntries(topnav);
-        if (drawerNav) {
-            drawerNav.innerHTML = topnav.innerHTML;
+function applyCompactNav(root, signal) {
+    bindCompactNavigation(root, {
+        signal,
+        prepareNavigation(topnav) {
+            sortNavigationEntries(topnav);
             applyActiveNavigation();
-        }
-        syncCompactState();
-    }
-
-    function syncCompactState() {
-        const overflows = topnav.scrollWidth > topnav.clientWidth + 2;
-        navrow.classList.toggle("global-navrow--compact", overflows);
-        compactToggle.hidden = !overflows;
-        if (!overflows && drawerOpen) closeDrawer();
-    }
-
-    function openDrawer() {
-        if (drawerOpen) return;
-        drawerOpen = true;
-        redrawNavigation();
-        drawer.classList.add("nav-drawer--open");
-        drawer.setAttribute("aria-hidden", "false");
-        compactToggle.setAttribute("aria-expanded", "true");
-        backdrop.removeAttribute("hidden");
-        (drawerNav?.querySelector("a") ?? drawerClose ?? compactToggle).focus();
-    }
-
-    function closeDrawer() {
-        if (!drawerOpen) return;
-        drawerOpen = false;
-        drawer.classList.remove("nav-drawer--open");
-        drawer.setAttribute("aria-hidden", "true");
-        compactToggle.setAttribute("aria-expanded", "false");
-        backdrop.setAttribute("hidden", "");
-        compactToggle.focus();
-    }
-
-    compactToggle.addEventListener("click", () => {
-        if (drawerOpen) closeDrawer();
-        else openDrawer();
+        },
+        log: uiCtx.capabilities.get("ui:log"),
+        registerSurface: (...args) =>
+            uiCtx.capabilities.get("ui:transientSurfaces")?.register(...args),
     });
-
-    drawerClose?.addEventListener("click", closeDrawer);
-
-    backdrop.addEventListener("click", closeDrawer);
-
-    drawerNav?.addEventListener("click", (e) => {
-        if (e.target.closest("a")) closeDrawer();
-    });
-
-    document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape" && drawerOpen) closeDrawer();
-    });
-
-    const resizeObserver = new ResizeObserver(syncCompactState);
-    resizeObserver.observe(topnav);
-    resizeObserver.observe(navrow);
-    const navigationObserver = new MutationObserver(redrawNavigation);
-    navigationObserver.observe(topnav, { childList: true });
-    redrawNavigation();
 }
+
+const headerScrollScopes = new WeakMap();
 
 function syncHeaderScrollState(root) {
     const shell = root.querySelector(".app-shell");
@@ -459,9 +399,14 @@ function syncHeaderScrollState(root) {
     );
     const primaryNavigationHeight =
         Number(primaryNavigation?.scrollHeight) || 0;
+    const compact = window.matchMedia("(max-width:900px)").matches;
+    const collapsingRegion = compact
+        ? shell.querySelector(".global-topbar")
+        : primaryNavigation;
     const shouldPrioritizeSubnav =
         hasSubNavigation &&
         hasPrimaryNavigation &&
+        !collapsingRegion?.contains(document.activeElement) &&
         (currentlyPrioritized
             ? window.scrollY > 12
             : window.scrollY > primaryNavigationHeight + 12);
@@ -473,17 +418,23 @@ function syncHeaderScrollState(root) {
     );
 }
 
-function bindHeaderScrollState(root) {
-    if (root.dataset.headerScrollStateBound === "true") {
-        syncHeaderScrollState(root);
-        return;
-    }
+function bindHeaderScrollState(root, externalSignal) {
+    const controller = replaceMountScope(
+        headerScrollScopes.get(root),
+        externalSignal,
+    );
+    headerScrollScopes.set(root, controller);
+    const { signal } = controller;
+    const syncState = () => {
+        if (!signal.aborted) syncHeaderScrollState(root);
+    };
 
-    root.dataset.headerScrollStateBound = "true";
-    const syncState = () => syncHeaderScrollState(root);
-
-    window.addEventListener("scroll", syncState, { passive: true });
-    window.addEventListener("resize", syncState);
+    window.addEventListener("scroll", syncState, { passive: true, signal });
+    window.addEventListener("resize", syncState, { signal });
+    root.addEventListener("focusin", syncState, { signal });
+    root.addEventListener("focusout", () => queueMicrotask(syncState), {
+        signal,
+    });
     syncState();
 }
 
@@ -636,6 +587,7 @@ export async function renderDashboardLayout(root, slots = {}) {
             (showTopbar || showNavbar) &&
             uiCtx.capabilities.get("session:isGuest")?.() !== true
         ) {
+            applyCompactNav(root, slots.signal);
             scheduleNavbarEnhancements();
             scheduleDeferredLoginSetup(i18n, slots.signal);
             initSearchBar(i18n);
@@ -644,7 +596,7 @@ export async function renderDashboardLayout(root, slots = {}) {
                 signal: slots.signal,
             });
         }
-        bindHeaderScrollState(root);
+        bindHeaderScrollState(root, slots.signal);
         if (!componentWindow)
             mountOfflineStatus(root, { i18n, signal: slots.signal });
         if (!componentWindow) {
@@ -706,14 +658,14 @@ export async function renderDashboardLayout(root, slots = {}) {
         scheduleNavbarEnhancements();
         scheduleDeferredLoginSetup(i18n, slots.signal);
         applyActiveNavigation();
-        applyCompactNav(root);
+        applyCompactNav(root, slots.signal);
         initSearchBar(i18n);
         registerReleaseChangelogReadiness(uiCtx, {
             i18n,
             signal: slots.signal,
         });
     }
-    bindHeaderScrollState(root);
+    bindHeaderScrollState(root, slots.signal);
     if (!componentWindow)
         mountOfflineStatus(root, { i18n, signal: slots.signal });
     if (!componentWindow) {

@@ -10,6 +10,10 @@ export async function loadCalendarMount({ hold, signal }) {
     };
     const contracts = {
         "./guides.js": { guides },
+        "../calendar-view-controls.js": {
+            renderCalendarViewSwitcher: unexpected,
+            mountCalendarViewControls: unexpected,
+        },
         "../offline-client.js": { calendarFetch: unexpected },
         "/static/reuse/offline-state.js": { isOffline: () => false },
         "/static/reuse/i18n.js": {
@@ -34,7 +38,9 @@ export async function loadCalendarMount({ hold, signal }) {
         "/static/reuse/popup.js": { openPopup: unexpected },
         "/static/reuse/escape-html.js": { escapeHtml: unexpected },
         "/static/reuse/form-builder.js": { createFormBuilder: unexpected },
-        "/static/reuse/ui-ctx.js": { uiCtx: {} },
+        "/static/reuse/ui-ctx.js": {
+            uiCtx: { capabilities: { get: () => undefined } },
+        },
         "./popup-manager.js": {
             createCalendarPopupManager: () => {
                 reached.push("render");
@@ -70,6 +76,7 @@ export async function loadCalendarMount({ hold, signal }) {
         Set,
         console,
         window: {
+            matchMedia: () => ({ matches: false, addEventListener() {} }),
             localStorage: { getItem: () => null },
             clearTimeout: () => reached.push("clearTimer"),
         },

@@ -1,3 +1,5 @@
+import { mountLanguageLabels } from "../ui/language-labels.js";
+import { loadDictionarySearch } from "./reuse/dictionary-search.js";
 import { replaceMountScope } from "../../../ui/reuse/mount-scope.js";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
@@ -114,12 +116,15 @@ function navigationContext({
             },
         },
     });
+    const search = loadDictionarySearch(context);
     Object.assign(
         context,
         loadTestModule(
             new URL("../ui/sub-navigation.js", import.meta.url),
             {
                 "./navigation-client.js": context,
+                "./sub-navigation-search.js": search,
+                "./language-labels.js": { mountLanguageLabels },
                 "/static/reuse/offline-state.js": {
                     isOffline: () => context.offline === true,
                 },
@@ -284,7 +289,9 @@ test("an already mounted Study menu disables management links on disconnect and 
         setAttribute: (name, value) => attributes.set(name, value),
         removeAttribute: (name) => attributes.delete(name),
     };
-    root.querySelectorAll = () => [link];
+    root.querySelector = () => null;
+    root.querySelectorAll = (selector) =>
+        selector.startsWith("a[") ? [link] : [];
     const scope = new AbortController();
     context.bindStudySubNavigation(root, { signal: scope.signal });
     assert.equal(attributes.has("aria-disabled"), false);
@@ -307,6 +314,7 @@ test("disabled Study language links cannot bypass the router through their state
     context.window.addEventListener = events.addEventListener.bind(events);
     const listeners = new Map();
     const root = {
+        querySelector: () => null,
         querySelectorAll: () => [],
         addEventListener: (name, listener) => listeners.set(name, listener),
     };

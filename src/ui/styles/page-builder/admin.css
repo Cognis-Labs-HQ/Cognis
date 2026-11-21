@@ -289,17 +289,56 @@ body[data-theme="light"] .slider::before {
     color: #f59e0b;
 }
 
-@media (max-width: 640px) {
-    .module-row summary,
-    .module-row-summary {
-        grid-template-columns: minmax(0, 1fr) auto;
-        gap: 10px;
-    }
+[data-composer-layout="compact"] .module-row summary,
+[data-composer-layout="compact"] .module-row-summary {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+}
 
-    .module-detail-item {
-        grid-template-columns: 92px minmax(0, 1fr);
-        gap: 10px;
-    }
+[data-composer-layout="compact"]
+    .module-row
+    > summary
+    > .collapsible-section-title {
+    grid-column: 1;
+    grid-row: 1;
+}
+
+[data-composer-layout="compact"]
+    .module-row
+    > summary
+    > .collapsible-section-chevron {
+    grid-column: 2;
+    grid-row: 1;
+    min-width: 44px;
+    min-height: 44px;
+}
+
+[data-composer-layout="compact"] .module-row > summary > .module-row-controls {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    grid-template-columns: minmax(0, 1fr) 10px 52px;
+    gap: 8px;
+    width: 100%;
+}
+
+[data-composer-layout="compact"] .module-row-controls > .state-pill {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+[data-composer-layout="compact"] .module-row-title {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    max-width: 100%;
+}
+
+[data-composer-layout="compact"] .module-row-title strong {
+    min-width: 0;
+}
+
+[data-composer-layout="compact"] .module-detail-item {
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: 10px;
 }
 
 .users-quota-list {

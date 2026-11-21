@@ -7,6 +7,7 @@
 import { createFloatingMenu } from "../floating-menu.js";
 import { usableTarget } from "./targets.js";
 import {
+    calloutViewport,
     shadeRegions,
     tutorialViewport,
     visibleTargetRect,
@@ -228,6 +229,18 @@ export function createTutorialView({ document, hostI18n, loadStyles, ctx }) {
             ctx,
         });
         menu.element.classList.add("tutorial-actions");
+        const restart = menu.element.querySelector('[data-action="restart"]');
+        if (restart) {
+            const label = document.createElement("span");
+            label.className = "tutorial-restart-label";
+            label.textContent = restart.textContent;
+            const icon = document.createElement("span");
+            icon.className = "tutorial-restart-icon";
+            icon.setAttribute("aria-hidden", "true");
+            restart.setAttribute("aria-label", restart.textContent);
+            restart.title = restart.textContent;
+            restart.replaceChildren(icon, label);
+        }
         menu.element
             .querySelector('[data-action="next"]')
             .classList.toggle(
@@ -335,12 +348,13 @@ export function createTutorialView({ document, hostI18n, loadStyles, ctx }) {
                 lost?.(error);
                 return;
             }
-            const viewport = tutorialViewport(
+            const pageViewport = tutorialViewport(
                 window,
                 document,
                 target,
                 step.layer,
             );
+            const viewport = calloutViewport(pageViewport, window);
             menu.element.style.maxWidth = `${Math.max(48, viewport.width - 16)}px`;
             menu.element.style.maxHeight = `${Math.max(48, viewport.height - 16)}px`;
             const menuBox = menu.element.getBoundingClientRect();
@@ -362,7 +376,7 @@ export function createTutorialView({ document, hostI18n, loadStyles, ctx }) {
             panel.style.maxWidth = `${Math.max(48, viewport.width - 16)}px`;
             const visible =
                 target &&
-                visibleTargetRect(target, viewport, step.padding ?? 8);
+                visibleTargetRect(target, pageViewport, step.padding ?? 8);
             spotlight.hidden = !visible || !step.effects.spotlight;
             shade.hidden = spotlight.hidden;
             if (!shade.hidden) {

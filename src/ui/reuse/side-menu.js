@@ -56,7 +56,7 @@ export function createSideMenu({
                         const itemId = String(item?.id ?? "");
                         const targetId = String(item?.targetId ?? "").trim();
                         const isActive = itemId === selectedId;
-                        return `<li><button class="side-menu-link${isActive ? " active" : ""}" data-side-menu-item="${escapeHtml(itemId)}"${targetId ? ` data-side-menu-target="${escapeHtml(targetId)}"` : ""}${isActive ? ' aria-current="page"' : ""}>${escapeHtml(String(item?.label ?? ""))}</button></li>`;
+                        return `<li><button class="side-menu-link btn-neutral${isActive ? " active" : ""}" data-side-menu-item="${escapeHtml(itemId)}"${targetId ? ` data-side-menu-target="${escapeHtml(targetId)}"` : ""}${isActive ? ' aria-current="page"' : ""}>${escapeHtml(String(item?.label ?? ""))}</button></li>`;
                     })
                     .join("")}</ul>`;
                 if (group?.collapsible === false)

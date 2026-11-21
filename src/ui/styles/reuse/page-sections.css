@@ -20,11 +20,6 @@
     padding: 0;
 }
 
-.content-panel > .content-section {
-    --composer-grid-inset: 28px;
-    padding: var(--composer-grid-inset);
-}
-
 .content-section :where(input, select, textarea, button) {
     max-width: 100%;
 }
@@ -658,12 +653,6 @@ body:not([data-theme="light"]) .markdown-code-inline code {
     }
 }
 
-@media (max-width: 640px) {
-    .content-panel > .content-section {
-        --composer-grid-inset: 14px;
-        padding: var(--composer-grid-inset);
-    }
-}
 .focus-control-status {
     position: absolute;
     width: 1px;
@@ -848,24 +837,4 @@ body:not([data-theme="light"]) .markdown-code-inline code {
 
 .component-page-window--borderless > .workspace .content-panel {
     min-height: 0;
-}
-.side-menu {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.side-menu-group {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-.side-menu-group--fixed {
-    flex: 0 0 auto;
-}
-
-.side-menu .side-menu-link {
-    display: block;
-    text-align: left;
 }

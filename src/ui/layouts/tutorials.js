@@ -168,6 +168,11 @@ export async function mountProvider(ctx) {
             await owner.target(name, {
                 public: true,
                 resolve: () => {
+                    if (name === "navigation") {
+                        const toggle =
+                            document.getElementById("nav-compact-toggle");
+                        if (usableTarget(toggle, document)) return toggle;
+                    }
                     const matches = document.querySelectorAll(selector);
                     return matches.length === 1 ? matches[0] : null;
                 },

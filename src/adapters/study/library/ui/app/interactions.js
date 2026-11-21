@@ -61,7 +61,12 @@ export function bindLibraryInteractions(root, context) {
     const requests = context.requests ?? [];
     let locations;
     const renderEntries = (update = entries) => {
+        if (signal.aborted) return;
         entries = mergeEntryCollectionUpdate(entries, update);
+        if (context.refreshEntries) {
+            context.refreshEntries(entries);
+            return;
+        }
         root.querySelector(".library-browser").innerHTML =
             context.renderContent?.(entries) ??
             renderBrowser(schemas, entries, i18n, requestedLayer);

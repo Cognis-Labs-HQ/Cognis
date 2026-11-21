@@ -162,3 +162,40 @@ const load = () => import("./contracts/api.js");`),
         ],
     );
 });
+
+test("browser fixtures load optional component implementations only within their owner", () => {
+    const violations = [];
+    for (const filePath of walk(SRC_ROOT)) {
+        if (!normalizePath(filePath).includes("/tests/fixtures/")) continue;
+        if (
+            ![".js", ".html", ".css"].some((extension) =>
+                filePath.endsWith(extension),
+            )
+        )
+            continue;
+        const source = readFileSync(filePath, "utf8");
+        const componentUrls = source.matchAll(
+            /\/static\/(adapters\/[^/]+\/[^/]+|gateways\/[^/]+)\//g,
+        );
+        for (const [, componentPath] of componentUrls) {
+            const ownerRoot = resolve(SRC_ROOT, componentPath);
+            if (
+                normalizePath(filePath).startsWith(
+                    `${normalizePath(ownerRoot)}/`,
+                )
+            )
+                continue;
+            const adapterOwner = resolveAdapterOwner(ownerRoot);
+            if (adapterOwner && sourceOwnsAdapterImport(filePath, adapterOwner))
+                continue;
+            violations.push(
+                `${normalizePath(relative(ROOT, filePath))} -> ${componentPath}`,
+            );
+        }
+    }
+    assert.deepEqual(
+        violations,
+        [],
+        "Move component render fixtures into their owner and inject public contracts for external capabilities.",
+    );
+});

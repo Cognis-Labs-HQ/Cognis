@@ -1,0 +1,82 @@
+{
+    "schema": {
+        "id": "tablet-preview",
+        "language": "ja",
+        "metadata": {
+            "labels": {
+                "en": "Japanese"
+            }
+        },
+        "layers": [
+            {
+                "id": "characters",
+                "semanticRole": "atomicWritingUnit",
+                "metadata": {
+                    "labels": {
+                        "en": "Characters"
+                    }
+                },
+                "fields": [
+                    {
+                        "id": "meaning",
+                        "type": "string",
+                        "metadata": {
+                            "labels": {
+                                "en": "Meaning"
+                            }
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    "entries": [
+        {
+            "id": "5412a45f-5c2e-44ab-9094-9521173f6a33",
+            "schemaId": "tablet-preview",
+            "language": "ja",
+            "layer": "characters",
+            "label": "北",
+            "fields": {
+                "meaning": "north"
+            },
+            "references": [],
+            "scope": "global"
+        },
+        {
+            "id": "a9a2c8be-bebf-482f-a015-e018d2f19e43",
+            "schemaId": "tablet-preview",
+            "language": "ja",
+            "layer": "characters",
+            "label": "東",
+            "fields": {
+                "meaning": "north east"
+            },
+            "references": [],
+            "scope": "global"
+        },
+        {
+            "id": "06d65dd2-49b7-4d8b-a4d7-01bd230d71c1",
+            "schemaId": "tablet-preview",
+            "language": "ja",
+            "layer": "characters",
+            "label": "西",
+            "fields": {
+                "meaning": "north west"
+            },
+            "references": [],
+            "scope": "global"
+        }
+    ],
+    "title": "北",
+    "titleDetailItems": [
+        {
+            "label": "き た",
+            "placement": "aside"
+        },
+        {
+            "label": "north",
+            "placement": "below"
+        }
+    ]
+}

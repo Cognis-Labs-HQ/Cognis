@@ -3,5 +3,10 @@
     "version": "0.4.1",
     "private": true,
     "type": "module",
-    "main": "index.ts"
+    "main": "index.ts",
+    "documentation": {
+        "readme": "docs/README.en.md",
+        "usage": "docs/USAGE.en.md",
+        "technical": "docs/TECHNICAL.en.md"
+    }
 }

@@ -61,7 +61,9 @@ button {
 button:disabled {
     cursor: not-allowed;
 }
-button:hover:not(:disabled):not(.dropdown-item):not([class*="btn-"]) {
+button:hover:not(:disabled):not(.dropdown-item):not([class*="btn-"]):not(
+        .toolbar button
+    ) {
     border-color: var(--accent-2);
     transform: translateY(-1px);
 }
@@ -154,28 +156,40 @@ button:hover:not(:disabled):not(.dropdown-item):not([class*="btn-"]) {
     background: var(--toolbar-bg);
 }
 
-.toolbar > *,
 .content-panel > * {
-    padding-left: 28px;
-    padding-right: 28px;
+    padding-left: var(--composer-grid-inset);
+    padding-right: var(--composer-grid-inset);
     min-width: 0;
 }
 
-.toolbar > :first-child,
 .content-panel > :first-child {
-    padding-top: 28px;
+    padding-top: var(--composer-grid-inset);
 }
 
-.toolbar > :last-child,
 .content-panel > :last-child {
-    padding-bottom: 28px;
+    padding-bottom: var(--composer-grid-inset);
 }
 
 .toolbar {
+    --toolbar-content-inset: clamp(12px, 2vw, 20px);
     margin-bottom: 0;
 }
 
-.toolbar ul {
+.toolbar > * {
+    padding-left: var(--toolbar-content-inset);
+    padding-right: var(--toolbar-content-inset);
+    min-width: 0;
+}
+
+.toolbar > :first-child {
+    padding-top: var(--toolbar-content-inset);
+}
+
+.toolbar > :last-child {
+    padding-bottom: var(--toolbar-content-inset);
+}
+
+.toolbar :where(ul) {
     list-style: none;
     margin: 0;
     padding: 0 6px;
@@ -183,10 +197,10 @@ button:hover:not(:disabled):not(.dropdown-item):not([class*="btn-"]) {
     gap: 10px;
 }
 
-.toolbar button {
+.toolbar :where(button) {
     min-height: 44px;
     width: 100%;
-    min-width: 150px;
+    min-width: 0;
     text-align: left;
     background: transparent;
     border: 1px solid transparent;
@@ -194,13 +208,18 @@ button:hover:not(:disabled):not(.dropdown-item):not([class*="btn-"]) {
     padding: 10px 14px;
 }
 
-.toolbar button:hover {
+:where(.toolbar button):hover {
     color: var(--text);
     border-color: var(--border);
     background: var(--surface-soft);
 }
 
-.toolbar button.active {
+.toolbar :where(button):focus-visible {
+    outline: 2px solid var(--text);
+    outline-offset: -2px;
+}
+
+.toolbar :where(button).active {
     color: var(--text);
     border-color: transparent;
     background-color: var(--surface-soft);
@@ -272,12 +291,10 @@ code {
     gap: 12px;
     align-items: start;
     width: 100%;
+    min-width: 0;
 }
 .main-window--with-toolbar {
-    grid-template-columns: fit-content(40vw) minmax(0, 1fr);
-}
-.main-window--with-toolbar .toolbar {
-    margin-right: 12px;
+    grid-template-columns: minmax(0, min(20rem, 32vw)) minmax(0, 1fr);
 }
 .main-window--content-only {
     grid-template-columns: minmax(0, 1fr);
@@ -299,12 +316,13 @@ code {
     width: 100%;
 }
 
-.toolbar-mobile-toggle {
+.toolbar-mobile-toggle.btn-neutral {
     display: none;
     align-items: center;
     justify-content: center;
     width: 44px;
     height: 44px;
+    padding: 0;
     margin: 0 0 10px;
     border: 1px solid var(--border);
     background: var(--surface-2);
@@ -312,7 +330,6 @@ code {
     font-size: 1.1rem;
     line-height: 1;
     cursor: pointer;
-    z-index: 1770;
     transition:
         left 0.22s ease,
         top 0.22s ease,
@@ -339,32 +356,42 @@ code {
 
 @media (max-width: 900px) {
     .main-window--with-toolbar {
-        grid-template-columns: 1fr;
+        --toolbar-drawer-width: min(
+            22rem,
+            calc(100vw - 52px - env(safe-area-inset-right))
+        );
+        grid-template-columns: minmax(0, 1fr);
     }
-    .toolbar-mobile-toggle {
+    .toolbar-mobile-toggle.btn-neutral:not([hidden]) {
         display: inline-flex;
     }
     .main-window--with-toolbar .toolbar-mobile-toggle--drawer-open {
         position: fixed;
-        top: 12px;
-        left: calc(min(320px, 88vw) - 1px);
+        top: max(12px, env(safe-area-inset-top));
+        left: max(12px, env(safe-area-inset-left));
         margin: 0;
-        border-radius: 0 12px 12px 0;
+        border-radius: 10px;
         box-shadow: var(--shadow);
+        z-index: 1770;
     }
     .main-window--with-toolbar .toolbar {
         position: fixed;
         top: 0;
         left: 0;
-        width: min(320px, 88vw);
+        width: var(--toolbar-drawer-width);
         height: 100dvh;
+        max-height: 100dvh;
+        padding-top: calc(56px + env(safe-area-inset-top));
+        padding-bottom: env(safe-area-inset-bottom);
+        padding-left: env(safe-area-inset-left);
         border-radius: 0 14px 14px 0;
         margin-right: 0;
-        background: var(--surface-2);
+        background: rgb(from var(--surface-2) r g b / 1);
         transform: translateX(-100%);
         transition: transform 0.26s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         z-index: 1760;
         overflow-y: auto;
+        overscroll-behavior: contain;
         pointer-events: none;
         visibility: hidden;
     }
@@ -376,22 +403,6 @@ code {
 }
 
 @media (max-width: 640px) {
-    .toolbar > *,
-    .content-panel > * {
-        padding-left: 14px;
-        padding-right: 14px;
-    }
-    .toolbar > :first-child,
-    .content-panel > :first-child {
-        padding-top: 14px;
-    }
-    .toolbar > :last-child,
-    .content-panel > :last-child {
-        padding-bottom: 14px;
-    }
-    .toolbar button {
-        min-width: 0;
-    }
     .workspace.app-page--frameless {
         padding: 0;
     }
@@ -399,18 +410,59 @@ code {
 
 .toolbar-mobile-toggle-icon {
     display: block;
-    width: 16px;
-    height: 16px;
+    width: 20px;
+    height: 20px;
+    mask-image: url("../../public/assets/reuse/icons/sidebar-collapse.svg");
     background: currentColor;
     mask-position: center;
     mask-size: contain;
     mask-repeat: no-repeat;
 }
 
-.toolbar-mobile-toggle-icon--toolbar-close {
-    mask-image: url("../../public/assets/reuse/icons/toolbar-close.svg");
+@media (prefers-reduced-motion: reduce) {
+    .toolbar-mobile-toggle,
+    .toolbar-mobile-backdrop,
+    .main-window--with-toolbar .toolbar {
+        transition: none;
+    }
 }
 
-.toolbar-mobile-toggle-icon--toolbar-menu {
-    mask-image: url("../../public/assets/reuse/icons/toolbar-menu.svg");
+.app-page--viewport .main-window {
+    height: var(--page-viewport-height);
+    min-height: 0;
+}
+
+.app-page--viewport .content-panel,
+.app-page--viewport .content-grid {
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+}
+
+.app-page--viewport .composer-view-grid--viewport {
+    height: 100%;
+    min-height: 0;
+    grid-template-rows: minmax(0, 1fr);
+    grid-auto-rows: minmax(0, 1fr);
+}
+
+.app-page--viewport .main-window {
+    grid-template-rows: minmax(0, 1fr);
+}
+
+@media (max-width: 900px) {
+    .app-page--viewport
+        .main-window--with-toolbar:has(> .toolbar-mobile-toggle:not([hidden])) {
+        grid-template-rows: auto minmax(0, 1fr);
+    }
+}
+
+.toolbar-mobile-toggle.btn-neutral[hidden] {
+    display: none;
+}
+
+.toolbar-mobile-toggle.btn-neutral.toolbar-mobile-toggle--in-header {
+    margin: 0;
+    flex-shrink: 0;
+    align-self: start;
 }

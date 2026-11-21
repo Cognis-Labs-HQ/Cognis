@@ -2,9 +2,14 @@ import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 import vm from "node:vm";
+import { mergeEntryCollectionUpdate } from "../ui/app/entry-collection.js";
 import { replaceMountScope } from "../../../../ui/reuse/mount-scope.js";
 
-function fixture({ openingScope = (_target, signal) => signal } = {}) {
+function fixture({
+    openingScope = (_target, signal) => signal,
+    refreshEntries,
+} = {}) {
+    const renders = [];
     const pending = [];
     const updates = [];
     const toasts = [];
@@ -12,6 +17,7 @@ function fixture({ openingScope = (_target, signal) => signal } = {}) {
     const page = new AbortController();
     const context = vm.createContext({
         replaceMountScope,
+        mergeEntryCollectionUpdate,
         window: new EventTarget(),
         bindSelectionEscape() {},
         bindDrawingGridPreviews() {},
@@ -25,7 +31,10 @@ function fixture({ openingScope = (_target, signal) => signal } = {}) {
         },
         bindVariantInteractions() {},
         bindTransformationInteractions() {},
-        createLibraryVisibilityActions: () => ({}),
+        createLibraryVisibilityActions: ({ render }) => {
+            renders.push(render);
+            return {};
+        },
         setSelectionMode() {},
         fetchLibraryLocations: () =>
             new Promise((resolve, reject) => pending.push({ resolve, reject })),
@@ -80,6 +89,7 @@ function fixture({ openingScope = (_target, signal) => signal } = {}) {
             entries: [{ id: "card", schemaId: "schema", layer: "words" }],
             schemas: [{ id: "schema", layers: [{ id: "words" }] }],
             signal: page.signal,
+            refreshEntries,
         });
     const control = {
         dataset: { libraryEntry: "card" },
@@ -95,6 +105,7 @@ function fixture({ openingScope = (_target, signal) => signal } = {}) {
     };
     return {
         pending,
+        renders,
         updates,
         toasts,
         bind,
@@ -175,4 +186,22 @@ test("card openings serialize active attempts, allow immediate retries after can
         "real failures must still be reported",
     );
     assert.equal(state.toasts[0][0], "gateway.study.library_load_error");
+});
+
+test("Library mutations refresh the owning Composer with current entries and stop after unmount", async (context) => {
+    const refreshed = [];
+    const state = fixture({
+        refreshEntries: (entries) => refreshed.push(entries),
+    });
+    context.after(state.close);
+    state.bind();
+    state.pending[0].resolve({ writable: [] });
+    await new Promise(setImmediate);
+    state.renders[0]({ id: "card", label: "Updated" });
+    assert.equal(refreshed[0][0].label, "Updated");
+    state.renders[0]([]);
+    assert.equal(refreshed[1].length, 0);
+    state.close();
+    state.renders[0]({ id: "late" });
+    assert.equal(refreshed.length, 2);
 });

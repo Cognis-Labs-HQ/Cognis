@@ -29,26 +29,14 @@
                 data-i18n-aria-label="ui.layout.nav.open_menu"
                 aria-label="Open navigation menu"
                 aria-expanded="false"
-                aria-controls="nav-drawer"
+                aria-controls="nav-launcher"
                 hidden
             >
-                <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 16 16"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-hidden="true"
-                >
-                    <path
-                        d="M10 3V6H4L4 10H10L10 13L11 13L16 8L11 3L10 3Z"
-                        fill="currentColor"
-                    />
-                    <path
-                        d="M0 2L1.38281e-06 14H2L2 2L0 2Z"
-                        fill="currentColor"
-                    />
-                </svg>
+                <span class="nav-compact-toggle-icon" aria-hidden="true"></span>
+                <span
+                    class="nav-compact-toggle-label"
+                    data-i18n="ui.reuse.pages"
+                ></span>
             </button>
             <div class="topnav global-navrow-surface">
                 <a href="/dashboard" data-i18n="ui.reuse.dashboard"></a>
@@ -185,30 +173,33 @@
         </button>
     </div>
     <div
-        id="nav-drawer"
-        class="nav-drawer"
+        id="nav-launcher"
+        class="nav-launcher"
         aria-hidden="true"
         role="dialog"
         aria-modal="true"
         data-i18n-aria-label="ui.layout.nav.primary"
         aria-label="Primary navigation"
     >
-        <div class="nav-drawer-content">
-            <button
-                id="nav-drawer-close"
-                class="nav-drawer-close"
-                type="button"
-                data-i18n-aria-label="ui.layout.nav.close_menu"
-                aria-label="Close navigation menu"
-            >
-                &times;
-            </button>
-            <nav class="nav-drawer-nav"></nav>
+        <div class="nav-launcher-content">
+            <div class="nav-launcher-heading">
+                <h2 data-i18n="ui.reuse.pages"></h2>
+                <button
+                    id="nav-launcher-close"
+                    class="nav-launcher-close"
+                    type="button"
+                    data-i18n-aria-label="ui.layout.nav.close_menu"
+                    aria-label="Close navigation menu"
+                >
+                    &times;
+                </button>
+            </div>
+            <nav class="nav-launcher-nav"></nav>
         </div>
     </div>
     <div
-        id="nav-drawer-backdrop"
-        class="nav-drawer-backdrop"
+        id="nav-launcher-backdrop"
+        class="nav-launcher-backdrop"
         aria-hidden="true"
         hidden
     ></div>

@@ -1,6 +1,10 @@
+import {
+    initializeDocsStore,
+    readStoredMarkdown,
+} from "../../routes/docs/store.js";
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, rm, stat, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, readdir, rm, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import {
@@ -49,6 +53,34 @@ async function request(
     return { status, body: JSON.parse(body) };
 }
 
+function manifest(version: string, name = "Example") {
+    return JSON.stringify({
+        name,
+        version,
+        documentation: {
+            readme: "docs/README.en.md",
+            usage: "docs/USAGE.en.md",
+            technical: "docs/TECHNICAL.en.md",
+        },
+    });
+}
+
+async function writeBundle(docsRoot: string, info: string, core = false) {
+    await mkdir(docsRoot, { recursive: true });
+    await writeFile(
+        join(docsRoot, core ? "index.en.md" : "README.en.md"),
+        info,
+    );
+    await writeFile(
+        join(docsRoot, core ? "usage.en.md" : "USAGE.en.md"),
+        "# Usage\n\nConcrete usage procedure.",
+    );
+    await writeFile(
+        join(docsRoot, core ? "technical.en.md" : "TECHNICAL.en.md"),
+        "# Technical\n\nPublic interfaces.",
+    );
+}
+
 test("docs snapshots manifest versions across software starts", async () => {
     const fixtureRoot = await mkdtemp(join(tmpdir(), "cognis-docs-"));
     const sourceRoot = join(fixtureRoot, "src");
@@ -56,21 +88,15 @@ test("docs snapshots manifest versions across software starts", async () => {
     const docsRoot = join(componentRoot, "docs");
     const archiveRoot = join(fixtureRoot, "archive");
     await mkdir(docsRoot, { recursive: true });
-    await writeFile(
-        join(componentRoot, "package.json"),
-        JSON.stringify({ version: "1.0.0" }),
-    );
-    await writeFile(join(docsRoot, "index.en.md"), "# Example\n\nFirst");
+    await writeFile(join(componentRoot, "package.json"), manifest("1.0.0"));
+    await writeBundle(docsRoot, "# Example\n\nFirst");
 
     await request(
         createDocsRoutes({ sourceRoot, archiveRoot }),
         "/api/v1/docs/latest/gateways/example",
     );
-    await writeFile(
-        join(componentRoot, "package.json"),
-        JSON.stringify({ version: "1.1.0" }),
-    );
-    await writeFile(join(docsRoot, "index.en.md"), "# Example\n\nSecond");
+    await writeFile(join(componentRoot, "package.json"), manifest("1.1.0"));
+    await writeBundle(docsRoot, "# Example\n\nSecond");
     const restartedRoute = createDocsRoutes({ sourceRoot, archiveRoot });
 
     const index = await request(restartedRoute, "/api/v1/docs");
@@ -90,7 +116,7 @@ test("docs snapshots manifest versions across software starts", async () => {
     assert.match(latest.body.data.markdown, /Second/);
     assert.match(historical.body.data.markdown, /First/);
 
-    await rm(join(docsRoot, "index.en.md"));
+    await rm(componentRoot, { recursive: true, force: true });
     const routeAfterRemoval = createDocsRoutes({ sourceRoot, archiveRoot });
     const indexAfterRemoval = await request(routeAfterRemoval, "/api/v1/docs");
     const archivedEntry = indexAfterRemoval.body.data.find(
@@ -113,11 +139,8 @@ test("docs refresh archived content for the installed version", async () => {
     const docsRoot = join(componentRoot, "docs");
     const archiveRoot = join(fixtureRoot, "archive");
     await mkdir(docsRoot, { recursive: true });
-    await writeFile(
-        join(componentRoot, "package.json"),
-        JSON.stringify({ version: "1.0.0" }),
-    );
-    await writeFile(join(docsRoot, "index.en.md"), "# Example\n\nOld link");
+    await writeFile(join(componentRoot, "package.json"), manifest("1.0.0"));
+    await writeBundle(docsRoot, "# Example\n\nOld link");
     const route = createDocsRoutes({ sourceRoot, archiveRoot });
     await request(route, "/api/v1/docs/latest/gateways/example");
     const archivedPath = join(
@@ -125,16 +148,13 @@ test("docs refresh archived content for the installed version", async () => {
         "gateways",
         "example",
         "1.0.0",
-        "en.md",
+        "bundle.json",
     );
     const initialArchive = await stat(archivedPath);
     await request(route, "/api/v1/docs/latest/gateways/example");
     assert.equal((await stat(archivedPath)).ino, initialArchive.ino);
 
-    await writeFile(
-        join(docsRoot, "index.en.md"),
-        "# Example\n\nCorrected link",
-    );
+    await writeBundle(docsRoot, "# Example\n\nCorrected link");
     const refreshed = await request(
         createDocsRoutes({ sourceRoot, archiveRoot }),
         "/api/v1/docs/latest/gateways/example",
@@ -177,15 +197,12 @@ test("docs route discovers external module docs and changelogs", async () => {
         join(sourceRoot, "package.json"),
         JSON.stringify({ version: "1.0.0" }),
     );
-    await writeFile(join(sourceRoot, "docs", "index.en.md"), "# Core\n");
+    await writeBundle(join(sourceRoot, "docs"), "# Core\n", true);
     await writeFile(
         join(moduleRoot, "package.json"),
-        JSON.stringify({ name: "Weather Module", version: "2.0.0" }),
+        manifest("2.0.0", "Weather Module"),
     );
-    await writeFile(
-        join(moduleRoot, "docs", "standard.en.md"),
-        "# External module\n",
-    );
+    await writeBundle(join(moduleRoot, "docs"), "# External module\n");
     await writeFile(
         join(moduleRoot, "docs", "changelog", "2.0.0.en.md"),
         "# External release\n",
@@ -201,7 +218,7 @@ test("docs route discovers external module docs and changelogs", async () => {
         const slugs = response.body.data.map(
             (entry: { slug: string }) => entry.slug,
         );
-        assert.ok(slugs.includes("module-uuid/standard"));
+        assert.ok(slugs.includes("module-uuid"));
         assert.ok(slugs.includes("changelog/module-uuid/2.0.0"));
         const moduleChangelog = response.body.data.find(
             (entry: { slug: string }) =>
@@ -345,7 +362,10 @@ test("docs route indexes every changelog markdown stem and serves generated chan
     );
     assert.equal(status, 200);
     const changelogLanding = JSON.parse(body);
-    assert.match(changelogLanding.data.markdown, /^# Changelogs/);
+    assert.equal(
+        changelogLanding.data.markdown.split("\n")[0],
+        `# ${parsed.data.find((entry: { slug: string }) => entry.slug === "changelog/index").title}`,
+    );
     assert.match(changelogLanding.data.markdown, /\/changelogs\//);
     assert.match(changelogLanding.data.markdown, /## Cognis Core/);
 });
@@ -415,4 +435,316 @@ test("docs route returns 404 for unknown slug", async () => {
     );
     assert.equal(handled, true);
     assert.equal(status, 404);
+});
+
+test("all document views retain their component version across publication and restart", async (context) => {
+    const fixtureRoot = await mkdtemp(join(tmpdir(), "cognis-doc-bundle-"));
+    context.after(() => rm(fixtureRoot, { recursive: true, force: true }));
+    const sourceRoot = join(fixtureRoot, "src");
+    const componentRoot = join(sourceRoot, "gateways", "example");
+    const docsRoot = join(componentRoot, "docs");
+    const archiveRoot = join(fixtureRoot, "archive");
+    await writeBundle(docsRoot, "# First README");
+    await writeFile(join(componentRoot, "manifest.json"), manifest("1.0.0"));
+    await writeFile(join(docsRoot, "USAGE.en.md"), "# First Usage");
+    await writeFile(join(docsRoot, "TECHNICAL.en.md"), "# First Technical");
+    const first = createDocsRoutes({ sourceRoot, archiveRoot });
+    for (const [view, title] of [
+        ["", "README"],
+        ["/usage", "Usage"],
+        ["/technical", "Technical"],
+    ])
+        assert.match(
+            (await request(first, `/api/v1/docs/1.0.0/gateways/example${view}`))
+                .body.data.markdown,
+            new RegExp(`First ${title}`),
+        );
+    await writeFile(join(componentRoot, "manifest.json"), manifest("2.0.0"));
+    await writeBundle(docsRoot, "# Second README");
+    await writeFile(join(docsRoot, "USAGE.en.md"), "# Second Usage");
+    await writeFile(join(docsRoot, "TECHNICAL.en.md"), "# Second Technical");
+    const restarted = createDocsRoutes({ sourceRoot, archiveRoot });
+    for (const [view, title] of [
+        ["", "README"],
+        ["/usage", "Usage"],
+        ["/technical", "Technical"],
+    ]) {
+        assert.match(
+            (
+                await request(
+                    restarted,
+                    `/api/v1/docs/latest/gateways/example${view}`,
+                )
+            ).body.data.markdown,
+            new RegExp(`Second ${title}`),
+        );
+        assert.match(
+            (
+                await request(
+                    restarted,
+                    `/api/v1/docs/1.0.0/gateways/example${view}`,
+                )
+            ).body.data.markdown,
+            new RegExp(`First ${title}`),
+        );
+    }
+    const index = await request(restarted, "/api/v1/docs");
+    assert.deepEqual(index.body.data[0].views, ["info", "usage", "technical"]);
+    assert.deepEqual(index.body.data[0].versions, ["2.0.0", "1.0.0"]);
+});
+
+test("incomplete document sources cannot publish a partial version", async (context) => {
+    const fixtureRoot = await mkdtemp(join(tmpdir(), "cognis-doc-atomic-"));
+    context.after(() => rm(fixtureRoot, { recursive: true, force: true }));
+    const sourceRoot = join(fixtureRoot, "src");
+    const componentRoot = join(sourceRoot, "gateways", "example");
+    const docsRoot = join(componentRoot, "docs");
+    const archiveRoot = join(fixtureRoot, "archive");
+    await writeBundle(docsRoot, "# First README");
+    await writeFile(join(componentRoot, "manifest.json"), manifest("1.0.0"));
+    const route = createDocsRoutes({ sourceRoot, archiveRoot });
+    await request(route, "/api/v1/docs");
+    await writeFile(join(componentRoot, "manifest.json"), manifest("2.0.0"));
+    await rm(join(docsRoot, "USAGE.en.md"));
+    await assert.rejects(
+        () => request(route, "/api/v1/docs"),
+        /docs_english_source_missing/,
+    );
+    assert.deepEqual(await readdir(join(archiveRoot, "gateways", "example")), [
+        "1.0.0",
+    ]);
+    await writeFile(join(docsRoot, "USAGE.en.md"), "# Restored Usage");
+    const repaired = await request(
+        route,
+        "/api/v1/docs/2.0.0/gateways/example/usage",
+    );
+    assert.equal(repaired.body.data.markdown, "# Restored Usage");
+});
+
+test("core topic discovery reads a directory bundle and ignores unrelated filenames", async (context) => {
+    const fixtureRoot = await mkdtemp(join(tmpdir(), "cognis-core-doc-"));
+    context.after(() => rm(fixtureRoot, { recursive: true, force: true }));
+    const sourceRoot = join(fixtureRoot, "src");
+    const docsRoot = join(sourceRoot, "docs", "example");
+    const archiveRoot = join(fixtureRoot, "archive");
+    await writeBundle(docsRoot, "# Core Info", true);
+    await writeFile(
+        join(sourceRoot, "package.json"),
+        JSON.stringify({ version: "1.0.0" }),
+    );
+    await writeFile(
+        join(sourceRoot, "docs", "unregistered.en.md"),
+        "# Arbitrary filename",
+    );
+    const route = createDocsRoutes({ sourceRoot, archiveRoot });
+    const index = await request(route, "/api/v1/docs");
+    assert.equal(index.body.data.length, 1);
+    assert.equal(index.body.data[0].slug, "example");
+    assert.equal(
+        (await request(route, "/api/v1/docs/example")).body.data.markdown,
+        "# Core Info",
+    );
+    assert.match(
+        (await request(route, "/api/v1/docs/example/usage")).body.data.markdown,
+        /Concrete usage/,
+    );
+    assert.match(
+        (await request(route, "/api/v1/docs/example/technical")).body.data
+            .markdown,
+        /Public interfaces/,
+    );
+});
+
+test("published documentation links resolve to a complete declared or discovered bundle", async (context) => {
+    const archiveRoot = await mkdtemp(join(tmpdir(), "cognis-doc-links-"));
+    context.after(() => rm(archiveRoot, { recursive: true, force: true }));
+    const index = await initializeDocsStore(
+        join(process.cwd(), "src"),
+        archiveRoot,
+    );
+    const failures = new Set<string>();
+    for (const entry of index.values()) {
+        if (entry.slug.startsWith("changelog/")) continue;
+        for (const view of entry.views)
+            for (const language of ["en", "de", "id", "ja"]) {
+                const content = await readStoredMarkdown(
+                    archiveRoot,
+                    entry,
+                    entry.version,
+                    [language],
+                    view,
+                );
+                for (const link of content!.matchAll(
+                    /\]\(\/docs\/([^\s)#]+)(?:#[^)]*)?\)/g,
+                )) {
+                    let slug = link[1].replace(
+                        /^(?:latest|\d+\.\d+\.\d+)\//,
+                        "",
+                    );
+                    if (index.has(slug)) continue;
+                    slug = slug.replace(/\/(?:info|usage|technical)$/, "");
+                    if (!index.has(slug))
+                        failures.add(`${entry.slug}/${view}: /docs/${link[1]}`);
+                }
+            }
+    }
+    assert.deepEqual([...failures], []);
+});
+
+test("localized changelog branch metadata is preserved without adding a second label", async (context) => {
+    const root = await mkdtemp(join(tmpdir(), "cognis-changelog-language-"));
+    context.after(() => rm(root, { recursive: true, force: true }));
+    const sourceRoot = join(root, "src");
+    const folder = join(sourceRoot, "docs/changelog");
+    await mkdir(folder, { recursive: true });
+    await writeFile(
+        join(sourceRoot, "package.json"),
+        JSON.stringify({ version: "1.0.0" }),
+    );
+    const content = new Map();
+    for (const [language, label] of [
+        ["en", "Feature Branch"],
+        ["de", "Feature-Zweig"],
+        ["id", "Cabang Fitur"],
+        ["ja", "機能ブランチ"],
+    ]) {
+        const markdown = `# Release\n\n**${label}:** feature-example\n`;
+        content.set(language, markdown);
+        await writeFile(
+            join(folder, `feature-example.${language}.md`),
+            markdown,
+        );
+    }
+    const route = createDocsRoutes({
+        sourceRoot,
+        archiveRoot: join(root, "archive"),
+    });
+    for (const [language, markdown] of content)
+        assert.equal(
+            (
+                await request(
+                    route,
+                    `/api/v1/docs/changelog/feature-example?langs=${language}`,
+                )
+            ).body.data.markdown,
+            markdown,
+        );
+});
+
+for (const core of [false, true]) {
+    test(`${core ? "discovered core" : "manifest component"} titles and all views use one language policy across versions`, async (context) => {
+        const root = await mkdtemp(join(tmpdir(), "cognis-doc-locales-"));
+        context.after(() => rm(root, { recursive: true, force: true }));
+        const sourceRoot = join(root, "src");
+        const component = join(
+            sourceRoot,
+            core ? "docs/example" : "gateways/example",
+        );
+        const docsRoot = core ? component : join(component, "docs");
+        const archiveRoot = join(root, "archive");
+        const manifestPath = core
+            ? join(sourceRoot, "package.json")
+            : join(component, "manifest.json");
+        const titles = {
+            en: "English Guide",
+            de: "Deutscher Leitfaden",
+            id: "Panduan Indonesia",
+            ja: "日本語ガイド",
+        };
+        const publish = async (version: string) => {
+            await mkdir(docsRoot, { recursive: true });
+            await writeFile(
+                manifestPath,
+                core ? JSON.stringify({ version }) : manifest(version),
+            );
+            for (const [language, title] of Object.entries(titles)) {
+                for (const [view, name] of Object.entries(
+                    core
+                        ? {
+                              info: "index",
+                              usage: "usage",
+                              technical: "technical",
+                          }
+                        : {
+                              info: "README",
+                              usage: "USAGE",
+                              technical: "TECHNICAL",
+                          },
+                )) {
+                    await writeFile(
+                        join(docsRoot, `${name}.${language}.md`),
+                        `# ${title}\n\n${view} ${version} ${language}`,
+                    );
+                }
+            }
+        };
+        await publish("1.0.0");
+        const route = createDocsRoutes({ sourceRoot, archiveRoot });
+        const slug = core ? "example" : "gateways/example";
+        for (const [languages, expectedLanguage] of [
+            ["ja-JP,en", "ja"],
+            ["fr-CA,id,en", "id"],
+            ["de,en", "de"],
+            ["fr,en", "en"],
+        ] as const) {
+            const query = `?langs=${encodeURIComponent(languages)}`;
+            const index = await request(route, `/api/v1/docs${query}`);
+            assert.equal(index.body.data[0].title, titles[expectedLanguage]);
+            for (const view of ["", "/usage", "/technical"]) {
+                const result = await request(
+                    route,
+                    `/api/v1/docs/latest/${slug}${view}${query}`,
+                );
+                assert.equal(result.status, 200);
+                assert.match(
+                    result.body.data.markdown,
+                    new RegExp(`1.0.0 ${expectedLanguage}$`),
+                );
+            }
+        }
+        await publish("2.0.0");
+        const current = await request(
+            route,
+            `/api/v1/docs/latest/${slug}/usage?langs=ja`,
+        );
+        assert.match(current.body.data.markdown, /2.0.0 ja$/);
+        const archived = await request(
+            route,
+            `/api/v1/docs/1.0.0/${slug}/technical?langs=ja`,
+        );
+        assert.match(archived.body.data.markdown, /1.0.0 ja$/);
+        await rm(component, { recursive: true, force: true });
+        const afterRemoval = await request(route, "/api/v1/docs?langs=ja");
+        assert.equal(afterRemoval.body.data[0].title, titles.ja);
+    });
+}
+
+test("generated changelog navigation and heading use the localized index title", async (context) => {
+    const root = await mkdtemp(join(tmpdir(), "cognis-doc-changelog-title-"));
+    context.after(() => rm(root, { recursive: true, force: true }));
+    const sourceRoot = join(root, "src");
+    const folder = join(sourceRoot, "docs/changelog");
+    await mkdir(folder, { recursive: true });
+    await writeFile(
+        join(sourceRoot, "package.json"),
+        JSON.stringify({ version: "1.0.0" }),
+    );
+    await writeFile(join(folder, "index.en.md"), "# Changelogs\n");
+    await writeFile(join(folder, "index.ja.md"), "# 変更履歴\n");
+    const route = createDocsRoutes({
+        sourceRoot,
+        archiveRoot: join(root, "archive"),
+    });
+    const index = await request(route, "/api/v1/docs?langs=ja,en");
+    assert.equal(
+        index.body.data.find(
+            (entry: { slug: string }) => entry.slug === "changelog",
+        ).title,
+        "変更履歴",
+    );
+    assert.match(
+        (await request(route, "/api/v1/docs/changelog?langs=ja,en")).body.data
+            .markdown,
+        /^# 変更履歴/,
+    );
 });

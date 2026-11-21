@@ -207,6 +207,7 @@ async function mountWelcome(root, { i18n, registeredLanguages, signal }) {
     const composer = createPageComposer(root, {
         signal,
         allowCustomization: false,
+        contentScrolling: false,
         elements: [
             {
                 id: "study-welcome",
@@ -565,6 +566,7 @@ async function mountHub(
     const composer = createPageComposer(root, {
         signal,
         allowCustomization: false,
+        contentScrolling: false,
         elements: [viewElement],
         preferenceKey: isSettingsPath
             ? "study-settings-layout"

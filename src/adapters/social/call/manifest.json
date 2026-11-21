@@ -9,5 +9,10 @@
     "requires": [
         "062a74f5-5699-52fb-98a3-63ec6538bdfc",
         "433cd9f3-5b80-5e7d-911b-1907b9348f26"
-    ]
+    ],
+    "documentation": {
+        "readme": "docs/README.en.md",
+        "usage": "docs/USAGE.en.md",
+        "technical": "docs/TECHNICAL.en.md"
+    }
 }

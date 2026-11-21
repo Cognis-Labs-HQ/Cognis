@@ -14,6 +14,9 @@ export async function mountProvider(ctx) {
         signal: ctx.signal,
         stringsBaseUrls: ["/static/gateways/study/languages"],
     });
+    const { usableTarget } = await ctx.capabilities
+        .get("ui:reuse")
+        .importModule("tutorials/targets.js");
     const ids = {};
     let releaseGuides;
     try {
@@ -21,7 +24,8 @@ export async function mountProvider(ctx) {
             navigation: ".study-subnav-modules",
             languages: ".study-subnav-language-options",
             modules: ".study-hub-modules",
-            dictionary: "[data-study-dictionary-search]",
+            dictionary:
+                ".study-dictionary-toggle, [data-study-dictionary-search]",
             settings: "[data-study-settings]",
             drawingCanvas: ".study-drawing-host .study-drawing-pad canvas",
             drawingTools: ".study-drawing-host .study-drawing-controls",
@@ -33,7 +37,9 @@ export async function mountProvider(ctx) {
                     available: () =>
                         window.location.pathname.startsWith("/study"),
                     resolve: () => {
-                        const all = document.querySelectorAll(selector);
+                        const all = [
+                            ...document.querySelectorAll(selector),
+                        ].filter((element) => usableTarget(element, document));
                         return all.length === 1 ? all[0] : null;
                     },
                 },

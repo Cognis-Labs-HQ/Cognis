@@ -2,6 +2,7 @@
  * Computes visible tutorial geometry without changing targets or scrolling their owners.
  * Public exports: clipRect — intersects rectangles; tutorialViewport — excludes shell chrome;
  * visibleTargetRect — clips a padded target to its scrolling ancestors and viewport;
+ * calloutViewport — reclaims header space for readable explanations on short screens;
  * shadeRegions — subtracts highlight and control rectangles from the page shade.
  * @example const visible = visibleTargetRect(target, tutorialViewport(window, document, target), 8);
  */
@@ -65,6 +66,22 @@ export function tutorialViewport(window, document, target, layer = "page") {
         offsetTop: top,
         width,
         height: Math.max(0, bottom - top),
+    };
+}
+
+/**
+ * Keeps the footer boundary while allowing short-screen explanations above the header.
+ * @param {object} viewport Page area after shell exclusion.
+ * @param {Window} window Owner window with visual viewport offsets.
+ * @returns {object} Available explanation and action area.
+ */
+export function calloutViewport(viewport, window) {
+    if (viewport.height >= 240) return viewport;
+    const top = window.visualViewport?.offsetTop ?? 0;
+    return {
+        ...viewport,
+        offsetTop: top,
+        height: viewport.offsetTop + viewport.height - top,
     };
 }
 

@@ -11,7 +11,7 @@
  *
  * @param {string} path API route that returns `{ data: { markdown: string } }`.
  * @param {{ transformMarkdown?: (markdown: string) => string }} [options]
- * Optional Markdown transformation applied before rendering.
+ * Optional Markdown transformation and renderer settings applied before rendering.
  * @returns {Promise<string>} Rendered HTML generated from the markdown payload.
  */
 import { apiFetch } from "./api-client.js";
@@ -27,5 +27,6 @@ export async function loadMarkdownDocumentHtml(path, options = {}) {
     const transformedMarkdown = options.transformMarkdown
         ? options.transformMarkdown(markdown)
         : markdown;
-    return renderMarkdown(transformedMarkdown);
+    const { transformMarkdown, ...renderOptions } = options;
+    return renderMarkdown(transformedMarkdown, renderOptions);
 }

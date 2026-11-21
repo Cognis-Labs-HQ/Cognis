@@ -6,5 +6,10 @@
     "hasAdapters": false,
     "required": true,
     "description": "Vendor-neutral runtime and browser performance telemetry.",
-    "publisher": "Cognis Labs HQ"
+    "publisher": "Cognis Labs HQ",
+    "documentation": {
+        "readme": "docs/README.en.md",
+        "usage": "docs/USAGE.en.md",
+        "technical": "docs/TECHNICAL.en.md"
+    }
 }

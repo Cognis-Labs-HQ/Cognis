@@ -27,15 +27,6 @@ export const guides = [
                     },
                     {
                         highlightNext: true,
-                        id: "posts",
-                        selector: "[data-profile-post-list]",
-                        titleKey:
-                            "module.social.profile.tutorial.profile.posts.title",
-                        bodyKey:
-                            "module.social.profile.tutorial.profile.posts.body",
-                    },
-                    {
-                        highlightNext: true,
                         id: "preview-post",
                         when: ({ targetAvailable }) => targetAvailable,
                         selector: "#profile-post-preview-toggle",
@@ -43,6 +34,15 @@ export const guides = [
                             "module.social.profile.tutorial.profile.preview.post.title",
                         bodyKey:
                             "module.social.profile.tutorial.profile.preview.post.body",
+                    },
+                    {
+                        highlightNext: true,
+                        id: "posts",
+                        selector: "[data-profile-post-list]",
+                        titleKey:
+                            "module.social.profile.tutorial.profile.posts.title",
+                        bodyKey:
+                            "module.social.profile.tutorial.profile.posts.body",
                     },
                 ],
             },

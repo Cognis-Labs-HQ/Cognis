@@ -1,3 +1,7 @@
+import {
+    composerPresentation,
+    applyComposerPresentation,
+} from "./presentation.js";
 /** Sub-composer helpers for nested page composer sections.
  * Export: createSubComposerHandlers(deps). @param {object} deps @returns {object}
  */
@@ -6,10 +10,18 @@ import {
     checkPlacement,
     gridStep,
     halfGrid,
-    snapGridFloor,
     snapGridRound,
 } from "./grid-math.js";
+import {
+    isCompactComposer,
+    resolveComposerResize,
+} from "./responsive-layout.js";
 import { createSubComposerPanelHandlers } from "./sub-composer-panel.js";
+import {
+    resolveInitialGridWidth,
+    resolveGridWidthBounds,
+} from "./grid-sizing.js";
+import { bindLayoutKeyboard } from "./keyboard-layout.js";
 export function createSubComposerHandlers({
     i18n,
     UNIT,
@@ -39,6 +51,7 @@ export function createSubComposerHandlers({
         state.container.style.width = "";
         const width = state.container.getBoundingClientRect().width;
         state.gridCols = Math.max(1, Math.floor(width / UNIT));
+        state.gridTrackSize = width / state.gridCols;
         const visiblePlacements = (state.layout?.placements ?? []).filter(
             (p) => !(state.layout?.hidden ?? []).includes(p.id),
         );
@@ -52,7 +65,7 @@ export function createSubComposerHandlers({
             maxBottom + extra,
         );
         state.container.style.minHeight = `${state.gridRows * UNIT}px`;
-        state.container.style.width = `${state.gridCols * UNIT}px`;
+        state.container.style.width = "";
     }
 
     function canSubPlace(state, col, row, w, h, excludeId) {
@@ -114,7 +127,7 @@ export function createSubComposerHandlers({
         return candidate;
     }
 
-    function initializeSubPlacements(state) {
+    function initializeSubPlacements(state, { reveal = [] } = {}) {
         if (!state.layout.placements) state.layout.placements = [];
         if (!state.layout.hidden) state.layout.hidden = [];
         state.layout.placements = state.layout.placements.filter((p) =>
@@ -127,18 +140,18 @@ export function createSubComposerHandlers({
             if (state.layout.hidden.includes(element.id)) continue;
             if (state.layout.placements.some((p) => p.id === element.id))
                 continue;
-            if (element.defaultHidden && !element.pinned) {
+            if (
+                element.defaultHidden &&
+                !element.pinned &&
+                !reveal.includes(element.id)
+            ) {
                 state.layout.hidden.push(element.id);
                 continue;
             }
             const gridSize = getGridSize(element);
             const cStep = gridStep(state.gridCols);
             const rStep = gridStep(state.gridRows);
-            const baseW = gridSize.fullWidth
-                ? state.gridCols
-                : gridSize.halfWidth
-                  ? Math.max(gridSize.min[0], halfGrid(state.gridCols))
-                  : Math.min(gridSize.default[0], state.gridCols);
+            const baseW = resolveInitialGridWidth(gridSize, state.gridCols);
             const baseH = gridSize.halfHeight
                 ? Math.max(gridSize.min[1], halfGrid(state.gridRows))
                 : gridSize.default[1];
@@ -149,7 +162,10 @@ export function createSubComposerHandlers({
                     : Math.max(0, state.gridCols - baseW);
                 for (let col = 0; col <= colLimit; col += cStep) {
                     const w = gridSize.fillWidth
-                        ? Math.max(gridSize.min[0], state.gridCols - col)
+                        ? Math.min(
+                              state.gridCols,
+                              Math.max(gridSize.min[0], state.gridCols - col),
+                          )
                         : gridSize.halfWidth &&
                             col + baseW + cStep === state.gridCols
                           ? baseW + cStep
@@ -212,11 +228,11 @@ export function createSubComposerHandlers({
         overlay.className = "composer-grid-overlay";
         overlay.style.left = "0";
         overlay.style.top = "0";
-        overlay.style.width = `${state.gridCols * UNIT}px`;
+        overlay.style.width = `${state.gridCols * state.gridTrackSize}px`;
         overlay.style.height = `${state.gridRows * UNIT}px`;
         const cStep = gridStep(state.gridCols);
         const rStep = gridStep(state.gridRows);
-        const cellW = UNIT * cStep;
+        const cellW = state.gridTrackSize * cStep;
         const cellH = UNIT * rStep;
         for (let r = 0; r < state.gridRows; r += rStep) {
             for (let c = 0; c < state.gridCols; c += cStep) {
@@ -225,7 +241,7 @@ export function createSubComposerHandlers({
                     cStep < 1 || rStep < 1
                         ? "composer-grid-cell composer-grid-cell--half"
                         : "composer-grid-cell";
-                cell.style.left = `${c * UNIT}px`;
+                cell.style.left = `${c * state.gridTrackSize}px`;
                 cell.style.top = `${r * UNIT}px`;
                 cell.style.width = `${cellW}px`;
                 cell.style.height = `${cellH}px`;
@@ -246,9 +262,9 @@ export function createSubComposerHandlers({
 
             const shade = document.createElement("div");
             shade.className = "composer-shade";
-            shade.style.left = `${placement.col * UNIT}px`;
+            shade.style.left = `${placement.col * state.gridTrackSize}px`;
             shade.style.top = `${placement.row * UNIT}px`;
-            shade.style.width = `${placement.w * UNIT}px`;
+            shade.style.width = `${placement.w * state.gridTrackSize}px`;
             shade.style.height = `${placement.h * UNIT}px`;
             state.container.appendChild(shade);
 
@@ -269,16 +285,17 @@ export function createSubComposerHandlers({
                 const y = e.clientY - gridRect.top;
                 if (direction === "e" || direction === "se") {
                     const rawW = snapGridRound(
-                        (x - placement.col * UNIT) / UNIT,
+                        x / state.gridTrackSize - placement.col,
                         state.gridCols,
                     );
-                    const maxW = gridSize.max
-                        ? gridSize.max[0]
-                        : state.gridCols - placement.col;
+                    const widthBounds = resolveGridWidthBounds(
+                        gridSize,
+                        state.gridCols - placement.col,
+                    );
                     currentW = clampValue(
                         rawW,
-                        gridSize.min[0],
-                        Math.min(maxW, state.gridCols - placement.col),
+                        widthBounds.min,
+                        widthBounds.max,
                     );
                 }
                 if (direction === "s" || direction === "se") {
@@ -292,7 +309,7 @@ export function createSubComposerHandlers({
                         gridSize.max ? gridSize.max[1] : null,
                     );
                 }
-                shade.style.width = `${currentW * UNIT}px`;
+                shade.style.width = `${currentW * state.gridTrackSize}px`;
                 shade.style.height = `${currentH * UNIT}px`;
                 shade.classList.toggle(
                     "composer-shade--invalid",
@@ -307,12 +324,13 @@ export function createSubComposerHandlers({
                 );
             }
 
-            function onUp() {
+            function onUp(event) {
                 handle.removeEventListener("pointermove", onMove);
                 handle.removeEventListener("pointerup", onUp);
                 handle.removeEventListener("pointercancel", onUp);
                 shade.remove();
                 cell.classList.remove("composer-cell--resizing");
+                if (event.type === "pointercancel") return;
                 const sizeChanged =
                     currentW !== placement.w || currentH !== placement.h;
                 const valid = canSubPlace(
@@ -345,13 +363,24 @@ export function createSubComposerHandlers({
         const cell = document.createElement("div");
         cell.className = "composer-cell";
         cell.dataset.composerElement = el.id;
-        cell.style.left = `${placement.col * UNIT}px`;
+        cell.style.left = `${placement.col * state.gridTrackSize}px`;
         cell.style.top = `${placement.row * UNIT}px`;
-        cell.style.width = `${placement.w * UNIT}px`;
+        cell.style.width = `${placement.w * state.gridTrackSize}px`;
         cell.style.height = `${placement.h * UNIT}px`;
 
         if (state.editing) {
             cell.classList.add("composer-cell--editable");
+            bindLayoutKeyboard({
+                cell,
+                placement,
+                state,
+                gridSize: getGridSize(el),
+                canPlace: (...args) => canSubPlace(state, ...args),
+                findSwapCandidate: (...args) =>
+                    findSubSwapCandidate(state, ...args),
+                render: () => renderSubGrid(state),
+                i18n,
+            });
 
             cell.addEventListener("pointerdown", (e) => {
                 if (e.button !== 0) return;
@@ -361,9 +390,9 @@ export function createSubComposerHandlers({
 
                 const shade = document.createElement("div");
                 shade.className = "composer-shade";
-                shade.style.left = `${placement.col * UNIT}px`;
+                shade.style.left = `${placement.col * state.gridTrackSize}px`;
                 shade.style.top = `${placement.row * UNIT}px`;
-                shade.style.width = `${placement.w * UNIT}px`;
+                shade.style.width = `${placement.w * state.gridTrackSize}px`;
                 shade.style.height = `${placement.h * UNIT}px`;
                 state.container.appendChild(shade);
 
@@ -412,7 +441,7 @@ export function createSubComposerHandlers({
                         Math.min(
                             state.gridCols - placement.w,
                             snapGridRound(
-                                x / UNIT - placement.w / 2,
+                                x / state.gridTrackSize - placement.w / 2,
                                 state.gridCols,
                             ),
                         ),
@@ -432,7 +461,7 @@ export function createSubComposerHandlers({
 
                     currentCol = col;
                     currentRow = row;
-                    shade.style.left = `${col * UNIT}px`;
+                    shade.style.left = `${col * state.gridTrackSize}px`;
                     shade.style.top = `${row * UNIT}px`;
 
                     if (
@@ -482,6 +511,7 @@ export function createSubComposerHandlers({
                     }
                     shade.remove();
                     cell.classList.remove("composer-cell--dragging");
+                    if (e.type === "pointercancel") return;
 
                     const panel = document.getElementById(
                         getSubPanelId(state.preferenceKey),
@@ -582,7 +612,11 @@ export function createSubComposerHandlers({
 
         const content = document.createElement("div");
         content.className = "widget-card composer-cell-content";
-        content.innerHTML = el.render();
+        content.inert = state.editing;
+        cell.setAttribute("aria-label", el.label ?? el.id);
+        const presentation = composerPresentation(state.container);
+        applyComposerPresentation(state.container, content, presentation);
+        content.innerHTML = el.render(presentation);
         cell.appendChild(content);
 
         if (state.editing) {
@@ -633,7 +667,7 @@ export function createSubComposerHandlers({
         renderSubGrid,
     });
 
-    function renderSubGrid(state) {
+    function renderSubGrid(state, { preserveContent = false } = {}) {
         document.getElementById(getSubPanelId(state.preferenceKey))?.remove();
 
         if (!state.layout || (state.layout.order && !state.layout.placements)) {
@@ -648,12 +682,26 @@ export function createSubComposerHandlers({
             loadPersistedFormState(state.preferenceKey),
             captureFormState(state.container),
         );
-        state.container.innerHTML = "";
+        const retainedCards = new Map(
+            preserveContent && !state.editing
+                ? Array.from(state.container.children)
+                      .filter((card) =>
+                          card.matches(".widget-card[data-composer-element]"),
+                      )
+                      .map((card) => [card.dataset.composerElement, card])
+                : [],
+        );
+        let renderedNewContent = !retainedCards.size;
+        if (!retainedCards.size) state.container.innerHTML = "";
+        state.container.classList.toggle(
+            "sub-composer--compact",
+            !state.editing && isCompactComposer(state.container),
+        );
 
         if (state.editing) {
             state.container.classList.add("composer-grid-active");
             state.container.style.minHeight = `${state.gridRows * UNIT}px`;
-            state.container.style.width = `${state.gridCols * UNIT}px`;
+            state.container.style.width = "";
             state.container.appendChild(createSubGridOverlay(state));
 
             const visiblePlacements = state.layout.placements.filter(
@@ -678,17 +726,38 @@ export function createSubComposerHandlers({
             }
 
             const sorted = computeSubViewPlacements(state);
+            const visibleIds = new Set(sorted.map((placement) => placement.id));
+            for (const [id, card] of retainedCards) {
+                if (!visibleIds.has(id)) card.remove();
+            }
 
             for (const placement of sorted) {
                 const element = state.elements.find(
                     (e) => e.id === placement.id,
                 );
                 if (!element) continue;
-                const card = document.createElement("div");
-                card.className = "widget-card";
-                card.dataset.composerElement = element.id;
-                card.innerHTML = element.render();
-                state.container.appendChild(card);
+                let card = retainedCards.get(element.id);
+                if (!card) {
+                    renderedNewContent = true;
+                    card = document.createElement("div");
+                    card.className = "widget-card";
+                    card.dataset.composerElement = element.id;
+                    card.innerHTML = element.render(
+                        composerPresentation(state.container),
+                    );
+                }
+                applyComposerPresentation(
+                    state.container,
+                    card,
+                    composerPresentation(state.container),
+                );
+                const position = sorted.indexOf(placement);
+                if (state.container.children[position] !== card) {
+                    state.container.insertBefore(
+                        card,
+                        state.container.children[position] ?? null,
+                    );
+                }
             }
         }
 
@@ -701,7 +770,7 @@ export function createSubComposerHandlers({
         restoreFormState(state.container, subGridFormSnapshot);
         bindFormDraftPersistence(state.container, state.preferenceKey);
 
-        state.onRender?.();
+        if (renderedNewContent) state.onRender?.();
     }
 
     async function mountSubComposer(el, sectionContainer) {
@@ -752,6 +821,8 @@ export function createSubComposerHandlers({
         computeSubGridDimensions(state);
         renderSubGrid(state);
         state.lastObservedCols = state.gridCols;
+        state.lastObservedCompact = isCompactComposer(state.container);
+        state.lastObservedWidth = state.container.getBoundingClientRect().width;
 
         if (state.resizeObserver) {
             state.resizeObserver.disconnect();
@@ -766,14 +837,34 @@ export function createSubComposerHandlers({
             state.container.style.width = "";
             const width = state.container.getBoundingClientRect().width;
             const newCols = Math.max(1, Math.floor(width / UNIT));
-            if (newCols !== state.lastObservedCols) {
+            const compact = isCompactComposer(state.container);
+            const resize = resolveComposerResize(
+                {
+                    columns: state.lastObservedCols,
+                    compact: state.lastObservedCompact,
+                    width: state.lastObservedWidth,
+                },
+                { columns: newCols, compact, width },
+                state.editing,
+            );
+            if (resize.render) {
                 state.lastObservedCols = newCols;
+                state.lastObservedCompact = compact;
+                state.lastObservedWidth = width;
                 state.gridCols = newCols;
-                if (!state.editing) {
+                if (resize.reflow) {
+                    const visible = computeSubViewPlacements(state);
+                    const adjusted = new Map(
+                        visible.map((placement) => [placement.id, placement]),
+                    );
+                    state.layout.placements = state.layout.placements.map(
+                        (placement) => adjusted.get(placement.id) ?? placement,
+                    );
+                } else if (!state.editing) {
                     applySubLayoutForCurrentGridColumns(state);
                 }
                 computeSubGridDimensions(state);
-                renderSubGrid(state);
+                renderSubGrid(state, { preserveContent: true });
             }
         });
         state.resizeObserver.observe(sectionContainer);
@@ -794,7 +885,13 @@ export function createSubComposerHandlers({
         state.container = null;
     }
 
+    function destroy() {
+        for (const id of subStates.keys()) unmountSubComposer({ id });
+        subStates.clear();
+    }
+
     return {
+        destroy,
         mountSubComposer,
         unmountSubComposer,
         renderSubGrid,

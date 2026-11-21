@@ -23,5 +23,5 @@
   <string name="module.social.profile.tutorial.profile.social.actions.title">交流の操作</string>
   <string name="module.social.profile.tutorial.profile.social.actions.body">プロフィールの操作からフォロー、メッセージ、関係の管理を行えます。相手を確認してから操作します。</string>
   <string name="module.social.profile.tutorial.profile.preview.post.title">投稿をプレビューする</string>
-  <string name="module.social.profile.tutorial.profile.preview.post.body">投稿を書き、書式と添付内容をプレビューします。公開前に対象読者を確認します。</string>
+  <string name="module.social.profile.tutorial.profile.preview.post.body">プレビューで公開前の最新のタイトルと本文を確認できます。作成画面に戻ったり端末の向きを変えたりしても下書きは保持されます。</string>
 </resources>

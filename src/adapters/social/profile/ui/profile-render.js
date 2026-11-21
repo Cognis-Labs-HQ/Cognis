@@ -12,8 +12,8 @@ import { getRoleLabel, normalizeRoleValue } from "/static/reuse/access-role.js";
 const POST_TITLE_MAX_CHARACTERS = 120;
 const POST_CONTENT_MAX_CHARACTERS = 1000;
 const PROFILE_ROLE_ICON_PATHS = {
-    owner: "/static/assets/reuse/crown.svg",
-    admin: "/static/assets/reuse/wrench.svg",
+    owner: "/static/adapters/social/profile/assets/crown.svg",
+    admin: "/static/adapters/social/profile/assets/wrench.svg",
 };
 const PROFILE_ROLE_ICON_ROLES = new Set(["owner", "admin", "teacher"]);
 
@@ -272,7 +272,7 @@ export function renderHero({
           aria-label="${escapeHtml(i18n.t("ui.app.profile.banner_menu_label"))}"
           aria-haspopup="true"
           aria-expanded="false"
-        >&#9776;</button>
+        ><span class="profile-banner-options-icon" aria-hidden="true"></span></button>
         <div class="profile-banner-menu-dropdown" hidden>
           <label class="profile-banner-menu-item profile-banner-height-label">
             <input
@@ -381,7 +381,7 @@ export function renderHero({
                     data-message-target="${escapeHtml(profile?.handle ?? "")}"
                     aria-label="${escapeHtml(i18n.t("ui.reuse.message"))}"
                     title="${escapeHtml(i18n.t("ui.reuse.message"))}"
-                  ><img src="/static/assets/reuse/message-light.svg" alt="" class="profile-message-icon profile-message-icon--light" /><img src="/static/assets/reuse/message-dark.svg" alt="" class="profile-message-icon profile-message-icon--dark" /></button>`
+                  ><img src="/static/adapters/social/profile/assets/message-light.svg" alt="" class="profile-message-icon profile-message-icon--light" /><img src="/static/adapters/social/profile/assets/message-dark.svg" alt="" class="profile-message-icon profile-message-icon--dark" /></button>`
                 : ""
         }
         <button

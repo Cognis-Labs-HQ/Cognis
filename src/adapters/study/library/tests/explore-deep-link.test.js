@@ -1,8 +1,5 @@
 import { guides } from "../ui/app/guides.js";
-import {
-    loadTestModule,
-    importTestModule,
-} from "../../../../tooling/reuse/test-module.ts";
+import { importTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 import vm from "node:vm";
@@ -13,6 +10,11 @@ test("a directly opened Explore card path opens the requested preview without hi
     const entry = { id: "requested-card", schemaId: "ja", layer: "words" };
     const opened = [];
     const fetched = [];
+    const navigationSlot = {
+        id: "study-subnav",
+        render: () => "Study navigation",
+    };
+    const navigationModels = [];
     const context = vm.createContext({
         window: {
             location: {
@@ -33,7 +35,14 @@ test("a directly opened Explore card path opens the requested preview without hi
         fetchLibraryForms: async () => [],
         canCreateLayerEntries: () => false,
         applyDocumentTitle() {},
-        createPageComposer: () => ({ init: async () => {} }),
+        createStudySubNavigationSlot: (model) => {
+            navigationModels.push(model);
+            return navigationSlot;
+        },
+        createPageComposer: (_root, options) => {
+            assert.equal(options.subNavigation[0], navigationSlot);
+            return { init: async () => {} };
+        },
         librarySelectionFloatingMenu: () => [],
         bindStudySubNavigation() {},
         bindLibraryInteractions() {},
@@ -44,30 +53,13 @@ test("a directly opened Explore card path opens the requested preview without hi
         openEntryPopup: async (...args) => opened.push(args),
         mountWhenDirect: async () => {},
     });
-    context.createStudySubNavigationSlot = loadTestModule(
-        new URL(
-            "../../../../gateways/study/ui/sub-navigation.js",
-            import.meta.url,
-        ),
+    const workspace = await importTestModule(
+        new URL("../ui/app/layer/workspace.js", import.meta.url),
         {
-            "/static/reuse/offline-state.js": { isOffline: () => false },
-            "./navigation-client.js": {
-                fetchStudyPreferences: () => {
-                    throw new Error("unexpected_study_preferences_read");
-                },
-            },
-            "./reuse/explore.js": context,
-            "/static/reuse/mount-scope.js": context,
-            "/static/reuse/toast.js": context,
-            "/static/reuse/form-builder.js": context,
-            "/static/reuse/escape-html.js": context,
-            "/static/reuse/ui-ctx.js": context,
-            "/static/reuse/spa-route-registry.js": context,
-            "/static/gateways/study/language.js": context,
-            "/static/gateways/study/library-client.js": context,
+            "../layer-cards.js": { renderBrowser: context.renderBrowser },
         },
         context,
-    ).createStudySubNavigationSlot;
+    );
     context.mountLayer = (
         await importTestModule(
             new URL("../ui/app/layer/index.js", import.meta.url),
@@ -112,7 +104,7 @@ test("a directly opened Explore card path opens the requested preview without hi
                         context.createStudySubNavigationSlot,
                 },
                 "../data.js": { loadLibrary: context.loadLibrary },
-                "../layer-cards.js": { renderBrowser: context.renderBrowser },
+                "./workspace.js": workspace,
                 "../filters.js": {
                     refreshLibraryFilterResults:
                         context.refreshLibraryFilterResults,
@@ -143,6 +135,7 @@ test("a directly opened Explore card path opens the requested preview without hi
         )
     ).mount;
     await context.mountLayer({ querySelectorAll: () => [] });
+    assert.equal(navigationModels[0].selectedLanguageCode, "ja");
     assert.deepEqual(fetched, [entry.id]);
     assert.equal(opened[0][1], entry);
     assert.equal(opened[0][5], "ja");

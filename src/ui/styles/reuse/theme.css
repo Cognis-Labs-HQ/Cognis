@@ -133,6 +133,11 @@ button {
     font-size: inherit;
 }
 
+html {
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
 body {
     margin: 0;
     background: var(--bg);
@@ -145,6 +150,14 @@ body {
         Arial, sans-serif;
     font-size: var(--app-font-size);
     line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 640px) {
+    :where(input:not([type="checkbox"]):not([type="radio"]), select, textarea) {
+        font-size: max(1em, 16px);
+        max-width: 100%;
+    }
 }
 
 a {
@@ -178,6 +191,7 @@ body[data-theme="light"] {
     --bg-attachment: fixed, scroll;
     --surface: rgba(255, 255, 255, 0.92);
     --surface-2: rgba(248, 250, 255, 0.96);
+    --surface-soft: color-mix(in srgb, var(--text) 6%, transparent);
     --text: #0f172a;
     --text-muted: #475569;
     --border: rgba(100, 116, 139, 0.3);

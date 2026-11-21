@@ -104,12 +104,13 @@
 
 .profile-post-header {
     display: flex;
-    align-items: center;
+    align-items: baseline;
     flex-wrap: wrap;
     gap: 8px;
 }
 
 .profile-post-title {
+    flex: 1 1 10rem;
     font-size: 0.95rem;
     color: var(--text);
 }
@@ -117,7 +118,7 @@
 .profile-post-date {
     font-size: 0.78rem;
     color: var(--text-muted);
-    margin-left: auto;
+    margin-left: 0;
 }
 
 .profile-post-body {
@@ -216,25 +217,6 @@
     margin-left: auto;
 }
 
-@media (max-width: 900px) {
-    .profile-hero--full-banner .profile-hero-content {
-        max-width: 100%;
-        width: 100%;
-    }
-
-    .profile-hero-stats-bio {
-        flex-direction: column;
-    }
-
-    .profile-hero-stats-bio .profile-hero-stats {
-        flex-shrink: 1;
-    }
-
-    .profile-hero-bio-wrap {
-        max-width: 100%;
-    }
-}
-
 .profile-not-found-message {
     padding: 2rem;
     color: var(--text-muted);
@@ -287,4 +269,93 @@
 
 .profile-hero-unblock-btn:hover {
     background: var(--surface-3, #e8e8e8);
+}
+
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
+    .profile-hero {
+    grid-template-rows: clamp(7rem, 25cqi, 12rem) auto;
+    min-width: 0;
+}
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
+    .profile-hero--full-banner
+    .profile-hero-content {
+    grid-row: 2;
+    width: 100%;
+    max-height: none;
+    pointer-events: auto;
+}
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
+    .profile-hero-stats-bio {
+    flex-direction: column;
+}
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
+    .profile-hero-bio-wrap {
+    max-width: 100%;
+    max-height: none;
+    border-left: 0;
+}
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
+    .profile-hero-bio {
+    overflow: visible;
+    max-height: none;
+}
+.profile-hero-display-name,
+.profile-hero-handle,
+.profile-post-title,
+.profile-post-body {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
+    .profile-post-card {
+    border-radius: 0;
+    border-width: 0 0 1px;
+    padding: 1rem 0.25rem;
+    background: transparent;
+}
+[data-composer-touch="true"]
+    :is(
+        .profile-hero-edit-btn,
+        .profile-hero-follow-btn,
+        .profile-hero-block-btn,
+        .profile-message-button,
+        .profile-compose-mode-toggle,
+        .post-delete-btn
+    ) {
+    min-height: 44px;
+    min-width: 44px;
+}
+[data-composer-touch="true"]
+    :is(.profile-banner-menu-btn, .profile-avatar-remove-btn) {
+    opacity: 1;
+}
+
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
+    .profile-hero-identity {
+    flex-basis: 100%;
+    padding-top: 0;
+}
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
+    .profile-hero-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
+    .profile-stat-label {
+    text-transform: none;
+    letter-spacing: normal;
+    overflow-wrap: anywhere;
+}
+
+[data-composer-touch="true"]
+    :is(
+        .profile-banner-menu-item,
+        .profile-avatar-remove-btn,
+        .profile-follow-btn
+    ) {
+    min-height: 44px;
+    min-width: 44px;
 }

@@ -7,5 +7,10 @@
     "requires": ["433cd9f3-5b80-5e7d-911b-1907b9348f26"],
     "entrypoints": {
         "cli": "./cli/index.js"
+    },
+    "documentation": {
+        "readme": "docs/README.en.md",
+        "usage": "docs/USAGE.en.md",
+        "technical": "docs/TECHNICAL.en.md"
     }
 }

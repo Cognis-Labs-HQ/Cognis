@@ -3,6 +3,8 @@
  */
 import { halfGrid, snapGridFloor } from "./grid-math.js";
 
+import { resolveInitialGridWidth } from "./grid-sizing.js";
+import { fitComposerPanel } from "./responsive-layout.js";
 export function createSubComposerPanelHandlers({
     i18n,
     UNIT,
@@ -20,17 +22,12 @@ export function createSubComposerPanelHandlers({
 }) {
     function bindSubPanelItemDrag(item, el, state) {
         item.addEventListener("pointerdown", (e) => {
-            if (e.button !== 0) return;
+            if (e.button !== 0 || e.target.closest("button")) return;
             e.preventDefault();
             item.setPointerCapture(e.pointerId);
 
             const gridSize = getGridSize(el);
-            const w =
-                gridSize.fullWidth || gridSize.fillWidth
-                    ? state.gridCols
-                    : gridSize.halfWidth
-                      ? Math.max(gridSize.min[0], halfGrid(state.gridCols))
-                      : Math.min(gridSize.default[0], state.gridCols);
+            const w = resolveInitialGridWidth(gridSize, state.gridCols);
             const h = gridSize.fillHeight
                 ? state.gridRows
                 : gridSize.halfHeight
@@ -52,7 +49,7 @@ export function createSubComposerPanelHandlers({
                     if (!shade) {
                         shade = document.createElement("div");
                         shade.className = "composer-shade";
-                        shade.style.width = `${w * UNIT}px`;
+                        shade.style.width = `${w * state.gridTrackSize}px`;
                         shade.style.height = `${h * UNIT}px`;
                         state.container.appendChild(shade);
                     }
@@ -60,13 +57,17 @@ export function createSubComposerPanelHandlers({
                         0,
                         Math.min(
                             state.gridCols - w,
-                            snapGridFloor(x, state.gridCols),
+                            snapGridFloor(
+                                x,
+                                state.gridCols,
+                                state.gridTrackSize,
+                            ),
                         ),
                     );
                     const row = Math.max(0, snapGridFloor(y, state.gridRows));
                     currentCol = col;
                     currentRow = row;
-                    shade.style.left = `${col * UNIT}px`;
+                    shade.style.left = `${col * state.gridTrackSize}px`;
                     shade.style.top = `${row * UNIT}px`;
                     shade.classList.toggle(
                         "composer-shade--invalid",
@@ -82,11 +83,12 @@ export function createSubComposerPanelHandlers({
                 }
             }
 
-            function onUp() {
+            function onUp(event) {
                 item.removeEventListener("pointermove", onMove);
                 item.removeEventListener("pointerup", onUp);
                 item.removeEventListener("pointercancel", onUp);
                 if (shade) shade.remove();
+                if (event.type === "pointercancel") return;
                 if (
                     overGrid &&
                     canSubPlace(state, currentCol, currentRow, w, h, null)
@@ -128,7 +130,7 @@ export function createSubComposerPanelHandlers({
             listHtml = hiddenElements
                 .map(
                     (el) =>
-                        `<li class="composer-library-item" data-composer-panel-item="${el.id}"><span>${el.label}</span></li>`,
+                        `<li class="composer-library-item" data-composer-panel-item="${el.id}"><span>${el.label}</span><button type="button" class="composer-add-btn btn-confirm">${i18n.t("ui.reuse.add")}</button></li>`,
                 )
                 .join("");
         }
@@ -163,6 +165,7 @@ export function createSubComposerPanelHandlers({
         }
 
         document.body.appendChild(panel);
+        fitComposerPanel(panel);
 
         const dragHandle = panel.querySelector(`#${panelId}-drag-handle`);
         if (dragHandle) {
@@ -194,6 +197,7 @@ export function createSubComposerPanelHandlers({
                     );
                     panel.style.left = `${newLeft}px`;
                     panel.style.top = `${newTop}px`;
+                    fitComposerPanel(panel);
                     state.panelPosition = { top: newTop, left: newLeft };
                 }
                 function onUp() {
@@ -264,6 +268,16 @@ export function createSubComposerPanelHandlers({
             const elId = item.dataset.composerPanelItem;
             const element = state.elements.find((e) => e.id === elId);
             if (element) bindSubPanelItemDrag(item, element, state);
+            item.querySelector(".composer-add-btn")?.addEventListener(
+                "click",
+                () => {
+                    state.layout.hidden = state.layout.hidden.filter(
+                        (id) => id !== elId,
+                    );
+                    initializeSubPlacements(state, { reveal: [elId] });
+                    renderSubGrid(state);
+                },
+            );
         });
     }
 

@@ -236,7 +236,7 @@
   <string name="adapter.study.library.tutorial.requests.follow.request.outcome.title">Anfrage verfolgen</string>
   <string name="adapter.study.library.tutorial.requests.follow.request.outcome.body">Öffnen Sie Ihre Anfrage für vorgeschlagene Änderungen und die aktuelle Entscheidung. Beachten Sie Rückmeldungen vor einer korrigierten Anfrage.</string>
   <string name="adapter.study.library.tutorial.explore.read.details.title">Kartendetails lesen</string>
-  <string name="adapter.study.library.tutorial.explore.read.details.body">Die Detailansicht verbindet Bedeutungen, Lesungen, Beispiele und verknüpfte Einträge. Folge diesen Beziehungen, um die Verwendung der Karte zu verstehen.</string>
+  <string name="adapter.study.library.tutorial.explore.read.details.body">Hier findest du Bedeutungen, Lesungen, Beispiele und verknüpfte Einträge. Scrolle lange Details, während Zurück und Weiter erreichbar bleiben, und folge Beziehungen, um die Verwendung der Karte zu verstehen.</string>
   <string name="adapter.study.library.tutorial.explore.listen.title">Aussprache Anhören</string>
   <string name="adapter.study.library.tutorial.explore.listen.body">Spielen Sie die Audioaufnahme der Karte ab. Hören Sie erneut zu, bevor Sie die Aussprache selbst üben.</string>
   <string name="adapter.study.library.tutorial.explore.draw.strokes.title">Striche Nachzeichnen</string>

@@ -179,6 +179,11 @@ function renderRoomAvatar(room, currentAccountId) {
     });
 }
 
+/** @param {object} i18n Localized labels. @returns {string} Conversation selection prompt. */
+export function renderConversationPrompt(i18n) {
+    return `<p class="messages-empty">${escapeHtml(i18n.t("module.social.messages.choose_conversation"))}</p>`;
+}
+
 export function renderThreadHeader(
     room,
     currentAccountId,
@@ -208,7 +213,7 @@ export function renderThreadHeader(
     <header class="messages-thread-header" id="messages-thread-header">
       ${renderRoomAvatar(room, currentAccountId)}
       <div class="messages-thread-title-wrap">
-        <h2 class="messages-thread-title">${escapeHtml(selectedRoomTitle(room, currentAccountId))}</h2>
+        <h2 class="messages-thread-title" title="${escapeHtml(selectedRoomTitle(room, currentAccountId))}">${escapeHtml(selectedRoomTitle(room, currentAccountId))}</h2>
         ${renderMemberCountControl(room, members, i18n)}
       </div>
       <div class="messages-thread-actions">
@@ -238,7 +243,7 @@ export function renderRoomList({
     formatRoomListAvatar,
 }) {
     if (!rooms.length) {
-        return `<div class="messages-empty">${escapeHtml(i18n.t("module.social.messages.empty"))}</div>`;
+        return `<li class="messages-empty">${escapeHtml(i18n.t("module.social.messages.empty"))}</li>`;
     }
     const renderRoomItems = (roomItems) =>
         roomItems
@@ -278,12 +283,12 @@ export function renderRoomList({
                 return `
           <li class="messages-room ${isActive ? "messages-room--active" : ""}${archivedClass}${unreadClass}" data-chat-id="${escapeHtml(room.id)}" data-room-id="${escapeHtml(room.id)}" data-search-label="${escapeHtml(titleSource)}" data-search-text="${escapeHtml(`${titleSource} ${preview}`)}">
             ${avatar}
-            <span class="messages-room-meta">
+            <button type="button" class="messages-room-select side-menu-link btn-neutral" aria-label="${escapeHtml(titleSource)}" aria-pressed="${isActive}"><span class="messages-room-meta">
               <span class="messages-room-title" title="${escapeHtml(titleSource)}">${escapeHtml(titleSource)}</span>
               <span class="messages-room-preview">${escapeHtml(preview)}</span>
               ${archivedHint}
             </span>
-            ${unreadBadge}
+            ${unreadBadge}</button>
           </li>
         `;
             })

@@ -244,8 +244,14 @@ if (manifest["/static/app/offline/index.js"]) {
         offlineAssets.add(sourceUrl);
         if (manifest[sourceUrl]) offlineAssets.add(manifest[sourceUrl]);
     }
-    for (const url of logicalSourcePaths.keys()) {
-        if (/\/languages\/[^/]+\/strings\.xml$/.test(url))
+    for (const [url, sourcePath] of logicalSourcePaths) {
+        if (
+            /\/languages\/[^/]+\/strings\.xml$/.test(url) ||
+            (sourcePath.includes("/ui/") &&
+                !sourcePath.includes("/src/ui/public/pages/") &&
+                sourcePath.endsWith(".html") &&
+                !sourcePath.includes("/tests/"))
+        )
             offlineAssets.add(url);
     }
     for (const flag of await walk(

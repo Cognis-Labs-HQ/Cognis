@@ -23,5 +23,5 @@
   <string name="module.social.profile.tutorial.profile.social.actions.title">Social Actions</string>
   <string name="module.social.profile.tutorial.profile.social.actions.body">Follow, message or manage relationships from the profile controls; review the selected person before acting.</string>
   <string name="module.social.profile.tutorial.profile.preview.post.title">Preview A Post</string>
-  <string name="module.social.profile.tutorial.profile.preview.post.body">Compose a post, then preview its formatting and attachments. Check the audience before publishing.</string>
+  <string name="module.social.profile.tutorial.profile.preview.post.body">Preview shows the current title and body before publishing. Return to Compose or rotate the device without losing your draft.</string>
 </resources>

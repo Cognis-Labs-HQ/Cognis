@@ -193,7 +193,7 @@ export async function openEntryPopup(
                     : []),
             ],
             body: composed.body,
-            maxWidth: "min(56rem, 94vw)",
+            surface: "reader",
             closeButtonVariant: "neutral",
             actions: [
                 ...popupNavigationActions(index, active.length, i18n),

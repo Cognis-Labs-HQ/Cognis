@@ -4,5 +4,10 @@
     "name": "Console Logging",
     "version": "1.1.4",
     "publisher": "Cognis Labs HQ",
-    "locked": true
+    "locked": true,
+    "documentation": {
+        "readme": "docs/README.en.md",
+        "usage": "docs/USAGE.en.md",
+        "technical": "docs/TECHNICAL.en.md"
+    }
 }

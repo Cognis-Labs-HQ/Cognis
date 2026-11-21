@@ -10,6 +10,10 @@
     text-align: center;
     text-decoration: none;
     cursor: pointer;
+    max-width: 100%;
+    min-width: 0;
+    overflow-wrap: anywhere;
+    touch-action: manipulation;
 }
 
 .btn-confirm {
@@ -99,4 +103,13 @@ a.btn-neutral {
 [class*="btn-"]:disabled {
     opacity: 0.38;
     cursor: not-allowed;
+}
+
+@media (max-width: 640px), (any-pointer: coarse) {
+    .btn-confirm,
+    .btn-cancel,
+    .btn-neutral {
+        min-height: 44px;
+        min-width: 44px;
+    }
 }

@@ -236,7 +236,7 @@
   <string name="adapter.study.library.tutorial.requests.follow.request.outcome.title">Follow A Request</string>
   <string name="adapter.study.library.tutorial.requests.follow.request.outcome.body">Open your request to review its proposed changes and current decision. Check feedback before submitting a corrected request.</string>
   <string name="adapter.study.library.tutorial.explore.read.details.title">Read Card Details</string>
-  <string name="adapter.study.library.tutorial.explore.read.details.body">The detail view combines meanings, readings, examples and linked records. Follow those relationships when you want to understand how the card is used.</string>
+  <string name="adapter.study.library.tutorial.explore.read.details.body">Read meanings, readings, examples and linked records here. Scroll long details while Previous and Next remain available, and follow relationships to understand how the card is used.</string>
   <string name="adapter.study.library.tutorial.explore.listen.title">Hear The Pronunciation</string>
   <string name="adapter.study.library.tutorial.explore.listen.body">Play the card’s audio to hear how it sounds. Listen again before practising the pronunciation yourself.</string>
   <string name="adapter.study.library.tutorial.explore.draw.strokes.title">Trace The Strokes</string>

@@ -24,6 +24,7 @@ import {
     roomListRenderSignature,
     renderRoomList,
     renderThreadHeader,
+    renderConversationPrompt,
 } from "./room-render.js";
 
 const profileAvatars = () => {
@@ -794,6 +795,9 @@ export function createMessagesRoomState({
                 const element = document.getElementById(elementId);
                 if (element) element.innerHTML = "";
             }
+            const emptyThread = document.getElementById("messages-thread-list");
+            if (emptyThread)
+                emptyThread.innerHTML = renderConversationPrompt(i18n);
             syncComposerAvailability(null);
             return;
         }

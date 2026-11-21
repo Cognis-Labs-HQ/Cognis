@@ -152,7 +152,7 @@
 
 .study-hub-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
     gap: 14px;
 }
 
@@ -171,6 +171,8 @@
 .study-hub-card-name {
     font-size: 1rem;
     font-weight: 700;
+    min-width: 0;
+    overflow-wrap: anywhere;
 }
 
 .study-hub-modules {
@@ -187,6 +189,9 @@
     text-decoration: none;
     color: var(--text);
     font-size: 0.85rem;
+    overflow-wrap: anywhere;
+    min-height: 44px;
+    align-content: center;
     transition:
         background 0.15s,
         color 0.15s;
@@ -225,16 +230,11 @@ body[data-theme="light"] .study-hub-module-link:focus-visible {
 .study-subnav-modules {
     display: flex;
     align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     margin-right: auto;
     flex: 1 1 auto;
     min-width: 0;
     overflow-x: auto;
-}
-
-.study-subnav-language-options {
-    margin-inline-start: auto;
 }
 
 .study-subnav-settings a {
@@ -252,11 +252,13 @@ body[data-theme="light"] .study-hub-module-link:focus-visible {
 }
 
 .study-subnav-language-options {
+    margin-inline-start: auto;
     display: flex;
     align-items: center;
     gap: 8px;
-    flex-wrap: wrap;
-    flex: 0 0 auto;
+    flex-wrap: nowrap;
+    flex: 0 1 var(--study-language-width, auto);
+    max-width: 35%;
 }
 
 .study-subnav-settings {
@@ -327,12 +329,30 @@ body[data-theme="light"] .study-hub-module-link:focus-visible {
 
 @media (max-width: 900px) {
     .study-page-subnav {
-        flex-direction: column;
-        align-items: stretch;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto auto;
+        grid-template-areas: "pages pages pages" "languages search settings";
+        gap: 4px 8px;
+    }
+
+    .study-subnav-modules {
+        grid-area: pages;
+        width: 100%;
+        margin: 0;
     }
 
     .study-subnav-language-options {
-        min-width: 100%;
+        grid-area: languages;
+        max-width: 100%;
+        margin: 0;
+    }
+
+    .study-subnav-search-slot {
+        grid-area: search;
+    }
+
+    .study-subnav-settings {
+        grid-area: settings;
     }
 
     .study-lang-settings-table {
@@ -372,6 +392,9 @@ body[data-theme="light"] .study-hub-module-link:focus-visible {
 }
 
 .study-browse-controls {
+    flex-wrap: wrap;
+    min-width: 0;
+    max-width: 100%;
     margin-inline-start: auto;
     display: inline-flex;
     align-items: center;
@@ -428,7 +451,91 @@ body[data-theme="light"] .study-hub-module-link:focus-visible {
     display: none;
 }
 
+.study-subnav-search-slot {
+    min-width: 0;
+    flex: 0 1 auto;
+}
+
+.study-subnav-search-slot > .study-dictionary-toggle {
+    display: none;
+    padding: 0;
+    min-width: 44px;
+    min-height: 44px;
+}
+
+.study-dictionary-search--dialog {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0;
+}
+
+.study-dictionary-search--dialog :is(input, select) {
+    width: 100%;
+    min-width: 0;
+}
+
+.study-dictionary-search--dialog input {
+    flex: 1 1 8rem;
+    min-height: 44px;
+}
+
+.study-dictionary-search--dialog button {
+    min-width: 44px;
+    min-height: 44px;
+}
+
+@media (max-width: 900px) {
+    .study-subnav-search-slot > .study-dictionary-search {
+        display: none;
+    }
+    .study-subnav-search-slot > .study-dictionary-toggle {
+        display: inline-flex;
+    }
+}
+
+@media (max-width: 640px) {
+    .study-welcome {
+        min-height: 0;
+        padding: 20px 12px;
+        gap: 20px;
+    }
+    .study-welcome-heading {
+        font-size: 1.5em;
+    }
+    .study-hub-card-standalone {
+        padding: 12px;
+    }
+}
+
 .study-browse-search {
     width: min(18rem, 35vw);
     min-width: 6rem;
+}
+
+.study-language-code,
+.study-language-flag:empty {
+    display: none;
+}
+
+.study-subnav-language-options:is(
+        [data-language-display="code"],
+        [data-language-display="flag"]
+    )
+    .study-language-name {
+    display: none;
+}
+
+.study-subnav-language-options:is(
+        [data-language-display="code"],
+        [data-language-display="flag"]
+    )
+    .study-language-code {
+    display: inline;
+}
+
+.study-subnav-language-options[data-language-display="flag"]
+    [data-language-has-flag="true"]
+    .study-language-code {
+    display: none;
 }

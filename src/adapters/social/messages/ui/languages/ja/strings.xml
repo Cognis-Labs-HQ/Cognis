@@ -83,7 +83,7 @@
   <string name="module.social.messages.decline_call">通話を拒否</string>
   <string name="module.social.messages.tutorial.messages.title">メッセージの使い方</string>
   <string name="module.social.messages.tutorial.messages.rooms.title">ルーム</string>
-  <string name="module.social.messages.tutorial.messages.rooms.body">サイドバーで会話を選ぶか、新しい会話を始めます。</string>
+  <string name="module.social.messages.tutorial.messages.rooms.body">サイドバーでルームを選ぶか会話を始めます。スマートフォンとタブレットでは左上の二重山括弧ボタンで開きます。</string>
   <string name="module.social.messages.tutorial.messages.room.history.title">ルームの履歴</string>
   <string name="module.social.messages.tutorial.messages.room.history.body">会話を読み、参加者と未処理のリクエストを確認します。</string>
   <string name="module.social.messages.tutorial.messages.compose.and.preview.title">作成とプレビュー</string>
@@ -96,4 +96,6 @@
   <string name="module.social.messages.tutorial.messages.preview.message.body">プレビューで書式、リンク、添付内容を確認し、修正するときは編集に戻ります。</string>
   <string name="module.social.messages.tutorial.messages.manage.room.title">会話を管理する</string>
   <string name="module.social.messages.tutorial.messages.manage.room.body">会話の見出しでルームと参加者を確認します。メンバー変更や退出には、表示される操作を使います。</string>
+  <string name="module.social.messages.conversations">会話</string>
+  <string name="module.social.messages.choose_conversation">会話を選択してメッセージを読んだり送信したりできます。</string>
 </resources>

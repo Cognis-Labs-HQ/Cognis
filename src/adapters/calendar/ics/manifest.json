@@ -5,5 +5,10 @@
     "version": "1.0.10",
     "gateway": "calendar",
     "description": "Imports and exports calendar data in ICS format.",
-    "publisher": "Cognis Labs HQ"
+    "publisher": "Cognis Labs HQ",
+    "documentation": {
+        "readme": "docs/README.en.md",
+        "usage": "docs/USAGE.en.md",
+        "technical": "docs/TECHNICAL.en.md"
+    }
 }

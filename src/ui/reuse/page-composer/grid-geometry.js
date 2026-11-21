@@ -69,7 +69,7 @@ export function createGridGeometry(state, unit) {
         state.gridPixelHeight = gridRowSpanSize(state.gridRows);
         state.gridPixelWidth = gridColumnSpanSize(state.gridCols);
         state.contentGrid.style.minHeight =
-            state.frameless && !state.editing
+            (state.frameless || state.fillViewport) && !state.editing
                 ? ""
                 : `${state.gridPixelHeight}px`;
         state.contentGrid.style.width = "";

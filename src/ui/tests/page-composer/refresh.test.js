@@ -60,7 +60,7 @@ test("page composer refreshes only explicitly selected card content", () => {
     );
     assert.match(
         source,
-        /renderer\.refreshElements\(elementIds\);\s*onRender\?\.\(\);/,
+        /function refreshElements\(elementIds\)[\s\S]*refreshElementMarkup\(elementIds\);[\s\S]*element\?\.onRender\?\.\(\);[\s\S]*state\.onRender\?\.\(\);/,
     );
 });
 
@@ -69,11 +69,11 @@ test("page composer renderer receives the element content renderer", () => {
 
     assert.match(
         source,
-        /return \{\s*parkPreservedElementNodes,\s*renderElementContent,\s*refreshElements,\s*\};/m,
+        /return \{\s*consumeElementRender,\s*syncElementPresentation,\s*parkPreservedElementNodes,\s*renderElementContent,\s*refreshElements,\s*\};/m,
     );
     assert.match(
         source,
-        /const \{[^}]*renderElementContent[^}]*\}\s*=\s*createDomPreservation\(state\);/m,
+        /const \{[^}]*renderElementContent[^}]*\}\s*=\s*createDomPreservation\(state,\s*\{[\s\S]*?redraw:[\s\S]*?\}\);/m,
     );
 });
 
@@ -109,26 +109,13 @@ test("page composer parks media DOM only when explicitly enabled", () => {
 test("page composer includes mobile toolbar drawer behavior", () => {
     const source = readPageComposerBundle();
 
-    assert.match(source, /MOBILE_TOOLBAR_BREAKPOINT = 900/);
-    assert.match(source, /window\.matchMedia\(/);
-    assert.match(source, /\(max-width: \$\{MOBILE_TOOLBAR_BREAKPOINT\}px\)/);
-    assert.match(source, /toolbar--mobile-open/);
-    assert.match(source, /toolbar-mobile-backdrop--open/);
-    assert.match(source, /target\.closest\("a\[href\]"\)/);
+    assert.match(source, /mountComposerToolbarDrawer\(/);
+    assert.match(source, /signal: tutorialLifetime.signal/);
     assert.match(
         source,
-        /target\.closest\("button:not\(\.toolbar-mobile-toggle\)"\)/,
+        /closeMobileDrawerIfNeeded\s*=\s*toolbarDrawer.closeMobileDrawerIfNeeded/,
     );
-    assert.match(
-        source,
-        /mobileToggleBtn\.classList\.toggle\(\s*"toolbar-mobile-toggle--drawer-open",\s*open,\s*\)/m,
-    );
-    assert.match(
-        source,
-        /mobileToggleBtn\.innerHTML = renderToolbarToggleIcon\(open\)/,
-    );
-    assert.match(source, /toolbar-mobile-toggle-icon--toolbar-close/);
-    assert.match(source, /toolbar-mobile-toggle-icon--toolbar-menu/);
+    assert.match(source, /toolbar-mobile-toggle-icon/);
     const toolbarIconsSource = readFileSync(
         resolve(ROOT, "src/ui/reuse/page-composer/toolbar-icons.js"),
         "utf8",
@@ -207,7 +194,11 @@ test("page composer tears down stale presence before mounting a page", () => {
 test("page composer expands compact single-pane rows to full width", () => {
     const source = readPageComposerBundle();
 
-    assert.match(source, /MOBILE_LAYOUT_WIDTH_RECLAIM_BREAKPOINT\s*=/);
+    assert.match(source, /COMPOSER_COMPACT_BREAKPOINT\s*=\s*640/);
+    assert.match(
+        source,
+        /MOBILE_LAYOUT_WIDTH_RECLAIM_BREAKPOINT:\s*COMPOSER_COMPACT_BREAKPOINT/,
+    );
     assert.match(source, /COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS\s*=/);
     assert.match(source, /function shouldUseMobileWidthReclaim\(\)/);
     assert.match(source, /window\.matchMedia\(/);

@@ -1,4 +1,4 @@
-import { confirmPopupDiscard } from "./popup/discard-confirmation.js";
+import { watchComposerPresentation } from "./page-composer/presentation.js";
 /**
  * Reusable popup / modal dialog.
  *
@@ -93,6 +93,7 @@ import { confirmPopupDiscard } from "./popup/discard-confirmation.js";
  *   variant?: 'info' | 'warning' | 'danger' | 'confirm',
  *   actions?: Array<{ id: string, label: string, variant?: string, disabled?: boolean, icon?: { light: string, dark?: string, position?: 'before' | 'after', flip?: boolean } }>,
  *   maxWidth?: string,
+ *   surface?: "dialog" | "reader",
  *   onOpen?: (overlay: HTMLElement, dismiss: () => void, api: PopupApi) => void,
  *   onAction?: (actionId: string | null, overlay: HTMLElement, api: PopupApi) => Promise<boolean | void> | boolean | void,
  *   closeProtection?: boolean,
@@ -109,7 +110,9 @@ import {
     createPopupContentApi,
     bindPopupActionIcons,
 } from "./popup/content.js";
+import { confirmPopupDiscard } from "./popup/discard-confirmation.js";
 import { createI18n } from "./i18n.js";
+import { lockPageScroll } from "./page-scroll-lock.js";
 import { createFormDirtyTracker } from "./unsaved-changes.js";
 
 /** @typedef {ReturnType<typeof createPopupContentApi> & {updateBody: (body: string | (() => string)) => HTMLElement | null, setPage: (id: string) => boolean, pageId?: string, markDirty: () => void, requestClose?: () => void}} PopupApi */
@@ -131,70 +134,6 @@ function getI18n() {
             throw error;
         });
     return i18nReady;
-}
-
-const scrollLockState = {
-    count: 0,
-    bodyOverflow: null,
-    bodyScrollbarGutter: null,
-    rootScrollbarGutter: null,
-    mainOverflowValues: [],
-};
-
-function getScrollableMainElements() {
-    return Array.from(document.querySelectorAll("main")).filter((element) =>
-        /^(auto|scroll)$/.test(getComputedStyle(element).overflowY),
-    );
-}
-
-function lockPageScroll() {
-    if (scrollLockState.count === 0) {
-        scrollLockState.bodyOverflow = document.body.style.overflow;
-        scrollLockState.bodyScrollbarGutter =
-            document.body.style.scrollbarGutter;
-        scrollLockState.rootScrollbarGutter =
-            document.documentElement.style.scrollbarGutter;
-        scrollLockState.mainOverflowValues = getScrollableMainElements().map(
-            (element) => ({
-                element,
-                overflow: element.style.overflow,
-                scrollbarGutter: element.style.scrollbarGutter,
-            }),
-        );
-        // Reserve each scrolling surface's gutter before hiding its scrollbar.
-        // Without this, opening or closing a modal changes the available inline
-        // space and forces the page beneath it to redraw at a different width.
-        if (window.innerWidth > document.documentElement.clientWidth)
-            document.documentElement.style.scrollbarGutter = "stable";
-        document.body.style.overflow = "hidden";
-        scrollLockState.mainOverflowValues.forEach(({ element }) => {
-            if (element.scrollHeight > element.clientHeight)
-                element.style.scrollbarGutter = "stable";
-            element.style.overflow = "hidden";
-        });
-    }
-    scrollLockState.count += 1;
-}
-
-function unlockPageScroll() {
-    scrollLockState.count = Math.max(0, scrollLockState.count - 1);
-    if (scrollLockState.count > 0) return;
-
-    document.body.style.overflow = scrollLockState.bodyOverflow ?? "";
-    document.body.style.scrollbarGutter =
-        scrollLockState.bodyScrollbarGutter ?? "";
-    document.documentElement.style.scrollbarGutter =
-        scrollLockState.rootScrollbarGutter ?? "";
-    scrollLockState.mainOverflowValues.forEach(
-        ({ element, overflow, scrollbarGutter }) => {
-            element.style.overflow = overflow;
-            element.style.scrollbarGutter = scrollbarGutter;
-        },
-    );
-    scrollLockState.bodyOverflow = null;
-    scrollLockState.bodyScrollbarGutter = null;
-    scrollLockState.rootScrollbarGutter = null;
-    scrollLockState.mainOverflowValues = [];
 }
 
 async function getPopupStylesheetCache() {
@@ -436,6 +375,7 @@ export async function openPopup({
     headerActions = [],
     body,
     variant = "info",
+    surface = "dialog",
     actions,
     maxWidth,
     onOpen,
@@ -454,6 +394,7 @@ export async function openPopup({
     if (signal?.aborted) return null;
     return new Promise((resolve) => {
         const overlay = document.createElement("div");
+        let presentationLifetime;
         overlay.className = "popup-overlay";
         const highestPopupZIndex = Array.from(
             document.querySelectorAll(".popup-overlay"),
@@ -465,6 +406,7 @@ export async function openPopup({
         overlay.setAttribute("aria-labelledby", "popup-title");
         let closeProtectionTracker = null;
         let manuallyDirty = false;
+        let releaseScroll;
 
         function escapeHtml(value) {
             return String(value)
@@ -556,6 +498,7 @@ export async function openPopup({
             }
             if (dismissed) return;
             dismissed = true;
+            presentationLifetime?.abort();
             signal?.removeEventListener("abort", abortPopup);
             if (timeoutHandle !== null) {
                 clearTimeout(timeoutHandle);
@@ -574,7 +517,7 @@ export async function openPopup({
                 if (!removed) {
                     removed = true;
                     overlay.remove();
-                    unlockPageScroll();
+                    releaseScroll?.();
                 }
             }
             if (aborted) removeOverlay();
@@ -638,7 +581,7 @@ export async function openPopup({
             .join("");
 
         overlay.innerHTML = `
-      <div class="popup-dialog popup-dialog--${escapeHtml(variant)}">
+      <div class="popup-dialog popup-dialog--${escapeHtml(variant)}${surface === "reader" ? " popup-dialog--reader" : ""}">
         <div class="popup-header">
           <div class="popup-heading${headingLayout === "annotated" ? " popup-heading--annotated" : ""}">${renderPopupHeading(
               currentPage?.title ?? title,
@@ -858,7 +801,16 @@ export async function openPopup({
         document.addEventListener("keydown", onKeyDown);
 
         document.body.appendChild(overlay);
-        lockPageScroll();
+        if (surface === "reader") {
+            presentationLifetime = new AbortController();
+            watchComposerPresentation(
+                overlay,
+                overlay.querySelector(".popup-dialog"),
+                presentationLifetime.signal,
+                { observeResize: true },
+            );
+        }
+        releaseScroll = lockPageScroll(document);
         window.addEventListener("resize", fitPopupTitleRow);
         fitPopupTitleRow();
         document.fonts?.ready.then(fitPopupTitleRow);

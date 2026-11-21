@@ -3,12 +3,16 @@
  *
  * Public exports:
  * - `resolveGridColumnCount` — determines columns from the first measurable container.
+ * - `resolveInitialGridWidth` — bounds initial widths to the available grid.
+ * - `resolveGridWidthBounds` — clamps declared bounds to the available grid.
  * - `resolveElementGridSize` — normalizes an element's default, minimum, and maximum dimensions.
  *
  * @example
  * const columns = resolveGridColumnCount({ contentGrid, root, unit: 90 });
  * const size = resolveElementGridSize({ gridSize: { max: "half" } });
  */
+
+import { halfGrid } from "./grid-math.js";
 
 /**
  * Resolves a stable column count by trying progressively broader containers.
@@ -81,4 +85,35 @@ export function resolveElementGridSize(element) {
         halfHeight,
         fillHeight,
     };
+}
+
+/**
+ * @param {object} gridSize Normalized element sizing.
+ * @param {number} availableColumns Available space from the placement's column.
+ * @returns {{ min: number, max: number }} Feasible width limits.
+ */
+export function resolveGridWidthBounds(gridSize, availableColumns) {
+    const available = Math.max(1, availableColumns);
+    const minimum = Math.min(available, Math.max(1, gridSize.min[0]));
+    const declaredMaximum = gridSize.max?.[0];
+    const maximum = Number.isFinite(declaredMaximum)
+        ? Math.min(available, Math.max(minimum, declaredMaximum))
+        : available;
+    return { min: minimum, max: maximum };
+}
+
+/**
+ * @param {object} gridSize Normalized element sizing.
+ * @param {number} columns Available grid columns.
+ * @returns {number} Initial width that always fits in the grid.
+ */
+export function resolveInitialGridWidth(gridSize, columns) {
+    const bounds = resolveGridWidthBounds(gridSize, columns);
+    const preferred =
+        gridSize.fullWidth || gridSize.fillWidth
+            ? columns
+            : gridSize.halfWidth
+              ? halfGrid(columns)
+              : gridSize.default[0];
+    return Math.min(bounds.max, Math.max(bounds.min, preferred));
 }

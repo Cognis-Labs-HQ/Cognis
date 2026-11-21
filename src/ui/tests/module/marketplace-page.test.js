@@ -71,16 +71,6 @@ test("module marketplace polls Cognis for current recommendations", () => {
     );
     assert.match(marketplaceSource, /window\.clearInterval\(interval\)/);
 });
-test("modules navigation derives its width from its content", () => {
-    assert.match(
-        marketplaceStyles,
-        /\[data-module-sidebar\]\s*{[^}]*width: max-content;[^}]*max-width: 100%/,
-    );
-    assert.match(
-        marketplaceStyles,
-        /\[data-module-sidebar\] button\s*{[^}]*width: fit-content;[^}]*min-width: 0/,
-    );
-});
 
 test("module preference fields use the form builder and secret controls", () => {
     assert.match(modulePreferencesSource, /createFormBuilder/);
@@ -171,13 +161,20 @@ test("module filters expose every selected state", () => {
         html,
         /data-store-category="collaboration" aria-pressed="true"/,
     );
-    assert.match(
-        marketplaceStyles,
-        /\[data-module-sidebar\] button\.is-active\s*{[^}]*border-color: var\(--accent-color\)/,
+    const controls = [...html.matchAll(/<button[^>]*class="([^"]*)"/g)].map(
+        (match) => match[1].split(/\s+/),
     );
-    assert.match(
-        marketplaceStyles,
-        /\[data-module-sidebar\] button:not\(\.is-active\)\s*{[^}]*border-color: transparent/,
+    assert.equal(controls.length, 7);
+    assert.ok(
+        controls.every(
+            (classes) =>
+                classes.includes("btn-neutral") &&
+                classes.includes("side-menu-link"),
+        ),
+    );
+    assert.equal(
+        controls.filter((classes) => classes.includes("is-active")).length,
+        3,
     );
 });
 

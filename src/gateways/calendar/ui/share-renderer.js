@@ -1,3 +1,7 @@
+import {
+    renderCalendarViewSwitcher,
+    mountCalendarViewControls,
+} from "./calendar-view-controls.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createFormBuilder } from "/static/reuse/form-builder.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
@@ -237,6 +241,20 @@ export async function mount(
         }
     };
 
+    let presentation;
+    mountCalendarViewControls(root, {
+        views: CALENDAR_VIEWS,
+        signal,
+        onDateChange(date) {
+            activeDate = date;
+            renderCalendar();
+        },
+        onViewChange(view) {
+            selectedView = view;
+            renderCalendar();
+        },
+    });
+
     function renderCalendar() {
         const sharedCalendar = root.querySelector(
             `[data-shared-calendar-id="${CSS.escape(calendarId)}"]`,
@@ -251,11 +269,18 @@ export async function mount(
         sharedCalendar
             .querySelectorAll("[data-calendar-view]")
             .forEach((button) => {
-                button.classList.toggle(
-                    "active",
-                    button.getAttribute("data-calendar-view") === selectedView,
-                );
+                const active =
+                    button.getAttribute("data-calendar-view") === selectedView;
+                button.classList.toggle("active", active);
+                button.setAttribute("aria-pressed", String(active));
             });
+        const viewSelect = sharedCalendar.querySelector(
+            "[data-calendar-view-select]",
+        );
+        if (viewSelect) viewSelect.value = selectedView;
+        const dateInput = sharedCalendar.querySelector("[data-calendar-date]");
+        if (dateInput)
+            dateInput.value = toDateTimeLocalValue(activeDate).slice(0, 10);
         const canvas = sharedCalendar.querySelector(".calendar-view-canvas");
         if (canvas instanceof HTMLElement) {
             canvas.innerHTML = renderCalendarView(
@@ -263,9 +288,13 @@ export async function mount(
                 selectedView,
                 activeDate,
                 i18n,
+                null,
+                {
+                    compact: presentation.layout !== "regular",
+                    canCreate: canWrite,
+                },
             );
         }
-        requestAnimationFrame(scrollTimedViewsToCurrentSlot);
     }
 
     function resolvePeriodLabel() {
@@ -274,35 +303,7 @@ export async function mount(
             : formatMonthYear(activeDate);
     }
 
-    function scrollTimedViewsToCurrentSlot() {
-        root.querySelectorAll(".calendar-day-timed-lane").forEach((lane) => {
-            if (!(lane instanceof HTMLElement)) return;
-            const currentSlot = lane.querySelector(
-                ".calendar-timeslot-events--current",
-            );
-            if (!(currentSlot instanceof HTMLElement)) return;
-            lane.scrollTop = Math.max(
-                0,
-                currentSlot.offsetTop - lane.clientHeight * 0.3,
-            );
-        });
-        root.querySelectorAll("[data-calendar-week-scroll-grid]").forEach(
-            (grid) => {
-                if (!(grid instanceof HTMLElement)) return;
-                const currentSlot = grid.querySelector(
-                    ".calendar-week-slot--current-time",
-                );
-                if (!(currentSlot instanceof HTMLElement)) return;
-                grid.scrollTop = Math.max(
-                    0,
-                    currentSlot.offsetTop - grid.clientHeight * 0.3,
-                );
-            },
-        );
-    }
-
     function buildCalendarElement() {
-        const periodLabel = resolvePeriodLabel();
         return {
             id: "shared-calendar",
             label: calendar.name || i18n.t("gateway.calendar.page_title"),
@@ -312,21 +313,24 @@ export async function mount(
                 min: [1, 3],
                 max: ["fill", "fill"],
             },
-            render: () => `<section class="calendar-section shared-calendar" data-shared-calendar-id="${escapeHtml(calendarId)}">
+            responsive: true,
+            render: (context) => {
+                presentation = context;
+                const periodLabel = resolvePeriodLabel();
+                return `<section class="calendar-section shared-calendar" data-shared-calendar-id="${escapeHtml(calendarId)}">
                 <h2 class="shared-calendar-title">${escapeHtml(calendar.name || i18n.t("gateway.calendar.page_title"))}</h2>
-                <header class="calendar-view-header">
+                <header class="calendar-view-header" data-composer-header>
                     <div class="calendar-view-nav">
-                        <button type="button" data-calendar-nav="prev" aria-label="${escapeHtml(i18n.t("gateway.calendar.previous"))}">&lt;</button>
-                        <button type="button" data-calendar-nav="today">${escapeHtml(i18n.t("gateway.calendar.today"))}</button>
-                        <button type="button" data-calendar-nav="next" aria-label="${escapeHtml(i18n.t("gateway.calendar.next"))}">&gt;</button>
+                        <button type="button" class="btn-neutral" data-calendar-nav="prev" aria-label="${escapeHtml(i18n.t("gateway.calendar.previous"))}">&lt;</button>
+                        <button type="button" class="btn-neutral" data-calendar-nav="today" aria-label="${escapeHtml(i18n.t("gateway.calendar.today"))}" title="${escapeHtml(i18n.t("gateway.calendar.today"))}">${escapeHtml(i18n.t("gateway.calendar.today"))}</button>
+                        <button type="button" class="btn-neutral" data-calendar-nav="next" aria-label="${escapeHtml(i18n.t("gateway.calendar.next"))}">&gt;</button>
                         <span class="calendar-nav-month-label">${escapeHtml(periodLabel)}</span>
                     </div>
-                    <div class="calendar-view-switcher">
-                        ${CALENDAR_VIEWS.map((view) => `<button type="button" data-calendar-view="${view}" class="${selectedView === view ? "active" : ""}">${escapeHtml(i18n.t(`gateway.calendar.view_${view}`))}</button>`).join("")}
-                    </div>
+                    ${renderCalendarViewSwitcher(CALENDAR_VIEWS, selectedView, i18n, activeDate)}
                 </header>
-                <div class="calendar-view-canvas">${renderCalendarView(events, selectedView, activeDate, i18n)}</div>
-            </section>`,
+                <div class="calendar-view-canvas" data-composer-viewport-body>${renderCalendarView(events, selectedView, activeDate, i18n, null, { compact: presentation.layout !== "regular", canCreate: canWrite })}</div>
+            </section>`;
+            },
         };
     }
 
@@ -401,6 +405,7 @@ export async function mount(
     composer = createPageComposer(root, {
         signal,
         allowCustomization: false,
+        fillViewport: true,
         enableDomParking: false,
         elements: [buildCalendarElement()],
         preferenceKey: "shared-calendar-layout",
@@ -420,6 +425,4 @@ export async function mount(
     });
 
     await composer.init();
-    if (signal.aborted) return;
-    requestAnimationFrame(scrollTimedViewsToCurrentSlot);
 }

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" href="/static/styles/page-builder.css" />
+        <link rel="stylesheet" href="/static/styles/reuse/page-sections.css" />
+        <link
+            rel="stylesheet"
+            href="/static/gateways/calendar/ui/calendar.css"
+        />
+    </head>
+    <body>
+        <div id="app"></div>
+        <template id="calendar-sidebar">
+            <section class="toolbar-section calendar-toolbar-section">
+                <header class="calendar-toolbar-heading">
+                    <h3 data-i18n="gateway.calendar.my_calendars"></h3>
+                    <button
+                        type="button"
+                        class="calendar-toolbar-add btn-confirm"
+                        data-i18n="gateway.calendar.new_calendar_short"
+                    ></button>
+                </header>
+                <div data-fixture-calendar-list></div>
+                <div data-fixture-calendars></div>
+            </section>
+        </template>
+        <template id="calendar-upcoming">
+            <section class="toolbar-section calendar-toolbar-section">
+                <header class="calendar-toolbar-heading">
+                    <h3 data-i18n="gateway.calendar.upcoming_events"></h3>
+                </header>
+                <p
+                    class="calendar-empty"
+                    data-i18n="gateway.calendar.no_events"
+                ></p>
+            </section>
+        </template>
+        <script type="module" src="/fixture.js"></script>
+    </body>
+</html>

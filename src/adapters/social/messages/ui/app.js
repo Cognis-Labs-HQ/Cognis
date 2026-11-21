@@ -1,4 +1,3 @@
-import { guides } from "./guides.js";
 /**
  * Messages page.
  *
@@ -9,6 +8,8 @@ import { guides } from "./guides.js";
  * Messages are encrypted client-side with per-room AES-GCM keys resolved from
  * the authenticated user's encrypted keyring and cached for the page lifetime.
  */
+
+import { guides } from "./guides.js";
 
 import { messagesFetch as apiFetch } from "./offline-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
@@ -47,7 +48,8 @@ import {
 import { resolveMessageTemplateVariables } from "./message-templates.js";
 import { createMessageSender } from "./send-message.js";
 import { createMessagesRoomState } from "./room-state.js";
-import { renderRoomList } from "./room-render.js";
+import { renderRoomList, renderConversationPrompt } from "./room-render.js";
+import { renderMessagesSidebar } from "./sidebar.js";
 import { activateRoomAction, resolveRoomActions } from "./flows.js";
 import {
     LAST_OPENED_ROOM_KEY,
@@ -259,28 +261,15 @@ export async function mount(root, { signal } = {}) {
         },
     });
 
-    const sidebarHtml = `<div class="messages-sidebar-content">
-    <header class="messages-rooms-header">
-      <button type="button" class="messages-new-btn" id="messages-new-btn">
-        ${escapeHtml(i18n.t("module.social.messages.new"))}
-      </button>
-    </header>
-    <ul class="messages-rooms-list" id="messages-rooms-list">
-      ${renderRoomList({
-          rooms: roomState.getRooms(),
-          currentAccountId,
-          selectedRoomId: roomState.getSelectedRoomId(),
-          i18n,
-          formatRoomListAvatar,
-      })}
-    </ul>
-    <section class="messages-sidebar-section">
-      <button type="button" class="messages-sidebar-section-label messages-sidebar-section-label--btn" id="messages-open-templates-btn">
-        ${escapeHtml(i18n.t("module.social.messages.templates"))}
-      </button>
-      <ul class="messages-sidebar-template-list" id="messages-sidebar-template-list"></ul>
-    </section>
-  </div>`;
+    const sidebarHtml = await renderMessagesSidebar({
+        rooms: roomState.getRooms(),
+        currentAccountId,
+        selectedRoomId: roomState.getSelectedRoomId(),
+        i18n,
+        formatRoomListAvatar,
+        signal,
+    });
+    if (signal?.aborted) return;
 
     const messageFormBuilder = createFormBuilder(
         { i18n, escapeHtml },
@@ -316,9 +305,9 @@ export async function mount(root, { signal } = {}) {
             gridSize: { default: [12, 8], min: [4, 4], max: "full" },
             render: () =>
                 `<section class="messages-thread">
-          <div id="messages-thread-header-slot"></div>
+          <div class="messages-thread-topbar" data-composer-header><div id="messages-thread-header-slot"></div></div>
           <div id="messages-request-banner-slot"></div>
-          <div class="messages-thread-list" id="messages-thread-list"></div>
+          <div class="messages-thread-list" data-composer-viewport-body id="messages-thread-list">${roomState.getSelectedRoomId() ? "" : renderConversationPrompt(i18n)}</div>
           <div class="messages-typing-status" id="messages-typing-status"></div>
           ${messageFormBuilder.render()}
         </section>`,
@@ -737,7 +726,9 @@ export async function mount(root, { signal } = {}) {
         const roomsList = document.getElementById("messages-rooms-list");
         if (roomsList) void hydrateProfileAvatars(roomsList);
         roomsList?.addEventListener("click", async (clickEvent) => {
-            const item = clickEvent.target.closest("[data-room-id]");
+            const item = clickEvent.target
+                .closest(".messages-room-select")
+                ?.closest("[data-room-id]");
             if (!(item instanceof HTMLElement)) return;
             const roomId = item.getAttribute("data-room-id");
             if (!roomId) return;
@@ -749,7 +740,16 @@ export async function mount(root, { signal } = {}) {
                 .forEach((activeItem) =>
                     activeItem.classList.remove("messages-room--active"),
                 );
+            roomsList
+                .querySelectorAll(".messages-room-select")
+                .forEach((button) =>
+                    button.setAttribute(
+                        "aria-pressed",
+                        String(item.contains(button)),
+                    ),
+                );
             item.classList.add("messages-room--active");
+            composer.closeToolbar();
             history.pushState(
                 {},
                 "",
@@ -837,6 +837,8 @@ export async function mount(root, { signal } = {}) {
         tutorials: guides,
         signal,
         allowCustomization: false,
+        fillViewport: true,
+        toolbarScrollable: true,
         elements,
         preferenceKey: "messages-layout",
         i18n,

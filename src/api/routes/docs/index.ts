@@ -1,3 +1,4 @@
+import type { DocView } from "./sources.js";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
@@ -42,7 +43,11 @@ function withChangelogBranch(markdown: string, slug: string): string {
     if (!slug.startsWith("changelog/") || slug === "changelog/index") {
         return markdown;
     }
-    if (/^\*\*Feature Branch:\*\*\s+.+$/m.test(markdown)) {
+    if (
+        /^\*\*(?:Feature Branch|Feature-Zweig|Cabang Fitur|機能ブランチ):\*\*\s+.+$/m.test(
+            markdown,
+        )
+    ) {
         return markdown;
     }
     const branch = changelogBranchFromSlug(slug);
@@ -53,7 +58,10 @@ function withChangelogBranch(markdown: string, slug: string): string {
     return `# ${branch}\n${branchLine}\n${markdown}`;
 }
 
-function buildChangelogIndexMarkdown(entries: DocEntry[]): string {
+function buildChangelogIndexMarkdown(
+    entries: DocEntry[],
+    title: string,
+): string {
     const groupedEntries = new Map<string, DocEntry[]>();
     for (const entry of entries
         .filter((entry) => entry.slug.startsWith("changelog/"))
@@ -76,7 +84,7 @@ function buildChangelogIndexMarkdown(entries: DocEntry[]): string {
         ],
     );
 
-    return ["# Changelogs", "", ...sections].join("\n");
+    return [`# ${title}`, "", ...sections].join("\n");
 }
 
 async function collectDocIndex(
@@ -96,15 +104,19 @@ async function collectDocIndex(
         entry.slug.startsWith("changelog/"),
     );
     if (changelogEntries.length > 0) {
+        const title = bySlug.get("changelog/index")?.title ?? "Changelogs";
         bySlug.set("changelog", {
             slug: "changelog",
             path: "/api/v1/docs/changelog",
             group: "changelog",
-            title: "Changelogs",
-            fileStem: "",
+            title,
+            views: ["info"],
             version: "latest",
             versions: ["latest"],
-            generatedMarkdown: buildChangelogIndexMarkdown(changelogEntries),
+            generatedMarkdown: buildChangelogIndexMarkdown(
+                changelogEntries,
+                title,
+            ),
             sourceName: "Cognis Core",
         });
     }
@@ -123,10 +135,11 @@ export function createDocsRoutes(
     } = {},
 ) {
     const archiveRoot = options.archiveRoot ?? resolveDocsArchiveRoot();
-    const loadStoredDocs = () =>
+    const loadStoredDocs = (languages: string[]) =>
         initializeDocsStore(
             options.sourceRoot ?? [SRC_ROOT, EXTERNAL_MODULES_ROOT],
             archiveRoot,
+            languages,
         );
     return async (
         req: IncomingMessage,
@@ -134,9 +147,10 @@ export function createDocsRoutes(
         url: URL,
     ): Promise<boolean> => {
         if (req.method !== "GET") return false;
+        const langs = resolveLangs(url);
 
         if (url.pathname === "/api/v1/docs") {
-            const index = await collectDocIndex(loadStoredDocs());
+            const index = await collectDocIndex(loadStoredDocs(langs));
             const data = [...index.values()].map(
                 ({
                     slug,
@@ -146,6 +160,7 @@ export function createDocsRoutes(
                     version,
                     versions,
                     sourceName,
+                    views,
                 }) => ({
                     slug,
                     path,
@@ -154,6 +169,7 @@ export function createDocsRoutes(
                     version,
                     versions,
                     sourceName,
+                    views,
                 }),
             );
             res.writeHead(200, { "content-type": "application/json" });
@@ -173,12 +189,24 @@ export function createDocsRoutes(
         const rawSlug = (match?.[2] ?? legacyMatch?.[1] ?? "")
             .replace(/\.\./g, "")
             .replace(/\/+/g, "/");
-        const langs = resolveLangs(url);
+        const index = await collectDocIndex(loadStoredDocs(langs));
+        let slug = rawSlug;
+        let view: DocView = "info";
+        if (!index.has(slug)) {
+            const parts = slug.split("/");
+            const candidate = parts.pop();
+            if (
+                candidate === "info" ||
+                candidate === "usage" ||
+                candidate === "technical"
+            ) {
+                view = candidate;
+                slug = parts.join("/");
+            }
+        }
+        const entry = index.get(slug);
 
-        const index = await collectDocIndex(loadStoredDocs());
-        const entry = index.get(rawSlug);
-
-        if (!entry) {
+        if (!entry || !entry.views.includes(view)) {
             res.writeHead(404, { "content-type": "application/json" });
             res.end(NOT_FOUND_BODY);
             return true;
@@ -191,6 +219,7 @@ export function createDocsRoutes(
                 entry,
                 requestedVersion,
                 langs,
+                view,
             ));
 
         if (content === undefined) {
@@ -205,7 +234,8 @@ export function createDocsRoutes(
         res.end(
             JSON.stringify({
                 data: {
-                    slug: rawSlug,
+                    slug,
+                    view,
                     version:
                         requestedVersion === "latest"
                             ? entry.version

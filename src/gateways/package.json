@@ -2,5 +2,10 @@
     "name": "@cognis/gateways",
     "version": "0.4.3",
     "private": true,
-    "type": "module"
+    "type": "module",
+    "documentation": {
+        "readme": "docs/README.en.md",
+        "usage": "docs/USAGE.en.md",
+        "technical": "docs/TECHNICAL.en.md"
+    }
 }

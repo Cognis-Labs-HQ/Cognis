@@ -83,7 +83,7 @@
   <string name="module.social.messages.decline_call">Tolak panggilan</string>
   <string name="module.social.messages.tutorial.messages.title">Panduan Pesan</string>
   <string name="module.social.messages.tutorial.messages.rooms.title">Ruang</string>
-  <string name="module.social.messages.tutorial.messages.rooms.body">Pilih percakapan atau mulai percakapan baru dari bilah samping.</string>
+  <string name="module.social.messages.tutorial.messages.rooms.body">Pilih ruang atau mulai percakapan di panel samping. Pada ponsel dan tablet, gunakan tombol sudut ganda di kiri atas untuk membukanya.</string>
   <string name="module.social.messages.tutorial.messages.room.history.title">Riwayat Ruang</string>
   <string name="module.social.messages.tutorial.messages.room.history.body">Baca percakapan dan periksa peserta serta permintaan tertunda.</string>
   <string name="module.social.messages.tutorial.messages.compose.and.preview.title">Tulis dan Pratinjau</string>
@@ -96,4 +96,6 @@
   <string name="module.social.messages.tutorial.messages.preview.message.body">Beralih ke Pratinjau untuk memeriksa format, tautan, dan lampiran. Kembali ke Tulis untuk memperbaikinya.</string>
   <string name="module.social.messages.tutorial.messages.manage.room.title">Kelola Percakapan</string>
   <string name="module.social.messages.tutorial.messages.manage.room.body">Judul percakapan menunjukkan ruang dan pesertanya. Periksa tindakan yang tersedia sebelum mengubah anggota atau keluar.</string>
+  <string name="module.social.messages.conversations">Percakapan</string>
+  <string name="module.social.messages.choose_conversation">Pilih percakapan untuk membaca dan mengirim pesan.</string>
 </resources>

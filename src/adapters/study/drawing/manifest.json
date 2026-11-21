@@ -8,5 +8,10 @@
     "requires": [
         "a4db7882-9207-56bd-b13d-448fc82543ba",
         "5018b5c9-21ea-51ab-9432-4f83831df97f"
-    ]
+    ],
+    "documentation": {
+        "readme": "docs/README.en.md",
+        "usage": "docs/USAGE.en.md",
+        "technical": "docs/TECHNICAL.en.md"
+    }
 }

@@ -7,5 +7,10 @@
     "gateway": "auth",
     "requires": ["5711a248-4ac9-5d44-98b5-b99bd4c6d722"],
     "required": true,
-    "locked": true
+    "locked": true,
+    "documentation": {
+        "readme": "docs/README.en.md",
+        "usage": "docs/USAGE.en.md",
+        "technical": "docs/TECHNICAL.en.md"
+    }
 }

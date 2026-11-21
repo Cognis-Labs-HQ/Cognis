@@ -83,7 +83,7 @@
   <string name="module.social.messages.decline_call">Anruf ablehnen</string>
   <string name="module.social.messages.tutorial.messages.title">Nachrichtenanleitung</string>
   <string name="module.social.messages.tutorial.messages.rooms.title">Räume</string>
-  <string name="module.social.messages.tutorial.messages.rooms.body">Wählen Sie eine Unterhaltung oder beginnen Sie eine neue über die Seitenleiste.</string>
+  <string name="module.social.messages.tutorial.messages.rooms.body">Wähle einen Raum oder beginne eine Unterhaltung in der Seitenleiste. Auf Telefonen und Tablets öffnest du sie über die Schaltfläche mit doppeltem Winkel oben links.</string>
   <string name="module.social.messages.tutorial.messages.room.history.title">Raumverlauf</string>
   <string name="module.social.messages.tutorial.messages.room.history.body">Lesen Sie den Verlauf und prüfen Sie Teilnehmer sowie offene Anfragen.</string>
   <string name="module.social.messages.tutorial.messages.compose.and.preview.title">Verfassen und Vorschau</string>
@@ -96,4 +96,6 @@
   <string name="module.social.messages.tutorial.messages.preview.message.body">Wechseln Sie zur Vorschau, um Formatierung, Links und Anhänge zu prüfen. Korrigieren Sie den Text unter Verfassen.</string>
   <string name="module.social.messages.tutorial.messages.manage.room.title">Gespräch verwalten</string>
   <string name="module.social.messages.tutorial.messages.manage.room.body">Der Gesprächskopf zeigt Raum und Teilnehmer. Prüfen Sie verfügbare Aktionen, bevor Sie Mitglieder ändern oder austreten.</string>
+  <string name="module.social.messages.conversations">Unterhaltungen</string>
+  <string name="module.social.messages.choose_conversation">Wähle eine Unterhaltung, um Nachrichten zu lesen und zu senden.</string>
 </resources>

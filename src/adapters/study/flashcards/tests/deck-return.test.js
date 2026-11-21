@@ -21,9 +21,8 @@ import {
     deckMatchesLanguage,
     deckRouteKey,
 } from "../ui/app/language.js";
-import { languageFlashcardsUrl } from "../../../../gateways/study/ui/reuse/explore.js";
 
-test("Back from Explore remounts the complete locked-mode deck at the saved card with working Previous and Next", async () => {
+test("Back from Explore remounts the complete locked-mode deck at the saved card with working Previous and Next", async (context) => {
     const cards = ["one", "two", "three"].map((id) => ({
         entry: { id, schemaId: "ja", label: id },
     }));
@@ -67,6 +66,11 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
     const queueCalls = [];
     const menus = [];
     const navigations = [];
+    const actionFlows = [];
+    const navigationSlot = {
+        id: "study-subnav",
+        render: () => "Study navigation",
+    };
     const environment = vm.createContext({
         AbortController,
         uiCtx,
@@ -76,7 +80,36 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
         flashcardsRoute,
         deckMatchesLanguage,
         deckRouteKey,
-        languageFlashcardsUrl,
+        languageFlashcardsUrl: (language, deckSlug) => {
+            assert.equal(language, "ja");
+            return `/study/ja/flashcards${deckSlug ? `/${deckSlug}` : ""}`;
+        },
+        createStudySubNavigationSlot: (model) => {
+            assert.equal(model.selectedLanguageCode, "ja");
+            return navigationSlot;
+        },
+        createActionRunner: (namespace, actions) => {
+            for (const action of actions) {
+                const id = `${namespace}:${action}`;
+                const unregister = uiCtx.registerFlow(id, ["execute"]);
+                uiCtx.extendFlow(
+                    id,
+                    "execute",
+                    { id },
+                    async ({ input, data }) => {
+                        actionFlows.push(id);
+                        data.result = await input.operation();
+                    },
+                );
+                context.after(unregister);
+            }
+            return async (action, operation) => {
+                const result = await uiCtx.runFlow(`${namespace}:${action}`, {
+                    operation,
+                });
+                return result.data.result;
+            };
+        },
         history,
         location,
         window: { addEventListener() {} },
@@ -112,6 +145,7 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
         createPageComposer: (_root, options) => ({
             getFloatingSlot: () => ({}),
             init: async () => {
+                assert.equal(options.subNavigation[0], navigationSlot);
                 assert.equal(options.toolbar[0].render(), "deck menu");
                 assert.equal(options.toolbarScrollable, true);
                 root.querySelector("[data-study-deck]").innerHTML =
@@ -154,43 +188,6 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
         mountWhenDirect: async () => {},
         showToast: () => assert.fail("Unexpected deck failure"),
     });
-    environment.createStudySubNavigationSlot = loadTestModule(
-        new URL(
-            "../../../../gateways/study/ui/sub-navigation.js",
-            import.meta.url,
-        ),
-        {
-            "/static/reuse/offline-state.js": offlineState,
-            "./navigation-client.js": {
-                fetchStudyPreferences: () => {
-                    throw new Error("unexpected_study_preferences_read");
-                },
-            },
-            "./reuse/explore.js": environment,
-            "/static/reuse/mount-scope.js": environment,
-            "/static/reuse/toast.js": environment,
-            "/static/reuse/form-builder.js": environment,
-            "/static/reuse/escape-html.js": environment,
-            "/static/reuse/ui-ctx.js": environment,
-            "/static/reuse/spa-route-registry.js": environment,
-            "/static/gateways/study/language.js": environment,
-            "/static/gateways/study/library-client.js": environment,
-        },
-        environment,
-    ).createStudySubNavigationSlot;
-    Object.assign(
-        environment,
-        loadTestModule(
-            new URL(
-                "../../../../gateways/study/ui/reuse/action-flows.js",
-                import.meta.url,
-            ),
-            {
-                "/static/reuse/ui-ctx.js": environment,
-            },
-            environment,
-        ),
-    );
     Object.assign(
         environment,
         loadTestModule(
@@ -422,4 +419,6 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
         },
     });
     assert.equal(navigations.at(-1), "/study/ja/flashcards");
+    for (const action of ["load", "browse", "filter", "restart", "review"])
+        assert.ok(actionFlows.includes(`study:decks:${action}`), action);
 });

@@ -82,12 +82,6 @@
     transition: none;
 }
 
-@media (max-width: 900px) {
-    .messages-page .main-window--with-toolbar .toolbar {
-        width: min(320px, 85vw);
-    }
-}
-
 .messages-room-avatar-btn {
     border: 1px solid var(--color-border);
     border-radius: 999px;
@@ -393,14 +387,61 @@
     background: var(--initials-bg, var(--color-accent));
 }
 
-@media (max-width: 640px) {
-    .messages-message-row--own {
-        justify-content: flex-end;
-        align-items: flex-end;
-    }
+[data-composer-layout="compact"] .messages-message-row--own {
+    justify-content: flex-end;
+    align-items: flex-end;
+}
+[data-composer-layout="compact"]
+    .messages-message-row--own
+    .messages-message-wrap {
+    margin-left: auto;
+    max-width: calc(100% - 2.8rem);
+}
 
-    .messages-message-row--own .messages-message-wrap {
-        margin-left: auto;
-        max-width: calc(100% - 2.8rem);
-    }
+[data-composer-drawer="true"] .messages-thread-header {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.5rem 0.65rem;
+}
+[data-composer-drawer="true"] .messages-thread-title-wrap {
+    flex: 1;
+}
+[data-composer-drawer="true"] .messages-thread-actions {
+    width: 100%;
+    margin-left: 0;
+    flex-wrap: wrap;
+}
+[data-composer-drawer="true"] .messages-thread-actions :is(button, label),
+[data-composer-drawer="true"] .messages-request-banner-actions button {
+    min-height: 44px;
+    min-width: 44px;
+}
+[data-composer-drawer="true"] .messages-request-banner {
+    flex-wrap: wrap;
+    margin-inline: 0.65rem;
+}
+
+[data-composer-touch="true"] .messages-thread-actions :is(button, label) {
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+[data-composer-touch="true"] .messages-request-banner {
+    flex-wrap: wrap;
+}
+[data-composer-touch="true"] .messages-request-banner-actions {
+    flex-wrap: wrap;
+}
+[data-composer-touch="true"] .messages-request-banner-actions button {
+    min-height: 44px;
+}
+
+:is([data-composer-layout="compact"], [data-composer-layout="medium"])
+    .messages-thread-title {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }

@@ -9,5 +9,10 @@
         "8f3102a7-88c8-56f9-a4ee-ba602dd35d36"
     ],
     "description": "Structured application logging to stdout/stderr and file.",
-    "publisher": "Cognis Labs HQ"
+    "publisher": "Cognis Labs HQ",
+    "documentation": {
+        "readme": "docs/README.en.md",
+        "usage": "docs/USAGE.en.md",
+        "technical": "docs/TECHNICAL.en.md"
+    }
 }

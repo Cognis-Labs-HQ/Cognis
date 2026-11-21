@@ -43,6 +43,8 @@
     flex-wrap: wrap;
     justify-content: center;
     overflow: auto;
+    background: rgb(from var(--surface) r g b / 1);
+    backdrop-filter: none;
 }
 .page-context h1:has(> .tutorial-help) {
     display: inline-flex;
@@ -95,6 +97,9 @@
     border: 3px solid var(--tutorial-accent);
     border-radius: 8px;
     pointer-events: none;
+    box-shadow:
+        0 0 0 2px var(--surface),
+        0 0 0 4px var(--tutorial-accent);
 }
 .tutorial-arrow {
     position: fixed;
@@ -103,6 +108,47 @@
     border: 8px solid transparent;
     transform: translate(-50%, -50%);
     pointer-events: none;
+    filter: drop-shadow(0 0 2px var(--text));
+}
+
+.tutorial-restart-icon {
+    display: none;
+    width: 20px;
+    height: 20px;
+    background: currentColor;
+    mask: url("/static/assets/reuse/refresh-dark.svg") center / contain
+        no-repeat;
+}
+
+@media (max-width: 640px) {
+    .tutorial-callout {
+        padding: 12px;
+        line-height: 1.4;
+    }
+    .tutorial-actions.floating-toolbar {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(0, 1fr);
+        width: calc(
+            100vw - 16px - env(safe-area-inset-left) -
+                env(safe-area-inset-right)
+        );
+        gap: 4px;
+    }
+    .tutorial-actions.floating-toolbar > button {
+        padding: 6px 4px;
+        font-size: 0.875em;
+        line-height: 1.2;
+    }
+    .tutorial-actions .tutorial-restart-icon {
+        display: block;
+    }
+    .tutorial-actions .tutorial-restart-label {
+        display: none;
+    }
+    .page-context h1:has(> .tutorial-help) {
+        gap: 4px;
+    }
 }
 .tutorial-callout:focus-visible {
     outline: 2px solid var(--tutorial-accent);

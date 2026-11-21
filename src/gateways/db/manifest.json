@@ -8,5 +8,10 @@
     "publisher": "Cognis Labs HQ",
     "entrypoints": {
         "cli": "./cli/index.js"
+    },
+    "documentation": {
+        "readme": "docs/README.en.md",
+        "usage": "docs/USAGE.en.md",
+        "technical": "docs/TECHNICAL.en.md"
     }
 }

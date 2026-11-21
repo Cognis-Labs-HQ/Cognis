@@ -5,5 +5,10 @@
     "name": "File Storage Quotas",
     "version": "1.0.24",
     "publisher": "Cognis Labs HQ",
-    "locked": true
+    "locked": true,
+    "documentation": {
+        "readme": "docs/README.en.md",
+        "usage": "docs/USAGE.en.md",
+        "technical": "docs/TECHNICAL.en.md"
+    }
 }

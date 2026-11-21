@@ -19,6 +19,7 @@
     width: 100%;
     max-width: none;
     gap: 1.5rem;
+    container-type: inline-size;
 }
 
 .error-content--fullscreen {
@@ -45,7 +46,8 @@
 }
 
 .error-code {
-    font-size: clamp(5rem, 22vw, 14rem);
+    font-size: clamp(2.5rem, 24cqi, 14rem);
+    white-space: nowrap;
     font-weight: 900;
     line-height: 1;
     letter-spacing: -0.03em;
