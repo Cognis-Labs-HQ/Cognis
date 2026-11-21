@@ -420,6 +420,14 @@
   <string name="ui.app.settings.emails_add_placeholder">du@beispiel.de</string>
   <string name="ui.app.settings.emails_none">Keine E-Mail-Adressen hinzugefügt.</string>
   <string name="ui.app.settings.emails_remove_failed">E-Mail-Adresse konnte nicht entfernt werden.</string>
+  <string name="ui.app.settings.emails_primary_failed">Die primäre E-Mail-Adresse konnte nicht geändert werden.</string>
+  <string name="ui.app.settings.emails_remove_completed">E-Mail-Adresse entfernt.</string>
+  <string name="ui.app.settings.emails_primary_completed">Primäre E-Mail-Adresse geändert.</string>
+  <string name="ui.app.settings.emails_queued">Die E-Mail-Änderung wurde vorgemerkt. Sie wurde vom Server noch nicht bestätigt.</string>
+  <string name="ui.app.settings.emails_saved_refresh_failed">Die E-Mail-Änderung wurde gespeichert, aber die aktuelle Adressliste konnte nicht bestätigt werden. Wählen Sie vor einer weiteren Änderung Aktualisieren.</string>
+  <string name="ui.app.settings.emails_queued_refresh_failed">Die E-Mail-Änderung wurde vorgemerkt, aber die Liste mit ausstehenden Änderungen konnte nicht geladen werden. Wählen Sie Aktualisieren, ohne die Änderung zu wiederholen.</string>
+  <string name="ui.app.settings.emails_outcome_unknown">Die E-Mail-Änderung ist unbestätigt und möglicherweise bereits gespeichert. Aktualisieren prüft, ohne erneut zu senden. Bleibt sie unbestätigt, öffnen Sie die Einstellungen erneut und prüfen Sie die Liste vor einer neuen Änderung.</string>
+  <string name="ui.app.settings.emails_refreshed">E-Mail-Adressen aktualisiert.</string>
   <string name="ui.app.settings.emails_add_failed">E-Mail-Adresse konnte nicht hinzugefügt werden.</string>
   <string name="ui.app.settings.emails_unverified">Unverifiziert</string>
   <string name="ui.app.settings.emails_verified">Gültig</string>
@@ -656,7 +664,7 @@
   <string name="ui.tutorial.replay">Tutorial dieser Seite wiederholen</string>
   <string name="ui.tutorial.settings.general.title">Kontoeinstellungen</string>
   <string name="ui.tutorial.settings.general.email.addresses.title">E-Mail-Adressen</string>
-  <string name="ui.tutorial.settings.general.email.addresses.body">Prüfen Sie Adressen und Bestätigungsstatus, bevor Sie eine Adresse hinzufügen oder entfernen.</string>
+  <string name="ui.tutorial.settings.general.email.addresses.body">Prüfen Sie Adressen und Bestätigungsstatus vor dem Hinzufügen oder Entfernen. Als primär festlegen ändert die Hauptadresse; Entfernen löscht eine zusätzliche Adresse. Warten Sie während einer laufenden Aktion. Vorgemerkte Änderungen sind noch nicht vom Server bestätigt. Bei einem unbestätigten Ergebnis oder einer unbestätigten Liste prüft Aktualisieren ohne erneutes Senden. Bleibt das Ergebnis unbestätigt, öffnen Sie die Einstellungen erneut und prüfen Sie die Liste.</string>
   <string name="ui.tutorial.settings.general.offline.access.title">Offline-Zugriff</string>
   <string name="ui.tutorial.settings.general.offline.access.body">Wählen Sie, ob dieser Browser erlaubte Inhalte für die Offline-Nutzung vorbereitet.</string>
   <string name="ui.tutorial.settings.general.account.lifecycle.title">Kontolebenszyklus</string>

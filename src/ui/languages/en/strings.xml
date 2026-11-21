@@ -420,6 +420,14 @@
   <string name="ui.app.settings.emails_add_placeholder">you@example.com</string>
   <string name="ui.app.settings.emails_none">No email addresses added.</string>
   <string name="ui.app.settings.emails_remove_failed">Could not remove email address.</string>
+  <string name="ui.app.settings.emails_primary_failed">Could not change the primary email address.</string>
+  <string name="ui.app.settings.emails_remove_completed">Email address removed.</string>
+  <string name="ui.app.settings.emails_primary_completed">Primary email address changed.</string>
+  <string name="ui.app.settings.emails_queued">Email change queued. It has not yet been confirmed by the server.</string>
+  <string name="ui.app.settings.emails_saved_refresh_failed">Email change saved, but the latest email list could not be confirmed. Use Refresh before making another change.</string>
+  <string name="ui.app.settings.emails_queued_refresh_failed">Email change queued, but the pending email list could not be loaded. Use Refresh without repeating the change.</string>
+  <string name="ui.app.settings.emails_outcome_unknown">The email change is unconfirmed and may already be saved. Refresh checks without resending. If it stays unconfirmed, reopen Settings and review the list before making a new change.</string>
+  <string name="ui.app.settings.emails_refreshed">Email addresses refreshed.</string>
   <string name="ui.app.settings.emails_add_failed">Could not add email address.</string>
   <string name="ui.app.settings.emails_unverified">Unverified</string>
   <string name="ui.app.settings.emails_verified">Valid</string>
@@ -656,7 +664,7 @@
   <string name="ui.tutorial.replay">Replay This Page’s Tutorial</string>
   <string name="ui.tutorial.settings.general.title">Account Preferences</string>
   <string name="ui.tutorial.settings.general.email.addresses.title">Email Addresses</string>
-  <string name="ui.tutorial.settings.general.email.addresses.body">Review your email addresses and verification status before adding or removing an address.</string>
+  <string name="ui.tutorial.settings.general.email.addresses.body">Review your email addresses and verification status before adding or removing an address. Set as primary changes the main address; Remove deletes an extra address. Wait while an action is pending. Queued changes are not yet server-confirmed. If the result or list is unconfirmed, use Refresh to check without resending. Reopen Settings and review the list if the result remains unconfirmed.</string>
   <string name="ui.tutorial.settings.general.offline.access.title">Offline Access</string>
   <string name="ui.tutorial.settings.general.offline.access.body">Choose whether this browser prepares permitted content for offline use.</string>
   <string name="ui.tutorial.settings.general.account.lifecycle.title">Account Lifecycle</string>

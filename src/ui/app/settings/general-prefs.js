@@ -6,6 +6,7 @@ import { openPopup } from "../../reuse/popup.js";
 import { watchToken } from "../../reuse/validation-url.js";
 import { showToast } from "../../reuse/toast.js";
 import { matchesTrustedDomain } from "../../reuse/trusted-domains.js";
+import { createEmailActions } from "./email-actions.js";
 
 /**
  * General preferences sub-module for the Settings page.
@@ -33,7 +34,19 @@ export function initGeneralPrefs(
     { i18n, username, signal, onRender = () => {} },
 ) {
     let emails = [];
+    let emailReadVersion = 0;
     const emailClient = () => uiCtx.capabilities.get("notify:emailClient");
+    const emailActions = createEmailActions(root, {
+        i18n,
+        username,
+        signal,
+        emailClient,
+        refresh: async (isCurrent, options) => {
+            const snapshot = await loadEmails(isCurrent, options);
+            if (snapshot && isCurrent()) renderEmailList();
+            return snapshot;
+        },
+    });
 
     function updateEmailAvailability() {
         const available = Boolean(emailClient());
@@ -44,14 +57,45 @@ export function initGeneralPrefs(
         return available;
     }
 
-    async function loadEmails() {
+    async function loadEmails(
+        isCurrent = () => true,
+        { authoritative = false } = {},
+    ) {
+        const readVersion = ++emailReadVersion;
         const res = await emailClient().request(
             `/api/v1/notify/users/${encodeURIComponent(username)}/emails`,
+            {
+                signal,
+                cache: "no-store",
+                ...(authoritative ? { bufferOffline: false } : {}),
+            },
         );
-        if (!res.ok) return;
+        signal?.throwIfAborted();
+        if (!res.ok || (authoritative && res.status !== 200)) return;
         const payload = await res.json();
         signal?.throwIfAborted();
-        emails = payload.data ?? [];
+        const entries = payload?.data;
+        if (
+            !isCurrent() ||
+            readVersion !== emailReadVersion ||
+            !Array.isArray(entries) ||
+            !entries.every(
+                (entry) =>
+                    entry &&
+                    typeof entry.email === "string" &&
+                    entry.email.trim() &&
+                    typeof entry.primary === "boolean" &&
+                    typeof entry.verified === "boolean",
+            ) ||
+            new Set(entries.map((entry) => entry.email)).size !== entries.length
+        )
+            return;
+        emails = entries;
+        return {
+            emails,
+            authoritative,
+            source: res.headers.get("x-cognis-read-source"),
+        };
     }
 
     async function isDomainAllowed(address) {
@@ -82,19 +126,6 @@ export function initGeneralPrefs(
         return { ...payload.data, queued: payload.queued === true };
     }
 
-    async function removeEmail(address) {
-        const res = await emailClient().request(
-            `/api/v1/notify/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(address)}`,
-            { method: "DELETE" },
-        );
-        if (res.status === 409) {
-            const payload = await res.json();
-            const code = payload?.error?.code ?? "remove_failed";
-            throw new Error(code);
-        }
-        if (!res.ok) throw new Error("remove_failed");
-    }
-
     async function forceRemoveUnverifiedEmail(address) {
         await emailClient().request(
             `/api/v1/notify/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(address)}?force=true`,
@@ -112,14 +143,6 @@ export function initGeneralPrefs(
         if (!res.ok) throw new Error("resend_failed");
         const payload = await res.json();
         return { ...payload.data, queued: payload.queued === true };
-    }
-
-    async function setPrimaryEmail(address) {
-        const response = await emailClient().request(
-            `/api/v1/notify/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(address)}/primary`,
-            { method: "PUT" },
-        );
-        if (!response.ok) throw new Error("primary_failed");
     }
 
     async function submitAccountLifecycleAction(action, password) {
@@ -146,10 +169,12 @@ export function initGeneralPrefs(
     }
 
     function renderEmailList() {
+        if (signal?.aborted) return;
         const listEl = root.querySelector("#email-list");
         if (!listEl) return;
         if (!emails.length) {
             listEl.innerHTML = `<li class="email-list-item"><span class="email-address">${i18n.t("ui.app.settings.emails_none")}</span></li>`;
+            emailActions.update();
             onRender();
             return;
         }
@@ -161,13 +186,14 @@ export function initGeneralPrefs(
                     : `<button class="email-badge-unverified" type="button" data-resend-verification="${escaped}">${i18n.t("ui.app.settings.emails_unverified")}</button>`;
                 const primaryBadge = entry.primary
                     ? `<span class="email-badge-primary">${i18n.t("ui.app.settings.emails_primary")}</span>`
-                    : `<button class="btn-animated" type="button" data-set-primary="${escaped}">${i18n.t("ui.app.settings.emails_set_primary")}</button>`;
+                    : `<button class="btn-confirm btn-animated" type="button" data-set-primary="${escaped}">${i18n.t("ui.app.settings.emails_set_primary")}</button>`;
                 const removeBtn = entry.primary
                     ? ""
-                    : `<button class="btn-animated" type="button" data-remove-email="${escaped}">${i18n.t("ui.reuse.remove")}</button>`;
+                    : `<button class="btn-cancel btn-animated" type="button" data-remove-email="${escaped}">${i18n.t("ui.reuse.remove")}</button>`;
                 return `<li class="email-list-item"><span class="email-address">${escaped}</span>${verifiedBadge}${primaryBadge}${removeBtn}</li>`;
             })
             .join("");
+        emailActions.update();
         onRender();
     }
 
@@ -382,37 +408,17 @@ export function initGeneralPrefs(
                 const target = evt.target;
                 if (!(target instanceof HTMLElement)) return;
 
-                const removeAttr = target.dataset.removeEmail;
-                if (removeAttr) {
-                    try {
-                        await removeEmail(removeAttr);
-                        await loadEmails();
-                        renderEmailList();
-                    } catch (err) {
-                        const code =
-                            err instanceof Error
-                                ? err.message
-                                : "remove_failed";
-                        if (code === "cannot_remove_primary_email") {
-                            showToast(i18n.t("ui.reuse.remove_primary_body"), {
-                                variant: "warning",
-                            });
-                        } else {
-                            showStatus(i18n.t("ui.reuse.remove_failed"));
-                        }
-                    }
+                if (target.dataset.refreshEmails !== undefined) {
+                    await emailActions.refresh();
                     return;
                 }
-
+                const removeAttr = target.dataset.removeEmail;
                 const setPrimaryAttr = target.dataset.setPrimary;
-                if (setPrimaryAttr) {
-                    try {
-                        await setPrimaryEmail(setPrimaryAttr);
-                        await loadEmails();
-                        renderEmailList();
-                    } catch (error) {
-                        showStatus(i18n.t("ui.app.settings.emails_add_failed"));
-                    }
+                if (removeAttr || setPrimaryAttr) {
+                    await emailActions.run(
+                        removeAttr ? "remove" : "primary",
+                        removeAttr || setPrimaryAttr,
+                    );
                     return;
                 }
 
@@ -539,6 +545,14 @@ export function initGeneralPrefs(
         },
         async refresh() {
             if (!updateEmailAvailability()) return;
+            if (emailActions.busy) {
+                renderEmailList();
+                return;
+            }
+            if (emailActions.blocked) {
+                await emailActions.refresh();
+                return;
+            }
             await loadEmails();
             renderEmailList();
         },
