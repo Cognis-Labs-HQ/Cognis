@@ -12,5 +12,5 @@ Profile 4.0.0 requires the matching shell navbar provider contract. Ship both to
 
 ## Commits
 
-- [ba688b9f541984838dda8ebda981d3b43edced81](https://github.com/Cognis-Labs-HQ/Cognis/commit/ba688b9f541984838dda8ebda981d3b43edced81)
-- [315cf7b6d44a853dd34159b52572e2840f0d4b14](https://github.com/Cognis-Labs-HQ/Cognis/commit/315cf7b6d44a853dd34159b52572e2840f0d4b14)
+- [ada7d770c1e5dd54ba303ab52df127bff327a285](https://github.com/Cognis-Labs-HQ/Cognis/commit/ada7d770c1e5dd54ba303ab52df127bff327a285)
+- [185f85f89a8962d4762ae862cc3aec124bad4718](https://github.com/Cognis-Labs-HQ/Cognis/commit/185f85f89a8962d4762ae862cc3aec124bad4718)
