@@ -6,6 +6,8 @@ Buat akun tanpa undangan saat pendaftaran publik diaktifkan.
 
 Izinkan pengguna baru membuat akun lokal biasa tanpa token undangan.
 
+Registrasi publik membuat akun melalui penyedia registrasi yang aktif dan dapat membuat profilnya melalui kapabilitas yang diinjeksi.
+
 ## Sebelum Memulai
 
 Administrator harus mengaktifkan pendaftaran publik secara eksplisit.

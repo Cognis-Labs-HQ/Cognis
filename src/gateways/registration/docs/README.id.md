@@ -6,6 +6,8 @@ Buat akun menggunakan undangan atau opsi pendaftaran yang diaktifkan pada instal
 
 Atur pembuatan akun dan undangan sesuai kebijakan instalasi.
 
+Gateway registrasi mengelola pendaftaran publik dan penukaran undangan serta menyediakan operasi penyedia melalui kapabilitas dan rute gateway.
+
 ## Sebelum Memulai
 
 Pemilik mengatur kebijakan; penerbitan bergantung pada peran dan penyedia.

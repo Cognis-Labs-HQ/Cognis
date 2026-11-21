@@ -6,6 +6,8 @@ Erstellen Sie ein Konto über eine Einladung oder die aktivierten Registrierungs
 
 Steuere Kontoerstellung und Einladungen nach Installationsrichtlinie.
 
+Das Registrierungs-Gateway verwaltet öffentliche Anmeldung und Einladungseinlösung und stellt Provider-Operationen über Gateway-Fähigkeiten und Routen bereit.
+
 ## Vor dem Start
 
 Inhaber verwalten Einladungsrichtlinien; Ausstellung hängt von Rolle und Anbietern ab.

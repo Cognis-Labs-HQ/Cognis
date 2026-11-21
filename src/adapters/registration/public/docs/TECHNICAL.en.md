@@ -14,6 +14,8 @@ Enable Public Registration through Registration administration only when account
 
 The provider trims the username and display name, requires a username and password, creates a local account with the `user` role, and invokes the injected profile creator when available.
 
+The adapter accepts username, password, optional email and optional displayName. It trims username and displayName, rejects an empty username or password with username_and_password_required, and calls the account store with the user role. Its result contains username, enabled and role. The account store owns persistence and propagates failures. If createProfile is provided, profile creation is awaited after account creation. The adapter is disabled by default; the gateway checks its public-registration policy and rejects disabled registration. The optional email is part of the input contract but is not passed to the account registration operation.
+
 ## Security
 
 Callers cannot request an administrative role through this provider. Registration policy and any external-identity continuation are enforced by the owning gateway.
