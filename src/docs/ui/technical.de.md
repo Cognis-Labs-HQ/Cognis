@@ -71,6 +71,31 @@ Die Abmeldung löscht private Sitzungsdaten, ohne auf die öffentliche Routenpfl
 
 Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
 
+#### Strukturierte Schaltflächen
+
+Verwenden Sie `renderStructuredContent(groups)` aus `src/ui/reuse/structured-content.js` für deklarative Beiträge zu Einstellungen und Administration. Texte und zugängliche Beschriftungen stammen aus den Übersetzungen der zuständigen Komponente.
+
+```js
+renderStructuredContent([
+    {
+        items: [
+            {
+                type: "button",
+                id: "inspect",
+                text: inspectLabel,
+                variant: "neutral",
+            },
+        ],
+    },
+]);
+```
+
+Der Schaltflächendeskriptor ordnet `variant: 'confirm'` der Klasse `btn-confirm` und `variant: 'danger'` der Klasse `btn-cancel` zu. Fehlende Varianten, `neutral` und andere Werte erhalten `btn-neutral`; unbekannte Werte werden nicht abgelehnt. Jede Schaltfläche besitzt genau eine Konsequenzklasse neben `structured-content__button` und `btn-animated`. Die zuständige Komponente wählt erzeugende oder destruktive Varianten ausdrücklich; Beschriftungen und IDs bestimmen niemals die Konsequenz.
+
+Natives `type="button"`, maskierte Texte und Attribute (`id`, `name`, `ariaLabel`, `disabled`, `checked`), Gruppen und Trennlinien bleiben erhalten. Der Renderer liefert Markup, ohne Aktionen auszuführen oder Formulare abzusenden. Ereignisbehandlung und vorübergehende Deaktivierung bleiben beim Aufrufer; Deskriptoren bieten keine Schnittstellen für Ladezustände oder beliebige Klassen. Der Host muss die vorhandenen gemeinsamen Schaltflächen- und Strukturstile laden. Die kanonischen Klassen greifen auf gemeinsame Regeln für Umbruch, Schriftvererbung und Größen bei groben Zeigegeräten zu.
+
+Die Anleitungen für Einstellungen und Administration behalten ihre Ziele und Abläufe: Dieser Renderer ergänzt weder eine Aktion noch einen Anleitungsschritt. Die beitragenden Komponenten bleiben für ihre eigenen Aktionen und Anleitungen verantwortlich.
+
 ## Sicherheit
 
 Verborgene Navigation ist kein Zugriffsschutz. Anbieter nutzen Eigentümerfähigkeiten und brechen bei Seitenende oder Kontowechsel ab; private Daten bleiben kontogebunden.

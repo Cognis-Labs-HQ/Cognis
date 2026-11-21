@@ -133,6 +133,31 @@ Batas lima detik hanya berlaku untuk percobaan stylesheet, bukan seluruh persiap
 
 Perilaku bersama: [Kontrol Mengambang](/docs/focus-control/technical).
 
+### Tombol Konten Terstruktur
+
+Gunakan `renderStructuredContent(groups)` dari `src/ui/reuse/structured-content.js` untuk kontribusi deklaratif Pengaturan dan Administrasi. Sediakan teks dan label aksesibilitas yang dilokalkan oleh komponen pemilik.
+
+```js
+renderStructuredContent([
+    {
+        items: [
+            {
+                type: "button",
+                id: "inspect",
+                text: inspectLabel,
+                variant: "neutral",
+            },
+        ],
+    },
+]);
+```
+
+Deskriptor tombol memetakan `variant: 'confirm'` ke `btn-confirm` dan `variant: 'danger'` ke `btn-cancel`. Varian yang dihilangkan, `neutral`, dan nilai lainnya menggunakan `btn-neutral`; nilai yang tidak dikenal tidak ditolak. Setiap tombol memiliki tepat satu kelas konsekuensi selain `structured-content__button` dan `btn-animated`. Pemilik memilih varian pembuatan atau penghapusan secara eksplisit; label dan ID tidak pernah menentukan konsekuensi.
+
+`type="button"` bawaan, teks dan atribut yang di-escape (`id`, `name`, `ariaLabel`, `disabled`, `checked`), grup, serta pemisah tetap dipertahankan. Renderer mengembalikan markup tanpa menjalankan tindakan atau mengirim formulir. Penanganan peristiwa dan status nonaktif sementara tetap menjadi tanggung jawab pemanggil; deskriptor tidak menyediakan API pemuatan atau kelas bebas. Host harus memuat gaya tombol bersama dan konten terstruktur yang sudah tersedia. Kelas baku mengikuti aturan bersama untuk pembungkusan teks, pewarisan fon, dan ukuran bagi perangkat penunjuk kasar.
+
+Panduan Pengaturan dan Administrasi mempertahankan target serta alurnya: renderer ini tidak menambahkan tindakan atau langkah tutorial. Pemilik kontribusi tetap bertanggung jawab atas tindakan dan panduannya sendiri.
+
 ## Keamanan
 
 Navigasi tersembunyi bukan kontrol akses. Penyedia memakai kapabilitas pemilik dan membatalkan pekerjaan saat unmount atau pergantian akun; data privat terikat akun.
