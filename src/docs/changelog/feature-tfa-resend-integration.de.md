@@ -28,4 +28,5 @@ Bei der Rückkehr zu einer Methode wird jede abgeschlossene Neuanforderung genau
 
 ## Commits
 
-- [781658c2c3040c882e8ccbb4c1a7f2f5a1dfcb5a](https://github.com/Cognis-Labs-HQ/Cognis/commit/781658c2c3040c882e8ccbb4c1a7f2f5a1dfcb5a)
+- [18941c4346a32e691be8e802350d279fac42d98a](https://github.com/Cognis-Labs-HQ/Cognis/commit/18941c4346a32e691be8e802350d279fac42d98a)
+- [72160829fb76bd59c0b725e936abb4e6f29fcb8d](https://github.com/Cognis-Labs-HQ/Cognis/commit/72160829fb76bd59c0b725e936abb4e6f29fcb8d)
