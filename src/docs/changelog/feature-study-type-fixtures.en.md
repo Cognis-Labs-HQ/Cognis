@@ -8,4 +8,4 @@ Classes and Flashcards tests now explicitly reject unused bootstrap operations w
 
 ## Commits
 
-- [ee0ad5b3a7d481a6c0b892b819f074150f10b6e7](https://github.com/Cognis-Labs-HQ/Cognis/commit/ee0ad5b3a7d481a6c0b892b819f074150f10b6e7)
+- [dda9defddb917919c1f0adb55ded88647dac3adf](https://github.com/Cognis-Labs-HQ/Cognis/commit/dda9defddb917919c1f0adb55ded88647dac3adf)
