@@ -12,4 +12,5 @@ Synthetic tests exercise persisted token results, denied owner updates and guest
 
 ## Commits
 
-- [f8c570ec93b88599220fcbf1ec5b18d617e01136](https://github.com/Cognis-Labs-HQ/Cognis/commit/f8c570ec93b88599220fcbf1ec5b18d617e01136)
+- [841fd8d38a298e4c1d4b529209d90be92bfba322](https://github.com/Cognis-Labs-HQ/Cognis/commit/841fd8d38a298e4c1d4b529209d90be92bfba322)
+- [137c5eeebaee4702045181ff5880993ddd319913](https://github.com/Cognis-Labs-HQ/Cognis/commit/137c5eeebaee4702045181ff5880993ddd319913)
