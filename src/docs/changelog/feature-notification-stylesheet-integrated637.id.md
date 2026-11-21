@@ -12,4 +12,4 @@ Tindakan notifikasi, pemeriksaan berkala, siklus hidup notifikasi masuk, dan tut
 
 ## Komit
 
-- [5c081737d6026b5c0fc23e57fe43b8e5da76d499](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c081737d6026b5c0fc23e57fe43b8e5da76d499)
+- [693734195cf2391d000a0987c66e4399a0b15318](https://github.com/Cognis-Labs-HQ/Cognis/commit/693734195cf2391d000a0987c66e4399a0b15318)
