@@ -43,9 +43,10 @@ export async function composerFixture({
         },
     ).window;
     const document = window.document;
-    window.matchMedia = (query) => ({
-        matches: query.includes("max-width") ? width <= 640 : false,
-    });
+    window.matchMedia = (query) =>
+        Object.assign(new window.EventTarget(), {
+            matches: query.includes("max-width") ? width <= 640 : false,
+        });
     window.scrollTo = () => {};
     window.HTMLElement.prototype.setPointerCapture = () => {};
     window.HTMLElement.prototype.getBoundingClientRect = function () {
@@ -72,10 +73,14 @@ export async function composerFixture({
         observe(target) {
             this.targets.add(target);
         }
+        unobserve(target) {
+            this.targets.delete(target);
+        }
         disconnect() {
             this.targets.clear();
         }
     }
+    window.ResizeObserver = ResizeObserver;
     const requests = [];
     const logs = [];
     const toasts = [];
@@ -488,8 +493,16 @@ export async function composerFixture({
         modules,
         resize(nextWidth) {
             width = nextWidth;
-            for (const observer of resizeObservers)
-                if (observer.targets.size) observer.callback();
+            for (const observer of [...resizeObservers]) {
+                if (observer.targets.size)
+                    observer.callback(
+                        [...observer.targets].map((target) => ({
+                            target,
+                            contentRect: target.getBoundingClientRect(),
+                        })),
+                        observer,
+                    );
+            }
         },
         snapshot,
         i18n,
