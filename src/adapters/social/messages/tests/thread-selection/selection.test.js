@@ -242,12 +242,12 @@ test("keyboard focus, hydrated avatars and interaction payloads survive targeted
     ];
     await state.render();
     const status = state.container.querySelector("[data-readers]");
-    state.showReadReceiptHoverPopup(
-        status,
+    const receiptMarkup = state.receipts.renderReaders(
         state.parseEncodedPayload(status.dataset.readers),
+        state.avatars,
         { t: String },
     );
-    assert.match(state.popups.at(-1)[1], /12:00/);
+    assert.match(receiptMarkup, /12:00/);
     state.messages[0].readBy[0].readAt = "2026-11-14T12:01:00.000Z";
     assert.equal((await state.render()).changed, false);
     assertSelection(snapshot);

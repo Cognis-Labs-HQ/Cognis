@@ -261,7 +261,7 @@ test("messages reactions and receipts include advanced interaction safeguards", 
     assert.match(appSource, /data-reaction-details="1"/);
     assert.match(
         appSource,
-        /threadList\?\.addEventListener\(\s*"focusin",[\s\S]*messages-message-status--read/,
+        /root\.addEventListener\(\s*"click",[\s\S]*button\.messages-receipt-details/,
     );
     assert.match(
         sharedCssSource,
@@ -273,7 +273,7 @@ test("messages reactions and receipts include advanced interaction safeguards", 
     );
     assert.match(
         sharedCssSource,
-        /\.messages-read-receipt-popup[\s\S]*pointer-events:\s*none;/,
+        /\.messages-read-receipt-popup[\s\S]*pointer-events:\s*auto;/,
     );
     assert.match(
         messagesCssSource,
@@ -299,7 +299,10 @@ test("messages reactions and receipts include advanced interaction safeguards", 
         appSource,
         /messages-reaction-details-reactor-emoji" title="\$\{escapeHtml\(emojiLabel\)\}" aria-label="\$\{escapeHtml\(emojiLabel\)\}"/,
     );
-    assert.match(appSource, /hydrateProfileAvatars\(document\.body\)/);
+    assert.match(
+        appSource,
+        /renderer[\s\S]*\.hydrate\(panelElement, \{ signal: attempt\.controller\.signal \}\)/,
+    );
     assert.match(
         variantsCssSource,
         /\.messages-page\[data-message-style="speech_bubbles"\][\s\S]*\.messages-reactions-row[\s\S]*max-width:\s*100%;/,

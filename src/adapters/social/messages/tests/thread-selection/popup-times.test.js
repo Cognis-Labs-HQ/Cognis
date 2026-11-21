@@ -10,10 +10,10 @@ test("read receipt and reaction details retain shared timestamp formatting", asy
         displayName: "Reader",
         readAt: "2026-01-15T14:30:00.000Z",
     };
-    state.showReadReceiptHoverPopup(state.container, [reader], {
+    const markup = state.receipts.renderReaders([reader], state.avatars, {
         t: (key) => key,
     });
-    assert.match(state.popups[0][1], /2026-01-15 14:30/);
+    assert.match(markup, /2026-01-15 14:30/);
     await state.openReactionDetailsPopup(
         [
             {
@@ -24,5 +24,5 @@ test("read receipt and reaction details retain shared timestamp formatting", asy
         ],
         { t: (key) => key },
     );
-    assert.match(state.popups[1].body, /2026-01-15 14:30/);
+    assert.match(state.popups[0].body, /2026-01-15 14:30/);
 });

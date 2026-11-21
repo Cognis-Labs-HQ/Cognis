@@ -8,6 +8,14 @@ import {
 
 import { createAvatarCache } from "./reuse/avatar-cache.js";
 
+const contentSizes = Object.freeze([
+    "tiny",
+    "compact",
+    "small",
+    "medium",
+    "large",
+]);
+
 let activeScope = null;
 let activeContext = null;
 const mountedImages = new WeakSet();
@@ -125,7 +133,7 @@ export function getProfileAvatarPresentation(profile = {}) {
 
 /**
  * Builds only the avatar content; callers retain their link, button and badge.
- * Sizes are small (32px), medium (48px) and large (80px).
+ * Sizes are tiny, compact, small, medium and large; geometry belongs to Profile.
  * @param {{ profile?: object, size?: string, avatarKey?: string, blobUrl?: string, imageClass?: string, imageAlt?: string }} options
  * @returns {string}
  */
@@ -137,7 +145,7 @@ export function buildProfileAvatarContent({
     imageClass = "",
     imageAlt = "",
 } = {}) {
-    if (!["small", "medium", "large"].includes(size))
+    if (!contentSizes.includes(size))
         throw new Error("profile_avatar_size_invalid");
     const { label, colorSeed } = getProfileAvatarPresentation(profile);
     const fallbackClass = "profile-capability-avatar-initials";
@@ -415,6 +423,7 @@ export async function hydrateProfileAvatars(container, { signal } = {}) {
 }
 
 const avatarRenderer = {
+    contentSizes,
     get available() {
         return isRendererAvailable();
     },

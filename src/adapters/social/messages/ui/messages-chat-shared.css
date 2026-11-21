@@ -130,26 +130,42 @@
 .messages-read-receipt-popup {
     position: fixed;
     z-index: 60;
+    box-sizing: border-box;
     background: var(--color-surface, rgba(19, 29, 51, 0.98));
     border: 1px solid var(--color-border, rgba(148, 163, 184, 0.28));
     border-radius: 0.65rem;
     padding: 0.65rem 0.8rem;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-    min-width: 180px;
-    max-width: 260px;
-    pointer-events: none;
+    width: min(20rem, calc(100vw - 1rem));
+    max-height: calc(100dvh - 1rem);
+    overflow: auto;
+    pointer-events: auto;
+}
+
+.messages-receipt-popup-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    justify-content: space-between;
 }
 
 .messages-receipt-popup-title {
-    margin: 0 0 0.5rem;
+    margin: 0;
     font-size: 0.8rem;
     font-weight: 700;
     color: var(--color-text, #e2e8f0);
+    overflow-wrap: anywhere;
+}
+
+.messages-receipt-close {
+    min-width: 44px;
+    min-height: 44px;
 }
 
 .messages-receipt-popup-list {
     list-style: none;
-    margin: 0;
+    margin: 0.5rem 0 0;
     padding: 0;
     display: grid;
     gap: 0.45rem;
@@ -162,28 +178,13 @@
 }
 
 .messages-receipt-popup-avatar {
-    width: 1.65rem;
-    height: 1.65rem;
-    border-radius: 999px;
-    overflow: hidden;
-    flex: 0 0 auto;
-}
-
-.messages-receipt-popup-avatar-img,
-.messages-receipt-popup-avatar-fallback {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.messages-receipt-popup-avatar-fallback {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    color: #fff;
-    font-size: 0.6rem;
-    font-weight: 700;
-    background: var(--initials-bg, var(--color-accent));
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+    flex: 0 0 auto;
 }
 
 .messages-receipt-popup-reader-meta {
@@ -203,7 +204,8 @@
 .messages-receipt-popup-reader-time {
     font-size: 0.7rem;
     color: var(--color-text-muted, #94a3b8);
-    white-space: nowrap;
+    white-space: normal;
+    overflow-wrap: anywhere;
 }
 
 .messages-reaction-hover-popup-title {

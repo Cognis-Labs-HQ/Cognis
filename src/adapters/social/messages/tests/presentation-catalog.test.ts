@@ -29,6 +29,7 @@ test("Messages bootstrap publishes the presentation provider with adapter availa
         providesCapabilities: string[];
         isEnabled?: () => boolean;
     }> = [];
+    const routes: Array<{ requiredCapabilities?: string[] }> = [];
     let enabled = true;
     await bootstrapSocialAdapter({
         capabilities,
@@ -38,6 +39,7 @@ test("Messages bootstrap publishes the presentation provider with adapter availa
         adapterRoot: "",
         gatewayRegistry: new GatewayRegistry(),
         registerRoute() {},
+        registerSpaRoute: (route) => routes.push(route),
         registerNavbarPlugin() {},
         registerStaticDir() {},
         isGatewayEnabled: () => true,
@@ -53,6 +55,20 @@ test("Messages bootstrap publishes the presentation provider with adapter availa
         "/static/adapters/social/messages/presentation-provider.js",
     );
     assert.equal(provider.isEnabled?.(), true);
+    const receipts = providers.find((entry) =>
+        entry.providesCapabilities.includes("social:messageReceipts"),
+    );
+    assert.equal(
+        receipts?.scriptUrl,
+        "/static/adapters/social/messages/read-receipts.js",
+    );
+    assert.ok(
+        routes.some((route) =>
+            route.requiredCapabilities?.includes("social:messageReceipts"),
+        ),
+    );
+    assert.equal(receipts?.isEnabled?.(), true);
     enabled = false;
     assert.equal(provider.isEnabled?.(), false);
+    assert.equal(receipts?.isEnabled?.(), false);
 });

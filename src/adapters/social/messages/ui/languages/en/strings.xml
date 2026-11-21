@@ -52,7 +52,7 @@
   <string name="module.social.messages.receipt_sent">Sent</string>
   <string name="module.social.messages.receipt_delivered">Delivered</string>
   <string name="module.social.messages.receipt_read_single">Read: {day} {time}</string>
-  <string name="module.social.messages.receipt_seen_by_count">Seen by {count} people</string>
+  <string name="module.social.messages.receipt_seen_by_count">Seen by {count}</string>
   <string name="module.social.messages.typing">is typing…</string>
   <string name="module.social.messages.typing_users">Typing: {names}</string>
   <string name="module.social.messages.requests">Message requests</string>
@@ -88,7 +88,7 @@
   <string name="module.social.messages.tutorial.messages.rooms.title">Rooms</string>
   <string name="module.social.messages.tutorial.messages.rooms.body">Select a room or start a conversation in the sidebar. On phones and tablets, use the double-chevron button at the top left to open it.</string>
   <string name="module.social.messages.tutorial.messages.room.history.title">Room History</string>
-  <string name="module.social.messages.tutorial.messages.room.history.body">Read the room history and check participants and pending requests. You can select message text while new messages and reactions arrive, and load earlier messages without losing your place. In styles that show avatars, initials match each profile. Hover over an avatar for a profile preview or click it to open the profile.</string>
+  <string name="module.social.messages.tutorial.messages.room.history.body">Read the room history and check participants and pending requests. You can select message text while new messages and reactions arrive, and load earlier messages without losing your place. In styles that show avatars, initials match each profile. Hover over an avatar for a profile preview or click it to open the profile. Select Seen by beside a sent message to open the reader list and read times, then use Close to return. Reader avatars also open profile previews and profiles.</string>
   <string name="module.social.messages.tutorial.messages.compose.and.preview.title">Compose And Preview</string>
   <string name="module.social.messages.tutorial.messages.compose.and.preview.body">Write and preview a draft before sending; calls use their own controls.</string>
   <string name="module.social.messages.tutorial.messages.start.room.title">Start A Room</string>

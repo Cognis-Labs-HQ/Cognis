@@ -191,3 +191,20 @@ test("mounted failed-send JSON cannot notify or reload for a replacement account
     assert.deepEqual(state.toasts, []);
     assert.deepEqual(state.errors, []);
 });
+
+test("mounted Messages binds reader panels to page and room ownership", async (context) => {
+    const state = await mountFixture();
+    context.after(() => state.controller.abort());
+    const [binding] = state.receiptBindings;
+    assert.equal(binding.options.root, state.elements["messages-thread-list"]);
+    assert.equal(binding.options.signal, state.controller.signal);
+    await state.select("A");
+    const ownsRoom = binding.options.captureRoom();
+    const before = binding.closes;
+    await state.select("B");
+    assert.equal(ownsRoom(), false);
+    assert.ok(binding.closes > before);
+    await state.remount();
+    assert.equal(binding.disposed, true);
+    assert.equal(state.receiptBindings.length, 2);
+});
