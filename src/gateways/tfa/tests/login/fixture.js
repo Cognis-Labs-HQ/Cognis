@@ -158,10 +158,12 @@ export async function fixture(
         timerId: 0,
         mount: null,
         pendingPrompt: resume ? initialPrompt : null,
-        respond: respond ?? (() =>
-            Response.json({
-                data: { challenge: challenge(state.clock + 30_000) },
-            })),
+        respond:
+            respond ??
+            (() =>
+                Response.json({
+                    data: { challenge: challenge(state.clock + 30_000) },
+                })),
     };
     window.localStorage.setItem(
         "cognis_language_priority",
