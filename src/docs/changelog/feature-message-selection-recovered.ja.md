@@ -28,3 +28,4 @@ Messages 2.7.43 では、公開されたレンダラーとオフラインクラ�
 
 - [563674f0b9e67952ca3ba1dd0decf5d2faee6a52](https://github.com/Cognis-Labs-HQ/Cognis/commit/563674f0b9e67952ca3ba1dd0decf5d2faee6a52)
 - [560beddcf5e49512c6fbaa5edf0db7a7dd578c93](https://github.com/Cognis-Labs-HQ/Cognis/commit/560beddcf5e49512c6fbaa5edf0db7a7dd578c93)
+- [db03c9bcedd49b127a5aaf696840b2ea8933501a](https://github.com/Cognis-Labs-HQ/Cognis/commit/db03c9bcedd49b127a5aaf696840b2ea8933501a)
