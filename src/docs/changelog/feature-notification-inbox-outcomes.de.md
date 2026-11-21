@@ -12,6 +12,6 @@ Interne Benachrichtigungen 0.5.36 gleichen Inhalt, Reihenfolge und Lesestatus ü
 
 ## Commits
 
-- [cfe7a4001e6be4f26b15e82b199d18edbb2be42e](https://github.com/Cognis-Labs-HQ/Cognis/commit/cfe7a4001e6be4f26b15e82b199d18edbb2be42e)
-- [faba21400a8fa7680a3e4e8f48aad4d05eab7a7e](https://github.com/Cognis-Labs-HQ/Cognis/commit/faba21400a8fa7680a3e4e8f48aad4d05eab7a7e)
-- [024c4b6996da3c2f45a66ff876480140e245a3be](https://github.com/Cognis-Labs-HQ/Cognis/commit/024c4b6996da3c2f45a66ff876480140e245a3be)
+- [8258aae680b6049b091f6af88d87e7dd0cfdcf77](https://github.com/Cognis-Labs-HQ/Cognis/commit/8258aae680b6049b091f6af88d87e7dd0cfdcf77)
+- [d88df86fe5c20571ba8134db71bbbeeecf9c1820](https://github.com/Cognis-Labs-HQ/Cognis/commit/d88df86fe5c20571ba8134db71bbbeeecf9c1820)
+- [0dce5557f24f3f32f34286fff1af710389b5de5c](https://github.com/Cognis-Labs-HQ/Cognis/commit/0dce5557f24f3f32f34286fff1af710389b5de5c)
