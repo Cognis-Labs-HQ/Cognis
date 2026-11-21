@@ -186,6 +186,22 @@ Der Vertrag in Version 2 verlangt den booleschen Wert `available`. Er ist nur wa
 
 Passende Settings-Dateien, Messages 2.8.1 und Profile 3.0.19 müssen gemeinsam ausgeliefert werden. Settings akzeptiert Version 2 mit `available: true`; Version 1 und fehlende Bereitschaftsfelder sind keine Kompatibilitätsalternativen. Der gemeinsame Renderer echter Unterhaltungen sowie Auswahl und Aktualisierung bleiben unverändert.
 
+### Gebundene Bestätigungen
+
+Der Austritt gilt nur für das Gespräch und die Mitgliedschaft beim Öffnen der Bestätigung. Raumwechsel, Verlassen der Seite, Konto- oder Sitzungswechsel und verlorene Mitgliedschaft machen die Auswahl unwirksam. Wiederholtes Öffnen teilt eine ausstehende Aktion. Abbrechen, Escape, Schließen und der Hintergrund verlassen keinen Raum. Abbrechen ist neutral; Austritt und Vorlagenlöschen verwenden den destruktiven Stil.
+
+Ein bestätigter Austritt wird einmal über den registrierten Nachrichtenclient gesendet. Nach einer eindeutigen Ablehnung ist eine neue Bestätigung möglich. Eine ungewisse Antwort wird nicht wiederholt; ein bestätigter Austritt bleibt bei fehlgeschlagener Aktualisierung bestätigt. Ohne frische erfolgreiche Liste bleiben bekannte Räume erhalten. Öffnen Sie Nachrichten erneut, um das Ergebnis abzugleichen. Verspätete Ergebnisse dürfen eine neue Ansicht weder ändern noch benachrichtigen.
+
+Vorlageneditoren und Löschbestätigungen gehören zur ursprünglichen Seite, Raumauswahl, zum Konto, zur Sitzung und zum gespeicherten Vorlagenstand. Es ist nur ein Vorlagendialog gleichzeitig aktiv. Neuere oder zurückgesetzte Einstellungen machen alte Steuerelemente unwirksam und bleiben erhalten. Erfolgreiches Speichern geschieht einmal.
+
+Nachrichten 2.8.2 korrigiert die Browserzuordnung. Serverrouten, Mitgliedschaftsregeln und der schreibgeschützte Darstellungsvertrag Version 2 bleiben unverändert. Profil bleibt 4.0.0. Die umfassenderen Bestätigungsprüfungen bleiben teilweise offen.
+
+Der registrierte Nachrichtenclient akzeptiert eine optionale synchrone Prüfung `beforeDispatch()` für den direkten Transport. Sie läuft nach der Vorbereitung im Anfrageablauf und wird vor HTTP entfernt; sie wird nie gespeichert oder wiederholt. Der Austritt prüft damit unmittelbar vor dem Versand Ansicht, Konto, Sitzung, Mitglied, Handle und Anfrageanbieter erneut. Eine abgebrochene Vorbereitung bleibt ungesendet und erlaubt eine neue Bestätigung; nur ein gestarteter Transport kann ein ungewisses Ergebnis haben.
+
+### Gebundene Bestätigungen
+
+Der Schritt zur Raumverwaltung erklärt die Austrittsbestätigung und das sichere Abbrechen. Kopfbereich, optionale Verfügbarkeit, Reihenfolge und Abschlussidentität bleiben gleich. Vorlagen behalten ihre Seitenleistenaktionen; ihre Dialoge werden nach Änderungen der auslösenden Seite, Auswahl oder gespeicherten Liste unwirksam.
+
 ## Sicherheit
 
 Raumzugang, Mitgliedschaft und Nachrichtenlesen werden getrennt geprüft. Verschlüsselte Räume benötigen Clientschlüssel; das Bedrohungsmodell unterscheidet Inhalte von sichtbaren Routingdaten.

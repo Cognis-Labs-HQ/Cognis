@@ -211,6 +211,22 @@ Kontrak versi 2 mewajibkan boolean `available`. Nilainya benar hanya saat cakupa
 
 Rilis aset Settings yang sesuai bersama Messages 2.8.1 dan Profile 3.0.19. Settings menerima versi 2 dengan `available: true`; versi 1 dan bidang kesiapan yang tidak ada bukan jalur kompatibilitas. Penggambar bersama untuk percakapan langsung serta perilaku seleksi dan pembaruannya tidak berubah.
 
+### Kepemilikan Konfirmasi
+
+Keluar hanya berlaku untuk percakapan dan keanggotaan saat konfirmasi dibuka. Berpindah ruang, meninggalkan halaman, mengganti akun atau sesi, atau kehilangan keanggotaan menonaktifkan pilihan tersebut. Pembukaan berulang berbagi satu tindakan tertunda. Batal, Escape, tutup, dan latar tidak mengeluarkan Anda dari ruang. Batal bersifat netral; Keluar dan Hapus templat memakai gaya destruktif.
+
+Keluar yang dikonfirmasi dikirim sekali melalui klien Pesan terdaftar. Penolakan yang pasti memungkinkan konfirmasi baru. Respons yang belum pasti tidak diputar ulang, dan keluar yang sudah diakui tetap diakui saat pembaruan gagal. Ruang yang diketahui dipertahankan jika daftar baru yang berhasil tidak tersedia; buka kembali Pesan untuk mencocokkan hasilnya. Hasil terlambat tidak dapat menavigasi atau memberi pemberitahuan pada tampilan pengganti.
+
+Editor templat dan konfirmasi Hapus dimiliki oleh halaman, pilihan ruang, akun, sesi, dan salinan templat tersimpan semula. Hanya satu dialog templat yang aktif. Preferensi baru atau yang diatur ulang menonaktifkan kontrol lama, sehingga daftar baru tidak tertimpa. Penyimpanan yang berhasil terjadi sekali.
+
+Pesan 2.8.2 memperbaiki kepemilikan di browser. Rute server, kebijakan keanggotaan, dan kontrak presentasi hanya-baca versi 2 tidak berubah. Profil tetap 4.0.0. Audit konfirmasi yang lebih luas masih sebagian.
+
+Klien permintaan Pesan terdaftar menerima pemeriksaan sinkron opsional `beforeDispatch()` untuk transportasi langsung. Pemeriksaan berjalan setelah persiapan alur permintaan dan dihapus sebelum HTTP; tidak pernah disimpan atau diputar ulang. Keluar memakainya untuk memeriksa kembali tampilan, akun, sesi, anggota, handle, dan penyedia permintaan semula tepat sebelum pengiriman. Persiapan yang dibatalkan tetap belum terkirim dan mengizinkan konfirmasi baru; hanya transportasi yang telah dimulai dapat menghasilkan status belum pasti.
+
+### Kepemilikan Konfirmasi
+
+Langkah pengelolaan ruang menjelaskan konfirmasi Keluar dan pembatalan yang aman. Target judul, ketersediaan opsional, urutan, dan identitas penyelesaian tetap sama. Editor dan penghapusan templat tetap menggunakan kontrol bilah samping; dialognya tidak berlaku setelah halaman, pilihan, atau daftar tersimpan berubah.
+
 ## Keamanan
 
 Kelayakan ruang, keanggotaan, dan pembacaan pesan diperiksa terpisah. Ruang terenkripsi bergantung pada kunci klien; model ancaman membedakan konten dan metadata perutean.

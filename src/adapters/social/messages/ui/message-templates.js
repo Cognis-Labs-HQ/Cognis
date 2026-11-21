@@ -22,17 +22,16 @@ function templateStorageKey(accountId) {
 
 export function loadSavedMessageTemplates(accountId) {
     if (!accountId) return [];
-    try {
-        const raw = localStorage.getItem(templateStorageKey(accountId));
-        if (!raw) return [];
-        const parsed = JSON.parse(raw);
-        if (!Array.isArray(parsed)) return [];
-        return parsed
-            .map((entry) => normalizeMessageTemplateRecord(entry))
-            .filter(Boolean);
-    } catch {
-        return [];
-    }
+    const raw = localStorage.getItem(templateStorageKey(accountId));
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) throw new Error("invalid_message_templates");
+    const templates = parsed.map((entry) =>
+        normalizeMessageTemplateRecord(entry),
+    );
+    if (templates.some((entry) => !entry))
+        throw new Error("invalid_message_templates");
+    return templates;
 }
 
 export function persistSavedMessageTemplates(templates, accountId) {

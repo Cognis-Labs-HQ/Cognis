@@ -243,6 +243,9 @@ export async function mount(root, { signal } = {}) {
         );
 
     const templateUi = createMessageTemplatesUi({
+        signal,
+        isActive: roomState.isActive,
+        captureOwner: roomState.captureRoom,
         i18n,
         currentAccountId,
         resolveTemplateContent: resolveSelectedRoomTemplateContent,
@@ -701,7 +704,13 @@ export async function mount(root, { signal } = {}) {
         },
     ];
 
+    let sidebarEvents = null;
     function bindSidebarEvents() {
+        sidebarEvents?.abort();
+        sidebarEvents = new AbortController();
+        const sidebarSignal = AbortSignal.any(
+            [signal, sidebarEvents.signal].filter(Boolean),
+        );
         const roomsList = document.getElementById("messages-rooms-list");
         if (roomsList) void hydrateProfileAvatars(roomsList);
         roomsList?.addEventListener("click", async (clickEvent) => {
@@ -756,16 +765,24 @@ export async function mount(root, { signal } = {}) {
         const templatesButton = document.getElementById(
             "messages-open-templates-btn",
         );
-        templatesButton?.addEventListener("click", () => {
-            void templateUi.openTemplatesPopup();
-        });
+        templatesButton?.addEventListener(
+            "click",
+            () => {
+                void templateUi.openTemplatesPopup();
+            },
+            { signal: sidebarSignal },
+        );
 
         const sidebarTemplateList = document.getElementById(
             "messages-sidebar-template-list",
         );
-        sidebarTemplateList?.addEventListener("click", async (clickEvent) => {
-            await templateUi.handleSidebarTemplateClick(clickEvent);
-        });
+        sidebarTemplateList?.addEventListener(
+            "click",
+            async (clickEvent) => {
+                await templateUi.handleSidebarTemplateClick(clickEvent);
+            },
+            { signal: sidebarSignal },
+        );
 
         templateUi.renderSidebarTemplateList();
     }

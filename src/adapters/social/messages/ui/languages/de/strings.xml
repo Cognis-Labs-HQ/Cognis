@@ -98,7 +98,10 @@
   <string name="module.social.messages.tutorial.messages.preview.message.title">Vor dem Senden prüfen</string>
   <string name="module.social.messages.tutorial.messages.preview.message.body">Prüfe in der Vorschau Formatierung, Links und Zeilenumbrüche. Korrigiere den Text unter Verfassen.</string>
   <string name="module.social.messages.tutorial.messages.manage.room.title">Gespräch verwalten</string>
-  <string name="module.social.messages.tutorial.messages.manage.room.body">Der Gesprächskopf zeigt Raum und Teilnehmer. Prüfen Sie verfügbare Aktionen, bevor Sie Mitglieder ändern oder austreten.</string>
+  <string name="module.social.messages.tutorial.messages.manage.room.body">Der Gesprächskopf zeigt Raum und Teilnehmer. Der Austritt erfordert eine Bestätigung. Abbrechen behält Ihre Mitgliedschaft bei; ein Gesprächswechsel verwirft die ausstehende Auswahl.</string>
   <string name="module.social.messages.conversations">Unterhaltungen</string>
   <string name="module.social.messages.choose_conversation">Wähle eine Unterhaltung, um Nachrichten zu lesen und zu senden.</string>
+  <string name="module.social.messages.leave_refresh_failed">Sie haben das Gespräch verlassen, aber die Raumliste konnte nicht aktualisiert werden. Öffnen Sie Nachrichten erneut; wiederholen Sie den Austritt nicht.</string>
+  <string name="module.social.messages.leave_succeeded">Sie haben das Gespräch verlassen.</string>
+  <string name="module.social.messages.leave_uncertain">Die Austrittsanfrage konnte nicht bestätigt werden. Prüfen Sie vor einem erneuten Versuch Ihre Gespräche; die Anfrage wird nicht automatisch erneut gesendet.</string>
 </resources>
