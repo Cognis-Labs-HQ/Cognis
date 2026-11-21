@@ -228,7 +228,6 @@ Respons keamanan sistem menyertakan metadata `userValidationModes` dari Auth. Pe
 
 Administrasi hanya menyimpan bagian dengan perubahan tertunda. Kontrol keamanan dapat diedit setelah pengaturan keamanan dan kebijakan kata sandi berhasil dimuat. Penggambaran ulang formulir mempertahankan perubahan; meninggalkan bagian yang diubah tetap memerlukan konfirmasi pembuangan. Penyimpanan yang berhasil sebagian mempertahankan perubahan yang gagal atau lebih baru, sehingga percobaan ulang tidak mengirim ulang pengaturan yang sudah tersimpan. Panduan Keamanan tetap menjelaskan kebijakan sesi dan domain tepercaya.
 
-
 ## Keamanan
 
 Membaca dokumentasi tidak memberikan izin menjalankan contohnya. Komponen pemilik mengotorisasi setiap operasi.
