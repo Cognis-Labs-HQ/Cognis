@@ -18,5 +18,5 @@ Teilweise ausgeführte, abgelehnte und unbekannte Ergebnisse verwenden lokalisie
 
 ## Commits
 
-- [527633ba4baa68b59e1463f00d1b58deee86b213](https://github.com/Cognis-Labs-HQ/Cognis/commit/527633ba4baa68b59e1463f00d1b58deee86b213)
-- [b04149d652f3802afb5e6cfdaa921762c39c4c48](https://github.com/Cognis-Labs-HQ/Cognis/commit/b04149d652f3802afb5e6cfdaa921762c39c4c48)
+- [d8bca6529364abcb08bb13c8b31171cc6e1921f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/d8bca6529364abcb08bb13c8b31171cc6e1921f0)
+- [95e30b93cf82a9ac7f3d5e26663c4b07fa284044](https://github.com/Cognis-Labs-HQ/Cognis/commit/95e30b93cf82a9ac7f3d5e26663c4b07fa284044)
