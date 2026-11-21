@@ -12,6 +12,8 @@ Select Info, Usage or Technical, choose a component version and switch views whi
 
 Call `store.diff(fromVersion, toVersion)` through a store created by the `docs:versionStore` capability. Runtime modules can return that structured result from their own authenticated route, resolve `ui:documentDiff` through browser ctx, and pass the result to `renderDocumentDiff(diff)`.
 
+Use the authenticated system security or TFA enforcement endpoint to change mandatory enrollment. A failed policy application returns an error instead of a successful save.
+
 ## Expected Results
 
 Each published version contains a complete localized bundle; unavailable views are not fabricated from unrelated versions.
