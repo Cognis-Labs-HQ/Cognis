@@ -1,3 +1,4 @@
+import { registerHooks } from "node:module";
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
@@ -7,6 +8,21 @@ import {
 
 for (const locale of ["en", "de", "id", "ja"]) {
     test(`password popup exposes real criteria and cancellation stays read-only: ${locale}`, async (context) => {
+        const prefix = "/static/gateways/auth/";
+        const hooks = registerHooks({
+            resolve(specifier, owner, nextResolve) {
+                return nextResolve(
+                    specifier.startsWith(prefix)
+                        ? new URL(
+                              `../../ui/${specifier.slice(prefix.length)}`,
+                              import.meta.url,
+                          ).href
+                        : specifier,
+                    owner,
+                );
+            },
+        });
+        context.after(() => hooks.deregister());
         const host = await formValidationFixture(context, locale);
         const { openPasswordChangePopup } =
             await import("../../ui/security-prefs/password-change.js");
