@@ -20,7 +20,7 @@ for (const recovery of [false, true]) {
         });
         assert.equal(host.resendRequests().length, 1);
         assert.equal(
-            JSON.parse(host.resendRequests()[0].options.body).methodId,
+            host.resendRequests()[0].body.methodId,
             "email",
         );
         host.root.querySelector("#login-tfa-method-nav a").click();
