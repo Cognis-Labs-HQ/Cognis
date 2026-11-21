@@ -16,4 +16,5 @@ SMTP queue entries retain their required subject through delivery and retries. T
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/419e8648fe3bcbb04f1280517b79bba83852ecf4
+- [e8dc18187f0952a00078d22e4713181197fc6886](https://github.com/Cognis-Labs-HQ/Cognis/commit/e8dc18187f0952a00078d22e4713181197fc6886)
+- [a7b28309057dc860920174fcc68017401b5953ae](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7b28309057dc860920174fcc68017401b5953ae)
