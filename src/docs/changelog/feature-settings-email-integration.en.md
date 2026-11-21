@@ -12,5 +12,5 @@ Localized toasts distinguish confirmed, queued, rejected and unconfirmed changes
 
 ## Commits
 
-- [3a112deab1eb880bb4df4cf6ce27a8f2b85be7c8](https://github.com/Cognis-Labs-HQ/Cognis/commit/3a112deab1eb880bb4df4cf6ce27a8f2b85be7c8)
-- [c473f491bb8950ff841037f9ab46703adcc8aad0](https://github.com/Cognis-Labs-HQ/Cognis/commit/c473f491bb8950ff841037f9ab46703adcc8aad0)
+- [066548d3bf0e402b9d801e063d169a26564b8fe3](https://github.com/Cognis-Labs-HQ/Cognis/commit/066548d3bf0e402b9d801e063d169a26564b8fe3)
+- [0bf46f7a143476c732892809c4a940feeeeeceeb](https://github.com/Cognis-Labs-HQ/Cognis/commit/0bf46f7a143476c732892809c4a940feeeeeceeb)
