@@ -16,4 +16,5 @@ Die Prüfung der UI-Veröffentlichung verfolgt den tatsächlich angehängten For
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/f30d7c677fd5c8a2fcda49dff738d5c133118085
+- [5742d5aa3020f7aaf11cc9e3041dd1d107ab7837](https://github.com/Cognis-Labs-HQ/Cognis/commit/5742d5aa3020f7aaf11cc9e3041dd1d107ab7837)
+- [b1bb0fa35be26e7765d0a2c7d40bcaaed291155c](https://github.com/Cognis-Labs-HQ/Cognis/commit/b1bb0fa35be26e7765d0a2c7d40bcaaed291155c)
