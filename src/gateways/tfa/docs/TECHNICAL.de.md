@@ -146,12 +146,6 @@ Bei Email Code bedeutet „wartend“, dass die Zustellung noch nicht erfolgt is
 
 Kontenübergreifende Verwaltung sowie alle TFA-Lesezugriffe mit Zielauswahl, Wiederherstellungscode-Aktionen, Methodenpräferenzen, Aktivierungen/Deaktivierungen und Administrator-Zurücksetzungen erfordern Auths Richtlinie `auth:authorizeAccountTarget` v1. Administratoren dürfen keine anderen Administratoren, Eigentümer oder Gründeradministratoren verwalten. Vom Eigentümer erlaubte Aktionen bleiben verfügbar. Fehlende Richtlinien oder unlesbare Kontometadaten führen vor nachgelagerten Speicherzugriffen zur Ablehnung. Die Benutzerverwaltung verbietet weiterhin Selbstverwaltung; TFA akzeptiert ein weggelassenes oder exakt angegebenes eigenes Ziel. Einrichtung und Methodendetails bleiben auf das eigene Konto beschränkt. Leere, doppelte oder fehlerhafte Zielparameter werden abgelehnt. Verwenden Sie Einstellungen für Ihre eigene Sicherheit und die Benutzerverwaltung für ein zulässiges anderes Konto.
 
-### Rückmeldung zur Neuanforderung
-
-Wenn die erneute Anforderung der aktiven Methode abgeschlossen ist, zeigt die Anmeldemaske ihr Ergebnis. Eine Bestätigung mit dem Status „wartend“ oder „gesendet“ beschreibt den gemeldeten Zustellungsstand. Eine gültige Antwort ohne Bestätigung zeigt nur, dass die Methode geantwortet hat. Ein abgelehntes, fehlerhaftes oder unterbrochenes Ergebnis beweist nicht, ob eine Zustellung erfolgt ist. Prüfen Sie vor einem weiteren Versuch, ob ein Code angekommen ist. Ist der Anmeldeversuch abgelaufen, brechen Sie ihn ab und melden Sie sich erneut an. Wartezeiten bestimmt weiterhin der Server, laufende Anfragen bleiben gesperrt und es erfolgen keine automatischen Wiederholungen oder E-Mail-Sendungen.
-
-Solange eine Neuanforderung offen ist, zeigt die Aktion „Code wird angefordert…“ und einen Beschäftigt-Zustand. Sie bleibt gesperrt, ohne eine neue Frist zu erfinden oder automatisch zu wiederholen. Wird die Neuanforderung während eines Abbruchs fertig und schlägt der Abbruch danach fehl, gleicht dieselbe Maske Ergebnis, Sperre und ausgegebene Frist ab. Eine relative Serverwartezeit beginnt beim Empfang der Antwort; das Warten auf den Abbruch startet sie nicht neu.
-
 ## Sicherheit
 
 Einrichtung, Bestätigung, Löschung und Login nutzen geschützte Abläufe. Adapter prüfen Challenges; unbestätigte Methoden oder Fehler gelten nicht als erfolgreiche Verifikation.

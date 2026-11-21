@@ -146,12 +146,6 @@ Pada Email Code, “dalam antrean” berarti pengiriman belum selesai. Tunggu ko
 
 Pengelolaan lintas akun serta semua pembacaan TFA dengan pilihan target, operasi kode pemulihan, preferensi metode, pengaktifan/penonaktifan, dan pengaturan ulang administrator memerlukan kebijakan Auth `auth:authorizeAccountTarget` v1. Administrator tidak dapat mengelola administrator lain, pemilik, atau administrator pendiri. Operasi yang diizinkan bagi pemilik tetap tersedia. Kebijakan yang hilang atau metadata akun yang tidak dapat dibaca menyebabkan penolakan sebelum akses penyimpanan lanjutan. Pengelolaan pengguna tetap melarang pengelolaan diri; TFA menerima target pribadi yang tidak ditentukan atau ditentukan secara persis. Penyiapan dan detail metode tetap khusus akun sendiri. Parameter target kosong, ganda, atau tidak valid ditolak. Gunakan Pengaturan untuk keamanan akun sendiri dan administrasi Pengguna untuk akun lain yang memenuhi syarat.
 
-### Umpan Balik Pengiriman Ulang
-
-Saat permintaan ulang dari metode aktif selesai, layar masuk menampilkan hasilnya. Konfirmasi antrean atau pengiriman menjelaskan status pengiriman yang dilaporkan; respons valid tanpa konfirmasi hanya menunjukkan bahwa metode telah merespons. Hasil yang ditolak, tidak valid, atau terputus tidak membuktikan apakah pengiriman terjadi. Periksa apakah kode sudah diterima sebelum mencoba lagi. Jika upaya masuk kedaluwarsa, batalkan dan masuk kembali. Waktu tunggu tetap ditentukan server, permintaan yang belum selesai tetap terkunci, dan percobaan ulang atau email tidak dikirim otomatis.
-
-Selama kirim ulang belum selesai, tindakan menampilkan “Meminta kode…” dan status sibuk. Tindakan tetap terkunci tanpa membuat tenggat baru atau mencoba ulang otomatis. Jika kirim ulang selesai saat pembatalan berlangsung lalu pembatalan gagal, formulir yang sama menyelaraskan hasil, kunci permintaan, dan tenggat yang diterbitkan. Waktu tunggu relatif dari server dihitung sejak respons diterima, sehingga menunggu pembatalan tidak memulainya lagi.
-
 ## Keamanan
 
 Penyiapan, konfirmasi, penghapusan, dan verifikasi memakai alur terlindungi. Adapter memvalidasi tantangan; metode belum terkonfirmasi atau gagal tidak dianggap berhasil.

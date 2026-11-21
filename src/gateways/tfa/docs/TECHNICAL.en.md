@@ -148,12 +148,6 @@ For Email Code, “queued” means delivery is still pending, not sent. Wait for
 
 Cross-account account management and all target-selectable TFA reads, recovery-code operations, method preferences, enable/disable and administrator resets require Auth’s `auth:authorizeAccountTarget` v1 policy. An administrator cannot manage another admin, owner or founder-admin. Owner-authorized operations remain available. Missing policy or unreadable account metadata fails closed before downstream storage. Users keeps its self-management prohibition; TFA accepts omitted or exact explicit self targets. Setup and method-details operations remain self-only. Blank, duplicate or malformed target parameters are rejected. Use Settings for your own security and Users administration for an eligible other account.
 
-### Resend feedback
-
-When the active method’s resend request finishes, the login prompt shows its result. A queued or sent receipt describes the reported delivery state; a valid response without a receipt only confirms that the method responded. A rejected, malformed or interrupted result does not prove whether delivery occurred. Check for a code before trying again. If the attempt has expired, cancel and sign in again. Cooldowns remain server-controlled, pending requests stay locked, and no retry or email is sent automatically.
-
-While a resend remains unresolved, its action reads “Requesting code…” and exposes a busy state. It stays locked without inventing a new deadline or retrying. If the resend finishes during Cancel and cancellation later fails, the same prompt reconciles the settled result, pending lock and issued deadline. A relative server wait is anchored when its response arrives, so time spent waiting for cancellation does not restart it.
-
 ## Security
 
 Setup, confirmation, deletion and login verification use authenticated gateway flows. Method adapters own challenge validation; primary authentication must not treat an unconfirmed method or failed challenge as successful verification.
