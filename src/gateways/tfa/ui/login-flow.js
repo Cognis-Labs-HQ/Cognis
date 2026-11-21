@@ -72,13 +72,13 @@ export function renderTfaMethodTabs(
             });
             setActiveTfaInputPlaceholder(i18n, method, tfaCodeInput);
             onMethodChanged?.(method);
+            onMethodActivated?.(method);
         });
         if (index === 0) {
             tabLink.classList.add("active");
             methodInput.value = method.id;
             setActiveTfaInputPlaceholder(i18n, method, tfaCodeInput);
             onMethodChanged?.(method);
-            onMethodActivated?.(method);
         }
         tabsEl.appendChild(tabLink);
     });

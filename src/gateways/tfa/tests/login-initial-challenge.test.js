@@ -171,3 +171,32 @@ for (const failure of ["response", "network"]) {
         if (failure === "network") assert.equal(host.logs.length, 1);
     });
 }
+
+test("selecting email after an authenticator requests its first challenge", async () => {
+    const host = clientFixture();
+    const client = await host.createTfaLoginClient({
+        baseI18n: { t: (key) => key },
+        root: host.root,
+    });
+    let requests = 0;
+    client.resendCode = async () => {
+        requests++;
+        return { response: { ok: true }, body: { data: { challenge: {} } } };
+    };
+    await client.switchToTfaPrompt({
+        loginAttemptId: "attempt",
+        methods: [
+            { id: "totp" },
+            {
+                id: "smtp",
+                loginUi: { challengeOnSelect: true, supportsResend: true },
+            },
+        ],
+    });
+    assert.equal(requests, 0);
+    host.root
+        .querySelector("#login-tfa-method-nav")
+        .children[1].listeners.get("click")({ preventDefault() {} });
+    await new Promise(setImmediate);
+    assert.equal(requests, 1);
+});
