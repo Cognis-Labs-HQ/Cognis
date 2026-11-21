@@ -18,5 +18,5 @@ CLI には HTTP 200 と正確な削除確認が必要です。その他の成功
 
 ## コミット
 
-- [1f812000625099bad2c447cf2de833056d876c7f](https://github.com/Cognis-Labs-HQ/Cognis/commit/1f812000625099bad2c447cf2de833056d876c7f)
-- [166268387a59c19eda22ef829590a62ecf62a1b9](https://github.com/Cognis-Labs-HQ/Cognis/commit/166268387a59c19eda22ef829590a62ecf62a1b9)
+- [0785079b07be0e03d48b1d37df2a6d1b48750300](https://github.com/Cognis-Labs-HQ/Cognis/commit/0785079b07be0e03d48b1d37df2a6d1b48750300)
+- [fb01bb26f7611b16c642da0e52fea0cdfc919bbf](https://github.com/Cognis-Labs-HQ/Cognis/commit/fb01bb26f7611b16c642da0e52fea0cdfc919bbf)
