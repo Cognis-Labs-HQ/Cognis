@@ -12,5 +12,5 @@ Pergantian baris eksplisit, Markdown, teks literal menyerupai HTML yang di-escap
 
 ## Komit
 
-- [4c445cd18fa693c22b1b2a88d37e99d6adf62398](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c445cd18fa693c22b1b2a88d37e99d6adf62398)
-- [19f39b7de3d445be34df1a162057ad22fafb87b3](https://github.com/Cognis-Labs-HQ/Cognis/commit/19f39b7de3d445be34df1a162057ad22fafb87b3)
+- [9465d9c27de7ee2a3968d7828a4c81c38717eeeb](https://github.com/Cognis-Labs-HQ/Cognis/commit/9465d9c27de7ee2a3968d7828a4c81c38717eeeb)
+- [82ddcf323324009e2deca44c66e90e5a4e76b5fd](https://github.com/Cognis-Labs-HQ/Cognis/commit/82ddcf323324009e2deca44c66e90e5a4e76b5fd)
