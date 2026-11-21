@@ -26,3 +26,4 @@ Reaktionsänderungen und das Laden älterer Nachrichten bleiben an das Gespräch
 
 - [6f9fa1801fe5134802f859fddbbc65a16db50e33](https://github.com/Cognis-Labs-HQ/Cognis/commit/6f9fa1801fe5134802f859fddbbc65a16db50e33)
 - [818ae91b9472a39a1fe584e5ad226fb7d819f01d](https://github.com/Cognis-Labs-HQ/Cognis/commit/818ae91b9472a39a1fe584e5ad226fb7d819f01d)
+- [dc89cd5397bb1d69600046e1f09fba0b70dd60b8](https://github.com/Cognis-Labs-HQ/Cognis/commit/dc89cd5397bb1d69600046e1f09fba0b70dd60b8)
