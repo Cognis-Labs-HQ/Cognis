@@ -18,4 +18,5 @@ Core auf 0.6.3 und API auf 0.13.32 anheben, einschließlich passender Lockdatei-
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/e34777ea07ccb815f00b541cf131f89f9210e4e0
+- [e5b60406ab91c267f905eafd3ccd81df8b576145](https://github.com/Cognis-Labs-HQ/Cognis/commit/e5b60406ab91c267f905eafd3ccd81df8b576145)
+- [b694d79adc5e1b9ff39a6be69f54d789790d66fa](https://github.com/Cognis-Labs-HQ/Cognis/commit/b694d79adc5e1b9ff39a6be69f54d789790d66fa)
