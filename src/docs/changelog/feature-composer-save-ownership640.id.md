@@ -14,4 +14,4 @@ Panduan pemulihan ditutup saat Anda mencoba lagi, membuang perubahan, meninggalk
 
 ## Komit
 
-- [c5c0edc70ed43280c2c0c8918e4d12ae17e14ad9](https://github.com/Cognis-Labs-HQ/Cognis/commit/c5c0edc70ed43280c2c0c8918e4d12ae17e14ad9)
+- [6096a767db49c22ef4b5bf02c413e198bd0409d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/6096a767db49c22ef4b5bf02c413e198bd0409d4)
