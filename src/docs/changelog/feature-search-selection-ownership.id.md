@@ -14,5 +14,5 @@ Pemilihan pada bilah navigasi meneruskan hasil `false` dari `navigateTo` sebelum
 
 ## Komit
 
-- [503f60be5a55aec1f8aedaf03d254d7c1c26f9e4](https://github.com/Cognis-Labs-HQ/Cognis/commit/503f60be5a55aec1f8aedaf03d254d7c1c26f9e4)
-- [8aa74a09b59194319593c51b12aa7f490bbfc5f4](https://github.com/Cognis-Labs-HQ/Cognis/commit/8aa74a09b59194319593c51b12aa7f490bbfc5f4)
+- [f8bc1a541514629c7091b7e9dbb6db7b924159b7](https://github.com/Cognis-Labs-HQ/Cognis/commit/f8bc1a541514629c7091b7e9dbb6db7b924159b7)
+- [793b8de58bcc707683d5ebf26a93941655660ace](https://github.com/Cognis-Labs-HQ/Cognis/commit/793b8de58bcc707683d5ebf26a93941655660ace)
