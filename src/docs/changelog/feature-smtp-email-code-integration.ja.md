@@ -27,3 +27,4 @@ SMTP設定の変更は、再送による置き換えを含む、新しく発行�
 - [39d7f5d412ab4f30b681e8a8d6bbf083205f5007](https://github.com/Cognis-Labs-HQ/Cognis/commit/39d7f5d412ab4f30b681e8a8d6bbf083205f5007)
 - [f96cbfd66b0e194e0f7998c1501ab672c54b4f39](https://github.com/Cognis-Labs-HQ/Cognis/commit/f96cbfd66b0e194e0f7998c1501ab672c54b4f39)
 - [ac26f8f8483db87f1b62717d5c1f231c12dda6e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/ac26f8f8483db87f1b62717d5c1f231c12dda6e0)
+- [c1d740bac56419be19780e79c4719f7a8b4e316a](https://github.com/Cognis-Labs-HQ/Cognis/commit/c1d740bac56419be19780e79c4719f7a8b4e316a)
