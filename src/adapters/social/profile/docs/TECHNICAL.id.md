@@ -130,7 +130,7 @@ Buang, Tutup, Escape, dan latar dialog menggunakan konfirmasi perubahan belum te
 
 Editor milik Profil menggunakan alur ctx `social:profile:request` yang ada serta mempertahankan gerbang validasi kolom, kepemilikan fokus dialog bersama, dan kebijakan pengiriman offline. Uji DOM sintetis menjalankan pemuatan halaman, dialog, pembuat formulir, dan alur permintaan terdaftar yang sebenarnya dengan transportasi serta penyimpanan terkendali. Uji ini tidak membuktikan tata letak peramban nyata atau perilaku server dan basis data.
 
-## Pemulihan Pembacaan Avatar
+### Pemulihan Pembacaan Avatar
 
 Bilah navigasi dan pratinjau profil mempertahankan gambar yang tidak berubah saat pembaruan lain berlangsung. Kegagalan jaringan sementara serta HTTP 408, 425, 429 atau 5xx tidak menonaktifkan kunci secara permanen. Pembaruan atau pembukaan berikutnya dapat mencoba lagi; tidak ada pewaktu percobaan avatar. Penghapusan terkonfirmasi (404/410), penolakan akses (401/403), pembatalan cache eksplisit, perubahan akun/token, dan penghapusan penyedia menghapus gambar terkait. Tampilan utama halaman profil menggunakan konsumen terpisah dan tidak diubah oleh kontrak ini.
 

@@ -142,7 +142,7 @@ Verwerfen, Schließen, Escape und der Hintergrund verwenden die gemeinsame Best�
 
 Der profileigene Editor nutzt den vorhandenen ctx-Ablauf `social:profile:request` und bewahrt die Feldvalidierung, die gemeinsame Fokusverwaltung und die Offline-Zustellrichtlinie. Synthetische DOM-Tests führen die echte Seiteneinbindung, den Dialog, den Formulargenerator und registrierte Anfrageabläufe mit kontrolliertem Transport und Speicher aus. Sie belegen weder das Layout im echten Browser noch das Server- oder Datenbankverhalten.
 
-## Profilbilder erneut laden
+### Profilbilder erneut laden
 
 Navigationsleiste und Profilvorschau behalten unveränderte Bilder bei unabhängigen Aktualisierungen bei. Vorübergehende Netzwerkfehler sowie HTTP 408, 425, 429 und 5xx sperren einen Bildschlüssel nicht dauerhaft. Die nächste ausdrückliche Aktualisierung oder Öffnung kann erneut laden; es gibt keinen Wiederholungszeitgeber. Bestätigte Löschung (404/410), verweigerter Zugriff (401/403), ausdrückliche Invalidierung, Konto- oder Tokenwechsel und das Entfernen des Anbieters entfernen das zugehörige Bild. Die große Profilansicht verwendet einen getrennten Verbraucher und wird durch diesen Vertrag nicht geändert.
 

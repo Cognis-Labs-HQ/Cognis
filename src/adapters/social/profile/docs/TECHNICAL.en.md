@@ -209,7 +209,7 @@ Discard, Close, Escape and the backdrop use the shared unsaved-change confirmati
 
 The Profile-owned editor uses the existing `social:profile:request` ctx flow and preserves its field-validation gate, shared popup focus ownership and offline delivery policy. Synthetic DOM tests exercise the real page mount, popup, form builder and registered request flows with controlled transport and storage. They do not establish live browser layout or server/database behavior.
 
-## Avatar Read Recovery
+### Avatar Read Recovery
 
 The navbar and hover previews keep an unchanged image mounted during unrelated refreshes. Temporary network failures and HTTP 408, 425, 429 or 5xx responses do not permanently disable a key. The next explicit refresh or opening can retry; there is no avatar retry timer. Confirmed deletion (404/410), denial (401/403), explicit invalidation, account/token changes and provider removal clear the corresponding image. Profile page hero rendering is a separate consumer and is not changed by this recovery contract.
 

@@ -258,7 +258,7 @@ This migration protects the bundled cleanup consumers. Before enabling account d
 
 The browser provider exposes `social:messagePresentation` version 2 through its lifecycle-scoped ctx. `render({ style, records, currentAccountId })` runs `messages:presentConversation` with `validate` and `render` stages and returns non-interactive markup. Each record supplies string `id`, `senderId`, `senderDisplayName`, `senderHandle`, `text` and ISO `createdAt`. Only those presentation fields are accepted into the rendering snapshot. The provider advertises its shared stylesheets and an abort signal; consumers listen for `cognis:message-presentation-changed` and stop using a revoked provider. Live threads and read-only presentations share the same row/body renderer. The read-only path never fetches rooms, hydrates avatars, registers search, produces receipts or persists content. Synthetic consumers provide their own localized records and labels.
 
-## Preview Readiness
+### Preview Readiness
 
 The version 2 contract requires an `available` boolean. It is true only while the Messages scope and the current Profile avatar renderer are active. Profile owns `cognis:profile-avatar-renderer-changed`; Messages relays changes through `cognis:message-presentation-changed`. Revocation is visible before registry removal. Pending renders are fenced by dependency generation, including removal and return of the same renderer object. Missing or rolled-back Profile providers therefore hide the preview rather than presenting an available capability that cannot render. Reactivation restores the currently selected unsaved style without a Settings reload or preference write. The relay is removed when Messages ends.
 
