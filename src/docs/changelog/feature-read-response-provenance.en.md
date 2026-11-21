@@ -14,5 +14,5 @@ Undeclared requests, guest credentials, explicit Authorization headers and `buff
 
 ## Commits
 
-- [c32f66652fa1c49cf695f9a99b6a45c6bb4fff8f](https://github.com/Cognis-Labs-HQ/Cognis/commit/c32f66652fa1c49cf695f9a99b6a45c6bb4fff8f)
-- [9ff1ff1b7a33e0307fa667a0fccedca6c1aa477a](https://github.com/Cognis-Labs-HQ/Cognis/commit/9ff1ff1b7a33e0307fa667a0fccedca6c1aa477a)
+- [145cc1039d30ee5927ecad7dadfec6ec068fa354](https://github.com/Cognis-Labs-HQ/Cognis/commit/145cc1039d30ee5927ecad7dadfec6ec068fa354)
+- [2f2620af50be71318ebd354c7abf7b3a40807bfe](https://github.com/Cognis-Labs-HQ/Cognis/commit/2f2620af50be71318ebd354c7abf7b3a40807bfe)
