@@ -14,4 +14,4 @@ Beim Wechsel der gewählten Option wird die Fehlerdarstellung für die gesamte G
 
 ## Commits
 
-- [e05521b51dd4e96fd45e8106b5ad872a26e57e2e](https://github.com/Cognis-Labs-HQ/Cognis/commit/e05521b51dd4e96fd45e8106b5ad872a26e57e2e)
+- [769cf90d473487329d2bac477f1a3bd6881242c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/769cf90d473487329d2bac477f1a3bd6881242c9)
