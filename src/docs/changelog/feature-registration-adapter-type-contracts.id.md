@@ -12,4 +12,5 @@ Dokumentasi registrasi mencakup contoh kapabilitas publik dan kontrak teknis. Fi
 
 ## Komit
 
-- [3492bfe6761c6c7100b8c2744c128884078680fc](https://github.com/Cognis-Labs-HQ/Cognis/commit/3492bfe6761c6c7100b8c2744c128884078680fc)
+- [456b614a57720e842f2e093e9290ad992717ac86](https://github.com/Cognis-Labs-HQ/Cognis/commit/456b614a57720e842f2e093e9290ad992717ac86)
+- [84aa63eb64831bb04ad211e366fa5dec8f2b713e](https://github.com/Cognis-Labs-HQ/Cognis/commit/84aa63eb64831bb04ad211e366fa5dec8f2b713e)
