@@ -8,5 +8,5 @@ Die Haupt- und verschachtelten Layout-Panels verwenden native Steuerelemente vom
 
 ## Commits
 
-- [42981c58ed2a2757cee977d79007c99937406674](https://github.com/Cognis-Labs-HQ/Cognis/commit/42981c58ed2a2757cee977d79007c99937406674)
-- [5036b5e71fb80aa106468004edbd219a1f6ec111](https://github.com/Cognis-Labs-HQ/Cognis/commit/5036b5e71fb80aa106468004edbd219a1f6ec111)
+- [eadda4b8f2ffdd8cdb9da3fc4205b3fb09524529](https://github.com/Cognis-Labs-HQ/Cognis/commit/eadda4b8f2ffdd8cdb9da3fc4205b3fb09524529)
+- [9dc32536b63fe4a385001b74b52c8bc0a725784e](https://github.com/Cognis-Labs-HQ/Cognis/commit/9dc32536b63fe4a385001b74b52c8bc0a725784e)
