@@ -734,3 +734,23 @@ test("content-hashed fonts survive worker upgrades and do not revalidate unchang
         false,
     );
 });
+
+for (const cache of ["reload", "no-cache"]) {
+    test(`explicit ${cache} reads obtain current translations after restart while keeping offline fallback`, async () => {
+        const fixture = workerFixture();
+        await fixture.lifecycle("install");
+        const path = "/static/languages/en/strings.xml";
+        fixture.serve(() => new Response("Before restart"));
+        await fixture.request(path);
+        fixture.serve(() => new Response("After restart"));
+        assert.equal(
+            await (await fixture.request(path, undefined, { cache })).text(),
+            "After restart",
+        );
+        fixture.unavailable = true;
+        assert.equal(
+            await (await fixture.request(path, undefined, { cache })).text(),
+            "After restart",
+        );
+    });
+}

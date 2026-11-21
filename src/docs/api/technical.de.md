@@ -333,6 +333,11 @@ Empfehlungsfeeds werden vom Marketplace-Dienst gemeinsam genutzt, bündeln gleic
 
 Die Systemsicherheitsantwort enthält `userValidationModes` aus Auth. Eine geänderte Richtlinie prüft registrierte Kennung und Verfügbarkeit. Nicht verfügbare gespeicherte Kennungen bleiben bei unabhängigen Änderungen erhalten. Adapterkonfiguration liefert eigene Schemas, Sprachressourcen, bedingte Felder, Geheimnispräsenz und Testfelder; das gemeinsame Popup leitet keine Transportart aus Feldnamen ab.
 
+### Verwaltung speichern
+
+Die Verwaltung speichert nur Bereiche mit ausstehenden Änderungen. Sicherheitsfelder werden erst nach dem erfolgreichen Laden der Sicherheitseinstellungen und der Passwortrichtlinie bearbeitbar. Beim erneuten Darstellen bleiben Änderungen erhalten; beim Verlassen eines geänderten Bereichs ist weiterhin die Bestätigung zum Verwerfen erforderlich. Nach einem teilweise erfolgreichen Speichern bleiben fehlgeschlagene oder neuere Änderungen offen. Ein erneuter Versuch sendet bereits gespeicherte Einstellungen nicht erneut. Die Sicherheitsanleitung erklärt weiterhin Sitzungsrichtlinien und vertrauenswürdige Domains.
+
+
 ## Sicherheit
 
 ### Authentifizierungsmodell
@@ -353,7 +358,3 @@ Der Token-Ablauf wird durch `COGNIS_ACCESS_TOKEN_TTL_SECONDS` gesteuert (Standar
 
 - [src/api/main.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/api/main.ts)
 - [src/api/routes/docs/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/api/routes/docs/index.ts)
-
-### Verwaltung speichern
-
-Die Verwaltung speichert nur Bereiche mit ausstehenden Änderungen. Sicherheitsfelder werden erst nach dem erfolgreichen Laden der Sicherheitseinstellungen und der Passwortrichtlinie bearbeitbar. Beim erneuten Darstellen bleiben Änderungen erhalten; beim Verlassen eines geänderten Bereichs ist weiterhin die Bestätigung zum Verwerfen erforderlich. Nach einem teilweise erfolgreichen Speichern bleiben fehlgeschlagene oder neuere Änderungen offen. Ein erneuter Versuch sendet bereits gespeicherte Einstellungen nicht erneut. Die Sicherheitsanleitung erklärt weiterhin Sitzungsrichtlinien und vertrauenswürdige Domains.

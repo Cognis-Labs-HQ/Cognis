@@ -35,6 +35,13 @@ const stringRequestCache = new Map();
 const publicBundleCache = new Map();
 const privateBundleCache = new Map();
 let privateBundleOwner;
+let translationGeneration = 0;
+globalThis.window?.addEventListener?.("cognis:connection-restoring", () => {
+    translationGeneration += 1;
+    cache.clear();
+    publicBundleCache.clear();
+    privateBundleCache.clear();
+});
 const PUBLIC_BUNDLE_CACHE_LIMIT = 128;
 globalThis.window?.addEventListener?.("cognis:module-lifecycle-changed", () => {
     publicBundleCache.clear();
@@ -44,13 +51,18 @@ const STRING_REQUEST_TIMEOUT_MS = 15_000;
 
 async function fetchStrings(path, revision) {
     const key = requestTargetsApi(path)
-        ? JSON.stringify([path, translationIdentity(), revision])
-        : JSON.stringify([path, revision]);
+        ? JSON.stringify([
+              path,
+              translationIdentity(),
+              revision,
+              translationGeneration,
+          ])
+        : JSON.stringify([path, revision, translationGeneration]);
     let request = stringRequestCache.get(key);
     if (!request) {
         const requestFunction = requestTargetsApi(path) ? apiFetch : fetch;
         request = requestFunction(path, {
-            ...(revision ? { cache: "reload" } : {}),
+            cache: "reload",
             signal: globalThis.AbortSignal?.timeout?.(
                 STRING_REQUEST_TIMEOUT_MS,
             ),
@@ -264,6 +276,12 @@ export function selectSupportedLanguage(
 
 function parseStringsXml(xmlText) {
     const xml = new DOMParser().parseFromString(xmlText, "application/xml");
+    if (
+        xml.querySelector("parsererror") ||
+        xml.documentElement?.nodeName !== "resources"
+    ) {
+        throw new Error("translation_bundle_invalid");
+    }
     const map = new Map();
     xml.querySelectorAll("string[name]").forEach((node) => {
         map.set(node.getAttribute("name"), (node.textContent || "").trim());
@@ -276,6 +294,7 @@ async function readTranslationBundle(path, revision) {
     const cacheable =
         url.origin === window.location.origin &&
         url.pathname.startsWith("/static/");
+    const generation = translationGeneration;
     const owner = translationIdentity();
     if (owner !== privateBundleOwner) {
         privateBundleOwner = owner;
@@ -287,7 +306,7 @@ async function readTranslationBundle(path, revision) {
         : requestTargetsApi(path) && versioned
           ? privateBundleCache
           : undefined;
-    const key = JSON.stringify([path, revision]);
+    const key = JSON.stringify([path, revision, translationGeneration]);
     if (bundleCache?.has(key)) return bundleCache.get(key);
     const load = async () => {
         const response = await fetchStrings(path, revision);
@@ -297,6 +316,8 @@ async function readTranslationBundle(path, revision) {
             });
         }
         const parsed = parseStringsXml(await response.text());
+        if (generation !== translationGeneration)
+            throw new Error("translation_generation_changed");
         if (requestTargetsApi(path) && owner !== translationIdentity())
             throw new Error("translation_identity_changed");
         return parsed;
@@ -318,9 +339,12 @@ async function loadLocaleStrings(locale) {
     const normalized = normalizeLocale(locale);
     if (cache.has(normalized)) return cache.get(normalized);
 
+    const generation = translationGeneration;
     const parsed = await readTranslationBundle(
         `${STRINGS_BASE_PATH}/${normalized}/strings.xml`,
     );
+    if (generation !== translationGeneration)
+        throw new Error("translation_generation_changed");
     cache.set(normalized, parsed);
     return parsed;
 }

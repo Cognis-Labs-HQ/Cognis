@@ -12,6 +12,8 @@ Preferensi akun memilih tema, bahasa, dan font. Katalog komponen menyediakan ter
 
 ## Perilaku
 
+Pemulihan koneksi membatalkan cache terjemahan inti dan komponen sebelum halaman digambar ulang. Permintaan pembaruan mengambil konten server terbaru sambil mempertahankan salinan luring lengkap saat terjadi gangguan. Respons XML yang tidak valid tidak disimpan sehingga pemuatan berikutnya dapat pulih tanpa pemuatan ulang penuh.
+
 ### Ikhtisar
 
 `src/ui/` menjadi tuan rumah frontend browser Cognis. Menyediakan alur kerja studi, permukaan interaksi sosial, panel administrasi, dan browser dokumentasi yang tertanam. UI adalah aplikasi multi-halaman yang di-render oleh server.

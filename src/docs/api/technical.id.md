@@ -224,6 +224,11 @@ Feed rekomendasi dibagikan oleh layanan marketplace, menggabungkan pembacaan ser
 
 Respons keamanan sistem menyertakan metadata `userValidationModes` dari Auth. Penyimpanan kebijakan yang berubah memeriksa ID terdaftar dan ketersediaannya. ID tersimpan yang tidak tersedia dipertahankan saat pengaturan lain berubah. Respons konfigurasi adapter menyertakan skema penyedia, basis bahasa, bidang bersyarat, keberadaan rahasia, dan bidang pengujian; popup bersama tidak menebak transportasi dari nama bidang.
 
+### Penyimpanan Administrasi
+
+Administrasi hanya menyimpan bagian dengan perubahan tertunda. Kontrol keamanan dapat diedit setelah pengaturan keamanan dan kebijakan kata sandi berhasil dimuat. Penggambaran ulang formulir mempertahankan perubahan; meninggalkan bagian yang diubah tetap memerlukan konfirmasi pembuangan. Penyimpanan yang berhasil sebagian mempertahankan perubahan yang gagal atau lebih baru, sehingga percobaan ulang tidak mengirim ulang pengaturan yang sudah tersimpan. Panduan Keamanan tetap menjelaskan kebijakan sesi dan domain tepercaya.
+
+
 ## Keamanan
 
 Membaca dokumentasi tidak memberikan izin menjalankan contohnya. Komponen pemilik mengotorisasi setiap operasi.
@@ -233,7 +238,3 @@ Membaca dokumentasi tidak memberikan izin menjalankan contohnya. Komponen pemili
 ### Salinan Preferensi Terkonfirmasi
 
 Penulisan preferensi Profile yang berhasil memperbarui salinan baca terbatas milik penyedia sebelum pembacaan berikutnya, termasuk pengiriman ulang dan penyimpanan khusus daring. Penggabungan preferensi luring mempertahankan bidang terkonfirmasi dan menerapkan perubahan yang masih tertunda. Pembacaan terlambat tidak menimpa salinan terkonfirmasi yang lebih baru; pergantian akun, penghentian penyedia, dan penulisan gagal tidak menerbitkan data usang.
-
-### Penyimpanan Administrasi
-
-Administrasi hanya menyimpan bagian dengan perubahan tertunda. Kontrol keamanan dapat diedit setelah pengaturan keamanan dan kebijakan kata sandi berhasil dimuat. Penggambaran ulang formulir mempertahankan perubahan; meninggalkan bagian yang diubah tetap memerlukan konfirmasi pembuangan. Penyimpanan yang berhasil sebagian mempertahankan perubahan yang gagal atau lebih baru, sehingga percobaan ulang tidak mengirim ulang pengaturan yang sudah tersimpan. Panduan Keamanan tetap menjelaskan kebijakan sesi dan domain tepercaya.

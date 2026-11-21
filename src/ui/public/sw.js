@@ -1,5 +1,5 @@
 /* Public assets only. API requests and authenticated documents stay network-only. */
-const CACHE_VERSION = "v13";
+const CACHE_VERSION = "v14";
 const CACHE_PREFIX = "cognis-offline-";
 const CACHE_NAME = `${CACHE_PREFIX}${CACHE_VERSION}`;
 const CONTROL_CACHE_NAME = `${CACHE_NAME}-control`;
@@ -473,6 +473,8 @@ async function assetResponse(request, moduleAsset, event) {
             throw error;
         }
     };
+    if (request.cache === "reload" || request.cache === "no-cache")
+        return refresh();
     if (!cached) {
         const loadKey = JSON.stringify([
             cacheKey,
