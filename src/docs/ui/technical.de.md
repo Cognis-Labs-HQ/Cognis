@@ -71,7 +71,7 @@ Die Abmeldung löscht private Sitzungsdaten, ohne auf die öffentliche Routenpfl
 
 Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
 
-### Strukturierte Schaltflächen
+#### Strukturierte Schaltflächen
 
 Verwenden Sie `renderStructuredContent(groups)` aus `src/ui/reuse/structured-content.js` für deklarative Beiträge zu Einstellungen und Administration. Texte und zugängliche Beschriftungen stammen aus den Übersetzungen der zuständigen Komponente.
 
