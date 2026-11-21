@@ -8,4 +8,5 @@ Inisialisasi basis data hanya memerlukan kemampuan eksekusi mentah yang digunaka
 
 ## Komit
 
-- [ef1d7ff1a0531bd6540c099f82411b6e3e8d2af3](https://github.com/Cognis-Labs-HQ/Cognis/commit/ef1d7ff1a0531bd6540c099f82411b6e3e8d2af3)
+- [0860c74b81eb91404ff15cc0ce4a765bc1ad3413](https://github.com/Cognis-Labs-HQ/Cognis/commit/0860c74b81eb91404ff15cc0ce4a765bc1ad3413)
+- [358fe1e04b4e6ac672c64aaa2f1d687db91f38c9](https://github.com/Cognis-Labs-HQ/Cognis/commit/358fe1e04b4e6ac672c64aaa2f1d687db91f38c9)
