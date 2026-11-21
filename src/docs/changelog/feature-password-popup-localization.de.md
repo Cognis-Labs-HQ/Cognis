@@ -16,4 +16,4 @@ Auth 2.2.13 und Registration 1.2.9 benötigen passende gemeinsame Host-Kataloge.
 
 ## Commits
 
-- [1036a17e084ec3e72c6af3ba4cfbfea04a8bacb8](https://github.com/Cognis-Labs-HQ/Cognis/commit/1036a17e084ec3e72c6af3ba4cfbfea04a8bacb8)
+- [2c3e132c03e5d4fcd36b3d0ae1860b41153cf594](https://github.com/Cognis-Labs-HQ/Cognis/commit/2c3e132c03e5d4fcd36b3d0ae1860b41153cf594)
