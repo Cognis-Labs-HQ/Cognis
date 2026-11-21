@@ -209,7 +209,7 @@ Tutorial-Ziele, Abschlusskennungen, Aktionen, Weiter, Zurück, Neustart und Wied
 
 Die Fünf-Sekunden-Grenze gilt nur für den Stylesheet-Versuch, nicht für die gesamte Vorbereitung von `openPopup`. Die strikte Sprachinitialisierung behält ihre bisherige Lebensdauer ohne neues Zeitlimit. Sie kann die lokalisierte Fehlermeldung und Ablehnung verzögern; das Öffnungssignal bricht dennoch sofort ab. Erfolgreiche verankerte Vorschauen initialisieren keine Sprachressourcen des Dialogs.
 
-## Gesten schwebender Fenster
+### Gesten schwebender Fenster
 
 `ui:makeFloatingWindow`
 
