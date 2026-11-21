@@ -12,4 +12,4 @@ Notifikasi Internal 0.5.37 mempertahankan perilaku tautan dengan tombol pengubah
 
 ## Komit
 
-- [cde203828684905be37f1701f1c83c78aa92f20d](https://github.com/Cognis-Labs-HQ/Cognis/commit/cde203828684905be37f1701f1c83c78aa92f20d)
+- [4c1b49d2cbcbf3b6481c2932c7daaac9a6efce9f](https://github.com/Cognis-Labs-HQ/Cognis/commit/4c1b49d2cbcbf3b6481c2932c7daaac9a6efce9f)
