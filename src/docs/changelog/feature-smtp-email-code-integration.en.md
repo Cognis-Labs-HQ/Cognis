@@ -24,7 +24,7 @@ Configuration saves, patches, activation changes and persisted reloads are seria
 
 ## Commits
 
-- [39d7f5d412ab4f30b681e8a8d6bbf083205f5007](https://github.com/Cognis-Labs-HQ/Cognis/commit/39d7f5d412ab4f30b681e8a8d6bbf083205f5007)
-- [f96cbfd66b0e194e0f7998c1501ab672c54b4f39](https://github.com/Cognis-Labs-HQ/Cognis/commit/f96cbfd66b0e194e0f7998c1501ab672c54b4f39)
-- [ac26f8f8483db87f1b62717d5c1f231c12dda6e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/ac26f8f8483db87f1b62717d5c1f231c12dda6e0)
-- [c1d740bac56419be19780e79c4719f7a8b4e316a](https://github.com/Cognis-Labs-HQ/Cognis/commit/c1d740bac56419be19780e79c4719f7a8b4e316a)
+- [569ad9700af1f4b55c1aeb77e478e62c9a97c494](https://github.com/Cognis-Labs-HQ/Cognis/commit/569ad9700af1f4b55c1aeb77e478e62c9a97c494)
+- [a34e813acc544eb2ac555a688d044906a1f21bcb](https://github.com/Cognis-Labs-HQ/Cognis/commit/a34e813acc544eb2ac555a688d044906a1f21bcb)
+- [d1284631bc603dbaf0a194472efa5a0a246e2488](https://github.com/Cognis-Labs-HQ/Cognis/commit/d1284631bc603dbaf0a194472efa5a0a246e2488)
+- [0281a7b53365cc39e73f6c7e0f9a00026b18be33](https://github.com/Cognis-Labs-HQ/Cognis/commit/0281a7b53365cc39e73f6c7e0f9a00026b18be33)
