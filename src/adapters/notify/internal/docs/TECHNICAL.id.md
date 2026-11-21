@@ -53,7 +53,7 @@ Bilah navigasi mengekspor `mountProvider(scopedUiCtx)` untuk pemuat penyedia pub
 
 Status dan hasil UI tertunda hanya berlaku untuk akun, token, halaman, dan penyedia saat ini. Keluar, pergantian akun, pemasangan halaman, dan pelepasan penyedia membatalkan hasil lama. Baris yang dilepas dan konfirmasi yang ditutup tidak dapat menjalankan tindakan kemudian. Pendaftaran pencarian, pendengar peristiwa, pengatur waktu, dan panel sementara dilepas bersama pemiliknya. Tidak ada cache kotak masuk permanen di peramban.
 
-Tutorial ruang kerja tetap membuka `#notification-toggle` dan menjelaskan `.notification-panel`. Masa aktif sementara bersama menutup panel, termasuk saat pembacaan masih tertunda. Hapus tetap nonaktif untuk kotak masuk yang dikonfirmasi kosong; kotak masuk yang tidak tersedia menawarkan Coba lagi, bukan menyatakan kosong. Notifikasi berkelanjutan mempertahankan popup terpisah, tindakan, korelasi, dan perilaku kedaluwarsa. Kategori notifikasi dan preferensi pengiriman tidak ditentukan oleh perubahan ini.
+Tutorial ruang kerja tetap membuka `#notification-toggle` dan menjelaskan `.notification-panel`. Masa aktif sementara bersama menutup panel, termasuk saat pembacaan masih tertunda. Hapus tetap nonaktif untuk kotak masuk yang dikonfirmasi kosong; kotak masuk yang tidak tersedia menawarkan Coba lagi, bukan menyatakan kosong. Notifikasi berkelanjutan mempertahankan popup terpisah, tindakan, korelasi, dan perilaku kedaluwarsa.
 
 Penyelesaian korelasi dari produsen dijalankan berurutan tanpa duplikasi dalam masa aktif pemilik saat ini. Proses menunggu perubahan pengguna yang tertunda dan pembacaan terbaru sebelum menghapus notifikasi yang cocok. Penghapusan yang belum dikonfirmasi tidak pernah diulang otomatis.
 
