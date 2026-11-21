@@ -74,4 +74,4 @@ Nur beigetretene Teilnehmende dürfen einen aktiven Anruf beenden. Eingeladene P
 
 Die getestete Obergrenze der Messages-Abhängigkeit ist 2.7.44. Stellen Sie sie gemeinsam mit einem Auth-Anbieter bereit, der `auth:deprovisionOutcome` Version 1 implementiert; der mitgelieferte Auth-Anbieter 2.2.12 stellt diesen Vertrag bereit. Die Messages-Bereinigung nach Kontolöschung benötigt die Auth-eigene Bestätigung der ausgeführten Löschung; veränderbare öffentliche Ergebnisse können sie nicht ersetzen. Alternative Auth-Anbieter müssen den Vertrag implementieren. Anrufsignalisierung, bestehende Oberflächenbedienelemente und Tutorials bleiben unverändert.
 
-Diese Umstellung schützt die Bereinigung durch die mitgelieferten Komponenten. Bevor die Kontolöschung in einer Bereitstellung aktiviert wird, müssen externe Bereinigungs-Hooks aktualisiert oder deaktiviert werden, die weiterhin veränderbaren öffentlichen Flow-Ergebnissen vertrauen.
+Gemeinsames Verhalten: [Auth](/docs/gateways/auth/technical).

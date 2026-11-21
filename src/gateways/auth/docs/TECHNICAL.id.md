@@ -230,10 +230,6 @@ Integrasi SSO harus memperlakukan `tfaRequired: true` sebagai autentikasi belum 
 
 `auth:getPendingLoginLifetime` versi 1 hanya membaca `{ id, accountId, expiresAt, signal }` dari percobaan yang sudah melewati autentikasi utama. Operasi ini tidak membuat atau memperpanjang kewenangan. Auth membuat percobaan sebelum persiapan faktor otomatis tanpa menerbitkan sesi atau mengaktifkan profil. Tenggat lima menit yang tetap membatasi pengiriman. Konsumsi, pembatalan, kedaluwarsa, penggantian kelanjutan, logout, dan pembersihan pemilik membatalkan sumber daya tantangan. Kelanjutan berbasis cookie, perlindungan percobaan lama, dan melanjutkan tanpa pengiriman ulang tetap berlaku. Keberhasilan faktor membatalkan tantangan tanpa membatalkan komit sesi akhir yang terpisah. TFA menolak jika kontrak ini tidak tersedia.
 
-### Otorisasi Target Akun
-
-Pengelolaan lintas akun serta semua pembacaan TFA dengan pilihan target, operasi kode pemulihan, preferensi metode, pengaktifan/penonaktifan, dan pengaturan ulang administrator memerlukan kebijakan Auth `auth:authorizeAccountTarget` v1. Administrator tidak dapat mengelola administrator lain, pemilik, atau administrator pendiri. Operasi yang diizinkan bagi pemilik tetap tersedia. Kebijakan yang hilang atau metadata akun yang tidak dapat dibaca menyebabkan penolakan sebelum akses penyimpanan lanjutan. Pengelolaan pengguna tetap melarang pengelolaan diri; TFA menerima target pribadi yang tidak ditentukan atau ditentukan secara persis. Penyiapan dan detail metode tetap khusus akun sendiri. Parameter target kosong, ganda, atau tidak valid ditolak. Gunakan Pengaturan untuk keamanan akun sendiri dan administrasi Pengguna untuk akun lain yang memenuhi syarat.
-
 ### Identitas dan izin
 
 Klaim Auth pelaku yang terverifikasi tetap menjadi acuan; kebijakan ini tidak memuat ulang atau meningkatkan perannya. Akun biasa hanya dapat bertindak pada dirinya sendiri jika layanan mandiri diizinkan. Administrator dapat mengelola akun pengguna, pengajar, dan moderator lain. Hanya pemilik yang dapat mengelola akun administrator atau pemilik lain. Pendiri dengan peran administrator atau pemilik tersimpan memiliki peran efektif pemilik; penanda pendiri saja tidak meningkatkan peran lain. Pengelolaan pengguna tetap menerapkan pembatasan pendiri, peran, dan penghapusan yang khusus untuk setiap tindakan.
@@ -277,6 +273,8 @@ Terapkan Auth 2.2.12 bersama TFA 1.3.13 dan API 0.13.36. Implementasi Auth lama 
 Autentikasi memvalidasi kredensial sebelum sesi dan TFA wajib. Otorisasi akun, peran, dan sumber daya tetap terpisah; penolakan keyring tidak mengubah identitas.
 
 Akun SSO menggunakan ID acak yang tidak mengungkap identitas penyedia. ID penyedia disimpan terpisah dan hanya ditampilkan kepada administrator; nama pengguna publik tidak memuatnya. Auth mencadangkan nama sebelum perubahan profil atau email: nama duplikat dari penyedia yang sama ditolak, sedangkan penyedia berbeda mendapat akhiran acak pendek bila perlu. Daftar pengguna dan endpoint tindakan membedakan `username` publik dari `accountId` internal.
+
+Pasang bersama penyedia Auth 2.2.12 bawaan atau alternatif yang menerapkan kontrak berversi ini; hasil alur publik yang dapat diubah bukan pengganti. Pembersihan menggunakan bukti penghapusan yang sudah tersimpan, bukan melakukan otorisasi ulang setelah penghapusan. Mutasi eksternal yang sudah dimulai dapat selesai sebagian sebelum kegagalan berikutnya; pembatalan lintas komponen tidak dijamin. Kontrol antarmuka dan tutorial biasa tidak berubah.
 
 ## Referensi
 

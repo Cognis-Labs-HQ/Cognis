@@ -65,10 +65,6 @@ The content revision also changes when published locale-file hashes change at th
 
 Published prerelease version identifiers remain valid for presentation revisions, including archived-only documents. Unrelated published assets, including filenames with spaces or non-Latin characters, do not affect locale validation or the locale digest.
 
-### Account Target Authorization
-
-Cross-account account management and all target-selectable TFA reads, recovery-code operations, method preferences, enable/disable and administrator resets require Auth’s `auth:authorizeAccountTarget` v1 policy. An administrator cannot manage another admin, owner or founder-admin. Owner-authorized operations remain available. Missing policy or unreadable account metadata fails closed before downstream storage. Users keeps its self-management prohibition; TFA accepts omitted or exact explicit self targets. Setup and method-details operations remain self-only. Blank, duplicate or malformed target parameters are rejected. Use Settings for your own security and Users administration for an eligible other account.
-
 ## Security
 
 Documentation endpoints publish read-only information. Keep credentials and private account data out of these sources. Routes using the separate document-diff capability enforce their own authentication and document authorization.

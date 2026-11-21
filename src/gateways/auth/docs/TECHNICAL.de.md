@@ -234,10 +234,6 @@ SSO-Integrationen müssen `tfaRequired: true` als unvollständige Anmeldung beha
 
 `auth:getPendingLoginLifetime` Version 1 liest ausschließlich `{ id, accountId, expiresAt, signal }` eines vorhandenen, primär authentifizierten Versuchs. Der Aufruf erstellt oder verlängert keine Berechtigung. Auth legt den Versuch vor der automatischen Faktorvorbereitung an, ohne Sitzung oder Profilaktivierung. Die unveränderliche Fünf-Minuten-Frist begrenzt die Zustellung. Verbrauch, Abbruch, Ablauf, Ersetzung der Fortsetzung, Logout und Bereinigung beenden Challenge-Ressourcen. Cookie-gebundene Fortsetzung, Schutz vor veralteten Versuchen und Fortsetzen ohne Neuversand bleiben erhalten. Erfolgreiche Faktorprüfung beendet die Challenge, nicht den getrennten abschließenden Sitzungsabschluss. Ohne diesen Vertrag verweigert TFA den Vorgang.
 
-### Autorisierung des Kontoziels
-
-Kontenübergreifende Verwaltung sowie alle TFA-Lesezugriffe mit Zielauswahl, Wiederherstellungscode-Aktionen, Methodenpräferenzen, Aktivierungen/Deaktivierungen und Administrator-Zurücksetzungen erfordern Auths Richtlinie `auth:authorizeAccountTarget` v1. Administratoren dürfen keine anderen Administratoren, Eigentümer oder Gründeradministratoren verwalten. Vom Eigentümer erlaubte Aktionen bleiben verfügbar. Fehlende Richtlinien oder unlesbare Kontometadaten führen vor nachgelagerten Speicherzugriffen zur Ablehnung. Die Benutzerverwaltung verbietet weiterhin Selbstverwaltung; TFA akzeptiert ein weggelassenes oder exakt angegebenes eigenes Ziel. Einrichtung und Methodendetails bleiben auf das eigene Konto beschränkt. Leere, doppelte oder fehlerhafte Zielparameter werden abgelehnt. Verwenden Sie Einstellungen für Ihre eigene Sicherheit und die Benutzerverwaltung für ein zulässiges anderes Konto.
-
 ### Identität und Berechtigungen
 
 Die verifizierten Auth-Ansprüche des Akteurs bleiben maßgeblich; die Richtlinie lädt seine Rolle weder erneut noch erhöht sie diese. Ein gewöhnliches Konto darf nur sich selbst bearbeiten, sofern Selbstverwaltung erlaubt ist. Administratoren dürfen andere Benutzer-, Lehrer- und Moderatorenkonten verwalten. Nur ein Eigentümer darf ein anderes Administrator- oder Eigentümerkonto verwalten. Ein Gründer mit gespeicherter Administrator- oder Eigentümerrolle gilt als Eigentümer; das Gründermerkmal allein erhöht keine andere Rolle. Die Benutzerverwaltung behält ihre zusätzlichen aktionsbezogenen Gründer-, Rollen- und Löschbeschränkungen.
@@ -281,6 +277,10 @@ Stellen Sie Auth 2.2.12 zusammen mit TFA 1.3.13 und API 0.13.36 bereit. Ältere 
 Authentifizierung prüft Zugangsdaten vor Sitzung und nötiger TFA. Konto-, Rollen- und Inhaltsrechte bleiben getrennt; verweigerte Schlüsselbundfreigabe ändert keine Identität.
 
 SSO-Konten erhalten zufällige undurchsichtige IDs. Anbieter-IDs werden separat gespeichert und nur Administratoren angezeigt; öffentliche Benutzernamen enthalten sie nie. Auth reserviert Benutzernamen vor Profil- oder E-Mail-Änderungen: doppelte Namen desselben Anbieters werden abgelehnt, bei verschiedenen Anbietern wird bei Bedarf ein kurzes Zufallssuffix ergänzt. Benutzerlisten und Aktionsendpunkte unterscheiden den öffentlichen `username` von der internen `accountId`.
+
+Für die Bereitstellung ist der mitgelieferte Auth-Anbieter 2.2.12 oder eine Alternative erforderlich, die diesen versionierten Vertrag implementiert; veränderbare öffentliche Flow-Ergebnisse dienen nicht als Ersatz. Die Bereinigung verwendet die bestätigte Löschung, statt nach der Löschung erneut zu autorisieren. Eine bereits gestartete externe Änderung kann vor einem späteren Fehler teilweise abgeschlossen sein; ein komponentenübergreifendes Zurückrollen ist nicht garantiert. Bestehende Oberflächenbedienelemente und Tutorials bleiben unverändert.
+
+Diese Umstellung schützt die Bereinigung durch die mitgelieferten Komponenten. Bevor die Kontolöschung in einer Bereitstellung aktiviert wird, müssen externe Bereinigungs-Hooks aktualisiert oder deaktiviert werden, die weiterhin veränderbaren öffentlichen Flow-Ergebnissen vertrauen.
 
 ## Referenz
 

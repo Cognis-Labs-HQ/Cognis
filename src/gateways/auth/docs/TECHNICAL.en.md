@@ -230,10 +230,6 @@ SSO integrations must treat `tfaRequired: true` as incomplete authentication and
 
 `auth:getPendingLoginLifetime` version 1 is a read-only public lookup of `{ id, accountId, expiresAt, signal }` for an existing primary-authenticated attempt. It cannot create or extend authority. Auth allocates the attempt before automatic factor preparation without issuing a session or activating a profile. Its immutable five-minute deadline applies to delivery. Consumption, explicit cancellation, expiry, continuation replacement, logout and owner cleanup abort challenge resources. Existing cookie-bound continuation, stale-attempt guards and resume without redelivery remain unchanged. Successful factor consumption cancels challenge resources without cancelling the separate final session commit. TFA requires this contract and fails closed when it is absent.
 
-### Account Target Authorization
-
-Cross-account account management and all target-selectable TFA reads, recovery-code operations, method preferences, enable/disable and administrator resets require Auth’s `auth:authorizeAccountTarget` v1 policy. An administrator cannot manage another admin, owner or founder-admin. Owner-authorized operations remain available. Missing policy or unreadable account metadata fails closed before downstream storage. Users keeps its self-management prohibition; TFA accepts omitted or exact explicit self targets. Setup and method-details operations remain self-only. Blank, duplicate or malformed target parameters are rejected. Use Settings for your own security and Users administration for an eligible other account.
-
 ### Identity and permissions
 
 The actor's verified Auth claims remain authoritative; this policy does not reload or upgrade the actor's role. An ordinary account can act only on itself when self-service is allowed. Administrators may manage other user, teacher and moderator accounts. Only an owner may manage another admin or owner. A founder with persisted admin or owner role has effective owner role; the founder flag alone does not elevate another role. Users retains its additional action-specific founder, role and deletion restrictions.
@@ -277,6 +273,8 @@ Deploy Auth 2.2.12 with TFA 1.3.13 and API 0.13.36. Older or alternative Auth im
 Authentication validates primary credentials before session issuance and any required TFA challenge. Account, role and resource authorization remain separate; keyring unlock refusal must not create or switch account identity.
 
 SSO accounts use opaque random IDs. Provider IDs are stored separately and exposed only to administrators; public usernames never include them. Auth reserves usernames before profile or email side effects: duplicate names within one provider are rejected, while different providers receive a short random suffix when needed. Users lists and action endpoints distinguish public `username` from internal `accountId`.
+
+Deploy with the bundled Auth 2.2.12 provider or an alternative implementing this versioned contract; mutable public flow results are not a fallback. Cleanup uses the committed receipt rather than reauthorizing after deletion. An external mutation already started may partially complete before a later failure; cross-component rollback is not guaranteed. Normal UI controls and tutorials are unchanged.
 
 ## Reference
 
