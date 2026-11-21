@@ -24,4 +24,5 @@ Das Speichern und Ändern der Konfiguration, Aktivierungsänderungen und das Lad
 
 ## Änderungen
 
-- [40f8a8974ab8d4582bba5b60de4441ea7d90d8c3](https://github.com/Cognis-Labs-HQ/Cognis/commit/40f8a8974ab8d4582bba5b60de4441ea7d90d8c3)
+- [39d7f5d412ab4f30b681e8a8d6bbf083205f5007](https://github.com/Cognis-Labs-HQ/Cognis/commit/39d7f5d412ab4f30b681e8a8d6bbf083205f5007)
+- [f96cbfd66b0e194e0f7998c1501ab672c54b4f39](https://github.com/Cognis-Labs-HQ/Cognis/commit/f96cbfd66b0e194e0f7998c1501ab672c54b4f39)
