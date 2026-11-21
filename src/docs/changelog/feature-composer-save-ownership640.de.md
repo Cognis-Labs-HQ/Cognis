@@ -14,5 +14,5 @@ Hinweise zur Wiederherstellung verschwinden, wenn du erneut speicherst, Änderun
 
 ## Commits
 
-- [197acc74e3bf83ecf90edad03e03f3c61598051e](https://github.com/Cognis-Labs-HQ/Cognis/commit/197acc74e3bf83ecf90edad03e03f3c61598051e)
-- [ea13223554ae22eb0bd6c2d3bfde1ec08b9d8917](https://github.com/Cognis-Labs-HQ/Cognis/commit/ea13223554ae22eb0bd6c2d3bfde1ec08b9d8917)
+- [bcfcae00603336ddd5099b3b401a94ed157b00ec](https://github.com/Cognis-Labs-HQ/Cognis/commit/bcfcae00603336ddd5099b3b401a94ed157b00ec)
+- [26ba8999e905199018ecc0ab1b25e0ccc4cec107](https://github.com/Cognis-Labs-HQ/Cognis/commit/26ba8999e905199018ecc0ab1b25e0ccc4cec107)
