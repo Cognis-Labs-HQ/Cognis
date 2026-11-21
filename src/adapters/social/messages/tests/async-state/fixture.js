@@ -1,5 +1,9 @@
+import * as reactionRecord from "../../ui/reuse/reaction-record.js";
 import assert from "node:assert/strict";
 import vm from "node:vm";
+import { JSDOM } from "jsdom";
+import * as threadDom from "../../ui/thread-dom.js";
+import * as threadData from "../../ui/thread-data.js";
 import { loadTestModule } from "../../../../../tooling/reuse/test-module.ts";
 
 export function deferred() {
@@ -21,6 +25,9 @@ export async function until(predicate) {
 }
 
 export class Element extends EventTarget {
+    static [Symbol.hasInstance](value) {
+        return super[Symbol.hasInstance](value) || value?.nodeType === 1;
+    }
     listeners = new Map();
     addEventListener(type, listener, options) {
         this.listeners.set(type, listener);
@@ -68,6 +75,13 @@ export function createRoomFixture() {
             "messages-typing-status",
         ].map((id) => [id, new Element()]),
     );
+    const thread = new JSDOM("<div></div>").window.document.querySelector(
+        "div",
+    );
+    thread.listeners = new Map();
+    thread.addEventListener = (type, listener) =>
+        thread.listeners.set(type, listener);
+    elements["messages-thread-list"] = thread;
     const storage = new Map([["cognis_account", "reader"]]);
     const controller = new AbortController();
     const state = {
@@ -124,6 +138,9 @@ export function createRoomFixture() {
         resolveMessageStyle: () => "default",
     };
     const dependencies = {
+        "./thread-dom.js": threadDom,
+        "./reuse/reaction-record.js": reactionRecord,
+        "./thread-data.js": threadData,
         "./offline-client.js": { messagesFetch: fetch },
         "./reaction-state.js": { nextReactionState: () => true },
         "/static/reuse/offline-state.js": { isOffline: () => false },
@@ -212,6 +229,7 @@ export function createRoomFixture() {
     dependencies["./read-state.js"] = load("read-state.js");
     dependencies["./typing-state.js"] = load("typing-state.js");
     dependencies["./room-render.js"] = load("room-render.js");
+    dependencies["./thread-reactions.js"] = load("thread-reactions.js");
     dependencies["./message-render.js"] = load("message-render.js");
     dependencies["./thread-actions.js"] = load("thread-actions.js");
     state.renderThread = dependencies["./message-render.js"].renderThread;

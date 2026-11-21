@@ -58,6 +58,11 @@ test("Messages prepares its sidebar before first navigation and renders it from 
         {
             ...fixture.imports,
             "./i18n.js": { createMessagesI18n: async () => ({}) },
+            "./reuse/reaction-record.js": loadTestModule(
+                new URL("../ui/reuse/reaction-record.js", import.meta.url),
+                {},
+                fixture.globals,
+            ),
         },
         fixture.globals,
     );

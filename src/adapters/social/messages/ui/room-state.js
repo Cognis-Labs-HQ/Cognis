@@ -337,7 +337,7 @@ export function createMessagesRoomState({
             undefined,
             { force: true, isCurrent, signal },
         );
-        if (!isCurrent() || !threadResult) return;
+        if (!isCurrent() || !threadResult || threadResult.obsolete) return;
         const resolvedPendingRequest = threadResult.pendingRequest ?? null;
         setSelectedRoomPendingRequest(resolvedPendingRequest);
         syncPendingRequestBanner(resolvedPendingRequest);
@@ -589,7 +589,7 @@ export function createMessagesRoomState({
                 undefined,
                 { isCurrent, signal },
             );
-            if (!isCurrent() || !threadResult) return;
+            if (!isCurrent() || !threadResult || threadResult.obsolete) return;
             const pendingRequest = threadResult.pendingRequest ?? null;
             setSelectedRoomPendingRequest(pendingRequest);
             syncPendingRequestBanner(pendingRequest);

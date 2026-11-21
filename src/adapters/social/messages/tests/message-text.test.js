@@ -1,4 +1,8 @@
+import * as reactionRecord from "../ui/reuse/reaction-record.js";
 import test from "node:test";
+import { JSDOM } from "jsdom";
+import * as threadDom from "../ui/thread-dom.js";
+import * as threadData from "../ui/thread-data.js";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
@@ -57,6 +61,15 @@ function createRenderer(style, theme, messageList) {
         },
         "./message-utils.js": messageUtils,
     };
+    commonImports["./thread-reactions.js"] = loadTestModule(
+        new URL("../ui/thread-reactions.js", import.meta.url),
+        {
+            ...commonImports,
+            "./thread-dom.js": threadDom,
+            "./reuse/reaction-record.js": reactionRecord,
+            "./emoji-helpers.js": { getQuickReactionEmojis: () => ["♥"] },
+        },
+    );
     const roomRender = loadTestModule(
         new URL("../ui/room-render.js", import.meta.url),
         commonImports,
@@ -65,6 +78,8 @@ function createRenderer(style, theme, messageList) {
         new URL("../ui/message-render.js", import.meta.url),
         {
             ...commonImports,
+            "./thread-dom.js": threadDom,
+            "./thread-data.js": threadData,
             "/static/reuse/markdown-renderer.js": { renderMarkdown },
             "/static/reuse/popup.js": {
                 createAnchoredPopup: () => ({ hide() {}, destroy() {} }),
@@ -93,17 +108,7 @@ function createRenderer(style, theme, messageList) {
 }
 
 function createThreadContainer() {
-    return {
-        innerHTML: "",
-        scrollTop: 0,
-        scrollHeight: 100,
-        clientHeight: 100,
-        querySelector: () => null,
-        insertAdjacentHTML(position, markup) {
-            assert.equal(position, "afterbegin");
-            this.innerHTML = markup + this.innerHTML;
-        },
-    };
+    return new JSDOM("<div></div>").window.document.querySelector("div");
 }
 
 function readBodyMarkup(html) {
@@ -260,8 +265,8 @@ for (const style of styleOptions.MESSAGE_STYLE_OPTIONS) {
                 );
                 assert.equal(
                     container.innerHTML,
-                    previousMarkup + previousMarkup,
-                    "Earlier messages use the same wrapping path",
+                    previousMarkup,
+                    "Repeated history pages retain one row per message",
                 );
             });
         }
