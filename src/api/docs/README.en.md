@@ -6,6 +6,8 @@ The application server connects your browser to accounts, saved content and enab
 
 Read component documentation and use the application's server-backed features.
 
+Open Docs, expand a module group by its display name and choose a page. Modules with the same display name remain separate groups. Search descriptions and searchable text use the same localized names.
+
 ## Before You Start
 
 Operators deploy the server; readers can use published documentation without administrative access.

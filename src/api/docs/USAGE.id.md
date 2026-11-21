@@ -16,6 +16,8 @@ Gunakan titik akhir keamanan sistem atau penegakan TFA yang terautentikasi untuk
 
 `await ctx.getCapability("share:getGuestClaims")(request)`
 
+GET /api/v1/docs menyertakan metadata groupPresentation opsional bersama group, slug, title, path, dan versions yang sudah ada. Grup tetap memakai UUID modul yang tidak berubah; label tidak menggantikan identitas atau rute.
+
 ## Hasil yang Diharapkan
 
 Setiap versi terbit berisi paket lokal lengkap; tampilan hilang tidak dibuat dari versi lain.

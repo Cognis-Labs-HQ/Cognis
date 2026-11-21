@@ -6,6 +6,8 @@ Der Anwendungsserver verbindet Ihren Browser mit Konten, gespeicherten Inhalten 
 
 Lies Komponentendokumente und nutze servergestützte Funktionen.
 
+Öffne die Dokumentation, klappe eine Modulgruppe anhand ihres Anzeigenamens auf und wähle eine Seite. Module mit gleichem Anzeigenamen bleiben getrennte Gruppen. Suchbeschreibungen und Suchtext verwenden dieselben übersetzten Namen.
+
 ## Vor dem Start
 
 Betreiber stellen den Server bereit; veröffentlichte Dokumente benötigen keine Administratorrechte.

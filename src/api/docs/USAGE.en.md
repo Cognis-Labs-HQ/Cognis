@@ -16,6 +16,8 @@ Use the authenticated system security or TFA enforcement endpoint to change mand
 
 `await ctx.getCapability("share:getGuestClaims")(request)`
 
+GET /api/v1/docs includes optional groupPresentation metadata alongside each entry’s existing group, slug, title, path and versions. The group remains the immutable module UUID; labels never replace identity or routes.
+
 ## Expected Results
 
 Each published version contains a complete localized bundle; unavailable views are not fabricated from unrelated versions.
