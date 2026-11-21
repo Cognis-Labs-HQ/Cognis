@@ -12,4 +12,4 @@ Die Zuständigkeit einer Dashboard-Instanz folgt dem Abbruch oder Ersatz der Nav
 
 ## Commits
 
-- [4fb4fe8819ae951c538f7f2f6b562fc68acf5065](https://github.com/Cognis-Labs-HQ/Cognis/commit/4fb4fe8819ae951c538f7f2f6b562fc68acf5065)
+- [8306134d322a6688d20ed5b64b68b9931b2de6ae](https://github.com/Cognis-Labs-HQ/Cognis/commit/8306134d322a6688d20ed5b64b68b9931b2de6ae)
