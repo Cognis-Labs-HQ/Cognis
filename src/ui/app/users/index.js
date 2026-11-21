@@ -502,6 +502,7 @@ async function runUserMenuAction(action, username) {
 }
 
 function bindUsersInteractions() {
+    const menuSignal = pageSignal;
     root.querySelectorAll("[data-user-details]").forEach((details) => {
         if (details.dataset.userDetailsBound === "true") return;
         details.dataset.userDetailsBound = "true";
@@ -621,7 +622,10 @@ function bindUsersInteractions() {
                       ]
                     : []),
             ];
-            const action = await openHamburgerMenu(btn, { items: menuItems });
+            const action = await openHamburgerMenu(btn, {
+                items: menuItems,
+                signal: menuSignal,
+            });
             if (!action) return;
             await runUserMenuAction(action, username);
         });

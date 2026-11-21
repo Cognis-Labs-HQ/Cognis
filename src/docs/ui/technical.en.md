@@ -153,6 +153,16 @@ Floating menus use the version-one `ui:floatingMenus` capability and the staged 
 
 Toast feedback loads its shared stylesheet without delaying notification creation or dismissal. Concurrent notifications share a loading cycle with at most two five-second attempts. A failed cycle permits a later notification to retry. Existing external links are preserved; only failed links created by the toast loader are removed. Dismissal during loading remains final. Page tutorial targets and progression are unchanged.
 
+### Action Menu Lifetime and Keys
+
+`openHamburgerMenu(button, { items, signal })` returns `Promise<string|null>`. The optional `signal` binds preparation and the open menu to its current page or component. Capture that mount's signal before awaiting the result. A selected enabled item returns its existing action ID; dismissal, cancellation, invoker removal or replacement by a newer opening returns `null`. Empty lists and lists with no enabled actions return `null`. Cancellation also applies while the stylesheet or menu queue is pending. Moving focus away from the opening button or menu cancels the opening, including while stylesheets or queue access are pending. Retained old controls cannot select an action or close a newer menu.
+
+Action menus use `ui:floatingMenus` at priority 50 and wait for higher-priority tutorial reservations to yield. A higher-priority reservation taking over an already open menu dismisses that menu without restoring focus. Pending and open surfaces share lifecycle ownership through `ui:transientSurfaces`; bundled and directly served callers use the same ownership. Users and Modules retain their existing tutorial targets and action handling. This shared UI contract has no independent package version.
+
+Opening focuses the first enabled item. Arrow Down and Arrow Up move through enabled items; Home and End reach the first and last. Escape dismisses and restores focus only to the still-current, connected opening button. Tab dismisses while preserving normal focus traversal. Outside pointer dismissal does not move focus back to the opening button. Disabled actions cannot select. Existing localized labels, escaped HTML values, danger styling and responsive positioning remain supported.
+
+Menus opened by controls inside a popup use the existing `ui:popupFocus` delegated ownership. Menu navigation and Escape operate on the menu without closing its parent popup. Moving focus to another control inside that popup dismisses the menu and preserves the new focus. Opening a nested popup or closing the parent revokes the menu’s ownership. Popup contracts remain unchanged.
+
 ### Keyboard Popup Navigation
 
 Every popup has its own accessible heading, including nested unsaved-change confirmations and multi-page dialogs. Tab and Shift+Tab stay inside the active dialog. Keeping a draft returns focus to its editor; closing the last dialog returns focus to its available opening control, or to the page when that control is gone. Empty dialogs keep focus until controls become available. Navigation cancellation releases popup focus ownership without moving focus back onto the old page. Closing animations do not retain keyboard ownership. These shared controls also apply to dialogs opened from guided tutorials.
