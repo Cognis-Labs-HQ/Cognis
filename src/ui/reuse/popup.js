@@ -830,7 +830,12 @@ export async function openPopup({
             document.body.appendChild(overlay);
             if (surface === "reader") {
                 presentationLifetime = new AbortController();
-                watchComposerPresentation(overlay, overlay.querySelector(".popup-dialog"), presentationLifetime.signal, { observeResize: true });
+                watchComposerPresentation(
+                    overlay,
+                    overlay.querySelector(".popup-dialog"),
+                    presentationLifetime.signal,
+                    { observeResize: true },
+                );
             }
             focusLifecycle = bindPopupFocus(overlay, invoker);
             releaseScroll = lockPageScroll(document);
