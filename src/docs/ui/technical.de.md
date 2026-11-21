@@ -163,7 +163,7 @@ Jedes dargestellte Kriterium hat eine eindeutige ID, auch bei mehreren Formulare
 
 Beachten Sie die Anforderungen am Feld, korrigieren Sie unerfüllte Kriterien und wiederholen Sie die Aktion. Die Tutorials zur Registrierungsverwaltung und Sicherheit behalten ihre bisherigen Steuerelemente, Ziele, Abschlusskennungen und Navigation. Die Sicherheitsanleitung erläutert bereits Passwortanforderungen, Bestätigung und Abbruch. Die gemeinsame Validierung fügt keine Tutorial-Aktion und keinen Schritt hinzu. Die gemeinsame UI hat kein separat versioniertes Paket oder Manifest.
 
-## E-Mail-Aktionen
+### E-Mail-Aktionen
 
 Als primär festlegen erhält eine aufbauende, Entfernen eine destruktive Darstellung. Beide Aktionen teilen eine Sperre für laufende Vorgänge in der gesamten Adressliste, auch nach einer erneuten Darstellung derselben Seite. Ablehnung, bestätigte Änderung, vorgemerkte Änderung und unbestätigtes Ergebnis erhalten unterschiedliche lokalisierte Hinweise. Eine gespeicherte Änderung wird bei fehlgeschlagener Listenaktualisierung nicht als fehlgeschlagen gemeldet. Seitenwechsel, Kontowechsel oder Entfernung des Anbieters unterdrücken veraltete Abschlussmeldungen.
 
