@@ -12,5 +12,5 @@ Einzeln gesperrte Adapter werden weiterhin von ihrem Gateway verwaltet. Gateway-
 
 ## Commits
 
-- [b83b0b66dde15749c76b9457dbfe29fb82648141](https://github.com/Cognis-Labs-HQ/Cognis/commit/b83b0b66dde15749c76b9457dbfe29fb82648141)
-- [d116af6da9b6b1ea00f7798a61474071693ed724](https://github.com/Cognis-Labs-HQ/Cognis/commit/d116af6da9b6b1ea00f7798a61474071693ed724)
+- [8eb94e34f3747bcab037af29ae0e323650611fbd](https://github.com/Cognis-Labs-HQ/Cognis/commit/8eb94e34f3747bcab037af29ae0e323650611fbd)
+- [d7172168d2beab6bbd86d6e689a65d27fdaafa00](https://github.com/Cognis-Labs-HQ/Cognis/commit/d7172168d2beab6bbd86d6e689a65d27fdaafa00)
