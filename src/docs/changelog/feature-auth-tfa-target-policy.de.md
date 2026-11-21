@@ -26,6 +26,7 @@ Core 0.6.6 friert die bereits als schreibgeschützt deklarierten Flow-Kontextref
 
 ## Commits
 
-- [dcc48ad2e75ab6dd8817d753bf8eb599b2e19218](https://github.com/Cognis-Labs-HQ/Cognis/commit/dcc48ad2e75ab6dd8817d753bf8eb599b2e19218)
-- [081cae20906c2a465306cc52e1d5533bb49a600e](https://github.com/Cognis-Labs-HQ/Cognis/commit/081cae20906c2a465306cc52e1d5533bb49a600e)
-- [67c0d1e39defb2a0acf78e9e72df0270e3791579](https://github.com/Cognis-Labs-HQ/Cognis/commit/67c0d1e39defb2a0acf78e9e72df0270e3791579)
+- [184112ded6a0fb8d035c5c3fdb97e6bafb62fc29](https://github.com/Cognis-Labs-HQ/Cognis/commit/184112ded6a0fb8d035c5c3fdb97e6bafb62fc29)
+- [626448c464546a37948105cdcf98c26e62a10a23](https://github.com/Cognis-Labs-HQ/Cognis/commit/626448c464546a37948105cdcf98c26e62a10a23)
+- [54ae11fac7f8d3e213db888b3d1a1e690221c356](https://github.com/Cognis-Labs-HQ/Cognis/commit/54ae11fac7f8d3e213db888b3d1a1e690221c356)
+- [afd4a7be48536b6961bdf978c1b2e1c1e229f4ec](https://github.com/Cognis-Labs-HQ/Cognis/commit/afd4a7be48536b6961bdf978c1b2e1c1e229f4ec)
