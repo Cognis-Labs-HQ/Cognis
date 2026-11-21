@@ -16,5 +16,5 @@ A page cancellation now reaches the shared request and durable-buffer boundaries
 
 ## Commits
 
-- [447e2ef705547e9e4f42ead1ef49574752b80c10](https://github.com/Cognis-Labs-HQ/Cognis/commit/447e2ef705547e9e4f42ead1ef49574752b80c10)
-- [cc32cb6dd56ee033cdcb869d405ee2cb479d6611](https://github.com/Cognis-Labs-HQ/Cognis/commit/cc32cb6dd56ee033cdcb869d405ee2cb479d6611)
+- [ac720864aa3c4ddf57c94bd91a114b315f552697](https://github.com/Cognis-Labs-HQ/Cognis/commit/ac720864aa3c4ddf57c94bd91a114b315f552697)
+- [56847277f26266a3b4a2919c11be1b4eb8e14287](https://github.com/Cognis-Labs-HQ/Cognis/commit/56847277f26266a3b4a2919c11be1b4eb8e14287)
