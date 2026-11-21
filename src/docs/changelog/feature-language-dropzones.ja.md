@@ -16,4 +16,5 @@
 
 ## コミット
 
-- [d11dbdaca92963277b8afdb02e676a0cb6f02cbc](https://github.com/Cognis-Labs-HQ/Cognis/commit/d11dbdaca92963277b8afdb02e676a0cb6f02cbc)
+- [30805140b757a0385e9e75b3e064bed04b372b87](https://github.com/Cognis-Labs-HQ/Cognis/commit/30805140b757a0385e9e75b3e064bed04b372b87)
+- [e35f4a12200f5ea7a421698262bf3f209d34ecc8](https://github.com/Cognis-Labs-HQ/Cognis/commit/e35f4a12200f5ea7a421698262bf3f209d34ecc8)
