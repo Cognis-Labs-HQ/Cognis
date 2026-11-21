@@ -12,4 +12,4 @@ Kedaluwarsa, verifikasi atomik, pembatalan, penggantian dan logout menonaktifkan
 
 ## Komit
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/6c3a7fb4a2bf3a2882d5cb801382ad503fcd74bb
+- [892be808be6d9cbce88fd4dc01f493a055ef6ac7](https://github.com/Cognis-Labs-HQ/Cognis/commit/892be808be6d9cbce88fd4dc01f493a055ef6ac7)
