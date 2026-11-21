@@ -149,6 +149,12 @@ Tutorial targets, completion IDs, actions, Next, Back, Restart and replay are un
 
 The five-second bound applies only to the stylesheet attempt, not total `openPopup` preparation. Strict locale initialization retains its existing lifetime without a new timeout; it can delay localized failure feedback and rejection, but the opening signal still cancels promptly. Healthy anchored previews do not initialize modal locale resources.
 
+### Floating window gestures
+
+`ui:makeFloatingWindow`
+
+Shared behavior: [Floating Controls](/docs/focus-control/technical).
+
 ## Security
 
 Hidden navigation is not access control. Browser providers resolve owner capabilities and abort pending work on unmount or account changes; private reads remain account-scoped.

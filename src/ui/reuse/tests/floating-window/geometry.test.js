@@ -2,11 +2,11 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 
-import { makeFloatingWindow } from "../floating-window.js";
-import { uiCtx } from "../ui-ctx.js";
+import { makeFloatingWindow } from "../../floating-window.js";
+import { uiCtx } from "../../ui-ctx.js";
 
 const floatingWindowStyles = readFileSync(
-    new URL("../../styles/reuse/floating-window.css", import.meta.url),
+    new URL("../../../styles/reuse/floating-window.css", import.meta.url),
     "utf8",
 );
 
@@ -312,6 +312,7 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
         assert.equal(panel.style.left, "450px");
         assert.equal(panel.style.top, "250px");
 
+        toolbar.dispatch("pointerup", { pointerId: 4 });
         panel.rect = { left: 450, top: 250, width: 280, height: 220 };
         bottomRightResizeHandle.dispatch("pointerdown", {
             button: 0,
@@ -329,6 +330,7 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
         assert.equal(panel.style.width, "400px");
         assert.equal(panel.style.height, "300px");
 
+        bottomRightResizeHandle.dispatch("pointerup", { pointerId: 5 });
         panel.rect = { left: 450, top: 250, width: 400, height: 300 };
         bottomRightResizeHandle.dispatch("pointerdown", {
             button: 0,
@@ -357,6 +359,7 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
         assert.equal(panel.style.minWidth, "240px");
         assert.equal(panel.style.minHeight, "320px");
 
+        bottomRightResizeHandle.dispatch("pointerup", { pointerId: 7 });
         panel.rect = { left: 450, top: 250, width: 250, height: 400 };
         bottomRightResizeHandle.dispatch("pointerdown", {
             button: 0,
@@ -376,6 +379,7 @@ test("floating windows move, resize, remain visible, and release cleanly", () =>
         assert.equal(panel.style.width, "400px");
         assert.equal(panel.style.height, "250px");
 
+        bottomRightResizeHandle.dispatch("pointerup", { pointerId: 8 });
         panel.rect = { left: 450, top: 250, width: 400, height: 300 };
         topLeftResizeHandle.dispatch("pointerdown", {
             button: 0,

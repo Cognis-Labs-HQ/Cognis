@@ -208,3 +208,9 @@ Dialogstile teilen `ui:popupPreparation` zwischen gebündelten und direkt gelade
 Tutorial-Ziele, Abschlusskennungen, Aktionen, Weiter, Zurück, Neustart und Wiederholung bleiben unverändert. Fokus, verschachtelte Dialoge, Verwerfungsbestätigung, Aktionen, Zeitlimits und Rückabwicklung sichtbarer Dialoge behalten ihre Verträge. Die gemeinsame UI besitzt keine eigene Paketversion.
 
 Die Fünf-Sekunden-Grenze gilt nur für den Stylesheet-Versuch, nicht für die gesamte Vorbereitung von `openPopup`. Die strikte Sprachinitialisierung behält ihre bisherige Lebensdauer ohne neues Zeitlimit. Sie kann die lokalisierte Fehlermeldung und Ablehnung verzögern; das Öffnungssignal bricht dennoch sofort ab. Erfolgreiche verankerte Vorschauen initialisieren keine Sprachressourcen des Dialogs.
+
+### Gesten schwebender Fenster
+
+`ui:makeFloatingWindow`
+
+Gemeinsames Verhalten: [Schwebende Steuerelemente](/docs/focus-control/technical).

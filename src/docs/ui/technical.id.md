@@ -123,6 +123,12 @@ Target tutorial, ID penyelesaian, tindakan, Berikutnya, Kembali, Mulai Ulang, da
 
 Batas lima detik hanya berlaku untuk percobaan stylesheet, bukan seluruh persiapan `openPopup`. Inisialisasi bahasa yang ketat mempertahankan masa hidupnya tanpa batas waktu baru; proses ini dapat menunda pemberitahuan kegagalan terlokalisasi dan penolakan, tetapi sinyal pembukaan tetap segera membatalkan. Pratinjau berjangkar yang berhasil tidak menginisialisasi sumber daya bahasa dialog.
 
+### Gestur jendela mengambang
+
+`ui:makeFloatingWindow`
+
+Perilaku bersama: [Kontrol Mengambang](/docs/focus-control/technical).
+
 ## Keamanan
 
 Navigasi tersembunyi bukan kontrol akses. Penyedia memakai kapabilitas pemilik dan membatalkan pekerjaan saat unmount atau pergantian akun; data privat terikat akun.
