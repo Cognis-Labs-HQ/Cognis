@@ -16,4 +16,5 @@ Core 0.6.4 records discovered gateway bootstrap failures separately from executa
 
 ## Commits
 
-- [0f5aaa8: Commit sessions only after final assurance](https://github.com/Cognis-Labs-HQ/Cognis/commit/0f5aaa8b1ef309db23b947ea6361dc3369e4713f)
+- [02e067b8981a5582633afe940bceff84a392ec61](https://github.com/Cognis-Labs-HQ/Cognis/commit/02e067b8981a5582633afe940bceff84a392ec61)
+- [e336d6f6cc18527505a7dd259cb0a24f410a7869](https://github.com/Cognis-Labs-HQ/Cognis/commit/e336d6f6cc18527505a7dd259cb0a24f410a7869)
