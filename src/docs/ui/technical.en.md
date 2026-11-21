@@ -79,6 +79,10 @@ Every HTML element added to templates or injected from page scripts must resolve
 
 Global `ui:imagePreview` provides thumbnail rendering, binding and an `open` action through the registered `ui:imagePreview:open` flow. It is also available from `ui:reuse` as `image-preview.js`; its provider loads the shared stylesheet before publishing controls. Image buttons open the original image at its natural size, constrained to the viewport, with only the standard X control visible. Keyboard activation, Escape, focus return and owner/provider teardown use the shared popup lifecycle. Callers retain ownership of image URLs and optional removal actions. Library uses this shared control for uploaded and bundled images in editors and detail galleries.
 
+Caller cancellation or provider removal releases a pending image preview without waiting for locale or popup stylesheet preparation. Late preparation cannot reopen the canceled viewer or show its failure feedback. Other callers continue sharing preparation normally.
+
+The public open action rejects with AbortError on cancellation; deliberate Close still completes normally. Replacing a thumbnail under the same live caller signal preserves its original-image snapshot. Without a caller signal, the viewer remains provider-owned; unrelated route changes do not close it. Image URLs stay caller-owned. Existing Library tutorial targets and actions are unchanged; cancellation adds no user step.
+
 The shared image-preview provider loads its stylesheet before publishing controls. The image-only popup removes heading markup and fits landscape, portrait and panoramic originals inside the viewport without horizontal or vertical scrolling. Library detail previews retain their 20rem × 18rem limits; editor thumbnails remain 8rem × 6rem.
 
 ### Responsive Session Navigation

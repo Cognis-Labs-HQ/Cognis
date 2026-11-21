@@ -1,11 +1,12 @@
-import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
+import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 import vm from "node:vm";
-import { uiCtx } from "../ui-ctx.js";
-import { createProviderLifecycle } from "../provider-lifecycle.js";
-import { registerScopedUiActions } from "../scoped-actions.js";
-import { escapeHtml } from "../escape-html.js";
+import { uiCtx } from "../../ui-ctx.js";
+import { createProviderLifecycle } from "../../provider-lifecycle.js";
+import { registerScopedUiActions } from "../../scoped-actions.js";
+import { waitForPopupPreparation } from "../../popup/preparation.js";
+import { escapeHtml } from "../../escape-html.js";
 
 async function fixture(t) {
     let click;
@@ -40,6 +41,7 @@ async function fixture(t) {
         escapeHtml,
         uiCtx,
         registerScopedUiActions,
+        waitForPopupPreparation,
         AbortSignal,
         ensurePageStylesheet: async (url) => {
             stylesLoaded.push(url);
@@ -89,10 +91,11 @@ async function fixture(t) {
     Object.assign(
         context,
         loadTestModule(
-            new URL("../image-preview.js", import.meta.url),
+            new URL("../../image-preview.js", import.meta.url),
             {
                 "./escape-html.js": context,
                 "./popup.js": context,
+                "./popup/preparation.js": context,
                 "./page-styles.js": context,
                 "./i18n.js": context,
                 "./ui-ctx.js": context,
@@ -222,6 +225,7 @@ test("the preview provider waits for its shared stylesheet before publishing con
     const context = vm.createContext({
         uiCtx,
         registerScopedUiActions,
+        waitForPopupPreparation,
         ensurePageStylesheet: (url) => {
             assert.equal(url, "/static/styles/reuse/image-preview.css");
             return stylesheet;
@@ -230,10 +234,11 @@ test("the preview provider waits for its shared stylesheet before publishing con
     Object.assign(
         context,
         loadTestModule(
-            new URL("../image-preview.js", import.meta.url),
+            new URL("../../image-preview.js", import.meta.url),
             {
                 "./escape-html.js": context,
                 "./popup.js": context,
+                "./popup/preparation.js": context,
                 "./page-styles.js": context,
                 "./i18n.js": context,
                 "./ui-ctx.js": context,
