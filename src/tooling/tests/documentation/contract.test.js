@@ -189,9 +189,7 @@ test("core topics require directory entry bundles rather than arbitrary flat fil
 
 test("technical paragraphs have one authoritative owner", () => {
     const paths = sourceFiles(resolve(ROOT, "src")).filter((path) =>
-        /\/(?:TECHNICAL(?:\.(?:de|id|ja))?|technical\.(?:en|de|id|ja))\.md$/.test(
-            path,
-        ),
+        /\/(?:TECHNICAL|technical)\.(?:en|de|id|ja)\.md$/.test(path),
     );
     assert.deepEqual(duplicateTechnicalParagraphs(paths), []);
 });
