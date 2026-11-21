@@ -16,5 +16,5 @@ Message Style previews require a ready version 2 presentation provider. If Profi
 
 ## Commits
 
-- [e6e0cc1b97caf49b935b8cec6594ad71c1660a33](https://github.com/Cognis-Labs-HQ/Cognis/commit/e6e0cc1b97caf49b935b8cec6594ad71c1660a33)
-- [00a797f7d6d606839503f929947eb9508b92f710](https://github.com/Cognis-Labs-HQ/Cognis/commit/00a797f7d6d606839503f929947eb9508b92f710)
+- [e6ca5ac18a89838154c3e11848bbf855f1c9ec3c](https://github.com/Cognis-Labs-HQ/Cognis/commit/e6ca5ac18a89838154c3e11848bbf855f1c9ec3c)
+- [acf9691e8ecfc3a57fa097cb2b277c7e621bee3c](https://github.com/Cognis-Labs-HQ/Cognis/commit/acf9691e8ecfc3a57fa097cb2b277c7e621bee3c)
