@@ -12,5 +12,5 @@ Lokalisierte Hinweise unterscheiden bestätigte, vorgemerkte, abgelehnte und unb
 
 ## Commits
 
-- [66319d835277440e96871227f1e84cdd3b5e144b](https://github.com/Cognis-Labs-HQ/Cognis/commit/66319d835277440e96871227f1e84cdd3b5e144b)
-- [1474bcfaf4d2e734ddbefda6c99178a93f55df08](https://github.com/Cognis-Labs-HQ/Cognis/commit/1474bcfaf4d2e734ddbefda6c99178a93f55df08)
+- [3a112deab1eb880bb4df4cf6ce27a8f2b85be7c8](https://github.com/Cognis-Labs-HQ/Cognis/commit/3a112deab1eb880bb4df4cf6ce27a8f2b85be7c8)
+- [c473f491bb8950ff841037f9ab46703adcc8aad0](https://github.com/Cognis-Labs-HQ/Cognis/commit/c473f491bb8950ff841037f9ab46703adcc8aad0)
