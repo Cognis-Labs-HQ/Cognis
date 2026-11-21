@@ -8,8 +8,6 @@ Perintah CLI mendeklarasikan nama, penggunaan, deskripsi, argumen, dan execute d
 
 ## Konfigurasi
 
-### Konfigurasi
-
 | Variabel                       | Default            | Keterangan                                                                   |
 | ------------------------------ | ------------------ | ---------------------------------------------------------------------------- |
 | `COGNIS_CLI_TOKEN_PATH`        | —                  | Path ke file yang berisi token API untuk perintah `cognisctl` terautentikasi |

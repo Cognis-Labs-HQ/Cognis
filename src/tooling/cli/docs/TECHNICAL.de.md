@@ -8,8 +8,6 @@ CLI-Befehle deklarieren Name, Aufruf, Beschreibung, Argumente und execute im Reg
 
 ## Konfiguration
 
-### Konfiguration
-
 | Variable                       | Standard           | Beschreibung                                                              |
 | ------------------------------ | ------------------ | ------------------------------------------------------------------------- |
 | `COGNIS_CLI_TOKEN_PATH`        | —                  | Pfad zur Datei mit dem API-Token für authentifizierte `cognisctl`-Befehle |
