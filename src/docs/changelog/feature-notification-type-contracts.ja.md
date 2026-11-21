@@ -16,5 +16,6 @@ SMTPキューの項目は配信と再試行を通じて必須の件名を保持�
 
 ## コミット
 
-- [e8dc18187f0952a00078d22e4713181197fc6886](https://github.com/Cognis-Labs-HQ/Cognis/commit/e8dc18187f0952a00078d22e4713181197fc6886)
-- [a7b28309057dc860920174fcc68017401b5953ae](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7b28309057dc860920174fcc68017401b5953ae)
+- [21295f18697e07a687ee70f6e5b3f5166db50963](https://github.com/Cognis-Labs-HQ/Cognis/commit/21295f18697e07a687ee70f6e5b3f5166db50963)
+- [88e31ce18fc9e0fb6a0f6ff7e3bb500e65d58770](https://github.com/Cognis-Labs-HQ/Cognis/commit/88e31ce18fc9e0fb6a0f6ff7e3bb500e65d58770)
+- [26a5b1a0a4b1db40cbe00a526c003a54f98a38e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/26a5b1a0a4b1db40cbe00a526c003a54f98a38e0)
