@@ -24,4 +24,5 @@ If a custom criterion detaches or aborts its form attachment, the running field 
 
 ## Commits
 
-- [eadd9c4a49b075fa908c39071be679613a4681cb](https://github.com/Cognis-Labs-HQ/Cognis/commit/eadd9c4a49b075fa908c39071be679613a4681cb)
+- [c396bee5dfcdb2e21e69e9b79ddae6f6ed61a600](https://github.com/Cognis-Labs-HQ/Cognis/commit/c396bee5dfcdb2e21e69e9b79ddae6f6ed61a600)
+- [8a1c44bad0c99cd4a823421faaeb40ea992dcb86](https://github.com/Cognis-Labs-HQ/Cognis/commit/8a1c44bad0c99cd4a823421faaeb40ea992dcb86)
