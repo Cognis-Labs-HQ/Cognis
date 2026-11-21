@@ -12,4 +12,4 @@ Escape menutup bantuan tanpa memindahkan fokus, sambil mempertahankan tindakan E
 
 ## Komit
 
-- [7c0481a3f44adf55fec639d5ec48dfecaea427c1](https://github.com/Cognis-Labs-HQ/Cognis/commit/7c0481a3f44adf55fec639d5ec48dfecaea427c1)
+- [271efe6a5f68664197197a702374ce4e578f47b2](https://github.com/Cognis-Labs-HQ/Cognis/commit/271efe6a5f68664197197a702374ce4e578f47b2)
