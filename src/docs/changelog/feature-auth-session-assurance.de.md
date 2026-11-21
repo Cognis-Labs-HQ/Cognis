@@ -16,5 +16,5 @@ Core 0.6.4 erfasst Bootstrap-Fehler gefundener Gateways getrennt von ausführbar
 
 ## Commits
 
-- [02e067b8981a5582633afe940bceff84a392ec61](https://github.com/Cognis-Labs-HQ/Cognis/commit/02e067b8981a5582633afe940bceff84a392ec61)
-- [e336d6f6cc18527505a7dd259cb0a24f410a7869](https://github.com/Cognis-Labs-HQ/Cognis/commit/e336d6f6cc18527505a7dd259cb0a24f410a7869)
+- [16c520fe40b0feebf51fe58f0f3ae080dd44a428](https://github.com/Cognis-Labs-HQ/Cognis/commit/16c520fe40b0feebf51fe58f0f3ae080dd44a428)
+- [32aa5b9d708571c0df436924b1ebe45ee8ec690e](https://github.com/Cognis-Labs-HQ/Cognis/commit/32aa5b9d708571c0df436924b1ebe45ee8ec690e)
