@@ -18,4 +18,4 @@ Die Fünf-Sekunden-Grenze gilt nur für den Stylesheet-Versuch, nicht für die g
 
 ## Commits
 
-- [773ccefddb14f3ee77f98dcb454ebe0dd42b24a8](https://github.com/Cognis-Labs-HQ/Cognis/commit/773ccefddb14f3ee77f98dcb454ebe0dd42b24a8)
+- [79e3b60b563710a7b5372edbb6476af78b62b83a](https://github.com/Cognis-Labs-HQ/Cognis/commit/79e3b60b563710a7b5372edbb6476af78b62b83a)
