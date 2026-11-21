@@ -14,9 +14,11 @@ The public interfaces and operational rules of API.
 
 `offline:registerSessionRoutes(ids, signal, { available })` accepts an optional owner predicate called with the route and path while offline. Disposing its signal removes the declaration. The host separately prepares public page code and styles through `offline:prepareRouteAssets`; `offline:areRouteAssetsReady` reports completion. `createOfflineReadCache` exposes `read.has(key)`, and scoped HTTP clients expose `request.hasCachedRead(path)`, without returning private data. These checks include account/session identity, expiry, cache generation and provider lifetime. They do not grant authorization or waive cached legal consent.
 
-## Configuration
+Component-declared session GET responses handled by the read cache include `x-cognis-read-source: live` only for the call that starts its transport read, `shared` for a call that joins an already-started in-flight read, or `cached` for a saved or component-restored result. A shared response does not establish a new read boundary; a later call that starts another transport read is `live`, even if its payload is identical. The marker follows the actual result, not the connection state at completion. It leaves the existing response status, headers and projected payload unchanged. A cache consumer can observe the same per-call provenance through the optional fifth argument: `read(key, load, canCache, refresh, onSource)`. The callback receives `live`, `shared` or `cached` on success; ordinary reads still return their original values. Cached foreground reads retain their source even when background revalidation finishes. Older or explicitly replaced snapshots remain `cached`, including when returned to a caller that joined an in-flight read. Snapshot metadata shares the existing bounded cache, account/session invalidation and owner cleanup.
 
-### Configuration
+Undeclared requests, guest credentials, explicit Authorization headers and `bufferOffline: false` bypasses return the original Response unchanged. Status-zero error or opaque Responses also pass through unchanged without an added marker. Managed HTTP error subscribers receive independent body streams. These values describe the client read outcome, not a server revision or an authorization decision; existing ownership and access checks still apply.
+
+## Configuration
 
 | Variable                          | Default                        | Description                                             |
 | --------------------------------- | ------------------------------ | ------------------------------------------------------- |
