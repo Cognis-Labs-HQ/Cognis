@@ -179,7 +179,7 @@ Aktualisieren prüft die Liste, ohne eine Änderung zu wiederholen. Bestätigte 
 
 Die vorhandene allgemeine Einführung behält Ziel, Eigentümer und Abschlusskennung der E-Mail-Liste für gefüllte und leere Listen. Hinweise zu laufenden und vorgemerkten Aktionen sowie Aktualisieren sind in allen vier Sprachen angepasst. Bestätigung, erneuter Versand, Hinzufügen, Passwort- und Kontoverwaltungsaktionen behalten ihre bisherigen Abläufe. Gemeinsame UI-Dateien haben keine eigene Paketversion.
 
-## Lebensdauer der Karussellwahl
+### Lebensdauer der Karussellwahl
 
 Horizontale Karussells halten Auswahlreihenfolge, gedrückten Zustand und Auswahlzähler gemeinsam aktuell. Karussells mit derselben Kennung führen ihre ausgewählten Werte zusammen; Hinzufügen kann ein Element ergänzen, ohne es auszuwählen. Vorschauen bei Fokus oder Zeigerkontakt gehören zur eingebundenen Karussellinstanz.
 
