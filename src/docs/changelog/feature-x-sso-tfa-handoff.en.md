@@ -12,4 +12,4 @@ Expiry, atomic verification, cancellation, supersession and logout invalidate th
 
 ## Commits
 
-- [892be808be6d9cbce88fd4dc01f493a055ef6ac7](https://github.com/Cognis-Labs-HQ/Cognis/commit/892be808be6d9cbce88fd4dc01f493a055ef6ac7)
+- [0e14cb64c42f3c5ae96710fdd1ae404db6875aed](https://github.com/Cognis-Labs-HQ/Cognis/commit/0e14cb64c42f3c5ae96710fdd1ae404db6875aed)
