@@ -16,7 +16,9 @@ export function installI18nEnvironment(respond) {
         parseFromString(xml) {
             return {
                 documentElement: {
-                    nodeName: /^\s*<resources[>\s]/.test(xml)
+                    nodeName: /^\s*(?:<\?xml[^>]*>\s*)?<resources[>\s]/.test(
+                        xml,
+                    )
                         ? "resources"
                         : "html",
                 },
