@@ -12,5 +12,5 @@
 
 ## コミット
 
-- [2ff0d83d7db9486b5ca3f7ef727274176298b46d](https://github.com/Cognis-Labs-HQ/Cognis/commit/2ff0d83d7db9486b5ca3f7ef727274176298b46d)
-- [982f35dbce4f8070fbf34696f52c30ac53c3b1a1](https://github.com/Cognis-Labs-HQ/Cognis/commit/982f35dbce4f8070fbf34696f52c30ac53c3b1a1)
+- [bc19cea34dc3a2c52b07ac47ed49d2fdfb8b5301](https://github.com/Cognis-Labs-HQ/Cognis/commit/bc19cea34dc3a2c52b07ac47ed49d2fdfb8b5301)
+- [3e9a85d44408718a08618b285cd0e802184d5841](https://github.com/Cognis-Labs-HQ/Cognis/commit/3e9a85d44408718a08618b285cd0e802184d5841)
