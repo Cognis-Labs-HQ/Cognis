@@ -492,7 +492,12 @@ async function assetResponse(request, moduleAsset, event) {
             throw error;
         }
     };
-    if (!cached || mutableCatalog || request.cache === "reload" || request.cache === "no-cache") {
+    if (
+        !cached ||
+        mutableCatalog ||
+        request.cache === "reload" ||
+        request.cache === "no-cache"
+    ) {
         const loadKey = JSON.stringify([
             cacheKey,
             generation,
