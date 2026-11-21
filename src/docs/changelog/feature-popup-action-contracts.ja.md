@@ -16,4 +16,4 @@ Enterとスペースはフォーカス中のコントロールに従います。
 
 ## コミット
 
-- [f5896384f0417b5717206c20c3a358f09eeb39c1](https://github.com/Cognis-Labs-HQ/Cognis/commit/f5896384f0417b5717206c20c3a358f09eeb39c1)
+- [b5a54c65c1bc627fe8ee5887428e64d7e7449db2](https://github.com/Cognis-Labs-HQ/Cognis/commit/b5a54c65c1bc627fe8ee5887428e64d7e7449db2)
