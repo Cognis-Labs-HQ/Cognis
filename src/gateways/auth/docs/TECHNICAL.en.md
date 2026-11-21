@@ -188,7 +188,7 @@ Factor verification and setup completion both use the Auth-owned final commit. `
 
 ### Typed Authentication Boundaries
 
-Auth and TFA declarations now describe the existing account roles, external identity fields, database commands and cookie session projections. Session timeout validation retains the same accepted numeric values. Login assurance and single-use factor attempts remain unchanged.
+Shared behavior: [TFA](/docs/gateways/tfa/technical).
 
 ## Security
 

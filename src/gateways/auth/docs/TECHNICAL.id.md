@@ -188,7 +188,7 @@ Verifikasi faktor dan penyelesaian penyiapan sama-sama memakai penyelesaian sesi
 
 ### Batas Autentikasi Bertipe
 
-Deklarasi Auth dan TFA kini menjelaskan peran akun, bidang identitas eksternal, perintah basis data, dan proyeksi sesi kuki yang sudah ada. Validasi batas waktu sesi tetap menerima nilai angka yang sama. Jaminan masuk dan percobaan faktor sekali pakai tidak berubah.
+Perilaku bersama: [TFA](/docs/gateways/tfa/technical).
 
 ## Keamanan
 

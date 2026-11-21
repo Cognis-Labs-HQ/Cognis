@@ -192,7 +192,7 @@ Faktorprüfung und Einrichtungsabschluss verwenden beide den Auth-eigenen Sitzun
 
 ### Typisierte Authentifizierungsgrenzen
 
-Die Deklarationen von Auth und TFA beschreiben die bestehenden Kontorollen, externen Identitätsfelder, Datenbankbefehle und Cookie-Sitzungsdaten. Die Prüfung des Sitzungslimits akzeptiert dieselben Zahlenwerte. Die Anmeldeabsicherung und einmalig verwendbare Faktorversuche bleiben unverändert.
+Gemeinsames Verhalten: [TFA](/docs/gateways/tfa/technical).
 
 ## Sicherheit
 
