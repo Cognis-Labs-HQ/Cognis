@@ -20,5 +20,6 @@ The policy flow requires a single-use operation and execution state held by its 
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/3a2f90aa804ed98e3ba72cc10724913cf14bbf84
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/44d621b20f9b1107c66f10dbc3fb1e7f251f24b0
+- [322876824a16093b61862a780fe40caedb52c82f](https://github.com/Cognis-Labs-HQ/Cognis/commit/322876824a16093b61862a780fe40caedb52c82f)
+- [5c8ca31ce5a466b74f962ef2db8e2ba677eee368](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c8ca31ce5a466b74f962ef2db8e2ba677eee368)
+- [4f3aec6dff33e9f5ebcc4e49e7e0820bea8f41ab](https://github.com/Cognis-Labs-HQ/Cognis/commit/4f3aec6dff33e9f5ebcc4e49e7e0820bea8f41ab)
