@@ -142,7 +142,7 @@ Tutorial identitas profil tetap menjelaskan tautan profil dan pratinjaunya; kont
 
 Penggambar juga menyediakan penanda kesiapan `available` yang akurat bagi penyedia tampilan yang bergantung padanya, serta mengirim peristiwa miliknya `cognis:profile-avatar-renderer-changed` saat dipasang dan dicabut. Penanda menjadi salah saat cakupan dibatalkan, sebelum kapabilitas dihapus. Kegagalan pemasangan dan pengaktifan kembali memakai jalur pemberitahuan yang sama. Konsumen tidak boleh menyimpulkan kesiapan hanya dari keberadaan dalam registri.
 
-## Gambar Profil
+### Gambar Profil
 
 Halaman profil mempertahankan elemen avatar dan banner yang tidak berubah saat jumlah pengikut, detail profil, dan kartu lain diperbarui. Sinkronisasi eksplisit memeriksa media kembali dan mempertahankan gambar saat ini untuk profil, sesi, dan kunci yang sama ketika kesalahan jaringan atau HTTP 408, 425, 429, atau 5xx menghalangi pembacaan. Pesan kesalahan meminta pengguna mencoba lagi; pembaruan tersebut tidak dilaporkan berhasil. Percobaan berhasil dengan data identik mempertahankan URL yang sama, sedangkan data baru menggantinya.
 

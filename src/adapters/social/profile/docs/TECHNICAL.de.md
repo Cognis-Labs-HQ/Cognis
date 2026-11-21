@@ -154,7 +154,7 @@ Die Einführung zur Profilidentität erklärt weiterhin Profillinks und ihre Vor
 
 Für abhängige Darstellungsanbieter stellt der Renderer außerdem den verbindlichen Bereitschaftswert `available` bereit und sendet beim Einhängen und Widerrufen sein eigenes Ereignis `cognis:profile-avatar-renderer-changed`. Beim Abbruch des Scopes wird der Wert bereits vor dem Entfernen der Capability falsch. Fehlgeschlagene Starts und Reaktivierungen nutzen denselben Benachrichtigungsweg. Die bloße Registrierung belegt keine Bereitschaft.
 
-## Profilbilder
+### Profilbilder
 
 Die Profilseite behält unveränderte Avatar- und Banner-Bildelemente bei Aktualisierungen von Follower-Zahlen, Profildaten und anderen Karten. Eine ausdrückliche Synchronisierung prüft die Medien erneut. Bei Netzwerkfehlern oder HTTP 408, 425, 429 oder 5xx bleibt das aktuelle Bild für dasselbe Profil, dieselbe Sitzung und denselben Schlüssel erhalten. Eine sichtbare Fehlermeldung fordert zum erneuten Versuch auf; die Aktualisierung wird nicht als erfolgreich gemeldet. Identische Bilddaten behalten ihre URL, geänderte Daten erhalten eine neue.
 

@@ -221,7 +221,7 @@ The profile identity tutorial continues to explain profile links and their previ
 
 The renderer also exposes a required truthful `available` flag for dependent presentation providers and emits its own `cognis:profile-avatar-renderer-changed` notification on mount and revocation. Its flag becomes false on scope abort before capability removal; failed mounts and reactivation follow the same notification path. Consumers must not infer readiness merely from registry presence.
 
-## Hero Images
+### Hero Images
 
 The profile page keeps unchanged avatar and banner image nodes during follower counts, profile edits and other card updates. Explicit synchronization rechecks media and preserves the current image for the same profile, session and key when a network error or HTTP 408, 425, 429 or 5xx prevents a read. A visible error invites a retry; the page does not report that refresh as successful. A successful retry with identical bytes keeps the same URL, while changed bytes replace it.
 
