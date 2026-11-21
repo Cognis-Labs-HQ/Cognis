@@ -13,3 +13,4 @@ Notifikasi Internal 0.5.36 menyelaraskan isi, urutan, dan status dibaca melalui 
 ## Komit
 
 - [cfe7a4001e6be4f26b15e82b199d18edbb2be42e](https://github.com/Cognis-Labs-HQ/Cognis/commit/cfe7a4001e6be4f26b15e82b199d18edbb2be42e)
+- [faba21400a8fa7680a3e4e8f48aad4d05eab7a7e](https://github.com/Cognis-Labs-HQ/Cognis/commit/faba21400a8fa7680a3e4e8f48aad4d05eab7a7e)
