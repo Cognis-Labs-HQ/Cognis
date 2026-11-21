@@ -12,4 +12,5 @@ Profile 3.0.20 scopes asynchronous reads, uploads, deletion and file selection t
 
 ## Commits
 
-- [4daddbabcc1a7e23b6aea874f593c12abb55a8ec](https://github.com/Cognis-Labs-HQ/Cognis/commit/4daddbabcc1a7e23b6aea874f593c12abb55a8ec)
+- [a1c92e7a120e13504ad560f6f83f1413c0bcd9df](https://github.com/Cognis-Labs-HQ/Cognis/commit/a1c92e7a120e13504ad560f6f83f1413c0bcd9df)
+- [997978e1f38ac8d917af0284ec3359effea36f17](https://github.com/Cognis-Labs-HQ/Cognis/commit/997978e1f38ac8d917af0284ec3359effea36f17)
