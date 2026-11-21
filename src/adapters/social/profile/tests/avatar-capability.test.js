@@ -34,7 +34,7 @@ test("Profile adapter owns the complete avatar UI capability", () => {
     }
     assert.match(
         source,
-        /uiCtx\.capabilities\.contribute\("ui:profileAvatarRenderer"/,
+        /scope\.capabilities\.contribute\("ui:profileAvatarRenderer"/,
     );
     assert.match(
         source,
@@ -69,10 +69,13 @@ test("Profile standalone provider waits for avatar styles and contributes its cl
 
 test("navbar and profile cards derive initials from the same profile label", () => {
     const navbar = readFileSync(
-        resolve(process.cwd(), "src/adapters/social/profile/ui/navbar.js"),
+        resolve(
+            process.cwd(),
+            "src/adapters/social/profile/ui/navbar-avatar-provider.js",
+        ),
         "utf8",
     );
-    assert.match(navbar, /payload\?\.data\?\.displayName/);
+    assert.match(navbar, /profile\.displayName/);
     assert.match(navbar, /fallbackFor\(profileLabel\)/);
 });
 

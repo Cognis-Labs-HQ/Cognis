@@ -58,6 +58,14 @@ function nonInteractiveMarkup(markup) {
 export function mountProvider(ctx) {
     ctx.signal.throwIfAborted();
     const log = ctx.capabilities.get("ui:log");
+    let rendererGeneration = 0;
+    const resolveRenderer = () => {
+        const renderer = ctx.capabilities.get("ui:profileAvatarRenderer");
+        return renderer?.available === true &&
+            typeof renderer.buildMarkup === "function"
+            ? renderer
+            : null;
+    };
     ctx.registerFlow(flowName, ["validate", "render"]);
     ctx.extendFlow(
         flowName,
@@ -74,8 +82,8 @@ export function mountProvider(ctx) {
         { id: "messages:presentationMarkup" },
         ({ data }) => {
             ctx.signal.throwIfAborted();
-            const avatars = ctx.capabilities.get("ui:profileAvatarRenderer");
-            if (typeof avatars?.buildMarkup !== "function") {
+            const avatars = resolveRenderer();
+            if (!avatars) {
                 throw new Error("profile_avatar_presentation_unavailable");
             }
             data.markup = nonInteractiveMarkup(
@@ -87,7 +95,10 @@ export function mountProvider(ctx) {
         },
     );
     const capability = Object.freeze({
-        version: 1,
+        version: 2,
+        get available() {
+            return !ctx.signal.aborted && !!resolveRenderer();
+        },
         signal: ctx.signal,
         stylesheets: Object.freeze([
             "/static/adapters/social/messages/messages.css",
@@ -97,8 +108,17 @@ export function mountProvider(ctx) {
         async render(input) {
             ctx.signal.throwIfAborted();
             try {
+                const renderer = resolveRenderer();
+                const generation = rendererGeneration;
+                if (!renderer)
+                    throw new Error("profile_avatar_presentation_unavailable");
                 const result = await ctx.runFlow(flowName, input);
                 ctx.signal.throwIfAborted();
+                if (
+                    generation !== rendererGeneration ||
+                    renderer !== resolveRenderer()
+                )
+                    throw new Error("profile_avatar_presentation_unavailable");
                 if (typeof result.data.markup !== "string") {
                     throw new Error("message_presentation_unavailable");
                 }
@@ -116,6 +136,20 @@ export function mountProvider(ctx) {
     });
     ctx.capabilities.contribute(capabilityName, capability);
     const notify = () => window.dispatchEvent(new Event(changeEvent));
-    ctx.signal.addEventListener("abort", notify, { once: true });
+    const rendererChanged = () => {
+        rendererGeneration++;
+        notify();
+    };
+    const rendererChangeEvent = "cognis:profile-avatar-renderer-changed";
+    window.addEventListener(rendererChangeEvent, rendererChanged);
+    ctx.signal.addEventListener(
+        "abort",
+        () => {
+            window.removeEventListener(rendererChangeEvent, rendererChanged);
+            rendererGeneration++;
+            notify();
+        },
+        { once: true },
+    );
     notify();
 }

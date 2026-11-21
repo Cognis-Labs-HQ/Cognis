@@ -126,20 +126,8 @@ test("messages room membership resolution is exported through ctx", () => {
     );
 });
 
-test("messages avatars fall back after failed image loads", () => {
+test("messages delegate avatar rendering and image errors to the profile capability", () => {
     const appSource = readMessagesUiBundle();
-    const sharedSource = readFileSync(
-        resolve(ROOT, "src/adapters/social/profile/ui/profile-avatar.js"),
-        "utf8",
-    );
-    assert.match(sharedSource, /const unavailableAvatarKeys = new Set\(\)/);
-    assert.match(sharedSource, /unavailableAvatarKeys\.add\(avatarKey\)/);
-    assert.match(sharedSource, /data-avatar-key=/);
-    assert.match(sharedSource, /apiFetch\(buildAvatarFileUrl\(avatarKey\)\)/);
-    assert.doesNotMatch(
-        sharedSource,
-        /src=\"\$\{escapeHtml\(buildAvatarFileUrl\(avatarKey\)\)\}/,
-    );
     assert.match(appSource, /avatarKey: member\.avatarKey/);
     assert.match(
         appSource,
