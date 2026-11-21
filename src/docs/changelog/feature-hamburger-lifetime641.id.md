@@ -16,5 +16,5 @@ Menu tertunda juga dibatalkan saat fokus berpindah, sehingga persiapan yang terl
 
 ## Komit
 
-- [d437ae0479f6a2ecc6ca83926275b4779014fdf3](https://github.com/Cognis-Labs-HQ/Cognis/commit/d437ae0479f6a2ecc6ca83926275b4779014fdf3)
-- [d3d62fbdd0397e2a982bf1e05cdd1b0126d45597](https://github.com/Cognis-Labs-HQ/Cognis/commit/d3d62fbdd0397e2a982bf1e05cdd1b0126d45597)
+- [f56c092cb8286c5420faccc7f943f24d4a20a2ab](https://github.com/Cognis-Labs-HQ/Cognis/commit/f56c092cb8286c5420faccc7f943f24d4a20a2ab)
+- [f5535c3f93e2e101b4ae7fb399e1f81fabe9b1da](https://github.com/Cognis-Labs-HQ/Cognis/commit/f5535c3f93e2e101b4ae7fb399e1f81fabe9b1da)
