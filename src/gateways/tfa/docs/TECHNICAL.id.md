@@ -32,11 +32,7 @@ Gateway ini mendaftarkan capability berikut melalui `ctx.capabilities`:
 
 Capability ini adalah permukaan integrasi yang didukung. Komponen lain tidak boleh mengimpor internal adapter TFA secara langsung.
 
-<<<<<<< HEAD:src/gateways/tfa/docs/TECHNICAL.id.md
 `tfa:getLoginMethods(accountId)` menyiapkan tantangan hanya saat satu metode tersedia tanpa kode pemulihan yang belum digunakan. Jika tidak, UI login meminta tantangan melalui `POST /api/v1/tfa/login/resend` untuk metode awal dengan `challengeOnSelect` dan pilihan berikutnya yang belum memiliki tantangan. Tantangan dari server digunakan kembali. Kegagalan pengiriman ditampilkan dalam bahasa pengguna; log mencatat metode, akun, kesiapan, dan alasan kegagalan tanpa kode atau isi email.
-=======
-`tfa:getLoginMethods(accountId, lifetime)` hanya memicu challenge login (misalnya mengirim email SMTP) saat tepat satu metode dikonfigurasi untuk pengguna. Saat beberapa metode tersedia, respons hanya berisi identitas metode tanpa data challenge. UI login memicu challenge secara on-demand melalui `POST /api/v1/tfa/login/resend` ketika pengguna secara eksplisit memilih sebuah metode.
->>>>>>> f07343ef8 (fix(tfa): bind queued SMTP codes to challenge lifetimes):src/gateways/tfa/docs/index.id.md
 
 ### Route API
 
@@ -130,8 +126,6 @@ Selama penulisan kebijakan yang diserialkan, TFA menangguhkan penilaian sesi bar
 
 Alur kebijakan memerlukan operasi sekali pakai dan status eksekusi yang dipegang pemiliknya. Pemanggilan alur langsung dan pengulangan operasi yang ditangkap ditolak sebelum mutasi; integrasi harus memanggil kapabilitas kebijakan.
 
-<<<<<<< HEAD:src/gateways/tfa/docs/TECHNICAL.id.md
-
 ### Pengiriman tantangan berbatas waktu
 
 Pada Email Code, “dalam antrean” berarti pengiriman belum selesai. Tunggu kode terbaru. Kirim ulang mengganti kode sebelumnya hanya setelah diterima; penolakan mempertahankannya. Setelah kegagalan pengiriman, kirim ulang secara eksplisit sebelum kedaluwarsa atau mulai login baru. Percobaan login berlaku lima menit dan penyiapan sepuluh menit. Pembatalan penyiapan hanya memengaruhi penyiapan tersebut. Melanjutkan login tidak mengirim email lagi atau memperpanjang tenggat.
@@ -152,12 +146,3 @@ Penyiapan, konfirmasi, penghapusan, dan verifikasi memakai alur terlindungi. Ada
 Perilaku ini dijelaskan dalam [kontrak bersama](/docs/adapters/social/messages/technical).
 
 Kode pemulihan dijelaskan untuk masuk saat faktor kedua tidak tersedia. Panduan penerapan menyorot sakelar, bukan seluruh panel.
-=======
-## Pengiriman tantangan berbatas waktu
-
-Adapter metode wajib menerima `lifetime: { id, expiresAt, signal }` untuk penyiapan, tantangan login, dan verifikasi login. Pemanggil `tfa:getLoginMethods(accountId, lifetime)` dan `tfa:verifyLogin(accountId, methodId, payload, lifetime)` harus dimigrasikan. Penyiapan memperoleh identitas serta tenggat sepuluh menit sebelum pembacaan asinkron pertama. Auth menyediakan masa hidup login melalui `auth:getPendingLoginLifetime` versi 1. Pembatalan, kedaluwarsa, kegagalan penyimpanan, penonaktifan metode akun, reset, dan pembersihan gateway membatalkan operasi yang tepat. Pembacaan lama tetap ditolak setelah aktivasi ulang. Verifikasi dapat dibatalkan sebelum titik komit pendaftaran; setelah penulisan dimulai, pembatalan dan reset menunggu penghalang komit/pembersihan yang tetap terlihat. Verifikasi kode pemulihan juga memeriksa masa hidup setelah konsumsi asinkron. Mulai ulang menghilangkan tantangan dalam memori. Deskripsi login yang dilanjutkan adalah cuplikan penerimaan, bukan tanda terima pengiriman terkini.
-
-### Koordinasikan transisi akhir
-
-Operasi akhir akun, metode, dan gateway memblokir penerimaan baru selama pembersihan dan penulisan status. Setiap operasi yang tumpang tindih memiliki token penghalang sendiri; penyelesaian satu operasi tidak membuka operasi lainnya. Kegagalan penulisan pendaftaran tetap menjadi kegagalan verifikasi, tetapi pembersihan menunggu penyelesaiannya tanpa menghalangi perubahan status oleh reset atau penonaktifan berikutnya.
->>>>>>> f07343ef8 (fix(tfa): bind queued SMTP codes to challenge lifetimes):src/gateways/tfa/docs/index.id.md

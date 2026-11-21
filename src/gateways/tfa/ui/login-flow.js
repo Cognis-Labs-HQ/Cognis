@@ -427,9 +427,12 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                         setResendStateForMethod(resolveMethod(methodId), {
                             skipDeliveryToast: true,
                         });
-                        showToast(i18n.t("ui.app.login.tfa.challenge_unavailable"), {
-                            variant: "error",
-                        });
+                        showToast(
+                            i18n.t("ui.app.login.tfa.challenge_unavailable"),
+                            {
+                                variant: "error",
+                            },
+                        );
                     }
                 }
             };

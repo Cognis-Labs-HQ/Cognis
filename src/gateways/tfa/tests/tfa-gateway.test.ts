@@ -120,7 +120,10 @@ test("tfa gateway excludes methods when login challenge is not ready", async () 
         state: { email: "alice@example.com" },
         configuredAt: new Date().toISOString(),
     });
-    const methods = await gateway.getLoginMethods("alice", createLoginLifetime());
+    const methods = await gateway.getLoginMethods(
+        "alice",
+        createLoginLifetime(),
+    );
     assert.ok(
         logs.some(
             ({ level, metadata }) =>
