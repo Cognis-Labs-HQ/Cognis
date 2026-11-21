@@ -1,3 +1,4 @@
+import type { LoginContinuation } from "../login-continuation.js";
 import * as verificationCodes from "../../reuse/verification-codes.js";
 import { registerUserValidationModes } from "../user-validation.js";
 import type { LocalAccountStore } from "../reuse/account-store.js";
@@ -130,6 +131,7 @@ export interface AuthBootstrapHookContext {
 }
 
 export interface AuthRouteBootstrapRuntime {
+    loginContinuation: LoginContinuation;
     buildAccessTokenCookie: (
         req: IncomingMessage,
         rawToken: string,
