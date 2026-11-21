@@ -14,7 +14,7 @@ Target tutorial `modules` yang hanya digunakan direktori lama dihapus. Panduan e
 
 ## Komit
 
-- [901418a110ee91975861d2232a8a2d2bbb4c0b20](https://github.com/Cognis-Labs-HQ/Cognis/commit/901418a110ee91975861d2232a8a2d2bbb4c0b20)
-- [afdd5e7af532e18b2f2c39c77b4c477036b4ea5b](https://github.com/Cognis-Labs-HQ/Cognis/commit/afdd5e7af532e18b2f2c39c77b4c477036b4ea5b)
-- [b45e83afb36dae5bd6049d41f24cecb88b3ce864](https://github.com/Cognis-Labs-HQ/Cognis/commit/b45e83afb36dae5bd6049d41f24cecb88b3ce864)
-- [5d09bfb8bb000c8f4c6184a56efd5dcc94836729](https://github.com/Cognis-Labs-HQ/Cognis/commit/5d09bfb8bb000c8f4c6184a56efd5dcc94836729)
+- [cc25a6568920324c31a1812c02e3790c7d12e791](https://github.com/Cognis-Labs-HQ/Cognis/commit/cc25a6568920324c31a1812c02e3790c7d12e791)
+- [2de2715bf0f046d950eed9f294e3dfd6f815f043](https://github.com/Cognis-Labs-HQ/Cognis/commit/2de2715bf0f046d950eed9f294e3dfd6f815f043)
+- [bf407ef2b0a68e6bdaa05c3e8ace44f544cb0488](https://github.com/Cognis-Labs-HQ/Cognis/commit/bf407ef2b0a68e6bdaa05c3e8ace44f544cb0488)
+- [aea21af67ac61ff988b27fd636091a77a5998c5c](https://github.com/Cognis-Labs-HQ/Cognis/commit/aea21af67ac61ff988b27fd636091a77a5998c5c)
