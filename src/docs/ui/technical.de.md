@@ -139,7 +139,7 @@ Die ergänzenden Verträge lauten `deliverOrQueue(ctx, owner, id, payload, send,
 
 Diese Verträge gehören zu den gemeinsamen UI-Dateien, nicht zu einem Gateway- oder Adapterpaket. Liefern Sie die aktualisierten gemeinsamen Dateien mit Profile 4.0.1 aus. Profil, Nachrichten, Kalender und Notify-E-Mail verwenden den gemeinsamen HTTP-Client; Study-Zeichnungen, Bibliothek, Favoriten und Flashcards nutzen auch die optionale Übertragungshilfe. Aufrufe ohne Signal behalten den bestehenden Vertrag. Das Kalender-Laufzeitverhalten wird nicht gesondert angepasst.
 
-## Vertrag für die Suchauswahl
+### Vertrag für die Suchauswahl
 
 Wählen Sie einen Treffer mit dem Zeiger oder der Eingabetaste und warten Sie auf den Abschluss. Jeder Dialog erlaubt währenddessen nur einen Auswahl-Callback. Solange die zuständige Suchinstanz aktiv bleibt, bleiben bei einer Ausnahme oder einem abgelehnten Promise Suchtext, Kategorie und Mehrfachauswahl erhalten; ein übersetzter Toast zeigt den Fehler. Prüfen Sie vor einem erneuten Versuch das Ziel: Eine Fehlermeldung beweist nicht, dass die Operation noch nicht ausgelöst wurde. Bei einem nicht mehr verfügbaren Treffer werden Sie zur erneuten Suche aufgefordert.
 
