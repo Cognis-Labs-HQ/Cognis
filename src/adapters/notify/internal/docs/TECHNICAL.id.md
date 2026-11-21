@@ -15,6 +15,8 @@ createNotificationSender memakai penyimpanan aktif secara malas. bootstrapNotify
 | `DELETE` | `/api/v1/notify/inbox/:id`      | Hapus satu notifikasi               | Pengguna |
 | `DELETE` | `/api/v1/notify/inbox`          | Hapus semua notifikasi pengguna     | Pengguna |
 
+Plugin navigasi, gaya, terjemahan, dan ikon memakai direktori `/static/gateways/notify-internal/` yang terdaftar saat bootstrap. Aset lonceng dimiliki adapter ini dalam `ui/assets/`.
+
 ## Konfigurasi
 
 Adaptor ini tidak memiliki konfigurasi. Adaptor aktif selama gateway notify memuatnya (yaitu selalu, karena adaptor ditemukan secara otomatis). Untuk menonaktifkan adaptor, hapus atau ubah nama direktori adaptor — setelah itu bel notifikasi akan menghilang dari antarmuka.

@@ -529,7 +529,7 @@ function buildButton(i18n) {
     btn.setAttribute("type", "button");
     btn.innerHTML =
         '<span class="notification-badge-wrap">' +
-        '<span class="notification-icon" aria-hidden="true"><img src="/static/adapters/notify/internal/assets/bell.svg" alt="" class="notification-icon-img" /></span>' +
+        '<span class="notification-icon" aria-hidden="true"><img src="/static/gateways/notify-internal/assets/bell.svg" alt="" class="notification-icon-img" /></span>' +
         '<span id="notification-count" class="notification-count" hidden>0</span>' +
         "</span>";
 

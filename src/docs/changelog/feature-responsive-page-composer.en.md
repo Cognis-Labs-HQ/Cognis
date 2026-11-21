@@ -8,7 +8,7 @@ Core pages adapt to phone, tablet and desktop viewports through Page Composer, i
 
 ## Reliable Feature Integration
 
-Offline preparation, provider contracts, account boundaries and lifecycle cleanup support enabled components without coupling their implementations.
+Offline preparation, provider contracts, account boundaries and lifecycle cleanup support enabled components without coupling their implementations. Component UI resources resolve through the owning component’s registered public directory.
 
 ## Structured Documentation
 

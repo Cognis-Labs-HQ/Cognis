@@ -15,6 +15,8 @@ createNotificationSender nutzt den aktuellen Speicher verzögert. bootstrapNotif
 | `DELETE` | `/api/v1/notify/inbox/:id`      | Eine Benachrichtigung löschen               | Benutzer |
 | `DELETE` | `/api/v1/notify/inbox`          | Alle Benachrichtigungen des Nutzers löschen | Benutzer |
 
+Navigationsplugin, Styles, Übersetzungen und Symbole nutzen das beim Start registrierte Verzeichnis `/static/gateways/notify-internal/`. Das Glockensymbol gehört diesem Adapter unter `ui/assets/`.
+
 ## Konfiguration
 
 Benachrichtigungsproduzenten können einen Eintrag als dauerhaft markieren und Aktionsbeschreibungen mit Kennung, barrierefreier Beschriftung, optionalem SVG-Symbol und Konsequenz bereitstellen. Der Adapter validiert und rendert diesen allgemeinen Vertrag und meldet die ausgewählte Kennung mit der Benachrichtigung zurück; er interpretiert weder die Domäne des Produzenten noch ruft er dessen Capabilities auf.

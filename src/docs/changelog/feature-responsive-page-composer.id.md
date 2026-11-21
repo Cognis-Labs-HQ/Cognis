@@ -8,7 +8,7 @@ Halaman inti menyesuaikan layar ponsel, tablet, dan desktop melalui Page Compose
 
 ## Integrasi Fitur Andal
 
-Persiapan luring, kontrak penyedia, batas akun, dan pembersihan siklus hidup mendukung komponen aktif tanpa mengikat implementasinya.
+Persiapan luring, kontrak penyedia, batas akun, dan pembersihan siklus hidup mendukung komponen aktif tanpa mengikat implementasinya. Sumber daya UI diselesaikan melalui direktori publik yang didaftarkan komponen pemilik.
 
 ## Dokumentasi Terstruktur
 

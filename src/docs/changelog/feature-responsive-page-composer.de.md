@@ -8,7 +8,7 @@ Kernseiten passen sich über Page Composer an Telefon, Tablet und Desktop an, ei
 
 ## Zuverlässige Integration
 
-Offline-Vorbereitung, Anbieterverträge, Kontogrenzen und Lebenszyklusbereinigung unterstützen aktivierte Komponenten ohne Kopplung ihrer Implementierungen.
+Offline-Vorbereitung, Anbieterverträge, Kontogrenzen und Lebenszyklusbereinigung unterstützen aktivierte Komponenten ohne Kopplung ihrer Implementierungen. UI-Ressourcen werden über das registrierte öffentliche Verzeichnis ihrer Komponente aufgelöst.
 
 ## Strukturierte Dokumentation
 

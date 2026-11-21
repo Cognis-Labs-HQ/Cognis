@@ -15,6 +15,8 @@ createNotificationSender resolves the current store lazily. bootstrapNotifyAdapt
 | `DELETE` | `/api/v1/notify/inbox/:id`      | Delete one notification                  | User |
 | `DELETE` | `/api/v1/notify/inbox`          | Delete all of the caller's notifications | User |
 
+The navbar plugin, styles, translations and icons use the bootstrap-registered `/static/gateways/notify-internal/` directory. The bell asset belongs to this adapter under `ui/assets/`.
+
 ## Configuration
 
 Notification producers may mark an entry as continuous and provide action-button descriptors containing an identifier, accessible label, optional SVG icon, and consequence. Continuous entries remain visible until their supplied lifetime ends. The adapter validates and renders those generic descriptors, then emits the selected identifier and notification payload; it does not interpret the producer's domain or invoke producer capabilities.
