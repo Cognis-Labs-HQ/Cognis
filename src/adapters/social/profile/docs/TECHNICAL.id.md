@@ -116,6 +116,12 @@ Tipe peran dan visibilitas profil sesuai dengan rekaman tersimpan, termasuk akun
 
 Perilaku bersama: [Auth](/docs/gateways/auth/technical).
 
+### Bukti penghapusan akun
+
+Pada `deprovision-user` → `cleanup-dependencies`, komponen memperoleh `auth:deprovisionOutcome` versi 1 melalui `system:contracts` dan memanggil `deletedAccount(input, stageResults)` dengan objek asli dari pemanggilan tersebut. Hanya bukti milik Auth yang mengonfirmasi penghapusan tersimpan yang mengizinkan penghapusan profil, aktivitas sosial, dan preferensi akun. Hasil salinan, hasil penonaktifan/pengarsipan, serta bukti yang hilang atau tidak tersedia tidak mengizinkan pembersihan ini.
+
+Migrasi ini melindungi konsumen pembersihan bawaan. Sebelum mengaktifkan penghapusan akun dalam penerapan, perbarui atau nonaktifkan hook pembersihan eksternal yang masih memercayai hasil alur publik yang dapat diubah.
+
 ## Keamanan
 
 ### Privasi akun dan isolasi keyring

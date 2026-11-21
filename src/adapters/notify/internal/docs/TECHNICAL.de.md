@@ -33,6 +33,12 @@ Beide Speicher behalten fünfzig Einträge pro Empfänger und entfernen die ält
 
 Die interne Zustellung bezieht den strukturierten Datenbankzugriff über ctx. Der Protokollierungsvertrag verwendet die unterstützten Bootstrap-Schweregrade. Verschlüsselung, Postfachberechtigungen und stets aktive Zustellung bleiben unverändert.
 
+### Bestätigte Kontolöschung
+
+In `deprovision-user` → `cleanup-dependencies` löst die Komponente `auth:deprovisionOutcome` Version 1 über `system:contracts` auf und ruft `deletedAccount(input, stageResults)` mit den Originalobjekten desselben Aufrufs auf. Nur eine Auth-eigene Bestätigung der dauerhaft ausgeführten Löschung berechtigt dazu, die gespeicherten Benachrichtigungen des Kontos zu entfernen. Kopierte Ergebnisse, Deaktivierungs- oder Archivierungsergebnisse sowie fehlende oder nicht verfügbare Bestätigungen berechtigen nicht zu dieser Bereinigung.
+
+Gemeinsames Verhalten: [Auth](/docs/gateways/auth/technical).
+
 ## Sicherheit
 
 Benachrichtigungsrouten prüfen den Empfänger und bearbeiten dessen Einträge. Dauerhafte Nachrichten benötigen DATA_ENCRYPTION_KEY; halte den Schlüssel stabil und geheim.

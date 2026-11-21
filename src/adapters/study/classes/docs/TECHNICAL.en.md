@@ -50,6 +50,18 @@ Learning languages, teacher eligibility, class membership and classroom limits a
 
 Teachers manage their classes and membership decisions. Learners browse available classes, request membership and use their enrolled classrooms. State is stored through the DB gateway.
 
+### Routes and permissions
+
+The adapter registers its routes and persistence through the Study gateway and ctx. Teacher-scoped routes require the teacher role; teacher-request approval and rejection require an administrator. Class membership and classroom changes retain their account and class authorization checks.
+
+### Account deletion receipts
+
+During `deprovision-user` → `cleanup-dependencies`, the component resolves `auth:deprovisionOutcome` version 1 through `system:contracts` and calls `deletedAccount(input, stageResults)` with the original objects from that invocation. Only an Auth-owned receipt confirming a committed deletion authorizes removal of the account's memberships, teacher assignments and classroom activity. Copied results, disable/archive outcomes, and missing or unavailable receipts do not authorize this cleanup.
+
+Shared behavior: [Auth](/docs/gateways/auth/technical).
+
+This migration protects the bundled cleanup consumers. Before enabling account deletion in a deployment, update or disable external cleanup hooks that still trust mutable public flow results.
+
 ## Security
 
 Authenticated ownership and classroom membership are checked by each operation. Administrative approval is required where teacher or join policy requires it.

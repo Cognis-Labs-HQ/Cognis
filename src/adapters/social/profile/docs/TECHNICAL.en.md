@@ -195,6 +195,12 @@ Profile roles and visibility types match the stored records, including moderator
 
 Shared behavior: [Auth](/docs/gateways/auth/technical).
 
+### Account deletion receipts
+
+During `deprovision-user` → `cleanup-dependencies`, the component resolves `auth:deprovisionOutcome` version 1 through `system:contracts` and calls `deletedAccount(input, stageResults)` with the original objects from that invocation. Only an Auth-owned receipt confirming a committed deletion authorizes removal of the account's profile, social activity and preferences. Copied results, disable/archive outcomes, and missing or unavailable receipts do not authorize this cleanup.
+
+This migration protects the bundled cleanup consumers. Before enabling account deletion in a deployment, update or disable external cleanup hooks that still trust mutable public flow results.
+
 ## Security
 
 ### Account privacy and keyring isolation

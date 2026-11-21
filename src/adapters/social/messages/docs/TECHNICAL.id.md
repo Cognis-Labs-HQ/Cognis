@@ -195,6 +195,12 @@ Perender mengembalikan hasil usang secara eksplisit ketika kepemilikan ruang, ak
 
 Langkah riwayat menjelaskan pemilihan teks selama pembaruan percakapan dan pemuatan pesan sebelumnya sambil mempertahankan posisi. Wilayah, urutan, identitas penyelesaian, dan aturan akses tetap sama.
 
+### Bukti penghapusan akun
+
+Pada `deprovision-user` → `cleanup-dependencies`, komponen memperoleh `auth:deprovisionOutcome` versi 1 melalui `system:contracts` dan memanggil `deletedAccount(input, stageResults)` dengan objek asli dari pemanggilan tersebut. Hanya bukti milik Auth yang mengonfirmasi penghapusan tersimpan yang mengizinkan penghapusan keanggotaan ruang dan aktivitas pesan akun. Hasil salinan, hasil penonaktifan/pengarsipan, serta bukti yang hilang atau tidak tersedia tidak mengizinkan pembersihan ini.
+
+Migrasi ini melindungi konsumen pembersihan bawaan. Sebelum mengaktifkan penghapusan akun dalam penerapan, perbarui atau nonaktifkan hook pembersihan eksternal yang masih memercayai hasil alur publik yang dapat diubah.
+
 ## Keamanan
 
 Kelayakan ruang, keanggotaan, dan pembacaan pesan diperiksa terpisah. Ruang terenkripsi bergantung pada kunci klien; model ancaman membedakan konten dan metadata perutean.

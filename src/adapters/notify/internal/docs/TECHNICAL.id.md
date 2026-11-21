@@ -35,6 +35,14 @@ Kedua penyimpanan mempertahankan lima puluh notifikasi per penerima dan membuang
 
 Pengiriman internal memperoleh eksekutor basis data terstruktur melalui ctx. Kontrak pencatatannya memakai tingkat keparahan bootstrap yang didukung. Enkripsi, otorisasi kotak masuk, dan pengiriman yang selalu aktif tidak berubah.
 
+### Bukti penghapusan akun
+
+Pada `deprovision-user` → `cleanup-dependencies`, komponen memperoleh `auth:deprovisionOutcome` versi 1 melalui `system:contracts` dan memanggil `deletedAccount(input, stageResults)` dengan objek asli dari pemanggilan tersebut. Hanya bukti milik Auth yang mengonfirmasi penghapusan tersimpan yang mengizinkan penghapusan notifikasi akun yang tersimpan. Hasil salinan, hasil penonaktifan/pengarsipan, serta bukti yang hilang atau tidak tersedia tidak mengizinkan pembersihan ini.
+
+Perilaku bersama: [Auth](/docs/gateways/auth/technical).
+
+Migrasi ini melindungi konsumen pembersihan bawaan. Sebelum mengaktifkan penghapusan akun dalam penerapan, perbarui atau nonaktifkan hook pembersihan eksternal yang masih memercayai hasil alur publik yang dapat diubah.
+
 ## Keamanan
 
 Rute notifikasi mengautentikasi penerima dan mengakses rekaman akunnya. Persistensi memerlukan DATA_ENCRYPTION_KEY; jaga kunci tetap stabil dan rahasia.

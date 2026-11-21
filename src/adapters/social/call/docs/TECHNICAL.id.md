@@ -60,6 +60,12 @@ Riwayat panggilan menggunakan capability generik `social:messages:appendRoomEven
 
 Hanya peserta yang sudah bergabung yang dapat mengakhiri panggilan aktif. Setiap peserta undangan, termasuk pemanggil awal setelah keluar, bergabung kembali ke status pensinyalan sebelum tersambung. Permintaan keluar yang gagal mempertahankan status bergabung dan dicoba kembali sebelum panggung lokal dibuang. Calls—bukan Notifications—menerjemahkan kedatangan notifikasi generik menjadi status panggilan ruang. Bilah alat tertanam hanya berisi kontrol PiP dan tidak mengulang judul jendela penyedia.
 
+### Penerapan dependensi Messages
+
+Batas versi dependensi Messages yang diuji adalah 2.7.44. Pasang bersama penyedia Auth yang menerapkan `auth:deprovisionOutcome` versi 1, yang disediakan Auth 2.2.12 bawaan. Pembersihan Messages setelah penghapusan akun memerlukan bukti penghapusan tersimpan milik Auth; hasil publik yang dapat diubah tidak dapat menggantikannya. Penyedia Auth alternatif wajib menerapkan kontrak tersebut. Pensinyalan panggilan, kontrol antarmuka biasa, dan tutorial tidak berubah.
+
+Migrasi ini melindungi konsumen pembersihan bawaan. Sebelum mengaktifkan penghapusan akun dalam penerapan, perbarui atau nonaktifkan hook pembersihan eksternal yang masih memercayai hasil alur publik yang dapat diubah.
+
 ## Keamanan
 
 Pensinyalan memeriksa pelaku dan akses ruang melalui social:messages:callContext. Keadaan panggilan tidak menggantikan otorisasi media atau izin perangkat peramban.

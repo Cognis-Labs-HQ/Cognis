@@ -172,6 +172,10 @@ Wenn sich die Zuständigkeit für Raum, Konto, Schlüssel, Stil oder Container g
 
 Der Verlaufsschritt erklärt die Textauswahl während Aktualisierungen und das Laden früherer Nachrichten unter Beibehaltung der Position. Bereich, Reihenfolge, Abschlusskennung und Zugriffsregeln bleiben gleich.
 
+### Bestätigte Kontolöschung
+
+In `deprovision-user` → `cleanup-dependencies` löst die Komponente `auth:deprovisionOutcome` Version 1 über `system:contracts` auf und ruft `deletedAccount(input, stageResults)` mit den Originalobjekten desselben Aufrufs auf. Nur eine Auth-eigene Bestätigung der dauerhaft ausgeführten Löschung berechtigt dazu, Raummitgliedschaften und Nachrichtenaktivität des Kontos zu entfernen. Kopierte Ergebnisse, Deaktivierungs- oder Archivierungsergebnisse sowie fehlende oder nicht verfügbare Bestätigungen berechtigen nicht zu dieser Bereinigung.
+
 ## Sicherheit
 
 Raumzugang, Mitgliedschaft und Nachrichtenlesen werden getrennt geprüft. Verschlüsselte Räume benötigen Clientschlüssel; das Bedrohungsmodell unterscheidet Inhalte von sichtbaren Routingdaten.

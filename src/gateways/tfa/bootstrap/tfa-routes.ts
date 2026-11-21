@@ -1,4 +1,5 @@
 import { readLoginLifetime } from "./login-lifetime.js";
+import { authorizeTargetAccount } from "./target-account.js";
 import type { TfaChallengeLifetime } from "../contracts/method.js";
 import type { ApplyEnforcementPolicy } from "./enforcement-policy.js";
 import type { RouteLifetime } from "./route-lifetime.js";
@@ -9,23 +10,20 @@ import {
 } from "./session-completion.js";
 import type { AccessRole } from "@cognis/core";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import {
-    readJson,
-    hasMinRole,
-    type GatewayBootstrapContext,
-} from "../../shared.js";
+import { readJson, type GatewayBootstrapContext } from "../../shared.js";
 import { CoreTfaGateway } from "../gateway.js";
 
-function resolveTargetAccountId(
-    claims: { sub: string; role: AccessRole },
-    url: URL,
-): string | null {
-    const requestedAccountId = String(
-        url.searchParams.get("accountId") ?? "",
-    ).trim();
-    if (!requestedAccountId) return claims.sub;
-    return hasMinRole(claims.role, "admin") ? requestedAccountId : null;
-}
+type RequireAuth = (
+    req: IncomingMessage,
+    res: ServerResponse,
+    minRole: AccessRole,
+) => {
+    sub: string;
+    role: AccessRole;
+    providerId?: string;
+    ttlSeconds: number | null;
+    setupPending?: boolean;
+} | null;
 
 export function createTfaRoutes(
     gateway: CoreTfaGateway,
@@ -33,19 +31,22 @@ export function createTfaRoutes(
     log?: GatewayBootstrapContext["log"],
     lifetime?: Pick<RouteLifetime, "capture" | "isCurrent">,
 ) {
-    const requireAuth = capabilities.require<
-        (
-            req: IncomingMessage,
-            res: ServerResponse,
-            minRole: AccessRole,
-        ) => {
-            sub: string;
-            role: AccessRole;
-            providerId?: string;
-            ttlSeconds: number | null;
-            setupPending?: boolean;
-        } | null
-    >("auth:requireAuth");
+    const requireAuth: RequireAuth = (req, res, minRole) => {
+        const current = capabilities.get<RequireAuth>("auth:requireAuth");
+        if (typeof current === "function") {
+            const claims = current(req, res, minRole);
+            return claims ? { ...claims } : null;
+        }
+        log?.("error", "TFA route authentication is unavailable.", {
+            component: "tfa-gateway",
+            operation: "requireAuth",
+        });
+        res.writeHead(503, { "content-type": "application/json" });
+        res.end(
+            JSON.stringify({ error: { code: "account_policy_unavailable" } }),
+        );
+        return null;
+    };
     return async (
         req: IncomingMessage,
         res: ServerResponse,
@@ -56,6 +57,15 @@ export function createTfaRoutes(
             component: "tfa-gateway",
             method: req.method ?? "GET",
             path: url.pathname,
+        };
+        const targetContext = {
+            req,
+            res,
+            url,
+            capabilities,
+            lifetime,
+            revision,
+            log,
         };
 
         if (
@@ -400,12 +410,12 @@ export function createTfaRoutes(
         if (url.pathname === "/api/v1/tfa/status" && req.method === "GET") {
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
-            const targetAccountId = resolveTargetAccountId(claims, url);
-            if (!targetAccountId) {
-                res.writeHead(403, { "content-type": "application/json" });
-                res.end(JSON.stringify({ error: { code: "forbidden" } }));
-                return true;
-            }
+            const target = await authorizeTargetAccount({
+                ...targetContext,
+                claims,
+            });
+            if (!target || !target.check()) return true;
+            const targetAccountId = target.accountId;
             const status = await gateway.getUserStatus(targetAccountId);
             log?.("debug", "Read TFA status.", {
                 ...logMeta,
@@ -420,12 +430,12 @@ export function createTfaRoutes(
         if (url.pathname === "/api/v1/tfa/methods" && req.method === "GET") {
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
-            const targetAccountId = resolveTargetAccountId(claims, url);
-            if (!targetAccountId) {
-                res.writeHead(403, { "content-type": "application/json" });
-                res.end(JSON.stringify({ error: { code: "forbidden" } }));
-                return true;
-            }
+            const target = await authorizeTargetAccount({
+                ...targetContext,
+                claims,
+            });
+            if (!target || !target.check()) return true;
+            const targetAccountId = target.accountId;
             const status = await gateway.getUserStatus(targetAccountId);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
@@ -611,12 +621,12 @@ export function createTfaRoutes(
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
             const methodId = decodeURIComponent(disableMatch[1]);
-            const targetAccountId = resolveTargetAccountId(claims, url);
-            if (!targetAccountId) {
-                res.writeHead(403, { "content-type": "application/json" });
-                res.end(JSON.stringify({ error: { code: "forbidden" } }));
-                return true;
-            }
+            const target = await authorizeTargetAccount({
+                ...targetContext,
+                claims,
+            });
+            if (!target || !target.check()) return true;
+            const targetAccountId = target.accountId;
             await gateway.disableMethod(targetAccountId, methodId);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { updated: true } }));
@@ -630,12 +640,12 @@ export function createTfaRoutes(
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
             const methodId = decodeURIComponent(enableMatch[1]);
-            const targetAccountId = resolveTargetAccountId(claims, url);
-            if (!targetAccountId) {
-                res.writeHead(403, { "content-type": "application/json" });
-                res.end(JSON.stringify({ error: { code: "forbidden" } }));
-                return true;
-            }
+            const target = await authorizeTargetAccount({
+                ...targetContext,
+                claims,
+            });
+            if (!target || !target.check()) return true;
+            const targetAccountId = target.accountId;
             const enabled = await gateway.enableMethod(
                 targetAccountId,
                 methodId,
@@ -700,12 +710,12 @@ export function createTfaRoutes(
                       .map((methodId: string) => methodId.trim())
                       .filter(Boolean)
                 : [];
-            const targetAccountId = resolveTargetAccountId(claims, url);
-            if (!targetAccountId) {
-                res.writeHead(403, { "content-type": "application/json" });
-                res.end(JSON.stringify({ error: { code: "forbidden" } }));
-                return true;
-            }
+            const target = await authorizeTargetAccount({
+                ...targetContext,
+                claims,
+            });
+            if (!target || !target.check()) return true;
+            const targetAccountId = target.accountId;
             await gateway.setPreferredMethods(
                 targetAccountId,
                 preferredMethodIds,
@@ -721,12 +731,12 @@ export function createTfaRoutes(
         ) {
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
-            const targetAccountId = resolveTargetAccountId(claims, url);
-            if (!targetAccountId) {
-                res.writeHead(403, { "content-type": "application/json" });
-                res.end(JSON.stringify({ error: { code: "forbidden" } }));
-                return true;
-            }
+            const target = await authorizeTargetAccount({
+                ...targetContext,
+                claims,
+            });
+            if (!target || !target.check()) return true;
+            const targetAccountId = target.accountId;
             const recoveryStatus =
                 await gateway.getRecoveryCodesStatus(targetAccountId);
             res.writeHead(200, { "content-type": "application/json" });
@@ -740,12 +750,12 @@ export function createTfaRoutes(
         ) {
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
-            const targetAccountId = resolveTargetAccountId(claims, url);
-            if (!targetAccountId) {
-                res.writeHead(403, { "content-type": "application/json" });
-                res.end(JSON.stringify({ error: { code: "forbidden" } }));
-                return true;
-            }
+            const target = await authorizeTargetAccount({
+                ...targetContext,
+                claims,
+            });
+            if (!target || !target.check()) return true;
+            const targetAccountId = target.accountId;
             const codes = await gateway.generateRecoveryCodes(targetAccountId);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { recoveryCodes: codes } }));
@@ -758,12 +768,12 @@ export function createTfaRoutes(
         ) {
             const claims = requireAuth(req, res, "user");
             if (!claims) return true;
-            const targetAccountId = resolveTargetAccountId(claims, url);
-            if (!targetAccountId) {
-                res.writeHead(403, { "content-type": "application/json" });
-                res.end(JSON.stringify({ error: { code: "forbidden" } }));
-                return true;
-            }
+            const target = await authorizeTargetAccount({
+                ...targetContext,
+                claims,
+            });
+            if (!target || !target.check()) return true;
+            const targetAccountId = target.accountId;
             const available = await gateway.hasRecoveryCodes(targetAccountId);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { available } }));
@@ -776,7 +786,13 @@ export function createTfaRoutes(
         if (adminResetMatch && req.method === "POST") {
             const claims = requireAuth(req, res, "admin");
             if (!claims) return true;
-            const accountId = decodeURIComponent(adminResetMatch[1]);
+            const target = await authorizeTargetAccount({
+                ...targetContext,
+                claims,
+                encodedAccountId: adminResetMatch[1],
+            });
+            if (!target || !target.check()) return true;
+            const accountId = target.accountId;
             await gateway.resetUser(accountId);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { reset: true } }));

@@ -104,6 +104,12 @@ Judul minggu membungkus di dalam kolom harinya dan menggunakan label bertumpuk b
 
 Perencanaan acara mempertahankan target slot pembuatan dan menjelaskan formulir yang lebih lebar, urutan baca ringkas, serta pengguliran. Langkah acara menjelaskan undangan tertunda yang bergaris. ID panduan, enam langkah, nilai highlightNext, dan masa aktif halaman tidak berubah. Kalender kosong tetap memiliki target navigasi tanggal dan pembuatan acara.
 
+### Bukti penghapusan akun
+
+Pada `deprovision-user` → `cleanup-dependencies`, komponen memperoleh `auth:deprovisionOutcome` versi 1 melalui `system:contracts` dan memanggil `deletedAccount(input, stageResults)` dengan objek asli dari pemanggilan tersebut. Hanya bukti milik Auth yang mengonfirmasi penghapusan tersimpan yang mengizinkan penghapusan aktivitas kalender akun. Hasil salinan, hasil penonaktifan/pengarsipan, serta bukti yang hilang atau tidak tersedia tidak mengizinkan pembersihan ini.
+
+Migrasi ini melindungi konsumen pembersihan bawaan. Sebelum mengaktifkan penghapusan akun dalam penerapan, perbarui atau nonaktifkan hook pembersihan eksternal yang masih memercayai hasil alur publik yang dapat diubah.
+
 ## Keamanan
 
 Mutasi kalender memerlukan kepemilikan atau izin edit terdelegasi. Berbagi memeriksa cakupan, kedaluwarsa, dan perlindungan; pengingat memakai kategori notifikasi terdaftar saat bootstrap.

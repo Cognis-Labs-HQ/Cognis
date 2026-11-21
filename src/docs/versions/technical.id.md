@@ -8,13 +8,13 @@ Antarmuka publik dan aturan operasional Versi Komponen.
 
 | Komponen     | Jalur       | Versi   |
 | ------------ | ----------- | ------- |
-| Core Package | `src/core/` | `0.6.5` |
+| Core Package | `src/core/` | `0.6.6` |
 
 ### API
 
 | Komponen   | Jalur      | Versi     |
 | ---------- | ---------- | --------- |
-| API Server | `src/api/` | `0.13.37` |
+| API Server | `src/api/` | `0.13.38` |
 
 ## Konfigurasi
 
@@ -53,11 +53,11 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Komponen              | Jalur                               | Versi    |
 | --------------------- | ----------------------------------- | -------- |
 | SMTP Notification     | `src/adapters/notify/smtp/`         | `0.5.5`  |
-| Internal Notification | `src/adapters/notify/internal/`     | `0.5.36` |
+| Internal Notification | `src/adapters/notify/internal/`     | `0.5.37` |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.26` |
 | File Quota            | `src/adapters/file/quota/`          | `1.0.24` |
 | Local Auth            | `src/adapters/auth/local/`          | `0.4.2`  |
-| User Keyring          | `src/adapters/auth/keyring/`        | `2.1.4`  |
+| User Keyring          | `src/adapters/auth/keyring/`        | `2.1.5`  |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.38` |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.24` |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.24` |
@@ -69,12 +69,12 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Memory Database       | `src/adapters/db/memory/`           | `0.1.24` |
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.41` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.24` |
-| Profile (Social)      | `src/adapters/social/profile/`      | `3.0.19` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.51` |
-| Calls (Social)        | `src/adapters/social/call/`         | `0.5.36` |
+| Profile (Social)      | `src/adapters/social/profile/`      | `3.0.20` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.52` |
+| Calls (Social)        | `src/adapters/social/call/`         | `0.5.37` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.39` |
 | User Share            | `src/adapters/share/user/`          | `1.1.20` |
-| Classes (Study)       | `src/adapters/study/classes/`       | `1.4.11` |
+| Classes (Study)       | `src/adapters/study/classes/`       | `1.4.12` |
 | Library (Study)       | `src/adapters/study/library/`       | `4.1.29` |
 | Drawing (Study)       | `src/adapters/study/drawing/`       | `1.1.3`  |
 | Adaptor Kartu Belajar | `src/adapters/study/flashcards/`    | `1.5.34` |
@@ -88,9 +88,9 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Komponen              | Jalur                         | Versi    |
 | --------------------- | ----------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`            | `1.4.1`  |
-| Authentication (auth) | `src/gateways/auth/`          | `2.2.13` |
+| Authentication (auth) | `src/gateways/auth/`          | `2.2.14` |
 | Share                 | `src/gateways/share/`         | `1.9.11` |
-| Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.3.13` |
+| Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.3.14` |
 | Notification (notify) | `src/gateways/notify/`        | `2.2.13` |
 | Social                | `src/gateways/social/`        | `1.4.6`  |
 | File Storage (files)  | `src/gateways/files/`         | `2.3.7`  |
@@ -98,7 +98,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Logging               | `src/gateways/logging/`       | `1.5.19` |
 | Observability         | `src/gateways/observability/` | `1.0.7`  |
 | Study                 | `src/gateways/study/`         | `2.6.16` |
-| Calendar              | `src/gateways/calendar/`      | `1.7.22` |
+| Calendar              | `src/gateways/calendar/`      | `1.7.23` |
 
 ### Peralatan
 

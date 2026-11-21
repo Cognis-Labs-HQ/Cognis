@@ -50,6 +50,16 @@ Lernsprachen, Lehrberechtigungen, Mitgliedschaften und Raumgrenzen werden über 
 
 Lehrkräfte verwalten eigene Kurse und Mitgliedschaften. Lernende durchsuchen verfügbare Kurse, beantragen die Teilnahme und nutzen ihre Kursräume. Der Zustand wird über den Datenbankdienst gespeichert.
 
+### Routen und Berechtigungen
+
+Der Adapter registriert seine Routen und Persistenz über das Study-Gateway und ctx. Lehrkraftbezogene Routen erfordern die Rolle einer Lehrkraft; das Genehmigen und Ablehnen von Lehrkraftanfragen erfordert Administratorrechte. Änderungen an Mitgliedschaften und Klassenräumen behalten ihre konto- und klassenbezogenen Berechtigungsprüfungen.
+
+### Bestätigte Kontolöschung
+
+In `deprovision-user` → `cleanup-dependencies` löst die Komponente `auth:deprovisionOutcome` Version 1 über `system:contracts` auf und ruft `deletedAccount(input, stageResults)` mit den Originalobjekten desselben Aufrufs auf. Nur eine Auth-eigene Bestätigung der dauerhaft ausgeführten Löschung berechtigt dazu, Mitgliedschaften, Lehrkraftzuweisungen und Klassenraumaktivität des Kontos zu entfernen. Kopierte Ergebnisse, Deaktivierungs- oder Archivierungsergebnisse sowie fehlende oder nicht verfügbare Bestätigungen berechtigen nicht zu dieser Bereinigung.
+
+Gemeinsames Verhalten: [Auth](/docs/gateways/auth/technical).
+
 ## Sicherheit
 
 Anmeldung, Eigentum und Kursmitgliedschaft werden pro Vorgang geprüft. Bei entsprechenden Lehr- oder Beitrittsregeln ist eine Verwaltungsfreigabe erforderlich.

@@ -130,6 +130,10 @@ Profilrollen und Sichtbarkeitstypen entsprechen den gespeicherten Datensätzen, 
 
 Gemeinsames Verhalten: [Auth](/docs/gateways/auth/technical).
 
+### Bestätigte Kontolöschung
+
+In `deprovision-user` → `cleanup-dependencies` löst die Komponente `auth:deprovisionOutcome` Version 1 über `system:contracts` auf und ruft `deletedAccount(input, stageResults)` mit den Originalobjekten desselben Aufrufs auf. Nur eine Auth-eigene Bestätigung der dauerhaft ausgeführten Löschung berechtigt dazu, Profil, soziale Aktivitäten und Einstellungen des Kontos zu entfernen. Kopierte Ergebnisse, Deaktivierungs- oder Archivierungsergebnisse sowie fehlende oder nicht verfügbare Bestätigungen berechtigen nicht zu dieser Bereinigung.
+
 ## Sicherheit
 
 Profilzugriff beachtet Sichtbarkeit, Blockierungen und aktuelle Beziehungen. Eigene Änderungen benötigen die passende Identität; öffentliche Handles und Avatarvorschauen umgehen diese Prüfung nicht.

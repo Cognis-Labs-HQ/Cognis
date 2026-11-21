@@ -132,6 +132,10 @@ The policy flow requires a single-use operation and execution state held by its 
 
 For Email Code, “queued” means delivery is still pending, not sent. Wait for the latest code. A resend replaces the previous code only when accepted; a rejected resend leaves it unchanged. After delivery failure, explicitly resend before the attempt expires, or start a new login. Login attempts last five minutes and setup lasts ten minutes. Cancelling setup affects only that setup. Resuming a login does not send another email or extend its deadline.
 
+### Account Target Authorization
+
+Cross-account account management and all target-selectable TFA reads, recovery-code operations, method preferences, enable/disable and administrator resets require Auth’s `auth:authorizeAccountTarget` v1 policy. An administrator cannot manage another admin, owner or founder-admin. Owner-authorized operations remain available. Missing policy or unreadable account metadata fails closed before downstream storage. Users keeps its self-management prohibition; TFA accepts omitted or exact explicit self targets. Setup and method-details operations remain self-only. Blank, duplicate or malformed target parameters are rejected. Use Settings for your own security and Users administration for an eligible other account.
+
 ## Security
 
 Setup, confirmation, deletion and login verification use authenticated gateway flows. Method adapters own challenge validation; primary authentication must not treat an unconfirmed method or failed challenge as successful verification.

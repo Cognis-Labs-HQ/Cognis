@@ -110,6 +110,12 @@ Week headings wrap within their day columns and use compact stacked labels based
 
 Event planning retains its creation-slot target and explains the wider form, compact reading order and scrolling. The events step explains the striped pending invitation state. The existing guide IDs, six steps, highlightNext values and page lifetime are unchanged; empty calendars keep the date-navigation and creation targets.
 
+### Account deletion receipts
+
+During `deprovision-user` → `cleanup-dependencies`, the component resolves `auth:deprovisionOutcome` version 1 through `system:contracts` and calls `deletedAccount(input, stageResults)` with the original objects from that invocation. Only an Auth-owned receipt confirming a committed deletion authorizes removal of the account's calendar activity. Copied results, disable/archive outcomes, and missing or unavailable receipts do not authorize this cleanup.
+
+This migration protects the bundled cleanup consumers. Before enabling account deletion in a deployment, update or disable external cleanup hooks that still trust mutable public flow results.
+
 ## Security
 
 Calendar mutations require owned or delegated edit access. Share resolution checks current scope, expiry and protection; reminder delivery uses its bootstrap-registered notification category rather than registering during requests.

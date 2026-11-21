@@ -104,6 +104,10 @@ Wochenüberschriften brechen innerhalb ihrer Tagesspalten um. Kompakte Beschrift
 
 Die Terminplanung behält ihr Ziel auf einem echten Erstellungsplatz und erklärt das breitere Formular, die kompakte Lesereihenfolge und das Scrollen. Der Terminschritt erklärt gestreifte ausstehende Einladungen. Anleitungs-IDs, sechs Schritte, highlightNext-Werte und Seitenlebensdauer bleiben unverändert. Leere Kalender behalten Datumsnavigation und Erstellungsziele.
 
+### Bestätigte Kontolöschung
+
+In `deprovision-user` → `cleanup-dependencies` löst die Komponente `auth:deprovisionOutcome` Version 1 über `system:contracts` auf und ruft `deletedAccount(input, stageResults)` mit den Originalobjekten desselben Aufrufs auf. Nur eine Auth-eigene Bestätigung der dauerhaft ausgeführten Löschung berechtigt dazu, die Kalenderaktivität des Kontos zu entfernen. Kopierte Ergebnisse, Deaktivierungs- oder Archivierungsergebnisse sowie fehlende oder nicht verfügbare Bestätigungen berechtigen nicht zu dieser Bereinigung.
+
 ## Sicherheit
 
 Kalenderänderungen brauchen Eigentum oder übertragenes Bearbeitungsrecht. Freigaben prüfen Bereich, Ablauf und Schutz; Erinnerungen nutzen die beim Start registrierte Kategorie.

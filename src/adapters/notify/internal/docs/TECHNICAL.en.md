@@ -33,6 +33,14 @@ Both stores retain up to fifty notifications per recipient, evicting the oldest 
 
 Internal delivery obtains the structured database executor through ctx. Its logging contract uses the supported bootstrap severity levels. Encryption, inbox authorization and always-on delivery remain unchanged.
 
+### Account deletion receipts
+
+During `deprovision-user` → `cleanup-dependencies`, the component resolves `auth:deprovisionOutcome` version 1 through `system:contracts` and calls `deletedAccount(input, stageResults)` with the original objects from that invocation. Only an Auth-owned receipt confirming a committed deletion authorizes removal of the account's stored notifications. Copied results, disable/archive outcomes, and missing or unavailable receipts do not authorize this cleanup.
+
+Shared behavior: [Auth](/docs/gateways/auth/technical).
+
+This migration protects the bundled cleanup consumers. Before enabling account deletion in a deployment, update or disable external cleanup hooks that still trust mutable public flow results.
+
 ## Security
 
 Notification routes authenticate the recipient and operate on that account's records. Persistent notifications require DATA_ENCRYPTION_KEY; keep that deployment key stable and secret.

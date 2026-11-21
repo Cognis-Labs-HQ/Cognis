@@ -6,6 +6,8 @@ Bergabunglah dengan kelas bahasa atau kelola pelajaran dan keanggotaan sebagai g
 
 Jelajahi kelas, minta keanggotaan, dan kelola kelompok ajar.
 
+Adaptor Classes mengelola kelas per bahasa, permintaan keanggotaan, penugasan pengajar, dan preferensi ruang kelas.
+
 ## Sebelum Memulai
 
 Masuk; pengajaran dan keanggotaan mengikuti kebijakan Study.

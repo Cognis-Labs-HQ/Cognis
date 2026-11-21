@@ -1,3 +1,4 @@
+import { registerDeprovisionFlow } from "./deprovision.js";
 import type { UserValidationModes } from "../user-validation.js";
 import {
     AUTH_FLOW_CATALOG,
@@ -803,84 +804,7 @@ export async function registerAuthBootstrapHook(
         },
     );
 
-    context.ctx.flow.extend(
-        "deprovision-user",
-        "authorize-request",
-        { id: "auth-gateway:authorize-deprovision" },
-        (stageCtx) => {
-            const input = (stageCtx.input ?? {}) as {
-                callerRole?: string;
-                targetRole?: string;
-                targetIsFounder?: boolean;
-            };
-            if (input.targetIsFounder) {
-                return {
-                    authorized: false,
-                    reason: "protected_founder_account",
-                };
-            }
-            if (
-                input.callerRole === "admin" &&
-                (input.targetRole === "admin" || input.targetRole === "owner")
-            ) {
-                return { authorized: false, reason: "protected_admin_account" };
-            }
-            return { authorized: true };
-        },
-    );
-
-    context.ctx.flow.extend(
-        "deprovision-user",
-        "persist-state",
-        { id: "auth-gateway:apply-deprovision" },
-        async (stageCtx) => {
-            const input = (stageCtx.input ?? {}) as {
-                username?: string;
-                action?: "delete" | "disable" | "archive";
-            };
-            const authorizeResult = (
-                (stageCtx.stageResults["authorize-request"] ?? []) as Array<{
-                    authorized: boolean;
-                    reason?: string;
-                }>
-            )[0];
-            if (!authorizeResult?.authorized) {
-                return {
-                    persisted: false,
-                    reason: authorizeResult?.reason ?? "authorization_failed",
-                };
-            }
-            const username = String(input.username ?? "");
-            if (input.action === "delete") {
-                await context.accountStore.delete(username);
-            } else if (input.action === "disable") {
-                await context.accountStore.setEnabled?.(username, false);
-            }
-            return { persisted: true, username, action: input.action };
-        },
-    );
-
-    context.ctx.flow.extend(
-        "deprovision-user",
-        "cleanup-dependencies",
-        { id: "auth-gateway:revoke-tokens" },
-        (stageCtx) => {
-            const persistResult = (
-                (stageCtx.stageResults["persist-state"] ?? []) as Array<{
-                    persisted: boolean;
-                    username?: string;
-                }>
-            )[0];
-            if (!persistResult?.persisted || !persistResult.username) {
-                return { cleaned: false };
-            }
-            const revokeTokens = context.ctx.capabilities.get<
-                (subject: string) => number
-            >("auth:revokeAccessTokensForSubject");
-            const revokedCount = revokeTokens?.(persistResult.username) ?? 0;
-            return { cleaned: true, revokedTokenCount: revokedCount };
-        },
-    );
+    registerDeprovisionFlow(context);
 
     const enabledLdapAdapter = context.authGateway.getEnabledAdapter("ldap");
     const ldapAdapter =

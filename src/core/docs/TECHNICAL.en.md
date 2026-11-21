@@ -75,8 +75,6 @@ Providers must publish the capability ID in their component documentation and, f
 
 ## Configuration
 
-### Configuration
-
 This component has no runtime environment variable configuration.
 
 ## Behavior
@@ -118,6 +116,8 @@ Not responsible for: persistence, HTTP route wiring, adapter discovery, or compo
 A flow is registered once with explicit stage IDs. Stage hooks are then added by any participating component with an `order` value. During execution, hooks run in ascending order, then by hook ID for deterministic behavior.
 
 Flows can call other flows through `context.ctx.runFlow(...)`, enabling nested composition. Example: a login-page construction flow can invoke login flow logic; login flow hooks can invoke LDAP flow when adapter conditions match.
+
+The runner shallow-freezes each stage's execution context before calling its owner or extension hooks. The `ctx`, `flowId`, `stageId`, `input`, `meta`, `data` and `stageResults` bindings cannot be replaced or deleted, and new context fields cannot be added. Owners and hooks share the same context within a stage; each stage and invocation receives its own context. This does not deep-freeze payloads: `input`, `data` and `stageResults` retain their existing identities and mutable contents. Later stages continue to see accumulated results through the same `stageResults` object. Metadata remains a shallow-frozen copy of the supplied `meta`; nested metadata values are not frozen.
 
 ### Standard stage names
 
