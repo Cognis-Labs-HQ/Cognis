@@ -12,4 +12,5 @@ Formulir sumber modul mempertahankan panduan kredensial dalam bahasa Inggris, Je
 
 ## Komit
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/e01bd17a1da792c21b0e71e331678721bb7b7c00
+- [e8fcba6b2264bf38d5283e8d7f2ca6f9745a210c](https://github.com/Cognis-Labs-HQ/Cognis/commit/e8fcba6b2264bf38d5283e8d7f2ca6f9745a210c)
+- [2fefc8a0444b39badc9be1353af43413486b9c98](https://github.com/Cognis-Labs-HQ/Cognis/commit/2fefc8a0444b39badc9be1353af43413486b9c98)
