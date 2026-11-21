@@ -12,4 +12,5 @@ Authentication fixtures use the real structured database contract and registered
 
 ## Commits
 
-- [f953a13e8b8ec88c0907be13cc1891c0800ff25d](https://github.com/Cognis-Labs-HQ/Cognis/commit/f953a13e8b8ec88c0907be13cc1891c0800ff25d)
+- [f731cb62ccf6b430a3b33b082d4e083157158a83](https://github.com/Cognis-Labs-HQ/Cognis/commit/f731cb62ccf6b430a3b33b082d4e083157158a83)
+- [ada8231e5710e9eb57aba6d695c020038016339f](https://github.com/Cognis-Labs-HQ/Cognis/commit/ada8231e5710e9eb57aba6d695c020038016339f)
