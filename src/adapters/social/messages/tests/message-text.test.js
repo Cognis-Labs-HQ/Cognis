@@ -1,3 +1,4 @@
+import { createAvatarRenderer } from "./fixtures/avatar-renderer.js";
 import { loadPresentation } from "./fixtures/presentation.js";
 import * as reactionRecord from "../ui/reuse/reaction-record.js";
 import test from "node:test";
@@ -26,6 +27,9 @@ function createRenderer(style, theme, messageList) {
             [
                 "ui:profileAvatarRenderer",
                 {
+                    ...createAvatarRenderer({
+                        contentRequests: avatarRequests,
+                    }),
                     buildMarkup(options) {
                         avatarRequests.push(options);
                         return `<a class="${options.avatarClass}" href="/profile/${escapeHtml(options.profileHandle ?? "")}">${escapeHtml(options.label)}</a>`;
@@ -186,7 +190,7 @@ for (const style of styleOptions.MESSAGE_STYLE_OPTIONS) {
                     );
                     assert.match(
                         container.innerHTML,
-                        /class="messages-message-bubble-avatar" href="\/profile\/sender"/,
+                        /class="messages-message-bubble-avatar messages-avatar-link" href="\/profile\/sender"/,
                     );
                     assert.equal(
                         container.innerHTML.includes(
@@ -219,8 +223,8 @@ for (const style of styleOptions.MESSAGE_STYLE_OPTIONS) {
                 assert.ok(
                     fixture.avatarRequests.some(
                         (options) =>
-                            options.profileHandle === "sender" &&
-                            options.showAvailability === false,
+                            options.profile?.handle === "sender" &&
+                            options.size === "small",
                     ),
                 );
                 assert.ok(

@@ -701,7 +701,7 @@ async function renderThreadSnapshot(
     const html = renderConversationMarkup(
         { records: decoded, style, currentAccountId },
         {
-            buildAvatar: buildProfileAvatarMarkup,
+            avatars: profileAvatars(),
             decorateMessage: (messageRecord, isOwn) => {
                 const readers = Array.isArray(messageRecord.readBy)
                     ? messageRecord.readBy

@@ -62,7 +62,8 @@ export function mountProvider(ctx) {
     const resolveRenderer = () => {
         const renderer = ctx.capabilities.get("ui:profileAvatarRenderer");
         return renderer?.available === true &&
-            typeof renderer.buildMarkup === "function"
+            typeof renderer.getPresentation === "function" &&
+            typeof renderer.buildContent === "function"
             ? renderer
             : null;
     };
@@ -88,7 +89,7 @@ export function mountProvider(ctx) {
             }
             data.markup = nonInteractiveMarkup(
                 renderConversationMarkup(data.presentation, {
-                    buildAvatar: avatars.buildMarkup,
+                    avatars,
                     interactive: false,
                 }),
             );

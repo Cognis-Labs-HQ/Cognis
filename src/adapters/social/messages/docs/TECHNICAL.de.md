@@ -202,6 +202,18 @@ Der registrierte Nachrichtenclient akzeptiert eine optionale synchrone Prüfung 
 
 Der Schritt zur Raumverwaltung erklärt die Austrittsbestätigung und das sichere Abbrechen. Kopfbereich, optionale Verfügbarkeit, Reihenfolge und Abschlussidentität bleiben gleich. Vorlagen behalten ihre Seitenleistenaktionen; ihre Dialoge werden nach Änderungen der auslösenden Seite, Auswahl oder gespeicherten Liste unwirksam.
 
+### Avatare im Gespräch
+
+Der Verlaufsschritt erklärt profilgleiche Initialen sowie Vorschau und Navigation per Avatar in Stilen mit Avataren. Bereich, optionale Verfügbarkeit, Reihenfolge und Abschlussidentität bleiben unverändert.
+
+### Avatare im Gespräch
+
+Nachrichtenautoren verwenden den aktuellen Profile-Renderer für Initialen, Farbe und die kleine Avatargröße (32px). Initialen folgen dem Anzeigenamen, danach dem Handle; fehlt beides, bleibt die Kontokennung als Beschriftung erhalten. Vorhandene Avatarbilder und Profillinks bleiben in Stilen mit Avataren verfügbar. Darüberfahren öffnet die übliche Profilvorschau, Anklicken das Profil. IRC blendet Avatare weiterhin aus.
+
+Die Vorschau des Nachrichtenstils in den Einstellungen nutzt dieselbe kleine Darstellung mit Beispieldaten, ohne Profillinks, Bilder, nachträgliches Laden oder Schreibvorgänge. Fehlende, deaktivierte oder unvollständige Profile-Anbieter machen die Vorschau unverfügbar; zurückkehrende Anbieter stellen sie wieder her. Gesprächszeilen behalten ihre Seiten- und Kontozuordnung, Textauswahl, Entwürfe und Leseergebnisse. Raumköpfe, Teilnehmerübersichten und andere Avatarflächen bleiben unverändert; die übergreifende Avatarprüfung bleibt teilweise offen.
+
+Messages 2.8.3 / Profile 4.0.0.
+
 ## Sicherheit
 
 Raumzugang, Mitgliedschaft und Nachrichtenlesen werden getrennt geprüft. Verschlüsselte Räume benötigen Clientschlüssel; das Bedrohungsmodell unterscheidet Inhalte von sichtbaren Routingdaten.
