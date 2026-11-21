@@ -12,5 +12,5 @@ Synthetische Tests prüfen gespeicherte Token-Ergebnisse, abgewiesene Änderunge
 
 ## Commits
 
-- [841fd8d38a298e4c1d4b529209d90be92bfba322](https://github.com/Cognis-Labs-HQ/Cognis/commit/841fd8d38a298e4c1d4b529209d90be92bfba322)
-- [137c5eeebaee4702045181ff5880993ddd319913](https://github.com/Cognis-Labs-HQ/Cognis/commit/137c5eeebaee4702045181ff5880993ddd319913)
+- [411baf079785e6e470970301216f37c7b73fceba](https://github.com/Cognis-Labs-HQ/Cognis/commit/411baf079785e6e470970301216f37c7b73fceba)
+- [4b940788bcf224e9e93de8f4c1557ea8eef418c0](https://github.com/Cognis-Labs-HQ/Cognis/commit/4b940788bcf224e9e93de8f4c1557ea8eef418c0)
