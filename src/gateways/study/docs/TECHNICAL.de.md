@@ -168,13 +168,13 @@ Persönliche Aktivitäten und gespeicherte Zustände verwenden bestätigte Konto
 
 Die Dashboard-Elemente für Lernende und Lehrende beginnen mit fünf Spalten und zwei Zeilen, passend zum Einführungstext und zur Aktion Meine Klassen für Lernende. Über Page Composer lassen sie sich weiterhin vergrößern oder anordnen. Gespeicherte Platzierungen und Mindestgrößen bleiben unverändert. Die vorhandene Arbeitsbereich-Anleitung erklärt die Layoutbearbeitung; die Klassenanleitungen behandeln weiterhin die Klassenverwaltung auf ihren eigenen Seiten.
 
-## Einstieg In Gewählte Sprache
+### Einstieg In Gewählte Sprache
 
 Beim Öffnen von `/study` erscheint direkt Explore für die ausgewählte verfügbare Sprache. Die Auswahl folgt der Study-Navigation: Eine bewusst ausgewählte registrierte Sprache bleibt auch ohne Lernanmeldung erhalten; andernfalls wird die erste verfügbare angemeldete Sprache verwendet. Ohne gültige Auswahl oder Anmeldung öffnet sich online die Sprachauswahl. Ein fehlender Katalog oder Explore-Anbieter führt zur bestehenden Nicht-verfügbar-Seite. Fehlende Offline-Metadaten zeigen die leere Study-Seite im Page Composer.
 
 Der Ablauf `study:navigation:enter` enthält die Stufen `resolve` und `navigate`. Er verwendet das gemeinsame Study-Navigationsmodell und Anbieterschemata und ruft anschließend `ui:navigate` mit ersetztem Verlaufseintrag und aufgelöster Sprache auf. Direkte Links zu Inhalten, Kartensätzen, Library und anderen Study-Seiten bleiben erhalten. Ausstehende Auflösungen werden beim Seitenwechsel, Abbruch oder Entfernen des Anbieters verworfen; Änderungen an Anmeldung oder Anbietern lösen eine neue Auflösung aus. Zugriffsverweigerungen werden weitergegeben, Navigationsabbrüche respektiert und während des Wartens erscheint kein Sprachverzeichnis.
 
-## Anleitung Verwenden
+### Anleitung Verwenden
 
 Wählen Sie in Explore über das ? neben dem Seitentitel die Study-Übersicht. Dieser manuelle Leitfaden erklärt Navigation, gewählte Sprache, verfügbare Wörterbuchsuche und Lerneinstellungen. Er bleibt auf der aktuellen Ebene und überspringt nicht verfügbare Bedienelemente. Sprachleitfäden erklären Inhalte und gelten nur für ihre eigene Sprache.
 

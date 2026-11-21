@@ -174,7 +174,7 @@ Aktivitas pribadi dan status tersimpan menggunakan sesi akun terverifikasi, term
 
 Kontribusi Dasbor untuk siswa dan guru dimulai dengan lima kolom dan dua baris, sesuai teks pengantar serta tindakan Kelas Saya untuk siswa. Pengguna tetap dapat memperbesar atau mengaturnya melalui Page Composer. Penempatan tersimpan dan ukuran minimum tidak berubah. Panduan ruang kerja yang ada mencakup pengeditan tata letak; panduan Kelas tetap mencakup pengelolaan kelas pada halamannya sendiri.
 
-## Masuk Ke Bahasa Pilihan
+### Masuk Ke Bahasa Pilihan
 
 Membuka `/study` langsung menampilkan Explore untuk bahasa tersedia yang dipilih. Pilihan mengikuti navigasi Study: bahasa terdaftar yang sengaja dipilih dipertahankan meskipun belum diikuti; jika tidak ada, bahasa pertama yang tersedia dan diikuti digunakan. Tanpa pilihan atau pendaftaran yang valid, pengguna daring diarahkan ke pengaturan bahasa. Katalog atau penyedia Explore yang tidak tersedia membuka halaman tidak tersedia yang sudah ada. Metadata luring yang belum tersimpan menampilkan halaman Study kosong melalui Page Composer.
 
@@ -182,7 +182,7 @@ Alur `study:navigation:enter` memiliki tahap `resolve` dan `navigate`. Alur ini 
 
 Di Explore, pilih Ikhtisar Study dari ? di samping judul halaman. Panduan manual ini menjelaskan navigasi, bahasa pilihan, pencarian kamus yang tersedia, dan pengaturan Study. Panduan tetap berada pada lapisan saat ini dan melewati kontrol yang tidak tersedia. Panduan milik bahasa menjelaskan konten dan hanya berlaku untuk bahasanya sendiri.
 
-## Ikhtisar Dan Panduan Bahasa
+### Ikhtisar Dan Panduan Bahasa
 
 Ikhtisar mempertahankan identitas penyelesaian `study:getting-started`. Gunakan Berikutnya, Kembali, atau Mulai Ulang untuk meninjau navigasi tanpa berpindah halaman. Panduan yang selesai dapat diputar ulang dari menu ? yang sama. Panduan bahasa dapat dimulai otomatis pada konten bahasanya sendiri yang diikuti; mengganti bahasa pilihan menampilkan panduan bahasa tersebut.
 
