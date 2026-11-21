@@ -8,4 +8,4 @@ Die Verträge für Kalenderereignisse, Speicherung, Initialisierung und Adapter-
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/49940f0a083eae2e463de353238acc248c4f8c27
+- [9ad6853df85b254778c9665a95a28ab17083651f](https://github.com/Cognis-Labs-HQ/Cognis/commit/9ad6853df85b254778c9665a95a28ab17083651f)
