@@ -14,4 +14,5 @@ Permintaan yang tidak dideklarasikan, kredensial tamu, header Authorization eksp
 
 ## Komit
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/2413fc3523639f7c61d260ef13668decc09703b5
+- [c32f66652fa1c49cf695f9a99b6a45c6bb4fff8f](https://github.com/Cognis-Labs-HQ/Cognis/commit/c32f66652fa1c49cf695f9a99b6a45c6bb4fff8f)
+- [9ff1ff1b7a33e0307fa667a0fccedca6c1aa477a](https://github.com/Cognis-Labs-HQ/Cognis/commit/9ff1ff1b7a33e0307fa667a0fccedca6c1aa477a)
