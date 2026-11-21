@@ -12,5 +12,5 @@ Live synchronous and asynchronous activation, false-result vetoes, ordered and s
 
 ## Commits
 
-- [7e9746dde4b5ce65f426e1baeef8b09bd814c0e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/7e9746dde4b5ce65f426e1baeef8b09bd814c0e0)
-- [7adfa7602f9e74515dacf83ce779572bb8faffc3](https://github.com/Cognis-Labs-HQ/Cognis/commit/7adfa7602f9e74515dacf83ce779572bb8faffc3)
+- [3e8affbdb84f7248cb1ff4b8fb94579325b147e4](https://github.com/Cognis-Labs-HQ/Cognis/commit/3e8affbdb84f7248cb1ff4b8fb94579325b147e4)
+- [1a51f703a335861ec0a0769af89c9392cd407183](https://github.com/Cognis-Labs-HQ/Cognis/commit/1a51f703a335861ec0a0769af89c9392cd407183)
