@@ -1,3 +1,4 @@
+import { logLoginChallenge } from "./reuse/log-login-challenge.js";
 import { MethodSetups } from "./method-setups.js";
 import {
     ChallengeLifetimes,
@@ -659,21 +660,7 @@ export class CoreTfaGateway {
             state,
         });
         assertLiveChallenge(challengeLifetime);
-        const log = this.options.log;
-        log?.(
-            challenge.ready ? "info" : "error",
-            challenge.ready
-                ? "TFA login challenge prepared."
-                : "TFA login challenge unavailable.",
-            {
-                component: "tfa-gateway",
-                operation: "prepare_login_challenge",
-                accountId,
-                methodId,
-                ready: challenge.ready,
-                reason: challenge.message,
-            },
-        );
+        logLoginChallenge(this.options.log, accountId, methodId, challenge);
         return challenge;
     }
 
