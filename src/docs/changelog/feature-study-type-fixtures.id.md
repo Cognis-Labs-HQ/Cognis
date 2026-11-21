@@ -8,4 +8,4 @@ Pengujian Classes dan Flashcards kini menolak operasi bootstrap yang tidak digun
 
 ## Komit
 
-- [dda9defddb917919c1f0adb55ded88647dac3adf](https://github.com/Cognis-Labs-HQ/Cognis/commit/dda9defddb917919c1f0adb55ded88647dac3adf)
+- [ea9fbe3eb4b75e2b4d3e997f61bb9d3c3fafc5f6](https://github.com/Cognis-Labs-HQ/Cognis/commit/ea9fbe3eb4b75e2b4d3e997f61bb9d3c3fafc5f6)
