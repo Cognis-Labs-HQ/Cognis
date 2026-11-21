@@ -8,4 +8,4 @@ Pengujian pemilihan pencarian kini menunggu hingga lapisan pencarian dihapus dal
 
 ## Komit
 
-- [b6b3bec4110a097884ca1edd5302c63761ad222a](https://github.com/Cognis-Labs-HQ/Cognis/commit/b6b3bec4110a097884ca1edd5302c63761ad222a)
+- [84580d3c4cdf3d6d61d123afda87510ba08f88ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/84580d3c4cdf3d6d61d123afda87510ba08f88ea)
