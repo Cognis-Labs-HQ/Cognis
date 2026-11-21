@@ -18,4 +18,5 @@ Partial, refused and unknown outcomes use localized stderr messages and a nonzer
 
 ## Commits
 
-- [f9f217e23dd3c2b9e5854320602e72f333ca4fbc](https://github.com/Cognis-Labs-HQ/Cognis/commit/f9f217e23dd3c2b9e5854320602e72f333ca4fbc)
+- [1f812000625099bad2c447cf2de833056d876c7f](https://github.com/Cognis-Labs-HQ/Cognis/commit/1f812000625099bad2c447cf2de833056d876c7f)
+- [166268387a59c19eda22ef829590a62ecf62a1b9](https://github.com/Cognis-Labs-HQ/Cognis/commit/166268387a59c19eda22ef829590a62ecf62a1b9)
