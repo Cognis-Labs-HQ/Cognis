@@ -3,9 +3,9 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { renderInfoTooltip } from "../reuse/info-tooltip.js";
+import { renderInfoTooltip } from "../../reuse/info-tooltip.js";
 
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
 
 test("renderInfoTooltip outputs id-based tooltip buttons without inline panels", () => {
     const tooltipMarkup = renderInfoTooltip(
@@ -51,5 +51,22 @@ test("info-tooltip styles use viewport-level fixed positioning", () => {
         overlayRuleBlock.includes("position: fixed;"),
         true,
         "tooltip overlay should use fixed positioning to avoid container clipping",
+    );
+});
+
+test("tooltip styles allow pointer input and bridge both placement gaps", () => {
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/styles/reuse/info-tooltip.css"),
+        "utf8",
+    );
+    assert.match(source, /pointer-events:\s*auto/);
+    assert.match(
+        source,
+        /\.info-tooltip-overlay::before\s*\{[^}]*height:\s*calc\(var\(--info-tooltip-gap\) \+ 2px\)/,
+    );
+    assert.match(source, /\[data-placement="top"\]::before\s*\{\s*top:\s*100%/);
+    assert.match(
+        source,
+        /\[data-placement="bottom"\]::before\s*\{\s*bottom:\s*100%/,
     );
 });

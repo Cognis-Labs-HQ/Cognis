@@ -105,3 +105,14 @@ Judul formulir tetap berada dalam kolom yang sama. Target dan alur panduan Kalen
 ## Label Formulir Kata Sandi
 
 Formulir kata sandi lintas komponen memakai `ui.reuse.password_requirements` dan `ui.reuse.passwords_match` dari katalog XML host. Auth dan Registration menggunakan kunci yang sama dalam bahasa Inggris, Jerman, Indonesia, dan Jepang. Rilis katalog host bersama Auth 2.2.13 dan Registration 1.2.9; integrasi yang memakai label ini harus beralih ke kunci bersama. Resolusi kunci Inggris yang sama tetap ketat dan gagal secara eksplisit jika nilai Inggris hilang atau kosong.
+
+## Bantuan Kontekstual
+
+Gunakan `renderInfoTooltip(localizedText, localizedLabel, optionalId)` di samping label atau judul yang ada. Ambil teks bantuan dan label tombol dari katalog XML pemiliknya; gunakan teks biasa untuk deskripsi. Komponen bantuan bersama ini tidak memiliki versi komponen tersendiri.
+
+Arahkan penunjuk ke tombol informasi atau fokuskan tombol untuk membaca bantuan. Bantuan tetap terbuka selama tombol memiliki fokus atau penunjuk berada di tombol maupun panel. Memasuki tombol bantuan lain memilih penjelasan tersebut; saat meninggalkannya, penjelasan lain yang masih difokuskan atau ditunjuk akan muncul kembali. Escape menutup bantuan tanpa memindahkan fokus atau menghentikan penangan Escape lainnya. Interaksi yang ditutup harus berakhir sebelum tombol tersebut dapat membuka bantuan lagi. Menggulir dan mengubah ukuran tetap menutup panel.
+Saat fokus papan ketik mengganti penjelasan sementara penunjuk tetap di panel bersama, interaksi penunjuk tersebut menjadi milik penjelasan yang baru ditampilkan sampai penunjuk meninggalkan panel atau bantuan ditutup.
+
+Panel yang tidak dapat menerima fokus menggunakan `role="tooltip"`; tombol aktif menambahkan ID panel ke `aria-describedby` tanpa mengganti deskripsi lain. Menghapus tombol menutup bantuannya. Penggantian dokumen melepaskan pendengar dan pengamat lama, dan meninggalkan halaman membersihkan bantuan aktif. Panel tetap bertema mempertahankan aturan penempatannya serta menjembatani celah dengan area penunjuk transparan, tanpa pemanggilan balik tertunda.
+
+Tutorial halaman yang ada mempertahankan label, sasaran, dan alurnya: bantuan tetap tersedia di samping kontrol yang sama, tanpa tindakan atau langkah tutorial baru. Panduan: [konten saat ditunjuk atau difokuskan dari W3C](https://www.w3.org/WAI/WCAG22/Understanding/content-on-hover-or-focus.html) dan [pola tooltip APG](https://www.w3.org/WAI/ARIA/apg/patterns/tooltip/). Pola APG masih dalam pengembangan tanpa konsensus kelompok kerja. Pengujian peristiwa DOM tidak menyatakan kepatuhan, geometri tampilan nyata, perilaku sentuhan, atau keluaran teknologi bantu.

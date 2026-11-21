@@ -105,3 +105,14 @@ Form headings remain within their existing fields. Calendar and Sharing tutorial
 ## Password Form Labels
 
 Cross-component password forms use `ui.reuse.password_requirements` and `ui.reuse.passwords_match` from the host XML catalogs. Auth and Registration consume the same keys in English, German, Indonesian and Japanese. Ship the host catalogs with Auth 2.2.13 and Registration 1.2.9; integrations using these labels must adopt the shared keys. Same-key English fallback remains strict, including an explicit failure when English is missing or empty.
+
+## Contextual Help
+
+Use `renderInfoTooltip(localizedText, localizedLabel, optionalId)` beside the existing label or heading. Resolve help text and the button label through the owning XML catalog; keep descriptions as plain text. The shared owner has no independent component version.
+
+Hover or focus the information button to read its help. Help stays open while its button has focus or the pointer is on the button or panel. Entering another help button selects that explanation; leaving it restores another still-active focused or hovered explanation. Escape dismisses help without moving focus or consuming other Escape handlers. The dismissed interaction must end before that button opens help again. Scroll and resize still dismiss the panel.
+When keyboard focus switches explanations while the pointer remains on the shared panel, that panel interaction belongs to the newly displayed explanation until a pointer departure or dismissal.
+
+The non-focusable panel uses `role="tooltip"`; the active button adds its panel ID to `aria-describedby` without replacing other descriptions. Removing the button releases its help. A document replacement releases old listeners and observations, and leaving the page clears its active help. The fixed, themed panel retains its placement rules and a transparent pointer bridge across the gap, without delayed callbacks.
+
+Existing page tutorials keep their labels, targets and progression: help remains available beside the same controls, with no new action or tutorial step. Guidance: [W3C content on hover or focus](https://www.w3.org/WAI/WCAG22/Understanding/content-on-hover-or-focus.html) and the [APG tooltip pattern](https://www.w3.org/WAI/ARIA/apg/patterns/tooltip/). The APG pattern is work in progress without task-force consensus. DOM event tests do not certify conformance, rendered geometry, touch behavior or assistive-technology output.

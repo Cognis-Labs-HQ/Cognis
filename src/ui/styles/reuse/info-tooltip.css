@@ -48,10 +48,26 @@
     color: var(--text-muted, var(--text));
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
     white-space: normal;
-    pointer-events: none;
+    pointer-events: auto;
     z-index: 20000;
 }
 
 .info-tooltip-overlay[hidden] {
     display: none;
+}
+
+.info-tooltip-overlay::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: calc(var(--info-tooltip-gap) + 2px);
+}
+
+.info-tooltip-overlay[data-placement="top"]::before {
+    top: 100%;
+}
+
+.info-tooltip-overlay[data-placement="bottom"]::before {
+    bottom: 100%;
 }
