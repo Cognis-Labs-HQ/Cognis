@@ -12,8 +12,6 @@ Die Schema-Selbstheilung erhält Fremdschlüsseldefinitionen beim Hinzufügen fe
 
 ## Konfiguration
 
-### Konfiguration
-
 | Variable                              | Standard | Beschreibung                                                               |
 | ------------------------------------- | -------- | -------------------------------------------------------------------------- |
 | `DB_TYPE`                             | —        | Muss `postgresql` sein, um diesen Adapter zu aktivieren                    |

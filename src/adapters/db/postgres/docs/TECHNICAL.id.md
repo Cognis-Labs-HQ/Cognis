@@ -12,8 +12,6 @@ Pemulihan mandiri skema mempertahankan klausa kunci asing saat menambahkan kolom
 
 ## Konfigurasi
 
-### Konfigurasi
-
 | Variabel                              | Default | Keterangan                                                             |
 | ------------------------------------- | ------- | ---------------------------------------------------------------------- |
 | `DB_TYPE`                             | —       | Harus `postgresql` untuk mengaktifkan adapter ini                      |

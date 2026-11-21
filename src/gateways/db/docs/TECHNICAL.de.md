@@ -22,8 +22,6 @@ export interface DatabaseGateway {
 
 ## Konfiguration
 
-### Konfiguration
-
 | Variable       | Standard     | Beschreibung                                                          |
 | -------------- | ------------ | --------------------------------------------------------------------- |
 | `DB_TYPE`      | `postgresql` | Datenbank-Backend: `postgresql` oder `mariadb`                        |

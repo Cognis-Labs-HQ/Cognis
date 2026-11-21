@@ -12,8 +12,6 @@ Schema self-healing preserves foreign-key clauses when adding missing columns an
 
 ## Configuration
 
-### Configuration
-
 | Variable                              | Default | Description                                                               |
 | ------------------------------------- | ------- | ------------------------------------------------------------------------- |
 | `DB_TYPE`                             | —       | Must be `postgresql` to activate this adapter                             |
