@@ -100,7 +100,7 @@ Die Anleitungen für Einstellungen und Administration behalten ihre Ziele und Ab
 
 Gemeinsames Verhalten: [Page Composer](/docs/page-composer/technical).
 
-### Seitenmenü-Auswahl
+#### Seitenmenü-Auswahl
 
 Die Fähigkeit `ui:sideMenu` stellt `createSideMenu` für gruppierte Auswahlen bereit. Jeder Eintrag wird als natives `button type="button"` dargestellt: Die Auswahl aktualisiert den aktiven Zustand, ruft `onSelect` mit der ID auf und scrollt zum optionalen `targetId`, ohne ein umgebendes Formular abzusenden. Beschriftungen und Kennungen werden maskiert. Echte Navigationslinks bleiben in der Verantwortung der Aufrufer.
 
