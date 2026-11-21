@@ -20,6 +20,7 @@ Der Richtlinienablauf verlangt einen einmaligen Vorgang und Ausführungszustand 
 
 ## Commits
 
-- [322876824a16093b61862a780fe40caedb52c82f](https://github.com/Cognis-Labs-HQ/Cognis/commit/322876824a16093b61862a780fe40caedb52c82f)
-- [5c8ca31ce5a466b74f962ef2db8e2ba677eee368](https://github.com/Cognis-Labs-HQ/Cognis/commit/5c8ca31ce5a466b74f962ef2db8e2ba677eee368)
-- [4f3aec6dff33e9f5ebcc4e49e7e0820bea8f41ab](https://github.com/Cognis-Labs-HQ/Cognis/commit/4f3aec6dff33e9f5ebcc4e49e7e0820bea8f41ab)
+- [71b28b234ca0757f84755cae49d09f942f0f73ef](https://github.com/Cognis-Labs-HQ/Cognis/commit/71b28b234ca0757f84755cae49d09f942f0f73ef)
+- [b24c90ba0c3e8a4683bbfcc5179896fda57281c8](https://github.com/Cognis-Labs-HQ/Cognis/commit/b24c90ba0c3e8a4683bbfcc5179896fda57281c8)
+- [af370270d698d3f55b6939f0727a0ccfb3fa02af](https://github.com/Cognis-Labs-HQ/Cognis/commit/af370270d698d3f55b6939f0727a0ccfb3fa02af)
+- [f11e76367a3396faba5abbd2fd1732fa972743a1](https://github.com/Cognis-Labs-HQ/Cognis/commit/f11e76367a3396faba5abbd2fd1732fa972743a1)
