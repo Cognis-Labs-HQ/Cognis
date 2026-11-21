@@ -22,4 +22,5 @@ Abschlussvorgänge für Konto, Methode und Gateway sperren neue Vorgänge währe
 
 ## Commits
 
-- [f07343ef8ff8b9d223a46758f8c91a88ffbcc588](https://github.com/Cognis-Labs-HQ/Cognis/commit/f07343ef8ff8b9d223a46758f8c91a88ffbcc588)
+- [86fa7824aaf0af2d1f7a0190b8b2bc2e9a0dc2ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/86fa7824aaf0af2d1f7a0190b8b2bc2e9a0dc2ea)
+- [64a28f2a3dd9bd7c7c7a02ca56c8dbe494ecf361](https://github.com/Cognis-Labs-HQ/Cognis/commit/64a28f2a3dd9bd7c7c7a02ca56c8dbe494ecf361)
