@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { challenge, fixture, prompt, settle } from "./login/fixture.js";
+import { challenge, fixture, prompt, settle } from "./fixture.js";
 
 const email = () => ({
     id: "email",
