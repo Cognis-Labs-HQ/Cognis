@@ -52,7 +52,7 @@ export function deferred() {
     return { promise, resolve };
 }
 
-export async function environment() {
+export async function environment({ createContribution } = {}) {
     const lifetime = new AbortController();
     let visible = false;
     let config;
@@ -61,6 +61,7 @@ export async function environment() {
     let contributionDirty = false;
     let contributionFails = false;
     let requestHandler;
+    let navigationDecision = "stay";
     const requests = [];
     const events = [];
     const fields = new Map();
@@ -203,6 +204,7 @@ export async function environment() {
         loadAdminSections: async () => [{ id: "registration" }],
         loadGatewaySection: async (metadata, options) => {
             contributionOptions = options;
+            if (createContribution) return createContribution(options);
             return {
                 id: metadata.id,
                 label: "Registration",
@@ -227,6 +229,10 @@ export async function environment() {
                 getFloatingSlot: () => slot,
                 refresh: async () => {},
             };
+        },
+        openPopup: async (options) => {
+            events.push({ kind: "popup", options });
+            return navigationDecision;
         },
         syncRuntimeToggleControls() {},
         showToast: (message, options) =>
@@ -263,6 +269,12 @@ export async function environment() {
         fields,
         slot,
         abort: () => lifetime.abort(),
+        get composerOptions() {
+            return config;
+        },
+        decideNavigation: (decision) => {
+            navigationDecision = decision;
+        },
         get section() {
             return section;
         },

@@ -73,6 +73,22 @@ An address may already be stored when delivery or revocation fails; a valid code
 
 Registration validates guide titles and steps against the gateway's own catalog before making guides available. English, German, Indonesian and Japanese are supported; missing or empty preferred-language values use the same English key. Missing English text remains an explicit translation error. Registering guides on another dashboard page does not navigate to Settings or Administration.
 
+The delivery guide explains explicit Send Notification and pending-request availability. The broadcast guide explains Create Broadcast, audience review and publication status. Both explain same-page draft retention and Stay versus Discard and Leave. General Settings Save does not publish either draft. Optional action stages are omitted while their controls are unavailable.
+
+The broadcast guide also highlights Refresh as a separate action for retrying list loading while keeping the draft, without repeating publication or a status change.
+
+In Administration, prepare a notification under Notifications and choose Send Notification, or prepare an announcement under Broadcasts and choose Create Broadcast. These explicit actions send or publish the draft; the general Settings Save does neither.
+
+### Administration Drafts
+
+Notification and broadcast drafts remain in memory during redraws of the same Administration page. If navigation asks about unsaved changes, Stay retains the draft and Discard and Leave drops it. Discard restores the initial form values. Drafts are not saved across browser reloads or tab closure, and changing accounts clears them.
+
+Send and Create accept one request at a time, including validation; their controls are unavailable while pending. A rejected submission retains its draft. Success restores the original defaults only if the draft still matches the submitted values. Newer edits made while waiting remain unchanged and unsaved. General Settings Save never sends a notification or publishes a broadcast.
+
+Broadcast status changes are also single-flight. A successful creation or status change remains successful if the following list refresh fails. The refresh error is reported separately, and previously loaded rows remain visible. Check the current state before repeating an action; there is no automatic retry. Closing or replacing acknowledgement details, leaving the page or changing accounts prevents older detail responses from updating the current view.
+
+Use Refresh beside Create Broadcast to reload only the list with a read-only request, including after a loading error. It retains your draft and never repeats creation or a status change. Refresh is unavailable while another broadcast action is pending.
+
 ## Security
 
 Email verification binds account ID and address. Missing delivery does not waive validation policy; purpose registration is bootstrap-scoped and disposal prevents late messages from entering a cancelled delivery lifetime.

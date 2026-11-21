@@ -75,6 +75,22 @@ Eine Adresse kann bereits gespeichert sein, wenn Zustellung oder Widerruf fehlsc
 
 Die Registrierung prüft Titel und Schritte anhand des eigenen Katalogs des Gateways, bevor die Anleitungen verfügbar werden. Englisch, Deutsch, Indonesisch und Japanisch werden unterstützt. Fehlende oder leere Werte der bevorzugten Sprache verwenden denselben englischen Schlüssel. Fehlender englischer Text bleibt ein ausdrücklicher Übersetzungsfehler. Die Registrierung auf einer anderen Dashboard-Seite navigiert nicht zu Einstellungen oder Verwaltung.
 
+Die Zustellungsanleitung erklärt Benachrichtigung senden und die Verfügbarkeit während laufender Anfragen. Die Rundsendungsanleitung erklärt Rundsendung erstellen, Zielgruppenprüfung und Veröffentlichungsstatus. Beide erläutern den Erhalt von Entwürfen auf derselben Seite sowie Bleiben gegenüber Verwerfen und fortfahren. Das allgemeine Speichern der Einstellungen veröffentlicht keinen dieser Entwürfe. Optionale Aktionsschritte entfallen bei nicht verfügbaren Bedienelementen.
+
+Die Rundsendungsanleitung hebt Aktualisieren als eigene Aktion hervor, um die Liste erneut zu laden und den Entwurf zu behalten, ohne Veröffentlichung oder Statusänderung zu wiederholen.
+
+Bereiten Sie in der Verwaltung unter Benachrichtigungen eine Nachricht vor und wählen Sie Benachrichtigung senden, oder erstellen Sie unter Rundsendungen einen Entwurf und wählen Sie Rundsendung erstellen. Nur diese ausdrücklichen Aktionen versenden oder veröffentlichen den Entwurf; das allgemeine Speichern der Einstellungen tut beides nicht.
+
+### Entwürfe in der Verwaltung
+
+Benachrichtigungs- und Rundsendungsentwürfe bleiben bei erneuter Darstellung derselben Verwaltungsseite im Arbeitsspeicher. Fragt die Navigation nach ungespeicherten Änderungen, behält Bleiben den Entwurf; Verwerfen und fortfahren verwirft ihn. Verwerfen stellt die ursprünglichen Formularwerte wieder her. Entwürfe überstehen weder ein Neuladen im Browser noch das Schließen des Tabs; ein Kontowechsel löscht sie.
+
+Senden und Erstellen nehmen jeweils nur eine Anfrage gleichzeitig an, einschließlich der Validierung. Währenddessen sind ihre Schaltflächen nicht verfügbar. Eine abgelehnte Übermittlung behält den Entwurf. Nach Erfolg werden die ursprünglichen Werte nur wiederhergestellt, wenn der Entwurf noch den übermittelten Werten entspricht. Neuere Änderungen während der Wartezeit bleiben unverändert und ungespeichert. Das allgemeine Speichern der Einstellungen versendet keine Benachrichtigung und veröffentlicht keine Rundsendung.
+
+Auch Statusänderungen einer Rundsendung laufen nur einzeln. Erfolgreiches Erstellen oder Ändern des Status bleibt erfolgreich, wenn die anschließende Listenaktualisierung fehlschlägt. Der Aktualisierungsfehler wird getrennt gemeldet und bereits geladene Zeilen bleiben sichtbar. Prüfen Sie vor einer Wiederholung den aktuellen Zustand; es gibt keine automatische Wiederholung. Nach Schließen oder Ersetzen der Bestätigungsdetails, Verlassen der Seite oder Kontowechsel können ältere Detailantworten die aktuelle Ansicht nicht mehr ändern.
+
+Mit Aktualisieren neben Rundsendung erstellen laden Sie ausschließlich die Liste über eine lesende Anfrage neu, auch nach einem Ladefehler. Ihr Entwurf bleibt erhalten; Erstellung und Statusänderungen werden nicht wiederholt. Während einer anderen laufenden Rundsendungsaktion ist Aktualisieren nicht verfügbar.
+
 ## Sicherheit
 
 E-Mail-Bestätigung bindet Konto und Adresse. Fehlende Zustellung hebt Richtlinien nicht auf; Zwecke werden beim Start registriert und nach Entsorgung nicht weiter genutzt.

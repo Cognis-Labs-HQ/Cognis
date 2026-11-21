@@ -73,6 +73,22 @@ Alamat mungkin sudah tersimpan saat pengiriman atau pencabutan gagal; kode yang 
 
 Pendaftaran memvalidasi judul dan langkah panduan terhadap katalog milik gateway sebelum menyediakan panduan. Bahasa Inggris, Jerman, Indonesia, dan Jepang didukung; nilai bahasa pilihan yang hilang atau kosong menggunakan kunci bahasa Inggris yang sama. Teks bahasa Inggris yang hilang tetap menghasilkan kesalahan terjemahan yang eksplisit. Mendaftarkan panduan di halaman dasbor lain tidak membuka Pengaturan atau Administrasi.
 
+Panduan pengiriman menjelaskan Kirim Notifikasi secara eksplisit dan ketersediaan saat permintaan berlangsung. Panduan siaran menjelaskan Buat Siaran, peninjauan audiens, dan status publikasi. Keduanya menjelaskan penyimpanan draf pada halaman yang sama serta perbedaan Tetap di Sini dan Buang dan Lanjutkan. Simpan pada pengaturan umum tidak menerbitkan kedua draf tersebut. Tahap tindakan opsional dihilangkan saat kontrolnya tidak tersedia.
+
+Panduan siaran juga menyoroti Segarkan sebagai tindakan terpisah untuk mencoba kembali pemuatan daftar sambil mempertahankan draf, tanpa mengulangi publikasi atau perubahan status.
+
+Di Administrasi, siapkan pesan pada Notifikasi lalu pilih Kirim Notifikasi, atau siapkan pengumuman pada Siaran lalu pilih Buat Siaran. Tindakan eksplisit ini mengirim atau menerbitkan draf; Simpan pada pengaturan umum tidak melakukan keduanya.
+
+### Draf Administrasi
+
+Draf notifikasi dan siaran tetap berada dalam memori saat halaman Administrasi yang sama dirender ulang. Jika navigasi menanyakan perubahan yang belum disimpan, Tetap di Sini mempertahankan draf dan Buang dan Lanjutkan membuangnya. Batalkan mengembalikan nilai awal formulir. Draf tidak disimpan setelah pemuatan ulang browser atau penutupan tab, dan pergantian akun menghapusnya.
+
+Kirim dan Buat hanya menerima satu permintaan sekaligus, termasuk validasi; kontrolnya tidak tersedia selama proses berlangsung. Pengiriman yang ditolak mempertahankan draf. Keberhasilan mengembalikan nilai awal hanya jika draf masih sama dengan nilai yang dikirim. Suntingan yang lebih baru selama menunggu tetap utuh dan belum disimpan. Simpan pada pengaturan umum tidak pernah mengirim notifikasi atau menerbitkan siaran.
+
+Perubahan status siaran juga hanya berjalan satu per satu. Pembuatan atau perubahan status yang berhasil tetap berhasil jika pemuatan ulang daftar sesudahnya gagal. Kesalahan pemuatan ulang dilaporkan terpisah dan baris yang sudah dimuat tetap terlihat. Periksa keadaan terkini sebelum mengulangi tindakan; tidak ada percobaan ulang otomatis. Menutup atau mengganti detail konfirmasi, meninggalkan halaman, atau berganti akun mencegah respons detail lama mengubah tampilan saat ini.
+
+Gunakan Segarkan di samping Buat Siaran untuk memuat kembali daftar melalui permintaan baca saja, termasuk setelah kesalahan pemuatan. Draf tetap dipertahankan dan pembuatan maupun perubahan status tidak pernah diulang. Segarkan tidak tersedia selama tindakan siaran lain berlangsung.
+
 ## Keamanan
 
 Verifikasi email mengikat akun dan alamat. Pengiriman hilang tidak membatalkan kebijakan; registrasi tujuan terbatas pada bootstrap dan pelepasan mencegah pesan terlambat.
