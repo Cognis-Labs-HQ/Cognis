@@ -1,0 +1,2 @@
+import { double } from './double.js';
+export const result: number = double(2);

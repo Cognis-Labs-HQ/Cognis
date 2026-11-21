@@ -1,0 +1,21 @@
+{
+    "core.ts.txt": ["src/core/index.ts"],
+    "api.ts.txt": ["src/api/index.ts"],
+    "clean.ts.txt": [
+        "src/adapters/study/example/index.ts",
+        "src/adapters/study/example/tests/index.test.ts",
+        "src/modules/new-optional/index.ts",
+        "src/modules/new-optional/nested/index.ts",
+        "src/modules/new-optional/view.tsx",
+        "src/modules/new-optional/module.mts",
+        "src/modules/new-optional/common.cts"
+    ],
+    "types.d.ts.txt": [
+        "src/modules/new-optional/types.d.ts",
+        "src/modules/new-optional/module-types.d.mts",
+        "src/modules/new-optional/common-types.d.cts"
+    ],
+    "component.json": ["src/modules/new-optional/tsconfig.json"],
+    "interop.ts.txt": ["src/api/interop.ts"],
+    "double.js.txt": ["src/api/double.js"]
+}

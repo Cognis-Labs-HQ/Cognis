@@ -1,0 +1,2 @@
+import type { Identity } from '@cognis/core';
+export const identity: Identity = { id: 'api' };
