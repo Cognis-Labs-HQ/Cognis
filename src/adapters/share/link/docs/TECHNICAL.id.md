@@ -1,0 +1,35 @@
+# Referensi Teknis
+
+Antarmuka publik dan aturan operasional Tautan Berbagi Publik.
+
+## Antarmuka
+
+Tautan Berbagi Publik terintegrasi melalui gerbang pemilik; manifesnya mengidentifikasi komponen dan dependensi yang diperlukan.
+
+## Konfigurasi
+
+Konfigurasi disediakan melalui gerbang pemilik. Tautan Berbagi Publik tidak menyatakan konfigurasi tambahan dalam manifesnya.
+
+## Perilaku
+
+### Adapter berbagi tautan
+
+Adapter mendeklarasikan popup Link beserta kapabilitasnya melalui `navbarPlugins`. Gateway memuat kontribusi yang dideklarasikan dan menonaktifkannya bersama adapter pemilik.
+
+### Contoh penggunaan
+
+Membuat tautan publik yang dapat kedaluwarsa melalui gateway Share. Adapter memiliki penyiapan masukan khusus tautan dan halaman Tautan di dalam popup gateway.
+
+### Spesifikasi teknis
+
+Adaptor memvalidasi input penerima atau token khusus metode, mendelegasikan orkestrasi sumber daya bersama ke gateway Share, dan hanya aktif selama gateway pemilik serta siklus hidup adaptor diaktifkan.
+
+Pemanggil dapat menetapkan `allowedPermissions: ["read"]` pada dialog berbagi untuk menampilkan hanya izin yang diterapkan sumber daya. Pilihan pengguna dan perubahan mengikuti daftar tersebut. Pemilik sumber daya tetap harus menegakkan izin yang sama pada alur otorisasi.
+
+## Keamanan
+
+Akses Tautan Berbagi Publik diatur oleh pemanggil dan gerbang pemilik. Mengaktifkan komponen tidak menambah izin akun.
+
+## Referensi
+
+Kode sumber dan metadata paket: `src/adapters/share/link/`.

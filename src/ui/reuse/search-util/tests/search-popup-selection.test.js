@@ -316,9 +316,8 @@ test("docs search indexes navigation titles and document contents", () => {
     );
     assert.match(source, /registerSearchIndex\(\s*["\']docs["\']/);
     assert.match(source, /createDocsSearchProvider/);
-    assert.match(source, /htmlToSearchText/);
+    assert.match(source, /loadDocsBundleMarkdown/);
     assert.match(source, /resultClass: "page"/);
-    assert.match(source, /search-util\/indexing\.js/);
     assert.match(source, /loadMarkdownDocumentHtml/);
     assert.match(source, /changelogSlugToRoutePath/);
     assert.match(source, /ui\.layout\.footer\.changelogs/);

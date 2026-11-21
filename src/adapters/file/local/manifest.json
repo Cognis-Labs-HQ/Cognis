@@ -5,5 +5,10 @@
     "name": "Local File Storage",
     "version": "0.1.26",
     "publisher": "Cognis Labs HQ",
-    "locked": true
+    "locked": true,
+    "documentation": {
+        "readme": "docs/README.md",
+        "usage": "docs/USAGE.md",
+        "technical": "docs/TECHNICAL.md"
+    }
 }

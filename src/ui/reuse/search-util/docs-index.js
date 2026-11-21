@@ -1,3 +1,4 @@
+import { loadDocsBundleMarkdown } from "../docs-client.js";
 /**
  * Documentation search emits navigation metadata before reading document bodies.
  * Public export: collectGlobalDocsSearchGroups({ signal, onResults }).
@@ -55,7 +56,8 @@ export async function collectGlobalDocsSearchGroups({
             const changelog = slug.startsWith("changelog/");
             return {
                 slug,
-                key: JSON.stringify([langs, slug]),
+                version: item.version,
+                key: JSON.stringify([langs, slug, item.version]),
                 changelog,
                 item: {
                     id: `global-docs:${slug}`,
@@ -101,15 +103,13 @@ export async function collectGlobalDocsSearchGroups({
             const entry = entries[next++];
             if (cachedContent.has(entry.key)) continue;
             try {
-                const body = await fetch(
-                    `/api/v1/docs/${entry.slug}?langs=${encodeURIComponent(langs)}`,
-                    request,
-                );
-                if (!body.ok)
-                    throw new Error("docs_search_content_unavailable");
-                const html = await body.text();
+                const markdown = await loadDocsBundleMarkdown(entry, {
+                    fetchDocs: (path) => fetch(path, request),
+                    signal,
+                    languages: JSON.parse(langs || "[]"),
+                });
                 if (signal?.aborted) return;
-                cachedContent.set(entry.key, textFromHtml(html));
+                cachedContent.set(entry.key, textFromHtml(markdown));
                 if (Date.now() - lastEmission >= 100) {
                     lastEmission = Date.now();
                     onResults?.(groups());

@@ -765,4 +765,11 @@
   <string name="ui.reuse.layout_keyboard">Mit Pfeiltasten verschieben; zum Ändern der Größe Umschalttaste halten</string>
   <string name="ui.reuse.date">Datum</string>
   <string name="ui.reuse.pages">Seiten</string>
+  <string name="ui.reuse.info">Info</string>
+  <string name="ui.reuse.usage">Anwendung</string>
+  <string name="ui.reuse.technical">Technik</string>
+  <string name="ui.app.docs.load_error">Das Dokument konnte nicht geladen werden. Bitte versuchen Sie es erneut.</string>
+  <string name="ui.tutorial.docs.read.document.views.title">Lesestufe wählen</string>
+  <string name="ui.tutorial.docs.read.document.views.body">Info bietet eine Einführung, Anwendung erklärt Abläufe und Technik beschreibt Schnittstellen und Konfiguration. Alle drei folgen der gewählten Version.</string>
+  <string name="ui.reuse.components">Komponenten</string>
 </resources>

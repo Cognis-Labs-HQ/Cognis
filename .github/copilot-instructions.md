@@ -373,7 +373,7 @@ Branch names may contain only ASCII letters, numbers, hyphens (`-`), and undersc
 
 Store changelog entries under `src/docs/changelog/` (one shared directory for all changelog files) instead of a root `CHANGELOG.md`.
 
-Every pull request change must add changelog files for that PR in every supported app language (de, en, id, ja). Use the filename pattern `<branch-name-without-copilot-prefix>.<lang>.md` for each language (for example, branch `copilot/cleanup-strings-and-codebase` produces `cleanup-strings-and-codebase.en.md`, `cleanup-strings-and-codebase.de.md`, `cleanup-strings-and-codebase.id.md`, and `cleanup-strings-and-codebase.ja.md`).
+Each pull request must add exactly one branch-named changelog set, consolidate all work and stacked-branch notes into that set, and never create extra sets for follow-up fixes, reviews or local branch renames. The pull request head branch is authoritative. Every pull request change must add changelog files for that PR in every supported app language (de, en, id, ja). Use the filename pattern `<branch-name-without-copilot-prefix>.<lang>.md` for each language (for example, branch `copilot/cleanup-strings-and-codebase` produces `cleanup-strings-and-codebase.en.md`, `cleanup-strings-and-codebase.de.md`, `cleanup-strings-and-codebase.id.md`, and `cleanup-strings-and-codebase.ja.md`).
 
 Changelog entry structure is mandatory:
 
@@ -402,8 +402,30 @@ Gateways, adapters, and modules are responsible for their own resources. This in
 - **Styles**: adapter-specific CSS lives inside the adapter, not under `src/ui/styles/`.
 - **Strings (i18n)**: each component can carry its own `languages/<lang>/strings.xml`; the i18n loader merges these at startup. Core-level `src/ui/languages/` files must contain only keys that are genuinely cross-component.
 - **User preferences**: adapters and gateways can contribute preference fields to the settings UI; the settings page is assembled from contributions rather than hardcoded sections.
-- **Docs**: each component places its documentation under a `docs/` subdirectory. The docs route auto-discovers all `docs/` directories across the codebase and serves them dynamically. Do not hardcode doc paths in the docs route. Follow the section structure, depth tiers, and language requirements defined in `src/docs/standard.en.md`.
+- **Docs**: each component places its documentation under a `docs/` subdirectory. The docs route auto-discovers all `docs/` directories across the codebase and serves them dynamically. Do not hardcode doc paths in the docs route. Follow the enforced document contract in `src/docs/standard/technical.en.md` and `src/tooling/reuse/documentation/structure.json`.
 - Implementation contracts, technical details, and usage examples belong in component docs, not source-file overview comments. Keep source comments limited to non-obvious constraints.
+
+### Component documentation contract
+
+Documentation describes the current supported behavior. Do not append journal entries, implementation chronology, per-review notes, bug-fix headings or duplicated paragraphs. Revise the relevant section instead; record release history only in the single branch changelog set.
+
+Every component declares exactly `documentation.readme`, `documentation.usage` and `documentation.technical` in its owning manifest. These point to `docs/README.md`, `docs/USAGE.md` and `docs/TECHNICAL.md`. English uses the unsuffixed file; German, Indonesian and Japanese use `.de.md`, `.id.md` and `.ja.md`. Do not duplicate an English file as `.en.md`.
+
+- README is for non-technical readers: purpose, available tasks, access requirements, getting started and links to the other views. Do not include endpoints or implementation code.
+- USAGE provides concrete CLI or procedural examples, prerequisites, expected results and troubleshooting. Do not invent commands or substitute generic assurances for procedures.
+- TECHNICAL documents public interfaces and endpoints, configuration, behavior, security and reference material. Keep related facts together and link to their owner instead of repeating shared paragraphs.
+
+The exact localized H2 names and order are defined in `src/tooling/reuse/documentation/structure.json`; extra, missing, duplicate, reordered or empty sections fail validation. Begin with one H1 of at most 30 characters and an informative introductory paragraph. Code fences must balance and headings must not skip levels. Unsupported interfaces or settings require an explicit explanation of the actual boundary, not an empty section or template placeholder.
+
+Core documentation is discovered by directory. Each directory in `src/docs/` supplies `index.<locale>.md` for Info, `usage.<locale>.md` and `technical.<locale>.md` in all four languages. Put an API topic in `src/docs/api/index.en.md`, never `src/docs/api.en.md`. Changelogs use their separate branch convention. Components continue to declare their own README/USAGE/TECHNICAL paths rather than depending on core discovery.
+
+The Docs reader opens Info on a new topic and offers Info, Usage and Technical controls. One component version snapshots all three views atomically; view changes preserve that version. Tests enforce complete bundles, manifest pointers, localization, structural rules and core entry paths. Run `npm run check:docs`; PR CI additionally compares newly added changelogs to the head branch.
+
+CSS `@import` statements must form a contiguous block, sorted alphabetically by target, with no blank lines inside and one blank line before ordinary rules. Preserve cascade behavior through the owning selectors and verify the renderings after ordering changes.
+
+### Asset publication ownership
+
+A component's assets belong within its own published asset space. Do not place a feature-specific image, font or template in core merely to make its URL resolve. Use the component's public static prefix and verify production asset publication. A core asset consumed exclusively by a component with its own asset space is a compliance failure. Core-owned and genuinely shared assets may remain in core. Ownership tests use generic component fixtures and must not special-case feature names or filenames.
 
 ### Auto-discovery over static wiring
 

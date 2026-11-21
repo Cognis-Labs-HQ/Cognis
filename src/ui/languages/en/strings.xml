@@ -765,4 +765,11 @@
   <string name="ui.reuse.layout_keyboard">Use Arrow Keys to Move; Hold Shift to Resize</string>
   <string name="ui.reuse.date">Date</string>
   <string name="ui.reuse.pages">Pages</string>
+  <string name="ui.reuse.info">Info</string>
+  <string name="ui.reuse.usage">Usage</string>
+  <string name="ui.reuse.technical">Technical</string>
+  <string name="ui.app.docs.load_error">The document could not be loaded. Please try again.</string>
+  <string name="ui.tutorial.docs.read.document.views.title">Choose A Reading Level</string>
+  <string name="ui.tutorial.docs.read.document.views.body">Use Info for an introduction, Usage for procedures, and Technical for interfaces and configuration. All three follow the selected version.</string>
+  <string name="ui.reuse.components">Components</string>
 </resources>

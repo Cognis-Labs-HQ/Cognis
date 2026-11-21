@@ -1,3 +1,4 @@
+import type { DocView } from "./sources.js";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
@@ -42,7 +43,11 @@ function withChangelogBranch(markdown: string, slug: string): string {
     if (!slug.startsWith("changelog/") || slug === "changelog/index") {
         return markdown;
     }
-    if (/^\*\*Feature Branch:\*\*\s+.+$/m.test(markdown)) {
+    if (
+        /^\*\*(?:Feature Branch|Feature-Zweig|Cabang Fitur|機能ブランチ):\*\*\s+.+$/m.test(
+            markdown,
+        )
+    ) {
         return markdown;
     }
     const branch = changelogBranchFromSlug(slug);
@@ -101,7 +106,7 @@ async function collectDocIndex(
             path: "/api/v1/docs/changelog",
             group: "changelog",
             title: "Changelogs",
-            fileStem: "",
+            views: ["info"],
             version: "latest",
             versions: ["latest"],
             generatedMarkdown: buildChangelogIndexMarkdown(changelogEntries),
@@ -146,6 +151,7 @@ export function createDocsRoutes(
                     version,
                     versions,
                     sourceName,
+                    views,
                 }) => ({
                     slug,
                     path,
@@ -154,6 +160,7 @@ export function createDocsRoutes(
                     version,
                     versions,
                     sourceName,
+                    views,
                 }),
             );
             res.writeHead(200, { "content-type": "application/json" });
@@ -176,9 +183,23 @@ export function createDocsRoutes(
         const langs = resolveLangs(url);
 
         const index = await collectDocIndex(loadStoredDocs());
-        const entry = index.get(rawSlug);
+        let slug = rawSlug;
+        let view: DocView = "info";
+        if (!index.has(slug)) {
+            const parts = slug.split("/");
+            const candidate = parts.pop();
+            if (
+                candidate === "info" ||
+                candidate === "usage" ||
+                candidate === "technical"
+            ) {
+                view = candidate;
+                slug = parts.join("/");
+            }
+        }
+        const entry = index.get(slug);
 
-        if (!entry) {
+        if (!entry || !entry.views.includes(view)) {
             res.writeHead(404, { "content-type": "application/json" });
             res.end(NOT_FOUND_BODY);
             return true;
@@ -191,6 +212,7 @@ export function createDocsRoutes(
                 entry,
                 requestedVersion,
                 langs,
+                view,
             ));
 
         if (content === undefined) {
@@ -205,7 +227,8 @@ export function createDocsRoutes(
         res.end(
             JSON.stringify({
                 data: {
-                    slug: rawSlug,
+                    slug,
+                    view,
                     version:
                         requestedVersion === "latest"
                             ? entry.version

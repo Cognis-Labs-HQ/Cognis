@@ -5,5 +5,10 @@
     "version": "1.4.11",
     "publisher": "Cognis Labs HQ",
     "gateway": "study",
-    "requires": ["5711a248-4ac9-5d44-98b5-b99bd4c6d722"]
+    "requires": ["5711a248-4ac9-5d44-98b5-b99bd4c6d722"],
+    "documentation": {
+        "readme": "docs/README.md",
+        "usage": "docs/USAGE.md",
+        "technical": "docs/TECHNICAL.md"
+    }
 }

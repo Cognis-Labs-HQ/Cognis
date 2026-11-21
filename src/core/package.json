@@ -6,5 +6,10 @@
     "main": "index.ts",
     "dependencies": {
         "tsx": "^4.23.10"
+    },
+    "documentation": {
+        "readme": "docs/README.md",
+        "usage": "docs/USAGE.md",
+        "technical": "docs/TECHNICAL.md"
     }
 }

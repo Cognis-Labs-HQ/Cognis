@@ -18,7 +18,7 @@ const contentTypes = {
 
 export async function serveBrowserFixture(
     fixtureDirectory,
-    { staticRoots = {} } = {},
+    { staticRoots = {}, apiResponses = {} } = {},
 ) {
     const layouts = new Map();
     const requests = [];
@@ -39,6 +39,10 @@ export async function serveBrowserFixture(
             }
             if (pathname.startsWith("/api/")) {
                 response.setHeader("content-type", "application/json");
+                if (Object.hasOwn(apiResponses, pathname)) {
+                    response.end(JSON.stringify(apiResponses[pathname]));
+                    return;
+                }
                 if (pathname === "/api/v1/tutorials/completions") {
                     if (request.method === "POST") {
                         let body = "";

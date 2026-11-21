@@ -46,8 +46,14 @@ function splitTrailingUrlPunctuation(href) {
     };
 }
 
-function renderLinkMarkup(label, href) {
+function renderLinkMarkup(label, href, options = {}) {
     const safeLabel = escapeHtml(label);
+    if (
+        options.relativeLinks &&
+        /^(?:\/(?![\/\\])|#)/.test(href) &&
+        !/[\\\u0000-\u0020]/.test(href)
+    )
+        return `<a href="${escapeHtmlAttribute(href)}">${safeLabel}</a>`;
     if (!canLinkToHref(href)) return safeLabel;
     const safeHref = escapeHtmlAttribute(href);
     return `<a href="${safeHref}" target="_blank" rel="noopener noreferrer">${safeLabel}</a>`;
@@ -58,7 +64,7 @@ function renderDetectedUrlMarkup(href) {
     return `${renderLinkMarkup(trimmedHref, trimmedHref)}${escapeHtml(suffix)}`;
 }
 
-function renderInline(markdown) {
+function renderInline(markdown, options = {}) {
     const codeTokens = [];
     const linkTokens = [];
     let rendered = String(markdown ?? "").replace(
@@ -73,7 +79,7 @@ function renderInline(markdown) {
         /\[((?:\\.|[^\]\\])+)\]\(([^)\s]+)\)/g,
         (match, label, href) => {
             const token = `@@LINK_${linkTokens.length}@@`;
-            linkTokens.push(renderLinkMarkup(label, href));
+            linkTokens.push(renderLinkMarkup(label, href, options));
             return token;
         },
     );
@@ -101,13 +107,13 @@ function isTableSeparator(line) {
     return /^\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?$/.test(line);
 }
 
-function parseTableRow(line) {
+function parseTableRow(line, options) {
     return line
         .trim()
         .replace(/^\|/, "")
         .replace(/\|$/, "")
         .split("|")
-        .map((cell) => renderInline(cell.trim()));
+        .map((cell) => renderInline(cell.trim(), options));
 }
 
 const CODE_LANGUAGE_ALIASES = new Map([
@@ -269,6 +275,7 @@ function lineStartsBlock(line) {
     const trimmedLine = line.trim();
     return (
         trimmedLine.startsWith("```") ||
+        trimmedLine.startsWith("~~~") ||
         trimmedLine.startsWith("#") ||
         trimmedLine.startsWith(">") ||
         isListItem(trimmedLine) ||
@@ -372,6 +379,8 @@ initializeMarkdownCodeCopy();
  * @param {{ softBreaks?: boolean }} [options] Options object. When softBreaks
  *   is true, single line breaks within paragraphs are preserved as <br> tags
  *   instead of being normalized to spaces.
+ * @param {boolean} [options.relativeLinks=false] Allow safe root-relative and fragment links.
+ * @param {boolean} [options.headingIds=false] Give headings stable fragment identifiers.
  * @returns {string}
  */
 export function renderMarkdown(markdown, options = {}) {
@@ -384,6 +393,7 @@ export function renderMarkdown(markdown, options = {}) {
     const html = [];
     let listType = null;
     let tableOpen = false;
+    const headingIds = new Map();
 
     const closeList = () => {
         if (!listType) return;
@@ -400,14 +410,21 @@ export function renderMarkdown(markdown, options = {}) {
         const line = lines[index] ?? "";
         const trimmedLine = line.trim();
 
-        if (trimmedLine.startsWith("```")) {
+        const fence = trimmedLine.match(/^(`{3,}|~{3,})([^`~]*)$/);
+        if (fence) {
             closeList();
             closeTable();
-            const infoString = trimmedLine.slice(3).trim();
+            const infoString = fence[2].trim();
             const codeLines = [];
             for (index += 1; index < lines.length; index += 1) {
                 const codeLine = lines[index] ?? "";
-                if (codeLine.trim().startsWith("```")) break;
+                const closing = codeLine.trim().match(/^(`{3,}|~{3,})$/);
+                if (
+                    closing &&
+                    closing[1][0] === fence[1][0] &&
+                    closing[1].length >= fence[1].length
+                )
+                    break;
                 codeLines.push(codeLine);
             }
             html.push(renderCodeBlockMarkup(infoString, codeLines));
@@ -424,7 +441,7 @@ export function renderMarkdown(markdown, options = {}) {
         if (trimmedLine.includes("|") && isTableSeparator(nextLine)) {
             closeList();
             closeTable();
-            const headers = parseTableRow(trimmedLine);
+            const headers = parseTableRow(trimmedLine, options);
             html.push("<table><thead><tr>");
             headers.forEach((header) => html.push(`<th>${header}</th>`));
             html.push("</tr></thead><tbody>");
@@ -434,7 +451,7 @@ export function renderMarkdown(markdown, options = {}) {
         }
 
         if (tableOpen && trimmedLine.includes("|")) {
-            const cells = parseTableRow(trimmedLine);
+            const cells = parseTableRow(trimmedLine, options);
             html.push("<tr>");
             cells.forEach((cell) => html.push(`<td>${cell}</td>`));
             html.push("</tr>");
@@ -450,7 +467,9 @@ export function renderMarkdown(markdown, options = {}) {
                 listType = nextListType;
                 html.push(`<${listType}>`);
             }
-            html.push(`<li>${renderInline(stripListPrefix(trimmedLine))}</li>`);
+            html.push(
+                `<li>${renderInline(stripListPrefix(trimmedLine), options)}</li>`,
+            );
             continue;
         }
 
@@ -469,33 +488,29 @@ export function renderMarkdown(markdown, options = {}) {
             }
             index -= 1;
             html.push(
-                `<blockquote>${renderMarkdown(blockQuoteLines.join("\n"))}</blockquote>`,
+                `<blockquote>${renderMarkdown(blockQuoteLines.join("\n"), options)}</blockquote>`,
             );
             continue;
         }
 
-        if (trimmedLine.startsWith("###### ")) {
-            html.push(`<h6>${renderInline(trimmedLine.slice(7))}</h6>`);
-            continue;
-        }
-        if (trimmedLine.startsWith("##### ")) {
-            html.push(`<h5>${renderInline(trimmedLine.slice(6))}</h5>`);
-            continue;
-        }
-        if (trimmedLine.startsWith("#### ")) {
-            html.push(`<h4>${renderInline(trimmedLine.slice(5))}</h4>`);
-            continue;
-        }
-        if (trimmedLine.startsWith("### ")) {
-            html.push(`<h3>${renderInline(trimmedLine.slice(4))}</h3>`);
-            continue;
-        }
-        if (trimmedLine.startsWith("## ")) {
-            html.push(`<h2>${renderInline(trimmedLine.slice(3))}</h2>`);
-            continue;
-        }
-        if (trimmedLine.startsWith("# ")) {
-            html.push(`<h1>${renderInline(trimmedLine.slice(2))}</h1>`);
+        const heading = trimmedLine.match(/^(#{1,6}) (.+)$/);
+        if (heading) {
+            const level = heading[1].length;
+            let id = "";
+            if (options.headingIds) {
+                const base = heading[2]
+                    .normalize("NFKC")
+                    .toLowerCase()
+                    .replace(/[^\p{L}\p{N}\s-]/gu, "")
+                    .trim()
+                    .replace(/\s+/g, "-");
+                const count = headingIds.get(base) ?? 0;
+                headingIds.set(base, count + 1);
+                id = ` id="${escapeHtmlAttribute(base + (count ? `-${count}` : ""))}"`;
+            }
+            html.push(
+                `<h${level}${id}>${renderInline(heading[2], options)}</h${level}>`,
+            );
             continue;
         }
 
@@ -509,10 +524,12 @@ export function renderMarkdown(markdown, options = {}) {
         }
         if (softBreaks && paragraphLines.length > 1) {
             html.push(
-                `<p>${paragraphLines.map((paragraphLine) => renderInline(paragraphLine)).join("<br>")}</p>`,
+                `<p>${paragraphLines.map((paragraphLine) => renderInline(paragraphLine, options)).join("<br>")}</p>`,
             );
         } else {
-            html.push(`<p>${renderInline(paragraphLines.join(" "))}</p>`);
+            html.push(
+                `<p>${renderInline(paragraphLines.join(" "), options)}</p>`,
+            );
         }
     }
 

@@ -3,5 +3,10 @@
     "uuid": "a3496b91-e0a4-5fb8-a315-04dd071f95fc",
     "name": "MariaDB Database",
     "version": "0.5.31",
-    "publisher": "Cognis Labs HQ"
+    "publisher": "Cognis Labs HQ",
+    "documentation": {
+        "readme": "docs/README.md",
+        "usage": "docs/USAGE.md",
+        "technical": "docs/TECHNICAL.md"
+    }
 }

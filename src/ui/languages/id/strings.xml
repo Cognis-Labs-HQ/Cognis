@@ -765,4 +765,11 @@
   <string name="ui.reuse.layout_keyboard">Gunakan tombol panah untuk memindahkan; tahan Shift untuk mengubah ukuran</string>
   <string name="ui.reuse.date">Tanggal</string>
   <string name="ui.reuse.pages">Halaman</string>
+  <string name="ui.reuse.info">Info</string>
+  <string name="ui.reuse.usage">Penggunaan</string>
+  <string name="ui.reuse.technical">Teknis</string>
+  <string name="ui.app.docs.load_error">Dokumen tidak dapat dimuat. Silakan coba lagi.</string>
+  <string name="ui.tutorial.docs.read.document.views.title">Pilih Tingkat Bacaan</string>
+  <string name="ui.tutorial.docs.read.document.views.body">Gunakan Info untuk pengenalan, Penggunaan untuk prosedur, dan Teknis untuk antarmuka serta konfigurasi. Ketiganya mengikuti versi yang dipilih.</string>
+  <string name="ui.reuse.components">Komponen</string>
 </resources>

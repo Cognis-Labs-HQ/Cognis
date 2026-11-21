@@ -1,0 +1,65 @@
+# Technische Referenz
+
+Öffentliche Schnittstellen und Betriebsregeln von Lokale Konten.
+
+## Schnittstellen
+
+### Architektur
+
+`DbLocalAccountStore` in `src/adapters/auth/local/store.ts` ist die einzige Persistenzschicht für lokale Benutzerkonten.
+
+## Konfiguration
+
+### Konfiguration
+
+Keine konfigurierbaren Felder. Die Credential-Verwaltung erfolgt ausschließlich über die `user:*`-CLI-Befehle oder die Registrierungs-/Anmelde-API-Routen.
+
+Die Bereinigung externer Identitäten kann Identitäten anhand eines anbietereigenen Quellenpräfixes entfernen. Eine erneute Authentifizierung aktualisiert E-Mail, Anzeigename, Rolle und Aktivierungsstatus eines erhaltenen externen Kontos, bevor die neue Identität verknüpft wird.
+
+## Verhalten
+
+### Überblick
+
+Der lokale Auth-Adapter ist der eingebaute Credential-Store für Cognis. Er verwaltet Benutzernamen und gehashte Passwörter in der eigenen Datenbank der Plattform, ohne externen Identitätsanbieter. Der lokale Adapter ist immer aktiviert und kann nicht deaktiviert werden.
+
+### Verantwortlichkeiten
+
+- Lokal verwaltete Anmeldedaten mit `crypto.scrypt` speichern und verifizieren.
+- `register()` für die Account-Erstellung bereitstellen.
+- `updateLastLogin()` für das Tracking des letzten Logins bereitstellen.
+- `DbLocalAccountStore` als `LocalAccountStore`-Implementierung bereitstellen.
+
+### Passwort-Hashing
+
+Passwörter werden mit Node.js `crypto.scrypt` und einem 16-Byte-Zufallssalz gehasht. Gespeicherte Passwörter haben das Format:
+
+```
+scrypt:<hex-salt>:<hex-derived-key>
+```
+
+### CLI-Verwaltung
+
+Lokale Konten werden über die `cognisctl`-CLI mit dem `user:*`-Befehlsnamespace verwaltet:
+
+| Befehl              | Beschreibung                     |
+| ------------------- | -------------------------------- |
+| `user:create`       | Neues lokales Konto erstellen    |
+| `user:role`         | Einer Rolle einem Konto zuweisen |
+| `user:set-password` | Passwort eines Kontos ändern     |
+| `user:disable`      | Konto deaktivieren               |
+| `user:enable`       | Deaktiviertes Konto reaktivieren |
+| `user:delete`       | Konto löschen                    |
+
+### Kontodatenschutz und Schlüsselbund-Isolation
+
+SSO-Konten erhalten zufällige undurchsichtige IDs. Anbieter-IDs werden separat gespeichert und nur Administratoren angezeigt; öffentliche Benutzernamen enthalten sie nie. Auth reserviert Benutzernamen vor Profil- oder E-Mail-Änderungen: doppelte Namen desselben Anbieters werden abgelehnt, bei verschiedenen Anbietern wird bei Bedarf ein kurzes Zufallssuffix ergänzt. Benutzerlisten und Aktionsendpunkte unterscheiden den öffentlichen `username` von der internen `accountId`.
+
+Vorhandene lokale Konten funktionieren auch bei vorhandenen alten SSO-Datensätzen weiter. Der Start erfordert kein Zurücksetzen der Datenbank. Anmeldung und Bereitstellung alter SSO-Konten werden einzeln abgelehnt, bis diese Konten mit undurchsichtigen IDs neu erstellt wurden. Konto-IDs, Beziehungen und Besprechungen werden weder automatisch migriert noch gelöscht.
+
+## Sicherheit
+
+Der Zugriff auf Lokale Konten unterliegt dem Aufrufer und dem zuständigen Funktionsdienst. Die Aktivierung erweitert keine Kontorechte.
+
+## Referenz
+
+Quellcode und Paketmetadaten: `src/adapters/auth/local/`.

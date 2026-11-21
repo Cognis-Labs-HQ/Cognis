@@ -1,41 +1,19 @@
-# Indeks Dokumentasi Cognis
+# Cognis
 
-## Ikhtisar
+Cognis menyatukan pembelajaran bahasa, percakapan, dan kalender dalam satu ruang kerja.
 
-Ini adalah dokumen navigasi root untuk dokumentasi pengembang Cognis. Semua dokumen dalam set ini disajikan melalui browser dokumentasi dalam aplikasi di `/docs` dan melalui `GET /api/v1/docs`.
+## Yang Dapat Anda Lakukan
 
-Dokumen-dokumen ini ditulis untuk kontributor pengembang, bukan pengguna akhir. Jika Anda baru mengenal kodebase, mulailah dengan dokumen Ikhtisar dan Fitur Platform.
+Tindakan yang tersedia ditampilkan pada [halaman fitur](/) sesuai izin akun Anda.
 
-## Daftar Isi
+## Sebelum Memulai
 
-### Platform
+Operasi yang dibahas dapat memerlukan izin akun atau administrator. Membaca topik tidak mengaktifkan fitur opsionalnya.
 
-| Dokumen                               | Keterangan                                              |
-| ------------------------------------- | ------------------------------------------------------- |
-| [Ikhtisar](/docs/overview)            | Apa itu Cognis dan bagaimana lapisan-lapisannya bersatu |
-| [Fitur Platform](/docs/features)      | Kemampuan bawaan dan cakupan adapter                    |
-| [Standar Dokumentasi](/docs/standard) | Cara penulisan dan pengorganisasian dokumentasi         |
-| [Matriks ACL](/docs/acl-matrix)       | Definisi peran dan matriks izin lengkap                 |
-| [Versi Komponen](/docs/versions)      | Versi terkini setiap gateway, adapter, dan modul        |
+## Langkah Awal
 
-### Lapisan Arsitektur
+Buka [fitur ini](/) dan pilih tindakan yang diperlukan.
 
-| Dokumen                   | Keterangan                                                      |
-| ------------------------- | --------------------------------------------------------------- |
-| [Inti](/docs/core)        | Kontrak, antarmuka, dan layanan kebijakan                       |
-| [API](/docs/api)          | Server HTTP, grup route, model autentikasi                      |
-| [UI](/docs/ui)            | Frontend browser: halaman, layout, i18n                         |
-| [Adapter](/docs/adapters) | Ikhtisar lapisan adapter platform                               |
-| [Gateway](/docs/gateways) | Cara membuat gateway dan adapter; urutan boot; capability store |
-| [DevOps](/docs/devops)    | Dockerfile, GitHub Actions, referensi variabel environment      |
+## Pelajari Lebih Lanjut
 
-### Gateway
-
-| Dokumen                                          | Keterangan                                |
-| ------------------------------------------------ | ----------------------------------------- |
-| [Gateway Autentikasi](/docs/gateways/auth)       | Penyedia autentikasi, penerbitan token    |
-| [Gateway Database](/docs/gateways/db)            | Akses database, executor, helper dialek   |
-| [Gateway File](/docs/gateways/files)             | Capability penyimpanan file lokal         |
-| [Gateway Logging](/docs/gateways/logging)        | Logging terstruktur                       |
-| [Gateway Notifikasi](/docs/gateways/notify)      | Pengiriman notifikasi yang dapat dipasang |
-| [Gateway Sosial](/docs/gateways/social/standard) | Profil, grafik sosial, postingan, pesan   |
+[Penggunaan](/docs/index/usage) menjelaskan prosedur. [Teknis](/docs/index/technical) mendokumentasikan antarmuka dan konfigurasi.

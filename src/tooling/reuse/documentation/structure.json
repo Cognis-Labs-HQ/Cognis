@@ -1,0 +1,76 @@
+{
+    "en": {
+        "readme": [
+            "What You Can Do",
+            "Before You Start",
+            "Get Started",
+            "Learn More"
+        ],
+        "usage": [
+            "Prerequisites",
+            "Examples",
+            "Expected Results",
+            "Troubleshooting"
+        ],
+        "technical": [
+            "Interfaces",
+            "Configuration",
+            "Behavior",
+            "Security",
+            "Reference"
+        ]
+    },
+    "de": {
+        "readme": [
+            "Möglichkeiten",
+            "Vor dem Start",
+            "Erste Schritte",
+            "Weitere Informationen"
+        ],
+        "usage": [
+            "Voraussetzungen",
+            "Beispiele",
+            "Erwartete Ergebnisse",
+            "Fehlerbehebung"
+        ],
+        "technical": [
+            "Schnittstellen",
+            "Konfiguration",
+            "Verhalten",
+            "Sicherheit",
+            "Referenz"
+        ]
+    },
+    "id": {
+        "readme": [
+            "Yang Dapat Anda Lakukan",
+            "Sebelum Memulai",
+            "Langkah Awal",
+            "Pelajari Lebih Lanjut"
+        ],
+        "usage": [
+            "Prasyarat",
+            "Contoh",
+            "Hasil yang Diharapkan",
+            "Pemecahan Masalah"
+        ],
+        "technical": [
+            "Antarmuka",
+            "Konfigurasi",
+            "Perilaku",
+            "Keamanan",
+            "Referensi"
+        ]
+    },
+    "ja": {
+        "readme": ["できること", "始める前に", "はじめに", "詳しい情報"],
+        "usage": ["前提条件", "使用例", "期待される結果", "問題の解決"],
+        "technical": [
+            "インターフェース",
+            "設定",
+            "動作",
+            "セキュリティ",
+            "リファレンス"
+        ]
+    }
+}

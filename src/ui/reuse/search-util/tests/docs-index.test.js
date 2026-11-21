@@ -8,9 +8,19 @@ test("documentation titles arrive before content, content concurrency is bounded
     let active = 0;
     let maximum = 0;
     let bodyCalls = 0;
+    const { loadDocsBundleMarkdown } = loadTestModule(
+        new URL("../../docs-client.js", import.meta.url),
+        {
+            "./api-client.js": {
+                apiFetch: () => {
+                    throw new Error("Use the injected public request contract");
+                },
+            },
+        },
+    );
     const { collectGlobalDocsSearchGroups } = loadTestModule(
         new URL("../docs-index.js", import.meta.url),
-        {},
+        { "../docs-client.js": { loadDocsBundleMarkdown } },
         {
             localStorage: { getItem: () => null },
             console,
@@ -22,6 +32,7 @@ test("documentation titles arrive before content, content concurrency is bounded
                         json: async () => ({
                             data: Array.from({ length: 25 }, (_, i) => ({
                                 slug: `guide-${i}`,
+                                version: "1.0.0",
                                 title: `Guide ${i}`,
                             })),
                         }),

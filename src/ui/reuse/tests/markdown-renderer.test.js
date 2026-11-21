@@ -113,3 +113,45 @@ test("renderMarkdown handles long escaped non-links without ambiguous backtracki
         /<a href="https:\/\/example.test"/,
     );
 });
+
+test("document rendering enables safe internal links across paragraphs, tables, lists and quotes", () => {
+    const html = renderMarkdown(
+        "[Usage](/docs/example/usage)\n\n- [Technical](/docs/example/technical)\n\n> [Info](/docs/example)\n\n| Doc |\n| --- |\n| [Section](#section) |",
+        { relativeLinks: true },
+    );
+    for (const href of [
+        "/docs/example/usage",
+        "/docs/example/technical",
+        "/docs/example",
+        "#section",
+    ])
+        assert.ok(html.includes(`href="${href}"`), html);
+    for (const href of [
+        "//evil.example/path",
+        "/\\evil.example/path",
+        "javascript:alert%281%29",
+        "data:text/html,test",
+    ])
+        assert.equal(
+            renderMarkdown(`[Unsafe](${href})`, { relativeLinks: true }),
+            "<p>Unsafe</p>",
+        );
+});
+
+test("document heading fragments are stable and distinguish repeated headings", () => {
+    const html = renderMarkdown("# A Heading\n\n## A Heading\n\n### 日本語", {
+        headingIds: true,
+    });
+    assert.match(html, /id="a-heading"/);
+    assert.match(html, /id="a-heading-1"/);
+    assert.match(html, /id="日本語"/);
+});
+
+test("long Markdown code fences preserve shorter nested examples and subsequent content", () => {
+    const html = renderMarkdown(
+        "````md\n```sh\ncommand --help\n```\n````\n\n## After",
+    );
+    assert.match(html.replace(/<[^>]+>/g, ""), /```sh/);
+    assert.match(html, /<h2>After<\/h2>/);
+    assert.equal((html.match(/<pre /g) ?? []).length, 1);
+});

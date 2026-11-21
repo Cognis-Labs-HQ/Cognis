@@ -1,7 +1,7 @@
-@import "./calendar-timed-grid.css";
-@import "./calendar-share-reminder.css";
 @import "./calendar-event-details.css";
+@import "./calendar-share-reminder.css";
 @import "./calendar-status.css";
+@import "./calendar-timed-grid.css";
 
 .calendar-section {
     display: grid;
@@ -230,13 +230,13 @@
 }
 
 .calendar-visibility-icon--private {
-    background-image: url("/static/assets/reuse/secure-light.svg");
+    background-image: url("/static/gateways/calendar/assets/secure-light.svg");
 }
 
 .calendar-visibility-icon--shared {
     width: 1.1rem;
     height: 1.1rem;
-    background-image: url("/static/assets/reuse/share-light.svg");
+    background-image: url("/static/gateways/calendar/assets/share-light.svg");
 }
 
 .calendar-visibility-icon--public {
@@ -248,11 +248,11 @@ body[data-theme="dark"] .calendar-visibility-icon--read-only {
 }
 
 body[data-theme="dark"] .calendar-visibility-icon--private {
-    background-image: url("/static/assets/reuse/secure-dark.svg");
+    background-image: url("/static/gateways/calendar/assets/secure-dark.svg");
 }
 
 body[data-theme="dark"] .calendar-visibility-icon--shared {
-    background-image: url("/static/assets/reuse/share-dark.svg");
+    background-image: url("/static/gateways/calendar/assets/share-dark.svg");
 }
 
 body[data-theme="dark"] .calendar-visibility-icon--public {
@@ -655,7 +655,8 @@ body[data-theme="dark"] .calendar-visibility-icon--public {
     width: 20px;
     height: 20px;
     background: currentColor;
-    mask: url("/static/assets/reuse/icons/add.svg") center / contain no-repeat;
+    mask: url("/static/gateways/calendar/assets/add.svg") center / contain
+        no-repeat;
 }
 
 [data-composer-header].calendar-view-header:has(
@@ -704,8 +705,8 @@ body[data-theme="dark"] .calendar-visibility-icon--public {
     height: 20px;
     margin: auto;
     background: var(--text);
-    mask: url("/static/assets/reuse/icons/calendar-today.svg") center / contain
-        no-repeat;
+    mask: url("/static/gateways/calendar/assets/calendar-today.svg") center /
+        contain no-repeat;
 }
 body[data-theme="dark"] .calendar-date-select {
     color-scheme: dark;

@@ -7,5 +7,10 @@
     "required": false,
     "locked": false,
     "description": "Shares resources directly with Cognis users.",
-    "publisher": "Cognis Labs HQ"
+    "publisher": "Cognis Labs HQ",
+    "documentation": {
+        "readme": "docs/README.md",
+        "usage": "docs/USAGE.md",
+        "technical": "docs/TECHNICAL.md"
+    }
 }

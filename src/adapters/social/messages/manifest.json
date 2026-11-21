@@ -21,5 +21,10 @@
             "id": "profile",
             "purpose": "Read profile avatars when rendering chat participants."
         }
-    ]
+    ],
+    "documentation": {
+        "readme": "docs/README.md",
+        "usage": "docs/USAGE.md",
+        "technical": "docs/TECHNICAL.md"
+    }
 }

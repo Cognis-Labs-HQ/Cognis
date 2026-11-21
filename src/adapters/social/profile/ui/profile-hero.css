@@ -36,8 +36,8 @@
     width: 40px;
     height: 40px;
     background-color: rgba(255, 255, 255, 0.9);
-    -webkit-mask-image: url("/static/assets/reuse/upload.svg");
-    mask-image: url("/static/assets/reuse/upload.svg");
+    -webkit-mask-image: url("/static/adapters/social/profile/assets/upload.svg");
+    mask-image: url("/static/adapters/social/profile/assets/upload.svg");
     -webkit-mask-repeat: no-repeat;
     mask-repeat: no-repeat;
     -webkit-mask-size: contain;
@@ -361,6 +361,6 @@
     width: 20px;
     height: 20px;
     background: currentColor;
-    mask: url("/static/assets/reuse/icons/more-horizontal.svg") center / contain
-        no-repeat;
+    mask: url("/static/adapters/social/profile/assets/more-horizontal.svg")
+        center / contain no-repeat;
 }

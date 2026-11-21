@@ -1,7 +1,7 @@
 {
     "name": "cognis",
     "private": true,
-    "version": "0.1.4",
+    "version": "0.1.5",
     "description": "Cognis monorepo scaffold",
     "workspaces": [
         "src/api",
@@ -23,7 +23,8 @@
         "start": "node --import tsx src/api/main.ts",
         "start:production": "COGNIS_UI_ASSET_MANIFEST=dist/ui/asset-manifest.json COGNIS_UI_DIST_ROOT=dist/ui COGNIS_GATEWAYS_ROOT=dist/server/src/gateways COGNIS_ADAPTERS_ROOT=dist/server/src/adapters node dist/server/src/api/main.js",
         "ci:test": "npm run typecheck && npm test",
-        "cli": "node --import tsx src/tooling/cli/index.ts"
+        "cli": "node --import tsx src/tooling/cli/index.ts",
+        "check:docs": "node src/tooling/scripts/check-documentation.mjs"
     },
     "devDependencies": {
         "esbuild": "^0.28.1",
@@ -34,5 +35,10 @@
     "type": "module",
     "engines": {
         "node": ">=24"
+    },
+    "documentation": {
+        "readme": "src/docs/index.en.md",
+        "usage": "src/docs/usage.en.md",
+        "technical": "src/docs/technical.en.md"
     }
 }

@@ -583,7 +583,10 @@ test("component versions match manifests, lockfile, and translated indexes", () 
     }
 
     for (const language of ["de", "en", "id", "ja"]) {
-        const versionsPath = resolve(ROOT, `src/docs/versions.${language}.md`);
+        const versionsPath = resolve(
+            ROOT,
+            `src/docs/versions/technical.${language}.md`,
+        );
         const source = readFileSync(versionsPath, "utf8");
         for (const [componentPath, version] of packageVersionsByPath) {
             if (!source.includes(`\`${componentPath}\``)) continue;

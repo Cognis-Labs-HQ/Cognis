@@ -81,3 +81,28 @@
     color: var(--accent, var(--color-accent));
     transform: translateY(-1px);
 }
+
+.docs-view-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 16px;
+}
+.docs-view-button {
+    flex: 1 0 max-content;
+    min-width: 0;
+    max-width: 100%;
+    padding-inline: 8px;
+    min-height: 44px;
+    white-space: nowrap;
+}
+.docs-view-button[aria-pressed="true"] {
+    border-color: var(--accent);
+    background: var(--surface-soft);
+    color: var(--text);
+}
+@media (max-width: 640px) {
+    .docs-version-bar {
+        margin-inline: 14px;
+    }
+}

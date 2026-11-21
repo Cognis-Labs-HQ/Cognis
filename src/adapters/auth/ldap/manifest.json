@@ -3,5 +3,10 @@
     "uuid": "773843d7-68e0-5fe3-9609-a536a9dd9c4a",
     "name": "LDAP Authentication",
     "version": "0.5.37",
-    "publisher": "Cognis Labs HQ"
+    "publisher": "Cognis Labs HQ",
+    "documentation": {
+        "readme": "docs/README.md",
+        "usage": "docs/USAGE.md",
+        "technical": "docs/TECHNICAL.md"
+    }
 }

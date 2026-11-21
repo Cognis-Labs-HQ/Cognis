@@ -13,5 +13,10 @@
     "hasAdapters": true,
     "entrypoints": {
         "cli": "./cli/index.js"
+    },
+    "documentation": {
+        "readme": "docs/README.md",
+        "usage": "docs/USAGE.md",
+        "technical": "docs/TECHNICAL.md"
     }
 }

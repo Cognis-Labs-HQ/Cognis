@@ -765,4 +765,11 @@
   <string name="ui.reuse.layout_keyboard">矢印キーで移動し、Shift キーを押しながらサイズを変更します</string>
   <string name="ui.reuse.date">日付</string>
   <string name="ui.reuse.pages">ページ</string>
+  <string name="ui.reuse.info">概要</string>
+  <string name="ui.reuse.usage">使用例</string>
+  <string name="ui.reuse.technical">技術情報</string>
+  <string name="ui.app.docs.load_error">ドキュメントを読み込めませんでした。もう一度お試しください。</string>
+  <string name="ui.tutorial.docs.read.document.views.title">読む内容を選ぶ</string>
+  <string name="ui.tutorial.docs.read.document.views.body">概要で紹介、使用例で手順、技術情報でインターフェースと設定を確認できます。三つとも選択したバージョンに対応します。</string>
+  <string name="ui.reuse.components">コンポーネント</string>
 </resources>

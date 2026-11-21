@@ -10,5 +10,10 @@
         "engagement:recordActivity",
         "engagement:achievements",
         "engagement:ledger"
-    ]
+    ],
+    "documentation": {
+        "readme": "docs/README.md",
+        "usage": "docs/USAGE.md",
+        "technical": "docs/TECHNICAL.md"
+    }
 }
