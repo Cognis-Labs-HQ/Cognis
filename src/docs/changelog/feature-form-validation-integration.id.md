@@ -26,3 +26,4 @@ Jika kriteria khusus melepas atau membatalkan pengaitan formulir, validasi kolom
 
 - [8c9fc0683b33aab169806f3783d5f702d272bf32](https://github.com/Cognis-Labs-HQ/Cognis/commit/8c9fc0683b33aab169806f3783d5f702d272bf32)
 - [497c7e6aec641d2288c3202a30fc5ce97149e600](https://github.com/Cognis-Labs-HQ/Cognis/commit/497c7e6aec641d2288c3202a30fc5ce97149e600)
+- [d87c318ae94cd979dbbb38bae781db1fcc762315](https://github.com/Cognis-Labs-HQ/Cognis/commit/d87c318ae94cd979dbbb38bae781db1fcc762315)
