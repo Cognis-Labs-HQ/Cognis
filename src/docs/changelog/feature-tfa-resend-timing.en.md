@@ -12,4 +12,5 @@ Resend stays disabled until the deadline, and server rate limits still apply aft
 
 ## Commits
 
-- [b934e3675cef0d19580bcbe422264a3d920e38b8](https://github.com/Cognis-Labs-HQ/Cognis/commit/b934e3675cef0d19580bcbe422264a3d920e38b8)
+- [59562cb8941363fa36516f7228ca73c03355d611](https://github.com/Cognis-Labs-HQ/Cognis/commit/59562cb8941363fa36516f7228ca73c03355d611)
+- [11ad08e119e2452da0bd7a5d7f16014abd27cd50](https://github.com/Cognis-Labs-HQ/Cognis/commit/11ad08e119e2452da0bd7a5d7f16014abd27cd50)
