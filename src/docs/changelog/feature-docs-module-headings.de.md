@@ -24,5 +24,5 @@ Veröffentlichte Vorabversionskennungen bleiben für Anzeigerevisionen gültig, 
 
 ## Commits
 
-- [08675465cca34d9dbce6205626a7f27dac5b2488](https://github.com/Cognis-Labs-HQ/Cognis/commit/08675465cca34d9dbce6205626a7f27dac5b2488)
-- [41817ce94d3a64e5ad9380b9ee24d253d8c85626](https://github.com/Cognis-Labs-HQ/Cognis/commit/41817ce94d3a64e5ad9380b9ee24d253d8c85626)
+- [3131ad9cbbfcb54b61c87310285dc3cd0b829f63](https://github.com/Cognis-Labs-HQ/Cognis/commit/3131ad9cbbfcb54b61c87310285dc3cd0b829f63)
+- [3a47d31e52dbf5773d618585b0fe3c4d73a43d64](https://github.com/Cognis-Labs-HQ/Cognis/commit/3a47d31e52dbf5773d618585b0fe3c4d73a43d64)
