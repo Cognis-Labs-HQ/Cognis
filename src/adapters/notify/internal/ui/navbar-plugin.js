@@ -32,6 +32,11 @@ import {
 import { createArrivalLifetime } from "./arrival-lifetime.js";
 import { createCorrelationResolver } from "./correlation.js";
 import { createInbox } from "./inbox.js";
+import {
+    createPrimaryAction,
+    claimPrimaryActivation,
+    setControlsDisabled,
+} from "./reuse/primary-action.js";
 
 const POLL_INTERVAL_VISIBLE_MS = 10_000;
 const POLL_INTERVAL_HIDDEN_MS = 30_000;
@@ -267,16 +272,15 @@ export async function mountProvider(ctx) {
         if (panelEl)
             panelEl.dataset.inboxState =
                 inbox.rows === null ? "unavailable" : "confirmed";
-        if (listEl) {
-            listEl.setAttribute("aria-busy", String(inbox.pending));
-            for (const button of listEl.querySelectorAll("button"))
-                button.disabled = inbox.pending || inbox.failed;
-        }
+        if (listEl) listEl.setAttribute("aria-busy", String(inbox.pending));
         if (renderedRows !== inbox.rows) {
             renderedRows = inbox.rows;
             renderPanelContents(i18n);
-            for (const button of listEl?.querySelectorAll("button") ?? [])
-                button.disabled = inbox.pending || inbox.failed;
+        } else {
+            setControlsDisabled(
+                listEl,
+                !panelVisible || inbox.pending || inbox.failed,
+            );
         }
     }
 
@@ -335,6 +339,7 @@ export async function mountProvider(ctx) {
 
     function renderPanelContents(i18n) {
         if (!listEl) return;
+        setControlsDisabled(listEl, true);
         listEl.innerHTML = "";
         if (emptyEl) emptyEl.hidden = true;
 
@@ -356,6 +361,10 @@ export async function mountProvider(ctx) {
             listEl.appendChild(renderNotificationItem(notif, i18n));
         }
 
+        setControlsDisabled(
+            listEl,
+            !panelVisible || inbox.pending || inbox.failed,
+        );
         stopRelativeTimeTicker();
         startRelativeTimeTicker();
     }
@@ -364,6 +373,7 @@ export async function mountProvider(ctx) {
         panelController?.abort();
         confirmationPending = false;
         if (!panelEl) return;
+        setControlsDisabled(listEl, true);
         panelEl.hidden = true;
         if (mobileBackdropEl) mobileBackdropEl.hidden = true;
         panelVisible = false;
@@ -760,34 +770,48 @@ export async function mountProvider(ctx) {
 
         const isPersistent = notif.metadata?.continuous === true;
         toast.classList.toggle("arrival-toast--persistent", isPersistent);
-        toast.innerHTML =
-            '<span class="arrival-toast-icon" aria-hidden="true">\uD83D\uDD14</span>' +
-            '<div class="arrival-toast-text">' +
-            `<span class="arrival-toast-subject">${escapeHtml(toastSubject)}</span>` +
-            `<span class="arrival-toast-sender">${escapeHtml(sender)}</span>` +
-            `<span class="arrival-toast-preview">${escapeHtml(preview)}</span>` +
-            "</div>" +
-            (isPersistent
+        const primary = createPrimaryAction({
+            actionUrl: notif.actionUrl,
+            subject: toastSubject,
+            buttonLabel: i18n.t("adapter.notify.internal.open_inbox"),
+            content:
+                '<span class="arrival-toast-icon" aria-hidden="true">\uD83D\uDD14</span>' +
+                '<span class="arrival-toast-text">' +
+                `<span class="arrival-toast-subject">${escapeHtml(toastSubject)}</span>` +
+                `<span class="arrival-toast-sender">${escapeHtml(sender)}</span>` +
+                `<span class="arrival-toast-preview">${escapeHtml(preview)}</span>` +
+                "</span>",
+        });
+        toast.appendChild(primary);
+        toast.insertAdjacentHTML(
+            "beforeend",
+            isPersistent
                 ? renderNotificationActions(notif)
-                : `<button class="arrival-toast-dismiss" type="button" aria-label="${i18n.t("ui.reuse.dismiss")}">&#215;</button>`);
+                : `<button class="arrival-toast-dismiss" type="button" aria-label="${escapeHtml(i18n.t("ui.reuse.dismiss"))}">&#215;</button>`,
+        );
 
         const dismiss = () => {
             arrival.release();
+            setControlsDisabled(toast, true);
             toast.classList.add("arrival-toast--out");
             toast.addEventListener("animationend", () => toast.remove(), {
                 once: true,
             });
         };
 
+        const isCurrent = () =>
+            arrival.isCurrent() &&
+            toast.isConnected &&
+            !toast.classList.contains("arrival-toast--out");
+        toast.addEventListener("auxclick", (event) => {
+            if (primary.contains(event.target))
+                claimPrimaryActivation(event, primary, isCurrent);
+        });
         toast.addEventListener("click", (e) => {
-            if (
-                !arrival.isCurrent() ||
-                !toast.isConnected ||
-                toast.classList.contains("arrival-toast--out")
-            )
-                return;
             const actionButton = e.target.closest("[data-notification-action]");
             if (actionButton instanceof HTMLElement) {
+                e.stopPropagation();
+                if (!isCurrent()) return;
                 dismiss();
                 void markArrivalRead(notif);
                 dispatchNotificationAction(
@@ -796,13 +820,11 @@ export async function mountProvider(ctx) {
                 );
                 return;
             }
-            if (e.target.closest(".arrival-toast-dismiss")) {
-                dismiss();
-                return;
-            }
+            if (e.target.closest(".arrival-toast-dismiss")) return;
+            if (!claimPrimaryActivation(e, primary, isCurrent)) return;
             dismiss();
             markArrivalRead(notif);
-            if (notif.actionUrl) {
+            if (primary.tagName === "A") {
                 navigateNotif(notif.actionUrl);
             } else {
                 openPanel(i18n);
@@ -813,7 +835,7 @@ export async function mountProvider(ctx) {
             .querySelector(".arrival-toast-dismiss")
             ?.addEventListener("click", (e) => {
                 e.stopPropagation();
-                dismiss();
+                if (isCurrent()) dismiss();
             });
 
         container.appendChild(toast);
@@ -828,6 +850,7 @@ export async function mountProvider(ctx) {
         }, delay);
         toastTimers.add(timer);
         arrival.attach(toast, () => {
+            setControlsDisabled(toast, true);
             clearTimeout(timer);
             toastTimers.delete(timer);
         });
