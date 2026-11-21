@@ -228,3 +228,7 @@ Menu tindakan Pengguna menemukan baris melalui ID akun yang tidak berubah, bukan
 ## Aset Cache Lengkap
 
 Permintaan rentang melewati cache berkas utuh, dan hanya respons HTTP 200 lengkap yang dapat mengisi atau mengganti aset publik. Respons parsial tidak mengubah data lengkap yang sudah tersedia. Berkas font dengan hash konten memakai cache tetap dan penggunaan ulang lintas generasi seperti skrip dan gambar berhash, sehingga pembaruan worker tidak mengunduh ulang berkas yang sama.
+
+## Penyimpanan Administrasi
+
+Administrasi hanya menyimpan bagian dengan perubahan tertunda. Kontrol keamanan dapat diedit setelah pengaturan keamanan dan kebijakan kata sandi berhasil dimuat. Penggambaran ulang formulir mempertahankan perubahan; meninggalkan bagian yang diubah tetap memerlukan konfirmasi pembuangan. Penyimpanan yang berhasil sebagian mempertahankan perubahan yang gagal atau lebih baru, sehingga percobaan ulang tidak mengirim ulang pengaturan yang sudah tersimpan. Panduan Keamanan tetap menjelaskan kebijakan sesi dan domain tepercaya.

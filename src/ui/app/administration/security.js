@@ -7,7 +7,6 @@ import {
 } from "../../reuse/duration-input.js";
 import { renderInfoTooltip } from "../../reuse/info-tooltip.js";
 import {
-    DEFAULT_PASSWORD_POLICY,
     normalizePasswordPolicy,
     parsePolicyCount,
 } from "/static/gateways/auth/password-policy.js";
@@ -67,44 +66,29 @@ const POLICY_FIELDS = [
  *   security.discard();
  *
  * @param {Element} root
- * @param {{ i18n: object, onDirtyChange?: (dirty: boolean) => void }} options
- * @returns {{ init: () => Promise<void>, refresh: () => Promise<void>, save: () => Promise<void>, discard: () => void, renderContent: () => string }}
+ * @param {{ i18n: object, onDirtyChange?: (dirty: boolean) => void, signal?: AbortSignal }} options
+ * @returns {{ isDirty: () => boolean, init: () => Promise<void>, refresh: () => Promise<void>, save: () => Promise<void>, discard: () => void, renderContent: () => string }}
  */
-export function initSecuritySection(root, { i18n, onDirtyChange }) {
-    let originalDomains = [];
-    let originalUserValidationMode = "none";
-    let currentUserValidationMode = "none";
-    let originalTeacherManualApproval = true;
-    let originalEnforceTfaForAllUsers = false;
-    let originalLoginSessionTimeoutMinutes = 720;
-    let originalPasswordPolicy = { ...DEFAULT_PASSWORD_POLICY };
+export function initSecuritySection(root, { i18n, onDirtyChange, signal }) {
+    let originalSettings = null;
+    let draftSettings = null;
+    let originalPasswordPolicy = null;
+    let draftPasswordPolicy = null;
     let validationModes = [];
     let initialized = false;
+    let loading = null;
+    let bindings = null;
+    signal?.addEventListener("abort", () => bindings?.abort(), { once: true });
+    const log = (...args) => uiCtx.capabilities.get("ui:log")?.(...args);
 
-    async function loadSettings() {
-        const response = await apiFetch("/api/v1/system/security");
-        if (!response.ok) {
-            return {
-                trustedDomains: [],
-                enforceTfaForAllUsers: false,
-            };
-        }
+    async function loadData(url) {
+        const response = await apiFetch(url);
+        if (!response.ok) throw new Error("load_failed");
         const payload = await response.json();
-        return (
-            payload.data ?? {
-                trustedDomains: [],
-                enforceTfaForAllUsers: false,
-            }
-        );
-    }
-
-    async function loadPasswordPolicy() {
-        const response = await apiFetch("/api/v1/auth/password-policy");
-        if (!response.ok) {
-            return { ...DEFAULT_PASSWORD_POLICY };
+        if (!payload?.data || typeof payload.data !== "object") {
+            throw new Error("load_failed");
         }
-        const payload = await response.json();
-        return normalizePasswordPolicy(payload?.data, originalPasswordPolicy);
+        return payload.data;
     }
 
     async function persistSettings(
@@ -143,24 +127,29 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
 
     function getInputValue() {
         const input = root.querySelector("#security-trusted-domains");
-        return input instanceof HTMLInputElement ? input.value : "";
+        return input instanceof HTMLInputElement
+            ? input.value
+            : draftSettings.trustedDomains.join(",");
     }
 
     function getValidationModeValue() {
         const select = root.querySelector("#security-user-validation-mode");
-        if (!(select instanceof HTMLSelectElement)) return "none";
+        if (!(select instanceof HTMLSelectElement))
+            return draftSettings.userValidationMode;
         return select.value;
     }
 
     function getTeacherManualApprovalValue() {
         const input = root.querySelector("#security-require-teacher-approval");
-        if (!(input instanceof HTMLInputElement)) return true;
+        if (!(input instanceof HTMLInputElement))
+            return draftSettings.requireTeacherManualApproval;
         return input.checked;
     }
 
     function getEnforceTfaForAllUsersValue() {
         const input = root.querySelector("#security-enforce-tfa-for-all-users");
-        if (!(input instanceof HTMLInputElement)) return false;
+        if (!(input instanceof HTMLInputElement))
+            return draftSettings.enforceTfaForAllUsers;
         return input.checked;
     }
 
@@ -168,13 +157,13 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
         const input = root.querySelector("#security-login-session-timeout");
         const unit = root.querySelector("#security-login-session-timeout-unit");
         if (!(unit instanceof HTMLSelectElement)) {
-            return originalLoginSessionTimeoutMinutes;
+            return draftSettings.loginSessionTimeoutMinutes;
         }
         return unit.value === "never"
             ? 0
             : input instanceof HTMLInputElement
               ? joinDurationMinutes(input.value, unit.value)
-              : originalLoginSessionTimeoutMinutes;
+              : draftSettings.loginSessionTimeoutMinutes;
     }
 
     function updateLoginSessionTimeoutControls() {
@@ -219,63 +208,53 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                         ? parsePolicyCount(
                               policyInput.value,
                               min,
-                              originalPasswordPolicy[key],
+                              draftPasswordPolicy[key],
                           )
-                        : originalPasswordPolicy[key],
+                        : draftPasswordPolicy[key],
                 ];
             }),
         );
     }
 
-    function isPasswordPolicyChanged() {
-        const currentPolicy = getPasswordPolicyValue();
-        return POLICY_FIELDS.some(
-            ({ key }) => currentPolicy[key] !== originalPasswordPolicy[key],
+    function changed(current, original) {
+        return JSON.stringify(current) !== JSON.stringify(original);
+    }
+
+    function isDirty() {
+        return (
+            initialized &&
+            (changed(draftSettings, originalSettings) ||
+                changed(draftPasswordPolicy, originalPasswordPolicy))
         );
     }
 
     function markDirtyState() {
-        const currentDomains = parseDomains(getInputValue()).join(",");
-        const originalDomainsValue = originalDomains.join(",");
-        const effectiveOriginalValidationMode = originalUserValidationMode;
-        const modeChanged =
-            getValidationModeValue() !== effectiveOriginalValidationMode;
-        const teacherApprovalChanged =
-            getTeacherManualApprovalValue() !== originalTeacherManualApproval;
-        const enforceTfaChanged =
-            getEnforceTfaForAllUsersValue() !== originalEnforceTfaForAllUsers;
-        const loginTimeoutChanged =
-            getLoginSessionTimeoutMinutesValue() !==
-            originalLoginSessionTimeoutMinutes;
-        onDirtyChange?.(
-            currentDomains !== originalDomainsValue ||
-                modeChanged ||
-                teacherApprovalChanged ||
-                enforceTfaChanged ||
-                loginTimeoutChanged ||
-                isPasswordPolicyChanged(),
-        );
+        if (!initialized) return;
+        draftSettings = {
+            trustedDomains: parseDomains(getInputValue()),
+            userValidationMode: getValidationModeValue(),
+            requireTeacherManualApproval: getTeacherManualApprovalValue(),
+            enforceTfaForAllUsers: getEnforceTfaForAllUsersValue(),
+            loginSessionTimeoutMinutes: getLoginSessionTimeoutMinutesValue(),
+        };
+        draftPasswordPolicy = getPasswordPolicyValue();
+        onDirtyChange?.(isDirty());
     }
 
-    function bindSecurityInputs(settings, passwordPolicy) {
+    function bindSecurityInputs() {
+        if (signal?.aborted) return;
+        bindings?.abort();
+        bindings = new AbortController();
+        const options = { signal: bindings.signal };
         const input = root.querySelector("#security-trusted-domains");
         if (!(input instanceof HTMLInputElement)) return;
-        validationModes = settings.userValidationModes ?? validationModes;
-
-        originalDomains = settings.trustedDomains ?? [];
-        currentUserValidationMode = settings.userValidationMode ?? "none";
-        originalUserValidationMode = currentUserValidationMode;
-        originalTeacherManualApproval =
-            settings.requireTeacherManualApproval !== false;
-        originalEnforceTfaForAllUsers = settings.enforceTfaForAllUsers === true;
-        originalLoginSessionTimeoutMinutes =
-            settings.loginSessionTimeoutMinutes ?? 720;
-        originalPasswordPolicy = normalizePasswordPolicy(
-            passwordPolicy,
-            originalPasswordPolicy,
-        );
-
-        input.value = originalDomains.join(", ");
+        input.value = draftSettings.trustedDomains.join(", ");
+        for (const control of root.querySelectorAll(
+            ".security-settings-form input, .security-settings-form select",
+        )) {
+            control.disabled = false;
+        }
+        const currentUserValidationMode = draftSettings.userValidationMode;
         const validationSelect = root.querySelector(
             "#security-user-validation-mode",
         );
@@ -308,47 +287,100 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             validationSelect.value = currentUserValidationMode;
         }
         if (teacherApprovalToggle instanceof HTMLInputElement) {
-            teacherApprovalToggle.checked = originalTeacherManualApproval;
+            teacherApprovalToggle.checked =
+                draftSettings.requireTeacherManualApproval;
         }
         if (enforceTfaToggle instanceof HTMLInputElement) {
-            enforceTfaToggle.checked = originalEnforceTfaForAllUsers;
+            enforceTfaToggle.checked = draftSettings.enforceTfaForAllUsers;
         }
-        setLoginSessionTimeoutControls(originalLoginSessionTimeoutMinutes);
+        setLoginSessionTimeoutControls(
+            draftSettings.loginSessionTimeoutMinutes,
+        );
         for (const { key, id } of POLICY_FIELDS) {
             const policyInput = root.querySelector(`#${id}`);
             if (policyInput instanceof HTMLInputElement) {
-                policyInput.value = String(originalPasswordPolicy[key]);
-                policyInput.addEventListener("input", markDirtyState);
+                policyInput.value = String(draftPasswordPolicy[key]);
+                policyInput.addEventListener("input", markDirtyState, options);
             }
         }
 
-        input.addEventListener("input", markDirtyState);
-        validationSelect?.addEventListener("change", markDirtyState);
-        teacherApprovalToggle?.addEventListener("change", markDirtyState);
-        enforceTfaToggle?.addEventListener("change", markDirtyState);
-        loginTimeoutInput?.addEventListener("input", markDirtyState);
-        loginTimeoutUnit?.addEventListener("change", () => {
-            updateLoginSessionTimeoutControls();
-            markDirtyState();
-        });
+        input.addEventListener("input", markDirtyState, options);
+        validationSelect?.addEventListener("change", markDirtyState, options);
+        teacherApprovalToggle?.addEventListener(
+            "change",
+            markDirtyState,
+            options,
+        );
+        enforceTfaToggle?.addEventListener("change", markDirtyState, options);
+        loginTimeoutInput?.addEventListener("input", markDirtyState, options);
+        loginTimeoutUnit?.addEventListener(
+            "change",
+            () => {
+                updateLoginSessionTimeoutControls();
+                markDirtyState();
+            },
+            options,
+        );
+    }
+
+    async function initialize() {
+        const [settings, passwordPolicy] = await Promise.all([
+            loadData("/api/v1/system/security"),
+            loadData("/api/v1/auth/password-policy"),
+        ]);
+        const policyKeys = POLICY_FIELDS.map(({ key }) => key);
+        if (
+            !Array.isArray(settings.trustedDomains) ||
+            typeof settings.userValidationMode !== "string" ||
+            typeof settings.requireTeacherManualApproval !== "boolean" ||
+            typeof settings.enforceTfaForAllUsers !== "boolean" ||
+            !settings.trustedDomains.every(
+                (domain) => typeof domain === "string",
+            ) ||
+            !Number.isInteger(settings.loginSessionTimeoutMinutes) ||
+            settings.loginSessionTimeoutMinutes < 0 ||
+            !policyKeys.every(
+                (key) =>
+                    Number.isInteger(passwordPolicy[key]) &&
+                    passwordPolicy[key] >= (key === "minLength" ? 1 : 0),
+            )
+        ) {
+            throw new Error("load_failed");
+        }
+        validationModes = settings.userValidationModes ?? [];
+        const stringBases = [
+            ...new Set(
+                validationModes
+                    .map((mode) => mode.stringsBaseUrl)
+                    .filter(Boolean),
+            ),
+        ];
+        i18n = await extendI18n(i18n, stringBases);
+        if (signal?.aborted) throw new Error("security_load_cancelled");
+        originalSettings = {
+            trustedDomains: [...settings.trustedDomains],
+            userValidationMode: settings.userValidationMode,
+            requireTeacherManualApproval: settings.requireTeacherManualApproval,
+            enforceTfaForAllUsers: settings.enforceTfaForAllUsers,
+            loginSessionTimeoutMinutes: settings.loginSessionTimeoutMinutes,
+        };
+        originalPasswordPolicy = normalizePasswordPolicy(passwordPolicy);
+        draftSettings = structuredClone(originalSettings);
+        draftPasswordPolicy = { ...originalPasswordPolicy };
+        initialized = true;
     }
 
     return {
+        isDirty,
+
         async init() {
-            const [settings, passwordPolicy] = await Promise.all([
-                loadSettings(),
-                loadPasswordPolicy(),
-            ]);
-            const stringBases = [
-                ...new Set(
-                    (settings.userValidationModes ?? [])
-                        .map((mode) => mode.stringsBaseUrl)
-                        .filter(Boolean),
-                ),
-            ];
-            i18n = await extendI18n(i18n, stringBases);
-            bindSecurityInputs(settings, passwordPolicy);
-            initialized = true;
+            if (!initialized) {
+                loading ??= initialize().finally(() => {
+                    loading = null;
+                });
+                await loading;
+            }
+            bindSecurityInputs();
         },
 
         async refresh() {
@@ -356,78 +388,48 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                 await this.init();
                 return;
             }
-            bindSecurityInputs(
-                {
-                    trustedDomains: originalDomains,
-                    userValidationMode: originalUserValidationMode,
-                    requireTeacherManualApproval: originalTeacherManualApproval,
-                    enforceTfaForAllUsers: originalEnforceTfaForAllUsers,
-                    loginSessionTimeoutMinutes:
-                        originalLoginSessionTimeoutMinutes,
-                },
-                originalPasswordPolicy,
-            );
+            bindSecurityInputs();
         },
 
         async save() {
-            const domains = parseDomains(getInputValue());
-            const validationMode = getValidationModeValue();
-            const requireTeacherManualApproval =
-                getTeacherManualApprovalValue();
-            const enforceTfaForAllUsers = getEnforceTfaForAllUsersValue();
-            const passwordPolicy = getPasswordPolicyValue();
-            const loginSessionTimeoutMinutes =
-                getLoginSessionTimeoutMinutesValue();
-
-            await persistSettings(
-                domains,
-                validationMode,
-                requireTeacherManualApproval,
-                enforceTfaForAllUsers,
-                loginSessionTimeoutMinutes,
-            );
-            await persistPasswordPolicy(passwordPolicy);
-            clearTrustedDomainsCache();
-
-            originalDomains = domains;
-            currentUserValidationMode = validationMode;
-            originalUserValidationMode = validationMode;
-            originalTeacherManualApproval = requireTeacherManualApproval;
-            originalEnforceTfaForAllUsers = enforceTfaForAllUsers;
-            originalLoginSessionTimeoutMinutes = loginSessionTimeoutMinutes;
-            originalPasswordPolicy = passwordPolicy;
+            if (!initialized) throw new Error("security_not_loaded");
+            if (!isDirty()) return;
+            const settings = structuredClone(draftSettings);
+            const passwordPolicy = { ...draftPasswordPolicy };
+            try {
+                if (changed(settings, originalSettings)) {
+                    await persistSettings(
+                        settings.trustedDomains,
+                        settings.userValidationMode,
+                        settings.requireTeacherManualApproval,
+                        settings.enforceTfaForAllUsers,
+                        settings.loginSessionTimeoutMinutes,
+                    );
+                    originalSettings = settings;
+                    clearTrustedDomainsCache();
+                    log("info", "security_settings_saved", {
+                        component: "administration",
+                        operation: "saveSettings",
+                    });
+                }
+                if (changed(passwordPolicy, originalPasswordPolicy)) {
+                    await persistPasswordPolicy(passwordPolicy);
+                    originalPasswordPolicy = passwordPolicy;
+                    log("info", "password_policy_saved", {
+                        component: "administration",
+                        operation: "savePasswordPolicy",
+                    });
+                }
+            } finally {
+                onDirtyChange?.(isDirty());
+            }
         },
 
         discard() {
-            const input = root.querySelector("#security-trusted-domains");
-            if (input instanceof HTMLInputElement) {
-                input.value = originalDomains.join(", ");
-            }
-            const validationSelect = root.querySelector(
-                "#security-user-validation-mode",
-            );
-            if (validationSelect instanceof HTMLSelectElement) {
-                validationSelect.value = originalUserValidationMode;
-            }
-            const teacherApprovalToggle = root.querySelector(
-                "#security-require-teacher-approval",
-            );
-            const enforceTfaToggle = root.querySelector(
-                "#security-enforce-tfa-for-all-users",
-            );
-            if (teacherApprovalToggle instanceof HTMLInputElement) {
-                teacherApprovalToggle.checked = originalTeacherManualApproval;
-            }
-            if (enforceTfaToggle instanceof HTMLInputElement) {
-                enforceTfaToggle.checked = originalEnforceTfaForAllUsers;
-            }
-            setLoginSessionTimeoutControls(originalLoginSessionTimeoutMinutes);
-            for (const { key, id } of POLICY_FIELDS) {
-                const policyInput = root.querySelector(`#${id}`);
-                if (policyInput instanceof HTMLInputElement) {
-                    policyInput.value = String(originalPasswordPolicy[key]);
-                }
-            }
+            if (!initialized) return;
+            draftSettings = structuredClone(originalSettings);
+            draftPasswordPolicy = { ...originalPasswordPolicy };
+            bindSecurityInputs();
             onDirtyChange?.(false);
         },
 
@@ -441,8 +443,8 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
               ${renderInfoTooltip(i18n.t("ui.app.admin.security.login_session_timeout_hint"), tooltipAria)}
             </h3>
             <div class="security-field-row">
-              <input id="security-login-session-timeout" class="security-policy-number-input" type="number" min="1" step="1" />
-              <select id="security-login-session-timeout-unit" class="theme-select">
+              <input ${initialized ? "" : "disabled"} id="security-login-session-timeout" class="security-policy-number-input" type="number" min="1" step="1" />
+              <select ${initialized ? "" : "disabled"} id="security-login-session-timeout-unit" class="theme-select">
                 <option value="minutes">${escapeHtml(i18n.t("ui.reuse.duration.minutes"))}</option>
                 <option value="hours">${escapeHtml(i18n.t("ui.reuse.duration.hours"))}</option>
                 <option value="days">${escapeHtml(i18n.t("ui.reuse.duration.days"))}</option>
@@ -458,7 +460,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
               ${renderInfoTooltip(i18n.t("ui.app.admin.security.trusted_domains_hint"), tooltipAria)}
             </h3>
             <div class="security-field-row">
-              <input
+              <input ${initialized ? "" : "disabled"}
                 id="security-trusted-domains"
                 type="text"
                 class="security-domains-input"
@@ -472,7 +474,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
               ${renderInfoTooltip(i18n.t("ui.app.admin.security.user_validation_mode_hint"), tooltipAria)}
             </h3>
             <div class="security-field-row">
-              <select id="security-user-validation-mode" class="theme-select">
+              <select ${initialized ? "" : "disabled"} id="security-user-validation-mode" class="theme-select">
 
               </select>
             </div>
@@ -484,7 +486,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             </h3>
             <div class="security-field-row">
               <label class="switch">
-                <input id="security-require-teacher-approval" type="checkbox" />
+                <input ${initialized ? "" : "disabled"} id="security-require-teacher-approval" type="checkbox" />
                 <span class="slider"></span>
               </label>
             </div>
@@ -496,7 +498,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
             </h3>
             <div class="security-field-row">
               <label class="switch">
-                <input id="security-enforce-tfa-for-all-users" type="checkbox" />
+                <input ${initialized ? "" : "disabled"} id="security-enforce-tfa-for-all-users" type="checkbox" />
                 <span class="slider"></span>
               </label>
             </div>
@@ -509,7 +511,7 @@ export function initSecuritySection(root, { i18n, onDirtyChange }) {
                 ({ id, min, i18nSuffix }) => `
             <div class="security-field-row">
               <label for="${id}">${escapeHtml(i18n.t(`ui.app.admin.security.${i18nSuffix}`))}</label>
-              <input id="${id}" class="security-policy-number-input" type="number" min="${min}" max="128" />
+              <input ${initialized ? "" : "disabled"} id="${id}" class="security-policy-number-input" type="number" min="${min}" max="128" />
             </div>`,
             ).join("")}
           </div>
