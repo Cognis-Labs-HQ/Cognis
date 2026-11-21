@@ -856,5 +856,8 @@ test("calendar shares provide a Cognis content route", () => {
 });
 
 test("calendar week headers adapt to the panel width", () => {
-    assert.match(TIMED_GRID_CSS_SOURCE, /@container calendar-week \(max-width:\s*700px\)[\s\S]*\.calendar-week-day-header\s*\{[\s\S]*flex-direction:\s*column;/s);
+    assert.match(
+        TIMED_GRID_CSS_SOURCE,
+        /@container calendar-week \(max-width:\s*700px\)[\s\S]*\.calendar-week-day-header\s*\{[\s\S]*flex-direction:\s*column;/s,
+    );
 });
