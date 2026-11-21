@@ -12,5 +12,6 @@ Auth und Share im Browser unterscheiden bestätigte Anmeldungen statt Kontonamen
 
 ## Änderungen
 
-- [7e5d3d04323e4c3109e364d39f063d650ad63629](https://github.com/Cognis-Labs-HQ/Cognis/commit/7e5d3d04323e4c3109e364d39f063d650ad63629)
-- [56c4ec2f65332bf0e3b64dcf57c17fd49210df24](https://github.com/Cognis-Labs-HQ/Cognis/commit/56c4ec2f65332bf0e3b64dcf57c17fd49210df24)
+- [d4ce81f358beccf5b559295be48b4f0ee0cc2408](https://github.com/Cognis-Labs-HQ/Cognis/commit/d4ce81f358beccf5b559295be48b4f0ee0cc2408)
+- [1a2d25e7dc0ef6f19225f5e6cd5ccc65fcb74897](https://github.com/Cognis-Labs-HQ/Cognis/commit/1a2d25e7dc0ef6f19225f5e6cd5ccc65fcb74897)
+- [0deea1701af7b4b1ca9da660a6ab299200125d0c](https://github.com/Cognis-Labs-HQ/Cognis/commit/0deea1701af7b4b1ca9da660a6ab299200125d0c)
