@@ -34,8 +34,6 @@ Adapter contract registration follows [the shared gateway bootstrap contract](/d
 
 ## Configuration
 
-### Configuration
-
 | Variable         | Default      | Description                                                                               |
 | ---------------- | ------------ | ----------------------------------------------------------------------------------------- |
 | `MEDIA_LOCATION` | `/app/media` | Root directory for media storage; uploads go to `$MEDIA_LOCATION/uploads/<namespace>/...` |

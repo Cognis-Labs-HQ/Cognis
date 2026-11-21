@@ -8,8 +8,6 @@ Berkas terintegrasi melalui gerbang pemilik; manifesnya mengidentifikasi kompone
 
 ## Konfigurasi
 
-### Konfigurasi
-
 | Variabel         | Default      | Deskripsi                                                                                           |
 | ---------------- | ------------ | --------------------------------------------------------------------------------------------------- |
 | `MEDIA_LOCATION` | `/app/media` | Direktori root untuk penyimpanan media; unggahan masuk ke `$MEDIA_LOCATION/uploads/<namespace>/...` |

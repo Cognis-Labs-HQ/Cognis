@@ -64,8 +64,6 @@ The profile navbar plugin provides `ui:profileAvatarRenderer`. Modules that rend
 
 ## Configuration
 
-### Configuration
-
 The adapter reads `db:executor` and `db:type` from the capability store
 (contributed by the database gateway) and optionally `file:gateway`
 (contributed by the files gateway). No environment variables are required.

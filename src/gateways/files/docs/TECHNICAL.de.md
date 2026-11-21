@@ -18,8 +18,6 @@ Die Vertragsregistrierung von Adaptern folgt dem [gemeinsamen Gateway-Bootstrap-
 
 ## Konfiguration
 
-### Konfiguration
-
 | Variable         | Standard     | Beschreibung                                                                                       |
 | ---------------- | ------------ | -------------------------------------------------------------------------------------------------- |
 | `MEDIA_LOCATION` | `/app/media` | Stammverzeichnis für Medienspeicherung; Uploads gehen an `$MEDIA_LOCATION/uploads/<namespace>/...` |
