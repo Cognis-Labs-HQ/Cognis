@@ -16,4 +16,4 @@ Tests mit dem tatsächlichen CLI im PTY und öffentlichen Registrierungen prüfe
 
 ## Commits
 
-- [9f11d41e2609f2938a56da8358ec884a90f2e80d](https://github.com/Cognis-Labs-HQ/Cognis/commit/9f11d41e2609f2938a56da8358ec884a90f2e80d)
+- [b0e67efd30970e4329914952e194f7b4bf0d036c](https://github.com/Cognis-Labs-HQ/Cognis/commit/b0e67efd30970e4329914952e194f7b4bf0d036c)
