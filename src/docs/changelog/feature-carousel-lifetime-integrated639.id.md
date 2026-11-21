@@ -12,5 +12,5 @@ Aktivasi sinkron dan asinkron yang masih aktif, penolakan melalui hasil false, u
 
 ## Komit
 
-- [53f14b9f22c2191c38b90ecccf82f14c50f02684](https://github.com/Cognis-Labs-HQ/Cognis/commit/53f14b9f22c2191c38b90ecccf82f14c50f02684)
-- [9fdad54cf036a485a7981eee48c05c819eb5d20d](https://github.com/Cognis-Labs-HQ/Cognis/commit/9fdad54cf036a485a7981eee48c05c819eb5d20d)
+- [7e9746dde4b5ce65f426e1baeef8b09bd814c0e0](https://github.com/Cognis-Labs-HQ/Cognis/commit/7e9746dde4b5ce65f426e1baeef8b09bd814c0e0)
+- [7adfa7602f9e74515dacf83ce779572bb8faffc3](https://github.com/Cognis-Labs-HQ/Cognis/commit/7adfa7602f9e74515dacf83ce779572bb8faffc3)
