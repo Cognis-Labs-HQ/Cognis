@@ -83,19 +83,23 @@ export function readModulePreferenceValues(
 export async function openModulePreferences(
     module,
     labels,
-    { signal: lifetime } = {
-        signal: uiCtx.capabilities
+    {
+        signal: lifetime = uiCtx.capabilities
             .get("ui:moduleTutorialTargets")
             ?.settingsSignal(module.id),
-    },
+        isCurrent = () => true,
+        isVisible = () => true,
+    } = {},
 ) {
+    const available = () => !lifetime?.aborted && isCurrent() && isVisible();
+    if (!available()) return null;
     const definitions = module.ui?.preferences ?? [];
     if (!definitions.length) return;
-    if (lifetime?.aborted) return null;
+    if (!available()) return null;
     const values = await loadModuleConfig(module.id);
-    if (lifetime?.aborted) return null;
+    if (!available()) return null;
     const moduleI18n = await extendI18n(labels.i18n, module.ui?.stringsBaseUrl);
-    if (lifetime?.aborted) return null;
+    if (!available()) return null;
     const localizedDefinitions = definitions.map((definition) => ({
         ...definition,
         label: moduleI18n.t(definition.labelKey),
@@ -182,6 +186,7 @@ export async function openModulePreferences(
                     });
             },
             onAction: async (action, overlay) => {
+                if (!available()) return false;
                 const configuredAction = configActions.find(
                     (item) => action === `config:${item.id}`,
                 );
@@ -201,7 +206,8 @@ export async function openModulePreferences(
                             ),
                             controller.signal,
                         );
-                        if (controller.signal.aborted) return false;
+                        if (controller.signal.aborted || !available())
+                            return false;
                         if (configuredAction.result === "options") {
                             const input = form.elements.namedItem(
                                 configuredAction.fieldKey,
@@ -249,7 +255,8 @@ export async function openModulePreferences(
                             await preview.play();
                         }
                     } catch (error) {
-                        if (controller.signal.aborted) return false;
+                        if (controller.signal.aborted || !available())
+                            return false;
                         reportClientError({
                             component: "modules",
                             operation: "configAction",
@@ -288,5 +295,5 @@ export async function openModulePreferences(
         formController?.detach();
         for (const objectUrl of objectUrls) URL.revokeObjectURL(objectUrl);
     }
-    return action === "save" ? savedValues : null;
+    return available() && action === "save" ? savedValues : null;
 }

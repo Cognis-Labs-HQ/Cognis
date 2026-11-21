@@ -5,6 +5,7 @@ import {
     areModuleDependenciesSatisfied,
     dependencyLifecycleAction,
     moduleDependencyActionState,
+    moduleActionNeedsDependencies,
     resolveModuleDependencyErrorMessage,
     resolveInstallDependencies,
 } from "../../app/modules/dependencies.js";
@@ -149,19 +150,40 @@ test("module dependency popup renders navigable cards and action-specific labels
     );
     assert.match(
         marketplaceSource,
-        /installAndEnableDependency[\s\S]*runLifecycleAction\(dependency, "install"\)[\s\S]*runLifecycleAction\(dependency, "enable"\)/,
+        /installAndEnableDependency[\s\S]*runLifecycleAction\(dependency, "install",[\s\S]*runLifecycleAction\(dependency, "enable",/,
     );
     assert.match(
         marketplaceSource,
-        /ensureModuleDependenciesReady\(module\)[\s\S]*pendingModuleActions\.set\(module\.uuid, action\)[\s\S]*beginButtonLoading\(target\)/,
+        /ensureModuleDependenciesReady\(module, owner\)[\s\S]*pendingModuleActions\.set\(module\.uuid, action\)[\s\S]*beginButtonLoading\(target\)/,
     );
     assert.match(
         marketplaceSource,
-        /\["install", "enable"\]\.includes\(action\)[\s\S]*ensureModuleDependenciesReady\(module\)/,
+        /moduleActionNeedsDependencies\(module, action\)[\s\S]*ensureModuleDependenciesReady\(module, owner\)/,
     );
 });
 
-test("installation and enablement both run dependency preflight", async () => {
+test("every enabling action runs dependency preflight at queue and execution", async () => {
+    for (const status of ["enabled", "disabled"]) {
+        for (const action of ["install", "enable"])
+            assert.equal(
+                moduleActionNeedsDependencies({ status }, action),
+                true,
+            );
+        for (const action of ["disable", "uninstall"])
+            assert.equal(
+                moduleActionNeedsDependencies({ status }, action),
+                false,
+            );
+        assert.equal(
+            moduleActionNeedsDependencies({ status }, "configure"),
+            status === "disabled",
+        );
+        for (const action of ["update", "force-update", "change-channel"])
+            assert.equal(
+                moduleActionNeedsDependencies({ status }, action),
+                status === "enabled",
+            );
+    }
     const source = await import("node:fs/promises").then(({ readFile }) =>
         readFile(
             new URL("../../app/modules/index.js", import.meta.url),
@@ -169,7 +191,7 @@ test("installation and enablement both run dependency preflight", async () => {
         ),
     );
     const preflightChecks = source.match(
-        /\["install", "enable"\]\.includes\(action\)/g,
+        /moduleActionNeedsDependencies\(module, action\)/g,
     );
     assert.equal(preflightChecks?.length, 2);
 });
