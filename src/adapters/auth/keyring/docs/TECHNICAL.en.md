@@ -32,8 +32,6 @@ const password = await keyring.resolve("meeting:123:password", {
 
 ## Configuration
 
-### Configuration
-
 The required adapter uses the active `db:executor`. Administrators configure the maximum encrypted vault size in MiB and the password-derivation iteration count through the adapter settings. Existing vaults retain their recorded derivation count; the configured count applies when a vault is created. The default encrypted-vault capacity is 2 MiB.
 
 ## Behavior
@@ -82,7 +80,7 @@ Keyring configuration declares its own string bundle and localized labels for ma
 
 ### Credential Scope
 
-Account operations require verified account sessions. Shared-resource operations explicitly verify guest credentials and recheck the current grant before applying resource permissions. Account names never determine credential type. Revoked or expired access is denied.
+Shared behavior: [Auth](/docs/gateways/auth/technical).
 
 ## Security
 

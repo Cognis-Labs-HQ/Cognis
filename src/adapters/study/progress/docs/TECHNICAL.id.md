@@ -34,7 +34,7 @@ ID proyeksi kemajuan memakai tupel identitas JSON yang tidak ambigu tanpa byte N
 
 ### Identitas Sesi
 
-Aktivitas pribadi dan status tersimpan menggunakan sesi akun terverifikasi, termasuk nama akun yang diawali `share:`. Pembatasan tamu mengikuti tujuan kredensial terverifikasi, bukan nama atau penanda peramban. Pengiriman luring tetap memeriksa sesi terverifikasi, akun, dan instans.
+Perilaku bersama: [Study](/docs/gateways/study/technical).
 
 ## Keamanan
 

@@ -94,7 +94,7 @@ Die Verträge für Kalenderereignisse, Speicherung, Initialisierung und Adapter-
 
 ### Geltungsbereich der Anmeldung
 
-Kontoaktionen erfordern bestätigte Kontositzungen. Aktionen für freigegebene Ressourcen prüfen Gastanmeldungen ausdrücklich und kontrollieren die aktuelle Freigabe vor den Ressourcenberechtigungen. Kontonamen bestimmen niemals den Anmeldetyp. Widerrufener oder abgelaufener Zugriff wird abgelehnt.
+Gemeinsames Verhalten: [Auth](/docs/gateways/auth/technical).
 
 ## Sicherheit
 

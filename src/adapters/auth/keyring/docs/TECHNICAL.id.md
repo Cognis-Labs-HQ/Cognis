@@ -32,8 +32,6 @@ const password = await keyring.resolve("meeting:123:password", {
 
 ## Konfigurasi
 
-### Konfigurasi
-
 Adapter wajib ini menggunakan `db:executor` aktif. Administrator mengatur ukuran maksimum brankas terenkripsi dalam MiB dan jumlah iterasi penurunan kata sandi melalui pengaturan adapter. Brankas yang sudah ada mempertahankan jumlah penurunan yang tersimpan; nilai konfigurasi berlaku saat brankas dibuat. Kapasitas bawaan brankas terenkripsi adalah 2 MiB.
 
 ## Perilaku
@@ -82,7 +80,7 @@ Konfigurasi Keyring mendeklarasikan paket bahasanya sendiri serta label terlokal
 
 ### Cakupan Kredensial
 
-Operasi akun memerlukan sesi akun yang terverifikasi. Operasi sumber daya bersama memverifikasi kredensial tamu secara eksplisit dan memeriksa kembali izin berbagi saat ini sebelum menerapkan izin sumber daya. Nama akun tidak menentukan jenis kredensial. Akses yang dicabut atau kedaluwarsa ditolak.
+Perilaku bersama: [Auth](/docs/gateways/auth/technical).
 
 ## Keamanan
 

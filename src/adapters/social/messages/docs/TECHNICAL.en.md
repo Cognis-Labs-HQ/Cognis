@@ -204,7 +204,7 @@ Social profile roles and visibility declarations now match stored records. Messa
 
 ### Credential Scope
 
-Account operations require verified account sessions. Shared-resource operations explicitly verify guest credentials and recheck the current grant before applying resource permissions. Account names never determine credential type. Revoked or expired access is denied.
+Shared behavior: [Auth](/docs/gateways/auth/technical).
 
 ## Security
 

@@ -94,7 +94,7 @@ Kontrak acara, penyimpanan, inisialisasi, dan HTTP adaptor Kalender kini menjela
 
 ### Cakupan Kredensial
 
-Operasi akun memerlukan sesi akun yang terverifikasi. Operasi sumber daya bersama memverifikasi kredensial tamu secara eksplisit dan memeriksa kembali izin berbagi saat ini sebelum menerapkan izin sumber daya. Nama akun tidak menentukan jenis kredensial. Akses yang dicabut atau kedaluwarsa ditolak.
+Perilaku bersama: [Auth](/docs/gateways/auth/technical).
 
 ## Keamanan
 

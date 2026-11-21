@@ -44,7 +44,7 @@ Progress projection IDs use an unambiguous JSON identity tuple without NUL bytes
 
 ### Session Identity
 
-Personal activity and saved state use verified account sessions, including account names beginning with `share:`. Guest restrictions follow verified credential purpose rather than names or browser markers. Offline delivery retains its verified-session, account and instance checks.
+Shared behavior: [Study](/docs/gateways/study/technical).
 
 ## Security
 

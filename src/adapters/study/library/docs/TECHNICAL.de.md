@@ -611,7 +611,7 @@ Testfabriken in `tests/reuse/` liefern vollständige Einträge, Schemas und Nach
 
 ### Sitzungsidentität
 
-Persönliche Aktivitäten und gespeicherte Zustände verwenden bestätigte Kontositzungen, auch bei Kontonamen mit `share:`. Gastbeschränkungen richten sich nach dem bestätigten Zweck der Anmeldung statt nach Namen oder Browsermarkierungen. Die Offline-Übertragung behält ihre Prüfungen für bestätigte Sitzungen, Konten und Instanzen bei.
+Gemeinsames Verhalten: [Study](/docs/gateways/study/technical).
 
 ## Sicherheit
 
