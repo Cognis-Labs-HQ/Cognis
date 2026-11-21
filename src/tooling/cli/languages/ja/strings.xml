@@ -1,0 +1,24 @@
+<resources>
+  <string name="cli.terminal.intro">{command} の対話ウィザード。各項目には入力が表示されるか非表示かが示されます。任意の項目は Enter キーで省略できます。</string>
+  <string name="cli.terminal.visible">表示</string>
+  <string name="cli.terminal.hidden">非表示</string>
+  <string name="cli.terminal.required">必須</string>
+  <string name="cli.terminal.optional">任意</string>
+  <string name="cli.terminal.noninteractive">対話入力には stdin と stderr の端末が必要です。コマンド引数を指定してください。使用方法は --help で確認できます。</string>
+  <string name="cli.terminal.eof">コマンドを送信する前に入力が終了しました。</string>
+  <string name="cli.terminal.cancelled">送信前にコマンドがキャンセルされました。</string>
+  <string name="cli.terminal.missing">必須の入力項目がありません: {field}</string>
+  <string name="cli.terminal.invalid">無効な入力項目: {field}</string>
+  <string name="cli.terminal.working">{command}: 実行中…</string>
+  <string name="cli.terminal.waiting">{command}: 実行中（{seconds} 秒経過）…</string>
+  <string name="cli.terminal.input.json">JSON オブジェクトが必要です。コマンドの項目は --help で確認できます。</string>
+  <string name="cli.terminal.input.extra">引数が多すぎます。コマンドの使用方法は --help で確認できます。</string>
+  <string name="cli.terminal.input.argument">必須の引数がありません: {field}</string>
+  <string name="cli.terminal.input.body">JSON 本文の必須項目がありません: {field}。コマンドの項目は --help で確認できます。</string>
+  <string name="cli.terminal.input.arguments">引数</string>
+  <string name="cli.terminal.input.bodyfields">JSON 本文の項目</string>
+  <string name="cli.terminal.input.queryfields">JSON クエリの項目</string>
+  <string name="cli.terminal.input.query">JSON クエリの必須項目がありません: {field}。コマンドの項目は --help で確認できます。</string>
+  <string name="cli.terminal.input.duplicate">コマンドの入力項目名が重複しています: {field}。コマンドの提供元は一意の項目名を指定する必要があります。</string>
+  <string name="cli.terminal.input.array">カンマ区切りの一覧または JSON 文字列配列を入力してください。空の一覧には [] を使用します。</string>
+</resources>

@@ -1,3 +1,5 @@
+import { cliText } from "./locale.ts";
+import { isPromptActive, withTerminalSession } from "./terminal.ts";
 import { conciseText } from "./output-summary.ts";
 
 export function componentLabel(
@@ -39,19 +41,23 @@ export async function withCommandProgress<T>(
     operation: () => Promise<T>,
     write: (line: string) => void,
 ): Promise<T> {
-    const started = Date.now();
-    write(`${commandLabel(command)}: working…`);
-    const timer = setInterval(
-        () =>
+    return withTerminalSession(async () => {
+        const started = Date.now();
+        write(cliText("working", { command: commandLabel(command) }));
+        const timer = setInterval(() => {
+            if (isPromptActive()) return;
             write(
-                `${commandLabel(command)}: still working (${Math.floor((Date.now() - started) / 1000)}s elapsed)…`,
-            ),
-        10_000,
-    );
-    timer.unref();
-    try {
-        return await operation();
-    } finally {
-        clearInterval(timer);
-    }
+                cliText("waiting", {
+                    command: commandLabel(command),
+                    seconds: String(Math.floor((Date.now() - started) / 1000)),
+                }),
+            );
+        }, 10_000);
+        timer.unref();
+        try {
+            return await operation();
+        } finally {
+            clearInterval(timer);
+        }
+    });
 }
