@@ -8,4 +8,4 @@ Die Datenbankinitialisierung benötigt nur die verwendete direkte Ausführungsfu
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/6b35ffb159afbea717ce9bd656629055f34ebaef
+- [ef1d7ff1a0531bd6540c099f82411b6e3e8d2af3](https://github.com/Cognis-Labs-HQ/Cognis/commit/ef1d7ff1a0531bd6540c099f82411b6e3e8d2af3)
