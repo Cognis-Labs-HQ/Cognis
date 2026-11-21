@@ -12,4 +12,5 @@ Deleted channels resolve to the current default branch while valid choices and i
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/7b5d27e196c7597948332a39196d7ca147f2098b
+- [5717f520ef59ebf0de20be2583d2f51454b4271b](https://github.com/Cognis-Labs-HQ/Cognis/commit/5717f520ef59ebf0de20be2583d2f51454b4271b)
+- [588ffab3d3751e442ceb96e62ad326d9767aa5e6](https://github.com/Cognis-Labs-HQ/Cognis/commit/588ffab3d3751e442ceb96e62ad326d9767aa5e6)
