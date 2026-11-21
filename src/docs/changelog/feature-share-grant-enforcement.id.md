@@ -12,4 +12,5 @@ PATCH dengan `grantedCapabilities: []` menghapus semua kapabilitas yang diberika
 
 ## Komit
 
-- [494c33c61dc193364755f8474c6905b96d786520](https://github.com/Cognis-Labs-HQ/Cognis/commit/494c33c61dc193364755f8474c6905b96d786520)
+- [1f5c4f101876d150f9ee130a00297fbb266d4399](https://github.com/Cognis-Labs-HQ/Cognis/commit/1f5c4f101876d150f9ee130a00297fbb266d4399)
+- [bb1d6a4e69171f0abfe3792028a9137855224315](https://github.com/Cognis-Labs-HQ/Cognis/commit/bb1d6a4e69171f0abfe3792028a9137855224315)
