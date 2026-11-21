@@ -235,6 +235,7 @@ Administrasi hanya menyimpan bagian dengan perubahan tertunda. Kontrol keamanan 
 Dialog Nonaktifkan menempatkan Batal yang netral terlebih dahulu dan menandai Nonaktifkan sebagai tindakan berbahaya. Aktifkan tetap positif. Batal, tutup, dan Escape tidak mengubah status komponen. Kontrol yang sedang memproses tidak memulai operasi yang sama lagi. Meninggalkan tampilan komponen, mengganti halaman Administrasi, atau mengubah sesi membatalkan pekerjaan yang belum dikirim. Permintaan yang sudah dikirim tidak dapat dibatalkan kembali. Permintaan yang ditolak menghentikan perubahan dependennya. Jika hasilnya tidak pasti atau pembacaan gagal setelah perubahan diterima, kontrol tetap tidak tersedia hingga Administrasi dimuat ulang untuk membaca status terkini. Saat meninggalkan draf, Tetap bersifat netral dan Buang dan Lanjutkan bersifat destruktif; hanya pilihan kedua yang menghapus draf.
 
 Adaptor yang dikunci secara individual tetap dikelola oleh gateway-nya. Tindakan gateway tidak mengirim perubahan individual untuk adaptor tersebut atau menawarkannya sebagai pilihan Aktifkan adaptor.
+
 ## Keamanan
 
 Membaca dokumentasi tidak memberikan izin menjalankan contohnya. Komponen pemilik mengotorisasi setiap operasi.

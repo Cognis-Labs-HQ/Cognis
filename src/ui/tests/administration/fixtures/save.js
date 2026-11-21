@@ -9,9 +9,7 @@ import {
     importTestModule,
     loadTestModule,
 } from "../../../../tooling/reuse/test-module.ts";
-import {
-    createAdministrationSave,
-} from "../../../app/administration/save.js";
+import { createAdministrationSave } from "../../../app/administration/save.js";
 import * as duration from "../../../reuse/duration-input.js";
 import { createAdministrationReloaders } from "../../../app/administration/reloaders.js";
 
@@ -204,7 +202,7 @@ export async function environment({ createContribution } = {}) {
         escapeHtml: String,
         createAdministrationReloaders,
         createAdministrationSave,
-            initSecuritySection: (...args) =>
+        initSecuritySection: (...args) =>
             (section = security.initSecuritySection(...args)),
         createUnsavedChangesBar: unsaved.createUnsavedChangesBar,
         mountWhenDirect: async () => {},
