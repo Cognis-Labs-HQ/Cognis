@@ -16,7 +16,7 @@ Konfigurasikan `COGNIS_SMTP_HOST`, `COGNIS_SMTP_PORT` (587), `COGNIS_SMTP_FROM`,
 
 #Adapter notifikasi SMTP mengirim aksi email terdaftar dan mengelola kebijakan panjang kode bersama untuk verifikasi email dan TFA Kode Email.
 
-## Contoh Penggunaan
+### Contoh Penggunaan
 
 SMTP memiliki registrasi aksi, penyusunan pesan, dan antrean. Daftarkan `notify:registerEmailPurpose` dengan pengenal lokal dan fungsi aksi yang membangun pesan dari variabel. Gateway, adapter, dan modul eksternal hanya mendaftar dalam lingkup bootstrap masing-masing; pengenal menyertakan pemilik. Auth, Registration, TFA, dan Share memiliki isi pesannya sendiri. SMTP tidak memiliki daftar tujuan khusus aplikasi.
 
@@ -30,7 +30,7 @@ const sendEmail = ctx.getCapability("notify:sendEmail");
 await sendEmail({ purpose, recipientEmail, variables });
 ```
 
-## Spesifikasi Teknis
+### Spesifikasi Teknis
 
 ### Bootstrap dan Kanal
 

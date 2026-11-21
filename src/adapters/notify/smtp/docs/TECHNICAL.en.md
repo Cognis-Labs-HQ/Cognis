@@ -16,7 +16,7 @@ Configure `COGNIS_SMTP_HOST`, `COGNIS_SMTP_PORT` (587), `COGNIS_SMTP_FROM`, opti
 
 #The SMTP notification adapter delivers registered email actions and owns the code-length policy shared by email verification and Email Code TFA.
 
-## Usage Examples
+### Usage Examples
 
 SMTP owns action registration, rendering and queues. Register `notify:registerEmailPurpose` with a local identifier and an action function that builds the message from variables. Gateways, adapters and external modules register only within their own bootstrap scope; identifiers include the owner. Auth, Registration, TFA and Share own their message content. SMTP has no list of application-specific purposes.
 
@@ -30,7 +30,7 @@ const sendEmail = ctx.getCapability("notify:sendEmail");
 await sendEmail({ purpose, recipientEmail, variables });
 ```
 
-## Technical Specification
+### Technical Specification
 
 ### Bootstrap and Channels
 

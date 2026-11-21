@@ -16,7 +16,7 @@ SMTPは自身のブートストラップでメール用途、配送、ポリシ�
 
 #SMTP通知アダプターは登録済みのメールアクションを配信し、メール確認とメールコードTFAで共有するコード長のポリシーを管理します。
 
-## 使用例
+### 使用例
 
 SMTPがアクションの登録、メッセージの生成、キューを管理します。`notify:registerEmailPurpose`にはローカル識別子と、変数からメッセージを生成するアクション関数を渡します。ゲートウェイ、アダプター、外部モジュールは、それぞれのブートストラップ中にのみ登録でき、識別子には所有者が含まれます。Auth、Registration、TFA、Shareが各メッセージの内容を所有し、SMTPにアプリ固有の用途一覧はありません。
 
@@ -30,7 +30,7 @@ const sendEmail = ctx.getCapability("notify:sendEmail");
 await sendEmail({ purpose, recipientEmail, variables });
 ```
 
-## 技術仕様
+### 技術仕様
 
 ### ブートストラップとチャネル
 

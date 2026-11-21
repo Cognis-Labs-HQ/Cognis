@@ -407,11 +407,17 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                 } catch (error) {
                     pendingMethodIds.delete(methodId);
                     console.error("[tfa] challenge request failed", {
-                        component: "tfa", operation: "beginLoginChallenge", methodId, errorName: error?.name,
+                        component: "tfa",
+                        operation: "beginLoginChallenge",
+                        methodId,
+                        errorName: error?.name,
                     });
                     if (isSelectedMethod(methodId)) {
                         setResendStateForMethod(resolveMethod(methodId));
-                        showToast(i18n.t("ui.app.login.tfa.challenge_unavailable"), { variant: "error" });
+                        showToast(
+                            i18n.t("ui.app.login.tfa.challenge_unavailable"),
+                            { variant: "error" },
+                        );
                     }
                 }
             };

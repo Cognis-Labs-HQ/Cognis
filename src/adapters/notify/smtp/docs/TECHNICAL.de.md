@@ -16,7 +16,7 @@ Konfigurieren Sie `COGNIS_SMTP_HOST`, `COGNIS_SMTP_PORT` (587), `COGNIS_SMTP_FRO
 
 #Der SMTP-Benachrichtigungsadapter versendet registrierte E-Mail-Aktionen und verwaltet die gemeinsame Codelänge für E-Mail-Verifizierung und E-Mail-Code-TFA.
 
-## Anwendungsbeispiele
+### Anwendungsbeispiele
 
 SMTP verwaltet die Registrierung von Aktionen, deren Darstellung und Warteschlangen. `notify:registerEmailPurpose` erhält eine lokale Kennung und eine Aktionsfunktion, die aus Variablen eine Nachricht erstellt. Gateways, Adapter und externe Module registrieren nur innerhalb ihres eigenen Bootstraps; Kennungen enthalten den Besitzer. Auth, Registration, TFA und Share besitzen ihre Nachrichteninhalte. SMTP führt keine Liste anwendungsspezifischer Zwecke.
 
@@ -30,7 +30,7 @@ const sendEmail = ctx.getCapability("notify:sendEmail");
 await sendEmail({ purpose, recipientEmail, variables });
 ```
 
-## Technische Spezifikation
+### Technische Spezifikation
 
 ### Bootstrap und Kanäle
 

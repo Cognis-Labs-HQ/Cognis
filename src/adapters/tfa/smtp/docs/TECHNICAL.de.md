@@ -18,13 +18,11 @@ Die TFA-Methode liefert Einrichtung und Prüfung und registriert ihren Zweck üb
 
 #Die Methode E-Mail-Code sendet einmalige Einrichtungs- und Anmeldecodes über den SMTP-Sender des Benachrichtigungs-Gateways. Die Codelänge gehört zur Zustellrichtlinie dieses Senders; TFA liest sie über ctx.
 
-## Anwendungsbeispiele
+### Anwendungsbeispiele
 
-#1. Konfigurieren und aktivieren Sie SMTP in der Administration unter dem Benachrichtigungs-Gateway.
-2. Stellen Sie dort **Codelänge** beispielsweise auf 8 Ziffern und speichern Sie. Neue E-Mail-Verifizierungscodes sowie Einrichtungs- und Anmeldecodes für E-Mail-Code-TFA verwenden diesen Wert.
-3. Aktivieren Sie E-Mail-Code-TFA in den Einstellungen und geben Sie den Code ein, der an die verifizierte primäre E-Mail-Adresse des Kontos gesendet wurde. Verwenden Sie bei der Anmeldung den Code der neuesten Anforderung. Erneutes Senden erzeugt einen Ersatzcode nach der aktuellen Richtlinie.
+#1. Konfigurieren und aktivieren Sie SMTP in der Administration unter dem Benachrichtigungs-Gateway. 2. Stellen Sie dort **Codelänge** beispielsweise auf 8 Ziffern und speichern Sie. Neue E-Mail-Verifizierungscodes sowie Einrichtungs- und Anmeldecodes für E-Mail-Code-TFA verwenden diesen Wert. 3. Aktivieren Sie E-Mail-Code-TFA in den Einstellungen und geben Sie den Code ein, der an die verifizierte primäre E-Mail-Adresse des Kontos gesendet wurde. Verwenden Sie bei der Anmeldung den Code der neuesten Anforderung. Erneutes Senden erzeugt einen Ersatzcode nach der aktuellen Richtlinie.
 
-## Technische Spezifikation
+### Technische Spezifikation
 
 #### Konfiguration und Speicherung
 
