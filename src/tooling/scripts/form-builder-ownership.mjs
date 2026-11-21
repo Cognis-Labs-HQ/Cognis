@@ -203,14 +203,25 @@ function formHasNotEscaped(module, binding, attach) {
         )
             return true;
         const parent = module.parents.get(node);
-        if (parent?.type === "CallExpression" && !parent.optional &&
-            parent.callee?.type === "MemberExpression" && !parent.callee.computed &&
-            ["has", "add"].includes(propertyName(parent.callee))) {
+        if (
+            parent?.type === "CallExpression" &&
+            !parent.optional &&
+            parent.callee?.type === "MemberExpression" &&
+            !parent.callee.computed &&
+            ["has", "add"].includes(propertyName(parent.callee))
+        ) {
             const tracker = module.bindingAt(parent.callee.object);
             const initializer = tracker?.node?.init;
-            if (tracker?.kind === "const" && !tracker.written && !tracker.memberWritten &&
-                initializer?.type === "NewExpression" && initializer.callee.name === "WeakSet" &&
-                !module.bindingAt(initializer.callee) && initializer.arguments.length === 0) return true;
+            if (
+                tracker?.kind === "const" &&
+                !tracker.written &&
+                !tracker.memberWritten &&
+                initializer?.type === "NewExpression" &&
+                initializer.callee.name === "WeakSet" &&
+                !module.bindingAt(initializer.callee) &&
+                initializer.arguments.length === 0
+            )
+                return true;
         }
         return (
             (parent?.type === "IfStatement" && parent.test === node) ||
