@@ -123,6 +123,14 @@ Toast memuat lembar gaya bersama tanpa menunda pembuatan atau penutupan pemberit
 
 Setiap dialog memiliki judul aksesibel tersendiri, termasuk konfirmasi perubahan yang belum disimpan dan dialog beberapa halaman. Tab dan Shift+Tab tetap berada di dalam dialog aktif. Mempertahankan draf mengembalikan fokus ke editor; menutup dialog terakhir mengembalikan fokus ke kontrol pembukanya yang masih tersedia, atau ke halaman jika kontrol tersebut sudah hilang. Dialog kosong mempertahankan fokus hingga kontrol tersedia. Pembatalan saat navigasi melepaskan fokus dialog tanpa mengembalikannya ke halaman lama. Animasi penutupan tidak mempertahankan kendali papan ketik. Kontrol bersama ini juga berlaku untuk dialog yang dibuka dari tutorial terpandu.
 
+### Masa Aktif Pembukaan Dialog
+
+`onOpen` berjalan secara sinkron setelah dialog dipasang dan sebelum animasi pembukaan. Jika penyiapan awal melempar galat, `openPopup` menolak dengan galat yang sama setelah menghapus dialog yang gagal serta melepaskan fokus, pendengar peristiwa, timer, pelacak perubahan, dan hak penguncian gulirnya. Kegagalan penyiapan tidak meminta persetujuan pembatalan atau menampilkan konfirmasi buang perubahan. Penutupan atau pembatalan pemilik yang sudah menyelesaikan hasil tetap final. Promise yang dikembalikan fungsi inisialisasi tidak ditunggu.
+
+Dialog induk yang aktif atau pembukaan yang lebih baru mempertahankan kepemilikan fokus dan gulirnya sendiri. Pratinjau Gambar memakai pembersihan yang sama jika penyiapan sinkronnya gagal; galat terjemahan tetap dinyatakan secara eksplisit. Animasi buka dan tutup normal, dialog wajib, callback tindakan, konfirmasi perubahan, dan callback halaman berulang mempertahankan kontrak yang ada. Galat callback halaman berikutnya bukan kegagalan pembukaan awal.
+
+Target tutorial, ID pemilik dan penyelesaian, Berikutnya, Kembali, Mulai Ulang, dan pemutaran ulang tetap sama. Dialog anak yang gagal mengembalikan kepemilikan kepada tutorial induk aktif yang diterima; pembersihan tidak mendaftarkan dialog gagal sebagai target tutorial baru. UI bersama tidak memiliki paket atau manifes dengan versi tersendiri.
+
 ### Kontrak Tindakan Dialog
 
 Enter dan Spasi mengaktifkan kontrol asli yang sedang difokuskan, sehingga Batal tidak memilih tindakan lain di bagian bawah dialog. Dialog perubahan yang belum disimpan mula-mula memfokuskan Batal yang aman; Buang menggunakan tampilan bahaya. Menahan Enter tidak mengulang aktivasi dialog. Tindakan yang sedang berjalan tidak dapat dikirim ulang; Tutup dan Batal yang dipilih secara langsung tetap tersedia. Kontrol lama atau dialog yang sedang ditutup tidak dapat memanggil tindakan.
