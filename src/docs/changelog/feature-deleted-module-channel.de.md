@@ -12,5 +12,5 @@ Gelöschte Kanäle wechseln zum aktuellen Standardbranch. Gültige Auswahlen und
 
 ## Commits
 
-- [5717f520ef59ebf0de20be2583d2f51454b4271b](https://github.com/Cognis-Labs-HQ/Cognis/commit/5717f520ef59ebf0de20be2583d2f51454b4271b)
-- [588ffab3d3751e442ceb96e62ad326d9767aa5e6](https://github.com/Cognis-Labs-HQ/Cognis/commit/588ffab3d3751e442ceb96e62ad326d9767aa5e6)
+- [1218f77880f555ba45174a29d375c3bee5825622](https://github.com/Cognis-Labs-HQ/Cognis/commit/1218f77880f555ba45174a29d375c3bee5825622)
+- [d43df50371d28231e72fcdfa41ba26b6c4b3fedf](https://github.com/Cognis-Labs-HQ/Cognis/commit/d43df50371d28231e72fcdfa41ba26b6c4b3fedf)
