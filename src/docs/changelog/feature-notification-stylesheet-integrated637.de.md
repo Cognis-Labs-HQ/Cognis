@@ -12,4 +12,4 @@ Benachrichtigungsaktionen, Abfragen, die Lebensdauer eingehender Meldungen und d
 
 ## Commits
 
-- [e13e0df42cf4e5f067992a3e289de9cf303c9223](https://github.com/Cognis-Labs-HQ/Cognis/commit/e13e0df42cf4e5f067992a3e289de9cf303c9223)
+- [d34b89e533bb6f7166cfef1b5eccf45bdacb5ca2](https://github.com/Cognis-Labs-HQ/Cognis/commit/d34b89e533bb6f7166cfef1b5eccf45bdacb5ca2)
