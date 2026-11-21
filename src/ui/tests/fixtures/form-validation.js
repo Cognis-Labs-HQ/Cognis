@@ -56,14 +56,6 @@ export async function formValidationFixture(context, locale = "en") {
     });
     const hooks = registerHooks({
         resolve(specifier, parent, nextResolve) {
-            if (specifier.startsWith("/static/gateways/auth/"))
-                return nextResolve(
-                    new URL(
-                        `gateways/auth/ui/${specifier.slice(22)}`,
-                        sourceRoot,
-                    ).href,
-                    parent,
-                );
             if (specifier.startsWith("/static/reuse/"))
                 return nextResolve(
                     new URL(`ui/reuse/${specifier.slice(14)}`, sourceRoot).href,
