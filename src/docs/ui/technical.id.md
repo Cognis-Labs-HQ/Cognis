@@ -103,7 +103,7 @@ Tampilan memperlihatkan percakapan fiktif berlabel di bawah Gaya Pesan. Contoh p
 
 Pratinjau Gaya Pesan memerlukan penyedia tampilan versi 2 yang siap. Jika Profile atau Messages tidak tersedia, hanya contoh yang disembunyikan; pemilih dan pilihan yang belum disimpan tetap dapat digunakan. Pilihan saat ini muncul otomatis saat penyedia pulih. Langkah tutorial pratinjau opsional mengikuti area terlihat yang sama. Rilis aset Settings yang sesuai bersama Messages 2.8.1 dan Profile 3.0.19.
 
-## Hasil tindakan modul
+### Hasil tindakan modul
 
 Aktifkan dan Nonaktifkan tetap sibuk selama permintaan perubahan dan pemeriksaan status lanjutannya berjalan. Pembacaan status menetapkan status yang diamati saat ini, bukan membuktikan bahwa permintaan ini diterapkan. Meninggalkan halaman Modul tidak membatalkan perubahan yang sudah dikirim. Halaman lama tidak boleh menampilkan umpan balik terlambat atau mengubah tampilan pengganti. Pergantian akun membatalkan wewenang pekerjaan antrean dan hasil terlambat. Respons yang hilang memicu satu pembacaan status baru dengan batas lima detik, tanpa mengulangi perubahan secara otomatis. Jika hasil belum pasti, Periksa status menggantikan tindakan modul. Pembacaan berikutnya dan kunjungan SPA tetap mengunci tindakan jika status yang diamati masih berlawanan. Tindakan kembali hanya setelah status yang diminta diamati. Panduan penyiapan opsional dan pembaruan katalog yang dibatalkan tidak mengubah aktivasi yang telah dikonfirmasi menjadi penolakan. Pembatalan konfigurasi wajib tetap membatalkan aktivasi satu kali. Jika respons pembatalan hilang, hasilnya dicocokkan sebagai nonaktif hanya ketika pembacaan otoritatif menunjukkan status nonaktif. Jika tidak, hasilnya tetap belum pasti.
 

@@ -129,7 +129,7 @@ Appearance shows a labeled, fictional conversation below Message Style. Incoming
 
 Message Style previews require a ready version 2 presentation provider. If Profile or Messages becomes unavailable, only the sample is hidden; the selector and unsaved choice remain usable. The current choice reappears automatically when its providers recover. The optional preview tutorial step follows the same visible region. Deploy matching Settings, Messages 2.8.1 and Profile 3.0.19 assets together.
 
-## Module Lifecycle Outcomes
+### Module Lifecycle Outcomes
 
 Enable and Disable remain busy while the mutation request and any follow-up state check run. A state read establishes the current observed state, not whether this request committed. Leaving Modules does not cancel an already sent mutation, and its old page cannot show late feedback or update a replacement view. Account changes invalidate queued work and late results. A lost response triggers one fresh state read with a five-second deadline, never an automatic mutation retry. If the result remains unknown, Check State replaces lifecycle actions; later reads and SPA visits keep actions locked while the opposite state is observed; actions return only after the requested state is observed. Optional setup guidance and cancelled catalog refreshes cannot turn an acknowledged enable into a rejection. Required configuration cancellation still rolls back once. A lost rollback response is reconciled as disabled only when an authoritative read shows disabled; otherwise its outcome remains unknown.
 
