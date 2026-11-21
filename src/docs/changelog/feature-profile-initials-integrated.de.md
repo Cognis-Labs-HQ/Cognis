@@ -12,5 +12,5 @@ Profile 4.0.0 benötigt den passenden Navigationsvertrag der Shell. Beide müsse
 
 ## Commits
 
-- [ada7d770c1e5dd54ba303ab52df127bff327a285](https://github.com/Cognis-Labs-HQ/Cognis/commit/ada7d770c1e5dd54ba303ab52df127bff327a285)
-- [185f85f89a8962d4762ae862cc3aec124bad4718](https://github.com/Cognis-Labs-HQ/Cognis/commit/185f85f89a8962d4762ae862cc3aec124bad4718)
+- [f78e449025c0a14e90a69d6164203d9ab2a35a7f](https://github.com/Cognis-Labs-HQ/Cognis/commit/f78e449025c0a14e90a69d6164203d9ab2a35a7f)
+- [e2c162f806ab6b8866aaa388b1124b4ec9bd9723](https://github.com/Cognis-Labs-HQ/Cognis/commit/e2c162f806ab6b8866aaa388b1124b4ec9bd9723)
