@@ -4,7 +4,10 @@ import { renderMarkdown } from "/static/reuse/markdown-renderer.js";
 import { getRoleLabel, normalizeRoleValue } from "/static/reuse/access-role.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 
-import { getAvatarContext } from "./profile-avatar.js";
+import {
+    getAvatarContext,
+    updateProfileAvatarImage,
+} from "./profile-avatar.js";
 import { profileReadState } from "./reuse/avatar-cache.js";
 
 const SHOW_DELAY_MS = 250;
@@ -22,6 +25,7 @@ let previewContext = null;
 let previewHandle = null;
 let opening = 0;
 let openingController = null;
+let restoringFocus = false;
 
 export function mountProfilePreviews(scope) {
     activeScope = scope;
@@ -89,26 +93,32 @@ function ensurePreview() {
     if (previewEl) return previewEl;
     previewEl = document.createElement("aside");
     previewEl.className = "profile-mini-preview";
-    previewEl.setAttribute("role", "tooltip");
+    previewEl.setAttribute("role", "dialog");
+    previewEl.setAttribute("aria-modal", "false");
     previewEl.hidden = true;
     previewEl.addEventListener("mouseenter", () => {
         if (hideTimer) clearTimeout(hideTimer);
     });
-    previewEl.addEventListener("mouseleave", scheduleHide);
+    previewEl.addEventListener("mouseleave", () => {
+        if (!previewEl.contains(document.activeElement)) scheduleHide();
+    });
+    previewEl.addEventListener("focusin", () => {
+        if (hideTimer) clearTimeout(hideTimer);
+    });
+    previewEl.addEventListener("focusout", (event) => {
+        if (!restoringFocus && !previewEl.contains(event.relatedTarget))
+            scheduleHide();
+    });
     document.body.appendChild(previewEl);
     return previewEl;
 }
 
 function renderAvatar(profile) {
     const renderer = uiCtx.capabilities.get("ui:profileAvatarRenderer");
-    return renderer.buildMarkup({
+    return renderer.buildContent({
+        profile,
         avatarKey: profile?.avatarKey,
-        label: profile?.displayName || profile?.handle || "",
-        colorSeed: profile?.handle || profile?.displayName || "",
-        avatarClass: "profile-mini-preview__avatar-content",
-        imageClass: "profile-mini-preview__avatar-img",
-        fallbackClass: "profile-mini-preview__avatar-initials",
-        showAvailability: false,
+        size: "medium",
     });
 }
 
@@ -149,6 +159,7 @@ async function showPreview(link) {
         activeLink === link;
     activeLink = link;
     const preview = ensurePreview();
+    preview.setAttribute("aria-label", handle);
     preview.hidden = false;
     const retainedImage =
         previewContext === context && previewHandle === handle
@@ -176,6 +187,7 @@ async function showPreview(link) {
     if (!avatarRenderer) return;
 
     const name = profile.displayName || profile.handle || handle;
+    preview.setAttribute("aria-label", name);
     const handleText = profile.handle || handle;
     const normalizedRole = normalizeRoleValue(profile.role);
     const roleLabel = PREVIEW_ROLE_LABELS.has(normalizedRole)
@@ -204,7 +216,7 @@ async function showPreview(link) {
     const template = document.createElement("template");
     template.innerHTML = `
         <div class="profile-mini-preview__header">
-            <div class="profile-mini-preview__avatar">${renderAvatar(profile)}${availabilityMarkup}</div>
+            <a class="profile-mini-preview__avatar" href="/profile/${escapeHtml(encodeURIComponent(handleText.replace(/^@/, "")))}" aria-label="${escapeHtml(name)}">${renderAvatar(profile)}${availabilityMarkup}</a>
             <div class="profile-mini-preview__identity">
                 <strong>${escapeHtml(name)}</strong>
                 <span>@${escapeHtml(handleText)}</span>
@@ -216,7 +228,10 @@ async function showPreview(link) {
     `;
     if (retainedImage?.dataset.avatarKey === profile.avatarKey) {
         const placeholder = template.content.querySelector("[data-avatar-key]");
-        placeholder?.replaceWith(retainedImage);
+        if (placeholder) {
+            updateProfileAvatarImage(retainedImage, placeholder);
+            placeholder.replaceWith(retainedImage);
+        }
     }
     preview.replaceChildren(template.content);
     previewContext = context;
@@ -247,7 +262,8 @@ export function bindProfilePreviews(i18n = null) {
         "mouseover",
         (event) => {
             const link = event.target.closest?.('a[href^="/profile/"]');
-            if (!link || link === activeLink) return;
+            if (!link || link === activeLink || previewEl?.contains(link))
+                return;
             if (hideTimer) clearTimeout(hideTimer);
             if (showTimer) clearTimeout(showTimer);
             showTimer = setTimeout(() => showPreview(link), SHOW_DELAY_MS);
@@ -258,7 +274,7 @@ export function bindProfilePreviews(i18n = null) {
         "focusin",
         (event) => {
             const link = event.target.closest?.('a[href^="/profile/"]');
-            if (!link) return;
+            if (!link || restoringFocus || previewEl?.contains(link)) return;
             if (showTimer) clearTimeout(showTimer);
             showTimer = setTimeout(() => showPreview(link), SHOW_DELAY_MS);
         },
@@ -268,7 +284,7 @@ export function bindProfilePreviews(i18n = null) {
         "mouseout",
         (event) => {
             const link = event.target.closest?.('a[href^="/profile/"]');
-            if (!link) return;
+            if (!link || previewEl?.contains(link)) return;
             const related = event.relatedTarget;
             if (
                 related &&
@@ -283,7 +299,36 @@ export function bindProfilePreviews(i18n = null) {
         "focusout",
         (event) => {
             const link = event.target.closest?.('a[href^="/profile/"]');
-            if (link) scheduleHide();
+            if (
+                link &&
+                !previewEl?.contains(link) &&
+                !previewEl?.contains(event.relatedTarget)
+            )
+                scheduleHide();
+        },
+        options,
+    );
+    document.addEventListener(
+        "keydown",
+        (event) => {
+            if (event.key !== "Escape" || !previewEl || previewEl.hidden)
+                return;
+            event.preventDefault();
+            opening++;
+            openingController?.abort();
+            clearTimeout(showTimer);
+            clearTimeout(hideTimer);
+            const returnTarget = previewEl.contains(document.activeElement)
+                ? activeLink
+                : null;
+            previewEl.hidden = true;
+            restoringFocus = true;
+            try {
+                returnTarget?.focus();
+            } finally {
+                restoringFocus = false;
+            }
+            activeLink = null;
         },
         options,
     );

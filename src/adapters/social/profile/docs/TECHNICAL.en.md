@@ -215,7 +215,7 @@ The navbar and hover previews keep an unchanged image mounted during unrelated r
 
 The standalone provider owns `ui:profileAvatarRenderer` until its scope ends. Existing `fetch(key)` still returns a URL or null; `hydrate(container, { signal })` accepts optional cancellation, and `invalidate(key)` clears a key (omitting the key clears all). Cache entries are scoped to the account, access token and provider lifetime, coalesce concurrent loads, and are capped at 128 keys. Successful and confirmed-negative reads are revalidated after 60 seconds on demand. A content digest keeps identical bytes on the same URL while changed bytes receive a new URL. Eviction, invalidation and disposal revoke owned object URLs. Detached elements are not retained.
 
-The navbar provider now returns `avatarState` (`available`, `missing`, `denied`, `retryable`, `invalid` or `stale`), an optional `avatarKey`, and `avatarBlobUrl` only for an available read. `onAvatarError` evicts that specific URL; the provider's `signal` tells consumers when its lifetime ends. Only an explicit retryable result may retain a same-account, same-token, same-provider image with an unchanged or unresolved key. Unknown or omitted states cannot authorize an image, and unavailable authorization is never reported as a successful read. Ship this host consumer and Profile 3.0.19 together; installing the host alone with an older provider shows initials until the matching provider is available.
+The navbar provider returns `avatarState` (`available`, `missing`, `denied`, `retryable`, `invalid` or `stale`), an optional `avatarKey`, `profileAvailable`, and a required synchronous `renderContent(previousContent, { retainImage })` callback. The callback returns a local DOM element or null, never a promise. Its content has no outer link or button. The host checks account, token, generation, connection and provider lifetime before and after invoking it, preserving its menu button and availability indicator. Only an explicit retryable result can retain an image for the same identity and unchanged or unresolved key. Profile owns image errors, current-name fallback metadata and cache eviction. The provider signal revokes its content immediately. Ship the matching shell assets and Profile 4.0.0 together: the required callback is a breaking navbar-provider change, and a missing or invalid contract produces only the generic unavailable placeholder.
 
 The profile identity tutorial continues to explain profile links and their previews; its controls, progression and completion identity are unchanged.
 
@@ -227,13 +227,25 @@ The profile page keeps unchanged avatar and banner image nodes during follower c
 
 A changed profile or image key, authoritative null key, confirmed deletion, or denied/missing media (401/403/404/410) clears the former image. Removing an avatar leaves the banner intact, and vice versa. Navigation, repeated mounting, account/token/provider changes and provider disposal cancel old work and release its object URLs. Late profile records, response bodies, image reads, crop results, uploads, deletes and follower refreshes cannot update a newer page. A file picker belongs to the page that opened it.
 
-The Profile client publishes its scoped `social:profilePageSignal` alongside `social:profileRequest`. The hero uses the registered `social:profile:request` and `social:profileMedia:read` flows, bounded two-image ownership and the shared Profile digest reader. Only image nodes are reconciled; the rest of the hero continues updating normally. The composer, shell, navbar, preview authorization and draft-editor contracts remain in force. Ship the Profile 3.0.20 page and provider together.
+The Profile client publishes its scoped `social:profilePageSignal` alongside `social:profileRequest`. The hero uses the registered `social:profile:request` and `social:profileMedia:read` flows, bounded two-image ownership and the shared Profile digest reader. Only image nodes are reconciled; the rest of the hero continues updating normally. The composer, shell, navbar, preview authorization and draft-editor contracts remain in force. Ship the Profile 4.0.0 page and provider together.
 
 Regression tests use static jsdom fixtures, actual page exports and registered request/provider lifecycles. They verify node identity, URL release, failure recovery and out-of-order work. They do not establish native browser paint, image decoding or the original reported production trigger.
 
 On your own profile, Edit Profile opens your details. Unsuccessful saves keep your changes available to correct and retry.
 
 Profile photos remain visible while counts and details update. Retry a failed image refresh by reopening the profile; a confirmed removal clears only the selected image. The identity step keeps its existing target, progression and completion identity.
+
+Navbar, preview and profile initials use the same name and color rules. The preview avatar opens that profile. A name change also updates initials shown after an image failure. Existing identity and avatar controls retain their tutorial targets, step order and completion IDs.
+
+The interactive preview is a named nonmodal dialog. Hovering it does not move keyboard focus; moving the pointer away leaves a focused card open. Escape closes it and returns focus to its trigger only when focus was inside the card.
+
+### Canonical Avatar Content
+
+`ui:profileAvatarRenderer.getPresentation(profile)` derives `label`, `initials`, `colorSeed` and `color` from the already authorized `displayName || handle`. `buildContent({ profile, size, avatarKey, blobUrl, imageClass, imageAlt })` builds noninteractive inner markup. Explicit sizes are `small` (32px, 0.7rem), `medium` (48px, 1.05rem) and `large` (80px, 1.75rem); unknown sizes fail. Profile CSS owns content geometry, typography, color, border and padding. Outer links, menu/upload buttons, placement and availability remain caller-owned. Supplied image URLs and identity records must already be authorized; this presentation API does not fetch or grant access.
+
+Navbar, hover preview and profile hero use these shared rules. An unchanged valid image stays mounted after a display-name update, while a later decode error restores initials for the current name. The preview avatar links to the named profile and keeps its accessible name current; focusing or hovering it does not restart the preview. Hero media remains page-owned and does not join the avatar cache.
+
+The existing `buildMarkup`, `colorSeed`, custom classes, availability, hydration and profile-link options keep their meaning. Messages and Settings previews, Share, Library and Calendar can continue using that contract; this release does not migrate their presentation or external modules. Messages and Calendar tested dependency ceilings advance to Profile 4.0.0. External module ceilings have not been validated and require companion testing before an upgrade. Synthetic DOM tests cover style ordering in both themes, not native browser paint or layout geometry.
 
 ## Security
 

@@ -1,8 +1,5 @@
 import { createFormBuilder } from "/static/reuse/form-builder.js";
-import {
-    getProfileInitials,
-    getProfileInitialsColor,
-} from "./profile-avatar.js";
+import { buildProfileAvatarContent } from "./profile-avatar.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { renderMarkdown } from "/static/reuse/markdown-renderer.js";
 import { formatDate } from "/static/reuse/timestamp.js";
@@ -195,13 +192,13 @@ export function renderAvatarBadge(roleValue, i18n) {
 }
 
 function renderAvatarContent({ avatarBlobUrl, profile, i18n }) {
-    if (avatarBlobUrl) {
-        return `<img src="${escapeHtml(avatarBlobUrl)}" class="profile-hero-avatar-img" alt="${i18n.t("ui.layout.avatar.alt")}" />`;
-    }
-    const initialsLabel = profile?.displayName || profile?.handle || "";
-    const initials = getProfileInitials(initialsLabel);
-    const initialsColor = getProfileInitialsColor(initialsLabel);
-    return `<div class="profile-avatar-initials" style="--initials-bg: ${escapeHtml(initialsColor)};">${escapeHtml(initials)}</div>`;
+    return buildProfileAvatarContent({
+        profile,
+        size: "large",
+        blobUrl: avatarBlobUrl,
+        imageClass: "profile-hero-avatar-img",
+        imageAlt: i18n.t("ui.layout.avatar.alt"),
+    });
 }
 
 export function renderHero({
