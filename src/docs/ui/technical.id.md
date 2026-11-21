@@ -103,6 +103,14 @@ Segarkan memeriksa daftar tanpa mengulangi perubahan. Hasil yang diakui atau bel
 
 Tutorial Umum mempertahankan target daftar email, pemilik, dan ID penyelesaiannya untuk daftar berisi maupun kosong. Petunjuk tindakan tertunda, antrean, dan Segarkan diperbarui dalam keempat bahasa. Penanganan verifikasi, pengiriman ulang, Tambah, kata sandi, dan tindakan siklus akun tetap sama. Aset UI bersama tidak memiliki versi paket terpisah.
 
+### Masa Aktif Pilihan Karusel
+
+Karusel horizontal menjaga urutan pilihan, status ditekan, dan jumlah pilihan tetap selaras. Karusel dengan pengenal yang sama menggabungkan nilai yang dipilih, sedangkan tindakan Tambah dapat menambahkan item tanpa memilihnya. Pratinjau melalui fokus dan penunjuk tetap dimiliki oleh karusel yang terpasang.
+
+Teruskan `AbortSignal` milik pemilik ke `mountHorizontalCarousels`. `onActivate` dapat langsung mengembalikan nilai dan label item atau menyelesaikannya melalui promise; hasil `false` membatalkan pemilihan. Hasil sinkron tetap diproses secara sinkron. Setelah sinyal dibatalkan, hasil aktivasi yang masih tertunda tidak boleh mengubah pengenal, label, pilihan, status ARIA, atau penghitung, maupun memberi tahu pemilik yang telah berakhir melalui `onChange`. Pembatalan di dalam callback aktivasi, pengurutan, atau perubahan juga menghentikan pekerjaan widget berikutnya sehingga pemasangan baru pada elemen akar yang sama tetap terjaga. Sinyal yang sudah dibatalkan saat pemasangan tidak mengubah elemen akar. Hal ini tidak membatalkan atau mengembalikan pekerjaan yang dilakukan di dalam callback pemilik.
+
+Tutorial pembuatan yang ada mempertahankan target isi editor, bagian, dan bagian bawah, pengenal penyelesaian, serta alur Berikutnya, Kembali, dan pengulangan. Pemilihan karusel tidak menambah panduan atau tindakan tersendiri. Aset karusel bersama tidak memiliki versi paket komponen terpisah.
+
 ## Keamanan
 
 Navigasi tersembunyi bukan kontrol akses. Penyedia memakai kapabilitas pemilik dan membatalkan pekerjaan saat unmount atau pergantian akun; data privat terikat akun.
