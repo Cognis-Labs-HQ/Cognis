@@ -226,6 +226,10 @@ A new pending login supersedes the attempt named by its incoming cookie. Tabs sh
 
 SSO integrations must treat `tfaRequired: true` as incomplete authentication and follow only the explicit `loginUrl: "/login"` marker on a successful response. The marker is emitted only after Auth binds a live, matching account/provider attempt. Deploy Auth 2.2.10 with X SSO 1.0.63; the module fails closed when an older host cannot supply this continuation contract. Local login and SSO without TFA retain their existing completion paths. Browser clients keep attempt IDs only in memory or request bodies, never URLs or browser storage. The login integration receives a query-only root scoped to its current attempt and mounted form; delayed work cannot modify a superseded view.
 
+### Bounded challenge delivery
+
+`auth:getPendingLoginLifetime` version 1 is a read-only public lookup of `{ id, accountId, expiresAt, signal }` for an existing primary-authenticated attempt. It cannot create or extend authority. Auth allocates the attempt before automatic factor preparation without issuing a session or activating a profile. Its immutable five-minute deadline applies to delivery. Consumption, explicit cancellation, expiry, continuation replacement, logout and owner cleanup abort challenge resources. Existing cookie-bound continuation, stale-attempt guards and resume without redelivery remain unchanged. Successful factor consumption cancels challenge resources without cancelling the separate final session commit. TFA requires this contract and fails closed when it is absent.
+
 ## Security
 
 Authentication validates primary credentials before session issuance and any required TFA challenge. Account, role and resource authorization remain separate; keyring unlock refusal must not create or switch account identity.

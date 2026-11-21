@@ -22,8 +22,8 @@ Bootstrap in `src/gateways/tfa/bootstrap.ts`:
 Das Gateway registriert diese Capabilities über `ctx.capabilities`:
 
 - `tfa:getUserStatus(accountId)`
-- `tfa:getLoginMethods(accountId)`
-- `tfa:verifyLogin(accountId, methodId, payload)`
+- `tfa:getLoginMethods(accountId, lifetime)`
+- `tfa:verifyLogin(accountId, methodId, payload, lifetime)`
 - `tfa:isSecondFactorEnabled(accountId)`
 - `tfa:isSetupRequired(accountId)`
 - `tfa:resetUser(accountId)`
@@ -125,6 +125,10 @@ Alle Zugänge zur TFA-Erzwingung verwenden den zuständigen Richtlinienablauf. D
 Während eines serialisierten Richtlinienschreibvorgangs setzt TFA neue Sitzungsprüfungen aus und macht zuvor erteilte Prüfzusagen ungültig. Laufende Richtlinienabfragen können nach der Bereinigung keine eingeschränkten Token ausstellen; normale Sitzungen benötigen eine aktuelle Bestätigung. Der Einrichtungsabschluss prüft vor dem endgültigen Abschluss erneut die ursprüngliche Berechtigung. Ein während der Faktorprüfung widerrufenes Token kann daher keine Sitzung erhalten.
 
 Der Richtlinienablauf verlangt einen einmaligen Vorgang und Ausführungszustand unter Kontrolle seines Eigentümers. Direkte Ablaufaufrufe und die Wiederholung erfasster Vorgänge werden vor Änderungen abgewiesen; Integrationen müssen die Richtliniencapability verwenden.
+
+### Zeitlich begrenzte Challenge-Zustellung
+
+Bei Email Code bedeutet „wartend“, dass die Zustellung noch nicht erfolgt ist. Warten Sie auf den neuesten Code. Erst ein angenommener Neuversand ersetzt den alten Code; bei Ablehnung bleibt er erhalten. Nach einem Zustellfehler innerhalb der Frist erneut senden oder einen neuen Login beginnen. Login-Versuche gelten fünf, Einrichtungen zehn Minuten. Ein Einrichtungsabbruch betrifft nur diese Einrichtung. Fortsetzen versendet keine neue E-Mail und verlängert keine Frist.
 
 ## Sicherheit
 

@@ -22,8 +22,8 @@ Bootstrap in `src/gateways/tfa/bootstrap.ts` performs this sequence:
 The gateway contributes these capabilities through `ctx.capabilities`:
 
 - `tfa:getUserStatus(accountId)`
-- `tfa:getLoginMethods(accountId)`
-- `tfa:verifyLogin(accountId, methodId, payload)`
+- `tfa:getLoginMethods(accountId, lifetime)`
+- `tfa:verifyLogin(accountId, methodId, payload, lifetime)`
 - `tfa:isSecondFactorEnabled(accountId)`
 - `tfa:isSetupRequired(accountId)`
 - `tfa:resetUser(accountId)`
@@ -127,6 +127,10 @@ All TFA enforcement entry points use the owning policy flow. Disabling enforceme
 During a serialized policy write, TFA suspends new session assessments and invalidates previous assessment leases. In-flight policy reads cannot issue a restricted token after cleanup, and ordinary session commitment must obtain current assurance. Setup completion rechecks the original credential before final commitment, so a token revoked during factor verification cannot refresh into a session.
 
 The policy flow requires a single-use operation and execution state held by its owner. Direct raw-flow calls and captured-operation replay are rejected before mutation; integrations must call the policy capability.
+
+### Bounded challenge delivery
+
+For Email Code, “queued” means delivery is still pending, not sent. Wait for the latest code. A resend replaces the previous code only when accepted; a rejected resend leaves it unchanged. After delivery failure, explicitly resend before the attempt expires, or start a new login. Login attempts last five minutes and setup lasts ten minutes. Cancelling setup affects only that setup. Resuming a login does not send another email or extend its deadline.
 
 ## Security
 

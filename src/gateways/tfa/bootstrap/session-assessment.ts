@@ -1,3 +1,5 @@
+import { readLoginLifetime } from "./login-lifetime.js";
+import { assertLiveChallenge } from "../challenge-lifetimes.js";
 import {
     registerBootstrapFlow,
     requireBootstrapScope,
@@ -21,6 +23,10 @@ export function registerSessionAssessment(
 ): () => () => void {
     const root = ctx.capabilities.require<Ctx>("system:ctx");
     const log = ctx.log;
+    const createdAttempts = new WeakMap<
+        SessionCandidate,
+        { id: string; clear: (id: string) => void }
+    >();
     let active = true;
     let revision = 0;
     let policyChanging = false;
@@ -71,23 +77,41 @@ export function registerSessionAssessment(
                 ReturnType<CoreTfaGateway["getUserStatus"]>
             >;
             if (status.hasConfiguredMethod) {
-                const methods = await gateway.getLoginMethods(
-                    candidate.accountId,
-                );
-                assertActive(data.revision);
-                if (!methods.length) {
-                    data.result = { outcome: "tfa_unavailable" };
-                    return;
-                }
                 const createAttempt = ctx.capabilities.require<
                     (input: SessionCandidate) => { id: string }
                 >("tfa:createPendingLoginAttempt");
-                data.result = {
-                    ...candidate,
-                    outcome: "tfa_required",
-                    loginAttemptId: createAttempt(candidate).id,
-                    methods,
-                };
+                const clearAttempt = ctx.capabilities.require<
+                    (id: string) => void
+                >("tfa:clearPendingLoginAttempt");
+                const attempt = createAttempt(candidate);
+                createdAttempts.set(candidate, {
+                    id: attempt.id,
+                    clear: clearAttempt,
+                });
+                try {
+                    const lifetime = readLoginLifetime(
+                        ctx.capabilities,
+                        attempt.id,
+                        candidate.accountId,
+                    );
+                    const methods = await gateway.getLoginMethods(
+                        candidate.accountId,
+                        lifetime,
+                    );
+                    assertActive(data.revision);
+                    assertLiveChallenge(lifetime);
+                    if (!methods.length)
+                        throw new Error("tfa_method_unavailable");
+                    data.result = {
+                        ...candidate,
+                        outcome: "tfa_required",
+                        loginAttemptId: attempt.id,
+                        methods,
+                    };
+                } catch (error) {
+                    clearAttempt(attempt.id);
+                    throw error;
+                }
                 return;
             }
             if (status.requiresSetup) {
@@ -121,10 +145,15 @@ export function registerSessionAssessment(
         candidate: SessionCandidate,
     ): Promise<Record<string, unknown>> => {
         const expected = revision;
+        const flowCandidate = { ...candidate };
+        let retainedAttempt = false;
         try {
             if (!active || policyChanging)
                 throw new Error("tfa_assessment_unavailable");
-            const result = await root.flow.run("tfa:assessSession", candidate);
+            const result = await root.flow.run(
+                "tfa:assessSession",
+                flowCandidate,
+            );
             if (
                 !active ||
                 policyChanging ||
@@ -153,6 +182,10 @@ export function registerSessionAssessment(
                     : (returned.findLast(
                           (gate) => gate.outcome !== "assured",
                       ) ?? current);
+            retainedAttempt =
+                assessment.outcome === "tfa_required" &&
+                assessment.loginAttemptId ===
+                    createdAttempts.get(flowCandidate)?.id;
             return assessment.outcome === "assured"
                 ? {
                       ...assessment,
@@ -171,6 +204,10 @@ export function registerSessionAssessment(
                 errorName: error instanceof Error ? error.name : "UnknownError",
             });
             return { outcome: "tfa_unavailable" };
+        } finally {
+            const attempt = createdAttempts.get(flowCandidate);
+            createdAttempts.delete(flowCandidate);
+            if (attempt && !retainedAttempt) attempt.clear(attempt.id);
         }
     };
     ctx.capabilities.contribute("tfa:assessSession", assess);

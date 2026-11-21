@@ -230,6 +230,10 @@ Ein neuer ausstehender Versuch ersetzt den durch das eingehende Cookie bezeichne
 
 SSO-Integrationen müssen `tfaRequired: true` als unvollständige Anmeldung behandeln und nur der ausdrücklichen Markierung `loginUrl: "/login"` einer erfolgreichen Antwort folgen. Die Markierung erscheint erst nach der Bindung eines gültigen Versuchs für das passende Konto und den passenden Anbieter. Auth 2.2.10 und X SSO 1.0.63 gemeinsam ausrollen; das Modul verweigert die Fortsetzung, wenn ein älterer Host den Vertrag nicht unterstützt. Lokale Anmeldung und SSO ohne TFA bleiben unverändert. Versuchs-IDs gehören nur in den Arbeitsspeicher oder Anfragekörper, niemals in URLs oder Browserspeicher. Die Anmeldeintegration erhält einen nur abfragbaren Wurzelbereich für den aktuellen Versuch und das eingebundene Formular; verspätete Arbeit kann keine ersetzte Ansicht ändern.
 
+### Zeitlich begrenzte Challenge-Zustellung
+
+`auth:getPendingLoginLifetime` Version 1 liest ausschließlich `{ id, accountId, expiresAt, signal }` eines vorhandenen, primär authentifizierten Versuchs. Der Aufruf erstellt oder verlängert keine Berechtigung. Auth legt den Versuch vor der automatischen Faktorvorbereitung an, ohne Sitzung oder Profilaktivierung. Die unveränderliche Fünf-Minuten-Frist begrenzt die Zustellung. Verbrauch, Abbruch, Ablauf, Ersetzung der Fortsetzung, Logout und Bereinigung beenden Challenge-Ressourcen. Cookie-gebundene Fortsetzung, Schutz vor veralteten Versuchen und Fortsetzen ohne Neuversand bleiben erhalten. Erfolgreiche Faktorprüfung beendet die Challenge, nicht den getrennten abschließenden Sitzungsabschluss. Ohne diesen Vertrag verweigert TFA den Vorgang.
+
 ## Sicherheit
 
 Authentifizierung prüft Zugangsdaten vor Sitzung und nötiger TFA. Konto-, Rollen- und Inhaltsrechte bleiben getrennt; verweigerte Schlüsselbundfreigabe ändert keine Identität.

@@ -22,8 +22,8 @@
 この gateway は `ctx.capabilities` に次を登録します。
 
 - `tfa:getUserStatus(accountId)`
-- `tfa:getLoginMethods(accountId)`
-- `tfa:verifyLogin(accountId, methodId, payload)`
+- `tfa:getLoginMethods(accountId, lifetime)`
+- `tfa:verifyLogin(accountId, methodId, payload, lifetime)`
 - `tfa:isSecondFactorEnabled(accountId)`
 - `tfa:isSetupRequired(accountId)`
 - `tfa:resetUser(accountId)`
@@ -125,6 +125,10 @@ Auth と TFA の宣言は、既存のアカウントロール、外部識別情�
 直列化されたポリシー保存中は、新しいセッション評価を停止し、以前の評価結果の有効性を失わせます。処理中の古いポリシー読み取りは失効処理後に制限付きトークンを発行できず、通常のセッション確定には最新の保証が必要です。設定完了では最終確定前に元の認証情報を再確認するため、要素の検証中に失効したトークンから通常のセッションを発行できません。
 
 ポリシーフローには、担当コンポーネントが保持する一回限りの操作と実行状態が必要です。フローの直接呼び出しや取得済み操作の再実行は、変更前に拒否されます。連携機能はポリシーケイパビリティを呼び出してください。
+
+### 有効期限付きチャレンジ配送
+
+Email Codeの「送信待ち」はまだ配送が完了していない状態です。最新のコードを待ってください。再送が受け付けられた場合だけ前のコードを置換し、拒否時は維持します。配送失敗後は試行の期限内に明示的に再送するか、新しくログインしてください。ログイン試行は5分、設定は10分です。設定の中止はその設定だけに影響します。ログイン再開で追加メールを送ったり期限を延長したりしません。
 
 ## セキュリティ
 

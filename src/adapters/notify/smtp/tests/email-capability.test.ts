@@ -356,3 +356,57 @@ test("SMTP owns normalized defaults, bounds and revocable policy availability", 
     for (const dispose of host.cleanup) await dispose();
     assert.throws(policy, /email_delivery_unavailable/);
 });
+
+test("versioned bounded delivery reuses the staged SMTP flow and reports final transport status", async (t) => {
+    const host = await fixture(t);
+    const contracts =
+        host.root.requireCapability<CapabilityContracts>("system:contracts");
+    assert.equal(
+        contracts.describe("notify:deliverEmail")?.owner,
+        "adapter:notify:smtp",
+    );
+    const deliver = contracts.resolve<
+        import("../contracts/action-delivery.js").DeliverEmailAction
+    >("notify:deliverEmail", 1);
+    const purpose = await runBootstrapScope(
+        host.root,
+        "module:synthetic-bounded",
+        () =>
+            host.register("code", (variables) => ({
+                subject: "Synthetic",
+                body: variables.code,
+            })),
+        (dispose) => host.cleanup.push(dispose),
+    );
+    const stages: string[] = [];
+    for (const stage of ["validate", "render", "enqueue"])
+        host.root.flow.extend(
+            "smtp:sendEmail",
+            stage,
+            { id: `bounded:${stage}`, order: 100 },
+            () => {
+                stages.push(stage);
+            },
+        );
+    const controller = new AbortController();
+    const delivery = await deliver({
+        purpose,
+        recipientEmail: "bounded@example.test",
+        variables: { code: "123456" },
+        signal: controller.signal,
+        expiresAt: Date.now() + 300000,
+    });
+    assert.deepEqual(stages, ["validate", "render", "enqueue"]);
+    assert.notEqual(delivery.receipt.status, "failed");
+    assert.equal((await delivery.completion).status, "sent");
+    const deferred = await deliver({
+        purpose,
+        recipientEmail: "bounded@example.test",
+        variables: { code: "654321" },
+        signal: controller.signal,
+        expiresAt: Date.now() + 300000,
+    });
+    assert.equal(deferred.receipt.status, "waiting_rate_limit");
+    controller.abort();
+    assert.equal((await deferred.completion).error, "smtp_delivery_cancelled");
+});

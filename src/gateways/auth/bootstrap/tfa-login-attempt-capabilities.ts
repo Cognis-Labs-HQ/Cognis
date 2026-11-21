@@ -30,6 +30,23 @@ export async function registerAuthRouteBootstrapHook({
         "auth:consumePendingLoginAttempt",
         runtime.consumePendingTfaLoginAttempt,
     );
+    root.requireCapability<CapabilityContracts>("system:contracts").define(
+        "auth:getPendingLoginLifetime",
+        {
+            version: 1,
+            kind: "function",
+            description:
+                "Read the immutable expiry and cancellation signal of a pending primary-authenticated login attempt.",
+        },
+    );
+    capabilities.contribute(
+        "auth:getPendingLoginLifetime",
+        runtime.getPendingLoginLifetime,
+    );
+    root.contributePublicCapability(
+        "auth:getPendingLoginLifetime",
+        runtime.getPendingLoginLifetime,
+    );
     capabilities.contribute("auth:getAccessTokenTtlSeconds", () =>
         runtime.getAccessTokenTtlSeconds(),
     );

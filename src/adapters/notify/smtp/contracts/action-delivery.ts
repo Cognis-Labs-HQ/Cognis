@@ -33,3 +33,17 @@ export type SendEmailAction = (input: EmailActionInput) => Promise<
         notificationId: string;
     }
 >;
+
+export interface DeliverEmailInput extends EmailActionInput {
+    signal: AbortSignal;
+    expiresAt: number;
+}
+
+export interface EmailDelivery {
+    receipt: NotificationDeliveryReceipt;
+    completion: Promise<NotificationDeliveryReceipt>;
+}
+
+export type DeliverEmailAction = (
+    input: DeliverEmailInput,
+) => Promise<EmailDelivery>;

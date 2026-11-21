@@ -22,8 +22,8 @@ Bootstrap di `src/gateways/tfa/bootstrap.ts` melakukan urutan berikut:
 Gateway ini mendaftarkan capability berikut melalui `ctx.capabilities`:
 
 - `tfa:getUserStatus(accountId)`
-- `tfa:getLoginMethods(accountId)`
-- `tfa:verifyLogin(accountId, methodId, payload)`
+- `tfa:getLoginMethods(accountId, lifetime)`
+- `tfa:verifyLogin(accountId, methodId, payload, lifetime)`
 - `tfa:isSecondFactorEnabled(accountId)`
 - `tfa:isSetupRequired(accountId)`
 - `tfa:resetUser(accountId)`
@@ -125,6 +125,10 @@ Semua jalur penegakan TFA memakai alur kebijakan milik komponen. Menonaktifkan p
 Selama penulisan kebijakan yang diserialkan, TFA menangguhkan penilaian sesi baru dan membatalkan jaminan penilaian sebelumnya. Pembacaan kebijakan yang masih berjalan tidak dapat menerbitkan token terbatas setelah pembersihan, dan penerbitan sesi normal membutuhkan jaminan terkini. Penyelesaian penyiapan memeriksa ulang kredensial asli sebelum komit akhir, sehingga token yang dicabut selama verifikasi faktor tidak dapat diperbarui menjadi sesi.
 
 Alur kebijakan memerlukan operasi sekali pakai dan status eksekusi yang dipegang pemiliknya. Pemanggilan alur langsung dan pengulangan operasi yang ditangkap ditolak sebelum mutasi; integrasi harus memanggil kapabilitas kebijakan.
+
+### Pengiriman tantangan berbatas waktu
+
+Pada Email Code, “dalam antrean” berarti pengiriman belum selesai. Tunggu kode terbaru. Kirim ulang mengganti kode sebelumnya hanya setelah diterima; penolakan mempertahankannya. Setelah kegagalan pengiriman, kirim ulang secara eksplisit sebelum kedaluwarsa atau mulai login baru. Percobaan login berlaku lima menit dan penyiapan sepuluh menit. Pembatalan penyiapan hanya memengaruhi penyiapan tersebut. Melanjutkan login tidak mengirim email lagi atau memperpanjang tenggat.
 
 ## Keamanan
 

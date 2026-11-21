@@ -1,409 +1,286 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createAdapter } from "../index.js";
+import { createDeliveryFixture, lifetime } from "./fixtures/delivery.js";
 
-test("smtp adapter setup sends a code and verifies it", async () => {
-    const sentCodes: Array<{ to: string; code: string }> = [];
-    const adapter = createAdapter({
-        getEmailDeliveryPolicy: () => ({
-            codeLength: 6,
-            minimumIntervalMs: 15000,
-        }),
-        canSendVerificationEmail: () => true,
-        sendVerificationEmail: async (to, code) => {
-            sentCodes.push({ to, code });
-        },
-        getPrimaryEmail: async () => "alice@example.com",
-    });
-    const setup = await adapter.beginSetup({
-        accountId: "alice",
-        displayName: "Alice",
-        issuer: "Cognis",
-    });
-    assert.equal(sentCodes.length, 1);
+test("SMTP setup admits a code and verifies it once", async () => {
+    const host = createDeliveryFixture();
+    const setup = await host.setup();
     assert.equal(setup.view.fields?.[0]?.maxLength, 6);
-    const verified = await adapter.verifySetup({
+    assert.equal(setup.view.prompt, "adapter.tfa.smtp.setup_prompt_queued");
+    const input = {
         accountId: "alice",
         pendingPayload: setup.pendingPayload,
-        verification: { code: sentCodes[0].code },
-    });
-    assert.equal(verified.verified, true);
-    assert.equal(verified.state?.email, "alice@example.com");
+        verification: { code: host.deliveries[0].code },
+    };
+    const result = await host.adapter.verifySetup(input);
+    assert.equal(result.verified, true);
+    assert.equal(result.state?.email, "alice@example.test");
+    assert.equal((await host.adapter.verifySetup(input)).verified, false);
+    assert.equal(host.deliveries[0].signal.aborted, true);
 });
 
-test("smtp adapter login challenge sends a code and verifyLogin consumes it", async () => {
-    const sentCodes: string[] = [];
-    const adapter = createAdapter({
-        getEmailDeliveryPolicy: () => ({
-            codeLength: 6,
-            minimumIntervalMs: 15000,
-        }),
-        canSendVerificationEmail: () => true,
-        sendVerificationEmail: async (_to, code) => {
-            sentCodes.push(code);
-        },
-    });
-    const challenge = await adapter.beginLoginChallenge?.({
-        accountId: "alice",
-        state: { email: "alice@example.com" },
-    });
-    assert.equal(challenge?.ready, true);
-    assert.equal(typeof challenge?.retryAfterSeconds, "number");
-    assert.equal(typeof challenge?.resendAvailableAt, "string");
-    const verified = await adapter.verifyLogin({
-        accountId: "alice",
-        state: { email: "alice@example.com" },
-        payload: { code: sentCodes[0] },
-    });
-    assert.equal(verified.verified, true);
-    const secondTry = await adapter.verifyLogin({
-        accountId: "alice",
-        state: { email: "alice@example.com" },
-        payload: { code: sentCodes[0] },
-    });
-    assert.equal(secondTry.verified, false);
+test("SMTP login admission supplies retry metadata and single-use verification", async () => {
+    const host = createDeliveryFixture();
+    const challenge = await host.begin();
+    assert.equal(challenge.ready, true);
+    assert.equal(challenge.deliveryStatus, "queued");
+    assert.equal(typeof challenge.retryAfterSeconds, "number");
+    assert.equal(typeof challenge.resendAvailableAt, "string");
+    const results = await Promise.all([
+        host.verify(host.deliveries[0].code),
+        host.verify(host.deliveries[0].code),
+    ]);
+    assert.deepEqual(
+        results.map((result) => result.verified),
+        [true, false],
+    );
 });
 
-test("smtp adapter resend invalidates the previous login code and issues a new one", async () => {
-    const sentCodes: string[] = [];
-    const adapter = createAdapter({
-        getEmailDeliveryPolicy: () => ({
-            codeLength: 6,
-            minimumIntervalMs: 15000,
-        }),
-        canSendVerificationEmail: () => true,
-        sendVerificationEmail: async (_to, code) => {
-            sentCodes.push(code);
-        },
-    });
-    await adapter.beginLoginChallenge?.({
-        accountId: "alice",
-        state: { email: "alice@example.com" },
-    });
-    await adapter.beginLoginChallenge?.({
-        accountId: "alice",
-        state: { email: "alice@example.com" },
-    });
-    assert.equal(sentCodes.length, 2);
-    assert.notEqual(sentCodes[0], sentCodes[1]);
-    const firstCodeAttempt = await adapter.verifyLogin({
-        accountId: "alice",
-        state: { email: "alice@example.com" },
-        payload: { code: sentCodes[0] },
-    });
-    assert.equal(firstCodeAttempt.verified, false);
-    const secondCodeAttempt = await adapter.verifyLogin({
-        accountId: "alice",
-        state: { email: "alice@example.com" },
-        payload: { code: sentCodes[1] },
-    });
-    assert.equal(secondCodeAttempt.verified, true);
+test("first deferred admission retains the exact code until delivery", async () => {
+    const host = createDeliveryFixture();
+    host.state.status = "waiting_rate_limit";
+    host.state.availableAt = new Date(Date.now() + 30_000).toISOString();
+    const challenge = await host.begin();
+    assert.equal(challenge.ready, true);
+    assert.equal(challenge.deliveryStatus, "queued");
+    assert.equal(challenge.retryAfterSeconds, 30);
+    host.deliveries[0].complete("sent");
+    await Promise.resolve();
+    assert.equal((await host.verify(host.deliveries[0].code)).verified, true);
 });
 
-test("smtp adapter reads code length from the delivery policy", async () => {
-    const sentCodes: string[] = [];
-    const adapter = createAdapter({
-        canSendVerificationEmail: () => true,
-        sendVerificationEmail: async (_to, code) => {
-            sentCodes.push(code);
-        },
-        getPrimaryEmail: async () => "alice@example.com",
-        getEmailDeliveryPolicy: () => ({
-            codeLength: 8,
-            minimumIntervalMs: 15000,
-        }),
-    });
-    const setup = await adapter.beginSetup({
-        accountId: "alice",
-        displayName: "Alice",
-        issuer: "Cognis",
-    });
-    assert.equal(sentCodes[0].length, 8);
-    assert.equal(setup.view.fields?.[0]?.maxLength, 8);
+test("deferred resend replaces and cancels the superseded queued message", async () => {
+    const host = createDeliveryFixture();
+    await host.begin();
+    host.state.status = "waiting_rate_limit";
+    const resent = await host.begin();
+    assert.equal(resent.ready, true);
+    assert.equal(resent.deliveryStatus, "queued");
+    assert.equal(host.deliveries[0].signal.aborted, true);
+    assert.notEqual(host.deliveries[0].code, host.deliveries[1].code);
+    assert.equal((await host.verify(host.deliveries[0].code)).verified, false);
+    assert.equal((await host.verify(host.deliveries[1].code)).verified, true);
 });
 
-test("smtp adapter login challenge reports unavailable when SMTP sender is missing", async () => {
-    const adapter = createAdapter({
-        getEmailDeliveryPolicy: () => ({
-            codeLength: 6,
-            minimumIntervalMs: 15000,
-        }),
-        canSendVerificationEmail: () => false,
+for (const failure of ["throw", "receipt"] as const)
+    test(`rejected ${failure} admission preserves the previous live code`, async () => {
+        const host = createDeliveryFixture();
+        await host.begin();
+        if (failure === "throw") host.state.failAdmission = true;
+        else host.state.status = "failed";
+        const rejected = await host.begin();
+        assert.equal(rejected.ready, false);
+        assert.equal(rejected.deliveryStatus, undefined);
+        assert.equal(host.deliveries[0].signal.aborted, false);
+        if (failure === "receipt")
+            assert.equal(host.deliveries[1].signal.aborted, true);
+        assert.equal(
+            (await host.verify(host.deliveries[0].code)).verified,
+            true,
+        );
     });
-    const challenge = await adapter.beginLoginChallenge?.({
-        accountId: "alice",
-        state: { email: "alice@example.com" },
-    });
-    assert.equal(challenge?.ready, false);
+
+test("concurrent resends coalesce within one owner operation", async () => {
+    const host = createDeliveryFixture();
+    const results = await Promise.all([
+        host.begin(),
+        host.begin(),
+        host.begin(),
+    ]);
+    assert.equal(host.deliveries.length, 1);
+    assert.ok(results.every((result) => result.ready));
 });
 
-test("smtp adapter login challenge surfaces retry countdown when SMTP is rate-limited", async () => {
-    const adapter = createAdapter({
-        getEmailDeliveryPolicy: () => ({
-            codeLength: 6,
-            minimumIntervalMs: 15000,
-        }),
-        canSendVerificationEmail: () => true,
-        sendVerificationEmail: async () => {
-            throw new Error("email_rate_limited");
-        },
+for (const failure of ["receipt", "rejection"] as const)
+    test(`asynchronous ${failure} failure invalidates the candidate and explicit resend recovers`, async () => {
+        const host = createDeliveryFixture();
+        await host.begin();
+        const failedCode = host.deliveries[0].code;
+        if (failure === "receipt")
+            host.deliveries[0].complete("failed", "synthetic_failure");
+        else host.deliveries[0].reject();
+        await Promise.resolve();
+        assert.equal((await host.verify(failedCode)).verified, false);
+        await host.begin();
+        assert.equal((await host.verify(failedCode)).verified, false);
+        assert.equal(
+            (await host.verify(host.deliveries[1].code)).verified,
+            true,
+        );
     });
-    const challenge = await adapter.beginLoginChallenge?.({
-        accountId: "alice",
-        state: { email: "alice@example.com" },
-    });
-    assert.equal(challenge?.ready, true);
-    assert.equal(challenge?.message, "email_rate_limited");
-    assert.equal(typeof challenge?.retryAfterSeconds, "number");
-    assert.equal(typeof challenge?.resendAvailableAt, "string");
+
+test("late superseded completion cannot invalidate a replacement", async () => {
+    const host = createDeliveryFixture();
+    await host.begin();
+    await host.begin();
+    host.deliveries[0].complete("failed", "late_failure");
+    await Promise.resolve();
+    assert.equal((await host.verify(host.deliveries[1].code)).verified, true);
 });
 
-test("smtp adapter login challenge surfaces queued rate limits without replacing a live code", async () => {
-    let queueCallCount = 0;
-    let firstIssuedCode = "";
-    let secondIssuedCode = "";
-    const adapter = createAdapter({
-        getEmailDeliveryPolicy: () => ({
-            codeLength: 6,
-            minimumIntervalMs: 15000,
-        }),
-        canSendVerificationEmail: () => true,
-        queueVerificationEmail: async (_to, code) => {
-            queueCallCount += 1;
-            if (queueCallCount === 1) {
-                firstIssuedCode = code;
-                return {
-                    notificationId: "first-send",
-                    status: "queued",
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
-                };
-            }
-            secondIssuedCode = code;
-            return {
-                notificationId: "rate-limited-send",
-                status: "waiting_rate_limit",
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                availableAt: new Date(Date.now() + 30_000).toISOString(),
-            };
-        },
-    });
-    const firstChallenge = await adapter.beginLoginChallenge?.({
-        accountId: "alice",
-        state: { email: "alice@example.com" },
-    });
-    assert.equal(firstChallenge?.ready, true);
-    assert.equal(typeof firstChallenge?.retryAfterSeconds, "number");
-    assert.equal(typeof firstChallenge?.resendAvailableAt, "string");
-    const secondChallenge = await adapter.beginLoginChallenge?.({
-        accountId: "alice",
-        state: { email: "alice@example.com" },
-    });
-    assert.equal(secondChallenge?.ready, true);
-    assert.equal(secondChallenge?.message, "email_rate_limited");
-    assert.equal(typeof secondChallenge?.retryAfterSeconds, "number");
-    const verified = await adapter.verifyLogin({
-        accountId: "alice",
-        state: { email: "alice@example.com" },
-        payload: { code: firstIssuedCode },
-    });
-    assert.equal(verified.verified, true);
-    const secondCodeAttempt = await adapter.verifyLogin({
-        accountId: "alice",
-        state: { email: "alice@example.com" },
-        payload: { code: secondIssuedCode },
-    });
-    assert.equal(secondCodeAttempt.verified, false);
+test("owner cancellation and expiry are exclusive and cannot be resurrected by late completion", async (context) => {
+    context.mock.timers.enable({ apis: ["Date"], now: 1000 });
+    const host = createDeliveryFixture();
+    await host.begin();
+    assert.equal(host.deliveries[0].expiresAt, host.owner.expiresAt);
+    context.mock.timers.setTime(host.owner.expiresAt);
+    assert.equal((await host.verify(host.deliveries[0].code)).verified, false);
+    assert.equal(host.deliveries[0].signal.aborted, true);
+    host.deliveries[0].complete("sent");
+    assert.equal((await host.verify(host.deliveries[0].code)).verified, false);
 });
 
-test("smtp adapter login challenge rolls back on queued failed status", async () => {
-    let queueCallCount = 0;
-    let firstIssuedCode = "";
-    let failedAttemptCode = "";
-    const adapter = createAdapter({
-        getEmailDeliveryPolicy: () => ({
-            codeLength: 6,
-            minimumIntervalMs: 15000,
-        }),
-        canSendVerificationEmail: () => true,
-        queueVerificationEmail: async (_to, code) => {
-            queueCallCount += 1;
-            if (queueCallCount === 1) {
-                firstIssuedCode = code;
-                return {
-                    notificationId: "first-send",
-                    status: "queued",
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString(),
-                };
-            }
-            failedAttemptCode = code;
-            return {
-                notificationId: "failed-send",
-                status: "failed",
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-                error: "delivery_failed",
-            };
-        },
-    });
-    const firstChallenge = await adapter.beginLoginChallenge?.({
+test("concurrent independent setups do not share delivery or cancellation", async () => {
+    const host = createDeliveryFixture();
+    const [first, second] = await Promise.all([host.setup(), host.setup()]);
+    assert.equal(host.deliveries.length, 2);
+    assert.notEqual(
+        first.pendingPayload.challengeId,
+        second.pendingPayload.challengeId,
+    );
+    await host.adapter.cancelSetup!({
         accountId: "alice",
-        state: { email: "alice@example.com" },
+        pendingPayload: first.pendingPayload,
     });
-    assert.equal(firstChallenge?.ready, true);
-    const failedChallenge = await adapter.beginLoginChallenge?.({
+    assert.equal(host.deliveries[0].signal.aborted, true);
+    assert.equal(host.deliveries[1].signal.aborted, false);
+    const result = await host.adapter.verifySetup({
         accountId: "alice",
-        state: { email: "alice@example.com" },
+        pendingPayload: second.pendingPayload,
+        verification: { code: host.deliveries[1].code },
     });
-    assert.equal(failedChallenge?.ready, false);
-    assert.equal(failedChallenge?.message, "email_delivery_unavailable");
-    const originalCodeAttempt = await adapter.verifyLogin({
-        accountId: "alice",
-        state: { email: "alice@example.com" },
-        payload: { code: firstIssuedCode },
-    });
-    assert.equal(originalCodeAttempt.verified, true);
-    const failedCodeAttempt = await adapter.verifyLogin({
-        accountId: "alice",
-        state: { email: "alice@example.com" },
-        payload: { code: failedAttemptCode },
-    });
-    assert.equal(failedCodeAttempt.verified, false);
+    assert.equal(result.verified, true);
 });
 
-test("smtp adapter renderMethodDetails returns empty details for configured email state", async () => {
-    const adapter = createAdapter();
-    const details = await adapter.renderMethodDetails?.({
+test("independent login owners isolate cancellation on the same account", async () => {
+    const host = createDeliveryFixture();
+    await host.begin();
+    const second = {
         accountId: "alice",
-        state: { email: "alice@example.com" },
-        issuer: "Cognis",
-    });
-    assert.deepEqual(details, { details: {} });
-});
-
-test("smtp adapter renders management details without exposing setup state", async () => {
-    const adapter = createAdapter();
-    const details = await adapter.renderMethodDetails?.({
-        accountId: "alice",
-        state: {},
-        issuer: "Cognis",
-    });
-    assert.deepEqual(details, { details: {} });
-});
-
-test("setup constraints retain the issued code length when policy changes during delivery", async () => {
-    let length = 10;
-    let deliveredCode = "";
-    const adapter = createAdapter({
-        getEmailDeliveryPolicy: () => ({
-            codeLength: length,
-            minimumIntervalMs: 0,
-        }),
-        canSendVerificationEmail: () => true,
-        getPrimaryEmail: async () => "pending@example.test",
-        sendVerificationEmail: async (_recipient, code) => {
-            deliveredCode = code;
-            length = 4;
-        },
-    });
-    const setup = await adapter.beginSetup({
-        accountId: "pending",
-        displayName: "Pending",
-        issuer: "Cognis",
-    });
-    assert.equal(deliveredCode.length, 10);
-    assert.equal(setup.view.fields?.[0].maxLength, 10);
+        state: { email: "alice@example.test" },
+        lifetime: lifetime("second"),
+    };
+    await host.adapter.beginLoginChallenge!(second);
+    host.owner.controller.abort();
+    assert.equal(host.deliveries[0].signal.aborted, true);
+    assert.equal(host.deliveries[1].signal.aborted, false);
     assert.equal(
         (
-            await adapter.verifySetup({
-                accountId: "pending",
-                pendingPayload: setup.pendingPayload,
-                verification: { code: deliveredCode },
+            await host.adapter.verifyLogin({
+                ...second,
+                payload: { code: host.deliveries[1].code },
             })
         ).verified,
         true,
     );
-    const next = await adapter.beginSetup({
-        accountId: "pending",
-        displayName: "Pending",
-        issuer: "Cognis",
-    });
-    assert.equal(next.view.fields?.[0].maxLength, 4);
-    assert.equal(deliveredCode.length, 4);
 });
 
-for (const length of [undefined, 0, 3, 11, 5.5, Number.NaN]) {
-    test(`TFA rejects missing or invalid owner policy (${String(length)}) without delivery`, async () => {
-        let deliveries = 0;
-        const adapter = createAdapter({
+for (const length of [4, 6, 8, 10])
+    test(`SMTP owner policy issues ${length} digits with matching input constraints`, async () => {
+        const host = createDeliveryFixture();
+        host.state.length = length;
+        const setup = await host.setup();
+        assert.match(host.deliveries[0].code, new RegExp(`^\\d{${length}}$`));
+        assert.equal(setup.view.fields?.[0].maxLength, length);
+        host.state.length = length === 4 ? 10 : 4;
+        assert.equal(
+            (
+                await host.adapter.verifySetup({
+                    accountId: "alice",
+                    pendingPayload: setup.pendingPayload,
+                    verification: { code: host.deliveries[0].code },
+                })
+            ).verified,
+            true,
+        );
+    });
+
+test("accepted deferred resend uses the new policy length without retaining a stale code", async () => {
+    const host = createDeliveryFixture();
+    host.state.length = 10;
+    assert.equal((await host.begin()).maxLength, 10);
+    host.state.length = 4;
+    host.state.status = "waiting_rate_limit";
+    assert.equal((await host.begin()).maxLength, 4);
+    assert.equal((await host.verify(host.deliveries[0].code)).verified, false);
+    assert.equal((await host.verify(host.deliveries[1].code)).verified, true);
+});
+
+for (const length of [undefined, 0, 3, 11, 5.5, Number.NaN])
+    test(`invalid owner policy ${String(length)} fails without delivery`, async () => {
+        const host = createDeliveryFixture({
             getEmailDeliveryPolicy:
                 length === undefined
                     ? undefined
                     : () => ({ codeLength: length, minimumIntervalMs: 0 }),
-            canSendVerificationEmail: () => true,
-            getPrimaryEmail: async () => "pending@example.test",
-            sendVerificationEmail: async () => {
-                deliveries++;
-            },
         });
-        await assert.rejects(
-            adapter.beginSetup({
-                accountId: "pending",
-                displayName: "Pending",
+        await assert.rejects(host.setup(), /email_delivery_unavailable/);
+        assert.equal((await host.begin()).ready, false);
+        assert.equal(host.deliveries.length, 0);
+    });
+
+test("unavailable provider and missing primary email fail closed", async () => {
+    const unavailable = createDeliveryFixture({
+        deliverVerificationEmail: undefined,
+    });
+    assert.equal((await unavailable.begin()).ready, false);
+    await assert.rejects(unavailable.setup(), /email_delivery_unavailable/);
+    const missing = createDeliveryFixture({
+        getPrimaryEmail: async () => null,
+    });
+    await assert.rejects(missing.setup(), /primary_email_required/);
+});
+
+test("management details never expose setup state", async () => {
+    const adapter = createAdapter();
+    for (const state of [{}, { email: "alice@example.test" }])
+        assert.deepEqual(
+            await adapter.renderMethodDetails!({
+                accountId: "alice",
+                state,
                 issuer: "Cognis",
             }),
-            /email_delivery_unavailable/,
+            { details: {} },
         );
+});
+
+test("verification consumes the old code and cancels a replacement still awaiting admission", async () => {
+    const host = createDeliveryFixture();
+    await host.begin();
+    let release!: () => void;
+    host.state.admissionGate = new Promise<void>((resolve) => {
+        release = resolve;
+    });
+    const pending = host.begin();
+    await Promise.resolve();
+    await Promise.resolve();
+    assert.equal(host.deliveries.length, 2);
+    assert.equal((await host.verify(host.deliveries[0].code)).verified, true);
+    assert.equal(host.deliveries[1].signal.aborted, true);
+    release();
+    assert.equal((await pending).ready, false);
+    assert.equal((await host.verify(host.deliveries[1].code)).verified, false);
+});
+
+for (const ending of ["cancel", "expiry"])
+    test(`${ending} during admission cannot install a late SMTP code`, async (context) => {
+        context.mock.timers.enable({ apis: ["Date"], now: 1000 });
+        const host = createDeliveryFixture();
+        let release!: () => void;
+        host.state.admissionGate = new Promise<void>((resolve) => {
+            release = resolve;
+        });
+        const pending = host.begin();
+        await Promise.resolve();
+        await Promise.resolve();
+        if (ending === "cancel") host.owner.controller.abort();
+        else context.mock.timers.setTime(host.owner.expiresAt);
+        release();
+        assert.equal((await pending).ready, false);
+        assert.equal(host.deliveries[0].signal.aborted, true);
         assert.equal(
-            (
-                await adapter.beginLoginChallenge!({
-                    accountId: "pending",
-                    state: { email: "pending@example.test" },
-                })
-            ).ready,
+            (await host.verify(host.deliveries[0].code)).verified,
             false,
         );
-        assert.equal(deliveries, 0);
     });
-}
-
-test("rate-limited resend keeps the pending code input length after a policy change", async () => {
-    let length = 10;
-    let calls = 0;
-    let pendingCode = "";
-    const adapter = createAdapter({
-        getEmailDeliveryPolicy: () => ({
-            codeLength: length,
-            minimumIntervalMs: 0,
-        }),
-        canSendVerificationEmail: () => true,
-        queueVerificationEmail: async (_recipient, code) => {
-            calls++;
-            if (calls === 1) pendingCode = code;
-            return {
-                notificationId: String(calls),
-                status: calls === 1 ? "queued" : "waiting_rate_limit",
-                createdAt: "",
-                updatedAt: "",
-            };
-        },
-    });
-    const input = {
-        accountId: "pending",
-        state: { email: "pending@example.test" },
-    };
-    assert.equal((await adapter.beginLoginChallenge!(input)).maxLength, 10);
-    length = 4;
-    assert.equal((await adapter.beginLoginChallenge!(input)).maxLength, 10);
-    assert.equal(
-        (
-            await adapter.verifyLogin({
-                ...input,
-                payload: { code: pendingCode },
-            })
-        ).verified,
-        true,
-    );
-});
