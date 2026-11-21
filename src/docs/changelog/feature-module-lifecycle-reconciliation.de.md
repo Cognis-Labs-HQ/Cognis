@@ -18,8 +18,8 @@ Einstellungen, Aktualisierungen und Kanalwechsel nutzen dieselben kontogebundene
 
 ## Commits
 
-- [6b07deb5d8ce62ff71ab90697acee521208374e8](https://github.com/Cognis-Labs-HQ/Cognis/commit/6b07deb5d8ce62ff71ab90697acee521208374e8)
-- [a805e1ed366693e996e943aa89be66a2a11562ac](https://github.com/Cognis-Labs-HQ/Cognis/commit/a805e1ed366693e996e943aa89be66a2a11562ac)
-- [ee2175deb3a402dde97fa3f9acc425f31006ef30](https://github.com/Cognis-Labs-HQ/Cognis/commit/ee2175deb3a402dde97fa3f9acc425f31006ef30)
-- [2bca735a672863baa6457b24309f711a966c5f00](https://github.com/Cognis-Labs-HQ/Cognis/commit/2bca735a672863baa6457b24309f711a966c5f00)
-- [e0799f0a1ebd96b76fe512bb51dedafd15e0e7b0](https://github.com/Cognis-Labs-HQ/Cognis/commit/e0799f0a1ebd96b76fe512bb51dedafd15e0e7b0)
+- [dd34bb16c52ceef8229705763e08031801b7aefc](https://github.com/Cognis-Labs-HQ/Cognis/commit/dd34bb16c52ceef8229705763e08031801b7aefc)
+- [635024bc04bcd87f628853d99ee1099b2ae1b511](https://github.com/Cognis-Labs-HQ/Cognis/commit/635024bc04bcd87f628853d99ee1099b2ae1b511)
+- [70576100d92e29a4168d69411a169e3e08d4b44a](https://github.com/Cognis-Labs-HQ/Cognis/commit/70576100d92e29a4168d69411a169e3e08d4b44a)
+- [03946553752f290486fa8e38e08ea92c40491d4e](https://github.com/Cognis-Labs-HQ/Cognis/commit/03946553752f290486fa8e38e08ea92c40491d4e)
+- [af3e88d0d861db5e5b5c56a75ed0fb43413b3d94](https://github.com/Cognis-Labs-HQ/Cognis/commit/af3e88d0d861db5e5b5c56a75ed0fb43413b3d94)
