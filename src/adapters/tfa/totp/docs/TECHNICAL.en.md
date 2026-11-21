@@ -8,8 +8,6 @@ The method implements the TFA adapter contract: setup returns manualSecret and q
 
 ## Configuration
 
-### Configuration
-
 The adapter exposes one admin setting:
 
 - `algorithm` — HMAC algorithm used for setup verification and login verification.

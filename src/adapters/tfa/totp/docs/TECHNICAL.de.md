@@ -8,8 +8,6 @@ Die Methode implementiert TFA: Einrichtung liefert manualSecret und qrSvg, Best�
 
 ## Konfiguration
 
-### Konfiguration
-
 Der Adapter bietet eine Admin-Einstellung:
 
 - `algorithm` — HMAC-Algorithmus für Setup- und Login-Prüfung.

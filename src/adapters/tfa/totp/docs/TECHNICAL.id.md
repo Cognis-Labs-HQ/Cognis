@@ -8,8 +8,6 @@ Metode menerapkan kontrak TFA: penyiapan memberi manualSecret dan qrSvg, konfirm
 
 ## Konfigurasi
 
-### Konfigurasi
-
 Adaptor menyediakan satu pengaturan admin:
 
 - `algorithm` — algoritma HMAC untuk verifikasi penyiapan dan verifikasi login.

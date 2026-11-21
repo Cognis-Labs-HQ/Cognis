@@ -10,8 +10,6 @@ Antarmuka publik dan aturan operasional Akun Lokal.
 
 ## Konfigurasi
 
-### Konfigurasi
-
 Tidak ada field yang dapat dikonfigurasi. Manajemen kredensial dilakukan melalui perintah CLI `user:*` atau route API register/login.
 
 Pembersihan identitas eksternal dapat menghapus identitas berdasarkan awalan sumber milik penyedia. Autentikasi ulang memperbarui email, nama tampilan, peran, dan status aktif akun eksternal yang dipertahankan sebelum mengaitkan identitas baru.

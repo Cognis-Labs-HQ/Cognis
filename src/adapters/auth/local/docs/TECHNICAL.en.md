@@ -10,8 +10,6 @@ The public interfaces and operational rules of Local Accounts.
 
 ## Configuration
 
-### Configuration
-
 No configurable fields. The local adapter reads its storage from whichever database executor is active (`db:executor` capability). Credential management is done exclusively through the `user:*` CLI commands or the register/login API routes.
 
 External identity cleanup can remove identities by provider-owned source prefix. Re-authentication updates a retained external account's current email, display name, role, and enabled state before attaching the new identity.

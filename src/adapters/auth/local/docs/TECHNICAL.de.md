@@ -10,8 +10,6 @@
 
 ## Konfiguration
 
-### Konfiguration
-
 Keine konfigurierbaren Felder. Die Credential-Verwaltung erfolgt ausschließlich über die `user:*`-CLI-Befehle oder die Registrierungs-/Anmelde-API-Routen.
 
 Die Bereinigung externer Identitäten kann Identitäten anhand eines anbietereigenen Quellenpräfixes entfernen. Eine erneute Authentifizierung aktualisiert E-Mail, Anzeigename, Rolle und Aktivierungsstatus eines erhaltenen externen Kontos, bevor die neue Identität verknüpft wird.
