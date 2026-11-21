@@ -16,4 +16,5 @@ Day all-day and timed rows share their minimum slot height. Compact events keep 
 
 ## Commits
 
-- [402bf87d3090af6efb2405cb85a7a70be1a4ded4](https://github.com/Cognis-Labs-HQ/Cognis/commit/402bf87d3090af6efb2405cb85a7a70be1a4ded4)
+- [86157151d52e22e68bd97942ab458d4d82c18fe8](https://github.com/Cognis-Labs-HQ/Cognis/commit/86157151d52e22e68bd97942ab458d4d82c18fe8)
+- [7c11f8d57af60bf4750496a44b0db4fd934c2671](https://github.com/Cognis-Labs-HQ/Cognis/commit/7c11f8d57af60bf4750496a44b0db4fd934c2671)
