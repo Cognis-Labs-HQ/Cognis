@@ -62,3 +62,9 @@ for (const name of [
         assert.equal(hasOwnership(name), false);
     });
 }
+
+test("delegated form ownership permits unchanged native WeakSet tracking", () => {
+    assert.equal(hasOwnership("weak-set-tracking"), true);
+    assert.equal(hasOwnership("mutated-tracking"), false);
+    assert.equal(hasOwnership("shadowed-tracking"), false);
+});
