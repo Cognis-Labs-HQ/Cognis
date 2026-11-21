@@ -12,4 +12,5 @@ Profile 4.0.0 membutuhkan kontrak penyedia navigasi kerangka yang sesuai. Terbit
 
 ## Komit
 
-- [68e461b023f71b3002b177c2145782a191b106c0](https://github.com/Cognis-Labs-HQ/Cognis/commit/68e461b023f71b3002b177c2145782a191b106c0)
+- [ba688b9f541984838dda8ebda981d3b43edced81](https://github.com/Cognis-Labs-HQ/Cognis/commit/ba688b9f541984838dda8ebda981d3b43edced81)
+- [315cf7b6d44a853dd34159b52572e2840f0d4b14](https://github.com/Cognis-Labs-HQ/Cognis/commit/315cf7b6d44a853dd34159b52572e2840f0d4b14)
