@@ -27,3 +27,4 @@ Trennt oder beendet ein benutzerdefiniertes Kriterium seine Formularanbindung, l
 - [47f407cd521a3e58adf7c371977970a0b7d5d0d2](https://github.com/Cognis-Labs-HQ/Cognis/commit/47f407cd521a3e58adf7c371977970a0b7d5d0d2)
 - [8b78edeee17d2959ba6d93f290cd4ecded080b8c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8b78edeee17d2959ba6d93f290cd4ecded080b8c)
 - [27f332f3075194ce66dac482f706a9705f3cfd57](https://github.com/Cognis-Labs-HQ/Cognis/commit/27f332f3075194ce66dac482f706a9705f3cfd57)
+- [1bd071a27173f7e7a684832b8c3f4d31445d7a9b](https://github.com/Cognis-Labs-HQ/Cognis/commit/1bd071a27173f7e7a684832b8c3f4d31445d7a9b)
