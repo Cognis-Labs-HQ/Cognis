@@ -15,6 +15,9 @@ test("documentation titles arrive before content, content concurrency is bounded
     const { loadDocsBundleMarkdown, loadDocsIndex, readDocsLanguages } =
         loadTestModule(new URL("../../docs-client.js", import.meta.url), {
             "./ui-language-state.js": languageState,
+            "./presentation.js": {
+                localizeModulePresentation: async (value) => value,
+            },
             "./api-client.js": {
                 apiFetch: () => {
                     throw new Error("Use the injected public request contract");
@@ -28,6 +31,8 @@ test("documentation titles arrive before content, content concurrency is bounded
                 loadDocsBundleMarkdown,
                 loadDocsIndex,
                 readDocsLanguages,
+                resolveDocsGroupLabels: async () =>
+                    new Map([["platform", "Platform"]]),
             },
             "../i18n.js": { createI18n: async () => ({ t: (key) => key }) },
         },

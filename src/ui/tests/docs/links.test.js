@@ -174,7 +174,10 @@ test("docs page falls back ungrouped docs to the platform section", () => {
         "docs navigation should assign ungrouped docs to platform",
     );
     assert.match(source, /createSideMenu\(/);
-    assert.match(source, /createNavigationGroups\(i18n, navigationDocs\)/);
+    assert.match(
+        source,
+        /createNavigationGroups\(i18n, navigationDocs, groupLabels\)/,
+    );
 });
 
 test("docs and changelogs use the shared side menu capability", () => {

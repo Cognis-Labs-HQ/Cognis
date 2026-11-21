@@ -6,6 +6,7 @@ import {
     loadDocsIndex,
     loadDocsBundleMarkdown,
     readDocsLanguages,
+    resolveDocsGroupLabels,
 } from "../../reuse/docs-client.js";
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { loadMarkdownDocumentHtml } from "../../reuse/markdown-document.js";
@@ -14,34 +15,6 @@ import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { navigateTo } from "../../reuse/app-router.js";
 import { registerSearchIndex } from "../../reuse/search-util/popup.js";
 import { createSideMenu } from "../../reuse/side-menu.js";
-
-// platform is the fallback group for ungrouped root-level docs.
-const GROUP_KEYS = {
-    platform: "ui.app.docs.group.platform",
-    components: "ui.reuse.components",
-    gateways: "ui.app.docs.group.gateways",
-    "adapters/auth": "ui.app.docs.group.adapters_auth",
-    "adapters/db": "ui.app.docs.group.adapters_db",
-    "adapters/file": "ui.app.docs.group.adapters_file",
-    "adapters/notify": "ui.app.docs.group.adapters_notify",
-    "adapters/calendar": "ui.app.docs.group.adapters.calendar",
-    "adapters/registration": "ui.app.docs.group.adapters.registration",
-    "adapters/share": "ui.app.docs.group.adapters.share",
-    "adapters/social": "ui.app.docs.group.adapters.social",
-    "adapters/study": "ui.app.docs.group.adapters.study",
-    "adapters/tfa": "ui.app.docs.group.adapters.tfa",
-    modules: "ui.reuse.modules",
-    tooling: "ui.app.docs.group.tooling",
-};
-
-function groupLabel(i18n, group) {
-    const key = GROUP_KEYS[group];
-    if (key) return i18n.t(key);
-    return group
-        .split("/")
-        .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-        .join(" › ");
-}
 
 function docTitle(item) {
     return (
@@ -55,7 +28,7 @@ function docTitle(item) {
     );
 }
 
-function createDocsSearchProvider(i18n, docs, activeDocContent) {
+function createDocsSearchProvider(i18n, docs, activeDocContent, groupLabels) {
     return async () => {
         const docsItems = [];
         const changelogItems = [];
@@ -84,7 +57,7 @@ function createDocsSearchProvider(i18n, docs, activeDocContent) {
             const searchItem = {
                 id: `docs:${item.slug}`,
                 label: title,
-                description: `${isChangelogDoc(item) ? i18n.t("ui.layout.footer.changelogs") : i18n.t("ui.reuse.docs")} / ${groupLabel(i18n, item.group || "platform")}`,
+                description: `${isChangelogDoc(item) ? i18n.t("ui.layout.footer.changelogs") : i18n.t("ui.reuse.docs")} / ${groupLabels.get(item.group || "platform")}`,
                 resultClass: "page",
                 url: isChangelogDoc(item)
                     ? changelogSlugToRoutePath(item.slug)
@@ -92,6 +65,7 @@ function createDocsSearchProvider(i18n, docs, activeDocContent) {
                 searchText: [
                     title,
                     item.slug,
+                    groupLabels.get(item.group || "platform"),
                     item.group,
                     item.description,
                     contentText,
@@ -178,7 +152,7 @@ function changelogSlugToRoutePath(slug) {
     return "/changelogs";
 }
 
-function createNavigationGroups(i18n, items) {
+function createNavigationGroups(i18n, items, groupLabels) {
     const groups = new Map();
     for (const item of items) {
         const groupKey = item.group || "platform";
@@ -188,7 +162,7 @@ function createNavigationGroups(i18n, items) {
 
     return Array.from(groups, ([group, groupItems]) => ({
         id: group,
-        label: groupLabel(i18n, group),
+        label: groupLabels.get(group),
         items: groupItems.map((item) => ({
             id: item.slug,
             label: docTitle(item),
@@ -285,15 +259,17 @@ export async function mount(root, { signal } = {}) {
     }
 
     const docs = await loadDocsIndex({ signal });
+    const groupLabels = await resolveDocsGroupLabels(i18n, docs);
+    if (signal?.aborted) return;
     const navigationDocs = docs.filter((doc) => !isChangelogDoc(doc));
     const navigationMenu = createSideMenu({
-        groups: createNavigationGroups(i18n, navigationDocs),
+        groups: createNavigationGroups(i18n, navigationDocs, groupLabels),
         storageKeyPrefix: "docs-group-open",
         onSelect: (slug) => showDoc(slug, { signal }),
     });
     registerSearchIndex(
         "docs",
-        createDocsSearchProvider(i18n, docs, docsSearchContent),
+        createDocsSearchProvider(i18n, docs, docsSearchContent, groupLabels),
     );
 
     const elements = [

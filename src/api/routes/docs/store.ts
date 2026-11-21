@@ -1,3 +1,8 @@
+import type { BootstrapLog } from "@cognis/core";
+import {
+    readGroupPresentation,
+    type DocGroupPresentation,
+} from "./presentation.js";
 import {
     mkdir,
     readFile,
@@ -18,6 +23,7 @@ export interface StoredDoc {
     versions: string[];
     sourceName: string;
     views: DocView[];
+    groupPresentation?: DocGroupPresentation;
 }
 
 interface Snapshot extends Omit<StoredDoc, "versions" | "title"> {
@@ -100,6 +106,7 @@ export async function initializeDocsStore(
     sourceRoot: string | string[],
     archiveRoot: string,
     languages: string[] = ["en"],
+    log?: BootstrapLog,
 ): Promise<Map<string, StoredDoc>> {
     const live = new Map<string, Snapshot>();
     for (const root of Array.isArray(sourceRoot) ? sourceRoot : [sourceRoot]) {
@@ -155,6 +162,17 @@ export async function initializeDocsStore(
             versions: versions.map((entry) => entry.version),
             views: snapshot.views,
         });
+    }
+    const sourceRoots = Array.isArray(sourceRoot) ? sourceRoot : [sourceRoot];
+    const presentations = new Map<string, DocGroupPresentation | undefined>();
+    for (const doc of stored.values()) {
+        if (!presentations.has(doc.group))
+            presentations.set(
+                doc.group,
+                await readGroupPresentation(sourceRoots, doc.group, log),
+            );
+        const presentation = presentations.get(doc.group);
+        if (presentation) doc.groupPresentation = presentation;
     }
     return stored;
 }

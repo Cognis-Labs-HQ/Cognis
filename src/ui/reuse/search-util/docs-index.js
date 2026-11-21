@@ -9,6 +9,8 @@ import { createI18n } from "../i18n.js";
  * Public export: collectGlobalDocsSearchGroups({ signal, onResults }).
  * @example collectGlobalDocsSearchGroups({ signal, onResults: renderGroups });
  */
+import { resolveDocsGroupLabels } from "../docs-client.js";
+
 let content = new Map();
 let contentIdentity = "";
 
@@ -54,6 +56,9 @@ export async function collectGlobalDocsSearchGroups({
         languages,
         signal,
     });
+    const labels = await resolveDocsGroupLabels(i18n, docs);
+    const docsLabel = i18n.t("ui.reuse.docs");
+    const changelogsLabel = i18n.t("ui.layout.footer.changelogs");
     const entries = docs
         .filter((item) => String(item?.slug ?? "").trim())
         .map((item) => {
@@ -68,17 +73,19 @@ export async function collectGlobalDocsSearchGroups({
                 item: {
                     id: `global-docs:${slug}`,
                     label: title,
-                    description: i18n.t(
-                        changelog
-                            ? "ui.layout.footer.changelogs"
-                            : "ui.reuse.docs",
-                    ),
+                    description: `${changelog ? changelogsLabel : docsLabel} / ${labels.get(item.group || "platform")}`,
                     url: changelog
                         ? `/changelogs/${slug.replace(/^changelog\//, "")}`
                         : `/docs/${slug}`,
                     resultClass: "page",
                     visible: true,
-                    searchText: [title, slug, item.group, item.description]
+                    searchText: [
+                        title,
+                        slug,
+                        labels.get(item.group || "platform"),
+                        item.group,
+                        item.description,
+                    ]
                         .filter(Boolean)
                         .join(" "),
                 },
@@ -87,7 +94,7 @@ export async function collectGlobalDocsSearchGroups({
     const groups = () =>
         [
             {
-                category: i18n.t("ui.reuse.docs"),
+                category: docsLabel,
                 items: entries
                     .filter((entry) => !entry.changelog)
                     .map((entry) => ({
@@ -96,7 +103,7 @@ export async function collectGlobalDocsSearchGroups({
                     })),
             },
             {
-                category: i18n.t("ui.layout.footer.changelogs"),
+                category: changelogsLabel,
                 items: entries
                     .filter((entry) => entry.changelog)
                     .map((entry) => ({

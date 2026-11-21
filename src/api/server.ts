@@ -557,7 +557,7 @@ export function buildServer(deps: ApiDependencies) {
         log,
         routeContext,
     );
-    const docsRoutes = createDocsRoutes();
+    const docsRoutes = createDocsRoutes({ log });
     const uiRoutes = createUiRoutes(
         deps.moduleRuntimeGateway,
         deps.uiRegistry,

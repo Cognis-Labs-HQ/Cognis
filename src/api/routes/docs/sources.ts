@@ -51,7 +51,7 @@ async function filesWithin(directory: string): Promise<string[]> {
 async function manifestMetadata(
     root: string,
 ): Promise<Record<string, unknown> | undefined> {
-    for (const name of ["manifest.json", "package.json"]) {
+    for (const name of ["package.json", "manifest.json"]) {
         const content = await optionalText(join(root, name));
         if (content) return JSON.parse(content);
     }
@@ -89,7 +89,7 @@ async function sourceNameFor(root: string): Promise<string> {
 function groupFor(slug: string): string {
     const parts = slug.split("/");
     if (parts[0] === "adapters") return parts.slice(0, 2).join("/");
-    return parts.length === 1 ? "platform" : parts[0];
+    return parts[0];
 }
 
 async function localizedFiles(
@@ -136,8 +136,11 @@ export async function discoverDocSources(
             path.endsWith(`${sep}package.json`),
     );
     const owners = new Set<string>();
-    for (const path of manifests.sort((first, second) =>
-        first.localeCompare(second),
+    for (const path of manifests.sort(
+        (first, second) =>
+            dirname(first).localeCompare(dirname(second)) ||
+            Number(first.endsWith("manifest.json")) -
+                Number(second.endsWith("manifest.json")),
     )) {
         const root = dirname(path);
         if (owners.has(root)) continue;
@@ -167,6 +170,12 @@ export async function discoverDocSources(
             manifest.name?.startsWith("@cognis/")
                 ? `components/${relativeRoot}`
                 : relativeRoot;
+        if (
+            (
+                await Promise.all(Object.values(declared).map(optionalText))
+            ).every((text) => text === undefined)
+        )
+            continue;
         sources.push({
             slug,
             group: groupFor(slug),

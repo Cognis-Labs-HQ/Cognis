@@ -8,7 +8,7 @@
 
 | Komponente | Pfad       | Version   |
 | ---------- | ---------- | --------- |
-| API Server | `src/api/` | `0.13.36` |
+| API Server | `src/api/` | `0.13.37` |
 
 ## Konfiguration
 

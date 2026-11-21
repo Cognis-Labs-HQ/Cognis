@@ -14,7 +14,7 @@ The public interfaces and operational rules of Component Versions.
 
 | Component  | Path       | Version   |
 | ---------- | ---------- | --------- |
-| API Server | `src/api/` | `0.13.36` |
+| API Server | `src/api/` | `0.13.37` |
 
 ## Configuration
 

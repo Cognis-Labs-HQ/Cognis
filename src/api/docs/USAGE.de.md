@@ -16,6 +16,8 @@ Rufen Sie `store.diff(fromVersion, toVersion)` über einen Speicher auf, der mit
 
 `await ctx.getCapability("share:getGuestClaims")(request)`
 
+GET /api/v1/docs liefert optional groupPresentation neben den bisherigen Feldern group, slug, title, path und versions. Die Gruppe bleibt die unveränderliche Modul-UUID; Beschriftungen ersetzen weder Identität noch Routen.
+
 ## Erwartete Ergebnisse
 
 Jede veröffentlichte Version enthält ein vollständiges übersetztes Paket; fehlende Ansichten werden nicht aus fremden Versionen ergänzt.
