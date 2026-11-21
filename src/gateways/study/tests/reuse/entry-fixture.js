@@ -140,9 +140,27 @@ export async function createEntryFixture(context) {
         },
         globals,
     );
+    const dictionarySearch = loadTestModule(
+        new URL("../../ui/sub-navigation-search.js", import.meta.url),
+        {
+            "/static/reuse/form-builder.js": { createFormBuilder: fail },
+            "/static/reuse/escape-html.js": { escapeHtml },
+            "/static/reuse/popup.js": { openPopup: fail },
+            "/static/reuse/toast.js": { showToast: fail },
+            "/static/reuse/ui-ctx.js": { uiCtx: host.ctx },
+            "/static/gateways/study/library-client.js": library,
+        },
+        globals,
+    );
     const subnav = loadTestModule(
         new URL("../../ui/sub-navigation.js", import.meta.url),
         {
+            "./language-labels.js": loadTestModule(
+                new URL("../../ui/language-labels.js", import.meta.url),
+                {},
+                globals,
+            ),
+            "./sub-navigation-search.js": dictionarySearch,
             "./navigation-client.js": navigation,
             "./reuse/explore.js": explore,
             "/static/reuse/offline-state.js":
