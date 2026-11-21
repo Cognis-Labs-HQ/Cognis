@@ -123,6 +123,6 @@ Drag a language row, or its handle on a touch screen, into the preferred list at
 
 Settings native dragging and touch/pen handles share `bindListDropzones` in `src/ui/app/settings/dropzones.js`. The Settings controller owns selectors, eligibility and the drop callback; the helper owns destination hit testing, indicators, capture and cancellation. `cancel()` clears a gesture before rerender; `dispose()` or the supplied signal removes its listeners. Cancellation, lost capture, Escape, leaving the page and invalid drops do not submit edits. Eligibility failures release the gesture before propagating; capture release cannot commit after cancellation, owner disposal or row replacement. The Settings language tutorial retains its available/preferred list targets and explains the same drag and Save workflow.
 
-## Message Style Preview
+### Message Style Preview
 
 Appearance shows a labeled, fictional conversation below Message Style. Incoming and outgoing samples use the Messages presentation with participant labels and localized dates and times. Switching the style previews the unsaved choice; Save applies it and Discard restores the saved layout. The appearance tutorial includes the preview only while it is available. The sample has no links, profile actions, receipts or real conversation data. If Messages is unavailable, the selector and ordinary preference workflow remain usable. Repeated section renders retain pending choices, and leaving Settings cancels unfinished rendering.
