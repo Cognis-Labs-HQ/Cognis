@@ -1,3 +1,4 @@
+import { renderConversationMarkup } from "./reuse/conversation-presentation.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { messagesFetch as apiFetch } from "./offline-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
@@ -9,7 +10,6 @@ import { registerSearchIndex } from "/static/reuse/search-util/popup.js";
 import {
     decryptMessageOrReturnPlaintext,
     emojiDisplayName,
-    formatHandleNotation,
     normalizeReactionEmoji,
     resolveMessageStyle,
     stableJson,
@@ -33,8 +33,6 @@ const buildProfileAvatarMarkup = (options) =>
     profileAvatars().buildMarkup(options);
 const hydrateProfileAvatars = (container) =>
     profileAvatars().hydrate(container);
-
-const MESSAGE_UNAVAILABLE_PLACEHOLDER = "…";
 
 const reactionHoverPopup = createAnchoredPopup({
     className: "messages-reaction-hover-popup",
@@ -260,13 +258,6 @@ async function formatRoomEventText(message, i18n) {
     return formatRoomEvent(payload, subjectLabel, i18n);
 }
 
-function renderMessageBodyMarkup(messageText) {
-    const normalizedText = String(
-        messageText ?? MESSAGE_UNAVAILABLE_PLACEHOLDER,
-    );
-    return `<div class="messages-message-body">${renderMarkdown(normalizedText, { softBreaks: true })}</div>`;
-}
-
 export function renderComposerPreviewMarkup(content, emptyMessage) {
     const normalizedText = String(content ?? "");
     if (!normalizedText.trim()) {
@@ -361,7 +352,7 @@ export function showReadReceiptHoverPopup(statusElement, readers, i18n) {
             const readerLabel =
                 reader.displayName || reader.handle || reader.accountId;
             const readDay = formatDate(reader.readAt, "");
-            const readTime = formatMessageTime(reader.readAt);
+            const readTime = formatTime(reader.readAt, "");
             const timeLabel = [readDay, readTime].filter(Boolean).join(" ");
             const avatarMarkup = buildProfileAvatarMarkup({
                 avatarKey: reader.avatarKey || null,
@@ -454,7 +445,7 @@ export async function openReactionDetailsPopup(reactionDetailsRows, i18n) {
                 let reactedAtLabel = "";
                 if (reactedAt) {
                     const reactedDay = formatDate(reactedAt, "");
-                    const reactedTime = formatMessageTime(reactedAt);
+                    const reactedTime = formatTime(reactedAt, "");
                     reactedAtLabel = [reactedDay, reactedTime]
                         .filter(Boolean)
                         .join(" ");
@@ -553,42 +544,6 @@ export function renderMemberSummaryBody({
             }),
         )
         .join("")}</ul>`;
-}
-
-function formatMessageAvatar(message) {
-    const senderLabel =
-        message.senderDisplayName || message.senderHandle || message.senderId;
-    return buildProfileAvatarMarkup({
-        avatarKey: message.senderAvatarKey || null,
-        label: senderLabel,
-        colorSeed: message.senderHandle || message.senderId || senderLabel,
-        avatarClass: "messages-message-avatar",
-        imageClass: "messages-message-avatar-img",
-        fallbackClass: "messages-message-avatar-fallback",
-        profileHandle: message.senderHandle || null,
-        linkClass: "messages-avatar-link",
-        showAvailability: false,
-    });
-}
-
-function formatMessageBubbleAvatar(message) {
-    const senderLabel =
-        message.senderDisplayName || message.senderHandle || message.senderId;
-    return buildProfileAvatarMarkup({
-        avatarKey: message.senderAvatarKey || null,
-        label: senderLabel,
-        colorSeed: message.senderHandle || message.senderId || senderLabel,
-        avatarClass: "messages-message-bubble-avatar",
-        imageClass: "messages-message-bubble-avatar-img",
-        fallbackClass: "messages-message-bubble-avatar-fallback",
-        profileHandle: message.senderHandle || null,
-        linkClass: "messages-avatar-link",
-        showAvailability: false,
-    });
-}
-
-function formatMessageTime(iso) {
-    return formatTime(iso, "");
 }
 
 function unchangedThreadResult(view) {
@@ -742,89 +697,35 @@ async function renderThreadSnapshot(
         );
     decoded = page.messages;
     searchableRoomMessages.set(roomId, decoded);
-    let previousDateLabel = "";
     const readersAtMessage = buildLastReadMap(decoded);
-    const isSpeechBubbles = style === "speech_bubbles";
-    const html = decoded
-        .map((messageRecord) => {
-            const dateLabel = formatDate(messageRecord.createdAt, "");
-            const showDateDivider =
-                dateLabel && dateLabel !== previousDateLabel
-                    ? `<div class="messages-date-divider" data-thread-key="date-${escapeHtml(dateLabel)}"><span>${escapeHtml(dateLabel)}</span></div>`
-                    : "";
-            if (dateLabel) {
-                previousDateLabel = dateLabel;
-            }
-            const roomEventLabel = messageRecord.roomEventLabel;
-            if (roomEventLabel) {
-                return `${showDateDivider}<div class="messages-room-event" data-thread-key="event-${escapeHtml(messageRecord.id)}">${escapeHtml(roomEventLabel)}</div>`;
-            }
-            const isOwn = messageRecord.senderId === currentAccountId;
-            const ownClass = isOwn ? " messages-message--own" : "";
-            const timeLabel = messageRecord.createdAt
-                ? `<time class="messages-message-time" datetime="${escapeHtml(messageRecord.createdAt)}">${escapeHtml(formatMessageTime(messageRecord.createdAt))}</time>`
-                : "";
-            const readers = Array.isArray(messageRecord.readBy)
-                ? messageRecord.readBy
-                : [];
-            const deliveredCount = Number(messageRecord.deliveredToCount ?? 0);
-            const isDelivered = deliveredCount > 0 || readers.length > 0;
-            const hadPriorReaders = readers.length > 0;
-            const readersHere = isOwn
-                ? (readersAtMessage.get(messageRecord.id) ?? []).filter(
-                      (reader) => reader.accountId !== currentAccountId,
-                  )
-                : [];
-            const statusBlock = renderMessageStatus(
-                messageRecord,
-                currentAccountId,
-                isDelivered,
-                readersHere,
-                hadPriorReaders,
-                i18n,
-            );
-            const ownRowClass = isOwn ? " messages-message-row--own" : "";
-            const displayName =
-                messageRecord.senderDisplayName ||
-                messageRecord.senderHandle ||
-                messageRecord.senderId;
-            const handle = messageRecord.senderHandle || "";
-            const senderDisplaySpan = `<span class="messages-message-sender">${escapeHtml(displayName)}</span>`;
-            const senderHandleSpan = handle
-                ? `<span class="messages-message-handle">${escapeHtml(formatHandleNotation(handle))}</span>`
-                : "";
-            const senderLabel = isOwn
-                ? senderHandleSpan
-                : `${senderDisplaySpan}${senderHandleSpan}`;
-            const bubbleAvatarMarkup = formatMessageBubbleAvatar(messageRecord);
-            const reactionRows = renderReactionRows(messageRecord, i18n, isOwn);
-            const messageSearchText = [displayName, handle, messageRecord.text]
-                .filter(Boolean)
-                .join(" ");
-            const metadataRow =
-                timeLabel || statusBlock
-                    ? `<span class="messages-message-meta">${timeLabel}${statusBlock}</span>`
-                    : "";
-            const innerMetaRow = isSpeechBubbles ? "" : metadataRow;
-            const outerMetaRow = isSpeechBubbles ? metadataRow : "";
-            return `${showDateDivider}<div id="message-${escapeHtml(encodeURIComponent(messageRecord.id))}" class="messages-message-row${ownRowClass}" data-message-id="${escapeHtml(messageRecord.id)}" data-thread-key="message-${escapeHtml(messageRecord.id)}" data-search-label="${escapeHtml(displayName)}" data-search-description="${escapeHtml(formatDate(messageRecord.createdAt, ""))}" data-search-text="${escapeHtml([messageSearchText, formatDate(messageRecord.createdAt, "")].filter(Boolean).join(" "))}">
-        ${isOwn ? "" : formatMessageAvatar(messageRecord)}
-        <div class="messages-message-wrap">
-          ${bubbleAvatarMarkup}
-          <span data-reaction-slot="picker" data-search-exclude="true">${reactionRows.pickerRow}</span>
-          <div class="messages-message${ownClass}">
-            ${senderLabel}
-            <div class="messages-message-content">
-              ${renderMessageBodyMarkup(messageRecord.text)}
-              ${innerMetaRow}
-            </div>
-          </div>
-          ${outerMetaRow}
-          <span data-reaction-slot="active" data-search-exclude="true">${reactionRows.activeRow}</span>
-        </div>
-      </div>`;
-        })
-        .join("");
+    const html = renderConversationMarkup(
+        { records: decoded, style, currentAccountId },
+        {
+            buildAvatar: buildProfileAvatarMarkup,
+            decorateMessage: (messageRecord, isOwn) => {
+                const readers = Array.isArray(messageRecord.readBy)
+                    ? messageRecord.readBy
+                    : [];
+                const readersHere = isOwn
+                    ? (readersAtMessage.get(messageRecord.id) ?? []).filter(
+                          (reader) => reader.accountId !== currentAccountId,
+                      )
+                    : [];
+                return {
+                    statusBlock: renderMessageStatus(
+                        messageRecord,
+                        currentAccountId,
+                        Number(messageRecord.deliveredToCount ?? 0) > 0 ||
+                            readers.length > 0,
+                        readersHere,
+                        readers.length > 0,
+                        i18n,
+                    ),
+                    ...renderReactionRows(messageRecord, i18n, isOwn),
+                };
+            },
+        },
+    );
 
     const { oldestCreatedAt, newestCreatedAt, hasMore } = page;
     const earlierButton =

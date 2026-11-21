@@ -254,6 +254,10 @@ During `deprovision-user` → `cleanup-dependencies`, the component resolves `au
 
 This migration protects the bundled cleanup consumers. Before enabling account deletion in a deployment, update or disable external cleanup hooks that still trust mutable public flow results.
 
+### Read-only Presentation
+
+The browser provider exposes `social:messagePresentation` version 1 through its lifecycle-scoped ctx. `render({ style, records, currentAccountId })` runs `messages:presentConversation` with `validate` and `render` stages and returns non-interactive markup. Each record supplies string `id`, `senderId`, `senderDisplayName`, `senderHandle`, `text` and ISO `createdAt`. Only those presentation fields are accepted into the rendering snapshot. The provider advertises its shared stylesheets and an abort signal; consumers listen for `cognis:message-presentation-changed` and stop using a revoked provider. Live threads and read-only presentations share the same row/body renderer. The read-only path never fetches rooms, hydrates avatars, registers search, produces receipts or persists content. Synthetic consumers provide their own localized records and labels.
+
 ## Security
 
 Room eligibility, membership changes and message reads are authorized independently. Encrypted rooms depend on client-held keys; the threat model below distinguishes protected content from visible routing metadata.

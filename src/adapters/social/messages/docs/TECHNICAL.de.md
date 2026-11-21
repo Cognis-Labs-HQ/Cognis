@@ -176,6 +176,10 @@ Der Verlaufsschritt erklärt die Textauswahl während Aktualisierungen und das L
 
 In `deprovision-user` → `cleanup-dependencies` löst die Komponente `auth:deprovisionOutcome` Version 1 über `system:contracts` auf und ruft `deletedAccount(input, stageResults)` mit den Originalobjekten desselben Aufrufs auf. Nur eine Auth-eigene Bestätigung der dauerhaft ausgeführten Löschung berechtigt dazu, Raummitgliedschaften und Nachrichtenaktivität des Kontos zu entfernen. Kopierte Ergebnisse, Deaktivierungs- oder Archivierungsergebnisse sowie fehlende oder nicht verfügbare Bestätigungen berechtigen nicht zu dieser Bereinigung.
 
+### Schreibgeschützte Darstellung
+
+Der Browser-Anbieter stellt `social:messagePresentation` Version 1 über seinen lebenszyklusgebundenen ctx bereit. `render({ style, records, currentAccountId })` führt `messages:presentConversation` mit den Stufen `validate` und `render` aus und liefert nicht interaktives Markup. Jeder Datensatz enthält die Zeichenketten `id`, `senderId`, `senderDisplayName`, `senderHandle`, `text` und den ISO-Zeitstempel `createdAt`. Nur diese Darstellungsfelder gelangen in die Momentaufnahme. Der Anbieter veröffentlicht die gemeinsamen Stylesheets und ein Abbruchsignal; Verbraucher beachten `cognis:message-presentation-changed` und verwenden widerrufene Anbieter nicht weiter. Echte Unterhaltungen und schreibgeschützte Ansichten teilen denselben Zeilen- und Textrenderer. Der schreibgeschützte Pfad lädt keine Räume oder Avatarbilder, registriert keine Suche, erstellt keine Lesebestätigungen und speichert keine Inhalte. Synthetische Ansichten liefern ihre eigenen lokalisierten Datensätze und Beschriftungen.
+
 ## Sicherheit
 
 Raumzugang, Mitgliedschaft und Nachrichtenlesen werden getrennt geprüft. Verschlüsselte Räume benötigen Clientschlüssel; das Bedrohungsmodell unterscheidet Inhalte von sichtbaren Routingdaten.

@@ -1,3 +1,4 @@
+import { initMessageStylePrefs } from "./message-style-prefs.js";
 import { guides } from "./guides.js";
 import { navigateTo } from "../../reuse/app-router.js";
 import { createLanguageRedraw } from "./language-redraw.js";
@@ -52,10 +53,7 @@ import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { showToast } from "../../reuse/toast.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { renderInfoTooltip } from "../../reuse/info-tooltip.js";
-import {
-    isValidMessageStyle,
-    normalizeMessageStyle,
-} from "../../reuse/message-style-options.js";
+import { normalizeMessageStyle } from "../../reuse/message-style-options.js";
 import { loadDynamicContributions } from "../../reuse/dynamic-contribution-loader.js";
 import { renderStructuredContent } from "../../reuse/structured-content.js";
 import {
@@ -298,47 +296,6 @@ export async function mount(root, { signal } = {}) {
         };
     }
 
-    function initMessageStylePrefs({ onDirtyChange }) {
-        let savedMessageStyle = normalizeMessageStyle(
-            loadedPrefs?.messageStyle,
-        );
-        let currentMessageStyle = savedMessageStyle;
-
-        function updateSelector() {
-            root.querySelectorAll(".message-style-btn").forEach((button) => {
-                button.classList.toggle(
-                    "active",
-                    button.dataset.messageStyleValue === currentMessageStyle,
-                );
-            });
-        }
-
-        root.querySelectorAll(".message-style-btn").forEach((button) => {
-            button.addEventListener("click", () => {
-                const nextStyle = button.dataset.messageStyleValue;
-                if (!isValidMessageStyle(nextStyle)) return;
-                currentMessageStyle = nextStyle;
-                updateSelector();
-                onDirtyChange?.(currentMessageStyle !== savedMessageStyle);
-            });
-        });
-
-        updateSelector();
-
-        return {
-            getMessageStyle: () => currentMessageStyle,
-            isDirty: () => currentMessageStyle !== savedMessageStyle,
-            commit: () => {
-                savedMessageStyle = currentMessageStyle;
-            },
-            discard: () => {
-                currentMessageStyle = savedMessageStyle;
-                updateSelector();
-                onDirtyChange?.(false);
-            },
-        };
-    }
-
     const elements = [
         {
             id: "general",
@@ -493,6 +450,10 @@ export async function mount(root, { signal } = {}) {
                 <button type="button" class="message-style-btn" data-message-style-value="speech_bubbles">${i18n.t("ui.app.settings.message_style_speech_bubbles")}</button>
                 <button type="button" class="message-style-btn" data-message-style-value="irc">${i18n.t("ui.app.settings.message_style_irc")}</button>
               </div>
+              <section class="message-style-preview messages-page" data-message-style-preview data-search-exclude="true" aria-labelledby="message-style-preview-title" hidden>
+                <h4 id="message-style-preview-title">${escapeHtml(i18n.t("ui.app.settings.message_preview_title"))}</h4>
+                <div class="messages-thread-list" data-message-preview-thread></div>
+              </section>
             </div>
           `,
                     },
@@ -507,10 +468,14 @@ export async function mount(root, { signal } = {}) {
                     themePrefs = initThemePrefs({
                         onDirtyChange: (dirty) => markDirty("theme", dirty),
                     });
-                    messageStylePrefs = initMessageStylePrefs({
+                    messageStylePrefs ??= initMessageStylePrefs(root, {
+                        existingPrefs: loadedPrefs,
+                        i18n,
+                        signal,
                         onDirtyChange: (dirty) =>
                             markDirty(DIRTY_KEY_MESSAGE_STYLE, dirty),
                     });
+                    messageStylePrefs.bind();
                 },
             },
         },
