@@ -54,9 +54,9 @@ test("profile synchronization is routed through a provider-aware registry", () =
     assert.doesNotMatch(PROFILE_SYNC_SOURCE, /auth:syncExternalProfile/);
 });
 
-test("profile synchronization revokes replaced profile blob URLs", () => {
+test("profile synchronization reconciles owned media after the record read", () => {
     assert.match(
         PROFILE_APP_SOURCE,
-        /applyProfile: async \(\) => \{[\s\S]*?revokeProfileBlobUrls\(\);[\s\S]*?loadImageAsBlob/,
+        /applyProfile: async \(\) => \{[\s\S]*?loadOwnProfile\(\);[\s\S]*?heroMedia\.read\(nextProfile\)/,
     );
 });

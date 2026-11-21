@@ -6,6 +6,7 @@ import { navigateTo } from "/static/reuse/app-router.js";
 
 export function createProfilePostActions({
     getState,
+    isCurrent,
     setState,
     refreshPage,
     refreshProfileHero = refreshPage,
@@ -18,6 +19,7 @@ export function createProfilePostActions({
     const pendingFollowHandles = new Set();
 
     async function doCreatePost() {
+        if (!isCurrent()) return;
         const { root, newPostFormController } = getState();
         const submitButton = root?.querySelector(
             '#new-post-form button[type="submit"]',
@@ -40,14 +42,17 @@ export function createProfilePostActions({
                 }),
             });
 
+            if (!isCurrent()) return;
             if (response.ok) {
                 const receipt = await response.json();
+                if (!isCurrent()) return;
                 delivered = true;
                 setState({
                     posts: receipt.queued
                         ? [receipt.data, ...(getState().posts ?? [])]
                         : await loadOwnPosts(),
                 });
+                if (!isCurrent()) return;
                 const postFormElement = root?.querySelector("#new-post-form");
                 if (postFormElement instanceof HTMLFormElement) {
                     postFormElement.reset();
@@ -61,6 +66,7 @@ export function createProfilePostActions({
                 });
             }
         } catch (error) {
+            if (error?.code === "missing_translation") throw error;
             console.error(
                 delivered
                     ? "[profile] post view refresh failed"
@@ -72,7 +78,7 @@ export function createProfilePostActions({
                     delivered,
                 },
             );
-            if (delivered) return;
+            if (delivered || !isCurrent()) return;
             showToast(
                 i18n.t(
                     error.message === "offline_outbox_full"
@@ -87,6 +93,7 @@ export function createProfilePostActions({
     }
 
     async function doDeletePost(postId) {
+        if (!isCurrent()) return;
         const result = await openPopup({
             title: i18n.t("ui.app.profile.delete_post_confirm"),
             body: "",
@@ -104,13 +111,14 @@ export function createProfilePostActions({
                 },
             ],
         });
-        if (result !== "confirm") return;
+        if (!isCurrent() || result !== "confirm") return;
         const response = await apiFetch(
             `/api/v1/social/posts/${encodeURIComponent(postId)}`,
             {
                 method: "DELETE",
             },
         );
+        if (!isCurrent()) return;
         if (response.ok) {
             setState({ posts: await loadOwnPosts() });
             refreshPage();
@@ -118,6 +126,7 @@ export function createProfilePostActions({
     }
 
     async function doFollowUser(handle) {
+        if (!isCurrent()) return;
         if (!handle || pendingFollowHandles.has(handle)) return;
         const { relationship, profile } = getState();
         const isFollowingTarget = Boolean(relationship?.following);
@@ -139,7 +148,7 @@ export function createProfilePostActions({
                     },
                 ],
             });
-            if (result !== "confirm") return;
+            if (!isCurrent() || result !== "confirm") return;
         }
 
         pendingFollowHandles.add(handle);
@@ -156,6 +165,7 @@ export function createProfilePostActions({
                 { method: isFollowingTarget ? "DELETE" : "POST" },
             );
 
+            if (!isCurrent()) return;
             if (response.ok) {
                 const currentState = getState();
                 const matchingUser = [
@@ -203,6 +213,7 @@ export function createProfilePostActions({
                         loadFollowers(profile?.handle),
                         loadFollowing(profile?.handle),
                     ]);
+                if (!isCurrent()) return;
                 setState({
                     ...(followersResult.status === "fulfilled"
                         ? { followers: followersResult.value }
@@ -233,6 +244,7 @@ export function createProfilePostActions({
     }
 
     async function doBlockUser() {
+        if (!isCurrent()) return;
         const { urlHandle, relationship, profile } = getState();
         const result = await openPopup({
             title: i18n.t("ui.app.profile.block_user"),
@@ -251,16 +263,17 @@ export function createProfilePostActions({
                 },
             ],
         });
-        if (result !== "confirm") return;
+        if (!isCurrent() || result !== "confirm") return;
         const response = await apiFetch(
             `/api/v1/social/users/${encodeURIComponent(urlHandle)}/block`,
             { method: "POST" },
         );
-        if (!response.ok) return;
+        if (!isCurrent() || !response.ok) return;
         const [nextFollowers, nextFollowing] = await Promise.all([
             loadFollowers(profile?.handle),
             loadFollowing(profile?.handle),
         ]);
+        if (!isCurrent()) return;
         setState({
             relationship: {
                 ...(relationship ?? {}),
@@ -276,6 +289,7 @@ export function createProfilePostActions({
     }
 
     async function doUnblockUser() {
+        if (!isCurrent()) return;
         const { urlHandle, relationship } = getState();
         const result = await openPopup({
             title: i18n.t("ui.app.profile.unblock_user"),
@@ -294,12 +308,12 @@ export function createProfilePostActions({
                 },
             ],
         });
-        if (result !== "confirm") return;
+        if (!isCurrent() || result !== "confirm") return;
         const response = await apiFetch(
             `/api/v1/social/users/${encodeURIComponent(urlHandle)}/block`,
             { method: "DELETE" },
         );
-        if (!response.ok) return;
+        if (!isCurrent() || !response.ok) return;
         setState({
             relationship: { ...(relationship ?? {}), blocked: false },
             canRequestMessageTarget: Boolean(
@@ -310,6 +324,7 @@ export function createProfilePostActions({
     }
 
     async function doOpenMessageRoom() {
+        if (!isCurrent()) return;
         const { profile } = getState();
         if (!profile?.handle) return;
         try {
@@ -317,6 +332,7 @@ export function createProfilePostActions({
                 method: "POST",
                 body: JSON.stringify({ handles: [profile.handle] }),
             });
+            if (!isCurrent()) return;
             if (!response.ok) {
                 showToast(i18n.t("ui.app.profile.message_start_failed"), {
                     variant: "error",
@@ -324,6 +340,7 @@ export function createProfilePostActions({
                 return;
             }
             const payload = await response.json();
+            if (!isCurrent()) return;
             const roomId = payload?.data?.id;
             if (!roomId && payload?.data?.requiresApproval) {
                 showToast(i18n.t("ui.app.profile.message_request_sent"), {
@@ -333,7 +350,14 @@ export function createProfilePostActions({
             }
             if (!roomId) return;
             await navigateTo(`/messages/${encodeURIComponent(roomId)}`);
-        } catch {
+        } catch (error) {
+            if (error?.code === "missing_translation") throw error;
+            if (!isCurrent()) return;
+            console.error("[profile] message room request failed", {
+                component: "social-profile",
+                operation: "openMessageRoom",
+                errorName: error?.name,
+            });
             showToast(i18n.t("ui.app.profile.message_start_failed"), {
                 variant: "error",
             });

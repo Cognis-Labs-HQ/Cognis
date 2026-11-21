@@ -1,3 +1,5 @@
+import { profileReadState } from "./reuse/avatar-cache.js";
+import { readImageBlob } from "./reuse/image-blob.js";
 import { profileFetch as apiFetch } from "./offline-client.js";
 import {
     PROFILE_FILE_NAMESPACE_ID,
@@ -27,10 +29,34 @@ function createDefaultBannerLayout() {
 export async function loadOwnProfile() {
     try {
         const response = await apiFetch("/api/v1/social/profile");
-        if (!response.ok) return null;
-        return (await response.json()).data ?? null;
-    } catch {
-        return null;
+        const state = profileReadState(response);
+        if (["denied", "missing"].includes(state)) return null;
+        if (state !== "available") throw new Error("profile_read_failed");
+        const payload = await response.json();
+        if (
+            !Object.hasOwn(payload, "data") ||
+            (payload.data !== null &&
+                (typeof payload.data !== "object" ||
+                    Array.isArray(payload.data) ||
+                    typeof payload.data.accountId !== "string" ||
+                    !payload.data.accountId ||
+                    typeof payload.data.handle !== "string" ||
+                    !payload.data.handle ||
+                    ["avatarKey", "bannerKey"].some(
+                        (key) =>
+                            payload.data[key] !== null &&
+                            typeof payload.data[key] !== "string",
+                    )))
+        )
+            throw new Error("profile_read_invalid");
+        return payload.data;
+    } catch (error) {
+        console.error("[profile] profile read failed", {
+            component: "social-profile",
+            operation: "readProfile",
+            errorName: error?.name,
+        });
+        throw error;
     }
 }
 
@@ -96,16 +122,34 @@ export async function loadUserPosts(handle) {
     }
 }
 
-export async function loadImageAsBlob(fileKey) {
-    if (!fileKey) return null;
+export async function readProfileImage(
+    fileKey,
+    { signal, isCurrent, previous },
+) {
+    if (!fileKey) return { state: "missing" };
     try {
         const response = await apiFetch(
             buildNamespacedFileUrl(PROFILE_FILE_NAMESPACE_ID, fileKey),
+            { signal },
         );
-        if (!response.ok) return null;
-        return URL.createObjectURL(await response.blob());
-    } catch {
-        return null;
+        if (!isCurrent()) return { state: "stale" };
+        const state = profileReadState(response);
+        return state === "available"
+            ? await readImageBlob(response, { isCurrent, previous })
+            : { state };
+    } catch (error) {
+        if (!isCurrent() || signal.aborted) return { state: "stale" };
+        console.error("[profile] hero image read failed", {
+            component: "social-profile",
+            operation: "readHeroMedia",
+            errorName: error?.name,
+            status: error?.status,
+        });
+        return {
+            state: error?.status
+                ? profileReadState({ ok: false, status: error.status })
+                : "retryable",
+        };
     }
 }
 
