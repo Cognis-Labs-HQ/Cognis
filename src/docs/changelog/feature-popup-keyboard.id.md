@@ -16,5 +16,5 @@ Fungsi delegasi bersifat sinkron, dan `contains` harus mengembalikan nilai boole
 
 ## Komit
 
-- [c068853abee3bd2c64816643f2d115489bccb577](https://github.com/Cognis-Labs-HQ/Cognis/commit/c068853abee3bd2c64816643f2d115489bccb577)
-- [a9b2eb92c58054b2ac5cba82625e1dbbf60a11af](https://github.com/Cognis-Labs-HQ/Cognis/commit/a9b2eb92c58054b2ac5cba82625e1dbbf60a11af)
+- [4fff1ed5620f6cd3ca53799bbd0115032a1901b0](https://github.com/Cognis-Labs-HQ/Cognis/commit/4fff1ed5620f6cd3ca53799bbd0115032a1901b0)
+- [be848544b9653d6f7ccf80cee57a2b151a5eb1ed](https://github.com/Cognis-Labs-HQ/Cognis/commit/be848544b9653d6f7ccf80cee57a2b151a5eb1ed)
