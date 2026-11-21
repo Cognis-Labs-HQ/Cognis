@@ -22,7 +22,8 @@ Operasi akhir akun, metode, dan gateway memblokir penerimaan baru selama pembers
 
 ## Komit
 
-- [86fa7824aaf0af2d1f7a0190b8b2bc2e9a0dc2ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/86fa7824aaf0af2d1f7a0190b8b2bc2e9a0dc2ea)
-- [64a28f2a3dd9bd7c7c7a02ca56c8dbe494ecf361](https://github.com/Cognis-Labs-HQ/Cognis/commit/64a28f2a3dd9bd7c7c7a02ca56c8dbe494ecf361)
-- [d93b02e0311f34c246500692eab67d11a061b7d9](https://github.com/Cognis-Labs-HQ/Cognis/commit/d93b02e0311f34c246500692eab67d11a061b7d9)
-- [80abb16c76882e2f29cbe130b50df79323dba543](https://github.com/Cognis-Labs-HQ/Cognis/commit/80abb16c76882e2f29cbe130b50df79323dba543)
+- [38c133dcaab2bf4a6ec83af69eddc619f66f1c6e](https://github.com/Cognis-Labs-HQ/Cognis/commit/38c133dcaab2bf4a6ec83af69eddc619f66f1c6e)
+- [f08147c498b49ec2be082a94bf72dc240bc3cb62](https://github.com/Cognis-Labs-HQ/Cognis/commit/f08147c498b49ec2be082a94bf72dc240bc3cb62)
+- [a7ace92b92a455dfb5b060920749a591997d0a43](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7ace92b92a455dfb5b060920749a591997d0a43)
+- [3f537c9889526f904cbb482b8356d9364aa5c2bc](https://github.com/Cognis-Labs-HQ/Cognis/commit/3f537c9889526f904cbb482b8356d9364aa5c2bc)
+- [05f58cb334da6bbfb92eac49215af7c9b540e319](https://github.com/Cognis-Labs-HQ/Cognis/commit/05f58cb334da6bbfb92eac49215af7c9b540e319)
