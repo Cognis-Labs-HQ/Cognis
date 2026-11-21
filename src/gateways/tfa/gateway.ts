@@ -634,10 +634,26 @@ export class CoreTfaGateway {
         if (typeof adapter.beginLoginChallenge !== "function") {
             return { ready: true };
         }
-        return adapter.beginLoginChallenge({
+        const challenge = await adapter.beginLoginChallenge({
             accountId,
             state,
         });
+        const log = this.options.log;
+        log?.(
+            challenge.ready ? "info" : "error",
+            challenge.ready
+                ? "TFA login challenge prepared."
+                : "TFA login challenge unavailable.",
+            {
+                component: "tfa-gateway",
+                operation: "prepare_login_challenge",
+                accountId,
+                methodId,
+                ready: challenge.ready,
+                reason: challenge.message,
+            },
+        );
+        return challenge;
     }
 
     private buildLoginMethodChallengeMetadata(challenge: {

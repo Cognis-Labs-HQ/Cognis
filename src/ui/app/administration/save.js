@@ -54,3 +54,36 @@ export function createAdministrationSave({
         });
     };
 }
+
+export async function confirmAdministrationSectionSwitch({
+    changesBar,
+    securitySection,
+    gatewaySections,
+    i18n,
+    openPopup,
+}) {
+    if (changesBar?.isAnyDirty()) {
+        const result = await openPopup({
+            title: i18n.t("ui.reuse.unsaved_changes"),
+            body: `<p>${i18n.t("ui.reuse.leave_page_warning")}</p>`,
+            variant: "warning",
+            actions: [
+                {
+                    id: "discard",
+                    label: i18n.t("ui.reuse.discard_and_leave"),
+                    variant: "confirm",
+                },
+                {
+                    id: "stay",
+                    label: i18n.t("ui.reuse.stay"),
+                    variant: "cancel",
+                },
+            ],
+        });
+        if (result !== "discard") return false;
+        securitySection?.discard();
+        changesBar.markDirty("security", false);
+        gatewaySections.forEach((section) => section.discard?.());
+    }
+    return true;
+}

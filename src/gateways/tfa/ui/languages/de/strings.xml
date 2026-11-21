@@ -63,4 +63,5 @@
   <string name="gateway.tfa.tutorial.enforcement.enforcement.policy.body">Prüfen Sie Folgen für alle Konten vor dem Verpflichten zur Zwei-Faktor-Authentifizierung.</string>
   <string name="gateway.tfa.tutorial.enforcement.apply.policy.title">Regel übernehmen</string>
   <string name="gateway.tfa.tutorial.enforcement.apply.policy.body">Speichern Sie erst nach Prüfung der Pflichtoption und der nötigen Benutzereinrichtung.</string>
+  <string name="ui.app.login.tfa.challenge_unavailable">Der Bestätigungscode konnte nicht gesendet werden. Versuchen Sie es erneut oder wählen Sie eine andere Bestätigungsmethode.</string>
 </resources>

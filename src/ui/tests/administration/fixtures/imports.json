@@ -57,5 +57,8 @@
     "./control-bindings.js": ["createAdministrationControlBindings"],
     "./reloaders.js": ["createAdministrationReloaders"],
     "./runtime-toggles.js": ["syncRuntimeToggleControls"],
-    "./save.js": ["createAdministrationSave"]
+    "./save.js": [
+        "createAdministrationSave",
+        "confirmAdministrationSectionSwitch"
+    ]
 }

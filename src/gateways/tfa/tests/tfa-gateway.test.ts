@@ -208,7 +208,13 @@ test("tfa gateway dispatches low recovery-code notification after recovery login
 
 test("tfa gateway excludes methods when login challenge is not ready", async () => {
     const storeMock = createStoreMock();
-    const gateway = new CoreTfaGateway(storeMock as any);
+    const logs: Array<{ level: string; metadata?: Record<string, unknown> }> =
+        [];
+    const gateway = new CoreTfaGateway(storeMock as any, {
+        log: (level, _message, metadata) => {
+            logs.push({ level, metadata });
+        },
+    });
     gateway.registerAdapter({
         id: "smtp",
         name: "Email",
@@ -217,7 +223,10 @@ test("tfa gateway excludes methods when login challenge is not ready", async () 
             view: { prompt: "prompt" },
         }),
         verifySetup: async () => ({ verified: true, state: {} }),
-        beginLoginChallenge: async () => ({ ready: false }),
+        beginLoginChallenge: async () => ({
+            ready: false,
+            message: "email_delivery_unavailable",
+        }),
         verifyLogin: async () => ({ verified: false }),
         getConfigSchema: () => [],
         configure: () => undefined,
@@ -232,6 +241,14 @@ test("tfa gateway excludes methods when login challenge is not ready", async () 
         configuredAt: new Date().toISOString(),
     });
     const methods = await gateway.getLoginMethods("alice");
+    assert.ok(
+        logs.some(
+            ({ level, metadata }) =>
+                level === "error" &&
+                metadata?.reason === "email_delivery_unavailable" &&
+                metadata?.methodId === "smtp",
+        ),
+    );
     assert.equal(
         methods.some((method) => method.id === "smtp"),
         false,

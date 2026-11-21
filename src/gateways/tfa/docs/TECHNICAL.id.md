@@ -32,7 +32,7 @@ Gateway ini mendaftarkan capability berikut melalui `ctx.capabilities`:
 
 Capability ini adalah permukaan integrasi yang didukung. Komponen lain tidak boleh mengimpor internal adapter TFA secara langsung.
 
-`tfa:getLoginMethods(accountId)` hanya memicu challenge login (misalnya mengirim email SMTP) saat tepat satu metode dikonfigurasi untuk pengguna. Saat beberapa metode tersedia, respons hanya berisi identitas metode tanpa data challenge. UI login memicu challenge secara on-demand melalui `POST /api/v1/tfa/login/resend` ketika pengguna secara eksplisit memilih sebuah metode.
+`tfa:getLoginMethods(accountId)` menyiapkan tantangan hanya saat satu metode tersedia tanpa kode pemulihan yang belum digunakan. Jika tidak, UI login meminta tantangan melalui `POST /api/v1/tfa/login/resend` untuk metode awal dengan `challengeOnSelect` dan pilihan berikutnya yang belum memiliki tantangan. Tantangan dari server digunakan kembali. Kegagalan pengiriman ditampilkan dalam bahasa pengguna; log mencatat metode, akun, kesiapan, dan alasan kegagalan tanpa kode atau isi email.
 
 ### Route API
 

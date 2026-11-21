@@ -63,4 +63,5 @@
   <string name="gateway.tfa.tutorial.enforcement.enforcement.policy.body">Review the effect on all accounts before requiring two-factor authentication.</string>
   <string name="gateway.tfa.tutorial.enforcement.apply.policy.title">Apply Policy</string>
   <string name="gateway.tfa.tutorial.enforcement.apply.policy.body">Save only after reviewing the enforcement choice and the setup users will need.</string>
+  <string name="ui.app.login.tfa.challenge_unavailable">The verification code could not be sent. Try again or choose another verification method.</string>
 </resources>

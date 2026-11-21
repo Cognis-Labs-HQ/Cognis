@@ -10,6 +10,10 @@ Die Verwaltung speichert nur Bereiche mit ausstehenden Änderungen. Sicherheitsf
 
 Bei der Wiederherstellung der Verbindung werden Übersetzungsspeicher vor dem erneuten Seitenaufbau verworfen. Explizite Aktualisierungen laden aktuelle Serverinhalte und behalten bei Ausfällen vollständige Offlinekopien. Ungültige XML-Antworten werden nicht gespeichert; nachfolgende Ladeversuche können ohne vollständiges Neuladen erfolgreich sein.
 
+## Erste E-Mail-Bestätigung
+
+`tfa:getLoginMethods(accountId)` bereitet eine Challenge nur bei genau einer verfügbaren Methode ohne unbenutzte Wiederherstellungscodes vor. Andernfalls fordert die Login-Oberfläche über `POST /api/v1/tfa/login/resend` eine Challenge für die anfänglich gewählte Methode mit `challengeOnSelect` sowie für spätere Auswahlen ohne bestehende Challenge an. Vorbereitete Challenges werden wiederverwendet. Zustellfehler erscheinen lokalisiert; Protokolle erfassen Methode, Konto, Bereitschaft und Fehlergrund ohne Codes oder E-Mail-Inhalte.
+
 ## Commits
 
 - [5670661ce549fca1766d385fdfcb157114365b6d](https://github.com/Cognis-Labs-HQ/Cognis/commit/5670661ce549fca1766d385fdfcb157114365b6d)

@@ -72,13 +72,13 @@ export function renderTfaMethodTabs(
             });
             setActiveTfaInputPlaceholder(i18n, method, tfaCodeInput);
             onMethodChanged?.(method);
-            onMethodActivated?.(method);
         });
         if (index === 0) {
             tabLink.classList.add("active");
             methodInput.value = method.id;
             setActiveTfaInputPlaceholder(i18n, method, tfaCodeInput);
             onMethodChanged?.(method);
+            onMethodActivated?.(method);
         }
         tabsEl.appendChild(tabLink);
     });
@@ -341,6 +341,10 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                         });
                         return;
                     }
+                    showToast(
+                        i18n.t("ui.app.login.tfa.challenge_unavailable"),
+                        { variant: "error" },
+                    );
                     if (resolvedMethod) {
                         challengeStateByMethodId.set(resolvedMethod.id, {
                             message: body?.error?.code,
@@ -357,7 +361,16 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                         syncDisabledResendState();
                     }
                 } catch (error) {
-                    console.error(error);
+                    console.error("[tfa] challenge request failed", {
+                        component: "tfa",
+                        operation: "beginLoginChallenge",
+                        methodId,
+                        errorName: error?.name,
+                    });
+                    showToast(
+                        i18n.t("ui.app.login.tfa.challenge_unavailable"),
+                        { variant: "error" },
+                    );
                     resendLocked = false;
                     syncDisabledResendState();
                 }
@@ -392,23 +405,25 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                     });
                 }
             }
-            return switchToTfaPrompt(
+            const activateMethod = async (method) => {
+                if (
+                    method?.loginUi?.challengeOnSelect === true &&
+                    !challengeStateByMethodId.has(method.id)
+                ) {
+                    await sendChallenge(method.id);
+                }
+            };
+            const attemptId = switchToTfaPrompt(
                 i18n,
                 payload,
                 root,
-                (method) => {
-                    setResendStateForMethod(resolveMethod(method.id));
-                },
-                async (method) => {
-                    if (
-                        method.loginUi?.challengeOnSelect === true &&
-                        !challengeStateByMethodId.has(method.id)
-                    ) {
-                        await sendChallenge(method.id);
-                    }
-                },
+                (method) => setResendStateForMethod(resolveMethod(method.id)),
+                activateMethod,
             );
+            await activateMethod(methods[0]);
+            return attemptId;
         },
+
         async resendCode(payload) {
             const response = await fetch("/api/v1/tfa/login/resend", {
                 method: "POST",

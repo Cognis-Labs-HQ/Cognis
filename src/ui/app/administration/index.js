@@ -1,4 +1,7 @@
-import { createAdministrationSave } from "./save.js";
+import {
+    createAdministrationSave,
+    confirmAdministrationSectionSwitch,
+} from "./save.js";
 import { uiCtx } from "../../reuse/ui-ctx.js";
 import { guides } from "./guides.js";
 import { apiFetch } from "../../reuse/api-client.js";
@@ -659,33 +662,6 @@ async function openAdapterConfig(gatewayId, adapterId, name, adapterOverride = n
     });
 }
 
-async function guardSubPageSwitch() {
-    if (changesBar?.isAnyDirty()) {
-        const result = await openPopup({
-            title: i18n.t("ui.reuse.unsaved_changes"),
-            body: `<p>${i18n.t("ui.reuse.leave_page_warning")}</p>`,
-            variant: "warning",
-            actions: [
-                {
-                    id: "discard",
-                    label: i18n.t("ui.reuse.discard_and_leave"),
-                    variant: "confirm",
-                },
-                {
-                    id: "stay",
-                    label: i18n.t("ui.reuse.stay"),
-                    variant: "cancel",
-                },
-            ],
-        });
-        if (result !== "discard") return false;
-        securitySection?.discard();
-        changesBar.markDirty("security", false);
-        gatewaySections.forEach((section) => section.discard?.());
-    }
-    return true;
-}
-
 export async function mount(rootEl, { signal } = {}) {
     root = rootEl;
     i18n = await createI18n();
@@ -884,7 +860,14 @@ export async function mount(rootEl, { signal } = {}) {
         elements,
         preferenceKey: "administration-layout",
         i18n,
-        onBeforeSubPageSwitch: guardSubPageSwitch,
+        onBeforeSubPageSwitch: () =>
+            confirmAdministrationSectionSwitch({
+                changesBar,
+                securitySection,
+                gatewaySections,
+                i18n,
+                openPopup,
+            }),
         pageContext: {
             title: i18n.t("ui.reuse.administration"),
             subtitle: i18n.t("ui.app.admin.page_subtitle"),
