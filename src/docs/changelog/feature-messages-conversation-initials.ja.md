@@ -14,4 +14,5 @@ Messages 2.8.3 / Profile 4.0.0.
 
 ## コミット
 
-- [f714d0e65e81c7cfc76fabe863f7eeb3289709c4](https://github.com/Cognis-Labs-HQ/Cognis/commit/f714d0e65e81c7cfc76fabe863f7eeb3289709c4)
+- [7d1129047b79d5c54ebc2a572387692eb4670f3c](https://github.com/Cognis-Labs-HQ/Cognis/commit/7d1129047b79d5c54ebc2a572387692eb4670f3c)
+- [39b7601bebb159e99b318b16df5d064a37b86c74](https://github.com/Cognis-Labs-HQ/Cognis/commit/39b7601bebb159e99b318b16df5d064a37b86c74)
