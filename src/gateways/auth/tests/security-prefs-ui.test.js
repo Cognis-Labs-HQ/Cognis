@@ -218,7 +218,7 @@ test("password change popup revalidates confirm password reactively", () => {
     );
     assert.match(
         PASSWORD_CHANGE_SOURCE,
-        /messageKey:\s*"ui\.app\.register\.passwords_match"/,
+        /messageKey:\s*"ui\.reuse\.passwords_match"/,
     );
 });
 

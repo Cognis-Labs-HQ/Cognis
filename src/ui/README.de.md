@@ -101,3 +101,7 @@ Der gemeinsame Formularbaukasten fasst jede Feldüberschrift und ihre Pflichtfel
 Die Überschrift verhindert einen Umbruch zwischen Inhalt und Markierung, während der innere Beschriftungstext auch innerhalb langer ungetrennter Wörter umbrechen darf.
 
 Formularüberschriften bleiben in ihren bisherigen Feldern. Ziele und Ablauf der Kalender- und Freigabeanleitungen ändern sich nicht; es ist keine neue Aktion oder Anleitungsetappe nötig.
+
+## Passwortformular-Texte
+
+Komponentenübergreifende Passwortformulare verwenden `ui.reuse.password_requirements` und `ui.reuse.passwords_match` aus den Host-XML-Katalogen. Auth und Registration nutzen dieselben Schlüssel auf Englisch, Deutsch, Indonesisch und Japanisch. Liefern Sie die Host-Kataloge mit Auth 2.2.13 und Registration 1.2.9 aus; Integrationen müssen diese gemeinsamen Schlüssel übernehmen. Die Auflösung desselben englischen Schlüssels bleibt strikt und meldet fehlende oder leere englische Werte ausdrücklich als Fehler.

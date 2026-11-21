@@ -230,6 +230,14 @@ Integrasi SSO harus memperlakukan `tfaRequired: true` sebagai autentikasi belum 
 
 `auth:getPendingLoginLifetime` versi 1 hanya membaca `{ id, accountId, expiresAt, signal }` dari percobaan yang sudah melewati autentikasi utama. Operasi ini tidak membuat atau memperpanjang kewenangan. Auth membuat percobaan sebelum persiapan faktor otomatis tanpa menerbitkan sesi atau mengaktifkan profil. Tenggat lima menit yang tetap membatasi pengiriman. Konsumsi, pembatalan, kedaluwarsa, penggantian kelanjutan, logout, dan pembersihan pemilik membatalkan sumber daya tantangan. Kelanjutan berbasis cookie, perlindungan percobaan lama, dan melanjutkan tanpa pengiriman ulang tetap berlaku. Keberhasilan faktor membatalkan tantangan tanpa membatalkan komit sesi akhir yang terpisah. TFA menolak jika kontrak ini tidak tersedia.
 
+### Label Formulir Kata Sandi
+
+Keamanan memakai kunci XML bersama `ui.reuse.password_requirements` dan `ui.reuse.passwords_match`. Bagian Pengaturan terdaftar memuat katalog Auth dan host tanpa mewajibkan Registration aktif. Kebijakan kata sandi, validasi konfirmasi, dan pembatasan penyedia tetap sama. Terapkan Auth 2.2.13 bersama katalog UI host yang sesuai.
+
+### Label Formulir Kata Sandi
+
+Panduan Keamanan Akun menjelaskan cara membuka Ubah Kata Sandi jika didukung, memenuhi kebijakan yang ditampilkan, mengonfirmasi kata sandi baru yang sama, serta memilih Simpan atau Batal. Simpan yang berhasil mengeluarkan akun; Batal memungkinkan keputusan membuang perubahan. Dua target panduan dan identitas penyelesaian yang ada tetap sama.
+
 ### Identitas dan izin
 
 Klaim Auth pelaku yang terverifikasi tetap menjadi acuan; kebijakan ini tidak memuat ulang atau meningkatkan perannya. Akun biasa hanya dapat bertindak pada dirinya sendiri jika layanan mandiri diizinkan. Administrator dapat mengelola akun pengguna, pengajar, dan moderator lain. Hanya pemilik yang dapat mengelola akun administrator atau pemilik lain. Pendiri dengan peran administrator atau pemilik tersimpan memiliki peran efektif pemilik; penanda pendiri saja tidak meningkatkan peran lain. Pengelolaan pengguna tetap menerapkan pembatasan pendiri, peran, dan penghapusan yang khusus untuk setiap tindakan.

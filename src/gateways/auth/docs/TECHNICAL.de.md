@@ -234,6 +234,14 @@ SSO-Integrationen müssen `tfaRequired: true` als unvollständige Anmeldung beha
 
 `auth:getPendingLoginLifetime` Version 1 liest ausschließlich `{ id, accountId, expiresAt, signal }` eines vorhandenen, primär authentifizierten Versuchs. Der Aufruf erstellt oder verlängert keine Berechtigung. Auth legt den Versuch vor der automatischen Faktorvorbereitung an, ohne Sitzung oder Profilaktivierung. Die unveränderliche Fünf-Minuten-Frist begrenzt die Zustellung. Verbrauch, Abbruch, Ablauf, Ersetzung der Fortsetzung, Logout und Bereinigung beenden Challenge-Ressourcen. Cookie-gebundene Fortsetzung, Schutz vor veralteten Versuchen und Fortsetzen ohne Neuversand bleiben erhalten. Erfolgreiche Faktorprüfung beendet die Challenge, nicht den getrennten abschließenden Sitzungsabschluss. Ohne diesen Vertrag verweigert TFA den Vorgang.
 
+### Passwortformular-Texte
+
+Sicherheit verwendet die gemeinsamen XML-Schlüssel `ui.reuse.password_requirements` und `ui.reuse.passwords_match`. Der registrierte Einstellungsbereich lädt Auth- und Host-Kataloge, ohne aktivierte Registrierung vorauszusetzen. Passwortrichtlinie, Bestätigungsprüfung und Anbieterbeschränkungen bleiben unverändert. Stellen Sie Auth 2.2.13 mit den passenden Host-UI-Katalogen bereit.
+
+### Passwortformular-Texte
+
+Die Anleitung zur Kontosicherheit erklärt das Öffnen der unterstützten Passwortänderung, das Erfüllen der angezeigten Richtlinie, die Bestätigung desselben neuen Passworts sowie Speichern und Abbrechen. Erfolgreiches Speichern meldet das Konto ab; beim Abbrechen kann das Verwerfen der Eingaben bestätigt werden. Die beiden vorhandenen Ziele und die Abschlusskennung bleiben unverändert.
+
 ### Identität und Berechtigungen
 
 Die verifizierten Auth-Ansprüche des Akteurs bleiben maßgeblich; die Richtlinie lädt seine Rolle weder erneut noch erhöht sie diese. Ein gewöhnliches Konto darf nur sich selbst bearbeiten, sofern Selbstverwaltung erlaubt ist. Administratoren dürfen andere Benutzer-, Lehrer- und Moderatorenkonten verwalten. Nur ein Eigentümer darf ein anderes Administrator- oder Eigentümerkonto verwalten. Ein Gründer mit gespeicherter Administrator- oder Eigentümerrolle gilt als Eigentümer; das Gründermerkmal allein erhöht keine andere Rolle. Die Benutzerverwaltung behält ihre zusätzlichen aktionsbezogenen Gründer-, Rollen- und Löschbeschränkungen.

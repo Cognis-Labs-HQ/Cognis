@@ -42,6 +42,10 @@ Alle Operationsdeklarationen werden vor dem Import oder Aufruf einer Erweiterung
 
 Schlägt die Zusammenstellung der Registrierungskonfiguration fehl, wird registration_configuration_unavailable statt einer leeren Integrationsliste zurückgegeben. Nicht migrierte Abschlussexporte ohne deklarierte Operationen blockieren ebenfalls die Registrierung. Optionale Erweiterungen, die nur Felder bereitstellen, werden weiterhin unabhängig geladen.
 
+### Passwortformular-Texte
+
+Registration 1.2.9 verwendet die Host-Schlüssel `ui.reuse.password_requirements` und `ui.reuse.passwords_match` gemeinsam mit Sicherheit. Stellen Sie die passenden Host-UI-Kataloge bereit und aktualisieren Sie Integrationen, die diese Texte verwenden, auf die gemeinsamen Schlüssel. Fehlende Werte der bevorzugten Sprache werden aus denselben englischen XML-Schlüsseln aufgelöst; fehlende oder leere englische Werte führen ausdrücklich zu einem Fehler. Die öffentliche Registrierung bleibt außerhalb angemeldeter Anleitungen; Einladungs- und Richtlinienanleitungen behalten ihre Bedienelemente.
+
 ## Sicherheit
 
 Die Zustandsabfrage verlangt eine Anmeldung. Richtlinienverwaltung verlangt Verwaltungsrechte; Erstellen und Auflisten von Einladungen folgen der geltenden Regel. Zurückgehaltene externe Identitäten bleiben serverseitig.

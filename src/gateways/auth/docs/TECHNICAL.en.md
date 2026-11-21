@@ -230,6 +230,14 @@ SSO integrations must treat `tfaRequired: true` as incomplete authentication and
 
 `auth:getPendingLoginLifetime` version 1 is a read-only public lookup of `{ id, accountId, expiresAt, signal }` for an existing primary-authenticated attempt. It cannot create or extend authority. Auth allocates the attempt before automatic factor preparation without issuing a session or activating a profile. Its immutable five-minute deadline applies to delivery. Consumption, explicit cancellation, expiry, continuation replacement, logout and owner cleanup abort challenge resources. Existing cookie-bound continuation, stale-attempt guards and resume without redelivery remain unchanged. Successful factor consumption cancels challenge resources without cancelling the separate final session commit. TFA requires this contract and fails closed when it is absent.
 
+### Password Form Labels
+
+Security uses the shared `ui.reuse.password_requirements` and `ui.reuse.passwords_match` XML keys. Its registered Settings section loads Auth and host catalogs, without requiring Registration to be enabled. Password policy, confirmation validation and provider restrictions remain unchanged. Deploy Auth 2.2.13 with the matching host UI catalogs.
+
+### Password Form Labels
+
+The Account Security guide explains opening Change Password where supported, satisfying the displayed policy, confirming the same new password, and choosing Save or Cancel. Successful Save signs out the account; Cancel preserves the decision to discard edits. The two existing guide targets and completion identity remain unchanged.
+
 ### Identity and permissions
 
 The actor's verified Auth claims remain authoritative; this policy does not reload or upgrade the actor's role. An ordinary account can act only on itself when self-service is allowed. Administrators may manage other user, teacher and moderator accounts. Only an owner may manage another admin or owner. A founder with persisted admin or owner role has effective owner role; the founder flag alone does not elevate another role. Users retains its additional action-specific founder, role and deletion restrictions.
