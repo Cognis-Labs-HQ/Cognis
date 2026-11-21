@@ -12,4 +12,4 @@ Escape schließt die Hilfe, ohne den Fokus zu verschieben; andere Escape-Aktione
 
 ## Commits
 
-- [6e0c9ae21d5dfba3257c1a0ac1d712f7739eac09](https://github.com/Cognis-Labs-HQ/Cognis/commit/6e0c9ae21d5dfba3257c1a0ac1d712f7739eac09)
+- [015f5ccca865fa29afd10f670f2b54fa0177cbc9](https://github.com/Cognis-Labs-HQ/Cognis/commit/015f5ccca865fa29afd10f670f2b54fa0177cbc9)
