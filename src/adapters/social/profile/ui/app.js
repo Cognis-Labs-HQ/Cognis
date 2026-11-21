@@ -640,6 +640,7 @@ async function initializePage(lifetime, media) {
     ({ avatarFileInput, bannerFileInput, requestSelection } = imageSelection);
     postActions = createProfilePostActions({
         ...ownedState,
+        signal: lifetime.signal,
         refreshPage: () => {
             if (lifetime.isCurrent()) refreshPage();
         },
@@ -651,8 +652,10 @@ async function initializePage(lifetime, media) {
         },
         i18n,
         loadOwnPosts,
-        loadFollowers,
-        loadFollowing,
+        loadFollowers: (handle) =>
+            loadSocialConnectionList(handle, "followers"),
+        loadFollowing: (handle) =>
+            loadSocialConnectionList(handle, "following"),
     });
     urlHandle = decodeURIComponent(
         window.location.pathname.split("/")[2] ?? "",

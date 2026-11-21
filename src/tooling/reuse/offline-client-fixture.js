@@ -5,7 +5,7 @@ import { uiCtx } from "../../ui/reuse/ui-ctx.js";
 import { loadTestModule } from "./test-module.ts";
 
 /** Exercise component clients against the public host delivery/cache contracts. */
-export function createOfflineClientFixture(send, { window } = {}) {
+export function createOfflineClientFixture(send, { window, withLock } = {}) {
     let disconnected = false;
     let cacheGeneration = 0;
     let actor = {
@@ -34,7 +34,8 @@ export function createOfflineClientFixture(send, { window } = {}) {
             getItem: (key) => values.get(key) ?? null,
             setItem: (key, value) => values.set(key, value),
         }),
-        withLock: (operation) => Promise.resolve().then(operation),
+        withLock:
+            withLock ?? ((operation) => Promise.resolve().then(operation)),
         withDeliveryLock: (operation) => Promise.resolve().then(operation),
         log: () => {},
     });

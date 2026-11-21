@@ -239,6 +239,10 @@ Navbar, preview and profile initials use the same name and color rules. The prev
 
 The interactive preview is a named nonmodal dialog. Hovering it does not move keyboard focus; moving the pointer away leaves a focused card open. Escape closes it and returns focus to its trigger only when focus was inside the card.
 
+### Confirm Profile Actions
+
+Delete, Unfollow and Block ask for confirmation. Cancel keeps the post or relationship. The posts and social-actions steps explain these choices in all supported languages. Their targets, ordering, progression and completion IDs remain unchanged.
+
 ### Canonical Avatar Content
 
 `ui:profileAvatarRenderer.getPresentation(profile)` derives `label`, `initials`, `colorSeed` and `color` from the already authorized `displayName || handle`. `buildContent({ profile, size, avatarKey, blobUrl, imageClass, imageAlt })` builds noninteractive inner markup. Explicit sizes are `small` (32px, 0.7rem), `medium` (48px, 1.05rem) and `large` (80px, 1.75rem); unknown sizes fail. Profile CSS owns content geometry, typography, color, border and padding. Outer links, menu/upload buttons, placement and availability remain caller-owned. Supplied image URLs and identity records must already be authorized; this presentation API does not fetch or grant access.
@@ -246,6 +250,14 @@ The interactive preview is a named nonmodal dialog. Hovering it does not move ke
 Navbar, hover preview and profile hero use these shared rules. An unchanged valid image stays mounted after a display-name update, while a later decode error restores initials for the current name. The preview avatar links to the named profile and keeps its accessible name current; focusing or hovering it does not restart the preview. Hero media remains page-owned and does not join the avatar cache.
 
 The existing `buildMarkup`, `colorSeed`, custom classes, availability, hydration and profile-link options keep their meaning. Messages and Settings previews, Share, Library and Calendar can continue using that contract; this release does not migrate their presentation or external modules. Messages and Calendar tested dependency ceilings advance to Profile 4.0.0. External module ceilings have not been validated and require companion testing before an upgrade. Synthetic DOM tests cover style ordering in both themes, not native browser paint or layout geometry.
+
+### Confirm Profile Actions
+
+Profile confirmation dialogs use a neutral Cancel. Delete, Unfollow and Block are destructive; Unblock is neutral. Repeated actions for the same post or relationship share a pending decision and request. Cancel, Close and Escape make no change. Leaving the page, changing account/session or removing the provider invalidates pending decisions and retained controls.
+
+A rejected or known-unsent action can be confirmed again. When delivery is uncertain, the current page does not resend it: reopen the profile to check the result. A successful server response or durable offline acceptance updates the current view. A failed follow-up refresh reports that the change was accepted; it is not a failed write. Connection refreshes keep successfully loaded lists and retain existing lists on failure.
+
+These controls use the existing social:profile:request flow and page lifetime. Synthetic DOM tests exercise real page mounts, popups, registered request stages and controlled transport. Native browser layout and live server/database behavior are not established by these tests.
 
 ## Security
 

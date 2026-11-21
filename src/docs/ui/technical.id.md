@@ -63,6 +63,14 @@ Keluar membersihkan data sesi pribadi tanpa menunggu pemeliharaan rute publik ol
 
 Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
 
+### Batalkan Sebelum Pengiriman
+
+Klien luring UI bersama meneruskan AbortSignal pemanggil melalui tahap permintaan terdaftar, pembacaan antrean tertunda, dan penantian pengiriman. Pembatalan sebelum permintaan jaringan atau penulisan antrean permanen dimulai mencegah tindakan baru tersebut. Kotak keluar memeriksa pembatalan lagi di dalam kunci penyimpanannya.
+
+Kontrak tambahan adalah `deliverOrQueue(ctx, owner, id, payload, send, { signal } = {})` dan `outbox.submit(owner, id, payload, { signal } = {})`. Pemanggil tanpa sinyal dan pemutaran ulang tersimpan tetap berperilaku sama. Pembatalan kemudian tidak pernah menghapus catatan antrean yang diterima atau membatalkan permintaan yang sudah dikirim. Konfirmasi yang hilang dapat membuat hasil tidak pasti dan tidak boleh memicu pengiriman ulang tanpa pemeriksaan.
+
+Kontrak ini dimiliki aset UI bersama, bukan paket gateway atau adaptor. Rilis aset bersama yang diperbarui bersama Profile 4.0.1. Profil, Pesan, Kalender, dan email Notify memakai klien HTTP bersama; gambar Study, pustaka, favorit, dan Flashcards juga memakai pembantu pengiriman opsional. Panggilan tanpa sinyal mempertahankan kontrak yang ada. Perilaku waktu jalan Kalender tidak disesuaikan secara khusus.
+
 ## Keamanan
 
 Navigasi tersembunyi bukan kontrol akses. Penyedia memakai kapabilitas pemilik dan membatalkan pekerjaan saat unmount atau pergantian akun; data privat terikat akun.

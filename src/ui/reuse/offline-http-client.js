@@ -221,6 +221,7 @@ export function registerOfflineHttpClient(
                 body?.operationId ?? id,
                 operation,
                 () => send(operation, options.signal),
+                { signal: options.signal },
             );
             assertAccount();
             if (!result?.queued)
@@ -244,11 +245,16 @@ export function registerOfflineHttpClient(
     });
     const scopedRequest = async (path, options = {}) => {
         options.signal?.throwIfAborted();
-        const assertAccount = captureAccountGuard();
+        const assertIdentity = captureAccountGuard();
+        const assertAccount = () => {
+            options.signal?.throwIfAborted();
+            assertIdentity();
+        };
         let response;
         let source;
         try {
             response = await actions.request({
+                signal: options.signal,
                 path,
                 options,
                 assertAccount,
