@@ -12,5 +12,5 @@ Aktive übergeordnete Dialoge und neuere Öffnungen behalten ihre eigene Kontrol
 
 ## Commits
 
-- [3f7f66637a28f7f73411e557fe6d90c94e60ef45](https://github.com/Cognis-Labs-HQ/Cognis/commit/3f7f66637a28f7f73411e557fe6d90c94e60ef45)
-- [1e19a0040518af575759196659d91a8119ef9362](https://github.com/Cognis-Labs-HQ/Cognis/commit/1e19a0040518af575759196659d91a8119ef9362)
+- [2ff0d83d7db9486b5ca3f7ef727274176298b46d](https://github.com/Cognis-Labs-HQ/Cognis/commit/2ff0d83d7db9486b5ca3f7ef727274176298b46d)
+- [982f35dbce4f8070fbf34696f52c30ac53c3b1a1](https://github.com/Cognis-Labs-HQ/Cognis/commit/982f35dbce4f8070fbf34696f52c30ac53c3b1a1)
