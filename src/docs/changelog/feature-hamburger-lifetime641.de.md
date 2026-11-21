@@ -16,5 +16,5 @@ Auch ausstehende Menüs werden beim Fokuswechsel abgebrochen, damit eine verzög
 
 ## Commits
 
-- [6fdfd7da07688831003a38a6e46787e9307ea7ec](https://github.com/Cognis-Labs-HQ/Cognis/commit/6fdfd7da07688831003a38a6e46787e9307ea7ec)
-- [7e278f92e13030097bf626ac18c527626c6ae129](https://github.com/Cognis-Labs-HQ/Cognis/commit/7e278f92e13030097bf626ac18c527626c6ae129)
+- [731807501377b0b3e868c97bb2334d5da4b43ee8](https://github.com/Cognis-Labs-HQ/Cognis/commit/731807501377b0b3e868c97bb2334d5da4b43ee8)
+- [1f6984009dd260f08ab607f247202b90a4807ef2](https://github.com/Cognis-Labs-HQ/Cognis/commit/1f6984009dd260f08ab607f247202b90a4807ef2)
