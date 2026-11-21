@@ -4,7 +4,7 @@ Dokumentasi memisahkan pengenalan, prosedur praktis, dan referensi teknis agar p
 
 ## Antarmuka
 
-Setiap komponen menyatakan `documentation.readme`, `documentation.usage`, dan `documentation.technical` dengan nilai `docs/README.md`, `docs/USAGE.md`, dan `docs/TECHNICAL.md`. Bahasa Inggris tanpa akhiran; terjemahan menambahkan `.de`, `.id`, atau `.ja`. Topik inti ditemukan dari direktori berisi `index.<locale>.md`, `usage.<locale>.md`, dan `technical.<locale>.md`.
+Setiap komponen menyatakan `documentation.readme`, `documentation.usage`, dan `documentation.technical` dengan nilai `docs/README.en.md`, `docs/USAGE.en.md`, dan `docs/TECHNICAL.en.md`. Setiap bahasa mempertahankan akhiran `.en`, `.de`, `.id`, atau `.ja`. Jalur manifes menunjuk anggota Inggris dalam keluarga dokumen lokal, bukan berkas bahasa tampilan tetap. Topik inti ditemukan dari direktori berisi `index.<locale>.md`, `usage.<locale>.md`, dan `technical.<locale>.md`.
 
 ## Konfigurasi
 
@@ -13,6 +13,8 @@ Jalankan `npm run check:docs`. CI permintaan penggabungan juga membandingkan ber
 ## Perilaku
 
 Topik baru membuka Info. Info, Penggunaan, dan Teknis adalah tiga tampilan satu versi komponen. Server membaca semua sumber sebelum menerbitkan paket secara atomik; tampilan hilang atau terjemahan parsial menolak penerbitan. Pergantian tampilan mempertahankan versi, dan paket historis tetap terbaca setelah komponen dihapus.
+
+Isi dokumen, judul navigasi, dan pencarian mendahulukan bahasa UI aktif, lalu bahasa cadangan terkonfigurasi dan Inggris. Pilihan berlaku konsisten untuk Info, Penggunaan, Teknis, serta versi arsip.
 
 ## Keamanan
 

@@ -1,4 +1,9 @@
-import { loadDocsBundleMarkdown } from "../docs-client.js";
+import {
+    loadDocsIndex,
+    loadDocsBundleMarkdown,
+    readDocsLanguages,
+} from "../docs-client.js";
+import { createI18n } from "../i18n.js";
 /**
  * Documentation search emits navigation metadata before reading document bodies.
  * Public export: collectGlobalDocsSearchGroups({ signal, onResults }).
@@ -24,9 +29,15 @@ export async function collectGlobalDocsSearchGroups({
     onResults,
 } = {}) {
     const token = localStorage.getItem("cognis_access_token");
+    const languages = readDocsLanguages();
+    const i18n = await createI18n({
+        preferredLanguages: languages,
+        persistLocale: false,
+    });
     const identity = JSON.stringify([
         localStorage.getItem("cognis_account"),
         token,
+        languages,
     ]);
     if (identity !== contentIdentity) {
         contentIdentity = identity;
@@ -38,31 +49,30 @@ export async function collectGlobalDocsSearchGroups({
         signal,
         headers: token ? { authorization: `Bearer ${token}` } : {},
     };
-    const response = await fetch("/api/v1/docs", request);
-    if (!response.ok) throw new Error("docs_search_index_unavailable");
-    const payload = await response.json();
-    const docs = Array.isArray(payload?.data) ? payload.data : [];
-    const langs = localStorage.getItem("cognis_language_priority") ?? "";
+    const docs = await loadDocsIndex({
+        fetchDocs: (path) => fetch(path, request),
+        languages,
+        signal,
+    });
     const entries = docs
         .filter((item) => String(item?.slug ?? "").trim())
         .map((item) => {
             const slug = String(item.slug).trim();
-            const title = String(item.title ?? slug)
-                .split("/")
-                .pop()
-                .split("-")
-                .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-                .join(" ");
+            const title = String(item.title ?? slug);
             const changelog = slug.startsWith("changelog/");
             return {
                 slug,
                 version: item.version,
-                key: JSON.stringify([langs, slug, item.version]),
+                key: JSON.stringify([languages, slug, item.version]),
                 changelog,
                 item: {
                     id: `global-docs:${slug}`,
                     label: title,
-                    description: `${changelog ? "Changelogs" : "Docs"} / ${item.group || "platform"}`,
+                    description: i18n.t(
+                        changelog
+                            ? "ui.layout.footer.changelogs"
+                            : "ui.reuse.docs",
+                    ),
                     url: changelog
                         ? `/changelogs/${slug.replace(/^changelog\//, "")}`
                         : `/docs/${slug}`,
@@ -77,7 +87,7 @@ export async function collectGlobalDocsSearchGroups({
     const groups = () =>
         [
             {
-                category: "Docs",
+                category: i18n.t("ui.reuse.docs"),
                 items: entries
                     .filter((entry) => !entry.changelog)
                     .map((entry) => ({
@@ -86,7 +96,7 @@ export async function collectGlobalDocsSearchGroups({
                     })),
             },
             {
-                category: "Changelogs",
+                category: i18n.t("ui.layout.footer.changelogs"),
                 items: entries
                     .filter((entry) => entry.changelog)
                     .map((entry) => ({
@@ -106,7 +116,7 @@ export async function collectGlobalDocsSearchGroups({
                 const markdown = await loadDocsBundleMarkdown(entry, {
                     fetchDocs: (path) => fetch(path, request),
                     signal,
-                    languages: JSON.parse(langs || "[]"),
+                    languages,
                 });
                 if (signal?.aborted) return;
                 cachedContent.set(entry.key, textFromHtml(markdown));

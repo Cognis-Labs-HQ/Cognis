@@ -1,6 +1,6 @@
 {
     "name": "@cognis/api",
-    "version": "0.13.32",
+    "version": "0.13.33",
     "private": true,
     "type": "module",
     "main": "server.ts",
@@ -10,8 +10,8 @@
         "pg": "^8.22.0"
     },
     "documentation": {
-        "readme": "docs/README.md",
-        "usage": "docs/USAGE.md",
-        "technical": "docs/TECHNICAL.md"
+        "readme": "docs/README.en.md",
+        "usage": "docs/USAGE.en.md",
+        "technical": "docs/TECHNICAL.en.md"
     }
 }

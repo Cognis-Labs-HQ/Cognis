@@ -159,6 +159,12 @@
   <string name="ui.app.docs.group.adapters_db">データベースアダプター</string>
   <string name="ui.app.docs.group.adapters_file">ファイルアダプター</string>
   <string name="ui.app.docs.group.adapters_notify">通知アダプター</string>
+  <string name="ui.app.docs.group.adapters.calendar">カレンダーアダプター</string>
+  <string name="ui.app.docs.group.adapters.registration">登録アダプター</string>
+  <string name="ui.app.docs.group.adapters.share">共有アダプター</string>
+  <string name="ui.app.docs.group.adapters.social">交流アダプター</string>
+  <string name="ui.app.docs.group.adapters.study">学習アダプター</string>
+  <string name="ui.app.docs.group.adapters.tfa">認証確認アダプター</string>
   <string name="ui.app.docs.group.tooling">ツール</string>
   <string name="ui.app.changelogs.page_title">変更履歴</string>
   <string name="ui.app.changelogs.page_subtitle">プロジェクトの変更履歴。</string>

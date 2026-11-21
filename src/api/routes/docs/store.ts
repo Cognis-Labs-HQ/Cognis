@@ -20,8 +20,22 @@ export interface StoredDoc {
     views: DocView[];
 }
 
-interface Snapshot extends Omit<StoredDoc, "versions"> {
+interface Snapshot extends Omit<StoredDoc, "versions" | "title"> {
     documents: Partial<Record<DocView, Record<string, string>>>;
+}
+
+function localizedMarkdown(
+    translations: Record<string, string> | undefined,
+    languages: string[],
+): string | undefined {
+    for (const language of [...languages, "en"]) {
+        const locale = language.toLowerCase();
+        for (const candidate of new Set([locale, locale.split("-")[0]])) {
+            const markdown = translations?.[candidate];
+            if (markdown !== undefined) return markdown;
+        }
+    }
+    return undefined;
 }
 
 function validateSnapshot(snapshot: Snapshot): void {
@@ -85,6 +99,7 @@ async function archivedSnapshots(directory: string): Promise<Snapshot[]> {
 export async function initializeDocsStore(
     sourceRoot: string | string[],
     archiveRoot: string,
+    languages: string[] = ["en"],
 ): Promise<Map<string, StoredDoc>> {
     const live = new Map<string, Snapshot>();
     for (const root of Array.isArray(sourceRoot) ? sourceRoot : [sourceRoot]) {
@@ -104,9 +119,6 @@ export async function initializeDocsStore(
                 sourceName: source.sourceName,
                 version: source.version,
                 views: Object.keys(source.files) as DocView[],
-                title:
-                    documents.info?.en.match(/^#\s+(.+)$/m)?.[1].trim() ??
-                    source.slug,
                 documents,
             };
             await publishSnapshot(
@@ -133,7 +145,10 @@ export async function initializeDocsStore(
         const snapshot = live.get(slug) ?? versions[0];
         stored.set(slug, {
             slug,
-            title: snapshot.title,
+            title:
+                localizedMarkdown(snapshot.documents.info, languages)
+                    ?.match(/^#\s+(.+)$/m)?.[1]
+                    .trim() ?? slug,
             group: snapshot.group,
             sourceName: snapshot.sourceName,
             version: snapshot.version,
@@ -159,7 +174,5 @@ export async function readStoredMarkdown(
     );
     const translations = snapshot?.documents[view];
     if (!translations) return undefined;
-    for (const language of [...languages, "en"])
-        if (translations[language] !== undefined) return translations[language];
-    return undefined;
+    return localizedMarkdown(translations, languages);
 }

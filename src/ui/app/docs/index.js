@@ -5,12 +5,9 @@ import { guides } from "./guides.js";
 import {
     loadDocsIndex,
     loadDocsBundleMarkdown,
+    readDocsLanguages,
 } from "../../reuse/docs-client.js";
-import {
-    applyDocumentTitle,
-    createI18n,
-    readPreferredLanguages,
-} from "../../reuse/i18n.js";
+import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { loadMarkdownDocumentHtml } from "../../reuse/markdown-document.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
@@ -27,6 +24,12 @@ const GROUP_KEYS = {
     "adapters/db": "ui.app.docs.group.adapters_db",
     "adapters/file": "ui.app.docs.group.adapters_file",
     "adapters/notify": "ui.app.docs.group.adapters_notify",
+    "adapters/calendar": "ui.app.docs.group.adapters.calendar",
+    "adapters/registration": "ui.app.docs.group.adapters.registration",
+    "adapters/share": "ui.app.docs.group.adapters.share",
+    "adapters/social": "ui.app.docs.group.adapters.social",
+    "adapters/study": "ui.app.docs.group.adapters.study",
+    "adapters/tfa": "ui.app.docs.group.adapters.tfa",
     modules: "ui.reuse.modules",
     tooling: "ui.app.docs.group.tooling",
 };
@@ -54,7 +57,6 @@ function docTitle(item) {
 
 function createDocsSearchProvider(i18n, docs, activeDocContent) {
     return async () => {
-        const langs = readPreferredLanguages().join(",");
         const docsItems = [];
         const changelogItems = [];
         for (const item of docs ?? []) {
@@ -63,7 +65,7 @@ function createDocsSearchProvider(i18n, docs, activeDocContent) {
             if (!contentText) {
                 try {
                     contentText = await loadDocsBundleMarkdown(item, {
-                        languages: readPreferredLanguages(),
+                        languages: readDocsLanguages(),
                     });
                     activeDocContent.set(item.slug, contentText);
                 } catch (error) {
@@ -220,7 +222,7 @@ export async function mount(root, { signal } = {}) {
             slug = route.slug;
             view = route.view;
         }
-        const langs = readPreferredLanguages().join(",");
+        const langs = readDocsLanguages().join(",");
         const item = navigationDocs.find((doc) => doc.slug === slug);
         if (!item) return;
         const sequence = ++requestSequence;
@@ -282,7 +284,7 @@ export async function mount(root, { signal } = {}) {
         );
     }
 
-    const docs = await loadDocsIndex();
+    const docs = await loadDocsIndex({ signal });
     const navigationDocs = docs.filter((doc) => !isChangelogDoc(doc));
     const navigationMenu = createSideMenu({
         groups: createNavigationGroups(i18n, navigationDocs),

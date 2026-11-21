@@ -4,7 +4,7 @@
 
 ## インターフェース
 
-各コンポーネントは `documentation.readme`、`documentation.usage`、`documentation.technical` に `docs/README.md`、`docs/USAGE.md`、`docs/TECHNICAL.md` を指定します。英語には言語の接尾辞を付けず、翻訳には `.de`、`.id`、`.ja` を付けます。コアのトピックは、`index.<locale>.md`、`usage.<locale>.md`、`technical.<locale>.md` があるディレクトリから検出します。
+各コンポーネントは `documentation.readme`、`documentation.usage`、`documentation.technical` に `docs/README.en.md`、`docs/USAGE.en.md`、`docs/TECHNICAL.en.md` を指定します。英語も `.en` を維持し、各言語に `.en`、`.de`、`.id`、`.ja` を付けます。宣言のパスは表示言語を固定せず、翻訳を含む文書群の英語版を示します。コアのトピックは、`index.<locale>.md`、`usage.<locale>.md`、`technical.<locale>.md` があるディレクトリから検出します。
 
 ## 設定
 
@@ -13,6 +13,8 @@
 ## 動作
 
 新しいトピックは概要を開きます。概要、使用例、技術情報は一つのコンポーネントバージョンに属します。サーバーは全ファイルを読んでから一括で公開し、不足した表示や部分的な翻訳があれば公開を拒否します。表示の切り替えは選択したバージョンを保ち、コンポーネントを削除しても過去の版を参照できます。
+
+本文、ナビゲーション、検索は現在の UI 言語を優先し、その後に設定した代替言語と英語を使います。情報・使い方・技術と保存版にも同じ選択を適用します。
 
 ## セキュリティ
 

@@ -1,10 +1,6 @@
 import { guides } from "./guides.js";
-import { loadDocsIndex } from "../../reuse/docs-client.js";
-import {
-    applyDocumentTitle,
-    createI18n,
-    readPreferredLanguages,
-} from "../../reuse/i18n.js";
+import { loadDocsIndex, readDocsLanguages } from "../../reuse/docs-client.js";
+import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { loadMarkdownDocumentHtml } from "../../reuse/markdown-document.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
@@ -102,7 +98,7 @@ export async function mount(root, { signal } = {}) {
     }
 
     async function showDoc(slug, { pushHistory = true, signal } = {}) {
-        const langs = readPreferredLanguages().join(",");
+        const langs = readDocsLanguages().join(",");
         try {
             activeHtml = await loadMarkdownDocumentHtml(
                 `/api/v1/docs/${slug}?langs=${encodeURIComponent(langs)}`,

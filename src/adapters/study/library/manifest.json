@@ -10,8 +10,8 @@
         "8f3102a7-88c8-56f9-a4ee-ba602dd35d36"
     ],
     "documentation": {
-        "readme": "docs/README.md",
-        "usage": "docs/USAGE.md",
-        "technical": "docs/TECHNICAL.md"
+        "readme": "docs/README.en.md",
+        "usage": "docs/USAGE.en.md",
+        "technical": "docs/TECHNICAL.en.md"
     }
 }

@@ -4,7 +4,7 @@ Dokumentation trennt Einführung, praktische Abläufe und technische Referenz, d
 
 ## Schnittstellen
 
-Jede Komponente deklariert `documentation.readme`, `documentation.usage` und `documentation.technical` mit `docs/README.md`, `docs/USAGE.md` und `docs/TECHNICAL.md`. Englisch hat kein Sprachsuffix; Übersetzungen verwenden `.de`, `.id` oder `.ja`. Kernthemen werden aus Verzeichnissen mit `index.<locale>.md`, `usage.<locale>.md` und `technical.<locale>.md` erkannt.
+Jede Komponente deklariert `documentation.readme`, `documentation.usage` und `documentation.technical` mit `docs/README.en.md`, `docs/USAGE.en.md` und `docs/TECHNICAL.en.md`. Jede Sprache behält ihr Suffix: `.en`, `.de`, `.id` oder `.ja`. Manifestpfade benennen das englische Mitglied einer lokalisierten Dokumentfamilie statt einer festen Anzeigesprache. Kernthemen werden aus Verzeichnissen mit `index.<locale>.md`, `usage.<locale>.md` und `technical.<locale>.md` erkannt.
 
 ## Konfiguration
 
@@ -13,6 +13,8 @@ Führen Sie `npm run check:docs` aus. PR-CI vergleicht neue Änderungsdateien zu
 ## Verhalten
 
 Ein neues Thema öffnet Info. Info, Anwendung und Technik gehören zu einer Komponentenversion. Der Server liest alle Quelldateien vor der atomaren Veröffentlichung; fehlende Ansichten oder unvollständige Übersetzungen verhindern sie. Ansichtswechsel behalten die Version; historische Pakete bleiben nach dem Entfernen der Komponente lesbar.
+
+Inhalte, Navigationstitel und Suche bevorzugen die aktive UI-Sprache, danach konfigurierte Ausweichsprachen und Englisch. Dies gilt einheitlich für Info, Nutzung und Technik sowie archivierte Versionen.
 
 ## Sicherheit
 

@@ -7,8 +7,8 @@
     "gateway": "study",
     "requires": ["5711a248-4ac9-5d44-98b5-b99bd4c6d722"],
     "documentation": {
-        "readme": "docs/README.md",
-        "usage": "docs/USAGE.md",
-        "technical": "docs/TECHNICAL.md"
+        "readme": "docs/README.en.md",
+        "usage": "docs/USAGE.en.md",
+        "technical": "docs/TECHNICAL.en.md"
     }
 }

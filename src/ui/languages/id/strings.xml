@@ -159,6 +159,12 @@
   <string name="ui.app.docs.group.adapters_db">Adapter Basis Data</string>
   <string name="ui.app.docs.group.adapters_file">Adapter Berkas</string>
   <string name="ui.app.docs.group.adapters_notify">Adapter Notifikasi</string>
+  <string name="ui.app.docs.group.adapters.calendar">Adapter Kalender</string>
+  <string name="ui.app.docs.group.adapters.registration">Adapter Pendaftaran</string>
+  <string name="ui.app.docs.group.adapters.share">Adapter Berbagi</string>
+  <string name="ui.app.docs.group.adapters.social">Adapter Sosial</string>
+  <string name="ui.app.docs.group.adapters.study">Adapter Pembelajaran</string>
+  <string name="ui.app.docs.group.adapters.tfa">Adapter Verifikasi</string>
   <string name="ui.app.docs.group.tooling">Perkakas</string>
   <string name="ui.app.changelogs.page_title">Log Perubahan</string>
   <string name="ui.app.changelogs.page_subtitle">Riwayat perubahan proyek.</string>

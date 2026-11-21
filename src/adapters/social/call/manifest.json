@@ -11,8 +11,8 @@
         "433cd9f3-5b80-5e7d-911b-1907b9348f26"
     ],
     "documentation": {
-        "readme": "docs/README.md",
-        "usage": "docs/USAGE.md",
-        "technical": "docs/TECHNICAL.md"
+        "readme": "docs/README.en.md",
+        "usage": "docs/USAGE.en.md",
+        "technical": "docs/TECHNICAL.en.md"
     }
 }

@@ -15,6 +15,8 @@
 
 `langs` legt die Sprachreihenfolge fest; Englisch ist die letzte Ersatzsprache. Der Index liefert `slug`, `title`, `group`, `version`, `versions`, `sourceName` und `views`.
 
+Die Abfrage `langs` enthält eine geordnete, kommagetrennte Sprachliste für Indextitel und Inhalte. Regionale Angaben versuchen ihre Basissprache vor der nächsten Präferenz; Englisch bleibt als verpflichtende Ausweichsprache verfügbar. Dieselbe Auflösung gilt für Info, Nutzung und Technik der angeforderten Version.
+
 ## Konfiguration
 
 ### Dokumentationsleser

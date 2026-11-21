@@ -92,7 +92,7 @@ test("component manifests cannot point outside their owned bundle or omit a tran
     const pointers = Object.fromEntries(
         Object.entries(documents).map(([kind, name]) => [
             kind,
-            `docs/${name}.md`,
+            `docs/${name}.en.md`,
         ]),
     );
     writeFileSync(manifest, JSON.stringify({ documentation: pointers }));
@@ -112,7 +112,10 @@ test("component manifests cannot point outside their owned bundle or omit a tran
     writeFileSync(
         manifest,
         JSON.stringify({
-            documentation: { ...pointers, technical: "../other/TECHNICAL.md" },
+            documentation: {
+                ...pointers,
+                technical: "../other/TECHNICAL.en.md",
+            },
         }),
     );
     assert.ok(

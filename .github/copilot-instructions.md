@@ -413,7 +413,7 @@ GitHub source-file links must use the repository default-branch alias `blob/HEAD
 
 Documentation describes the current supported behavior. Do not append journal entries, implementation chronology, per-review notes, bug-fix headings or duplicated paragraphs. Revise the relevant section instead; record release history only in the single branch changelog set.
 
-Every component declares exactly `documentation.readme`, `documentation.usage` and `documentation.technical` in its owning manifest. These point to `docs/README.md`, `docs/USAGE.md` and `docs/TECHNICAL.md`. English uses the unsuffixed file; German, Indonesian and Japanese use `.de.md`, `.id.md` and `.ja.md`. Do not duplicate an English file as `.en.md`.
+Every component declares exactly `documentation.readme`, `documentation.usage` and `documentation.technical` in its owning manifest. These point to `docs/README.en.md`, `docs/USAGE.en.md` and `docs/TECHNICAL.en.md`. Every language, including English, uses its locale suffix: `.en.md`, `.de.md`, `.id.md` and `.ja.md`. Manifest paths identify the English member of a localized document family; readers must choose titles and all views using the active UI language before configured fallbacks.
 
 - README is for non-technical readers: purpose, available tasks, access requirements, getting started and links to the other views. Do not include endpoints or implementation code.
 - USAGE provides concrete CLI or procedural examples, prerequisites, expected results and troubleshooting. Do not invent commands or substitute generic assurances for procedures.

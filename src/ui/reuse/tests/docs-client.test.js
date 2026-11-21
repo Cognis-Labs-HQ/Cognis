@@ -1,6 +1,47 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { loadDocsIndex, loadDocsBundleMarkdown } from "../docs-client.js";
+import { selectUiLanguage } from "../ui-language-state.js";
+
+test("index and every view prioritize the displayed UI language over account order", async (context) => {
+    const previousStorage = globalThis.localStorage;
+    const previousDocument = globalThis.document;
+    const values = new Map([
+        [
+            "cognis_ui_preferences",
+            JSON.stringify({ languagePriority: ["en", "de", "ja"] }),
+        ],
+        ["cognis_account", "documentation-reader"],
+    ]);
+    globalThis.localStorage = { getItem: (key) => values.get(key) ?? null };
+    globalThis.document = { documentElement: { lang: "en" } };
+    const restoreLanguage = selectUiLanguage("ja");
+    context.after(() => {
+        restoreLanguage();
+        globalThis.localStorage = previousStorage;
+        globalThis.document = previousDocument;
+    });
+    const paths = [];
+    const fetchDocs = async (path) => {
+        paths.push(path);
+        return {
+            ok: true,
+            json: async () => ({
+                data: path.startsWith("/api/v1/docs?")
+                    ? []
+                    : { markdown: "日本語" },
+            }),
+        };
+    };
+    await loadDocsIndex({ fetchDocs });
+    const content = await loadDocsBundleMarkdown(
+        { slug: "example", version: "1.0.0" },
+        { fetchDocs },
+    );
+    assert.equal(content, "日本語\n\n日本語\n\n日本語");
+    assert.equal(paths.length, 4);
+    assert.ok(paths.every((path) => path.endsWith("langs=ja%2Cen%2Cde")));
+});
 
 test("docs index loader returns an empty list for unsuccessful responses", async () => {
     const docs = await loadDocsIndex({

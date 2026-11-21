@@ -12,7 +12,7 @@ export const documents = {
 };
 
 export function documentName(kind, language) {
-    return `${documents[kind]}${language === "en" ? "" : `.${language}`}.md`;
+    return `${documents[kind]}.${language}.md`;
 }
 
 export function validateMarkdown(markdown, kind, language) {
@@ -114,7 +114,7 @@ export function validateComponent(manifestPath, docsDirectory = "docs") {
     for (const kind of Object.keys(documents)) {
         const name = core
             ? `${{ readme: "index", usage: "usage", technical: "technical" }[kind]}.en.md`
-            : `${documents[kind]}.md`;
+            : documentName(kind, "en");
         if (pointers[kind] !== `${docsDirectory}/${name}`) {
             issues.push(
                 `Invalid documentation.${kind}: use ${docsDirectory}/${name}`,

@@ -99,7 +99,7 @@ async function localizedFiles(
         throw new Error(`docs_english_source_missing:${englishPath}`);
     const result: Record<string, string> = { en: englishPath };
     for (const language of ["de", "id", "ja"]) {
-        const path = englishPath.replace(/(?:\.en)?\.md$/, `.${language}.md`);
+        const path = englishPath.replace(/\.en\.md$/, `.${language}.md`);
         if ((await optionalText(path)) !== undefined) result[language] = path;
     }
     return result;
@@ -157,7 +157,7 @@ export async function discoverDocSources(
                 usage: "USAGE",
                 technical: "TECHNICAL",
             }[key];
-            if (pointer !== `docs/${expected}.md`)
+            if (pointer !== `docs/${expected}.en.md`)
                 throw new Error(`docs_manifest_pointer_invalid:${path}:${key}`);
             declared[view] = resolve(root, pointer);
         }

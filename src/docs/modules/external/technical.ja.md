@@ -62,7 +62,7 @@
 
 ### アセットとタグを保存する
 
-モジュールは、より広範な `categories` と一緒に `tags` を宣言できます。どちらもマーケットプレイスのフィルタリングに参加します。アートワークは `assets/` の下のリポジトリ ルートに保存されます。カタログ アイコンには `assets/icon.svg` または `assets/icon.png` を、詳細ページのヒーローには `assets/banner.svg`、`assets/banner.png`、または `assets/banner.jpg` を指定します。選択したパスを `manifest.json` で `assets.icon` および `assets.banner` として宣言します。オプションのギャラリー画像は `assets.screenshots` にリストされています。アートワークには秘密や個人データが含まれないようにしてください。 インストール済みモジュールの詳細ページは、現在の UI 言語に対応する `README.<locale>.md` を選び、続いて `README.en.md`、`README.md`、カタログ説明の順にフォールバックします。 ルートの任意の互換エイリアス `README.md` は必須ではなくチェックサム検証の対象にもなりません。ローカライズされた `README.<locale>.md` は引き続きマニフェストの整合性一覧に含められます。
+モジュールは、より広範な `categories` と一緒に `tags` を宣言できます。どちらもマーケットプレイスのフィルタリングに参加します。アートワークは `assets/` の下のリポジトリ ルートに保存されます。カタログ アイコンには `assets/icon.svg` または `assets/icon.png` を、詳細ページのヒーローには `assets/banner.svg`、`assets/banner.png`、または `assets/banner.jpg` を指定します。選択したパスを `manifest.json` で `assets.icon` および `assets.banner` として宣言します。オプションのギャラリー画像は `assets.screenshots` にリストされています。アートワークには秘密や個人データが含まれないようにしてください。 インストール済みモジュールの詳細ページは、現在の UI 言語に対応する `README.<locale>.md` を選び、続いて `README.en.md`、`README.en.md`、カタログ説明の順にフォールバックします。 ルートの任意の互換エイリアス `README.en.md` は必須ではなくチェックサム検証の対象にもなりません。ローカライズされた `README.<locale>.md` は引き続きマニフェストの整合性一覧に含められます。
 
 モジュール画像はコードのインストールとは独立して取得します。公開 GitHub アセットは raw.githubusercontent.com からストリーミングし、非公開および Enterprise リポジトリは認証付き Raw 応答、GitLab は Raw ファイルエンドポイントを使用します。Cognis はバイト列とメディア種別を独立したハッシュキャッシュに保存し、認証付きカタログアセットエンドポイントから配信します。GitHub Contents JSON の埋め込みサイズ制限を回避し、空のアセットと既存の 10 MiB 上限を超えるダウンロードを拒否します。ログにはソース、リポジトリ、参照、パス、通信方式、処理段階、HTTP ステータスまたは失敗理由を記録します。失敗後はカタログを更新して再試行できます。欠落アイコンは疑問符 SVG を維持し、欠落またはデコード不能のバナーには翻訳された「画像を表示できません」を表示します。
 

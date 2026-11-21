@@ -12,9 +12,33 @@
  * @returns {Promise<Array<Record<string, unknown>>>} Valid documentation entries.
  */
 import { apiFetch } from "./api-client.js";
+import { activeUiLanguage, enabledUiLanguages } from "./ui-language-state.js";
 
-export async function loadDocsIndex({ fetchDocs = apiFetch } = {}) {
-    const response = await fetchDocs("/api/v1/docs").catch(() => null);
+export function readDocsLanguages() {
+    return [
+        ...new Set(
+            [
+                activeUiLanguage() ??
+                    globalThis.document?.documentElement?.lang,
+                ...enabledUiLanguages(),
+                "en",
+            ]
+                .filter((language) => typeof language === "string")
+                .map((language) => language.trim().toLowerCase().split("-")[0])
+                .filter((language) => /^[a-z]{2}$/.test(language)),
+        ),
+    ];
+}
+
+export async function loadDocsIndex({
+    fetchDocs = apiFetch,
+    languages = readDocsLanguages(),
+    signal,
+} = {}) {
+    const response = await fetchDocs(
+        `/api/v1/docs?langs=${encodeURIComponent(languages.join(","))}`,
+        { signal },
+    ).catch(() => null);
     if (!response?.ok) return [];
     const payload = await response.json().catch(() => null);
     if (!Array.isArray(payload?.data)) return [];
@@ -25,7 +49,7 @@ export async function loadDocsIndex({ fetchDocs = apiFetch } = {}) {
 
 export async function loadDocsBundleMarkdown(
     item,
-    { fetchDocs = apiFetch, languages = [], signal } = {},
+    { fetchDocs = apiFetch, languages = readDocsLanguages(), signal } = {},
 ) {
     if (
         !item.slug ||

@@ -19,13 +19,48 @@ for (const language of ["en", "de", "id", "ja"]) {
             const directory = fileURLToPath(
                 new URL("./fixtures/", import.meta.url),
             );
-            const server = await serveBrowserFixture(directory, {
-                apiResponses: JSON.parse(
-                    await readFile(
-                        new URL("./fixtures/responses.json", import.meta.url),
-                        "utf8",
-                    ),
+            const responses = JSON.parse(
+                await readFile(
+                    new URL("./fixtures/responses.json", import.meta.url),
+                    "utf8",
                 ),
+            );
+            const locales = JSON.parse(
+                await readFile(
+                    new URL("./fixtures/locales.json", import.meta.url),
+                    "utf8",
+                ),
+            );
+            const labels = locales[language];
+            const heading = (view, version, slug = "example") =>
+                JSON.stringify(`${labels[slug]} ${labels[view]} ${version}`);
+            const server = await serveBrowserFixture(directory, {
+                async apiHandler(_request, response, url) {
+                    if (!Object.hasOwn(responses, url.pathname)) return false;
+                    const selected =
+                        (url.searchParams.get("langs") ?? "en")
+                            .split(",")
+                            .find((locale) => locales[locale]) ?? "en";
+                    const localized = locales[selected];
+                    const payload = structuredClone(responses[url.pathname]);
+                    if (Array.isArray(payload.data)) {
+                        for (const item of payload.data)
+                            item.title = localized[item.slug];
+                    } else {
+                        payload.data.markdown = payload.data.markdown
+                            .replaceAll("Example", localized.example)
+                            .replaceAll("Other", localized.other)
+                            .replaceAll("README", localized.info)
+                            .replaceAll("Usage", localized.usage)
+                            .replaceAll("Technical", localized.technical)
+                            .replaceAll(
+                                "Documentation fixture content.",
+                                localized.body,
+                            );
+                    }
+                    response.end(JSON.stringify(payload));
+                    return true;
+                },
             });
             context.after(() => server.close());
             const browser = await launchChromium(executable);
@@ -40,18 +75,36 @@ for (const language of ["en", "de", "id", "ja"]) {
                 null,
             );
             await browser.waitFor(
-                'document.querySelector("#doc h1")?.textContent === "Example README 2.0.0"',
+                `document.querySelector("#doc h1")?.textContent === ${heading("info", "2.0.0", "example")}`,
             );
-            for (const [view, heading] of [
-                ["usage", "Usage 2.0.0"],
-                ["technical", "Technical 2.0.0"],
-            ]) {
+            assert.equal(
+                await browser.evaluate(
+                    'document.querySelector("[data-side-menu-item=example]").textContent',
+                ),
+                labels.example,
+            );
+            assert.equal(
+                await browser.evaluate(
+                    'document.querySelector("#doc p").textContent',
+                ),
+                labels.body,
+            );
+            assert.ok(
+                server.requests.some(
+                    (request) =>
+                        request.pathname === "/api/v1/docs" &&
+                        new URLSearchParams(request.search)
+                            .get("langs")
+                            .split(",")[0] === language,
+                ),
+            );
+            for (const view of ["usage", "technical"]) {
                 await browser.callFunction(
                     'function(view) { document.querySelector(`[data-doc-view="${view}"]`).click(); }',
                     [view],
                 );
                 await browser.waitFor(
-                    `document.querySelector('#doc h1')?.textContent === 'Example ${heading}'`,
+                    `document.querySelector('#doc h1')?.textContent === ${JSON.stringify(`${labels.example} ${labels[view]} 2.0.0`)}`,
                 );
                 assert.equal(
                     await browser.evaluate(
@@ -64,31 +117,28 @@ for (const language of ["en", "de", "id", "ja"]) {
                 `document.querySelector('[data-doc-version="1.0.0"]').click()`,
             );
             await browser.waitFor(
-                'document.querySelector("#doc h1")?.textContent === "Example Technical 1.0.0"',
+                `document.querySelector("#doc h1")?.textContent === ${heading("technical", "1.0.0", "example")}`,
             );
-            for (const [view, label] of [
-                ["usage", "Usage"],
-                ["info", "README"],
-            ]) {
+            for (const view of ["usage", "info"]) {
                 await browser.callFunction(
                     'function(view) { document.querySelector(`[data-doc-view="${view}"]`).click(); }',
                     [view],
                 );
                 await browser.waitFor(
-                    `document.querySelector('#doc h1')?.textContent === 'Example ${label} 1.0.0'`,
+                    `document.querySelector('#doc h1')?.textContent === ${heading(view, "1.0.0")}`,
                 );
             }
             await browser.evaluate(
                 `document.querySelector('#doc a[href="/docs/example/usage"]').click()`,
             );
             await browser.waitFor(
-                'document.querySelector("#doc h1")?.textContent === "Example Usage 1.0.0"',
+                `document.querySelector("#doc h1")?.textContent === ${heading("usage", "1.0.0", "example")}`,
             );
             await browser.evaluate(
                 'document.querySelector("[data-doc-view=info]").click()',
             );
             await browser.waitFor(
-                'document.querySelector("#doc h1")?.textContent === "Example README 1.0.0"',
+                `document.querySelector("#doc h1")?.textContent === ${heading("info", "1.0.0", "example")}`,
             );
             for (const width of [253, 390, 768, 1440]) {
                 await browser.resize(width, 844);
@@ -125,11 +175,11 @@ for (const language of ["en", "de", "id", "ja"]) {
                 'document.querySelector("[data-side-menu-item=other]").click()',
             );
             await browser.waitFor(
-                'document.querySelector("#doc h1")?.textContent === "Other README 2.0.0"',
+                `document.querySelector("#doc h1")?.textContent === ${heading("info", "2.0.0", "other")}`,
             );
             await browser.evaluate("history.back()");
             await browser.waitFor(
-                'document.querySelector("#doc h1")?.textContent === "Example README 1.0.0"',
+                `document.querySelector("#doc h1")?.textContent === ${heading("info", "1.0.0", "example")}`,
             );
             await browser.evaluate("window.fixture.dispose()");
         },

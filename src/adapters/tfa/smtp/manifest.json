@@ -8,8 +8,8 @@
     "publisher": "Cognis Labs HQ",
     "requires": ["5054e338-ef3b-5d84-9a99-74d54d30232a"],
     "documentation": {
-        "readme": "docs/README.md",
-        "usage": "docs/USAGE.md",
-        "technical": "docs/TECHNICAL.md"
+        "readme": "docs/README.en.md",
+        "usage": "docs/USAGE.en.md",
+        "technical": "docs/TECHNICAL.en.md"
     }
 }

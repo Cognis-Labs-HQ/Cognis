@@ -18,14 +18,15 @@ const contentTypes = {
 
 export async function serveBrowserFixture(
     fixtureDirectory,
-    { staticRoots = {}, apiResponses = {} } = {},
+    { staticRoots = {}, apiResponses = {}, apiHandler } = {},
 ) {
     const layouts = new Map();
     const requests = [];
     const completions = new Set();
     const server = createServer(async (request, response) => {
-        const pathname = new URL(request.url, "http://localhost").pathname;
-        requests.push({ method: request.method, pathname });
+        const url = new URL(request.url, "http://localhost");
+        const pathname = url.pathname;
+        requests.push({ method: request.method, pathname, search: url.search });
         try {
             if (pathname === "/static/gateways/auth/session-flow-hooks.js") {
                 response.setHeader("content-type", "text/javascript");
@@ -39,6 +40,8 @@ export async function serveBrowserFixture(
             }
             if (pathname.startsWith("/api/")) {
                 response.setHeader("content-type", "application/json");
+                if (apiHandler && (await apiHandler(request, response, url)))
+                    return;
                 if (Object.hasOwn(apiResponses, pathname)) {
                     response.end(JSON.stringify(apiResponses[pathname]));
                     return;

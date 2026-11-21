@@ -29,7 +29,7 @@ function listTrackedDocFiles() {
         for (const entry of readdirSync(currentDirectory, {
             withFileTypes: true,
         })) {
-            if (entry.name === ".git" || entry.name === "node_modules") {
+            if ([".git", "node_modules", "dist"].includes(entry.name)) {
                 continue;
             }
             const absolutePath = join(currentDirectory, entry.name);
@@ -76,8 +76,6 @@ test("docs links use pretty docs URLs instead of markdown file URLs", () => {
 });
 
 function localizedDocGroup(file) {
-    if (/(?:^|\/)(README|USAGE|TECHNICAL)\.md$/.test(file))
-        return { stem: file, lang: "en" };
     const match = file.match(/^(.*)\.(de|en|id|ja)\.md$/);
     if (!match) return null;
     return { stem: `${match[1]}.md`, lang: match[2] };
@@ -127,11 +125,7 @@ test("unsuffixed markdown docs have localized variants", () => {
         if (exemptUnsuffixedDocs.has(unsuffixedDoc)) {
             continue;
         }
-        const missingLanguages = (
-            /\/(README|USAGE|TECHNICAL)\.md$/.test(unsuffixedDoc)
-                ? ["de", "id", "ja"]
-                : ["de", "en", "id", "ja"]
-        ).filter(
+        const missingLanguages = ["de", "en", "id", "ja"].filter(
             (languageCode) =>
                 !trackedDocSet.has(
                     unsuffixedDoc.replace(/\.md$/, `.${languageCode}.md`),

@@ -4,7 +4,7 @@ Documentation separates introductory information, practical procedures and techn
 
 ## Interfaces
 
-Every component declares `documentation.readme`, `documentation.usage` and `documentation.technical`. Their values are `docs/README.md`, `docs/USAGE.md` and `docs/TECHNICAL.md`. English is unsuffixed; translations append `.de`, `.id` or `.ja`. Core topics are discovered from directories containing `index.<locale>.md`, `usage.<locale>.md` and `technical.<locale>.md`.
+Every component declares `documentation.readme`, `documentation.usage` and `documentation.technical`. Their values are `docs/README.en.md`, `docs/USAGE.en.md` and `docs/TECHNICAL.en.md`. Every language keeps its suffix: `.en`, `.de`, `.id` or `.ja`. Manifest paths identify the English member of a localized document family, not a fixed display-language file. Core topics are discovered from directories containing `index.<locale>.md`, `usage.<locale>.md` and `technical.<locale>.md`.
 
 ## Configuration
 
@@ -13,6 +13,8 @@ Run `npm run check:docs`. Pull-request CI also compares the added changelog file
 ## Behavior
 
 A new topic opens Info. Info, Usage and Technical are three views of one component version. The server reads all source files before atomically publishing a bundle; a missing view or partial translation rejects publication. Switching views retains the selected version, and historical bundles remain readable after component removal.
+
+Document bodies, navigation titles and search prioritize the active UI language, then configured fallbacks and English. This selection applies consistently to Info, Usage and Technical, including archived versions.
 
 ## Security
 

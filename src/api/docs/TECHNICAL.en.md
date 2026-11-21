@@ -15,6 +15,8 @@ The public interfaces and operational rules of Application Server.
 
 `langs` is an ordered language preference; English is the final fallback. The index exposes `slug`, `title`, `group`, `version`, `versions`, `sourceName` and `views`.
 
+The `langs` query is an ordered comma-separated language list for both index titles and document bodies. A regional locale tries its base language before the next preference; English remains available as the mandatory fallback. The same resolution applies to Info, Usage and Technical at the requested component version.
+
 ## Configuration
 
 ### Documentation Reader
