@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { captureAccountGuard } from "../../../ui/reuse/offline-identity.js";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 
 for (const [code, key] of [
@@ -11,6 +12,7 @@ for (const [code, key] of [
         const { createTfaLoginClient } = loadTestModule(
             new URL("../ui/login-flow.js", import.meta.url),
             {
+                "/static/reuse/offline-identity.js": { captureAccountGuard },
                 "/static/reuse/auth-setup-route.js": {
                     redirectToRequiredTfaSetup() {},
                 },
@@ -20,9 +22,12 @@ for (const [code, key] of [
                 },
                 "/static/reuse/toast.js": { showToast() {} },
             },
+            { AbortSignal },
         );
         const client = await createTfaLoginClient({
             root: {},
+            signal: new AbortController().signal,
+            lifecycleVersion: 1,
             baseI18n: { t: (value) => `translated:${value}` },
         });
         assert.equal(client.resolveErrorMessage(code), `translated:${key}`);

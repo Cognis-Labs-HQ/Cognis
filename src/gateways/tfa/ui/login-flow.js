@@ -2,6 +2,9 @@ import { redirectToRequiredTfaSetup } from "/static/reuse/auth-setup-route.js";
 import { extendI18n } from "/static/reuse/i18n.js";
 import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
 import { showToast } from "/static/reuse/toast.js";
+import { captureAccountGuard } from "/static/reuse/offline-identity.js";
+
+export const loginLifecycleVersion = 1;
 
 function setActiveTfaInputPresentation(i18n, method, tfaCodeInput) {
     if (!(tfaCodeInput instanceof HTMLInputElement)) {
@@ -174,16 +177,66 @@ function resolveTranslatedTfaErrorMessage(i18n, message) {
     );
 }
 
-export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
+export async function createTfaLoginClient({
+    baseI18n,
+    root = document,
+    signal,
+    lifecycleVersion,
+} = {}) {
+    const log = console.error.bind(console);
+    if (
+        lifecycleVersion !== loginLifecycleVersion ||
+        !(signal instanceof AbortSignal)
+    ) {
+        log("[tfa] login lifecycle required", {
+            component: "tfa",
+            operation: "createLoginClient",
+            code: "tfa_login_lifecycle_required",
+        });
+        throw new Error("tfa_login_lifecycle_required");
+    }
+    const assertAccount = captureAccountGuard();
+    let promptVersion = 0;
+    let stopActivePrompt = () => {};
+    let reconcileActivePrompt = null;
+    const releasePrompt = () => {
+        promptVersion++;
+        stopActivePrompt();
+        stopActivePrompt = () => {};
+        reconcileActivePrompt = null;
+    };
+    signal.addEventListener("abort", releasePrompt, { once: true });
+    let ownsAccount = true;
+    const invalidateAccount = () => {
+        ownsAccount = false;
+        releasePrompt();
+    };
+    const isAccountCurrent = () => {
+        if (!ownsAccount || signal.aborted) return false;
+        try {
+            assertAccount();
+            return true;
+        } catch (error) {
+            if (error?.message !== "offline_account_changed") throw error;
+            invalidateAccount();
+            return false;
+        }
+    };
+    if (!isAccountCurrent()) return null;
     await ensurePageStylesheet("/static/gateways/tfa/login.css");
     let i18n = await extendI18n(baseI18n, ["/static/gateways/tfa/languages"]);
-    let promptVersion = 0;
-    let stopActiveCountdown = () => {};
+    if (!isAccountCurrent()) return null;
     return {
         i18n,
+        lifecycle: Object.freeze({ version: loginLifecycleVersion, signal }),
+        refreshPrompt() {
+            if (!isAccountCurrent() || !reconcileActivePrompt) return false;
+            return reconcileActivePrompt();
+        },
         async switchToTfaPrompt(payload) {
-            const currentPrompt = ++promptVersion;
-            stopActiveCountdown();
+            if (!isAccountCurrent()) return null;
+            releasePrompt();
+            const currentPrompt = promptVersion;
             const promptI18n = await extendI18n(i18n, [
                 ...new Set(
                     (payload?.methods ?? [])
@@ -191,7 +244,8 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                         .filter(Boolean),
                 ),
             ]);
-            if (currentPrompt !== promptVersion) return null;
+            if (currentPrompt !== promptVersion || !isAccountCurrent())
+                return null;
             i18n = promptI18n;
             const fields = root.querySelector("#login-tfa-fields");
             const methods = Array.isArray(payload?.methods)
@@ -211,10 +265,29 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
             let deliveryToastShownOnce = false;
             let invalidResendLinkTypeWarned = false;
             const pendingMethodIds = new Set();
+            const outcomesByMethodId = new Map();
+            const retainChallenge = (methodId, challenge) => {
+                const deadline = parseChallengeResendTimestamp({ challenge });
+                challengeStateByMethodId.set(
+                    methodId,
+                    deadline === null
+                        ? challenge
+                        : {
+                              ...challenge,
+                              resendAvailableAt: new Date(
+                                  deadline,
+                              ).toISOString(),
+                          },
+                );
+            };
+            const pendingObservers = new Set();
+            let ownedResendLink = null;
+            let ownedResendHandler = null;
             const isSelectedMethod = (methodId) => {
                 const methodInput = root.querySelector("#login-tfa-method");
                 return (
                     currentPrompt === promptVersion &&
+                    isAccountCurrent() &&
                     methodInput instanceof HTMLInputElement &&
                     methodInput.value === methodId
                 );
@@ -246,6 +319,11 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                     "auth-text-action--disabled",
                     resendLocked,
                 );
+                const methodId = root.querySelector("#login-tfa-method")?.value;
+                resendLink.setAttribute(
+                    "aria-busy",
+                    String(pendingMethodIds.has(methodId)),
+                );
                 resendLink.setAttribute(
                     "aria-disabled",
                     resendLocked ? "true" : "false",
@@ -259,7 +337,13 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                     countdownTimer = null;
                 }
             };
-            stopActiveCountdown = stopCountdown;
+            stopActivePrompt = () => {
+                stopCountdown();
+                for (const removeObserver of pendingObservers) removeObserver();
+                pendingObservers.clear();
+                if (ownedResendLink?.onclick === ownedResendHandler)
+                    ownedResendLink.onclick = null;
+            };
 
             const showDeliveryToastOnce = ({
                 skipDeliveryToast = false,
@@ -302,8 +386,16 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                     return;
                 }
                 const updateCountdown = () => {
-                    if (!resendLink.isConnected) {
+                    if (!resendLink.isConnected || !isAccountCurrent()) {
                         stopCountdown();
+                        return;
+                    }
+                    if (pendingMethodIds.has(method.id)) {
+                        resendLocked = true;
+                        syncDisabledResendState();
+                        resendLink.textContent = i18n.t(
+                            "ui.app.login.tfa.resend_pending",
+                        );
                         return;
                     }
                     const remainingSeconds = resendAt
@@ -329,7 +421,11 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                     );
                 };
                 updateCountdown();
-                if (resendAt != null) {
+                if (
+                    resendAt != null &&
+                    resendAt > Date.now() &&
+                    !pendingMethodIds.has(method.id)
+                ) {
                     countdownTimer = window.setInterval(updateCountdown, 1000);
                 }
             };
@@ -343,6 +439,51 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                     ...method,
                     challenge: challengeStateByMethodId.get(method.id) ?? null,
                 };
+            };
+
+            const showResendFailure = (
+                methodId,
+                { status, expired = false, errorName } = {},
+            ) => {
+                if (!isSelectedMethod(methodId)) return;
+                log("[tfa] resend result unavailable", {
+                    component: "tfa",
+                    operation: "resendLoginChallenge",
+                    status,
+                    errorName,
+                });
+                showToast(
+                    i18n.t(
+                        expired
+                            ? "ui.app.login.tfa.resend_expired"
+                            : "ui.app.login.tfa.resend_unconfirmed",
+                    ),
+                    { variant: "error" },
+                );
+            };
+
+            reconcileActivePrompt = () => {
+                const methodId = root.querySelector("#login-tfa-method")?.value;
+                if (!isSelectedMethod(methodId)) return false;
+                setResendStateForMethod(resolveMethod(methodId), {
+                    skipDeliveryToast: true,
+                });
+                const outcome = outcomesByMethodId.get(methodId);
+                if (!outcome) return true;
+                outcomesByMethodId.delete(methodId);
+                if (outcome.failed) {
+                    showResendFailure(methodId, outcome);
+                } else if (
+                    ["queued", "sent"].includes(outcome.deliveryStatus)
+                ) {
+                    deliveryToastShownOnce = false;
+                    showDeliveryToastOnce(outcome);
+                } else {
+                    showToast(i18n.t("ui.app.login.tfa.resend_received"), {
+                        variant: "info",
+                    });
+                }
+                return true;
             };
 
             const sendChallenge = async (methodId) => {
@@ -363,42 +504,80 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                     );
                     return;
                 }
+                i18n.t("ui.app.login.tfa.resend_pending");
                 resendLocked = true;
                 pendingMethodIds.add(methodId);
-                syncDisabledResendState();
+                setResendStateForMethod(resolveMethod(methodId), {
+                    skipDeliveryToast: true,
+                });
+                const onStorageChange = (event) => {
+                    if (
+                        event.storageArea &&
+                        event.storageArea !== globalThis.localStorage
+                    )
+                        return;
+                    if (
+                        event.key === null ||
+                        (["cognis_account", "cognis_access_token"].includes(
+                            event.key,
+                        ) &&
+                            event.oldValue !== event.newValue)
+                    ) {
+                        invalidateAccount();
+                        removeObserver();
+                    }
+                };
+                const removeObserver = () => {
+                    window.removeEventListener("storage", onStorageChange);
+                    pendingObservers.delete(removeObserver);
+                };
+                pendingObservers.add(removeObserver);
+                window.addEventListener("storage", onStorageChange);
+                let result;
                 try {
-                    const { response, body } = await this.resendCode({
+                    result = await this.resendCode({
                         loginAttemptId,
                         methodId,
                     });
+                } catch (error) {
                     pendingMethodIds.delete(methodId);
-                    if (currentPrompt !== promptVersion) return;
-                    const resolvedMethod = resolveMethod(methodId);
-                    if (response.ok) {
-                        if (resolvedMethod) {
-                            challengeStateByMethodId.set(
-                                resolvedMethod.id,
-                                body?.data?.challenge ?? {},
-                            );
-                        }
-                        if (isSelectedMethod(methodId)) {
-                            deliveryToastShownOnce = false;
-                            showDeliveryToastOnce({
-                                deliveryStatus:
-                                    body?.data?.challenge?.deliveryStatus,
-                            });
-                        }
-                        setResendStateForMethod(resolveMethod(methodId), {
-                            skipDeliveryToast: true,
+                    if (currentPrompt === promptVersion && isAccountCurrent()) {
+                        outcomesByMethodId.set(methodId, {
+                            failed: true,
+                            errorName: error?.name,
                         });
-                        return;
+                        reconcileActivePrompt();
                     }
-                    showToast(
-                        i18n.t("ui.app.login.tfa.challenge_unavailable"),
-                        { variant: "error" },
-                    );
+                    return;
+                } finally {
+                    removeObserver();
+                }
+                pendingMethodIds.delete(methodId);
+                if (currentPrompt !== promptVersion || !isAccountCurrent())
+                    return;
+                const { response, body } = result;
+                const resolvedMethod = resolveMethod(methodId);
+                if (response.ok) {
+                    const challenge = body?.data?.challenge;
+                    if (
+                        !challenge ||
+                        typeof challenge !== "object" ||
+                        Array.isArray(challenge)
+                    ) {
+                        outcomesByMethodId.set(methodId, {
+                            failed: true,
+                            status: response.status,
+                            errorName: "InvalidChallengeResponse",
+                        });
+                    } else {
+                        retainChallenge(methodId, challenge);
+                        outcomesByMethodId.set(methodId, {
+                            deliveryStatus: challenge.deliveryStatus,
+                        });
+                    }
+                } else {
                     if (resolvedMethod) {
-                        challengeStateByMethodId.set(resolvedMethod.id, {
+                        retainChallenge(methodId, {
                             ...resolvedMethod.challenge,
                             message: body?.error?.code,
                             retryAfterSeconds:
@@ -408,33 +587,14 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                                 body?.error?.resendAvailableAt ??
                                 body?.error?.details?.resendAvailableAt,
                         });
-                        setResendStateForMethod(resolveMethod(methodId), {
-                            skipDeliveryToast: true,
-                        });
-                    } else {
-                        resendLocked = false;
-                        syncDisabledResendState();
                     }
-                } catch (error) {
-                    pendingMethodIds.delete(methodId);
-                    console.error("[tfa] challenge request failed", {
-                        component: "tfa",
-                        operation: "beginLoginChallenge",
-                        methodId,
-                        errorName: error?.name,
+                    outcomesByMethodId.set(methodId, {
+                        failed: true,
+                        status: response.status,
+                        expired: body?.error?.code === "tfa_attempt_expired",
                     });
-                    if (isSelectedMethod(methodId)) {
-                        setResendStateForMethod(resolveMethod(methodId), {
-                            skipDeliveryToast: true,
-                        });
-                        showToast(
-                            i18n.t("ui.app.login.tfa.challenge_unavailable"),
-                            {
-                                variant: "error",
-                            },
-                        );
-                    }
                 }
+                reconcileActivePrompt();
             };
 
             if (
@@ -453,7 +613,8 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
             }
             const resendLink = root.querySelector("#login-tfa-resend-action");
             if (resendLink instanceof HTMLAnchorElement) {
-                resendLink.onclick = async (event) => {
+                ownedResendLink = resendLink;
+                ownedResendHandler = async (event) => {
                     event.preventDefault();
                     const methodInput = root.querySelector("#login-tfa-method");
                     const selectedMethodId =
@@ -462,6 +623,7 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                             : "";
                     await sendChallenge(selectedMethodId);
                 };
+                resendLink.onclick = ownedResendHandler;
             }
             const activateMethod = async (method) => {
                 if (
@@ -475,7 +637,13 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                 i18n,
                 payload,
                 root,
-                (method) => setResendStateForMethod(resolveMethod(method.id)),
+                (method) => {
+                    if (outcomesByMethodId.has(method.id)) {
+                        reconcileActivePrompt();
+                    } else {
+                        setResendStateForMethod(resolveMethod(method.id));
+                    }
+                },
                 activateMethod,
             );
             await activateMethod(methods[0]);

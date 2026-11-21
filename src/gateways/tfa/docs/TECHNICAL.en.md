@@ -104,6 +104,18 @@ Login challenge responses may include `maxLength`, a positive integer describing
 
 The login UI keeps a valid absolute `resendAvailableAt` deadline when rendering or resuming an issued challenge, even after that deadline has passed. It uses a positive `retryAfterSeconds` duration from the current render time only when the absolute deadline is missing or invalid. Before eligibility, the resend control stays disabled and suppresses requests. Eligibility does not send a code automatically or replace the issued challenge; the server remains authoritative for resend limits and code verification.
 
+When the active method’s resend request finishes, the login prompt shows its result. A queued or sent receipt describes the reported delivery state; a valid response without a receipt only confirms that the method responded. A rejected, malformed or interrupted result does not prove whether delivery occurred. Check for a code before trying again. If the attempt has expired, cancel and sign in again. Cooldowns remain server-controlled, pending requests stay locked, and no retry or email is sent automatically.
+
+Resend actions and pending feedback remain bound to the browser account and session that opened the prompt. An account or token change prevents an older request from updating the prompt or sending again. Missing required English translations remain explicit rendering errors, not uncertain transport results.
+
+Returning to a method shows each completed resend receipt once; switching away and back again does not repeat it.
+
+The Auth login owner supplies an abort signal to `createTfaLoginClient({ baseI18n, root, signal, lifecycleVersion })`. Leaving the page, replacing its form or login attempt, or successfully cancelling releases pending storage listeners, the resend handler and cooldown timers immediately, even while a request remains unresolved. Failed cancellation preserves the active prompt. UI disposal does not undo a dispatched request or guarantee that delivery stopped.
+
+Auth 2.2.14 and TFA 1.3.14 require a coordinated JavaScript and asset deployment. The TFA integration module must export `loginLifecycleVersion = 1`. Its factory requires `lifecycleVersion: 1` and a real `AbortSignal`; the returned client must expose `lifecycle: { version: 1, signal }` with that same signal and `refreshPrompt()`. Missing or mismatched contracts fail before the prompt can send a request, with a login error and structured lifecycle diagnostic. Auth 2.2.13 and TFA 1.3.13 lack this contract. Update both packages and their served/bundled assets together, then reload old Login tabs. Third-party replacements for the TFA login integration must implement the contract before enabling this release; there is no cleanup-free compatibility path. Non-TFA sign-in and method-provider descriptors are unchanged.
+
+While a resend remains unresolved, its action reads “Requesting code…” and exposes a busy state. It stays locked without inventing a new deadline or retrying. If the resend finishes during Cancel and cancellation later fails, the same prompt reconciles the settled result, pending lock and issued deadline. A relative server wait is anchored when its response arrives, so time spent waiting for cancellation does not restart it.
+
 Adapter contract registration follows [the shared gateway bootstrap contract](/docs/gateways).
 
 ### Adapter Management Controls
