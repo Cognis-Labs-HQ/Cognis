@@ -18,4 +18,4 @@ Die Registrierung verhindert das Absenden, wenn erforderliche Abschlusshandler, 
 
 ## Commits
 
-- [91e4296](https://github.com/Cognis-Labs-HQ/Cognis/commit/91e4296077bf1bd0ca58ec4405023a5f0678c59c)
+- [474f9808a7068634a7a47a6eec4104d6c8c5dcfd](https://github.com/Cognis-Labs-HQ/Cognis/commit/474f9808a7068634a7a47a6eec4104d6c8c5dcfd)
