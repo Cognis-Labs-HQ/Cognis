@@ -188,6 +188,12 @@ Settings and Administration guides keep their existing targets and progression: 
 
 Shared behavior: [Page Composer](/docs/page-composer/technical).
 
+### Side-menu selection
+
+The `ui:sideMenu` capability exposes `createSideMenu` for grouped selections. Each item renders a native `button type="button"`: selecting an item updates its active state, calls `onSelect` with its ID and scrolls to its optional `targetId`, without submitting an enclosing form. Labels and identifiers are escaped. Genuine navigation links remain owned by their callers.
+
+Pass the owning lifetime’s abort signal to `mount(root, { signal })` and abort it before mounting again. Collapsible groups retain their open state under `storageKeyPrefix`; fixed groups have no toggle. Docs, Changelogs, Flashcards and Library guides retain their existing navigation targets and steps.
+
 ## Security
 
 Hidden navigation is not access control. Browser providers resolve owner capabilities and abort pending work on unmount or account changes; private reads remain account-scoped.
