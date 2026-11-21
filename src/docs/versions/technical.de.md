@@ -53,7 +53,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | MariaDB Database      | `src/adapters/db/mariadb/`          | `0.5.32` |
 | SQLite Database       | `src/adapters/db/sqlite/`           | `0.3.28` |
 | Memory Database       | `src/adapters/db/memory/`           | `0.1.24` |
-| Registration Token    | `src/adapters/registration/token/`  | `0.1.41` |
+| Registration Token    | `src/adapters/registration/token/`  | `0.1.42` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.24` |
 | Profile (Social)      | `src/adapters/social/profile/`      | `4.1.0`  |
 | Messages (Social)     | `src/adapters/social/messages/`     | `2.9.0`  |
@@ -96,7 +96,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 | Komponente | Pfad               | Version |
 | ---------- | ------------------ | ------- |
-| Cognis CLI | `src/tooling/cli/` | `0.4.2` |
+| Cognis CLI | `src/tooling/cli/` | `0.4.3` |
 
 [c]: https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/core/package.json
 [a]: https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/api/package.json

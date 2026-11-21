@@ -26,6 +26,8 @@ Bei geschlossener öffentlicher Registrierung hält Cognis den authentifizierten
 
 Administratoren und Eigentümer können `/invite` ohne Gründerstatus öffnen. Die Einladungsrichtlinie bestimmt weiterhin die Ausstellung. Der aktivierte Registrierungstoken-Adapter stellt `cognisctl invite:token:generate` für eigenständige Token ohne SMTP-Versand und `cognisctl invite:email:send person@example.com` für E-Mail-Einladungen bereit. Ohne E-Mail-Argument öffnet sich der CLI-Assistent. Beide Befehle nutzen die authentifizierte Registrierungs-API und beachten Rollen-, Domain- und Versandbeschränkungen.
 
+`cognisctl invite:token:generate` erwartet kein E-Mail-Argument und fordert die manuelle Zustellung an. Der Befehl gibt einen Registrierungslink zurück, ohne eine E-Mail zu senden. Für eine an eine E-Mail-Adresse gebundene Einladung verwenden Sie `cognisctl invite:email:send person@example.com`. Behandeln Sie den zurückgegebenen Einladungslink als Geheimnis und teilen Sie ihn nur mit dem vorgesehenen Empfänger. Mit `-v` erhalten Sie ihn vollständig, falls die Standardübersicht ihn kürzt.
+
 ### Typverträge
 
 Der Token-Adapter benötigt Kontoregistrierung, Existenzprüfung und Löschung sowie den strukturierten Datenbank-Executor. Tests stellen diese Verträge direkt bereit, einschließlich generischer Transaktionen und Kontobereinigung nach fehlgeschlagener Einlösung. Token-Validierung und Berechtigungsregeln bleiben unverändert.
