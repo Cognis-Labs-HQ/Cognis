@@ -12,4 +12,5 @@ Profile 4.1.0 は `buildContent` に `tiny`（1.22rem、頭文字0.5rem）と `c
 
 ## コミット
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/65a8200a22add13a4a09a11228ac9bf40d213582
+- [fdf3907c9d10cefdc0bfbb20fe9a9e6d42f8ac21](https://github.com/Cognis-Labs-HQ/Cognis/commit/fdf3907c9d10cefdc0bfbb20fe9a9e6d42f8ac21)
+- [ae80749f2062c20691228ca3c09c809844ec5899](https://github.com/Cognis-Labs-HQ/Cognis/commit/ae80749f2062c20691228ca3c09c809844ec5899)
