@@ -12,5 +12,6 @@ Die Registrierungsdokumentation enthält Beispiele für öffentliche Fähigkeite
 
 ## Commits
 
-- [456b614a57720e842f2e093e9290ad992717ac86](https://github.com/Cognis-Labs-HQ/Cognis/commit/456b614a57720e842f2e093e9290ad992717ac86)
-- [84aa63eb64831bb04ad211e366fa5dec8f2b713e](https://github.com/Cognis-Labs-HQ/Cognis/commit/84aa63eb64831bb04ad211e366fa5dec8f2b713e)
+- [471c1b5aa070b5a955dab7afc7eb47b91787c3a1](https://github.com/Cognis-Labs-HQ/Cognis/commit/471c1b5aa070b5a955dab7afc7eb47b91787c3a1)
+- [8ce0f9aaab0b162a8462b20a99fa4ed27cb04487](https://github.com/Cognis-Labs-HQ/Cognis/commit/8ce0f9aaab0b162a8462b20a99fa4ed27cb04487)
+- [82e9aaada9162eabefb033f5bde05fbf349a6f82](https://github.com/Cognis-Labs-HQ/Cognis/commit/82e9aaada9162eabefb033f5bde05fbf349a6f82)
