@@ -63,15 +63,16 @@ test("popup styles constrain dialog height and apply themed scrollbars", () => {
 });
 
 test("popup caches the complete stylesheet before a service interruption", () => {
-    const source = readFileSync(resolve(ROOT, "src/ui/reuse/popup.js"), "utf8");
-
-    assert.match(source, /export function primePopupStylesheet/);
+    const source = readFileSync(
+        resolve(ROOT, "src/ui/reuse/popup/preparation.js"),
+        "utf8",
+    );
+    const entry = readFileSync(resolve(ROOT, "src/ui/reuse/popup.js"), "utf8");
+    assert.match(entry, /export function primePopupStylesheet/);
     assert.match(source, /stylesheetCache\.put\(POPUP_STYLESHEET_URL/);
     assert.match(source, /stylesheetCache\?\.match\(POPUP_STYLESHEET_URL\)/);
-    assert.match(
-        source,
-        /cachedStylesheet\.textContent = await cachedResponse\.text/,
-    );
+    assert.match(source, /const text = await cachedResponse\.text\(\)/);
+    assert.match(source, /cachedStylesheet\.textContent = text/);
     const runtimeErrorSource = readFileSync(
         resolve(ROOT, "src/ui/reuse/runtime-error-popup.js"),
         "utf8",
