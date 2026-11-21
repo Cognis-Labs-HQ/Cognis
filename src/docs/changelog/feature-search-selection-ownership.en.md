@@ -14,4 +14,5 @@ Navbar selection propagates `navigateTo` returning `false` before route teardown
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/3f0063375d8479a949f75847239ac7ed89223692
+- [503f60be5a55aec1f8aedaf03d254d7c1c26f9e4](https://github.com/Cognis-Labs-HQ/Cognis/commit/503f60be5a55aec1f8aedaf03d254d7c1c26f9e4)
+- [8aa74a09b59194319593c51b12aa7f490bbfc5f4](https://github.com/Cognis-Labs-HQ/Cognis/commit/8aa74a09b59194319593c51b12aa7f490bbfc5f4)
