@@ -8,7 +8,7 @@ The public interfaces and operational rules of Component Versions.
 
 | Component    | Path        | Version |
 | ------------ | ----------- | ------- |
-| Core Package | `src/core/` | `0.6.4` |
+| Core Package | `src/core/` | `0.6.5` |
 
 ### API
 

@@ -17,12 +17,17 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
         const selectedBranches = new Map(
             cached.map((module) => [module.uuid, module.selectedBranch]),
         );
-        return modules.map((module) => ({
-            ...module,
-            ...(selectedBranches.get(module.uuid)
-                ? { selectedBranch: selectedBranches.get(module.uuid) }
-                : {}),
-        }));
+        return modules.map((module) => {
+            const previous = selectedBranches.get(module.uuid);
+            if (!previous) return module;
+            const available = [...module.branches, ...module.releases].some(
+                (channel) => channel.name === previous,
+            );
+            return {
+                ...module,
+                selectedBranch: available ? previous : module.defaultBranch,
+            };
+        });
     }
 
     protected async discoverSource(
@@ -67,14 +72,25 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
                             repository.path_with_namespace ??
                             "",
                     );
+                    const [discoveredBranches, discoveredReleases] =
+                        await Promise.all([
+                            this.discoverBranches(source, projectPath, headers),
+                            this.discoverReleases(source, projectPath, headers),
+                        ]);
+                    const defaultChannel = discoveredBranches.find(
+                        (channel) => channel.name === defaultBranch,
+                    );
+                    if (!defaultChannel) {
+                        throw new Error("module_default_channel_unavailable");
+                    }
                     const rawUrl =
                         source.provider === "github"
                             ? this.resolveGithubManifestUrl(
                                   source,
                                   projectPath,
-                                  defaultBranch,
+                                  defaultChannel.commit,
                               )
-                            : `${source.baseUrl}/projects/${encodeURIComponent(projectPath)}/repository/files/manifest.json/raw?ref=${encodeURIComponent(defaultBranch)}`;
+                            : `${source.baseUrl}/projects/${encodeURIComponent(projectPath)}/repository/files/manifest.json/raw?ref=${encodeURIComponent(defaultChannel.commit)}`;
                     // default-manifest block: establishes the immutable UUID used for provenance lookup.
                     const manifestResponse = await fetchMarketplaceResource(
                         rawUrl,
@@ -118,45 +134,58 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
                     const provenance = await this.readInstallProvenance(
                         manifest.uuid,
                     );
-                    let catalogRef = provenance?.branch || defaultBranch;
-                    if (catalogRef !== defaultBranch) {
+                    const catalogChannel =
+                        [...discoveredBranches, ...discoveredReleases].find(
+                            (channel) => channel.name === provenance?.branch,
+                        ) ?? defaultChannel;
+                    const catalogRef = catalogChannel.commit;
+                    if (
+                        provenance?.branch &&
+                        catalogChannel.name !== provenance.branch
+                    ) {
+                        this.log(
+                            "info",
+                            "Unavailable module channel resolved to the default channel.",
+                            {
+                                component: "module-marketplace",
+                                operation: "resolveCatalogChannel",
+                                moduleUuid: manifest.uuid,
+                                sourceUuid: source.uuid,
+                                previousChannel: provenance.branch,
+                                selectedChannel: catalogChannel.name,
+                            },
+                        );
+                    }
+                    if (catalogRef !== defaultChannel.commit) {
                         const channelManifestResponse =
                             await fetchMarketplaceResource(
-                                source.provider === "github"
-                                    ? this.resolveGithubManifestUrl(
-                                          source,
-                                          projectPath,
-                                          catalogRef,
-                                      )
-                                    : `${source.baseUrl}/projects/${encodeURIComponent(projectPath)}/repository/files/manifest.json/raw?ref=${encodeURIComponent(catalogRef)}`,
+                                this.resolveRepositoryAssetUrl(
+                                    source,
+                                    projectPath,
+                                    catalogRef,
+                                    "manifest.json",
+                                ),
                                 { headers },
                             );
-                        if (channelManifestResponse.ok) {
-                            try {
-                                const channelManifest = this.parseManifest(
-                                    await this.readRepositoryFile(
-                                        source,
-                                        channelManifestResponse,
-                                    ),
-                                );
-                                if (channelManifest.uuid === manifest.uuid) {
-                                    manifest = channelManifest;
-                                } else {
-                                    catalogRef = defaultBranch;
-                                }
-                            } catch {
-                                // Fall back to the default-manifest block above.
-                                catalogRef = defaultBranch;
-                            }
-                        } else {
-                            catalogRef = defaultBranch;
+                        if (!channelManifestResponse.ok) {
+                            throw new Error(
+                                `module_manifest_discovery_failed:${channelManifestResponse.status}`,
+                            );
                         }
+                        const channelManifest = this.parseManifest(
+                            await this.readRepositoryFile(
+                                source,
+                                channelManifestResponse,
+                            ),
+                        );
+                        if (
+                            channelManifest.uuid !== manifest.uuid ||
+                            channelManifest.id !== manifest.id
+                        ) {
+                            throw new Error("module_channel_identity_mismatch");
+                        }
+                        manifest = channelManifest;
                     }
-                    const [discoveredBranches, discoveredReleases] =
-                        await Promise.all([
-                            this.discoverBranches(source, projectPath, headers),
-                            this.discoverReleases(source, projectPath, headers),
-                        ]);
                     const [branches, releases] = await Promise.all([
                         this.attachVersions(
                             source,
@@ -267,11 +296,16 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
                                       : undefined,
                               }
                             : undefined;
+                    if (manifest.ui?.stringsBaseUrl && !assetIds?.strings?.en) {
+                        throw new Error(
+                            "module_catalog_english_strings_unavailable",
+                        );
+                    }
                     const installedVersion = await this.readInstalledVersion(
                         manifest.uuid,
                     );
                     const channelVersion = [...branches, ...releases].find(
-                        (channel) => channel.name === catalogRef,
+                        (channel) => channel.name === catalogChannel.name,
                     )?.version;
                     return {
                         cloneUrl,
@@ -310,7 +344,7 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
                         source.scanPrivateRepos === true &&
                         privateRepository &&
                         error instanceof Error &&
-                        /module_manifest_discovery_failed:(401|403)/.test(
+                        /^module_(?:manifest|source)_discovery_failed:(?:401|403)$/.test(
                             error.message,
                         )
                     ) {
@@ -319,7 +353,7 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
                         );
                     }
                     this.log(
-                        "warn",
+                        "error",
                         "Module repository was excluded from marketplace discovery.",
                         {
                             sourceUuid: source.uuid,

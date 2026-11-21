@@ -8,7 +8,7 @@ Antarmuka publik dan aturan operasional Versi Komponen.
 
 | Komponen     | Jalur       | Versi   |
 | ------------ | ----------- | ------- |
-| Core Package | `src/core/` | `0.6.4` |
+| Core Package | `src/core/` | `0.6.5` |
 
 ### API
 
