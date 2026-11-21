@@ -24,4 +24,5 @@ Perubahan reaksi dan Muat Lebih Awal tetap terkait dengan percakapan tempat tind
 
 ## Komit
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/d8e546ce544f6c9bd5bae4c680df2e19c8a44b69
+- [6f9fa1801fe5134802f859fddbbc65a16db50e33](https://github.com/Cognis-Labs-HQ/Cognis/commit/6f9fa1801fe5134802f859fddbbc65a16db50e33)
+- [818ae91b9472a39a1fe584e5ad226fb7d819f01d](https://github.com/Cognis-Labs-HQ/Cognis/commit/818ae91b9472a39a1fe584e5ad226fb7d819f01d)
