@@ -4,6 +4,7 @@ import { fixture } from "./fixture.mjs";
 
 const keys = [
     "error_load",
+    "error_styles",
     "error_refresh",
     "error_refresh_after_change",
     "error_change_rejected",
@@ -52,7 +53,7 @@ test("missing preferred and English copy throws rather than hiding the error", a
     );
 });
 
-for (const name of ["mark_read", "open_inbox"]) {
+for (const name of ["mark_read", "open_inbox", "error_styles"]) {
     const key = `adapter.notify.internal.${name}`;
     test(`${name} label falls back from preferred locale to English XML`, async (context) => {
         const environment = await fixture({

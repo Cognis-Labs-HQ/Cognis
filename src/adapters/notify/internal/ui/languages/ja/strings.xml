@@ -11,6 +11,7 @@
   <string name="adapter.notify.internal.error_clear_all">通知を削除できませんでした。もう一度お試しください。</string>
   <string name="adapter.notify.internal.new_message">新しいメッセージ</string>
   <string name="adapter.notify.internal.error_load">通知を取得できません。「再試行」で受信トレイを読み込んでください。</string>
+  <string name="adapter.notify.internal.error_styles">通知のスタイルを読み込めませんでした。受信トレイは利用できますが、レイアウトが不完全な場合があります。アプリを開き直すと再試行できます。</string>
   <string name="adapter.notify.internal.error_refresh">通知を更新できませんでした。最後に確認できた受信トレイを表示しています。「再試行」で再度確認してください。</string>
   <string name="adapter.notify.internal.error_refresh_after_change">変更は保存されましたが、通知を更新できませんでした。「再試行」で最新の受信トレイを確認してください。</string>
   <string name="adapter.notify.internal.error_change_rejected">通知の変更が拒否されました。変更をやり直す前に、「再試行」で受信トレイを更新してください。</string>
