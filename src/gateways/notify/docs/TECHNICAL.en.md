@@ -15,25 +15,7 @@ Components use ctx capabilities rather than retaining the gateway implementation
 
 Provider contracts are exported from `@cognis/core`. Adapter bootstrap receives ctx capabilities and bounded host registration functions, without the concrete gateway. Provider tests delegate through `testSender(senderId, recipient, config)`.
 
-<<<<<<< HEAD:src/gateways/notify/docs/TECHNICAL.en.md
 #### Browser Capabilities
-=======
-In Administration, prepare a notification under Notifications and choose Send Notification, or prepare an announcement under Broadcasts and choose Create Broadcast. These explicit actions send or publish the draft; the general Settings Save does neither.
-
-## Technical Specification
-
-### Email Actions
-
-An optional email provider contributes `notify:registerEmailPurpose(id, action)`, `notify:sendEmail`, `notify:emailAvailable` and `notify:emailDeliveryPolicy`. Consumers supply their own content; registration is allowed only during their bootstrap and returns an owner-scoped purpose. Sending requires that purpose, a recipient and variables. It never creates a queue. Without an email provider, email delivery actions are unavailable while stored addresses remain readable.
-
-Email verification applies equally to local and SSO accounts. Codes and verification tokens bind the complete account ID and address. Email verification reads `codeLength` from the provider-owned `notify:emailDeliveryPolicy` version 1 contract at each issuance. With SMTP, the Notification adapter’s Code Length setting also governs Email Code TFA. Changes apply to subsequent codes; existing codes retain their issued length until used, replaced or expired. An absent, disabled or unconfigured policy owner causes issuance to fail explicitly. Delivery outages do not waive required verification. The security setting uses `userValidationMode: "email"` or `"none"`.
-
-### Lifecycle
-
-Disable and unmount revoke owned registrations and pending delivery. Re-enable restores fresh channels without replaying cancelled messages. Other owners of a shared category remain active. Async message actions cannot enqueue after their registration is disposed or replaced.
-
-### Browser Capabilities
->>>>>>> ca8faf9a2 (Protect Notify Administration drafts and request lifetimes):src/gateways/notify/docs/index.en.md
 
 The lifecycle-scoped `notify:emailClient` provides own-account email requests, trusted domains, administrator `listUserEmails`, online-only `resendUserEmail` and `emailAvailable`. Settings, Users and Administration resolve it through ctx. Email edits are cached and queued by their owning provider; verification remains online. `GET /api/v1/notify/email-delivery` is authenticated and returns only availability, not provider configuration.
 
@@ -89,12 +71,23 @@ Handlers recheck current authority before effects after asynchronous reads. Disa
 
 An address may already be stored when delivery or revocation fails; a valid code may be consumed before a later authority check or database failure. Retry only after checking the current state.
 
-<<<<<<< HEAD:src/gateways/notify/docs/TECHNICAL.en.md
 Registration validates guide titles and steps against the gateway's own catalog before making guides available. English, German, Indonesian and Japanese are supported; missing or empty preferred-language values use the same English key. Missing English text remains an explicit translation error. Registering guides on another dashboard page does not navigate to Settings or Administration.
 
 The delivery guide explains explicit Send Notification and pending-request availability. The broadcast guide explains Create Broadcast, audience review and publication status. Both explain same-page draft retention and Stay versus Discard and Leave. General Settings Save does not publish either draft. Optional action stages are omitted while their controls are unavailable.
 
 The broadcast guide also highlights Refresh as a separate action for retrying list loading while keeping the draft, without repeating publication or a status change.
+
+In Administration, prepare a notification under Notifications and choose Send Notification, or prepare an announcement under Broadcasts and choose Create Broadcast. These explicit actions send or publish the draft; the general Settings Save does neither.
+
+### Administration Drafts
+
+Notification and broadcast drafts remain in memory during redraws of the same Administration page. If navigation asks about unsaved changes, Stay retains the draft and Discard and Leave drops it. Discard restores the initial form values. Drafts are not saved across browser reloads or tab closure, and changing accounts clears them.
+
+Send and Create accept one request at a time, including validation; their controls are unavailable while pending. A rejected submission retains its draft. Success restores the original defaults only if the draft still matches the submitted values. Newer edits made while waiting remain unchanged and unsaved. General Settings Save never sends a notification or publishes a broadcast.
+
+Broadcast status changes are also single-flight. A successful creation or status change remains successful if the following list refresh fails. The refresh error is reported separately, and previously loaded rows remain visible. Check the current state before repeating an action; there is no automatic retry. Closing or replacing acknowledgement details, leaving the page or changing accounts prevents older detail responses from updating the current view.
+
+Use Refresh beside Create Broadcast to reload only the list with a read-only request, including after a loading error. It retains your draft and never repeats creation or a status change. Refresh is unavailable while another broadcast action is pending.
 
 ## Security
 
@@ -113,14 +106,3 @@ Email verification binds account ID and address. Missing delivery does not waive
 See the [shared contract](/docs/adapters/social/messages/technical) for this behavior.
 
 Optional test-delivery and publication controls are included only while available; repeated test buttons use one visible target.
-=======
-### Administration Drafts
-
-Notification and broadcast drafts remain in memory during redraws of the same Administration page. If navigation asks about unsaved changes, Stay retains the draft and Discard and Leave drops it. Discard restores the initial form values. Drafts are not saved across browser reloads or tab closure, and changing accounts clears them.
-
-Send and Create accept one request at a time, including validation; their controls are unavailable while pending. A rejected submission retains its draft. Success restores the original defaults only if the draft still matches the submitted values. Newer edits made while waiting remain unchanged and unsaved. General Settings Save never sends a notification or publishes a broadcast.
-
-Broadcast status changes are also single-flight. A successful creation or status change remains successful if the following list refresh fails. The refresh error is reported separately, and previously loaded rows remain visible. Check the current state before repeating an action; there is no automatic retry. Closing or replacing acknowledgement details, leaving the page or changing accounts prevents older detail responses from updating the current view.
-
-Use Refresh beside Create Broadcast to reload only the list with a read-only request, including after a loading error. It retains your draft and never repeats creation or a status change. Refresh is unavailable while another broadcast action is pending.
->>>>>>> ca8faf9a2 (Protect Notify Administration drafts and request lifetimes):src/gateways/notify/docs/index.en.md
