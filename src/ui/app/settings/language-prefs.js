@@ -1,3 +1,4 @@
+import { bindListDropzones } from "./dropzones.js";
 import { isOffline } from "../../reuse/offline-state.js";
 import { loadUiLanguageCatalog } from "../../reuse/ui-language-catalog.js";
 import {
@@ -14,6 +15,7 @@ export function initLanguagePrefs(
     let savedPriority = [...initialPriority];
     let catalog = [];
     let pendingMode = null;
+    const log = console.info.bind(console);
 
     function getSupportedLanguageCodes() {
         return catalog.map((item) => item.iso_code);
@@ -42,55 +44,13 @@ export function initLanguagePrefs(
 
         row.append(tdLabel, tdHandle);
 
-        tdHandle.addEventListener("pointerdown", (e) => {
-            if (
-                e.pointerType === "mouse" ||
-                (isOffline() && !languagePriority.includes(isoCode))
-            )
-                return;
-            e.preventDefault();
-            tdHandle.setPointerCapture(e.pointerId);
-            row.classList.add("language-row-dragging");
-            dragLanguage = isoCode;
-
-            function onMove(ev) {
-                ev.preventDefault();
-                clearDropMarkers();
-                const { row: targetRow, rect } = findRowAt(row, ev.clientY);
-                if (!targetRow) return;
-                targetRow.classList.add(
-                    ev.clientY > rect.top + rect.height / 2
-                        ? "drop-target-after"
-                        : "drop-target-before",
-                );
-            }
-
-            function onEnd(ev) {
-                tdHandle.removeEventListener("pointermove", onMove);
-                tdHandle.removeEventListener("pointerup", onEnd);
-                tdHandle.removeEventListener("pointercancel", onEnd);
-                row.classList.remove("language-row-dragging");
-                const { row: targetRow, rect } = findRowAt(row, ev.clientY);
-                const targetTable = findTableAt(ev.clientX, ev.clientY);
-                const targetIsAfter = Boolean(
-                    targetRow && ev.clientY > rect.top + rect.height / 2,
-                );
-                clearDropMarkers();
-                applyDrop(isoCode, targetTable, targetRow, targetIsAfter);
-                dragLanguage = null;
-            }
-
-            tdHandle.addEventListener("pointermove", onMove);
-            tdHandle.addEventListener("pointerup", onEnd);
-            tdHandle.addEventListener("pointercancel", onEnd);
-        });
-
         return row;
     }
 
     function makeEmptyDropZoneRow() {
         const row = document.createElement("tr");
         const emptyCell = document.createElement("td");
+        row.setAttribute("data-drop-placeholder", "");
         emptyCell.setAttribute("colspan", "2");
         emptyCell.className = "language-table-empty-cell";
         emptyCell.textContent = "\u00A0";
@@ -99,6 +59,8 @@ export function initLanguagePrefs(
     }
 
     function renderTables() {
+        dropzones.cancel();
+        if (signal?.aborted) return;
         const preferred = root.querySelector("#preferred-languages");
         const available = root.querySelector("#available-languages");
         if (!preferred || !available) return;
@@ -125,72 +87,17 @@ export function initLanguagePrefs(
         );
     }
 
-    function clearDropMarkers() {
-        root.querySelectorAll(
-            ".drop-target-before, .drop-target-after",
-        ).forEach((row) => {
-            row.classList.remove("drop-target-before", "drop-target-after");
-        });
-    }
-
-    function findRowAt(excludeRow, clientY) {
-        for (const row of root.querySelectorAll("tr[data-lang-row]")) {
-            if (
-                row === excludeRow ||
-                (isOffline() && !row.closest("#preferred-languages"))
-            )
-                continue;
-            const rect = row.getBoundingClientRect();
-            if (clientY >= rect.top && clientY <= rect.bottom)
-                return { row, rect };
-        }
-        return { row: null, rect: null };
-    }
-
-    function findTableAt(clientX, clientY) {
-        for (const table of root.querySelectorAll(
-            "#available-languages, #preferred-languages",
-        )) {
-            if (isOffline() && table.id !== "preferred-languages") continue;
-            const rect = table.getBoundingClientRect();
-            if (
-                clientX >= rect.left &&
-                clientX <= rect.right &&
-                clientY >= rect.top &&
-                clientY <= rect.bottom
-            )
-                return table;
-        }
-        return null;
-    }
-
-    function resolveDropTarget(targetNode, clientX, clientY) {
-        const closestElement = targetNode?.closest
-            ? targetNode
-            : targetNode?.parentElement;
-        const targetTable =
-            closestElement?.closest(
-                "#available-languages, #preferred-languages",
-            ) ?? findTableAt(clientX, clientY);
-        const targetRow = closestElement?.closest("tr[data-lang-row]");
-        const targetIsAfter = Boolean(
-            targetRow &&
-            clientY >
-                targetRow.getBoundingClientRect().top +
-                    targetRow.getBoundingClientRect().height / 2,
-        );
-        return { targetTable, targetRow, targetIsAfter };
-    }
-
     function applyDrop(lang, targetTable, targetRow, targetIsAfter) {
         if (
-            !lang ||
+            !getSupportedLanguageCodes().includes(lang) ||
+            !targetTable ||
             (isOffline() &&
                 (targetTable?.id !== "preferred-languages" ||
                     !languagePriority.includes(lang)))
         )
             return;
 
+        const previousPriority = JSON.stringify(languagePriority);
         if (targetTable?.id === "preferred-languages") {
             languagePriority = languagePriority.filter((item) => item !== lang);
             if (targetRow) {
@@ -219,84 +126,31 @@ export function initLanguagePrefs(
             languagePriority,
             getSupportedLanguageCodes(),
         );
+        if (JSON.stringify(languagePriority) === previousPriority) return;
+        pendingMode = "manual";
+        log("language_draft_changed", {
+            component: "ui.settings",
+            operation: "moveLanguage",
+            count: languagePriority.length,
+        });
         renderTables();
         notifyDirty();
-        pendingMode = "manual";
     }
 
-    let dragLanguage = null;
-
-    root.addEventListener(
-        "dragstart",
-        (event) => {
-            const row = event.target.closest("tr[data-lang-row]");
-            if (!row) return;
-            if (isOffline() && !row.closest("#preferred-languages")) {
-                event.preventDefault();
-                return;
-            }
-            dragLanguage = row.getAttribute("data-lang-row");
-            event.dataTransfer?.setData("text/plain", dragLanguage || "");
-        },
-        { signal },
-    );
-
-    root.addEventListener(
-        "dragend",
-        () => {
-            clearDropMarkers();
-            dragLanguage = null;
-        },
-        { signal },
-    );
-
-    root.addEventListener(
-        "dragover",
-        (event) => {
-            const zone = event.target.closest(
-                "#available-languages, #preferred-languages, tr[data-lang-row]",
-            );
-            if (!zone || (isOffline() && !zone.closest("#preferred-languages")))
-                return;
-            event.preventDefault();
-            clearDropMarkers();
-
-            const row = zone.closest("tr[data-lang-row]");
-            if (row) {
-                const rect = row.getBoundingClientRect();
-                const isAfter = event.clientY > rect.top + rect.height / 2;
-                row.classList.add(
-                    isAfter ? "drop-target-after" : "drop-target-before",
-                );
-            } else {
-                const placeholderRow = zone.querySelector(
-                    "tr:not([data-lang-row])",
-                );
-                if (placeholderRow) {
-                    placeholderRow.classList.add("drop-target-before");
-                }
-            }
-        },
-        { signal },
-    );
-
-    root.addEventListener(
-        "drop",
-        (event) => {
-            event.preventDefault();
-            const { targetTable, targetRow, targetIsAfter } = resolveDropTarget(
-                event.target,
-                event.clientX,
-                event.clientY,
-            );
-            clearDropMarkers();
-            const lang =
-                dragLanguage || event.dataTransfer?.getData("text/plain");
-            applyDrop(lang, targetTable, targetRow, targetIsAfter);
-            dragLanguage = null;
-        },
-        { signal },
-    );
+    const dropzones = bindListDropzones({
+        root,
+        zoneSelector: "#available-languages, #preferred-languages",
+        rowSelector: "tr[data-lang-row]",
+        handleSelector: ".drag-handle",
+        draggingClass: "language-row-dragging",
+        signal,
+        canDrag: (row) =>
+            !isOffline() || languagePriority.includes(row.dataset.langRow),
+        canDrop: (row, table) =>
+            !isOffline() || table.id === "preferred-languages",
+        onDrop: ({ source, zone, row, after }) =>
+            applyDrop(source.dataset.langRow, zone, row, after),
+    });
 
     function commit() {
         savedPriority = [...languagePriority];
@@ -322,6 +176,7 @@ export function initLanguagePrefs(
                 return { iso_code, name };
             });
         });
+        if (signal?.aborted) return;
         languagePriority = sanitizeLanguagePriority(
             languagePriority,
             getSupportedLanguageCodes(),
