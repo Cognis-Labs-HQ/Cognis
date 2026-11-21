@@ -91,7 +91,7 @@ Fungsi `onRevoke` yang wajib menghapus penangan kejadian delegasi secara sinkron
 
 Fungsi delegasi bersifat sinkron, dan `contains` harus mengembalikan nilai boolean. Galat, nilai predikat yang tidak valid, hasil asinkron, atau upaya fokus rekursif mencabut delegasi, mencatat metadata diagnostik yang aman, dan memulihkan penanganan fokus biasa. Kegagalan fungsi maupun pencatatan tidak boleh menghambat penutupan dialog atau membiarkan hasilnya tertunda.
 
-## Gestur daftar bahasa
+### Gestur daftar bahasa
 
 Seret baris bahasa, atau pegangannya pada layar sentuh, ke posisi yang diinginkan dalam daftar pilihan. Titik tengah baris tujuan menentukan penyisipan sebelum atau sesudahnya; area tabel lainnya menambahkan bahasa di akhir. Bahasa Inggris tetap menjadi bahasa cadangan pilihan. Perubahan tetap berupa draf hingga disimpan; membuang perubahan mengembalikan urutan tersimpan. Mode luring mengizinkan pengurutan bahasa pilihan, tetapi tidak mengubah keanggotaannya.
 

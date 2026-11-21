@@ -117,7 +117,7 @@ The required `onRevoke` callback removes delegated event handlers synchronously 
 
 Delegated callbacks are synchronous, and `contains` must return a boolean. A thrown error, invalid predicate value, asynchronous return, or recursive focus attempt revokes the delegation, records safe diagnostic metadata, and restores ordinary popup focus handling. Callback and logging failures cannot interrupt popup dismissal or leave its result pending.
 
-## Language list gestures
+### Language list gestures
 
 Drag a language row, or its handle on a touch screen, into the preferred list at the desired position. Drops on a row insert before or after its midpoint; drops in the remaining table area append. English stays available as a preferred fallback. Changes remain a draft until Save; Discard restores the saved order. Offline mode permits reordering preferred languages but not changing membership.
 
