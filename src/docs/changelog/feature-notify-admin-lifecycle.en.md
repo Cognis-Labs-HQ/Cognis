@@ -14,4 +14,5 @@ A separate Refresh action retries only list loading, preserves the draft and nev
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/ca8faf9a2c750e9e82cf2ee5ada603053b0103cc
+- [d3cd50083ed212817eda70f02dbaf59d0adb60a6](https://github.com/Cognis-Labs-HQ/Cognis/commit/d3cd50083ed212817eda70f02dbaf59d0adb60a6)
+- [e9aca7eea535a572cdf46c3c5c7a385edd76bef6](https://github.com/Cognis-Labs-HQ/Cognis/commit/e9aca7eea535a572cdf46c3c5c7a385edd76bef6)
