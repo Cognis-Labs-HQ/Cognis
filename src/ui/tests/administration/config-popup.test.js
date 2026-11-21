@@ -117,6 +117,8 @@ function fixture(payload, i18n = { t: (key) => `translated:${key}` }) {
         tooltips,
         open: () =>
             popup.openAdapterConfig("Example", {
+                gatewayId: "notify",
+                adapterId: "smtp",
                 configUrl: "/example/config",
             }),
         body: () => options.body,
