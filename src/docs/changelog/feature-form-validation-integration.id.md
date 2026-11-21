@@ -24,7 +24,7 @@ Jika kriteria khusus melepas atau membatalkan pengaitan formulir, validasi kolom
 
 ## Komit
 
-- [47f407cd521a3e58adf7c371977970a0b7d5d0d2](https://github.com/Cognis-Labs-HQ/Cognis/commit/47f407cd521a3e58adf7c371977970a0b7d5d0d2)
-- [8b78edeee17d2959ba6d93f290cd4ecded080b8c](https://github.com/Cognis-Labs-HQ/Cognis/commit/8b78edeee17d2959ba6d93f290cd4ecded080b8c)
-- [27f332f3075194ce66dac482f706a9705f3cfd57](https://github.com/Cognis-Labs-HQ/Cognis/commit/27f332f3075194ce66dac482f706a9705f3cfd57)
-- [1bd071a27173f7e7a684832b8c3f4d31445d7a9b](https://github.com/Cognis-Labs-HQ/Cognis/commit/1bd071a27173f7e7a684832b8c3f4d31445d7a9b)
+- [7751793f494f1177c28987e3a74d7dbe0cb2e200](https://github.com/Cognis-Labs-HQ/Cognis/commit/7751793f494f1177c28987e3a74d7dbe0cb2e200)
+- [76e82854c8ba2fc31aa94027d5578127ca041ed0](https://github.com/Cognis-Labs-HQ/Cognis/commit/76e82854c8ba2fc31aa94027d5578127ca041ed0)
+- [68ea2d586774d81fa915d1df36fda3ab8a2f8912](https://github.com/Cognis-Labs-HQ/Cognis/commit/68ea2d586774d81fa915d1df36fda3ab8a2f8912)
+- [103319a5a0e31443f7cb6d0bdb85e36e1e1f6e8b](https://github.com/Cognis-Labs-HQ/Cognis/commit/103319a5a0e31443f7cb6d0bdb85e36e1e1f6e8b)
