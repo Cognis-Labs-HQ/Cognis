@@ -184,6 +184,10 @@ Native `type="button"`, escaped text and attributes (`id`, `name`, `ariaLabel`, 
 
 Settings and Administration guides keep their existing targets and progression: this renderer adds no action or tutorial step. Contribution owners remain responsible for their own actions and guides.
 
+### Native layout actions
+
+Shared behavior: [Page Composer](/docs/page-composer/technical).
+
 ## Security
 
 Hidden navigation is not access control. Browser providers resolve owner capabilities and abort pending work on unmount or account changes; private reads remain account-scoped.

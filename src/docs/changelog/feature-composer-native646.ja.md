@@ -1,0 +1,13 @@
+# 標準のレイアウト操作
+
+**機能ブランチ:** feature-composer-native646
+
+## 標準のレイアウト操作
+
+メインおよび入れ子のレイアウトパネルでは、完了、破棄、リセットに標準の `button type="button"` コントロールを使用します。これらの操作は、外側のフォームを送信したり画面を移動したりしません。レイアウトの送信中は既存の編集ロックで無効になり、送信に失敗すると明示的に再試行できるよう復元されます。完了は引き続き保存の確認後に編集を終了し、破棄は書き込みを行わずローカルの基準状態に戻し、リセットは既定のレイアウトを保存して編集を続けます。既存の操作クラスとワークスペースチュートリアルの対象 `#composer-edit-toggle` は変わりません。
+
+## コミット
+
+- [7dcf289b56fe90332c57b27f21f108dbb63140f8](https://github.com/Cognis-Labs-HQ/Cognis/commit/7dcf289b56fe90332c57b27f21f108dbb63140f8)
+- [45986f62b4584520efcf707b8d1b0c2610a880a8](https://github.com/Cognis-Labs-HQ/Cognis/commit/45986f62b4584520efcf707b8d1b0c2610a880a8)
+- [f03db8184a93fb4f015aea9d8b09684e0361eb38](https://github.com/Cognis-Labs-HQ/Cognis/commit/f03db8184a93fb4f015aea9d8b09684e0361eb38)

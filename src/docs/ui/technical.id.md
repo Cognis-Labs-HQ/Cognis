@@ -158,6 +158,10 @@ Deskriptor tombol memetakan `variant: 'confirm'` ke `btn-confirm` dan `variant: 
 
 Panduan Pengaturan dan Administrasi mempertahankan target serta alurnya: renderer ini tidak menambahkan tindakan atau langkah tutorial. Pemilik kontribusi tetap bertanggung jawab atas tindakan dan panduannya sendiri.
 
+### Aksi tata letak native
+
+Perilaku bersama: [Page Composer](/docs/page-composer/technical).
+
 ## Keamanan
 
 Navigasi tersembunyi bukan kontrol akses. Penyedia memakai kapabilitas pemilik dan membatalkan pekerjaan saat unmount atau pergantian akun; data privat terikat akun.

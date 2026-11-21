@@ -96,6 +96,10 @@ Natives `type="button"`, maskierte Texte und Attribute (`id`, `name`, `ariaLabel
 
 Die Anleitungen für Einstellungen und Administration behalten ihre Ziele und Abläufe: Dieser Renderer ergänzt weder eine Aktion noch einen Anleitungsschritt. Die beitragenden Komponenten bleiben für ihre eigenen Aktionen und Anleitungen verantwortlich.
 
+#### Native Layout-Aktionen
+
+Gemeinsames Verhalten: [Page Composer](/docs/page-composer/technical).
+
 ## Sicherheit
 
 Verborgene Navigation ist kein Zugriffsschutz. Anbieter nutzen Eigentümerfähigkeiten und brechen bei Seitenende oder Kontowechsel ab; private Daten bleiben kontogebunden.
