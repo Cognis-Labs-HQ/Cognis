@@ -4,16 +4,16 @@ Prosedur praktis untuk OpenID Connect.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/adapters/auth/oidc) sebelum menjalankan prosedur ini.
+Adapter OIDC bawaan tidak memiliki klien protokol terpasang. createAdapter() mengembalikan klien null; integrasi harus memasok klien tervalidasi melalui setClient(). Konfigurasi saja tidak mengaktifkan masuk.
 
 ## Contoh
 
-Komponen ini tidak menyatakan titik masuk baris perintah mandiri. Gunakan fitur pemiliknya atau [prosedur penerapan](/docs/devops/usage) untuk mengonfigurasi instalasi; [referensi teknis](/docs/adapters/auth/oidc/technical) mencantumkan antarmuka dan batasnya.
+Dapatkan token akses valid melalui aplikasi klien lalu kirim memakai penyedia autentikasi Cognis yang dikonfigurasi. Uji identitas nonadministrator dahulu.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka OpenID Connect yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/adapters/auth/oidc/technical) sebelum mengulangi operasi tulis.
+Tanpa klien terinjeksi, autentikasi menghasilkan null meski formulir lengkap. Uji keberhasilan hanya dengan integrasi penyedia klien.
 
 ## Pemecahan Masalah
 
-Jika OpenID Connect tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Periksa integrasi klien dahulu. Discovery, tanda tangan, dan transportasi milik klien terinjeksi; pemetaan peran tidak memasok klien.

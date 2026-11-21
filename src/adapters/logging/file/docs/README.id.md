@@ -4,15 +4,15 @@ Simpan log aplikasi dalam berkas dengan rotasi dan kompresi yang dapat diatur.
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/administration) sesuai izin akun Anda.
+Simpan log aplikasi dalam berkas berotasi.
 
 ## Sebelum Memulai
 
-Pastikan Log Berkas aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Lokasi log harus dapat ditulis dan bertahan sesuai kebijakan retensi.
 
 ## Langkah Awal
 
-Buka [fitur ini](/administration) dan pilih tindakan yang diperlukan.
+Buka pengaturan log berkas di Administrasi.
 
 ## Pelajari Lebih Lanjut
 

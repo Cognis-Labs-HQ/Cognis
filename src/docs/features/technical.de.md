@@ -4,7 +4,7 @@
 
 ## Schnittstellen
 
-Dieses Thema ist eine Referenz und stellt keinen eigenen Endpunkt bereit. Beispiele verwenden die öffentlichen Schnittstellen der unten beschriebenen Komponenten.
+Öffentliche Verträge gehören ihren Eigentümern: Auth verwaltet Sitzungen, Lernen Inhalte und Übungen, Social Profile, Räume und Signalisierung, Kalender Termine und Share Freigaben. Nicht jede UI-Funktion hat einen eigenen HTTP-Endpunkt. OIDC und SAML benötigen einen injizierten Protokollclient; Schemas allein implementieren keine Fernanmeldung.
 
 ## Konfiguration
 
@@ -76,9 +76,7 @@ Die Benutzerliste nutzt die verfügbare Breite des Composers. Jedes Konto bildet
 
 ### Kontodatenschutz und Schlüsselbund-Isolation
 
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/adapters/auth/local/technical).
-
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/adapters/auth/local/technical).
+Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/gateways/auth/technical).
 
 Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
 
@@ -116,15 +114,11 @@ Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
 
 Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
 
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
-
 ### Entsperren und Modulladen
 
 Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
 
 ### Gemeinsame obere Hinweise
-
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
 
 Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
 
@@ -144,8 +138,6 @@ Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/gateways/study/techni
 
 Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
 
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
-
 ### Offline-Verfügbarkeit
 
 Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
@@ -158,17 +150,11 @@ Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
 
 Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
 
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
-
 ### Dauerhafter Ressourcen-Cache
 
 Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
 
 ### Offline-Arbeitsbereich
-
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
-
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
 
 Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
 
@@ -203,8 +189,6 @@ Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
 Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/gateways/study/technical).
 
 ### Direkter UI-Sprachwechsel
-
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
 
 Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
 
@@ -248,4 +232,5 @@ Das Dashboard deklariert privaten Offline-Zugriff innerhalb der Sitzung; Kontoü
 
 ## Referenz
 
-Quellcode und Paketmetadaten: `src/docs/features/`.
+- [src/api/reuse/ui-registry.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/api/reuse/ui-registry.ts)
+- [src/gateways/shared.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/shared.ts)

@@ -4,16 +4,15 @@ Masuk ke Cognis dengan akun lokal atau penyedia masuk yang diaktifkan administra
 
 ## Yang Dapat Anda Lakukan
 
-- Gunakan kontrol kata sandi penyedia autentikasi Anda; perubahan mungkin memerlukan konfirmasi identitas.
-- Pilih durasi sesi yang diizinkan atau pulihkan bawaan global, lalu simpan perubahan.
+Masuk, kelola sesi, dan lindungi akun.
 
 ## Sebelum Memulai
 
-Pastikan Masuk aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Gunakan penyedia aktif; pendaftaran mungkin memerlukan undangan.
 
 ## Langkah Awal
 
-Buka [fitur ini](/login) dan pilih tindakan yang diperlukan.
+Buka Masuk dan pilih metode yang dikonfigurasi.
 
 ## Pelajari Lebih Lanjut
 

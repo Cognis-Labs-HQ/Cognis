@@ -77,7 +77,7 @@ Adapter listings and configuration contracts include `stringsBaseUrl` when an ad
 
 ## Configuration
 
-Configuration is supplied through the owning gateway. Sign In declares no additional configuration in its manifest.
+Provider schemas configure external connections. COGNIS_ACCESS_TOKEN_TTL_SECONDS controls token lifetime; account validation policy and TFA methods remain registered owner-specific choices.
 
 ## Behavior
 
@@ -178,11 +178,9 @@ Authentication footer links wrap into accessible rows, and provider labels remai
 
 ## Security
 
-### Account privacy and keyring isolation
+Authentication validates primary credentials before session issuance and any required TFA challenge. Account, role and resource authorization remain separate; keyring unlock refusal must not create or switch account identity.
 
-See the [shared contract](/docs/adapters/auth/local/technical) for this behavior.
-
-See the [shared contract](/docs/adapters/auth/local/technical) for this behavior.
+SSO accounts use opaque random IDs. Provider IDs are stored separately and exposed only to administrators; public usernames never include them. Auth reserves usernames before profile or email side effects: duplicate names within one provider are rejected, while different providers receive a short random suffix when needed. Users lists and action endpoints distinguish public `username` from internal `accountId`.
 
 ## Reference
 

@@ -4,19 +4,16 @@ Praktische Abläufe für Profile und Beiträge.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/adapters/social/profile).
+Melde dich für eigene Änderungen an; fremde Profile beachten Datenschutz und Blockierungen.
 
 ## Beispiele
 
-- Prüfen Sie Identität und Verfügbarkeit; Ihr eigenes Profil bietet Bearbeitungsfunktionen.
-- Lesen Sie sichtbare Beiträge und nutzen Sie die für Ihr Konto erlaubten Aktionen.
-- Folgen, Nachrichten und Beziehungen steuern Sie am Profil; prüfen Sie zuvor die ausgewählte Person.
-- Die Vorschau zeigt vor dem Veröffentlichen den aktuellen Titel und Text. Wechsle zurück zum Schreiben oder drehe das Gerät, ohne den Entwurf zu verlieren.
+Ändere Anzeigename oder Bild, speichere und veröffentliche einen Beitrag mit passender Sichtbarkeit; prüfe ihn mit einem berechtigten anderen Konto.
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von Profile und Beiträge. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/adapters/social/profile/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Bestätigte Änderungen aktualisieren Profil und Zeitleiste; private Inhalte bleiben berechtigten Lesern vorbehalten.
 
 ## Fehlerbehebung
 
-Falls Profile und Beiträge nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Prüfe Sichtbarkeit, Folgen, Blockierungen und Verbindung. Ein öffentlicher Profilname umgeht keine Zugriffsregeln.

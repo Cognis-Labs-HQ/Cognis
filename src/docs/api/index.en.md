@@ -4,15 +4,15 @@ The application server connects your browser to accounts, saved content and enab
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/) according to your account permissions.
+Understand the server operations behind browser and command-line actions.
 
 ## Before You Start
 
-The operations discussed here may require account or administrator permissions. Reading a topic does not enable its optional features.
+Protected operations require the relevant account role and resource access.
 
 ## Get Started
 
-Open [the feature](/) and choose the action you need.
+Find the owning component's Technical view before using an operation.
 
 ## Learn More
 

@@ -4,15 +4,15 @@ Das Kernsystem verbindet aktivierte Cognis-Funktionen und verwaltet ihren Zugrif
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/) entsprechend Ihren Kontorechten.
+Verstehe das Zusammenspiel von Konten, Rechten und Funktionen.
 
 ## Vor dem Start
 
-Die beschriebenen Vorgänge können Konto- oder Verwaltungsrechte verlangen. Das Lesen eines Themas aktiviert keine optionalen Funktionen.
+Verwaltungsänderungen benötigen ein berechtigtes Konto.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/) und wählen Sie die gewünschte Aktion.
+Prüfe installierte Komponenten vor Änderungen gemeinsamer Dienste.
 
 ## Weitere Informationen
 

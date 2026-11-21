@@ -4,15 +4,15 @@ Die Leistungsüberwachung hilft Administratoren, langsame Anfragen und Browserak
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/administration) entsprechend Ihren Kontorechten.
+Erfasse begrenzte Leistungswerte zur Untersuchung langsamer Anfragen und Seiten.
 
 ## Vor dem Start
 
-Prüfen Sie, ob Leistungsüberwachung aktiviert ist und Ihr Konto den Vorgang ausführen darf.
+Betreiber benötigen Zugriff auf die Messwertausgabe; standardmäßig sind dies Debug-Protokolle.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/administration) und wählen Sie die gewünschte Aktion.
+Prüfe Messwerte zusammen mit Anwendungsprotokollen.
 
 ## Weitere Informationen
 

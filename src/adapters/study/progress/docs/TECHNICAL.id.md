@@ -14,7 +14,7 @@ Endpoint peristiwa biasa menolak `compensatesEventId`; klien harus memakai endpo
 
 ## Konfigurasi
 
-Konfigurasi disediakan melalui gerbang pemilik. Kemajuan Belajar tidak menyatakan konfigurasi tambahan dalam manifesnya.
+Kemajuan memakai executor DB aktif. Kueri menerima pelaku, cakupan, dan waktu inklusif; pencatatan latihan tepercaya terpisah dari impor mentah.
 
 ## Perilaku
 
@@ -23,13 +23,6 @@ Konfigurasi disediakan melalui gerbang pemilik. Kemajuan Belajar tidak menyataka
 Tipe bersama untuk peristiwa, pelaku, proyeksi, dan kapabilitas kemajuan berada di gateways/study/reuse/progress.ts. Gateway tidak lagi mengimpor titik masuk adaptor opsional untuk kontrak ini; adaptor tetap menerapkan kapabilitas dan ekspor publik yang sama. JSON peristiwa serta koreksi dibatasi 60.000 byte; permintaan lebih besar menghasilkan 413 sebelum pencatatan. Privasi, pemeriksaan kelas, koreksi, imbalan, dan alur pembangunan ulang tetap aktif.
 
 Adaptor Kemajuan mencatat peristiwa belajar yang tidak dapat diubah dan idempoten, lalu membentuk proyeksi yang dapat dibangun ulang. Setiap peristiwa memuat pelaku, identitas dan revisi konten kanonis, aktivitas, lingkup, hasil percobaan, petunjuk, durasi, status penyelesaian, dan metadata terbatas.
-
-### Penggunaan
-
-```ts
-const progress = ctx.capabilities.require("study:progress");
-const events = await progress.listEvents(actor, {});
-```
 
 ### Kapabilitas dan alur
 
@@ -55,4 +48,7 @@ Pelajar terdaftar dapat mencatat hasil kelas sendiri dengan hak baca, tanpa hak 
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/adapters/study/progress/`.
+- [src/adapters/study/progress/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/study/progress/manifest.json)
+- [src/adapters/study/progress/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/study/progress/package.json)
+- [src/adapters/study/progress/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/study/progress/index.ts)
+- [src/adapters/study/progress/routes/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/study/progress/routes/index.ts)

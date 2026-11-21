@@ -4,16 +4,16 @@ Praktische Abläufe für Öffentliche Registrierung.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/adapters/registration/public).
+Ein Administrator muss öffentliche Registrierung ausdrücklich aktivieren.
 
 ## Beispiele
 
-Diese Komponente deklariert keinen eigenständigen Befehlszeileneinstieg. Nutzen Sie die zugehörige Funktion oder die [Bereitstellungsabläufe](/docs/devops/usage) zur Konfiguration; die [technische Referenz](/docs/adapters/registration/public/technical) nennt Schnittstellen und Grenzen.
+Gib Benutzername und Passwort sowie optional E-Mail und Anzeigename ein und sende gemäß Richtlinie ab.
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von Öffentliche Registrierung. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/adapters/registration/public/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Gültige Eingaben erstellen ein lokales Benutzerkonto ohne wählbare Administratorrolle.
 
 ## Fehlerbehebung
 
-Falls Öffentliche Registrierung nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Prüfe Pflichtfelder, Namensverfügbarkeit und öffentliche Registrierungsrichtlinie bei Ablehnung.

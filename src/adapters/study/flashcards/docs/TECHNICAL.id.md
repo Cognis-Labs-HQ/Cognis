@@ -4,11 +4,11 @@ Antarmuka publik dan aturan operasional Kartu Hafalan.
 
 ## Antarmuka
 
-Kartu Hafalan terintegrasi melalui gerbang pemilik; manifesnya mengidentifikasi komponen dan dependensi yang diperlukan.
+study:decks menyediakan layanan dek. /api/v1/study/decks mendukung GET daftar, GET/:id, POST simpan, DELETE/:id; POST/:id/review menerima cardId, grade, dan attempt.
 
 ## Konfigurasi
 
-Konfigurasi disediakan melalui gerbang pemilik. Kartu Hafalan tidak menyatakan konfigurasi tambahan dalam manifesnya.
+Konten dan visibilitas disimpan per dek. Mode Baca/Tulis adalah preferensi akun; dek awal berasal dari penyedia terdaftar, bukan daftar bahasa tetap.
 
 ## Perilaku
 
@@ -25,10 +25,6 @@ Latihan membaca menampilkan pelafalan utama di samping nilai kartu jika berbeda;
 Coba Lagi hanya ditampilkan jika antrean terbaru untuk fokus yang dipilih berisi kartu. Fokus kosong tetap menampilkan ucapan selamat dan tindakan Beranda tanpa menawarkan pengulangan kosong.
 
 Setelah dek selesai, tanda centang hijau dan ucapan selamat ditampilkan di tengah. Beranda kembali ke Semua. Coba Lagi membangun ulang antrean berdasarkan status ulasan terbaru dan memulainya dari kartu pertama, mempertahankan fokus Total/Selesai/Jatuh Tempo/Baru meskipun ulasan tersimpan telah mengubah status kartu. Hanya jawaban sesi dan identitas percobaan yang direset; kemajuan ulasan tersimpan tetap utuh. Latihan melalui tautan berbagi menggunakan tampilan selesai yang sama dan memulai ulang sesi sementara.
-
-### Penggunaan
-
-Buka dek yang terlihat dari Flashcards untuk langsung berlatih. Pilih Total, Selesai, Jatuh Tempo atau Baru untuk menentukan kartu.
 
 ### Spesifikasi Teknis
 
@@ -67,10 +63,6 @@ Jawaban dapat menyertakan objek `attempt` dengan `id` dan waktu ISO `occurredAt`
 ### Imbalan Latihan Tersimpan
 
 Jadwal kartu belajar dan bukti percobaan disimpan sebelum pengiriman imbalan lintas adapter. Alur terpisah `study:decks:recordResult` mengirim ulang hasil yang sama setelah kegagalan tanpa memajukan jadwal lagi. Ini menghindari transaksi basis data bersarang ketika Progress menyimpan peristiwa.
-
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/gateways/study/technical).
-
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/gateways/study/technical).
 
 Perilaku ini dijelaskan dalam [kontrak bersama](/docs/gateways/study/technical).
 
@@ -114,7 +106,7 @@ Pemuatan halaman tamu memeriksa pembatalan setelah lokalisasi, inisialisasi comp
 
 ## Keamanan
 
-Akses Kartu Hafalan diatur oleh pemanggil dan gerbang pemilik. Mengaktifkan komponen tidak menambah izin akun.
+Operasi dek memeriksa kepemilikan dan akses berbagi. Ekspor memerlukan pembuat atau administrator; berbagi tidak memberi keanggotaan kelas atau hadiah dari peristiwa impor sembarang.
 
 ## Referensi
 

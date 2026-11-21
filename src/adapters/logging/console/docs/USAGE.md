@@ -4,16 +4,16 @@ Practical procedures for Console Logs.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/adapters/logging/console) before performing these procedures.
+Administrators configure output; operators capture console logs in their hosting system.
 
 ## Examples
 
-This component does not declare a standalone command-line entry point. Use its owning feature or the [deployment procedures](/docs/devops/usage) to configure the installation; the [technical reference](/docs/adapters/logging/console/technical) lists its interfaces and constraints.
+Choose the level and pretty or JSON format, save and inspect a newly emitted log.
 
 ## Expected Results
 
-The example uses the documented interface of Console Logs. Confirm the response or saved state described in [Technical](/docs/adapters/logging/console/technical) before repeating a write operation.
+Console records use the selected threshold and format; the built-in console adapter remains enabled.
 
 ## Troubleshooting
 
-If Console Logs is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+Check the threshold and container log capture if an expected record is absent.

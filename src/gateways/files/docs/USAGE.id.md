@@ -4,17 +4,16 @@ Prosedur praktis untuk Berkas.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/gateways/files) sebelum menjalankan prosedur ini.
+Unggahan memerlukan penyedia penyimpanan aktif dan kuota cukup.
 
 ## Contoh
 
-- Periksa kuota penyimpanan bawaan global dan namespace komponen yang menggunakannya.
-- Periksa pemilik dan visibilitas namespace sebelum mengubah kuota byte dan menyimpannya.
+Unggah gambar yang diizinkan, simpan item pemilik, lalu buka kembali; administrator memeriksa kuota secara terpisah.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Berkas yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/gateways/files/technical) sebelum mengulangi operasi tulis.
+Metadata mencatat kepemilikan dan penggunaan; pembaca harus memenuhi aturan sumber daya.
 
 ## Pemecahan Masalah
 
-Jika Berkas tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Periksa tipe, ukuran, kuota, dan penyimpanan. ID berkas saja tidak memberi izin baca.

@@ -1,18 +1,18 @@
 # Passphrasen-Dienstprogramm
 
-Die API-Laufzeit stellt `reuse:generatePassphrase` über `ctx` bereit, damit Module wie Jitsi Meet lesbare Geheimnisse erzeugen können, ohne API-Interna zu importieren.
+Unterstützte Funktionen erzeugen lesbare zufällige Passphrasen, ohne dass du selbst ein Passwort erfinden musst.
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/) entsprechend Ihren Kontorechten.
+Erzeuge lesbare zufällige Passphrasen für Funktionen mit Geheimnissen.
 
 ## Vor dem Start
 
-Die beschriebenen Vorgänge können Konto- oder Verwaltungsrechte verlangen. Das Lesen eines Themas aktiviert keine optionalen Funktionen.
+Eine Funktion muss Erzeugung anbieten; das Werkzeug hat keine eigene Benutzerseite.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/) und wählen Sie die gewünschte Aktion.
+Nutze die Passworterzeugung einer unterstützten Funktion.
 
 ## Weitere Informationen
 

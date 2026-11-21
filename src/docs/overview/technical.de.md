@@ -18,7 +18,7 @@ Cognis wird durch drei Mechanismen erweitert:
 
 ## Konfiguration
 
-Dieses Dokumentationsthema hat keine eigene Laufzeitkonfiguration. Betriebseinstellungen gehören zur zuständigen Komponente.
+Wähle Komponenten in Administration und Sprachen in Lerneinstellungen. Datenbank und Medienpfade gehören zur Bereitstellung statt Browsereinstellungen.
 
 ## Verhalten
 
@@ -81,8 +81,9 @@ Module werden ausschließlich aus installierten Repositorys unter `COGNIS_EXTERN
 
 ## Sicherheit
 
-Das Lesen der Dokumentation berechtigt nicht zur Ausführung ihrer Beispiele. Die zuständige Komponente autorisiert jeden Vorgang.
+Das Schichtenmodell beschreibt Eigentum statt pauschaler Rechte. Konten, Gäste und Module behalten eigene Authentifizierungs- und Inhaltsgrenzen.
 
 ## Referenz
 
-Quellcode und Paketmetadaten: `src/docs/overview/`.
+- [src/core/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/index.ts)
+- [src/gateways/shared.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/shared.ts)

@@ -54,7 +54,7 @@ Gateways expose the same `system:contracts` registry to their adapters through `
 
 ## Configuration
 
-This documentation topic has no runtime configuration of its own. Operational settings belong to the relevant component.
+Gateway and adapter roots come from COGNIS_GATEWAYS_ROOT and COGNIS_ADAPTERS_ROOT in the host environment. Identity, version and dependency declarations belong to manifests; feature settings remain with each gateway.
 
 ## Behavior
 
@@ -391,8 +391,9 @@ gateways) if a declared dependency is absent.
 
 ## Security
 
-Reading documentation does not grant permission to execute its examples. The owning component authorizes each operation.
+Gateway ownership is not account authority. Public contracts permit bounded cross-component calls; each operation still checks current account and resource access.
 
 ## Reference
 
-Source and package metadata: `src/docs/gateways/`.
+- [src/gateways/shared.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/shared.ts)
+- [src/gateways/reuse/adapter-bootstrap.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/reuse/adapter-bootstrap.ts)

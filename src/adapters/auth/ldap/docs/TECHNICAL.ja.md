@@ -4,42 +4,13 @@ LDAP ログイン の公開インターフェースと運用規則を説明し�
 
 ## インターフェース
 
-### アーキテクチャ
-
-`src/adapters/auth/ldap/index.ts` の `LdapAuthAdapter` が `AuthProviderAdapter` を実装します。
-
-```ts
-export interface LdapClient {
-    authenticate(accessToken: string): Promise<LdapIdentity | null>;
-}
-```
+`LdapClient.authenticate(username, password, options)` は `LdapIdentity | null` を返します。username/password と任意の authSourceId からサーバーを選び、provider、externalUserId、email、displayName、role を返します。既定の実装は StandardLdapClient です。
 
 ## 設定
 
-### 設定
-
-`PUT /api/v1/gateways/auth/adapters/ldap/config`（管理者のみ）で設定します。
-
-| キー           | 説明                                             | 必須   |
-| -------------- | ------------------------------------------------ | ------ |
-| `host`         | LDAPサーバーのホスト名                           | はい   |
-| `port`         | LDAPサーバーのポート                             | はい   |
-| `bindDn`       | サービスアカウントのバインドDN                   | はい   |
-| `bindPassword` | バインドDNのパスワード                           | はい   |
-| `baseDn`       | ユーザー検索のベースDN                           | はい   |
-| `adminGroups`  | 管理者ロールを受けるLDAPグループ（カンマ区切り） | いいえ |
+管理画面で `unify` と名前付きの `servers` を保存します。identifier、serverUrl、baseDn、bindDn、bindPassword、userAttribute、userFilter が必要です。検索範囲や groupFilter、memberOf、nestedMemberOf を指定し、roleMappings でグループを対応付けます。パスワード書き戻しには writebackEnabled と検索範囲が必要です。統合した接続先は接続失敗時に次のサーバーを試します。
 
 ## 動作
-
-### 概要
-
-LDAPアダプターは、LDAPディレクトリサーバーに対してユーザーを認証します。Active Directory、OpenLDAP、または類似のディレクトリサービスですでにアイデンティティを管理している組織に適した選択肢です。ユーザーはLDAPアクセストークンでログインし、アダプターはサービスアカウントでディレクトリにバインドし、ユーザーを検索し、グループメンバーシップをCognisの管理者ロールにマッピングします。
-
-### 責務
-
-- `accessToken` 認証情報を受け入れ、LDAPサーバーに対して認証する。
-- 認証されたユーザーのLDAPグループをCognisの `isAdmin` フラグにマッピングする。
-- 認証ゲートウェイ向けに `AuthProviderAdapter` インターフェースを公開する。
 
 ### 接続テスト
 
@@ -67,8 +38,10 @@ LDAP 接続フォームと資格情報フォームは、アダプターのロー
 
 ## セキュリティ
 
-LDAP ログイン へのアクセスは呼び出し元と担当のゲートウェイが管理します。有効化してもアカウントの権限は増えません。
+認証情報は設定済みの LDAP クライアントが検証します。管理者権限はグループ対応に従います。バインド情報と TLS 証明書を保護してください。
 
 ## リファレンス
 
-ソースとパッケージの情報: `src/adapters/auth/ldap/`。
+- [src/adapters/auth/ldap/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/ldap/manifest.json)
+- [src/adapters/auth/ldap/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/ldap/package.json)
+- [src/adapters/auth/ldap/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/ldap/index.ts)

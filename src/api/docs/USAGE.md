@@ -4,16 +4,18 @@ Practical procedures for Application Server.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/api) before performing these procedures.
+Operators deploy the server; readers can use published documentation without administrative access.
 
 ## Examples
 
-This component does not declare a standalone command-line entry point. Use its owning feature or the [deployment procedures](/docs/devops/usage) to configure the installation; the [technical reference](/docs/components/api/technical) lists its interfaces and constraints.
+Select Info, Usage or Technical, choose a component version and switch views while checking that the version stays selected.
+
+Call `store.diff(fromVersion, toVersion)` through a store created by the `docs:versionStore` capability. Runtime modules can return that structured result from their own authenticated route, resolve `ui:documentDiff` through browser ctx, and pass the result to `renderDocumentDiff(diff)`.
 
 ## Expected Results
 
-The example uses the documented interface of Application Server. Confirm the response or saved state described in [Technical](/docs/components/api/technical) before repeating a write operation.
+Each published version contains a complete localized bundle; unavailable views are not fabricated from unrelated versions.
 
 ## Troubleshooting
 
-If Application Server is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+Check the requested topic, version and server access. Archive writes require a writable configured location.

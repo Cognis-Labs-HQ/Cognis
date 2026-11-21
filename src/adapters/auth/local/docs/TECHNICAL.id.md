@@ -52,12 +52,10 @@ Akun lokal dikelola melalui CLI `cognisctl` menggunakan namespace perintah `user
 
 ## Keamanan
 
-### Privasi akun dan isolasi keyring
-
-Akun SSO menggunakan ID acak yang tidak mengungkap identitas penyedia. ID penyedia disimpan terpisah dan hanya ditampilkan kepada administrator; nama pengguna publik tidak memuatnya. Auth mencadangkan nama sebelum perubahan profil atau email: nama duplikat dari penyedia yang sama ditolak, sedangkan penyedia berbeda mendapat akhiran acak pendek bila perlu. Daftar pengguna dan endpoint tindakan membedakan `username` publik dari `accountId` internal.
-
-Akun lokal yang sudah ada tetap berfungsi meskipun ada catatan SSO lama. Startup tidak memerlukan reset basis data. Login dan provisi akun SSO lama ditolak secara individual sampai akun tersebut dibuat ulang dengan ID opak. ID akun, hubungan, dan rapat tidak dimigrasikan atau dihapus secara otomatis.
+Kata sandi lokal memakai scrypt dengan salt acak dan pemeriksaan aman waktu. Pengelolaan akun memerlukan otorisasi Auth; adapter memeriksa kredensial, bukan menerbitkan sesi atau memberikan admin dari masukan pendaftaran.
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/adapters/auth/local/`.
+- [src/adapters/auth/local/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/local/manifest.json)
+- [src/adapters/auth/local/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/local/package.json)
+- [src/adapters/auth/local/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/local/index.ts)

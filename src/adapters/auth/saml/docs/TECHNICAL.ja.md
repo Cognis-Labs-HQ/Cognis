@@ -4,13 +4,7 @@ SAML ログイン の公開インターフェースと運用規則を説明し�
 
 ## インターフェース
 
-### アーキテクチャ
-
-```ts
-export interface SamlClient {
-    validateAssertion(samlResponse: string): Promise<SamlAssertion | null>;
-}
-```
+authenticate(credentials) は `assertion` を読み、注入した `SamlClient.consumeAssertion` を呼びます。`nameId` で外部を識別し、`provider`、`externalUserId`、任意の `email`、`role` を返します。未接続や入力不足では null です。
 
 ## 設定
 
@@ -28,22 +22,18 @@ export interface SamlClient {
 
 設定ラベルは `stringsBaseUrl` を通じてこのアダプターの言語リソースから取得します。
 
+`configure()` が適用するのは `adminAttribute` / `adminValue` です。他の接続項目はスキーマ情報であり、この実装はそこからクライアントを生成しません。
+
 ## 動作
 
-### 概要
-
-SAMLアダプターは、外部アイデンティティプロバイダーからのSAML 2.0アサーションを通じてユーザーを認証し、Microsoft AD FS、Google Workspace、Okta、またはその他のSAML 2.0準拠のIdPとのエンタープライズシングルサインオンを可能にします。
-
-### 責務
-
-- SAML レスポンス/アサーションを受け入れ、設定された `SamlClient` で検証し、アイデンティティクレームを抽出する。
-- 設定可能なSAML属性をCognisの `isAdmin` フラグにマッピングする。
-- 認証ゲートウェイ向けに `AuthProviderAdapter` インターフェースを公開する。
+同梱の SAML アダプターには動作するプロトコルクライアントが接続されていません。createAdapter() はクライアントが null の状態を返し、setClient() による明示的な連携が必要です。設定だけではログインできません。
 
 ## セキュリティ
 
-SAML ログイン へのアクセスは呼び出し元と担当のゲートウェイが管理します。有効化してもアカウントの権限は増えません。
+認証はアサーション検証と信頼された署名証明書に依存します。管理者グループを慎重に設定し、未検証のアサーションでセッションを作成してはいけません。
 
 ## リファレンス
 
-ソースとパッケージの情報: `src/adapters/auth/saml/`。
+- [src/adapters/auth/saml/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/saml/manifest.json)
+- [src/adapters/auth/saml/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/saml/package.json)
+- [src/adapters/auth/saml/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/saml/index.ts)

@@ -4,11 +4,11 @@
 
 ## Schnittstellen
 
-Öffentliche Freigabelinks wird über den zuständigen Funktionsdienst eingebunden; das Manifest nennt die Komponente und ihre Abhängigkeiten.
+createShareAdapter liefert Methode link, öffentliche Seite und Dialog. prepare leert Empfänger; Token und Rechte gehören Share.
 
 ## Konfiguration
 
-Die Konfiguration erfolgt über den zuständigen Funktionsdienst. Öffentliche Freigabelinks definiert keine zusätzlichen Einstellungen im Manifest.
+Freigaben enthalten accessControls, Ablauf und optionales Passwort. allowedPermissions begrenzt den Dialog; externe Zustellkonten werden nicht eingerichtet.
 
 ## Verhalten
 
@@ -22,7 +22,7 @@ Erstellt öffentliche, ablaufende Links über das Share-Gateway. Der Adapter ver
 
 ## Sicherheit
 
-Der Zugriff auf Öffentliche Freigabelinks unterliegt dem Aufrufer und dem zuständigen Funktionsdienst. Die Aktivierung erweitert keine Kontorechte.
+Linkbesitzer erhalten nur den erlaubten Inhaltsbereich. Ablauf, Passwort und Widerruf werden beim Zugriff geprüft; Aufrufergrenzen beschränken wählbare Rechte.
 
 ## Referenz
 

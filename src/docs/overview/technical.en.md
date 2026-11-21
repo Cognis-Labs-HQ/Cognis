@@ -18,7 +18,7 @@ Cognis is extended through three mechanisms:
 
 ## Configuration
 
-This documentation topic has no runtime configuration of its own. Operational settings belong to the relevant component.
+Select components in Administration and learning languages in Study settings. Database and media paths are deployment configuration, not browser preferences.
 
 ## Behavior
 
@@ -81,8 +81,9 @@ Modules are discovered only from installed repositories under `COGNIS_EXTERNAL_M
 
 ## Security
 
-Reading documentation does not grant permission to execute its examples. The owning component authorizes each operation.
+The layer model describes ownership, not blanket permission. Accounts, shared guests and external modules retain their own authenticated and resource-scoped boundaries.
 
 ## Reference
 
-Source and package metadata: `src/docs/overview/`.
+- [src/core/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/index.ts)
+- [src/gateways/shared.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/shared.ts)

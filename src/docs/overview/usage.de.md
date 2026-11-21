@@ -4,16 +4,16 @@ Praktische Abläufe für Cognis – Überblick.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/overview).
+Ein Administrator wählt Komponenten und Sprachmodule der Installation.
 
 ## Beispiele
 
-Diese Komponente deklariert keinen eigenständigen Befehlszeileneinstieg. Nutzen Sie die zugehörige Funktion oder die [Bereitstellungsabläufe](/docs/devops/usage) zur Konfiguration; die [technische Referenz](/docs/overview/technical) nennt Schnittstellen und Grenzen.
+Wähle eine Lernsprache und Sammlung und plane anschließend über Kalender oder Nachrichten eine gemeinsame Lerneinheit.
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von Cognis – Überblick. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/overview/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Aktive Funktionen teilen die Kontoidentität, behalten aber eigene Inhalte und Zugriffsregeln.
 
 ## Fehlerbehebung
 
-Falls Cognis – Überblick nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Eine allgemeine Übersicht beweist keine Installation optionaler Werkzeuge; prüfe deren Komponentenseite.

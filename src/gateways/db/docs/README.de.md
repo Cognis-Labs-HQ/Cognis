@@ -4,15 +4,15 @@ Die Datenbank speichert Konten und Anwendungsinhalte über Neustarts hinweg.
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/administration) entsprechend Ihren Kontorechten.
+Stelle dauerhaften Speicher für Konten und aktive Funktionen bereit.
 
 ## Vor dem Start
 
-Prüfen Sie, ob Datenbank aktiviert ist und Ihr Konto den Vorgang ausführen darf.
+Betreiber müssen vor regulärer Nutzung einen unterstützten Anbieter einrichten.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/administration) und wählen Sie die gewünschte Aktion.
+Konfiguriere die Datenbankverbindung bei der Bereitstellung.
 
 ## Weitere Informationen
 

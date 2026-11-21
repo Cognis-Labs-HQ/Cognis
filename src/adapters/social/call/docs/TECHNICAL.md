@@ -4,11 +4,11 @@ The public interfaces and operational rules of Calls.
 
 ## Interfaces
 
-Calls is integrated through the owning gateway; its manifest identifies the component and required dependencies.
+Authenticated signaling uses POST /api/v1/social/call, GET /api/v1/social/call/room/:roomId and call-ID answer, hangup, leave and ringing actions. POST creation supplies roomId.
 
 ## Configuration
 
-Configuration is supplied through the owning gateway. Calls declares no additional configuration in its manifest.
+Signaling resolves eligible rooms through Messages and publishes its own call provider. Browser device permissions and the selected media provider determine audio/video availability.
 
 ## Behavior
 
@@ -18,13 +18,9 @@ The Call adapter owns room-scoped call invitations, ringing, answering, hangup, 
 
 A call starts in a ringing surface that replaces chat history and the composer while retaining the thread header. The recipient receives a persistent Calls notification whose Answer action opens the room with the call token. Calls expire after 45 seconds if unanswered. Once answered, the adapter invokes `voip:startCall` with `phase: connect`; the provider returns a component or navigation action. Embedded meeting controls remain separate from the Call toolbar, whose arrow moves the meeting to picture-in-picture and restores Messages.
 
-### Usage examples
-
-The Call adapter is activated automatically when Messages and a `voip:startCall` browser provider are available.
-
 ## Security
 
-Access to Calls is governed by the caller and its owning gateway. Enabling a component does not grant additional account permissions.
+Signaling authenticates the caller and resolves room access through social:messages:callContext. Call state and events do not replace the media provider's authorization or browser device permissions.
 
 ## Reference
 

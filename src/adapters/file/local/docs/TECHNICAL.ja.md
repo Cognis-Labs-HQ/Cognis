@@ -48,8 +48,10 @@
 
 ## セキュリティ
 
-ローカルファイル保存 へのアクセスは呼び出し元と担当のゲートウェイが管理します。有効化してもアカウントの権限は増えません。
+名前空間とキーを検証し、uploads 配下に保存します。アクセス制御と容量は Files が呼び出し前に確認します。
 
 ## リファレンス
 
-ソースとパッケージの情報: `src/adapters/file/local/`。
+- [src/adapters/file/local/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/file/local/manifest.json)
+- [src/adapters/file/local/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/file/local/package.json)
+- [src/adapters/file/local/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/file/local/index.ts)

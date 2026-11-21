@@ -4,31 +4,7 @@ The public interfaces and operational rules of OpenID Connect.
 
 ## Interfaces
 
-### Architecture
-
-`OidcAuthAdapter` in `src/adapters/auth/oidc/index.ts` implements `AuthProviderAdapter`. It holds a reference to an `OidcClient` instance and a `Set<string>` of admin roles:
-
-```ts
-export interface OidcClient {
-    introspect(accessToken: string): Promise<OidcTokenClaims | null>;
-}
-
-export interface OidcTokenClaims {
-    sub: string;
-    email?: string;
-    name?: string;
-    roles?: string[];
-}
-```
-
-On `authenticate(credentials)`, the adapter:
-
-1. Extracts `credentials.accessToken`.
-2. Calls `this.client.introspect(accessToken)` against the provider's discovery document.
-3. Checks whether any of the token's `roles` intersect `adminRoles`.
-4. Returns an `AuthContext` with `provider: providerName`, `externalUserId: sub`, `email`, and `isAdmin`.
-
-On first login with an unknown `sub`, the auth gateway creates a new account via `createExternalAccount`. Subsequent logins update the account with the latest token claims via `updateExternalAccount`.
+authenticate(credentials) reads `accessToken` and calls the injected `OidcClient.introspect`. Valid `sub` identifies the external account; the result carries `provider`, `externalUserId`, optional `email` and `role`. Without a client or credential it returns null.
 
 ## Configuration
 
@@ -46,27 +22,18 @@ Configure via `PUT /api/v1/gateways/auth/adapters/oidc/config` (admin only).
 
 Configuration labels are resolved from this adapter’s language resources through `stringsBaseUrl`.
 
+`configure()` applies `providerName` / `adminRoles`. The other connection fields are schema metadata; this implementation does not construct a protocol client from them.
+
 ## Behavior
 
-### Overview
-
-The OIDC adapter authenticates users via OpenID Connect token introspection, enabling single sign-on with any OAuth2/OIDC-compatible provider such as Google, Microsoft Entra ID, Okta, or a self-hosted Keycloak instance. Users log in by presenting an access token from the external provider; the adapter introspects it using the provider's discovery document and maps the token's roles claim to the Cognis admin flag.
-
-OIDC is the right choice when your organisation already has a central identity provider and you want users to authenticate with their existing corporate or platform accounts. No passwords are stored in Cognis for OIDC users; the external provider owns the credential lifecycle.
-
-### Responsibilities
-
-- Accept an `accessToken` credential, introspect it via the configured `OidcClient` using the provider's discovery endpoint.
-- Map token roles from the `roles` claim to the Cognis `isAdmin` flag using `adminRoles` configuration.
-- Expose the `AuthProviderAdapter` interface to the auth gateway.
-- Provide `getConfigSchema()` describing all configurable fields.
-
-Not responsible for: managing the OAuth2 authorization code flow (the client application handles that), storing user accounts locally, or session management.
+The bundled OIDC adapter has no installed protocol client. createAdapter() returns an adapter with a null client; integration must explicitly supply a validated client through setClient(). Configuration alone does not enable sign-in.
 
 ## Security
 
-Access to OpenID Connect is governed by the caller and its owning gateway. Enabling a component does not grant additional account permissions.
+Only introspected claims establish identity. The provider's subject identifies the external account; configured adminRoles determine role elevation. Never log access tokens or clientSecret.
 
 ## Reference
 
-Source and package metadata: `src/adapters/auth/oidc/`.
+- [src/adapters/auth/oidc/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/oidc/manifest.json)
+- [src/adapters/auth/oidc/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/oidc/package.json)
+- [src/adapters/auth/oidc/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/oidc/index.ts)

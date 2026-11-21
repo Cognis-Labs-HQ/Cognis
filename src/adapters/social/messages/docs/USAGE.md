@@ -4,22 +4,18 @@ Practical procedures for Messages.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/adapters/social/messages) before performing these procedures.
+Sign in; encrypted rooms also require access to your account keyring.
 
 ## Examples
 
-- Select a room or start a conversation in the sidebar. On phones and tablets, use the double-chevron button at the top left to open it.
-- Read the room history and check the current participants and pending requests.
-- Write and preview a draft before sending; attachments and calls use their own controls.
-- Create a direct or group room, select recipients, and check membership before sending the first message.
-- Write your message here. Use formatting and attachments as needed, then check the preview before sending.
-- Switch to Preview to check formatting, links and attached content. Return to Compose to make corrections.
-- The room header identifies the room and its participants. Review its available actions before changing membership or leaving.
+Create a room, choose recipients, write a draft, inspect Preview and send. Save repeated wording as a template when useful.
+
+Import `uiCtx`, require `social:messagesUiClient`, and call `listRoomMessages(roomId, options)`, `openPrivateRoom(payload, options)`, or `sendRoomMessage(roomId, payload)` from browser code.
 
 ## Expected Results
 
-The example uses the documented interface of Messages. Confirm the response or saved state described in [Technical](/docs/adapters/social/messages/technical) before repeating a write operation.
+Acknowledged messages appear in the room history. Drafts survive resizing; encrypted drafts clear after acknowledgement or durable queuing.
 
 ## Troubleshooting
 
-If Messages is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+Check membership and keyring access. Offline opening requires prepared assets and a cached room; uncached histories need a connection.

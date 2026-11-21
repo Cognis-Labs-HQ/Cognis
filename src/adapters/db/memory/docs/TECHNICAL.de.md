@@ -1,45 +1,23 @@
 # Technische Referenz
 
-Öffentliche Schnittstellen und Betriebsregeln von Arbeitsspeicher-Datenbank.
+Ein nicht persistenter Datenbank-Testersatz, der Aufrufe ohne SQL-Ausführung erfasst.
 
 ## Schnittstellen
 
-### Architektur
-
-```ts
-const db = new MemoryDatabaseGateway();
-await db.execute("INSERT INTO users (id) VALUES (?)", ["u1"]);
-console.log(db.queryLog);
-// [{ sql: 'INSERT INTO users (id) VALUES (?)', params: ['u1'] }]
-```
+`MemoryDatabaseGateway` implementiert query, execute, transaction und getQueries in `src/adapters/db/memory/index.ts`. getQueries liefert schreibgeschützte Einträge mit statement und optional params.
 
 ## Konfiguration
 
-### Konfiguration
-
-| Variable  | Standard | Beschreibung                                        |
-| --------- | -------- | --------------------------------------------------- |
-| `DB_TYPE` | —        | Muss `memory` sein, um diesen Adapter zu aktivieren |
+Erzeuge die Klasse im Test. Sie exportiert weder canHandleDbProvider noch createDbExecutor; DB_TYPE=memory bindet sie nicht an den Standardloader.
 
 ## Verhalten
 
-### Überblick
-
-Der Memory-Adapter ist eine No-Op-Datenbankimplementierung für automatisierte Tests und CI-Pipelines, in denen keine echte Datenbank beteiligt sein soll. Jede Abfrage gibt ein leeres Ergebnis zurück, und jedes Execute ist ein stiller No-Op. Alle ausgegebenen SQL-Anweisungen werden in `queryLog` aufgezeichnet, sodass Tests leicht prüfen können, ob die erwartete SQL generiert wurde.
-
-Der Memory-Adapter sollte niemals in einem Produktions-Deployment verwendet werden.
-
-### Verantwortlichkeiten
-
-- Die `DatabaseGateway`-Schnittstelle implementieren: `query`, `execute` und `transaction`.
-- Jede SQL-Anweisung und Parameter in `queryLog` aufzeichnen.
-- Für alle `query()`-Aufrufe ein leeres Ergebnis (`[]`) zurückgeben.
-- Für alle `execute()`-Aufrufe nichts tun.
+query erfasst den Aufruf und liefert `{ rows: [], rowCount: 0 }`. execute liefert `{ affectedRows: 0 }`. transaction ruft den Callback mit derselben Instanz ohne BEGIN, Rollback oder gespeicherte Zeilen auf.
 
 ## Sicherheit
 
-Der Zugriff auf Arbeitsspeicher-Datenbank unterliegt dem Aufrufer und dem zuständigen Funktionsdienst. Die Aktivierung erweitert keine Kontorechte.
+Erfasste Parameter können Testgeheimnisse enthalten. Nutze synthetische Werte; dieser Ersatz bietet keine Anmeldung oder SQL-Berechtigung.
 
 ## Referenz
 
-Quellcode und Paketmetadaten: `src/adapters/db/memory/`.
+Prüfe Persistenz, Constraints und Isolation mit einer echten Datenbank. Siehe [Datenbank](/docs/gateways/db/technical).

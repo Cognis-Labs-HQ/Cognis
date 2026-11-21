@@ -4,16 +4,16 @@ Prosedur praktis untuk Ikhtisar Cognis.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/overview) sebelum menjalankan prosedur ini.
+Administrator memilih komponen serta modul bahasa instalasi.
 
 ## Contoh
 
-Komponen ini tidak menyatakan titik masuk baris perintah mandiri. Gunakan fitur pemiliknya atau [prosedur penerapan](/docs/devops/usage) untuk mengonfigurasi instalasi; [referensi teknis](/docs/overview/technical) mencantumkan antarmuka dan batasnya.
+Pilih bahasa dan koleksi belajar, lalu kunjungi Kalender atau Pesan untuk merencanakan sesi bersama.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Ikhtisar Cognis yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/overview/technical) sebelum mengulangi operasi tulis.
+Fitur aktif berbagi identitas akun sambil mempertahankan aturan konten dan akses terpisah.
 
 ## Pemecahan Masalah
 
-Jika Ikhtisar Cognis tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Kemunculan dalam ikhtisar bukan bukti alat opsional terpasang; periksa halaman komponennya.

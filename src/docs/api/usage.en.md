@@ -4,16 +4,16 @@ Practical procedures for API.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/api) before performing these procedures.
+Protected operations require the relevant account role and resource access.
 
 ## Examples
 
-This component does not declare a standalone command-line entry point. Use its owning feature or the [deployment procedures](/docs/devops/usage) to configure the installation; the [technical reference](/docs/api/technical) lists its interfaces and constraints.
+Read its method, path and authorization requirements, make an authorized request and inspect the documented response before retrying a write.
 
 ## Expected Results
 
-The example uses the documented interface of API. Confirm the response or saved state described in [Technical](/docs/api/technical) before repeating a write operation.
+The server applies authentication and operation-specific authorization; reading reference material grants no access.
 
 ## Troubleshooting
 
-If API is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+Distinguish authentication errors, permission failures and invalid input. Do not expose tokens or private response data when sharing diagnostics.

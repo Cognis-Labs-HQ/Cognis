@@ -4,15 +4,15 @@ Navigieren Sie in Cognis zwischen Funktionen und wählen Sie passende Darstellun
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/) entsprechend Ihren Kontorechten.
+Navigiere in Cognis und wähle Thema, Sprache und Schrift.
 
 ## Vor dem Start
 
-Die beschriebenen Vorgänge können Konto- oder Verwaltungsrechte verlangen. Das Lesen eines Themas aktiviert keine optionalen Funktionen.
+Melde dich zum Speichern von Kontoeinstellungen an.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/) und wählen Sie die gewünschte Aktion.
+Öffne Darstellung und Sprache in Einstellungen.
 
 ## Weitere Informationen
 

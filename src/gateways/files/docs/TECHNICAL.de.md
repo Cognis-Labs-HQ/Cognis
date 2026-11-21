@@ -112,7 +112,7 @@ Komponenten sollten für reguläre Dateioperationen über `ctx` bevorzugt `files
 
 ## Sicherheit
 
-Der Zugriff auf Dateien unterliegt dem Aufrufer und dem zuständigen Funktionsdienst. Die Aktivierung erweitert keine Kontorechte.
+Namensraum-ACLs und aktuelles Eigentum bestimmen Dateizugriffe. Vor Schreiben prüft das Gateway globale und Namensraumnutzung; Speicherpfade sind keine Zugriffstokens.
 
 ## Referenz
 

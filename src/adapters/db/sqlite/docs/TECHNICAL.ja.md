@@ -4,15 +4,11 @@ SQLite の公開インターフェースと運用規則を説明します。
 
 ## インターフェース
 
-SQLite は担当のゲートウェイを通じて統合されます。マニフェストに識別情報と必要な依存先が記載されています。
+`SqliteDbGateway(client)` は DatabaseGateway を実装します。SqliteClient に all(statement, params)、changes を返す run(statement, params)、exec(statement) が必要です。構造化操作は SQLite のプレースホルダーと競合句を使います。
 
 ## 設定
 
-### 設定
-
-デプロイメントがこのアダプターを使用するように構成されている場合は、`DB_TYPE=sqlite` でSQLiteバックエンドを選択します。データベースファイルのパスは、実行環境で使われるSQLite設定（サポートされている場合は `SQLITE_PATH` など）で設定してください。
-
-ゲートウェイ全般の設定については、[データベースゲートウェイドキュメント](/docs/gateways/db)を参照してください。
+組み込む側がクライアントとファイルを設定します。SQLITE_PATH や標準用の実行ファクトリーは宣言せず、DB_TYPE=sqlite だけでは同梱サーバーから選べません。
 
 ## 動作
 
@@ -29,8 +25,10 @@ SQLiteアダプターは、SQLiteベースのデプロイメント、ローカ�
 
 ## セキュリティ
 
-SQLite へのアクセスは呼び出し元と担当のゲートウェイが管理します。有効化してもアカウントの権限は増えません。
+値をパラメーターで渡し、ファイルとバックアップを権限で保護します。呼び出し前にアプリ側の承認が必要です。
 
 ## リファレンス
 
-ソースとパッケージの情報: `src/adapters/db/sqlite/`。
+- [src/adapters/db/sqlite/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/sqlite/manifest.json)
+- [src/adapters/db/sqlite/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/sqlite/package.json)
+- [src/adapters/db/sqlite/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/sqlite/index.ts)

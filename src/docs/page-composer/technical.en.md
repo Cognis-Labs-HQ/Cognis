@@ -4,11 +4,11 @@ The public interfaces and operational rules of Page Composer.
 
 ## Interfaces
 
-This topic is reference material and does not expose an independent endpoint. Examples use the public interfaces of the components described below.
+createPageComposer(root, options) creates the page lifecycle. Elements supply content and owned render callbacks; init mounts the shared shell and refresh updates descriptors while preserving registered lifetimes.
 
 ## Configuration
 
-This documentation topic has no runtime configuration of its own. Operational settings belong to the relevant component.
+createPageComposer accepts elements, pageManifest, i18n, signal and layout options. Viewport-filling elements opt in to the documented responsive layout contract; persisted layout preferences use the page preferenceKey.
 
 ## Behavior
 
@@ -113,39 +113,6 @@ Form drafts are also persisted in `localStorage` per user, page path, and compos
 
 Cards with larger forms (6 or more persistable fields) include a **Reset Draft** button. This button clears the persisted draft for that card and resets the current fields to their default values.
 
-### Usage example
-
-```js
-import { createPageComposer } from "../../reuse/page-composer/init.js";
-
-const composer = createPageComposer(document.querySelector("#app"), {
-    allowCustomization: true,
-    elements,
-    preferenceKey: "my-page-layout",
-    i18n,
-    pageContext: { title: "My Page", subtitle: "Subtitle text" },
-    onRender: () => bindPageEvents(),
-    toolbar: [
-        { id: "nav", label: "Navigation", render: () => renderNavHtml() },
-    ],
-    floatingMenu: [
-        {
-            id: "save-bar",
-            label: "Save bar",
-            render: () => renderSaveBarHtml(),
-        },
-    ],
-});
-
-await composer.init();
-
-document
-    .querySelector("#app [data-some-toolbar-btn]")
-    ?.addEventListener("click", handleToolbarClick);
-```
-
-Source: `src/ui/reuse/page-composer/init.js`
-
 ### Theme-aware pointer controls
 
 The shared pointer-style button uses the standard theme foreground (`--text`) for mouse, laser and crosshair icons, including in embedded component pages. Participant pointer colours remain unchanged.
@@ -214,8 +181,8 @@ Shared text wraps within the available width before and after a font loads, with
 
 ## Security
 
-Reading documentation does not grant permission to execute its examples. The owning component authorizes each operation.
+Composer controls presentation and owned DOM lifetime, not resource authorization. Page actions still require their owner's flows; markup and stylesheet contributions must respect the shared panel and menu boundaries.
 
 ## Reference
 
-Source and package metadata: `src/docs/page-composer/`.
+- [src/ui/reuse/page-composer/index.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/ui/reuse/page-composer/index.js)

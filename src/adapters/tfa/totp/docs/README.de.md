@@ -4,15 +4,15 @@ Bestätigen Sie eine Anmeldung mit dem aktuellen Code Ihrer Authentifikator-App.
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/settings) entsprechend Ihren Kontorechten.
+Bestätige Anmeldungen mit sechsstelligen Codes einer Authenticator-App.
 
 ## Vor dem Start
 
-Prüfen Sie, ob Authentifikator-Bestätigung aktiviert ist und Ihr Konto den Vorgang ausführen darf.
+Installiere eine Authenticator-App und halte die Gerätezeit korrekt.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/settings) und wählen Sie die gewünschte Aktion.
+Füge die Authenticator-Methode in den Sicherheitseinstellungen hinzu.
 
 ## Weitere Informationen
 

@@ -4,15 +4,15 @@ Cognis is a modular language-study platform designed for independent learners, t
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/) according to your account permissions.
+See how learning tools, social features and scheduling fit together.
 
 ## Before You Start
 
-The operations discussed here may require account or administrator permissions. Reading a topic does not enable its optional features.
+An administrator selects the components and language modules your installation offers.
 
 ## Get Started
 
-Open [the feature](/) and choose the action you need.
+Review Dashboard and the available primary navigation entries.
 
 ## Learn More
 

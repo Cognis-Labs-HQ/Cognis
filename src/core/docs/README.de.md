@@ -4,15 +4,15 @@ Das Kernsystem verbindet aktivierte Cognis-Funktionen und verwaltet ihren Zugrif
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/administration) entsprechend Ihren Kontorechten.
+Verbinde aktive Funktionen über gemeinsame Dienste und Kontoregeln.
 
 ## Vor dem Start
 
-Prüfen Sie, ob Kernsystem aktiviert ist und Ihr Konto den Vorgang ausführen darf.
+Verfügbarkeit hängt von installierten Komponenten und ihren Abhängigkeiten ab.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/administration) und wählen Sie die gewünschte Aktion.
+Prüfe aktive Komponenten in Administration vor Änderungen.
 
 ## Weitere Informationen
 

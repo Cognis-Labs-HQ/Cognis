@@ -4,16 +4,16 @@ Prosedur praktis untuk Panduan Gateway dan Adapter.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/gateways) sebelum menjalankan prosedur ini.
+Ketersediaan mengikuti dependensi terpasang.
 
 ## Contoh
 
-Komponen ini tidak menyatakan titik masuk baris perintah mandiri. Gunakan fitur pemiliknya atau [prosedur penerapan](/docs/devops/usage) untuk mengonfigurasi instalasi; [referensi teknis](/docs/gateways/technical) mencantumkan antarmuka dan batasnya.
+Bandingkan tanggung jawab gateway dengan pengaturan koneksi adapter, lalu atur adapter melalui gateway pemilik.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Panduan Gateway dan Adapter yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/gateways/technical) sebelum mengulangi operasi tulis.
+Penyedia menyumbang tindakan saat aktif; penghapusan tidak memindahkan izinnya ke penyedia lain.
 
 ## Pemecahan Masalah
 
-Jika Panduan Gateway dan Adapter tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Cari pemilik tindakan gagal sebelum mengubah komponen tidak terkait.

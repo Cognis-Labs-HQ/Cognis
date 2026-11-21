@@ -4,16 +4,16 @@ Praktische Abläufe für Lernsprachenrahmen.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/study-language-framework).
+Schreibe dich über Lerneinstellungen in eine installierte Sprache ein.
 
 ## Beispiele
 
-Diese Komponente deklariert keinen eigenständigen Befehlszeileneinstieg. Nutzen Sie die zugehörige Funktion oder die [Bereitstellungsabläufe](/docs/devops/usage) zur Konfiguration; die [technische Referenz](/docs/study-language-framework/technical) nennt Schnittstellen und Grenzen.
+Durchsuche eine Sammlung, prüfe Lesungen oder Schreibeinheiten und starte eine unterstützte Übung.
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von Lernsprachenrahmen. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/study-language-framework/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Inhalte und Aktivitäten folgen dem Sprachanbieter; feste Tafeln können sich von wachsenden Kartensammlungen unterscheiden.
 
 ## Fehlerbehebung
 
-Falls Lernsprachenrahmen nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Prüfe Modulstatus und Einschreibung. Verfasste Reihenfolge und Beziehungen sind nicht durch beliebige Übersetzung austauschbar.

@@ -4,11 +4,11 @@ Antarmuka publik dan aturan operasional Kontrol Fokus.
 
 ## Antarmuka
 
-Topik ini merupakan referensi dan tidak menyediakan titik akhir mandiri. Contoh memakai antarmuka publik komponen yang dijelaskan di bawah.
+component-pages:request mencari halaman; component-pages:spawn membukanya setelah tindakan pengguna dalam area pemanggil. Handle mendukung discard dan retensi; mount menerima root, signal, serta konteks.
 
 ## Konfigurasi
 
-Topik dokumentasi ini tidak memiliki konfigurasi waktu jalan sendiri. Pengaturan operasional dimiliki komponen terkait.
+Penyedia mendeklarasikan componentPage dengan rute, label, dan mode. Pemanggil memakai UUID serta ID rute dan menyediakan area serta sinyal pembatalan.
 
 ## Perilaku
 
@@ -100,4 +100,5 @@ Setiap operasi diautentikasi, dibatasi pada sumber daya kolaborasi, serta memval
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/docs/focus-control/`.
+- [src/core/contracts/focus/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/contracts/focus/index.ts)
+- [src/ui/reuse/focus-control.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/ui/reuse/focus-control.js)

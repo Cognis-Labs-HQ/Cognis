@@ -4,9 +4,11 @@ Practical procedures for Passphrase Utility.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/passphrase-utility) before performing these procedures.
+A feature must expose a generation action; this utility has no standalone user page.
 
 ## Examples
+
+Generate a new passphrase, store it using the feature's protected mechanism and share it only with intended participants.
 
 ```ts
 const generatePassphrase = ctx.capabilities.require("reuse:generatePassphrase");
@@ -17,10 +19,21 @@ const passphrase = generatePassphrase({
 });
 ```
 
+Retrieve the capability from the module bootstrap context and request the desired word count and presentation:
+
+```js
+const generatePassphrase = ctx.capabilities.require("reuse:generatePassphrase");
+const passphrase = generatePassphrase({
+    words: 6,
+    separator: "-",
+    capitalization: "titlecase",
+});
+```
+
 ## Expected Results
 
-The example uses the documented interface of Passphrase Utility. Confirm the response or saved state described in [Technical](/docs/passphrase-utility/technical) before repeating a write operation.
+Generation combines independently sampled words; it does not itself persist, deliver or authorize the resulting secret.
 
 ## Troubleshooting
 
-If Passphrase Utility is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+Do not treat a generated value as automatically saved. Integrators should inspect the capability contract before choosing word count or separators.

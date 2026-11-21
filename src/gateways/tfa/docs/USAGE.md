@@ -4,20 +4,16 @@ Practical procedures for Two-Factor Authentication.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/gateways/tfa) before performing these procedures.
+Configure an available verification method before relying on it.
 
 ## Examples
 
-- Choose an available method and complete its setup before relying on it for sign-in.
-- Order your enabled methods to choose which one is offered first.
-- Use a recovery code to sign in when your usual second factor is unavailable. Keep a copy somewhere you can access without signing in.
-- Review the effect on all accounts before requiring two-factor authentication.
-- Save only after reviewing the enforcement choice and the setup users will need.
+Add a method, complete its setup confirmation, then test sign-in with its verification challenge. Remove an unwanted method through the protected controls.
 
 ## Expected Results
 
-The example uses the documented interface of Two-Factor Authentication. Confirm the response or saved state described in [Technical](/docs/gateways/tfa/technical) before repeating a write operation.
+Only confirmed methods participate in verification; available methods depend on enabled adapters.
 
 ## Troubleshooting
 
-If Two-Factor Authentication is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+Check method availability and code timing. Email verification also depends on verified email and delivery availability.

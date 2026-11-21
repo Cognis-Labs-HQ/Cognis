@@ -4,9 +4,11 @@ Prosedur praktis untuk DevOps.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/devops) sebelum menjalankan prosedur ini.
+Siapkan Docker Compose, kredensial basis data, dan kunci enkripsi yang dikelola penerapan.
 
 ## Contoh
+
+Sediakan POSTGRES_PASSWORD dan DATA_ENCRYPTION_KEY, jalankan `docker compose up --build`, lalu periksa kesehatan serta log.
 
 ```sh
 export POSTGRES_PASSWORD='<kata sandi basis data>'
@@ -16,8 +18,8 @@ docker compose up --build
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka DevOps yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/devops/technical) sebelum mengulangi operasi tulis.
+Aplikasi berjalan di belakang nginx dengan basis data terkonfigurasi; rahasia wajib yang hilang menghentikan startup.
 
 ## Pemecahan Masalah
 
-Jika DevOps tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Periksa galat Compose, koneksi basis data, dan kepemilikan direktori. Cadangkan basis data serta media bersama sebelum peningkatan.

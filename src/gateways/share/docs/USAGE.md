@@ -4,11 +4,11 @@ Practical procedures for Sharing.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/gateways/share) before performing these procedures.
+The content owner must permit sharing and an appropriate sharing method must be enabled.
 
 ## Examples
 
-Inspect the installed command arguments before executing an operation.
+Choose Link or User, review permissions and protection, save, then test access as the recipient. Revoke an obsolete share after confirmation.
 
 ```sh
 cognisctl share:tokens --help
@@ -17,10 +17,12 @@ cognisctl share:recipients:users --help
 cognisctl share:approvals:pending --help
 ```
 
+Import `uiCtx`, require `share:uiClient`, and call `getGuestProfile()`. Inspect the returned `Response` before reading its `{ data }` JSON payload.
+
 ## Expected Results
 
-The example uses the documented interface of Sharing. Confirm the response or saved state described in [Technical](/docs/gateways/share/technical) before repeating a write operation.
+Recipients receive only the declared resource access; guest sessions do not become ordinary account sessions.
 
 ## Troubleshooting
 
-If Sharing is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+Check expiry, password, recipient and current resource access. Revocation removes delegated access even if an old link remains visible elsewhere.

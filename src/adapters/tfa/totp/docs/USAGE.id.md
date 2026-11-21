@@ -4,16 +4,16 @@ Prosedur praktis untuk Verifikasi Autentikator.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/adapters/tfa/totp) sebelum menjalankan prosedur ini.
+Pasang autentikator dan pastikan waktu perangkat akurat.
 
 ## Contoh
 
-Komponen ini tidak menyatakan titik masuk baris perintah mandiri. Gunakan fitur pemiliknya atau [prosedur penerapan](/docs/devops/usage) untuk mengonfigurasi instalasi; [referensi teknis](/docs/adapters/tfa/totp/technical) mencantumkan antarmuka dan batasnya.
+Pindai kode penyiapan atau masukkan rahasia manual, lalu konfirmasi memakai kode enam digit saat ini.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Verifikasi Autentikator yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/adapters/tfa/totp/technical) sebelum mengulangi operasi tulis.
+Konfirmasi mengaktifkan metode; kode memakai periode tiga puluh detik dengan toleransi satu periode di kedua arah.
 
 ## Pemecahan Masalah
 
-Jika Verifikasi Autentikator tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Periksa waktu perangkat dan algoritma. Lindungi rahasia penyiapan karena pemiliknya dapat membuat kode.

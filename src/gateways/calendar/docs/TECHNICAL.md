@@ -4,11 +4,11 @@ The public interfaces and operational rules of Calendar.
 
 ## Interfaces
 
-Calendar is integrated through the owning gateway; its manifest identifies the component and required dependencies.
+Authenticated /api/v1/calendar/calendars supports GET and POST; calendars/:id supports PATCH and DELETE. calendars/:id/events supports GET and POST, with event GET, PATCH and DELETE handled under /api/v1/calendar/calendars/:calendarId/events/:eventId.
 
 ## Configuration
 
-Configuration is supplied through the owning gateway. Calendar declares no additional configuration in its manifest.
+Calendar resources define name, visibility and event data. Reminder preferences and account status use Calendar-owned controls; ICS and CalDAV adapters register their own export interfaces.
 
 ## Behavior
 
@@ -50,8 +50,6 @@ On creation, omitted `reminderOffsetsMinutes` uses calendar defaults; an explici
 
 See the [shared contract](/docs/features/technical) for this behavior.
 
-See the [shared contract](/docs/features/technical) for this behavior.
-
 ### Durable Queued Results
 
 Queued event creation and later edits appear in cached lists and detail popups. Concurrent submissions share one request. Optional activity, availability or view-refresh failures cannot turn a persisted event into a failed creation. Replay uses the same event UUID and current server authorization.
@@ -62,17 +60,17 @@ The Calendar provider prepares the lazy event-status stylesheet for first use of
 
 ### Runtime Request Safety
 
-Language switching and consent refreshes no longer fail because Calendar attempts notification registration during ordinary HTTP requests. Calendar registers its category once during bootstrap completion, after notification providers are available. Share sends through its already registered category, and Auth uses its completion hook without duplicate early registration. SMTP registration remains restricted to bootstrap; runtime handlers only resolve and use existing delivery capabilities. Calendar is **1.5.5**.
+Calendar registers its notification category during bootstrap completion after providers become available. Runtime handlers use registered delivery capabilities rather than registering categories during requests.
 
 Adapter contract registration follows [the shared gateway bootstrap contract](/docs/gateways).
 
-### Reliable Sharing and Tests
+### Share Delivery
 
-See the [shared contract](/docs/adapters/study/flashcards/technical) for this behavior.
+See the [shared contract](/docs/gateways/share/technical) for this behavior.
 
-### Review and Lifecycle Hardening
+### Lifecycle Boundaries
 
-See the [shared contract](/docs/adapters/study/flashcards/technical) for this behavior.
+See the [shared contract](/docs/gateways/share/technical) for this behavior.
 
 ### Owned Browser Actions
 
@@ -98,7 +96,7 @@ View buttons update their visible selection and pressed state together for every
 
 ## Security
 
-Access to Calendar is governed by the caller and its owning gateway. Enabling a component does not grant additional account permissions.
+Calendar mutations require owned or delegated edit access. Share resolution checks current scope, expiry and protection; reminder delivery uses its bootstrap-registered notification category rather than registering during requests.
 
 ## Reference
 

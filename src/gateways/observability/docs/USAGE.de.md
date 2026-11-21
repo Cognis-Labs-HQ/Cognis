@@ -4,16 +4,16 @@ Praktische Abläufe für Leistungsüberwachung.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/gateways/observability).
+Betreiber benötigen Zugriff auf die Messwertausgabe; standardmäßig sind dies Debug-Protokolle.
 
 ## Beispiele
 
-Diese Komponente deklariert keinen eigenständigen Befehlszeileneinstieg. Nutzen Sie die zugehörige Funktion oder die [Bereitstellungsabläufe](/docs/devops/usage) zur Konfiguration; die [technische Referenz](/docs/gateways/observability/technical) nennt Schnittstellen und Grenzen.
+Aktiviere geeignete Debug-Ausgabe, reproduziere die Anfrage und vergleiche HTTP- oder Datenbankzeit unter gleichen Bedingungen.
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von Leistungsüberwachung. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/gateways/observability/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Erlaubte Werte erreichen die Messwertfunktion; Browserstichproben erfassen nicht jeden Besuch.
 
 ## Fehlerbehebung
 
-Falls Leistungsüberwachung nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Prüfe Protokollstufe und Stichprobe. Das Gateway bietet kein separates Messwert-Dashboard.

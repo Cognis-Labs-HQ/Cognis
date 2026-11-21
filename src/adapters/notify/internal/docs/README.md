@@ -4,15 +4,15 @@ Use the notification bell to read activity updates without leaving Cognis.
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/) according to your account permissions.
+Read in-app notifications and mark them read.
 
 ## Before You Start
 
-Check that In-App Notifications is enabled and that your account has permission for the operation.
+Sign in to receive your account's notifications.
 
 ## Get Started
 
-Open [the feature](/) and choose the action you need.
+Open the bell in the header.
 
 ## Learn More
 

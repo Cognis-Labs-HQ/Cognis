@@ -4,16 +4,18 @@ Praktische Abläufe für Registrierungseinladungen.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/adapters/registration/token).
+Die Einladungsrichtlinie gilt; separate Tokens benötigen Administrator- oder Inhaberrechte.
 
 ## Beispiele
 
-Diese Komponente deklariert keinen eigenständigen Befehlszeileneinstieg. Nutzen Sie die zugehörige Funktion oder die [Bereitstellungsabläufe](/docs/devops/usage) zur Konfiguration; die [technische Referenz](/docs/adapters/registration/token/technical) nennt Schnittstellen und Grenzen.
+Sende mit `cognisctl invite:email:send person@example.com` eine Mail oder erzeuge mit `cognisctl invite:token:generate` einen erlaubten separaten Link.
+
+Administratoren und Gründer versenden Einladungen über die Benutzerseite. Externe Authentifizierungsanbieter übergeben ihre verifizierte E-Mail-Adresse und das Registrierungstoken über den Ablauf zur Freigabe der Kontoerstellung, anstatt den Adapter zu importieren.
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von Registrierungseinladungen. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/adapters/registration/token/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Einlösen erstellt das erlaubte Konto und verbraucht die Einladung; erfolgreiche Zustellung ersetzt ältere offene Einladungen.
 
 ## Fehlerbehebung
 
-Falls Registrierungseinladungen nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Prüfe Ablauf, eingeladene Adresse, Richtlinie und Zustellung. Gründer dürfen höchstens zehn offene Einladungen halten.

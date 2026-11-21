@@ -4,24 +4,20 @@ Prosedur praktis untuk Alat Baris Perintah.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/components/tooling/cli) sebelum menjalankan prosedur ini.
+Gunakan cognisctl terpasang dan token berizin untuk perintah terlindungi.
 
 ## Contoh
 
-Jalankan perintah bantuan untuk menampilkan operasi terpasang dan argumennya.
+Jalankan `cognisctl system:health` dan `cognisctl component:list`, lalu baca bantuan perintah komponen sebelum mengubah keadaan.
 
 ```sh
 cognisctl --help
 ```
 
-1. Buka [fitur ini](/administration).
-2. Pilih tindakan yang tersedia untuk Alat Baris Perintah.
-3. Periksa nilai yang diminta dan konfirmasi hasilnya.
-
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Alat Baris Perintah yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/components/tooling/cli/technical) sebelum mengulangi operasi tulis.
+Perintah menampilkan hasil server dan memeriksa izin akun yang sama dengan HTTP.
 
 ## Pemecahan Masalah
 
-Jika Alat Baris Perintah tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Periksa alamat server dan COGNIS_CLI_TOKEN_PATH. Simpan token dan kata sandi dalam konfigurasi terlindungi, bukan keluaran terminal bersama.

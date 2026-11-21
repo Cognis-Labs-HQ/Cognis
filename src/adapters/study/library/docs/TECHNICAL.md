@@ -52,13 +52,9 @@ Content records may declare a namespaced `class` value such as `lexical:noun` or
 
 ## Configuration
 
-Configuration is supplied through the owning gateway. Learning Library declares no additional configuration in its manifest.
+Language providers supply versioned schemas, constructors and content packs. Metadata filters and presentation derive from those declarations; visibility, review and edit rights are resource-specific.
 
 ## Behavior
-
-### Usage
-
-Use **Import** at the bottom-left of the Create Card type selector to upload JSON. Choose a writable scope; the entire batch goes into that scope. The supported envelope is `format: "cognis-library"`, `version: 1`, and a nonempty `entries` array.
 
 ### Extensible Browser Actions
 
@@ -396,7 +392,7 @@ Dictionary lookup now fills the open card composer directly and commits all retu
 
 Dictionary imports map provider record IDs to the accessible installed cards before attaching ordinary or grouped links. Missing or ambiguous targets leave the returned values unlinked with a warning rather than preventing submission. Committed definitions expose an Edit action through the existing permission-aware card editor, and saved changes refresh their composer summary. Hidden schema fields, including dictionary source data, are omitted from forms while preserving their stored values.
 
-### Composer lookup corrections
+### Composer Lookup State
 
 Stroke lookup is hidden whenever a retrieved pattern is present, including patterns loaded from dictionary results or saved cards. Clearing the pattern restores lookup. Definition editors keep translations in Content and omit the redundant Definitions tab. Dictionary meanings separated by semicolons become individually committed definitions, preserving aligned translations and original source metadata. Structured imported meanings replace aggregate source-definition links.
 
@@ -415,10 +411,6 @@ Vocabulary dictionary lookup preserves the authored text, composed token order, 
 ### Transformed sentences and scope moves
 
 Sentence creation, editing, and detail views derive pronunciations from each ordered reference’s selected transformation. Repeated roots retain separate positions and transformation paths. Declared punctuation remains visible without preventing adjacent title links; transformed title and reading links open the selected form and retain navigation back to its root. Scope moves execute the registered Study Library move flow, return updated permissions, and keep an owned card visible after moving it. The action reads “Move to: User” because shared cards return to the original creator’s user scope. Provider-owned content, shared dependants, pending requests, and ACL restrictions continue to block invalid moves. Contributor instructions explicitly prohibit advertising capabilities, actions, routes, or flows without executable implementations.
-
-### Lean component implementation
-
-Entry validation, identifier patterns, definition languages, and variant directions share focused helpers. Content audio handling has its own modules, and content packs use stable record identities directly.
 
 ### Dictionary search and caching
 
@@ -492,13 +484,7 @@ Explicit sentence title composition preserves whitespace between linked constitu
 
 See the [shared contract](/docs/gateways/study/technical) for this behavior.
 
-See the [shared contract](/docs/gateways/study/technical) for this behavior.
-
-See the [shared contract](/docs/gateways/study/technical) for this behavior.
-
 ### Dictionary audio and host caching
-
-See the [shared contract](/docs/gateways/study/technical) for this behavior.
 
 See the [shared contract](/docs/gateways/study/technical) for this behavior.
 
@@ -514,15 +500,13 @@ See the [shared contract](/docs/gateways/study/technical) for this behavior.
 
 Explore card links include canonical card identity in `/study/explore/<language>/<layer>/<card-id>`. Ctrl-click, Command-click and Shift-click retain native browser navigation, and direct navigation opens the requested card preview. Looking up an unanswered card counts as an assisted attempt. Ordinary navigation preserves the deck queue for browser Back.
 
-### Media and Delivery Fixes
+### Media Lifecycle
 
 Reference images now load as thumbnails in the Library editor and its read-only detail view, including bundled module images. Uploaded thumbnails have a red remove control on hover or keyboard focus (always visible on touch screens). Removal needs no confirmation, clears the draft and file picker, and discards unused staged uploads. Closing an unsaved editor also releases previews and staged files; saved cards and request history retain their referenced images. The remove button has an opaque background so it remains readable over photographs. Custom image files and saved references persist across server restarts and provider reloads, including provider updates to edited cards.
 
 Microphone recording waits for the browser’s permission response, blocks duplicate requests and saving while permission is pending, and releases a stream granted after the editor closes. Permission denial and unavailable recording have separate messages. Microphone, Play and Reload share one equally sized row. Collective Plural uses a single checkbox for its matching noun families; unrelated opt-ins remain hidden. Audio filenames are hidden. Play previews the latest staged upload or microphone recording; a delayed saved-audio response cannot replace it. Recording colors the microphone icon itself red, including while hovering; the button retains its ordinary theme styling.
 
 Study notifications resolve current capabilities at delivery time, so startup order and component reactivation do not permanently disable delivery. The sender receipt is checked: an empty delivered-sender list is treated as a failure, partial failures are logged, and successful recipients and senders are auditable.
-
-See the [shared contract](/docs/ui/technical) for this behavior.
 
 See the [shared contract](/docs/ui/technical) for this behavior.
 
@@ -582,7 +566,7 @@ Optional single-select fields include a localized **Not specified** choice. Edit
 
 Dictionary search-context reads use `study:library:readSearchContext` with authorize and resolve stages. Writes retain `study:library:searchContext` and add validation before persistence, allowing flow extensions to adjust input before service validation. Both operations reject shared-link principals. Writes stop at 16 KiB with HTTP 413; malformed JSON returns HTTP 400 and does not replace saved state. Unexpected failures expose only a stable error code.
 
-### Notification and persistence fixes
+### Notification Persistence
 
 Library content and deletion announcements include English, German, Indonesian and Japanese text from XML catalogs, use English fallback, and run through `study:library:notifyContent`. Card labels remain opaque during interpolation. Privileged class writes still require a real target class. Leaderboard observations roll back on failed persistence; season rollover rebuilds final standings after restart and restores state if saving fails. Verified administrators can release matching integration source bindings without room membership.
 
@@ -685,15 +669,7 @@ Cards support at most 8 tags, 16 pronunciations, and 10 definitions, together wi
 
 See the [shared contract](/docs/gateways/study/technical) for this behavior.
 
-See the [shared contract](/docs/gateways/study/technical) for this behavior.
-
-See the [shared contract](/docs/gateways/study/technical) for this behavior.
-
 ### Whole-reading reference audio
-
-See the [shared contract](/docs/gateways/study/technical) for this behavior.
-
-See the [shared contract](/docs/gateways/study/technical) for this behavior.
 
 See the [shared contract](/docs/gateways/study/technical) for this behavior.
 

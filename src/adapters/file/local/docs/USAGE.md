@@ -4,16 +4,16 @@ Practical procedures for Local File Storage.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/adapters/file/local) before performing these procedures.
+Operators need a writable media directory and persistent storage across container replacements.
 
 ## Examples
 
-This component does not declare a standalone command-line entry point. Use its owning feature or the [deployment procedures](/docs/devops/usage) to configure the installation; the [technical reference](/docs/adapters/file/local/technical) lists its interfaces and constraints.
+Set MEDIA_LOCATION to a persistent writable directory, restart Cognis and upload an allowed image through a feature such as Profile.
 
 ## Expected Results
 
-The example uses the documented interface of Local File Storage. Confirm the response or saved state described in [Technical](/docs/adapters/file/local/technical) before repeating a write operation.
+The file is stored beneath the uploads directory; its owning feature controls visibility and access.
 
 ## Troubleshooting
 
-If Local File Storage is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+Check directory permissions, free space and upload type. Back up media as well as the database; metadata alone cannot restore file contents.

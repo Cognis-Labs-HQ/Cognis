@@ -2,6 +2,7 @@ import { sourceFiles } from "../component-files.js";
 import { readFileSync, lstatSync } from "node:fs";
 import { dirname, relative, resolve, sep } from "node:path";
 import structure from "./structure.json" with { type: "json" };
+import { contentIssues } from "./content.js";
 
 export const languages = Object.keys(structure);
 export const documents = {
@@ -38,6 +39,7 @@ export function validateMarkdown(markdown, kind, language) {
         .map((line) => (/^\s*(`{3,}|~{3,})/.test(line) ? "Code example" : line))
         .join("\n");
     if (fence) issues.push("Unclosed code fence");
+    issues.push(...contentIssues(prose));
     const headings = [...prose.matchAll(/^(#{1,6})\s+(.+)$/gm)];
     if (
         headings.filter((heading) => heading[1] === "#").length !== 1 ||

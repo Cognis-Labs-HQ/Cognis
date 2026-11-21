@@ -4,15 +4,15 @@ Read shared Cognis calendars from a compatible calendar application.
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/calendar) according to your account permissions.
+Subscribe to supported calendars from compatible calendar software.
 
 ## Before You Start
 
-Check that CalDAV is enabled and that your account has permission for the operation.
+A feed needs a public calendar or a valid private access token.
 
 ## Get Started
 
-Open [the feature](/calendar) and choose the action you need.
+Obtain the subscription address through Calendar's CalDAV export.
 
 ## Learn More
 

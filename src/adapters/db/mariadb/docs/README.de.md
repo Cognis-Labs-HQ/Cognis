@@ -4,15 +4,15 @@ Speichern Sie Cognis-Konten und Inhalte in einer administrierten MariaDB-Datenba
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/administration) entsprechend Ihren Kontorechten.
+Speichere Cognis-Konten und Inhalte in MariaDB.
 
 ## Vor dem Start
 
-Prüfen Sie, ob MariaDB aktiviert ist und Ihr Konto den Vorgang ausführen darf.
+Betreiber benötigen eine MariaDB-Datenbank und Zugangsdaten.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/administration) und wählen Sie die gewünschte Aktion.
+Wähle MariaDB in der Datenbankkonfiguration der Installation.
 
 ## Weitere Informationen
 

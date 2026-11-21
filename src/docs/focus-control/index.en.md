@@ -4,15 +4,15 @@ Open supported features in separate windows and arrange them around your current
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/) according to your account permissions.
+Open supported component pages in controlled workspace presentations.
 
 ## Before You Start
 
-The operations discussed here may require account or administrator permissions. Reading a topic does not enable its optional features.
+The providing component must opt its page into the requested presentation mode.
 
 ## Get Started
 
-Open [the feature](/) and choose the action you need.
+Use an available feature's explicit open or whiteboard control.
 
 ## Learn More
 

@@ -4,7 +4,7 @@
 
 ## Schnittstellen
 
-Authentifikator-Bestätigung wird über den zuständigen Funktionsdienst eingebunden; das Manifest nennt die Komponente und ihre Abhängigkeiten.
+Die Methode implementiert TFA: Einrichtung liefert manualSecret und qrSvg, Bestätigung prüft einen Code und Verifikation nutzt secret, algorithm, digits und period.
 
 ## Konfiguration
 
@@ -43,8 +43,10 @@ Stellt zeitbasierte Einmalpasswort-Prüfung für das TFA-Gateway bereit.
 
 ## Sicherheit
 
-Der Zugriff auf Authentifikator-Bestätigung unterliegt dem Aufrufer und dem zuständigen Funktionsdienst. Die Aktivierung erweitert keine Kontorechte.
+Aktivierung erfolgt erst nach gültiger sechsstelliger Bestätigung. Schütze das Geheimnis; Prüfung akzeptiert die aktuelle Dreißigsekundenperiode und je eine benachbarte Periode.
 
 ## Referenz
 
-Quellcode und Paketmetadaten: `src/adapters/tfa/totp/`.
+- [src/adapters/tfa/totp/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/tfa/totp/manifest.json)
+- [src/adapters/tfa/totp/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/tfa/totp/package.json)
+- [src/adapters/tfa/totp/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/tfa/totp/index.ts)

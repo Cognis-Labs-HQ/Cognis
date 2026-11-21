@@ -4,16 +4,16 @@ Prosedur praktis untuk Log Konsol.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/adapters/logging/console) sebelum menjalankan prosedur ini.
+Administrator mengatur keluaran; operator menangkap log pada sistem hosting.
 
 ## Contoh
 
-Komponen ini tidak menyatakan titik masuk baris perintah mandiri. Gunakan fitur pemiliknya atau [prosedur penerapan](/docs/devops/usage) untuk mengonfigurasi instalasi; [referensi teknis](/docs/adapters/logging/console/technical) mencantumkan antarmuka dan batasnya.
+Pilih tingkat dan format pretty atau JSON, simpan, lalu periksa log baru.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Log Konsol yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/adapters/logging/console/technical) sebelum mengulangi operasi tulis.
+Catatan konsol memakai ambang dan format terpilih; adapter bawaan tetap aktif.
 
 ## Pemecahan Masalah
 
-Jika Log Konsol tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Periksa ambang dan penangkapan log kontainer bila catatan tidak muncul.

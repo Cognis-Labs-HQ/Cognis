@@ -4,17 +4,15 @@ Buat akun menggunakan undangan atau opsi pendaftaran yang diaktifkan pada instal
 
 ## Yang Dapat Anda Lakukan
 
-- Pilih metode yang tersedia bagi peran Anda; undangan email dan token pendaftaran memiliki langkah pengiriman berbeda.
-- Periksa status dan kedaluwarsa; salin token hanya untuk penerima yang dituju dan cabut undangan tak terpakai jika perlu.
-- Tinjau pendaftaran publik dan izin undangan sebelum mengubah siapa yang dapat membuat akun.
+Atur pembuatan akun dan undangan sesuai kebijakan instalasi.
 
 ## Sebelum Memulai
 
-Pastikan Pendaftaran aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Pemilik mengatur kebijakan; penerbitan bergantung pada peran dan penyedia.
 
 ## Langkah Awal
 
-Buka [fitur ini](/register) dan pilih tindakan yang diperlukan.
+Buka Undang atau Pendaftaran di Administrasi.
 
 ## Pelajari Lebih Lanjut
 

@@ -4,16 +4,16 @@ Praktische Abläufe für E-Mail-Bestätigung.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/adapters/tfa/smtp).
+Dein Konto braucht eine bestätigte Hauptadresse und funktionierende Zustellung.
 
 ## Beispiele
 
-Diese Komponente deklariert keinen eigenständigen Befehlszeileneinstieg. Nutzen Sie die zugehörige Funktion oder die [Bereitstellungsabläufe](/docs/devops/usage) zur Konfiguration; die [technische Referenz](/docs/adapters/tfa/smtp/technical) nennt Schnittstellen und Grenzen.
+Fordere einen Einrichtungscode an, gib ihn ein und bestätige; nutze die Methode bei der Anmeldung.
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von E-Mail-Bestätigung. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/adapters/tfa/smtp/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Bestätigung aktiviert die Methode; Codelänge und erneutes Senden folgen der Mailrichtlinie.
 
 ## Fehlerbehebung
 
-Falls E-Mail-Bestätigung nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Prüfe Spam und Wartezeit. Serverneustarts verwerfen offene Codes; Cluster müssen Anfragen während der Prüfung an dieselbe Instanz binden.

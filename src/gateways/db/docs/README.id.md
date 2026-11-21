@@ -4,15 +4,15 @@ Basis data menyimpan akun dan konten aplikasi agar tetap tersedia setelah dimula
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/administration) sesuai izin akun Anda.
+Sediakan penyimpanan persisten untuk akun dan fitur aktif.
 
 ## Sebelum Memulai
 
-Pastikan Basis Data aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Operator harus menyiapkan penyedia basis data yang didukung.
 
 ## Langkah Awal
 
-Buka [fitur ini](/administration) dan pilih tindakan yang diperlukan.
+Konfigurasikan koneksi basis data saat penerapan.
 
 ## Pelajari Lebih Lanjut
 

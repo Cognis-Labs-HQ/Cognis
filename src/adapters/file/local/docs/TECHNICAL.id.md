@@ -50,8 +50,10 @@ File dengan tipe MIME yang tidak ada dalam pemetaan ini disimpan dengan ekstensi
 
 ## Keamanan
 
-Akses Penyimpanan Berkas Lokal diatur oleh pemanggil dan gerbang pemilik. Mengaktifkan komponen tidak menambah izin akun.
+Validasi namespace dan kunci mencegah traversal jalur; penulisan berada di bawah uploads. Gateway Files memeriksa ACL serta kuota sebelum adapter penyimpanan.
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/adapters/file/local/`.
+- [src/adapters/file/local/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/file/local/manifest.json)
+- [src/adapters/file/local/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/file/local/package.json)
+- [src/adapters/file/local/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/file/local/index.ts)

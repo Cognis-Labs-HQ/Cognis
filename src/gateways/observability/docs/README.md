@@ -4,15 +4,15 @@ Performance monitoring helps administrators identify slow requests and browser i
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/administration) according to your account permissions.
+Collect bounded performance measurements for diagnosing slow requests and pages.
 
 ## Before You Start
 
-Check that Performance Monitoring is enabled and that your account has permission for the operation.
+Operators need access to the configured metric sink; the default sink writes debug logs.
 
 ## Get Started
 
-Open [the feature](/administration) and choose the action you need.
+Review performance metrics alongside application logs.
 
 ## Learn More
 

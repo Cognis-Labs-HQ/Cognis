@@ -4,11 +4,11 @@
 
 ## Schnittstellen
 
-Lernkarten wird über den zuständigen Funktionsdienst eingebunden; das Manifest nennt die Komponente und ihre Abhängigkeiten.
+study:decks bietet den Stapeldienst. /api/v1/study/decks unterstützt GET-Liste, GET/:id, POST-Speichern und DELETE/:id; POST/:id/review erhält cardId, grade und attempt.
 
 ## Konfiguration
 
-Die Konfiguration erfolgt über den zuständigen Funktionsdienst. Lernkarten definiert keine zusätzlichen Einstellungen im Manifest.
+Inhalt und Sichtbarkeit gehören zum Stapel. Lesen/Schreiben ist eine Kontoeinstellung; Starterstapel stammen von Anbietern statt fester Sprachlisten.
 
 ## Verhalten
 
@@ -62,10 +62,6 @@ Zeitplan und Versuchsbeleg der Karteikarte werden vor der adapterübergreifenden
 
 Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/gateways/study/technical).
 
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/gateways/study/technical).
-
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/gateways/study/technical).
-
 Der Browser-Haupteinstieg ist `ui/app/index.js`; Aktionen, Darstellung, Sprache und Übungsmodule liegen daneben. Geteilte Stapel verwenden `ui/app/shared-deck.js`. Serverseitiges Stapelverhalten verwendet `service/index.ts` mit Routen-, Ablauf-, Speicher- und Ergebnismodulen im selben Dienstverzeichnis.
 
 ### Gleichmäßige Übungsauswahl
@@ -106,7 +102,7 @@ Gastseiten prüfen den Abbruch nach Lokalisierung, Composer-Initialisierung, Sit
 
 ## Sicherheit
 
-Der Zugriff auf Lernkarten unterliegt dem Aufrufer und dem zuständigen Funktionsdienst. Die Aktivierung erweitert keine Kontorechte.
+Stapelaktionen prüfen Eigentum und Freigabe. Export braucht Ersteller- oder Administratorrechte; Freigaben begründen weder Klassenmitgliedschaft noch Belohnungen aus beliebigen Importereignissen.
 
 ## Referenz
 

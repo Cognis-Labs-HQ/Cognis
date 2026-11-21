@@ -4,16 +4,16 @@ Prosedur praktis untuk Penyimpanan Berkas Lokal.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/adapters/file/local) sebelum menjalankan prosedur ini.
+Operator memerlukan direktori media yang dapat ditulis dan tetap ada setelah kontainer diganti.
 
 ## Contoh
 
-Komponen ini tidak menyatakan titik masuk baris perintah mandiri. Gunakan fitur pemiliknya atau [prosedur penerapan](/docs/devops/usage) untuk mengonfigurasi instalasi; [referensi teknis](/docs/adapters/file/local/technical) mencantumkan antarmuka dan batasnya.
+Atur MEDIA_LOCATION ke direktori persisten yang dapat ditulis, mulai ulang, lalu unggah gambar yang diizinkan melalui fitur seperti Profil.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Penyimpanan Berkas Lokal yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/adapters/file/local/technical) sebelum mengulangi operasi tulis.
+Berkas disimpan di bawah direktori uploads; fitur pemilik menentukan visibilitas dan akses.
 
 ## Pemecahan Masalah
 
-Jika Penyimpanan Berkas Lokal tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Periksa izin direktori, ruang kosong, dan tipe berkas. Cadangkan media serta basis data; metadata saja tidak memulihkan isi berkas.

@@ -4,17 +4,15 @@ Bandingkan pencapaian belajar yang memenuhi syarat dengan menghormati visibilita
 
 ## Yang Dapat Anda Lakukan
 
-- Pilih peringkat untuk melihat peserta dan periode penilaiannya.
-- Bandingkan skor dan perubahan peringkat; baris yang disorot menunjukkan posisi Anda jika tersedia.
-- Temukan baris Anda dan bandingkan skor dalam peringkat terpilih. Ganti peringkat untuk membandingkan aktivitas yang diukurnya.
+Lihat peringkat dari aktivitas belajar terverifikasi dalam kelompok yang diizinkan.
 
 ## Sebelum Memulai
 
-Pastikan Papan Peringkat aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Masuk; papan kelas memerlukan keanggotaan aktif dan sebagian acara memerlukan persetujuan ikut.
 
 ## Langkah Awal
 
-Buka [fitur ini](/study/leaderboard) dan pilih tindakan yang diperlukan.
+Buka Papan Peringkat di Study dan pilih papan tersedia.
 
 ## Pelajari Lebih Lanjut
 

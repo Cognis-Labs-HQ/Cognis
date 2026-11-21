@@ -4,25 +4,7 @@ The public interfaces and operational rules of Platform Features.
 
 ## Interfaces
 
-### Core capabilities
-
-- **Authentication and identity** — pluggable auth adapters support local credentials, LDAP directory services, SAML 2.0, and OAuth2/OIDC providers such as Google or Microsoft. All providers are managed through the auth gateway's admin API without code changes.
-- **Modular language content delivery** — the module system allows curriculum units, activity types, and integrations to be packaged as modules and installed at runtime. Core modules are always present; optional modules can be enabled or disabled by an admin.
-- **Live collaboration readiness** — the platform is designed to integrate open-source communication tooling such as Jitsi for real-time study sessions.
-- **Configurable UI pages** — every page uses `createPageComposer` for reusable layout slots and per-user preference persistence. Users can customise widget placement on their profile and study pages.
-- **Lightweight social networking** — public profiles, microblog-style posts with per-post visibility, follower/following graphs, and block management.
-- **API-first architecture** — every feature is accessible via a versioned HTTP API with stable `{ data }` / `{ error }` response envelopes.
-- **Documentation browser** — docs are served directly from the running application at `/docs`, auto-discovered from `docs/` directories across the codebase.
-
-### Admin capabilities
-
-Admins have access to:
-
-- Full gateway management (enable/disable gateways, configure auth adapters).
-- Module installation and lifecycle management.
-- Per-category file size limits (`image`, `video`, `text`, `global`).
-- System health and diagnostics endpoints.
-- Deletion of any file or post on the platform.
+Public feature contracts belong to their owners: Auth establishes sessions; Study providers supply learning activities and content; Social adapters supply profiles, rooms and signaling; Calendar owns scheduling; Share mediates delegated access. Enabled UI contributions do not imply that every feature has an independent HTTP endpoint. OIDC and SAML require an injected protocol client; their configuration schemas alone do not implement remote authentication.
 
 ## Configuration
 
@@ -121,15 +103,11 @@ See the [shared contract](/docs/api/technical) for this behavior.
 
 See the [shared contract](/docs/api/technical) for this behavior.
 
-See the [shared contract](/docs/api/technical) for this behavior.
-
 ### Refresh unlocks and module loading
 
 See the [shared contract](/docs/api/technical) for this behavior.
 
 ### Shared top banners
-
-See the [shared contract](/docs/api/technical) for this behavior.
 
 See the [shared contract](/docs/api/technical) for this behavior.
 
@@ -163,17 +141,11 @@ See the [shared contract](/docs/api/technical) for this behavior.
 
 See the [shared contract](/docs/api/technical) for this behavior.
 
-See the [shared contract](/docs/api/technical) for this behavior.
-
 ### Persistent Asset Cache
 
 See the [shared contract](/docs/api/technical) for this behavior.
 
 ### Enrolled Offline Workspace
-
-See the [shared contract](/docs/api/technical) for this behavior.
-
-See the [shared contract](/docs/api/technical) for this behavior.
 
 See the [shared contract](/docs/api/technical) for this behavior.
 
@@ -204,8 +176,6 @@ See the [shared contract](/docs/api/technical) for this behavior.
 See the [shared contract](/docs/gateways/study/technical) for this behavior.
 
 ### Live UI Language Changes
-
-See the [shared contract](/docs/api/technical) for this behavior.
 
 See the [shared contract](/docs/api/technical) for this behavior.
 
@@ -245,9 +215,7 @@ See the [shared contract](/docs/api/technical) for this behavior.
 
 ### Account privacy and keyring isolation
 
-See the [shared contract](/docs/adapters/auth/local/technical) for this behavior.
-
-See the [shared contract](/docs/adapters/auth/local/technical) for this behavior.
+See the [shared contract](/docs/gateways/auth/technical) for this behavior.
 
 See the [shared contract](/docs/api/technical) for this behavior.
 

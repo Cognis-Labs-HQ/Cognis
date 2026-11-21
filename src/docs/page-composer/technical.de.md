@@ -4,11 +4,11 @@
 
 ## Schnittstellen
 
-Dieses Thema ist eine Referenz und stellt keinen eigenen Endpunkt bereit. Beispiele verwenden die öffentlichen Schnittstellen der unten beschriebenen Komponenten.
+createPageComposer(root, options) erzeugt den Seitenlebenszyklus. Elemente liefern Inhalt und Renderfunktionen; init bindet die Hülle ein und refresh aktualisiert Beschreibungen.
 
 ## Konfiguration
 
-Dieses Dokumentationsthema hat keine eigene Laufzeitkonfiguration. Betriebseinstellungen gehören zur zuständigen Komponente.
+createPageComposer erhält elements, pageManifest, i18n, signal und Layoutoptionen. Füllende Elemente nutzen den responsiven Vertrag; Präferenzen verwenden preferenceKey.
 
 ## Verhalten
 
@@ -147,8 +147,8 @@ Gemeinsame Texte umbrechen vor und nach dem Laden einer Schriftart innerhalb der
 
 ## Sicherheit
 
-Das Lesen der Dokumentation berechtigt nicht zur Ausführung ihrer Beispiele. Die zuständige Komponente autorisiert jeden Vorgang.
+Composer steuert Darstellung und DOM-Lebensdauer statt Inhaltsrechte. Seitenaktionen nutzen Eigentümerabläufe; Markup und Styles beachten gemeinsame Menü- und Panelgrenzen.
 
 ## Referenz
 
-Quellcode und Paketmetadaten: `src/docs/page-composer/`.
+- [src/ui/reuse/page-composer/index.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/ui/reuse/page-composer/index.js)

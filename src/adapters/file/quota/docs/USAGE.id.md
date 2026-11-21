@@ -4,16 +4,16 @@ Prosedur praktis untuk Batas Penyimpanan.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/adapters/file/quota) sebelum menjalankan prosedur ini.
+Hanya administrator mengelola nilai baku kuota dan penggantian per akun.
 
 ## Contoh
 
-Komponen ini tidak menyatakan titik masuk baris perintah mandiri. Gunakan fitur pemiliknya atau [prosedur penerapan](/docs/devops/usage) untuk mengonfigurasi instalasi; [referensi teknis](/docs/adapters/file/quota/technical) mencantumkan antarmuka dan batasnya.
+Ubah nilai baku namespace, lalu periksa kuota pengguna yang sudah ada dan sesuaikan penggantiannya secara terpisah bila perlu.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Batas Penyimpanan yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/adapters/file/quota/technical) sebelum mengulangi operasi tulis.
+Akun baru menyalin nilai baku. Perubahan nilai baku tidak menimpa jatah lama; unggahan memeriksa kedua batas.
 
 ## Pemecahan Masalah
 
-Jika Batas Penyimpanan tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Bandingkan penggunaan dengan batas global dan namespace. Menaikkan satu batas masih dapat terhalang oleh batas lainnya.

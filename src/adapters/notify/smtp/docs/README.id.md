@@ -4,15 +4,15 @@ Terima notifikasi Cognis melalui layanan email yang dikonfigurasi untuk instalas
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/settings) sesuai izin akun Anda.
+Kirim notifikasi dan email verifikasi melalui server email Anda.
 
 ## Sebelum Memulai
 
-Pastikan Pengiriman Email aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Administrator memerlukan akses SMTP dan alamat pengirim yang disetujui.
 
 ## Langkah Awal
 
-Buka [fitur ini](/settings) dan pilih tindakan yang diperlukan.
+Buka Notifikasi di Administrasi dan atur pengirim email.
 
 ## Pelajari Lebih Lanjut
 

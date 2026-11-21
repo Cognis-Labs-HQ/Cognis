@@ -4,17 +4,15 @@ Pelajari dek tersimpan, latih membaca atau menulis, dan kelola koleksi Anda.
 
 ## Yang Dapat Anda Lakukan
 
-- Pilih dek dari bilah samping lalu periksa bahasa dan kartu di dalamnya.
-- Tinjau mode dan filter belajar yang tersedia sebelum mulai berlatih.
-- Gunakan kontrol latihan untuk menjawab dan meninjau kartu; kemajuan terikat pada akun Anda.
+Buat dek, jelajahi dek awal, dan latih membaca atau menulis.
 
 ## Sebelum Memulai
 
-Pastikan Kartu Hafalan aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Masuk dan pilih bahasa terdaftar; pengeditan serta ekspor memerlukan akses dek yang sesuai.
 
 ## Langkah Awal
 
-Buka [fitur ini](/study/flashcards) dan pilih tindakan yang diperlukan.
+Pilih Kartu Belajar di Study dan buka dek.
 
 ## Pelajari Lebih Lanjut
 

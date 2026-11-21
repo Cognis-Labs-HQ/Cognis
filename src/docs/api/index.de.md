@@ -4,15 +4,15 @@ Der Anwendungsserver verbindet Ihren Browser mit Konten, gespeicherten Inhalten 
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/) entsprechend Ihren Kontorechten.
+Verstehe Serveroperationen hinter Browser- und Terminalaktionen.
 
 ## Vor dem Start
 
-Die beschriebenen Vorgänge können Konto- oder Verwaltungsrechte verlangen. Das Lesen eines Themas aktiviert keine optionalen Funktionen.
+Geschützte Aktionen benötigen Rolle und Inhaltszugriff.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/) und wählen Sie die gewünschte Aktion.
+Suche vor Nutzung die Technikansicht der zuständigen Komponente.
 
 ## Weitere Informationen
 

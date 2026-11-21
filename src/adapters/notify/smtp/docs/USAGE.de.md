@@ -4,11 +4,11 @@ Praktische Abläufe für E-Mail-Zustellung.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/adapters/notify/smtp).
+Administratoren benötigen SMTP-Zugang und eine erlaubte Absenderadresse.
 
 ## Beispiele
 
-Prüfen Sie vor der Ausführung die Argumente des installierten Befehls.
+Gib Host, Port, Verschlüsselung und Absender ein; sende vor regulärer Zustellung eine Testmail.
 
 ```sh
 cognisctl email:list --help
@@ -20,8 +20,8 @@ cognisctl email:verify:send --help
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von E-Mail-Zustellung. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/adapters/notify/smtp/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Ein erfolgreicher Test bestätigt diese Zustellung; Kontomails beachten weiterhin Bestätigung und Kategorien.
 
 ## Fehlerbehebung
 
-Falls E-Mail-Zustellung nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Prüfe Testfehler, TLS-Modus, Zugangsdaten und Postfach. Erfolgreiche Verbindung garantiert keine Posteingangszustellung.

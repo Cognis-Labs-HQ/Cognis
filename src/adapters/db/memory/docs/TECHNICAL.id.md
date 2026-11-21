@@ -1,45 +1,23 @@
 # Referensi Teknis
 
-Antarmuka publik dan aturan operasional Basis Data Dalam Memori.
+Pengganti basis data untuk pengujian yang mencatat panggilan tanpa menjalankan SQL.
 
 ## Antarmuka
 
-### Arsitektur
-
-```ts
-const db = new MemoryDatabaseGateway();
-await db.execute("INSERT INTO users (id) VALUES (?)", ["u1"]);
-console.log(db.queryLog);
-// [{ sql: 'INSERT INTO users (id) VALUES (?)', params: ['u1'] }]
-```
+`MemoryDatabaseGateway` menerapkan query, execute, transaction, dan getQueries di `src/adapters/db/memory/index.ts`. getQueries memberi rekaman readonly dengan statement dan params opsional.
 
 ## Konfigurasi
 
-### Konfigurasi
-
-| Variabel  | Default | Keterangan                                    |
-| --------- | ------- | --------------------------------------------- |
-| `DB_TYPE` | —       | Harus `memory` untuk mengaktifkan adapter ini |
+Buat kelas dalam harness uji. Kelas tidak mengekspor canHandleDbProvider atau createDbExecutor; DB_TYPE=memory tidak menghubungkannya ke pemuat standar.
 
 ## Perilaku
 
-### Ikhtisar
-
-Adapter memory adalah implementasi database no-op yang ditujukan untuk pengujian otomatis dan pipeline CI di mana database nyata tidak boleh dilibatkan. Setiap kueri mengembalikan set hasil kosong dan setiap execute adalah no-op yang senyap. Semua pernyataan SQL yang dikeluarkan dicatat dalam `queryLog`, sehingga mudah untuk menegaskan dalam pengujian bahwa SQL yang diharapkan telah dibuat.
-
-Adapter memory tidak boleh pernah digunakan dalam deployment produksi.
-
-### Tanggung Jawab
-
-- Mengimplementasikan antarmuka `DatabaseGateway`: `query`, `execute`, dan `transaction`.
-- Mencatat setiap pernyataan SQL dan parameter dalam `queryLog`.
-- Mengembalikan set hasil kosong (`[]`) untuk semua panggilan `query()`.
-- Tidak melakukan apa pun untuk semua panggilan `execute()`.
+query mencatat panggilan dan memberi `{ rows: [], rowCount: 0 }`. execute memberi `{ affectedRows: 0 }`. transaction menjalankan callback dengan instans sama tanpa BEGIN, rollback, atau baris tersimpan.
 
 ## Keamanan
 
-Akses Basis Data Dalam Memori diatur oleh pemanggil dan gerbang pemilik. Mengaktifkan komponen tidak menambah izin akun.
+Parameter terekam dapat berisi rahasia uji. Gunakan nilai sintetis; pengganti ini tidak memberi autentikasi atau otorisasi SQL.
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/adapters/db/memory/`.
+Gunakan penyedia nyata untuk persistensi, batasan, dan isolasi. Lihat [Basis Data](/docs/gateways/db/technical).

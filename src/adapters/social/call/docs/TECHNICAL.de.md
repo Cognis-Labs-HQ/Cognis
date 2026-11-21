@@ -4,11 +4,11 @@
 
 ## Schnittstellen
 
-Anrufe wird über den zuständigen Funktionsdienst eingebunden; das Manifest nennt die Komponente und ihre Abhängigkeiten.
+Signalisierung nutzt POST /api/v1/social/call, GET /api/v1/social/call/room/:roomId und Aktionen answer, hangup, leave, ringing je Anruf-ID. Erstellen braucht roomId.
 
 ## Konfiguration
 
-Die Konfiguration erfolgt über den zuständigen Funktionsdienst. Anrufe definiert keine zusätzlichen Einstellungen im Manifest.
+Signalisierung bezieht erlaubte Räume von Nachrichten und veröffentlicht ihren Anbieter. Geräterecht und Medienanbieter bestimmen Audio-/Videoverfügbarkeit.
 
 ## Verhalten
 
@@ -24,7 +24,7 @@ Der Call-Adapter wird automatisch aktiviert, wenn Messages und ein Browser-Anbie
 
 ## Sicherheit
 
-Der Zugriff auf Anrufe unterliegt dem Aufrufer und dem zuständigen Funktionsdienst. Die Aktivierung erweitert keine Kontorechte.
+Signalisierung prüft Anrufer und Raumzugriff über social:messages:callContext. Anrufzustand ersetzt weder Anbieterberechtigung noch Browser-Geräterechte.
 
 ## Referenz
 

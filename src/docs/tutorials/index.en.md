@@ -4,15 +4,15 @@ Learn useful actions with the page guides and replay a guide when you need a rem
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/) according to your account permissions.
+Learn page actions with guided steps and replay them when needed.
 
 ## Before You Start
 
-The operations discussed here may require account or administrator permissions. Reading a topic does not enable its optional features.
+Sign in for account-bound guide completion; optional actions appear only when available.
 
 ## Get Started
 
-Open [the feature](/) and choose the action you need.
+Use the question-mark control in the page header.
 
 ## Learn More
 

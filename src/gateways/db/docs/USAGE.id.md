@@ -4,25 +4,16 @@ Prosedur praktis untuk Basis Data.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/gateways/db) sebelum menjalankan prosedur ini.
+Operator harus menyiapkan penyedia basis data yang didukung.
 
 ## Contoh
 
-Periksa argumen perintah yang terpasang sebelum menjalankan operasi.
-
-```sh
-cognisctl search:query --help
-cognisctl docs:list --help
-cognisctl docs:get --help
-cognisctl ui:routes --help
-cognisctl ui:settings-sections --help
-cognisctl ui:navbar-plugins --help
-```
+Mulai Cognis, periksa inisialisasi skema, dan pastikan akun atau acara tersimpan tetap ada setelah mulai ulang.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Basis Data yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/gateways/db/technical) sebelum mengulangi operasi tulis.
+Skema dideklarasikan melalui gateway; persistensi bergantung pada penyedia.
 
 ## Pemecahan Masalah
 
-Jika Basis Data tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Periksa pemuatan penyedia, kredensial, dan izin skema. Memori mencatat panggilan tanpa menyimpan data aplikasi.

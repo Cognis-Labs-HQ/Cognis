@@ -4,42 +4,13 @@ Antarmuka publik dan aturan operasional Masuk LDAP.
 
 ## Antarmuka
 
-### Arsitektur
-
-`LdapAuthAdapter` di `src/adapters/auth/ldap/index.ts` mengimplementasikan `AuthProviderAdapter`.
-
-```ts
-export interface LdapClient {
-    authenticate(accessToken: string): Promise<LdapIdentity | null>;
-}
-```
+`LdapClient.authenticate(username, password, options)` memberi `LdapIdentity | null`. Adapter membaca username/password dan authSourceId opsional, memilih server bernama, lalu mengembalikan provider, externalUserId, email, displayName, dan role. Implementasi bawaan ialah StandardLdapClient.
 
 ## Konfigurasi
 
-### Konfigurasi
-
-Konfigurasi melalui `PUT /api/v1/gateways/auth/adapters/ldap/config` (hanya admin).
-
-| Kunci          | Keterangan                                                    | Diperlukan |
-| -------------- | ------------------------------------------------------------- | ---------- |
-| `host`         | Hostname server LDAP                                          | Ya         |
-| `port`         | Port server LDAP                                              | Ya         |
-| `bindDn`       | Bind DN untuk akun layanan                                    | Ya         |
-| `bindPassword` | Password untuk bind DN                                        | Ya         |
-| `baseDn`       | Base DN untuk pencarian pengguna                              | Ya         |
-| `adminGroups`  | Grup LDAP yang anggotanya mendapat peran admin (dipisah koma) | Tidak      |
+Administrasi menyimpan `unify` dan `servers` bernama. Server siap perlu identifier, serverUrl, baseDn, bindDn, bindPassword, userAttribute, dan userFilter. userDn/groupDn, groupFilter, memberOf, serta nestedMemberOf mengatur pencarian; roleMappings memetakan grup. Penulisan kata sandi memerlukan writebackEnabled dan cakupan. Sumber terpadu mencoba server berikutnya saat koneksi gagal.
 
 ## Perilaku
-
-### Ikhtisar
-
-Adapter LDAP mengautentikasi pengguna terhadap server direktori LDAP, menjadikannya pilihan yang tepat untuk organisasi yang sudah mengelola identitas di Active Directory, OpenLDAP, atau layanan direktori serupa. Pengguna login dengan token akses LDAP; adapter mengikat ke direktori dengan akun layanan, mencari pengguna, dan memetakan keanggotaan grup ke peran admin Cognis.
-
-### Tanggung Jawab
-
-- Menerima kredensial `accessToken` dan mengautentikasinya terhadap server LDAP.
-- Memetakan grup LDAP pengguna yang terautentikasi ke flag `isAdmin` Cognis.
-- Mengekspos antarmuka `AuthProviderAdapter` ke gateway autentikasi.
 
 ### Uji koneksi
 
@@ -67,8 +38,10 @@ Permintaan Uji dan Temukan yang berhasil menampilkan toast keberhasilan yang dil
 
 ## Keamanan
 
-Akses Masuk LDAP diatur oleh pemanggil dan gerbang pemilik. Mengaktifkan komponen tidak menambah izin akun.
+Kredensial direktori divalidasi klien LDAP terkonfigurasi. Akses administrator mengikuti pemetaan grup; lindungi kredensial bind dan validasi sertifikat TLS direktori.
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/adapters/auth/ldap/`.
+- [src/adapters/auth/ldap/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/ldap/manifest.json)
+- [src/adapters/auth/ldap/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/ldap/package.json)
+- [src/adapters/auth/ldap/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/ldap/index.ts)

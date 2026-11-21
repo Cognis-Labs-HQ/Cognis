@@ -4,49 +4,21 @@
 
 ## Schnittstellen
 
-Dieses Thema ist eine Referenz und stellt keinen eigenen Endpunkt bereit. Beispiele verwenden die öffentlichen Schnittstellen der unten beschriebenen Komponenten.
+`AccessRole` und `RoleAccessPolicy` exportiert Core. `hasMinRole(role, minRole)` vergleicht Ränge; `isRoleAllowed(role, { minRole, onlyRole })` prüft beide Grenzen. Authentifizierungsprüfungen bestimmen Claims vor der Routenrichtlinie.
 
 ## Konfiguration
 
-Dieses Dokumentationsthema hat keine eigene Laufzeitkonfiguration. Betriebseinstellungen gehören zur zuständigen Komponente.
+`minRole` erlaubt genannte und höhere Rollen. `onlyRole` erlaubt genau die genannte Rolle, auch bei höherem Aufruferrang. Eigentum, Sichtbarkeit, Mitgliedschaft und Freigaben werden zusätzlich geprüft.
 
 ## Verhalten
 
-### Überblick
-
-Die ACL-Matrix definiert, welche Aktionen jede Rolle in Cognis ausführen darf. Rollen werden bei der Kontoerstellung oder nachträglich von einem Admin zugewiesen; die Selbstregistrierung ergibt immer die `user`-Rolle.
-
-Cognis hat vier Rollen: `user` ist der Standard für normale Lernaktivitäten. `teacher` gewährt Zugriff auf lehrkraftspezifische APIs. `moderator` fügt Community-Moderationsrechte hinzu (beliebige Beiträge löschen). `admin` hat vollen Plattformzugriff.
-
-### Rollenmatrix
-
-| Fähigkeit                             | user | teacher | moderator | admin |
-| ------------------------------------- | ---: | ------: | --------: | ----: |
-| Selbstregistrierung                   |   ✅ |      ✅ |        ✅ |    ✅ |
-| Eigenes Profil anzeigen/bearbeiten    |   ✅ |      ✅ |        ✅ |    ✅ |
-| Beiträge erstellen                    |   ✅ |      ✅ |        ✅ |    ✅ |
-| Benutzer folgen/entfolgen             |   ✅ |      ✅ |        ✅ |    ✅ |
-| Benutzer blockieren/entblocken        |   ✅ |      ✅ |        ✅ |    ✅ |
-| Dateien hochladen/herunterladen       |   ✅ |      ✅ |        ✅ |    ✅ |
-| Lehrspezifische APIs zugreifen        |   ❌ |      ✅ |        ❌ |    ✅ |
-| Beliebige Beiträge löschen            |   ❌ |      ❌ |        ✅ |    ✅ |
-| Beliebige Dateien löschen             |   ❌ |      ❌ |        ❌ |    ✅ |
-| Dateispeichergrenzwerte konfigurieren |   ❌ |      ❌ |        ❌ |    ✅ |
-| Module installieren/verwalten         |   ❌ |      ❌ |        ❌ |    ✅ |
-| Auth-Anbieter-Konfiguration verwalten |   ❌ |      ❌ |        ❌ |    ✅ |
-| System-Diagnose-Endpunkte             |   ❌ |      ❌ |        ❌ |    ✅ |
-
-### Rollennotizen
-
-- **user** — Standardrolle bei der Selbstregistrierung; entspricht der Schülerrolle.
-- **teacher** — Erhöhter API-Zugriff für Lehrkraft-Features; von einem Admin zugewiesen.
-- **moderator** — Community-Moderationsrechte; kein Zugriff auf System- oder Admin-Konfiguration.
-- **admin** — Vollständiger Plattformzugriff; werden außerhalb des Systems über `cognisctl user:create` erstellt.
+Die Reihenfolge lautet `user < teacher < moderator < admin < owner`. Selbstregistrierung erstellt `user`; `founder` ist keine AccessRole und Einladungsberechtigung folgt Registrierung. Der Mindestrang ersetzt keine Inhaltsrechte für Profile, Dateien, Räume oder Klassen.
 
 ## Sicherheit
 
-Das Lesen der Dokumentation berechtigt nicht zur Ausführung ihrer Beispiele. Die zuständige Komponente autorisiert jeden Vorgang.
+Prüfe Rolle und Inhaltszugriff beim Ausführen. Verborgene Steuerelemente ersetzen keine Rechte; Rollenbeschreibungen überschreiben weder onlyRole noch aktuelle Mitgliedschaft.
 
 ## Referenz
 
-Quellcode und Paketmetadaten: `src/docs/acl-matrix/`.
+- [src/core/contracts/access-policy.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/contracts/access-policy.ts)
+- [src/gateways/auth/guard.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/auth/guard.ts)

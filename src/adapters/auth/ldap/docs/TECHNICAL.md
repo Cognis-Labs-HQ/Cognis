@@ -4,62 +4,13 @@ The public interfaces and operational rules of LDAP Sign In.
 
 ## Interfaces
 
-### Architecture
-
-`LdapAuthAdapter` in `src/adapters/auth/ldap/index.ts` implements `AuthProviderAdapter`. It holds a reference to an `LdapClient` instance that performs the actual directory operations, and a `Set<string>` of admin groups parsed from the `adminGroups` configuration field.
-
-```ts
-export interface LdapClient {
-    authenticate(accessToken: string): Promise<LdapIdentity | null>;
-}
-
-export interface LdapIdentity {
-    id: string;
-    email?: string;
-    groups?: string[];
-}
-```
-
-On `authenticate(credentials)`, the adapter:
-
-1. Extracts `credentials.accessToken`.
-2. Calls `this.client.authenticate(accessToken)`.
-3. Checks whether any of the identity's `groups` intersect `adminGroups`.
-4. Returns an `AuthContext` with `provider: 'ldap'`, `externalUserId`, `email`, and `isAdmin`.
-
-The adapter is enabled and configured through the auth gateway admin API, not through environment variables.
+`LdapClient.authenticate(username, password, options)` returns `LdapIdentity | null`. The adapter reads username/password and optional authSourceId, selects a named server, and returns an AuthContext with provider, externalUserId, email, displayName and role. The default implementation is StandardLdapClient.
 
 ## Configuration
 
-### Configuration
-
-Configure via `PUT /api/v1/gateways/auth/adapters/ldap/config` (admin only).
-
-| Key            | Description                                                  | Required |
-| -------------- | ------------------------------------------------------------ | -------- |
-| `host`         | LDAP server hostname                                         | Yes      |
-| `port`         | LDAP server port                                             | Yes      |
-| `bindDn`       | Bind DN for the service account                              | Yes      |
-| `bindPassword` | Password for the bind DN                                     | Yes      |
-| `baseDn`       | Base DN for user searches                                    | Yes      |
-| `adminGroups`  | Comma-separated LDAP groups whose members receive admin role | No       |
+Administration stores `unify` and named `servers`. Each ready server needs identifier, serverUrl, baseDn, bindDn, bindPassword, userAttribute and userFilter. Optional userDn/groupDn, groupFilter, memberOf and nestedMemberOf control discovery; roleMappings maps groups to roles. Password writeback requires explicit writebackEnabled and its configured search scope. Unified sources try subsequent servers after a connection failure.
 
 ## Behavior
-
-### Overview
-
-The LDAP adapter authenticates users against an LDAP directory server, making it the right choice for organisations that already manage identities in Active Directory, OpenLDAP, or a similar directory service. Users log in with an LDAP access token; the adapter binds to the directory with a service account, searches for the user, and maps group membership to the Cognis admin role.
-
-Because LDAP manages identities externally, there are no passwords to manage inside Cognis for LDAP users. The local auth adapter remains active alongside LDAP so that a break-glass admin account is always available even if the directory server is unreachable.
-
-### Responsibilities
-
-- Accept an `accessToken` credential, authenticate it against the LDAP server via the configured `LdapClient`.
-- Map the authenticated user's LDAP groups to the Cognis `isAdmin` flag using the `adminGroups` configuration.
-- Expose the `AuthProviderAdapter` interface to the auth gateway.
-- Provide a `getConfigSchema()` describing all configurable fields.
-
-Not responsible for: binding or searching LDAP directly (that is the injected `LdapClient`'s concern), storing user accounts locally, or handling session state.
 
 ### Connection tests
 
@@ -87,8 +38,10 @@ Successful Test and Discover requests display a localized success toast before s
 
 ## Security
 
-Access to LDAP Sign In is governed by the caller and its owning gateway. Enabling a component does not grant additional account permissions.
+Directory credentials are validated by the configured LDAP client. Administrator access depends on configured group mappings; protect bind credentials and validate the directory's TLS certificate.
 
 ## Reference
 
-Source and package metadata: `src/adapters/auth/ldap/`.
+- [src/adapters/auth/ldap/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/ldap/manifest.json)
+- [src/adapters/auth/ldap/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/ldap/package.json)
+- [src/adapters/auth/ldap/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/ldap/index.ts)

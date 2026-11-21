@@ -4,16 +4,16 @@ Practical procedures for UI.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/ui) before performing these procedures.
+Sign in to save account preferences.
 
 ## Examples
 
-This component does not declare a standalone command-line entry point. Use its owning feature or the [deployment procedures](/docs/devops/usage) to configure the installation; the [technical reference](/docs/ui/technical) lists its interfaces and constraints.
+Change a preference, save it and revisit another page; resize the window and reopen a sidebar using its double-chevron control.
 
 ## Expected Results
 
-The example uses the documented interface of UI. Confirm the response or saved state described in [Technical](/docs/ui/technical) before repeating a write operation.
+Shared pages use the selected appearance and adapt navigation to the available width.
 
 ## Troubleshooting
 
-If UI is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+Check that preferences were acknowledged before reloading; a loaded font can change wrapping without changing the chosen font size.

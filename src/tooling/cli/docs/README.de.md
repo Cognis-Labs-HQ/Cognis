@@ -4,15 +4,15 @@ Mit den Befehlszeilenwerkzeugen verwalten Administratoren Cognis ohne Browser.
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/administration) entsprechend Ihren Kontorechten.
+Prüfe und verwalte Cognis im Terminal.
 
 ## Vor dem Start
 
-Prüfen Sie, ob Befehlszeilenwerkzeuge aktiviert ist und Ihr Konto den Vorgang ausführen darf.
+Nutze cognisctl mit gültigem berechtigtem Token für geschützte Befehle.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/administration) und wählen Sie die gewünschte Aktion.
+Rufe die Hilfe von cognisctl für verfügbare Befehle auf.
 
 ## Weitere Informationen
 

@@ -4,16 +4,16 @@ Prosedur praktis untuk Gerbang Fitur.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/gateways) sebelum menjalankan prosedur ini.
+Paket ini mengelompokkan infrastruktur; fitur pengguna dimiliki gateway individual.
 
 ## Contoh
 
-Komponen ini tidak menyatakan titik masuk baris perintah mandiri. Gunakan fitur pemiliknya atau [prosedur penerapan](/docs/devops/usage) untuk mengonfigurasi instalasi; [referensi teknis](/docs/components/gateways/technical) mencantumkan antarmuka dan batasnya.
+Buka dokumentasinya, periksa adapter, dan konfigurasikan penyedia sesuai penerapan.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Gerbang Fitur yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/components/gateways/technical) sebelum mengulangi operasi tulis.
+Hanya penyedia aktif yang berhasil terdaftar menyediakan tindakannya.
 
 ## Pemecahan Masalah
 
-Jika Gerbang Fitur tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Penyedia hilang tidak diperbaiki melalui paket ini; periksa dependensi serta log gateway terkait.

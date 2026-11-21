@@ -46,8 +46,10 @@ INSERT INTO accounts (id, email) VALUES (?, ?)
 
 ## Sicherheit
 
-Der Zugriff auf MariaDB unterliegt dem Aufrufer und dem zuständigen Funktionsdienst. Die Aktivierung erweitert keine Kontorechte.
+Datenbankzugang und Transportschutz gehören zur Bereitstellung. Binde Werte als Parameter; prüfe Anwendungsrechte vor dem Datenbankaufruf.
 
 ## Referenz
 
-Quellcode und Paketmetadaten: `src/adapters/db/mariadb/`.
+- [src/adapters/db/mariadb/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/mariadb/manifest.json)
+- [src/adapters/db/mariadb/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/mariadb/package.json)
+- [src/adapters/db/mariadb/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/mariadb/index.ts)

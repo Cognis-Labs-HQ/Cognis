@@ -4,16 +4,15 @@ Tauschen Sie sich über Profile, Beiträge und private Gespräche mit anderen Co
 
 ## Möglichkeiten
 
-- Prüfen Sie aktive soziale Adapter und deren Einstellungen.
-- Prüfen Sie betroffene Benutzerfunktionen vor Aktivierung, Deaktivierung oder Neukonfiguration.
+Nutze aktive Profile, Gespräche und Anrufe mit gemeinsamen Kontoregeln.
 
 ## Vor dem Start
 
-Prüfen Sie, ob Soziale Funktionen aktiviert ist und Ihr Konto den Vorgang ausführen darf.
+Melde dich an; einzelne Adapter liefern ihre Funktionen.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/messages) und wählen Sie die gewünschte Aktion.
+Öffne Profil oder Nachrichten über die Navigation.
 
 ## Weitere Informationen
 

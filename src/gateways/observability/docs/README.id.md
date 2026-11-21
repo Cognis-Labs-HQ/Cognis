@@ -4,15 +4,15 @@ Pemantauan kinerja membantu administrator mengenali permintaan dan interaksi per
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/administration) sesuai izin akun Anda.
+Kumpulkan pengukuran kinerja terbatas untuk mendiagnosis permintaan dan halaman lambat.
 
 ## Sebelum Memulai
 
-Pastikan Pemantauan Kinerja aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Operator perlu akses ke tujuan metrik; tujuan bawaan menulis log debug.
 
 ## Langkah Awal
 
-Buka [fitur ini](/administration) dan pilih tindakan yang diperlukan.
+Tinjau metrik bersama log aplikasi.
 
 ## Pelajari Lebih Lanjut
 

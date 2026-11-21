@@ -4,9 +4,11 @@ Practical procedures for DevOps.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/devops) before performing these procedures.
+Prepare Docker Compose and deployment-managed database credentials and encryption key.
 
 ## Examples
+
+Supply POSTGRES_PASSWORD and DATA_ENCRYPTION_KEY, run `docker compose up --build`, then check container health and application logs.
 
 ```sh
 export POSTGRES_PASSWORD='<database password>'
@@ -16,8 +18,8 @@ docker compose up --build
 
 ## Expected Results
 
-The example uses the documented interface of DevOps. Confirm the response or saved state described in [Technical](/docs/devops/technical) before repeating a write operation.
+The application starts behind nginx using the configured database; required missing secrets prevent startup.
 
 ## Troubleshooting
 
-If DevOps is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+Check Compose errors, database connectivity and mounted-directory ownership. Back up database and media together before upgrades.

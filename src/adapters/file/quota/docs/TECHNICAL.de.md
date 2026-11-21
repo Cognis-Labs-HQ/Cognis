@@ -48,8 +48,10 @@ Wie das Datei-Gateway selbst bootstrapt dieser Adapter, bevor das Datenbank-Gate
 
 ## Sicherheit
 
-Der Zugriff auf Speichergrenzen unterliegt dem Aufrufer und dem zuständigen Funktionsdienst. Die Aktivierung erweitert keine Kontorechte.
+Nur berechtigte Verwaltung ändert Standards oder Benutzerwerte. Provisionierung überschreibt keine Zeilen; Durchsetzung und Nutzungserfassung gehören Files.
 
 ## Referenz
 
-Quellcode und Paketmetadaten: `src/adapters/file/quota/`.
+- [src/adapters/file/quota/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/file/quota/manifest.json)
+- [src/adapters/file/quota/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/file/quota/package.json)
+- [src/adapters/file/quota/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/file/quota/index.ts)

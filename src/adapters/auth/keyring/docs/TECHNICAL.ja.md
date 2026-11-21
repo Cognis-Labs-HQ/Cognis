@@ -92,4 +92,6 @@ Keyring の設定は独自の言語リソースと、保管庫の最大サイズ
 
 ## リファレンス
 
-ソースとパッケージの情報: `src/adapters/auth/keyring/`。
+- [src/adapters/auth/keyring/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/keyring/manifest.json)
+- [src/adapters/auth/keyring/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/keyring/package.json)
+- [src/adapters/auth/keyring/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/keyring/index.ts)

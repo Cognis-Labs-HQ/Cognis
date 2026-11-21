@@ -4,15 +4,15 @@ Melden Sie sich bei eingerichtetem LDAP mit Ihrem Organisationskonto an.
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/login) entsprechend Ihren Kontorechten.
+Melde dich mit den Zugangsdaten deiner Organisation an; Administratoren verbinden das LDAP-Verzeichnis und ordnen Administratorgruppen zu.
 
 ## Vor dem Start
 
-Prüfen Sie, ob LDAP-Anmeldung aktiviert ist und Ihr Konto den Vorgang ausführen darf.
+Ein Administrator muss den Verzeichniszugriff einrichten. Behalte während der Tests ein funktionierendes lokales Administratorkonto.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/login) und wählen Sie die gewünschte Aktion.
+Wähle das eingerichtete Verzeichnis auf der Anmeldeseite und verwende dessen Benutzername und Passwort.
 
 ## Weitere Informationen
 

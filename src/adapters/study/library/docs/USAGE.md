@@ -4,23 +4,18 @@ Practical procedures for Learning Library.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/adapters/study/library) before performing these procedures.
+Select an enrolled language; creation, editing and publication depend on ownership and review permissions.
 
 ## Examples
 
-- Use the layers sidebar to switch between the available content types for your language, then browse the cards in the selected layer.
-- Click this card to open its detail view, or continue the guide to skip that walkthrough.
-- Use this card’s favourite action to keep it for later. The favourites filter helps you return to saved cards.
-- Review dictionary results and their language, readings and meanings.
-- Open a result to compare its readings and meanings before importing it into your collection.
-- Filter your requests and read the current review status before submitting another change.
-- Open a request to see its proposed content and where the record will be stored.
-- Search and choose a layer to find the records you intend to manage.
+Search or filter a collection, open a card and inspect readings and definitions. When creating content, resolve referenced items and save or submit for review.
+
+Use **Import** at the bottom-left of the Create Card type selector to upload JSON. Choose a writable scope; the entire batch goes into that scope. The supported envelope is `format: "cognis-library"`, `version: 1`, and a nonempty `entries` array.
 
 ## Expected Results
 
-The example uses the documented interface of Learning Library. Confirm the response or saved state described in [Technical](/docs/adapters/study/library/technical) before repeating a write operation.
+Saved content retains its authored composition; publication follows review policy and favourites follow the acknowledged account state.
 
 ## Troubleshooting
 
-If Learning Library is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+Check scope, canonical references and pending requests. Dictionary alternatives require selection; a lookup is not automatic permission to publish.

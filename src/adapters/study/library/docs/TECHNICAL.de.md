@@ -26,7 +26,7 @@ Inhaltsdatensätze können einen Namensraumwert `class` wie `lexical:noun` oder 
 
 ## Konfiguration
 
-Die Konfiguration erfolgt über den zuständigen Funktionsdienst. Lernbibliothek definiert keine zusätzlichen Einstellungen im Manifest.
+Sprachanbieter liefern versionierte Schemas, Konstruktoren und Inhaltspakete. Filter und Darstellung folgen den Deklarationen; Rechte gelten je Inhalt.
 
 ## Verhalten
 
@@ -397,7 +397,7 @@ Die Wörterbuchsuche füllt den offenen Karteneditor direkt und übernimmt alle 
 
 Wörterbuchimporte ordnen Anbieter-Datensatzkennungen vor dem Verknüpfen den zugänglichen installierten Karten zu, auch für gruppierte Links. Fehlende oder mehrdeutige Ziele lassen die Werte mit einer Warnung unverknüpft, statt das Speichern zu verhindern. Übernommene Definitionen bieten eine Bearbeiten-Aktion über den bestehenden berechtigungsabhängigen Karteneditor; gespeicherte Änderungen aktualisieren ihre Zusammenfassung. Versteckte Schemafelder, einschließlich Wörterbuch-Quelldaten, erscheinen nicht im Formular, behalten aber ihre gespeicherten Werte.
 
-### Korrekturen am Karteneditor
+### Zustand des Karteneditors
 
 Die Strichsuche wird ausgeblendet, sobald ein abgerufenes Muster vorhanden ist, auch bei Wörterbuchergebnissen und gespeicherten Karten. Das Löschen des Musters zeigt die Suche wieder an. Definitionseditoren zeigen Übersetzungen unter Inhalt und lassen den überflüssigen Reiter Definitionen weg. Durch Semikolon getrennte Wörterbuchbedeutungen werden einzeln übernommen; zugeordnete Übersetzungen und ursprüngliche Quelldaten bleiben erhalten. Strukturierte Bedeutungen ersetzen Verknüpfungen zu zusammengefassten Quelldefinitionen.
 
@@ -416,10 +416,6 @@ Die Wörterbuchsuche für Vokabeln behält den eingegebenen Text, die Reihenfolg
 ### Transformierte Sätze und Bereiche
 
 Satzerstellung, Bearbeitung und Detailansicht leiten Aussprachen aus der gewählten Transformation jeder geordneten Referenz ab. Wiederholte Stammformen behalten getrennte Positionen und Transformationspfade. Deklarierte Satzzeichen bleiben sichtbar, ohne angrenzende Titellinks zu verhindern; Links in Titel und Aussprache öffnen die gewählte Form mit Rücknavigation zum Stamm. Bereichswechsel führen den registrierten Study-Library-Ablauf aus, liefern aktualisierte Berechtigungen und behalten eigene Karten nach dem Verschieben sichtbar. Die Aktion heißt „Verschieben nach: Benutzer“, da geteilte Karten in den Benutzerbereich ihres ursprünglichen Erstellers zurückkehren. Anbieterkarten, geteilte abhängige Karten, offene Anträge und Zugriffsbeschränkungen verhindern weiterhin ungültige Verschiebungen. Die Beitragsregeln verbieten ausdrücklich das Ankündigen von Fähigkeiten, Aktionen, Routen oder Abläufen ohne ausführbare Implementierung.
-
-### Schlanke Komponenten
-
-Eingabevalidierung, Bezeichnermuster, Definitionssprachen und Variantenrichtungen verwenden gemeinsame fokussierte Hilfsfunktionen. Inhaltsaudio besitzt eigene Module, und Inhaltspakete verwenden unmittelbar stabile Datensatzidentitäten.
 
 ### Wörterbuchsuche und Cache
 
@@ -493,13 +489,7 @@ Die ausdrückliche Titelkomposition von Sätzen erhält Leerraum zwischen verkn�
 
 Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/gateways/study/technical).
 
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/gateways/study/technical).
-
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/gateways/study/technical).
-
 ### Wörterbuchaudio und Host-Cache
-
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/gateways/study/technical).
 
 Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/gateways/study/technical).
 
@@ -522,8 +512,6 @@ Referenzbilder erscheinen nun als Vorschaubilder im Library-Editor und dessen sc
 Mikrofonaufnahmen warten auf die Berechtigungsantwort des Browsers. Währenddessen werden doppelte Anfragen und Speichern verhindert. Ein erst nach dem Schließen gewährter Stream wird freigegeben. Verweigerte Berechtigungen und nicht verfügbare Aufnahmen haben eigene Meldungen. Mikrofon, Wiedergabe und Neu laden stehen gleich groß in einer Zeile. Der Kollektivplural verwendet ein einziges Kontrollkästchen für passende Substantivfamilien; unpassende Optionen bleiben verborgen. Audiodateinamen bleiben verborgen. Wiedergabe spielt den neuesten vorläufigen Upload oder die Mikrofonaufnahme; eine verspätete Antwort für gespeichertes Audio ersetzt sie nicht. Während der Aufnahme wird nur das Mikrofonsymbol rot, auch beim Darüberfahren; die Schaltfläche behält ihren normalen Themenstil.
 
 Study-Benachrichtigungen lösen aktuelle Fähigkeiten erst bei der Zustellung auf. Startreihenfolge und erneute Komponentenaktivierung deaktivieren die Zustellung dadurch nicht dauerhaft. Die Zustellquittung wird geprüft: Ohne erfolgreichen Sender wird ein Fehler gemeldet, Teilfehler werden protokolliert und erfolgreiche Empfänger und Sender sind nachvollziehbar.
-
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/ui/technical).
 
 Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/ui/technical).
 
@@ -672,15 +660,7 @@ Pro Karte sind höchstens 8 Tags, 16 Aussprachen und 10 Definitionen erlaubt; Fe
 
 Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/gateways/study/technical).
 
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/gateways/study/technical).
-
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/gateways/study/technical).
-
 ### Vollständige Ausspracheaufnahmen der Referenzdaten
-
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/gateways/study/technical).
-
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/gateways/study/technical).
 
 Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/gateways/study/technical).
 

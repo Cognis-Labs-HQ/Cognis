@@ -1,18 +1,18 @@
 # SAML-Anmeldung
 
-Melden Sie sich mit dem von Ihrer Organisation verbundenen SAML-Identitätsdienst an.
+Diese Anmeldemethode benötigt eine zusätzliche Integration der Installation. Das ausgefüllte Einstellungsformular allein verbindet keinen Identitätsdienst.
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/login) entsprechend Ihren Kontorechten.
+Nutze den SAML-Identitätsdienst deiner Organisation ohne zusätzliches Cognis-Passwort für diese Identität.
 
 ## Vor dem Start
 
-Prüfen Sie, ob SAML-Anmeldung aktiviert ist und Ihr Konto den Vorgang ausführen darf.
+Diese Anmeldemethode benötigt eine zusätzliche Integration der Installation. Das ausgefüllte Einstellungsformular allein verbindet keinen Identitätsdienst.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/login) und wählen Sie die gewünschte Aktion.
+Prüfe mit der Integration, ob ein Protokollclient bereitsteht, bevor du die Methode anbietest. Behalte lokale Anmeldung.
 
 ## Weitere Informationen
 

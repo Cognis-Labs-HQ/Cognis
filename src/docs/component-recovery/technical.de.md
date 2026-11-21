@@ -4,11 +4,11 @@
 
 ## Schnittstellen
 
-Dieses Thema ist eine Referenz und stellt keinen eigenen Endpunkt bereit. Beispiele verwenden die öffentlichen Schnittstellen der unten beschriebenen Komponenten.
+component:list und component:info prüfen Zustand. component:enable, component:disable und component:upgrade führen berechtigte Lebenszyklusaktionen aus; erforderliche Komponenten bleiben geschützt.
 
 ## Konfiguration
 
-Dieses Dokumentationsthema hat keine eigene Laufzeitkonfiguration. Betriebseinstellungen gehören zur zuständigen Komponente.
+Kanäle externer Module stehen in config/component-channels.json. Mitgelieferte Gateways, Adapter und Kernmodule aktualisiert die Hostinstallation statt eigener Kanäle.
 
 ## Verhalten
 
@@ -60,8 +60,9 @@ Der Besitzer eines Browser-Anbieters wird bei der Registrierung aus dem Bootstra
 
 ## Sicherheit
 
-Das Lesen der Dokumentation berechtigt nicht zur Ausführung ihrer Beispiele. Die zuständige Komponente autorisiert jeden Vorgang.
+Wiederherstellung behält Rechte, Paketprüfung und Pflichtschutz. Ungewisse Zeitüberschreitungen lassen Installationen deaktiviert; Erzwingen umgeht keine Integrität oder Abhängigkeiten.
 
 ## Referenz
 
-Quellcode und Paketmetadaten: `src/docs/component-recovery/`.
+- [src/tooling/cli/component-commands.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/tooling/cli/component-commands.ts)
+- [src/core/services/gateway-service.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/services/gateway-service.ts)

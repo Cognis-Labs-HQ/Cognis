@@ -4,16 +4,15 @@ Unggah dan ambil berkas sesuai batas penyimpanan dan izin berbagi akun Anda.
 
 ## Yang Dapat Anda Lakukan
 
-- Periksa kuota penyimpanan bawaan global dan namespace komponen yang menggunakannya.
-- Periksa pemilik dan visibilitas namespace sebelum mengubah kuota byte dan menyimpannya.
+Unggah berkas milik fitur dengan aturan akses dan batas penyimpanan.
 
 ## Sebelum Memulai
 
-Pastikan Berkas aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Unggahan memerlukan penyedia penyimpanan aktif dan kuota cukup.
 
 ## Langkah Awal
 
-Buka [fitur ini](/settings) dan pilih tindakan yang diperlukan.
+Gunakan kontrol unggah pada fitur pemilik berkas.
 
 ## Pelajari Lebih Lanjut
 

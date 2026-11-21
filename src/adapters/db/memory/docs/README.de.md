@@ -4,15 +4,15 @@ Führen Sie vorübergehende Vorführungen und Tests ohne dauerhafte Datenspeiche
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/administration) entsprechend Ihren Kontorechten.
+Prüfe Datenbankaufrufe in isolierten Tests ohne gespeicherte Zeilen.
 
 ## Vor dem Start
 
-Prüfen Sie, ob Arbeitsspeicher-Datenbank aktiviert ist und Ihr Konto den Vorgang ausführen darf.
+Dieser Testersatz bietet weder Persistenz noch Transaktions-Rollback.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/administration) und wählen Sie die gewünschte Aktion.
+Nutze ihn nur in einer wegwerfbaren Testumgebung.
 
 ## Weitere Informationen
 

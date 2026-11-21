@@ -4,11 +4,11 @@
 
 ## インターフェース
 
-このトピックは参考情報であり、独立したエンドポイントを提供しません。例では、以下で説明するコンポーネントの公開インターフェースを使用します。
+component-pages:request で公開された画面を調べ、component-pages:spawn でユーザー操作後に指定領域へ開きます。返されたハンドルで終了や移動時の保持を管理し、mount に root、signal、context を渡します。
 
 ## 設定
 
-このドキュメント自体には実行時の設定はありません。運用の設定は該当するコンポーネントが管理します。
+提供元は componentPage にルート識別、翻訳、方式を宣言します。呼び出し元は UUID、ルート ID、自身の領域、中止シグナルを指定します。
 
 ## 動作
 
@@ -100,4 +100,5 @@ Cognis は既存のプロバイダー要素を別の DOM 親へ移動せず、�
 
 ## リファレンス
 
-ソースとパッケージの情報: `src/docs/focus-control/`。
+- [src/core/contracts/focus/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/contracts/focus/index.ts)
+- [src/ui/reuse/focus-control.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/ui/reuse/focus-control.js)

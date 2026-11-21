@@ -4,11 +4,11 @@ Antarmuka publik dan aturan operasional Panggilan.
 
 ## Antarmuka
 
-Panggilan terintegrasi melalui gerbang pemilik; manifesnya mengidentifikasi komponen dan dependensi yang diperlukan.
+Pensinyalan memakai POST /api/v1/social/call, GET /api/v1/social/call/room/:roomId serta tindakan answer, hangup, leave, ringing per ID. Pembuatan memasok roomId.
 
 ## Konfigurasi
 
-Konfigurasi disediakan melalui gerbang pemilik. Panggilan tidak menyatakan konfigurasi tambahan dalam manifesnya.
+Pensinyalan mendapatkan ruang dari Pesan dan menerbitkan penyedia panggilan. Izin perangkat dan penyedia media menentukan ketersediaan audio/video.
 
 ## Perilaku
 
@@ -17,10 +17,6 @@ Konfigurasi disediakan melalui gerbang pemilik. Panggilan tidak menyatakan konfi
 Adaptor Call memiliki undangan panggilan per ruang, dering, jawaban, penutupan, batas waktu, dan penyerahan ke penyedia peramban. Messages menyediakan flow tindakan ruang yang netral; adaptor Call menyuntikkan kontrol dan perilakunya ke tahap tersebut.
 
 Panggilan dimulai pada permukaan dering yang menggantikan riwayat percakapan dan penyusun pesan sambil mempertahankan tajuk utas. Penerima memperoleh notifikasi Calls persisten dengan tindakan Jawab yang membuka ruang beserta token panggilan. Panggilan berakhir setelah 45 detik jika tidak dijawab. Setelah dijawab, adaptor memanggil `voip:startCall` dengan `phase: connect`; penyedia mengembalikan tindakan komponen atau navigasi. Kontrol rapat tertanam tetap terpisah dari bilah alat Call, yang panahnya memindahkan rapat ke gambar-dalam-gambar dan memulihkan Messages.
-
-### Contoh penggunaan
-
-Adapter Call diaktifkan otomatis ketika Messages dan penyedia browser `voip:startCall` tersedia.
 
 ### Spesifikasi teknis
 
@@ -66,8 +62,12 @@ Hanya peserta yang sudah bergabung yang dapat mengakhiri panggilan aktif. Setiap
 
 ## Keamanan
 
-Akses Panggilan diatur oleh pemanggil dan gerbang pemilik. Mengaktifkan komponen tidak menambah izin akun.
+Pensinyalan memeriksa pelaku dan akses ruang melalui social:messages:callContext. Keadaan panggilan tidak menggantikan otorisasi media atau izin perangkat peramban.
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/adapters/social/call/`.
+- [src/adapters/social/call/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/social/call/manifest.json)
+- [src/adapters/social/call/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/social/call/package.json)
+- [src/adapters/social/call/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/social/call/index.ts)
+- [src/adapters/social/call/routes/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/social/call/routes/index.ts)
+- [src/adapters/social/call/ui/provider.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/social/call/ui/provider.js)

@@ -4,16 +4,16 @@ Practical procedures for Focus Control.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/focus-control) before performing these procedures.
+The providing component must opt its page into the requested presentation mode.
 
 ## Examples
 
-This component does not declare a standalone command-line entry point. Use its owning feature or the [deployment procedures](/docs/devops/usage) to configure the installation; the [technical reference](/docs/focus-control/technical) lists its interfaces and constraints.
+Open the supported component from its owning action, work inside its stage, then close it using the caller's controls.
 
 ## Expected Results
 
-The example uses the documented interface of Focus Control. Confirm the response or saved state described in [Technical](/docs/focus-control/technical) before repeating a write operation.
+The embedded page stays scoped to its stage and ends with its owning lifetime unless explicitly retained for navigation.
 
 ## Troubleshooting
 
-If Focus Control is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+Check provider availability and supported modes. Browsers may reject openings without a direct user gesture.

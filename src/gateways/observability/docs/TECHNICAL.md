@@ -4,11 +4,11 @@ The public interfaces and operational rules of Performance Monitoring.
 
 ## Interfaces
 
-Performance Monitoring is integrated through the owning gateway; its manifest identifies the component and required dependencies.
+observability:metrics.record(name, value, labels) records finite allowlisted values. POST /api/v1/observability/client accepts metrics and navigation, at most sixteen metrics and a 16,384-character accumulated request body.
 
 ## Configuration
 
-Configuration is supplied through the owning gateway. Performance Monitoring declares no additional configuration in its manifest.
+The built-in sink records debug logs. Metric names and label keys are fixed allowlists; a replacement sink implements observability:metrics.record without adding a vendor-specific route.
 
 ## Behavior
 
@@ -16,13 +16,9 @@ Configuration is supplied through the owning gateway. Performance Monitoring dec
 
 The gateway exposes the vendor-neutral `observability:metrics` ctx capability and a size-limited, sampled browser telemetry endpoint. Metric names and labels are allowlisted to keep cardinality bounded. Deployments can replace the capability sink without coupling routes or gateways to a telemetry vendor.
 
-### Usage examples
-
-Resolve `observability:metrics` through `ctx.capabilities` for server metrics, or submit allowlisted browser telemetry through the gateway endpoint.
-
 ## Security
 
-Access to Performance Monitoring is governed by the caller and its owning gateway. Enabling a component does not grant additional account permissions.
+POST /api/v1/observability/client requires a user session. Names and label keys are allowlisted, label values are truncated to eighty characters, and each account may submit at most six requests per minute.
 
 ## Reference
 

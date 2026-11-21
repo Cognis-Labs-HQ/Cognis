@@ -4,15 +4,15 @@ Cognis verbindet Sprachenlernen, Gespräche und Kalender in einer Arbeitsumgebun
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/) entsprechend Ihren Kontorechten.
+Lerne Sprachen, plane Termine und kommuniziere in einer Installation.
 
 ## Vor dem Start
 
-Die beschriebenen Vorgänge können Konto- oder Verwaltungsrechte verlangen. Das Lesen eines Themas aktiviert keine optionalen Funktionen.
+Werkzeuge hängen von aktiven Funktionen und deinem Kontozugriff ab.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/) und wählen Sie die gewünschte Aktion.
+Melde dich an und wähle Dashboard, Kalender, Nachrichten oder Lernen.
 
 ## Weitere Informationen
 

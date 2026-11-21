@@ -4,15 +4,15 @@ Wählen Sie die Dienstanbieter für Anmeldung, Speicherung, Benachrichtigungen u
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/) entsprechend Ihren Kontorechten.
+Wähle Anbieter für Anmeldung, Speicher, Benachrichtigungen und Lernen.
 
 ## Vor dem Start
 
-Die beschriebenen Vorgänge können Konto- oder Verwaltungsrechte verlangen. Das Lesen eines Themas aktiviert keine optionalen Funktionen.
+Konfiguration braucht Administratorrechte und Verbindungsdaten.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/) und wählen Sie die gewünschte Aktion.
+Öffne das zuständige Gateway in Administration.
 
 ## Weitere Informationen
 

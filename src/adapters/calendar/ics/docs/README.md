@@ -4,15 +4,15 @@ Transfer events between Cognis and other calendar applications using calendar fi
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/calendar) according to your account permissions.
+Move calendar events using iCalendar files.
 
 ## Before You Start
 
-Check that Calendar Import and Export is enabled and that your account has permission for the operation.
+Use an owned calendar and an enabled ICS adapter.
 
 ## Get Started
 
-Open [the feature](/calendar) and choose the action you need.
+Open your calendar's available import or export action.
 
 ## Learn More
 

@@ -4,16 +4,16 @@ Praktische Abläufe für Funktionsdienste.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/gateways).
+Dieses Paket bündelt Infrastruktur; Benutzerfunktionen gehören zu einzelnen Gateways.
 
 ## Beispiele
 
-Diese Komponente deklariert keinen eigenständigen Befehlszeileneinstieg. Nutzen Sie die zugehörige Funktion oder die [Bereitstellungsabläufe](/docs/devops/usage) zur Konfiguration; die [technische Referenz](/docs/components/gateways/technical) nennt Schnittstellen und Grenzen.
+Öffne seine Dokumentation, prüfe Adapter und konfiguriere den passenden Anbieter.
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von Funktionsdienste. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/components/gateways/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Nur aktive, erfolgreich registrierte Anbieter liefern ihre erklärten Aktionen.
 
 ## Fehlerbehebung
 
-Falls Funktionsdienste nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Fehlende Anbieter werden nicht durch dieses Infrastrukturpaket behoben; prüfe das betreffende Gateway und dessen Protokolle.

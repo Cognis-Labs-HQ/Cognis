@@ -4,7 +4,7 @@ The public interfaces and operational rules of DevOps.
 
 ## Interfaces
 
-This topic is reference material and does not expose an independent endpoint. Examples use the public interfaces of the components described below.
+Docker Compose runs the application and nginx with the selected database. docker/entrypoint.sh builds DATABASE_URL from provider fields when absent; docker/healthcheck.sh tests the running application.
 
 ## Configuration
 
@@ -118,8 +118,10 @@ npm test
 
 ## Security
 
-Reading documentation does not grant permission to execute its examples. The owning component authorizes each operation.
+Run the application as the image's non-root user. Keep database credentials and DATA_ENCRYPTION_KEY in deployment-managed secrets, use a stable encryption key for persistent data and terminate TLS at a trusted proxy or ingress.
 
 ## Reference
 
-Source and package metadata: `src/docs/devops/`.
+- [docker/Dockerfile](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/docker/Dockerfile)
+- [docker/entrypoint.sh](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/docker/entrypoint.sh)
+- [docker/healthcheck.sh](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/docker/healthcheck.sh)

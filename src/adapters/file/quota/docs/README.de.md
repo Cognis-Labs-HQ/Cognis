@@ -4,15 +4,15 @@ Prüfen und begrenzen Sie den Kontospeicher, damit Uploads das erlaubte Volumen 
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/settings) entsprechend Ihren Kontorechten.
+Lege globale und funktionsbezogene Speichergrenzen für Konten fest.
 
 ## Vor dem Start
 
-Prüfen Sie, ob Speichergrenzen aktiviert ist und Ihr Konto den Vorgang ausführen darf.
+Nur Administratoren verwalten Standardgrenzen und individuelle Kontowerte.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/settings) und wählen Sie die gewünschte Aktion.
+Öffne die Speicherbegrenzungen in Administration.
 
 ## Weitere Informationen
 

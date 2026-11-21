@@ -4,7 +4,7 @@
 
 ## インターフェース
 
-### APIルート
+createNotificationSender は現在の保存先を遅延参照します。bootstrapNotifyAdapter が常時配信、認証付き受信箱、ベルを登録します。db:executor があれば DbInternalNotificationStore を初期化し、なければ一時保存の警告を出します。
 
 | メソッド | パス                            | 説明                     | 認証     |
 | -------- | ------------------------------- | ------------------------ | -------- |
@@ -17,8 +17,6 @@
 
 ## 設定
 
-### 設定
-
 このアダプターに設定項目はありません。通知ゲートウェイがロードしている限り常に有効です（アダプターは自動検出されるため常時有効）。無効化するにはアダプターディレクトリを削除またはリネームしてください。その場合、通知ベルはUIから消えます。
 
 通知の生成元は、項目を継続表示として指定し、識別子、アクセシブルなラベル、任意の SVG アイコン、操作の結果を含むアクションボタン記述子を提供できます。アダプターはこの汎用契約を検証して描画し、選択された識別子と通知ペイロードを通知します。生成元のドメインを解釈したり、生成元のケイパビリティを呼び出したりしません。
@@ -29,25 +27,15 @@
 
 ## 動作
 
-### 内部通知アダプター
-
-ブートストラップは具体的なゲートウェイを受け取らず、ctx の `notify:registerAlwaysOnSender` で常時有効な送信者を登録します。送信者の契約は `@cognis/core` が提供します。
-
-### 概要
-
-内部アダプターは、すべてのダッシュボードページにあるアプリ内通知ベルに直接通知を届けます。デフォルトで常時オンです。通知設定を構成しなくても、ゲートウェイ経由で送信されたすべての通知が受信者の受信トレイに届きます。アダプターはユーザーごとに最大50件の通知をメモリ内に保存します。サーバーを再起動するとエントリは失われます。
-
-### 責務
-
-- 通知ゲートウェイがディスパッチしたすべての通知を受け取り、受信者のアプリ内受信トレイに配置する。
-- ナビバープラグインを通じてダッシュボードの通知ベルボタンを注入する。アダプターを無効にするとベルは完全に消える。
-- 未読通知の件数を示すバッジを表示し、30秒ごとにポーリングで更新する。
-- 通知の閲覧・削除・既読マークを行うドロップダウンパネルを提供する。
+両方の保存先は受信者ごとに五十件を保ち、古いものから削除します。データベースは暗号化し、一定の DATA_ENCRYPTION_KEY で再起動後も読めます。DB がなければ再起動で消え、本番では鍵不足を拒否します。開発用の一時鍵では再起動前の内容を復号できません。アカウント削除で受信箱も消去します。
 
 ## セキュリティ
 
-アプリ内通知 へのアクセスは呼び出し元と担当のゲートウェイが管理します。有効化してもアカウントの権限は増えません。
+通知ルートは受信者を認証し、そのアカウントの記録を操作します。永続化には DATA_ENCRYPTION_KEY が必要で、一定の秘密鍵として管理します。
 
 ## リファレンス
 
-ソースとパッケージの情報: `src/adapters/notify/internal/`。
+- [src/adapters/notify/internal/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/notify/internal/manifest.json)
+- [src/adapters/notify/internal/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/notify/internal/package.json)
+- [src/adapters/notify/internal/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/notify/internal/index.ts)
+- [src/adapters/notify/internal/routes/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/notify/internal/routes/index.ts)

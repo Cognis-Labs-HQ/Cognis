@@ -46,8 +46,10 @@ INSERT INTO accounts (id, email) VALUES (?, ?)
 
 ## Keamanan
 
-Akses MariaDB diatur oleh pemanggil dan gerbang pemilik. Mengaktifkan komponen tidak menambah izin akun.
+Kredensial dan keamanan transportasi dikelola penerapan. Ikat nilai sebagai parameter; otorisasi aplikasi harus berjalan sebelum executor dipanggil.
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/adapters/db/mariadb/`.
+- [src/adapters/db/mariadb/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/mariadb/manifest.json)
+- [src/adapters/db/mariadb/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/mariadb/package.json)
+- [src/adapters/db/mariadb/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/mariadb/index.ts)

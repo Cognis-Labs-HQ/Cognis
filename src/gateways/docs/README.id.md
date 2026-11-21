@@ -4,15 +4,15 @@ Gerbang fitur menghubungkan bagian Cognis yang aktif dengan penyedia layanan yan
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/administration) sesuai izin akun Anda.
+Kenali gateway dan penyedia pemilik layanan.
 
 ## Sebelum Memulai
 
-Pastikan Gerbang Fitur aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Paket ini mengelompokkan infrastruktur; fitur pengguna dimiliki gateway individual.
 
 ## Langkah Awal
 
-Buka [fitur ini](/administration) dan pilih tindakan yang diperlukan.
+Temukan gateway layanan di Administrasi.
 
 ## Pelajari Lebih Lanjut
 

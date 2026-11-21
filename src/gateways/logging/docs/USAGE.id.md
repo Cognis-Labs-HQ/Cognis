@@ -4,17 +4,16 @@ Prosedur praktis untuk Log Aplikasi.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/gateways/logging) sebelum menjalankan prosedur ini.
+Administrasi log memerlukan akses administrator.
 
 ## Contoh
 
-- Gunakan filter tingkat keparahan, kata kunci, dan rentang waktu untuk mempersempit log pemeriksaan.
-- Periksa cap waktu dan detail terstruktur; perbarui saat memerlukan snapshot baru.
+Filter entri, periksa kegagalan terkait, dan sesuaikan tingkat keluaran atau rotasi dalam pengaturan log.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Log Aplikasi yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/gateways/logging/technical) sebelum mengulangi operasi tulis.
+Entri menampilkan aktivitas terekam; berkas dirotasi sesuai ukuran dan retensi.
 
 ## Pemecahan Masalah
 
-Jika Log Aplikasi tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Periksa tingkat keluaran dan izin berkas. Menaikkan detail tidak memulihkan peristiwa yang tidak pernah direkam.

@@ -4,15 +4,15 @@ Erweitern Sie Ihre Installation um zusätzliche Funktionen und verwalten Sie der
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/) entsprechend Ihren Kontorechten.
+Ergänze separat verpackte Funktionen und verwalte Konfiguration und Verfügbarkeit.
 
 ## Vor dem Start
 
-Die beschriebenen Vorgänge können Konto- oder Verwaltungsrechte verlangen. Das Lesen eines Themas aktiviert keine optionalen Funktionen.
+Administratoren benötigen eine vertrauenswürdige Quelle und passende Abhängigkeiten.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/) und wählen Sie die gewünschte Aktion.
+Öffne Module und prüfe das Paket vor Installation.
 
 ## Weitere Informationen
 

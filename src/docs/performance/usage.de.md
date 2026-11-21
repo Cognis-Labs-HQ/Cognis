@@ -4,16 +4,16 @@ Praktische Abläufe für Leistungsbudgets.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/performance).
+Messungen benötigen reproduzierbare Bedingungen und eine erfasste Releaseversion.
 
 ## Beispiele
 
-Diese Komponente deklariert keinen eigenständigen Befehlszeileneinstieg. Nutzen Sie die zugehörige Funktion oder die [Bereitstellungsabläufe](/docs/devops/usage) zur Konfiguration; die [technische Referenz](/docs/performance/technical) nennt Schnittstellen und Grenzen.
+Wiederhole unter gleichen Netz- und CPU-Bedingungen, erfasse Zeiten und Datenmengen und vergleiche den Median mit der Referenz.
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von Leistungsbudgets. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/performance/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Ergebnisse gelten für gemessene Bedingungen; lokale Tests belegen keine gehostete Leistungsgarantie.
 
 ## Fehlerbehebung
 
-Falls Leistungsbudgets nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Trenne Schriftladen, Ressourcen, API und Darstellung. Geänderte Testbedingungen verhindern direkten Vergleich.

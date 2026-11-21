@@ -85,8 +85,10 @@ Die Vertragsregistrierung von Adaptern folgt dem [gemeinsamen Gateway-Bootstrap-
 
 ## Sicherheit
 
-Der Zugriff auf Datenbank unterliegt dem Aufrufer und dem zuständigen Funktionsdienst. Die Aktivierung erweitert keine Kontorechte.
+Der Executor ist Infrastruktur und keine Benutzerberechtigung. Aufrufer prüfen Rechte vor strukturierten Befehlen; Zugangsdaten und Sicherungen verwaltet die Bereitstellung.
 
 ## Referenz
 
-Quellcode und Paketmetadaten: `src/gateways/db/`.
+- [src/gateways/db/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/db/manifest.json)
+- [src/gateways/db/bootstrap.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/db/bootstrap.ts)
+- [src/gateways/db/gateway.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/db/gateway.ts)

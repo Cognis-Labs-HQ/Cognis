@@ -4,11 +4,11 @@
 
 ## Schnittstellen
 
-Rangliste wird über den zuständigen Funktionsdienst eingebunden; das Manifest nennt die Komponente und ihre Abhängigkeiten.
+study:leaderboard verwaltet Definitionen, Gruppen und Teilnahme mit requestTableModel und queryStandings. Authentifizierte GET-Routen /api/v1/study/leaderboard/definitions und /standings liefern Daten.
 
 ## Konfiguration
 
-Die Konfiguration erfolgt über den zuständigen Funktionsdienst. Rangliste definiert keine zusätzlichen Einstellungen im Manifest.
+Anbieter registrieren Kriterien, Mindestnachweise, Zeitfenster und Gruppenrichtlinien. Teilnahme und Gruppen werden über abgewartete Fähigkeiten gespeichert.
 
 ## Verhalten
 
@@ -49,7 +49,7 @@ Gespeicherte Übungs-XP erreichen die Rangliste über `study:leaderboard:recordP
 
 ## Sicherheit
 
-Der Zugriff auf Rangliste unterliegt dem Aufrufer und dem zuständigen Funktionsdienst. Die Aktivierung erweitert keine Kontorechte.
+Ranglisten prüfen aktuelle Klassenmitgliedschaft und veröffentlichen nur erlaubte Identität, sonst ein Alias. Definition und Teilnahme begrenzen die Gruppe; unberechtigte Anfragen lesen keine Ranglistendaten.
 
 ## Referenz
 

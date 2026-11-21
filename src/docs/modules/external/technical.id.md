@@ -30,7 +30,7 @@ Kunci pelokalan menggunakan kata huruf kecil yang dipisahkan titik pada namespac
 
 ## Konfigurasi
 
-Topik dokumentasi ini tidak memiliki konfigurasi waktu jalan sendiri. Pengaturan operasional dimiliki komponen terkait.
+Sumber dan root instalasi dikonfigurasi host. Modul mendeklarasikan identitas, dependensi, rute, dokumentasi, serta skema; rahasia diperoleh melalui kapabilitas terlindungi.
 
 ## Perilaku
 
@@ -39,33 +39,6 @@ Topik dokumentasi ini tidak memiliki konfigurasi waktu jalan sendiri. Pengaturan
 Perilaku ini dijelaskan dalam [kontrak bersama](/docs/adapters/study/library/technical).
 
 Modul eksternal memperluas Cognis dengan perilaku server dan browser yang dipasang secara mandiri serta tetap terisolasi di balik kontrak manifes, kapabilitas, alur, rute, integritas, dan siklus hidup.
-
-### Contoh penggunaan
-
-Repositori mendeklarasikan identitas stabil dan titik masuk bootstrap di `manifest.json`:
-
-<!-- prettier-ignore -->
-```json
-{
-  "uuid": "123e4567-e89b-42d3-a456-426614174000",
-  "id": "example-module",
-  "version": "1.0.0",
-  "entrypoints": { "bootstrap": "bootstrap.js" }
-}
-```
-
-Bootstrap menyumbangkan perilaku hanya melalui konteks terbatasnya dan mengembalikan pembersihan untuk sumber daya miliknya:
-
-<!-- prettier-ignore -->
-```js
-export async function bootstrapModule(ctx) {
-  ctx.registerFlow({ id: 'example-module:constructPage', stages: ['content'] });
-  ctx.flow.extend('example-module:constructPage', 'content',
-    { id: 'example-module:content' }, async () => ({ ready: true }));
-}
-```
-
-Administrator memasang repositori dari **Modul**, meninjau integritas dan dependensinya, mengaktifkannya secara eksplisit, lalu dapat menonaktifkannya untuk menghapus semua perilaku UI dan backend yang terdaftar tanpa memulai ulang Cognis.
 
 ### Identitas stabil
 
@@ -191,23 +164,13 @@ Gunakan tautan atau tombol dengan `data-navigation-path="/route"`; Cognis menona
 
 Perilaku ini dijelaskan dalam [kontrak bersama](/docs/gateways/study/technical).
 
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/gateways/study/technical).
-
 Study privat memerlukan sesi akun yang sama, pernah diverifikasi, dan belum kedaluwarsa di tab yang sama. Muat ulang dan kunjungan pertama tetap mengikuti kontrak offline khusus halaman publik. Perubahan akun/sesi, preferensi, siklus hidup modul, dan pelepasan penyedia membatalkan snapshot privat. Pencabutan akses server tidak dapat diketahui saat terputus. Pemulihan memakai penjaga perubahan yang belum disimpan lalu memuat ulang otorisasi server.
 
 ### Antrean dan Persetujuan
 
 Perilaku ini dijelaskan dalam [kontrak bersama](/docs/gateways/study/technical).
 
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/gateways/study/technical).
-
 ### Perubahan Sosial Offline
-
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/adapters/social/messages/technical).
-
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/adapters/social/messages/technical).
-
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/adapters/social/messages/technical).
 
 Perilaku ini dijelaskan dalam [kontrak bersama](/docs/adapters/social/messages/technical).
 
@@ -244,8 +207,6 @@ const purpose = await registerPurpose("digest", (variables) => ({
 const sendEmail = ctx.getCapability("notify:sendEmail");
 await sendEmail({ purpose, recipientEmail, variables });
 ```
-
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/adapters/notify/smtp/technical).
 
 Perilaku ini dijelaskan dalam [kontrak bersama](/docs/adapters/notify/smtp/technical).
 

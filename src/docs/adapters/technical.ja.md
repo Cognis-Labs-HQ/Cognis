@@ -4,40 +4,15 @@
 
 ## インターフェース
 
-### アーキテクチャ
-
-```
-src/adapters/
-  db/
-    mariadb/     — MariaDB/MySQL
-    postgres/    — PostgreSQL（デフォルト）
-    memory/      — インメモリ（テストのみ）
-  auth/
-    local/       — scryptハッシュのローカル認証情報
-    ldap/        — LDAPディレクトリ認証
-    saml/        — SAML 2.0 SSO
-    oidc/        — OAuth2/OIDC SSO
-  notify/
-    smtp/        — SMTPによるメール配信
-  file/
-    local/       — ファイルシステムベースのファイルストレージ
-```
-
-### 拡張ポイント
-
-既存のゲートウェイに新しいアダプターを追加するには、`src/adapters/<gateway-id>/<adapter-id>/` の下にディレクトリを作成し、以下を含めます:
-
-- アダプター実装（ゲートウェイインターフェースを実装するTypeScriptクラス）
-- `name`、`version`、`main` フィールドを含む `package.json`
-- エクスポートされた `createAdapter()` 関数
-- ドキュメント標準に従った `docs/index.en.md`
-- `tests/` 以下のテスト
+各アダプターはゲートウェイ契約の生成処理と起動処理を提供します。データベースは構造化実行、認証は AuthProviderAdapter、通知は配信情報と診断を公開します。
 
 ## 設定
 
-このドキュメント自体には実行時の設定はありません。運用の設定は該当するコンポーネントが管理します。
+各アダプターが担当する契約で設定を宣言します。認証・通知・データベースでは項目が異なり、宣言だけでは外部接続の実装を証明しません。
 
 ## 動作
+
+このソースの OIDC と SAML はクライアントの注入が必要です。フォームでは生成しないため、配置前に各技術資料を確認してください。
 
 ### 概要
 
@@ -70,8 +45,9 @@ src/adapters/
 
 ## セキュリティ
 
-ドキュメントを読むだけでは例を実行する権限は得られません。各操作は担当するコンポーネントが認可します。
+通信の秘密情報と契約は各アダプターが管理します。テストでパスワードを公開せず、無効化で登録を解放します。
 
 ## リファレンス
 
-ソースとパッケージの情報: `src/docs/adapters/`。
+- [src/gateways/reuse/adapter-bootstrap.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/reuse/adapter-bootstrap.ts)
+- [src/gateways/shared.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/shared.ts)

@@ -4,11 +4,11 @@ The public interfaces and operational rules of Flashcards.
 
 ## Interfaces
 
-Flashcards is integrated through the owning gateway; its manifest identifies the component and required dependencies.
+study:decks exposes the deck service. Authenticated /api/v1/study/decks supports GET listing, GET/:id details, POST upsert and DELETE/:id; POST/:id/review accepts cardId, grade and attempt.
 
 ## Configuration
 
-Configuration is supplied through the owning gateway. Flashcards declares no additional configuration in its manifest.
+Deck content and visibility are stored per resource. Read/Write mode is an account preference; starter decks come from registered providers rather than an adapter-wide hardcoded language list.
 
 ## Behavior
 
@@ -25,10 +25,6 @@ Reading prompts display the primary pronunciation beside the card value when the
 Try Again is shown only when the updated queue for the selected focus contains cards. An empty focus keeps the congratulations and Home action without offering an empty restart.
 
 Completing a deck shows a centered green check and congratulations. Home returns to All. Try Again rebuilds the selected queue using updated review status and starts it from its first card, retaining the Total/Done/Due/New focus even when submitted reviews have changed card status. Only session answers and attempt identities reset; saved review progress remains intact. Shared-link practice uses the same completion view and temporary-session restart.
-
-### Usage
-
-Open a visible deck from Flashcards to begin practicing immediately. Use Total, Done, Due or New to choose the cards to study.
 
 ### Study Browsing and Favourites
 
@@ -62,10 +58,6 @@ Flashcard scheduling and its attempt receipt commit before cross-adapter reward 
 
 See the [shared contract](/docs/gateways/study/technical) for this behavior.
 
-See the [shared contract](/docs/gateways/study/technical) for this behavior.
-
-See the [shared contract](/docs/gateways/study/technical) for this behavior.
-
 The main browser entry is `ui/app/index.js`; its actions, markup, language and practice modules live beside it. Shared decks mount `ui/app/shared-deck.js`. Server-side deck behavior uses `service/index.ts` with its route, flow, store and result modules in the same service directory.
 
 ### Uniform Practice Sampling
@@ -94,19 +86,15 @@ See the [shared contract](/docs/api/technical) for this behavior.
 
 See the [shared contract](/docs/api/technical) for this behavior.
 
-### Reliable Sharing and Tests
+### Share Delivery
 
 Calendar and Flashcards sharing hooks tolerate unrelated resource providers returning no result, so both link and account shares can be created and resolved with all providers enabled. Share loading, account-share status and Calendar guest pages use responsive minimum sizes rather than requiring eight grid columns. Guest pages remain usable on narrow screens. Share maintenance runs sequentially, coalesces overlapping requests, ends a failed pass and retries at the next fifteen-minute interval. Disable stops subsequent work; reactivation resumes scheduling.
 
 Guest Flashcard practice uses a temporary mode selection and disables account enhancements and persisted layout settings. It does not read or write account practice preferences.
 
-### Review and Lifecycle Hardening
-
-Guest page startup checks cancellation after localization, composer initialization, session/provider loading, styles and renderer imports. Composers, Calendar popups and resource requests use the page signal. Cancelled pages cannot overwrite a later page or report stale results. Maintenance passes also pass an abort signal into their jobs; disabling Share prevents later expiration notifications within an in-flight scan.
-
 ## Security
 
-Access to Flashcards is governed by the caller and its owning gateway. Enabling a component does not grant additional account permissions.
+Deck operations validate ownership and permitted shared access. Exports require creator or administrator authority; a deck share does not establish classroom membership or authorize rewards from arbitrary imported events.
 
 ## Reference
 

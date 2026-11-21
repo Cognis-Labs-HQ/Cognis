@@ -4,11 +4,11 @@
 
 ## Schnittstellen
 
-Kalender wird über den zuständigen Funktionsdienst eingebunden; das Manifest nennt die Komponente und ihre Abhängigkeiten.
+/api/v1/calendar/calendars bietet GET und POST; calendars/:id PATCH und DELETE. calendars/:id/events bietet GET und POST; /api/v1/calendar/calendars/:calendarId/events/:eventId GET, PATCH und DELETE.
 
 ## Konfiguration
 
-Die Konfiguration erfolgt über den zuständigen Funktionsdienst. Kalender definiert keine zusätzlichen Einstellungen im Manifest.
+Kalender enthalten Name, Sichtbarkeit und Termine. Erinnerungen und Kontostatus nutzen Kalendersteuerung; ICS und CalDAV registrieren eigene Exportschnittstellen.
 
 ## Verhalten
 
@@ -50,8 +50,6 @@ Beim Erstellen verwendet ein fehlendes `reminderOffsetsMinutes` die Kalenderstan
 
 Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/features/technical).
 
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/features/technical).
-
 ### Dauerhaft vorgemerkte Änderungen
 
 Vorgemerkte neue Termine und spätere Änderungen erscheinen in zwischengespeicherten Listen und Detailfenstern. Gleichzeitige Übermittlungen teilen sich eine Anfrage. Fehler optionaler Aktivitätserfassung, Verfügbarkeitsanzeige oder Ansichtsaktualisierung machen einen gespeicherten Termin nicht zu einer fehlgeschlagenen Erstellung. Die Übertragung verwendet dieselbe Termin-UUID und die aktuellen Serverberechtigungen.
@@ -62,11 +60,11 @@ Der Calendar-Provider bereitet das verzögert geladene Stylesheet für Ereigniss
 
 ### Zuverlässige Freigaben und Tests
 
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/adapters/study/flashcards/technical).
+Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/gateways/share/technical).
 
 ### Prüfung und Lebenszyklus
 
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/adapters/study/flashcards/technical).
+Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/gateways/share/technical).
 
 ### Browsereigene Aktionen
 
@@ -92,11 +90,7 @@ Ansichtsschaltflächen aktualisieren ihre sichtbare Auswahl und den gedrückten 
 
 ## Sicherheit
 
-### Sichere Laufzeitanfragen
-
-Sprachwechsel und Einwilligungsabfragen scheitern nicht mehr daran, dass Calendar bei normalen HTTP-Anfragen Benachrichtigungen registriert. Calendar registriert seine Kategorie einmal beim Bootstrap-Abschluss, nachdem die Benachrichtigungsanbieter verfügbar sind. Share verwendet seine bereits registrierte Kategorie; Auth nutzt seinen Abschluss-Hook ohne doppelte frühzeitige Registrierung. SMTP-Registrierungen bleiben auf den Bootstrap beschränkt. Laufzeit-Handler lösen nur vorhandene Zustellfunktionen auf und nutzen sie. Calendar ist **1.5.5**.
-
-Die Vertragsregistrierung von Adaptern folgt dem [gemeinsamen Gateway-Bootstrap-Vertrag](/docs/gateways).
+Kalenderänderungen brauchen Eigentum oder übertragenes Bearbeitungsrecht. Freigaben prüfen Bereich, Ablauf und Schutz; Erinnerungen nutzen die beim Start registrierte Kategorie.
 
 ## Referenz
 

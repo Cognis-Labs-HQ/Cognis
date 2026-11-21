@@ -4,15 +4,15 @@ Review recorded practice results and the progress derived from your learning act
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/study) according to your account permissions.
+Retain learning attempts, review schedules and eligible practice rewards across sessions.
 
 ## Before You Start
 
-Check that Learning Progress is enabled and that your account has permission for the operation.
+Practice through an enabled Study activity; classroom records require current access.
 
 ## Get Started
 
-Open [the feature](/study) and choose the action you need.
+Complete a supported Flashcards or Drawing activity.
 
 ## Learn More
 

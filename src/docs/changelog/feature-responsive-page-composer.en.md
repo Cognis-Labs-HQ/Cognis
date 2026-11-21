@@ -12,7 +12,7 @@ Offline preparation, provider contracts, account boundaries and lifecycle cleanu
 
 ## Structured Documentation
 
-Component documentation separates introductory information, usage procedures and technical contracts. Core topics use directory entries. The reader switches among three views of one complete versioned bundle; compliance checks enforce structure, localization, manifests and asset ownership. Markdown security regressions verify escaped malformed HTML and preserved nested code fences directly against encoded output.
+Component documentation separates introductory information, usage procedures and technical contracts. Core topics use directory entries. The reader switches among three views of one complete versioned bundle; compliance checks enforce structure, localization, manifests and asset ownership. Markdown security regressions verify escaped malformed HTML and preserved nested code fences directly against encoded output. Each view contains component-specific tasks, prerequisites, observable outcomes and failure guidance. Technical claims reflect implemented interfaces and configuration, including explicit limits for integrations that require an injected client. Validation rejects generic placeholder guidance and references to missing source files.
 
 ## Commits
 

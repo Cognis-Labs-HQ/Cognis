@@ -4,15 +4,15 @@ Siapkan dan pelihara instalasi Cognis, termasuk penyimpanan, layanan, dan konfig
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/) sesuai izin akun Anda.
+Terapkan Cognis dengan basis data, media, dan konfigurasi persisten.
 
 ## Sebelum Memulai
 
-Operasi yang dibahas dapat memerlukan izin akun atau administrator. Membaca topik tidak mengaktifkan fitur opsionalnya.
+Siapkan Docker Compose, kredensial basis data, dan kunci enkripsi yang dikelola penerapan.
 
 ## Langkah Awal
 
-Buka [fitur ini](/) dan pilih tindakan yang diperlukan.
+Tinjau berkas Compose dan variabel wajibnya.
 
 ## Pelajari Lebih Lanjut
 

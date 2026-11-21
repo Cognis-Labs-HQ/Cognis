@@ -269,8 +269,9 @@ Study loads adapter UUID dependencies and required core capabilities from each m
 
 ## Security
 
-Reading documentation does not grant permission to execute its examples. The owning component authorizes each operation.
+Language modules supply data and constructors, not permission policy. Canonical references, content visibility, classroom membership and owner-scoped mutations remain host-validated.
 
 ## Reference
 
-Source and package metadata: `src/docs/study-language-framework/`.
+- [src/gateways/study/gateway.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/study/gateway.ts)
+- [src/adapters/study/library/contracts.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/study/library/contracts.ts)

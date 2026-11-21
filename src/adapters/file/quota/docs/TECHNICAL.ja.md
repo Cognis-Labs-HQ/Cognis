@@ -48,8 +48,10 @@
 
 ## セキュリティ
 
-保存容量の制限 へのアクセスは呼び出し元と担当のゲートウェイが管理します。有効化してもアカウントの権限は増えません。
+既定値と個別容量の変更は許可された管理操作のみです。初期設定は既存行を上書きせず、適用と使用量は Files が管理します。
 
 ## リファレンス
 
-ソースとパッケージの情報: `src/adapters/file/quota/`。
+- [src/adapters/file/quota/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/file/quota/manifest.json)
+- [src/adapters/file/quota/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/file/quota/package.json)
+- [src/adapters/file/quota/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/file/quota/index.ts)

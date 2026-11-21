@@ -83,8 +83,10 @@ Databaseゲートウェイは、参加者の報酬記録、ブースター引き
 
 ## セキュリティ
 
-データベース へのアクセスは呼び出し元と担当のゲートウェイが管理します。有効化してもアカウントの権限は増えません。
+実行機能は基盤でありユーザーの認可境界ではありません。構造化コマンドの前に権限を確認し、接続情報とバックアップは配置環境で管理します。
 
 ## リファレンス
 
-ソースとパッケージの情報: `src/gateways/db/`。
+- [src/gateways/db/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/db/manifest.json)
+- [src/gateways/db/bootstrap.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/db/bootstrap.ts)
+- [src/gateways/db/gateway.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/db/gateway.ts)

@@ -48,8 +48,10 @@ Like the files gateway itself, this adapter bootstraps before the database gatew
 
 ## Security
 
-Access to Storage Limits is governed by the caller and its owning gateway. Enabling a component does not grant additional account permissions.
+Only authorized administration changes defaults or per-user overrides. Provisioning ignores existing rows; enforcement and usage accounting remain with the Files gateway.
 
 ## Reference
 
-Source and package metadata: `src/adapters/file/quota/`.
+- [src/adapters/file/quota/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/file/quota/manifest.json)
+- [src/adapters/file/quota/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/file/quota/package.json)
+- [src/adapters/file/quota/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/file/quota/index.ts)

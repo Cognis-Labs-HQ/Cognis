@@ -18,7 +18,7 @@ Der Profile-Adapter veröffentlicht `social:profile:identity` für Plattform- un
 
 ## Konfiguration
 
-Die Konfiguration erfolgt über den zuständigen Funktionsdienst. Soziale Funktionen definiert keine zusätzlichen Einstellungen im Manifest.
+Aktive Adapter liefern Profile, Räume und Signalisierung unabhängig. Ihre Startkontexte begrenzen Registrierung und nutzen Kontodienste über ctx.
 
 ## Verhalten
 
@@ -126,7 +126,7 @@ HTTP-Routen authentifizieren und autorisieren den Handelnden. Capabilities sind 
 
 ## Sicherheit
 
-Der Zugriff auf Soziale Funktionen unterliegt dem Aufrufer und dem zuständigen Funktionsdienst. Die Aktivierung erweitert keine Kontorechte.
+Adapter erhalten begrenzte Registrierungen und ctx-Fähigkeiten. Mitgliedschaft, Blockierungen und Sichtbarkeit prüft die zuständige Aktion; Aktivierung allein gewährt keinen Zugriff.
 
 ## Referenz
 

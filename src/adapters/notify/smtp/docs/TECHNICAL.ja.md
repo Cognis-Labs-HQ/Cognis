@@ -92,8 +92,11 @@ SMTP 接続の確立と TLS ネゴシエーションには、それぞれ 30 秒
 
 ## セキュリティ
 
-メール配信 へのアクセスは呼び出し元と担当のゲートウェイが管理します。有効化してもアカウントの権限は増えません。
+SMTP の秘密情報は管理者が管理します。TLS と証明書検証で通信を保護し、確認メールには有効期間内の登録目的と検証済みの宛先を使います。
 
 ## リファレンス
 
-ソースとパッケージの情報: `src/adapters/notify/smtp/`。
+- [src/adapters/notify/smtp/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/notify/smtp/manifest.json)
+- [src/adapters/notify/smtp/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/notify/smtp/package.json)
+- [src/adapters/notify/smtp/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/notify/smtp/index.ts)
+- [src/adapters/notify/smtp/bootstrap.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/notify/smtp/bootstrap.ts)

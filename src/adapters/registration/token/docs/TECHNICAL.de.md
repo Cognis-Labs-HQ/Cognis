@@ -4,11 +4,11 @@
 
 ## Schnittstellen
 
-Registrierungseinladungen wird über den zuständigen Funktionsdienst eingebunden; das Manifest nennt die Komponente und ihre Abhängigkeiten.
+createRegistrationAdapter liefert Einladungsfreigabe für Registrierung; CLI-Beiträge sind invite:token:generate und invite:email:send.
 
 ## Konfiguration
 
-Die Konfiguration erfolgt über den zuständigen Funktionsdienst. Registrierungseinladungen definiert keine zusätzlichen Einstellungen im Manifest.
+Ausstellung folgt der Registrierungsrichtlinie mit Gründer-/Administratorfreigabe, Empfängerdomänen und offenen Limits. Mail nutzt den aktiven Benachrichtigungsanbieter.
 
 ## Verhalten
 
@@ -17,10 +17,6 @@ Die Konfiguration erfolgt über den zuständigen Funktionsdienst. Registrierungs
 Der Adapter deklariert Autorisierungsskript und Sprachressourcen über `registrationUi`. Das Gateway lädt den Beitrag nur bei aktiviertem Adapter und Gateway.
 
 Der verpflichtende Registrierungstoken-Adapter verwaltet Einladungs- und Autorisierungstoken für die Kontoerstellung. Er sendet einmalig verwendbare Links über den aktiven E-Mail-Benachrichtigungsanbieter und dient der Benutzerseite als Tokenquelle für Einladungen durch Administratoren und Gründer.
-
-### Anwendungsbeispiele
-
-Administratoren und Gründer versenden Einladungen über die Benutzerseite. Externe Authentifizierungsanbieter übergeben ihre verifizierte E-Mail-Adresse und das Registrierungstoken über den Ablauf zur Freigabe der Kontoerstellung, anstatt den Adapter zu importieren.
 
 ### SSO-Autorisierung und Einladungsrichtlinien
 
@@ -32,7 +28,7 @@ Administratoren und Eigentümer können `/invite` ohne Gründerstatus öffnen. D
 
 ## Sicherheit
 
-Der Zugriff auf Registrierungseinladungen unterliegt dem Aufrufer und dem zuständigen Funktionsdienst. Die Aktivierung erweitert keine Kontorechte.
+Einladungsfreigabe bindet E-Mail und Richtlinie. Externe Konten müssen vor Einlösen gespeichert sein; fehlgeschlagene Zustellung ersetzt keine nutzbare Einladung.
 
 ## Referenz
 

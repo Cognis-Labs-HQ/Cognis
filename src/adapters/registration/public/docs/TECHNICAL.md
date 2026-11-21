@@ -20,4 +20,6 @@ Callers cannot request an administrative role through this provider. Registratio
 
 ## Reference
 
-Source and package metadata: `src/adapters/registration/public/`.
+- [src/adapters/registration/public/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/registration/public/manifest.json)
+- [src/adapters/registration/public/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/registration/public/package.json)
+- [src/adapters/registration/public/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/registration/public/index.ts)

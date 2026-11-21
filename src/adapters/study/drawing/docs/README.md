@@ -4,15 +4,15 @@ Practise writing characters using the drawing pad and the guidance available for
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/study) according to your account permissions.
+Practice writing with the drawing pad and supported language content.
 
 ## Before You Start
 
-Check that Writing Practice is enabled and that your account has permission for the operation.
+Enroll in a language with writing-practice support.
 
 ## Get Started
 
-Open [the feature](/study) and choose the action you need.
+Open a supported Study item and its drawing action.
 
 ## Learn More
 

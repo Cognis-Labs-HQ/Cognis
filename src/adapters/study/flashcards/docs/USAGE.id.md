@@ -4,23 +4,18 @@ Prosedur praktis untuk Kartu Hafalan.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/adapters/study/flashcards) sebelum menjalankan prosedur ini.
+Masuk dan pilih bahasa terdaftar; pengeditan serta ekspor memerlukan akses dek yang sesuai.
 
 ## Contoh
 
-- Pilih dek dari bilah samping lalu periksa bahasa dan kartu di dalamnya.
-- Tinjau mode dan filter belajar yang tersedia sebelum mulai berlatih.
-- Gunakan kontrol latihan untuk menjawab dan meninjau kartu; kemajuan terikat pada akun Anda.
-- Buat dek, beri nama yang berguna, dan pilih kartu pustaka. Periksa kartu yang dipilih sebelum menyimpan.
-- Baca soal lalu masukkan atau pilih jawaban. Pada latihan menulis, gunakan kontrol menggambar dan petunjuk goresan.
-- Setelah menjawab, bandingkan umpan balik dan jawaban. Lanjutkan kartu dan gunakan kontrol sebelumnya/berikutnya bila tersedia.
-- Edit dek milik Anda untuk mengubah nama atau pilihan kartu. Tinjau pilihan sebelum menyimpan untuk latihan berikutnya.
-- Gunakan kontrol berbagi untuk memilih penerima dan akses. Tinjau dialog sebelum mengonfirmasi siapa yang boleh memakai dek.
+Filter dek, pilih membaca atau menulis, selesaikan kartu, dan tinjau umpan balik; favoritkan dek berguna.
+
+Buka dek yang terlihat dari Flashcards untuk langsung berlatih. Pilih Total, Selesai, Jatuh Tempo atau Baru untuk menentukan kartu.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Kartu Hafalan yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/adapters/study/flashcards/technical) sebelum mengulangi operasi tulis.
+Latihan selesai yang tepercaya merekam kemajuan dan hadiah yang memenuhi syarat. Edit dek bertahan setelah disimpan.
 
 ## Pemecahan Masalah
 
-Jika Kartu Hafalan tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Daftar luring kosong memerlukan data bahasa yang disiapkan. Akses berbagi tidak memberikan hak ekspor khusus pembuat.

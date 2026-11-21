@@ -4,24 +4,20 @@ Praktische Abläufe für Befehlszeilenwerkzeuge.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/components/tooling/cli).
+Nutze cognisctl mit gültigem berechtigtem Token für geschützte Befehle.
 
 ## Beispiele
 
-Rufen Sie die Hilfe auf, um installierte Vorgänge und ihre Argumente aufzulisten.
+Führe `cognisctl system:health` und `cognisctl component:list` aus und lies vor Änderungen die Hilfe des Komponentenbefehls.
 
 ```sh
 cognisctl --help
 ```
 
-1. Öffnen Sie [die Funktion](/administration).
-2. Wählen Sie eine verfügbare Aktion für Befehlszeilenwerkzeuge.
-3. Prüfen Sie die benötigten Werte und bestätigen Sie das Ergebnis.
-
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von Befehlszeilenwerkzeuge. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/components/tooling/cli/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Befehle zeigen Serverergebnisse und prüfen dieselben Rechte wie HTTP-Aktionen.
 
 ## Fehlerbehebung
 
-Falls Befehlszeilenwerkzeuge nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Prüfe Serveradresse und COGNIS_CLI_TOKEN_PATH. Tokens und Passwörter gehören in geschützte Konfiguration statt geteilte Terminalausgabe.

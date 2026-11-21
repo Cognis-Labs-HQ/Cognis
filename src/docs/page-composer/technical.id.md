@@ -4,11 +4,11 @@ Antarmuka publik dan aturan operasional Page Composer.
 
 ## Antarmuka
 
-Topik ini merupakan referensi dan tidak menyediakan titik akhir mandiri. Contoh memakai antarmuka publik komponen yang dijelaskan di bawah.
+createPageComposer(root, options) membuat siklus halaman. Elemen memasok konten dan callback; init memasang shell dan refresh memperbarui deskriptor.
 
 ## Konfigurasi
 
-Topik dokumentasi ini tidak memiliki konfigurasi waktu jalan sendiri. Pengaturan operasional dimiliki komponen terkait.
+createPageComposer menerima elements, pageManifest, i18n, signal, dan opsi tata letak. Elemen viewport mengikuti kontrak responsif; preferensi memakai preferenceKey.
 
 ## Perilaku
 
@@ -131,8 +131,8 @@ Teks bersama membungkus sesuai lebar yang tersedia sebelum dan sesudah font dimu
 
 ## Keamanan
 
-Membaca dokumentasi tidak memberikan izin menjalankan contohnya. Komponen pemilik mengotorisasi setiap operasi.
+Composer mengatur presentasi dan masa DOM, bukan otorisasi sumber daya. Tindakan tetap memakai alur pemilik; markup serta gaya mematuhi batas panel dan menu.
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/docs/page-composer/`.
+- [src/ui/reuse/page-composer/index.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/ui/reuse/page-composer/index.js)

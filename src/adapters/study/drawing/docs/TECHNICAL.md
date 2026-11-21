@@ -4,21 +4,17 @@ The public interfaces and operational rules of Writing Practice.
 
 ## Interfaces
 
-Writing Practice is integrated through the owning gateway; its manifest identifies the component and required dependencies.
+Browser capabilities study:drawing:open, study:drawing:load and study:drawing:observe bind requests and observers to the provider and page abort signals.
 
 ## Configuration
 
-Configuration is supplied through the owning gateway. Writing Practice declares no additional configuration in its manifest.
+Language providers supply canonical stroke patterns. Guidance, reveal state and current drawing placement belong to the Study surface; there is no independent drawing server to configure.
 
 ## Behavior
 
 ### Drawing Practice
 
 Study owns the complete drawing pad in `src/gateways/study/ui/reuse/drawing.js`, including its canvas, controls, guidance, scoring and completion feedback. The optional Drawing adapter contributes the public `study:drawing:open` and `study:drawing:load` capabilities through browser `uiCtx`; callers await these actions and pass a complete Library card and validated `strokePattern`.
-
-### Usage Examples
-
-The same `openDrawingPad` engine accepts an optional `container`, abort `signal` and `onResult` callback. Without a container it opens a movable, resizable floating window within the page; loading a different card preserves its position. With a container it embeds the entire pad, locks the original character and reports success only when every ordered stroke is accepted. Flashcards requires no optional Drawing adapter for embedded Writing.
 
 ### Conceal writing answers
 
@@ -30,7 +26,7 @@ The provider prepares the drawing template, styles and close icons online, so a 
 
 ## Security
 
-Access to Writing Practice is governed by the caller and its owning gateway. Enabling a component does not grant additional account permissions.
+Practice uses the current learner identity and canonical pattern references. Only trusted completed attempts enter the practice-recording flow; opening a drawing surface does not grant content editing rights.
 
 ## Reference
 

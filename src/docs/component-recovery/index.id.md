@@ -4,15 +4,15 @@ Kelola fitur terpasang dan pulihkan dengan aman saat pembaruan atau dependensi g
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/) sesuai izin akun Anda.
+Periksa komponen gagal dan pulihkan pengaktifan atau peningkatan secara terkendali.
 
 ## Sebelum Memulai
 
-Operasi yang dibahas dapat memerlukan izin akun atau administrator. Membaca topik tidak mengaktifkan fitur opsionalnya.
+Gunakan administrator berwenang dan cadangan sebelum mengubah kode terpasang.
 
 ## Langkah Awal
 
-Buka [fitur ini](/) dan pilih tindakan yang diperlukan.
+Periksa status dan dependensi komponen gagal.
 
 ## Pelajari Lebih Lanjut
 

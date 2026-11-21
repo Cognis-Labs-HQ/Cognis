@@ -4,17 +4,16 @@ Praktische Abläufe für Soziale Funktionen.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/gateways/social).
+Melde dich an; einzelne Adapter liefern ihre Funktionen.
 
 ## Beispiele
 
-- Prüfen Sie aktive soziale Adapter und deren Einstellungen.
-- Prüfen Sie betroffene Benutzerfunktionen vor Aktivierung, Deaktivierung oder Neukonfiguration.
+Besuche ein erlaubtes Profil, folge oder schreibe über verfügbare Aktionen und prüfe Beziehung oder Raum.
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von Soziale Funktionen. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/gateways/social/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Aktionen prüfen aktuelle Identität und Zugriff; Deaktivieren entfernt die Beiträge des jeweiligen Adapters.
 
 ## Fehlerbehebung
 
-Falls Soziale Funktionen nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Prüfe Adapter, Blockierungen und Mitgliedschaft. Das Gateway allein liefert nicht jede soziale Funktion.

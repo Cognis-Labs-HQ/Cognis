@@ -4,15 +4,15 @@ Lernen Sie wichtige Aktionen mit Seitenführungen und wiederholen Sie eine Führ
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/) entsprechend Ihren Kontorechten.
+Lerne Seitenaktionen mit geführten Schritten und wiederhole sie bei Bedarf.
 
 ## Vor dem Start
 
-Die beschriebenen Vorgänge können Konto- oder Verwaltungsrechte verlangen. Das Lesen eines Themas aktiviert keine optionalen Funktionen.
+Melde dich für kontogebundenen Abschluss an; optionale Aktionen erscheinen nur bei Verfügbarkeit.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/) und wählen Sie die gewünschte Aktion.
+Nutze das Fragezeichen im Seitenkopf.
 
 ## Weitere Informationen
 

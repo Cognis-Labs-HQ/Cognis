@@ -4,15 +4,15 @@ Alat baris perintah memungkinkan administrator mengelola Cognis tanpa membuka pe
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/administration) sesuai izin akun Anda.
+Periksa dan kelola Cognis dari terminal.
 
 ## Sebelum Memulai
 
-Pastikan Alat Baris Perintah aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Gunakan cognisctl terpasang dan token berizin untuk perintah terlindungi.
 
 ## Langkah Awal
 
-Buka [fitur ini](/administration) dan pilih tindakan yang diperlukan.
+Jalankan bantuan cognisctl untuk melihat perintah.
 
 ## Pelajari Lebih Lanjut
 

@@ -4,15 +4,15 @@ Invite conversation participants to a call and answer incoming invitations.
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/messages) according to your account permissions.
+Start or answer a call from an eligible conversation.
 
 ## Before You Start
 
-Check that Calls is enabled and that your account has permission for the operation.
+Calls and Messages must be enabled; browser media permissions are needed for audio or video.
 
 ## Get Started
 
-Open [the feature](/messages) and choose the action you need.
+Open a conversation and use its available call controls.
 
 ## Learn More
 

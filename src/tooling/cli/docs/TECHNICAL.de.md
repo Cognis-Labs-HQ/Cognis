@@ -4,7 +4,7 @@
 
 ## Schnittstellen
 
-Dieser Arbeitsbereich stellt gemeinsamen Plattformcode bereit. Öffentliche Funktionsverträge gehören zur jeweiligen Fähigkeit, zum Befehl oder Funktionsdienst; dieses Paket stellt keinen eigenen HTTP-Dienst bereit.
+CLI-Befehle deklarieren Name, Aufruf, Beschreibung, Argumente und execute im Register. Core und Anbieter registrieren eigene Gruppen; HTTP-Helfer senden geschützte Anfragen an den Server.
 
 ## Konfiguration
 
@@ -53,8 +53,9 @@ Eingebaute `cognisctl`-Befehle können antwortungsabhängige Terminalausgabe mit
 
 ## Sicherheit
 
-Öffentliche Fähigkeiten und Befehle behalten ihre vorgangsbezogene Autorisierung. Die Paketinstallation gewährt keinen Zugriff auf private Ressourcen.
+CLI-Anmeldung liest COGNIS_CLI_TOKEN_PATH; der Server prüft Rollen und Inhalte. Schütze Tokendateien und vermeide Geheimnisse in ausführlicher Ausgabe oder Mitschriften.
 
 ## Referenz
 
-Quellcode und Paketmetadaten: `src/tooling/cli/`.
+- [src/tooling/cli/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/tooling/cli/package.json)
+- [src/tooling/cli/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/tooling/cli/index.ts)

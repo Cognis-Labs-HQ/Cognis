@@ -4,16 +4,18 @@ Prosedur praktis untuk Tautan Berbagi Publik.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/adapters/share/link) sebelum menjalankan prosedur ini.
+Anda harus memiliki sumber daya atau izin membagikannya.
 
 ## Contoh
 
-Komponen ini tidak menyatakan titik masuk baris perintah mandiri. Gunakan fitur pemiliknya atau [prosedur penerapan](/docs/devops/usage) untuk mengonfigurasi instalasi; [referensi teknis](/docs/adapters/share/link/technical) mencantumkan antarmuka dan batasnya.
+Pilih akses, kedaluwarsa, dan perlindungan yang diizinkan, buat tautan, lalu buka di sesi peramban terpisah.
+
+Membuat tautan publik yang dapat kedaluwarsa melalui gateway Share. Adapter memiliki penyiapan masukan khusus tautan dan halaman Tautan di dalam popup gateway.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Tautan Berbagi Publik yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/adapters/share/link/technical) sebelum mengulangi operasi tulis.
+Tautan hanya membuka sumber daya yang dibagikan; kedaluwarsa atau pencabutan mengakhiri akses.
 
 ## Pemecahan Masalah
 
-Jika Tautan Berbagi Publik tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Periksa status tautan dan kata sandi. Sumber daya hanya-baca tidak memperoleh akses tulis lewat pilihan berbagi.

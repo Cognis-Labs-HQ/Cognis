@@ -4,11 +4,11 @@
 
 ## Schnittstellen
 
-Dieses Thema ist eine Referenz und stellt keinen eigenen Endpunkt bereit. Beispiele verwenden die öffentlichen Schnittstellen der unten beschriebenen Komponenten.
+component-pages:request ermittelt eine Seite; component-pages:spawn öffnet sie nach Benutzeraktion im eigenen Bereich. Der Handle unterstützt discard und Navigationserhaltung; mount erhält root, signal und Kontext.
 
 ## Konfiguration
 
-Dieses Dokumentationsthema hat keine eigene Laufzeitkonfiguration. Betriebseinstellungen gehören zur zuständigen Komponente.
+Anbieter deklarieren componentPage mit Routenidentität, Labels und Modi. Aufrufer verwenden Komponenten-UUID und Route sowie eigenen Bereich und Abbruchsignal.
 
 ## Verhalten
 
@@ -100,4 +100,5 @@ Jeder Vorgang wird authentifiziert, auf eine Kollaborationsressource begrenzt un
 
 ## Referenz
 
-Quellcode und Paketmetadaten: `src/docs/focus-control/`.
+- [src/core/contracts/focus/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/contracts/focus/index.ts)
+- [src/ui/reuse/focus-control.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/ui/reuse/focus-control.js)

@@ -4,15 +4,15 @@ Temukan halaman dan permintaan lambat, ukur perilakunya, dan bandingkan perbaika
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/) sesuai izin akun Anda.
+Ukur navigasi lambat dan bandingkan optimasi secara konsisten.
 
 ## Sebelum Memulai
 
-Operasi yang dibahas dapat memerlukan izin akun atau administrator. Membaca topik tidak mengaktifkan fitur opsionalnya.
+Pengukuran memerlukan lingkungan berulang dan versi rilis tercatat.
 
 ## Langkah Awal
 
-Buka [fitur ini](/) dan pilih tindakan yang diperlukan.
+Pilih pemuatan dingin, hangat, atau navigasi SPA.
 
 ## Pelajari Lebih Lanjut
 

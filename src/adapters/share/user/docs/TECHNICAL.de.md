@@ -4,11 +4,11 @@
 
 ## Schnittstellen
 
-Mit Personen teilen wird über den zuständigen Funktionsdienst eingebunden; das Manifest nennt die Komponente und ihre Abhängigkeiten.
+createShareAdapter liefert Methode user mit Kontozustellung. prepare verlangt Empfänger; validateUnique lehnt doppelte Freigaben ab. Die Seite erfordert Anmeldung.
 
 ## Konfiguration
 
-Die Konfiguration erfolgt über den zuständigen Funktionsdienst. Mit Personen teilen definiert keine zusätzlichen Einstellungen im Manifest.
+Gib Empfänger und erlaubte Inhaltsrechte im Teilen-Dialog an. Zustellung nutzt Cognis-Identitäten statt externer Nachrichtenverbindungen.
 
 ## Verhalten
 
@@ -18,12 +18,10 @@ Gibt eine Ressource über das Share-Gateway direkt für Cognis-Benutzer frei. De
 
 ## Sicherheit
 
-Der Zugriff auf Mit Personen teilen unterliegt dem Aufrufer und dem zuständigen Funktionsdienst. Die Aktivierung erweitert keine Kontorechte.
+Empfänger müssen ausdrückliche Kontoverweise sein. Leere Empfänger und doppelte Freigaben werden abgelehnt; Share prüft Absender und Inhaltsrechte.
 
 ## Referenz
 
 ### Technische Spezifikation
-
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/adapters/share/link/technical).
 
 Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/adapters/share/link/technical).

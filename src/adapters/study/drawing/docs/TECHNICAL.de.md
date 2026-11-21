@@ -4,21 +4,17 @@
 
 ## Schnittstellen
 
-Schreibübungen wird über den zuständigen Funktionsdienst eingebunden; das Manifest nennt die Komponente und ihre Abhängigkeiten.
+Browserfähigkeiten study:drawing:open, study:drawing:load und study:drawing:observe binden Anfragen und Beobachter an Anbieter- und Seitensignale.
 
 ## Konfiguration
 
-Die Konfiguration erfolgt über den zuständigen Funktionsdienst. Schreibübungen definiert keine zusätzlichen Einstellungen im Manifest.
+Sprachanbieter liefern kanonische Striche. Führung, Aufdecken und Position gehören zur Lernfläche; ein eigener Zeichenserver wird nicht konfiguriert.
 
 ## Verhalten
 
 ### Schreibübung
 
 Study besitzt das vollständige Schreibfeld in `src/gateways/study/ui/reuse/drawing.js`: Zeichenfläche, Steuerung, Hilfen, Bewertung und Ergebnis. Der optionale Zeichenadapter stellt `study:drawing:open` und `study:drawing:load` über Browser-`uiCtx` bereit. Aufrufer warten auf diese Aktionen und übergeben eine vollständige Bibliothekskarte mit geprüftem `strokePattern`.
-
-### Anwendungsbeispiele
-
-Dieselbe Engine `openDrawingPad` akzeptiert `container`, Abbruch-`signal` und `onResult`. Ohne Container öffnet sie ein verschiebbares, skalierbares Fenster innerhalb der Seite und behält beim Kartenwechsel die Position. Mit Container wird das ganze Schreibfeld eingebettet, das ursprüngliche Zeichen gesperrt und Erfolg erst nach allen korrekten Strichen gemeldet. Eingebettetes Schreiben benötigt keinen optionalen Zeichenadapter.
 
 ### Schreibantworten verbergen
 
@@ -30,7 +26,7 @@ Der Anbieter bereitet Zeichenvorlage, Stile und Schließen-Symbole online vor, d
 
 ## Sicherheit
 
-Der Zugriff auf Schreibübungen unterliegt dem Aufrufer und dem zuständigen Funktionsdienst. Die Aktivierung erweitert keine Kontorechte.
+Übungen nutzen aktuelle Lernidentität und kanonische Muster. Nur bestätigte Abschlüsse gelangen in den Erfassungsablauf; Zeichnen gewährt keine Bearbeitungsrechte.
 
 ## Referenz
 

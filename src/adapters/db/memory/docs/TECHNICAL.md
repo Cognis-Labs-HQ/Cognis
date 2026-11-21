@@ -1,50 +1,23 @@
 # Technical Reference
 
-The public interfaces and operational rules of In-Memory Database.
+A non-persistent database test double that records calls without executing SQL.
 
 ## Interfaces
 
-### Architecture
-
-`MemoryDatabaseGateway` in `src/adapters/db/memory/adapter.ts` holds a single `queryLog: Array<{ sql: string; params: unknown[] }>` array. Both `query()` and `execute()` push a log entry and return immediately.
-
-```ts
-const db = new MemoryDatabaseGateway();
-await db.execute("INSERT INTO users (id) VALUES (?)", ["u1"]);
-console.log(db.queryLog);
-// [{ sql: 'INSERT INTO users (id) VALUES (?)', params: ['u1'] }]
-```
-
-Because schema initialisation (`ensureSchema()`) runs on every startup, the memory adapter silently absorbs all `CREATE TABLE IF NOT EXISTS` and `INSERT OR IGNORE` statements without error. Tests that call the memory adapter directly after gateway bootstrap can therefore inspect only the application-level queries that followed schema initialisation.
+`MemoryDatabaseGateway` implements query, execute, transaction and getQueries in `src/adapters/db/memory/index.ts`. getQueries returns readonly records with statement and optional params.
 
 ## Configuration
 
-### Configuration
-
-| Variable  | Default | Description                               |
-| --------- | ------- | ----------------------------------------- |
-| `DB_TYPE` | —       | Must be `memory` to activate this adapter |
+Instantiate the class in a test harness. It exports neither canHandleDbProvider nor createDbExecutor, so setting DB_TYPE=memory does not integrate it with the standard executor loader.
 
 ## Behavior
 
-### Overview
-
-The memory adapter is a no-op database implementation intended for use in automated tests and CI pipelines where a real database should not be involved. Every query returns an empty result set and every execute is a silent no-op. All SQL issued against the memory adapter is recorded in `queryLog`, making it easy to assert in tests that the expected SQL was generated.
-
-The memory adapter should never be used in a production deployment.
-
-### Responsibilities
-
-- Implement the `DatabaseGateway` interface: `query`, `execute`, and `transaction`.
-- Record every SQL statement and parameters in `queryLog`.
-- Return an empty result set (`[]`) for all `query()` calls.
-- Do nothing (return `{ rowsAffected: 0 }`) for all `execute()` calls.
-- Execute the `transaction(fn)` callback without any real transaction semantics.
+query records the call and returns `{ rows: [], rowCount: 0 }`. execute records it and returns `{ affectedRows: 0 }`. transaction invokes the callback with the same instance, without SQL BEGIN, rollback or persisted rows.
 
 ## Security
 
-Access to In-Memory Database is governed by the caller and its owning gateway. Enabling a component does not grant additional account permissions.
+Recorded parameters may include test secrets. Use synthetic values; this test double supplies no authentication or SQL authorization.
 
 ## Reference
 
-Source and package metadata: `src/adapters/db/memory/`.
+Use a real database provider to verify persistence, constraints or isolation. See [Database](/docs/gateways/db/technical).

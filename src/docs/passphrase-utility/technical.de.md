@@ -4,11 +4,11 @@
 
 ## Schnittstellen
 
-Dieses Thema ist eine Referenz und stellt keinen eigenen Endpunkt bereit. Beispiele verwenden die öffentlichen Schnittstellen der unten beschriebenen Komponenten.
+reuse:generatePassphrase ist eine synchrone ctx-Fähigkeit mit String-Ergebnis. Ungültige Anzahl oder Länge löst RangeError aus, Typ oder Schreibweise TypeError.
 
 ## Konfiguration
 
-Dieses Dokumentationsthema hat keine eigene Laufzeitkonfiguration. Betriebseinstellungen gehören zur zuständigen Komponente.
+words muss eine sichere Ganzzahl von 1 bis 128 sein. separator ist standardmäßig ein Bindestrich mit höchstens sechzehn Zeichen. capitalization erlaubt lowercase, uppercase oder titlecase.
 
 ## Verhalten
 
@@ -16,22 +16,9 @@ Dieses Dokumentationsthema hat keine eigene Laufzeitkonfiguration. Betriebseinst
 
 Die API-Laufzeit stellt `reuse:generatePassphrase` über `ctx` bereit, damit Module wie Jitsi Meet lesbare Geheimnisse erzeugen können, ohne API-Interna zu importieren.
 
-### Anwendungsbeispiele
-
-Die Capability wird aus dem Modul-Bootstrap-Kontext abgerufen und mit der gewünschten Wortanzahl und Darstellung aufgerufen:
-
-```js
-const generatePassphrase = ctx.capabilities.require("reuse:generatePassphrase");
-const passphrase = generatePassphrase({
-    words: 6,
-    separator: "-",
-    capitalization: "titlecase",
-});
-```
-
 ## Sicherheit
 
-Das Lesen der Dokumentation berechtigt nicht zur Ausführung ihrer Beispiele. Die zuständige Komponente autorisiert jeden Vorgang.
+Jedes Wort wird mit Node crypto.randomInt gewählt. Erzeugung speichert oder autorisiert kein Geheimnis; Aufrufer müssen es schützen und dürfen es nicht protokollieren.
 
 ## Referenz
 

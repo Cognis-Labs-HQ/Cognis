@@ -4,11 +4,11 @@ Antarmuka publik dan aturan operasional Anggaran kinerja.
 
 ## Antarmuka
 
-Topik ini merupakan referensi dan tidak menyediakan titik akhir mandiri. Contoh memakai antarmuka publik komponen yang dijelaskan di bawah.
+observability:metrics merekam waktu berizin. Endpoint peramban ialah POST /api/v1/observability/client; benchmark hosting dijalankan operator terpisah.
 
 ## Konfigurasi
 
-Topik dokumentasi ini tidak memiliki konfigurasi waktu jalan sendiri. Pengaturan operasional dimiliki komponen terkait.
+Gunakan jaringan dan CPU tetap. Anggaran adalah target peninjauan, bukan gerbang Lighthouse CI terimplementasi atau jaminan semua penerapan.
 
 ## Perilaku
 
@@ -48,8 +48,8 @@ Ukur awal navigasi, waktu indikator terlihat, dan kesiapan konten wajib secara t
 
 ## Keamanan
 
-Membaca dokumentasi tidak memberikan izin menjalankan contohnya. Komponen pemilik mengotorisasi setiap operasi.
+Metrik memakai nama dan label terbatas; jangan sertakan ID akun, URL privat, atau konten. Pengiriman peramban tetap memakai autentikasi dan batas akun.
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/docs/performance/`.
+- [src/gateways/observability/bootstrap.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/observability/bootstrap.ts)

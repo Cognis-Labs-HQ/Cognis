@@ -4,15 +4,15 @@ Verify a sign-in using the current code from your authenticator app.
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/settings) according to your account permissions.
+Verify sign-in with six-digit codes from an authenticator app.
 
 ## Before You Start
 
-Check that Authenticator Verification is enabled and that your account has permission for the operation.
+Install an authenticator and keep device time accurate.
 
 ## Get Started
 
-Open [the feature](/settings) and choose the action you need.
+Add the authenticator method in account security settings.
 
 ## Learn More
 

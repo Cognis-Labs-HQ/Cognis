@@ -4,11 +4,11 @@
 
 ## Schnittstellen
 
-Leistungsüberwachung wird über den zuständigen Funktionsdienst eingebunden; das Manifest nennt die Komponente und ihre Abhängigkeiten.
+observability:metrics.record(name, value, labels) erfasst endliche erlaubte Werte. POST /api/v1/observability/client nimmt metrics und navigation an, maximal sechzehn Messwerte und 16.384 Zeichen akkumulierten Text.
 
 ## Konfiguration
 
-Die Konfiguration erfolgt über den zuständigen Funktionsdienst. Leistungsüberwachung definiert keine zusätzlichen Einstellungen im Manifest.
+Die eingebaute Ausgabe schreibt Debug-Logs. Namen und Labelschlüssel sind begrenzt; andere Ausgaben implementieren observability:metrics.record ohne anbieterspezifische Route.
 
 ## Verhalten
 
@@ -22,7 +22,7 @@ Das Gateway stellt die herstellerneutrale ctx-Fähigkeit `observability:metrics`
 
 ## Sicherheit
 
-Der Zugriff auf Leistungsüberwachung unterliegt dem Aufrufer und dem zuständigen Funktionsdienst. Die Aktivierung erweitert keine Kontorechte.
+POST /api/v1/observability/client benötigt eine Benutzersitzung. Namen und Schlüssellabel sind erlaubt vorgegeben, Werte auf achtzig Zeichen begrenzt; pro Konto gelten sechs Anfragen je Minute.
 
 ## Referenz
 

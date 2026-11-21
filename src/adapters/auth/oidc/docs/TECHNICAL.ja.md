@@ -4,13 +4,7 @@ OpenID Connect の公開インターフェースと運用規則を説明しま�
 
 ## インターフェース
 
-### アーキテクチャ
-
-```ts
-export interface OidcClient {
-    introspect(accessToken: string): Promise<OidcTokenClaims | null>;
-}
-```
+authenticate(credentials) は `accessToken` を読み、注入した `OidcClient.introspect` を呼びます。`sub` で外部を識別し、`provider`、`externalUserId`、任意の `email`、`role` を返します。未接続や入力不足では null です。
 
 ## 設定
 
@@ -28,22 +22,18 @@ export interface OidcClient {
 
 設定ラベルは `stringsBaseUrl` を通じてこのアダプターの言語リソースから取得します。
 
+`configure()` が適用するのは `providerName` / `adminRoles` です。他の接続項目はスキーマ情報であり、この実装はそこからクライアントを生成しません。
+
 ## 動作
 
-### 概要
-
-OIDCアダプターは、OpenID Connectトークンイントロスペクションを通じてユーザーを認証し、Google、Microsoft Entra ID、Okta、またはセルフホストのKeycloakインスタンスなどのOAuth2/OIDC互換プロバイダーとのシングルサインオンを可能にします。
-
-### 責務
-
-- `accessToken` 認証情報を受け入れ、プロバイダーのディスカバリエンドポイントを使用してイントロスペクトする。
-- トークンの `roles` クレームからCognisの `isAdmin` フラグへマッピングする。
-- 認証ゲートウェイ向けに `AuthProviderAdapter` インターフェースを公開する。
+同梱の OIDC アダプターには動作するプロトコルクライアントが接続されていません。createAdapter() はクライアントが null の状態を返し、setClient() による明示的な連携が必要です。設定だけではログインできません。
 
 ## セキュリティ
 
-OpenID Connect へのアクセスは呼び出し元と担当のゲートウェイが管理します。有効化してもアカウントの権限は増えません。
+検証済みのクレームのみを識別に使います。外部の sub と adminRoles を確認し、アクセストークンや clientSecret をログに残さないでください。
 
 ## リファレンス
 
-ソースとパッケージの情報: `src/adapters/auth/oidc/`。
+- [src/adapters/auth/oidc/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/oidc/manifest.json)
+- [src/adapters/auth/oidc/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/oidc/package.json)
+- [src/adapters/auth/oidc/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/oidc/index.ts)

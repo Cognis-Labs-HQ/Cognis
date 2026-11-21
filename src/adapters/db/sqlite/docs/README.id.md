@@ -4,15 +4,15 @@ Simpan data Cognis dalam berkas basis data tertanam untuk instalasi lokal.
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/administration) sesuai izin akun Anda.
+Gunakan basis data relasional tertanam dalam runtime yang menyediakan klien SQLite.
 
 ## Sebelum Memulai
 
-Pastikan SQLite aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Runtime penyemat harus menyediakan klien SQLite; penerapan standar tidak menghubungkan kelas ini sebagai penyedia yang dapat dipilih.
 
 ## Langkah Awal
 
-Buka [fitur ini](/administration) dan pilih tindakan yang diperlukan.
+Pastikan runtime secara eksplisit menghubungkan adapter SQLite sebelum memilihnya sebagai penyimpanan.
 
 ## Pelajari Lebih Lanjut
 

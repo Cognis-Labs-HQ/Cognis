@@ -4,9 +4,11 @@ Praktische Abläufe für Passphrasen-Dienstprogramm.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/passphrase-utility).
+Eine Funktion muss Erzeugung anbieten; das Werkzeug hat keine eigene Benutzerseite.
 
 ## Beispiele
+
+Erzeuge eine Passphrase, speichere sie geschützt und teile sie nur mit vorgesehenen Teilnehmern.
 
 ```ts
 const generatePassphrase = ctx.capabilities.require("reuse:generatePassphrase");
@@ -17,10 +19,21 @@ const passphrase = generatePassphrase({
 });
 ```
 
+Die Capability wird aus dem Modul-Bootstrap-Kontext abgerufen und mit der gewünschten Wortanzahl und Darstellung aufgerufen:
+
+```js
+const generatePassphrase = ctx.capabilities.require("reuse:generatePassphrase");
+const passphrase = generatePassphrase({
+    words: 6,
+    separator: "-",
+    capitalization: "titlecase",
+});
+```
+
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von Passphrasen-Dienstprogramm. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/passphrase-utility/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Unabhängig gewählte Wörter werden kombiniert; Erzeugung speichert, versendet oder autorisiert das Geheimnis nicht.
 
 ## Fehlerbehebung
 
-Falls Passphrasen-Dienstprogramm nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Ein erzeugter Wert ist nicht automatisch gespeichert. Integratoren prüfen vor Wortanzahl und Trennzeichen den Vertrag.

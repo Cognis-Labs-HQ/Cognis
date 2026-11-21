@@ -4,13 +4,7 @@ Antarmuka publik dan aturan operasional Masuk SAML.
 
 ## Antarmuka
 
-### Arsitektur
-
-```ts
-export interface SamlClient {
-    validateAssertion(samlResponse: string): Promise<SamlAssertion | null>;
-}
-```
+authenticate(credentials) membaca `assertion` dan memanggil `SamlClient.consumeAssertion`. `nameId` mengenali akun; hasil memuat `provider`, `externalUserId`, opsional `email` dan `role`. Tanpa klien atau kredensial, hasilnya null.
 
 ## Konfigurasi
 
@@ -28,22 +22,18 @@ Konfigurasi melalui `PUT /api/v1/gateways/auth/adapters/saml/config` (hanya admi
 
 Label konfigurasi dibaca melalui `stringsBaseUrl` dari sumber bahasa adapter ini.
 
+`configure()` menerapkan `adminAttribute` / `adminValue`. Kolom koneksi lainnya adalah metadata skema; implementasi tidak membuat klien protokol darinya.
+
 ## Perilaku
 
-### Ikhtisar
-
-Adapter SAML mengautentikasi pengguna melalui assertion SAML 2.0 dari penyedia identitas eksternal, memungkinkan single sign-on dengan sistem identitas enterprise seperti Microsoft AD FS, Google Workspace, Okta, atau IdP SAML 2.0 lainnya.
-
-### Tanggung Jawab
-
-- Menerima respons/assertion SAML, memvalidasinya dengan `SamlClient` yang dikonfigurasi, dan mengekstrak klaim identitas.
-- Memetakan atribut SAML yang dapat dikonfigurasi ke flag `isAdmin` Cognis.
-- Mengekspos antarmuka `AuthProviderAdapter` ke gateway autentikasi.
+Adapter SAML bawaan tidak memiliki klien protokol terpasang. createAdapter() mengembalikan klien null; integrasi harus memasok klien tervalidasi melalui setClient(). Konfigurasi saja tidak mengaktifkan masuk.
 
 ## Keamanan
 
-Akses Masuk SAML diatur oleh pemanggil dan gerbang pemilik. Mengaktifkan komponen tidak menambah izin akun.
+Autentikasi bergantung pada validator assertion dan sertifikat tepercaya. Petakan grup administrator secara sengaja; assertion belum divalidasi tidak boleh membentuk sesi.
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/adapters/auth/saml/`.
+- [src/adapters/auth/saml/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/saml/manifest.json)
+- [src/adapters/auth/saml/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/saml/package.json)
+- [src/adapters/auth/saml/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/saml/index.ts)

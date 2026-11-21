@@ -4,7 +4,7 @@ Antarmuka publik dan aturan operasional Verifikasi Email.
 
 ## Antarmuka
 
-Verifikasi Email terintegrasi melalui gerbang pemilik; manifesnya mengidentifikasi komponen dan dependensi yang diperlukan.
+Metode TFA menyediakan penyiapan dan verifikasi serta tujuan melalui notify:registerEmailPurpose. Pengiriman memakai notify:sendEmail dan notify:emailDeliveryPolicy.
 
 ## Konfigurasi
 
@@ -35,8 +35,10 @@ Panjang kode dan jeda pengiriman dibaca dari `notify:emailDeliveryPolicy`. Adapt
 
 ## Keamanan
 
-Akses Verifikasi Email diatur oleh pemanggil dan gerbang pemilik. Mengaktifkan komponen tidak menambah izin akun.
+Tantangan memerlukan email utama terverifikasi dan pengiriman tersedia. Kode hanya ada dalam proses dan batal saat restart; jangan masukkan kode atau rahasia ke antrean luring.
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/adapters/tfa/smtp/`.
+- [src/adapters/tfa/smtp/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/tfa/smtp/manifest.json)
+- [src/adapters/tfa/smtp/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/tfa/smtp/package.json)
+- [src/adapters/tfa/smtp/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/tfa/smtp/index.ts)

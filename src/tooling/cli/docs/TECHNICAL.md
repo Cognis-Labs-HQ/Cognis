@@ -4,7 +4,7 @@ The public interfaces and operational rules of Command-Line Tools.
 
 ## Interfaces
 
-This workspace supplies shared platform code. Public feature contracts belong to the documented capability, command or gateway; this package does not expose a separate HTTP service.
+CLI commands declare name, usage, description, arguments and execute handlers in the command registry. Core and enabled provider plugins register their own command groups; HTTP helpers send protected requests to the running server.
 
 ## Configuration
 
@@ -92,8 +92,9 @@ Built-in `cognisctl` commands can render response-aware terminal output with hea
 
 ## Security
 
-Public capabilities and commands retain their per-operation authorization. Installing a package does not grant access to private resources.
+CLI authentication reads COGNIS_CLI_TOKEN_PATH; the server still enforces role and resource authorization. Keep token files private and avoid including secrets in verbose output or shared command transcripts.
 
 ## Reference
 
-Source and package metadata: `src/tooling/cli/`.
+- [src/tooling/cli/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/tooling/cli/package.json)
+- [src/tooling/cli/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/tooling/cli/index.ts)

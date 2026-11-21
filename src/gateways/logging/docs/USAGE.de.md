@@ -4,17 +4,16 @@ Praktische Abläufe für Anwendungsprotokolle.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/gateways/logging).
+Protokollverwaltung benötigt Administratorrechte.
 
 ## Beispiele
 
-- Grenzen Sie Protokolle mit Schweregrad, Stichwort und Zeitraum für die Untersuchung ein.
-- Prüfen Sie Zeitstempel und strukturierte Details; aktualisieren Sie für einen neuen Stand.
+Filtere Einträge, untersuche einen Fehler und passe Ausgabe oder Rotation in den Protokolleinstellungen an.
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von Anwendungsprotokolle. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/gateways/logging/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Ausgewählte Einträge zeigen aufgezeichnete Aktivität; Dateien rotieren nach Größe und Aufbewahrung.
 
 ## Fehlerbehebung
 
-Falls Anwendungsprotokolle nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Prüfe Ausgabestufe und Dateirechte. Mehr Detail stellt nie aufgezeichnete Ereignisse nicht wieder her.

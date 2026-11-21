@@ -92,8 +92,11 @@ Für den SMTP-Verbindungsaufbau und die TLS-Aushandlung gilt jeweils eine Frist 
 
 ## Sicherheit
 
-Der Zugriff auf E-Mail-Zustellung unterliegt dem Aufrufer und dem zuständigen Funktionsdienst. Die Aktivierung erweitert keine Kontorechte.
+SMTP-Geheimnisse verwalten Administratoren. TLS und Zertifikatsprüfung bestimmen den Transportschutz; Bestätigungsmails nutzen registrierte Zwecke und geprüfte Empfängeradressen.
 
 ## Referenz
 
-Quellcode und Paketmetadaten: `src/adapters/notify/smtp/`.
+- [src/adapters/notify/smtp/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/notify/smtp/manifest.json)
+- [src/adapters/notify/smtp/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/notify/smtp/package.json)
+- [src/adapters/notify/smtp/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/notify/smtp/index.ts)
+- [src/adapters/notify/smtp/bootstrap.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/notify/smtp/bootstrap.ts)

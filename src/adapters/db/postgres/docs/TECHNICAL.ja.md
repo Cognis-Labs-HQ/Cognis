@@ -55,8 +55,10 @@ PostgreSQL の `ensureTable()` は、新規テーブルと既存テーブルの�
 
 ## セキュリティ
 
-PostgreSQL へのアクセスは呼び出し元と担当のゲートウェイが管理します。有効化してもアカウントの権限は増えません。
+接続情報と通信保護は配置環境で管理します。値はパラメーターで渡し、実行前にアプリ側の権限を検証します。
 
 ## リファレンス
 
-ソースとパッケージの情報: `src/adapters/db/postgres/`。
+- [src/adapters/db/postgres/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/postgres/manifest.json)
+- [src/adapters/db/postgres/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/postgres/package.json)
+- [src/adapters/db/postgres/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/postgres/index.ts)

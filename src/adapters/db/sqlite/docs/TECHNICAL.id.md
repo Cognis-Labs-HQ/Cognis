@@ -4,15 +4,11 @@ Antarmuka publik dan aturan operasional SQLite.
 
 ## Antarmuka
 
-SQLite terintegrasi melalui gerbang pemilik; manifesnya mengidentifikasi komponen dan dependensi yang diperlukan.
+`SqliteDbGateway(client)` menerapkan DatabaseGateway. SqliteClient menyediakan all(statement, params), run(statement, params) dengan changes, dan exec(statement). Perintah terstruktur memakai placeholder serta konflik SQLite.
 
 ## Konfigurasi
 
-### Konfigurasi
-
-Pilih backend SQLite dengan `DB_TYPE=sqlite` ketika deployment Anda dikonfigurasi untuk menggunakan adapter ini. Konfigurasikan path file database melalui pengaturan SQLite yang digunakan lingkungan runtime Anda, seperti `SQLITE_PATH` jika didukung.
-
-Lihat [dokumentasi Gateway Database](/docs/gateways/db) untuk detail konfigurasi gateway secara umum.
+Runtime penyemat membuat klien dan jalur berkas. Adapter tidak mendeklarasikan SQLITE_PATH atau factory executor standar; DB_TYPE=sqlite saja tidak memilihnya pada server bawaan.
 
 ## Perilaku
 
@@ -29,8 +25,10 @@ Adapter SQLite menyediakan gateway database ringan untuk deployment berbasis SQL
 
 ## Keamanan
 
-Akses SQLite diatur oleh pemanggil dan gerbang pemilik. Mengaktifkan komponen tidak menambah izin akun.
+Ikat data sebagai parameter dan lindungi berkas serta cadangan dengan izin sistem. Otorisasi aplikasi berjalan sebelum adapter.
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/adapters/db/sqlite/`.
+- [src/adapters/db/sqlite/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/sqlite/manifest.json)
+- [src/adapters/db/sqlite/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/sqlite/package.json)
+- [src/adapters/db/sqlite/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/sqlite/index.ts)

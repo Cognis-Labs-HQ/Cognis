@@ -4,15 +4,15 @@ Pilih tingkat bantuan yang sesuai: pengenalan, contoh praktis, atau referensi te
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/) sesuai izin akun Anda.
+Temukan pengenalan, prosedur, dan referensi teknis dalam tampilan seragam.
 
 ## Sebelum Memulai
 
-Operasi yang dibahas dapat memerlukan izin akun atau administrator. Membaca topik tidak mengaktifkan fitur opsionalnya.
+Pilih komponen serta versi sesuai instalasi.
 
 ## Langkah Awal
 
-Buka [fitur ini](/) dan pilih tindakan yang diperlukan.
+Buka Dokumen dan mulai dengan Info.
 
 ## Pelajari Lebih Lanjut
 

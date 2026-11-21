@@ -4,16 +4,16 @@ Prosedur praktis untuk Fitur Platform.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/features) sebelum menjalankan prosedur ini.
+Fitur dapat opsional dan dibatasi peran.
 
 ## Contoh
 
-Komponen ini tidak menyatakan titik masuk baris perintah mandiri. Gunakan fitur pemiliknya atau [prosedur penerapan](/docs/devops/usage) untuk mengonfigurasi instalasi; [referensi teknis](/docs/features/technical) mencantumkan antarmuka dan batasnya.
+Buka fitur, ulangi panduan melalui tanda tanya header, lalu baca dokumentasi komponen.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Fitur Platform yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/features/technical) sebelum mengulangi operasi tulis.
+Panduan menjelaskan kontrol tersedia; membaca tidak membuka tindakan tersembunyi.
 
 ## Pemecahan Masalah
 
-Jika Fitur Platform tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Periksa peran, pendaftaran, dan penyedia bila kontrol tidak muncul.

@@ -4,15 +4,15 @@ Server aplikasi menghubungkan peramban Anda dengan akun, konten tersimpan, dan f
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/) sesuai izin akun Anda.
+Pahami operasi server di balik tindakan peramban dan terminal.
 
 ## Sebelum Memulai
 
-Operasi yang dibahas dapat memerlukan izin akun atau administrator. Membaca topik tidak mengaktifkan fitur opsionalnya.
+Operasi terlindungi memerlukan peran dan akses sumber daya.
 
 ## Langkah Awal
 
-Buka [fitur ini](/) dan pilih tindakan yang diperlukan.
+Cari tampilan Teknis komponen pemilik sebelum memakai operasi.
 
 ## Pelajari Lebih Lanjut
 

@@ -4,15 +4,15 @@
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/calendar) entsprechend Ihren Kontorechten.
+Übertrage Termine mit iCalendar-Dateien.
 
 ## Vor dem Start
 
-Prüfen Sie, ob Kalenderimport und -export aktiviert ist und Ihr Konto den Vorgang ausführen darf.
+Nutze einen eigenen Kalender und einen aktiven ICS-Adapter.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/calendar) und wählen Sie die gewünschte Aktion.
+Öffne Import oder Export am Kalender.
 
 ## Weitere Informationen
 

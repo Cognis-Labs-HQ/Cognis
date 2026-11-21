@@ -4,15 +4,15 @@ Bewahren Sie Anwendungsprotokolle in Dateien mit einstellbarer Rotation und Komp
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/administration) entsprechend Ihren Kontorechten.
+Bewahre Anwendungsprotokolle in rotierenden Dateien auf.
 
 ## Vor dem Start
 
-Prüfen Sie, ob Dateiprotokolle aktiviert ist und Ihr Konto den Vorgang ausführen darf.
+Der Protokollpfad muss beschreibbar und passend zur Aufbewahrung dauerhaft sein.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/administration) und wählen Sie die gewünschte Aktion.
+Öffne Dateiprotokollierung in Administration.
 
 ## Weitere Informationen
 

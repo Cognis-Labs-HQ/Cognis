@@ -1,18 +1,18 @@
 # Masuk SAML
 
-Masuk dengan penyedia identitas SAML yang dihubungkan organisasi Anda.
+Metode masuk ini memerlukan integrasi penerapan tambahan. Mengisi formulir pengaturan saja tidak menghubungkan layanan identitas.
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/login) sesuai izin akun Anda.
+Gunakan layanan identitas SAML organisasi tanpa kata sandi Cognis terpisah untuk identitas tersebut.
 
 ## Sebelum Memulai
 
-Pastikan Masuk SAML aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Metode masuk ini memerlukan integrasi penerapan tambahan. Mengisi formulir pengaturan saja tidak menghubungkan layanan identitas.
 
 ## Langkah Awal
 
-Buka [fitur ini](/login) dan pilih tindakan yang diperlukan.
+Tanyakan kepada integrator apakah klien protokol disediakan sebelum menawarkan metode ini. Pertahankan masuk lokal.
 
 ## Pelajari Lebih Lanjut
 

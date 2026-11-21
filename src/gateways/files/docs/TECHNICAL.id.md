@@ -114,7 +114,7 @@ Registrasi kontrak adapter mengikuti [kontrak bootstrap gateway bersama](/docs/g
 
 ## Keamanan
 
-Akses Berkas diatur oleh pemanggil dan gerbang pemilik. Mengaktifkan komponen tidak menambah izin akun.
+ACL namespace dan kepemilikan menentukan akses berkas. Gateway memeriksa penggunaan global serta namespace sebelum penulisan; jalur penyimpanan bukan token akses publik.
 
 ## Referensi
 

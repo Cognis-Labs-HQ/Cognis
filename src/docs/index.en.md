@@ -4,15 +4,15 @@ Cognis brings language learning, conversations and calendars into one workspace.
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/) according to your account permissions.
+Learn languages, plan events and communicate in one installation.
 
 ## Before You Start
 
-The operations discussed here may require account or administrator permissions. Reading a topic does not enable its optional features.
+Available tools depend on enabled features and your account access.
 
 ## Get Started
 
-Open [the feature](/) and choose the action you need.
+Sign in and choose Dashboard, Calendar, Messages or Study.
 
 ## Learn More
 

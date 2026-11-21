@@ -4,15 +4,15 @@ Keep Cognis data in an embedded database file suitable for local installations.
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/administration) according to your account permissions.
+Use an embedded relational database in runtimes that supply a SQLite client.
 
 ## Before You Start
 
-Check that SQLite is enabled and that your account has permission for the operation.
+An embedding runtime must supply the SQLite client; standard deployment does not wire this class as a selectable database provider.
 
 ## Get Started
 
-Open [the feature](/administration) and choose the action you need.
+Confirm your runtime explicitly wires the SQLite adapter before choosing it for storage.
 
 ## Learn More
 

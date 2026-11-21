@@ -4,15 +4,15 @@ Geben Sie ausgewählten Cognis-Nutzern Zugriff auf Inhalte, ohne einen öffentli
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/) entsprechend Ihren Kontorechten.
+Erteile benannten Cognis-Benutzern Zugriff auf unterstützte Inhalte.
 
 ## Vor dem Start
 
-Prüfen Sie, ob Mit Personen teilen aktiviert ist und Ihr Konto den Vorgang ausführen darf.
+Empfänger benötigen Cognis-Konten; Absender brauchen eine Freigabeberechtigung.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/) und wählen Sie die gewünschte Aktion.
+Wähle Benutzer im Teilen-Dialog des Inhalts.
 
 ## Weitere Informationen
 

@@ -4,7 +4,7 @@ Antarmuka publik dan aturan operasional API.
 
 ## Antarmuka
 
-Topik ini merupakan referensi dan tidak menyediakan titik akhir mandiri. Contoh memakai antarmuka publik komponen yang dijelaskan di bawah.
+Registri rute meneruskan permintaan kepada pemilik fitur. GET /api/v1/ui/page-extensions/:pageId menyediakan kontribusi halaman aktif; rute Docs menyediakan indeks serta paket dokumentasi versi. Rute terlindungi tetap menerapkan autentikasi dan otorisasi sumber daya.
 
 ## Konfigurasi
 

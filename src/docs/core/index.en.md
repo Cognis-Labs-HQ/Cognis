@@ -4,15 +4,15 @@ The core keeps enabled Cognis features working together and manages their access
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/) according to your account permissions.
+Understand how Cognis connects accounts, permissions and installed features.
 
 ## Before You Start
 
-The operations discussed here may require account or administrator permissions. Reading a topic does not enable its optional features.
+Administrative changes require an authorized account.
 
 ## Get Started
 
-Open [the feature](/) and choose the action you need.
+Inspect the installed components before changing their shared services.
 
 ## Learn More
 

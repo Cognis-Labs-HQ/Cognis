@@ -4,16 +4,16 @@ Prosedur praktis untuk CalDAV.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/adapters/calendar/caldav) sebelum menjalankan prosedur ini.
+Feed memerlukan kalender publik atau token akses privat valid.
 
 ## Contoh
 
-Komponen ini tidak menyatakan titik masuk baris perintah mandiri. Gunakan fitur pemiliknya atau [prosedur penerapan](/docs/devops/usage) untuk mengonfigurasi instalasi; [referensi teknis](/docs/adapters/calendar/caldav/technical) mencantumkan antarmuka dan batasnya.
+Tambahkan alamat ke klien kompatibel dan uji akses publik atau privat sesuai izin tujuan.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka CalDAV yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/adapters/calendar/caldav/technical) sebelum mengulangi operasi tulis.
+Klien membaca feed yang diizinkan; akses privat tetap terikat token.
 
 ## Pemecahan Masalah
 
-Jika CalDAV tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Periksa kompatibilitas, visibilitas, dan token. Adapter tidak membuat akun klien kalender terpisah.

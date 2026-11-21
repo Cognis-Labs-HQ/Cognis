@@ -4,21 +4,17 @@ Antarmuka publik dan aturan operasional Tautan Berbagi Publik.
 
 ## Antarmuka
 
-Tautan Berbagi Publik terintegrasi melalui gerbang pemilik; manifesnya mengidentifikasi komponen dan dependensi yang diperlukan.
+createShareAdapter mengembalikan metode link, halaman publik, dan dialog. prepare mengosongkan penerima; Share memiliki token serta otorisasi.
 
 ## Konfigurasi
 
-Konfigurasi disediakan melalui gerbang pemilik. Tautan Berbagi Publik tidak menyatakan konfigurasi tambahan dalam manifesnya.
+Setiap berbagi menyediakan accessControls, kedaluwarsa, dan kata sandi opsional. allowedPermissions membatasi dialog; adapter tidak mengatur akun pengiriman eksternal.
 
 ## Perilaku
 
 ### Adapter berbagi tautan
 
 Adapter mendeklarasikan popup Link beserta kapabilitasnya melalui `navbarPlugins`. Gateway memuat kontribusi yang dideklarasikan dan menonaktifkannya bersama adapter pemilik.
-
-### Contoh penggunaan
-
-Membuat tautan publik yang dapat kedaluwarsa melalui gateway Share. Adapter memiliki penyiapan masukan khusus tautan dan halaman Tautan di dalam popup gateway.
 
 ### Spesifikasi teknis
 
@@ -28,8 +24,10 @@ Pemanggil dapat menetapkan `allowedPermissions: ["read"]` pada dialog berbagi un
 
 ## Keamanan
 
-Akses Tautan Berbagi Publik diatur oleh pemanggil dan gerbang pemilik. Mengaktifkan komponen tidak menambah izin akun.
+Pemegang tautan hanya memperoleh cakupan sumber daya berizin. Kedaluwarsa, kata sandi, dan pencabutan diperiksa saat akses; batas pemanggil membatasi izin.
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/adapters/share/link/`.
+- [src/adapters/share/link/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/share/link/manifest.json)
+- [src/adapters/share/link/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/share/link/package.json)
+- [src/adapters/share/link/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/share/link/index.ts)

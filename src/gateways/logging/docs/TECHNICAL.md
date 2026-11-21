@@ -114,7 +114,7 @@ Logging adapter definitions use `labelKey`. The gateway serializes catalog and c
 
 ## Security
 
-Access to Application Logs is governed by the caller and its owning gateway. Enabling a component does not grant additional account permissions.
+Log inspection and configuration require administrative authorization. Treat log messages and metadata as potentially sensitive: credentials, access tokens and private message contents must not be emitted as diagnostics.
 
 ## Reference
 

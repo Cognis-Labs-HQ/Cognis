@@ -4,16 +4,16 @@ Praktische Abläufe für Lokale Konten.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/adapters/auth/local).
+Kontoadministratoren benötigen eine authentifizierte CLI-Sitzung, um fremde Zugangsdaten zu verwalten.
 
 ## Beispiele
 
-Diese Komponente deklariert keinen eigenständigen Befehlszeileneinstieg. Nutzen Sie die zugehörige Funktion oder die [Bereitstellungsabläufe](/docs/devops/usage) zur Konfiguration; die [technische Referenz](/docs/adapters/auth/local/technical) nennt Schnittstellen und Grenzen.
+Starte `cognisctl user:create` und folge den Eingaben. Mit `cognisctl user:set-password` ersetzt du ein lokales Passwort; `cognisctl user:disable` sperrt ein Konto.
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von Lokale Konten. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/adapters/auth/local/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Neue Zugangsdaten funktionieren lokal; deaktivierte Konten können sich nicht anmelden. Die Registrierung erstellt normale Benutzer statt Administratoren.
 
 ## Fehlerbehebung
 
-Falls Lokale Konten nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Prüfe Benutzername, Kontostatus und Anbieter. Passwörter externer Anbieter werden dort verwaltet und nicht durch Ändern eines lokalen Cognis-Passworts.

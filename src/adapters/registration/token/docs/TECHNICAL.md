@@ -4,11 +4,11 @@ The public interfaces and operational rules of Registration Invitations.
 
 ## Interfaces
 
-Registration Invitations is integrated through the owning gateway; its manifest identifies the component and required dependencies.
+createRegistrationAdapter supplies invitation authorization to Registration; CLI contributions include invite:token:generate and invite:email:send.
 
 ## Configuration
 
-Configuration is supplied through the owning gateway. Registration Invitations declares no additional configuration in its manifest.
+Invitation issuance follows the Registration policy, including founder/admin enablement, recipient-domain restrictions and pending-invitation limits. Email delivery uses the active notification provider.
 
 ## Behavior
 
@@ -18,17 +18,13 @@ The adapter declares its authorization script and language resources through `re
 
 The mandatory Registration Token adapter owns invitation and account-creation authorization tokens. It sends single-use links through the active email notification provider and is the token source used by the Users page for administrator and founder invitations.
 
-### Usage examples
-
-Administrators and founders issue invitations through the Users page. Its Email tab delivers the invitation through SMTP, while its Token tab creates the same email-bound authorization without sending mail and copies the registration link. External authentication providers hand an unknown authenticated identity to the registration flow rather than rendering their own token prompt.
-
 ### Invitation Commands
 
 Administrators and owners can open `/invite` without founder status. Invitation policy still controls issuance. The enabled Registration Token adapter contributes `cognisctl invite:token:generate` to create a standalone token without SMTP delivery, and `cognisctl invite:email:send person@example.com` to send an invitation. Omitting the email opens the CLI input wizard. Both commands use the authenticated registration API and respect role, domain and delivery restrictions.
 
 ## Security
 
-Access to Registration Invitations is governed by the caller and its owning gateway. Enabling a component does not grant additional account permissions.
+Invitation authorization binds the invited email and current policy. External-account persistence must succeed before redemption; failed delivery must not supersede a usable invitation.
 
 ## Reference
 

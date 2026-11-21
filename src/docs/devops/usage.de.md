@@ -4,9 +4,11 @@ Praktische Abläufe für DevOps.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/devops).
+Bereite Docker Compose, Datenbankzugang und Verschlüsselungsschlüssel vor.
 
 ## Beispiele
+
+Setze POSTGRES_PASSWORD und DATA_ENCRYPTION_KEY, starte `docker compose up --build` und prüfe Gesundheit und Protokolle.
 
 ```sh
 export POSTGRES_PASSWORD='<Datenbankkennwort>'
@@ -16,8 +18,8 @@ docker compose up --build
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von DevOps. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/devops/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Die Anwendung startet hinter nginx mit der Datenbank; fehlende Pflichtgeheimnisse verhindern den Start.
 
 ## Fehlerbehebung
 
-Falls DevOps nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Prüfe Compose-Fehler, Datenbank und Verzeichnisrechte. Sichere vor Updates Datenbank und Medien gemeinsam.

@@ -4,18 +4,21 @@ Practical procedures for Leaderboard.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/adapters/study/leaderboard) before performing these procedures.
+Sign in; classroom boards require current membership and some events require opting in.
 
 ## Examples
 
-- Choose a ranking to see its participants and scoring period.
-- Compare scores and rank movement; highlighted rows identify your own position when available.
-- Find your row and compare scores within the selected ranking. Switch rankings to compare the activity each one measures.
+Select the relevant cohort and period, then compare your position and the board's displayed criteria.
+
+```ts
+const leaderboard = ctx.capabilities.require("study:leaderboard");
+const table = await leaderboard.requestTableModel(query, "en");
+```
 
 ## Expected Results
 
-The example uses the documented interface of Leaderboard. Confirm the response or saved state described in [Technical](/docs/adapters/study/leaderboard/technical) before repeating a write operation.
+Rankings use eligible evidence and privacy-aware identities; corrections can change standings.
 
 ## Troubleshooting
 
-If Leaderboard is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+Check participation, cohort eligibility and minimum evidence. A completed activity need not qualify for every board.

@@ -1,4 +1,9 @@
 import { componentManifestFiles } from "../reuse/component-files.js";
+import {
+    documentationBundleFiles,
+    sourceReferenceIssues,
+} from "../reuse/documentation/content.js";
+import { readFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { resolve } from "node:path";
 import {
@@ -16,6 +21,14 @@ const failures = componentManifestFiles(root).flatMap((manifest) =>
         manifest === resolve(root, "package.json") ? "src/docs" : "docs",
     ).map((issue) => `${manifest}: ${issue}`),
 );
+
+for (const path of documentationBundleFiles(root)) {
+    failures.push(
+        ...sourceReferenceIssues(readFileSync(path, "utf8"), root).map(
+            (issue) => `${path}: ${issue}`,
+        ),
+    );
+}
 
 if (base) {
     const run = (args) => {

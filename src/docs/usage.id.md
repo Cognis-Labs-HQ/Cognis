@@ -4,16 +4,16 @@ Prosedur praktis untuk Cognis.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/index) sebelum menjalankan prosedur ini.
+Alat tersedia bergantung pada fitur aktif dan akses akun.
 
 ## Contoh
 
-Komponen ini tidak menyatakan titik masuk baris perintah mandiri. Gunakan fitur pemiliknya atau [prosedur penerapan](/docs/devops/usage) untuk mengonfigurasi instalasi; [referensi teknis](/docs/index/technical) mencantumkan antarmuka dan batasnya.
+Buka Study, daftar bahasa terpasang, dan pilih aktivitas; gunakan Dokumen untuk mempelajari kontrolnya.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Cognis yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/index/technical) sebelum mengulangi operasi tulis.
+Bahasa pilihan menentukan konten; setiap fitur mempertahankan izinnya sendiri.
 
 ## Pemecahan Masalah
 
-Jika Cognis tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Bila alat hilang, periksa pendaftaran bahasa dan tanyakan status komponen kepada administrator.

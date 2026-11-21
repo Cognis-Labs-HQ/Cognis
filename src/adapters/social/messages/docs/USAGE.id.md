@@ -4,22 +4,18 @@ Prosedur praktis untuk Pesan.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/adapters/social/messages) sebelum menjalankan prosedur ini.
+Masuk; ruang terenkripsi juga memerlukan akses keyring akun.
 
 ## Contoh
 
-- Pilih ruang atau mulai percakapan di panel samping. Pada ponsel dan tablet, gunakan tombol sudut ganda di kiri atas untuk membukanya.
-- Baca percakapan dan periksa peserta serta permintaan tertunda.
-- Tulis dan pratinjau draf sebelum mengirim; lampiran dan panggilan memiliki kontrol tersendiri.
-- Buat percakapan langsung atau ruang, pilih penerima, lalu periksa anggota sebelum mengirim pesan pertama.
-- Tulis pesan di sini. Gunakan format dan lampiran sesuai kebutuhan, lalu periksa pratinjau sebelum mengirim.
-- Beralih ke Pratinjau untuk memeriksa format, tautan, dan lampiran. Kembali ke Tulis untuk memperbaikinya.
-- Judul percakapan menunjukkan ruang dan pesertanya. Periksa tindakan yang tersedia sebelum mengubah anggota atau keluar.
+Buat ruang, pilih penerima, tulis draf, periksa Pratinjau, lalu kirim. Simpan kata-kata berulang sebagai templat bila berguna.
+
+Impor `uiCtx`, wajibkan `social:messagesUiClient`, lalu panggil `listRoomMessages(roomId, options)`, `openPrivateRoom(payload, options)`, atau `sendRoomMessage(roomId, payload)` dari kode browser.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Pesan yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/adapters/social/messages/technical) sebelum mengulangi operasi tulis.
+Pesan yang diakui muncul dalam riwayat. Draf bertahan saat ukuran berubah; draf terenkripsi dihapus setelah pengakuan atau antrean persisten.
 
 ## Pemecahan Masalah
 
-Jika Pesan tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Periksa keanggotaan dan keyring. Pembukaan luring memerlukan aset siap dan ruang tersimpan; riwayat belum tersimpan memerlukan koneksi.

@@ -68,12 +68,10 @@ The local adapter is also the target of `POST /api/v1/auth/register` for self-re
 
 ## Security
 
-### Account privacy and keyring isolation
-
-SSO accounts use opaque random IDs. Provider IDs are stored separately and exposed only to administrators; public usernames never include them. Auth reserves usernames before profile or email side effects: duplicate names within one provider are rejected, while different providers receive a short random suffix when needed. Users lists and action endpoints distinguish public `username` from internal `accountId`.
-
-Existing local accounts continue to work when legacy SSO records are present. Startup does not require a database reset. Legacy SSO sign-in and provisioning are rejected individually until those accounts are recreated with opaque IDs. No account IDs, relationships or meetings are migrated or deleted automatically.
+Local passwords use scrypt with a random salt and timing-safe verification. Account management requires the owning Auth operation's authorization; the local adapter verifies credentials but does not issue sessions or grant administrator roles from registration input.
 
 ## Reference
 
-Source and package metadata: `src/adapters/auth/local/`.
+- [src/adapters/auth/local/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/local/manifest.json)
+- [src/adapters/auth/local/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/local/package.json)
+- [src/adapters/auth/local/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/local/index.ts)

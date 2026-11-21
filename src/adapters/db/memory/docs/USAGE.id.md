@@ -4,16 +4,16 @@ Prosedur praktis untuk Basis Data Dalam Memori.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/adapters/db/memory) sebelum menjalankan prosedur ini.
+Pengganti uji ini tidak menyediakan persistensi atau rollback transaksi.
 
 ## Contoh
 
-Komponen ini tidak menyatakan titik masuk baris perintah mandiri. Gunakan fitur pemiliknya atau [prosedur penerapan](/docs/devops/usage) untuk mengonfigurasi instalasi; [referensi teknis](/docs/adapters/db/memory/technical) mencantumkan antarmuka dan batasnya.
+Buat MemoryDatabaseGateway, panggil query atau execute, lalu periksa statement dan params melalui getQueries().
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Basis Data Dalam Memori yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/adapters/db/memory/technical) sebelum mengulangi operasi tulis.
+query memberi rows kosong dan rowCount nol; execute memberi affectedRows nol.
 
 ## Pemecahan Masalah
 
-Jika Basis Data Dalam Memori tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+DB_TYPE saja tidak memilih kelas ini melalui pemuat standar; pengujian persistensi perlu basis data nyata.

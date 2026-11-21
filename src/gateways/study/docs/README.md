@@ -4,17 +4,15 @@ Choose a language and use its available learning materials, practice activities 
 
 ## What You Can Do
 
-- Explore browses enrolled languages. Flashcards and other installed tools appear here when available to your account.
-- Switch between the languages you have enrolled in. Names shorten to a code or flag when space is tight. Use Study settings to change your enrollment.
-- These cards open the installed learning tools. Each language’s guide walks through its own collections and card actions.
+Choose learning languages, browse available tools and search dictionaries.
 
 ## Before You Start
 
-Check that Study is enabled and that your account has permission for the operation.
+Sign in and enroll in an installed language.
 
 ## Get Started
 
-Open [the feature](/study) and choose the action you need.
+Open Study settings, select a language and return to Explore.
 
 ## Learn More
 

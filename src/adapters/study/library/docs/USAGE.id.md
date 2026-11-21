@@ -4,23 +4,18 @@ Prosedur praktis untuk Pustaka Pembelajaran.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/adapters/study/library) sebelum menjalankan prosedur ini.
+Pilih bahasa terdaftar; pembuatan, pengeditan, dan penerbitan bergantung pada kepemilikan serta izin peninjauan.
 
 ## Contoh
 
-- Gunakan menu lapisan di samping untuk berpindah jenis konten yang tersedia bagi bahasa Anda, lalu jelajahi kartu pada lapisan pilihan.
-- Klik kartu ini untuk membuka tampilan detail, atau lanjutkan panduan untuk melewati penjelasan tersebut.
-- Gunakan aksi favorit pada kartu ini untuk menyimpannya. Filter favorit membantu Anda kembali ke kartu tersimpan.
-- Periksa hasil kamus beserta bahasa, bacaan, dan maknanya.
-- Buka hasil untuk membandingkan bacaan dan maknanya sebelum mengimpornya ke koleksi Anda.
-- Saring permintaan dan baca status tinjauan sebelum mengajukan perubahan lain.
-- Buka permintaan untuk melihat konten yang diusulkan dan tempat penyimpanan rekaman.
-- Cari dan pilih lapisan untuk menemukan rekaman yang ingin dikelola.
+Cari atau filter koleksi dan periksa bacaan serta definisi. Saat membuat konten, selesaikan referensi lalu simpan atau kirim untuk ditinjau.
+
+Gunakan **Impor** di kiri bawah pemilih jenis kartu untuk mengunggah JSON. Pilih cakupan yang dapat ditulis untuk seluruh kelompok. Format berisi `format: "cognis-library"`, `version: 1`, dan larik `entries` yang tidak kosong.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Pustaka Pembelajaran yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/adapters/study/library/technical) sebelum mengulangi operasi tulis.
+Konten tersimpan mempertahankan komposisinya; penerbitan mengikuti peninjauan dan favorit mengikuti status akun yang diakui.
 
 ## Pemecahan Masalah
 
-Jika Pustaka Pembelajaran tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Periksa cakupan, referensi kanonis, dan permintaan tertunda. Alternatif kamus perlu dipilih; pencarian tidak otomatis mengizinkan penerbitan.

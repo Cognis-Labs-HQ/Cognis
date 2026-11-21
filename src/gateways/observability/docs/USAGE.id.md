@@ -4,16 +4,18 @@ Prosedur praktis untuk Pemantauan Kinerja.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/gateways/observability) sebelum menjalankan prosedur ini.
+Operator perlu akses ke tujuan metrik; tujuan bawaan menulis log debug.
 
 ## Contoh
 
-Komponen ini tidak menyatakan titik masuk baris perintah mandiri. Gunakan fitur pemiliknya atau [prosedur penerapan](/docs/devops/usage) untuk mengonfigurasi instalasi; [referensi teknis](/docs/gateways/observability/technical) mencantumkan antarmuka dan batasnya.
+Aktifkan log debug yang sesuai, reproduksi permintaan lambat, lalu bandingkan waktu HTTP atau basis data pada kondisi sama.
+
+Selesaikan `observability:metrics` melalui `ctx.capabilities` untuk metrik server, atau kirim telemetri browser yang diizinkan melalui endpoint gateway.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Pemantauan Kinerja yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/gateways/observability/technical) sebelum mengulangi operasi tulis.
+Pengukuran diizinkan mencapai kapabilitas metrik; sampel peramban tidak mencakup setiap kunjungan.
 
 ## Pemecahan Masalah
 
-Jika Pemantauan Kinerja tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Periksa tingkat log dan sampling. Gateway bawaan tidak menyediakan dasbor metrik tersendiri.

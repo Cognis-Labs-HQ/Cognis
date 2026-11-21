@@ -4,15 +4,15 @@ Empfangen Sie Cognis-Benachrichtigungen über den eingerichteten E-Mail-Dienst.
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/settings) entsprechend Ihren Kontorechten.
+Versende Benachrichtigungen und Bestätigungen über deinen Mailserver.
 
 ## Vor dem Start
 
-Prüfen Sie, ob E-Mail-Zustellung aktiviert ist und Ihr Konto den Vorgang ausführen darf.
+Administratoren benötigen SMTP-Zugang und eine erlaubte Absenderadresse.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/settings) und wählen Sie die gewünschte Aktion.
+Öffne Benachrichtigungen in Administration und konfiguriere den E-Mail-Absender.
 
 ## Weitere Informationen
 

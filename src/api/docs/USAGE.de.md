@@ -4,16 +4,18 @@ Praktische Abläufe für Anwendungsserver.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/api).
+Betreiber stellen den Server bereit; veröffentlichte Dokumente benötigen keine Administratorrechte.
 
 ## Beispiele
 
-Diese Komponente deklariert keinen eigenständigen Befehlszeileneinstieg. Nutzen Sie die zugehörige Funktion oder die [Bereitstellungsabläufe](/docs/devops/usage) zur Konfiguration; die [technische Referenz](/docs/components/api/technical) nennt Schnittstellen und Grenzen.
+Wähle Info, Nutzung oder Technik und eine Version; prüfe beim Ansichtswechsel die erhaltene Version.
+
+Rufen Sie `store.diff(fromVersion, toVersion)` über einen Speicher auf, der mit der Fähigkeit `docs:versionStore` erstellt wurde. Laufzeitmodule können das strukturierte Ergebnis über ihre eigene authentifizierte Route zurückgeben, `ui:documentDiff` über den Browser-ctx auflösen und das Ergebnis an `renderDocumentDiff(diff)` übergeben.
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von Anwendungsserver. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/components/api/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Jede veröffentlichte Version enthält ein vollständiges übersetztes Paket; fehlende Ansichten werden nicht aus fremden Versionen ergänzt.
 
 ## Fehlerbehebung
 
-Falls Anwendungsserver nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Prüfe Thema, Version und Serverzugriff. Das Archiv benötigt einen beschreibbaren Speicherort.

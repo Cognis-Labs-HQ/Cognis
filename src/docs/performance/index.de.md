@@ -4,15 +4,15 @@ Erkennen Sie langsame Seiten und Anfragen, messen Sie ihr Verhalten und vergleic
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/) entsprechend Ihren Kontorechten.
+Miss langsame Navigation und vergleiche Optimierungen einheitlich.
 
 ## Vor dem Start
 
-Die beschriebenen Vorgänge können Konto- oder Verwaltungsrechte verlangen. Das Lesen eines Themas aktiviert keine optionalen Funktionen.
+Messungen benötigen reproduzierbare Bedingungen und eine erfasste Releaseversion.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/) und wählen Sie die gewünschte Aktion.
+Wähle Kaltstart, Warmstart oder SPA-Navigation.
 
 ## Weitere Informationen
 

@@ -23,7 +23,7 @@ export interface AuthAccountStore {
         username: string;
         passwordHash: string;
         email?: string;
-        isAdmin?: boolean;
+        role?: string;
     }): Promise<AuthAccount>;
 }
 ```
@@ -36,7 +36,7 @@ Lingkup bootstrap bertingkat mewarisi wewenang induk dan tidak dapat mendaftarka
 
 ## Konfigurasi
 
-Topik dokumentasi ini tidak memiliki konfigurasi waktu jalan sendiri. Pengaturan operasional dimiliki komponen terkait.
+Core menerima penyimpanan dan registri dari bootstrap host. Koneksi basis data bukan preferensi pengguna; operator mengatur layanan tersebut.
 
 ## Perilaku
 
@@ -118,8 +118,9 @@ export interface HealthStatus {
 
 ## Keamanan
 
-Membaca dokumentasi tidak memberikan izin menjalankan contohnya. Komponen pemilik mengotorisasi setiap operasi.
+Cakupan bootstrap mengenali pemilik. Handler mengotorisasi sebelum perubahan; kapabilitas tersedia bukan bukti hak pengguna.
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/docs/core/`.
+- [src/core/ctx/types.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/ctx/types.ts)
+- [src/core/ctx/flow-api.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/ctx/flow-api.ts)

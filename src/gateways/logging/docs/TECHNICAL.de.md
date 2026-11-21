@@ -86,7 +86,7 @@ Logging-Adapterdefinitionen verwenden `labelKey`. Das Gateway serialisiert Katal
 
 ## Sicherheit
 
-Der Zugriff auf Anwendungsprotokolle unterliegt dem Aufrufer und dem zuständigen Funktionsdienst. Die Aktivierung erweitert keine Kontorechte.
+Protokolleinsicht und Konfiguration benötigen Verwaltungsrechte. Behandle Meldungen und Metadaten als sensibel; protokolliere keine Passwörter, Tokens oder privaten Nachrichten.
 
 ## Referenz
 

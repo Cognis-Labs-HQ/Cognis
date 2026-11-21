@@ -4,15 +4,15 @@ The database stores accounts and application content so they remain available af
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/administration) according to your account permissions.
+Provide durable storage for accounts and enabled features.
 
 ## Before You Start
 
-Check that Database is enabled and that your account has permission for the operation.
+Operators must configure a supported database provider before normal use.
 
 ## Get Started
 
-Open [the feature](/administration) and choose the action you need.
+Configure the database connection during deployment.
 
 ## Learn More
 

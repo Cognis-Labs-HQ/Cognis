@@ -8,7 +8,7 @@ The public interfaces and operational rules of Profiles and Posts.
 
 The adapter bootstrap in `src/adapters/social/profile/index.ts`:
 
-1. Guards on `ctx.dbExecutor` — logs a warning and returns if unavailable.
+1. Guards on `ctx.capabilities.get("db:executor")` — logs a warning and returns if unavailable.
 2. Instantiates `DbProfileStore` and calls `ensureSchema()`.
 3. Instantiates `DbUserPreferenceStore`, calls `ensureSchema()`, and
    contributes `preferences:store` and `social:profileStore`.
@@ -106,17 +106,17 @@ authentication (auth gateway), or private messaging (messages adapter).
 
 ### Key source locations
 
-| Path                                                | Purpose                                                                |
-| --------------------------------------------------- | ---------------------------------------------------------------------- |
-| `src/adapters/social/profile/index.ts`              | Adapter bootstrap entry point                                          |
-| `src/adapters/social/profile/routes/social.ts`      | Follow, unfollow, block, unblock, follower/following routes            |
-| `src/adapters/social/profile/routes/posts.ts`       | Post creation, listing, and deletion                                   |
-| `src/adapters/social/profile/routes/files.ts`       | File upload, download, and admin size-limit management                 |
-| `src/adapters/social/profile/routes/preferences.ts` | User preference get/set                                                |
-| `src/adapters/db/reuse/profile-store.ts`            | `DbProfileStore` — all profile, social graph, and post SQL             |
-| `src/adapters/db/reuse/preference-store.ts`         | `DbUserPreferenceStore`                                                |
-| `src/adapters/social/profile/profile-store.ts`      | Abstract `ProfileStore` interface and `VolatileProfileStore` for tests |
-| `src/adapters/social/profile/routes/index.ts`       | Own profile and public profile route handlers                          |
+| Path                                                        | Purpose                                                                |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `src/adapters/social/profile/index.ts`                      | Adapter bootstrap entry point                                          |
+| `src/adapters/social/profile/routes/social.ts`              | Follow, unfollow, block, unblock, follower/following routes            |
+| `src/adapters/social/profile/routes/posts.ts`               | Post creation, listing, and deletion                                   |
+| `src/adapters/social/profile/routes/profile-file-client.ts` | File upload, download, and admin size-limit management                 |
+| `src/adapters/social/profile/routes/preferences.ts`         | User preference get/set                                                |
+| `src/adapters/social/profile/store.ts`                      | `DbProfileStore` — all profile, social graph, and post SQL             |
+| `src/adapters/social/profile/preference-store.ts`           | `DbUserPreferenceStore`                                                |
+| `src/adapters/social/profile/store.ts`                      | Abstract `ProfileStore` interface and `VolatileProfileStore` for tests |
+| `src/adapters/social/profile/routes/index.ts`               | Own profile and public profile route handlers                          |
 
 ### Visibility model
 
@@ -152,12 +152,6 @@ The profile menu shows the current availability and lets the signed-in user choo
 GET availability returns a successful unknown status for a missing or privacy-restricted profile. Both cases have the same response shape and never query its manual preference or calendar status. Existing owner, block, community, friend and private visibility rules remain enforced; writes still require the owner. Avatar indicators display unknown without repeated not-found errors.
 
 ### Offline Social Changes
-
-See the [shared contract](/docs/adapters/social/messages/technical) for this behavior.
-
-See the [shared contract](/docs/adapters/social/messages/technical) for this behavior.
-
-See the [shared contract](/docs/adapters/social/messages/technical) for this behavior.
 
 See the [shared contract](/docs/adapters/social/messages/technical) for this behavior.
 
@@ -199,9 +193,7 @@ Published posts appear immediately, and deletions update the timeline without re
 
 ### Account privacy and keyring isolation
 
-See the [shared contract](/docs/adapters/auth/local/technical) for this behavior.
-
-See the [shared contract](/docs/adapters/auth/local/technical) for this behavior.
+See the [shared contract](/docs/gateways/auth/technical) for this behavior.
 
 ## Reference
 

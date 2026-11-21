@@ -4,16 +4,18 @@ Prosedur praktis untuk Berbagi dengan Orang.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/adapters/share/user) sebelum menjalankan prosedur ini.
+Penerima memerlukan akun Cognis; pengirim memerlukan izin berbagi.
 
 ## Contoh
 
-Komponen ini tidak menyatakan titik masuk baris perintah mandiri. Gunakan fitur pemiliknya atau [prosedur penerapan](/docs/devops/usage) untuk mengonfigurasi instalasi; [referensi teknis](/docs/adapters/share/user/technical) mencantumkan antarmuka dan batasnya.
+Pilih penerima dan izin yang tersedia, simpan, lalu minta akun tersebut membuka halaman berbagi akunnya.
+
+Memberikan sumber daya langsung kepada pengguna Cognis melalui gateway Share. Adapter memvalidasi penerima pengguna dan memiliki halaman Pengguna di dalam popup gateway.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Berbagi dengan Orang yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/adapters/share/user/technical) sebelum mengulangi operasi tulis.
+Akses terikat akun terpilih, bukan siapa pun yang memegang tautan publik.
 
 ## Pemecahan Masalah
 
-Jika Berbagi dengan Orang tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Periksa identitas penerima, pemberian akses lama, dan izin sumber daya. Pemberian ganda untuk penerima sama ditolak.

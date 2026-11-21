@@ -1,18 +1,18 @@
 # Passphrase Utility
 
-The API runtime provides `reuse:generatePassphrase` through `ctx` so modules such as Jitsi Meet can generate readable secrets without importing API internals.
+Supported features can generate readable random passphrases without asking you to invent a password.
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/) according to your account permissions.
+Generate readable random passphrases for features that need a secret.
 
 ## Before You Start
 
-The operations discussed here may require account or administrator permissions. Reading a topic does not enable its optional features.
+A feature must expose a generation action; this utility has no standalone user page.
 
 ## Get Started
 
-Open [the feature](/) and choose the action you need.
+Use a supported feature's password-generation control.
 
 ## Learn More
 

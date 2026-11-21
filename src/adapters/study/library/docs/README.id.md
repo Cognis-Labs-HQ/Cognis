@@ -4,17 +4,15 @@ Jelajahi konten bahasa, cari definisi, dan kelola materi belajar yang tersedia b
 
 ## Yang Dapat Anda Lakukan
 
-- Gunakan menu lapisan di samping untuk berpindah jenis konten yang tersedia bagi bahasa Anda, lalu jelajahi kartu pada lapisan pilihan.
-- Klik kartu ini untuk membuka tampilan detail, atau lanjutkan panduan untuk melewati penjelasan tersebut.
-- Gunakan aksi favorit pada kartu ini untuk menyimpannya. Filter favorit membantu Anda kembali ke kartu tersimpan.
+Jelajahi koleksi bahasa, periksa kartu, dan sumbangkan konten belajar terstruktur.
 
 ## Sebelum Memulai
 
-Pastikan Pustaka Pembelajaran aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Pilih bahasa terdaftar; pembuatan, pengeditan, dan penerbitan bergantung pada kepemilikan serta izin peninjauan.
 
 ## Langkah Awal
 
-Buka [fitur ini](/study) dan pilih tindakan yang diperlukan.
+Buka Jelajahi, pilih koleksi, lalu pilih kartu.
 
 ## Pelajari Lebih Lanjut
 

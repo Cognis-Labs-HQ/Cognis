@@ -4,16 +4,16 @@ Praktische Abläufe für Lokaler Dateispeicher.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/adapters/file/local).
+Betreiber benötigen ein beschreibbares Medienverzeichnis, das Containerwechsel übersteht.
 
 ## Beispiele
 
-Diese Komponente deklariert keinen eigenständigen Befehlszeileneinstieg. Nutzen Sie die zugehörige Funktion oder die [Bereitstellungsabläufe](/docs/devops/usage) zur Konfiguration; die [technische Referenz](/docs/adapters/file/local/technical) nennt Schnittstellen und Grenzen.
+Setze MEDIA_LOCATION auf ein dauerhaftes beschreibbares Verzeichnis, starte neu und lade ein erlaubtes Bild etwa im Profil hoch.
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von Lokaler Dateispeicher. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/adapters/file/local/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Die Datei liegt unter uploads; ihre Funktion steuert Sichtbarkeit und Zugriff.
 
 ## Fehlerbehebung
 
-Falls Lokaler Dateispeicher nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Prüfe Verzeichnisrechte, freien Speicher und Dateityp. Sichere Medien und Datenbank; Metadaten stellen keine Dateiinhalte wieder her.

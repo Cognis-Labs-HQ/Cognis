@@ -4,15 +4,15 @@ Speichern Sie hochgeladene Dateien auf dem Speicher des Cognis-Servers.
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/settings) entsprechend Ihren Kontorechten.
+Speichere hochgeladene Medien lokal auf dem Cognis-Server.
 
 ## Vor dem Start
 
-Prüfen Sie, ob Lokaler Dateispeicher aktiviert ist und Ihr Konto den Vorgang ausführen darf.
+Betreiber benötigen ein beschreibbares Medienverzeichnis, das Containerwechsel übersteht.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/settings) und wählen Sie die gewünschte Aktion.
+Konfiguriere den Medienpfad vor dem Hochladen.
 
 ## Weitere Informationen
 

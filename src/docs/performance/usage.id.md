@@ -4,16 +4,16 @@ Prosedur praktis untuk Anggaran kinerja.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/performance) sebelum menjalankan prosedur ini.
+Pengukuran memerlukan lingkungan berulang dan versi rilis tercatat.
 
 ## Contoh
 
-Komponen ini tidak menyatakan titik masuk baris perintah mandiri. Gunakan fitur pemiliknya atau [prosedur penerapan](/docs/devops/usage) untuk mengonfigurasi instalasi; [referensi teknis](/docs/performance/technical) mencantumkan antarmuka dan batasnya.
+Ulangi pada jaringan dan CPU tetap, catat waktu serta transfer, lalu bandingkan median dengan baseline tersimpan.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Anggaran kinerja yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/performance/technical) sebelum mengulangi operasi tulis.
+Hasil hanya mewakili kondisi terukur; sampel lokal tidak menjamin kinerja hosting.
 
 ## Pemecahan Masalah
 
-Jika Anggaran kinerja tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Pisahkan font, aset, API, dan render. Perubahan kondisi membatalkan perbandingan langsung.

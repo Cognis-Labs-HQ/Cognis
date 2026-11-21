@@ -4,15 +4,15 @@ Baca pesan log aplikasi di konsol server atau keluaran kontainer.
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/administration) sesuai izin akun Anda.
+Kirim log aplikasi ke konsol proses.
 
 ## Sebelum Memulai
 
-Pastikan Log Konsol aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Administrator mengatur keluaran; operator menangkap log pada sistem hosting.
 
 ## Langkah Awal
 
-Buka [fitur ini](/administration) dan pilih tindakan yang diperlukan.
+Buka pengaturan Logging dan pilih konsol.
 
 ## Pelajari Lebih Lanjut
 

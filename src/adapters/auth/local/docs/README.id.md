@@ -4,15 +4,15 @@ Masuk dengan nama pengguna dan kata sandi Cognis tanpa penyedia akun eksternal.
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/login) sesuai izin akun Anda.
+Masuk memakai nama pengguna dan kata sandi Cognis tanpa layanan identitas eksternal. Akun administrator lokal juga membantu pemulihan akses.
 
 ## Sebelum Memulai
 
-Pastikan Akun Lokal aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Pembuatan akun mengikuti kebijakan pendaftaran. Autentikasi lokal wajib aktif dan tidak dapat dinonaktifkan.
 
 ## Langkah Awal
 
-Buka [fitur ini](/login) dan pilih tindakan yang diperlukan.
+Pilih masuk lokal di halaman masuk lalu masukkan kredensial Cognis.
 
 ## Pelajari Lebih Lanjut
 

@@ -4,11 +4,11 @@ Antarmuka publik dan aturan operasional Papan Peringkat.
 
 ## Antarmuka
 
-Papan Peringkat terintegrasi melalui gerbang pemilik; manifesnya mengidentifikasi komponen dan dependensi yang diperlukan.
+study:leaderboard mendaftarkan definisi, kelompok, dan partisipasi serta menyediakan requestTableModel dan queryStandings. GET terautentikasi /api/v1/study/leaderboard/definitions dan /standings menyediakan data.
 
 ## Konfigurasi
 
-Konfigurasi disediakan melalui gerbang pemilik. Papan Peringkat tidak menyatakan konfigurasi tambahan dalam manifesnya.
+Penyedia mendaftarkan kriteria, bukti minimum, jendela, dan kebijakan kelompok. Partisipasi serta kelompok disimpan melalui operasi kapabilitas yang ditunggu.
 
 ## Perilaku
 
@@ -19,13 +19,6 @@ Permintaan definisi dan peringkat tanpa autentikasi menjalankan pemeriksaan aute
 Snapshot dibagi pada batas Unicode menjadi baris paling besar 60.000 byte UTF-8 dan diganti secara transaksional. Snapshot satu baris yang sudah ada menggunakan jalur baca yang sama. Metode metadata registerDefinition, assignCohort, dan setParticipation kini mengembalikan Promise<void> dan harus ditunggu. Metode menjalankan alur ctx bernama, meneruskan kegagalan penyimpanan, dan membatalkan perubahan metadata yang gagal. Pergantian musim juga mengembalikan promise yang ditunggu. Pendaftaran papan kelas secara bersamaan berbagi satu proses pendaftaran yang masih berjalan.
 
 Adaptor papan peringkat mengurutkan bukti belajar terverifikasi dalam kelompok yang diizinkan dan menyajikan peringkat yang aksesibel.
-
-### Penggunaan
-
-```ts
-const leaderboard = ctx.capabilities.require("study:leaderboard");
-const table = await leaderboard.requestTableModel(query, "id");
-```
 
 ### Integrasi penyedia
 

@@ -30,7 +30,7 @@ erforderlich, außer für `GET /messages/ping`.
 
 ## Konfiguration
 
-Die Konfiguration erfolgt über den zuständigen Funktionsdienst. Nachrichten definiert keine zusätzlichen Einstellungen im Manifest.
+Räume deklarieren Teilnehmer und Verschlüsselung/Zugriff. Vorlagen und Entwürfe gehören zum Konto; Offline braucht vorbereitete Ressourcen und gespeicherte Verläufe.
 
 ## Verhalten
 
@@ -124,20 +124,7 @@ Die Nachrichtenseite löst Raumschlüssel über den Schlüsselbundbereich `Socia
 
 ## Sicherheit
 
-### Berechtigung
-
-Direktnachrichten von Nutzer **A** an **B** sind erlaubt, wenn:
-
-1. keine Blockierung in beide Richtungen besteht,
-2. beide Profile sichtbar sind,
-3. beide einander folgen.
-
-Wenn nur Punkt 3 fehlt (kein gegenseitiges Folgen), kann `POST /messages/rooms`
-eine ausstehende Anfrage erzeugen (`202`). Der Absender kann den Raum sehen; der
-Empfänger muss zuerst genehmigen.
-
-Historisch genehmigte Anfragen erlauben spätere DMs ohne neue Anfrage, aber nur
-solange Block- und Sichtbarkeitsregeln weiterhin erfüllt sind.
+Raumzugang, Mitgliedschaft und Nachrichtenlesen werden getrennt geprüft. Verschlüsselte Räume benötigen Clientschlüssel; das Bedrohungsmodell unterscheidet Inhalte von sichtbaren Routingdaten.
 
 ## Referenz
 

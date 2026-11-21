@@ -4,30 +4,15 @@ Antarmuka publik dan aturan operasional Adapter.
 
 ## Antarmuka
 
-### Arsitektur
-
-```
-src/adapters/
-  db/
-    mariadb/     — MariaDB/MySQL
-    postgres/    — PostgreSQL (default)
-    memory/      — In-memory (hanya pengujian)
-  auth/
-    local/       — Kredensial lokal dengan hashing scrypt
-    ldap/        — Autentikasi direktori LDAP
-    saml/        — SSO SAML 2.0
-    oidc/        — SSO OAuth2/OIDC
-  notify/
-    smtp/        — Pengiriman email via SMTP
-  file/
-    local/       — Penyimpanan file berbasis filesystem
-```
+Adapter menyediakan factory dan hook sesuai kontrak gateway. Basis data memakai factory executor terstruktur, autentikasi AuthProviderAdapter, dan notifikasi metadata serta diagnosis pengiriman.
 
 ## Konfigurasi
 
-Topik dokumentasi ini tidak memiliki konfigurasi waktu jalan sendiri. Pengaturan operasional dimiliki komponen terkait.
+Adapter mendeklarasikan pengaturan lewat gateway. Penyedia autentikasi, notifikasi, dan basis data berbeda skema; manifes saja tidak membuktikan koneksi terimplementasi.
 
 ## Perilaku
+
+OIDC dan SAML dalam sumber ini memerlukan klien protokol terinjeksi. Formulir tidak membuat klien; periksa Teknis adapter sebelum penerapan.
 
 ### Ikhtisar
 
@@ -70,8 +55,9 @@ Untuk menambahkan adapter baru untuk gateway yang ada, buat direktori di bawah `
 
 ## Keamanan
 
-Membaca dokumentasi tidak memberikan izin menjalankan contohnya. Komponen pemilik mengotorisasi setiap operasi.
+Adapter memiliki rahasia transportasi dan kontrak. Pengujian tidak membocorkan kata sandi; penonaktifan membersihkan registrasi.
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/docs/adapters/`.
+- [src/gateways/reuse/adapter-bootstrap.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/reuse/adapter-bootstrap.ts)
+- [src/gateways/shared.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/shared.ts)

@@ -4,16 +4,16 @@ Practical procedures for Local Accounts.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/adapters/auth/local) before performing these procedures.
+Account administrators need an authenticated CLI session to manage another user's credentials.
 
 ## Examples
 
-This component does not declare a standalone command-line entry point. Use its owning feature or the [deployment procedures](/docs/devops/usage) to configure the installation; the [technical reference](/docs/adapters/auth/local/technical) lists its interfaces and constraints.
+Run `cognisctl user:create` and follow its prompts. Use `cognisctl user:set-password` to replace a local password, or `cognisctl user:disable` to suspend an account.
 
 ## Expected Results
 
-The example uses the documented interface of Local Accounts. Confirm the response or saved state described in [Technical](/docs/adapters/auth/local/technical) before repeating a write operation.
+Created credentials work through local sign-in; disabled accounts cannot authenticate. The registration interface creates ordinary users, not administrators.
 
 ## Troubleshooting
 
-If Local Accounts is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+Check the username, enabled state and selected provider. External-provider passwords are managed by that provider, not by changing a Cognis local password.

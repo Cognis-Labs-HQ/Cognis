@@ -20,4 +20,6 @@ Only administrators may change delivery or storage configuration. Client request
 
 ## Reference
 
-Source and package metadata: `src/adapters/logging/console/`.
+- [src/adapters/logging/console/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/logging/console/manifest.json)
+- [src/adapters/logging/console/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/logging/console/package.json)
+- [src/adapters/logging/console/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/logging/console/index.ts)

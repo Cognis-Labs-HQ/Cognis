@@ -4,21 +4,17 @@ Antarmuka publik dan aturan operasional Latihan Menulis.
 
 ## Antarmuka
 
-Latihan Menulis terintegrasi melalui gerbang pemilik; manifesnya mengidentifikasi komponen dan dependensi yang diperlukan.
+Kapabilitas peramban study:drawing:open, study:drawing:load, dan study:drawing:observe mengikat permintaan serta pengamat pada sinyal halaman dan penyedia.
 
 ## Konfigurasi
 
-Konfigurasi disediakan melalui gerbang pemilik. Latihan Menulis tidak menyatakan konfigurasi tambahan dalam manifesnya.
+Penyedia bahasa memasok pola goresan kanonis. Panduan, pengungkapan, dan posisi milik permukaan Study; tidak ada server gambar terpisah.
 
 ## Perilaku
 
 ### Latihan Menulis
 
 Study memiliki papan gambar lengkap di `src/gateways/study/ui/reuse/drawing.js`, termasuk kanvas, kontrol, panduan, penilaian dan hasil. Adaptor Gambar opsional menyediakan `study:drawing:open` dan `study:drawing:load` melalui `uiCtx` browser. Pemanggil menunggu tindakan ini dan memberikan kartu Library lengkap serta `strokePattern` tervalidasi.
-
-### Contoh Penggunaan
-
-Mesin `openDrawingPad` yang sama menerima `container`, `signal` pembatalan dan `onResult`. Tanpa kontainer, jendela dapat dipindahkan dan diubah ukurannya; memuat karakter lain mempertahankan posisi. Dengan kontainer, seluruh papan ditanam, karakter asal dikunci dan keberhasilan dilaporkan hanya setelah semua goresan berurutan diterima. Menulis tertanam tidak memerlukan adaptor Gambar opsional.
 
 ### Spesifikasi Teknis
 
@@ -40,8 +36,11 @@ Penyedia menyiapkan templat gambar, gaya, dan ikon tutup saat daring agar karakt
 
 ## Keamanan
 
-Akses Latihan Menulis diatur oleh pemanggil dan gerbang pemilik. Mengaktifkan komponen tidak menambah izin akun.
+Latihan memakai identitas pelajar dan pola kanonis. Hanya percobaan selesai tepercaya masuk alur pencatatan; papan gambar tidak memberi hak edit konten.
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/adapters/study/drawing/`.
+- [src/adapters/study/drawing/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/study/drawing/manifest.json)
+- [src/adapters/study/drawing/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/study/drawing/package.json)
+- [src/adapters/study/drawing/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/study/drawing/index.ts)
+- [src/adapters/study/drawing/ui/provider.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/study/drawing/ui/provider.js)

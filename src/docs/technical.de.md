@@ -17,15 +17,17 @@
 
 ## Konfiguration
 
-Dieses Dokumentationsthema hat keine eigene Laufzeitkonfiguration. Betriebseinstellungen gehören zur zuständigen Komponente.
+Installierte Manifeste und Anbieter bestimmen Funktionen. Bereitstellung konfiguriert Speicher und Transport; Kontoeinstellungen steuern persönliche Auswahl.
 
 ## Verhalten
+
+OIDC und SAML benötigen hier einen injizierten Protokollclient. Einstellungsformulare erzeugen keinen Client; prüfe vor Bereitstellung die Technikansichten.
 
 ### Überblick
 
 Dies ist das Root-Navigationsdokument für die Cognis-Entwicklerdokumentation. Alle Dokumente in diesem Set werden durch den In-App-Dokumentationsbrowser unter `/docs` und via `GET /api/v1/docs` bereitgestellt.
 
-Diese Dokumente sind für Entwickler-Mitwirkende geschrieben, nicht für Endbenutzer. Wenn Sie neu in der Codebase sind, beginnen Sie mit den Übersichts- und Plattform-Features-Dokumenten.
+Info stellt Funktionen vor, Nutzung erklärt Abläufe und Beispiele und Technik beschreibt Verträge und Betrieb. Wähle Ansicht und Version passend zur Installation.
 
 ### Plattform
 
@@ -50,8 +52,9 @@ Diese Dokumente sind für Entwickler-Mitwirkende geschrieben, nicht für Endbenu
 
 ## Sicherheit
 
-Das Lesen der Dokumentation berechtigt nicht zur Ausführung ihrer Beispiele. Die zuständige Komponente autorisiert jeden Vorgang.
+Funktionsverfügbarkeit gewährt keinen Datenzugriff. Anmeldung, Eigentum, private Momentaufnahmen und Anbieterlebensdauer bleiben getrennte Grenzen.
 
 ## Referenz
 
-Quellcode und Paketmetadaten: `./`.
+- [src/core/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/index.ts)
+- [src/api/main.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/api/main.ts)

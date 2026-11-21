@@ -4,7 +4,7 @@
 
 ## インターフェース
 
-メールによる認証 は担当のゲートウェイを通じて統合されます。マニフェストに識別情報と必要な依存先が記載されています。
+二段階方式の設定と検証を提供し、notify:registerEmailPurpose で目的を登録します。送信には notify:sendEmail と notify:emailDeliveryPolicy を使います。
 
 ## 設定
 
@@ -35,8 +35,10 @@
 
 ## セキュリティ
 
-メールによる認証 へのアクセスは呼び出し元と担当のゲートウェイが管理します。有効化してもアカウントの権限は増えません。
+確認済みの主メールと配信機能が必要です。コードはプロセス内のみで再起動時に無効になります。コードや秘密情報をオフラインキューに入れてはいけません。
 
 ## リファレンス
 
-ソースとパッケージの情報: `src/adapters/tfa/smtp/`。
+- [src/adapters/tfa/smtp/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/tfa/smtp/manifest.json)
+- [src/adapters/tfa/smtp/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/tfa/smtp/package.json)
+- [src/adapters/tfa/smtp/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/tfa/smtp/index.ts)

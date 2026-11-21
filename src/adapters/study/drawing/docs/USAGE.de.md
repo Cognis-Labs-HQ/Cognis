@@ -4,16 +4,18 @@ Praktische Abläufe für Schreibübungen.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/adapters/study/drawing).
+Schreibe dich in eine Sprache mit Schreibübungen ein.
 
 ## Beispiele
 
-Diese Komponente deklariert keinen eigenständigen Befehlszeileneinstieg. Nutzen Sie die zugehörige Funktion oder die [Bereitstellungsabläufe](/docs/devops/usage) zur Konfiguration; die [technische Referenz](/docs/adapters/study/drawing/technical) nennt Schnittstellen und Grenzen.
+Zeichne eine Antwort, nutze nötige Hinweise und schließe den Versuch ab; erhalte die Zeichenfläche beim Navigieren.
+
+Dieselbe Engine `openDrawingPad` akzeptiert `container`, Abbruch-`signal` und `onResult`. Ohne Container öffnet sie ein verschiebbares, skalierbares Fenster innerhalb der Seite und behält beim Kartenwechsel die Position. Mit Container wird das ganze Schreibfeld eingebettet, das ursprüngliche Zeichen gesperrt und Erfolg erst nach allen korrekten Strichen gemeldet. Eingebettetes Schreiben benötigt keinen optionalen Zeichenadapter.
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von Schreibübungen. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/adapters/study/drawing/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Die Zeichenfläche bewahrt den Arbeitsstand; bestätigte Abschlüsse können Lernfortschritt erfassen.
 
 ## Fehlerbehebung
 
-Falls Schreibübungen nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Prüfe Sprachunterstützung und Offline-Ressourcen. Verborgene Antworten bleiben bis zum Aufdecken verdeckt.

@@ -18,7 +18,7 @@ Audio retrieval begins only when the learner requests playback. Merely opening a
 
 ## Configuration
 
-Configuration is supplied through the owning gateway. Study declares no additional configuration in its manifest.
+Account language enrollment selects available navigation and content. Language modules and adapters register activities, dictionary providers and page contributions; absence of a provider removes only its owned choices.
 
 ## Behavior
 
@@ -40,12 +40,6 @@ An audio field is optional on sentence cards. On first playback Cognis authorize
 
 Sentence composition requests the selected transformed label and primary reading, including chained paths. If a variant recording is unavailable, playback fails explicitly instead of traversing base-form pronunciation references. The same rule applies to direct variant playback and nested constituents.
 
-### Usage
-
-Deletion confirmation is planned by the server using stored schema versions and includes dependant cards absent from the current page. The Study gateway client exposes the read-only deletion preflight.
-
-`POST /api/v1/study/library/entries/deletion-plan`
-
 ### Study navigation
 
 Study pages share one composer sub-navigation slot, resolve common navigation/action labels from ui.reuse in all four languages, and retain current route selection at rendering time. Cancelled router scopes stay cancelled when replaced. Image-preview failures show a localized error toast and release the open-state lock so another attempt is possible.
@@ -59,10 +53,6 @@ Flashcards uses `/study/<iso>/flashcards` and `/study/<iso>/flashcards/<deck-id>
 On phones and tablets, Study page links use a horizontally scrollable row and reveal the selected page after resizing or font changes. Language, dictionary search and settings share the next row. The search icon opens a dialog that retains the original form, selected provider and draft. Closing restores focus; navigation or a resize to desktop closes the dialog. The overview uses document scrolling. While scrolling, the compact header keeps primary navigation available and folds the brand row.
 
 Language names shorten to their language code and then their flag when the available space is tight. The full language name remains the accessible label and tooltip. Languages without a flag retain their code. More space restores the full names.
-
-### Usage examples
-
-Open `/study/ja/flashcards` to browse Japanese decks; selecting English opens `/study/en/flashcards`.
 
 ### Keep drawing frames consistent
 

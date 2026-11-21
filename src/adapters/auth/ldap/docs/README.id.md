@@ -4,15 +4,15 @@ Gunakan akun direktori organisasi untuk masuk saat LDAP telah dikonfigurasi.
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/login) sesuai izin akun Anda.
+Masuk dengan kredensial direktori organisasi; administrator menghubungkan LDAP dan memetakan grup administrator.
 
 ## Sebelum Memulai
 
-Pastikan Masuk LDAP aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Administrator harus menyiapkan akses direktori. Pertahankan akun administrator lokal yang berfungsi selama pengujian.
 
 ## Langkah Awal
 
-Buka [fitur ini](/login) dan pilih tindakan yang diperlukan.
+Pilih direktori yang dikonfigurasi di halaman masuk dan gunakan nama pengguna serta kata sandi direktori.
 
 ## Pelajari Lebih Lanjut
 

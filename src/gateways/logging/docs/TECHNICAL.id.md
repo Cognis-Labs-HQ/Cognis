@@ -85,7 +85,7 @@ Definisi adaptor Logging memakai `labelKey`. Gateway menyajikan skema katalog da
 
 ## Keamanan
 
-Akses Log Aplikasi diatur oleh pemanggil dan gerbang pemilik. Mengaktifkan komponen tidak menambah izin akun.
+Pemeriksaan dan konfigurasi log memerlukan administrasi. Perlakukan log sebagai data sensitif; jangan catat kredensial, token, atau isi pesan pribadi.
 
 ## Referensi
 

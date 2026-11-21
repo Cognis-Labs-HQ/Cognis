@@ -4,17 +4,15 @@ Plan events, switch between calendars and share schedules with other people.
 
 ## What You Can Do
 
-- Choose a calendar and check its visibility before adding an event.
-- Choose a day, week, month or year. On phones, day, week and month show a readable agenda with every event and an Add Event action for each date.
-- Open an event to review details, participants and invitation status before making changes.
+Create calendars and events, review schedules and share permitted content.
 
 ## Before You Start
 
-Check that Calendar is enabled and that your account has permission for the operation.
+Sign in; event changes require ownership or granted edit access.
 
 ## Get Started
 
-Open [the feature](/calendar) and choose the action you need.
+Open Calendar and select a calendar in the sidebar.
 
 ## Learn More
 

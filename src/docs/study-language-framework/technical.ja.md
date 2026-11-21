@@ -40,7 +40,7 @@ interface LanguageModule {
 
 ## 設定
 
-このドキュメント自体には実行時の設定はありません。運用の設定は該当するコンポーネントが管理します。
+言語モジュールの宣言がスキーマ、教材、作成規則を定義します。アカウントの登録言語で表示を選び、クラスの利用資格と編集権限は担当元が検証します。
 
 ## 動作
 
@@ -271,8 +271,9 @@ StudyはアダプターのマニフェストからUUID依存関係と必須の�
 
 ## セキュリティ
 
-ドキュメントを読むだけでは例を実行する権限は得られません。各操作は担当するコンポーネントが認可します。
+言語はデータと作成規則を提供し、権限方針は決めません。正規参照、公開範囲、参加資格、変更をホストが検証します。
 
 ## リファレンス
 
-ソースとパッケージの情報: `src/docs/study-language-framework/`。
+- [src/gateways/study/gateway.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/study/gateway.ts)
+- [src/adapters/study/library/contracts.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/study/library/contracts.ts)

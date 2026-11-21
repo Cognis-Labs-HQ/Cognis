@@ -4,15 +4,15 @@ Identify installed component versions and choose documentation that matches your
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/) according to your account permissions.
+Identify installed versions and match documentation to them.
 
 ## Before You Start
 
-The operations discussed here may require account or administrator permissions. Reading a topic does not enable its optional features.
+Component versions can differ from the overall application release.
 
 ## Get Started
 
-Open [the feature](/) and choose the action you need.
+Inspect the component's version in Administration or the CLI.
 
 ## Learn More
 

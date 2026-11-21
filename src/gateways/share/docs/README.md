@@ -4,15 +4,15 @@ Share supported content with selected people or through a public link while cont
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/) according to your account permissions.
+Share supported content through links or named recipients with explicit permissions.
 
 ## Before You Start
 
-Check that Sharing is enabled and that your account has permission for the operation.
+The content owner must permit sharing and an appropriate sharing method must be enabled.
 
 ## Get Started
 
-Open [the feature](/) and choose the action you need.
+Use Share on the resource you want to send.
 
 ## Learn More
 

@@ -4,16 +4,16 @@ Prosedur praktis untuk API.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/api) sebelum menjalankan prosedur ini.
+Operasi terlindungi memerlukan peran dan akses sumber daya.
 
 ## Contoh
 
-Komponen ini tidak menyatakan titik masuk baris perintah mandiri. Gunakan fitur pemiliknya atau [prosedur penerapan](/docs/devops/usage) untuk mengonfigurasi instalasi; [referensi teknis](/docs/api/technical) mencantumkan antarmuka dan batasnya.
+Baca metode, jalur, dan izin, kirim permintaan berwenang, lalu periksa respons sebelum mengulang penulisan.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka API yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/api/technical) sebelum mengulangi operasi tulis.
+Server menerapkan autentikasi dan otorisasi operasi; membaca referensi tidak memberi akses.
 
 ## Pemecahan Masalah
 
-Jika API tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Bedakan galat autentikasi, izin, dan masukan. Jangan bagikan token atau data respons pribadi dalam diagnosis.

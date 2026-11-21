@@ -4,16 +4,15 @@ Upload and retrieve files within the storage limits and sharing permissions of y
 
 ## What You Can Do
 
-- Review the global storage default and the component namespaces using it.
-- Check a namespace’s owner and visibility before changing its byte quota and saving.
+Upload feature-owned files while enforcing account access and storage limits.
 
 ## Before You Start
 
-Check that Files is enabled and that your account has permission for the operation.
+Uploads need an enabled storage provider and enough account quota.
 
 ## Get Started
 
-Open [the feature](/settings) and choose the action you need.
+Use an upload control in the feature that owns the file.
 
 ## Learn More
 

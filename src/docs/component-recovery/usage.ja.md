@@ -4,9 +4,11 @@
 
 ## 前提条件
 
-操作の前に、[アクセスの要件](/docs/component-recovery)を確認してください。
+コード変更前に管理者権限とバックアップを用意します。
 
 ## 使用例
+
+`cognisctl component:list` と component:info で問題を調べ、依存先や設定を修正してから再試行します。
 
 ```sh
 cognisctl component:upgrade module study-language-en
@@ -22,8 +24,8 @@ cognisctl component:disable module analytics --force
 
 ## 期待される結果
 
-この例は コンポーネントの復旧 の公開されたインターフェースを使います。書き込みを繰り返す前に、[技術情報](/docs/component-recovery/technical)で説明する応答または保存された状態を確認してください。
+成功すると自身の登録が復元し、要件が満たされない間は依存する機能を利用できません。
 
 ## 問題の解決
 
-コンポーネントの復旧 を利用できない場合は、ログイン状態を確認し、コンポーネントと依存先の有効状態を管理者に確認してもらってください。
+強制操作は影響を確認して使います。利用不能な機能の境界を回避してはいけません。

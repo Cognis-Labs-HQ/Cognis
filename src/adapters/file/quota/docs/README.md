@@ -4,15 +4,15 @@ View and enforce account storage limits so uploads do not exceed the available a
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/settings) according to your account permissions.
+Set global and feature-specific storage allowances for accounts.
 
 ## Before You Start
 
-Check that Storage Limits is enabled and that your account has permission for the operation.
+Only administrators manage quota defaults and account overrides.
 
 ## Get Started
 
-Open [the feature](/settings) and choose the action you need.
+Open Administration and the storage quota controls.
 
 ## Learn More
 

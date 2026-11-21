@@ -4,15 +4,15 @@ Jalankan demonstrasi dan pengujian sementara tanpa menyimpan data setelah proses
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/administration) sesuai izin akun Anda.
+Periksa panggilan basis data dalam pengujian tanpa menyimpan baris.
 
 ## Sebelum Memulai
 
-Pastikan Basis Data Dalam Memori aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Pengganti uji ini tidak menyediakan persistensi atau rollback transaksi.
 
 ## Langkah Awal
 
-Buka [fitur ini](/administration) dan pilih tindakan yang diperlukan.
+Gunakan hanya dalam harness uji sekali pakai.
 
 ## Pelajari Lebih Lanjut
 

@@ -26,7 +26,7 @@
 
 ## 設定
 
-このドキュメント自体には実行時の設定はありません。運用の設定は該当するコンポーネントが管理します。
+ホストの COGNIS_GATEWAYS_ROOT と COGNIS_ADAPTERS_ROOT が起点を指定します。識別・版・依存先は宣言で、設定は各機能で管理します。
 
 ## 動作
 
@@ -205,8 +205,9 @@ export async function bootstrapNotifyAdapter(
 
 ## セキュリティ
 
-ドキュメントを読むだけでは例を実行する権限は得られません。各操作は担当するコンポーネントが認可します。
+ゲートウェイの所有元とアカウント権限は別です。公開契約の範囲で呼び出し、各操作が現在の権限を確認します。
 
 ## リファレンス
 
-ソースとパッケージの情報: `src/docs/gateways/`。
+- [src/gateways/shared.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/shared.ts)
+- [src/gateways/reuse/adapter-bootstrap.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/reuse/adapter-bootstrap.ts)

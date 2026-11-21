@@ -4,7 +4,7 @@ The public interfaces and operational rules of Email Verification.
 
 ## Interfaces
 
-Email Verification is integrated through the owning gateway; its manifest identifies the component and required dependencies.
+The TFA method supplies setup and verification handlers and registers its own notification purpose through notify:registerEmailPurpose. Sending uses notify:sendEmail and notify:emailDeliveryPolicy.
 
 ## Configuration
 
@@ -35,8 +35,10 @@ Code length and resend interval are read from `notify:emailDeliveryPolicy`. The 
 
 ## Security
 
-Access to Email Verification is governed by the caller and its owning gateway. Enabling a component does not grant additional account permissions.
+Challenges require a verified primary email and available delivery. Pending codes are process-local and invalidated on restart; do not place codes, passwords or challenge secrets in offline queues.
 
 ## Reference
 
-Source and package metadata: `src/adapters/tfa/smtp/`.
+- [src/adapters/tfa/smtp/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/tfa/smtp/manifest.json)
+- [src/adapters/tfa/smtp/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/tfa/smtp/package.json)
+- [src/adapters/tfa/smtp/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/tfa/smtp/index.ts)

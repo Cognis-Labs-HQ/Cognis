@@ -4,11 +4,11 @@
 
 ## インターフェース
 
-このトピックは参考情報であり、独立したエンドポイントを提供しません。例では、以下で説明するコンポーネントの公開インターフェースを使用します。
+component:list と component:info で状態を確認します。有効化・無効化・更新は許可された動作期間の処理を使い、必須機能の保護を維持します。
 
 ## 設定
 
-このドキュメント自体には実行時の設定はありません。運用の設定は該当するコンポーネントが管理します。
+外部モジュールの選択チャネルは config/component-channels.json に保存します。同梱機能はホストと更新し、独立した配布チャネルはありません。
 
 ## 動作
 
@@ -56,10 +56,9 @@ cognisctl component:disable module analytics --force
 
 ## セキュリティ
 
-### 公開先と更新
-
-マーケットプレイスのブランチとリリースから公開先を選び、`config/component-channels.json` に原子的に保存します。更新では既存の認可、整合性、インストーラー、依存関係の検証を維持します。有効だったモジュールは一時的に無効化します。インストール失敗時の検証付き復旧には、呼び出し元が指定した免責確認を引き継ぎます。タイムアウトして状態が不確かな場合は無効のままにします。成功時は再起動の要否を表示します。同梱ゲートウェイ、アダプター、コアモジュールはホストとともに更新し、独立した公開先を持たず、一括更新ではスキップします。設定変更やリポジトリの取り込みは個別対象に限ります。
+復旧でも権限、パッケージ検証、必須機能の保護を維持します。不確実なタイムアウトは無効のままにし、強制でも整合性や依存関係の検証は省略しません。
 
 ## リファレンス
 
-ソースとパッケージの情報: `src/docs/component-recovery/`。
+- [src/tooling/cli/component-commands.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/tooling/cli/component-commands.ts)
+- [src/core/services/gateway-service.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/services/gateway-service.ts)

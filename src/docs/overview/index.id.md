@@ -4,15 +4,15 @@ Cognis adalah platform belajar bahasa modular yang dirancang untuk pelajar mandi
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/) sesuai izin akun Anda.
+Pahami hubungan alat belajar, fitur sosial, dan jadwal.
 
 ## Sebelum Memulai
 
-Operasi yang dibahas dapat memerlukan izin akun atau administrator. Membaca topik tidak mengaktifkan fitur opsionalnya.
+Administrator memilih komponen serta modul bahasa instalasi.
 
 ## Langkah Awal
 
-Buka [fitur ini](/) dan pilih tindakan yang diperlukan.
+Tinjau Dasbor dan navigasi utama yang tersedia.
 
 ## Pelajari Lebih Lanjut
 

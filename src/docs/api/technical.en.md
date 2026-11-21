@@ -173,13 +173,11 @@ Internal error details are never sent to the client. Server-side logging capture
 
 ### Files
 
-| Method   | Path                                         | Description                   | Auth   |
-| -------- | -------------------------------------------- | ----------------------------- | ------ |
-| `PUT`    | `/api/v1/files/:bucket/:key`                 | Upload a file                 | Bearer |
-| `GET`    | `/api/v1/files/:bucket/:key`                 | Download a file               | Bearer |
-| `DELETE` | `/api/v1/files/:bucket/:key`                 | Delete a file                 | Admin  |
-| `GET`    | `/api/v1/social/admin/file-limits`           | List per-category size limits | Admin  |
-| `PUT`    | `/api/v1/social/admin/file-limits/:category` | Set a size limit              | Admin  |
+| Method   | Path                         | Description     | Auth   |
+| -------- | ---------------------------- | --------------- | ------ |
+| `PUT`    | `/api/v1/files/:bucket/:key` | Upload a file   | Bearer |
+| `GET`    | `/api/v1/files/:bucket/:key` | Download a file | Bearer |
+| `DELETE` | `/api/v1/files/:bucket/:key` | Delete a file   | Admin  |
 
 ### Users (admin)
 

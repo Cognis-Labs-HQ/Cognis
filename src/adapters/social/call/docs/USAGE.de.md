@@ -4,16 +4,16 @@ Praktische Abläufe für Anrufe.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/adapters/social/call).
+Anrufe und Nachrichten müssen aktiv sein; Audio und Video benötigen Browserberechtigungen.
 
 ## Beispiele
 
-Diese Komponente deklariert keinen eigenständigen Befehlszeileneinstieg. Nutzen Sie die zugehörige Funktion oder die [Bereitstellungsabläufe](/docs/devops/usage) zur Konfiguration; die [technische Referenz](/docs/adapters/social/call/technical) nennt Schnittstellen und Grenzen.
+Rufe ein Raummitglied an, nimm am anderen Konto an, erlaube Mikrofonzugriff und lege anschließend auf.
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von Anrufe. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/adapters/social/call/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Signalisierung koordiniert den Anruf; Medien hängen vom Anbieter und Browser ab.
 
 ## Fehlerbehebung
 
-Falls Anrufe nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Prüfe Raummitgliedschaft, Medienrechte und Anbieter. Signalisierung allein stellt keinen Medientransport bereit.

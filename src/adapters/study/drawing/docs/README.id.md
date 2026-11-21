@@ -4,15 +4,15 @@ Latih penulisan karakter menggunakan papan gambar dan panduan bahasa yang tersed
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/study) sesuai izin akun Anda.
+Latih tulisan dengan papan gambar dan konten bahasa yang didukung.
 
 ## Sebelum Memulai
 
-Pastikan Latihan Menulis aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Daftar dalam bahasa yang mendukung latihan menulis.
 
 ## Langkah Awal
 
-Buka [fitur ini](/study) dan pilih tindakan yang diperlukan.
+Buka item Study yang didukung dan tindakan menggambarnya.
 
 ## Pelajari Lebih Lanjut
 

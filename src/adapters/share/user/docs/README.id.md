@@ -4,15 +4,15 @@ Berikan akses konten kepada pengguna Cognis tertentu tanpa menerbitkan tautan pu
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/) sesuai izin akun Anda.
+Berikan akses sumber daya kepada pengguna Cognis tertentu.
 
 ## Sebelum Memulai
 
-Pastikan Berbagi dengan Orang aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Penerima memerlukan akun Cognis; pengirim memerlukan izin berbagi.
 
 ## Langkah Awal
 
-Buka [fitur ini](/) dan pilih tindakan yang diperlukan.
+Pilih Pengguna dalam dialog Bagikan.
 
 ## Pelajari Lebih Lanjut
 

@@ -4,16 +4,18 @@ Practical procedures for Registration Invitations.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/adapters/registration/token) before performing these procedures.
+Invitation policy controls issuance; standalone tokens require administrator or owner access.
 
 ## Examples
 
-This component does not declare a standalone command-line entry point. Use its owning feature or the [deployment procedures](/docs/devops/usage) to configure the installation; the [technical reference](/docs/adapters/registration/token/technical) lists its interfaces and constraints.
+Run `cognisctl invite:email:send person@example.com` to send mail, or `cognisctl invite:token:generate` for an authorized standalone link.
+
+Administrators and founders issue invitations through the Users page. Its Email tab delivers the invitation through SMTP, while its Token tab creates the same email-bound authorization without sending mail and copies the registration link. External authentication providers hand an unknown authenticated identity to the registration flow rather than rendering their own token prompt.
 
 ## Expected Results
 
-The example uses the documented interface of Registration Invitations. Confirm the response or saved state described in [Technical](/docs/adapters/registration/token/technical) before repeating a write operation.
+Redemption creates the authorized account and consumes the invitation; successful delivery supersedes earlier pending invitations.
 
 ## Troubleshooting
 
-If Registration Invitations is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+Check invitation expiry, invited email, policy and mail delivery. Founder invitations have a ten-pending-invitation limit.

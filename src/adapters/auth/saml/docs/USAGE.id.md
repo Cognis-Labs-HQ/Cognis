@@ -4,16 +4,16 @@ Prosedur praktis untuk Masuk SAML.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/adapters/auth/saml) sebelum menjalankan prosedur ini.
+Adapter SAML bawaan tidak memiliki klien protokol terpasang. createAdapter() mengembalikan klien null; integrasi harus memasok klien tervalidasi melalui setClient(). Konfigurasi saja tidak mengaktifkan masuk.
 
 ## Contoh
 
-Komponen ini tidak menyatakan titik masuk baris perintah mandiri. Gunakan fitur pemiliknya atau [prosedur penerapan](/docs/devops/usage) untuk mengonfigurasi instalasi; [referensi teknis](/docs/adapters/auth/saml/technical) mencantumkan antarmuka dan batasnya.
+Simpan konfigurasi SAML lalu uji assertion bertanda tangan dari akun organisasi biasa. Periksa email dan grup administrator yang dipetakan.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Masuk SAML yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/adapters/auth/saml/technical) sebelum mengulangi operasi tulis.
+Tanpa klien terinjeksi, autentikasi menghasilkan null meski formulir lengkap. Uji keberhasilan hanya dengan integrasi penyedia klien.
 
 ## Pemecahan Masalah
 
-Jika Masuk SAML tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Periksa integrasi klien dahulu. Discovery, tanda tangan, dan transportasi milik klien terinjeksi; pemetaan peran tidak memasok klien.

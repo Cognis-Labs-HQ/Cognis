@@ -23,7 +23,7 @@ export interface AuthAccountStore {
         username: string;
         passwordHash: string;
         email?: string;
-        isAdmin?: boolean;
+        role?: string;
     }): Promise<AuthAccount>;
 }
 ```
@@ -45,7 +45,7 @@ Nested bootstrap scopes inherit their parent’s authority and cannot register c
 
 ## Configuration
 
-This documentation topic has no runtime configuration of its own. Operational settings belong to the relevant component.
+Core receives stores, capability registries and provider contexts from host bootstrap. It does not discover a database connection from a user preference; deployment owners configure those services.
 
 ## Behavior
 
@@ -131,8 +131,9 @@ Flows are ordered stage pipelines that components can extend without direct impo
 
 ## Security
 
-Reading documentation does not grant permission to execute its examples. The owning component authorizes each operation.
+Bootstrap scopes identify registration owners. Flow handlers must authorize before state changes; a capability lookup is not proof that the user may access its data.
 
 ## Reference
 
-Source and package metadata: `src/docs/core/`.
+- [src/core/ctx/types.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/ctx/types.ts)
+- [src/core/ctx/flow-api.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/ctx/flow-api.ts)

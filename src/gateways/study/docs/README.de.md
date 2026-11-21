@@ -4,17 +4,15 @@ Wählen Sie eine Sprache und nutzen Sie verfügbare Lernmaterialien, Übungen un
 
 ## Möglichkeiten
 
-- Explore zeigt eingeschriebene Sprachen. Lernkarten und weitere installierte Werkzeuge erscheinen hier, wenn dein Konto sie nutzen darf.
-- Wechsle zwischen deinen angemeldeten Sprachen. Bei wenig Platz werden Namen als Code oder Flagge angezeigt. Ändere deine Anmeldung in den Study-Einstellungen.
-- Diese Karten öffnen installierte Lernwerkzeuge. Die Sprachanleitungen führen durch die zugehörigen Sammlungen und Kartenaktionen.
+Wähle Lernsprachen, nutze Werkzeuge und suche in Wörterbüchern.
 
 ## Vor dem Start
 
-Prüfen Sie, ob Lernen aktiviert ist und Ihr Konto den Vorgang ausführen darf.
+Melde dich an und schreibe dich in eine installierte Sprache ein.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/study) und wählen Sie die gewünschte Aktion.
+Öffne Lerneinstellungen, wähle eine Sprache und kehre zu Erkunden zurück.
 
 ## Weitere Informationen
 

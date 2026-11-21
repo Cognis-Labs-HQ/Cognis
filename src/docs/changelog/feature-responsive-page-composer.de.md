@@ -12,7 +12,7 @@ Offline-Vorbereitung, Anbieterverträge, Kontogrenzen und Lebenszyklusbereinigun
 
 ## Strukturierte Dokumentation
 
-Komponentendokumente trennen Einführung, Anwendungsabläufe und technische Verträge. Kernthemen verwenden Verzeichniseinträge. Der Leser wechselt zwischen drei Ansichten eines vollständigen versionierten Pakets; Prüfungen sichern Struktur, Übersetzungen, Manifeste und Ressourcenzuordnung. Markdown-Sicherheitsprüfungen überprüfen maskiertes fehlerhaftes HTML und erhaltene verschachtelte Codeblöcke direkt anhand der kodierten Ausgabe.
+Komponentendokumente trennen Einführung, Anwendungsabläufe und technische Verträge. Kernthemen verwenden Verzeichniseinträge. Der Leser wechselt zwischen drei Ansichten eines vollständigen versionierten Pakets; Prüfungen sichern Struktur, Übersetzungen, Manifeste und Ressourcenzuordnung. Markdown-Sicherheitsprüfungen überprüfen maskiertes fehlerhaftes HTML und erhaltene verschachtelte Codeblöcke direkt anhand der kodierten Ausgabe. Jede Ansicht enthält konkrete Aufgaben, Voraussetzungen, beobachtbare Ergebnisse und Fehlerhinweise. Technische Aussagen folgen implementierten Schnittstellen und Einstellungen, einschließlich Grenzen für Integrationen mit injiziertem Client. Prüfungen lehnen allgemeine Platzhalter und Verweise auf fehlende Quelldateien ab.
 
 ## Commits
 

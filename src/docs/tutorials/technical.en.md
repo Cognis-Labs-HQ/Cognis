@@ -4,20 +4,21 @@ The public interfaces and operational rules of Guided Tutorials.
 
 ## Interfaces
 
-This topic is reference material and does not expose an independent endpoint. Examples use the public interfaces of the components described below.
+Components resolve `ui:tutorials` from browser ctx. The host installs it through installTutorials; registration and session actions execute named `ui:tutorial:*` flows. Page Composer contributes page-bound guides rather than components importing tutorial internals.
 
 ## Configuration
 
-This documentation topic has no runtime configuration of its own. Operational settings belong to the relevant component.
+Guides declare stable owner/guide/step identities, localized strings, page matching, visible targets and explicit highlightNext. Optional branches use targetAvailable and signals scoped to the opening action; language guides require enrollment.
 
 ## Behavior
 
-Read the relevant examples and technical contracts before changing an installation. This documentation view does not modify component state.
+Page discovery waits for account completion state and skips completed guides. Header replay starts a new session without clearing completion. Back and Restart retain the session example; cancelled openings and unmounted pages dispose pending targets. Completion is acknowledged only after persistence succeeds.
 
 ## Security
 
-Reading documentation does not grant permission to execute its examples. The owning component authorizes each operation.
+Guide visibility and step conditions respect account roles and current resource access. A failed completion read is an error, not permission to replay automatically; private progress is stored per authenticated account.
 
 ## Reference
 
-Source and package metadata: `src/docs/tutorials/`.
+- [src/ui/reuse/tutorials/index.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/ui/reuse/tutorials/index.js)
+- [src/ui/reuse/tutorials/runtime.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/ui/reuse/tutorials/runtime.js)

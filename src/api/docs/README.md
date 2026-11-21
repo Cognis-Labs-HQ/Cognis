@@ -4,15 +4,15 @@ The application server connects your browser to accounts, saved content and enab
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/administration) according to your account permissions.
+Read component documentation and use the application's server-backed features.
 
 ## Before You Start
 
-Check that Application Server is enabled and that your account has permission for the operation.
+Operators deploy the server; readers can use published documentation without administrative access.
 
 ## Get Started
 
-Open [the feature](/administration) and choose the action you need.
+Open Docs and select a component or core topic.
 
 ## Learn More
 

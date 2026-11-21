@@ -4,15 +4,15 @@ Bagikan konten yang didukung kepada orang tertentu atau melalui tautan publik de
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/) sesuai izin akun Anda.
+Bagikan konten lewat tautan atau penerima tertentu dengan izin jelas.
 
 ## Sebelum Memulai
 
-Pastikan Berbagi aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Konten harus mengizinkan berbagi dan metode terkait harus aktif.
 
 ## Langkah Awal
 
-Buka [fitur ini](/) dan pilih tindakan yang diperlukan.
+Gunakan Bagikan pada sumber daya tujuan.
 
 ## Pelajari Lebih Lanjut
 

@@ -4,16 +4,16 @@ Prosedur praktis untuk UI.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/ui) sebelum menjalankan prosedur ini.
+Masuk untuk menyimpan preferensi akun.
 
 ## Contoh
 
-Komponen ini tidak menyatakan titik masuk baris perintah mandiri. Gunakan fitur pemiliknya atau [prosedur penerapan](/docs/devops/usage) untuk mengonfigurasi instalasi; [referensi teknis](/docs/ui/technical) mencantumkan antarmuka dan batasnya.
+Ubah dan simpan preferensi, kunjungi halaman lain, lalu ubah ukuran dan buka bilah samping dengan chevron ganda.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka UI yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/ui/technical) sebelum mengulangi operasi tulis.
+Halaman bersama memakai preferensi dan menyesuaikan navigasi dengan lebar tersedia.
 
 ## Pemecahan Masalah
 
-Jika UI tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Pastikan penyimpanan diakui sebelum memuat ulang; font termuat dapat mengubah pembungkusan tanpa mengubah ukuran pilihan.

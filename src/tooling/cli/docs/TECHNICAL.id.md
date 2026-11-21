@@ -4,7 +4,7 @@ Antarmuka publik dan aturan operasional Alat Baris Perintah.
 
 ## Antarmuka
 
-Ruang kerja ini menyediakan kode platform bersama. Kontrak fitur publik dimiliki kemampuan, perintah, atau gerbang yang didokumentasikan; paket ini tidak menyediakan layanan HTTP terpisah.
+Perintah CLI mendeklarasikan nama, penggunaan, deskripsi, argumen, dan execute dalam registri. Core serta plugin mendaftarkan kelompok sendiri; helper HTTP mengirim permintaan terlindungi.
 
 ## Konfigurasi
 
@@ -48,8 +48,9 @@ Perintah bawaan `cognisctl` dapat merender keluaran terminal yang memahami respo
 
 ## Keamanan
 
-Kemampuan dan perintah publik mempertahankan otorisasi setiap operasi. Memasang paket tidak memberikan akses ke sumber daya pribadi.
+Autentikasi CLI membaca COGNIS_CLI_TOKEN_PATH; server tetap memeriksa peran dan sumber daya. Lindungi berkas token dan jangan bagikan rahasia dalam keluaran rinci.
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/tooling/cli/`.
+- [src/tooling/cli/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/tooling/cli/package.json)
+- [src/tooling/cli/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/tooling/cli/index.ts)

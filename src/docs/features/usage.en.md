@@ -4,16 +4,16 @@ Practical procedures for Platform Features.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/features) before performing these procedures.
+Features can be optional and role-restricted.
 
 ## Examples
 
-This component does not declare a standalone command-line entry point. Use its owning feature or the [deployment procedures](/docs/devops/usage) to configure the installation; the [technical reference](/docs/features/technical) lists its interfaces and constraints.
+Open an available feature, replay its guide with the header question mark and use its component documentation for details.
 
 ## Expected Results
 
-The example uses the documented interface of Platform Features. Confirm the response or saved state described in [Technical](/docs/features/technical) before repeating a write operation.
+Guides explain available controls; hidden optional actions do not become accessible by reading about them.
 
 ## Troubleshooting
 
-If Platform Features is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+Check role, enrollment and enabled providers when a documented control is absent.

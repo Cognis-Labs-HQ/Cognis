@@ -4,16 +4,16 @@ Practical procedures for Component Versions.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/versions) before performing these procedures.
+Component versions can differ from the overall application release.
 
 ## Examples
 
-This component does not declare a standalone command-line entry point. Use its owning feature or the [deployment procedures](/docs/devops/usage) to configure the installation; the [technical reference](/docs/versions/technical) lists its interfaces and constraints.
+Read the version listing, open that component in Docs and select the matching archived version where available.
 
 ## Expected Results
 
-The example uses the documented interface of Component Versions. Confirm the response or saved state described in [Technical](/docs/versions/technical) before repeating a write operation.
+The reader keeps the selected version across Info, Usage and Technical. Only complete archived bundles are offered.
 
 ## Troubleshooting
 
-If Component Versions is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+A missing archive does not prove incompatibility. Compare the installed version and declared dependency ceilings before upgrading.

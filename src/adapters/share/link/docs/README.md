@@ -4,15 +4,15 @@ Let people open supported content through a public link with the permissions you
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/) according to your account permissions.
+Create links with expiry and access controls for supported resources.
 
 ## Before You Start
 
-Check that Public Share Links is enabled and that your account has permission for the operation.
+You must own the resource or have permission to share it.
 
 ## Get Started
 
-Open [the feature](/) and choose the action you need.
+Open the resource's Share control and select Link.
 
 ## Learn More
 

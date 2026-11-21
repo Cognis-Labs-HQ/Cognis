@@ -4,15 +4,15 @@ Izinkan orang membuka konten yang didukung melalui tautan publik dengan izin pil
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/) sesuai izin akun Anda.
+Buat tautan dengan kedaluwarsa dan kontrol akses untuk sumber daya yang didukung.
 
 ## Sebelum Memulai
 
-Pastikan Tautan Berbagi Publik aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Anda harus memiliki sumber daya atau izin membagikannya.
 
 ## Langkah Awal
 
-Buka [fitur ini](/) dan pilih tindakan yang diperlukan.
+Buka Bagikan pada sumber daya lalu pilih Tautan.
 
 ## Pelajari Lebih Lanjut
 

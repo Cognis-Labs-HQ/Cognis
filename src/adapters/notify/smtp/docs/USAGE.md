@@ -4,11 +4,11 @@ Practical procedures for Email Delivery.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/adapters/notify/smtp) before performing these procedures.
+Administrators need SMTP access and an approved sender address.
 
 ## Examples
 
-Inspect the installed command arguments before executing an operation.
+Enter host, port, encryption and sender details; send a test email before enabling routine delivery.
 
 ```sh
 cognisctl email:list --help
@@ -20,8 +20,8 @@ cognisctl email:verify:send --help
 
 ## Expected Results
 
-The example uses the documented interface of Email Delivery. Confirm the response or saved state described in [Technical](/docs/adapters/notify/smtp/technical) before repeating a write operation.
+A successful test confirms delivery to that address; account mail still follows verification and category policies.
 
 ## Troubleshooting
 
-If Email Delivery is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+Inspect the test error, TLS mode, credentials and recipient mailbox. A successful connection does not guarantee inbox placement.

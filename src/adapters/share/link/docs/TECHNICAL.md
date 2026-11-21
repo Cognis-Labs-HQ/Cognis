@@ -4,11 +4,11 @@ The public interfaces and operational rules of Public Share Links.
 
 ## Interfaces
 
-Public Share Links is integrated through the owning gateway; its manifest identifies the component and required dependencies.
+createShareAdapter returns method link, its public delivery page and Link popup. prepare clears recipients for public delivery; Share owns token creation and authorization.
 
 ## Configuration
 
-Configuration is supplied through the owning gateway. Public Share Links declares no additional configuration in its manifest.
+Each share supplies accessControls, expiry and optional password protection. allowedPermissions constrains the popup; no external link-delivery account is configured by this adapter.
 
 ## Behavior
 
@@ -16,13 +16,9 @@ Configuration is supplied through the owning gateway. Public Share Links declare
 
 The adapter declares the Link popup with `navbarPlugins`, including its provided capabilities. The gateway loads declared contributions and disables them with their owning adapter.
 
-### Usage examples
-
-Creates public, expiring links through the Share gateway. The adapter owns link-specific input preparation and the Link page shown inside the gateway popup.
-
 ## Security
 
-Access to Public Share Links is governed by the caller and its owning gateway. Enabling a component does not grant additional account permissions.
+Link holders receive only the gateway-authorized resource scope. Expiry, password protection and revocation remain enforced when resolving access; caller permission ceilings restrict selectable grants.
 
 ## Reference
 

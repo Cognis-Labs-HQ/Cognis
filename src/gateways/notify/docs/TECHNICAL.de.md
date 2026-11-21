@@ -8,7 +8,7 @@ Benachrichtigungen wird über den zuständigen Funktionsdienst eingebunden; das 
 
 ## Konfiguration
 
-Die Konfiguration erfolgt über den zuständigen Funktionsdienst. Benachrichtigungen definiert keine zusätzlichen Einstellungen im Manifest.
+Senderadapter besitzen Transport und Tests. Konten wählen Kategoriekanäle in Einstellungen; dauerhaft aktive Sender bleiben unabhängig davon aktiv.
 
 ## Verhalten
 
@@ -55,7 +55,7 @@ Administratoren können Konfigurationen vor der Senderaktivierung testen. Tests 
 
 ## Sicherheit
 
-Der Zugriff auf Benachrichtigungen unterliegt dem Aufrufer und dem zuständigen Funktionsdienst. Die Aktivierung erweitert keine Kontorechte.
+E-Mail-Bestätigung bindet Konto und Adresse. Fehlende Zustellung hebt Richtlinien nicht auf; Zwecke werden beim Start registriert und nach Entsorgung nicht weiter genutzt.
 
 ## Referenz
 

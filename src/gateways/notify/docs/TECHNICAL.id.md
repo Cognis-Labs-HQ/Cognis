@@ -23,7 +23,7 @@ Registrasi kontrak adapter mengikuti [kontrak bootstrap gateway bersama](/docs/g
 
 ## Konfigurasi
 
-Konfigurasi disediakan melalui gerbang pemilik. Notifikasi tidak menyatakan konfigurasi tambahan dalam manifesnya.
+Adapter pengirim memiliki pengaturan transportasi dan uji. Akun memilih pengirim kategori di Pengaturan; pengirim selalu aktif tetap berjalan.
 
 ## Perilaku
 
@@ -53,7 +53,7 @@ Administrator dapat menguji konfigurasi sebelum pengirim diaktifkan. Pengujian t
 
 ## Keamanan
 
-Akses Notifikasi diatur oleh pemanggil dan gerbang pemilik. Mengaktifkan komponen tidak menambah izin akun.
+Verifikasi email mengikat akun dan alamat. Pengiriman hilang tidak membatalkan kebijakan; registrasi tujuan terbatas pada bootstrap dan pelepasan mencegah pesan terlambat.
 
 ## Referensi
 

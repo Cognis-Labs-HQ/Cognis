@@ -4,15 +4,15 @@ Kenali versi komponen terpasang dan pilih dokumentasi yang sesuai dengan instala
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/) sesuai izin akun Anda.
+Kenali versi terpasang dan dokumentasi yang cocok.
 
 ## Sebelum Memulai
 
-Operasi yang dibahas dapat memerlukan izin akun atau administrator. Membaca topik tidak mengaktifkan fitur opsionalnya.
+Versi komponen dapat berbeda dari rilis aplikasi keseluruhan.
 
 ## Langkah Awal
 
-Buka [fitur ini](/) dan pilih tindakan yang diperlukan.
+Periksa versi di Administrasi atau CLI.
 
 ## Pelajari Lebih Lanjut
 

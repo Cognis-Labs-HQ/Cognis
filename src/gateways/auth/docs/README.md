@@ -4,16 +4,15 @@ Sign in to Cognis with a local account or a sign-in provider enabled by your adm
 
 ## What You Can Do
 
-- Use the password control available for your authentication provider; changing a password may require confirming your identity.
-- Choose a permitted session duration or restore the global default, then save your changes.
+Sign in, manage sessions and protect your account.
 
 ## Before You Start
 
-Check that Sign In is enabled and that your account has permission for the operation.
+Use an enabled login provider; registration may require an invitation.
 
 ## Get Started
 
-Open [the feature](/login) and choose the action you need.
+Open Login and select your configured sign-in method.
 
 ## Learn More
 

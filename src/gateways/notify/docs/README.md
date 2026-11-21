@@ -4,17 +4,15 @@ Receive notifications about relevant activity through the delivery methods enabl
 
 ## What You Can Do
 
-- Choose which available channels receive each category of notification.
-- Review the selected combinations and save the settings; unavailable channels cannot be enabled here.
-- Choose the recipient and category, then write a subject and message for the test notification.
+Choose notification delivery by category and manage verified contact addresses.
 
 ## Before You Start
 
-Check that Notifications is enabled and that your account has permission for the operation.
+Sign in for personal preferences; administrators configure delivery providers and broadcasts.
 
 ## Get Started
 
-Open [the feature](/settings) and choose the action you need.
+Open notification preferences in Settings.
 
 ## Learn More
 

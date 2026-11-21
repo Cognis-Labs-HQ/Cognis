@@ -4,15 +4,15 @@ Undang seseorang membuat akun menggunakan token pendaftaran berbatas waktu.
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/register) sesuai izin akun Anda.
+Undang orang memakai tautan pendaftaran sekali pakai yang terikat email.
 
 ## Sebelum Memulai
 
-Pastikan Undangan Pendaftaran aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Kebijakan undangan mengatur penerbitan; token mandiri memerlukan administrator atau pemilik.
 
 ## Langkah Awal
 
-Buka [fitur ini](/register) dan pilih tindakan yang diperlukan.
+Gunakan Undang atau kontrol undangan pada Pengguna.
 
 ## Pelajari Lebih Lanjut
 

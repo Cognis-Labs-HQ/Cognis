@@ -4,7 +4,7 @@
 
 ## Schnittstellen
 
-E-Mail-Bestätigung wird über den zuständigen Funktionsdienst eingebunden; das Manifest nennt die Komponente und ihre Abhängigkeiten.
+Die TFA-Methode liefert Einrichtung und Prüfung und registriert ihren Zweck über notify:registerEmailPurpose. Versand nutzt notify:sendEmail und notify:emailDeliveryPolicy.
 
 ## Konfiguration
 
@@ -35,8 +35,10 @@ Codelänge und Versandintervall stammen aus `notify:emailDeliveryPolicy`. Der Ad
 
 ## Sicherheit
 
-Der Zugriff auf E-Mail-Bestätigung unterliegt dem Aufrufer und dem zuständigen Funktionsdienst. Die Aktivierung erweitert keine Kontorechte.
+Prüfungen brauchen bestätigte Hauptadresse und Zustellung. Offene Codes sind prozesslokal und verfallen beim Neustart; Codes und Geheimnisse gehören nicht in Offline-Warteschlangen.
 
 ## Referenz
 
-Quellcode und Paketmetadaten: `src/adapters/tfa/smtp/`.
+- [src/adapters/tfa/smtp/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/tfa/smtp/manifest.json)
+- [src/adapters/tfa/smtp/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/tfa/smtp/package.json)
+- [src/adapters/tfa/smtp/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/tfa/smtp/index.ts)

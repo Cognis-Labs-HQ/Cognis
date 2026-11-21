@@ -4,15 +4,15 @@ Use your organisation's directory account to sign in when LDAP is configured.
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/login) according to your account permissions.
+Use your organization's directory credentials to sign in; administrators connect Cognis to an LDAP directory and map administrator groups.
 
 ## Before You Start
 
-Check that LDAP Sign In is enabled and that your account has permission for the operation.
+An administrator must configure directory access. Keep a working local administrator account while testing the connection.
 
 ## Get Started
 
-Open [the feature](/login) and choose the action you need.
+Select the configured directory on the login page and use your directory username and password.
 
 ## Learn More
 

@@ -4,17 +4,15 @@ Create an account using an invitation or the registration options enabled for th
 
 ## What You Can Do
 
-- Choose an invitation method available to your role; email invitations and registration tokens have different delivery steps.
-- Review invitation status and expiry; copy tokens only for the intended recipient and revoke unused invitations when needed.
-- Review public registration and invitation permissions before changing who can create accounts.
+Control account creation and issue invitations under installation policy.
 
 ## Before You Start
 
-Check that Registration is enabled and that your account has permission for the operation.
+Owners manage invitation policy; issuance depends on role and enabled providers.
 
 ## Get Started
 
-Open [the feature](/register) and choose the action you need.
+Open Invite for invitations or Registration in Administration for policy.
 
 ## Learn More
 

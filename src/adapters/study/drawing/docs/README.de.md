@@ -4,15 +4,15 @@
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/study) entsprechend Ihren Kontorechten.
+Übe Schreiben mit Zeichenfläche und unterstützten Sprachinhalten.
 
 ## Vor dem Start
 
-Prüfen Sie, ob Schreibübungen aktiviert ist und Ihr Konto den Vorgang ausführen darf.
+Schreibe dich in eine Sprache mit Schreibübungen ein.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/study) und wählen Sie die gewünschte Aktion.
+Öffne einen unterstützten Lerneintrag und seine Zeichenaktion.
 
 ## Weitere Informationen
 

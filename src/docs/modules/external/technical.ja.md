@@ -30,9 +30,7 @@
 
 ## 設定
 
-### モジュールの設定
-
-モジュールは `ui.preferences` で管理者が編集できる設定を公開できます。各フィールドは、安定した `key`、ローカライズ用の `labelKey`、任意の `descriptionKey`、`boolean`、`string`、`number` のいずれかの `type`、任意の対応する `default`、機密文字列を隠す `password` 型、およびモジュール所有の設定エンドポイントが値を返すまで有効化をブロックする場合の `required: true` を宣言し、`ui.stringsBaseUrl` がモジュール所有の翻訳を示します。省略した場合、Cognis は標準の `ui/languages/<locale>/strings.xml` バンドルを自動的に検出します。Cognis はこのマニフェスト契約をインストール済みモジュールの詳細画面に描画し、`GET /api/v1/modules/<id>/config` をポーリングして、変更を同じモジュール所有エンドポイントへ `PUT` します。モジュールは運用設定を検証、適用、永続化します。別の設定 UI を提供したり、Cognis のユーザー設定を構成保存先として使用したりしてはいけません。 モジュールの無効化や再起動では、この永続化された設定を保持しなければならず、削除できるのはアンインストールフローだけです。 保存済みパスワードごとに、設定レスポンスは秘密値の代わりに `<key>Configured: true` を返します。Cognis は `****` を表示して必須項目を満たしたものとし、マスクが変更されていない場合は空の値を送信して、モジュールが保存済みパスワードを保持できるようにします。
+配布元と導入先はホストで設定します。モジュールは識別・依存先・ルート・資料・任意の設定を宣言し、秘密情報は保護された機能から取得します。
 
 ## 動作
 
@@ -41,33 +39,6 @@
 この動作については[共通の契約](/docs/adapters/study/library/technical)を参照してください。
 
 外部モジュールは、独立してインストールできるサーバーおよびブラウザー機能を Cognis に追加し、マニフェスト、ケイパビリティ、フロー、ルート、整合性、ライフサイクルの契約によって分離されます。
-
-### 使用例
-
-リポジトリは `manifest.json` で安定した識別子とブートストラップのエントリーポイントを宣言します。
-
-<!-- prettier-ignore -->
-```json
-{
-  "uuid": "123e4567-e89b-42d3-a456-426614174000",
-  "id": "example-module",
-  "version": "1.0.0",
-  "entrypoints": { "bootstrap": "bootstrap.js" }
-}
-```
-
-ブートストラップはスコープ付きコンテキストだけを通じて機能を提供し、所有するリソースのクリーンアップ処理を返します。
-
-<!-- prettier-ignore -->
-```js
-export async function bootstrapModule(ctx) {
-  ctx.registerFlow({ id: 'example-module:constructPage', stages: ['content'] });
-  ctx.flow.extend('example-module:constructPage', 'content',
-    { id: 'example-module:content' }, async () => ({ ready: true }));
-}
-```
-
-管理者は **モジュール** からリポジトリをインストールし、整合性と依存関係を確認して明示的に有効化します。後から無効化すると、登録済みの UI とバックエンド機能が Cognis の再起動なしで削除されます。
 
 ### 安定したアイデンティティ
 
@@ -195,13 +166,7 @@ Service Worker は API 応答、認証情報、認証済み HTML を保存しま
 
 この動作については[共通の契約](/docs/gateways/study/technical)を参照してください。
 
-この動作については[共通の契約](/docs/gateways/study/technical)を参照してください。
-
 ### オフラインのソーシャル変更
-
-この動作については[共通の契約](/docs/adapters/social/messages/technical)を参照してください。
-
-この動作については[共通の契約](/docs/adapters/social/messages/technical)を参照してください。
 
 この動作については[共通の契約](/docs/adapters/social/messages/technical)を参照してください。
 

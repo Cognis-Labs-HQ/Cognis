@@ -4,15 +4,15 @@ Choose available languages and use the learning content supplied for each langua
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/) according to your account permissions.
+Use language-specific learning collections supplied by installed modules.
 
 ## Before You Start
 
-The operations discussed here may require account or administrator permissions. Reading a topic does not enable its optional features.
+Enroll in an installed language through Study settings.
 
 ## Get Started
 
-Open [the feature](/) and choose the action you need.
+Choose your language in Study and open Explore.
 
 ## Learn More
 

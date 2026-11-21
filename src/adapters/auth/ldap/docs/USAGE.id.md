@@ -4,16 +4,16 @@ Prosedur praktis untuk Masuk LDAP.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/adapters/auth/ldap) sebelum menjalankan prosedur ini.
+Siapkan alamat LDAP, kredensial bind, basis pencarian, dan filter pengguna di administrasi Autentikasi.
 
 ## Contoh
 
-Komponen ini tidak menyatakan titik masuk baris perintah mandiri. Gunakan fitur pemiliknya atau [prosedur penerapan](/docs/devops/usage) untuk mengonfigurasi instalasi; [referensi teknis](/docs/adapters/auth/ldap/technical) mencantumkan antarmuka dan batasnya.
+Simpan pengaturan LDAP lalu jalankan uji koneksi. Atasi kesalahan bind atau pencarian, kemudian uji masuk pengguna direktori sebelum mengandalkan grup administrator.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Masuk LDAP yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/adapters/auth/ldap/technical) sebelum mengulangi operasi tulis.
+Pengujian melaporkan koneksi dan pencarian. Autentikasi berhasil menautkan identitas direktori ke akun Cognis.
 
 ## Pemecahan Masalah
 
-Jika Masuk LDAP tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Periksa kepercayaan TLS, izin bind, cakupan pencarian, dan filter pengguna. Koneksi berhasil belum membuktikan kata sandi pengguna atau pemetaan grup benar.

@@ -4,15 +4,15 @@ Undang peserta percakapan ke panggilan dan jawab undangan masuk.
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/messages) sesuai izin akun Anda.
+Mulai atau jawab panggilan dari percakapan yang memenuhi syarat.
 
 ## Sebelum Memulai
 
-Pastikan Panggilan aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Panggilan dan Pesan harus aktif; audio atau video memerlukan izin media peramban.
 
 ## Langkah Awal
 
-Buka [fitur ini](/messages) dan pilih tindakan yang diperlukan.
+Buka percakapan dan gunakan kontrol panggilan yang tersedia.
 
 ## Pelajari Lebih Lanjut
 

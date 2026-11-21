@@ -4,19 +4,16 @@ Practical procedures for Profiles and Posts.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/adapters/social/profile) before performing these procedures.
+Sign in to edit your own profile; other profiles respect their privacy and blocking rules.
 
 ## Examples
 
-- Review the profile identity and availability; your own profile provides editing controls.
-- Browse visible posts and use the post actions allowed for your account.
-- Follow, message or manage relationships from the profile controls; review the selected person before acting.
-- Preview shows the current title and body before publishing. Return to Compose or rotate the device without losing your draft.
+Update your display name or profile image, save, then publish a post with the intended visibility and inspect it from another permitted account.
 
 ## Expected Results
 
-The example uses the documented interface of Profiles and Posts. Confirm the response or saved state described in [Technical](/docs/adapters/social/profile/technical) before repeating a write operation.
+Acknowledged edits update the profile and timeline; private content remains restricted to authorized viewers.
 
 ## Troubleshooting
 
-If Profiles and Posts is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+Check visibility, follows, blocks and connectivity. A public handle identifies the profile but does not bypass its access rules.

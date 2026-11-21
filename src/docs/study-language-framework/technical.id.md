@@ -269,8 +269,9 @@ Study memuat dependensi UUID adapter dan kapabilitas inti wajib dari manifest. D
 
 ## Keamanan
 
-Membaca dokumentasi tidak memberikan izin menjalankan contohnya. Komponen pemilik mengotorisasi setiap operasi.
+Modul bahasa menyediakan data dan konstruktor, bukan kebijakan izin. Referensi, visibilitas, keanggotaan, dan mutasi tetap divalidasi host.
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/docs/study-language-framework/`.
+- [src/gateways/study/gateway.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/study/gateway.ts)
+- [src/adapters/study/library/contracts.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/study/library/contracts.ts)

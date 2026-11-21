@@ -4,7 +4,7 @@
 
 ## インターフェース
 
-このトピックは参考情報であり、独立したエンドポイントを提供しません。例では、以下で説明するコンポーネントの公開インターフェースを使用します。
+公開契約は各担当元に属し、Auth はセッション、Study は教材と活動、Social はプロフィールやルーム、Calendar は予定、Share は委譲アクセスを管理します。すべての画面機能に独立した HTTP API があるわけではありません。OIDC と SAML はクライアントの注入が必要で、設定項目だけでは外部認証を実装しません。
 
 ## 設定
 
@@ -155,8 +155,6 @@ Dashboard はセッション内限定の非公開オフラインアクセスを�
 
 この動作については[共通の契約](/docs/api/technical)を参照してください。
 
-この動作については[共通の契約](/docs/api/technical)を参照してください。
-
 ホストは ctx を通じて `ui:languageCatalog.load` を公開し、認証済みログイン後に共通の言語カタログを準備します。基本の翻訳カタログは公開起動リソースに含めます。Settings とナビゲーションバーは同じライフサイクル内の読み取りを使用します。オフラインで言語設定を保存しても利用中のページは閉じず、その後のクライアント内移動に設定を適用します。
 
 ### オフラインの Study 練習
@@ -237,8 +235,7 @@ SSO アカウントにはプロバイダーを示さないランダムな ID を
 
 この動作については[共通の契約](/docs/api/technical)を参照してください。
 
-この動作については[共通の契約](/docs/api/technical)を参照してください。
-
 ## リファレンス
 
-ソースとパッケージの情報: `src/docs/features/`。
+- [src/api/reuse/ui-registry.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/api/reuse/ui-registry.ts)
+- [src/gateways/shared.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/shared.ts)

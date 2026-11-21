@@ -129,10 +129,9 @@ Ledger-Zusammenfassungen, Booster-Einlösung und Aktivitätsentwertung durchlauf
 
 ## Sicherheit
 
-### Sicherheit und Evidenz
-
-Gewichte und Multiplikatoren liegen zwischen `0.01` und `10`, Schwierigkeiten zwischen `0.1` und `10`. Ereignis-IDs müssen eindeutig, Dauer und Hinweisanzahl nicht negativ und Zeitziele geordnet sein. Verbrauchbare Booster gelten nur für einen Teilnehmer und werden nach der ersten passenden Wertung entfernt. Achievement-Auszeichnungen fixieren Beschriftung, Schwierigkeit, Symbol, Zeitpunkt und Evidenz-IDs, damit spätere Definitionsänderungen verdiente Abzeichen nicht umschreiben.
+Eigentum und Startbereiche steuern Registrierungsdauer. Privilegierte Handler prüfen vor Änderungen; dauerhafte Belohnungsbelege prüfen Akteur, Nachweise und idempotente Identität vor Veröffentlichung.
 
 ## Referenz
 
-Quellcode und Paketmetadaten: `src/core/`.
+- [src/core/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/package.json)
+- [src/core/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/index.ts)

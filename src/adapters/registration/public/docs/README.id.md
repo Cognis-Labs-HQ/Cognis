@@ -4,15 +4,15 @@ Buat akun tanpa undangan saat pendaftaran publik diaktifkan.
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/register) sesuai izin akun Anda.
+Izinkan pengguna baru membuat akun lokal biasa tanpa token undangan.
 
 ## Sebelum Memulai
 
-Pastikan Pendaftaran Publik aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Administrator harus mengaktifkan pendaftaran publik secara eksplisit.
 
 ## Langkah Awal
 
-Buka [fitur ini](/register) dan pilih tindakan yang diperlukan.
+Buka formulir pendaftaran instalasi.
 
 ## Pelajari Lebih Lanjut
 

@@ -1,45 +1,23 @@
 # 技術リファレンス
 
-メモリ内データベース の公開インターフェースと運用規則を説明します。
+SQL を実行せず呼び出しを記録する、永続化しないテスト用データベースです。
 
 ## インターフェース
 
-### アーキテクチャ
-
-```ts
-const db = new MemoryDatabaseGateway();
-await db.execute("INSERT INTO users (id) VALUES (?)", ["u1"]);
-console.log(db.queryLog);
-// [{ sql: 'INSERT INTO users (id) VALUES (?)', params: ['u1'] }]
-```
+`src/adapters/db/memory/index.ts` の `MemoryDatabaseGateway` が query、execute、transaction、getQueries を実装します。getQueries は statement と任意の params を持つ読み取り専用の記録を返します。
 
 ## 設定
 
-### 設定
-
-| 変数      | デフォルト | 説明                                                   |
-| --------- | ---------- | ------------------------------------------------------ |
-| `DB_TYPE` | —          | このアダプターを起動するには `memory` である必要がある |
+テスト内でインスタンスを作成します。canHandleDbProvider や createDbExecutor は公開せず、DB_TYPE=memory では標準ローダーに接続されません。
 
 ## 動作
 
-### 概要
-
-メモリアダプターは、実際のデータベースが関与すべきでない自動テストやCIパイプラインで使用するためのno-opデータベース実装です。すべてのクエリは空の結果セットを返し、すべてのexecuteはサイレントなno-opです。発行されたすべてのSQL文は `queryLog` に記録されるため、テストで期待するSQLが生成されたことをアサートしやすいです。
-
-メモリアダプターは本番デプロイメントでは絶対に使用しないでください。
-
-### 責務
-
-- `DatabaseGateway` インターフェースを実装する: `query`、`execute`、`transaction`。
-- すべてのSQL文とパラメーターを `queryLog` に記録する。
-- すべての `query()` 呼び出しに対して空の結果セット（`[]`）を返す。
-- すべての `execute()` 呼び出しに対して何もしない。
+query は記録後に `{ rows: [], rowCount: 0 }`、execute は `{ affectedRows: 0 }` を返します。transaction は同じインスタンスでコールバックを呼び、BEGIN、ロールバック、保存行は提供しません。
 
 ## セキュリティ
 
-メモリ内データベース へのアクセスは呼び出し元と担当のゲートウェイが管理します。有効化してもアカウントの権限は増えません。
+記録する引数に秘密情報を含めず、合成データを使ってください。認証や SQL の認可は提供しません。
 
 ## リファレンス
 
-ソースとパッケージの情報: `src/adapters/db/memory/`。
+永続化・制約・分離の検証には実際の提供機能を使います。[データベース](/docs/gateways/db/technical)を参照してください。

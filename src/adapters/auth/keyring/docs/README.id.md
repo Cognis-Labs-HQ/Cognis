@@ -4,15 +4,15 @@ Simpan rahasia akun di penyimpan kunci terlindungi dan buka saat fitur memerluka
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/settings) sesuai izin akun Anda.
+Simpan kata sandi dan kunci dalam brankas terenkripsi di peramban, lalu kunci setelah memakai konten sensitif.
 
 ## Sebelum Memulai
 
-Pastikan Penyimpan Kunci aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Masuk dengan akun sendiri. Ingat kata sandi brankas: server tidak dapat membaca atau memulihkan rahasianya.
 
 ## Langkah Awal
 
-Buka [fitur ini](/settings) dan pilih tindakan yang diperlukan.
+Buka Pengaturan dan Keyring. Buat brankas jika belum ada; brankas yang ada boleh tetap terkunci sampai fitur meminta rahasia.
 
 ## Pelajari Lebih Lanjut
 

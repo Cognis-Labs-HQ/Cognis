@@ -14,7 +14,7 @@ Freigabefähige Komponenten deklarieren in ihrem Manifest einen `share`-Block mi
 
 ## Konfiguration
 
-Die Konfiguration erfolgt über den zuständigen Funktionsdienst. Freigaben definiert keine zusätzlichen Einstellungen im Manifest.
+Teilbare Manifeste deklarieren Renderer und Gastbereiche. Freigaben speichern Rechte, Empfänger, Ablauf und Schutz; Adapter besitzen Eingabeseiten.
 
 ## Verhalten
 
@@ -87,6 +87,8 @@ Der Browser prüft die Tokenauflösung, ohne den Kontoschlüsselbund zu öffnen.
 ### Grenze für Komponentenfenster
 
 Eine eingebundene Link-Freigabeseite darf eine ansonsten gültige Komponentenseite programmgesteuert öffnen. Diese Autorisierung gilt nur für den Browser-Fenstervorgang. Für API-Zugriff löst das Share-Gateway Delegierungen allgemein über den Flow `resolve-share-delegated-access` auf: Der Besitzer der Quellressource weist seine Beziehung zum angeforderten Ziel nach und deklariert die erlaubten Zielfähigkeiten, während Share prüft, dass das Gasttoken die erforderliche Quellfähigkeit gewährt, und das Ergebnis an beide Ressourcenkennungen bindet. Share codiert keine Ressourcenpaare fest und behandelt eine Ressourcenfreigabe niemals als eine andere.
+
+Die Freigabeseite prüft nach asynchroner Vorbereitung das Abbruchsignal. Schließen verhindert spätes Rendern; Deaktivieren beendet Wartungsaufgaben und spätere Ablaufhinweise.
 
 ## Sicherheit
 

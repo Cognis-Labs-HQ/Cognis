@@ -4,7 +4,7 @@
 
 ## Schnittstellen
 
-### API-Routen
+createNotificationSender nutzt den aktuellen Speicher verzögert. bootstrapNotifyAdapter registriert Pflichtsender, geschützte Postfachrouten und Glocke. Mit db:executor startet DbInternalNotificationStore; ohne ihn wird flüchtiger Speicher gemeldet.
 
 | Methode  | Pfad                            | Beschreibung                                | Auth     |
 | -------- | ------------------------------- | ------------------------------------------- | -------- |
@@ -17,10 +17,6 @@
 
 ## Konfiguration
 
-### Konfiguration
-
-Der Adapter verfügt über keine Konfigurationsoptionen. Er ist aktiv, solange das Notify-Gateway ihn lädt (also immer, da Adapter automatisch erkannt werden). Das Deaktivieren des Adapters erfordert das Entfernen oder Umbenennen des Adapter-Verzeichnisses – woraufhin die Benachrichtigungsglocke aus der Oberfläche verschwindet.
-
 Benachrichtigungsproduzenten können einen Eintrag als dauerhaft markieren und Aktionsbeschreibungen mit Kennung, barrierefreier Beschriftung, optionalem SVG-Symbol und Konsequenz bereitstellen. Der Adapter validiert und rendert diesen allgemeinen Vertrag und meldet die ausgewählte Kennung mit der Benachrichtigung zurück; er interpretiert weder die Domäne des Produzenten noch ruft er dessen Capabilities auf.
 
 Produzenten können eine dauerhafte Benachrichtigung mit einem anderen UI-Hinweis korrelieren. Ein allgemeines `cognis:notification-resolved`-Ereignis entfernt und löscht jede Benachrichtigung mit derselben Korrelationskennung, ohne dass der Adapter den Produzenten kennen muss.
@@ -29,25 +25,15 @@ Erzeuger können eine nach Gebietsschema sortierte `metadata.localizedText`-Map 
 
 ## Verhalten
 
-### Interner Notify-Adapter
-
-Der Bootstrap registriert den ständig aktiven Sender über `notify:registerAlwaysOnSender` in ctx statt einer konkreten Gateway-Instanz. Sender-Verträge stammen aus `@cognis/core`.
-
-### Übersicht
-
-Der interne Adapter leitet Benachrichtigungen direkt an die In-App-Benachrichtigungsglocke auf jeder Dashboard-Seite weiter. Er ist standardmäßig immer aktiv – jede über das Gateway gesendete Benachrichtigung erreicht den Posteingang des Empfängers, ohne dass Benachrichtigungseinstellungen konfiguriert werden müssen. Der Adapter speichert bis zu 50 Benachrichtigungen pro Benutzer im Arbeitsspeicher; Einträge gehen beim Neustart des Servers verloren.
-
-### Zuständigkeiten
-
-- Jede vom Benachrichtigungs-Gateway gesendete Benachrichtigung entgegennehmen und in den In-App-Posteingang des Empfängers ablegen.
-- Die Benachrichtigungsglocke über ein Navbar-Plugin in die Dashboard-Oberfläche einfügen – beim Deaktivieren des Adapters verschwindet die Glocke vollständig.
-- Ein Badge mit der Anzahl ungelesener Benachrichtigungen anzeigen, das alle 30 Sekunden aktualisiert wird.
-- Ein Dropdown-Panel zum Lesen, Verwerfen und Markieren von Benachrichtigungen als gelesen bereitstellen.
+Beide Speicher behalten fünfzig Einträge pro Empfänger und entfernen die ältesten. Datenbankinhalte sind verschlüsselt und überstehen Neustarts mit stabilem DATA_ENCRYPTION_KEY. Ohne Datenbank gehen Einträge verloren; Produktion verweigert fehlende Schlüssel. Ein Entwicklungsschlüssel gilt nur im Prozess und entschlüsselt nach Neustart keine alten Daten. Kontolöschung leert das Postfach über den Datenbesitzer.
 
 ## Sicherheit
 
-Der Zugriff auf Hinweise in der App unterliegt dem Aufrufer und dem zuständigen Funktionsdienst. Die Aktivierung erweitert keine Kontorechte.
+Benachrichtigungsrouten prüfen den Empfänger und bearbeiten dessen Einträge. Dauerhafte Nachrichten benötigen DATA_ENCRYPTION_KEY; halte den Schlüssel stabil und geheim.
 
 ## Referenz
 
-Quellcode und Paketmetadaten: `src/adapters/notify/internal/`.
+- [src/adapters/notify/internal/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/notify/internal/manifest.json)
+- [src/adapters/notify/internal/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/notify/internal/package.json)
+- [src/adapters/notify/internal/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/notify/internal/index.ts)
+- [src/adapters/notify/internal/routes/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/notify/internal/routes/index.ts)

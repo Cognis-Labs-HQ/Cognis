@@ -4,11 +4,11 @@
 
 ## インターフェース
 
-このトピックは参考情報であり、独立したエンドポイントを提供しません。例では、以下で説明するコンポーネントの公開インターフェースを使用します。
+reuse:generatePassphrase は文字列を返す同期 ctx 機能です。数や長さの不正は RangeError、型や表記方式の不正は TypeError です。
 
 ## 設定
 
-このドキュメント自体には実行時の設定はありません。運用の設定は該当するコンポーネントが管理します。
+words は 1～128 の安全な整数です。separator は既定がハイフンで十六文字まで、capitalization は lowercase（既定）、uppercase、titlecase です。
 
 ## 動作
 
@@ -16,22 +16,9 @@
 
 API ランタイムは `ctx` を通じて `reuse:generatePassphrase` を提供し、Jitsi Meet などのモジュールが API 内部をインポートせずに読みやすい秘密情報を生成できるようにします。
 
-### 使用例
-
-モジュールのブートストラップコンテキストから capability を取得し、必要な単語数と表示形式を指定します。
-
-```js
-const generatePassphrase = ctx.capabilities.require("reuse:generatePassphrase");
-const passphrase = generatePassphrase({
-    words: 6,
-    separator: "-",
-    capitalization: "titlecase",
-});
-```
-
 ## セキュリティ
 
-ドキュメントを読むだけでは例を実行する権限は得られません。各操作は担当するコンポーネントが認可します。
+各単語を Node の crypto.randomInt で選びます。生成は保存や承認を行わず、呼び出し元が保護し、結果をログに残してはいけません。
 
 ## リファレンス
 

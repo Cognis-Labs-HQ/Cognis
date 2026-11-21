@@ -4,18 +4,16 @@ Prosedur praktis untuk SQLite.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/adapters/db/sqlite) sebelum menjalankan prosedur ini.
+Runtime penyemat harus menyediakan klien SQLite; penerapan standar tidak menghubungkan kelas ini sebagai penyedia yang dapat dipilih.
 
 ## Contoh
 
-```sh
-DB_TYPE=sqlite
-```
+Sediakan SqliteClient dengan all, run, dan exec, lalu gunakan SqliteDbGateway untuk kueri dan transaksi di runtime Anda.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka SQLite yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/adapters/db/sqlite/technical) sebelum mengulangi operasi tulis.
+Kueri mengembalikan baris; callback transaksi berhasil melakukan commit dan kegagalan memicu rollback.
 
 ## Pemecahan Masalah
 
-Jika SQLite tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+DB_TYPE saja tidak menghubungkan SQLite ke server standar. Periksa integrasi klien dan akses berkas runtime.

@@ -4,48 +4,21 @@ Antarmuka publik dan aturan operasional Matriks ACL.
 
 ## Antarmuka
 
-Topik ini merupakan referensi dan tidak menyediakan titik akhir mandiri. Contoh memakai antarmuka publik komponen yang dijelaskan di bawah.
+`AccessRole` dan `RoleAccessPolicy` diekspor Core. `hasMinRole(role, minRole)` membandingkan peringkat; `isRoleAllowed(role, { minRole, onlyRole })` menerapkan kedua syarat. Guard autentikasi menyelesaikan klaim sebelum kebijakan rute.
 
 ## Konfigurasi
 
-Topik dokumentasi ini tidak memiliki konfigurasi waktu jalan sendiri. Pengaturan operasional dimiliki komponen terkait.
+`minRole` mengizinkan peran tersebut dan peringkat lebih tinggi. `onlyRole` hanya mengizinkan peran tepat tersebut, termasuk menolak peringkat lebih tinggi. Kepemilikan, visibilitas, keanggotaan, dan berbagi diperiksa terpisah.
 
 ## Perilaku
 
-### Ikhtisar
-
-Matriks ACL mendefinisikan tindakan apa yang boleh dilakukan oleh setiap peran di Cognis. Peran ditetapkan saat pembuatan akun atau oleh admin setelahnya; pendaftaran mandiri selalu menghasilkan peran `user`.
-
-Cognis memiliki empat peran. `user` adalah default untuk semua aktivitas pelajar standar. `teacher` memberikan akses ke API khusus instruktur. `moderator` menambahkan hak moderasi komunitas. `admin` memiliki akses platform penuh.
-
-### Matriks Peran
-
-| Kemampuan                               | user | teacher | moderator | admin |
-| --------------------------------------- | ---: | ------: | --------: | ----: |
-| Pendaftaran mandiri                     |   ✅ |      ✅ |        ✅ |    ✅ |
-| Lihat/edit profil sendiri               |   ✅ |      ✅ |        ✅ |    ✅ |
-| Buat postingan                          |   ✅ |      ✅ |        ✅ |    ✅ |
-| Follow/unfollow pengguna                |   ✅ |      ✅ |        ✅ |    ✅ |
-| Upload/download file                    |   ✅ |      ✅ |        ✅ |    ✅ |
-| Akses API khusus guru                   |   ❌ |      ✅ |        ❌ |    ✅ |
-| Hapus postingan pengguna mana pun       |   ❌ |      ❌ |        ✅ |    ✅ |
-| Hapus file apa pun                      |   ❌ |      ❌ |        ❌ |    ✅ |
-| Konfigurasi batas ukuran file           |   ❌ |      ❌ |        ❌ |    ✅ |
-| Instal/kelola modul                     |   ❌ |      ❌ |        ❌ |    ✅ |
-| Kelola konfigurasi penyedia autentikasi |   ❌ |      ❌ |        ❌ |    ✅ |
-| Endpoint diagnostik sistem              |   ❌ |      ❌ |        ❌ |    ✅ |
-
-### Catatan Peran
-
-- **user** — Peran default yang diberikan saat pendaftaran mandiri.
-- **teacher** — Akses API tingkat lanjut untuk fitur instruktur; ditetapkan oleh admin.
-- **moderator** — Hak moderasi komunitas; tidak ada akses ke konfigurasi sistem atau admin.
-- **admin** — Akses platform penuh; dibuat di luar jalur melalui `cognisctl user:create`.
+Urutan peran ialah `user < teacher < moderator < admin < owner`. Pendaftaran mandiri membuat `user`; `founder` bukan AccessRole dan undangan mengikuti kebijakan Pendaftaran. Peringkat minimum bukan matriks izin lengkap untuk profil, berkas, ruang, atau kelas.
 
 ## Keamanan
 
-Membaca dokumentasi tidak memberikan izin menjalankan contohnya. Komponen pemilik mengotorisasi setiap operasi.
+Periksa peran dan akses saat eksekusi. Kontrol tersembunyi bukan batas otorisasi; deskripsi peran tidak mengesampingkan onlyRole atau keanggotaan saat ini.
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/docs/acl-matrix/`.
+- [src/core/contracts/access-policy.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/contracts/access-policy.ts)
+- [src/gateways/auth/guard.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/auth/guard.ts)

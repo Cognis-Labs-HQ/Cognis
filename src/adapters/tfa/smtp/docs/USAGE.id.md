@@ -4,16 +4,16 @@ Prosedur praktis untuk Verifikasi Email.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/adapters/tfa/smtp) sebelum menjalankan prosedur ini.
+Akun memerlukan email utama terverifikasi dan pengiriman email aktif.
 
 ## Contoh
 
-Komponen ini tidak menyatakan titik masuk baris perintah mandiri. Gunakan fitur pemiliknya atau [prosedur penerapan](/docs/devops/usage) untuk mengonfigurasi instalasi; [referensi teknis](/docs/adapters/tfa/smtp/technical) mencantumkan antarmuka dan batasnya.
+Minta kode penyiapan, masukkan kode diterima, lalu konfirmasi; gunakan metode saat masuk meminta verifikasi.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Verifikasi Email yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/adapters/tfa/smtp/technical) sebelum mengulangi operasi tulis.
+Konfirmasi mengaktifkan metode; panjang kode dan jeda kirim mengikuti kebijakan email.
 
 ## Pemecahan Masalah
 
-Jika Verifikasi Email tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Periksa spam dan jeda kirim. Mulai ulang server membatalkan kode tertunda; klaster perlu mengarahkan tantangan ke instans sama.

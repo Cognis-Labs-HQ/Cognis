@@ -27,3 +27,5 @@ Nama H2 terlokalisasi dan urutannya ditentukan dalam `src/tooling/reuse/document
 Jelaskan perilaku yang didukung pada bagian yang sesuai. Riwayat rilis dan kronologi implementasi hanya berada dalam catatan cabang. Paragraf teknis bersama memiliki satu pemilik; dokumen lain menautkan referensinya.
 
 Aset komponen memakai awalan statis publik milik komponen. Aset yang hanya digunakan satu komponen dengan ruang aset sendiri tidak boleh diterbitkan di inti. Aset inti dan aset bersama tetap di inti. Impor CSS membentuk satu blok berurutan alfabetis dengan satu baris kosong sebelum aturan gaya.
+
+Isi setiap peran dengan informasi berguna yang diverifikasi pada sumber, bukan teks baku. Periksa metode, jalur, kolom, izin, nilai baku, persistensi, dan integrasi belum lengkap pada pemiliknya. Prosedur masuk Penggunaan, kontrak implementasi masuk Teknis. Pemeriksaan menolak petunjuk generik serta sumber hilang, tetapi tidak membuktikan kebenaran semua prosa.

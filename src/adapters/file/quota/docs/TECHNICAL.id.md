@@ -48,8 +48,10 @@ Seperti gateway file itu sendiri, adapter ini melakukan bootstrap sebelum gatewa
 
 ## Keamanan
 
-Akses Batas Penyimpanan diatur oleh pemanggil dan gerbang pemilik. Mengaktifkan komponen tidak menambah izin akun.
+Hanya administrasi berwenang mengubah nilai baku atau pengguna. Provisioning tidak menimpa baris; penegakan dan penggunaan tetap milik gateway Files.
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/adapters/file/quota/`.
+- [src/adapters/file/quota/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/file/quota/manifest.json)
+- [src/adapters/file/quota/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/file/quota/package.json)
+- [src/adapters/file/quota/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/file/quota/index.ts)

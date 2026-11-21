@@ -82,18 +82,21 @@ export async function registerReport(ctx, heading) {
 
 Email content uses a block container instead of nesting paragraphs around generated blocks. Paragraphs, codes, list items and table cells carry explicit theme colors; dark-mode footer text and light-mode links have readable contrast.
 
-### Reliable Sharing and Tests
+### Share Delivery
 
 SMTP configuration tests can run while the sender is disabled without enabling ordinary delivery. Tests use a dedicated bootstrap-owned diagnostic queue and a staged flow; gateway shutdown cancels that queue. Empty password overrides retain the concealed stored password. Diagnostic logs include safe transport error codes and protocol response codes without credentials or server response text.
 
-### Review and Lifecycle Hardening
+### Lifecycle Boundaries
 
 SMTP connection establishment and TLS negotiation each have a thirty-second deadline. A stalled connection is destroyed rather than leaving the diagnostic request pending. Direct TLS and STARTTLS use the configured hostname for TLS identity and DNS-name SNI; IP addresses are not sent as SNI names.
 
 ## Security
 
-Access to Email Delivery is governed by the caller and its owning gateway. Enabling a component does not grant additional account permissions.
+SMTP secrets are administrator-managed. TLS mode and certificate validation determine transport protection; verification mail must use its registered, lifetime-scoped purpose and the recipient's validated address.
 
 ## Reference
 
-Source and package metadata: `src/adapters/notify/smtp/`.
+- [src/adapters/notify/smtp/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/notify/smtp/manifest.json)
+- [src/adapters/notify/smtp/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/notify/smtp/package.json)
+- [src/adapters/notify/smtp/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/notify/smtp/index.ts)
+- [src/adapters/notify/smtp/bootstrap.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/notify/smtp/bootstrap.ts)

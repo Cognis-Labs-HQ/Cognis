@@ -4,7 +4,7 @@ DevOps の公開インターフェースと運用規則を説明します。
 
 ## インターフェース
 
-このトピックは参考情報であり、独立したエンドポイントを提供しません。例では、以下で説明するコンポーネントの公開インターフェースを使用します。
+Compose がアプリ、nginx、選択したデータベースを起動します。docker/entrypoint.sh が不足時の DATABASE_URL を作り、docker/healthcheck.sh が動作を確認します。
 
 ## 設定
 
@@ -78,8 +78,10 @@ MariaDB の場合は、代わりに `MARIADB_PASSWORD` を設定し、`docker-co
 
 ## セキュリティ
 
-ドキュメントを読むだけでは例を実行する権限は得られません。各操作は担当するコンポーネントが認可します。
+イメージの非 root ユーザーで実行します。接続情報と DATA_ENCRYPTION_KEY は配置環境の秘密管理に置き、鍵を維持して信頼できるプロキシで TLS を終端します。
 
 ## リファレンス
 
-ソースとパッケージの情報: `src/docs/devops/`。
+- [docker/Dockerfile](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/docker/Dockerfile)
+- [docker/entrypoint.sh](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/docker/entrypoint.sh)
+- [docker/healthcheck.sh](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/docker/healthcheck.sh)

@@ -4,15 +4,15 @@ Prüfen Sie vor Freigaben oder Berechtigungsänderungen, welche Aktionen jede Ko
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/) entsprechend Ihren Kontorechten.
+Prüfe, wer geschützte Inhalte lesen, erstellen oder ändern darf.
 
 ## Vor dem Start
 
-Die beschriebenen Vorgänge können Konto- oder Verwaltungsrechte verlangen. Das Lesen eines Themas aktiviert keine optionalen Funktionen.
+Rollen reichen oft nicht; Eigentum, Mitgliedschaft und Sichtbarkeit zählen mit.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/) und wählen Sie die gewünschte Aktion.
+Bestimme Inhalt und ausführendes Konto.
 
 ## Weitere Informationen
 

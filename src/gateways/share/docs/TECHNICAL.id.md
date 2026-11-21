@@ -14,7 +14,7 @@ Komponen yang dapat dibagikan mendeklarasikan blok `share` di manifest dengan `s
 
 ## Konfigurasi
 
-Konfigurasi disediakan melalui gerbang pemilik. Berbagi tidak menyatakan konfigurasi tambahan dalam manifesnya.
+Manifes berbagi menyatakan renderer dan cakupan API tamu. Setiap berbagi menyimpan izin, penerima, kedaluwarsa, dan perlindungan; adapter memiliki halaman masukan.
 
 ## Perilaku
 
@@ -23,10 +23,6 @@ Konfigurasi disediakan melalui gerbang pemilik. Berbagi tidak menyatakan konfigu
 Adapter mendeklarasikan penyedia navbar sendiri yang mengikuti status aktifnya. Penemuan pengirim memakai `notify:listSenders` tanpa implementasi Gateway Notifikasi. Pemeliharaan Share berkala berhenti saat gateway nonaktif dan dilanjutkan saat aktif.
 
 Klien browser Berbagi memungkinkan modul mengambil profil tamu berbagi yang sedang terautentikasi melalui kontrak browser publik gateway Share.
-
-### Contoh penggunaan
-
-Impor `uiCtx`, wajibkan `share:uiClient`, lalu panggil `getGuestProfile()`. Periksa `Response` yang dikembalikan sebelum membaca payload JSON `{ data }`.
 
 ### Spesifikasi teknis
 
@@ -93,6 +89,8 @@ Peramban memeriksa resolusi token tanpa membuka keyring akun. Hanya tantangan `4
 ### Batas jendela komponen
 
 Halaman berbagi tautan yang terpasang dapat membuka halaman komponen yang valid secara terprogram. Otorisasi ini hanya mencakup operasi jendela peramban. Untuk akses API, gateway Share menyelesaikan delegasi secara generik melalui flow `resolve-share-delegated-access`: pemilik sumber daya asal membuktikan hubungannya dengan target yang diminta dan menyatakan kapabilitas target yang diizinkan, sementara Share memastikan token tamu memberikan kapabilitas asal yang diperlukan serta mengikat hasil ke kedua pengenal sumber daya. Share tidak pernah mengodekan pasangan sumber daya secara tetap atau memperlakukan satu berbagi sumber daya sebagai berbagi lainnya.
+
+Halaman berbagi memeriksa sinyal setelah persiapan asinkron. Penutupan mencegah render terlambat; penonaktifan membatalkan pemeliharaan dan notifikasi kedaluwarsa berikutnya.
 
 ## Keamanan
 

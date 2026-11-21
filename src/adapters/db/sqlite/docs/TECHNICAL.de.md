@@ -4,15 +4,11 @@
 
 ## Schnittstellen
 
-SQLite wird über den zuständigen Funktionsdienst eingebunden; das Manifest nennt die Komponente und ihre Abhängigkeiten.
+`SqliteDbGateway(client)` implementiert DatabaseGateway. SqliteClient braucht all(statement, params), run(statement, params) mit changes und exec(statement). Strukturierte Befehle nutzen SQLite-Platzhalter und Konfliktklauseln.
 
 ## Konfiguration
 
-### Konfiguration
-
-Wählen Sie das SQLite-Backend mit `DB_TYPE=sqlite`, wenn Ihr Deployment für diesen Adapter verdrahtet ist. Konfigurieren Sie den Pfad zur Datenbankdatei über die SQLite-Einstellungen Ihrer Laufzeitumgebung, zum Beispiel `SQLITE_PATH`, sofern unterstützt.
-
-Siehe die [Datenbank-Gateway-Dokumentation](/docs/gateways/db) für allgemeine Konfigurationsdetails zum Gateway.
+Die einbettende Laufzeit erzeugt Client und Dateipfad. Der Adapter deklariert weder SQLITE_PATH noch eine Standard-Executorfabrik; DB_TYPE=sqlite allein wählt ihn nicht im Server.
 
 ## Verhalten
 
@@ -29,8 +25,10 @@ Der SQLite-Adapter stellt ein schlankes Datenbank-Gateway für SQLite-basierte D
 
 ## Sicherheit
 
-Der Zugriff auf SQLite unterliegt dem Aufrufer und dem zuständigen Funktionsdienst. Die Aktivierung erweitert keine Kontorechte.
+Binde Daten als Parameter und schütze Datei und Sicherungen mit Dateisystemrechten. Prüfe Anwendungsrechte vor dem Adapteraufruf.
 
 ## Referenz
 
-Quellcode und Paketmetadaten: `src/adapters/db/sqlite/`.
+- [src/adapters/db/sqlite/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/sqlite/manifest.json)
+- [src/adapters/db/sqlite/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/sqlite/package.json)
+- [src/adapters/db/sqlite/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/sqlite/index.ts)

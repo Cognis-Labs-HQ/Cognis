@@ -4,15 +4,15 @@ Buka fitur yang didukung dalam jendela terpisah dan atur sesuai tugas saat ini.
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/) sesuai izin akun Anda.
+Buka halaman komponen yang didukung dalam presentasi ruang kerja terkendali.
 
 ## Sebelum Memulai
 
-Operasi yang dibahas dapat memerlukan izin akun atau administrator. Membaca topik tidak mengaktifkan fitur opsionalnya.
+Penyedia harus mengizinkan halaman untuk mode yang diminta.
 
 ## Langkah Awal
 
-Buka [fitur ini](/) dan pilih tindakan yang diperlukan.
+Gunakan tindakan buka atau papan tulis yang tersedia.
 
 ## Pelajari Lebih Lanjut
 

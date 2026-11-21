@@ -4,36 +4,11 @@ The public interfaces and operational rules of UI.
 
 ## Interfaces
 
-### Extension Points
-
-Gateways extend the UI through the `UIRegistry`:
-
-- `ctx.uiRegistry.registerStaticDir(id, dir)` — serves static assets from a gateway-owned directory.
-- `ctx.uiRegistry.registerNavbarPlugin({ scriptUrl })` — injects a navbar script into the shell.
-- `ctx.uiRegistry.registerAdminSection(section)` — adds a section to the administration page.
-- `ctx.uiRegistry.registerPageExtension(pageId, element)` — contributes an element to a named page.
-
-Modules contribute CSS, HTML templates, and JavaScript via the `frontend` field in their manifest. The module loader appends styles, registers templates, and calls `mount(context)` on each script.
-
-### API Routes
-
-| Method | Path               | Description                   | Auth   |
-| ------ | ------------------ | ----------------------------- | ------ |
-| `GET`  | `/login`           | User sign-in page             | None   |
-| `GET`  | `/`                | Study app landing surface     | Cookie |
-| `GET`  | `/modules`         | Module and feature management | Cookie |
-| `GET`  | `/settings`        | User settings and preferences | Cookie |
-| `GET`  | `/administration`  | Administrative controls       | Cookie |
-| `GET`  | `/docs`            | Documentation browser         | Cookie |
-| `GET`  | `/profile`         | Redirect to own profile       | Cookie |
-| `GET`  | `/profile/:handle` | View a user's profile         | Cookie |
-| `GET`  | `/user`            | Legacy alias for profile      | Cookie |
+UIRegistry publishes static directories, navbar plugins, administration sections and page extensions. Browser providers register capabilities through uiCtx and own their cleanup signal; page contributions render through the shared Page Composer.
 
 ## Configuration
 
-### Configuration
-
-The UI layer has no operator-facing configuration beyond environment variables inherited from the API server (e.g. `COGNIS_UI_DEMO_MODE=1` enables pre-populated example data).
+Account preferences select theme, language and font. Component catalogs supply their own translations and page metadata; layout options remain in Page Composer instead of per-feature shell overrides.
 
 ## Behavior
 
@@ -75,7 +50,7 @@ The `createPageComposer` utility in `src/ui/reuse/page-composer/init.js` handles
 
 ### UIRegistry
 
-Gateways inject admin panels, static assets, and per-page UI contributions at runtime through the `UIRegistry` (`src/api/ui-registry.ts`). The `GET /api/v1/ui/page-extensions/:pageId` endpoint returns elements contributed by all enabled gateways for the named page. The `GET /api/v1/admin/sections` endpoint returns gateway-contributed admin UI sections.
+Gateways inject admin panels, static assets, and per-page UI contributions at runtime through the `UIRegistry` (`src/api/reuse/ui-registry.ts`). The `GET /api/v1/ui/page-extensions/:pageId` endpoint returns elements contributed by all enabled gateways for the named page. The `GET /api/v1/admin/sections` endpoint returns gateway-contributed admin UI sections.
 
 ### State model
 
@@ -85,7 +60,7 @@ Gateways inject admin panels, static assets, and per-page UI contributions at ru
 
 ### Theme coverage requirement
 
-Every HTML element added to templates or injected from page scripts must resolve its visual colors from CSS theme variables defined in `src/ui/styles/base/theme.css`. Hard-coded hex or rgb values are a policy violation. Both `light` and `dark` modes must remain readable, including hover, focus, disabled, and active states.
+Every HTML element added to templates or injected from page scripts must resolve its visual colors from CSS theme variables defined in `src/ui/styles/reuse/theme.css`. Hard-coded hex or rgb values are a policy violation. Both `light` and `dark` modes must remain readable, including hover, focus, disabled, and active states.
 
 ### i18n key conventions
 
@@ -112,13 +87,9 @@ Logout clears private session data without waiting for public service-worker rou
 
 See the [shared contract](/docs/api/technical) for this behavior.
 
-See the [shared contract](/docs/api/technical) for this behavior.
-
-See the [shared contract](/docs/api/technical) for this behavior.
-
 ## Security
 
-Reading documentation does not grant permission to execute its examples. The owning component authorizes each operation.
+Hidden navigation is not access control. Browser providers resolve owner capabilities and abort pending work on unmount or account changes; private reads remain account-scoped.
 
 ## Reference
 

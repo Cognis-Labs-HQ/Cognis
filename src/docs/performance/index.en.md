@@ -4,15 +4,15 @@ Find slow pages and requests, measure their behavior and compare improvements us
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/) according to your account permissions.
+Measure slow navigation and compare optimizations consistently.
 
 ## Before You Start
 
-The operations discussed here may require account or administrator permissions. Reading a topic does not enable its optional features.
+Measurements need a reproducible environment and a recorded release version.
 
 ## Get Started
 
-Open [the feature](/) and choose the action you need.
+Choose a cold load, warm load or SPA navigation journey.
 
 ## Learn More
 

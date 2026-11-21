@@ -35,12 +35,12 @@ Gateway Profil memiliki profil pengguna, grafik sosial, postingan, dan manajemen
 
 ### Lokasi Sumber Utama
 
-| Path                                     | Tujuan                                       |
-| ---------------------------------------- | -------------------------------------------- |
-| `src/gateways/profile/bootstrap.ts`      | Titik masuk bootstrap                        |
-| `src/gateways/profile/routes/social.ts`  | Route follow, block, follower                |
-| `src/gateways/profile/routes/posts.ts`   | Pembuatan, daftar, dan penghapusan postingan |
-| `src/adapters/db/reuse/profile-store.ts` | `DbProfileStore` — semua operasi SQL profil  |
+| Path                                           | Tujuan                                       |
+| ---------------------------------------------- | -------------------------------------------- |
+| `src/adapters/social/profile/index.ts`         | Titik masuk bootstrap                        |
+| `src/adapters/social/profile/routes/social.ts` | Route follow, block, follower                |
+| `src/adapters/social/profile/routes/posts.ts`  | Pembuatan, daftar, dan penghapusan postingan |
+| `src/adapters/social/profile/store.ts`         | `DbProfileStore` — semua operasi SQL profil  |
 
 ### Pembaruan profil langsung
 
@@ -71,12 +71,6 @@ Plugin navbar profil menyediakan `ui:profileAvatarRenderer`. Modul yang merender
 GET ketersediaan mengembalikan status unknown dengan respons berhasil untuk profil yang tidak ada atau dibatasi privasi. Kedua kasus memiliki bentuk respons yang sama dan tidak membaca preferensi manual atau status kalender. Aturan pemilik, pemblokiran, komunitas, teman, dan profil privat tetap berlaku; perubahan tetap memerlukan pemilik. Indikator avatar menampilkan tidak diketahui tanpa kesalahan tidak ditemukan berulang.
 
 ### Perubahan Sosial Offline
-
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/adapters/social/messages/technical).
-
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/adapters/social/messages/technical).
-
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/adapters/social/messages/technical).
 
 Perilaku ini dijelaskan dalam [kontrak bersama](/docs/adapters/social/messages/technical).
 
@@ -118,9 +112,7 @@ Pos yang diterbitkan langsung tampil, dan penghapusan memperbarui linimasa tanpa
 
 ### Privasi akun dan isolasi keyring
 
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/adapters/auth/local/technical).
-
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/adapters/auth/local/technical).
+Perilaku ini dijelaskan dalam [kontrak bersama](/docs/gateways/auth/technical).
 
 ## Referensi
 

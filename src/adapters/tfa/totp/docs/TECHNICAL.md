@@ -4,7 +4,7 @@ The public interfaces and operational rules of Authenticator Verification.
 
 ## Interfaces
 
-Authenticator Verification is integrated through the owning gateway; its manifest identifies the component and required dependencies.
+The method implements the TFA adapter contract: setup returns manualSecret and qrSvg, confirmation validates a code, and verification uses the stored secret, algorithm, digits and period.
 
 ## Configuration
 
@@ -43,8 +43,10 @@ Provides time-based one-time password verification for the TFA gateway.
 
 ## Security
 
-Access to Authenticator Verification is governed by the caller and its owning gateway. Enabling a component does not grant additional account permissions.
+Setup is enabled only after a valid six-digit confirmation. The stored secret permits code generation and must remain protected; verification accepts the current thirty-second window and one neighboring window on either side.
 
 ## Reference
 
-Source and package metadata: `src/adapters/tfa/totp/`.
+- [src/adapters/tfa/totp/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/tfa/totp/manifest.json)
+- [src/adapters/tfa/totp/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/tfa/totp/package.json)
+- [src/adapters/tfa/totp/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/tfa/totp/index.ts)

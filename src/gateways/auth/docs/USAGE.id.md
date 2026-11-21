@@ -4,17 +4,16 @@ Prosedur praktis untuk Masuk.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/gateways/auth) sebelum menjalankan prosedur ini.
+Gunakan penyedia aktif; pendaftaran mungkin memerlukan undangan.
 
 ## Contoh
 
-- Gunakan kontrol kata sandi penyedia autentikasi Anda; perubahan mungkin memerlukan konfirmasi identitas.
-- Pilih durasi sesi yang diizinkan atau pulihkan bawaan global, lalu simpan perubahan.
+Masuk, selesaikan verifikasi bila diminta, buka keamanan akun di Pengaturan, lalu keluar setelah selesai.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Masuk yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/gateways/auth/technical) sebelum mengulangi operasi tulis.
+Cognis membuat sesi terikat akun; aturan penyedia dan akun tetap berlaku.
 
 ## Pemecahan Masalah
 
-Jika Masuk tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Periksa penyedia, persyaratan verifikasi, dan status akun. Pembatalan membuka keyring bukan kegagalan masuk.

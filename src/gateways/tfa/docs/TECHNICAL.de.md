@@ -57,7 +57,7 @@ Jeder Adapter unter `src/adapters/tfa/<adapter-id>/` implementiert methodenspezi
 
 ## Konfiguration
 
-Die Konfiguration erfolgt über den zuständigen Funktionsdienst. Zwei-Faktor-Anmeldung definiert keine zusätzlichen Einstellungen im Manifest.
+Adapter deklarieren Metadaten und Einstellungen. Konten verwalten bestätigte Methoden; verfügbare Anbieter bestimmen hinzufügbare und prüfbare Methoden.
 
 ## Verhalten
 
@@ -106,7 +106,7 @@ Der ausschließlich für Administratoren zugängliche Adapterkatalog unter `GET 
 
 ## Sicherheit
 
-Der Zugriff auf Zwei-Faktor-Anmeldung unterliegt dem Aufrufer und dem zuständigen Funktionsdienst. Die Aktivierung erweitert keine Kontorechte.
+Einrichtung, Bestätigung, Löschung und Login nutzen geschützte Abläufe. Adapter prüfen Challenges; unbestätigte Methoden oder Fehler gelten nicht als erfolgreiche Verifikation.
 
 ## Referenz
 

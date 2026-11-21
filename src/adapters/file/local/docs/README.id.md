@@ -4,15 +4,15 @@ Simpan berkas unggahan pada penyimpanan server Cognis.
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/settings) sesuai izin akun Anda.
+Simpan media unggahan di penyimpanan lokal server Cognis.
 
 ## Sebelum Memulai
 
-Pastikan Penyimpanan Berkas Lokal aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Operator memerlukan direktori media yang dapat ditulis dan tetap ada setelah kontainer diganti.
 
 ## Langkah Awal
 
-Buka [fitur ini](/settings) dan pilih tindakan yang diperlukan.
+Konfigurasikan lokasi media sebelum mengunggah.
 
 ## Pelajari Lebih Lanjut
 

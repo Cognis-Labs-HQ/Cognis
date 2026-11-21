@@ -4,15 +4,15 @@ Command-line tools let administrators manage Cognis without opening the browser.
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/administration) according to your account permissions.
+Inspect and manage Cognis from a terminal.
 
 ## Before You Start
 
-Check that Command-Line Tools is enabled and that your account has permission for the operation.
+Use an installed cognisctl wrapper and a valid authorized token for protected commands.
 
 ## Get Started
 
-Open [the feature](/administration) and choose the action you need.
+Run cognisctl help to inspect available commands.
 
 ## Learn More
 

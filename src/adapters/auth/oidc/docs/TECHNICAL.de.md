@@ -4,20 +4,7 @@
 
 ## Schnittstellen
 
-### Architektur
-
-```ts
-export interface OidcClient {
-    introspect(accessToken: string): Promise<OidcTokenClaims | null>;
-}
-
-export interface OidcTokenClaims {
-    sub: string;
-    email?: string;
-    name?: string;
-    roles?: string[];
-}
-```
+authenticate(credentials) liest `accessToken` und ruft `OidcClient.introspect` auf. `sub` identifiziert das externe Konto; das Ergebnis enthält `provider`, `externalUserId`, optional `email` und `role`. Ohne Client oder Zugangsdaten folgt null.
 
 ## Konfiguration
 
@@ -35,22 +22,18 @@ Konfiguration über `PUT /api/v1/gateways/auth/adapters/oidc/config` (nur Admin)
 
 Konfigurationsbeschriftungen werden über `stringsBaseUrl` aus den Sprachressourcen dieses Adapters geladen.
 
+`configure()` übernimmt `providerName` / `adminRoles`. Weitere Verbindungsfelder sind Schemametadaten; die Implementierung erstellt daraus keinen Protokollclient.
+
 ## Verhalten
 
-### Überblick
-
-Der OIDC-Adapter authentifiziert Benutzer über OpenID Connect Token-Introspektion und ermöglicht Single Sign-On mit jedem OAuth2/OIDC-kompatiblen Anbieter wie Google, Microsoft Entra ID, Okta oder einer selbst gehosteten Keycloak-Instanz.
-
-### Verantwortlichkeiten
-
-- Ein `accessToken`-Credential akzeptieren und es über den konfigurierten `OidcClient` introspektieren.
-- Token-Rollen aus dem `roles`-Claim dem Cognis `isAdmin`-Flag zuordnen.
-- Die `AuthProviderAdapter`-Schnittstelle für das Auth-Gateway bereitstellen.
+Der mitgelieferte OIDC-Adapter besitzt keinen eingerichteten Protokollclient. createAdapter() liefert einen leeren Client; die Integration muss über setClient() einen geprüften Client bereitstellen. Konfiguration allein ermöglicht keine Anmeldung.
 
 ## Sicherheit
 
-Der Zugriff auf OpenID Connect unterliegt dem Aufrufer und dem zuständigen Funktionsdienst. Die Aktivierung erweitert keine Kontorechte.
+Nur geprüfte Claims begründen Identität. Das Anbieter-Subjekt kennzeichnet das externe Konto; adminRoles steuert erhöhte Rechte. Protokolliere weder Zugriffstoken noch clientSecret.
 
 ## Referenz
 
-Quellcode und Paketmetadaten: `src/adapters/auth/oidc/`.
+- [src/adapters/auth/oidc/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/oidc/manifest.json)
+- [src/adapters/auth/oidc/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/oidc/package.json)
+- [src/adapters/auth/oidc/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/oidc/index.ts)

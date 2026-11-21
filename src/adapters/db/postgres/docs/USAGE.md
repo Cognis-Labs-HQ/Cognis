@@ -4,18 +4,16 @@ Practical procedures for PostgreSQL.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/adapters/db/postgres) before performing these procedures.
+Prepare a PostgreSQL database accessible to the application.
 
 ## Examples
 
-```sh
-DB_TYPE=postgresql
-```
+Set DB_TYPE=postgresql and DATABASE_URL, restart and verify schema initialization before accepting users.
 
 ## Expected Results
 
-The example uses the documented interface of PostgreSQL. Confirm the response or saved state described in [Technical](/docs/adapters/db/postgres/technical) before repeating a write operation.
+The application uses the PostgreSQL connection pool; transactions commit together or roll back on failure.
 
 ## Troubleshooting
 
-If PostgreSQL is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+Check connection limits, credentials and database privileges. Switching providers does not copy existing data.

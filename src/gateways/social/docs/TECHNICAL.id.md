@@ -14,7 +14,7 @@ Antarmuka publik dan aturan operasional Fitur Sosial.
 
 ## Konfigurasi
 
-Konfigurasi disediakan melalui gerbang pemilik. Fitur Sosial tidak menyatakan konfigurasi tambahan dalam manifesnya.
+Adapter aktif menyumbang profil, ruang, dan pensinyalan mandiri. Konteks bootstrap membatasi registrasi dan memakai layanan akun melalui ctx.
 
 ## Perilaku
 
@@ -126,7 +126,7 @@ Adapter Profile menerbitkan `social:profile:identity` untuk konsumen platform da
 
 ## Keamanan
 
-Akses Fitur Sosial diatur oleh pemanggil dan gerbang pemilik. Mengaktifkan komponen tidak menambah izin akun.
+Adapter menerima hook terbatasi dan kapabilitas ctx. Keanggotaan, blok, serta visibilitas diperiksa pemilik operasi; pengaktifan saja tidak memberi akses.
 
 ## Referensi
 

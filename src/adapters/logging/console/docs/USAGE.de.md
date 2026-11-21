@@ -4,16 +4,16 @@ Praktische Abläufe für Konsolenprotokolle.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/adapters/logging/console).
+Administratoren konfigurieren die Ausgabe; Betreiber erfassen sie im Hostsystem.
 
 ## Beispiele
 
-Diese Komponente deklariert keinen eigenständigen Befehlszeileneinstieg. Nutzen Sie die zugehörige Funktion oder die [Bereitstellungsabläufe](/docs/devops/usage) zur Konfiguration; die [technische Referenz](/docs/adapters/logging/console/technical) nennt Schnittstellen und Grenzen.
+Wähle Stufe und lesbares oder JSON-Format, speichere und prüfe einen neuen Eintrag.
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von Konsolenprotokolle. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/adapters/logging/console/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Konsoleneinträge nutzen Stufe und Format; der integrierte Adapter bleibt aktiv.
 
 ## Fehlerbehebung
 
-Falls Konsolenprotokolle nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Prüfe Schwelle und Containererfassung bei fehlenden Einträgen.

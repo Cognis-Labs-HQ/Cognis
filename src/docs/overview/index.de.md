@@ -4,15 +4,15 @@ Cognis ist eine modulare Sprachlernplattform, die für unabhängige Lernende, Le
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/) entsprechend Ihren Kontorechten.
+Erkenne das Zusammenspiel von Lernen, sozialen Funktionen und Terminplanung.
 
 ## Vor dem Start
 
-Die beschriebenen Vorgänge können Konto- oder Verwaltungsrechte verlangen. Das Lesen eines Themas aktiviert keine optionalen Funktionen.
+Ein Administrator wählt Komponenten und Sprachmodule der Installation.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/) und wählen Sie die gewünschte Aktion.
+Prüfe Dashboard und verfügbare Hauptnavigation.
 
 ## Weitere Informationen
 

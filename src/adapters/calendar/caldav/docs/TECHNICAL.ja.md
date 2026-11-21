@@ -24,4 +24,6 @@ CalDAV の公開インターフェースと運用規則を説明します。
 
 ## リファレンス
 
-ソースとパッケージの情報: `src/adapters/calendar/caldav/`。
+- [src/adapters/calendar/caldav/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/calendar/caldav/manifest.json)
+- [src/adapters/calendar/caldav/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/calendar/caldav/package.json)
+- [src/adapters/calendar/caldav/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/calendar/caldav/index.ts)

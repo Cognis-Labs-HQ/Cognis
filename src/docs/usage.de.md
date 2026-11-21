@@ -4,16 +4,16 @@ Praktische Abläufe für Cognis.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/index).
+Werkzeuge hängen von aktiven Funktionen und deinem Kontozugriff ab.
 
 ## Beispiele
 
-Diese Komponente deklariert keinen eigenständigen Befehlszeileneinstieg. Nutzen Sie die zugehörige Funktion oder die [Bereitstellungsabläufe](/docs/devops/usage) zur Konfiguration; die [technische Referenz](/docs/index/technical) nennt Schnittstellen und Grenzen.
+Öffne Lernen, schreibe dich in eine installierte Sprache ein und wähle eine Übung; Dokumente erklären die Bedienung.
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von Cognis. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/index/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Die Sprache bestimmt verfügbare Inhalte; jede Funktion behält eigene Berechtigungen.
 
 ## Fehlerbehebung
 
-Falls Cognis nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Prüfe bei fehlenden Werkzeugen die Einschreibung und frage nach der aktivierten Komponente.

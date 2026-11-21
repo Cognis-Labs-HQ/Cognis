@@ -4,16 +4,18 @@ Prosedur praktis untuk Latihan Menulis.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/adapters/study/drawing) sebelum menjalankan prosedur ini.
+Daftar dalam bahasa yang mendukung latihan menulis.
 
 ## Contoh
 
-Komponen ini tidak menyatakan titik masuk baris perintah mandiri. Gunakan fitur pemiliknya atau [prosedur penerapan](/docs/devops/usage) untuk mengonfigurasi instalasi; [referensi teknis](/docs/adapters/study/drawing/technical) mencantumkan antarmuka dan batasnya.
+Gambar jawaban, gunakan petunjuk bila perlu, dan selesaikan percobaan; pertahankan papan saat berpindah navigasi.
+
+Mesin `openDrawingPad` yang sama menerima `container`, `signal` pembatalan dan `onResult`. Tanpa kontainer, jendela dapat dipindahkan dan diubah ukurannya; memuat karakter lain mempertahankan posisi. Dengan kontainer, seluruh papan ditanam, karakter asal dikunci dan keberhasilan dilaporkan hanya setelah semua goresan berurutan diterima. Menulis tertanam tidak memerlukan adaptor Gambar opsional.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Latihan Menulis yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/adapters/study/drawing/technical) sebelum mengulangi operasi tulis.
+Papan mempertahankan pekerjaan; percobaan selesai yang tepercaya dapat merekam kemajuan.
 
 ## Pemecahan Masalah
 
-Jika Latihan Menulis tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Periksa dukungan bahasa dan aset luring. Jawaban tersembunyi tetap tersembunyi sampai tindakan ungkap.

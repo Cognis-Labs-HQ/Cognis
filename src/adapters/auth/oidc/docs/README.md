@@ -1,18 +1,18 @@
 # OpenID Connect
 
-Sign in through your organisation's OpenID Connect identity provider.
+This sign-in method needs an additional deployment integration before it can work. Completing the settings form alone does not connect an identity service.
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/login) according to your account permissions.
+Sign in through an OpenID Connect identity provider using its access token. Your provider continues to manage the external credentials.
 
 ## Before You Start
 
-Check that OpenID Connect is enabled and that your account has permission for the operation.
+This sign-in method needs an additional deployment integration before it can work. Completing the settings form alone does not connect an identity service.
 
 ## Get Started
 
-Open [the feature](/login) and choose the action you need.
+Ask the deployment integrator whether a protocol client is supplied before offering this login method. Keep local sign-in available.
 
 ## Learn More
 

@@ -1,18 +1,18 @@
 # OpenID Connect
 
-Melden Sie sich über den OpenID-Connect-Identitätsdienst Ihrer Organisation an.
+Diese Anmeldemethode benötigt eine zusätzliche Integration der Installation. Das ausgefüllte Einstellungsformular allein verbindet keinen Identitätsdienst.
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/login) entsprechend Ihren Kontorechten.
+Melde dich über einen OpenID-Connect-Anbieter mit dessen Zugriffstoken an. Die externen Zugangsdaten verwaltet weiterhin der Anbieter.
 
 ## Vor dem Start
 
-Prüfen Sie, ob OpenID Connect aktiviert ist und Ihr Konto den Vorgang ausführen darf.
+Diese Anmeldemethode benötigt eine zusätzliche Integration der Installation. Das ausgefüllte Einstellungsformular allein verbindet keinen Identitätsdienst.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/login) und wählen Sie die gewünschte Aktion.
+Prüfe mit der Integration, ob ein Protokollclient bereitsteht, bevor du die Methode anbietest. Behalte lokale Anmeldung.
 
 ## Weitere Informationen
 

@@ -4,17 +4,16 @@ Praktische Abläufe für Anmelden.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/gateways/auth).
+Nutze einen aktiven Anbieter; Registrierung kann eine Einladung verlangen.
 
 ## Beispiele
 
-- Verwenden Sie die Passwortfunktion Ihres Anbieters; eine Änderung kann eine Identitätsbestätigung erfordern.
-- Wählen Sie eine erlaubte Sitzungsdauer oder den globalen Standard und speichern Sie Änderungen.
+Melde dich an, bestätige nötige Prüfungen, öffne Kontosicherheit in Einstellungen und melde dich anschließend ab.
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von Anmelden. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/gateways/auth/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Cognis erstellt eine kontogebundene Sitzung; Anbieter- und Kontoregeln bleiben wirksam.
 
 ## Fehlerbehebung
 
-Falls Anmelden nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Prüfe Anbieter, Bestätigung und Kontostatus. Ein abgebrochener Schlüsselbundzugriff ist kein fehlgeschlagener Login.

@@ -4,17 +4,15 @@ Lindungi akun Anda dengan langkah verifikasi kedua saat masuk.
 
 ## Yang Dapat Anda Lakukan
 
-- Pilih metode tersedia dan selesaikan penyiapannya sebelum mengandalkannya untuk masuk.
-- Urutkan metode aktif untuk menentukan metode yang ditawarkan lebih dahulu.
-- Gunakan kode pemulihan untuk masuk saat faktor kedua tidak tersedia. Simpan salinannya di tempat yang dapat diakses tanpa masuk.
+Tambahkan langkah verifikasi kedua saat masuk.
 
 ## Sebelum Memulai
 
-Pastikan Autentikasi Dua Faktor aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Selesaikan penyiapan metode tersedia sebelum mengandalkannya.
 
 ## Langkah Awal
 
-Buka [fitur ini](/settings) dan pilih tindakan yang diperlukan.
+Buka keamanan akun di Pengaturan.
 
 ## Pelajari Lebih Lanjut
 

@@ -112,7 +112,7 @@ Usage is tracked incrementally in the file object metadata table (`file_objects`
 
 ## Security
 
-Access to Files is governed by the caller and its owning gateway. Enabling a component does not grant additional account permissions.
+Namespace ACLs and current ownership govern file reads and writes. The gateway compares per-namespace and global usage before writes; storage-provider paths are not public authorization tokens.
 
 ## Reference
 

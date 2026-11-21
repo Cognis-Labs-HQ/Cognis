@@ -34,9 +34,7 @@ Externe Module veröffentlichen gemeinsame Server-Capabilities mit `ctx.contribu
 
 ## Konfiguration
 
-### Moduleinstellungen
-
-Ein Modul kann mit `ui.preferences` vom Administrator bearbeitbare Einstellungen bereitstellen. Jedes Feld deklariert einen stabilen `key`, einen lokalisierten `labelKey`, einen optionalen `descriptionKey`, einen `type` aus `boolean`, `string` oder `number` einen optionalen passenden `default`, einen `password`-Typ für verdeckte sensible Zeichenfolgen und `required: true`, wenn die Aktivierung blockiert werden muss, bis der moduleigene Konfigurationsendpunkt einen Wert zurückgibt; `ui.stringsBaseUrl` bezeichnet die moduleigenen Übersetzungen. Fehlt diese Angabe, erkennt Cognis automatisch das Standardpaket `ui/languages/<locale>/strings.xml`. Cognis rendert diesen Manifestvertrag in der Detailansicht des installierten Moduls, fragt `GET /api/v1/modules/<id>/config` ab und sendet Änderungen mit `PUT` an denselben moduleigenen Endpunkt. Das Modul validiert, übernimmt und speichert seine Betriebskonfiguration. Es darf weder eine zweite Einstellungsoberfläche anbieten noch Cognis-Benutzereinstellungen als Konfigurationsspeicher verwenden. Für jedes gespeicherte Passwort gibt die Konfigurationsantwort `<key>Configured: true` statt des Geheimnisses zurück; Cognis zeigt `****` an, betrachtet das Pflichtfeld als erfüllt und sendet bei unveränderter Maske einen leeren Wert, damit das Modul sein gespeichertes Passwort beibehält.
+Quellen und Installationspfade konfiguriert der Host. Module deklarieren Identität, Abhängigkeiten, Routen, Dokumente und optionale Einstellungen; Geheimnisse kommen über geschützte Fähigkeiten.
 
 ## Verhalten
 
@@ -45,33 +43,6 @@ Ein Modul kann mit `ui.preferences` vom Administrator bearbeitbare Einstellungen
 Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/adapters/study/library/technical).
 
 Externe Module erweitern Cognis um unabhängig installierbares Server- und Browserverhalten und bleiben dabei hinter Manifest-, Fähigkeits-, Ablauf-, Routen-, Integritäts- und Lebenszyklusverträgen isoliert.
-
-### Anwendungsbeispiele
-
-Ein Repository deklariert seine stabile Identität und seinen Bootstrap-Einstiegspunkt in `manifest.json`:
-
-<!-- prettier-ignore -->
-```json
-{
-  "uuid": "123e4567-e89b-42d3-a456-426614174000",
-  "id": "example-module",
-  "version": "1.0.0",
-  "entrypoints": { "bootstrap": "bootstrap.js" }
-}
-```
-
-Der Bootstrap stellt Verhalten ausschließlich über seinen begrenzten Kontext bereit und gibt eine Bereinigung für eigene Ressourcen zurück:
-
-<!-- prettier-ignore -->
-```js
-export async function bootstrapModule(ctx) {
-  ctx.registerFlow({ id: 'example-module:constructPage', stages: ['content'] });
-  ctx.flow.extend('example-module:constructPage', 'content',
-    { id: 'example-module:content' }, async () => ({ ready: true }));
-}
-```
-
-Administratoren installieren das Repository unter **Module**, prüfen Integrität und Abhängigkeiten, aktivieren es ausdrücklich und können es später deaktivieren, um alle registrierten UI- und Backend-Funktionen ohne Cognis-Neustart zu entfernen.
 
 ### Stabile Identität
 
@@ -193,23 +164,13 @@ Verwenden Sie Links oder Schaltflächen mit `data-navigation-path="/route"`; Cog
 
 Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/gateways/study/technical).
 
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/gateways/study/technical).
-
 Privates Study benötigt dieselbe zuvor bestätigte, noch gültige Kontositzung im selben Tab. Nach Neuladen und beim Erstbesuch gilt weiterhin der ausschließlich öffentliche Offline-Vertrag. Konto- und Sitzungswechsel, geänderte Einstellungen, Modul-Lebenszyklusänderungen und die Freigabe eines Anbieters verwerfen private Schnappschüsse. Serverseitige Sperren können ohne Verbindung nicht erkannt werden. Die Wiederherstellung prüft ungespeicherte Änderungen und lädt die Serverautorisierung neu.
 
 ### Übertragung und Zustimmung
 
 Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/gateways/study/technical).
 
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/gateways/study/technical).
-
 ### Soziale Offline-Änderungen
-
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/adapters/social/messages/technical).
-
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/adapters/social/messages/technical).
-
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/adapters/social/messages/technical).
 
 Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/adapters/social/messages/technical).
 
@@ -246,8 +207,6 @@ const purpose = await registerPurpose("digest", (variables) => ({
 const sendEmail = ctx.getCapability("notify:sendEmail");
 await sendEmail({ purpose, recipientEmail, variables });
 ```
-
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/adapters/notify/smtp/technical).
 
 Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/adapters/notify/smtp/technical).
 

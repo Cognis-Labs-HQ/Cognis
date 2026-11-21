@@ -52,12 +52,10 @@ scrypt:<hex-salt>:<hex-derived-key>
 
 ## セキュリティ
 
-### アカウントのプライバシーとキーリングの分離
-
-SSO アカウントにはプロバイダーを示さないランダムな ID を使用します。プロバイダー ID は別に保存し、管理者だけに表示します。公開ユーザー名には含めません。Auth はプロフィールやメールの変更前にユーザー名を確保します。同じプロバイダー内の重複名は拒否し、別プロバイダーとの重複には短いランダムな接尾辞を付けます。ユーザー一覧と操作 API は公開用の `username` と内部用の `accountId` を区別します。
-
-従来の SSO レコードが存在していても、既存のローカルアカウントは引き続き使用できます。起動時にデータベースのリセットは必要ありません。従来の SSO アカウントのログインと作成処理だけを個別に拒否し、不透明な ID での再作成を必要とします。アカウント ID、関係、会議の自動移行や自動削除は行いません。
+ローカルのパスワードはランダムソルトと scrypt、時間差に配慮した照合を使います。管理は Auth の承認を必要とし、アダプターはセッション発行や登録入力による管理者付与を行いません。
 
 ## リファレンス
 
-ソースとパッケージの情報: `src/adapters/auth/local/`。
+- [src/adapters/auth/local/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/local/manifest.json)
+- [src/adapters/auth/local/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/local/package.json)
+- [src/adapters/auth/local/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/local/index.ts)

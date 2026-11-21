@@ -4,16 +4,21 @@ Practical procedures for Core.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/core) before performing these procedures.
+Feature availability depends on installed components and their required dependencies.
 
 ## Examples
 
-This component does not declare a standalone command-line entry point. Use its owning feature or the [deployment procedures](/docs/devops/usage) to configure the installation; the [technical reference](/docs/components/core/technical) lists its interfaces and constraints.
+Inspect a component's dependency status, enable an allowed component and verify its contributed action appears in its owning page.
+
+```ts
+const record = ctx.requireCapability("engagement:recordActivity");
+await record(activity);
+```
 
 ## Expected Results
 
-The example uses the documented interface of Core. Confirm the response or saved state described in [Technical](/docs/components/core/technical) before repeating a write operation.
+Features contribute capabilities during their active lifetime; disabling them removes owned registrations.
 
 ## Troubleshooting
 
-If Core is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+Resolve missing dependencies rather than importing another component's implementation or bypassing its lifecycle.

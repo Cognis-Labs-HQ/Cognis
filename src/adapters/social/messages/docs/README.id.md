@@ -4,17 +4,15 @@ Mulai percakapan pribadi, baca pesan, dan simpan templat pesan yang dapat diguna
 
 ## Yang Dapat Anda Lakukan
 
-- Pilih ruang atau mulai percakapan di panel samping. Pada ponsel dan tablet, gunakan tombol sudut ganda di kiri atas untuk membukanya.
-- Baca percakapan dan periksa peserta serta permintaan tertunda.
-- Tulis dan pratinjau draf sebelum mengirim; lampiran dan panggilan memiliki kontrol tersendiri.
+Buat percakapan, kelola anggota ruang, dan tulis pesan dengan pratinjau serta templat.
 
 ## Sebelum Memulai
 
-Pastikan Pesan aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Masuk; ruang terenkripsi juga memerlukan akses keyring akun.
 
 ## Langkah Awal
 
-Buka [fitur ini](/messages) dan pilih tindakan yang diperlukan.
+Buka Pesan dan pilih ruang; di layar sempit tombol chevron ganda membuka daftar ruang.
 
 ## Pelajari Lebih Lanjut
 

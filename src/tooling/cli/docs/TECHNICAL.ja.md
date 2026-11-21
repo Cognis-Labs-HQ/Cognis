@@ -4,7 +4,7 @@
 
 ## インターフェース
 
-このワークスペースは共通のプラットフォームコードを提供します。公開する機能の契約は、説明されたケイパビリティ、コマンド、ゲートウェイが管理し、このパッケージは独立した HTTP サービスを提供しません。
+CLI の登録で名前、使い方、説明、引数、execute を定義します。コアと提供元が自身のグループを登録し、HTTP ヘルパーがサーバーへ認証付きで送ります。
 
 ## 設定
 
@@ -48,8 +48,9 @@
 
 ## セキュリティ
 
-公開されたケイパビリティとコマンドには、操作ごとの認可が適用されます。パッケージを追加するだけで、非公開のリソースにアクセスできるようにはなりません。
+CLI は COGNIS_CLI_TOKEN_PATH を読み、サーバーがロールと対象権限を検証します。トークンファイルを保護し、詳細出力や共有記録に秘密情報を含めないでください。
 
 ## リファレンス
 
-ソースとパッケージの情報: `src/tooling/cli/`。
+- [src/tooling/cli/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/tooling/cli/package.json)
+- [src/tooling/cli/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/tooling/cli/index.ts)

@@ -4,16 +4,16 @@ Prosedur praktis untuk Log Berkas.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/adapters/logging/file) sebelum menjalankan prosedur ini.
+Lokasi log harus dapat ditulis dan bertahan sesuai kebijakan retensi.
 
 ## Contoh
 
-Komponen ini tidak menyatakan titik masuk baris perintah mandiri. Gunakan fitur pemiliknya atau [prosedur penerapan](/docs/devops/usage) untuk mengonfigurasi instalasi; [referensi teknis](/docs/adapters/logging/file/technical) mencantumkan antarmuka dan batasnya.
+Atur tingkat, ukuran rotasi, jumlah arsip, dan kompresi; periksa keluaran baru serta berkas rotasi.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Log Berkas yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/adapters/logging/file/technical) sebelum mengulangi operasi tulis.
+Gateway Logging menulis dan merotasi; jumlah arsip nol tidak menyimpan arsip rotasi.
 
 ## Pemecahan Masalah
 
-Jika Log Berkas tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Periksa izin, ruang kosong, dan retensi sebelum mengandalkan catatan lama.

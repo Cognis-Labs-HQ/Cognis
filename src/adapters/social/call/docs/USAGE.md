@@ -4,16 +4,18 @@ Practical procedures for Calls.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/adapters/social/call) before performing these procedures.
+Calls and Messages must be enabled; browser media permissions are needed for audio or video.
 
 ## Examples
 
-This component does not declare a standalone command-line entry point. Use its owning feature or the [deployment procedures](/docs/devops/usage) to configure the installation; the [technical reference](/docs/adapters/social/call/technical) lists its interfaces and constraints.
+Call a room participant, accept from the other account, allow the requested microphone access and hang up when finished.
+
+The Call adapter is activated automatically when Messages and a `voip:startCall` browser provider are available.
 
 ## Expected Results
 
-The example uses the documented interface of Calls. Confirm the response or saved state described in [Technical](/docs/adapters/social/call/technical) before repeating a write operation.
+Signaling coordinates the call; actual media depends on the selected provider and browser support.
 
 ## Troubleshooting
 
-If Calls is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+Check room membership, media permissions and provider availability. Signaling alone does not supply a media transport.

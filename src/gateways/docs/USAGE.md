@@ -4,16 +4,16 @@ Practical procedures for Feature Gateways.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/gateways) before performing these procedures.
+This package groups gateway infrastructure; individual gateways define their user features.
 
 ## Examples
 
-This component does not declare a standalone command-line entry point. Use its owning feature or the [deployment procedures](/docs/devops/usage) to configure the installation; the [technical reference](/docs/components/gateways/technical) lists its interfaces and constraints.
+Open its component documentation, inspect its available adapters and configure the provider appropriate to your deployment.
 
 ## Expected Results
 
-The example uses the documented interface of Feature Gateways. Confirm the response or saved state described in [Technical](/docs/components/gateways/technical) before repeating a write operation.
+Only enabled, successfully registered providers supply their declared actions.
 
 ## Troubleshooting
 
-If Feature Gateways is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+A missing provider cannot be fixed by changing this workspace package; inspect the specific gateway's dependencies and logs.

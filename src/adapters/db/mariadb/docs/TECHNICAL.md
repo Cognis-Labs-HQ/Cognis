@@ -55,8 +55,10 @@ Use `DbDialectHelper.upsert()` and `DbDialectHelper.insertIgnore()` from `src/ga
 
 ## Security
 
-Access to MariaDB is governed by the caller and its owning gateway. Enabling a component does not grant additional account permissions.
+Database credentials and transport security belong to the deployment. Bind values through parameters; application authorization must run before invoking the database executor.
 
 ## Reference
 
-Source and package metadata: `src/adapters/db/mariadb/`.
+- [src/adapters/db/mariadb/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/mariadb/manifest.json)
+- [src/adapters/db/mariadb/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/mariadb/package.json)
+- [src/adapters/db/mariadb/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/mariadb/index.ts)

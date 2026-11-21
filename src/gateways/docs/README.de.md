@@ -4,15 +4,15 @@ Funktionsdienste verbinden aktivierte Cognis-Bereiche mit verfügbaren Dienstanb
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/administration) entsprechend Ihren Kontorechten.
+Erkenne zuständiges Gateway und Anbieter eines Dienstes.
 
 ## Vor dem Start
 
-Prüfen Sie, ob Funktionsdienste aktiviert ist und Ihr Konto den Vorgang ausführen darf.
+Dieses Paket bündelt Infrastruktur; Benutzerfunktionen gehören zu einzelnen Gateways.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/administration) und wählen Sie die gewünschte Aktion.
+Suche das zuständige Gateway in Administration.
 
 ## Weitere Informationen
 

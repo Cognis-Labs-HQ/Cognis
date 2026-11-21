@@ -27,3 +27,5 @@ Die exakten übersetzten H2-Namen und ihre Reihenfolge stehen in `src/tooling/re
 Beschreiben Sie unterstütztes Verhalten im passenden Abschnitt. Veröffentlichungsgeschichte und Implementierungsabläufe gehören ausschließlich in das Zweigprotokoll. Gemeinsame technische Absätze haben einen Eigentümer; andere Dokumente verweisen dorthin.
 
 Komponentenressourcen verwenden ihr eigenes öffentliches statisches Präfix. Eine ausschließlich von einer Komponente mit eigenem Ressourcenbereich verwendete Datei darf nicht im Kern liegen. Kernressourcen und gemeinsame Dateien bleiben dort. CSS-Importe bilden einen zusammenhängenden alphabetischen Block mit einer Leerzeile vor Stilregeln.
+
+Fülle jede Rolle mit nützlichen, am Quellcode geprüften Informationen statt Standardtext. Prüfe Methoden, Pfade, Felder, Rechte, Standardwerte, Persistenz und unvollständige Integrationen beim Eigentümer. Abläufe gehören in Nutzung, Implementierungsverträge in Technik. Prüfungen erkennen allgemeine Platzhalter und fehlende Quellen, beweisen aber nicht beliebige Prosa.

@@ -4,16 +4,15 @@ Terhubung dengan pengguna Cognis melalui profil, kiriman, dan percakapan pribadi
 
 ## Yang Dapat Anda Lakukan
 
-- Periksa adapter sosial aktif dan pengaturan yang tersedia.
-- Tinjau fitur pengguna yang terdampak sebelum mengaktifkan, menonaktifkan, atau mengonfigurasi ulang penyedia.
+Gunakan profil, percakapan, dan panggilan aktif dengan aturan akun bersama.
 
 ## Sebelum Memulai
 
-Pastikan Fitur Sosial aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Masuk; adapter sosial menyediakan fiturnya masing-masing.
 
 ## Langkah Awal
 
-Buka [fitur ini](/messages) dan pilih tindakan yang diperlukan.
+Buka Profil atau Pesan melalui navigasi aplikasi.
 
 ## Pelajari Lebih Lanjut
 

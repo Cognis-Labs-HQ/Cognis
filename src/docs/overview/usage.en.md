@@ -4,16 +4,16 @@ Practical procedures for Cognis Overview.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/overview) before performing these procedures.
+An administrator selects the components and language modules your installation offers.
 
 ## Examples
 
-This component does not declare a standalone command-line entry point. Use its owning feature or the [deployment procedures](/docs/devops/usage) to configure the installation; the [technical reference](/docs/overview/technical) lists its interfaces and constraints.
+Choose a learning language, open a collection and then visit Calendar or Messages to plan a study session with others.
 
 ## Expected Results
 
-The example uses the documented interface of Cognis Overview. Confirm the response or saved state described in [Technical](/docs/overview/technical) before repeating a write operation.
+Enabled features share account identity while retaining separate content and access rules.
 
 ## Troubleshooting
 
-If Cognis Overview is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+Do not assume an optional tool is installed because it appears in a general overview; check its component page.

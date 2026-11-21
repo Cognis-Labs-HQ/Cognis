@@ -4,17 +4,15 @@ Study saved decks, practise reading or writing and manage your own collections.
 
 ## What You Can Do
 
-- Choose a deck from the sidebar and check which language and cards it contains.
-- Review the available study modes and filters before beginning practice.
-- Use the practice controls to answer and review cards; progress belongs to your account.
+Create decks, browse starter decks and practice reading or writing.
 
 ## Before You Start
 
-Check that Flashcards is enabled and that your account has permission for the operation.
+Sign in and select an enrolled language; editing and exports require the appropriate deck access.
 
 ## Get Started
 
-Open [the feature](/study/flashcards) and choose the action you need.
+Choose Flashcards in Study and open a deck.
 
 ## Learn More
 

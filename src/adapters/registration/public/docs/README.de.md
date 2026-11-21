@@ -4,15 +4,15 @@ Erstellen Sie bei aktivierter öffentlicher Registrierung ein Konto ohne Einladu
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/register) entsprechend Ihren Kontorechten.
+Erlaube neue lokale Benutzerkonten ohne Einladungstoken.
 
 ## Vor dem Start
 
-Prüfen Sie, ob Öffentliche Registrierung aktiviert ist und Ihr Konto den Vorgang ausführen darf.
+Ein Administrator muss öffentliche Registrierung ausdrücklich aktivieren.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/register) und wählen Sie die gewünschte Aktion.
+Öffne das Registrierungsformular der Installation.
 
 ## Weitere Informationen
 

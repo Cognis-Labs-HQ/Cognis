@@ -4,16 +4,16 @@ Praktische Abläufe für Kalenderimport und -export.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/adapters/calendar/ics).
+Nutze einen eigenen Kalender und einen aktiven ICS-Adapter.
 
 ## Beispiele
 
-Diese Komponente deklariert keinen eigenständigen Befehlszeileneinstieg. Nutzen Sie die zugehörige Funktion oder die [Bereitstellungsabläufe](/docs/devops/usage) zur Konfiguration; die [technische Referenz](/docs/adapters/calendar/ics/technical) nennt Schnittstellen und Grenzen.
+Exportiere eine ICS-Datei, prüfe die Daten und importiere gültigen Inhalt in den gewünschten eigenen Kalender.
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von Kalenderimport und -export. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/adapters/calendar/ics/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Export liefert einen Anhang; Import übergibt Termine an Kalender.
 
 ## Fehlerbehebung
 
-Falls Kalenderimport und -export nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Prüfe Eigentum und nichtleeren ICS-Inhalt. Kontrolliere Zeitzonen und Wiederholungen fremder Dateien vor dem Import.

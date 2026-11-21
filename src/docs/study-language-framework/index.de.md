@@ -4,15 +4,15 @@ Wählen Sie verfügbare Sprachen und nutzen Sie die jeweils bereitgestellten Ler
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/) entsprechend Ihren Kontorechten.
+Nutze sprachspezifische Sammlungen installierter Module.
 
 ## Vor dem Start
 
-Die beschriebenen Vorgänge können Konto- oder Verwaltungsrechte verlangen. Das Lesen eines Themas aktiviert keine optionalen Funktionen.
+Schreibe dich über Lerneinstellungen in eine installierte Sprache ein.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/) und wählen Sie die gewünschte Aktion.
+Wähle die Sprache unter Lernen und öffne Erkunden.
 
 ## Weitere Informationen
 

@@ -173,13 +173,11 @@ Profileの設定保存が成功すると、再送時やオンライン専用の�
 
 ### ファイル
 
-| メソッド | パス                                         | 説明                           | 認証   |
-| -------- | -------------------------------------------- | ------------------------------ | ------ |
-| `PUT`    | `/api/v1/files/:bucket/:key`                 | ファイルをアップロード         | Bearer |
-| `GET`    | `/api/v1/files/:bucket/:key`                 | ファイルをダウンロード         | Bearer |
-| `DELETE` | `/api/v1/files/:bucket/:key`                 | ファイルを削除                 | Admin  |
-| `GET`    | `/api/v1/social/admin/file-limits`           | カテゴリ別サイズ制限を一覧表示 | Admin  |
-| `PUT`    | `/api/v1/social/admin/file-limits/:category` | サイズ制限を設定               | Admin  |
+| メソッド | パス                         | 説明                   | 認証   |
+| -------- | ---------------------------- | ---------------------- | ------ |
+| `PUT`    | `/api/v1/files/:bucket/:key` | ファイルをアップロード | Bearer |
+| `GET`    | `/api/v1/files/:bucket/:key` | ファイルをダウンロード | Bearer |
+| `DELETE` | `/api/v1/files/:bucket/:key` | ファイルを削除         | Admin  |
 
 ### ユーザー (管理者)
 
@@ -353,4 +351,5 @@ Messagesの再利用可能なリアクション選択機能は、リアクショ
 
 ## リファレンス
 
-ソースとパッケージの情報: `src/docs/api/`。
+- [src/api/main.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/api/main.ts)
+- [src/api/routes/docs/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/api/routes/docs/index.ts)

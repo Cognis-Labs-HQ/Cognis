@@ -104,13 +104,6 @@ Konteks bootstrap eksternal mendukung `registerDisposer(dispose)`. Pembersihan b
 
 Mesin keterlibatan inti menghitung XP berdasarkan bukti dan memberikan pencapaian terdaftar melalui alur ctx bertahap.
 
-### Penggunaan
-
-```ts
-const record = ctx.requireCapability("engagement:recordActivity");
-await record(activity);
-```
-
 ### Alur penyedia
 
 Penyedia bahasa dan aktivitas memperluas keterlibatan hanya melalui kapabilitas `ctx` publik. Saat bootstrap, gunakan `engagement:scoring` untuk mendaftarkan bobot bawaan jenis aktivitas, pengubah terjadwal berdasarkan cakupan, dan booster yang dapat ditukar. Gunakan `engagement:achievements` untuk mendaftarkan lencana normal, langka, atau legendaris. Kirim kumpulan yang selesai melalui `engagement:recordActivity`; tampilan item belajar mandiri tidak memberikan XP.
@@ -129,10 +122,9 @@ Ringkasan ledger, penukaran booster, dan pembatalan aktivitas menjalankan alur c
 
 ## Keamanan
 
-### Keamanan dan bukti
-
-Bobot dan pengali menerima nilai `0.01` hingga `10`; kesulitan menerima `0.1` hingga `10`. ID peristiwa harus unik, durasi dan jumlah petunjuk tidak boleh negatif, serta target waktu harus berurutan. Booster sekali pakai khusus peserta dan dihapus setelah skor pertama yang cocok. Penghargaan achievement membekukan label, kesulitan, ikon, waktu, dan ID bukti agar perubahan definisi tidak menulis ulang lencana yang sudah diperoleh.
+Kepemilikan dan cakupan bootstrap mengatur masa registrasi. Handler berhak khusus mengotorisasi sebelum perubahan; kuitansi engagement memvalidasi pelaku, bukti, serta identitas idempoten sebelum hadiah.
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/core/`.
+- [src/core/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/package.json)
+- [src/core/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/index.ts)

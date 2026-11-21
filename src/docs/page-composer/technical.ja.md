@@ -4,11 +4,11 @@
 
 ## インターフェース
 
-このトピックは参考情報であり、独立したエンドポイントを提供しません。例では、以下で説明するコンポーネントの公開インターフェースを使用します。
+createPageComposer(root, options) が画面の動作期間を作ります。要素が内容と描画を提供し、init で組み込み、refresh で記述を更新します。
 
 ## 設定
 
-このドキュメント自体には実行時の設定はありません。運用の設定は該当するコンポーネントが管理します。
+createPageComposer に elements、pageManifest、i18n、signal と配置設定を渡します。画面に合わせる要素は対応する契約を使い、保存配置は preferenceKey に結び付きます。
 
 ## 動作
 
@@ -131,8 +131,8 @@ Composerはコンテンツセクションの内側余白を管理します。広
 
 ## セキュリティ
 
-ドキュメントを読むだけでは例を実行する権限は得られません。各操作は担当するコンポーネントが認可します。
+構成機能は表示と DOM の期間を管理し、対象の認可は行いません。操作は担当元のフローを使い、共有のメニューとパネルの境界を守ります。
 
 ## リファレンス
 
-ソースとパッケージの情報: `src/docs/page-composer/`。
+- [src/ui/reuse/page-composer/index.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/ui/reuse/page-composer/index.js)

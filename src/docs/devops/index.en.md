@@ -4,15 +4,15 @@ Set up and maintain a Cognis installation, including its storage, services and d
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/) according to your account permissions.
+Deploy Cognis with persistent database, media and configuration storage.
 
 ## Before You Start
 
-The operations discussed here may require account or administrator permissions. Reading a topic does not enable its optional features.
+Prepare Docker Compose and deployment-managed database credentials and encryption key.
 
 ## Get Started
 
-Open [the feature](/) and choose the action you need.
+Review the selected Compose file and its required environment values.
 
 ## Learn More
 

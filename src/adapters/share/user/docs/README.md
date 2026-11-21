@@ -4,15 +4,15 @@ Give selected Cognis users access to content without publishing a public link.
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/) according to your account permissions.
+Grant named Cognis users access to a supported resource.
 
 ## Before You Start
 
-Check that Share with People is enabled and that your account has permission for the operation.
+Recipients need Cognis accounts; the sender needs sharing permission.
 
 ## Get Started
 
-Open [the feature](/) and choose the action you need.
+Choose User in the resource's Share dialog.
 
 ## Learn More
 

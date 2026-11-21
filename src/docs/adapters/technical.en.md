@@ -4,21 +4,15 @@ The public interfaces and operational rules of Adapters.
 
 ## Interfaces
 
-### Extension Points
-
-To add a new adapter for an existing gateway, create a directory under `src/adapters/<gateway-id>/<adapter-id>/` containing:
-
-- The adapter implementation (TypeScript class implementing the gateway interface).
-- A `package.json` with `name`, `version`, and a `main` field pointing to the entry module.
-- An exported `createAdapter()` function that the gateway calls during discovery.
-- A `docs/index.en.md` following the documentation standard.
-- Tests under `tests/`.
+Adapters expose factories and bootstrap hooks defined by their gateway contracts. Database adapters implement structured executor factories; authentication adapters return AuthProviderAdapter; notification senders register delivery metadata and owned diagnostics.
 
 ## Configuration
 
-This documentation topic has no runtime configuration of its own. Operational settings belong to the relevant component.
+Each adapter declares its settings through the owning gateway contract. Authentication providers, notification senders and database factories have different schemas; a manifest alone does not prove that a remote connection is implemented.
 
 ## Behavior
+
+OIDC and SAML in this source tree require an injected protocol client. Their configuration forms do not create a client; see the adapter Technical views before planning those deployments.
 
 ### Overview
 
@@ -67,16 +61,7 @@ Never place implementation logic directly in a file named after the adapter's te
 
 ### DB adapter shared layer
 
-`src/adapters/db/reuse/` contains store abstractions shared across all DB adapters:
-
-| Module                  | Purpose                                        |
-| ----------------------- | ---------------------------------------------- |
-| `account-store.ts`      | Account persistence (create, find, update)     |
-| `profile-store.ts`      | Profile CRUD, social graph, posts              |
-| `preference-store.ts`   | User preference key/value persistence          |
-| `notification-store.ts` | Notification config and preference persistence |
-
-These reuse modules are instantiated by gateways at bootstrap time. They receive a `DbExecutor` and `SupportedDbType` and generate the correct SQL dialect internally.
+Database drivers implement structured commands and dialect behavior. Domain persistence belongs to its owner: local accounts in src/adapters/auth/local/store.ts, profiles in src/adapters/social/profile/store.ts and preferences in src/adapters/social/profile/preference-store.ts. Cross-component callers use registered capabilities rather than importing these concrete stores.
 
 ### Coverage table
 
@@ -94,7 +79,7 @@ These reuse modules are instantiated by gateways at bootstrap time. They receive
 
 ## Security
 
-Reading documentation does not grant permission to execute its examples. The owning component authorizes each operation.
+Adapters own transport secrets and runtime contracts. Tests and diagnostics must not disclose configured passwords; provider registration must be disposed when its owner is disabled.
 
 ## Reference
 

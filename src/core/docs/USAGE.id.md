@@ -4,16 +4,21 @@ Prosedur praktis untuk Sistem Inti.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/core) sebelum menjalankan prosedur ini.
+Ketersediaan bergantung pada komponen terpasang serta dependensi wajib.
 
 ## Contoh
 
-Komponen ini tidak menyatakan titik masuk baris perintah mandiri. Gunakan fitur pemiliknya atau [prosedur penerapan](/docs/devops/usage) untuk mengonfigurasi instalasi; [referensi teknis](/docs/components/core/technical) mencantumkan antarmuka dan batasnya.
+Periksa dependensi, aktifkan komponen yang diizinkan, lalu pastikan tindakannya muncul di halaman pemilik.
+
+```ts
+const record = ctx.requireCapability("engagement:recordActivity");
+await record(activity);
+```
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Sistem Inti yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/components/core/technical) sebelum mengulangi operasi tulis.
+Fitur menyediakan kapabilitas selama masa aktif; penonaktifan menghapus registrasinya.
 
 ## Pemecahan Masalah
 
-Jika Sistem Inti tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Perbaiki dependensi alih-alih mengimpor implementasi komponen lain atau melewati siklus hidupnya.

@@ -4,15 +4,15 @@ Choose the right level of help: an introduction, practical examples or technical
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/) according to your account permissions.
+Find introductions, procedures and technical references in consistent document views.
 
 ## Before You Start
 
-The operations discussed here may require account or administrator permissions. Reading a topic does not enable its optional features.
+Select the component and version relevant to your installation.
 
 ## Get Started
 
-Open [the feature](/) and choose the action you need.
+Open Docs and start with Info.
 
 ## Learn More
 

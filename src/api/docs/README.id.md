@@ -4,15 +4,15 @@ Server aplikasi menghubungkan peramban Anda dengan akun, konten tersimpan, dan f
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/administration) sesuai izin akun Anda.
+Baca dokumentasi komponen dan gunakan fitur berbasis server.
 
 ## Sebelum Memulai
 
-Pastikan Server Aplikasi aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Operator menerapkan server; pembaca tidak perlu akses administrator untuk dokumentasi publik.
 
 ## Langkah Awal
 
-Buka [fitur ini](/administration) dan pilih tindakan yang diperlukan.
+Buka Dokumen dan pilih komponen atau topik inti.
 
 ## Pelajari Lebih Lanjut
 

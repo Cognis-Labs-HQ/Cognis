@@ -4,16 +4,16 @@ Prosedur praktis untuk Adapter.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/adapters) sebelum menjalankan prosedur ini.
+Konfigurasi memerlukan administrator dan detail koneksi penyedia.
 
 ## Contoh
 
-Komponen ini tidak menyatakan titik masuk baris perintah mandiri. Gunakan fitur pemiliknya atau [prosedur penerapan](/docs/devops/usage) untuk mengonfigurasi instalasi; [referensi teknis](/docs/adapters/technical) mencantumkan antarmuka dan batasnya.
+Periksa pengaturan adapter, atur layanan, dan gunakan pengujian bila tersedia sebelum penggunaan normal.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Adapter yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/adapters/technical) sebelum mengulangi operasi tulis.
+Gateway memakai penyedia aktif terdaftar; pengaturan khusus tetap milik adapter.
 
 ## Pemecahan Masalah
 
-Jika Adapter tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Periksa dependensi dan diagnosis. Instalasi tidak menjamin layanan eksternal dapat dijangkau.

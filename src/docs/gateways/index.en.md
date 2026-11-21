@@ -4,15 +4,15 @@ Feature gateways connect the enabled parts of Cognis to their available service 
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/) according to your account permissions.
+Understand how feature gateways coordinate interchangeable providers.
 
 ## Before You Start
 
-The operations discussed here may require account or administrator permissions. Reading a topic does not enable its optional features.
+Gateway and adapter availability follows installed dependencies.
 
 ## Get Started
 
-Open [the feature](/) and choose the action you need.
+Locate a feature gateway and its adapters in Administration.
 
 ## Learn More
 

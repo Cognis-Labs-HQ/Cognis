@@ -4,15 +4,15 @@ Check what each account role can do before granting access or changing permissio
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/) according to your account permissions.
+Review who may read, create or change protected resources.
 
 ## Before You Start
 
-The operations discussed here may require account or administrator permissions. Reading a topic does not enable its optional features.
+Roles alone may be insufficient: ownership, membership and visibility also matter.
 
 ## Get Started
 
-Open [the feature](/) and choose the action you need.
+Identify the resource and the account that will perform the action.
 
 ## Learn More
 

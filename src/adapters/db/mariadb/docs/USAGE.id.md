@@ -4,18 +4,16 @@ Prosedur praktis untuk MariaDB.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/adapters/db/mariadb) sebelum menjalankan prosedur ini.
+Operator memerlukan basis data MariaDB dan kredensial.
 
 ## Contoh
 
-```sh
-DB_TYPE=mariadb
-```
+Atur DB_TYPE=mariadb dan DATABASE_URL, mulai ulang Cognis, lalu periksa log inisialisasi.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka MariaDB yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/adapters/db/mariadb/technical) sebelum mengulangi operasi tulis.
+Cognis menghubungkan MariaDB dan menginisialisasi tabel yang dideklarasikan.
 
 ## Pemecahan Masalah
 
-Jika MariaDB tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Periksa koneksi, kredensial, dan izin skema; cadangkan data sebelum mengganti backend.

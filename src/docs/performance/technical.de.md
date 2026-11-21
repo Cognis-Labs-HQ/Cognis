@@ -4,11 +4,11 @@
 
 ## Schnittstellen
 
-Dieses Thema ist eine Referenz und stellt keinen eigenen Endpunkt bereit. Beispiele verwenden die öffentlichen Schnittstellen der unten beschriebenen Komponenten.
+observability:metrics erfasst erlaubte Zeiten. Browser-Endpunkt ist POST /api/v1/observability/client; gehostete Benchmarks führt der Betreiber separat aus.
 
 ## Konfiguration
 
-Dieses Dokumentationsthema hat keine eigene Laufzeitkonfiguration. Betriebseinstellungen gehören zur zuständigen Komponente.
+Nutze feste Netz- und CPU-Bedingungen. Dokumentierte Budgets sind Prüfziele, kein implementiertes Lighthouse-CI-Gate und keine Garantie für jede Installation.
 
 ## Verhalten
 
@@ -48,8 +48,8 @@ Navigationsbeginn, sichtbare Ladezeit und Bereitschaft benötigter Inhalte getre
 
 ## Sicherheit
 
-Das Lesen der Dokumentation berechtigt nicht zur Ausführung ihrer Beispiele. Die zuständige Komponente autorisiert jeden Vorgang.
+Messwerte nutzen begrenzte Namen und Labels; keine Konto-IDs, privaten URLs oder Inhalte in Labels. Browsermeldungen behalten Anmeldung und Kontolimits.
 
 ## Referenz
 
-Quellcode und Paketmetadaten: `src/docs/performance/`.
+- [src/gateways/observability/bootstrap.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/observability/bootstrap.ts)

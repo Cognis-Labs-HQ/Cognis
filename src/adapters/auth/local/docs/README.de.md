@@ -4,15 +4,15 @@ Melden Sie sich ohne externen Kontodienst mit Cognis-Benutzernamen und Passwort 
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/login) entsprechend Ihren Kontorechten.
+Melde dich mit Cognis-Benutzernamen und Passwort ohne externen Identitätsdienst an. Ein lokales Administratorkonto dient auch zur Wiederherstellung.
 
 ## Vor dem Start
 
-Prüfen Sie, ob Lokale Konten aktiviert ist und Ihr Konto den Vorgang ausführen darf.
+Neue Konten unterliegen der Registrierungsrichtlinie. Lokale Anmeldung ist erforderlich und lässt sich nicht deaktivieren.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/login) und wählen Sie die gewünschte Aktion.
+Wähle auf der Anmeldeseite die lokale Anmeldung und gib deine Cognis-Zugangsdaten ein.
 
 ## Weitere Informationen
 

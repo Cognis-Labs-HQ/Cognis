@@ -4,16 +4,16 @@ Praktische Abläufe für Öffentliche Freigabelinks.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/adapters/share/link).
+Du musst den Inhalt besitzen oder ihn teilen dürfen.
 
 ## Beispiele
 
-Diese Komponente deklariert keinen eigenständigen Befehlszeileneinstieg. Nutzen Sie die zugehörige Funktion oder die [Bereitstellungsabläufe](/docs/devops/usage) zur Konfiguration; die [technische Referenz](/docs/adapters/share/link/technical) nennt Schnittstellen und Grenzen.
+Wähle erlaubten Zugriff, Ablauf und Schutz, erstelle den Link und prüfe ihn in einer separaten Browsersitzung.
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von Öffentliche Freigabelinks. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/adapters/share/link/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Der Link öffnet nur den geteilten Inhalt; Ablauf oder Widerruf beendet den Zugriff.
 
 ## Fehlerbehebung
 
-Falls Öffentliche Freigabelinks nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Prüfe Linkstatus und Passwort. Schreibgeschützte Inhalte erhalten durch Teilen keine Schreibrechte.

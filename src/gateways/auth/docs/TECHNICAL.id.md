@@ -77,7 +77,7 @@ Daftar adaptor dan kontrak konfigurasi menyertakan `stringsBaseUrl` ketika adapt
 
 ## Konfigurasi
 
-Konfigurasi disediakan melalui gerbang pemilik. Masuk tidak menyatakan konfigurasi tambahan dalam manifesnya.
+Skema penyedia mengatur koneksi eksternal. COGNIS_ACCESS_TOKEN_TTL_SECONDS mengatur masa token; validasi akun dan TFA tetap pilihan pemilik terdaftar.
 
 ## Perilaku
 
@@ -178,11 +178,9 @@ Tautan footer autentikasi membentuk baris yang mudah diakses, dan label penyedia
 
 ## Keamanan
 
-### Privasi akun dan isolasi keyring
+Autentikasi memvalidasi kredensial sebelum sesi dan TFA wajib. Otorisasi akun, peran, dan sumber daya tetap terpisah; penolakan keyring tidak mengubah identitas.
 
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/adapters/auth/local/technical).
-
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/adapters/auth/local/technical).
+Akun SSO menggunakan ID acak yang tidak mengungkap identitas penyedia. ID penyedia disimpan terpisah dan hanya ditampilkan kepada administrator; nama pengguna publik tidak memuatnya. Auth mencadangkan nama sebelum perubahan profil atau email: nama duplikat dari penyedia yang sama ditolak, sedangkan penyedia berbeda mendapat akhiran acak pendek bila perlu. Daftar pengguna dan endpoint tindakan membedakan `username` publik dari `accountId` internal.
 
 ## Referensi
 

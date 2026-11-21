@@ -4,16 +4,15 @@ Laden Sie Dateien innerhalb der Speichergrenzen und Freigaberechte Ihres Kontos 
 
 ## Möglichkeiten
 
-- Prüfen Sie den globalen Speicherstandard und betroffene Komponentennamensräume.
-- Prüfen Sie Besitzer und Sichtbarkeit vor Änderung und Speicherung der Bytequote.
+Lade funktionsgebundene Dateien mit Zugriffs- und Speichergrenzen hoch.
 
 ## Vor dem Start
 
-Prüfen Sie, ob Dateien aktiviert ist und Ihr Konto den Vorgang ausführen darf.
+Uploads benötigen einen aktiven Speicheranbieter und freies Kontingent.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/settings) und wählen Sie die gewünschte Aktion.
+Nutze die Uploadsteuerung der besitzenden Funktion.
 
 ## Weitere Informationen
 

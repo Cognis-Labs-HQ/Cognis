@@ -4,19 +4,16 @@ Prosedur praktis untuk Profil dan Kiriman.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/adapters/social/profile) sebelum menjalankan prosedur ini.
+Masuk untuk mengedit profil sendiri; profil lain mengikuti aturan privasi dan pemblokiran.
 
 ## Contoh
 
-- Periksa identitas dan ketersediaan profil; profil sendiri menyediakan kontrol penyuntingan.
-- Jelajahi postingan yang terlihat dan gunakan aksi yang diizinkan bagi akun Anda.
-- Ikuti, kirim pesan, atau kelola hubungan melalui kontrol profil; periksa orang yang dipilih sebelum bertindak.
-- Pratinjau menampilkan judul dan isi terkini sebelum diterbitkan. Kembali ke mode Tulis atau putar perangkat tanpa kehilangan draf.
+Ubah nama tampilan atau gambar, simpan, lalu terbitkan kiriman dengan visibilitas yang diinginkan dan periksa dari akun lain yang diizinkan.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Profil dan Kiriman yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/adapters/social/profile/technical) sebelum mengulangi operasi tulis.
+Perubahan yang diakui memperbarui profil dan linimasa; konten pribadi tetap dibatasi bagi pembaca berizin.
 
 ## Pemecahan Masalah
 
-Jika Profil dan Kiriman tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Periksa visibilitas, hubungan mengikuti, pemblokiran, dan koneksi. Nama profil publik tidak melewati aturan akses.

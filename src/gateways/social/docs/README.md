@@ -4,16 +4,15 @@ Connect with other Cognis users through profiles, posts and private conversation
 
 ## What You Can Do
 
-- Inspect the active social adapters and their available settings.
-- Review the affected user features before enabling, disabling or reconfiguring a provider.
+Use enabled profiles, conversations and calls under shared account access rules.
 
 ## Before You Start
 
-Check that Social Features is enabled and that your account has permission for the operation.
+Sign in; individual social adapters supply their own features.
 
 ## Get Started
 
-Open [the feature](/messages) and choose the action you need.
+Open Profile or Messages from the application navigation.
 
 ## Learn More
 

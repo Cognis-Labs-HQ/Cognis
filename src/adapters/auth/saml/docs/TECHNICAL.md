@@ -4,31 +4,7 @@ The public interfaces and operational rules of SAML Sign In.
 
 ## Interfaces
 
-### Architecture
-
-`SamlAuthAdapter` in `src/adapters/auth/saml/index.ts` implements `AuthProviderAdapter`. It holds a reference to a `SamlClient` instance:
-
-```ts
-export interface SamlClient {
-    validateAssertion(samlResponse: string): Promise<SamlAssertion | null>;
-}
-
-export interface SamlAssertion {
-    nameId: string;
-    email?: string;
-    attributes?: Record<string, string | string[]>;
-}
-```
-
-On `authenticate(credentials)`, the adapter:
-
-1. Extracts `credentials.samlResponse` (base64-encoded XML assertion).
-2. Calls `this.client.validateAssertion(samlResponse)`.
-3. Reads the attribute named by `adminAttribute` from the assertion.
-4. If the attribute value matches `adminValue`, sets `isAdmin: true`.
-5. Returns an `AuthContext` with `provider: 'saml'`, `externalUserId: nameId`, `email`, and `isAdmin`.
-
-On first login, the auth gateway creates a new account via `createExternalAccount`. Subsequent logins update the account via `updateExternalAccount`.
+authenticate(credentials) reads `assertion` and calls the injected `SamlClient.consumeAssertion`. Valid `nameId` identifies the external account; the result carries `provider`, `externalUserId`, optional `email` and `role`. Without a client or credential it returns null.
 
 ## Configuration
 
@@ -46,27 +22,18 @@ Configure via `PUT /api/v1/gateways/auth/adapters/saml/config` (admin only).
 
 Configuration labels are resolved from this adapter’s language resources through `stringsBaseUrl`.
 
+`configure()` applies `adminAttribute` / `adminValue`. The other connection fields are schema metadata; this implementation does not construct a protocol client from them.
+
 ## Behavior
 
-### Overview
-
-The SAML adapter authenticates users via SAML 2.0 assertions from an external identity provider, enabling single sign-on with enterprise identity systems such as Microsoft Active Directory Federation Services (AD FS), Google Workspace (as an IdP), Okta, or any other SAML 2.0-compliant IdP. Users authenticate at the identity provider and are redirected back to Cognis with a signed XML assertion; the adapter validates the signature and maps the assertion's attributes to a Cognis account.
-
-SAML is the right choice for environments where OIDC is not available or where the existing identity infrastructure is built on SAML federations.
-
-### Responsibilities
-
-- Accept a SAML response/assertion credential, validate it with the configured `SamlClient`, and extract identity claims.
-- Map a configurable SAML attribute to the Cognis admin flag using `adminAttribute` and `adminValue`.
-- Expose the `AuthProviderAdapter` interface to the auth gateway.
-- Provide `getConfigSchema()` describing all configurable fields.
-
-Not responsible for: managing the SAML SP metadata, handling redirects (the client application manages the browser flow), or storing user accounts locally.
+The bundled SAML adapter has no installed protocol client. createAdapter() returns an adapter with a null client; integration must explicitly supply a validated client through setClient(). Configuration alone does not enable sign-in.
 
 ## Security
 
-Access to SAML Sign In is governed by the caller and its owning gateway. Enabling a component does not grant additional account permissions.
+Authentication depends on the configured assertion validator and trusted signing certificate. Map administrator groups deliberately; an unvalidated assertion must not establish a session.
 
 ## Reference
 
-Source and package metadata: `src/adapters/auth/saml/`.
+- [src/adapters/auth/saml/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/saml/manifest.json)
+- [src/adapters/auth/saml/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/saml/package.json)
+- [src/adapters/auth/saml/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/saml/index.ts)

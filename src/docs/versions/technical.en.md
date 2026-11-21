@@ -18,7 +18,7 @@ The public interfaces and operational rules of Component Versions.
 
 ## Configuration
 
-This documentation topic has no runtime configuration of its own. Operational settings belong to the relevant component.
+Manifests and package.json carry component versions. Cognis dependencies use tested ceilings such as <=1.2.3; this is a compatibility warning boundary, not a claim that every older feature is equivalent.
 
 ## Behavior
 
@@ -105,7 +105,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 
 ## Security
 
-Reading documentation does not grant permission to execute its examples. The owning component authorizes each operation.
+An installed version or tested ceiling is not authorization to enable a component. Package integrity, dependencies and required-host protections still apply during upgrades.
 
 ## Reference
 

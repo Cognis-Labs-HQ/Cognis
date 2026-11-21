@@ -4,18 +4,16 @@ Practical procedures for MariaDB.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/adapters/db/mariadb) before performing these procedures.
+Deployment operators need a MariaDB database and credentials.
 
 ## Examples
 
-```sh
-DB_TYPE=mariadb
-```
+Set DB_TYPE=mariadb and DATABASE_URL, restart Cognis and inspect database initialization logs.
 
 ## Expected Results
 
-The example uses the documented interface of MariaDB. Confirm the response or saved state described in [Technical](/docs/adapters/db/mariadb/technical) before repeating a write operation.
+Cognis connects to MariaDB and initializes its declared tables.
 
 ## Troubleshooting
 
-If MariaDB is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+Check database reachability, credentials and schema privileges; back up data before changing backends.

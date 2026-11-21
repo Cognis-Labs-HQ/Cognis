@@ -4,15 +4,15 @@ Ermöglichen Sie den Zugriff auf unterstützte Inhalte über einen öffentlichen
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/) entsprechend Ihren Kontorechten.
+Erstelle Links mit Ablauf und Zugriffsschutz für unterstützte Inhalte.
 
 ## Vor dem Start
 
-Prüfen Sie, ob Öffentliche Freigabelinks aktiviert ist und Ihr Konto den Vorgang ausführen darf.
+Du musst den Inhalt besitzen oder ihn teilen dürfen.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/) und wählen Sie die gewünschte Aktion.
+Öffne Teilen am Inhalt und wähle Link.
 
 ## Weitere Informationen
 

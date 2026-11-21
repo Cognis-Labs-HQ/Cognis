@@ -4,16 +4,18 @@ Prosedur praktis untuk Server Aplikasi.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/api) sebelum menjalankan prosedur ini.
+Operator menerapkan server; pembaca tidak perlu akses administrator untuk dokumentasi publik.
 
 ## Contoh
 
-Komponen ini tidak menyatakan titik masuk baris perintah mandiri. Gunakan fitur pemiliknya atau [prosedur penerapan](/docs/devops/usage) untuk mengonfigurasi instalasi; [referensi teknis](/docs/components/api/technical) mencantumkan antarmuka dan batasnya.
+Pilih Info, Penggunaan, atau Teknis serta versi; pastikan pilihan versi bertahan saat berganti tampilan.
+
+Panggil `store.diff(fromVersion, toVersion)` melalui penyimpanan yang dibuat oleh kapabilitas `docs:versionStore`. Modul runtime dapat mengembalikan hasil terstruktur melalui rute terautentikasinya sendiri, memperoleh `ui:documentDiff` melalui ctx browser, dan meneruskan hasil tersebut ke `renderDocumentDiff(diff)`.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Server Aplikasi yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/components/api/technical) sebelum mengulangi operasi tulis.
+Setiap versi terbit berisi paket lokal lengkap; tampilan hilang tidak dibuat dari versi lain.
 
 ## Pemecahan Masalah
 
-Jika Server Aplikasi tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Periksa topik, versi, dan akses server. Arsip memerlukan lokasi yang dapat ditulis.

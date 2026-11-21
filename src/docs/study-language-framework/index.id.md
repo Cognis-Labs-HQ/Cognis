@@ -4,15 +4,15 @@ Pilih bahasa yang tersedia dan gunakan konten belajar yang disediakan untuk seti
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/) sesuai izin akun Anda.
+Gunakan koleksi bahasa yang disediakan modul terpasang.
 
 ## Sebelum Memulai
 
-Operasi yang dibahas dapat memerlukan izin akun atau administrator. Membaca topik tidak mengaktifkan fitur opsionalnya.
+Daftar bahasa terpasang melalui pengaturan Study.
 
 ## Langkah Awal
 
-Buka [fitur ini](/) dan pilih tindakan yang diperlukan.
+Pilih bahasa di Study dan buka Jelajahi.
 
 ## Pelajari Lebih Lanjut
 

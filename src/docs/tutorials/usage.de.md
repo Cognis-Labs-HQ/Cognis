@@ -4,9 +4,11 @@ Praktische Abläufe für Geführte Anleitungen.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/tutorials).
+Melde dich für kontogebundenen Abschluss an; optionale Aktionen erscheinen nur bei Verfügbarkeit.
 
 ## Beispiele
+
+Starte, folge Markierungen, nutze Zurück oder Weiter und schließe ab; wiederhole über denselben Kopfbereich.
 
 ```ts
 export async function mountProvider(ctx) {
@@ -52,8 +54,8 @@ export async function mountProvider(ctx) {
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von Geführte Anleitungen. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/tutorials/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Abschlüsse bleiben am Konto gespeichert; Wiederholung benötigt kein Zurücksetzen der Einstellungen.
 
 ## Fehlerbehebung
 
-Falls Geführte Anleitungen nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Prüfe aktive Seite und sichtbare Aktion. Schließen eines optionalen Dialogs kann zum Zweiganfang zurückführen.

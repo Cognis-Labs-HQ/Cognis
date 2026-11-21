@@ -4,15 +4,15 @@ Keep account secrets in your protected keyring and unlock them when a feature ne
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/settings) according to your account permissions.
+Keep passwords and encryption keys in a browser-encrypted vault; lock it when you finish using sensitive content.
 
 ## Before You Start
 
-Check that Keyring is enabled and that your account has permission for the operation.
+Sign in to your own account. Remember the vault password: the server cannot read or recover its secrets.
 
 ## Get Started
 
-Open [the feature](/settings) and choose the action you need.
+Open Settings and inspect Keyring. Create a vault if none exists; an existing vault can remain locked until a feature requests a secret.
 
 ## Learn More
 

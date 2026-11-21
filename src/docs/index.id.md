@@ -4,15 +4,15 @@ Cognis menyatukan pembelajaran bahasa, percakapan, dan kalender dalam satu ruang
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/) sesuai izin akun Anda.
+Belajar bahasa, rencanakan acara, dan berkomunikasi dalam satu instalasi.
 
 ## Sebelum Memulai
 
-Operasi yang dibahas dapat memerlukan izin akun atau administrator. Membaca topik tidak mengaktifkan fitur opsionalnya.
+Alat tersedia bergantung pada fitur aktif dan akses akun.
 
 ## Langkah Awal
 
-Buka [fitur ini](/) dan pilih tindakan yang diperlukan.
+Masuk lalu pilih Dasbor, Kalender, Pesan, atau Study.
 
 ## Pelajari Lebih Lanjut
 

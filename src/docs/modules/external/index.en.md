@@ -4,15 +4,15 @@ Extend your installation with additional features and manage their access and co
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/) according to your account permissions.
+Add separately packaged features and manage their configuration and availability.
 
 ## Before You Start
 
-The operations discussed here may require account or administrator permissions. Reading a topic does not enable its optional features.
+Administrators need a trusted module source and compatible dependencies.
 
 ## Get Started
 
-Open [the feature](/) and choose the action you need.
+Open Modules and inspect the package before installation.
 
 ## Learn More
 

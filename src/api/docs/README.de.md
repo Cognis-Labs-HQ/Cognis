@@ -4,15 +4,15 @@ Der Anwendungsserver verbindet Ihren Browser mit Konten, gespeicherten Inhalten 
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/administration) entsprechend Ihren Kontorechten.
+Lies Komponentendokumente und nutze servergestützte Funktionen.
 
 ## Vor dem Start
 
-Prüfen Sie, ob Anwendungsserver aktiviert ist und Ihr Konto den Vorgang ausführen darf.
+Betreiber stellen den Server bereit; veröffentlichte Dokumente benötigen keine Administratorrechte.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/administration) und wählen Sie die gewünschte Aktion.
+Öffne Dokumente und wähle Komponente oder Kernthema.
 
 ## Weitere Informationen
 

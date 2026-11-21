@@ -4,11 +4,11 @@ The public interfaces and operational rules of Focus Control.
 
 ## Interfaces
 
-This topic is reference material and does not expose an independent endpoint. Examples use the public interfaces of the components described below.
+Browser component-pages:request resolves an eligible page; component-pages:spawn opens it inside a caller-owned stage after user activation. The returned handle supports discard and navigation retention; provider mount receives its root, signal and context.
 
 ## Configuration
 
-This documentation topic has no runtime configuration of its own. Operational settings belong to the relevant component.
+A provider must declare componentPage metadata with stable route identity, localized labels and supported modes. Callers request by component UUID and route ID and supply their stage and abort signal for spawning.
 
 ## Behavior
 
@@ -107,4 +107,5 @@ Providers authenticate every request, scope it to a collaboration resource, vali
 
 ## Reference
 
-Source and package metadata: `src/docs/focus-control/`.
+- [src/core/contracts/focus/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/contracts/focus/index.ts)
+- [src/ui/reuse/focus-control.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/ui/reuse/focus-control.js)

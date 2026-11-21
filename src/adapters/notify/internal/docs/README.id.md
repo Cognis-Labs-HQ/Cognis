@@ -4,15 +4,15 @@ Gunakan ikon lonceng untuk membaca pembaruan aktivitas tanpa meninggalkan Cognis
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/) sesuai izin akun Anda.
+Baca notifikasi dalam aplikasi dan tandai sudah dibaca.
 
 ## Sebelum Memulai
 
-Pastikan Notifikasi Dalam Aplikasi aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Masuk untuk menerima notifikasi akun sendiri.
 
 ## Langkah Awal
 
-Buka [fitur ini](/) dan pilih tindakan yang diperlukan.
+Buka ikon lonceng pada header.
 
 ## Pelajari Lebih Lanjut
 

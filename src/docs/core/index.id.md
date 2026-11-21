@@ -4,15 +4,15 @@ Sistem inti menghubungkan fitur Cognis yang aktif dan mengelola aksesnya ke laya
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/) sesuai izin akun Anda.
+Pahami hubungan akun, izin, dan fitur terpasang.
 
 ## Sebelum Memulai
 
-Operasi yang dibahas dapat memerlukan izin akun atau administrator. Membaca topik tidak mengaktifkan fitur opsionalnya.
+Perubahan administrasi memerlukan akun berwenang.
 
 ## Langkah Awal
 
-Buka [fitur ini](/) dan pilih tindakan yang diperlukan.
+Periksa komponen sebelum mengubah layanan bersama.
 
 ## Pelajari Lebih Lanjut
 

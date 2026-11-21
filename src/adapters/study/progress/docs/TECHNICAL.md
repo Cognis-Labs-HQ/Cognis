@@ -20,7 +20,7 @@ The ordinary event endpoint rejects `compensatesEventId`; clients must use the c
 
 ## Configuration
 
-Configuration is supplied through the owning gateway. Learning Progress declares no additional configuration in its manifest.
+Progress uses the active DB executor. Event queries accept actor, content scope and inclusive time filters; trusted practice recording is separate from raw event import.
 
 ## Behavior
 
@@ -29,13 +29,6 @@ Configuration is supplied through the owning gateway. Learning Progress declares
 Shared Progress event, actor, projection and capability types live in gateways/study/reuse/progress.ts. The gateway no longer imports an optional adapter entry point for these contracts; the adapter implements the same capability and keeps its public exports. Event and correction JSON bodies are limited to 60,000 bytes; oversized requests return 413 before recording. Existing privacy, classroom checks, correction, rewards and rebuild flows remain active.
 
 The Progress adapter records append-only, idempotent learning events and derives rebuildable learner projections. Each event identifies its actor, canonical content and revision, activity and scope, attempt result, hint use, duration, completion state, and bounded metadata.
-
-### Usage
-
-```ts
-const progress = ctx.capabilities.require("study:progress");
-const events = await progress.listEvents(actor, {});
-```
 
 ### Review scheduling safety
 
@@ -57,4 +50,7 @@ The service checks actor ownership before reading or writing. Administrators and
 
 ## Reference
 
-Source and package metadata: `src/adapters/study/progress/`.
+- [src/adapters/study/progress/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/study/progress/manifest.json)
+- [src/adapters/study/progress/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/study/progress/package.json)
+- [src/adapters/study/progress/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/study/progress/index.ts)
+- [src/adapters/study/progress/routes/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/study/progress/routes/index.ts)

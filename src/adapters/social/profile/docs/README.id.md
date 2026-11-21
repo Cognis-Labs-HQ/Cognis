@@ -4,17 +4,15 @@ Perkenalkan diri, terbitkan kiriman, dan pilih pengguna untuk diikuti atau diblo
 
 ## Yang Dapat Anda Lakukan
 
-- Periksa identitas dan ketersediaan profil; profil sendiri menyediakan kontrol penyuntingan.
-- Jelajahi postingan yang terlihat dan gunakan aksi yang diizinkan bagi akun Anda.
-- Ikuti, kirim pesan, atau kelola hubungan melalui kontrol profil; periksa orang yang dipilih sebelum bertindak.
+Edit profil, terbitkan kiriman, dan kelola visibilitas serta hubungan sosial.
 
 ## Sebelum Memulai
 
-Pastikan Profil dan Kiriman aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Masuk untuk mengedit profil sendiri; profil lain mengikuti aturan privasi dan pemblokiran.
 
 ## Langkah Awal
 
-Buka [fitur ini](/profile) dan pilih tindakan yang diperlukan.
+Buka avatar menuju profil dan pilih tindakan edit atau kiriman.
 
 ## Pelajari Lebih Lanjut
 

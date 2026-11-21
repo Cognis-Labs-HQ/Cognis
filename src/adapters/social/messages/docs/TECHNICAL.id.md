@@ -30,7 +30,7 @@ Semua endpoint berada di bawah `/api/v1/social/messages`. Autentikasi wajib, kec
 
 ## Konfigurasi
 
-Konfigurasi disediakan melalui gerbang pemilik. Pesan tidak menyatakan konfigurasi tambahan dalam manifesnya.
+Ruang mendeklarasikan peserta dan keadaan enkripsi/akses. Templat serta draf terikat akun; luring perlu aset dan riwayat tersimpan.
 
 ## Perilaku
 
@@ -39,10 +39,6 @@ Konfigurasi disediakan melalui gerbang pemilik. Pesan tidak menyatakan konfigura
 Ruang grup baru menyelesaikan pembuatan kunci dan seluruh penambahan anggota sebelum mengikat sumber integrasi. Kegagalan inisialisasi atau pengikatan menghapus ruang parsial; kegagalan pembersihan dicatat dan diteruskan. Ruang yang sudah ada dan eksklusivitas sumber tetap berperilaku sama.
 
 Klien browser Pesan memungkinkan modul mencantumkan pesan ruang, membuka ruang privat, dan mengirim pesan melalui kontrak API terautentikasi milik adaptor Social Messages.
-
-### Contoh penggunaan
-
-Impor `uiCtx`, wajibkan `social:messagesUiClient`, lalu panggil `listRoomMessages(roomId, options)`, `openPrivateRoom(payload, options)`, atau `sendRoomMessage(roomId, payload)` dari kode browser.
 
 ### Spesifikasi teknis
 
@@ -151,7 +147,7 @@ Halaman Pesan menyelesaikan kunci ruang melalui lingkup keyring `Social Messages
 
 ## Keamanan
 
-Akses Pesan diatur oleh pemanggil dan gerbang pemilik. Mengaktifkan komponen tidak menambah izin akun.
+Kelayakan ruang, keanggotaan, dan pembacaan pesan diperiksa terpisah. Ruang terenkripsi bergantung pada kunci klien; model ancaman membedakan konten dan metadata perutean.
 
 ## Referensi
 

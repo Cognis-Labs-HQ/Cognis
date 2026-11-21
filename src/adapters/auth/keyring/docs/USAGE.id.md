@@ -4,16 +4,16 @@ Prosedur praktis untuk Penyimpan Kunci.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/adapters/auth/keyring) sebelum menjalankan prosedur ini.
+Gunakan akun dengan brankas dan konten terlindungi, misalnya percakapan terenkripsi.
 
 ## Contoh
 
-Komponen ini tidak menyatakan titik masuk baris perintah mandiri. Gunakan fitur pemiliknya atau [prosedur penerapan](/docs/devops/usage) untuk mengonfigurasi instalasi; [referensi teknis](/docs/adapters/auth/keyring/technical) mencantumkan antarmuka dan batasnya.
+Buka konten terlindungi, periksa fitur peminta akses, lalu buka kunci brankas. Periksa entri dan aktivitas di Pengaturan, kemudian kunci kembali.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Penyimpan Kunci yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/adapters/auth/keyring/technical) sebelum mengulangi operasi tulis.
+Hanya brankas terbuka yang menyediakan rahasia. Pembatalan tetap mengunci konten; tombol kunci mengambang memungkinkan percobaan manual berikutnya.
 
 ## Pemecahan Masalah
 
-Jika Penyimpan Kunci tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Ulangi pembacaan status yang gagal sebelum membuat brankas. Kata sandi terlupa tidak dapat mendekripsi entri; pengaturan ulang destruktif juga menghapus akses ke ruang terenkripsi terkait.

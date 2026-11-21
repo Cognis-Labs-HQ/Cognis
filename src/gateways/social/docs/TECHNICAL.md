@@ -18,7 +18,7 @@ The Profile adapter publishes `social:profile:identity` to both platform and mod
 
 ## Configuration
 
-Configuration is supplied through the owning gateway. Social Features declares no additional configuration in its manifest.
+Enabled Social adapters contribute profiles, rooms and signaling independently. Their bootstrap contexts publish bounded registration hooks and resolve shared account services through ctx.
 
 ## Behavior
 
@@ -122,7 +122,7 @@ HTTP routes authenticate and authorize the acting user. Capabilities are the tru
 
 ## Security
 
-Access to Social Features is governed by the caller and its owning gateway. Enabling a component does not grant additional account permissions.
+Adapters receive bounded registration hooks and ctx capabilities. Room membership, blocks and profile visibility are checked by the operation owner; the gateway does not grant access merely because an adapter is enabled.
 
 ## Reference
 

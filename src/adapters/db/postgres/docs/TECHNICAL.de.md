@@ -55,8 +55,10 @@ Für Adaptertests `COGNIS_TEST_POSTGRES_URL` auf eine entbehrliche PostgreSQL-Te
 
 ## Sicherheit
 
-Der Zugriff auf PostgreSQL unterliegt dem Aufrufer und dem zuständigen Funktionsdienst. Die Aktivierung erweitert keine Kontorechte.
+Datenbankzugang und Transportschutz gehören zur Bereitstellung. Binde Werte als Parameter; prüfe Anwendungsrechte vor dem Datenbankaufruf.
 
 ## Referenz
 
-Quellcode und Paketmetadaten: `src/adapters/db/postgres/`.
+- [src/adapters/db/postgres/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/postgres/manifest.json)
+- [src/adapters/db/postgres/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/postgres/package.json)
+- [src/adapters/db/postgres/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/postgres/index.ts)

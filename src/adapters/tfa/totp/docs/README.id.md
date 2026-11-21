@@ -4,15 +4,15 @@ Verifikasi proses masuk menggunakan kode terkini dari aplikasi autentikator Anda
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/settings) sesuai izin akun Anda.
+Verifikasi masuk dengan kode enam digit dari aplikasi autentikator.
 
 ## Sebelum Memulai
 
-Pastikan Verifikasi Autentikator aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Pasang autentikator dan pastikan waktu perangkat akurat.
 
 ## Langkah Awal
 
-Buka [fitur ini](/settings) dan pilih tindakan yang diperlukan.
+Tambahkan metode autentikator di pengaturan keamanan akun.
 
 ## Pelajari Lebih Lanjut
 

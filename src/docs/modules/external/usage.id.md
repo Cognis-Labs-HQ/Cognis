@@ -4,16 +4,41 @@ Prosedur praktis untuk Modul Eksternal.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/modules/external) sebelum menjalankan prosedur ini.
+Administrator memerlukan sumber tepercaya dan dependensi kompatibel.
 
 ## Contoh
 
-Komponen ini tidak menyatakan titik masuk baris perintah mandiri. Gunakan fitur pemiliknya atau [prosedur penerapan](/docs/devops/usage) untuk mengonfigurasi instalasi; [referensi teknis](/docs/modules/external/technical) mencantumkan antarmuka dan batasnya.
+Pasang paket tepercaya, tinjau pengaturan serta izin, aktifkan, lalu periksa halaman atau tindakannya.
+
+Repositori mendeklarasikan identitas stabil dan titik masuk bootstrap di `manifest.json`:
+
+<!-- prettier-ignore -->
+```json
+{
+  "uuid": "123e4567-e89b-42d3-a456-426614174000",
+  "id": "example-module",
+  "version": "1.0.0",
+  "entrypoints": { "bootstrap": "bootstrap.js" }
+}
+```
+
+Bootstrap menyumbangkan perilaku hanya melalui konteks terbatasnya dan mengembalikan pembersihan untuk sumber daya miliknya:
+
+<!-- prettier-ignore -->
+```js
+export async function bootstrapModule(ctx) {
+  ctx.registerFlow({ id: 'example-module:constructPage', stages: ['content'] });
+  ctx.flow.extend('example-module:constructPage', 'content',
+    { id: 'example-module:content' }, async () => ({ ready: true }));
+}
+```
+
+Administrator memasang repositori dari **Modul**, meninjau integritas dan dependensinya, mengaktifkannya secara eksplisit, lalu dapat menonaktifkannya untuk menghapus semua perilaku UI dan backend yang terdaftar tanpa memulai ulang Cognis.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Modul Eksternal yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/modules/external/technical) sebelum mengulangi operasi tulis.
+Siklus hidup modul memiliki rute dan registrasi; penonaktifan menghapus kontribusinya.
 
 ## Pemecahan Masalah
 
-Jika Modul Eksternal tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Periksa validasi paket, dependensi, dan log. Deklarasi fitur tidak memberi akses ke implementasi privat komponen lain.

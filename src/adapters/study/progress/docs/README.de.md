@@ -4,15 +4,15 @@ Prüfen Sie gespeicherte Übungsergebnisse und den Fortschritt Ihrer Lernaktivit
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/study) entsprechend Ihren Kontorechten.
+Bewahre Lernversuche, Wiederholungspläne und mögliche Belohnungen über Sitzungen hinweg.
 
 ## Vor dem Start
 
-Prüfen Sie, ob Lernfortschritt aktiviert ist und Ihr Konto den Vorgang ausführen darf.
+Übe mit einer aktiven Lernfunktion; Klassendaten verlangen aktuellen Zugriff.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/study) und wählen Sie die gewünschte Aktion.
+Schließe eine unterstützte Lernkarten- oder Zeichenübung ab.
 
 ## Weitere Informationen
 

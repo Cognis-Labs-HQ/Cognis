@@ -4,15 +4,15 @@ Create an account without an invitation when public registration is enabled.
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/register) according to your account permissions.
+Let new users create ordinary local accounts without invitation tokens.
 
 ## Before You Start
 
-Check that Public Registration is enabled and that your account has permission for the operation.
+An administrator must explicitly enable public registration.
 
 ## Get Started
 
-Open [the feature](/register) and choose the action you need.
+Open the registration form offered by the installation.
 
 ## Learn More
 

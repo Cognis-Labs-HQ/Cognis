@@ -4,9 +4,11 @@ Praktische Abläufe für Komponentenwiederherstellung.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/component-recovery).
+Nutze ein berechtigtes Administratorkonto und sichere vor Codeänderungen.
 
 ## Beispiele
+
+Starte `cognisctl component:list`, prüfe die Komponente mit component:info und behebe gemeldete Abhängigkeits- oder Konfigurationsfehler vor erneutem Versuch.
 
 ```sh
 cognisctl component:upgrade module study-language-en
@@ -22,8 +24,8 @@ cognisctl component:disable module analytics --force
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von Komponentenwiederherstellung. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/component-recovery/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Erfolgreiche Wiederherstellung registriert ihre Funktionen; abhängige Funktionen bleiben bei fehlenden Voraussetzungen blockiert.
 
 ## Fehlerbehebung
 
-Falls Komponentenwiederherstellung nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Erzwinge Aktionen erst nach Prüfung ihrer Folgen. Fehlende Fähigkeiten erlauben kein Umgehen der Komponentengrenzen.

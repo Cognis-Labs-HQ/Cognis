@@ -4,15 +4,11 @@ The public interfaces and operational rules of SQLite.
 
 ## Interfaces
 
-SQLite is integrated through the owning gateway; its manifest identifies the component and required dependencies.
+`SqliteDbGateway(client)` implements DatabaseGateway. SqliteClient must supply all(statement, params), run(statement, params) returning changes, and exec(statement). Structured commands use SQLite placeholders and conflict clauses.
 
 ## Configuration
 
-### Configuration
-
-Select the SQLite backend with `DB_TYPE=sqlite` when your deployment is wired to use this adapter. Configure the database file path through the SQLite settings used by your runtime environment, such as `SQLITE_PATH` where supported.
-
-See the [Database Gateway documentation](/docs/gateways/db) for general gateway configuration details.
+The embedding runtime creates and configures the client and file path. This adapter declares no SQLITE_PATH setting or standard executor factory; DB_TYPE=sqlite alone cannot select it in the bundled server.
 
 ## Behavior
 
@@ -29,8 +25,10 @@ The SQLite adapter provides a lightweight database gateway for SQLite-backed dep
 
 ## Security
 
-Access to SQLite is governed by the caller and its owning gateway. Enabling a component does not grant additional account permissions.
+Bind data through parameters and protect the database file and backups using host filesystem permissions. Application authorization must run before invoking the adapter.
 
 ## Reference
 
-Source and package metadata: `src/adapters/db/sqlite/`.
+- [src/adapters/db/sqlite/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/sqlite/manifest.json)
+- [src/adapters/db/sqlite/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/sqlite/package.json)
+- [src/adapters/db/sqlite/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/sqlite/index.ts)

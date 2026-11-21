@@ -4,9 +4,11 @@ Prosedur praktis untuk Pemulihan Komponen.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/component-recovery) sebelum menjalankan prosedur ini.
+Gunakan administrator berwenang dan cadangan sebelum mengubah kode terpasang.
 
 ## Contoh
+
+Jalankan `cognisctl component:list`, periksa komponen dengan component:info, dan atasi masalah dependensi atau konfigurasi sebelum mencoba lagi.
 
 ```sh
 cognisctl component:upgrade module study-language-en
@@ -22,8 +24,8 @@ cognisctl component:disable module analytics --force
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Pemulihan Komponen yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/component-recovery/technical) sebelum mengulangi operasi tulis.
+Pemulihan berhasil mengembalikan registrasi; fitur tergantung tetap diblokir bila persyaratan belum terpenuhi.
 
 ## Pemecahan Masalah
 
-Jika Pemulihan Komponen tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Pakai operasi paksa hanya setelah memahami dampaknya. Kapabilitas tidak tersedia bukan izin melewati batas komponen.

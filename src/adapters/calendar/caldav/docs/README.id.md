@@ -4,15 +4,15 @@ Baca kalender Cognis bersama melalui aplikasi kalender yang kompatibel.
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/calendar) sesuai izin akun Anda.
+Langganan kalender yang didukung melalui perangkat lunak kompatibel.
 
 ## Sebelum Memulai
 
-Pastikan CalDAV aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Feed memerlukan kalender publik atau token akses privat valid.
 
 ## Langkah Awal
 
-Buka [fitur ini](/calendar) dan pilih tindakan yang diperlukan.
+Ambil alamat langganan melalui ekspor CalDAV Kalender.
 
 ## Pelajari Lebih Lanjut
 

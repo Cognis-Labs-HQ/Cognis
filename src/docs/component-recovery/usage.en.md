@@ -4,9 +4,11 @@ Practical procedures for Component Recovery.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/component-recovery) before performing these procedures.
+Use an authorized administrator and a backup before changing installed code.
 
 ## Examples
+
+Run `cognisctl component:list`, inspect the relevant component with component:info and resolve its reported dependency or configuration failure before retrying.
 
 ```sh
 cognisctl component:upgrade module study-language-en
@@ -22,8 +24,8 @@ cognisctl component:disable module analytics --force
 
 ## Expected Results
 
-The example uses the documented interface of Component Recovery. Confirm the response or saved state described in [Technical](/docs/component-recovery/technical) before repeating a write operation.
+A successful recovery restores owned registrations; dependent features remain blocked while requirements are unmet.
 
 ## Troubleshooting
 
-If Component Recovery is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+Use forced operations only after understanding their impact. An unavailable capability is not permission to bypass component boundaries.

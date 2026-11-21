@@ -4,11 +4,11 @@ The public interfaces and operational rules of Component Recovery.
 
 ## Interfaces
 
-This topic is reference material and does not expose an independent endpoint. Examples use the public interfaces of the components described below.
+component:list and component:info inspect state. component:enable, component:disable and component:upgrade execute owner-authorized lifecycle operations; required or locked host components retain their protections.
 
 ## Configuration
 
-This documentation topic has no runtime configuration of its own. Operational settings belong to the relevant component.
+External module channel selections persist in config/component-channels.json. Bundled gateways, adapters and core modules update with the host deployment; they do not offer independent marketplace channels.
 
 ## Behavior
 
@@ -43,7 +43,7 @@ cognisctl -v component:info module study-language-en
 cognisctl --version
 ```
 
-### Unchanged Operations
+### Lifecycle Controls
 
 Lifecycle messages use sentence case and preserve component identifiers. Enable and disable skip targets already in the requested state. Upgrade compares the installed commit with the selected catalog branch or release commit before disabling or installing anything; equal version strings alone do not imply equal code. Installed channel provenance is retained when no explicit channel is selected. Refresh the marketplace catalog to discover newer source revisions. Missing revision information requires an explicit `--force` rather than a blind reinstall. `--force` on enable, disable or upgrade repeats the selected operation, including with `--all`, while retaining authorization, integrity, dependency and required-host protections.
 
@@ -60,8 +60,9 @@ Browser provider ownership is captured from the registering bootstrap scope, bef
 
 ## Security
 
-Reading documentation does not grant permission to execute its examples. The owning component authorizes each operation.
+Recovery retains caller authorization, package validation and required-component protection. A timeout leaves uncertain installations disabled; a forced retry does not waive integrity or dependency checks.
 
 ## Reference
 
-Source and package metadata: `src/docs/component-recovery/`.
+- [src/tooling/cli/component-commands.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/tooling/cli/component-commands.ts)
+- [src/core/services/gateway-service.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/services/gateway-service.ts)

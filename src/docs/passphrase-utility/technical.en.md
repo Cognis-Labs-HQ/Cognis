@@ -4,11 +4,11 @@ The public interfaces and operational rules of Passphrase Utility.
 
 ## Interfaces
 
-This topic is reference material and does not expose an independent endpoint. Examples use the public interfaces of the components described below.
+reuse:generatePassphrase is a synchronous ctx capability returning a string. Invalid word count or separator length throws RangeError; invalid types or capitalization throw TypeError.
 
 ## Configuration
 
-This documentation topic has no runtime configuration of its own. Operational settings belong to the relevant component.
+words must be a safe integer from 1 to 128. separator defaults to a hyphen and is limited to sixteen characters. capitalization accepts lowercase (default), uppercase or titlecase.
 
 ## Behavior
 
@@ -16,22 +16,9 @@ This documentation topic has no runtime configuration of its own. Operational se
 
 The API runtime provides `reuse:generatePassphrase` through `ctx` so modules such as Jitsi Meet can generate readable secrets without importing API internals.
 
-### Usage examples
-
-Retrieve the capability from the module bootstrap context and request the desired word count and presentation:
-
-```js
-const generatePassphrase = ctx.capabilities.require("reuse:generatePassphrase");
-const passphrase = generatePassphrase({
-    words: 6,
-    separator: "-",
-    capitalization: "titlecase",
-});
-```
-
 ## Security
 
-Reading documentation does not grant permission to execute its examples. The owning component authorizes each operation.
+Each word is selected using Node crypto.randomInt. Generation does not store or authorize the secret; callers must protect it and must not log the resulting passphrase.
 
 ## Reference
 

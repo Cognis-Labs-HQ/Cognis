@@ -4,15 +4,15 @@ Read application log messages in the server console or container output.
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/administration) according to your account permissions.
+Send application logs to the process console.
 
 ## Before You Start
 
-Check that Console Logs is enabled and that your account has permission for the operation.
+Administrators configure output; operators capture console logs in their hosting system.
 
 ## Get Started
 
-Open [the feature](/administration) and choose the action you need.
+Open Logging settings and select console output.
 
 ## Learn More
 

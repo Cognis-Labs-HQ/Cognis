@@ -4,15 +4,15 @@ Periksa tindakan yang diizinkan bagi setiap peran akun sebelum memberikan akses 
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/) sesuai izin akun Anda.
+Tinjau siapa dapat membaca, membuat, atau mengubah sumber daya terlindungi.
 
 ## Sebelum Memulai
 
-Operasi yang dibahas dapat memerlukan izin akun atau administrator. Membaca topik tidak mengaktifkan fitur opsionalnya.
+Peran saja belum cukup; kepemilikan, keanggotaan, dan visibilitas juga berlaku.
 
 ## Langkah Awal
 
-Buka [fitur ini](/) dan pilih tindakan yang diperlukan.
+Tentukan sumber daya dan akun pelaku.
 
 ## Pelajari Lebih Lanjut
 

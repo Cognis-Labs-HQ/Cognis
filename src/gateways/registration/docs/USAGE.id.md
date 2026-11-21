@@ -4,20 +4,16 @@ Prosedur praktis untuk Pendaftaran.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/gateways/registration) sebelum menjalankan prosedur ini.
+Pemilik mengatur kebijakan; penerbitan bergantung pada peran dan penyedia.
 
 ## Contoh
 
-- Pilih metode yang tersedia bagi peran Anda; undangan email dan token pendaftaran memiliki langkah pengiriman berbeda.
-- Periksa status dan kedaluwarsa; salin token hanya untuk penerima yang dituju dan cabut undangan tak terpakai jika perlu.
-- Tinjau pendaftaran publik dan izin undangan sebelum mengubah siapa yang dapat membuat akun.
-- Simpan perubahan kebijakan yang ditinjau lalu periksa opsi pada halaman undangan.
-- Periksa penerima dan status undangan sebelum menyalin atau membagikannya. Cabut undangan yang tidak boleh digunakan lagi.
+Tinjau kebijakan, terbitkan undangan yang diizinkan, lalu tukarkan dengan alamat tujuan; formulir publik hanya berlaku bila pendaftaran publik aktif.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Pendaftaran yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/gateways/registration/technical) sebelum mengulangi operasi tulis.
+Pembuatan akun mengikuti penyedia dan kebijakan; kegagalan penyimpanan akun tidak memakai undangan.
 
 ## Pemecahan Masalah
 
-Jika Pendaftaran tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Periksa kedaluwarsa, kecocokan alamat, dan batas penerbitan. Masuk eksternal tidak melewati otorisasi pendaftaran.

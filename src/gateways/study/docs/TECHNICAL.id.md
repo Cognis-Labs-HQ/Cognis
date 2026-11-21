@@ -18,7 +18,7 @@ Audio baru diambil ketika pelajar meminta pemutaran. Membuka kartu saja tidak me
 
 ## Konfigurasi
 
-Konfigurasi disediakan melalui gerbang pemilik. Belajar tidak menyatakan konfigurasi tambahan dalam manifesnya.
+Pendaftaran bahasa menentukan navigasi dan konten. Modul serta adapter mendaftarkan aktivitas, kamus, dan halaman; penyedia hilang hanya menghapus pilihannya.
 
 ## Perilaku
 
@@ -40,12 +40,6 @@ Kartu kalimat memiliki bidang audio opsional. Pada pemutaran pertama, Cognis men
 
 Komposisi kalimat meminta label dan pelafalan utama dari transformasi terpilih, termasuk jalur bertingkat. Jika rekaman varian tidak tersedia, pemutaran gagal secara jelas alih-alih menelusuri referensi pelafalan bentuk dasar. Aturan yang sama berlaku untuk pemutaran varian langsung dan penyusun bertingkat.
 
-### Penggunaan
-
-Server merencanakan konfirmasi penghapusan menggunakan versi skema tersimpan dan menyertakan kartu dependan yang tidak ada di halaman saat ini. Klien gateway Study menyediakan pemeriksaan penghapusan tanpa perubahan data.
-
-`POST /api/v1/study/library/entries/deletion-plan`
-
 ### Spesifikasi teknis
 
 `{ "entryIds": ["entry-id"] }` → `{ "data": { "entryIds": ["entry-id"], "entries": [{ "id": "entry-id", "label": "..." }] } }`
@@ -65,10 +59,6 @@ Flashcards memakai `/study/<iso>/flashcards` dan `/study/<iso>/flashcards/<deck-
 Pada ponsel dan tablet, tautan halaman Study memakai baris bergulir mendatar dan menampilkan halaman terpilih setelah ukuran atau fon berubah. Bahasa, pencarian kamus, dan pengaturan berbagi baris berikutnya. Ikon pencarian membuka dialog yang mempertahankan formulir asli, penyedia terpilih, dan isian. Penutupan mengembalikan fokus; navigasi atau perubahan ke ukuran desktop menutup dialog. Ikhtisar memakai pengguliran dokumen. Saat digulir, navigasi utama tetap tersedia dan baris merek dilipat.
 
 Nama bahasa dipersingkat menjadi kode bahasa lalu bendera ketika ruang terbatas. Nama lengkap tetap tersedia sebagai label aksesibel dan tooltip. Bahasa tanpa bendera tetap menampilkan kode. Saat ruang bertambah, nama lengkap ditampilkan kembali.
-
-### Contoh penggunaan
-
-Buka `/study/ja/flashcards` untuk deck Jepang; memilih Inggris membuka `/study/en/flashcards`.
 
 ### Spesifikasi teknis
 

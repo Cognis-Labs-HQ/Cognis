@@ -4,17 +4,15 @@ Terima pemberitahuan aktivitas terkait melalui metode pengiriman yang aktif untu
 
 ## Yang Dapat Anda Lakukan
 
-- Pilih kanal tersedia yang menerima setiap kategori notifikasi.
-- Tinjau kombinasi yang dipilih lalu simpan; kanal yang tidak tersedia tidak dapat diaktifkan di sini.
-- Pilih penerima dan kategori, lalu tulis subjek dan pesan untuk notifikasi uji.
+Pilih pengiriman notifikasi per kategori dan kelola alamat terverifikasi.
 
 ## Sebelum Memulai
 
-Pastikan Notifikasi aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Masuk untuk preferensi pribadi; administrator mengatur penyedia dan siaran.
 
 ## Langkah Awal
 
-Buka [fitur ini](/settings) dan pilih tindakan yang diperlukan.
+Buka preferensi notifikasi di Pengaturan.
 
 ## Pelajari Lebih Lanjut
 

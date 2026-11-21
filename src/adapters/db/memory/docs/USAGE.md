@@ -4,16 +4,16 @@ Practical procedures for In-Memory Database.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/adapters/db/memory) before performing these procedures.
+This test double supplies neither persistence nor transaction rollback.
 
 ## Examples
 
-This component does not declare a standalone command-line entry point. Use its owning feature or the [deployment procedures](/docs/devops/usage) to configure the installation; the [technical reference](/docs/adapters/db/memory/technical) lists its interfaces and constraints.
+Instantiate MemoryDatabaseGateway, run query or execute, then inspect getQueries() for statement and params.
 
 ## Expected Results
 
-The example uses the documented interface of In-Memory Database. Confirm the response or saved state described in [Technical](/docs/adapters/db/memory/technical) before repeating a write operation.
+Query returns empty rows and rowCount zero; execute returns affectedRows zero.
 
 ## Troubleshooting
 
-If In-Memory Database is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+The standard loader cannot select this class through DB_TYPE alone; persistence tests need a real database.

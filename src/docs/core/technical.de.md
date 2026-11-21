@@ -23,7 +23,7 @@ export interface AuthAccountStore {
         username: string;
         passwordHash: string;
         email?: string;
-        isAdmin?: boolean;
+        role?: string;
     }): Promise<AuthAccount>;
 }
 ```
@@ -39,7 +39,7 @@ export interface AuthAccountStore {
 
 ## Konfiguration
 
-Dieses Dokumentationsthema hat keine eigene Laufzeitkonfiguration. Betriebseinstellungen gehören zur zuständigen Komponente.
+Core erhält Speicher und Register vom Hoststart. Datenbankverbindungen stammen nicht aus Benutzereinstellungen; Betreiber konfigurieren diese Dienste.
 
 ## Verhalten
 
@@ -118,8 +118,9 @@ Verschachtelte Bootstrap-Bereiche erben die Berechtigung ihres übergeordneten B
 
 ## Sicherheit
 
-Das Lesen der Dokumentation berechtigt nicht zur Ausführung ihrer Beispiele. Die zuständige Komponente autorisiert jeden Vorgang.
+Startbereiche identifizieren Eigentümer. Handler prüfen vor Änderungen; eine gefundene Fähigkeit beweist kein Benutzerrecht.
 
 ## Referenz
 
-Quellcode und Paketmetadaten: `src/docs/core/`.
+- [src/core/ctx/types.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/ctx/types.ts)
+- [src/core/ctx/flow-api.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/ctx/flow-api.ts)

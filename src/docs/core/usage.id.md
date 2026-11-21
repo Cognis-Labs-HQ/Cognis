@@ -4,16 +4,16 @@ Prosedur praktis untuk Inti.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/core) sebelum menjalankan prosedur ini.
+Perubahan administrasi memerlukan akun berwenang.
 
 ## Contoh
 
-Komponen ini tidak menyatakan titik masuk baris perintah mandiri. Gunakan fitur pemiliknya atau [prosedur penerapan](/docs/devops/usage) untuk mengonfigurasi instalasi; [referensi teknis](/docs/core/technical) mencantumkan antarmuka dan batasnya.
+Tinjau status serta dependensi di Administrasi, lalu baca dokumentasi sebelum mengaktifkan atau mengatur.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Inti yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/core/technical) sebelum mengulangi operasi tulis.
+Core mengoordinasikan fitur; akses privat tetap dimiliki operasi terkait.
 
 ## Pemecahan Masalah
 
-Jika Inti tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Kegagalan dependensi dapat menyembunyikan beberapa tindakan. Perbaiki penyedia, bukan melewati pemeriksaan akses.

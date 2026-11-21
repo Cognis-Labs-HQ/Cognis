@@ -4,16 +4,16 @@ Practical procedures for Authenticator Verification.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/adapters/tfa/totp) before performing these procedures.
+Install an authenticator and keep device time accurate.
 
 ## Examples
 
-This component does not declare a standalone command-line entry point. Use its owning feature or the [deployment procedures](/docs/devops/usage) to configure the installation; the [technical reference](/docs/adapters/tfa/totp/technical) lists its interfaces and constraints.
+Scan the setup code or enter the manual secret, then confirm with the current six-digit code.
 
 ## Expected Results
 
-The example uses the documented interface of Authenticator Verification. Confirm the response or saved state described in [Technical](/docs/adapters/tfa/totp/technical) before repeating a write operation.
+Confirmation enables the method; each code uses a thirty-second period with one adjacent period allowed in either direction.
 
 ## Troubleshooting
 
-If Authenticator Verification is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+Check device time and selected algorithm. Protect the setup secret: anyone holding it can generate codes.

@@ -4,15 +4,15 @@ Use the Cognis interface to move between features and choose the appearance and 
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/) according to your account permissions.
+Navigate Cognis and choose a theme, language and preferred font.
 
 ## Before You Start
 
-The operations discussed here may require account or administrator permissions. Reading a topic does not enable its optional features.
+Sign in to save account preferences.
 
 ## Get Started
 
-Open [the feature](/) and choose the action you need.
+Open Settings and find appearance and language controls.
 
 ## Learn More
 

@@ -4,11 +4,11 @@ Antarmuka publik dan aturan operasional UI.
 
 ## Antarmuka
 
-Topik ini merupakan referensi dan tidak menyediakan titik akhir mandiri. Contoh memakai antarmuka publik komponen yang dijelaskan di bawah.
+UIRegistry menerbitkan direktori aset, plugin navigasi, bagian administrasi, dan perluasan halaman. Penyedia peramban memakai uiCtx serta sinyal pembersihan; halaman memakai Page Composer.
 
 ## Konfigurasi
 
-Topik dokumentasi ini tidak memiliki konfigurasi waktu jalan sendiri. Pengaturan operasional dimiliki komponen terkait.
+Preferensi akun memilih tema, bahasa, dan font. Katalog komponen menyediakan terjemahan dan metadata; opsi tata letak tetap pada Page Composer.
 
 ## Perilaku
 
@@ -61,13 +61,9 @@ Keluar membersihkan data sesi pribadi tanpa menunggu pemeliharaan rute publik ol
 
 Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
 
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
-
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
-
 ## Keamanan
 
-Membaca dokumentasi tidak memberikan izin menjalankan contohnya. Komponen pemilik mengotorisasi setiap operasi.
+Navigasi tersembunyi bukan kontrol akses. Penyedia memakai kapabilitas pemilik dan membatalkan pekerjaan saat unmount atau pergantian akun; data privat terikat akun.
 
 ## Referensi
 

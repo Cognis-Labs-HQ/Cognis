@@ -4,15 +4,15 @@ Invite someone to create an account using a time-limited registration token.
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/register) according to your account permissions.
+Invite people with an email-bound, single-use registration link.
 
 ## Before You Start
 
-Check that Registration Invitations is enabled and that your account has permission for the operation.
+Invitation policy controls issuance; standalone tokens require administrator or owner access.
 
 ## Get Started
 
-Open [the feature](/register) and choose the action you need.
+Use Invite or the Users invitation controls.
 
 ## Learn More
 

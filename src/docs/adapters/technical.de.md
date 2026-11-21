@@ -4,13 +4,15 @@
 
 ## Schnittstellen
 
-Dieses Thema ist eine Referenz und stellt keinen eigenen Endpunkt bereit. Beispiele verwenden die öffentlichen Schnittstellen der unten beschriebenen Komponenten.
+Adapter liefern Fabriken und Starthooks ihres Gateways. Datenbanken implementieren strukturierte Executorfabriken, Anmeldung AuthProviderAdapter und Sender Zustellmetadaten samt Diagnosen.
 
 ## Konfiguration
 
-Dieses Dokumentationsthema hat keine eigene Laufzeitkonfiguration. Betriebseinstellungen gehören zur zuständigen Komponente.
+Adapter deklarieren Einstellungen über ihr Gateway. Anmeldung, Benachrichtigung und Datenbank haben verschiedene Schemas; ein Manifest beweist keine implementierte Verbindung.
 
 ## Verhalten
+
+OIDC und SAML benötigen hier einen injizierten Protokollclient. Einstellungsformulare erzeugen keinen Client; prüfe vor Bereitstellung die Technikansichten.
 
 ### Überblick
 
@@ -70,8 +72,9 @@ Um einen neuen Adapter für ein vorhandenes Gateway hinzuzufügen, ein Verzeichn
 
 ## Sicherheit
 
-Das Lesen der Dokumentation berechtigt nicht zur Ausführung ihrer Beispiele. Die zuständige Komponente autorisiert jeden Vorgang.
+Adapter besitzen Transportgeheimnisse und Verträge. Tests dürfen Passwörter nicht offenlegen; Deaktivieren räumt Registrierungen auf.
 
 ## Referenz
 
-Quellcode und Paketmetadaten: `src/docs/adapters/`.
+- [src/gateways/reuse/adapter-bootstrap.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/reuse/adapter-bootstrap.ts)
+- [src/gateways/shared.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/shared.ts)

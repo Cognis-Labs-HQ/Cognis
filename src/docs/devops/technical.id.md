@@ -4,7 +4,7 @@ Antarmuka publik dan aturan operasional DevOps.
 
 ## Antarmuka
 
-Topik ini merupakan referensi dan tidak menyediakan titik akhir mandiri. Contoh memakai antarmuka publik komponen yang dijelaskan di bawah.
+Compose menjalankan aplikasi dan nginx dengan basis data. docker/entrypoint.sh membuat DATABASE_URL dari kolom penyedia bila belum ada; docker/healthcheck.sh memeriksa aplikasi.
 
 ## Konfigurasi
 
@@ -78,8 +78,10 @@ Untuk MariaDB, tetapkan `MARIADB_PASSWORD`, lalu mulai `docker-compose.mariadb.y
 
 ## Keamanan
 
-Membaca dokumentasi tidak memberikan izin menjalankan contohnya. Komponen pemilik mengotorisasi setiap operasi.
+Jalankan aplikasi sebagai pengguna non-root image. Simpan kredensial dan DATA_ENCRYPTION_KEY dalam rahasia penerapan, pertahankan kunci stabil, dan terminasi TLS di proxy tepercaya.
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/docs/devops/`.
+- [docker/Dockerfile](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/docker/Dockerfile)
+- [docker/entrypoint.sh](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/docker/entrypoint.sh)
+- [docker/healthcheck.sh](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/docker/healthcheck.sh)

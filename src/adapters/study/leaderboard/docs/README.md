@@ -4,17 +4,15 @@ Compare eligible learning achievements while respecting the visibility chosen fo
 
 ## What You Can Do
 
-- Choose a ranking to see its participants and scoring period.
-- Compare scores and rank movement; highlighted rows identify your own position when available.
-- Find your row and compare scores within the selected ranking. Switch rankings to compare the activity each one measures.
+View standings based on verified learning activity in permitted groups.
 
 ## Before You Start
 
-Check that Leaderboard is enabled and that your account has permission for the operation.
+Sign in; classroom boards require current membership and some events require opting in.
 
 ## Get Started
 
-Open [the feature](/study/leaderboard) and choose the action you need.
+Open Leaderboard in Study and choose an available board.
 
 ## Learn More
 

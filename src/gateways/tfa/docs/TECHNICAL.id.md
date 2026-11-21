@@ -61,7 +61,7 @@ Setelah pembatalan pendaftaran dikonfirmasi server, navigasi ditawarkan kembali 
 
 ## Konfigurasi
 
-Konfigurasi disediakan melalui gerbang pemilik. Autentikasi Dua Faktor tidak menyatakan konfigurasi tambahan dalam manifesnya.
+Adapter mendeklarasikan metadata dan skema. Akun mengelola metode terkonfirmasi; ketersediaan penyedia menentukan metode yang dapat ditambahkan atau diuji.
 
 ## Perilaku
 
@@ -106,7 +106,7 @@ Katalog adaptor khusus administrator di `GET /api/v1/gateways/tfa/adapters` meny
 
 ## Keamanan
 
-Akses Autentikasi Dua Faktor diatur oleh pemanggil dan gerbang pemilik. Mengaktifkan komponen tidak menambah izin akun.
+Penyiapan, konfirmasi, penghapusan, dan verifikasi memakai alur terlindungi. Adapter memvalidasi tantangan; metode belum terkonfirmasi atau gagal tidak dianggap berhasil.
 
 ## Referensi
 

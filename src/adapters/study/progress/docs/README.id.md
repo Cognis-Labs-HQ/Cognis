@@ -4,15 +4,15 @@ Tinjau hasil latihan tersimpan dan kemajuan dari aktivitas belajar Anda.
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/study) sesuai izin akun Anda.
+Simpan percobaan belajar, jadwal tinjauan, dan hadiah latihan antarsesi.
 
 ## Sebelum Memulai
 
-Pastikan Kemajuan Belajar aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Berlatih melalui aktivitas Study aktif; rekaman kelas memerlukan akses saat ini.
 
 ## Langkah Awal
 
-Buka [fitur ini](/study) dan pilih tindakan yang diperlukan.
+Selesaikan aktivitas Kartu Belajar atau Menggambar yang didukung.
 
 ## Pelajari Lebih Lanjut
 

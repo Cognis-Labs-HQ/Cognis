@@ -59,8 +59,10 @@ Nicht verantwortlich für: HTTP-Auslieferung von Dateien (das erledigen die Rout
 
 ## Sicherheit
 
-Der Zugriff auf Lokaler Dateispeicher unterliegt dem Aufrufer und dem zuständigen Funktionsdienst. Die Aktivierung erweitert keine Kontorechte.
+Namensraum- und Schlüsselprüfung verhindern Pfadüberschreitungen; Schreibziele liegen unter uploads. Das Files-Gateway prüft ACLs und Kontingente vor Speicheraufrufen.
 
 ## Referenz
 
-Quellcode und Paketmetadaten: `src/adapters/file/local/`.
+- [src/adapters/file/local/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/file/local/manifest.json)
+- [src/adapters/file/local/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/file/local/package.json)
+- [src/adapters/file/local/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/file/local/index.ts)

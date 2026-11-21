@@ -4,18 +4,16 @@ Praktische Abläufe für PostgreSQL.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/adapters/db/postgres).
+Bereite eine für die Anwendung erreichbare PostgreSQL-Datenbank vor.
 
 ## Beispiele
 
-```sh
-DB_TYPE=postgresql
-```
+Setze DB_TYPE=postgresql und DATABASE_URL, starte neu und prüfe die Schemainitialisierung vor dem Benutzerzugriff.
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von PostgreSQL. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/adapters/db/postgres/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Die Anwendung nutzt den Verbindungspool; Transaktionen werden gemeinsam bestätigt oder bei Fehlern zurückgesetzt.
 
 ## Fehlerbehebung
 
-Falls PostgreSQL nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Prüfe Verbindungslimits, Zugangsdaten und Datenbankrechte. Ein Anbieterwechsel kopiert keine vorhandenen Daten.

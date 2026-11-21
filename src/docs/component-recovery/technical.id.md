@@ -4,11 +4,11 @@ Antarmuka publik dan aturan operasional Pemulihan Komponen.
 
 ## Antarmuka
 
-Topik ini merupakan referensi dan tidak menyediakan titik akhir mandiri. Contoh memakai antarmuka publik komponen yang dijelaskan di bawah.
+component:list dan component:info memeriksa keadaan. component:enable, component:disable, dan component:upgrade menjalankan operasi berizin; komponen wajib atau terkunci tetap terlindungi.
 
 ## Konfigurasi
 
-Topik dokumentasi ini tidak memiliki konfigurasi waktu jalan sendiri. Pengaturan operasional dimiliki komponen terkait.
+Pilihan kanal modul eksternal disimpan di config/component-channels.json. Gateway, adapter, dan modul inti bawaan diperbarui bersama host, bukan kanal mandiri.
 
 ## Perilaku
 
@@ -60,8 +60,9 @@ Kepemilikan penyedia browser dicatat dari lingkup bootstrap yang mendaftarkannya
 
 ## Keamanan
 
-Membaca dokumentasi tidak memberikan izin menjalankan contohnya. Komponen pemilik mengotorisasi setiap operasi.
+Pemulihan mempertahankan otorisasi, validasi paket, dan proteksi wajib. Timeout membiarkan instalasi tak pasti nonaktif; paksaan tidak melewati integritas atau dependensi.
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/docs/component-recovery/`.
+- [src/tooling/cli/component-commands.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/tooling/cli/component-commands.ts)
+- [src/core/services/gateway-service.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/services/gateway-service.ts)

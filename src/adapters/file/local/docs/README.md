@@ -4,15 +4,15 @@ Save uploaded files on the storage provided by the Cognis server.
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/settings) according to your account permissions.
+Keep uploaded media on the Cognis server's local storage.
 
 ## Before You Start
 
-Check that Local File Storage is enabled and that your account has permission for the operation.
+Operators need a writable media directory and persistent storage across container replacements.
 
 ## Get Started
 
-Open [the feature](/settings) and choose the action you need.
+Configure the media location before uploading files.
 
 ## Learn More
 

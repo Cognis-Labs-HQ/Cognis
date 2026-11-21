@@ -108,8 +108,10 @@ Adapter contract registration follows [the shared gateway bootstrap contract](/d
 
 ## Security
 
-Access to Database is governed by the caller and its owning gateway. Enabling a component does not grant additional account permissions.
+The executor is an infrastructure capability, not a user authorization boundary. Callers must authorize operations before structured commands; database credentials and backups remain deployment-managed.
 
 ## Reference
 
-Source and package metadata: `src/gateways/db/`.
+- [src/gateways/db/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/db/manifest.json)
+- [src/gateways/db/bootstrap.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/db/bootstrap.ts)
+- [src/gateways/db/gateway.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/db/gateway.ts)

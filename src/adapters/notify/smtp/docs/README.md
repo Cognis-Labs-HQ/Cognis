@@ -4,15 +4,15 @@ Receive Cognis notifications through the email service configured for this insta
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/settings) according to your account permissions.
+Deliver notification and verification email through your mail server.
 
 ## Before You Start
 
-Check that Email Delivery is enabled and that your account has permission for the operation.
+Administrators need SMTP access and an approved sender address.
 
 ## Get Started
 
-Open [the feature](/settings) and choose the action you need.
+Open Notifications in Administration and configure the email sender.
 
 ## Learn More
 

@@ -407,6 +407,8 @@ Gateways, adapters, and modules are responsible for their own resources. This in
 
 ### Component documentation contract
 
+Documentation must contain component-specific instructions verified against current source: methods, paths, configuration fields, defaults, permissions, persistence and integration limits. Do not treat a declared schema as a working transport implementation. Keep procedures in Usage and contracts in Technical; reject generic filler and broken source references.
+
 Documentation describes the current supported behavior. Do not append journal entries, implementation chronology, per-review notes, bug-fix headings or duplicated paragraphs. Revise the relevant section instead; record release history only in the single branch changelog set.
 
 Every component declares exactly `documentation.readme`, `documentation.usage` and `documentation.technical` in its owning manifest. These point to `docs/README.md`, `docs/USAGE.md` and `docs/TECHNICAL.md`. English uses the unsuffixed file; German, Indonesian and Japanese use `.de.md`, `.id.md` and `.ja.md`. Do not duplicate an English file as `.en.md`.

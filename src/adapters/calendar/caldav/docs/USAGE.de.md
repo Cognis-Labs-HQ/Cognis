@@ -4,16 +4,16 @@ Praktische Abläufe für CalDAV.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/adapters/calendar/caldav).
+Ein Feed benötigt einen öffentlichen Kalender oder gültigen privaten Zugriffstoken.
 
 ## Beispiele
 
-Diese Komponente deklariert keinen eigenständigen Befehlszeileneinstieg. Nutzen Sie die zugehörige Funktion oder die [Bereitstellungsabläufe](/docs/devops/usage) zur Konfiguration; die [technische Referenz](/docs/adapters/calendar/caldav/technical) nennt Schnittstellen und Grenzen.
+Füge die Adresse einem kompatiblen Client hinzu und prüfe öffentlichen oder privaten Zugriff mit den vorgesehenen Rechten.
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von CalDAV. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/adapters/calendar/caldav/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Der Client liest den erlaubten Feed; privater Zugriff bleibt tokengebunden.
 
 ## Fehlerbehebung
 
-Falls CalDAV nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Prüfe Clientunterstützung, Sichtbarkeit und Token. Der Adapter erstellt keine separaten Kalender-Clientkonten.

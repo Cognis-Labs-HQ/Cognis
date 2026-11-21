@@ -4,16 +4,18 @@ Practical procedures for Share with People.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/adapters/share/user) before performing these procedures.
+Recipients need Cognis accounts; the sender needs sharing permission.
 
 ## Examples
 
-This component does not declare a standalone command-line entry point. Use its owning feature or the [deployment procedures](/docs/devops/usage) to configure the installation; the [technical reference](/docs/adapters/share/user/technical) lists its interfaces and constraints.
+Select a recipient and allowed permissions, save the share and ask that account to open its account-share page.
+
+Grants a resource directly to Cognis users through the Share gateway. The adapter validates user recipients and owns the User page shown inside the gateway popup.
 
 ## Expected Results
 
-The example uses the documented interface of Share with People. Confirm the response or saved state described in [Technical](/docs/adapters/share/user/technical) before repeating a write operation.
+Access is bound to the selected account rather than anyone holding a public link.
 
 ## Troubleshooting
 
-If Share with People is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+Check the recipient identity, existing grants and resource permissions. Duplicate grants for the same recipient are rejected.

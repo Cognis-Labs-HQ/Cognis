@@ -4,15 +4,15 @@ Store Cognis accounts and content in a MariaDB database managed by your administ
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/administration) according to your account permissions.
+Store Cognis accounts and content in MariaDB.
 
 ## Before You Start
 
-Check that MariaDB is enabled and that your account has permission for the operation.
+Deployment operators need a MariaDB database and credentials.
 
 ## Get Started
 
-Open [the feature](/administration) and choose the action you need.
+Select MariaDB in the deployment's database configuration.
 
 ## Learn More
 

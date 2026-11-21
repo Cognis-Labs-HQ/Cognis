@@ -50,16 +50,12 @@ Lokale Konten werden über die `cognisctl`-CLI mit dem `user:*`-Befehlsnamespace
 | `user:enable`       | Deaktiviertes Konto reaktivieren |
 | `user:delete`       | Konto löschen                    |
 
-### Kontodatenschutz und Schlüsselbund-Isolation
-
-SSO-Konten erhalten zufällige undurchsichtige IDs. Anbieter-IDs werden separat gespeichert und nur Administratoren angezeigt; öffentliche Benutzernamen enthalten sie nie. Auth reserviert Benutzernamen vor Profil- oder E-Mail-Änderungen: doppelte Namen desselben Anbieters werden abgelehnt, bei verschiedenen Anbietern wird bei Bedarf ein kurzes Zufallssuffix ergänzt. Benutzerlisten und Aktionsendpunkte unterscheiden den öffentlichen `username` von der internen `accountId`.
-
-Vorhandene lokale Konten funktionieren auch bei vorhandenen alten SSO-Datensätzen weiter. Der Start erfordert kein Zurücksetzen der Datenbank. Anmeldung und Bereitstellung alter SSO-Konten werden einzeln abgelehnt, bis diese Konten mit undurchsichtigen IDs neu erstellt wurden. Konto-IDs, Beziehungen und Besprechungen werden weder automatisch migriert noch gelöscht.
-
 ## Sicherheit
 
-Der Zugriff auf Lokale Konten unterliegt dem Aufrufer und dem zuständigen Funktionsdienst. Die Aktivierung erweitert keine Kontorechte.
+Lokale Passwörter nutzen scrypt mit Zufallssalz und zeitkonstanter Prüfung. Kontoverwaltung benötigt Auth-Berechtigung; der Adapter prüft Zugangsdaten statt Sitzungen oder Administratorrechte aus Registrierung zu vergeben.
 
 ## Referenz
 
-Quellcode und Paketmetadaten: `src/adapters/auth/local/`.
+- [src/adapters/auth/local/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/local/manifest.json)
+- [src/adapters/auth/local/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/local/package.json)
+- [src/adapters/auth/local/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/local/index.ts)

@@ -4,16 +4,16 @@ Prosedur praktis untuk Akun Lokal.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/adapters/auth/local) sebelum menjalankan prosedur ini.
+Administrator akun memerlukan sesi CLI terautentikasi untuk mengelola kredensial pengguna lain.
 
 ## Contoh
 
-Komponen ini tidak menyatakan titik masuk baris perintah mandiri. Gunakan fitur pemiliknya atau [prosedur penerapan](/docs/devops/usage) untuk mengonfigurasi instalasi; [referensi teknis](/docs/adapters/auth/local/technical) mencantumkan antarmuka dan batasnya.
+Jalankan `cognisctl user:create` dan ikuti pertanyaannya. Gunakan `cognisctl user:set-password` untuk mengganti kata sandi lokal atau `cognisctl user:disable` untuk menangguhkan akun.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Akun Lokal yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/adapters/auth/local/technical) sebelum mengulangi operasi tulis.
+Kredensial baru dapat dipakai masuk lokal; akun nonaktif tidak dapat masuk. Antarmuka pendaftaran membuat pengguna biasa, bukan administrator.
 
 ## Pemecahan Masalah
 
-Jika Akun Lokal tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Periksa nama pengguna, status akun, dan penyedia terpilih. Kata sandi penyedia eksternal dikelola di penyedia tersebut, bukan dengan mengganti kata sandi lokal Cognis.

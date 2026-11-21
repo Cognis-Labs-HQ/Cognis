@@ -4,16 +4,16 @@ Practical procedures for Performance budgets.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/performance) before performing these procedures.
+Measurements need a reproducible environment and a recorded release version.
 
 ## Examples
 
-This component does not declare a standalone command-line entry point. Use its owning feature or the [deployment procedures](/docs/devops/usage) to configure the installation; the [technical reference](/docs/performance/technical) lists its interfaces and constraints.
+Repeat the same journey under fixed network and CPU conditions, record timing and transfer sizes, then compare the median with the retained baseline.
 
 ## Expected Results
 
-The example uses the documented interface of Performance budgets. Confirm the response or saved state described in [Technical](/docs/performance/technical) before repeating a write operation.
+Results describe the measured conditions; local samples do not establish hosted performance guarantees.
 
 ## Troubleshooting
 
-If Performance budgets is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+Separate font loading, asset downloads, API delay and rendering. Changing test conditions invalidates a direct comparison.

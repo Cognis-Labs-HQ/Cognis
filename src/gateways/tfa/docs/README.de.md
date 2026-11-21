@@ -4,17 +4,15 @@ Schützen Sie Ihr Konto durch einen zweiten Prüfschritt bei der Anmeldung.
 
 ## Möglichkeiten
 
-- Wählen Sie eine verfügbare Methode und schließen Sie deren Einrichtung vor der Anmeldung ab.
-- Ordnen Sie aktive Methoden, um die zuerst angebotene auszuwählen.
-- Mit einem Wiederherstellungscode können Sie sich anmelden, wenn Ihr üblicher zweiter Faktor nicht verfügbar ist. Bewahren Sie eine Kopie außerhalb Ihres Kontos auf.
+Ergänze die Anmeldung um einen zweiten Bestätigungsschritt.
 
 ## Vor dem Start
 
-Prüfen Sie, ob Zwei-Faktor-Anmeldung aktiviert ist und Ihr Konto den Vorgang ausführen darf.
+Richte eine verfügbare Methode vor ihrer Nutzung vollständig ein.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/settings) und wählen Sie die gewünschte Aktion.
+Öffne Kontosicherheit in Einstellungen.
 
 ## Weitere Informationen
 

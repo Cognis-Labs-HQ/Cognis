@@ -4,15 +4,15 @@ Pindahkan acara antara Cognis dan aplikasi kalender lain menggunakan berkas kale
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/calendar) sesuai izin akun Anda.
+Pindahkan acara memakai berkas iCalendar.
 
 ## Sebelum Memulai
 
-Pastikan Impor dan Ekspor Kalender aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Gunakan kalender milik sendiri dan adapter ICS aktif.
 
 ## Langkah Awal
 
-Buka [fitur ini](/calendar) dan pilih tindakan yang diperlukan.
+Buka tindakan impor atau ekspor kalender yang tersedia.
 
 ## Pelajari Lebih Lanjut
 

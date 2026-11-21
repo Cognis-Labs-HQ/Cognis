@@ -4,16 +4,16 @@ Practical procedures for Keyring.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/adapters/auth/keyring) before performing these procedures.
+Use an account with a vault and a feature that stores protected content, such as an encrypted conversation.
 
 ## Examples
 
-This component does not declare a standalone command-line entry point. Use its owning feature or the [deployment procedures](/docs/devops/usage) to configure the installation; the [technical reference](/docs/adapters/auth/keyring/technical) lists its interfaces and constraints.
+Open protected content, check which feature requests access, and unlock the vault. In Settings, inspect entries and recent activity, then lock it again.
 
 ## Expected Results
 
-The example uses the documented interface of Keyring. Confirm the response or saved state described in [Technical](/docs/adapters/auth/keyring/technical) before repeating a write operation.
+Only an unlocked vault supplies secrets. Cancelling access leaves protected content locked; the floating lock control permits a later manual attempt.
 
 ## Troubleshooting
 
-If Keyring is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+Retry a failed state read before creating a vault. A forgotten password cannot decrypt existing entries; destructive reset also removes access to dependent encrypted rooms.

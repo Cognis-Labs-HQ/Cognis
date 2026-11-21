@@ -4,16 +4,18 @@ Practical procedures for Performance Monitoring.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/gateways/observability) before performing these procedures.
+Operators need access to the configured metric sink; the default sink writes debug logs.
 
 ## Examples
 
-This component does not declare a standalone command-line entry point. Use its owning feature or the [deployment procedures](/docs/devops/usage) to configure the installation; the [technical reference](/docs/gateways/observability/technical) lists its interfaces and constraints.
+Enable suitable debug logging, reproduce a slow request and compare its HTTP or database timing with a repeat under the same conditions.
+
+Resolve `observability:metrics` through `ctx.capabilities` for server metrics, or submit allowlisted browser telemetry through the gateway endpoint.
 
 ## Expected Results
 
-The example uses the documented interface of Performance Monitoring. Confirm the response or saved state described in [Technical](/docs/gateways/observability/technical) before repeating a write operation.
+Allowed measurements reach the metric capability; sampled browser submissions do not describe every visit.
 
 ## Troubleshooting
 
-If Performance Monitoring is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+Check log level and sampling. The built-in gateway does not provide a standalone metrics dashboard.

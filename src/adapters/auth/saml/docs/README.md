@@ -1,18 +1,18 @@
 # SAML Sign In
 
-Sign in with the SAML identity provider connected by your organisation.
+This sign-in method needs an additional deployment integration before it can work. Completing the settings form alone does not connect an identity service.
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/login) according to your account permissions.
+Use your organization's SAML identity service to sign in without a separate Cognis password for that identity.
 
 ## Before You Start
 
-Check that SAML Sign In is enabled and that your account has permission for the operation.
+This sign-in method needs an additional deployment integration before it can work. Completing the settings form alone does not connect an identity service.
 
 ## Get Started
 
-Open [the feature](/login) and choose the action you need.
+Ask the deployment integrator whether a protocol client is supplied before offering this login method. Keep local sign-in available.
 
 ## Learn More
 

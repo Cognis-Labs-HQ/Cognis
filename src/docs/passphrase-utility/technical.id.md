@@ -4,30 +4,17 @@ Antarmuka publik dan aturan operasional Utilitas Frasa Sandi.
 
 ## Antarmuka
 
-Topik ini merupakan referensi dan tidak menyediakan titik akhir mandiri. Contoh memakai antarmuka publik komponen yang dijelaskan di bawah.
+reuse:generatePassphrase adalah kapabilitas ctx sinkron yang memberi string. Jumlah atau panjang invalid memicu RangeError; tipe atau kapitalisasi invalid memicu TypeError.
 
 ## Konfigurasi
 
-Topik dokumentasi ini tidak memiliki konfigurasi waktu jalan sendiri. Pengaturan operasional dimiliki komponen terkait.
+words harus bilangan bulat aman 1 sampai 128. separator baku berupa tanda hubung, maksimum enam belas karakter. capitalization menerima lowercase, uppercase, atau titlecase.
 
 ## Perilaku
 
 ### Utilitas Frasa Sandi
 
 Runtime API menyediakan `reuse:generatePassphrase` melalui `ctx` agar modul seperti Jitsi Meet dapat menghasilkan rahasia yang mudah dibaca tanpa mengimpor internal API.
-
-### Contoh penggunaan
-
-Ambil kapabilitas dari konteks bootstrap modul dan minta jumlah kata serta tampilan yang diperlukan:
-
-```js
-const generatePassphrase = ctx.capabilities.require("reuse:generatePassphrase");
-const passphrase = generatePassphrase({
-    words: 6,
-    separator: "-",
-    capitalization: "titlecase",
-});
-```
 
 ### Spesifikasi teknis
 
@@ -37,8 +24,8 @@ Generator memilih setiap kata dengan keacakan kriptografis Node.js. Pemanggil se
 
 ## Keamanan
 
-Membaca dokumentasi tidak memberikan izin menjalankan contohnya. Komponen pemilik mengotorisasi setiap operasi.
+Setiap kata dipilih dengan Node crypto.randomInt. Pembuatan tidak menyimpan atau mengotorisasi rahasia; pemanggil melindunginya dan tidak mencatat hasil.
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/docs/passphrase-utility/`.
+- [src/api/reuse/passphrase.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/api/reuse/passphrase.ts)

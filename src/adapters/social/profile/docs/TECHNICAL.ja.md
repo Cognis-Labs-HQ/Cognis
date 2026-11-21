@@ -37,12 +37,12 @@ Profileの設定保存が成功すると、再送時やオンライン専用の�
 
 ### 主要なソース
 
-| パス                                     | 目的                                           |
-| ---------------------------------------- | ---------------------------------------------- |
-| `src/gateways/profile/bootstrap.ts`      | ブートストラップエントリポイント               |
-| `src/gateways/profile/routes/social.ts`  | フォロー、ブロック、フォロワーのルート         |
-| `src/gateways/profile/routes/posts.ts`   | 投稿の作成、一覧表示、削除                     |
-| `src/adapters/db/reuse/profile-store.ts` | `DbProfileStore` — すべてのプロフィールSQL操作 |
+| パス                                           | 目的                                           |
+| ---------------------------------------------- | ---------------------------------------------- |
+| `src/adapters/social/profile/index.ts`         | ブートストラップエントリポイント               |
+| `src/adapters/social/profile/routes/social.ts` | フォロー、ブロック、フォロワーのルート         |
+| `src/adapters/social/profile/routes/posts.ts`  | 投稿の作成、一覧表示、削除                     |
+| `src/adapters/social/profile/store.ts`         | `DbProfileStore` — すべてのプロフィールSQL操作 |
 
 ### プロフィールの即時更新
 
@@ -69,10 +69,6 @@ Profileの設定保存が成功すると、再送時やオンライン専用の�
 在席状態の GET は、存在しないプロフィールとプライバシーで制限されたプロフィールのどちらにも成功応答で unknown を返します。応答の形を揃え、手動設定やカレンダーの状態は読みません。所有者、ブロック、コミュニティ、友達、非公開の既存ルールを維持し、変更は引き続き所有者だけが行えます。アバターの表示は不明となり、見つからないエラーを繰り返しません。
 
 ### オフラインのソーシャル変更
-
-この動作については[共通の契約](/docs/adapters/social/messages/technical)を参照してください。
-
-この動作については[共通の契約](/docs/adapters/social/messages/technical)を参照してください。
 
 この動作については[共通の契約](/docs/adapters/social/messages/technical)を参照してください。
 

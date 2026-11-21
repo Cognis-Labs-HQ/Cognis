@@ -4,17 +4,13 @@ Antarmuka publik dan aturan operasional Berbagi dengan Orang.
 
 ## Antarmuka
 
-Berbagi dengan Orang terintegrasi melalui gerbang pemilik; manifesnya mengidentifikasi komponen dan dependensi yang diperlukan.
+createShareAdapter mengembalikan metode user untuk akun. prepare memerlukan penerima; validateUnique menolak duplikasi. Halaman berbagi akun memerlukan masuk.
 
 ## Konfigurasi
 
-Konfigurasi disediakan melalui gerbang pemilik. Berbagi dengan Orang tidak menyatakan konfigurasi tambahan dalam manifesnya.
+Berikan recipients dan izin sumber daya melalui dialog Bagikan. Pengiriman akun memakai identitas Cognis, bukan koneksi pesan eksternal.
 
 ## Perilaku
-
-### Contoh penggunaan
-
-Memberikan sumber daya langsung kepada pengguna Cognis melalui gateway Share. Adapter memvalidasi penerima pengguna dan memiliki halaman Pengguna di dalam popup gateway.
 
 ### Spesifikasi teknis
 
@@ -24,8 +20,10 @@ Perilaku ini dijelaskan dalam [kontrak bersama](/docs/adapters/share/link/techni
 
 ## Keamanan
 
-Akses Berbagi dengan Orang diatur oleh pemanggil dan gerbang pemilik. Mengaktifkan komponen tidak menambah izin akun.
+Penerima harus berupa referensi akun eksplisit. Penerima kosong dan pemberian ganda ditolak; gateway Share memeriksa wewenang pengirim serta batas izin.
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/adapters/share/user/`.
+- [src/adapters/share/user/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/share/user/manifest.json)
+- [src/adapters/share/user/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/share/user/package.json)
+- [src/adapters/share/user/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/share/user/index.ts)

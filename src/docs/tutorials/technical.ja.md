@@ -4,20 +4,21 @@
 
 ## インターフェース
 
-このトピックは参考情報であり、独立したエンドポイントを提供しません。例では、以下で説明するコンポーネントの公開インターフェースを使用します。
+各機能はブラウザーの ctx から `ui:tutorials` を取得します。ホストが installTutorials で導入し、操作は `ui:tutorial:*` フローを実行します。Page Composer が画面別のガイドを登録します。
 
 ## 設定
 
-このドキュメント自体には実行時の設定はありません。運用の設定は該当するコンポーネントが管理します。
+所有元・ガイド・ステップの固定 ID、翻訳、対象画面、表示対象、highlightNext を宣言します。任意の分岐には targetAvailable と開始操作のシグナルを使い、言語ガイドには登録が必要です。
 
 ## 動作
 
-環境を変更する前に、関連する例と技術契約を確認してください。この表示からコンポーネントの状態を変更することはできません。
+アカウントの完了状態を取得してから自動案内を判定します。再生しても完了は消えず、戻る・再開は同じ例を使います。中止や画面終了で処理を解放し、保存成功後に完了を確定します。
 
 ## セキュリティ
 
-ドキュメントを読むだけでは例を実行する権限は得られません。各操作は担当するコンポーネントが認可します。
+表示と条件はロールと現在の権限に従います。完了の読み取り失敗を未完了として扱わず、状態は認証したアカウントごとに保存します。
 
 ## リファレンス
 
-ソースとパッケージの情報: `src/docs/tutorials/`。
+- [src/ui/reuse/tutorials/index.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/ui/reuse/tutorials/index.js)
+- [src/ui/reuse/tutorials/runtime.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/ui/reuse/tutorials/runtime.js)

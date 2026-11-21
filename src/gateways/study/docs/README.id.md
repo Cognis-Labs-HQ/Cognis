@@ -4,17 +4,15 @@ Pilih bahasa dan gunakan materi, latihan, serta kelas yang tersedia.
 
 ## Yang Dapat Anda Lakukan
 
-- Explore menampilkan bahasa yang diikuti. Kartu belajar dan alat terpasang lainnya muncul di sini jika tersedia untuk akun Anda.
-- Beralih di antara bahasa yang telah Anda ikuti. Saat ruang terbatas, nama ditampilkan sebagai kode atau bendera. Ubah pilihan melalui pengaturan Study.
-- Kartu ini membuka alat belajar terpasang. Panduan setiap bahasa menjelaskan koleksi dan aksi kartunya.
+Pilih bahasa belajar, jelajahi alat, dan cari kamus.
 
 ## Sebelum Memulai
 
-Pastikan Belajar aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Masuk dan daftar pada bahasa yang terpasang.
 
 ## Langkah Awal
 
-Buka [fitur ini](/study) dan pilih tindakan yang diperlukan.
+Buka pengaturan Study, pilih bahasa, lalu kembali ke Jelajahi.
 
 ## Pelajari Lebih Lanjut
 

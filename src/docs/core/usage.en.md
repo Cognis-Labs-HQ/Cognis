@@ -4,16 +4,16 @@ Practical procedures for Core.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/core) before performing these procedures.
+Administrative changes require an authorized account.
 
 ## Examples
 
-This component does not declare a standalone command-line entry point. Use its owning feature or the [deployment procedures](/docs/devops/usage) to configure the installation; the [technical reference](/docs/core/technical) lists its interfaces and constraints.
+Use Administration to review a component's status and dependencies, then read its documentation before enabling or configuring it.
 
 ## Expected Results
 
-The example uses the documented interface of Core. Confirm the response or saved state described in [Technical](/docs/core/technical) before repeating a write operation.
+Core coordinates registered features; private resource access still belongs to the responsible operation.
 
 ## Troubleshooting
 
-If Core is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+A dependency failure may hide several dependent actions. Fix the failing provider instead of bypassing access checks.

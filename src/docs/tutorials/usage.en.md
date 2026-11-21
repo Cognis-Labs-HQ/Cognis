@@ -4,9 +4,11 @@ Practical procedures for Guided Tutorials.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/tutorials) before performing these procedures.
+Sign in for account-bound guide completion; optional actions appear only when available.
 
 ## Examples
+
+Start a guide, follow highlighted controls, use Back or Next where offered and finish; replay it from the same header control.
 
 ```ts
 export async function mountProvider(ctx) {
@@ -52,8 +54,8 @@ export async function mountProvider(ctx) {
 
 ## Expected Results
 
-The example uses the documented interface of Guided Tutorials. Confirm the response or saved state described in [Technical](/docs/tutorials/technical) before repeating a write operation.
+Completed guides remain completed for the account; replay does not require resetting preferences.
 
 ## Troubleshooting
 
-If Guided Tutorials is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+Check the active page and visible control. Closing an optional dialog can return the guide to its branch rather than completing its action.

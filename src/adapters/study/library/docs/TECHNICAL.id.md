@@ -50,13 +50,9 @@ Rekaman konten dapat mendeklarasikan nilai `class` bernamespace seperti `lexical
 
 ## Konfigurasi
 
-Konfigurasi disediakan melalui gerbang pemilik. Pustaka Pembelajaran tidak menyatakan konfigurasi tambahan dalam manifesnya.
+Penyedia bahasa memasok skema, konstruktor, dan paket versi. Filter serta presentasi mengikuti deklarasi; visibilitas, tinjauan, dan edit bersifat per sumber daya.
 
 ## Perilaku
-
-### Penggunaan
-
-Gunakan **Impor** di kiri bawah pemilih jenis kartu untuk mengunggah JSON. Pilih cakupan yang dapat ditulis untuk seluruh kelompok. Format berisi `format: "cognis-library"`, `version: 1`, dan larik `entries` yang tidak kosong.
 
 ### Spesifikasi Teknis
 
@@ -444,7 +440,7 @@ Pencarian kamus kini langsung mengisi penyusun kartu yang terbuka dan menyimpan 
 
 Impor kamus memetakan ID catatan penyedia ke kartu terpasang yang dapat diakses sebelum menambahkan tautan biasa atau berkelompok. Target yang hilang atau ambigu membiarkan nilai hasil tanpa tautan dengan peringatan, bukan menghalangi penyimpanan. Definisi yang telah disimpan memiliki tindakan Edit melalui editor kartu yang memeriksa izin, dan perubahan tersimpan memperbarui ringkasannya. Bidang skema tersembunyi, termasuk data sumber kamus, tidak ditampilkan dalam formulir tetapi nilai tersimpannya dipertahankan.
 
-### Perbaikan pencarian editor
+### Keadaan pencarian editor
 
 Pencarian goresan disembunyikan saat pola yang berhasil diambil tersedia, termasuk pola dari hasil kamus atau kartu tersimpan. Menghapus pola menampilkan pencarian kembali. Editor definisi menampilkan terjemahan di Konten tanpa tab Definisi yang berlebihan. Makna kamus yang dipisahkan titik koma menjadi definisi tersendiri yang langsung disimpan, dengan terjemahan yang sesuai dan metadata sumber asli tetap tersimpan. Makna terstruktur menggantikan tautan definisi sumber gabungan.
 
@@ -540,13 +536,7 @@ Komposisi judul kalimat eksplisit mempertahankan spasi di antara unsur tertaut, 
 
 Perilaku ini dijelaskan dalam [kontrak bersama](/docs/gateways/study/technical).
 
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/gateways/study/technical).
-
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/gateways/study/technical).
-
 ### Audio kamus dan cache host
-
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/gateways/study/technical).
 
 Perilaku ini dijelaskan dalam [kontrak bersama](/docs/gateways/study/technical).
 
@@ -569,8 +559,6 @@ Gambar referensi kini ditampilkan sebagai gambar mini pada editor Library dan ta
 Perekaman mikrofon menunggu jawaban izin peramban, mencegah permintaan ganda dan penyimpanan saat izin belum dijawab, serta menghentikan aliran yang diberikan setelah editor ditutup. Penolakan izin dan ketidaktersediaan perekaman memiliki pesan terpisah. Mikrofon, Putar, dan Muat Ulang berada pada satu baris dengan ukuran sama. Jamak kolektif memakai satu kotak centang untuk keluarga nomina yang cocok; pilihan yang tidak sesuai tetap tersembunyi. Nama berkas audio disembunyikan. Putar memutar unggahan sementara atau rekaman mikrofon terbaru; respons audio tersimpan yang terlambat tidak menggantikannya. Saat merekam, hanya ikon mikrofon yang berwarna merah, termasuk saat diarahkan; tombol mempertahankan gaya tema biasanya.
 
 Notifikasi Study mengambil kapabilitas saat pengiriman sehingga urutan mulai dan pengaktifan ulang komponen tidak menonaktifkan pengiriman secara permanen. Tanda terima diperiksa: pengiriman tanpa pengirim yang berhasil dilaporkan sebagai kegagalan, kegagalan sebagian dicatat, serta penerima dan pengirim yang berhasil dapat diaudit.
-
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/ui/technical).
 
 Perilaku ini dijelaskan dalam [kontrak bersama](/docs/ui/technical).
 
@@ -666,7 +654,7 @@ Pratinjau kartu belajar memakai permukaan pembaca bersama. Dialog mengikuti leba
 
 ## Keamanan
 
-Akses Pustaka Pembelajaran diatur oleh pemanggil dan gerbang pemilik. Mengaktifkan komponen tidak menambah izin akun.
+Referensi konten harus berupa UUID kanonis yang dapat diselesaikan. Kepemilikan, cakupan, dan visibilitas mengatur edit serta publikasi; keanggotaan kelas diperiksa saat operasi, bukan dari hasil cache lama.
 
 ## Referensi
 
@@ -674,15 +662,7 @@ Akses Pustaka Pembelajaran diatur oleh pemanggil dan gerbang pemilik. Mengaktifk
 
 Perilaku ini dijelaskan dalam [kontrak bersama](/docs/gateways/study/technical).
 
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/gateways/study/technical).
-
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/gateways/study/technical).
-
 ### Rekaman bacaan utuh untuk referensi
-
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/gateways/study/technical).
-
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/gateways/study/technical).
 
 Perilaku ini dijelaskan dalam [kontrak bersama](/docs/gateways/study/technical).
 

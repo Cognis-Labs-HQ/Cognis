@@ -4,15 +4,15 @@ Choose the service providers your installation uses for sign-in, storage, notifi
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/) according to your account permissions.
+Choose service providers for authentication, storage, notifications and learning.
 
 ## Before You Start
 
-The operations discussed here may require account or administrator permissions. Reading a topic does not enable its optional features.
+Configuration requires administrator access and the provider's connection details.
 
 ## Get Started
 
-Open [the feature](/) and choose the action you need.
+Open the relevant gateway in Administration.
 
 ## Learn More
 

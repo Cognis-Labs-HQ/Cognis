@@ -4,17 +4,16 @@ Praktische Abläufe für Dateien.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/gateways/files).
+Uploads benötigen einen aktiven Speicheranbieter und freies Kontingent.
 
 ## Beispiele
 
-- Prüfen Sie den globalen Speicherstandard und betroffene Komponentennamensräume.
-- Prüfen Sie Besitzer und Sichtbarkeit vor Änderung und Speicherung der Bytequote.
+Lade ein erlaubtes Bild hoch, speichere den Eintrag und öffne ihn erneut; Administratoren prüfen Kontingente gesondert.
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von Dateien. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/gateways/files/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Metadaten erfassen Eigentum und Nutzung; Leser brauchen die Inhaltsberechtigung.
 
 ## Fehlerbehebung
 
-Falls Dateien nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Prüfe Typ, Größe, Kontingent und Speicher. Eine Datei-ID allein gewährt keinen Lesezugriff.

@@ -4,16 +4,15 @@ Log aplikasi membantu administrator menyelidiki kesalahan dan memahami aktivitas
 
 ## Yang Dapat Anda Lakukan
 
-- Gunakan filter tingkat keparahan, kata kunci, dan rentang waktu untuk mempersempit log pemeriksaan.
-- Periksa cap waktu dan detail terstruktur; perbarui saat memerlukan snapshot baru.
+Periksa log aplikasi dan atur keluaran konsol serta berkas.
 
 ## Sebelum Memulai
 
-Pastikan Log Aplikasi aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Administrasi log memerlukan akses administrator.
 
 ## Langkah Awal
 
-Buka [fitur ini](/administration) dan pilih tindakan yang diperlukan.
+Buka Log di Administrasi.
 
 ## Pelajari Lebih Lanjut
 

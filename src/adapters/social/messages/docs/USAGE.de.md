@@ -4,22 +4,16 @@ Praktische Abläufe für Nachrichten.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/adapters/social/messages).
+Melde dich an; verschlüsselte Räume benötigen auch Zugriff auf deinen Schlüsselbund.
 
 ## Beispiele
 
-- Wähle einen Raum oder beginne eine Unterhaltung in der Seitenleiste. Auf Telefonen und Tablets öffnest du sie über die Schaltfläche mit doppeltem Winkel oben links.
-- Lesen Sie den Verlauf und prüfen Sie Teilnehmer sowie offene Anfragen.
-- Verfassen und prüfen Sie Entwürfe vor dem Senden; Anhänge und Anrufe haben eigene Bedienelemente.
-- Erstellen Sie ein Direktgespräch oder einen Raum, wählen Sie Empfänger und prüfen Sie vor der ersten Nachricht die Mitgliedschaft.
-- Verfassen Sie hier die Nachricht. Nutzen Sie bei Bedarf Formatierung und Anhänge und prüfen Sie vor dem Senden die Vorschau.
-- Wechseln Sie zur Vorschau, um Formatierung, Links und Anhänge zu prüfen. Korrigieren Sie den Text unter Verfassen.
-- Der Gesprächskopf zeigt Raum und Teilnehmer. Prüfen Sie verfügbare Aktionen, bevor Sie Mitglieder ändern oder austreten.
+Erstelle einen Raum, wähle Empfänger, schreibe einen Entwurf, prüfe die Vorschau und sende. Speichere wiederkehrende Formulierungen bei Bedarf als Vorlage.
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von Nachrichten. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/adapters/social/messages/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Bestätigte Nachrichten erscheinen im Verlauf. Entwürfe überstehen Größenänderungen; verschlüsselte Entwürfe verschwinden erst nach Bestätigung oder dauerhafter Einreihung.
 
 ## Fehlerbehebung
 
-Falls Nachrichten nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Prüfe Mitgliedschaft und Schlüsselbund. Offline sind vorbereitete Ressourcen und gespeicherte Räume nötig; nicht gespeicherte Verläufe brauchen eine Verbindung.

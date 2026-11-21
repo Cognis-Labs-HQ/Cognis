@@ -4,16 +4,16 @@ Practical procedures for Cognis.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/index) before performing these procedures.
+Available tools depend on enabled features and your account access.
 
 ## Examples
 
-This component does not declare a standalone command-line entry point. Use its owning feature or the [deployment procedures](/docs/devops/usage) to configure the installation; the [technical reference](/docs/index/technical) lists its interfaces and constraints.
+Open Study, enroll in an installed language and choose an available learning activity; use Docs to learn its controls.
 
 ## Expected Results
 
-The example uses the documented interface of Cognis. Confirm the response or saved state described in [Technical](/docs/index/technical) before repeating a write operation.
+Your selected language determines available content; each feature retains its own permissions.
 
 ## Troubleshooting
 
-If Cognis is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+If a tool is missing, check enrollment and ask the administrator whether its component is enabled.

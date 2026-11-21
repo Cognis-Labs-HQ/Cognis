@@ -4,15 +4,15 @@ Verify a sign-in using a one-time code delivered to your email address.
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/settings) according to your account permissions.
+Receive sign-in verification codes at your verified email address.
 
 ## Before You Start
 
-Check that Email Verification is enabled and that your account has permission for the operation.
+Your account needs a verified primary email and working email delivery.
 
 ## Get Started
 
-Open [the feature](/settings) and choose the action you need.
+Add the email verification method in account security settings.
 
 ## Learn More
 

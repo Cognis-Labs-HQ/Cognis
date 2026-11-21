@@ -133,8 +133,9 @@ await record(activity);
 
 ## セキュリティ
 
-公開されたケイパビリティとコマンドには、操作ごとの認可が適用されます。パッケージを追加するだけで、非公開のリソースにアクセスできるようにはなりません。
+機能の所有元と起動範囲で登録期間を管理します。状態変更前に呼び出し元を承認し、報酬公開前に学習者・証拠・再送時の識別を検証します。
 
 ## リファレンス
 
-ソースとパッケージの情報: `src/core/`。
+- [src/core/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/package.json)
+- [src/core/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/index.ts)

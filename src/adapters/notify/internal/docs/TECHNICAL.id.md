@@ -4,7 +4,7 @@ Antarmuka publik dan aturan operasional Notifikasi Dalam Aplikasi.
 
 ## Antarmuka
 
-### Rute API
+createNotificationSender memakai penyimpanan aktif secara malas. bootstrapNotifyAdapter mendaftarkan pengirim selalu aktif, rute inbox, dan lonceng. Dengan db:executor, DbInternalNotificationStore diinisialisasi; tanpa itu penyimpanan volatil diperingatkan.
 
 | Metode   | Path                            | Deskripsi                           | Auth     |
 | -------- | ------------------------------- | ----------------------------------- | -------- |
@@ -17,8 +17,6 @@ Antarmuka publik dan aturan operasional Notifikasi Dalam Aplikasi.
 
 ## Konfigurasi
 
-### Konfigurasi
-
 Adaptor ini tidak memiliki konfigurasi. Adaptor aktif selama gateway notify memuatnya (yaitu selalu, karena adaptor ditemukan secara otomatis). Untuk menonaktifkan adaptor, hapus atau ubah nama direktori adaptor — setelah itu bel notifikasi akan menghilang dari antarmuka.
 
 Produsen notifikasi dapat menandai entri sebagai berkelanjutan dan menyediakan deskriptor tombol tindakan berisi pengenal, label aksesibel, ikon SVG opsional, serta konsekuensi. Adaptor memvalidasi dan merender kontrak umum ini, lalu memancarkan pengenal terpilih beserta payload notifikasi; adaptor tidak menafsirkan domain produsen atau memanggil kapabilitas produsen.
@@ -29,25 +27,15 @@ Produsen dapat melampirkan peta `metadata.localizedText` berdasarkan locale deng
 
 ## Perilaku
 
-### Adaptor Notifikasi Internal
-
-Bootstrap mendaftarkan pengirim selalu aktif melalui `notify:registerAlwaysOnSender` pada ctx tanpa gateway konkret. Kontrak pengirim berasal dari `@cognis/core`.
-
-### Ikhtisar
-
-Adaptor Internal mengirimkan notifikasi langsung ke bel notifikasi dalam aplikasi di setiap halaman dasbor. Adaptor ini selalu aktif secara bawaan — setiap notifikasi yang dikirim melalui gateway akan masuk ke kotak masuk penerima tanpa perlu mengonfigurasi preferensi notifikasi. Adaptor menyimpan hingga 50 notifikasi per pengguna dalam memori; entri akan hilang saat server di-restart.
-
-### Tanggung Jawab
-
-- Menerima setiap notifikasi yang dikirim gateway notifikasi dan menempatkannya di kotak masuk dalam aplikasi penerima.
-- Menyuntikkan tombol bel notifikasi ke antarmuka dasbor melalui plugin navbar — menonaktifkan adaptor akan menghilangkan bel sepenuhnya.
-- Menampilkan lencana dengan jumlah notifikasi yang belum dibaca, diperbarui setiap 30 detik.
-- Menyediakan panel dropdown untuk membaca, menutup, dan menandai notifikasi sebagai telah dibaca.
+Kedua penyimpanan mempertahankan lima puluh notifikasi per penerima dan membuang yang tertua. Payload basis data terenkripsi bertahan dengan DATA_ENCRYPTION_KEY stabil. Tanpa DB data hilang saat restart; produksi menolak kunci hilang. Kunci pengembangan lokal proses tidak dapat mendekripsi data lama setelah restart. Penghapusan akun membersihkan inbox melalui pemilik data.
 
 ## Keamanan
 
-Akses Notifikasi Dalam Aplikasi diatur oleh pemanggil dan gerbang pemilik. Mengaktifkan komponen tidak menambah izin akun.
+Rute notifikasi mengautentikasi penerima dan mengakses rekaman akunnya. Persistensi memerlukan DATA_ENCRYPTION_KEY; jaga kunci tetap stabil dan rahasia.
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/adapters/notify/internal/`.
+- [src/adapters/notify/internal/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/notify/internal/manifest.json)
+- [src/adapters/notify/internal/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/notify/internal/package.json)
+- [src/adapters/notify/internal/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/notify/internal/index.ts)
+- [src/adapters/notify/internal/routes/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/notify/internal/routes/index.ts)

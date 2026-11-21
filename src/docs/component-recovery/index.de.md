@@ -4,15 +4,15 @@ Verwalten Sie installierte Funktionen und stellen Sie sie nach fehlgeschlagenen 
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/) entsprechend Ihren Kontorechten.
+Prüfe fehlerhafte Komponenten und stelle Aktivierung oder Updates kontrolliert wieder her.
 
 ## Vor dem Start
 
-Die beschriebenen Vorgänge können Konto- oder Verwaltungsrechte verlangen. Das Lesen eines Themas aktiviert keine optionalen Funktionen.
+Nutze ein berechtigtes Administratorkonto und sichere vor Codeänderungen.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/) und wählen Sie die gewünschte Aktion.
+Prüfe Status und Abhängigkeiten der betroffenen Komponente.
 
 ## Weitere Informationen
 

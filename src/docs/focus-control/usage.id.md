@@ -4,16 +4,16 @@ Prosedur praktis untuk Kontrol Fokus.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/focus-control) sebelum menjalankan prosedur ini.
+Penyedia harus mengizinkan halaman untuk mode yang diminta.
 
 ## Contoh
 
-Komponen ini tidak menyatakan titik masuk baris perintah mandiri. Gunakan fitur pemiliknya atau [prosedur penerapan](/docs/devops/usage) untuk mengonfigurasi instalasi; [referensi teknis](/docs/focus-control/technical) mencantumkan antarmuka dan batasnya.
+Buka komponen, bekerja dalam areanya, lalu tutup melalui kontrol pemanggil.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Kontrol Fokus yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/focus-control/technical) sebelum mengulangi operasi tulis.
+Halaman tetap dalam area dan berakhir bersama masa pemilik kecuali dipertahankan secara eksplisit saat navigasi.
 
 ## Pemecahan Masalah
 
-Jika Kontrol Fokus tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Periksa penyedia dan mode. Peramban dapat menolak pembukaan tanpa tindakan langsung pengguna.

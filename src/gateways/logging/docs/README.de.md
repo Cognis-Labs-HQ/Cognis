@@ -4,16 +4,15 @@ Anwendungsprotokolle helfen Administratoren bei der Fehlersuche und beim Nachvol
 
 ## Möglichkeiten
 
-- Grenzen Sie Protokolle mit Schweregrad, Stichwort und Zeitraum für die Untersuchung ein.
-- Prüfen Sie Zeitstempel und strukturierte Details; aktualisieren Sie für einen neuen Stand.
+Prüfe Anwendungsprotokolle und konfiguriere Konsolen- und Dateiausgabe.
 
 ## Vor dem Start
 
-Prüfen Sie, ob Anwendungsprotokolle aktiviert ist und Ihr Konto den Vorgang ausführen darf.
+Protokollverwaltung benötigt Administratorrechte.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/administration) und wählen Sie die gewünschte Aktion.
+Öffne Protokolle in Administration.
 
 ## Weitere Informationen
 

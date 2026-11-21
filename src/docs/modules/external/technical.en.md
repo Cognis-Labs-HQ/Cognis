@@ -34,7 +34,7 @@ External modules publish shared server capabilities with `ctx.contributePublicCa
 
 ## Configuration
 
-This documentation topic has no runtime configuration of its own. Operational settings belong to the relevant component.
+Module sources and installation roots are host configuration. A module declares identity, dependencies, routes, documentation and optional configuration schema; secrets are resolved through the owning protected capability.
 
 ## Behavior
 
@@ -43,33 +43,6 @@ This documentation topic has no runtime configuration of its own. Operational se
 See the [shared contract](/docs/adapters/study/library/technical) for this behavior.
 
 External modules extend Cognis with independently installed server and browser behavior while remaining isolated behind manifest, capability, flow, route, integrity, and lifecycle contracts.
-
-### Usage examples
-
-A repository declares its stable identity and bootstrap entrypoint in `manifest.json`:
-
-<!-- prettier-ignore -->
-```json
-{
-  "uuid": "123e4567-e89b-42d3-a456-426614174000",
-  "id": "example-module",
-  "version": "1.0.0",
-  "entrypoints": { "bootstrap": "bootstrap.js" }
-}
-```
-
-The bootstrap contributes behavior only through its scoped context and returns cleanup for resources it owns:
-
-<!-- prettier-ignore -->
-```js
-export async function bootstrapModule(ctx) {
-  ctx.registerFlow({ id: 'example-module:constructPage', stages: ['content'] });
-  ctx.flow.extend('example-module:constructPage', 'content',
-    { id: 'example-module:content' }, async () => ({ ready: true }));
-}
-```
-
-An administrator installs the repository from **Modules**, reviews its integrity and dependencies, explicitly enables it, and can later disable it to remove all registered UI and backend behavior without restarting Cognis.
 
 ### Stable identity
 
@@ -193,23 +166,13 @@ Use anchors or buttons with `data-navigation-path="/route"`; Cognis disables uns
 
 See the [shared contract](/docs/gateways/study/technical) for this behavior.
 
-See the [shared contract](/docs/gateways/study/technical) for this behavior.
-
 Private Study requires the same verified, unexpired account session in the same tab. Reloads and first visits retain the public-only offline contract. Account/session changes, preference changes, module lifecycle changes and provider disposal invalidate private snapshots. Server revocations cannot be learned while disconnected. Recovery uses the existing unsaved-change guard and reloads to refresh server authorization.
 
 ### Queued Delivery and Consent
 
 See the [shared contract](/docs/gateways/study/technical) for this behavior.
 
-See the [shared contract](/docs/gateways/study/technical) for this behavior.
-
 ### Offline Social Changes
-
-See the [shared contract](/docs/adapters/social/messages/technical) for this behavior.
-
-See the [shared contract](/docs/adapters/social/messages/technical) for this behavior.
-
-See the [shared contract](/docs/adapters/social/messages/technical) for this behavior.
 
 See the [shared contract](/docs/adapters/social/messages/technical) for this behavior.
 
@@ -246,8 +209,6 @@ const purpose = await registerPurpose("digest", (variables) => ({
 const sendEmail = ctx.getCapability("notify:sendEmail");
 await sendEmail({ purpose, recipientEmail, variables });
 ```
-
-See the [shared contract](/docs/adapters/notify/smtp/technical) for this behavior.
 
 See the [shared contract](/docs/adapters/notify/smtp/technical) for this behavior.
 

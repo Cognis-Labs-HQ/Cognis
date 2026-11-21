@@ -4,17 +4,15 @@ Join a language class or manage lessons and membership as a teacher.
 
 ## What You Can Do
 
-- Filter classes by language to find the classes available to you.
-- Review class members and request status; class chat and meetings follow the class access rules.
-- Teachers manage assigned classes and invitations; teacher requests may require administrator approval.
+Browse classes, request membership and manage your teaching groups.
 
 ## Before You Start
 
-Check that Classes is enabled and that your account has permission for the operation.
+Sign in; teaching and membership decisions follow Study policy.
 
 ## Get Started
 
-Open [the feature](/my-classes) and choose the action you need.
+Open Classes to browse or My Classes to manage enrollment.
 
 ## Learn More
 

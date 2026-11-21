@@ -4,11 +4,11 @@ The public interfaces and operational rules of Leaderboard.
 
 ## Interfaces
 
-Leaderboard is integrated through the owning gateway; its manifest identifies the component and required dependencies.
+study:leaderboard registers definitions, cohorts and participation and provides requestTableModel and queryStandings. Authenticated GET /api/v1/study/leaderboard/definitions and /standings expose the reader interface.
 
 ## Configuration
 
-Configuration is supplied through the owning gateway. Leaderboard declares no additional configuration in its manifest.
+Providers register definitions with ranking criteria, evidence minimums, windows and cohort policies. Participation and cohort assignments are persisted through awaited capability operations.
 
 ## Behavior
 
@@ -19,13 +19,6 @@ Unauthenticated definitions and standings requests invoke the injected authentic
 Snapshots are split at Unicode boundaries into rows of at most 60,000 UTF-8 bytes and replaced transactionally. Existing single-row snapshots use the same read path. Metadata methods registerDefinition, assignCohort and setParticipation now return Promise<void> and must be awaited; they execute named ctx flows, propagate storage failures and roll back failed metadata changes. Rollover also returns an awaited promise. Concurrent classroom-board registration shares one pending registration.
 
 The Leaderboard adapter ranks verified learning evidence within authorized cohorts and presents accessible standings.
-
-### Usage
-
-```ts
-const leaderboard = ctx.capabilities.require("study:leaderboard");
-const table = await leaderboard.requestTableModel(query, "en");
-```
 
 ### Provider integration
 

@@ -4,11 +4,11 @@ The public interfaces and operational rules of Performance budgets.
 
 ## Interfaces
 
-This topic is reference material and does not expose an independent endpoint. Examples use the public interfaces of the components described below.
+observability:metrics records allowed server and browser timings. The browser endpoint is POST /api/v1/observability/client; hosted benchmark collection is a separate operator-run procedure.
 
 ## Configuration
 
-This documentation topic has no runtime configuration of its own. Operational settings belong to the relevant component.
+Use fixed network and CPU conditions for comparable measurements. The documented budgets are review targets, not an implemented Lighthouse CI gate or a guarantee that every deployment meets them.
 
 ## Behavior
 
@@ -48,8 +48,8 @@ Measure navigation intent, spinner visibility and required content readiness sep
 
 ## Security
 
-Reading documentation does not grant permission to execute its examples. The owning component authorizes each operation.
+Metrics use bounded names and labels; do not include account identifiers, private URLs or content in measurement labels. Browser submissions retain authentication and per-account rate limits.
 
 ## Reference
 
-Source and package metadata: `src/docs/performance/`.
+- [src/gateways/observability/bootstrap.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/observability/bootstrap.ts)

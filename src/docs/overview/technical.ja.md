@@ -14,7 +14,7 @@ Cognisは3つのメカニズムで拡張されます：
 
 ## 設定
 
-このドキュメント自体には実行時の設定はありません。運用の設定は該当するコンポーネントが管理します。
+管理画面で機能、学習設定で言語を選びます。データベースやメディアはブラウザーではなく配置環境で設定します。
 
 ## 動作
 
@@ -81,8 +81,9 @@ ui/              — ブラウザフロントエンド（ページ、レイア�
 
 ## セキュリティ
 
-ドキュメントを読むだけでは例を実行する権限は得られません。各操作は担当するコンポーネントが認可します。
+階層は所有元の説明であり一括の権限ではありません。アカウント、ゲスト、外部モジュールにそれぞれの認証と対象範囲を適用します。
 
 ## リファレンス
 
-ソースとパッケージの情報: `src/docs/overview/`。
+- [src/core/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/index.ts)
+- [src/gateways/shared.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/shared.ts)

@@ -65,8 +65,10 @@ Not responsible for: serving files over HTTP (the files gateway's routes do that
 
 ## Security
 
-Access to Local File Storage is governed by the caller and its owning gateway. Enabling a component does not grant additional account permissions.
+Namespace and key validation prevent path traversal; writes resolve beneath the configured uploads root. The Files gateway enforces ACLs and quotas before invoking this storage adapter.
 
 ## Reference
 
-Source and package metadata: `src/adapters/file/local/`.
+- [src/adapters/file/local/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/file/local/manifest.json)
+- [src/adapters/file/local/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/file/local/package.json)
+- [src/adapters/file/local/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/file/local/index.ts)

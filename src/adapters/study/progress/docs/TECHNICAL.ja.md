@@ -14,7 +14,7 @@
 
 ## 設定
 
-設定は担当のゲートウェイが提供します。学習の進み具合 のマニフェストには追加の設定は宣言されていません。
+有効な DB 実行機能を使います。問い合わせは学習者、内容、両端を含む時刻で絞り込み、信頼された練習と生の取り込みを区別します。
 
 ## 動作
 
@@ -55,4 +55,7 @@ const events = await progress.listEvents(actor, {});
 
 ## リファレンス
 
-ソースとパッケージの情報: `src/adapters/study/progress/`。
+- [src/adapters/study/progress/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/study/progress/manifest.json)
+- [src/adapters/study/progress/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/study/progress/package.json)
+- [src/adapters/study/progress/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/study/progress/index.ts)
+- [src/adapters/study/progress/routes/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/study/progress/routes/index.ts)

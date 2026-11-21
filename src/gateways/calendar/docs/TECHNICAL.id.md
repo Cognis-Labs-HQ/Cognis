@@ -4,11 +4,11 @@ Antarmuka publik dan aturan operasional Kalender.
 
 ## Antarmuka
 
-Kalender terintegrasi melalui gerbang pemilik; manifesnya mengidentifikasi komponen dan dependensi yang diperlukan.
+/api/v1/calendar/calendars menyediakan GET dan POST; calendars/:id PATCH dan DELETE. calendars/:id/events GET dan POST; /api/v1/calendar/calendars/:calendarId/events/:eventId GET, PATCH, dan DELETE.
 
 ## Konfigurasi
 
-Konfigurasi disediakan melalui gerbang pemilik. Kalender tidak menyatakan konfigurasi tambahan dalam manifesnya.
+Kalender menetapkan nama, visibilitas, dan acara. Pengingat serta status memakai kontrol Kalender; ICS dan CalDAV mendaftarkan ekspornya sendiri.
 
 ## Perilaku
 
@@ -50,8 +50,6 @@ Saat membuat acara, `reminderOffsetsMinutes` yang tidak disertakan memakai nilai
 
 Perilaku ini dijelaskan dalam [kontrak bersama](/docs/features/technical).
 
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/features/technical).
-
 ### Hasil Antrean Tersimpan
 
 Pembuatan acara dalam antrean dan suntingan berikutnya muncul di daftar serta popup detail tersimpan. Pengiriman bersamaan berbagi satu permintaan. Kegagalan aktivitas opsional, ketersediaan, atau penyegaran tampilan tidak menjadikan acara tersimpan sebagai pembuatan gagal. Pengiriman ulang memakai UUID acara yang sama dan otorisasi server terkini.
@@ -62,11 +60,11 @@ Penyedia Calendar menyiapkan lembar gaya status acara yang dimuat tertunda untuk
 
 ### Berbagi dan Pengujian Andal
 
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/adapters/study/flashcards/technical).
+Perilaku ini dijelaskan dalam [kontrak bersama](/docs/gateways/share/technical).
 
 ### Peninjauan dan Siklus Hidup
 
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/adapters/study/flashcards/technical).
+Perilaku ini dijelaskan dalam [kontrak bersama](/docs/gateways/share/technical).
 
 ### Aksi Milik Penyedia
 
@@ -92,11 +90,7 @@ Tombol tampilan memperbarui pilihan visual dan status ditekan secara bersamaan u
 
 ## Keamanan
 
-### Keamanan Permintaan Runtime
-
-Pergantian bahasa dan penyegaran persetujuan tidak lagi gagal akibat Calendar mencoba mendaftarkan notifikasi saat menangani permintaan HTTP biasa. Calendar mendaftarkan kategorinya sekali saat penyelesaian bootstrap, setelah penyedia notifikasi tersedia. Share memakai kategori yang sudah terdaftar, sedangkan Auth memakai hook penyelesaian tanpa registrasi awal yang berulang. Registrasi SMTP tetap dibatasi selama bootstrap; handler runtime hanya mencari dan memakai kemampuan pengiriman yang sudah ada. Calendar adalah **1.5.5**.
-
-Registrasi kontrak adapter mengikuti [kontrak bootstrap gateway bersama](/docs/gateways).
+Mutasi kalender memerlukan kepemilikan atau izin edit terdelegasi. Berbagi memeriksa cakupan, kedaluwarsa, dan perlindungan; pengingat memakai kategori notifikasi terdaftar saat bootstrap.
 
 ## Referensi
 

@@ -4,15 +4,15 @@ Gunakan antarmuka Cognis untuk berpindah fitur serta memilih tampilan dan bahasa
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/) sesuai izin akun Anda.
+Jelajahi Cognis dan pilih tema, bahasa, serta font.
 
 ## Sebelum Memulai
 
-Operasi yang dibahas dapat memerlukan izin akun atau administrator. Membaca topik tidak mengaktifkan fitur opsionalnya.
+Masuk untuk menyimpan preferensi akun.
 
 ## Langkah Awal
 
-Buka [fitur ini](/) dan pilih tindakan yang diperlukan.
+Buka tampilan dan bahasa di Pengaturan.
 
 ## Pelajari Lebih Lanjut
 

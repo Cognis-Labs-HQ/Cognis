@@ -14,7 +14,7 @@ Der gewöhnliche Ereignis-Endpunkt lehnt `compensatesEventId` ab; Clients müsse
 
 ## Konfiguration
 
-Die Konfiguration erfolgt über den zuständigen Funktionsdienst. Lernfortschritt definiert keine zusätzlichen Einstellungen im Manifest.
+Fortschritt nutzt den aktiven DB-Executor. Abfragen filtern Akteur, Inhaltsbereich und inklusive Zeiten; bestätigte Übungen sind von Rohimport getrennt.
 
 ## Verhalten
 
@@ -55,4 +55,7 @@ Eingeschriebene Lernende dürfen mit Leseberechtigung ihre eigenen Klassenergebn
 
 ## Referenz
 
-Quellcode und Paketmetadaten: `src/adapters/study/progress/`.
+- [src/adapters/study/progress/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/study/progress/manifest.json)
+- [src/adapters/study/progress/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/study/progress/package.json)
+- [src/adapters/study/progress/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/study/progress/index.ts)
+- [src/adapters/study/progress/routes/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/study/progress/routes/index.ts)

@@ -4,15 +4,15 @@ Bestätigen Sie eine Anmeldung mit einem einmaligen Code an Ihre E-Mail-Adresse.
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/settings) entsprechend Ihren Kontorechten.
+Erhalte Anmeldecodes an deine bestätigte E-Mail-Adresse.
 
 ## Vor dem Start
 
-Prüfen Sie, ob E-Mail-Bestätigung aktiviert ist und Ihr Konto den Vorgang ausführen darf.
+Dein Konto braucht eine bestätigte Hauptadresse und funktionierende Zustellung.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/settings) und wählen Sie die gewünschte Aktion.
+Füge die E-Mail-Methode in den Kontosicherheitseinstellungen hinzu.
 
 ## Weitere Informationen
 

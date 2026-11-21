@@ -4,16 +4,16 @@ Practical procedures for Adapters.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/adapters) before performing these procedures.
+Configuration requires administrator access and the provider's connection details.
 
 ## Examples
 
-This component does not declare a standalone command-line entry point. Use its owning feature or the [deployment procedures](/docs/devops/usage) to configure the installation; the [technical reference](/docs/adapters/technical) lists its interfaces and constraints.
+Inspect an adapter's settings, configure the service and use its test action where available before enabling normal use.
 
 ## Expected Results
 
-The example uses the documented interface of Adapters. Confirm the response or saved state described in [Technical](/docs/adapters/technical) before repeating a write operation.
+The gateway uses registered active providers; provider-specific settings remain owned by the adapter.
 
 ## Troubleshooting
 
-If Adapters is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+Check dependency status and test diagnostics. Installing an adapter does not guarantee its external service is reachable.

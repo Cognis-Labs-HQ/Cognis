@@ -83,8 +83,10 @@ Registrasi kontrak adapter mengikuti [kontrak bootstrap gateway bersama](/docs/g
 
 ## Keamanan
 
-Akses Basis Data diatur oleh pemanggil dan gerbang pemilik. Mengaktifkan komponen tidak menambah izin akun.
+Executor adalah infrastruktur, bukan batas otorisasi pengguna. Pelaku harus diotorisasi sebelum perintah terstruktur; kredensial dan cadangan dikelola penerapan.
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/gateways/db/`.
+- [src/gateways/db/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/db/manifest.json)
+- [src/gateways/db/bootstrap.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/db/bootstrap.ts)
+- [src/gateways/db/gateway.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/db/gateway.ts)

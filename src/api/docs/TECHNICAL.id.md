@@ -27,10 +27,6 @@ Antarmuka publik dan aturan operasional Server Aplikasi.
 
 Perbedaan dokumen memungkinkan modul menjelaskan perubahan antara dua versi dokumen yang tidak dapat diubah sebelum pengguna mengambil tindakan terhadap salinan terbaru.
 
-### Contoh Penggunaan
-
-Panggil `store.diff(fromVersion, toVersion)` melalui penyimpanan yang dibuat oleh kapabilitas `docs:versionStore`. Modul runtime dapat mengembalikan hasil terstruktur melalui rute terautentikasinya sendiri, memperoleh `ui:documentDiff` melalui ctx browser, dan meneruskan hasil tersebut ke `renderDocumentDiff(diff)`.
-
 ### Spesifikasi Teknis
 
 Kedua hash harus tersedia dalam namespace penyimpanan dan berasal dari slug dokumen yang sama. Hasilnya memuat hash sumber dan tujuan, slug bersama, serta baris terurut yang diklasifikasikan sebagai `unchanged`, `added`, `removed`, atau `changed`. Entri yang berubah memuat teks lama dan teks pengganti.
@@ -51,4 +47,4 @@ Titik akhir dokumentasi menyediakan informasi baca-saja. Jangan masukkan kredens
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/api/`.
+- [src/api/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/api/package.json)

@@ -4,16 +4,16 @@ Praktische Abläufe für Kernsystem.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/core).
+Verfügbarkeit hängt von installierten Komponenten und ihren Abhängigkeiten ab.
 
 ## Beispiele
 
-Diese Komponente deklariert keinen eigenständigen Befehlszeileneinstieg. Nutzen Sie die zugehörige Funktion oder die [Bereitstellungsabläufe](/docs/devops/usage) zur Konfiguration; die [technische Referenz](/docs/components/core/technical) nennt Schnittstellen und Grenzen.
+Prüfe Abhängigkeiten, aktiviere eine erlaubte Komponente und kontrolliere ihre Aktion auf der zuständigen Seite.
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von Kernsystem. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/components/core/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Funktionen stellen Fähigkeiten während ihrer aktiven Lebensdauer bereit; Deaktivieren entfernt ihre Registrierungen.
 
 ## Fehlerbehebung
 
-Falls Kernsystem nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Behebe fehlende Abhängigkeiten statt fremde Implementierungen zu importieren oder deren Lebenszyklus zu umgehen.

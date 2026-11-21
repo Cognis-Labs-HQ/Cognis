@@ -4,20 +4,20 @@
 
 ## Schnittstellen
 
-Dieser Arbeitsbereich stellt gemeinsamen Plattformcode bereit. Öffentliche Funktionsverträge gehören zur jeweiligen Fähigkeit, zum Befehl oder Funktionsdienst; dieses Paket stellt keinen eigenen HTTP-Dienst bereit.
+GatewayBootstrapContext stellt Fähigkeiten, Routen, UI und Lebenszyklus bereit. Gemeinsame Starthelfer führen defineContracts und Adapterstart im Eigentümerbereich aus.
 
 ## Konfiguration
 
-Hostkonfiguration und registrierte Fähigkeiten liefern den Betriebskontext. Dieses Paket ergänzt keinen unabhängigen Konfigurationsdienst.
+Der Host liefert Gateway- und Adapterpfade. Manifeste deklarieren Identität, Version, Abhängigkeiten und Dokumente; Anbieterfelder gehören ins jeweilige Adapterschema.
 
 ## Verhalten
 
-Dieses Paket wird mit Cognis bereitgestellt. Die einzelnen Funktionslebenszyklen verwalten Aktivierung, Abhängigkeitsprüfungen und Bereinigung.
+Erkennung registriert aktive Eigentümer und Anbieter. Adapter besitzen Verträge, Routen und Rückrufe; fehlgeschlagener Start rollt Registrierungen zurück. Fachdienste bleiben in Gateway-Verzeichnissen.
 
 ## Sicherheit
 
-Öffentliche Fähigkeiten und Befehle behalten ihre vorgangsbezogene Autorisierung. Die Paketinstallation gewährt keinen Zugriff auf private Ressourcen.
+Registrierungsbereiche bestimmen Eigentum statt Benutzerrechte. Aktionen prüfen Anmeldung und Inhaltsrechte; optionale Anbieter veröffentlichen keine fremden privaten Dienste.
 
 ## Referenz
 
-Quellcode und Paketmetadaten: `src/gateways/`.
+- [src/gateways/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/package.json)

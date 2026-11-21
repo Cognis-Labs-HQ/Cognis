@@ -4,15 +4,15 @@ Richten Sie Cognis einschließlich Speicherung, Diensten und Bereitstellung ein 
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/) entsprechend Ihren Kontorechten.
+Betreibe Cognis mit dauerhafter Datenbank, Medien- und Konfigurationsablage.
 
 ## Vor dem Start
 
-Die beschriebenen Vorgänge können Konto- oder Verwaltungsrechte verlangen. Das Lesen eines Themas aktiviert keine optionalen Funktionen.
+Bereite Docker Compose, Datenbankzugang und Verschlüsselungsschlüssel vor.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/) und wählen Sie die gewünschte Aktion.
+Prüfe Compose-Datei und erforderliche Umgebungswerte.
 
 ## Weitere Informationen
 

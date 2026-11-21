@@ -4,15 +4,15 @@ Sign in with a Cognis username and password without an external account provider
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/login) according to your account permissions.
+Sign in with a Cognis username and password without an external identity service. Local sign-in also provides an administrator recovery account.
 
 ## Before You Start
 
-Check that Local Accounts is enabled and that your account has permission for the operation.
+Account creation follows the installation's registration policy. Local authentication is required and cannot be disabled.
 
 ## Get Started
 
-Open [the feature](/login) and choose the action you need.
+Choose local sign-in on the login page and enter your Cognis credentials.
 
 ## Learn More
 

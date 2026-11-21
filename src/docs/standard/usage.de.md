@@ -4,19 +4,16 @@ Praktische Abläufe für Beitragsstandard.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/standard).
+Wähle passende Komponente und Version deiner Installation.
 
 ## Beispiele
 
-```sh
-npm --prefix <module-checkout> test
-cognisctl modules:jitsi-meet:ping
-```
+Nutze Info zum Verstehen, Nutzung für Abläufe und Technik für Schnittstellen, Konfiguration und Sicherheit.
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von Beitragsstandard. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/standard/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Alle drei Ansichten gehören zu einem vollständigen Versionspaket mit gleicher Übersetzungsstruktur.
 
 ## Fehlerbehebung
 
-Falls Beitragsstandard nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Wähle bei Widersprüchen die installierte Version und melde die genaue Aussage statt Releasegeschichte in Handbücher einzufügen.

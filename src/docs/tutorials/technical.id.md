@@ -4,20 +4,21 @@ Antarmuka publik dan aturan operasional Tutorial Terpandu.
 
 ## Antarmuka
 
-Topik ini merupakan referensi dan tidak menyediakan titik akhir mandiri. Contoh memakai antarmuka publik komponen yang dijelaskan di bawah.
+Komponen memperoleh `ui:tutorials` melalui ctx peramban. Host memasang lewat installTutorials; tindakan memakai alur `ui:tutorial:*`. Page Composer menyumbang panduan halaman tanpa impor internal.
 
 ## Konfigurasi
 
-Topik dokumentasi ini tidak memiliki konfigurasi waktu jalan sendiri. Pengaturan operasional dimiliki komponen terkait.
+Panduan mendeklarasikan ID pemilik/panduan/langkah stabil, terjemahan, halaman, target, dan highlightNext. Cabang opsional memakai targetAvailable serta sinyal pembukaan; panduan bahasa perlu pendaftaran.
 
 ## Perilaku
 
-Baca contoh dan kontrak teknis yang relevan sebelum mengubah instalasi. Tampilan dokumentasi ini tidak mengubah keadaan komponen.
+Penemuan halaman menunggu status akun dan melewati panduan selesai. Pemutaran ulang tidak menghapus penyelesaian. Kembali dan Mulai Ulang mempertahankan contoh; pembatalan dan unmount membersihkan target. Penyelesaian diakui setelah tersimpan.
 
 ## Keamanan
 
-Membaca dokumentasi tidak memberikan izin menjalankan contohnya. Komponen pemilik mengotorisasi setiap operasi.
+Visibilitas dan kondisi mengikuti peran serta akses. Kegagalan membaca penyelesaian adalah galat, bukan izin memutar otomatis; kemajuan disimpan per akun terautentikasi.
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/docs/tutorials/`.
+- [src/ui/reuse/tutorials/index.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/ui/reuse/tutorials/index.js)
+- [src/ui/reuse/tutorials/runtime.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/ui/reuse/tutorials/runtime.js)

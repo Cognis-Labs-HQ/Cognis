@@ -18,7 +18,7 @@
 
 ## 設定
 
-このドキュメント自体には実行時の設定はありません。運用の設定は該当するコンポーネントが管理します。
+版は宣言と package.json に記録します。<=1.2.3 のような検証上限は警告の境界であり、古い全機能の同等性を保証しません。
 
 ## 動作
 
@@ -113,8 +113,9 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 ## セキュリティ
 
-ドキュメントを読むだけでは例を実行する権限は得られません。各操作は担当するコンポーネントが認可します。
+版や検証上限で有効化が許可されるわけではありません。更新時も整合性、依存関係、ホスト保護を確認します。
 
 ## リファレンス
 
-ソースとパッケージの情報: `src/docs/versions/`。
+- [src/tooling/reuse/component-files.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/tooling/reuse/component-files.js)
+- [package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/package.json)

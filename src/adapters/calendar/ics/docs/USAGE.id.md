@@ -4,16 +4,16 @@ Prosedur praktis untuk Impor dan Ekspor Kalender.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/adapters/calendar/ics) sebelum menjalankan prosedur ini.
+Gunakan kalender milik sendiri dan adapter ICS aktif.
 
 ## Contoh
 
-Komponen ini tidak menyatakan titik masuk baris perintah mandiri. Gunakan fitur pemiliknya atau [prosedur penerapan](/docs/devops/usage) untuk mengonfigurasi instalasi; [referensi teknis](/docs/adapters/calendar/ics/technical) mencantumkan antarmuka dan batasnya.
+Ekspor ICS, periksa tanggalnya, lalu impor teks ICS valid ke kalender tujuan milik sendiri.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Impor dan Ekspor Kalender yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/adapters/calendar/ics/technical) sebelum mengulangi operasi tulis.
+Ekspor menghasilkan lampiran; impor menyerahkan pembuatan acara ke Kalender.
 
 ## Pemecahan Masalah
 
-Jika Impor dan Ekspor Kalender tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Periksa kepemilikan dan isi ICS tidak kosong. Tinjau zona waktu serta pengulangan sebelum mengimpor berkas asing.

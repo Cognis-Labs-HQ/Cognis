@@ -14,7 +14,7 @@ Shareable components declare a `share` block in their manifest with `shareable`,
 
 ## Configuration
 
-Configuration is supplied through the owning gateway. Sharing declares no additional configuration in its manifest.
+Shareable manifests declare renderer and guest API scopes. Each share records permissions, recipients, expiry and optional protection; method adapters own their input pages.
 
 ## Behavior
 
@@ -24,17 +24,13 @@ Adapter navbar providers are declared by the owning adapter and follow its enabl
 
 The Share browser client lets modules retrieve the current authenticated share-guest profile through the Share gateway's public browser contract.
 
-### Usage examples
-
-Import `uiCtx`, require `share:uiClient`, and call `getGuestProfile()`. Inspect the returned `Response` before reading its `{ data }` JSON payload.
-
-### Reliable Sharing and Tests
+### Share Delivery
 
 See the [shared contract](/docs/adapters/study/flashcards/technical) for this behavior.
 
 Guest Flashcard practice uses a temporary mode selection and disables account enhancements and persisted layout settings. It does not read or write account practice preferences.
 
-### Review and Lifecycle Hardening
+### Lifecycle Boundaries
 
 Share adapters may export `defineContracts(ctx)`. Share invokes this before constructing the method, using the shared contract registry and adapter-owned bootstrap scope. Invalid methods roll back their definitions and log safe failure metadata. Definitions follow gateway disable and reactivation.
 
@@ -87,6 +83,8 @@ The browser probes token resolution without opening the account keyring. Only a 
 ### Component-window boundary
 
 A mounted link-share page may programmatically spawn an otherwise valid component page. This authorization covers only the browser window operation. For API access, the Share gateway resolves delegation generically through the `resolve-share-delegated-access` flow: the source-resource owner proves its relationship to the requested target and declares the allowed target capabilities, while Share verifies that the guest token grants the required source capability and keeps the result bound to both resource identifiers. Share never hardcodes resource pairings or treats one resource share as another.
+
+Share page startup checks the page abort signal after asynchronous preparation. Closing a guest page prevents late rendering; disabling Share cancels its maintenance lifetime so a pending expiry scan cannot send later notices.
 
 ## Security
 

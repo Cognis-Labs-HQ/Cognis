@@ -4,11 +4,11 @@ Antarmuka publik dan aturan operasional Undangan Pendaftaran.
 
 ## Antarmuka
 
-Undangan Pendaftaran terintegrasi melalui gerbang pemilik; manifesnya mengidentifikasi komponen dan dependensi yang diperlukan.
+createRegistrationAdapter menyediakan otorisasi undangan; CLI mencakup invite:token:generate dan invite:email:send.
 
 ## Konfigurasi
 
-Konfigurasi disediakan melalui gerbang pemilik. Undangan Pendaftaran tidak menyatakan konfigurasi tambahan dalam manifesnya.
+Penerbitan mengikuti kebijakan Pendaftaran: pendiri/administrator, domain penerima, dan batas tertunda. Email memakai penyedia notifikasi aktif.
 
 ## Perilaku
 
@@ -17,10 +17,6 @@ Konfigurasi disediakan melalui gerbang pemilik. Undangan Pendaftaran tidak menya
 Adapter mendeklarasikan skrip otorisasi dan sumber bahasa melalui `registrationUi`. Gateway memuat kontribusi ini hanya saat adapter dan gateway aktif.
 
 Adapter Token Pendaftaran wajib memiliki token undangan dan otorisasi pembuatan akun. Adapter ini mengirim tautan sekali pakai melalui penyedia notifikasi email yang aktif dan menjadi sumber token yang dipakai halaman Pengguna untuk undangan administrator dan pendiri.
-
-### Contoh penggunaan
-
-Administrator dan pendiri menerbitkan undangan melalui halaman Pengguna. Penyedia autentikasi eksternal meneruskan email terverifikasi dan token pendaftaran melalui alur gerbang pembuatan akun, bukan mengimpor adapter.
 
 ### Spesifikasi teknis
 
@@ -38,8 +34,10 @@ Administrator dan pemilik dapat membuka `/invite` tanpa status pendiri. Kebijaka
 
 ## Keamanan
 
-Akses Undangan Pendaftaran diatur oleh pemanggil dan gerbang pemilik. Mengaktifkan komponen tidak menambah izin akun.
+Otorisasi undangan mengikat email dan kebijakan. Akun eksternal harus tersimpan sebelum penukaran; kegagalan pengiriman tidak menggantikan undangan valid.
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/adapters/registration/token/`.
+- [src/adapters/registration/token/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/registration/token/manifest.json)
+- [src/adapters/registration/token/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/registration/token/package.json)
+- [src/adapters/registration/token/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/registration/token/index.ts)

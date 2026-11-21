@@ -77,7 +77,7 @@ Adapterlisten und Konfigurationsverträge enthalten `stringsBaseUrl`, wenn ein A
 
 ## Konfiguration
 
-Die Konfiguration erfolgt über den zuständigen Funktionsdienst. Anmelden definiert keine zusätzlichen Einstellungen im Manifest.
+Anbieterschemas konfigurieren externe Verbindungen. COGNIS_ACCESS_TOKEN_TTL_SECONDS steuert Tokenlaufzeit; Kontoprüfung und TFA bleiben registrierte Auswahlmöglichkeiten.
 
 ## Verhalten
 
@@ -152,9 +152,7 @@ Anfragen für Zugangsdaten, TFA-Codes und SSO-Autorisierung zeigen das gemeinsam
 
 ### Kontodatenschutz und Schlüsselbund-Isolation
 
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/adapters/auth/local/technical).
-
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/adapters/auth/local/technical).
+Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/gateways/auth/technical).
 
 ### Anmeldung und Übertragung
 
@@ -184,7 +182,9 @@ Links im Anmeldefußbereich bilden zugängliche Zeilen; Anbieterbeschriftungen b
 
 ## Sicherheit
 
-Der Zugriff auf Anmelden unterliegt dem Aufrufer und dem zuständigen Funktionsdienst. Die Aktivierung erweitert keine Kontorechte.
+Authentifizierung prüft Zugangsdaten vor Sitzung und nötiger TFA. Konto-, Rollen- und Inhaltsrechte bleiben getrennt; verweigerte Schlüsselbundfreigabe ändert keine Identität.
+
+SSO-Konten erhalten zufällige undurchsichtige IDs. Anbieter-IDs werden separat gespeichert und nur Administratoren angezeigt; öffentliche Benutzernamen enthalten sie nie. Auth reserviert Benutzernamen vor Profil- oder E-Mail-Änderungen: doppelte Namen desselben Anbieters werden abgelehnt, bei verschiedenen Anbietern wird bei Bedarf ein kurzes Zufallssuffix ergänzt. Benutzerlisten und Aktionsendpunkte unterscheiden den öffentlichen `username` von der internen `accountId`.
 
 ## Referenz
 

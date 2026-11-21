@@ -4,21 +4,19 @@ The public interfaces and operational rules of Share with People.
 
 ## Interfaces
 
-Share with People is integrated through the owning gateway; its manifest identifies the component and required dependencies.
+createShareAdapter returns method user with account delivery. prepare requires recipients; validateUnique rejects an existing user grant. The account-share page requires sign-in.
 
 ## Configuration
 
-Configuration is supplied through the owning gateway. Share with People declares no additional configuration in its manifest.
+Provide explicit recipients and resource-allowed permissions through the Share popup. Account delivery uses Cognis identities rather than an external messaging connection.
 
 ## Behavior
 
-### Usage examples
-
-Grants a resource directly to Cognis users through the Share gateway. The adapter validates user recipients and owns the User page shown inside the gateway popup.
+Account delivery requires the recipient to sign in before the shared resource is resolved. The method contributes its recipient form and account-share page; Share retains token persistence, expiry and revocation.
 
 ## Security
 
-Access to Share with People is governed by the caller and its owning gateway. Enabling a component does not grant additional account permissions.
+Recipients must be explicit account references. Empty recipients and duplicate user grants are rejected; the Share gateway validates the sender's authority and the resource permission ceiling.
 
 ## Reference
 

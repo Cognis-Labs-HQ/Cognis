@@ -4,15 +4,15 @@ Laden Sie Gesprächsteilnehmer zu einem Anruf ein und nehmen Sie eingehende Einl
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/messages) entsprechend Ihren Kontorechten.
+Starte oder beantworte einen Anruf aus einem geeigneten Gespräch.
 
 ## Vor dem Start
 
-Prüfen Sie, ob Anrufe aktiviert ist und Ihr Konto den Vorgang ausführen darf.
+Anrufe und Nachrichten müssen aktiv sein; Audio und Video benötigen Browserberechtigungen.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/messages) und wählen Sie die gewünschte Aktion.
+Öffne ein Gespräch und nutze dessen Anrufsteuerung.
 
 ## Weitere Informationen
 

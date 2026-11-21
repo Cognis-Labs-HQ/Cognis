@@ -17,9 +17,11 @@ Antarmuka publik dan aturan operasional Cognis.
 
 ## Konfigurasi
 
-Topik dokumentasi ini tidak memiliki konfigurasi waktu jalan sendiri. Pengaturan operasional dimiliki komponen terkait.
+Manifes serta penyedia menentukan fitur. Penerapan mengatur penyimpanan dan transportasi; Pengaturan akun mengatur preferensi pribadi.
 
 ## Perilaku
+
+OIDC dan SAML dalam sumber ini memerlukan klien protokol terinjeksi. Formulir tidak membuat klien; periksa Teknis adapter sebelum penerapan.
 
 ### Ikhtisar
 
@@ -50,8 +52,9 @@ Dokumen-dokumen ini ditulis untuk kontributor pengembang, bukan pengguna akhir. 
 
 ## Keamanan
 
-Membaca dokumentasi tidak memberikan izin menjalankan contohnya. Komponen pemilik mengotorisasi setiap operasi.
+Ketersediaan fitur tidak memberi akses data. Autentikasi, kepemilikan, snapshot privat, dan masa penyedia tetap batas terpisah.
 
 ## Referensi
 
-Kode sumber dan metadata paket: `./`.
+- [src/core/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/index.ts)
+- [src/api/main.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/api/main.ts)

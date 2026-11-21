@@ -4,16 +4,18 @@ Practical procedures for Writing Practice.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/adapters/study/drawing) before performing these procedures.
+Enroll in a language with writing-practice support.
 
 ## Examples
 
-This component does not declare a standalone command-line entry point. Use its owning feature or the [deployment procedures](/docs/devops/usage) to configure the installation; the [technical reference](/docs/adapters/study/drawing/technical) lists its interfaces and constraints.
+Draw a response, use hints when needed and complete the attempt; change navigation without discarding the current pad unnecessarily.
+
+The same `openDrawingPad` engine accepts an optional `container`, abort `signal` and `onResult` callback. Without a container it opens a movable, resizable floating window within the page; loading a different card preserves its position. With a container it embeds the entire pad, locks the original character and reports success only when every ordered stroke is accepted. Flashcards requires no optional Drawing adapter for embedded Writing.
 
 ## Expected Results
 
-The example uses the documented interface of Writing Practice. Confirm the response or saved state described in [Technical](/docs/adapters/study/drawing/technical) before repeating a write operation.
+The pad preserves its working state; trusted completed attempts can record learning progress.
 
 ## Troubleshooting
 
-If Writing Practice is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+Check language support and prepared offline assets. Hidden answers remain concealed until the relevant reveal action.

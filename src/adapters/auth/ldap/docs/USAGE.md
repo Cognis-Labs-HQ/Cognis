@@ -4,16 +4,16 @@ Practical procedures for LDAP Sign In.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/adapters/auth/ldap) before performing these procedures.
+Prepare the LDAP URL, bind credentials, user search base and filter in Authentication administration.
 
 ## Examples
 
-This component does not declare a standalone command-line entry point. Use its owning feature or the [deployment procedures](/docs/devops/usage) to configure the installation; the [technical reference](/docs/adapters/auth/ldap/technical) lists its interfaces and constraints.
+Save the LDAP settings and run the connection test. Resolve bind or search errors, then test sign-in with a directory user before relying on group-based administrator access.
 
 ## Expected Results
 
-The example uses the documented interface of LDAP Sign In. Confirm the response or saved state described in [Technical](/docs/adapters/auth/ldap/technical) before repeating a write operation.
+The test reports connection and lookup status. Successful authentication links the directory identity to a Cognis account.
 
 ## Troubleshooting
 
-If LDAP Sign In is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+Check TLS trust, bind permissions, search scope and the username filter. A successful connection alone does not prove that a particular user's password or group mapping is valid.

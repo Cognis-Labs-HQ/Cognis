@@ -4,15 +4,15 @@ Verifikasi proses masuk menggunakan kode sekali pakai yang dikirim ke alamat ema
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/settings) sesuai izin akun Anda.
+Terima kode verifikasi masuk di email utama terverifikasi.
 
 ## Sebelum Memulai
 
-Pastikan Verifikasi Email aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Akun memerlukan email utama terverifikasi dan pengiriman email aktif.
 
 ## Langkah Awal
 
-Buka [fitur ini](/settings) dan pilih tindakan yang diperlukan.
+Tambahkan metode email di pengaturan keamanan akun.
 
 ## Pelajari Lebih Lanjut
 

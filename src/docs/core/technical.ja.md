@@ -23,14 +23,14 @@ export interface AuthAccountStore {
         username: string;
         passwordHash: string;
         email?: string;
-        isAdmin?: boolean;
+        role?: string;
     }): Promise<AuthAccount>;
 }
 ```
 
 ## 設定
 
-このドキュメント自体には実行時の設定はありません。運用の設定は該当するコンポーネントが管理します。
+コアはホスト起動時に保存機能や登録機能を受け取ります。データベース接続は個人設定ではなく運用側で構成します。
 
 ## 動作
 
@@ -118,8 +118,9 @@ export interface HealthStatus {
 
 ## セキュリティ
 
-ドキュメントを読むだけでは例を実行する権限は得られません。各操作は担当するコンポーネントが認可します。
+起動範囲で登録元を特定します。状態変更前に権限を検証し、機能が見つかっただけではデータを許可しません。
 
 ## リファレンス
 
-ソースとパッケージの情報: `src/docs/core/`。
+- [src/core/ctx/types.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/ctx/types.ts)
+- [src/core/ctx/flow-api.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/ctx/flow-api.ts)

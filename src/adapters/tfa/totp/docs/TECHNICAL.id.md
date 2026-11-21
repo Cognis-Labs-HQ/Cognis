@@ -4,7 +4,7 @@ Antarmuka publik dan aturan operasional Verifikasi Autentikator.
 
 ## Antarmuka
 
-Verifikasi Autentikator terintegrasi melalui gerbang pemilik; manifesnya mengidentifikasi komponen dan dependensi yang diperlukan.
+Metode menerapkan kontrak TFA: penyiapan memberi manualSecret dan qrSvg, konfirmasi memeriksa kode, verifikasi memakai secret, algorithm, digits, dan period tersimpan.
 
 ## Konfigurasi
 
@@ -43,8 +43,10 @@ Menyediakan verifikasi kata sandi sekali pakai berbasis waktu untuk gateway TFA.
 
 ## Keamanan
 
-Akses Verifikasi Autentikator diatur oleh pemanggil dan gerbang pemilik. Mengaktifkan komponen tidak menambah izin akun.
+Penyiapan aktif setelah konfirmasi enam digit valid. Lindungi rahasia tersimpan; verifikasi menerima periode tiga puluh detik saat ini dan satu tetangga di tiap sisi.
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/adapters/tfa/totp/`.
+- [src/adapters/tfa/totp/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/tfa/totp/manifest.json)
+- [src/adapters/tfa/totp/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/tfa/totp/package.json)
+- [src/adapters/tfa/totp/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/tfa/totp/index.ts)

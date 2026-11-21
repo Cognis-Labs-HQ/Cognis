@@ -4,18 +4,16 @@ Prosedur praktis untuk PostgreSQL.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/adapters/db/postgres) sebelum menjalankan prosedur ini.
+Siapkan basis data PostgreSQL yang dapat dijangkau aplikasi.
 
 ## Contoh
 
-```sh
-DB_TYPE=postgresql
-```
+Atur DB_TYPE=postgresql dan DATABASE_URL, mulai ulang, lalu verifikasi inisialisasi skema sebelum menerima pengguna.
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka PostgreSQL yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/adapters/db/postgres/technical) sebelum mengulangi operasi tulis.
+Aplikasi menggunakan pool koneksi PostgreSQL; transaksi disimpan bersama atau dibatalkan saat gagal.
 
 ## Pemecahan Masalah
 
-Jika PostgreSQL tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Periksa batas koneksi, kredensial, dan hak basis data. Mengganti penyedia tidak menyalin data lama.

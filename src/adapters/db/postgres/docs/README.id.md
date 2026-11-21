@@ -4,15 +4,15 @@ Simpan akun dan konten Cognis di basis data PostgreSQL yang dikelola administrat
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/administration) sesuai izin akun Anda.
+Simpan data Cognis secara persisten di PostgreSQL.
 
 ## Sebelum Memulai
 
-Pastikan PostgreSQL aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Siapkan basis data PostgreSQL yang dapat dijangkau aplikasi.
 
 ## Langkah Awal
 
-Buka [fitur ini](/administration) dan pilih tindakan yang diperlukan.
+Pilih PostgreSQL sebagai backend basis data instalasi.
 
 ## Pelajari Lebih Lanjut
 

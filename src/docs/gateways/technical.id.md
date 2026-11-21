@@ -10,7 +10,7 @@ Gateway menyediakan registri `system:contracts` yang sama kepada adapter melalui
 
 ## Konfigurasi
 
-Topik dokumentasi ini tidak memiliki konfigurasi waktu jalan sendiri. Pengaturan operasional dimiliki komponen terkait.
+Root gateway dan adapter berasal dari COGNIS_GATEWAYS_ROOT serta COGNIS_ADAPTERS_ROOT. Identitas, versi, dan dependensi milik manifes; pengaturan milik gateway.
 
 ## Perilaku
 
@@ -206,7 +206,7 @@ Untuk menambah gateway baru:
 
 ## Keamanan
 
-Membaca dokumentasi tidak memberikan izin menjalankan contohnya. Komponen pemilik mengotorisasi setiap operasi.
+Kepemilikan gateway bukan wewenang akun. Kontrak publik membatasi panggilan; operasi tetap memeriksa akun dan sumber daya.
 
 ## Referensi
 

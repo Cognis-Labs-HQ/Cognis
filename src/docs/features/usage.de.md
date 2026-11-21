@@ -4,16 +4,16 @@ Praktische Abläufe für Plattform-Features.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/features).
+Funktionen können optional und rollenbeschränkt sein.
 
 ## Beispiele
 
-Diese Komponente deklariert keinen eigenständigen Befehlszeileneinstieg. Nutzen Sie die zugehörige Funktion oder die [Bereitstellungsabläufe](/docs/devops/usage) zur Konfiguration; die [technische Referenz](/docs/features/technical) nennt Schnittstellen und Grenzen.
+Öffne eine Funktion, wiederhole ihre Anleitung über das Fragezeichen und lies ihre Komponentendokumente.
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von Plattform-Features. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/features/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Anleitungen erklären verfügbare Aktionen; Dokumentation schaltet verborgene Aktionen nicht frei.
 
 ## Fehlerbehebung
 
-Falls Plattform-Features nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Prüfe Rolle, Einschreibung und Anbieter bei fehlenden Steuerelementen.

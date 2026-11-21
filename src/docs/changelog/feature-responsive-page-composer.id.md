@@ -12,7 +12,7 @@ Persiapan luring, kontrak penyedia, batas akun, dan pembersihan siklus hidup men
 
 ## Dokumentasi Terstruktur
 
-Dokumentasi komponen memisahkan pengenalan, prosedur penggunaan, dan kontrak teknis. Topik inti memakai entri direktori. Pembaca beralih di antara tiga tampilan satu paket versi lengkap; pemeriksaan menegakkan struktur, terjemahan, manifes, dan kepemilikan aset. Regresi keamanan Markdown memverifikasi HTML cacat yang di-escape dan pagar kode bersarang yang dipertahankan langsung pada keluaran terenkode.
+Dokumentasi komponen memisahkan pengenalan, prosedur penggunaan, dan kontrak teknis. Topik inti memakai entri direktori. Pembaca beralih di antara tiga tampilan satu paket versi lengkap; pemeriksaan menegakkan struktur, terjemahan, manifes, dan kepemilikan aset. Regresi keamanan Markdown memverifikasi HTML cacat yang di-escape dan pagar kode bersarang yang dipertahankan langsung pada keluaran terenkode. Setiap tampilan memuat tugas, prasyarat, hasil teramati, dan penanganan kegagalan khusus komponen. Klaim teknis mengikuti antarmuka serta konfigurasi terimplementasi, termasuk batas integrasi yang memerlukan klien terinjeksi. Validasi menolak petunjuk generik dan referensi berkas sumber yang hilang.
 
 ## Komit
 

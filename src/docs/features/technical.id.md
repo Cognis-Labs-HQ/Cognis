@@ -4,7 +4,7 @@ Antarmuka publik dan aturan operasional Fitur Platform.
 
 ## Antarmuka
 
-Topik ini merupakan referensi dan tidak menyediakan titik akhir mandiri. Contoh memakai antarmuka publik komponen yang dijelaskan di bawah.
+Kontrak publik milik pemiliknya: Auth mengelola sesi, Study aktivitas dan konten, Social profil/ruang/pensinyalan, Kalender jadwal, dan Share akses terdelegasi. Kontribusi UI tidak berarti semua fitur memiliki endpoint HTTP mandiri. OIDC dan SAML memerlukan klien protokol terinjeksi; skema saja tidak mengimplementasikan autentikasi jarak jauh.
 
 ## Konfigurasi
 
@@ -97,15 +97,11 @@ Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
 
 Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
 
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
-
 ### Buka kunci dan pemuatan modul
 
 Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
 
 ### Banner atas bersama
-
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
 
 Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
 
@@ -139,17 +135,11 @@ Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
 
 Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
 
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
-
 ### Cache Aset Persisten
 
 Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
 
 ### Ruang Kerja Luring
-
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
-
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
 
 Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
 
@@ -184,8 +174,6 @@ Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
 Perilaku ini dijelaskan dalam [kontrak bersama](/docs/gateways/study/technical).
 
 ### Perubahan Bahasa UI Langsung
-
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
 
 Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
 
@@ -225,9 +213,7 @@ Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
 
 ### Privasi akun dan isolasi keyring
 
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/adapters/auth/local/technical).
-
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/adapters/auth/local/technical).
+Perilaku ini dijelaskan dalam [kontrak bersama](/docs/gateways/auth/technical).
 
 Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
 

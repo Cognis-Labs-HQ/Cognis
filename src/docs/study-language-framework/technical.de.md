@@ -269,8 +269,9 @@ Study lädt UUID-Abhängigkeiten und erforderliche Kern-Capabilities aus den Ada
 
 ## Sicherheit
 
-Das Lesen der Dokumentation berechtigt nicht zur Ausführung ihrer Beispiele. Die zuständige Komponente autorisiert jeden Vorgang.
+Sprachmodule liefern Daten und Konstruktoren statt Rechterichtlinien. Referenzen, Sichtbarkeit, Mitgliedschaft und Änderungen prüft der Host.
 
 ## Referenz
 
-Quellcode und Paketmetadaten: `src/docs/study-language-framework/`.
+- [src/gateways/study/gateway.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/study/gateway.ts)
+- [src/adapters/study/library/contracts.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/study/library/contracts.ts)

@@ -4,15 +4,15 @@ Cognis pages arrange content for your screen and keep navigation and controls us
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/) according to your account permissions.
+Use a consistent layout across phones, tablets and desktop screens.
 
 ## Before You Start
 
-The operations discussed here may require account or administrator permissions. Reading a topic does not enable its optional features.
+Each page supplies its content; the shared composer controls layout and sidebar presentation.
 
 ## Get Started
 
-Open [the feature](/) and choose the action you need.
+Open a page with a sidebar, such as Calendar or Messages.
 
 ## Learn More
 

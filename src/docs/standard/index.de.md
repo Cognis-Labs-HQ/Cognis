@@ -4,15 +4,15 @@ Wählen Sie die passende Hilfe: Einführung, praktische Beispiele oder technisch
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/) entsprechend Ihren Kontorechten.
+Finde Einführungen, Abläufe und technische Referenzen in einheitlichen Ansichten.
 
 ## Vor dem Start
 
-Die beschriebenen Vorgänge können Konto- oder Verwaltungsrechte verlangen. Das Lesen eines Themas aktiviert keine optionalen Funktionen.
+Wähle passende Komponente und Version deiner Installation.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/) und wählen Sie die gewünschte Aktion.
+Öffne Dokumente und beginne mit Info.
 
 ## Weitere Informationen
 

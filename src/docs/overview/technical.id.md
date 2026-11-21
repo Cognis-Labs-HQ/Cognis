@@ -25,7 +25,7 @@ Capability store adalah mekanisme injeksi yang menghubungkan gateway tanpa impor
 
 ## Konfigurasi
 
-Topik dokumentasi ini tidak memiliki konfigurasi waktu jalan sendiri. Pengaturan operasional dimiliki komponen terkait.
+Pilih komponen di Administrasi dan bahasa di Study. Basis data dan jalur media adalah konfigurasi penerapan, bukan preferensi peramban.
 
 ## Perilaku
 
@@ -81,8 +81,9 @@ Cognis diperluas melalui tiga mekanisme:
 
 ## Keamanan
 
-Membaca dokumentasi tidak memberikan izin menjalankan contohnya. Komponen pemilik mengotorisasi setiap operasi.
+Model lapisan menjelaskan kepemilikan, bukan izin menyeluruh. Akun, tamu, dan modul mempertahankan batas autentikasi serta sumber daya.
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/docs/overview/`.
+- [src/core/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/index.ts)
+- [src/gateways/shared.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/shared.ts)

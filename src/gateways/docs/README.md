@@ -4,15 +4,15 @@ Feature gateways connect the enabled parts of Cognis to their available service 
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/administration) according to your account permissions.
+Understand which feature gateway and provider own a service.
 
 ## Before You Start
 
-Check that Feature Gateways is enabled and that your account has permission for the operation.
+This package groups gateway infrastructure; individual gateways define their user features.
 
 ## Get Started
 
-Open [the feature](/administration) and choose the action you need.
+Find the gateway for the service you want to configure in Administration.
 
 ## Learn More
 

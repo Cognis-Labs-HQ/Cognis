@@ -4,15 +4,15 @@ Teilen Sie unterstützte Inhalte mit ausgewählten Personen oder über einen öf
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/) entsprechend Ihren Kontorechten.
+Teile unterstützte Inhalte per Link oder mit benannten Empfängern und klaren Rechten.
 
 ## Vor dem Start
 
-Prüfen Sie, ob Freigaben aktiviert ist und Ihr Konto den Vorgang ausführen darf.
+Der Inhalt muss teilbar und eine passende Methode aktiv sein.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/) und wählen Sie die gewünschte Aktion.
+Nutze Teilen am gewünschten Inhalt.
 
 ## Weitere Informationen
 

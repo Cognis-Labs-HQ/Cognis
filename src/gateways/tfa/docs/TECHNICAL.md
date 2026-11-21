@@ -57,7 +57,7 @@ Each adapter directory under `src/adapters/tfa/<adapter-id>/` provides the metho
 
 ## Configuration
 
-Configuration is supplied through the owning gateway. Two-Factor Authentication declares no additional configuration in its manifest.
+Method adapters declare setup/login metadata and configuration schemas. Accounts manage confirmed methods in Settings; provider availability determines which methods can be added or challenged.
 
 ## Behavior
 
@@ -108,7 +108,7 @@ The administrator-only adapter catalog at `GET /api/v1/gateways/tfa/adapters` pu
 
 ## Security
 
-Access to Two-Factor Authentication is governed by the caller and its owning gateway. Enabling a component does not grant additional account permissions.
+Setup, confirmation, deletion and login verification use authenticated gateway flows. Method adapters own challenge validation; primary authentication must not treat an unconfirmed method or failed challenge as successful verification.
 
 ## Reference
 

@@ -4,17 +4,15 @@ Erhalten Sie Hinweise zu wichtigen Aktivitäten über die für Ihr Konto aktivie
 
 ## Möglichkeiten
 
-- Wählen Sie für jede Benachrichtigungskategorie verfügbare Zustellkanäle.
-- Prüfen Sie Kombinationen und speichern Sie; nicht verfügbare Kanäle lassen sich hier nicht aktivieren.
-- Wählen Sie Empfänger und Kategorie und schreiben Sie Betreff und Nachricht für die Testbenachrichtigung.
+Wähle Benachrichtigungskanäle pro Kategorie und verwalte bestätigte Kontaktadressen.
 
 ## Vor dem Start
 
-Prüfen Sie, ob Benachrichtigungen aktiviert ist und Ihr Konto den Vorgang ausführen darf.
+Persönliche Einstellungen benötigen Anmeldung; Administratoren konfigurieren Zustellung und Rundmeldungen.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/settings) und wählen Sie die gewünschte Aktion.
+Öffne Benachrichtigungen in Einstellungen.
 
 ## Weitere Informationen
 

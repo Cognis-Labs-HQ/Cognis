@@ -4,15 +4,15 @@ Run temporary demonstrations and tests without keeping data after the process en
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/administration) according to your account permissions.
+Inspect database calls in isolated tests without storing rows.
 
 ## Before You Start
 
-Check that In-Memory Database is enabled and that your account has permission for the operation.
+This test double supplies neither persistence nor transaction rollback.
 
 ## Get Started
 
-Open [the feature](/administration) and choose the action you need.
+Use it only in a disposable test harness.
 
 ## Learn More
 

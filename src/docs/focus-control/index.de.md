@@ -4,15 +4,15 @@
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/) entsprechend Ihren Kontorechten.
+Öffne unterstützte Komponentenseiten in kontrollierten Arbeitsbereichen.
 
 ## Vor dem Start
 
-Die beschriebenen Vorgänge können Konto- oder Verwaltungsrechte verlangen. Das Lesen eines Themas aktiviert keine optionalen Funktionen.
+Der Anbieter muss seine Seite für den gewünschten Modus freigeben.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/) und wählen Sie die gewünschte Aktion.
+Nutze eine ausdrückliche Öffnen- oder Whiteboard-Aktion.
 
 ## Weitere Informationen
 

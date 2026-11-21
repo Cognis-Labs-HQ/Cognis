@@ -4,15 +4,15 @@ Lihat dan terapkan batas penyimpanan akun agar unggahan tidak melebihi jatah.
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/settings) sesuai izin akun Anda.
+Atur jatah penyimpanan global dan per fitur untuk akun.
 
 ## Sebelum Memulai
 
-Pastikan Batas Penyimpanan aktif dan akun Anda diizinkan melakukan operasi tersebut.
+Hanya administrator mengelola nilai baku kuota dan penggantian per akun.
 
 ## Langkah Awal
 
-Buka [fitur ini](/settings) dan pilih tindakan yang diperlukan.
+Buka kontrol kuota penyimpanan di Administrasi.
 
 ## Pelajari Lebih Lanjut
 

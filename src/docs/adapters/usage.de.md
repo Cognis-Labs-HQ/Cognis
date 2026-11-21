@@ -4,16 +4,16 @@ Praktische Abläufe für Adapter.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/adapters).
+Konfiguration braucht Administratorrechte und Verbindungsdaten.
 
 ## Beispiele
 
-Diese Komponente deklariert keinen eigenständigen Befehlszeileneinstieg. Nutzen Sie die zugehörige Funktion oder die [Bereitstellungsabläufe](/docs/devops/usage) zur Konfiguration; die [technische Referenz](/docs/adapters/technical) nennt Schnittstellen und Grenzen.
+Prüfe Adaptereinstellungen, konfiguriere den Dienst und teste ihn vor regulärer Nutzung, falls ein Test angeboten wird.
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von Adapter. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/adapters/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Das Gateway nutzt aktive registrierte Anbieter; spezielle Einstellungen gehören dem Adapter.
 
 ## Fehlerbehebung
 
-Falls Adapter nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Prüfe Abhängigkeiten und Diagnosen. Installation garantiert keine Erreichbarkeit des externen Dienstes.

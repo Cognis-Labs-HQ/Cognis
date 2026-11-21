@@ -4,18 +4,16 @@ Praktische Abläufe für SQLite.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/adapters/db/sqlite).
+Eine einbettende Laufzeit muss den SQLite-Client bereitstellen; die Standardinstallation bindet diese Klasse nicht als auswählbaren Anbieter ein.
 
 ## Beispiele
 
-```sh
-DB_TYPE=sqlite
-```
+Stelle einen SqliteClient mit all, run und exec bereit und verwende SqliteDbGateway für Abfrage und Transaktion.
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von SQLite. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/adapters/db/sqlite/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Abfragen liefern Zeilen; erfolgreiche Transaktionen werden bestätigt, ausgelöste Fehler führen zum Zurücksetzen.
 
 ## Fehlerbehebung
 
-Falls SQLite nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+DB_TYPE allein bindet SQLite nicht in den Standardserver ein. Prüfe Clientintegration und Dateizugriff deiner Laufzeit.

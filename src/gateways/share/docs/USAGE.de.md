@@ -4,11 +4,11 @@ Praktische Abläufe für Freigaben.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/gateways/share).
+Der Inhalt muss teilbar und eine passende Methode aktiv sein.
 
 ## Beispiele
 
-Prüfen Sie vor der Ausführung die Argumente des installierten Befehls.
+Wähle Link oder Benutzer, prüfe Rechte und Schutz und teste als Empfänger. Widerrufe alte Freigaben nach Bestätigung.
 
 ```sh
 cognisctl share:tokens --help
@@ -19,8 +19,8 @@ cognisctl share:approvals:pending --help
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von Freigaben. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/gateways/share/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Empfänger erhalten nur erklärten Inhaltszugriff; Gastsitzungen werden keine normalen Kontositzungen.
 
 ## Fehlerbehebung
 
-Falls Freigaben nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Prüfe Ablauf, Passwort, Empfänger und aktuelle Rechte. Widerruf beendet Zugriff auch bei weiter sichtbaren alten Links.

@@ -4,18 +4,16 @@ Praktische Abläufe für Rangliste.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/adapters/study/leaderboard).
+Melde dich an; Klassenlisten verlangen aktuelle Mitgliedschaft, manche Ereignisse eine Teilnahmefreigabe.
 
 ## Beispiele
 
-- Wählen Sie eine Rangliste für Teilnehmer und Wertungszeitraum.
-- Vergleichen Sie Punkte und Rangänderungen; markierte Zeilen zeigen gegebenenfalls Ihre Position.
-- Finden Sie Ihre Zeile und vergleichen Sie Punkte innerhalb der gewählten Rangliste. Andere Ranglisten messen andere Aktivitäten.
+Wähle Gruppe und Zeitraum und vergleiche Position und angezeigte Kriterien.
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von Rangliste. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/adapters/study/leaderboard/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Wertungen nutzen geeignete Nachweise und geschützte Identitäten; Korrekturen können Plätze ändern.
 
 ## Fehlerbehebung
 
-Falls Rangliste nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Prüfe Teilnahme, Gruppenzugang und Mindestnachweise. Nicht jede abgeschlossene Aktivität zählt für jede Liste.

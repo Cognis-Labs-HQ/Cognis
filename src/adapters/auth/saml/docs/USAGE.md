@@ -4,16 +4,16 @@ Practical procedures for SAML Sign In.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/adapters/auth/saml) before performing these procedures.
+The bundled SAML adapter has no installed protocol client. createAdapter() returns an adapter with a null client; integration must explicitly supply a validated client through setClient(). Configuration alone does not enable sign-in.
 
 ## Examples
 
-This component does not declare a standalone command-line entry point. Use its owning feature or the [deployment procedures](/docs/devops/usage) to configure the installation; the [technical reference](/docs/adapters/auth/saml/technical) lists its interfaces and constraints.
+Save the SAML provider configuration, then test with a signed assertion from a normal organization account. Check the mapped email and administrator groups.
 
 ## Expected Results
 
-The example uses the documented interface of SAML Sign In. Confirm the response or saved state described in [Technical](/docs/adapters/auth/saml/technical) before repeating a write operation.
+With no injected client, authentication returns null even when the configuration form is complete. Test successful authentication only in an integration that supplies the client.
 
 ## Troubleshooting
 
-If SAML Sign In is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+Check client integration first. Discovery, assertion signatures and remote transport are the injected client's responsibility; editing role mappings does not supply that client.

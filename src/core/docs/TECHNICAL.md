@@ -199,13 +199,6 @@ The external bootstrap context supports `registerDisposer(dispose)`. Cleanup run
 
 The core engagement engine computes evidence-backed XP and awards registered achievements through staged ctx flows.
 
-### Usage
-
-```ts
-const record = ctx.requireCapability("engagement:recordActivity");
-await record(activity);
-```
-
 ### Provider workflow
 
 Language and activity providers extend engagement only through public `ctx` capabilities. During bootstrap, require `engagement:scoring` to register fallback activity weights, scheduled scoped modifiers, and redeemable boosters. Require `engagement:achievements` to register normal, rare, or legendary badge definitions. Submit a completed collection through `engagement:recordActivity`; do not award XP for individual self-paced item views.
@@ -228,8 +221,9 @@ Ledger summaries, booster redemption and activity invalidation run dedicated ctx
 
 ## Security
 
-Public capabilities and commands retain their per-operation authorization. Installing a package does not grant access to private resources.
+Capability ownership and bootstrap scopes control registration lifetime. Privileged handlers must authorize their caller before state changes; persistent engagement receipts validate actor, evidence and idempotent activity identity before rewards are published.
 
 ## Reference
 
-Source and package metadata: `src/core/`.
+- [src/core/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/package.json)
+- [src/core/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/index.ts)

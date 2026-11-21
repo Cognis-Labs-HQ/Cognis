@@ -4,16 +4,16 @@ Praktische Abläufe für Speichergrenzen.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/adapters/file/quota).
+Nur Administratoren verwalten Standardgrenzen und individuelle Kontowerte.
 
 ## Beispiele
 
-Diese Komponente deklariert keinen eigenständigen Befehlszeileneinstieg. Nutzen Sie die zugehörige Funktion oder die [Bereitstellungsabläufe](/docs/devops/usage) zur Konfiguration; die [technische Referenz](/docs/adapters/file/quota/technical) nennt Schnittstellen und Grenzen.
+Ändere einen Namensraumstandard und prüfe dann das Kontingent eines vorhandenen Benutzers; passe es bei Bedarf gesondert an.
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von Speichergrenzen. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/adapters/file/quota/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Neue Konten übernehmen die Standardwerte. Standardänderungen überschreiben bestehende Kontingente nicht; Uploads prüfen beide Grenzen.
 
 ## Fehlerbehebung
 
-Falls Speichergrenzen nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Vergleiche Nutzung mit globaler und Namensraumgrenze. Das Erhöhen einer Grenze kann durch die andere weiterhin blockiert werden.

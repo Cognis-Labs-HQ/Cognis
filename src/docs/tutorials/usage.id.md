@@ -4,9 +4,11 @@ Prosedur praktis untuk Tutorial Terpandu.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/tutorials) sebelum menjalankan prosedur ini.
+Masuk untuk penyelesaian terikat akun; tindakan opsional hanya muncul saat tersedia.
 
 ## Contoh
+
+Mulai panduan, ikuti sorotan, gunakan Kembali atau Berikutnya, lalu selesaikan; ulangi lewat kontrol header sama.
 
 ```ts
 export async function mountProvider(ctx) {
@@ -52,8 +54,8 @@ export async function mountProvider(ctx) {
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Tutorial Terpandu yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/tutorials/technical) sebelum mengulangi operasi tulis.
+Penyelesaian tetap tersimpan pada akun; pemutaran ulang tidak perlu mengatur ulang preferensi.
 
 ## Pemecahan Masalah
 
-Jika Tutorial Terpandu tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Periksa halaman aktif dan kontrol terlihat. Menutup dialog opsional dapat mengembalikan panduan ke cabangnya.

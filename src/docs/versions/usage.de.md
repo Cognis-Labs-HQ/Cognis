@@ -4,16 +4,16 @@ Praktische Abläufe für Komponentenversionen.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/versions).
+Komponentenversionen können vom Gesamtrelease abweichen.
 
 ## Beispiele
 
-Diese Komponente deklariert keinen eigenständigen Befehlszeileneinstieg. Nutzen Sie die zugehörige Funktion oder die [Bereitstellungsabläufe](/docs/devops/usage) zur Konfiguration; die [technische Referenz](/docs/versions/technical) nennt Schnittstellen und Grenzen.
+Lies die Versionsliste, öffne die Komponente in Dokumente und wähle bei Verfügbarkeit das passende Archiv.
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von Komponentenversionen. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/versions/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Die Auswahl bleibt zwischen Info, Nutzung und Technik erhalten. Nur vollständige Archive werden angeboten.
 
 ## Fehlerbehebung
 
-Falls Komponentenversionen nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Fehlende Archive beweisen keine Unverträglichkeit. Vergleiche installierte Version und getestete Abhängigkeitsgrenzen vor Updates.

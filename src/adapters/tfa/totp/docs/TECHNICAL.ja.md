@@ -4,7 +4,7 @@
 
 ## インターフェース
 
-認証アプリによる確認 は担当のゲートウェイを通じて統合されます。マニフェストに識別情報と必要な依存先が記載されています。
+方式は TFA 契約を実装し、設定で manualSecret と qrSvg を返し、確認コードを検証します。保存した secret、algorithm、digits、period を使います。
 
 ## 設定
 
@@ -43,8 +43,10 @@ TFAゲートウェイ向けに時間ベースワンタイムパスワード検�
 
 ## セキュリティ
 
-認証アプリによる確認 へのアクセスは呼び出し元と担当のゲートウェイが管理します。有効化してもアカウントの権限は増えません。
+有効な六桁の確認後に有効化します。秘密情報を保護し、三十秒の現在の期間と前後一期間のみを許容します。
 
 ## リファレンス
 
-ソースとパッケージの情報: `src/adapters/tfa/totp/`。
+- [src/adapters/tfa/totp/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/tfa/totp/manifest.json)
+- [src/adapters/tfa/totp/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/tfa/totp/package.json)
+- [src/adapters/tfa/totp/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/tfa/totp/index.ts)

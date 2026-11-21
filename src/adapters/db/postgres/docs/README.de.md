@@ -4,15 +4,15 @@ Speichern Sie Cognis-Konten und Inhalte in einer administrierten PostgreSQL-Date
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/administration) entsprechend Ihren Kontorechten.
+Speichere Cognis-Daten dauerhaft in PostgreSQL.
 
 ## Vor dem Start
 
-Prüfen Sie, ob PostgreSQL aktiviert ist und Ihr Konto den Vorgang ausführen darf.
+Bereite eine für die Anwendung erreichbare PostgreSQL-Datenbank vor.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/administration) und wählen Sie die gewünschte Aktion.
+Wähle PostgreSQL als Datenbank der Installation.
 
 ## Weitere Informationen
 

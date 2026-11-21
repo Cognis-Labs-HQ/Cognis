@@ -12,7 +12,7 @@
 
 ## Konfiguration
 
-Dieses Dokumentationsthema hat keine eigene Laufzeitkonfiguration. Betriebseinstellungen gehören zur zuständigen Komponente.
+Manifeste und package.json enthalten Versionen. Cognis-Abhängigkeiten nutzen getestete Obergrenzen wie <=1.2.3; das ist eine Warngrenze, keine Gleichwertigkeit aller älteren Funktionen.
 
 ## Verhalten
 
@@ -105,7 +105,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 ## Sicherheit
 
-Das Lesen der Dokumentation berechtigt nicht zur Ausführung ihrer Beispiele. Die zuständige Komponente autorisiert jeden Vorgang.
+Version und getestete Grenze erlauben keine Aktivierung. Integrität, Abhängigkeiten und Hostschutz gelten auch beim Aktualisieren.
 
 ## Referenz
 

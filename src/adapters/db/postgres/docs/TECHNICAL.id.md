@@ -55,8 +55,10 @@ Jalankan pengujian adaptor dengan `COGNIS_TEST_POSTGRES_URL` yang menunjuk ke ba
 
 ## Keamanan
 
-Akses PostgreSQL diatur oleh pemanggil dan gerbang pemilik. Mengaktifkan komponen tidak menambah izin akun.
+Kredensial dan keamanan transportasi dikelola penerapan. Ikat nilai sebagai parameter; otorisasi aplikasi harus berjalan sebelum executor dipanggil.
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/adapters/db/postgres/`.
+- [src/adapters/db/postgres/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/postgres/manifest.json)
+- [src/adapters/db/postgres/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/postgres/package.json)
+- [src/adapters/db/postgres/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/postgres/index.ts)

@@ -4,16 +4,16 @@ Praktische Abläufe für SAML-Anmeldung.
 
 ## Voraussetzungen
 
-Beachten Sie vor dem Ausführen [die Zugriffsanforderungen](/docs/adapters/auth/saml).
+Der mitgelieferte SAML-Adapter besitzt keinen eingerichteten Protokollclient. createAdapter() liefert einen leeren Client; die Integration muss über setClient() einen geprüften Client bereitstellen. Konfiguration allein ermöglicht keine Anmeldung.
 
 ## Beispiele
 
-Diese Komponente deklariert keinen eigenständigen Befehlszeileneinstieg. Nutzen Sie die zugehörige Funktion oder die [Bereitstellungsabläufe](/docs/devops/usage) zur Konfiguration; die [technische Referenz](/docs/adapters/auth/saml/technical) nennt Schnittstellen und Grenzen.
+Speichere die SAML-Konfiguration und teste eine signierte Assertion eines normalen Organisationskontos. Prüfe die zugeordnete E-Mail und Administratorgruppen.
 
 ## Erwartete Ergebnisse
 
-Das Beispiel verwendet die dokumentierte Schnittstelle von SAML-Anmeldung. Prüfen Sie vor erneuten Schreibvorgängen die unter [Technik](/docs/adapters/auth/saml/technical) beschriebene Antwort oder den gespeicherten Zustand.
+Ohne injizierten Client liefert Anmeldung auch mit vollständigem Formular null. Erfolgsprüfungen benötigen eine Integration mit Client.
 
 ## Fehlerbehebung
 
-Falls SAML-Anmeldung nicht verfügbar ist, prüfen Sie Ihre Anmeldung und lassen Sie den Administrator die Komponente und ihre Abhängigkeiten kontrollieren.
+Prüfe zuerst die Clientintegration. Discovery, Signaturen und Transport gehören dem injizierten Client; Rolleneinstellungen ersetzen ihn nicht.

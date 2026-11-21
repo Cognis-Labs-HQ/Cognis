@@ -29,7 +29,7 @@ Adapter contract registration follows [the shared gateway bootstrap contract](/d
 
 ## Configuration
 
-Configuration is supplied through the owning gateway. Notifications declares no additional configuration in its manifest.
+Sender adapters own transport settings and diagnostic tests. Accounts select category senders in Settings; always-on senders remain active independently of those selections.
 
 ## Behavior
 
@@ -47,13 +47,13 @@ Email verification applies equally to local and SSO accounts. Codes and verifica
 
 Disable and unmount revoke owned registrations and pending delivery. Re-enable restores fresh channels without replaying cancelled messages. Other owners of a shared category remain active. Async message actions cannot enqueue after their registration is disposed or replaced.
 
-### Reliable Sharing and Tests
+### Share Delivery
 
 Administrator configuration tests are available before a sender is enabled. Testing does not activate normal delivery; each provider owns its diagnostic transport and cleanup.
 
 ## Security
 
-Access to Notifications is governed by the caller and its owning gateway. Enabling a component does not grant additional account permissions.
+Email verification binds account ID and address. Missing delivery does not waive validation policy; purpose registration is bootstrap-scoped and disposal prevents late messages from entering a cancelled delivery lifetime.
 
 ## Reference
 

@@ -4,25 +4,16 @@ Practical procedures for Database.
 
 ## Prerequisites
 
-Review [the access requirements](/docs/gateways/db) before performing these procedures.
+Operators must configure a supported database provider before normal use.
 
 ## Examples
 
-Inspect the installed command arguments before executing an operation.
-
-```sh
-cognisctl search:query --help
-cognisctl docs:list --help
-cognisctl docs:get --help
-cognisctl ui:routes --help
-cognisctl ui:settings-sections --help
-cognisctl ui:navbar-plugins --help
-```
+Start Cognis with the selected provider and inspect schema initialization; verify that a saved account or event remains after restarting.
 
 ## Expected Results
 
-The example uses the documented interface of Database. Confirm the response or saved state described in [Technical](/docs/gateways/db/technical) before repeating a write operation.
+Declared schemas initialize through the gateway; persistence depends on the selected provider.
 
 ## Troubleshooting
 
-If Database is unavailable, verify your sign-in and ask an administrator to check whether the component and its dependencies are enabled.
+Check provider loading, credentials and schema permissions. Memory records calls but does not retain application data.

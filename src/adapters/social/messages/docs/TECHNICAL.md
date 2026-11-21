@@ -31,7 +31,7 @@ probe used by the UI to detect whether the adapter is loaded.
 
 ## Configuration
 
-Configuration is supplied through the owning gateway. Messages declares no additional configuration in its manifest.
+Rooms declare participants and encryption/access state. Templates and drafts are account-scoped; offline availability requires prepared assets plus cached metadata and threads.
 
 ## Behavior
 
@@ -40,10 +40,6 @@ Configuration is supplied through the owning gateway. Messages declares no addit
 New group rooms finish key generation and all member insertions before claiming an integration source. Any setup or binding failure deletes the partial room; cleanup failures are logged and propagated. Existing rooms and source exclusivity keep their current behavior.
 
 The Messages browser client lets modules list room messages, open private rooms, and send messages through the Social Messages adapter's authenticated API contract.
-
-### Usage examples
-
-Import `uiCtx`, require `social:messagesUiClient`, and call `listRoomMessages(roomId, options)`, `openPrivateRoom(payload, options)`, or `sendRoomMessage(roomId, payload)` from browser code.
 
 ### Meeting-owned conversations
 
@@ -204,7 +200,7 @@ The Messages page resolves room keys through the `Social Messages` keyring scope
 
 ## Security
 
-Access to Messages is governed by the caller and its owning gateway. Enabling a component does not grant additional account permissions.
+Room eligibility, membership changes and message reads are authorized independently. Encrypted rooms depend on client-held keys; the threat model below distinguishes protected content from visible routing metadata.
 
 ## Reference
 

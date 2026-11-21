@@ -53,12 +53,12 @@ Beitrags-Sichtbarkeit (`only_me | private | friends | community`) ist immer durc
 
 ### Wichtige Quellen
 
-| Pfad                                     | Zweck                                          |
-| ---------------------------------------- | ---------------------------------------------- |
-| `src/gateways/profile/bootstrap.ts`      | Bootstrap-Einstiegspunkt                       |
-| `src/gateways/profile/routes/social.ts`  | Folgen, Blockieren, Follower-Routen            |
-| `src/gateways/profile/routes/posts.ts`   | Beitrags-Erstellung, -Auflistung und -Löschung |
-| `src/adapters/db/reuse/profile-store.ts` | `DbProfileStore` — alle Profil-SQL-Operationen |
+| Pfad                                           | Zweck                                          |
+| ---------------------------------------------- | ---------------------------------------------- |
+| `src/adapters/social/profile/index.ts`         | Bootstrap-Einstiegspunkt                       |
+| `src/adapters/social/profile/routes/social.ts` | Folgen, Blockieren, Follower-Routen            |
+| `src/adapters/social/profile/routes/posts.ts`  | Beitrags-Erstellung, -Auflistung und -Löschung |
+| `src/adapters/social/profile/store.ts`         | `DbProfileStore` — alle Profil-SQL-Operationen |
 
 ### Direkte Profilaktualisierungen
 
@@ -84,12 +84,6 @@ GET-Verfügbarkeit liefert für fehlende oder durch Privatsphäre geschützte Pr
 
 Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/adapters/social/messages/technical).
 
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/adapters/social/messages/technical).
-
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/adapters/social/messages/technical).
-
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/adapters/social/messages/technical).
-
 ### Profilstart
 
 Die Profilverfügbarkeit startet beim Einbinden des Anbieters, nachdem sein gepufferter Client registriert und die Avatar-Stile bereit sind. Der Import startet weder Anwesenheitsaufrufe noch Abfragen. Deaktivieren und fehlgeschlagenes Einbinden entfernen Abonnements, Seiten-Listener, Timer und zwischengespeicherte Verfügbarkeit; veraltete asynchrone Arbeit verändert keinen späteren Anbieterbereich. So entsteht beim Online-Start von Verwaltungsseiten kein Fehler `profile_client_unavailable`.
@@ -100,9 +94,7 @@ Die Profilverfügbarkeit startet beim Einbinden des Anbieters, nachdem sein gepu
 
 ### Kontodatenschutz und Schlüsselbund-Isolation
 
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/adapters/auth/local/technical).
-
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/adapters/auth/local/technical).
+Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/gateways/auth/technical).
 
 ### Plötzlicher Verbindungsverlust
 
@@ -132,7 +124,7 @@ Veröffentlichte Beiträge erscheinen sofort; nach dem Löschen wird die Beitrag
 
 ## Sicherheit
 
-Der Zugriff auf Profile und Beiträge unterliegt dem Aufrufer und dem zuständigen Funktionsdienst. Die Aktivierung erweitert keine Kontorechte.
+Profilzugriff beachtet Sichtbarkeit, Blockierungen und aktuelle Beziehungen. Eigene Änderungen benötigen die passende Identität; öffentliche Handles und Avatarvorschauen umgehen diese Prüfung nicht.
 
 ## Referenz
 

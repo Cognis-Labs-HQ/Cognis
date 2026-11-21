@@ -17,15 +17,17 @@ The public interfaces and operational rules of Cognis.
 
 ## Configuration
 
-This documentation topic has no runtime configuration of its own. Operational settings belong to the relevant component.
+Installed manifests and enabled providers determine available features. Deployment settings configure storage and transport; account Settings controls personal preferences.
 
 ## Behavior
+
+OIDC and SAML in this source tree require an injected protocol client. Their configuration forms do not create a client; see the adapter Technical views before planning those deployments.
 
 ### Overview
 
 This is the root navigation document for the Cognis developer documentation. All docs in this set are served through the in-app documentation browser at `/docs` and via `GET /api/v1/docs`. Each document is a Markdown file auto-discovered from `docs/` directories across the codebase.
 
-These docs are written for developer contributors, not end users. They describe the architecture, design decisions, and operational details of each component. If you are new to the codebase, start with the Overview and Platform Features docs, then read the Core and API docs before diving into individual gateways and adapters.
+Info introduces the feature, Usage gives procedures and examples, and Technical describes contracts and operational details. Select the document view for your task and the component version used by your installation.
 
 ### Platform
 
@@ -84,8 +86,9 @@ These docs are written for developer contributors, not end users. They describe 
 
 ## Security
 
-Reading documentation does not grant permission to execute its examples. The owning component authorizes each operation.
+Feature availability never grants data access. Authentication, resource ownership, private snapshots and enabled-provider lifetimes remain separate boundaries.
 
 ## Reference
 
-Source and package metadata: `./`.
+- [src/core/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/index.ts)
+- [src/api/main.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/api/main.ts)

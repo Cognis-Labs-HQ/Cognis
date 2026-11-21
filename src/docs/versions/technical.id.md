@@ -18,7 +18,7 @@ Antarmuka publik dan aturan operasional Versi Komponen.
 
 ## Konfigurasi
 
-Topik dokumentasi ini tidak memiliki konfigurasi waktu jalan sendiri. Pengaturan operasional dimiliki komponen terkait.
+Manifes dan package.json membawa versi. Dependensi Cognis memakai batas teruji seperti <=1.2.3; ini batas peringatan, bukan kesetaraan semua fitur lama.
 
 ## Perilaku
 
@@ -113,8 +113,9 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 
 ## Keamanan
 
-Membaca dokumentasi tidak memberikan izin menjalankan contohnya. Komponen pemilik mengotorisasi setiap operasi.
+Versi atau batas teruji bukan izin mengaktifkan komponen. Integritas, dependensi, dan proteksi host tetap berlaku saat peningkatan.
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/docs/versions/`.
+- [src/tooling/reuse/component-files.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/tooling/reuse/component-files.js)
+- [package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/package.json)

@@ -92,8 +92,11 @@ Pembentukan koneksi SMTP dan negosiasi TLS masing-masing memiliki batas tiga pul
 
 ## Keamanan
 
-Akses Pengiriman Email diatur oleh pemanggil dan gerbang pemilik. Mengaktifkan komponen tidak menambah izin akun.
+Rahasia SMTP dikelola administrator. Mode TLS dan validasi sertifikat menentukan perlindungan; email verifikasi memakai tujuan terdaftar dan alamat penerima tervalidasi.
 
 ## Referensi
 
-Kode sumber dan metadata paket: `src/adapters/notify/smtp/`.
+- [src/adapters/notify/smtp/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/notify/smtp/manifest.json)
+- [src/adapters/notify/smtp/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/notify/smtp/package.json)
+- [src/adapters/notify/smtp/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/notify/smtp/index.ts)
+- [src/adapters/notify/smtp/bootstrap.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/notify/smtp/bootstrap.ts)

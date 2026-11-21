@@ -4,11 +4,11 @@ Prosedur praktis untuk Pengiriman Email.
 
 ## Prasyarat
 
-Tinjau [persyaratan akses](/docs/adapters/notify/smtp) sebelum menjalankan prosedur ini.
+Administrator memerlukan akses SMTP dan alamat pengirim yang disetujui.
 
 ## Contoh
 
-Periksa argumen perintah yang terpasang sebelum menjalankan operasi.
+Masukkan host, port, enkripsi, dan pengirim; kirim email uji sebelum mengaktifkan pengiriman rutin.
 
 ```sh
 cognisctl email:list --help
@@ -20,8 +20,8 @@ cognisctl email:verify:send --help
 
 ## Hasil yang Diharapkan
 
-Contoh ini memakai antarmuka Pengiriman Email yang didokumentasikan. Periksa respons atau keadaan tersimpan yang dijelaskan dalam [Teknis](/docs/adapters/notify/smtp/technical) sebelum mengulangi operasi tulis.
+Uji berhasil mengonfirmasi pengiriman ke alamat tersebut; email akun tetap mengikuti kebijakan verifikasi dan kategori.
 
 ## Pemecahan Masalah
 
-Jika Pengiriman Email tidak tersedia, periksa status masuk dan minta administrator memeriksa komponen beserta dependensinya.
+Periksa galat pengujian, mode TLS, kredensial, dan kotak masuk. Koneksi berhasil tidak menjamin penempatan di kotak masuk.

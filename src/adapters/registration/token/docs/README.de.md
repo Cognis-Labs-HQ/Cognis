@@ -4,15 +4,15 @@ Laden Sie jemanden mit einem zeitlich begrenzten Registrierungstoken zur Kontoer
 
 ## Möglichkeiten
 
-Verfügbare Aktionen erscheinen auf [der Funktionsseite](/register) entsprechend Ihren Kontorechten.
+Lade Personen mit einem einmaligen, an ihre E-Mail gebundenen Registrierungslink ein.
 
 ## Vor dem Start
 
-Prüfen Sie, ob Registrierungseinladungen aktiviert ist und Ihr Konto den Vorgang ausführen darf.
+Die Einladungsrichtlinie gilt; separate Tokens benötigen Administrator- oder Inhaberrechte.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/register) und wählen Sie die gewünschte Aktion.
+Nutze Einladen oder die Einladungssteuerung unter Benutzer.
 
 ## Weitere Informationen
 

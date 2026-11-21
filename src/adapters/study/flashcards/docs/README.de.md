@@ -4,17 +4,15 @@ Lernen Sie mit gespeicherten Kartensätzen, üben Sie Lesen oder Schreiben und v
 
 ## Möglichkeiten
 
-- Wählen Sie einen Stapel und prüfen Sie Sprache und enthaltene Karten.
-- Prüfen Sie verfügbare Lernmodi und Filter vor dem Üben.
-- Nutzen Sie die Übungssteuerung zum Antworten und Wiederholen; Fortschritt gehört zu Ihrem Konto.
+Erstelle Stapel, durchsuche Starterstapel und übe Lesen oder Schreiben.
 
 ## Vor dem Start
 
-Prüfen Sie, ob Lernkarten aktiviert ist und Ihr Konto den Vorgang ausführen darf.
+Melde dich an und wähle eine eingeschriebene Sprache; Bearbeitung und Export benötigen passende Stapelrechte.
 
 ## Erste Schritte
 
-Öffnen Sie [die Funktion](/study/flashcards) und wählen Sie die gewünschte Aktion.
+Wähle Lernkarten unter Lernen und öffne einen Stapel.
 
 ## Weitere Informationen
 

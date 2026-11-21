@@ -4,19 +4,7 @@
 
 ## Schnittstellen
 
-### Architektur
-
-```ts
-export interface SamlClient {
-    validateAssertion(samlResponse: string): Promise<SamlAssertion | null>;
-}
-
-export interface SamlAssertion {
-    nameId: string;
-    email?: string;
-    attributes?: Record<string, string | string[]>;
-}
-```
+authenticate(credentials) liest `assertion` und ruft `SamlClient.consumeAssertion` auf. `nameId` identifiziert das externe Konto; das Ergebnis enthält `provider`, `externalUserId`, optional `email` und `role`. Ohne Client oder Zugangsdaten folgt null.
 
 ## Konfiguration
 
@@ -34,22 +22,18 @@ Konfiguration über `PUT /api/v1/gateways/auth/adapters/saml/config` (nur Admin)
 
 Konfigurationsbeschriftungen werden über `stringsBaseUrl` aus den Sprachressourcen dieses Adapters geladen.
 
+`configure()` übernimmt `adminAttribute` / `adminValue`. Weitere Verbindungsfelder sind Schemametadaten; die Implementierung erstellt daraus keinen Protokollclient.
+
 ## Verhalten
 
-### Überblick
-
-Der SAML-Adapter authentifiziert Benutzer über SAML 2.0 Assertions von einem externen Identitätsanbieter und ermöglicht Single Sign-On mit Enterprise-Identitätssystemen wie Microsoft AD FS, Google Workspace, Okta oder einem anderen SAML 2.0-konformen IdP.
-
-### Verantwortlichkeiten
-
-- Eine SAML-Response/Assertion akzeptieren, mit dem konfigurierten `SamlClient` validieren und Identitäts-Claims extrahieren.
-- Ein konfigurierbares SAML-Attribut dem Cognis `isAdmin`-Flag zuordnen.
-- Die `AuthProviderAdapter`-Schnittstelle für das Auth-Gateway bereitstellen.
+Der mitgelieferte SAML-Adapter besitzt keinen eingerichteten Protokollclient. createAdapter() liefert einen leeren Client; die Integration muss über setClient() einen geprüften Client bereitstellen. Konfiguration allein ermöglicht keine Anmeldung.
 
 ## Sicherheit
 
-Der Zugriff auf SAML-Anmeldung unterliegt dem Aufrufer und dem zuständigen Funktionsdienst. Die Aktivierung erweitert keine Kontorechte.
+Authentifizierung benötigt Assertionsprüfung und vertrauenswürdiges Signaturzertifikat. Ordne Administratorgruppen bewusst zu; ungeprüfte Assertions dürfen keine Sitzung begründen.
 
 ## Referenz
 
-Quellcode und Paketmetadaten: `src/adapters/auth/saml/`.
+- [src/adapters/auth/saml/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/saml/manifest.json)
+- [src/adapters/auth/saml/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/saml/package.json)
+- [src/adapters/auth/saml/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/saml/index.ts)

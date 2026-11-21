@@ -22,7 +22,7 @@ Neues Gateway hinzufügen:
 
 ## Konfiguration
 
-Dieses Dokumentationsthema hat keine eigene Laufzeitkonfiguration. Betriebseinstellungen gehören zur zuständigen Komponente.
+Gateway- und Adapterpfade kommen aus COGNIS_GATEWAYS_ROOT und COGNIS_ADAPTERS_ROOT. Identität, Version und Abhängigkeiten gehören Manifesten; Einstellungen dem Gateway.
 
 ## Verhalten
 
@@ -230,8 +230,9 @@ Gateways stellen ihren Adaptern dieselbe Registry `system:contracts` über `ctx.
 
 ## Sicherheit
 
-Das Lesen der Dokumentation berechtigt nicht zur Ausführung ihrer Beispiele. Die zuständige Komponente autorisiert jeden Vorgang.
+Gateway-Eigentum ist keine Kontoberechtigung. Öffentliche Verträge erlauben begrenzte Aufrufe; Aktionen prüfen Konto und Inhaltszugriff.
 
 ## Referenz
 
-Quellcode und Paketmetadaten: `src/docs/gateways/`.
+- [src/gateways/shared.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/shared.ts)
+- [src/gateways/reuse/adapter-bootstrap.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/reuse/adapter-bootstrap.ts)

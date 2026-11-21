@@ -4,15 +4,15 @@ Perluas instalasi dengan fitur tambahan dan kelola akses serta konfigurasinya.
 
 ## Yang Dapat Anda Lakukan
 
-Tindakan yang tersedia ditampilkan pada [halaman fitur](/) sesuai izin akun Anda.
+Tambahkan fitur berpakket terpisah dan kelola konfigurasi serta ketersediaannya.
 
 ## Sebelum Memulai
 
-Operasi yang dibahas dapat memerlukan izin akun atau administrator. Membaca topik tidak mengaktifkan fitur opsionalnya.
+Administrator memerlukan sumber tepercaya dan dependensi kompatibel.
 
 ## Langkah Awal
 
-Buka [fitur ini](/) dan pilih tindakan yang diperlukan.
+Buka Modul dan periksa paket sebelum memasang.
 
 ## Pelajari Lebih Lanjut
 

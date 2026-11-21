@@ -4,15 +4,15 @@ Store Cognis accounts and content in a PostgreSQL database managed by your admin
 
 ## What You Can Do
 
-Available actions are shown on [the feature page](/administration) according to your account permissions.
+Keep persistent Cognis data in PostgreSQL.
 
 ## Before You Start
 
-Check that PostgreSQL is enabled and that your account has permission for the operation.
+Prepare a PostgreSQL database accessible to the application.
 
 ## Get Started
 
-Open [the feature](/administration) and choose the action you need.
+Choose PostgreSQL as the installation's database backend.
 
 ## Learn More
 
