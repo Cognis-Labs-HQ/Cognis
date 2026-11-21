@@ -16,4 +16,5 @@ Ein Seitenabbruch erreicht jetzt die gemeinsamen Anfrage- und Puffergrenzen vor 
 
 ## Commits
 
-- [3f8f60ebac1a44ffb171c3251d72f9f81a0e0f4c](https://github.com/Cognis-Labs-HQ/Cognis/commit/3f8f60ebac1a44ffb171c3251d72f9f81a0e0f4c)
+- [650363e807a2137916b481fae3b1d109acb53b97](https://github.com/Cognis-Labs-HQ/Cognis/commit/650363e807a2137916b481fae3b1d109acb53b97)
+- [e502e635b2639f5a992314deca8c6428f31b3c6a](https://github.com/Cognis-Labs-HQ/Cognis/commit/e502e635b2639f5a992314deca8c6428f31b3c6a)
