@@ -14,6 +14,6 @@ Target, langkah, dan tindakan tutorial Fokus dan Menggambar yang ada tetap sama;
 
 ## Komit
 
-- [2556751cee7a0648108d29335293fd912b679dae](https://github.com/Cognis-Labs-HQ/Cognis/commit/2556751cee7a0648108d29335293fd912b679dae)
-- [00c10eda22a8235a1176afd7cf44b350463dc469](https://github.com/Cognis-Labs-HQ/Cognis/commit/00c10eda22a8235a1176afd7cf44b350463dc469)
-- [c8f92d823295f0279a4fa94e82364214ca8b9d17](https://github.com/Cognis-Labs-HQ/Cognis/commit/c8f92d823295f0279a4fa94e82364214ca8b9d17)
+- [542505b0130b6c0399b0977f114be7e777671b8d](https://github.com/Cognis-Labs-HQ/Cognis/commit/542505b0130b6c0399b0977f114be7e777671b8d)
+- [a69ef179c0ecb4727736cba606aabfa666d38cb8](https://github.com/Cognis-Labs-HQ/Cognis/commit/a69ef179c0ecb4727736cba606aabfa666d38cb8)
+- [f1f303e2f57447d6524ea0605a6d20a7f3937554](https://github.com/Cognis-Labs-HQ/Cognis/commit/f1f303e2f57447d6524ea0605a6d20a7f3937554)
