@@ -8,4 +8,4 @@ Search selection tests now wait for the overlay to be removed within a bounded d
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/386a5bec660d2014e932752f9efa6c09a1837fad
+- [02831e31b0dfd3ff7bbe77637391f0fca332ab56](https://github.com/Cognis-Labs-HQ/Cognis/commit/02831e31b0dfd3ff7bbe77637391f0fca332ab56)

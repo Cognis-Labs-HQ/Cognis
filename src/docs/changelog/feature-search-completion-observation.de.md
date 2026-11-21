@@ -8,4 +8,4 @@ Tests für die Suchauswahl warten nun innerhalb einer begrenzten Frist auf das E
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/386a5bec660d2014e932752f9efa6c09a1837fad
+- [02831e31b0dfd3ff7bbe77637391f0fca332ab56](https://github.com/Cognis-Labs-HQ/Cognis/commit/02831e31b0dfd3ff7bbe77637391f0fca332ab56)
