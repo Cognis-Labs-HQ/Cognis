@@ -12,4 +12,5 @@ Auth and Share browser flows classify verified credentials rather than account-n
 
 ## Commits
 
-- https://github.com/Cognis-Labs-HQ/Cognis/commit/92f8b7563953593f39d1844f0abd590478dd007f
+- [7e5d3d04323e4c3109e364d39f063d650ad63629](https://github.com/Cognis-Labs-HQ/Cognis/commit/7e5d3d04323e4c3109e364d39f063d650ad63629)
+- [56c4ec2f65332bf0e3b64dcf57c17fd49210df24](https://github.com/Cognis-Labs-HQ/Cognis/commit/56c4ec2f65332bf0e3b64dcf57c17fd49210df24)
