@@ -15,6 +15,14 @@ test("renderMarkdown escapes HTML in markdown content", () => {
     assert.equal(html, "<p>hello &lt;script&gt;alert(1)&lt;/script&gt;</p>");
 });
 
+test("renderMarkdown escapes nested malformed script markup", () => {
+    const html = renderMarkdown("<scr<script>ipt>alert(1)</scr</script>ipt>");
+    assert.equal(
+        html,
+        "<p>&lt;scr&lt;script&gt;ipt&gt;alert(1)&lt;/scr&lt;/script&gt;ipt&gt;</p>",
+    );
+});
+
 test("renderMarkdown does not render unsafe link protocols", () => {
     const html = renderMarkdown(
         "[x](javascript:alert%281%29) [m](mailto:admin@example.test) [r](/docs)",
@@ -151,7 +159,12 @@ test("long Markdown code fences preserve shorter nested examples and subsequent 
     const html = renderMarkdown(
         "````md\n```sh\ncommand --help\n```\n````\n\n## After",
     );
-    assert.match(html.replace(/<[^>]+>/g, ""), /```sh/);
+    assert.ok(
+        html.includes(
+            'data-markdown-code-copy="&#96;&#96;&#96;sh\ncommand --help\n&#96;&#96;&#96;"',
+        ),
+        html,
+    );
     assert.match(html, /<h2>After<\/h2>/);
     assert.equal((html.match(/<pre /g) ?? []).length, 1);
 });
