@@ -12,4 +12,4 @@ Die öffentliche Aktion open lehnt bei Abbruch mit AbortError ab; bewusstes Schl
 
 ## Commits
 
-- [ba8c9f4c39a39cdfbc4ff077eea3de6953819a50](https://github.com/Cognis-Labs-HQ/Cognis/commit/ba8c9f4c39a39cdfbc4ff077eea3de6953819a50)
+- [f09d6675a74b6e4f0de7f204c8ad5351f60fc918](https://github.com/Cognis-Labs-HQ/Cognis/commit/f09d6675a74b6e4f0de7f204c8ad5351f60fc918)
