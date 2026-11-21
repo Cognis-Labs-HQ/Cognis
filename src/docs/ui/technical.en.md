@@ -109,6 +109,18 @@ Navbar selection propagates `navigateTo` returning `false` before route teardown
 
 The workspace tutorial explains selection, waiting and safe retry while preserving its targets, completion IDs, Next, Back and replay. Search is shared UI without an independently versioned package or manifest.
 
+### Form Validation
+
+Fields evaluated as invalid expose `aria-invalid="true"`. Their `aria-describedby` includes the existing localized criteria that are currently unmet, alongside any descriptions supplied by the caller. Correcting a field removes only the builder's invalid state and description references. Untouched controls and indeterminate (`null`) criteria do not acquire an invalid ARIA state before evaluation. Existing required, optional and validation-return rules still apply; native constraint validity and tab selection are separate from custom criteria.
+
+Each rendered criterion has a unique ID, including when multiple forms use the same field names. The controller's `detach()` and the attachment's abort signal remove owned event listeners and ARIA state; explicit controller validation remains available. Page and popup owners must end the attachment when their form lifetime ends. No field values are recorded by this presentation behavior.
+
+Caller changes to `aria-invalid`, including removal, are retained across later invalid checks and correction or cleanup. A caller writing the same `true` value is indistinguishable from the builder's existing value. If a custom criterion ends the attachment, the interrupted field or whole-form evaluation still returns its validation result but does not update presentation after cleanup. A deliberate validation call after cleanup starts a new evaluation and can be cleaned up again.
+
+### Tutorial coverage
+
+Follow the requirements shown for a field, correct unmet criteria and retry the owner's action. Registration administration and Security tutorials retain their existing controls, targets, completion IDs and navigation. The Security guide already explains meeting password requirements, confirmation and cancellation. Shared validation adds no new tutorial action or step. The shared UI has no independently versioned package or manifest.
+
 ## Security
 
 Hidden navigation is not access control. Browser providers resolve owner capabilities and abort pending work on unmount or account changes; private reads remain account-scoped.

@@ -199,7 +199,7 @@ export function createFormBuilder(ctx, options) {
                 if (!criterionId) {
                     return "";
                 }
-                return `<li class="form-builder-criterion-item" data-form-builder-criterion="${escapeHtml(fieldName)}:${escapeHtml(criterionId)}">${escapeHtml(resolveMessage(criterionConfig.messageKey, criterionConfig.messageParams))}</li>`;
+                return `<li id="form-builder-criterion-${crypto.randomUUID()}" class="form-builder-criterion-item" data-form-builder-criterion="${escapeHtml(fieldName)}:${escapeHtml(criterionId)}">${escapeHtml(resolveMessage(criterionConfig.messageKey, criterionConfig.messageParams))}</li>`;
             })
             .join("");
 
@@ -417,6 +417,57 @@ export function createFormBuilder(ctx, options) {
             signal: attachOptions.signal,
         });
         const touchedFieldNames = new Set();
+        const validationAttributes = new Map();
+        const fieldListeners = [];
+        let cleanupGeneration = 0;
+
+        function updateValidationAttributes(
+            input,
+            invalid,
+            descriptionIds = [],
+        ) {
+            let previous = validationAttributes.get(input);
+            if (!previous && !invalid) return;
+            if (!previous) {
+                previous = {
+                    invalid: input.getAttribute("aria-invalid"),
+                    descriptions: new Set(),
+                };
+                validationAttributes.set(input, previous);
+            } else if (input.getAttribute("aria-invalid") !== "true") {
+                previous.invalid = input.getAttribute("aria-invalid");
+            }
+            const descriptions = new Set(
+                (input.getAttribute("aria-describedby") ?? "")
+                    .split(/\s+/)
+                    .filter((id) => id && !previous.descriptions.has(id)),
+            );
+            previous.descriptions.clear();
+            for (const id of descriptionIds) {
+                if (!descriptions.has(id)) previous.descriptions.add(id);
+                descriptions.add(id);
+            }
+            if (descriptions.size) {
+                input.setAttribute(
+                    "aria-describedby",
+                    [...descriptions].join(" "),
+                );
+            } else {
+                input.toggleAttribute("aria-describedby", false);
+            }
+            if (invalid) {
+                input.setAttribute("aria-invalid", "true");
+            } else {
+                if (input.getAttribute("aria-invalid") === "true") {
+                    if (previous.invalid === null) {
+                        input.toggleAttribute("aria-invalid", false);
+                    } else {
+                        input.setAttribute("aria-invalid", previous.invalid);
+                    }
+                }
+                validationAttributes.delete(input);
+            }
+        }
 
         function getFieldInputs(fieldName) {
             const namedField = formElement.elements.namedItem(fieldName);
@@ -441,11 +492,12 @@ export function createFormBuilder(ctx, options) {
             fieldValue,
             fieldValues,
             shouldForceEvaluation,
+            evaluationGeneration,
         ) {
             const criteria = Array.isArray(fieldConfig.criteria)
                 ? fieldConfig.criteria
                 : [];
-            let allCriteriaValid = true;
+            const unmetCriterionIds = [];
             for (const criterionConfig of criteria) {
                 const criterionId = String(criterionConfig?.id ?? "").trim();
                 if (!criterionId) {
@@ -468,22 +520,24 @@ export function createFormBuilder(ctx, options) {
                           fieldValues,
                       )
                     : null;
-                criterionElement.classList.toggle(
-                    "form-builder-criterion-item--met",
-                    criterionValid === true,
-                );
-                criterionElement.classList.toggle(
-                    "form-builder-criterion-item--unmet",
-                    criterionValid === false,
-                );
+                if (evaluationGeneration === cleanupGeneration) {
+                    criterionElement.classList.toggle(
+                        "form-builder-criterion-item--met",
+                        criterionValid === true,
+                    );
+                    criterionElement.classList.toggle(
+                        "form-builder-criterion-item--unmet",
+                        criterionValid === false,
+                    );
+                }
                 if (criterionValid === false) {
-                    allCriteriaValid = false;
+                    unmetCriterionIds.push(criterionElement.id);
                 }
             }
-            return allCriteriaValid;
+            return unmetCriterionIds;
         }
 
-        function validateField(fieldName, forceTouched = false) {
+        function evaluateField(fieldName, forceTouched, evaluationGeneration) {
             if (forceTouched) {
                 touchedFieldNames.add(fieldName);
             }
@@ -504,12 +558,14 @@ export function createFormBuilder(ctx, options) {
             if (!fallbackFieldInput) {
                 return true;
             }
-            updateFieldCharacterCounter(
-                formElement,
-                fieldName,
-                fieldConfig,
-                fallbackFieldInput,
-            );
+            if (evaluationGeneration === cleanupGeneration) {
+                updateFieldCharacterCounter(
+                    formElement,
+                    fieldName,
+                    fieldConfig,
+                    fallbackFieldInput,
+                );
+            }
             const fieldValues = createFieldValues(formElement);
             const fieldValue = String(fieldValues[fieldName] ?? "");
             const required = fieldConfig.required === true;
@@ -518,16 +574,18 @@ export function createFormBuilder(ctx, options) {
                 forceTouched ||
                 touchedFieldNames.has(fieldName) ||
                 fieldValue.length > 0;
-            const criteriaValid = updateCriterionVisualState(
+            const unmetCriterionIds = updateCriterionVisualState(
                 fieldName,
                 fieldConfig,
                 fieldValue,
                 fieldValues,
                 shouldEvaluateNow,
+                evaluationGeneration,
             );
             const fieldValid =
                 (!required || fieldHasValue) &&
-                (!shouldEvaluateNow || criteriaValid);
+                (!shouldEvaluateNow || unmetCriterionIds.length === 0);
+            if (evaluationGeneration !== cleanupGeneration) return fieldValid;
             const fieldWrapper = formElement.querySelector(
                 `[data-form-builder-field="${fieldName}"]`,
             );
@@ -542,6 +600,12 @@ export function createFormBuilder(ctx, options) {
                 );
             }
             for (const input of fieldInputs) {
+                const evaluatedInvalid = shouldEvaluateNow && !fieldValid;
+                updateValidationAttributes(
+                    input,
+                    evaluatedInvalid,
+                    evaluatedInvalid ? unmetCriterionIds : [],
+                );
                 input.classList.toggle(
                     "form-builder-input--invalid",
                     !fieldValid,
@@ -550,9 +614,18 @@ export function createFormBuilder(ctx, options) {
             return fieldValid;
         }
 
+        function validateField(fieldName, forceTouched = false) {
+            return evaluateField(fieldName, forceTouched, cleanupGeneration);
+        }
+
         function validateAll(forceTouched = false) {
+            const evaluationGeneration = cleanupGeneration;
             return fields.every((fieldConfig) =>
-                validateField(fieldConfig.name, forceTouched),
+                evaluateField(
+                    fieldConfig.name,
+                    forceTouched,
+                    evaluationGeneration,
+                ),
             );
         }
 
@@ -604,34 +677,30 @@ export function createFormBuilder(ctx, options) {
             }
             const fieldInputs = getFieldInputs(fieldName);
             for (const fieldInput of fieldInputs) {
-                fieldInput.addEventListener(
-                    "input",
-                    () => {
-                        if (String(fieldInput.value ?? "").length > 0) {
-                            touchedFieldNames.add(fieldName);
-                        }
-                        validateField(fieldName, false);
-                    },
-                    listenerOptions,
-                );
-                fieldInput.addEventListener(
-                    "change",
-                    () => {
-                        if (String(fieldInput.value ?? "").length > 0) {
-                            touchedFieldNames.add(fieldName);
-                        }
-                        validateField(fieldName, false);
-                    },
-                    listenerOptions,
-                );
-                fieldInput.addEventListener(
-                    "blur",
-                    () => {
+                const onValueChange = () => {
+                    if (String(fieldInput.value ?? "").length > 0) {
                         touchedFieldNames.add(fieldName);
-                        validateField(fieldName, true);
-                    },
-                    listenerOptions,
-                );
+                    }
+                    validateField(fieldName, false);
+                };
+                const onBlur = () => {
+                    touchedFieldNames.add(fieldName);
+                    validateField(fieldName, true);
+                };
+                for (const [eventName, listener] of [
+                    ["input", onValueChange],
+                    ["change", onValueChange],
+                    ["blur", onBlur],
+                ]) {
+                    fieldInput.addEventListener(
+                        eventName,
+                        listener,
+                        listenerOptions,
+                    );
+                    fieldListeners.push(() =>
+                        fieldInput.removeEventListener(eventName, listener),
+                    );
+                }
                 updateFieldCharacterCounter(
                     formElement,
                     fieldName,
@@ -641,18 +710,26 @@ export function createFormBuilder(ctx, options) {
             }
         }
 
+        function detach() {
+            cleanupGeneration++;
+            formElement.removeEventListener("submit", preventNativeSubmission);
+            for (const removeListener of fieldListeners) removeListener();
+            fieldListeners.length = 0;
+            for (const input of validationAttributes.keys()) {
+                updateValidationAttributes(input, false);
+            }
+            detachSecretVisibility();
+            attachOptions.signal?.removeEventListener("abort", detach);
+        }
+        attachOptions.signal?.addEventListener("abort", detach, { once: true });
+        if (attachOptions.signal?.aborted) detach();
+
         return {
             validateField,
             validateAll,
             setFieldRequired,
             getValues: () => createFieldValues(formElement),
-            detach() {
-                formElement.removeEventListener(
-                    "submit",
-                    preventNativeSubmission,
-                );
-                detachSecretVisibility();
-            },
+            detach,
         };
     }
 
