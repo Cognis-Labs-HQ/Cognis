@@ -16,4 +16,4 @@ Erste, ersetzte und neu hinzugefügte Fußzeilen verwenden denselben nativen Sch
 
 ## Commits
 
-- [13aa5f452dbe7d6f09ddebd92ec648df940b58c1](https://github.com/Cognis-Labs-HQ/Cognis/commit/13aa5f452dbe7d6f09ddebd92ec648df940b58c1)
+- [f5896384f0417b5717206c20c3a358f09eeb39c1](https://github.com/Cognis-Labs-HQ/Cognis/commit/f5896384f0417b5717206c20c3a358f09eeb39c1)
