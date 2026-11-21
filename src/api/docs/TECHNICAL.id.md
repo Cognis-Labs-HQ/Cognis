@@ -49,6 +49,10 @@ Perilaku bersama: [TFA](/docs/gateways/tfa/technical).
 
 Penulisan pengaturan yang tidak terkait tidak menerapkan kebijakan TFA. Jika kapabilitas pembacaan TFA tersedia, pembacaan sistem dan penulisan tanpa kolom TFA memakai kebijakan terkini dari pemiliknya; kegagalan pembacaan menghasilkan kesalahan, bukan laporan bahwa penegakan dinonaktifkan. Tanpa kapabilitas opsional tersebut, preferensi tersimpan hanya merupakan salinan yang mungkin usang. Perubahan kebijakan eksplisit tetap memerlukan kapabilitas pemilik.
 
+Pemeriksaan akun hanya menerima kredensial sesi. Rute sumber daya campuran mengambil `share:getGuestClaims(request)` secara eksplisit, lalu memeriksa izin sumber daya dan tindakan. Penerimaan tamu yang tidak ada atau tidak valid hanya dapat dilanjutkan dengan autentikasi akun biasa, bukan otorisasi akun memakai klaim tamu. Rute modul yang memeriksa seluruh akses di penangannya menghilangkan metadata peran akun luar; rute administrasi mempertahankannya. Hanya penemuan penyedia dan rute aplikasi yang menerima kredensial tamu aktif untuk perenderan, dengan filter visibilitas peran yang sudah ada. Endpoint identitas tanpa cache hanya mengembalikan subjek, peran, penyedia, tujuan, dan status penyiapan yang terverifikasi.
+
+`Promise<{ sub: string; role: "user"; providerId: string; purpose: "share"; setupPending: false } | null>`
+
 ## Keamanan
 
 Titik akhir dokumentasi menyediakan informasi baca-saja. Jangan masukkan kredensial dan data akun pribadi ke sumber ini. Rute kemampuan perbandingan dokumen terpisah menegakkan autentikasi dan izin dokumennya sendiri.

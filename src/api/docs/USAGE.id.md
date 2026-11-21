@@ -14,6 +14,8 @@ Panggil `store.diff(fromVersion, toVersion)` melalui penyimpanan yang dibuat ole
 
 Gunakan titik akhir keamanan sistem atau penegakan TFA yang terautentikasi untuk mengubah kewajiban penyiapan. Penerapan kebijakan yang gagal mengembalikan kesalahan, bukan penyimpanan yang berhasil.
 
+`await ctx.getCapability("share:getGuestClaims")(request)`
+
 ## Hasil yang Diharapkan
 
 Setiap versi terbit berisi paket lokal lengkap; tampilan hilang tidak dibuat dari versi lain.

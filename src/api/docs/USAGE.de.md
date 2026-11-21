@@ -14,6 +14,8 @@ Rufen Sie `store.diff(fromVersion, toVersion)` über einen Speicher auf, der mit
 
 Ändern Sie die verpflichtende Einrichtung über den authentifizierten Endpunkt für Systemsicherheit oder TFA-Erzwingung. Eine fehlgeschlagene Richtlinienanwendung meldet einen Fehler statt einer erfolgreichen Speicherung.
 
+`await ctx.getCapability("share:getGuestClaims")(request)`
+
 ## Erwartete Ergebnisse
 
 Jede veröffentlichte Version enthält ein vollständiges übersetztes Paket; fehlende Ansichten werden nicht aus fremden Versionen ergänzt.

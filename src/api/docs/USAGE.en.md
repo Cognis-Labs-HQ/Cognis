@@ -14,6 +14,8 @@ Call `store.diff(fromVersion, toVersion)` through a store created by the `docs:v
 
 Use the authenticated system security or TFA enforcement endpoint to change mandatory enrollment. A failed policy application returns an error instead of a successful save.
 
+`await ctx.getCapability("share:getGuestClaims")(request)`
+
 ## Expected Results
 
 Each published version contains a complete localized bundle; unavailable views are not fabricated from unrelated versions.
