@@ -8,8 +8,6 @@ Registri rute meneruskan permintaan kepada pemilik fitur. GET /api/v1/ui/page-ex
 
 ## Konfigurasi
 
-### Konfigurasi
-
 | Variabel                          | Default                      | Keterangan                                          |
 | --------------------------------- | ---------------------------- | --------------------------------------------------- |
 | `DB_TYPE`                         | `postgresql`                 | Backend database: `postgresql` atau `mariadb`       |
