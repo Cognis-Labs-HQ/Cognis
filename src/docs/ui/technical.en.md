@@ -153,7 +153,7 @@ Floating menus use the version-one `ui:floatingMenus` capability and the staged 
 
 Toast feedback loads its shared stylesheet without delaying notification creation or dismissal. Concurrent notifications share a loading cycle with at most two five-second attempts. A failed cycle permits a later notification to retry. Existing external links are preserved; only failed links created by the toast loader are removed. Dismissal during loading remains final. Page tutorial targets and progression are unchanged.
 
-## Action Menu Lifetime and Keys
+### Action Menu Lifetime and Keys
 
 `openHamburgerMenu(button, { items, signal })` returns `Promise<string|null>`. The optional `signal` binds preparation and the open menu to its current page or component. Capture that mount's signal before awaiting the result. A selected enabled item returns its existing action ID; dismissal, cancellation, invoker removal or replacement by a newer opening returns `null`. Empty lists and lists with no enabled actions return `null`. Cancellation also applies while the stylesheet or menu queue is pending. Moving focus away from the opening button or menu cancels the opening, including while stylesheets or queue access are pending. Retained old controls cannot select an action or close a newer menu.
 

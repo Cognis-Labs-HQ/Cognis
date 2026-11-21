@@ -127,7 +127,7 @@ Menu mengambang memakai kapabilitas `ui:floatingMenus` versi 1 dan alur bertahap
 
 Toast memuat lembar gaya bersama tanpa menunda pembuatan atau penutupan pemberitahuan. Pemberitahuan serentak berbagi siklus dengan maksimal dua percobaan selama lima detik masing-masing. Setelah siklus gagal, pemberitahuan berikutnya dapat mencoba lagi. Tautan eksternal tetap dipertahankan; hanya tautan gagal yang dibuat pemuat toast yang dihapus. Penutupan saat pemuatan tetap berlaku. Target dan alur tutorial halaman tidak berubah.
 
-## Masa Aktif dan Tombol Menu
+### Masa Aktif dan Tombol Menu
 
 `openHamburgerMenu(button, { items, signal })` mengembalikan `Promise<string|null>`. `signal` opsional mengikat persiapan dan menu terbuka pada halaman atau komponen saat ini. Tangkap sinyal pemasangan tersebut sebelum menunggu hasil. Item aktif yang dipilih mengembalikan ID tindakan yang sudah ada; penutupan, pembatalan, penghapusan tombol pembuka, atau penggantian oleh pembukaan lebih baru mengembalikan `null`. Daftar kosong dan daftar tanpa tindakan aktif mengembalikan `null`. Pembatalan juga berlaku saat menunggu lembar gaya atau antrean menu. Memindahkan fokus dari tombol pembuka atau menu membatalkan pembukaan, termasuk saat menunggu lembar gaya atau giliran antrean. Kontrol lama yang masih disimpan tidak dapat memilih tindakan atau menutup menu lebih baru.
 

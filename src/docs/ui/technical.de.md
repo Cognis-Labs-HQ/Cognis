@@ -83,7 +83,7 @@ Schwebende Menüs verwenden die Capability `ui:floatingMenus` Version 1 und die 
 
 Toast-Hinweise laden ihr gemeinsames Stylesheet, ohne Erstellung oder Schließen zu verzögern. Gleichzeitige Hinweise teilen sich höchstens zwei Ladeversuche von jeweils fünf Sekunden. Nach einem gescheiterten Zyklus kann ein späterer Hinweis erneut laden. Externe Links bleiben erhalten; nur fehlgeschlagene Links des Toast-Laders werden entfernt. Schließen während des Ladens bleibt endgültig. Ziele und Ablauf der Seitentutorials bleiben unverändert.
 
-## Lebensdauer und Menütasten
+### Lebensdauer und Menütasten
 
 `openHamburgerMenu(button, { items, signal })` liefert `Promise<string|null>`. Das optionale `signal` bindet Vorbereitung und geöffnetes Menü an die aktuelle Seite oder Komponente. Das Signal dieses Einhängens muss vor dem Warten auf das Ergebnis erfasst werden. Ein gewählter aktiver Eintrag liefert seine bestehende Aktionskennung; Schließen, Abbruch, Entfernen der öffnenden Schaltfläche oder Ersetzen durch ein neueres Menü liefert `null`. Leere Listen und Listen ohne aktive Aktionen liefern `null`. Ein Abbruch gilt auch beim Warten auf das Stylesheet oder die Menüwarteschlange. Wechselt der Fokus von der öffnenden Schaltfläche oder dem Menü weg, wird das Öffnen abgebrochen, auch während des Wartens auf Stylesheets oder die Warteschlange. Zurückbehaltene alte Bedienelemente können weder eine Aktion wählen noch ein neueres Menü schließen.
 
