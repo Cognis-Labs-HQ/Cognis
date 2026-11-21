@@ -38,8 +38,6 @@ export async function assertRequiredModulePreferences(
     message,
     loadConfig = loadModuleConfig,
 ) {
-    const available = () => !lifetime?.aborted && isCurrent() && isVisible();
-    if (!available()) return null;
     const definitions = module.ui?.preferences ?? [];
     if (!definitions.some((definition) => definition.required)) return true;
     let values;
@@ -93,6 +91,8 @@ export async function openModulePreferences(
         isVisible = () => true,
     } = {},
 ) {
+    const available = () => !lifetime?.aborted && isCurrent() && isVisible();
+    if (!available()) return null;
     const definitions = module.ui?.preferences ?? [];
     if (!definitions.length) return;
     if (!available()) return null;
