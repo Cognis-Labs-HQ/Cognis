@@ -278,7 +278,7 @@ test("event status backgrounds cover calendar cards and dashboard summaries", ()
     }
     assert.match(
         STATUS_CSS_SOURCE,
-        /calendar-view-canvas \.calendar-event-status--free,[\s\S]*background:\s*transparent !important;/,
+        /calendar-view-canvas \.calendar-event-status--free,[\s\S]*--calendar-status-background:\s*transparent;/,
     );
     assert.match(
         STATUS_CSS_SOURCE,
@@ -852,5 +852,12 @@ test("calendar shares provide a Cognis content route", () => {
     assert.match(
         POPUP_MANAGER_CALENDAR_EDIT_SOURCE,
         /contentUrl: `\/calendar\?calendarId=/,
+    );
+});
+
+test("calendar week headers adapt to the panel width", () => {
+    assert.match(
+        TIMED_GRID_CSS_SOURCE,
+        /@container calendar-week \(max-width:\s*700px\)[\s\S]*\.calendar-week-day-header\s*\{[\s\S]*flex-direction:\s*column;/s,
     );
 });

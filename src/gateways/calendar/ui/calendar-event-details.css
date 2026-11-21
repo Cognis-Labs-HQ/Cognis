@@ -1,3 +1,5 @@
+@import "./event-composer.css";
+
 .calendar-checkbox-row {
     width: 100%;
     display: inline-flex;
@@ -431,9 +433,9 @@
     width: 100%;
 }
 
-.calendar-slot-event--pending {
-    opacity: 0.55;
-    background: repeating-linear-gradient(
+.calendar-view-canvas .calendar-slot-event--pending {
+    --calendar-pending-opacity: 0.55;
+    --calendar-pending-background: repeating-linear-gradient(
         45deg,
         transparent,
         transparent 4px,
@@ -449,6 +451,6 @@
                 transparent
             )
             8px
-    ) !important;
+    );
     border-style: dashed;
 }

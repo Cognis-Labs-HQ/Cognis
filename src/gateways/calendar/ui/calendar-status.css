@@ -1,21 +1,21 @@
 .calendar-view-canvas .calendar-event-status--busy,
 .app-shell .calendar-view-canvas .calendar-event-status--busy:hover {
-    background: color-mix(
+    --calendar-status-background: color-mix(
         in srgb,
         var(--calendar-event-stripe, var(--calendar-accent, #1f8ceb)) 22%,
         var(--surface, transparent)
-    ) !important;
+    );
 }
 
 .calendar-view-canvas .calendar-event-status--free,
 .app-shell .calendar-view-canvas .calendar-event-status--free:hover {
-    background: transparent !important;
-    opacity: 0.78;
+    --calendar-status-background: transparent;
+    --calendar-status-opacity: 0.78;
 }
 
 .calendar-view-canvas .calendar-event-status--tentative,
 .app-shell .calendar-view-canvas .calendar-event-status--tentative:hover {
-    background:
+    --calendar-status-background:
         repeating-linear-gradient(
             135deg,
             color-mix(
@@ -30,7 +30,18 @@
                 0 8px,
             transparent 8px 16px
         ),
-        var(--surface, transparent) !important;
+        var(--surface, transparent);
+}
+
+.calendar-view-canvas .calendar-event-status,
+.app-shell .calendar-view-canvas .calendar-event-status:hover {
+    background:
+        var(
+            --calendar-pending-background,
+            linear-gradient(transparent, transparent)
+        ),
+        var(--calendar-status-background, transparent) !important;
+    opacity: var(--calendar-pending-opacity, var(--calendar-status-opacity, 1));
 }
 
 .app-shell
