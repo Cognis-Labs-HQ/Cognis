@@ -8,5 +8,5 @@ Shared side-menu selections now explicitly use non-submit buttons in fixed and c
 
 ## Commits
 
-- [e762b1de9b38f743031d84dd1dfab039de6659fb](https://github.com/Cognis-Labs-HQ/Cognis/commit/e762b1de9b38f743031d84dd1dfab039de6659fb)
-- [093649c1c0e7c3ca5016f54fe7893523370b4cdb](https://github.com/Cognis-Labs-HQ/Cognis/commit/093649c1c0e7c3ca5016f54fe7893523370b4cdb)
+- [0b6438cc5f084d89a72d8e9938491efabda52881](https://github.com/Cognis-Labs-HQ/Cognis/commit/0b6438cc5f084d89a72d8e9938491efabda52881)
+- [acf6084138245c050a57895e7be8b16c68ae1968](https://github.com/Cognis-Labs-HQ/Cognis/commit/acf6084138245c050a57895e7be8b16c68ae1968)
