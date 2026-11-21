@@ -13,6 +13,8 @@ import {
     type ManagementTargetAuthorization,
 } from "./account-target.js";
 
+import { runUserDeletion } from "./deletion.js";
+
 import {
     bindDeprovisionOutcome,
     type DeprovisionOutcome,
@@ -670,15 +672,14 @@ export function createUserRoutes(
                 targetIsFounder: Boolean(targetInfo?.isFounder),
                 isAuthorizationCurrent: authorization.isCurrent,
             });
-            const deleteResult = await ctx.flow.run(
-                "deprovision-user",
+            const outcome = await runUserDeletion(
+                ctx.flow,
                 deprovisionInput,
+                readOutcome,
+                res,
+                log,
             );
-            const outcome = readOutcome(
-                deprovisionInput,
-                deleteResult.stageResults,
-            );
-            if (!deprovisionPersisted(outcome, "delete")) return true;
+            if (!outcome) return true;
             log?.("warn", "Deleted user account.", {
                 ...logMeta,
                 accountId: adminClaims.sub,

@@ -22,6 +22,7 @@ export async function apiRequest(
         body?: unknown;
         apiToken?: string;
         reportProgress?: (event: Record<string, unknown>) => void;
+        expectedStatus?: number;
     },
 ): Promise<unknown> {
     const method = options?.method ?? "GET";
@@ -37,14 +38,18 @@ export async function apiRequest(
         body: body !== undefined ? JSON.stringify(body) : undefined,
     });
 
-    if (options?.reportProgress)
+    const unexpectedStatus =
+        response.ok &&
+        options?.expectedStatus !== undefined &&
+        response.status !== options.expectedStatus;
+    if (options?.reportProgress && !unexpectedStatus)
         return readProgressResponse(response, options.reportProgress);
     const contentType = response.headers.get("content-type") ?? "";
     const payload = contentType.includes("application/json")
         ? await response.json()
         : await response.text();
 
-    if (!response.ok) {
+    if (!response.ok || unexpectedStatus) {
         throw new ApiRequestError(
             response.status,
             response.statusText,

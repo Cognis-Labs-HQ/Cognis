@@ -18,6 +18,10 @@ Use the authenticated system security or TFA enforcement endpoint to change mand
 
 GET /api/v1/docs includes optional groupPresentation metadata alongside each entry’s existing group, slug, title, path and versions. The group remains the immutable module UUID; labels never replace identity or routes.
 
+Send `DELETE /api/v1/users/:username` with the usual authorized request credentials. A normal response remains HTTP 200 with `{"data":{"deleted":true}}`.
+
+If the deletion was confirmed but a subsequent flow hook failed, the response is HTTP 500 with `{"error":{"code":"user_deletion_cleanup_incomplete"},"data":{"deleted":true,"outcome":"committed","cleanup":"incomplete"}}`. Do not repeat deletion to repair cleanup. Review the server's recorded failure and the affected component's recovery procedure.
+
 ## Expected Results
 
 Each published version contains a complete localized bundle; unavailable views are not fabricated from unrelated versions.

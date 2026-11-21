@@ -16,6 +16,10 @@
 
 GET /api/v1/docs は既存の group、slug、title、path、versions に加えて、任意の groupPresentation メタデータを返します。グループの識別子は不変のモジュール UUID のままです。表示名によって識別子やルートは変わりません。
 
+通常の認可済みリクエストの認証情報で `DELETE /api/v1/users/:username` を送信します。通常の応答は HTTP 200、`{"data":{"deleted":true}}` のままです。
+
+削除が確認された後でフローのフックが失敗した場合、応答は HTTP 500、`{"error":{"code":"user_deletion_cleanup_incomplete"},"data":{"deleted":true,"outcome":"committed","cleanup":"incomplete"}}` です。後処理を修復するために削除を再実行しないでください。サーバーに記録された失敗と、該当コンポーネントの復旧手順を確認してください。
+
 ## 期待される結果
 
 公開版には全種類の翻訳済み資料が含まれ、別の版から不足を補いません。
