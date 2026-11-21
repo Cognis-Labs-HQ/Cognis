@@ -22,3 +22,4 @@ Einstellungen, Aktualisierungen und Kanalwechsel nutzen dieselben kontogebundene
 - [5bed8ecb4ad027927b0cef15a628c6b024621b86](https://github.com/Cognis-Labs-HQ/Cognis/commit/5bed8ecb4ad027927b0cef15a628c6b024621b86)
 - [6e41c5307b2ccf54e2a89d5cd76c0b02eca8cce7](https://github.com/Cognis-Labs-HQ/Cognis/commit/6e41c5307b2ccf54e2a89d5cd76c0b02eca8cce7)
 - [d2b50a30f8ec9b24ea94693b9e8fc830eac74705](https://github.com/Cognis-Labs-HQ/Cognis/commit/d2b50a30f8ec9b24ea94693b9e8fc830eac74705)
+- [c774baaabbd339c4fc92d1b7fc771d5c0dd2533a](https://github.com/Cognis-Labs-HQ/Cognis/commit/c774baaabbd339c4fc92d1b7fc771d5c0dd2533a)
