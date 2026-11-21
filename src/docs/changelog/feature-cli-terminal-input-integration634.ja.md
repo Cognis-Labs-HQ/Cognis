@@ -16,4 +16,5 @@ CLI 0.4.7 はヘルプの分類と独立したコマンド所有のスキーマ�
 
 ## コミット
 
-- [1fc472d13029bc3a88c24185a284efe3255b86ca](https://github.com/Cognis-Labs-HQ/Cognis/commit/1fc472d13029bc3a88c24185a284efe3255b86ca)
+- [5e4b8cbd671c4e1c93366810337d2f9ba0921c69](https://github.com/Cognis-Labs-HQ/Cognis/commit/5e4b8cbd671c4e1c93366810337d2f9ba0921c69)
+- [8d26b79ea4b76c6239b69ddee8a1db69fa7b84f3](https://github.com/Cognis-Labs-HQ/Cognis/commit/8d26b79ea4b76c6239b69ddee8a1db69fa7b84f3)
