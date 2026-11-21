@@ -470,3 +470,23 @@ test("mariadb safely parses repeated datetime error text", async () => {
     );
     assert.deepEqual(transactionCalls, ["BEGIN", "COMMIT"]);
 });
+
+test("installed mysql2 pool provides the adapter operations and error listener", async () => {
+    const { createPool: createDriverPool } = await import("mysql2/promise");
+    const pool = createDriverPool({
+        uri: "mysql://boundary:boundary@127.0.0.1/boundary",
+        ...readMariaDbPoolSettings(),
+    });
+    const adapterPool: MariaDbPool = pool;
+    const errors: Error[] = [];
+    pool.addListener("error", (error: Error) => errors.push(error));
+    const failure = new Error("pool boundary failure");
+    try {
+        pool.emit("error", failure);
+        assert.deepEqual(errors, [failure]);
+        assert.equal(typeof adapterPool.query, "function");
+        assert.equal(typeof adapterPool.getConnection, "function");
+    } finally {
+        await adapterPool.end();
+    }
+});

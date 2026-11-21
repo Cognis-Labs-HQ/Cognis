@@ -5,8 +5,9 @@ import { SqliteDbGateway, type SqliteClient } from "../index.js";
 test("sqlite adapter runs query and transaction", async () => {
     const execCalls: string[] = [];
     const client: SqliteClient = {
-        async all() {
-            return [{ id: 1 }];
+        async all<Row>() {
+            const rows: unknown[] = [{ id: 1 }];
+            return rows as Row[];
         },
         async run() {
             return { changes: 1 };
@@ -27,9 +28,10 @@ test("sqlite adapter executes structured commands", async () => {
     const allCalls: Array<{ statement: string; params?: unknown[] }> = [];
     const runCalls: Array<{ statement: string; params?: unknown[] }> = [];
     const client: SqliteClient = {
-        async all(statement: string, params?: unknown[]) {
+        async all<Row>(statement: string, params?: unknown[]) {
             allCalls.push({ statement, params });
-            return [{ module_id: "study" }];
+            const rows: unknown[] = [{ module_id: "study" }];
+            return rows as Row[];
         },
         async run(statement: string, params?: unknown[]) {
             runCalls.push({ statement, params });

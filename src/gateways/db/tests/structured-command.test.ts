@@ -161,10 +161,11 @@ test("gateway command builder emits sqlite ignore syntax", () => {
 test("gateway dialect helper delegates structured commands to the executor", async () => {
     const calls: StructuredDbCommand[] = [];
     const executor: DbExecutor = {
-        async execute() {
-            throw new Error(
-                "helper should use executeCommand for structured calls",
-            );
+        async ensureTable() {
+            throw new Error("Unexpected schema operation");
+        },
+        async transaction(callback) {
+            return callback(this);
         },
         async executeCommand(command) {
             calls.push(command);
@@ -200,10 +201,11 @@ test("gateway dialect helper delegates structured commands to the executor", asy
 test("gateway dialect helper insertIgnore delegates a structured command", async () => {
     const calls: StructuredDbCommand[] = [];
     const executor: DbExecutor = {
-        async execute() {
-            throw new Error(
-                "helper should use executeCommand for structured calls",
-            );
+        async ensureTable() {
+            throw new Error("Unexpected schema operation");
+        },
+        async transaction(callback) {
+            return callback(this);
         },
         async executeCommand(command) {
             calls.push(command);

@@ -46,8 +46,11 @@ export interface DbExecutor {
  * src/adapters/db/ or src/gateways/db/ may import or call this.
  */
 export interface RawDbExecutor extends DbExecutor {
+    transaction<T>(
+        callback: (executor: RawDbExecutor) => Promise<T>,
+    ): Promise<T>;
     execute(
         sql: string,
         params?: unknown[],
-    ): Promise<{ rows?: any[]; rowCount?: number }>;
+    ): Promise<{ rows?: Record<string, unknown>[]; rowCount?: number }>;
 }

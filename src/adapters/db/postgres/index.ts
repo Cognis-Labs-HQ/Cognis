@@ -19,7 +19,7 @@ import {
 
 export interface PostgresQueryResult<Row = Record<string, unknown>> {
     rows: Row[];
-    rowCount: number;
+    rowCount: number | null;
 }
 
 export interface PostgresClient {
@@ -120,7 +120,7 @@ export class PostgresDbGateway implements DatabaseGateway {
             statement.sql,
             statement.params,
         );
-        return { rows: result.rows, rowCount: result.rowCount };
+        return { rows: result.rows, rowCount: result.rowCount ?? 0 };
     }
 
     async query<Row = Record<string, unknown>>(
@@ -128,7 +128,7 @@ export class PostgresDbGateway implements DatabaseGateway {
         params?: unknown[],
     ): Promise<QueryResult<Row>> {
         const result = await this.pool.query<Row>(statement, params);
-        return { rows: result.rows, rowCount: result.rowCount };
+        return { rows: result.rows, rowCount: result.rowCount ?? 0 };
     }
 
     async execute(
@@ -185,7 +185,10 @@ class PostgresExecutor implements RawDbExecutor {
         private readonly inTransaction = false,
     ) {}
 
-    async execute(sql: string, params: unknown[] = []) {
+    async execute<Row = Record<string, unknown>>(
+        sql: string,
+        params: unknown[] = [],
+    ) {
         let parameterIndex = 1;
         const normalizedSql = sql.replace(/\?/g, () => `$${parameterIndex++}`);
         writeDbLog(this.log, "debug", "Executing SQL statement.", {
@@ -195,8 +198,8 @@ class PostgresExecutor implements RawDbExecutor {
             parameterCount: params.length,
         });
         try {
-            const result = await this.pool.query(normalizedSql, params);
-            return { rows: result.rows, rowCount: result.rowCount };
+            const result = await this.pool.query<Row>(normalizedSql, params);
+            return { rows: result.rows, rowCount: result.rowCount ?? 0 };
         } catch (error) {
             writeDbLog(this.log, "warn", "SQL execution failed.", {
                 component: "db",
@@ -397,7 +400,7 @@ class PostgresExecutor implements RawDbExecutor {
             ...(def.uniqueKeys ?? []),
         ];
         if (!declaredKeys.length) return;
-        const result = await this.execute(
+        const result = await this.execute<{ columns: string[] }>(
             `SELECT ARRAY(
                 SELECT pg_attribute.attname::text
                 FROM unnest(pg_index.indkey) WITH ORDINALITY AS index_columns(attnum, position)
@@ -487,5 +490,5 @@ async function createPostgresPool(
             ...buildDbErrorMeta(error),
         });
     });
-    return pool as PostgresPool;
+    return pool;
 }
