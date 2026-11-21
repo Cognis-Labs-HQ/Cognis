@@ -12,5 +12,5 @@ Tests des öffentlichen Renderers und der synthetischen Administration prüfen V
 
 ## Commits
 
-- [cefed3c0ddd10142f1e40a91fd158c2d353d7c8b](https://github.com/Cognis-Labs-HQ/Cognis/commit/cefed3c0ddd10142f1e40a91fd158c2d353d7c8b)
-- [6324207a77de094beb3b71023d5726d3f6686232](https://github.com/Cognis-Labs-HQ/Cognis/commit/6324207a77de094beb3b71023d5726d3f6686232)
+- [0c764477508865cc3a943494aee90f10b95c11f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/0c764477508865cc3a943494aee90f10b95c11f0)
+- [16142ccda414bfe5c1335005bf404414b1a4ba4f](https://github.com/Cognis-Labs-HQ/Cognis/commit/16142ccda414bfe5c1335005bf404414b1a4ba4f)
