@@ -28,7 +28,8 @@ Returning to a method shows each completed resend receipt once; switching away a
 
 ## Commits
 
-- [18941c4346a32e691be8e802350d279fac42d98a](https://github.com/Cognis-Labs-HQ/Cognis/commit/18941c4346a32e691be8e802350d279fac42d98a)
-- [72160829fb76bd59c0b725e936abb4e6f29fcb8d](https://github.com/Cognis-Labs-HQ/Cognis/commit/72160829fb76bd59c0b725e936abb4e6f29fcb8d)
-- [b25c7a490026774b22f81a7f670a0e4016392472](https://github.com/Cognis-Labs-HQ/Cognis/commit/b25c7a490026774b22f81a7f670a0e4016392472)
-- [efead97753cce6ff022741e388d6115f03d01538](https://github.com/Cognis-Labs-HQ/Cognis/commit/efead97753cce6ff022741e388d6115f03d01538)
+- [1b9d020c3d8820e1b5838fbd4c54e51e626fbd1f](https://github.com/Cognis-Labs-HQ/Cognis/commit/1b9d020c3d8820e1b5838fbd4c54e51e626fbd1f)
+- [f3f810aa71ab0bbd7bdcb841be01ee5979834239](https://github.com/Cognis-Labs-HQ/Cognis/commit/f3f810aa71ab0bbd7bdcb841be01ee5979834239)
+- [d43180248e4feb9d580f1fe7ce532c9dd7a6fbf6](https://github.com/Cognis-Labs-HQ/Cognis/commit/d43180248e4feb9d580f1fe7ce532c9dd7a6fbf6)
+- [6fcc59f6db105cc068acb34e57837f7d14e66519](https://github.com/Cognis-Labs-HQ/Cognis/commit/6fcc59f6db105cc068acb34e57837f7d14e66519)
+- [485f7e727dc7fffc158bad34a0f7ccec4dd4174e](https://github.com/Cognis-Labs-HQ/Cognis/commit/485f7e727dc7fffc158bad34a0f7ccec4dd4174e)
