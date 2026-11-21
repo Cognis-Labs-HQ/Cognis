@@ -6,6 +6,8 @@ Treten Sie einem Sprachkurs bei oder verwalten Sie als Lehrkraft Unterricht und 
 
 Durchsuche Klassen, beantrage Mitgliedschaft und verwalte Lehrgruppen.
 
+Der Klassen-Adapter verwaltet sprachbezogene Klassen, Mitgliedschaftsanfragen, Lehrkraftzuweisungen und Klassenraumeinstellungen.
+
 ## Vor dem Start
 
 Melde dich an; Lehr- und Mitgliedschaftsentscheidungen folgen der Lernrichtlinie.

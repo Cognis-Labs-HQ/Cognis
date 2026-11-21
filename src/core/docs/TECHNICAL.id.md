@@ -21,8 +21,6 @@ Komponen memeriksa apakah flow ada sebelum menginjeksi hook.
 
 ## Konfigurasi
 
-### Konfigurasi
-
 Komponen ini tidak memiliki konfigurasi variabel lingkungan runtime.
 
 ## Perilaku

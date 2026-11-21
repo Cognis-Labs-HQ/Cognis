@@ -6,6 +6,8 @@ Masuk ke Cognis dengan akun lokal atau penyedia masuk yang diaktifkan administra
 
 Masuk, kelola sesi, dan lindungi akun.
 
+Auth mengelola batas akun istimewa yang digunakan oleh pengelolaan akun dan administrasi autentikasi dua faktor.
+
 ## Sebelum Memulai
 
 Gunakan penyedia aktif; pendaftaran mungkin memerlukan undangan.

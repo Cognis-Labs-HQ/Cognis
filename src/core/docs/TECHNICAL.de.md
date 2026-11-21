@@ -35,8 +35,6 @@ Anbieter müssen die Capability-ID in ihrer Komponentendokumentation veröffentl
 
 ## Konfiguration
 
-### Konfiguration
-
 Diese Komponente hat keine Laufzeit-Umgebungsvariablen.
 
 ## Verhalten

@@ -6,6 +6,8 @@ Sign in to Cognis with a local account or a sign-in provider enabled by your adm
 
 Sign in, manage sessions and protect your account.
 
+Auth owns the privileged-account boundary used by account management and two-factor administration.
+
 ## Before You Start
 
 Use an enabled login provider; registration may require an invitation.

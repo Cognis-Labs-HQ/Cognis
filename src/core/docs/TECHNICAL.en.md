@@ -75,8 +75,6 @@ Providers must publish the capability ID in their component documentation and, f
 
 ## Configuration
 
-### Configuration
-
 This component has no runtime environment variable configuration.
 
 ## Behavior

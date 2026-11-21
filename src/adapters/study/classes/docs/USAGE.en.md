@@ -10,6 +10,8 @@ Sign in; teaching and membership decisions follow Study policy.
 
 Choose a class, request membership and wait for the required decision; teachers review requests from their class controls.
 
+Teachers use `/classes` to manage their classes; signed-in learners use `/my-classes` to view their memberships. `GET /api/v1/study/classes?language=ja` returns the teacher’s matching classes, while `GET /api/v1/study/my-classes` returns the learner’s enrolled classes.
+
 ## Expected Results
 
 Approved membership grants the class's permitted learning access.

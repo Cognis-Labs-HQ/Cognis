@@ -6,6 +6,8 @@ Join a language class or manage lessons and membership as a teacher.
 
 Browse classes, request membership and manage your teaching groups.
 
+The Classes adapter owns language-specific classes, membership requests, teacher assignments and classroom preferences.
+
 ## Before You Start
 
 Sign in; teaching and membership decisions follow Study policy.

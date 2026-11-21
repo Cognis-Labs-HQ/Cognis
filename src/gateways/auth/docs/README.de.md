@@ -6,6 +6,8 @@ Melden Sie sich mit einem lokalen Konto oder einem aktivierten Anmeldedienst bei
 
 Melde dich an, verwalte Sitzungen und schütze dein Konto.
 
+Auth verwaltet die Berechtigungsgrenze für privilegierte Konten bei der Kontoverwaltung und der Zwei-Faktor-Administration.
+
 ## Vor dem Start
 
 Nutze einen aktiven Anbieter; Registrierung kann eine Einladung verlangen.
