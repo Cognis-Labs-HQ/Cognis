@@ -48,7 +48,7 @@ Schlägt die Zusammenstellung der Registrierungskonfiguration fehl, wird registr
 
 Registration 1.2.10 verwendet die Host-Schlüssel `ui.reuse.password_requirements` und `ui.reuse.passwords_match` gemeinsam mit Sicherheit. Stellen Sie die passenden Host-UI-Kataloge bereit und aktualisieren Sie Integrationen, die diese Texte verwenden, auf die gemeinsamen Schlüssel. Fehlende Werte der bevorzugten Sprache werden aus denselben englischen XML-Schlüsseln aufgelöst; fehlende oder leere englische Werte führen ausdrücklich zu einem Fehler. Die öffentliche Registrierung bleibt außerhalb angemeldeter Anleitungen; Einladungs- und Richtlinienanleitungen behalten ihre Bedienelemente.
 
-## E-Mail-Einladungen prüfen
+### E-Mail-Einladungen prüfen
 
 E-Mail-Einladungen erfassen die Empfängeradresse mit dem gemeinsamen Formularbaukasten und der nativen E-Mail-Gültigkeitsprüfung. Fehlende oder fehlerhafte Angaben bleiben im Dialog, erhalten einen lokalisierten Toast und eine zugeordnete Feldfehlermeldung und lösen keine Einladung aus. Eine Korrektur hebt die Fehlerzuordnung auf. Eine gültige Adresse wird vor der bestehenden Client-Anfrage von äußeren Leerzeichen bereinigt; Serverprüfung, erlaubte Domains, Antworten zu doppelten Einladungen und Autorisierung bleiben maßgeblich. Wiederholte Aktionen teilen sich einen laufenden Versuch. Beim Verlassen der Seite wird das E-Mail-Formular geschlossen; spätere Erstellungsschritte, Rückmeldungen und Verlaufsaktualisierungen werden unterdrückt. Eine bereits gesendete Anfrage wird nicht rückgängig gemacht.
 
