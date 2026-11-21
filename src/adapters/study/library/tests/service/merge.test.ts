@@ -11,14 +11,16 @@ import type {
 
 async function mergeSession() {
     const schema = structuredClone(mockLanguageSchema);
-    schema.layers
-        .find(({ id }) => id === "words")!
-        .relationships!.push({
+    const words = schema.layers.find(({ id }) => id === "words")!;
+    words.relationships = [
+        ...words.relationships!,
+        {
             id: "related",
             targetLayer: "words",
             onDelete: "cascade",
             metadata: { labels: { en: "Related" } },
-        });
+        },
+    ];
     const character: LibraryEntry = {
         id: "character",
         schemaId: schema.id,
@@ -166,7 +168,7 @@ test("administrators immediately merge into the canonical card through registere
         session.input,
     );
     assert.equal(result.entry.id, "source");
-    assert.deepEqual(result.entry.fields.pronunciation, ["a", "alpha"]);
+    assert.deepEqual(result.entry.fields?.pronunciation, ["a", "alpha"]);
     assert.deepEqual(result.entry.tags, ["new-tag"]);
     assert.equal(
         result.entry.references?.filter(
@@ -189,7 +191,7 @@ test("users submit a shared merge for admin review without changing the original
         session.input,
     );
     assert.equal(result.request?.kind, "merge");
-    assert.deepEqual(session.records().get("source")!.fields.pronunciation, [
+    assert.deepEqual(session.records().get("source")!.fields?.pronunciation, [
         "a",
     ]);
     await assert.rejects(
@@ -205,7 +207,7 @@ test("users submit a shared merge for admin review without changing the original
         "request",
         "approved",
     );
-    assert.deepEqual(session.records().get("source")!.fields.pronunciation, [
+    assert.deepEqual(session.records().get("source")!.fields?.pronunciation, [
         "a",
         "alpha",
     ]);
@@ -224,7 +226,7 @@ test("private dependencies cannot enter a shared merge, and failed validation ke
         /reference_visibility_too_low/,
     );
     assert.equal(session.requests().length, 0);
-    assert.deepEqual(session.records().get("source")!.fields.pronunciation, [
+    assert.deepEqual(session.records().get("source")!.fields?.pronunciation, [
         "a",
     ]);
 });

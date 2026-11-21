@@ -17,6 +17,7 @@ const character: LibraryEntry = {
     label: "a",
     scope: "global",
     scopeId: "global",
+    protected: false,
     createdBy: "owner",
     createdAt: "2026-01-01",
     updatedAt: "2026-01-01",

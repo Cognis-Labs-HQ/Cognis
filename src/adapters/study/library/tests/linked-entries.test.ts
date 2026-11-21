@@ -1,3 +1,4 @@
+import { createEntry } from "./reuse/fixtures.js";
 import { createLibraryFlow } from "./reuse/flows.js";
 import type { FlowApi } from "@cognis/core";
 import assert from "node:assert/strict";
@@ -30,6 +31,7 @@ const schema: LibrarySchema = {
             relationships: [
                 {
                     id: "readings",
+                    onDelete: "restrict",
                     targetLayer: "words",
                     grouped: true,
                     ordered: true,
@@ -45,12 +47,14 @@ const schema: LibrarySchema = {
             relationships: [
                 {
                     id: "spelling",
+                    onDelete: "restrict",
                     targetLayer: "kanji",
                     metadata: { labels: { en: "Spelling" } },
                     presentationRole: "composition",
                 },
                 {
                     id: "kana",
+                    onDelete: "restrict",
                     targetLayer: "characters",
                     grouped: true,
                     ordered: true,
@@ -156,7 +160,7 @@ async function harness(flow?: FlowApi, registeredSchema = schema) {
             accountId: string,
             id: string,
         ) => {
-            const entry = {
+            const entry = createEntry({
                 ...value,
                 ...location,
                 id,
@@ -166,7 +170,7 @@ async function harness(flow?: FlowApi, registeredSchema = schema) {
                 createdBy: accountId,
                 createdAt: "2026-01-01",
                 updatedAt: "2026-01-01",
-            } as LibraryEntry;
+            });
             records.set(id, entry);
             return entry;
         },
@@ -285,12 +289,15 @@ test("repeat imports ignore SQL positions on unordered links while preserving or
         (layer) => layer.id === "words",
     )!;
     words.relationships![0].ordered = true;
-    words.relationships!.push({
-        id: "meaning",
-        targetLayer: "characters",
-        metadata: { labels: { en: "Meaning" } },
-        onDelete: "restrict",
-    });
+    words.relationships = [
+        ...words.relationships!,
+        {
+            id: "meaning",
+            targetLayer: "characters",
+            metadata: { labels: { en: "Meaning" } },
+            onDelete: "restrict",
+        },
+    ];
     const { library, records } = await harness(
         createLibraryFlow(),
         registeredSchema,

@@ -13,7 +13,7 @@ const schema = structuredClone(mockLanguageSchema);
 const word = (
     key: string,
     references: LibraryEntryInput["references"] = [],
-) => ({
+): LibraryEntryInput & { key: string } => ({
     key,
     schemaId: schema.id,
     layer: "words",
@@ -82,14 +82,16 @@ test("batch validation rejects duplicate keys, cycles, and provider-only layers"
 
 test("batch validates required stroke data using the installed layer schema", () => {
     const drawing = structuredClone(schema);
-    drawing.layers
-        .find((layer) => layer.id === "symbols")!
-        .fields!.push({
+    const symbols = drawing.layers.find((layer) => layer.id === "symbols")!;
+    symbols.fields = [
+        ...symbols.fields!,
+        {
             id: "stroke_pattern",
             type: "strokePattern",
             required: true,
             metadata: { labels: { en: "Stroke Pattern" } },
-        });
+        },
+    ];
     assert.throws(
         () =>
             prepareLibraryImport(

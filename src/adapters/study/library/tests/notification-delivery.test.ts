@@ -10,6 +10,10 @@ import { createRequestNotifier } from "../request-notifications.js";
 import { createLibraryFlow } from "./reuse/flows.js";
 import type { LibraryPushRequest } from "../types.js";
 
+type DispatchEnvelope = Parameters<
+    ReturnType<typeof createNotificationDelivery>["dispatch"]
+>[0];
+
 test("Study request delivery resolves late notification capabilities and forwards each decision to the internal feed", async () => {
     const capabilities = new CapabilityStore();
     const logs: Array<{ level: string; metadata: unknown }> = [];
@@ -44,10 +48,13 @@ test("Study request delivery resolves late notification capabilities and forward
             "study",
         );
     });
-    capabilities.contribute("notify:dispatch", async (envelope) => {
-        feed.push(envelope);
-        return { dispatched: ["internal"] };
-    });
+    capabilities.contribute(
+        "notify:dispatch",
+        async (envelope: DispatchEnvelope) => {
+            feed.push(envelope);
+            return { dispatched: ["internal"] };
+        },
+    );
     for (const status of [
         "pending",
         "approved",
@@ -75,10 +82,13 @@ test("Study request delivery resolves late notification capabilities and forward
         /notification_not_delivered/,
     );
     assert.ok(logs.some(({ level }) => level === "error"));
-    capabilities.contribute("notify:dispatch", async (envelope) => {
-        feed.push(envelope);
-        return { dispatched: ["internal"] };
-    });
+    capabilities.contribute(
+        "notify:dispatch",
+        async (envelope: DispatchEnvelope) => {
+            feed.push(envelope);
+            return { dispatched: ["internal"] };
+        },
+    );
     await delivery.dispatch({
         category: "study",
         recipientUsername: "admin",
@@ -90,7 +100,7 @@ test("Study request delivery resolves late notification capabilities and forward
 
 test("an administrator receives their incoming request but not their own review decision", async () => {
     const capabilities = new CapabilityStore();
-    const feed: Array<{ metadata: { status: string } }> = [];
+    const feed: Array<DispatchEnvelope> = [];
     capabilities.contribute("auth:accountStore", {
         list: async () => [
             {
@@ -101,10 +111,13 @@ test("an administrator receives their incoming request but not their own review 
             },
         ],
     });
-    capabilities.contribute("notify:dispatch", async (envelope) => {
-        feed.push(envelope);
-        return { dispatched: ["internal"] };
-    });
+    capabilities.contribute(
+        "notify:dispatch",
+        async (envelope: DispatchEnvelope) => {
+            feed.push(envelope);
+            return { dispatched: ["internal"] };
+        },
+    );
     const notify = createRequestNotifier({
         ...createNotificationDelivery({ capabilities }),
         flow: createLibraryFlow(),
@@ -120,7 +133,7 @@ test("an administrator receives their incoming request but not their own review 
             role: "admin",
         });
     assert.deepEqual(
-        feed.map(({ metadata }) => metadata.status),
+        feed.map(({ metadata }) => metadata?.status),
         ["pending"],
     );
 });

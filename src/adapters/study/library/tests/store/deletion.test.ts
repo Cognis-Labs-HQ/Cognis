@@ -149,7 +149,10 @@ test("deletion traversal honors restrict and detach relationship policies", asyn
         ensureTable: async () => {},
         transaction: async (callback) => callback(db),
         executeCommand: async (command) => {
-            if (command.table === "study_library_references") {
+            if (
+                command.option === "SELECT" &&
+                command.table === "study_library_references"
+            ) {
                 return {
                     rows: [
                         { source_entry_id: "word-one", relation: "meaning" },
@@ -215,7 +218,10 @@ test("restricted dependants included by another cascade are resolved before rest
         ensureTable: async () => {},
         transaction: async (callback) => callback(db),
         executeCommand: async (command) => {
-            if (command.table === "study_library_references") {
+            if (
+                command.option === "SELECT" &&
+                command.table === "study_library_references"
+            ) {
                 const id = command.where?.[0]?.value;
                 return {
                     rows:
