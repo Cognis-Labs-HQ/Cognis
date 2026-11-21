@@ -724,18 +724,22 @@ export async function renderThread(
     i18n,
     currentAccountId,
     before,
-    { force = false } = {},
+    { force = false, isCurrent = () => true, signal } = {},
 ) {
+    if (!isCurrent()) return null;
     const params = new URLSearchParams({ limit: "50" });
     if (before) params.set("before", before);
     const response = await apiFetch(
         `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}/messages?${params}`,
+        { signal },
     );
+    if (!isCurrent()) return null;
     if (!response.ok) {
         if (!before) container.innerHTML = "";
         return null;
     }
     const payload = await response.json();
+    if (!isCurrent()) return null;
     const messageList = payload?.data ?? [];
     const pendingRequest = payload?.pendingRequest ?? null;
     const renderSignature = messageRenderSignature(messageList, pendingRequest);
@@ -746,6 +750,7 @@ export async function renderThread(
     ) {
         return {
             oldestCreatedAt: messageList.at(-1)?.createdAt ?? null,
+            newestCreatedAt: messageList[0]?.createdAt ?? null,
             pendingRequest,
             changed: false,
         };
@@ -763,6 +768,7 @@ export async function renderThread(
             };
         }),
     );
+    if (!isCurrent()) return null;
     searchableRoomMessages.set(roomId, decoded);
     let previousDateLabel = "";
     const readersAtMessage = buildLastReadMap(decoded);
@@ -882,18 +888,20 @@ export async function renderThread(
 
     if (!before) threadRenderSignatures.set(roomId, renderSignature);
 
-    return { oldestCreatedAt, pendingRequest, changed: true };
+    return {
+        oldestCreatedAt,
+        newestCreatedAt: messageList[0]?.createdAt ?? null,
+        pendingRequest,
+        changed: true,
+    };
 }
 
-export async function loadRooms(i18n, { getRoomKey }) {
-    searchRoomKeyResolver = getRoomKey;
-    searchI18n = i18n;
+export async function loadRooms(i18n, { getRoomKey, isCurrent = () => true }) {
     const response = await apiFetch("/api/v1/social/messages/rooms");
     if (!response.ok) return [];
     const payload = await response.json();
     const rooms = payload?.data ?? [];
-    searchableRooms = rooms;
-    return Promise.all(
+    const decodedRooms = await Promise.all(
         rooms.map(async (room) => {
             const lastMessage = room.lastMessage ?? null;
             if (!lastMessage) return room;
@@ -920,4 +928,9 @@ export async function loadRooms(i18n, { getRoomKey }) {
             };
         }),
     );
+    if (!isCurrent()) return [];
+    searchRoomKeyResolver = getRoomKey;
+    searchI18n = i18n;
+    searchableRooms = rooms;
+    return decodedRooms;
 }
