@@ -133,5 +133,5 @@ Eigentum und Startbereiche steuern Registrierungsdauer. Privilegierte Handler pr
 
 ## Referenz
 
-- [src/core/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/package.json)
-- [src/core/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/index.ts)
+- [src/core/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/core/package.json)
+- [src/core/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/core/index.ts)

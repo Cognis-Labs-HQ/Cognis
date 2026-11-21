@@ -122,6 +122,6 @@ Run the application as the image's non-root user. Keep database credentials and 
 
 ## Reference
 
-- [docker/Dockerfile](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/docker/Dockerfile)
-- [docker/entrypoint.sh](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/docker/entrypoint.sh)
-- [docker/healthcheck.sh](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/docker/healthcheck.sh)
+- [docker/Dockerfile](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/docker/Dockerfile)
+- [docker/entrypoint.sh](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/docker/entrypoint.sh)
+- [docker/healthcheck.sh](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/docker/healthcheck.sh)

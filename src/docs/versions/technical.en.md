@@ -98,10 +98,10 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | ---------- | ------------------ | ------- |
 | Cognis CLI | `src/tooling/cli/` | `0.4.1` |
 
-[c]: https://github.com/Cognis-Labs-HQ/Cognis/blob/master/src/core/package.json
-[a]: https://github.com/Cognis-Labs-HQ/Cognis/blob/master/src/api/package.json
-[m]: https://github.com/Cognis-Labs-HQ/Cognis/blob/master/src/adapters/social/messages/package.json
-[p]: https://github.com/Cognis-Labs-HQ/Cognis/blob/master/src/adapters/social/profile/package.json
+[c]: https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/core/package.json
+[a]: https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/api/package.json
+[m]: https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/social/messages/package.json
+[p]: https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/social/profile/package.json
 
 ## Security
 

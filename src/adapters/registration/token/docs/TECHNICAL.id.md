@@ -38,6 +38,6 @@ Otorisasi undangan mengikat email dan kebijakan. Akun eksternal harus tersimpan 
 
 ## Referensi
 
-- [src/adapters/registration/token/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/registration/token/manifest.json)
-- [src/adapters/registration/token/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/registration/token/package.json)
-- [src/adapters/registration/token/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/registration/token/index.ts)
+- [src/adapters/registration/token/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/registration/token/manifest.json)
+- [src/adapters/registration/token/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/registration/token/package.json)
+- [src/adapters/registration/token/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/registration/token/index.ts)

@@ -151,4 +151,4 @@ Composer steuert Darstellung und DOM-Lebensdauer statt Inhaltsrechte. Seitenakti
 
 ## Referenz
 
-- [src/ui/reuse/page-composer/index.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/ui/reuse/page-composer/index.js)
+- [src/ui/reuse/page-composer/index.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/index.js)

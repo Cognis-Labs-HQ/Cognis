@@ -40,7 +40,7 @@ Latihan memakai identitas pelajar dan pola kanonis. Hanya percobaan selesai tepe
 
 ## Referensi
 
-- [src/adapters/study/drawing/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/study/drawing/manifest.json)
-- [src/adapters/study/drawing/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/study/drawing/package.json)
-- [src/adapters/study/drawing/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/study/drawing/index.ts)
-- [src/adapters/study/drawing/ui/provider.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/study/drawing/ui/provider.js)
+- [src/adapters/study/drawing/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/study/drawing/manifest.json)
+- [src/adapters/study/drawing/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/study/drawing/package.json)
+- [src/adapters/study/drawing/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/study/drawing/index.ts)
+- [src/adapters/study/drawing/ui/provider.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/study/drawing/ui/provider.js)

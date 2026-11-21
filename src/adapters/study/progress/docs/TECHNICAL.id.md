@@ -48,7 +48,7 @@ Pelajar terdaftar dapat mencatat hasil kelas sendiri dengan hak baca, tanpa hak 
 
 ## Referensi
 
-- [src/adapters/study/progress/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/study/progress/manifest.json)
-- [src/adapters/study/progress/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/study/progress/package.json)
-- [src/adapters/study/progress/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/study/progress/index.ts)
-- [src/adapters/study/progress/routes/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/study/progress/routes/index.ts)
+- [src/adapters/study/progress/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/study/progress/manifest.json)
+- [src/adapters/study/progress/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/study/progress/package.json)
+- [src/adapters/study/progress/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/study/progress/index.ts)
+- [src/adapters/study/progress/routes/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/study/progress/routes/index.ts)

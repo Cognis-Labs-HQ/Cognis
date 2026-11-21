@@ -52,6 +52,6 @@ Only authorized administration changes defaults or per-user overrides. Provision
 
 ## Reference
 
-- [src/adapters/file/quota/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/file/quota/manifest.json)
-- [src/adapters/file/quota/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/file/quota/package.json)
-- [src/adapters/file/quota/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/file/quota/index.ts)
+- [src/adapters/file/quota/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/file/quota/manifest.json)
+- [src/adapters/file/quota/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/file/quota/package.json)
+- [src/adapters/file/quota/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/file/quota/index.ts)

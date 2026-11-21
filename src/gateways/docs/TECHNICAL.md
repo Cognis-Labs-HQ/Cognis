@@ -20,4 +20,4 @@ A registration scope identifies ownership, not user authority. Operations still 
 
 ## Reference
 
-- [src/gateways/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/package.json)
+- [src/gateways/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/gateways/package.json)

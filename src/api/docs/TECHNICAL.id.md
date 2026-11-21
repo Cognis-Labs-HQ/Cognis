@@ -47,4 +47,4 @@ Titik akhir dokumentasi menyediakan informasi baca-saja. Jangan masukkan kredens
 
 ## Referensi
 
-- [src/api/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/api/package.json)
+- [src/api/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/api/package.json)

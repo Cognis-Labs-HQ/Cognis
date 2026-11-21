@@ -57,5 +57,5 @@ CLI-Anmeldung liest COGNIS_CLI_TOKEN_PATH; der Server prüft Rollen und Inhalte.
 
 ## Referenz
 
-- [src/tooling/cli/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/tooling/cli/package.json)
-- [src/tooling/cli/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/tooling/cli/index.ts)
+- [src/tooling/cli/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/tooling/cli/package.json)
+- [src/tooling/cli/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/tooling/cli/index.ts)

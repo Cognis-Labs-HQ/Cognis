@@ -106,10 +106,10 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | ---------- | ------------------ | ------- |
 | Cognis CLI | `src/tooling/cli/` | `0.4.1` |
 
-[c]: https://github.com/Cognis-Labs-HQ/Cognis/blob/master/src/core/package.json
-[a]: https://github.com/Cognis-Labs-HQ/Cognis/blob/master/src/api/package.json
-[m]: https://github.com/Cognis-Labs-HQ/Cognis/blob/master/src/adapters/social/messages/package.json
-[p]: https://github.com/Cognis-Labs-HQ/Cognis/blob/master/src/adapters/social/profile/package.json
+[c]: https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/core/package.json
+[a]: https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/api/package.json
+[m]: https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/social/messages/package.json
+[p]: https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/social/profile/package.json
 
 ## Keamanan
 
@@ -117,5 +117,5 @@ Versi atau batas teruji bukan izin mengaktifkan komponen. Integritas, dependensi
 
 ## Referensi
 
-- [src/tooling/reuse/component-files.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/tooling/reuse/component-files.js)
-- [package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/package.json)
+- [src/tooling/reuse/component-files.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/tooling/reuse/component-files.js)
+- [package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/package.json)

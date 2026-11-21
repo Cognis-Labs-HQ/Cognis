@@ -28,6 +28,6 @@ Pemegang tautan hanya memperoleh cakupan sumber daya berizin. Kedaluwarsa, kata 
 
 ## Referensi
 
-- [src/adapters/share/link/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/share/link/manifest.json)
-- [src/adapters/share/link/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/share/link/package.json)
-- [src/adapters/share/link/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/share/link/index.ts)
+- [src/adapters/share/link/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/share/link/manifest.json)
+- [src/adapters/share/link/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/share/link/package.json)
+- [src/adapters/share/link/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/share/link/index.ts)

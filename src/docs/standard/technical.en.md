@@ -29,3 +29,5 @@ Describe supported behavior in the appropriate section. Release history and impl
 Component assets use the owning public static prefix. An asset consumed only by one component with its own asset space cannot be published in core. Core-owned and shared assets retain core publication. CSS imports form one contiguous alphabetically sorted block with one blank line before style rules.
 
 Populate every role with useful, source-verified information rather than stock guidance. Check methods, paths, field names, permissions, defaults, persistence and incomplete integrations against their owners. Put procedural examples in Usage and implementation contracts in Technical. Automated checks reject generic placeholder guidance and missing concrete source references; they do not establish the truth of arbitrary prose.
+
+GitHub source-file links use the repository default-branch alias `blob/HEAD` or `raw/HEAD`, including from archived documentation. Commit links in changelogs retain their immutable commit targets.

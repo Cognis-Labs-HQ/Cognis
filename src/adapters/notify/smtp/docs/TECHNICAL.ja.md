@@ -96,7 +96,7 @@ SMTP の秘密情報は管理者が管理します。TLS と証明書検証で�
 
 ## リファレンス
 
-- [src/adapters/notify/smtp/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/notify/smtp/manifest.json)
-- [src/adapters/notify/smtp/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/notify/smtp/package.json)
-- [src/adapters/notify/smtp/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/notify/smtp/index.ts)
-- [src/adapters/notify/smtp/bootstrap.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/notify/smtp/bootstrap.ts)
+- [src/adapters/notify/smtp/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/notify/smtp/manifest.json)
+- [src/adapters/notify/smtp/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/notify/smtp/package.json)
+- [src/adapters/notify/smtp/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/notify/smtp/index.ts)
+- [src/adapters/notify/smtp/bootstrap.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/notify/smtp/bootstrap.ts)

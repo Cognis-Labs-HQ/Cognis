@@ -59,6 +59,6 @@ Datenbankzugang und Transportschutz gehören zur Bereitstellung. Binde Werte als
 
 ## Referenz
 
-- [src/adapters/db/postgres/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/postgres/manifest.json)
-- [src/adapters/db/postgres/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/postgres/package.json)
-- [src/adapters/db/postgres/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/postgres/index.ts)
+- [src/adapters/db/postgres/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/db/postgres/manifest.json)
+- [src/adapters/db/postgres/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/db/postgres/package.json)
+- [src/adapters/db/postgres/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/db/postgres/index.ts)

@@ -59,6 +59,6 @@ Database credentials and transport security belong to the deployment. Bind value
 
 ## Reference
 
-- [src/adapters/db/mariadb/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/mariadb/manifest.json)
-- [src/adapters/db/mariadb/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/mariadb/package.json)
-- [src/adapters/db/mariadb/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/db/mariadb/index.ts)
+- [src/adapters/db/mariadb/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/db/mariadb/manifest.json)
+- [src/adapters/db/mariadb/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/db/mariadb/package.json)
+- [src/adapters/db/mariadb/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/db/mariadb/index.ts)

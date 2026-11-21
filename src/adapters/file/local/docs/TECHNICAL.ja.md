@@ -52,6 +52,6 @@
 
 ## リファレンス
 
-- [src/adapters/file/local/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/file/local/manifest.json)
-- [src/adapters/file/local/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/file/local/package.json)
-- [src/adapters/file/local/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/file/local/index.ts)
+- [src/adapters/file/local/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/file/local/manifest.json)
+- [src/adapters/file/local/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/file/local/package.json)
+- [src/adapters/file/local/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/file/local/index.ts)

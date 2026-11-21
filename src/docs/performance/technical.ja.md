@@ -52,4 +52,4 @@ observability:metrics で許可した測定を記録します。ブラウザー�
 
 ## リファレンス
 
-- [src/gateways/observability/bootstrap.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/observability/bootstrap.ts)
+- [src/gateways/observability/bootstrap.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/gateways/observability/bootstrap.ts)

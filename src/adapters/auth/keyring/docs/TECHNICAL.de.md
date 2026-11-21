@@ -92,6 +92,6 @@ Das Abbrechen einer zugeordneten Entsperranfrage weist alle gleichzeitig wartend
 
 ## Referenz
 
-- [src/adapters/auth/keyring/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/keyring/manifest.json)
-- [src/adapters/auth/keyring/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/keyring/package.json)
-- [src/adapters/auth/keyring/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/auth/keyring/index.ts)
+- [src/adapters/auth/keyring/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/auth/keyring/manifest.json)
+- [src/adapters/auth/keyring/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/auth/keyring/package.json)
+- [src/adapters/auth/keyring/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/auth/keyring/index.ts)

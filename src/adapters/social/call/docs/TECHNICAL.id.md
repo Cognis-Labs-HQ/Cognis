@@ -66,8 +66,8 @@ Pensinyalan memeriksa pelaku dan akses ruang melalui social:messages:callContext
 
 ## Referensi
 
-- [src/adapters/social/call/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/social/call/manifest.json)
-- [src/adapters/social/call/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/social/call/package.json)
-- [src/adapters/social/call/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/social/call/index.ts)
-- [src/adapters/social/call/routes/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/social/call/routes/index.ts)
-- [src/adapters/social/call/ui/provider.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/social/call/ui/provider.js)
+- [src/adapters/social/call/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/social/call/manifest.json)
+- [src/adapters/social/call/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/social/call/package.json)
+- [src/adapters/social/call/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/social/call/index.ts)
+- [src/adapters/social/call/routes/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/social/call/routes/index.ts)
+- [src/adapters/social/call/ui/provider.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/social/call/ui/provider.js)

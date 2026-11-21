@@ -69,7 +69,34 @@ test("concrete source references track real files while illustrative API values 
     ]);
 });
 
-test("published component and core documents reference existing concrete source files", () => {
+test("GitHub file references follow the default branch while commit provenance stays immutable", () => {
+    for (const prefix of [
+        "https://github.com/example/project/blob/",
+        "https://github.com/example/project/raw/",
+        "https://raw.githubusercontent.com/example/project/",
+    ]) {
+        assert.deepEqual(
+            sourceReferenceIssues(`${prefix}HEAD/src/service.ts#L10`, "/"),
+            [],
+        );
+        for (const ref of ["a".repeat(40), "v1.0.0", "feature-example", "main"])
+            assert.ok(
+                sourceReferenceIssues(
+                    `${prefix}${ref}/src/service.ts`,
+                    "/",
+                ).some((issue) => issue.includes("default branch")),
+            );
+    }
+    assert.deepEqual(
+        sourceReferenceIssues(
+            "https://github.com/example/project/commit/abcdef123456",
+            "/",
+        ),
+        [],
+    );
+});
+
+test("published documentation references existing source and follows default branches", () => {
     const root = resolve(import.meta.dirname, "../../../..");
     const failures = documentationBundleFiles(root).flatMap((path) =>
         sourceReferenceIssues(readFileSync(path, "utf8"), root).map(

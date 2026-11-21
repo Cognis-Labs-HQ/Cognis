@@ -64,5 +64,5 @@ Wiederherstellung behält Rechte, Paketprüfung und Pflichtschutz. Ungewisse Zei
 
 ## Referenz
 
-- [src/tooling/cli/component-commands.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/tooling/cli/component-commands.ts)
-- [src/core/services/gateway-service.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/services/gateway-service.ts)
+- [src/tooling/cli/component-commands.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/tooling/cli/component-commands.ts)
+- [src/core/services/gateway-service.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/core/services/gateway-service.ts)

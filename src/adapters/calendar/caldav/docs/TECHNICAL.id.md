@@ -24,6 +24,6 @@ Ekspor dan impor memerlukan akun terautentikasi dengan akses kalender yang sesua
 
 ## Referensi
 
-- [src/adapters/calendar/caldav/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/calendar/caldav/manifest.json)
-- [src/adapters/calendar/caldav/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/calendar/caldav/package.json)
-- [src/adapters/calendar/caldav/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/calendar/caldav/index.ts)
+- [src/adapters/calendar/caldav/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/calendar/caldav/manifest.json)
+- [src/adapters/calendar/caldav/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/calendar/caldav/package.json)
+- [src/adapters/calendar/caldav/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/calendar/caldav/index.ts)

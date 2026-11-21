@@ -28,4 +28,4 @@ Setiap kata dipilih dengan Node crypto.randomInt. Pembuatan tidak menyimpan atau
 
 ## Referensi
 
-- [src/api/reuse/passphrase.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/api/reuse/passphrase.ts)
+- [src/api/reuse/passphrase.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/api/reuse/passphrase.ts)

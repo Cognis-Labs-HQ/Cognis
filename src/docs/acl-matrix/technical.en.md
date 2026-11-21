@@ -20,5 +20,5 @@ Check role and resource access at execution time. A hidden control is not an aut
 
 ## Reference
 
-- [src/core/contracts/access-policy.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/contracts/access-policy.ts)
-- [src/gateways/auth/guard.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/auth/guard.ts)
+- [src/core/contracts/access-policy.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/core/contracts/access-policy.ts)
+- [src/gateways/auth/guard.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/gateways/auth/guard.ts)

@@ -29,3 +29,5 @@ Jelaskan perilaku yang didukung pada bagian yang sesuai. Riwayat rilis dan krono
 Aset komponen memakai awalan statis publik milik komponen. Aset yang hanya digunakan satu komponen dengan ruang aset sendiri tidak boleh diterbitkan di inti. Aset inti dan aset bersama tetap di inti. Impor CSS membentuk satu blok berurutan alfabetis dengan satu baris kosong sebelum aturan gaya.
 
 Isi setiap peran dengan informasi berguna yang diverifikasi pada sumber, bukan teks baku. Periksa metode, jalur, kolom, izin, nilai baku, persistensi, dan integrasi belum lengkap pada pemiliknya. Prosedur masuk Penggunaan, kontrak implementasi masuk Teknis. Pemeriksaan menolak petunjuk generik serta sumber hilang, tetapi tidak membuktikan kebenaran semua prosa.
+
+Tautan berkas sumber GitHub memakai alias cabang baku `blob/HEAD` atau `raw/HEAD`, termasuk dalam dokumentasi arsip. Tautan komit pada catatan perubahan tetap menunjuk komit permanen.

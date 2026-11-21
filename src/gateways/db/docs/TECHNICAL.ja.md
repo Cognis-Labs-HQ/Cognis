@@ -87,6 +87,6 @@ Databaseゲートウェイは、参加者の報酬記録、ブースター引き
 
 ## リファレンス
 
-- [src/gateways/db/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/db/manifest.json)
-- [src/gateways/db/bootstrap.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/db/bootstrap.ts)
-- [src/gateways/db/gateway.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/db/gateway.ts)
+- [src/gateways/db/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/gateways/db/manifest.json)
+- [src/gateways/db/bootstrap.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/gateways/db/bootstrap.ts)
+- [src/gateways/db/gateway.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/gateways/db/gateway.ts)

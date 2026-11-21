@@ -20,6 +20,6 @@ Only administrators may change delivery or storage configuration. Client request
 
 ## Reference
 
-- [src/adapters/logging/file/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/logging/file/manifest.json)
-- [src/adapters/logging/file/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/logging/file/package.json)
-- [src/adapters/logging/file/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/logging/file/index.ts)
+- [src/adapters/logging/file/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/logging/file/manifest.json)
+- [src/adapters/logging/file/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/logging/file/package.json)
+- [src/adapters/logging/file/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/logging/file/index.ts)

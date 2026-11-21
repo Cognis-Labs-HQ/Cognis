@@ -232,5 +232,5 @@ Das Dashboard deklariert privaten Offline-Zugriff innerhalb der Sitzung; Kontoü
 
 ## Referenz
 
-- [src/api/reuse/ui-registry.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/api/reuse/ui-registry.ts)
-- [src/gateways/shared.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/shared.ts)
+- [src/api/reuse/ui-registry.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/api/reuse/ui-registry.ts)
+- [src/gateways/shared.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/gateways/shared.ts)

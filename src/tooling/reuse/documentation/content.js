@@ -45,12 +45,24 @@ export function contentIssues(prose) {
 }
 
 export function sourceReferenceIssues(markdown, root) {
+    const issues = [];
+    for (const match of markdown.matchAll(
+        /https:\/\/(?:github\.com\/[^/\s]+\/[^/\s]+\/(?:blob|raw)|raw\.githubusercontent\.com\/[^/\s]+\/[^/\s]+)\/([^/\s]+)\/[^\s)<>"`]+/g,
+    )) {
+        if (match[1] !== "HEAD")
+            issues.push(
+                `GitHub file links must follow the default branch through HEAD: ${match[0]}`,
+            );
+    }
     const paths = new Set(
         [
             ...markdown.matchAll(/`(src\/[\w./-]+\.(?:ts|js|html|css|json))`/g),
         ].map((match) => match[1]),
     );
-    return [...paths]
-        .filter((path) => !existsSync(resolve(root, path)))
-        .map((path) => `Documented source does not exist: ${path}`);
+    return [
+        ...issues,
+        ...[...paths]
+            .filter((path) => !existsSync(resolve(root, path)))
+            .map((path) => `Documented source does not exist: ${path}`),
+    ];
 }

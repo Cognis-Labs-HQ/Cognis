@@ -22,6 +22,6 @@ Import und Export verlangen eine Anmeldung mit den entsprechenden Kalenderrechte
 
 ## Referenz
 
-- [src/adapters/calendar/ics/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/calendar/ics/manifest.json)
-- [src/adapters/calendar/ics/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/calendar/ics/package.json)
-- [src/adapters/calendar/ics/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/calendar/ics/index.ts)
+- [src/adapters/calendar/ics/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/calendar/ics/manifest.json)
+- [src/adapters/calendar/ics/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/calendar/ics/package.json)
+- [src/adapters/calendar/ics/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/calendar/ics/index.ts)

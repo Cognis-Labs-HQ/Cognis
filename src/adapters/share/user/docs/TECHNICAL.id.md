@@ -24,6 +24,6 @@ Penerima harus berupa referensi akun eksplisit. Penerima kosong dan pemberian ga
 
 ## Referensi
 
-- [src/adapters/share/user/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/share/user/manifest.json)
-- [src/adapters/share/user/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/share/user/package.json)
-- [src/adapters/share/user/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/share/user/index.ts)
+- [src/adapters/share/user/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/share/user/manifest.json)
+- [src/adapters/share/user/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/share/user/package.json)
+- [src/adapters/share/user/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/share/user/index.ts)

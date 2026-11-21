@@ -275,5 +275,5 @@ StudyはアダプターのマニフェストからUUID依存関係と必須の�
 
 ## リファレンス
 
-- [src/gateways/study/gateway.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/study/gateway.ts)
-- [src/adapters/study/library/contracts.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/adapters/study/library/contracts.ts)
+- [src/gateways/study/gateway.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/gateways/study/gateway.ts)
+- [src/adapters/study/library/contracts.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/study/library/contracts.ts)

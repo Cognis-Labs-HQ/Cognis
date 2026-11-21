@@ -100,5 +100,5 @@ Jeder Vorgang wird authentifiziert, auf eine Kollaborationsressource begrenzt un
 
 ## Referenz
 
-- [src/core/contracts/focus/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/core/contracts/focus/index.ts)
-- [src/ui/reuse/focus-control.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/ui/reuse/focus-control.js)
+- [src/core/contracts/focus/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/core/contracts/focus/index.ts)
+- [src/ui/reuse/focus-control.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/focus-control.js)

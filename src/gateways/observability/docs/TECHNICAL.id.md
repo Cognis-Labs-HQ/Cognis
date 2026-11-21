@@ -26,5 +26,5 @@ POST /api/v1/observability/client memerlukan sesi pengguna. Nama dan kunci label
 
 ## Referensi
 
-- [src/gateways/observability/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/observability/manifest.json)
-- [src/gateways/observability/bootstrap.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/observability/bootstrap.ts)
+- [src/gateways/observability/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/gateways/observability/manifest.json)
+- [src/gateways/observability/bootstrap.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/gateways/observability/bootstrap.ts)

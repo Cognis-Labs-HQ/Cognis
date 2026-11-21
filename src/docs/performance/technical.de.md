@@ -52,4 +52,4 @@ Messwerte nutzen begrenzte Namen und Labels; keine Konto-IDs, privaten URLs oder
 
 ## Referenz
 
-- [src/gateways/observability/bootstrap.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/1dcd65eaa5b187007735ca3b527b797758aae884/src/gateways/observability/bootstrap.ts)
+- [src/gateways/observability/bootstrap.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/gateways/observability/bootstrap.ts)
