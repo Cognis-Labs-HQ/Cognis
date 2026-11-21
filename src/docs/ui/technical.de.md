@@ -151,7 +151,7 @@ Die Auswahl in der Navigationsleiste gibt ein von `navigateTo` vor dem Routenabb
 
 Die Arbeitsplatzanleitung erklärt Auswahl, Warten und sichere Wiederholung. Ziele, Abschlusskennungen, Weiter, Zurück und erneute Wiedergabe bleiben erhalten. Die Suche gehört zur gemeinsamen UI und besitzt kein eigenständig versioniertes Paket oder Manifest.
 
-## Formularvalidierung
+### Formularvalidierung
 
 Als ungültig ausgewertete Felder erhalten `aria-invalid="true"`. Ihr `aria-describedby` verweist auf die vorhandenen übersetzten Kriterien, die aktuell nicht erfüllt sind, sowie auf Beschreibungen des Aufrufers. Nach einer Korrektur entfernt der Formularersteller nur seinen eigenen Ungültigkeitszustand und seine Beschreibungsverweise. Unberührte Steuerelemente und unbestimmte Kriterien (`null`) erhalten vor der Auswertung keinen ungültigen ARIA-Zustand. Bestehende Regeln für Pflichtfelder, optionale Felder und Rückgabewerte gelten weiterhin; native Gültigkeitsprüfungen und die Registerauswahl bleiben von benutzerdefinierten Kriterien getrennt.
 
