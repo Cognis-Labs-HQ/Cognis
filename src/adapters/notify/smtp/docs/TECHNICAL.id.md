@@ -4,17 +4,17 @@ Antarmuka publik dan aturan operasional Pengiriman Email.
 
 ## Antarmuka
 
-#### Kepemilikan Kontrak SMTP
+### Kepemilikan Kontrak SMTP
 
 SMTP mendeklarasikan kontrak tujuan surel, pengiriman, kebijakan, dan pabrik templat selama bootstrap miliknya sendiri. Definisi runtime berada di `contracts/declarations.ts`; tipe aksi publik opsional berada di `contracts/action-delivery.ts`. Gateway notifikasi tidak mendeklarasikan API penyedia tersebut dan hanya menyimpan tipe pengirim serta bukti pengiriman umum. Adapter lain menggunakan mekanisme registrasi host yang sama tanpa menambah berkas Core.
 
-### Konfigurasi
+## Konfigurasi
 
 Konfigurasikan `COGNIS_SMTP_HOST`, `COGNIS_SMTP_PORT` (587), `COGNIS_SMTP_FROM`, `COGNIS_SMTP_USER`/`COGNIS_SMTP_PASS` opsional serta `COGNIS_SMTP_SECURE` (`none`, `starttls` atau `tls`). Nama pengirim, host EHLO, kebijakan sertifikat/autentikasi dan panjang kode menggunakan pengaturan adapter yang ada. Pesan uji dapat membawa penggantian konfigurasi dalam antrean.
 
 ## Perilaku
 
-#Adapter notifikasi SMTP mengirim aksi email terdaftar dan mengelola kebijakan panjang kode bersama untuk verifikasi email dan TFA Kode Email.
+Adapter notifikasi SMTP mengirim aksi email terdaftar dan mengelola kebijakan panjang kode bersama untuk verifikasi email dan TFA Kode Email.
 
 ### Contoh Penggunaan
 
@@ -44,7 +44,7 @@ Jeda bawaan adalah lima belas detik per penerima yang dinormalisasi dalam setiap
 
 Kontrak pengirim memakai `test(recipient, config)` umum dan hook bootstrap, kanal, serta siklus hidup opsional. Gateway memanggil `testSender(senderId, recipient, config)` tanpa metode khusus SMTP untuk pengujian, verifikasi, undangan, atau login. Fungsi bantu gateway khusus SMTP dan registrasi templat terpisah dihapus.
 
-#Di Administrasi, buka konfigurasi SMTP pada gateway Notifikasi dan ubah **Panjang Kode**. Ini adalah satu-satunya pengaturan panjang kode yang dapat diedit dan disimpan untuk verifikasi email serta penyiapan dan login TFA Kode Email. Nilai bawaan adalah 6 digit; nilai numerik dinormalisasi menjadi bilangan bulat dan dibatasi ke 4–10 digit. Tooltip informasi pada bidang menjelaskan penggunaan bersama ini.
+Di Administrasi, buka konfigurasi SMTP pada gateway Notifikasi dan ubah **Panjang Kode**. Ini adalah satu-satunya pengaturan panjang kode yang dapat diedit dan disimpan untuk verifikasi email serta penyiapan dan login TFA Kode Email. Nilai bawaan adalah 6 digit; nilai numerik dinormalisasi menjadi bilangan bulat dan dibatasi ke 4–10 digit. Tooltip informasi pada bidang menjelaskan penggunaan bersama ini.
 
 SMTP menyediakan nilai terkini beserta `minimumIntervalMs` melalui kontrak publik `notify:emailDeliveryPolicy` versi 1. Konsumen membaca kebijakan tersebut setiap kali menerbitkan kode baru. Perubahan yang disimpan berlaku untuk kode berikutnya, termasuk kode pengganti saat pengiriman ulang. Kode yang sudah diterbitkan mempertahankan panjang aslinya sampai digunakan, diganti, atau kedaluwarsa; perubahan pengaturan tidak menafsirkan ulang kode tersebut.
 

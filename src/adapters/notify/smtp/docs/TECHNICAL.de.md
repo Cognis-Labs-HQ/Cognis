@@ -4,17 +4,17 @@
 
 ## Schnittstellen
 
-#### Vertragsbesitz von SMTP
+### Vertragsbesitz von SMTP
 
 SMTP deklariert seine Verträge für E-Mail-Zwecke, Zustellung, Richtlinien und Vorlagenfabriken im eigenen Bootstrap. Laufzeitdefinitionen liegen in `contracts/declarations.ts`, optionale öffentliche Aktionstypen in `contracts/action-delivery.ts`. Das Benachrichtigungs-Gateway deklariert diese Anbieter-APIs nicht; dort bleiben allgemeine Sender- und Zustellbelegtypen. Andere Adapter verwenden denselben Registrierungsmechanismus ohne zusätzliche Core-Dateien.
 
-### Konfiguration
+## Konfiguration
 
 Konfigurieren Sie `COGNIS_SMTP_HOST`, `COGNIS_SMTP_PORT` (587), `COGNIS_SMTP_FROM`, optional `COGNIS_SMTP_USER`/`COGNIS_SMTP_PASS` sowie `COGNIS_SMTP_SECURE` (`none`, `starttls` oder `tls`). Absendername, EHLO-Host, Zertifikats- und Anmelderichtlinien sowie Codelänge verwenden die bestehenden Adaptereinstellungen. Testnachrichten können eine abweichende Konfiguration in ihrer Warteschlange mitführen.
 
 ## Verhalten
 
-#Der SMTP-Benachrichtigungsadapter versendet registrierte E-Mail-Aktionen und verwaltet die gemeinsame Codelänge für E-Mail-Verifizierung und E-Mail-Code-TFA.
+Der SMTP-Benachrichtigungsadapter versendet registrierte E-Mail-Aktionen und verwaltet die gemeinsame Codelänge für E-Mail-Verifizierung und E-Mail-Code-TFA.
 
 ### Anwendungsbeispiele
 
@@ -44,7 +44,7 @@ Die Standardpause beträgt fünfzehn Sekunden je normalisiertem Empfänger und W
 
 Der Sendervertrag verwendet `test(recipient, config)` und optionale Bootstrap-, Kanal- und Lebenszyklus-Hooks. Das Gateway ruft `testSender(senderId, recipient, config)` auf und enthält keine SMTP-spezifischen Test-, Verifizierungs-, Einladungs- oder Anmeldemethoden. Die bisherigen speziellen Gateway-Hilfsmethoden und die separate Vorlagenregistrierung entfallen.
 
-#Öffnen Sie in der Administration die SMTP-Konfiguration des Benachrichtigungs-Gateways und bearbeiten Sie **Codelänge**. Dies ist die einzige bearbeitbare und gespeicherte Einstellung für die Codelänge bei E-Mail-Verifizierung sowie Einrichtung und Anmeldung mit E-Mail-Code-TFA. Der Standardwert beträgt 6 Ziffern; numerische Werte werden in eine ganze Zahl umgewandelt und auf 4–10 Ziffern begrenzt. Der Informationshinweis am Feld erklärt diesen gemeinsamen Geltungsbereich.
+Öffnen Sie in der Administration die SMTP-Konfiguration des Benachrichtigungs-Gateways und bearbeiten Sie **Codelänge**. Dies ist die einzige bearbeitbare und gespeicherte Einstellung für die Codelänge bei E-Mail-Verifizierung sowie Einrichtung und Anmeldung mit E-Mail-Code-TFA. Der Standardwert beträgt 6 Ziffern; numerische Werte werden in eine ganze Zahl umgewandelt und auf 4–10 Ziffern begrenzt. Der Informationshinweis am Feld erklärt diesen gemeinsamen Geltungsbereich.
 
 SMTP stellt den aktuellen Wert zusammen mit `minimumIntervalMs` über seinen öffentlichen Vertrag `notify:emailDeliveryPolicy` in Version 1 bereit. Verbraucher lesen die Richtlinie bei jeder neuen Codeausgabe. Eine gespeicherte Änderung gilt für nachfolgende Codes, einschließlich Ersatzcodes beim erneuten Senden. Bereits ausgegebene Codes behalten ihre ursprüngliche Länge, bis sie verwendet, ersetzt oder abgelaufen sind; eine Änderung deutet sie nicht neu aus.
 

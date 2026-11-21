@@ -8,7 +8,7 @@ Metode TFA menyediakan penyiapan dan verifikasi serta tujuan melalui notify:regi
 
 ### Persyaratan
 
-### Konfigurasi
+## Konfigurasi
 
 - Pengirim SMTP gateway Notifikasi harus dikonfigurasi dan diaktifkan.
 - Pemilik SMTP harus menyediakan `notify:emailDeliveryPolicy` versi 1, ketersediaan email, dan pengiriman melalui ctx. Tantangan baru gagal secara eksplisit jika pemilik tidak tersedia, dinonaktifkan, atau belum dikonfigurasi.
@@ -16,11 +16,11 @@ Metode TFA menyediakan penyiapan dan verifikasi serta tujuan melalui notify:regi
 
 ## Perilaku
 
-#Metode Kode Email mengirim kode sekali pakai untuk penyiapan dan login melalui pengirim SMTP gateway Notifikasi. Panjang kode dimiliki kebijakan pengiriman pengirim tersebut; TFA membacanya melalui ctx.
+Metode Kode Email mengirim kode sekali pakai untuk penyiapan dan login melalui pengirim SMTP gateway Notifikasi. Panjang kode dimiliki kebijakan pengiriman pengirim tersebut; TFA membacanya melalui ctx.
 
 ### Contoh Penggunaan
 
-#1. Di Administrasi, konfigurasikan dan aktifkan SMTP pada gateway Notifikasi. 2. Atur **Panjang Kode** di sana, misalnya menjadi 8 digit, lalu simpan. Kode verifikasi email baru serta kode penyiapan dan login TFA Kode Email menggunakan nilai tersebut. 3. Di Pengaturan, aktifkan TFA Kode Email dan masukkan kode yang dikirim ke alamat email utama akun yang sudah diverifikasi. Saat login, gunakan kode dari tantangan terbaru; pengiriman ulang menerbitkan kode pengganti berdasarkan kebijakan terkini.
+1. Di Administrasi, konfigurasikan dan aktifkan SMTP pada gateway Notifikasi. 2. Atur **Panjang Kode** di sana, misalnya menjadi 8 digit, lalu simpan. Kode verifikasi email baru serta kode penyiapan dan login TFA Kode Email menggunakan nilai tersebut. 3. Di Pengaturan, aktifkan TFA Kode Email dan masukkan kode yang dikirim ke alamat email utama akun yang sudah diverifikasi. Saat login, gunakan kode dari tantangan terbaru; pengiriman ulang menerbitkan kode pengganti berdasarkan kebijakan terkini.
 
 ### Spesifikasi Teknis
 

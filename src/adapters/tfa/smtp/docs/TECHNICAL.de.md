@@ -8,7 +8,7 @@ Die TFA-Methode liefert Einrichtung und Prüfung und registriert ihren Zweck üb
 
 ### Voraussetzungen
 
-### Konfiguration
+## Konfiguration
 
 - Der SMTP-Sender des Benachrichtigungs-Gateways muss konfiguriert und aktiviert sein.
 - Der SMTP-Anbieter muss `notify:emailDeliveryPolicy` in Version 1 sowie E-Mail-Verfügbarkeit und Zustellung über ctx bereitstellen. Fehlt der Anbieter oder ist er deaktiviert oder nicht konfiguriert, schlagen neue Codeanforderungen ausdrücklich fehl.
@@ -16,11 +16,11 @@ Die TFA-Methode liefert Einrichtung und Prüfung und registriert ihren Zweck üb
 
 ## Verhalten
 
-#Die Methode E-Mail-Code sendet einmalige Einrichtungs- und Anmeldecodes über den SMTP-Sender des Benachrichtigungs-Gateways. Die Codelänge gehört zur Zustellrichtlinie dieses Senders; TFA liest sie über ctx.
+Die Methode E-Mail-Code sendet einmalige Einrichtungs- und Anmeldecodes über den SMTP-Sender des Benachrichtigungs-Gateways. Die Codelänge gehört zur Zustellrichtlinie dieses Senders; TFA liest sie über ctx.
 
 ### Anwendungsbeispiele
 
-#1. Konfigurieren und aktivieren Sie SMTP in der Administration unter dem Benachrichtigungs-Gateway. 2. Stellen Sie dort **Codelänge** beispielsweise auf 8 Ziffern und speichern Sie. Neue E-Mail-Verifizierungscodes sowie Einrichtungs- und Anmeldecodes für E-Mail-Code-TFA verwenden diesen Wert. 3. Aktivieren Sie E-Mail-Code-TFA in den Einstellungen und geben Sie den Code ein, der an die verifizierte primäre E-Mail-Adresse des Kontos gesendet wurde. Verwenden Sie bei der Anmeldung den Code der neuesten Anforderung. Erneutes Senden erzeugt einen Ersatzcode nach der aktuellen Richtlinie.
+1. Konfigurieren und aktivieren Sie SMTP in der Administration unter dem Benachrichtigungs-Gateway. 2. Stellen Sie dort **Codelänge** beispielsweise auf 8 Ziffern und speichern Sie. Neue E-Mail-Verifizierungscodes sowie Einrichtungs- und Anmeldecodes für E-Mail-Code-TFA verwenden diesen Wert. 3. Aktivieren Sie E-Mail-Code-TFA in den Einstellungen und geben Sie den Code ein, der an die verifizierte primäre E-Mail-Adresse des Kontos gesendet wurde. Verwenden Sie bei der Anmeldung den Code der neuesten Anforderung. Erneutes Senden erzeugt einen Ersatzcode nach der aktuellen Richtlinie.
 
 ### Technische Spezifikation
 
