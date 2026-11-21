@@ -12,5 +12,5 @@ Der Neuversand bleibt bis zur Freigabe deaktiviert. Auch danach gelten die serve
 
 ## Commits
 
-- [59562cb8941363fa36516f7228ca73c03355d611](https://github.com/Cognis-Labs-HQ/Cognis/commit/59562cb8941363fa36516f7228ca73c03355d611)
-- [11ad08e119e2452da0bd7a5d7f16014abd27cd50](https://github.com/Cognis-Labs-HQ/Cognis/commit/11ad08e119e2452da0bd7a5d7f16014abd27cd50)
+- [b9626f82768c4c4905de9096bac067b3e49b4d9e](https://github.com/Cognis-Labs-HQ/Cognis/commit/b9626f82768c4c4905de9096bac067b3e49b4d9e)
+- [838d72afd60749a85cd167bd7d0d28c5707c01cc](https://github.com/Cognis-Labs-HQ/Cognis/commit/838d72afd60749a85cd167bd7d0d28c5707c01cc)
