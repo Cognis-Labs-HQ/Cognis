@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { formatTemplate } from "../../../../../ui/reuse/format-template.js";
 import assert from "node:assert/strict";
 import {
     importTestModule,
@@ -9,6 +11,20 @@ export async function mountFixture() {
     const state = createRoomFixture();
     state.roomState.cleanup();
     const { context, dependencies, elements } = state;
+    context.fetch = async (path) => {
+        assert.equal(
+            path,
+            "/static/adapters/social/messages/templates/sidebar.html",
+        );
+        return new Response(
+            readFileSync(
+                new URL("../../ui/templates/sidebar.html", import.meta.url),
+                "utf8",
+            ),
+        );
+    };
+    dependencies["/static/reuse/format-template.js"] = { formatTemplate };
+    dependencies["./sidebar.js"] = state.load("sidebar.js");
     const input = elements["messages-composer-input"];
     input.id = "messages-composer-input";
     const form = (elements["messages-composer"] = new Element());
@@ -62,6 +78,9 @@ export async function mountFixture() {
     dependencies["/static/reuse/page-composer/index.js"] = {
         ...manager,
         createPageComposer: (_root, options) => ({
+            closeToolbar: () => {
+                state.sidebarCloses = (state.sidebarCloses ?? 0) + 1;
+            },
             init: async () => {
                 for (const element of options.elements) element.onRender?.();
                 options.onRender?.();
@@ -105,6 +124,7 @@ export async function mountFixture() {
     const select = (id) => {
         const item = new Element();
         item.getAttribute = () => id;
+        item.closest = () => item;
         return elements["messages-rooms-list"].listeners.get("click")({
             target: { closest: () => item },
         });

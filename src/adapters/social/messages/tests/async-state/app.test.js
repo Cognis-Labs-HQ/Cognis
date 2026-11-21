@@ -12,6 +12,7 @@ test("mounted Messages keeps selected URL, rendered thread and per-room drafts t
     state.edit("B draft");
     await state.select("A");
     assert.equal(state.input.value, "A draft");
+    assert.ok(state.sidebarCloses >= 3);
     const gate = deferred();
     let reached = false;
     state.intercept = async (url) => {
