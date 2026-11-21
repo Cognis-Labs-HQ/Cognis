@@ -172,7 +172,7 @@ Initialen in Navigation, Vorschau und Profil folgen denselben Namens- und Farbre
 
 Die interaktive Vorschau ist ein benannter nichtmodaler Dialog. Beim Darüberfahren wird der Tastaturfokus nicht verschoben; ein fokussiertes Fenster bleibt beim Wegbewegen des Zeigers offen. Escape schließt es und setzt den Fokus nur dann auf den Auslöser zurück, wenn er zuvor in der Vorschau lag.
 
-## Profilaktionen bestätigen
+### Profilaktionen bestätigen
 
 Löschen, Entfolgen und Blockieren erfordern eine Bestätigung. Abbrechen behält Beitrag oder Beziehung. Die Schritte für Beiträge und soziale Aktionen erklären diese Auswahl in allen unterstützten Sprachen. Ziele, Reihenfolge, Fortschritt und Abschlusskennungen bleiben unverändert.
 

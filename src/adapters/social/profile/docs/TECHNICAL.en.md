@@ -239,7 +239,7 @@ Navbar, preview and profile initials use the same name and color rules. The prev
 
 The interactive preview is a named nonmodal dialog. Hovering it does not move keyboard focus; moving the pointer away leaves a focused card open. Escape closes it and returns focus to its trigger only when focus was inside the card.
 
-## Confirm Profile Actions
+### Confirm Profile Actions
 
 Delete, Unfollow and Block ask for confirmation. Cancel keeps the post or relationship. The posts and social-actions steps explain these choices in all supported languages. Their targets, ordering, progression and completion IDs remain unchanged.
 

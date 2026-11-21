@@ -131,7 +131,7 @@ Ein Modul kann keine Abhängigkeit erfüllen, solange eine Modulaktion läuft od
 
 Einstellungen, Aktualisierungen und Kanalwechsel nutzen dieselben kontogebundenen Prüfungen für laufende Aktionen und ihre Ergebnisse, einschließlich vorübergehender Aktivierung, Deaktivierung und Rücknahme. Jede Aktivierung und Wiederherstellung prüft die ausgewählten Abhängigkeiten erneut. Eine Wiederherstellung nach Installation ist nur bei eindeutig abgelehnter Einreichung oder bestätigtem abschließendem Auftragsergebnis zulässig. Verlorene Anfrage- oder Statusantworten und fehlende Auftragsbelege bleiben ungeklärt; es erfolgt weder Wiederherstellung noch Wiederholung. Eine Installation mit verlorenem Ergebnis bleibt für die Seitensitzung gesperrt. Zustand prüfen aktualisiert den Katalog, beweist aber keinen Auftragsabschluss. Vollständiges Neuladen verwirft diese lokale Unsicherheit, ohne einen Abschluss zu belegen. Dauerhafte Auftragsbelege und Wiederherstellung nach vollständigem Neuladen werden nicht hinzugefügt.
 
-## Vor dem Senden abbrechen
+### Vor dem Senden abbrechen
 
 Der gemeinsame UI-Offline-Client führt das AbortSignal des Aufrufers durch registrierte Anfragestufen, Abfragen der Warteschlange und Wartezeiten bei der Übertragung. Ein Abbruch vor dem Start einer Netzwerkanfrage oder eines dauerhaften Warteschlangeneintrags verhindert diese neue Aktion. Die Ausgangswarteschlange prüft den Abbruch nochmals innerhalb ihrer Speichersperre.
 

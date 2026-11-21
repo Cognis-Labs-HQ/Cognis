@@ -160,7 +160,7 @@ Inisial pada navigasi, pratinjau, dan profil memakai aturan nama dan warna yang 
 
 Pratinjau interaktif adalah dialog nonmodal bernama. Mengarahkan penunjuk tidak memindahkan fokus keyboard; kartu yang sedang fokus tetap terbuka saat penunjuk menjauh. Escape menutupnya dan mengembalikan fokus ke pemicu hanya jika fokus sebelumnya berada di dalam kartu.
 
-## Konfirmasi Tindakan Profil
+### Konfirmasi Tindakan Profil
 
 Hapus, Berhenti Mengikuti, dan Blokir meminta konfirmasi. Batal mempertahankan postingan atau hubungan. Langkah postingan dan tindakan sosial menjelaskan pilihan ini dalam semua bahasa yang didukung. Target, urutan, progres, dan ID penyelesaiannya tetap sama.
 
