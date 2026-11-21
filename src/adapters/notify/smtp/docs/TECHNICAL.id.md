@@ -10,8 +10,6 @@ SMTP mendeklarasikan kontrak tujuan surel, pengiriman, kebijakan, dan pabrik tem
 
 ## Konfigurasi
 
-### Konfigurasi
-
 Konfigurasikan `COGNIS_SMTP_HOST`, `COGNIS_SMTP_PORT` (587), `COGNIS_SMTP_FROM`, `COGNIS_SMTP_USER`/`COGNIS_SMTP_PASS` opsional serta `COGNIS_SMTP_SECURE` (`none`, `starttls` atau `tls`). Nama pengirim, host EHLO, kebijakan sertifikat/autentikasi dan panjang kode menggunakan pengaturan adapter yang ada. Pesan uji dapat membawa penggantian konfigurasi dalam antrean.
 
 ## Perilaku

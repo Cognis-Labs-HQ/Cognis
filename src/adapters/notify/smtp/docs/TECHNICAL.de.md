@@ -10,8 +10,6 @@ SMTP deklariert seine Verträge für E-Mail-Zwecke, Zustellung, Richtlinien und 
 
 ## Konfiguration
 
-### Konfiguration
-
 Konfigurieren Sie `COGNIS_SMTP_HOST`, `COGNIS_SMTP_PORT` (587), `COGNIS_SMTP_FROM`, optional `COGNIS_SMTP_USER`/`COGNIS_SMTP_PASS` sowie `COGNIS_SMTP_SECURE` (`none`, `starttls` oder `tls`). Absendername, EHLO-Host, Zertifikats- und Anmelderichtlinien sowie Codelänge verwenden die bestehenden Adaptereinstellungen. Testnachrichten können eine abweichende Konfiguration in ihrer Warteschlange mitführen.
 
 ## Verhalten
