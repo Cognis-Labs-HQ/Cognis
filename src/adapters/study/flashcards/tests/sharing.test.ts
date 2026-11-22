@@ -6,10 +6,7 @@ import {
     GatewayRegistry,
     SHARE_FLOW_CATALOG,
 } from "@cognis/core";
-import {
-    CoreStudyGateway,
-    type StudyAdapterBootstrapCtx,
-} from "../../../../gateways/study/gateway.js";
+import type { StudyAdapterBootstrapCtx } from "../../../../gateways/study/gateway.js";
 import {
     registerDeckSharing,
     canReadSharedDeck,
@@ -39,15 +36,31 @@ function fixture() {
     let enabled = true;
     const ctx: StudyAdapterBootstrapCtx = {
         capabilities,
-        gateway: new CoreStudyGateway(),
+        get gateway(): StudyAdapterBootstrapCtx["gateway"] {
+            throw new Error("Unexpected Study gateway implementation access");
+        },
         gatewayRegistry: new GatewayRegistry(),
         flow: system.flow,
         adapterId: "flashcards",
         adapterRoot: "",
-        registerRoute: () => {},
-        registerStaticDir: () => {},
-        registerNavbarPlugin: () => {},
-        registerPageExtension: () => {},
+        registerCapabilityProvider: () => {
+            throw new Error("Unexpected browser capability registration");
+        },
+        onAvailabilityChange: () => {
+            throw new Error("Unexpected availability subscription");
+        },
+        registerRoute: () => {
+            throw new Error("Unexpected registerRoute call");
+        },
+        registerStaticDir: () => {
+            throw new Error("Unexpected registerStaticDir call");
+        },
+        registerNavbarPlugin: () => {
+            throw new Error("Unexpected registerNavbarPlugin call");
+        },
+        registerPageExtension: () => {
+            throw new Error("Unexpected registerPageExtension call");
+        },
         isAdapterEnabled: () => enabled,
     };
     const deck: StudyDeck = {

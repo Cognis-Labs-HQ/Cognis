@@ -2,10 +2,9 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { CapabilityStore, createCtx, GatewayRegistry } from "@cognis/core";
 import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
-import {
-    CoreStudyGateway,
-    type StudyAdapterBootstrapCtx,
-    type StudyClassAccessCapability,
+import type {
+    StudyAdapterBootstrapCtx,
+    StudyClassAccessCapability,
 } from "../../../../gateways/study/gateway.js";
 import { bootstrapStudyAdapter } from "../index.js";
 
@@ -58,10 +57,18 @@ test("registered class access uses current memberships and the class teacher wit
     const context: StudyAdapterBootstrapCtx = {
         capabilities,
         flow: ctx.flow,
-        gateway: new CoreStudyGateway(),
+        get gateway(): StudyAdapterBootstrapCtx["gateway"] {
+            throw new Error("Unexpected Study gateway implementation access");
+        },
         gatewayRegistry: new GatewayRegistry(),
         adapterId: "classes",
         adapterRoot: "",
+        registerCapabilityProvider: () => {
+            throw new Error("Unexpected browser capability registration");
+        },
+        onAvailabilityChange: () => {
+            throw new Error("Unexpected availability subscription");
+        },
         isAdapterEnabled: () => enabled,
         registerRoute: (route) => routes.push(route),
         registerStaticDir: (prefix, directory) =>
@@ -77,7 +84,7 @@ test("registered class access uses current memberships and the class teacher wit
     assert.equal(await access.canRead("class", "outsider", "user"), false);
     assert.equal(await access.canWrite("class", "learner", "user"), false);
     assert.equal(await access.canWrite("class", "teacher", "teacher"), true);
-    for (const role of ["admin", "owner"]) {
+    for (const role of ["admin", "owner"] as const) {
         assert.equal(await access.canWrite("missing", "admin", role), false);
         assert.equal(await access.canRead("missing", "admin", role), false);
         assert.equal(await access.canWrite("class", "admin", role), true);
