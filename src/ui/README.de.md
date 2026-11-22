@@ -88,3 +88,9 @@ Jeder commitete Code in `src/ui/app` und `src/ui/layouts` muss beide Prüfungen 
 Unter Erweitert → Einstellungen kann nach einer einmaligen, im serverseitigen Benutzerprofil gespeicherten Sicherheitsbestätigung das vollständige Dokument der UI-Einstellungen als JSON bearbeitet werden. Gültige Änderungen werden über das normale Einstellungssystem gespeichert und angewendet. Bestätigungen von Versionshinweisen werden getrennt gespeichert, damit sie dieses Dokument nicht unübersichtlich machen.
 
 Seitenüberlagerungen werden am Dokumentkörper eingehängt, damit Hintergrundfilter und Begrenzungsblöcke des Arbeitsbereichs die Fensterposition nicht verschieben. Das Zeichenfeld bleibt auf den sichtbaren Seitenbereich begrenzt und behält beim Scrollen seine verschobene Position.
+
+## Administrationssteuerung
+
+Unter Administration → Komponenten nutzen Statusbeschriftung, Zustandsanzeige und Ein-/Ausschalter ihre Inhaltsbreite. Schmale Komponentenzeilen zeigen den Namen über den Bedienelementen und die Aufklappsteuerung daneben; die Bedienelemente können innerhalb der verfügbaren Breite umbrechen. Lange Namen, Statusbeschriftungen und Versionsdetails bleiben lesbar.
+
+Ein-/Ausschalter und Aufklappsteuerung haben 44 Pixel hohe Bedienflächen. Tab fokussiert einen verfügbaren Schalter, die Leertaste schaltet ihn um, und ein Fokusring markiert den sichtbaren Schieber. Erforderliche Gateways sowie gesperrte oder nicht verfügbare Adapter behalten deaktivierte Schalter. Die Komponenten-Anleitung erklärt die Tastaturbedienung und verwendet weiterhin dieselben Ziele für Schalter, Aufklappen, Metadaten und Konfiguration.
