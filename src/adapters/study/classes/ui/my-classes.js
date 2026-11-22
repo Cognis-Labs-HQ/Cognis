@@ -1,3 +1,4 @@
+import { log } from "/static/reuse/diagnostics.js";
 import { guides } from "./guides.js";
 /**
  * My Classes page — student view for class enrollment management.
@@ -325,5 +326,5 @@ export async function mount(root, { signal } = {}) {
 }
 
 await mountWhenDirect(mount).catch((error) => {
-    console.error("[study-classes] my-classes mount failed", error);
+    void log("error", "[study-classes] my-classes mount failed", error);
 });

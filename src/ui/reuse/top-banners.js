@@ -1,3 +1,4 @@
+import { log } from "./diagnostics.js";
 import { escapeHtml } from "./escape-html.js";
 import { ensurePersistentStylesheet } from "./page-styles.js";
 
@@ -123,7 +124,7 @@ export function createTopBanners() {
             ensurePersistentStylesheet("/static/styles/reuse/buttons.css"),
         ]).catch((error) => {
             stylesPromise = null;
-            console.info("[ui] banner styles unavailable", {
+            void log("info", "[ui] banner styles unavailable", {
                 operation: "loadBannerStyles",
                 errorName: error?.name,
             });

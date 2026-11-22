@@ -1,3 +1,4 @@
+import { log } from "../diagnostics.js";
 import {
     loadDocsIndex,
     loadDocsBundleMarkdown,
@@ -126,7 +127,7 @@ export async function collectGlobalDocsSearchGroups({
                 }
             } catch (error) {
                 if (signal?.aborted) return;
-                console.error("[search-bar]:document-index-failed", {
+                void log("error", "[search-bar]:document-index-failed", {
                     component: "search",
                     operation: "indexDocument",
                     slug: entry.slug,

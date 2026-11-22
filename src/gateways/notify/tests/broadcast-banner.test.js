@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../../tooling/reuse/diagnostic-fixture.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
@@ -28,6 +29,7 @@ test("Broadcast publishes through ctx and releases only its own banner on dispos
     const plugin = loadTestModule(
         new URL("../ui/broadcast-navbar-plugin.js", import.meta.url),
         {
+            "/static/reuse/diagnostics.js": createDiagnosticFixture(),
             "/static/reuse/ui-ctx.js": { uiCtx: ctx },
             "/static/reuse/offline-state.js": { isOffline: () => false },
             "/static/reuse/i18n.js": {

@@ -4,6 +4,8 @@
  * @module reuse/search-util/capability
  */
 
+import { log } from "../diagnostics.js";
+
 import { uiCtx } from "../ui-ctx.js";
 import "../flow-registry.js";
 
@@ -146,7 +148,7 @@ function createSearchCapability() {
         const results = await Promise.allSettled(
             getAvenues(stageContext?.stageId).map((avenue) =>
                 runAvenue(avenue, providerContext).catch((error) => {
-                    console.warn("[search-bar]:avenue-failed", {
+                    void log("warn", "[search-bar]:avenue-failed", {
                         componentId: avenue.componentId,
                         avenueId: avenue.id,
                         error,

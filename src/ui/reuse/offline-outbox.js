@@ -5,6 +5,8 @@
  * @param {object} options Injected identity, access, storage, lock and connectivity contracts.
  * @returns {object} Register, submit, flush and clear operations.
  */
+
+import { log as defaultLog } from "./diagnostics.js";
 const STORAGE_KEY = "cognis_offline_outbox";
 const MAX_ITEMS = 1000;
 const MAX_BYTES = 1_000_000;
@@ -28,7 +30,7 @@ export function createOfflineOutbox({
         requestLock("cognis-offline-delivery", operation),
     now = () => Date.now(),
     changed = () => {},
-    log = (level, message, meta) => console[level]?.(message, meta),
+    log = defaultLog,
 }) {
     const handlers = new Map();
     const pageChanges = new Map();

@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../../tooling/reuse/diagnostic-fixture.ts";
 import { reportClientError } from "../error-reporting.js";
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -47,10 +48,10 @@ test("a warm offline catalog keeps both cached public pages and provider-authori
         },
     };
     const load = () =>
-        loadTestModule(
-            new URL("../spa-route-registry.js", import.meta.url),
-            imports,
-        );
+        loadTestModule(new URL("../spa-route-registry.js", import.meta.url), {
+            ...imports,
+            "./diagnostics.js": createDiagnosticFixture(),
+        });
     const { loadSpaRoutes } = load();
     await loadSpaRoutes();
     const controller = new AbortController();

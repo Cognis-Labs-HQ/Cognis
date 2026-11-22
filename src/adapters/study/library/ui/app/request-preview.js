@@ -1,3 +1,4 @@
+import { log } from "/static/reuse/diagnostics.js";
 import { showToast } from "/static/reuse/toast.js";
 import { renderEntryCard } from "./cards.js";
 import { layerForEntry } from "./presentation.js";
@@ -116,7 +117,7 @@ export function bindRequestPreviews(
                     },
                 );
             } catch (error) {
-                console.error("Study request preview failed.", {
+                void log("error", "Study request preview failed.", {
                     component: "study-library",
                     operation: "requestPreview",
                     requestId: request.id,

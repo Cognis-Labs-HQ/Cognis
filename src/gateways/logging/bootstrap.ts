@@ -706,7 +706,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.routeRegistry.registerPrefix("/api/v1/logging", "logging");
     ctx.uiRegistry?.registerCapabilityProvider({
         scriptUrl: "/static/gateways/logging/browser.js",
-        providesCapabilities: ["logging:browser"],
+        providesCapabilities: ["logging:browser", "logging:recentEntries"],
         public: true,
     });
     ctx.uiRegistry?.registerCapabilityProvider({

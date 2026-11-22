@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../../../tooling/reuse/diagnostic-fixture.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
@@ -13,6 +14,7 @@ test("login submission shows loading during a delayed request, prevents duplicat
     const { createLoginSubmitHandler } = loadTestModule(
         new URL("../../ui/login-page/submit.js", import.meta.url),
         {
+            "/static/reuse/diagnostics.js": createDiagnosticFixture(),
             "/static/reuse/page-entry.js": {
                 beginPageLoading: () => {
                     loading++;

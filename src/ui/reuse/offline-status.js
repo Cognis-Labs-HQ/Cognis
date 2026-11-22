@@ -1,3 +1,4 @@
+import { log } from "./diagnostics.js";
 import { uiCtx } from "./ui-ctx.js";
 import { beginButtonLoading } from "./button-loading.js";
 import {
@@ -102,7 +103,8 @@ export function mountOfflineStatus(
                 try {
                     await uiCtx.runFlow(recheckFlow, {});
                 } catch (error) {
-                    console.info(
+                    void log(
+                        "info",
                         "[offline] connectivity recheck could not finish",
                         {
                             operation: "recheckConnectivity",

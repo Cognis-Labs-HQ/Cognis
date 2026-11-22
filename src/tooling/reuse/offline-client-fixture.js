@@ -79,6 +79,7 @@ export function createOfflineClientFixture(send, { window } = {}) {
         },
     };
     const dependency = {
+        "./diagnostics.js": { log },
         "./offline-state.js": state,
         "./offline-policy.js": { offlinePolicy: { allows: () => true } },
     };
@@ -86,7 +87,6 @@ export function createOfflineClientFixture(send, { window } = {}) {
         ...(window ? { window } : {}),
         crypto: webcrypto,
         AbortSignal,
-        console,
         structuredClone,
         Response,
         Headers,
@@ -122,6 +122,7 @@ export function createOfflineClientFixture(send, { window } = {}) {
     const http = loadTestModule(
         new URL("../../ui/reuse/offline-http-client.js", import.meta.url),
         {
+            "./diagnostics.js": { log },
             "./offline-read-cache.js": cache,
             "./offline-delivery.js": delivery,
             "./scoped-actions.js": { registerScopedUiActions },
@@ -132,7 +133,7 @@ export function createOfflineClientFixture(send, { window } = {}) {
     );
     const snapshots = loadTestModule(
         new URL("../../ui/reuse/offline-snapshot.js", import.meta.url),
-        { "./offline-state.js": state },
+        { "./diagnostics.js": { log }, "./offline-state.js": state },
         globals,
     );
     return {

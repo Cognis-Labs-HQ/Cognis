@@ -1,3 +1,4 @@
+import { log } from "../../reuse/diagnostics.js";
 import { guides } from "./guides.js";
 import { ensurePageStylesheet } from "../../reuse/page-styles.js";
 import { createCollapsibleSectionComposer } from "../../reuse/collapsible-section-composer.js";
@@ -283,7 +284,7 @@ async function refreshUsersAfterMutation() {
         composer.refresh(elements);
     } catch (error) {
         if (signal !== pageSignal || signal?.aborted) return;
-        console.error("users_refresh_after_save_failed", {
+        void log("error", "users_refresh_after_save_failed", {
             component: "ui",
             operation: "refreshUsersAfterMutation",
             errorName: error?.name,
@@ -525,7 +526,7 @@ function bindUsersInteractions() {
                     ).innerHTML = html;
             } catch (error) {
                 if (error?.name === "AbortError") return;
-                console.error("users_account_details_failed", {
+                void log("error", "users_account_details_failed", {
                     component: "ui",
                     operation: "readUserDetails",
                     errorName: error?.name,

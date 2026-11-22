@@ -1,3 +1,4 @@
+import { log } from "/static/reuse/diagnostics.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
@@ -614,7 +615,7 @@ export function createSettingsSection({ i18n, root, signal }) {
             loadState = result.error ? "unavailable" : "ready";
             if (result.state) keyringPresent = result.state.exists === true;
             if (result.error) {
-                console.error("[keyring] settings metadata unavailable", {
+                void log("error", "[keyring] settings metadata unavailable", {
                     component: "auth-keyring",
                     operation: "readSettings",
                     errorName: result.error.name,

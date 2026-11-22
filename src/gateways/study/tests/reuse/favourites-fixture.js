@@ -35,6 +35,8 @@ export function createFavouriteFixture(send) {
                 {
                     "./favourites-client.js": client,
                     "/static/reuse/escape-html.js": { escapeHtml: String },
+                    "/static/reuse/diagnostics.js":
+                        host.imports["/static/reuse/diagnostics.js"],
                     "/static/reuse/toast.js": {
                         showToast: (message) => notices.push(message),
                     },

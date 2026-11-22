@@ -11,6 +11,8 @@
  * @param {object} options Share popup callbacks, labels, and defaults.
  * @returns {Promise<void>} Resolves after the popup closes.
  */
+
+import { log } from "/static/reuse/diagnostics.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { openPopup } from "/static/reuse/popup.js";
@@ -510,7 +512,8 @@ export async function openShareLinksPopup({
                                     renderLinksList(listContainer);
                                 }
                             } catch (updateError) {
-                                console.error(
+                                void log(
+                                    "error",
                                     "[share] failed to update duplicate user share",
                                     updateError,
                                 );

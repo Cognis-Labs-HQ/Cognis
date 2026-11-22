@@ -1,3 +1,4 @@
+import { log } from "/static/reuse/diagnostics.js";
 import { createSubmitEvent } from "./submit-event.js";
 import { bindViewInteractions as bindCalendarViewInteractions } from "./bind-view-interactions.js";
 import { createCalendarEditPopupHandler } from "./popup-manager-calendar-edit.js";
@@ -353,10 +354,7 @@ export function createCalendarPopupManager({
                                 hydrateEventPopupParticipants(popupBody);
                             }
                         } catch (error) {
-                            console.warn(
-                                "Failed to refresh calendar participant responses.",
-                                error,
-                            );
+                            void log("warn", "responses_refresh_failed", error);
                         }
                     }, 60000);
                     const popupRemovalObserver = new MutationObserver(() => {

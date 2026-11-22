@@ -1,3 +1,4 @@
+import { log } from "/static/reuse/diagnostics.js";
 export function createLoginIntegrationLoader() {
     let configLoadPromise = null;
 
@@ -20,7 +21,7 @@ export function createLoginIntegrationLoader() {
                     };
                 })
                 .catch((error) => {
-                    console.error(error);
+                    void log("error", error);
                     return { methods: [], integrations: [] };
                 });
         }
@@ -39,7 +40,7 @@ export function createLoginIntegrationLoader() {
         try {
             return createClient(await import(integration.scriptUrl));
         } catch (error) {
-            console.error(error);
+            void log("error", error);
             return null;
         }
     }

@@ -1,3 +1,4 @@
+import { log } from "./diagnostics.js";
 import { uiCtx } from "./ui-ctx.js";
 import { isOffline, offlineEnabled } from "./offline-state.js";
 import { loadWithSpaImportGuard } from "./page-entry.js";
@@ -70,7 +71,8 @@ if (!uiCtx.flowExists(flow)) {
                                     styles?.cancel();
                                 }
                             } catch (error) {
-                                console.info(
+                                void log(
+                                    "info",
                                     "[offline] route assets not prepared",
                                     {
                                         operation: "prepareRouteAssets",
@@ -95,10 +97,11 @@ if (!uiCtx.flowExists(flow)) {
 /** Prepare public code and styles without mounting pages or fetching private page data. */
 export function prepareOfflineRouteAssets(routes) {
     if (isOffline() || !offlineEnabled()) return;
-    void uiCtx.runFlow(flow, { routes }).catch((error) =>
-        console.error("[offline] asset preparation failed", {
-            operation: "prepareRouteAssets",
-            errorName: error?.name,
-        }),
+    void uiCtx.runFlow(flow, { routes }).catch(
+        (error) =>
+            void log("error", "[offline] asset preparation failed", {
+                operation: "prepareRouteAssets",
+                errorName: error?.name,
+            }),
     );
 }

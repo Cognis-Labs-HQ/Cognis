@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../../../tooling/reuse/diagnostic-fixture.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
@@ -8,6 +9,7 @@ for (const usageFails of [false, true]) {
         const requests = [],
             updated = [],
             logs = [];
+        const diagnostics = createDiagnosticFixture();
         let selected;
         class Button {
             dataset = { emoji: "♥" };
@@ -15,6 +17,7 @@ for (const usageFails of [false, true]) {
         const { createMessageReactionsController } = loadTestModule(
             new URL("../ui/reactions.js", import.meta.url),
             {
+                "/static/reuse/diagnostics.js": diagnostics,
                 "./reaction-state.js": {
                     nextReactionState: (messageId, emoji) => {
                         assert.equal(messageId, "message");
@@ -79,7 +82,8 @@ for (const usageFails of [false, true]) {
             { emoji: "♥", active: true },
         );
         assert.equal(updated.length, 1);
-        assert.equal(logs.length, usageFails ? 1 : 0);
+        assert.equal(diagnostics.entries.length, usageFails ? 1 : 0);
+        assert.equal(logs.length, 0);
         controller.destroy();
     });
 }

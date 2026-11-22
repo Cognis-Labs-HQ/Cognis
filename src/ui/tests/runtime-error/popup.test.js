@@ -1,3 +1,6 @@
+import { uiCtx } from "../../reuse/ui-ctx.js";
+import { subscribeDiagnostics } from "../../reuse/diagnostics.js";
+import { createDiagnosticFixture } from "../../../tooling/reuse/diagnostic-fixture.ts";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -84,6 +87,10 @@ test("popup stylesheet priming reports cache refresh failures", async () => {
     const originalConsoleError = console.error;
     const originalFetch = globalThis.fetch;
     const loggedErrors = [];
+    const release = subscribeDiagnostics(async (entry) => {
+        loggedErrors.push(entry);
+        return true;
+    });
     globalThis.caches = {
         async open() {
             return {
@@ -94,7 +101,8 @@ test("popup stylesheet priming reports cache refresh failures", async () => {
         },
     };
     globalThis.fetch = async () => new Response(".popup { display: block; }");
-    console.error = (...messageParts) => loggedErrors.push(messageParts);
+    console.error = () =>
+        assert.fail("Stylesheet failures must use gateway diagnostics");
 
     try {
         const { primePopupStylesheet } = await import(
@@ -105,12 +113,14 @@ test("popup stylesheet priming reports cache refresh failures", async () => {
         globalThis.caches = originalCaches;
         globalThis.fetch = originalFetch;
         console.error = originalConsoleError;
+        release();
     }
 
     assert.equal(loggedErrors.length, 1);
-    assert.match(loggedErrors[0][0], /Failed to refresh stylesheet cache/);
-    assert.match(loggedErrors[0][0], /\/static\/styles\/popup\.css/);
-    assert.match(loggedErrors[0][1].message, /storage denied/);
+    assert.match(loggedErrors[0].message, /Failed to refresh stylesheet cache/);
+    assert.match(loggedErrors[0].message, /\/static\/styles\/popup\.css/);
+    assert.equal(loggedErrors[0].level, "error");
+    assert.equal(loggedErrors[0].meta.name, "Error");
 });
 
 test("popup stylesheet priming stores the actual CSS response", async () => {
@@ -242,7 +252,8 @@ test("runtime error popup suppresses crash dialogs for connection-interruption f
     context.__testExports = loadTestModule(
         new URL("../../reuse/runtime-error-popup.js", import.meta.url),
         {
-            "./ui-ctx.js": context,
+            "./diagnostics.js": createDiagnosticFixture(),
+            "./ui-ctx.js": { uiCtx },
             "./popup.js": context,
             "./api-client.js": context,
             "./i18n.js": context,
@@ -333,7 +344,8 @@ test("runtime error popup uses full navigation fallback after reload-origin fail
     context.__testExports = loadTestModule(
         new URL("../../reuse/runtime-error-popup.js", import.meta.url),
         {
-            "./ui-ctx.js": context,
+            "./diagnostics.js": createDiagnosticFixture(),
+            "./ui-ctx.js": { uiCtx },
             "./popup.js": context,
             "./api-client.js": context,
             "./i18n.js": context,
@@ -426,7 +438,8 @@ test("runtime error popup preserves SPA back navigation when main boilerplate is
     context.__testExports = loadTestModule(
         new URL("../../reuse/runtime-error-popup.js", import.meta.url),
         {
-            "./ui-ctx.js": context,
+            "./diagnostics.js": createDiagnosticFixture(),
+            "./ui-ctx.js": { uiCtx },
             "./popup.js": context,
             "./api-client.js": context,
             "./i18n.js": context,
@@ -510,7 +523,8 @@ test("runtime error popup keeps users on loaded pages after post-load crashes", 
     context.__testExports = loadTestModule(
         new URL("../../reuse/runtime-error-popup.js", import.meta.url),
         {
-            "./ui-ctx.js": context,
+            "./diagnostics.js": createDiagnosticFixture(),
+            "./ui-ctx.js": { uiCtx },
             "./popup.js": context,
             "./api-client.js": context,
             "./i18n.js": context,
@@ -567,7 +581,8 @@ test("runtime error popup caches main boilerplate lookup across recovery actions
     const module = loadTestModule(
         new URL("../../reuse/runtime-error-popup.js", import.meta.url),
         {
-            "./ui-ctx.js": context,
+            "./diagnostics.js": createDiagnosticFixture(),
+            "./ui-ctx.js": { uiCtx },
             "./popup.js": context,
             "./api-client.js": context,
             "./i18n.js": context,
@@ -677,7 +692,8 @@ test("runtime error popup copy action writes full crash detail text", async () =
     context.__testExports = loadTestModule(
         new URL("../../reuse/runtime-error-popup.js", import.meta.url),
         {
-            "./ui-ctx.js": context,
+            "./diagnostics.js": createDiagnosticFixture(),
+            "./ui-ctx.js": { uiCtx },
             "./popup.js": context,
             "./api-client.js": context,
             "./i18n.js": context,
@@ -800,7 +816,8 @@ test("runtime error popup copy action adds and removes copied class on success",
     context.__testExports = loadTestModule(
         new URL("../../reuse/runtime-error-popup.js", import.meta.url),
         {
-            "./ui-ctx.js": context,
+            "./diagnostics.js": createDiagnosticFixture(),
+            "./ui-ctx.js": { uiCtx },
             "./popup.js": context,
             "./api-client.js": context,
             "./i18n.js": context,
@@ -899,7 +916,8 @@ test("runtime error popup copy action skips class toggle when overlay is not an 
     context.__testExports = loadTestModule(
         new URL("../../reuse/runtime-error-popup.js", import.meta.url),
         {
-            "./ui-ctx.js": context,
+            "./diagnostics.js": createDiagnosticFixture(),
+            "./ui-ctx.js": { uiCtx },
             "./popup.js": context,
             "./api-client.js": context,
             "./i18n.js": context,

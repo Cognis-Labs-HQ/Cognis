@@ -1,3 +1,4 @@
+import { log } from "../reuse/diagnostics.js";
 import { uiCtx } from "../reuse/ui-ctx.js";
 
 /**
@@ -32,7 +33,7 @@ export async function updateNavbarAvatar() {
             avatarInitials = result?.avatarInitials ?? avatarInitials;
             avatarColor = result?.avatarColor ?? avatarColor;
         } catch (error) {
-            console.error("[dashboard-layout]:avatar-provider-failed", {
+            void log("error", "[dashboard-layout]:avatar-provider-failed", {
                 error,
             });
             profileAvailable = false;

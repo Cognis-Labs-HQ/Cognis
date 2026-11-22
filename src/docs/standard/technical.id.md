@@ -12,6 +12,12 @@ Jalankan `npm run check:docs`. CI permintaan penggabungan juga membandingkan ber
 
 ## Perilaku
 
+### Batas Logging
+
+JavaScript dan TypeScript aplikasi, skrip peramban sebaris, serta penangan peristiwa harus menerbitkan diagnostik melalui kapabilitas log yang diinjeksi atau port diagnostik peramban publik. Akses konsol asli dibatasi pada adaptor keluaran logging dan inisialisasi gateway logging. Penangan lain dalam berkas inisialisasi tidak mendapat pengecualian. Laporan perintah dan build menggunakan aliran terminal secara eksplisit. Pemeriksaan konsol asli juga mencakup sumber perkakas; fixture pengujian tetap berada di luar pemindaian sumber produksi.
+
+Jalankan `node --import tsx --test src/tooling/tests/logging/*.test.js` untuk memeriksa repositori dan kasus deteksi. Pemeriksaan mencakup modul eksternal yang terpasang, mendukung `COGNIS_EXTERNAL_MODULES_ROOT`, dan melaporkan berkas serta baris pelanggaran. Alias, akses terhitung, dan impor `node:console` ditolak tanpa pengecualian untuk pelanggaran lama.
+
 Topik baru membuka Info. Info, Penggunaan, dan Teknis adalah tiga tampilan satu versi komponen. Server membaca semua sumber sebelum menerbitkan paket secara atomik; tampilan hilang atau terjemahan parsial menolak penerbitan. Pergantian tampilan mempertahankan versi, dan paket historis tetap terbaca setelah komponen dihapus.
 
 Isi dokumen, judul navigasi, dan pencarian mendahulukan bahasa UI aktif, lalu bahasa cadangan terkonfigurasi dan Inggris. Pilihan berlaku konsisten untuk Info, Penggunaan, Teknis, serta versi arsip.

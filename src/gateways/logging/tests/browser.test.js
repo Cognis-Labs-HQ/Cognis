@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
+import { normalizeDiagnostic } from "../ui/entry.js";
 import { safeMetadata } from "../ui/metadata.js";
 import { uiCtx } from "../../../ui/reuse/ui-ctx.js";
 import { createProviderLifecycle } from "../../../ui/reuse/provider-lifecycle.js";
@@ -32,8 +33,9 @@ async function fixture(t, { failHandshake = false } = {}) {
             "./console.js": loadTestModule(
                 new URL("../ui/console.js", import.meta.url),
                 { "/static/reuse/diagnostics.js": { log } },
+                { console: consoleTarget },
             ),
-            "./metadata.js": { safeMetadata },
+            "./entry.js": { normalizeDiagnostic },
             "./client.js": loadTestModule(
                 new URL("../ui/client.js", import.meta.url),
                 {},
@@ -100,7 +102,7 @@ test("logs run the gateway flow and only gateway permission permits console outp
     assert.deepEqual(JSON.parse(runtime.requests[0].options.body), {
         level: "error",
         message: "challenge_request_failed",
-        meta: { component: "tfa" },
+        meta: { component: "tfa", operation: "diagnostic" },
     });
     runtime.allowed = true;
     assert.equal(await log("warn", "translation_bundle_load_failed"), true);
@@ -117,6 +119,7 @@ test("logs run the gateway flow and only gateway permission permits console outp
     await runtime.lifecycle.reconcile([]);
     assert.equal(uiCtx.flowExists("logging:emit"), false);
     assert.equal(uiCtx.capabilities.get("logging:browser"), undefined);
+    assert.equal(uiCtx.capabilities.get("logging:recentEntries"), undefined);
     for (const method of Object.keys(runtime.originalConsole))
         assert.equal(
             runtime.consoleTarget[method],
@@ -188,6 +191,7 @@ test("failed provider initialization releases its flow, console capture and subs
     );
     assert.equal(uiCtx.flowExists("logging:emit"), false);
     assert.equal(uiCtx.capabilities.get("logging:browser"), undefined);
+    assert.equal(uiCtx.capabilities.get("logging:recentEntries"), undefined);
     const runtime = await fixture(t);
     assert.equal(await log("error", "provider_recovered"), true);
     assert.equal(runtime.requests.length, 1);
@@ -203,4 +207,17 @@ test("diagnostic context has an overall size budget as well as per-field limits"
     const safe = safeMetadata(context);
     assert.ok(JSON.stringify(safe).length < 10_000);
     assert.equal(safe["0"].detail.length, 512);
+});
+
+test("recent diagnostics remain bounded and cannot be mutated by crash-report consumers", async (t) => {
+    await fixture(t);
+    for (let index = 0; index < 35; index++)
+        await log("info", `history_${index}`);
+    const recent = uiCtx.capabilities.get("logging:recentEntries");
+    const entries = recent();
+    assert.equal(entries.length, 30);
+    assert.match(entries[0].message, /^history_5 /);
+    assert.match(entries.at(-1).message, /^history_34 /);
+    entries[0].message = "changed";
+    assert.match(recent()[0].message, /^history_5 /);
 });

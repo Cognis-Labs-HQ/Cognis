@@ -1,3 +1,4 @@
+import { writeTerminalReport } from "../reuse/terminal-output.ts";
 import { formatField, formatHeading } from "./formatters.ts";
 import { registry } from "./registry.ts";
 import type { CommandSpec } from "./types.ts";
@@ -45,24 +46,32 @@ export function printCommandGroupHelp(commandGroupName: string): boolean {
 }
 
 export function printGlobalHelp(): void {
-    console.log("Cognis CLI (cognisctl)");
-    console.log("");
-    console.log("Usage:");
-    console.log("  cognisctl <command> [args]");
-    console.log("");
-    console.log("Global options:");
-    console.log(
+    writeTerminalReport("stdout", "Cognis CLI (cognisctl)");
+    writeTerminalReport("stdout", "");
+    writeTerminalReport("stdout", "Usage:");
+    writeTerminalReport("stdout", "  cognisctl <command> [args]");
+    writeTerminalReport("stdout", "");
+    writeTerminalReport("stdout", "Global options:");
+    writeTerminalReport(
+        "stdout",
         "  -h, --help               Show global help or command help (e.g. cognisctl user:create --help)",
     );
-    console.log("  -v, --verbose            Show the full command response");
-    console.log("  --version                Show CLI version");
-    console.log("");
-    console.log("Environment:");
-    console.log(
+    writeTerminalReport(
+        "stdout",
+        "  -v, --verbose            Show the full command response",
+    );
+    writeTerminalReport(
+        "stdout",
+        "  --version                Show CLI version",
+    );
+    writeTerminalReport("stdout", "");
+    writeTerminalReport("stdout", "Environment:");
+    writeTerminalReport(
+        "stdout",
         "  COGNIS_API_URL           API base URL (default: http://localhost:3000)",
     );
-    console.log("");
-    console.log("Commands:");
+    writeTerminalReport("stdout", "");
+    writeTerminalReport("stdout", "Commands:");
 
     const commands = [...registry.values()].sort((left, right) =>
         left.name.localeCompare(right.name),
@@ -105,9 +114,10 @@ export function printGlobalHelp(): void {
         const sectionCommands = grouped.get(sectionName);
         if (!sectionCommands || sectionCommands.length === 0) continue;
 
-        console.log(`\n  ${sectionName}:`);
+        writeTerminalReport("stdout", `\n  ${sectionName}:`);
         for (const command of sectionCommands) {
-            console.log(
+            writeTerminalReport(
+                "stdout",
                 `    ${command.name.padEnd(maxName + 2)}${command.description}`,
             );
         }
@@ -121,9 +131,10 @@ export function printGlobalHelp(): void {
         const sectionCommands = grouped.get(sectionName);
         if (!sectionCommands || sectionCommands.length === 0) continue;
 
-        console.log(`\n  ${sectionName}:`);
+        writeTerminalReport("stdout", `\n  ${sectionName}:`);
         for (const command of sectionCommands) {
-            console.log(
+            writeTerminalReport(
+                "stdout",
                 `    ${command.name.padEnd(maxName + 2)}${command.description}`,
             );
         }
@@ -134,15 +145,19 @@ export function printCommandHelp(commandName: string): void {
     const command = registry.get(commandName);
     if (!command) {
         if (printCommandGroupHelp(commandName)) return;
-        console.error(`Unknown command: ${commandName}`);
+        writeTerminalReport("stderr", `Unknown command: ${commandName}`);
         process.exit(1);
     }
 
-    console.log(`Command: ${command.name}`);
-    console.log(`Description: ${command.description}`);
-    console.log(`Usage: ${command.usage}`);
-    console.log("Options: -v, --verbose (full response); -h, --help");
-    console.log(
+    writeTerminalReport("stdout", `Command: ${command.name}`);
+    writeTerminalReport("stdout", `Description: ${command.description}`);
+    writeTerminalReport("stdout", `Usage: ${command.usage}`);
+    writeTerminalReport(
+        "stdout",
+        "Options: -v, --verbose (full response); -h, --help",
+    );
+    writeTerminalReport(
+        "stdout",
         "Progress is written to stderr; the final result is written to stdout.",
     );
 }

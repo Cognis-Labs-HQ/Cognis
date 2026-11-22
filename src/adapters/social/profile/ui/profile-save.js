@@ -1,3 +1,4 @@
+import { log } from "/static/reuse/diagnostics.js";
 import { profileUiClient } from "./client.js";
 import { updateNavbarAvatar } from "/static/layouts/dashboard-layout.js";
 import { showToast } from "/static/reuse/toast.js";
@@ -25,15 +26,16 @@ export async function saveProfileFields(
         });
         refreshProfileCards(["hero", "social-links", "posts-new"]);
         bindProfileHeroEvents();
-        void updateNavbarAvatar().catch((error) =>
-            console.error("[profile] navbar refresh failed", {
-                operation: "refreshAfterSave",
-                errorName: error?.name,
-            }),
+        void updateNavbarAvatar().catch(
+            (error) =>
+                void log("error", "[profile] navbar refresh failed", {
+                    operation: "refreshAfterSave",
+                    errorName: error?.name,
+                }),
         );
     } catch (error) {
         if (delivered) {
-            console.error("[profile] saved profile view refresh failed", {
+            void log("error", "[profile] saved profile view refresh failed", {
                 operation: "refreshAfterSave",
                 errorName: error?.name,
             });

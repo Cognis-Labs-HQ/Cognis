@@ -1,3 +1,4 @@
+import { log } from "/static/reuse/diagnostics.js";
 import { showOfflineContentNotice } from "./offline-content.js";
 /**
  * Study hub — welcome onboarding, dashboard, and settings.
@@ -661,5 +662,5 @@ async function mountHub(
 }
 
 await mountWhenDirect(mount).catch((error) => {
-    console.error("[study] mount failed", error);
+    void log("error", "[study] mount failed", error);
 });

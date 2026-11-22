@@ -1,3 +1,4 @@
+import { log } from "/static/reuse/diagnostics.js";
 import { guides } from "./guides.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { isOffline } from "/static/reuse/offline-state.js";
@@ -228,7 +229,7 @@ const {
                     : pendingBannerAspectRatio,
         }),
     onError: (error) => {
-        console.error("[profile] image selection failed", {
+        void log("error", "[profile] image selection failed", {
             component: "social-profile",
             operation: "selectImage",
             errorName: error.name,

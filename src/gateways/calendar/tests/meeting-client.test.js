@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../../tooling/reuse/diagnostic-fixture.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
@@ -36,6 +37,7 @@ test("Calendar delegates meeting creation to the installed provider through ctx"
     const client = loadTestModule(
         new URL("../ui/calendar-api.js", import.meta.url),
         {
+            "/static/reuse/diagnostics.js": createDiagnosticFixture(),
             "./offline-client.js": {
                 calendarFetch: () =>
                     assert.fail(

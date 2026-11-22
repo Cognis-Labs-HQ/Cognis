@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../../tooling/reuse/diagnostic-fixture.ts";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -85,6 +86,7 @@ test("runtime error handlers ignore benign ResizeObserver loop errors", async ()
     context.__testExports = loadTestModule(
         new URL("../../reuse/runtime-error-popup.js", import.meta.url),
         {
+            "./diagnostics.js": createDiagnosticFixture(),
             "./ui-ctx.js": context,
             "./popup.js": context,
             "./api-client.js": context,

@@ -1,3 +1,4 @@
+import { log } from "../reuse/diagnostics.js";
 import { bindCompactNavigation } from "./compact-navigation.js";
 import { replaceMountScope } from "../reuse/mount-scope.js";
 import { registerPageReadinessBlocker } from "../reuse/page-readiness.js";
@@ -339,9 +340,13 @@ window.addEventListener("cognis:navbar-plugins-refresh", () => {
     ensureNavbarPluginsLoaded()
         .then(updateNavbarAvatar)
         .catch((error) => {
-            console.error("[dashboard-layout]:navbar-plugins-refresh-failed", {
-                error,
-            });
+            void log(
+                "error",
+                "[dashboard-layout]:navbar-plugins-refresh-failed",
+                {
+                    error,
+                },
+            );
         });
 });
 
@@ -350,7 +355,8 @@ function scheduleNavbarEnhancements() {
         ensureNavbarPluginsLoaded()
             .then(() => {
                 updateNavbarAvatar().catch((error) => {
-                    console.warn(
+                    void log(
+                        "warn",
                         "[dashboard-layout]:navbar-avatar-refresh-failed",
                         error,
                     );
@@ -359,7 +365,8 @@ function scheduleNavbarEnhancements() {
                 window.dispatchEvent(new Event("cognis:navbar-refresh"));
             })
             .catch((error) => {
-                console.warn(
+                void log(
+                    "warn",
                     "[dashboard-layout]:navbar-plugin-refresh-failed",
                     error,
                 );

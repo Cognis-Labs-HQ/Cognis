@@ -1,3 +1,4 @@
+import { log } from "/static/reuse/diagnostics.js";
 import { isOffline } from "/static/reuse/offline-state.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { openPopup } from "/static/reuse/popup.js";
@@ -41,17 +42,22 @@ export function showOfflineContentNotice(i18n, signal) {
                         ],
                     });
                 } catch (error) {
-                    console.info("[study] offline notice unavailable", {
+                    void log("info", "[study] offline notice unavailable", {
                         operation: "showOfflineContent",
                         errorName: error?.name,
                     });
                 }
             },
         })
-        .catch((error) =>
-            console.info("[study] offline notice could not be scheduled", {
-                operation: "scheduleOfflineContent",
-                errorName: error?.name,
-            }),
+        .catch(
+            (error) =>
+                void log(
+                    "info",
+                    "[study] offline notice could not be scheduled",
+                    {
+                        operation: "scheduleOfflineContent",
+                        errorName: error?.name,
+                    },
+                ),
         );
 }

@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../../../tooling/reuse/diagnostic-fixture.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
@@ -7,6 +8,7 @@ function fixture(navigate, syncTimezoneOnLogin) {
     const client = loadTestModule(
         new URL("../../ui/login-page/navigation.js", import.meta.url),
         {
+            "/static/reuse/diagnostics.js": createDiagnosticFixture(),
             "/static/reuse/page-entry.js": {
                 beginPageLoading: () => {
                     loading++;

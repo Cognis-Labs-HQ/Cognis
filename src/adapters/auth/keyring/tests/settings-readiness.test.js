@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../../../tooling/reuse/diagnostic-fixture.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
@@ -60,6 +61,7 @@ function fixture({
     const { createSettingsSection } = loadTestModule(
         new URL("../ui/settings.js", import.meta.url),
         {
+            "/static/reuse/diagnostics.js": createDiagnosticFixture(),
             "/static/reuse/escape-html.js": { escapeHtml: String },
             "/static/reuse/popup.js": {
                 openPopup: () =>

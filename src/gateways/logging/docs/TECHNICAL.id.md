@@ -4,6 +4,8 @@ Antarmuka publik dan aturan operasional Log Aplikasi.
 
 ## Antarmuka
 
+`logging:recentEntries` mengembalikan salinan maksimal 30 catatan diagnostik yang telah dibersihkan, dengan `timestamp`, `level`, dan `message`. Laporan galat menggunakan kapabilitas publik ini alih-alih membungkus metode konsol dalam Core. Riwayat lokal juga mencakup diagnostik anonim; pengiriman server dan keluaran peramban tetap mengikuti kebijakan gateway yang terpisah.
+
 ### Arsitektur
 
 ```ts

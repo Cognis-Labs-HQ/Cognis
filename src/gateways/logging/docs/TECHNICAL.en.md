@@ -4,6 +4,8 @@ The public interfaces and operational rules of Application Logs.
 
 ## Interfaces
 
+`logging:recentEntries` returns a copy of up to 30 sanitized diagnostic records with `timestamp`, `level` and `message`. Crash reports consume this public capability instead of wrapping console methods in core. This local history includes anonymous diagnostics; server ingestion and browser output retain their separate gateway policy.
+
 ### Capabilities contributed
 
 | Capability       | Type                              | Description                                                       |

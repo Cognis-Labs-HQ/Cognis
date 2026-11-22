@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../../tooling/reuse/diagnostic-fixture.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
@@ -11,12 +12,13 @@ test("waiting for pending activity cannot send or enqueue a previous account's o
             ]);
             const guard = loadTestModule(
                 new URL("../offline-identity.js", import.meta.url),
-                {},
+                { "./diagnostics.js": createDiagnosticFixture() },
                 { localStorage: { getItem: (key) => values.get(key) } },
             );
             const { deliverOrQueue } = loadTestModule(
                 new URL("../offline-delivery.js", import.meta.url),
                 {
+                    "./diagnostics.js": createDiagnosticFixture(),
                     "./offline-identity.js": guard,
                     "./offline-state.js": {
                         isOffline: () => offline,

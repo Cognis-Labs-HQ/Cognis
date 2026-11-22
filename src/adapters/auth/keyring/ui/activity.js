@@ -1,3 +1,4 @@
+import { log } from "/static/reuse/diagnostics.js";
 import {
     dispatchKeyringEvent,
     showKeyringLifecycleToast,
@@ -23,7 +24,7 @@ export function boundedKeyringActivity(events = []) {
 }
 
 async function reportSyncFailure(error) {
-    console.error({
+    void log("error", {
         component: "auth-keyring-adapter",
         operation: "activity_sync",
         code: "keyring_sync_failed",
@@ -52,12 +53,13 @@ export function createActivityPersistence({
         const stateVersion = getStateVersion();
         pending = persist()
             .catch(onError)
-            .catch(() =>
-                console.error({
-                    component: "auth-keyring-adapter",
-                    operation: "activity_sync",
-                    code: "keyring_sync_failed",
-                }),
+            .catch(
+                () =>
+                    void log("error", {
+                        component: "auth-keyring-adapter",
+                        operation: "activity_sync",
+                        code: "keyring_sync_failed",
+                    }),
             )
             .finally(() => {
                 pending = null;

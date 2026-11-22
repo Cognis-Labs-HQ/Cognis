@@ -22,6 +22,8 @@
  *     signal,
  * }));
  */
+
+import { log } from "./diagnostics.js";
 import { ensurePageStylesheet } from "./page-styles.js";
 import { loadWithSpaImportGuard } from "./page-entry.js";
 import { resolveComponentPage } from "./spa-route-registry.js";
@@ -317,7 +319,7 @@ export function installComponentPageBroker({
                 try {
                     await releaseMountResult(mountResult);
                 } catch (error) {
-                    console.error("component_page_cleanup_failed", {
+                    void log("error", "component_page_cleanup_failed", {
                         componentUuid: data.request.componentUuid,
                         routeId: data.request.routeId,
                         elementId: data.request.elementId,
@@ -431,7 +433,7 @@ export function installComponentPageBroker({
                 }
                 data.window = handle;
             } catch (error) {
-                console.error("component_page_mount_failed", {
+                void log("error", "component_page_mount_failed", {
                     componentUuid: data.request.componentUuid,
                     routeId: data.request.routeId,
                     elementId: data.request.elementId,

@@ -1,3 +1,4 @@
+import { log } from "./diagnostics.js";
 import { registerPageRedraw } from "./page-redraw.js";
 /**
  * Client-side application router for the Cognis dashboard shell.
@@ -56,6 +57,8 @@ import {
     loadWithSpaImportGuard,
 } from "./page-entry.js";
 import {
+    findMatchingRoute,
+    internalNavigationPath,
     getCurrentRoutePath,
     normalizeSameOriginRoutePath,
 } from "./route-path.js";
@@ -100,10 +103,6 @@ const ROUTE_STYLE_BUNDLES = {
         "/static/styles/license.css",
     ],
 };
-
-function normalizePath(path) {
-    return String(path).split("?")[0].split("#")[0];
-}
 
 const routerState = (globalThis[Symbol.for("cognis.appRouterState")] ??= {
     allRoutes: null,
@@ -274,13 +273,6 @@ installComponentPageBroker({
         ) ?? null,
 });
 
-function findMatchingRoute(routes, path) {
-    const pathWithoutQueryOrFragment = normalizePath(path);
-    return routes.find((route) =>
-        route.pattern.test(pathWithoutQueryOrFragment),
-    );
-}
-
 async function loadAllRoutes() {
     if (routerState.allRoutes) return routerState.allRoutes;
     if (isOffline()) return [...STATIC_ROUTES, ...(await loadSpaRoutes())];
@@ -418,7 +410,7 @@ async function loadRouteContent(
             navigationSequence !== routerState.navigationSequence
         )
             return false;
-        console.error("[router] route load error for", path, error);
+        void log("error", "[router] route load error for", path, error);
         finishPageLoading();
         if (isOffline()) return false;
         await openRuntimeErrorPopup({
@@ -550,7 +542,7 @@ async function loadRouteContent(
             recordRouteMount(path, performance.now() - routeMountStartedAt);
         } catch (error) {
             if (!signal.aborted) {
-                console.error("[router] mount() error for", path, error);
+                void log("error", "[router] mount() error for", path, error);
                 finishPageLoading();
                 observer?.disconnect();
                 if (routerState.commitPage === commit)
@@ -570,7 +562,7 @@ async function loadRouteContent(
         if (signal.aborted) {
             return false;
         }
-        console.error("[router] route load error for", path, error);
+        void log("error", "[router] route load error for", path, error);
         finishPageLoading();
         if (isOffline()) return false;
         await openRuntimeErrorPopup({
@@ -847,14 +839,6 @@ export function initRouter(root) {
     });
 }
 
-function internalNavigationPath(href) {
-    if (!href || href.startsWith("#")) return null;
-    return (
-        normalizeSameOriginRoutePath(href, { baseUrl: window.location.href }) ||
-        null
-    );
-}
-
 function installOfflineNavigation() {
     let pending = false;
     let updateRequested = false;
@@ -932,11 +916,12 @@ function installOfflineNavigation() {
         "cognis:offline-policy-changed",
     ])
         window.addEventListener(type, () => {
-            void transition().catch((error) =>
-                console.error("[offline] page transition failed", {
-                    operation: "recoverActivePage",
-                    errorName: error?.name,
-                }),
+            void transition().catch(
+                (error) =>
+                    void log("error", "[offline] page transition failed", {
+                        operation: "recoverActivePage",
+                        errorName: error?.name,
+                    }),
             );
         });
     if (typeof MutationObserver !== "undefined")

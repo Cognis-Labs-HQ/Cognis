@@ -188,6 +188,7 @@ test("language shortcut commits after two seconds, coalesces clicks and releases
     const client = loadTestModule(
         new URL("../language-toggle.js", import.meta.url),
         {
+            "./diagnostics.js": createDiagnosticFixture(),
             "./ui-language-catalog.js": {
                 loadUiLanguageCatalog: async () =>
                     ["en", "de", "ja"].map((iso_code) => ({

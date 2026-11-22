@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../../tooling/reuse/diagnostic-fixture.ts";
 import { registerFloatingMenus } from "../../../ui/reuse/floating-menu-queue.js";
 import { installPageReadiness } from "../../../ui/reuse/page-readiness.js";
 import { installTutorials } from "../../../ui/reuse/tutorials/index.js";
@@ -43,6 +44,7 @@ function fixture() {
     const auth = loadTestModule(
         new URL("../ui/session-flow-hooks.js", import.meta.url),
         {
+            "/static/reuse/diagnostics.js": createDiagnosticFixture(),
             "./external-profile-sync.js": {},
             "/static/reuse/flow-registry.js": {},
             "/static/gateways/auth/reuse/password-confirmation.js": {},

@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../../tooling/reuse/diagnostic-fixture.ts";
 import { guides } from "../../app/modules/guides.js";
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -146,6 +147,7 @@ async function fixture(context, { failTranslations = false, settings } = {}) {
     const page = await importTestModule(
         new URL("../../app/modules/index.js", import.meta.url),
         {
+            "../../reuse/diagnostics.js": createDiagnosticFixture(),
             "./guides.js": { guides },
             "./catalog.js": catalog,
             "./filters.js": filters,

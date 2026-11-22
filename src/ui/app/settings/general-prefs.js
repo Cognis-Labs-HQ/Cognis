@@ -1,3 +1,4 @@
+import { log } from "../../reuse/diagnostics.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { uiCtx } from "../../reuse/ui-ctx.js";
 import { isOffline } from "../../reuse/offline-state.js";
@@ -275,7 +276,7 @@ export function initGeneralPrefs(
         try {
             allowed = await isDomainAllowed(address);
         } catch (error) {
-            console.error(i18n.t("ui.app.settings.emails_add_failed"), {
+            void log("error", i18n.t("ui.app.settings.emails_add_failed"), {
                 operation: "loadEmailDomainPolicy",
                 errorName: error.name,
             });

@@ -1,4 +1,6 @@
 /** Route styles are staged without affecting the visible page, then exchanged at commit. */
+
+import { log } from "./diagnostics.js";
 const state = (globalThis[Symbol.for("cognis.pageStyles")] ??= {
     entries: new Map(),
     route: new Set(),
@@ -54,10 +56,14 @@ function acquire(href) {
               link.addEventListener(
                   "error",
                   (error) => {
-                      console.error("[page-styles] failed to load stylesheet", {
-                          href,
-                          error,
-                      });
+                      void log(
+                          "error",
+                          "[page-styles] failed to load stylesheet",
+                          {
+                              href,
+                              error,
+                          },
+                      );
                       reject(new Error("page_stylesheet_unavailable"));
                   },
                   { once: true },

@@ -1,3 +1,4 @@
+import { log } from "/static/reuse/diagnostics.js";
 import { registerEnrolledLibrarySnapshots } from "./reuse/library-offline-snapshot.js";
 import { readStudySnapshot } from "./offline-content.js";
 import { deliverOrQueue } from "/static/reuse/offline-delivery.js";
@@ -132,7 +133,7 @@ async function executeFetchSearchableDictionaryProviders(request, language) {
         return (await response.json()).data;
     } catch (error) {
         if (error?.name !== "TimeoutError") throw error;
-        console.error("[study] dictionary discovery timed out", {
+        void log("error", "[study] dictionary discovery timed out", {
             operation: "loadDictionaryProviders",
             errorName: error.name,
         });

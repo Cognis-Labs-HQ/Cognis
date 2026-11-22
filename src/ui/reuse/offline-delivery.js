@@ -9,6 +9,8 @@
  * @param {(payload: object) => Promise<unknown>} send Owning component transport.
  * @returns {Promise<unknown>} Server result or explicit queued result.
  */
+
+import { log } from "./diagnostics.js";
 import { captureAccountGuard } from "./offline-identity.js";
 import { isOffline, offlineEnabled } from "./offline-state.js";
 
@@ -20,7 +22,7 @@ export async function recordQueuedActivity(ctx, activity) {
     try {
         await ctx.runFlow("activity:record", activity);
     } catch (error) {
-        console.error("[offline] queued activity recording failed", {
+        void log("error", "[offline] queued activity recording failed", {
             operation: "recordQueuedActivity",
             errorName: error?.name,
         });

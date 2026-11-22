@@ -12,6 +12,8 @@
  *
  * @module notify-internal/navbar-plugin
  */
+
+import { log } from "/static/reuse/diagnostics.js";
 import { transientSurfaces } from "/static/reuse/transient-surfaces.js";
 import { createI18n } from "/static/reuse/i18n.js";
 import { apiFetch } from "/static/reuse/api-client.js";
@@ -39,7 +41,8 @@ function waitForNotificationStyles(link) {
         link.addEventListener(
             "error",
             (error) => {
-                console.error(
+                void log(
+                    "error",
                     "[notify-internal] notification styles failed to load:",
                     error,
                 );
@@ -231,7 +234,8 @@ async function decryptRoomMessage(roomId) {
         );
         return notificationTextDecoder.decode(decrypted).trim() || null;
     } catch {
-        console.warn(
+        void log(
+            "warn",
             "[notify-internal] Failed to decrypt latest room message.",
         );
         return null;
@@ -806,7 +810,11 @@ async function markArrivalRead(notif) {
         // Non-fatal: arrival toast was clicked but read-marking failed.
         // The next inbox poll will still reflect server state when the user
         // opens the panel; do not interrupt navigation/openPanel for this.
-        console.warn("[notify-internal] Failed to mark arrival as read:", err);
+        void log(
+            "warn",
+            "[notify-internal] Failed to mark arrival as read:",
+            err,
+        );
     }
 }
 
@@ -934,6 +942,6 @@ window.addEventListener("cognis:notification-resolved", (event) => {
     } catch (err) {
         // Initialization failed — navbar plugin degrades gracefully without the
         // notification bell.
-        console.error("[notify-internal] navbar plugin init failed:", err);
+        void log("error", "[notify-internal] navbar plugin init failed:", err);
     }
 })();

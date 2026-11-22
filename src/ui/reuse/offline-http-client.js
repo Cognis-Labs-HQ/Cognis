@@ -6,6 +6,8 @@
  * @param {object} options Owning component's transport, request declarations and projections.
  * @returns {((path: string, options?: object) => Promise<Response>) & {hasCachedRead: (path: string) => boolean}} Scoped request executor and snapshot readiness.
  */
+
+import { log } from "./diagnostics.js";
 import { captureAccountGuard } from "./offline-identity.js";
 import { createOfflineReadCache } from "./offline-read-cache.js";
 import { deliverOrQueue, recordQueuedActivity } from "./offline-delivery.js";
@@ -63,12 +65,16 @@ export function registerOfflineHttpClient(
             try {
                 payload = await response.json();
             } catch (error) {
-                console.error("[offline] delivery response could not be read", {
-                    component: owner,
-                    operation: "readDeliveryResponse",
-                    status: response.status,
-                    errorName: error.name,
-                });
+                void log(
+                    "error",
+                    "[offline] delivery response could not be read",
+                    {
+                        component: owner,
+                        operation: "readDeliveryResponse",
+                        status: response.status,
+                        errorName: error.name,
+                    },
+                );
                 payload = { error: { code: "delivery_failed" } };
             }
             throw Object.assign(

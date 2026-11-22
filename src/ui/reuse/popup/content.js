@@ -2,6 +2,8 @@
  * Decorative action icons retain their caller-supplied labels when unavailable.
  * @returns {void}
  */
+
+import { log } from "../diagnostics.js";
 export function bindPopupActionIcons(overlay) {
     for (const image of overlay.querySelectorAll(
         ".popup-header-action-icon img",
@@ -13,7 +15,7 @@ export function bindPopupActionIcons(overlay) {
                 if (!button) return;
                 button.textContent = button.getAttribute("aria-label");
                 button.classList.add("popup-header-action--text");
-                console.info("[popup] action icon unavailable", {
+                void log("info", "[popup] action icon unavailable", {
                     operation: "renderActionIcon",
                 });
             },

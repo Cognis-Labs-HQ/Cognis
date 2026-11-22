@@ -1,3 +1,4 @@
+import { log } from "/static/reuse/diagnostics.js";
 import { guides } from "./guides.js";
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
@@ -417,7 +418,7 @@ export async function mount(root, { signal } = {}) {
         try {
             overview = await fetchShareOverview();
         } catch (error) {
-            console.error("[share] failed to load share overview", error);
+            void log("error", "[share] failed to load share overview", error);
             showToast(i18n.t("share.shares.load_failed"), {
                 variant: "error",
             });

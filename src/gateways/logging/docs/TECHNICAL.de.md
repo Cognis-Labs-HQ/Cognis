@@ -4,6 +4,8 @@
 
 ## Schnittstellen
 
+`logging:recentEntries` liefert Kopien von höchstens 30 bereinigten Diagnoseeinträgen mit `timestamp`, `level` und `message`. Fehlerberichte nutzen diese öffentliche Fähigkeit, statt Konsolenmethoden in Core umzuleiten. Der lokale Verlauf enthält auch anonyme Diagnosen; Serverübertragung und Browserausgabe folgen weiterhin den getrennten Gateway-Richtlinien.
+
 ### Architektur
 
 ```ts

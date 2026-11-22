@@ -1,3 +1,4 @@
+import { log } from "/static/reuse/diagnostics.js";
 import { isOffline } from "/static/reuse/offline-state.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
@@ -197,11 +198,13 @@ uiCtx.capabilities.contribute("ui:navbarAvatarProvider", async () => {
 
 registerSearchIndexing();
 mountAvailabilityControl().catch((error) => {
-    console.error("[social-profile]:availability-menu-mount-failed", { error });
+    void log("error", "[social-profile]:availability-menu-mount-failed", {
+        error,
+    });
 });
 window.addEventListener("cognis:navbar-refresh", () => {
     mountAvailabilityControl().catch((error) => {
-        console.error("[social-profile]:availability-menu-refresh-failed", {
+        void log("error", "[social-profile]:availability-menu-refresh-failed", {
             error,
         });
     });

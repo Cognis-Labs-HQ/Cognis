@@ -1,3 +1,4 @@
+import { writeTerminalReport } from "../reuse/terminal-output.ts";
 import { createHash } from "node:crypto";
 import { COMMON_STYLESHEETS } from "../../ui/reuse/resources.js";
 import { versionOfflineWorker } from "./ui-build/offline-version.mjs";
@@ -322,6 +323,7 @@ await Promise.all(
             ]);
         }),
 );
-console.log(
+writeTerminalReport(
+    "stdout",
     `Built ${Object.keys(manifest).length} production UI asset mappings.`,
 );

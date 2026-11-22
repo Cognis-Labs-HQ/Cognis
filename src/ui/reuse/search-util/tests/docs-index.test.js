@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../../../tooling/reuse/diagnostic-fixture.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
@@ -24,6 +25,7 @@ test("documentation titles arrive before content, content concurrency is bounded
     const { collectGlobalDocsSearchGroups } = loadTestModule(
         new URL("../docs-index.js", import.meta.url),
         {
+            "../diagnostics.js": createDiagnosticFixture(),
             "../docs-client.js": {
                 loadDocsBundleMarkdown,
                 loadDocsIndex,

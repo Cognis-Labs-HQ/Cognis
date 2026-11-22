@@ -1,3 +1,4 @@
+import { log } from "./diagnostics.js";
 import {
     isOffline,
     offlineEnabled,
@@ -37,7 +38,7 @@ export function bindOfflineSnapshotRefresh(ctx, { id, refresh, events = [] }) {
             if (isOffline() || ctx.signal.aborted) prepared = undefined;
         } catch (error) {
             if (prepared === actor) prepared = undefined;
-            console.info("[offline] snapshot not prepared", {
+            void log("info", "[offline] snapshot not prepared", {
                 operation: id,
                 errorName: error?.name,
             });

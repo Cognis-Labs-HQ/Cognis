@@ -1,10 +1,11 @@
+import { log } from "../../reuse/diagnostics.js";
 import { offlinePolicy } from "../../reuse/offline-policy.js";
 import { offlineWorkerRequest } from "../../reuse/offline-state.js";
 import { setOffline } from "../../reuse/offline-state.js";
 import { initRouter, navigateTo } from "../../reuse/app-router.js";
 import { loadWithSpaImportGuard } from "../../reuse/page-entry.js";
 
-console.info("offline:restoreShell", {
+void log("info", "offline:restoreShell", {
     component: "ui",
     operation: "offlineBoot",
 });
@@ -31,7 +32,7 @@ if (!mounted && !root.children.length) {
     );
     await fallback.mount(root, { signal: controller.signal });
 }
-console.info("offline:shellReady", {
+void log("info", "offline:shellReady", {
     component: "ui",
     operation: "offlineBoot",
 });

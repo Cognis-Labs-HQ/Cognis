@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../../tooling/reuse/diagnostic-fixture.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
@@ -51,6 +52,7 @@ test("the ctx publisher shares a top-of-page stack, keeps priority and scopes re
     const { createTopBanners, renderTopBanner } = loadTestModule(
         new URL("../top-banners.js", import.meta.url),
         {
+            "./diagnostics.js": createDiagnosticFixture(),
             "./escape-html.js": { escapeHtml },
             "./page-styles.js": {
                 ensurePersistentStylesheet: async (path) => styles.add(path),

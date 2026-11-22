@@ -1,3 +1,4 @@
+import { captureTerminalOutput } from "./fixtures/output.ts";
 /**
  * Tests CLI output formatting helpers.
  *
@@ -26,20 +27,6 @@ import { renderApiErrorPayload } from "../formatters.ts";
 import { loadModuleCliPlugins } from "../plugins.ts";
 import { registry } from "../registry.ts";
 import { ApiRequestError } from "../http.ts";
-
-function captureConsoleLog(run: () => void): string {
-    const originalLog = console.log;
-    const lines: string[] = [];
-    try {
-        console.log = (...args: unknown[]) => {
-            lines.push(args.join(" "));
-        };
-        run();
-    } finally {
-        console.log = originalLog;
-    }
-    return lines.join("\n");
-}
 
 test("component CLI plugins register broad operational coverage", async () => {
     await loadModuleCliPlugins();
@@ -357,7 +344,7 @@ test("notify:send accepts structured JSON payloads for direct execution", async 
 });
 
 test("global help includes component commands under the Components section", () => {
-    const output = captureConsoleLog(() => printGlobalHelp());
+    const output = captureTerminalOutput(() => printGlobalHelp());
 
     assert.match(output, /\n  Components:/);
     assert.match(
@@ -538,7 +525,7 @@ test("loadModuleCliPlugins discovers manifest-declared component CLI commands", 
             "Ok: Yes",
         );
 
-        const output = captureConsoleLog(() => printGlobalHelp());
+        const output = captureTerminalOutput(() => printGlobalHelp());
         assert.match(output, /\n  Demo Component:/);
         assert.match(output, /\n  Demo Gateway:/);
         assert.match(output, /\n  Demo Adapter:/);

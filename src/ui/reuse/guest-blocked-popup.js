@@ -22,6 +22,8 @@
  * @returns {Promise<void>}
  */
 
+import { log } from "./diagnostics.js";
+
 import { openPopup } from "./popup.js";
 import { createI18n } from "./i18n.js";
 import { escapeHtml } from "./escape-html.js";
@@ -168,7 +170,8 @@ export function installGuestNavigationGuard({ root = document, signal } = {}) {
             event.preventDefault();
             openGuestBlockedPopup({ allowBackNavigation: false }).catch(
                 (error) => {
-                    console.error(
+                    void log(
+                        "error",
                         "[guest-blocked-popup] Failed to open popup:",
                         error,
                     );

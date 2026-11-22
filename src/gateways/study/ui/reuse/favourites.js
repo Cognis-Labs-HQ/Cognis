@@ -1,3 +1,4 @@
+import { log } from "/static/reuse/diagnostics.js";
 import { favouriteClient } from "./favourites-client.js";
 /**
  * Shared Study favourites and browse sorting for Library cards and flashcard decks.
@@ -75,7 +76,8 @@ export async function loadFavourites({ signal } = {}) {
                         if (signal?.aborted || error?.name === "AbortError")
                             return;
                         if (saved) {
-                            console.error(
+                            void log(
+                                "error",
                                 "[study] saved favourite view refresh failed",
                                 {
                                     operation: "refreshFavourite",

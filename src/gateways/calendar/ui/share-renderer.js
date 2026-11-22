@@ -1,3 +1,4 @@
+import { log } from "/static/reuse/diagnostics.js";
 import {
     renderCalendarViewSwitcher,
     mountCalendarViewControls,
@@ -16,8 +17,8 @@ import {
     toDateTimeLocalValue,
 } from "./calendar-ui-helpers.js";
 
-const log = (operation, error) =>
-    console.error("Shared calendar request failed.", {
+const reportFailure = (operation, error) =>
+    void log("error", "Shared calendar request failed.", {
         component: "calendar",
         operation,
         errorName: error instanceof Error ? error.name : "UnknownError",
@@ -168,7 +169,7 @@ async function openEventEditor({
         });
     } catch (error) {
         if (signal?.aborted) return;
-        log("mutateEvent", error);
+        reportFailure("mutateEvent", error);
     }
     if (signal?.aborted) return;
     const successKey =
@@ -234,7 +235,7 @@ export async function mount(
             renderCalendar();
         } catch (error) {
             if (signal.aborted) return;
-            log("reloadEvents", error);
+            reportFailure("reloadEvents", error);
             showToast(i18n.t("gateway.calendar.load_failed"), {
                 variant: "error",
             });

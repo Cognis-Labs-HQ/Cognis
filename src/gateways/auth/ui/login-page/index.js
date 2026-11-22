@@ -1,3 +1,4 @@
+import { log } from "/static/reuse/diagnostics.js";
 import { createLoginSubmitHandler } from "./submit.js";
 import { renderInPageCallout } from "/static/reuse/in-page-callout.js";
 import {
@@ -781,7 +782,7 @@ export async function mount(root, { signal } = {}) {
                                 runTypingShowcase(typingSamples);
                             })
                             .catch((error) => {
-                                console.error(error);
+                                void log("error", error);
                                 loadLoginMethods();
                                 runTypingShowcase(typingSamples);
                             });

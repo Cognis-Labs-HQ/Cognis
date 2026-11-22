@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../../../tooling/reuse/diagnostic-fixture.ts";
 import { guides } from "../../../app/users/guides.js";
 import assert from "node:assert/strict";
 import { importTestModule } from "../../../../tooling/reuse/test-module.ts";
@@ -57,6 +58,7 @@ export async function mountUsers(options = {}) {
     const { mount } = await importTestModule(
         new URL("../../../app/users/index.js", import.meta.url),
         {
+            "../../reuse/diagnostics.js": createDiagnosticFixture(),
             "./guides.js": { guides },
             "../../reuse/page-styles.js": {
                 ensurePageStylesheet: async () => {},

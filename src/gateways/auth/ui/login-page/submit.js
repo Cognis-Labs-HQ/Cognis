@@ -1,3 +1,4 @@
+import { log } from "/static/reuse/diagnostics.js";
 import { beginPageLoading } from "/static/reuse/page-entry.js";
 
 /** Creates one guarded submit handler for native login and TFA verification. */
@@ -105,7 +106,7 @@ export function createLoginSubmitHandler({
                 : body?.error?.message || i18n.t("ui.app.login.error.generic");
             showToast(errorMsg, { variant: "error" });
         } catch (error) {
-            console.error("[auth] login submission failed", {
+            void log("error", "[auth] login submission failed", {
                 component: "auth",
                 operation: "submitLogin",
                 errorName: error?.name,

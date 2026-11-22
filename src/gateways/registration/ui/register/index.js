@@ -1,3 +1,4 @@
+import { log } from "/static/reuse/diagnostics.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import {
     loadAuthFooterPlugins,
@@ -140,7 +141,8 @@ export async function mount(root, { signal } = {}) {
                     i18n: await extendI18n(i18n, descriptor.stringsBaseUrl),
                 });
             } catch (error) {
-                console.error(
+                void log(
+                    "error",
                     JSON.stringify({
                         level: "error",
                         component: "register-page",
@@ -308,7 +310,8 @@ export async function mount(root, { signal } = {}) {
                 });
                 if (field) registerFormFields.push(field);
             } catch (error) {
-                console.error(
+                void log(
+                    "error",
                     JSON.stringify({
                         level: "error",
                         component: "register-page",
@@ -675,7 +678,8 @@ export async function mount(root, { signal } = {}) {
                                         i18n.t("ui.app.register.error.generic"),
                                         { variant: "error" },
                                     );
-                                    console.error(
+                                    void log(
+                                        "error",
                                         JSON.stringify({
                                             level: "error",
                                             component: "auth",
@@ -770,7 +774,8 @@ export async function mount(root, { signal } = {}) {
                                         const body = await response
                                             .json()
                                             .catch((error) => {
-                                                console.warn(
+                                                void log(
+                                                    "warn",
                                                     JSON.stringify({
                                                         level: "warn",
                                                         component:
@@ -866,7 +871,8 @@ export async function mount(root, { signal } = {}) {
                                     window.location.href = "/login";
                                 }, 1200);
                             } catch (error) {
-                                console.error(
+                                void log(
+                                    "error",
                                     JSON.stringify({
                                         level: "error",
                                         component: "register-page",

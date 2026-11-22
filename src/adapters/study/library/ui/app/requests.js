@@ -1,3 +1,4 @@
+import { log } from "/static/reuse/diagnostics.js";
 import { isOffline } from "/static/reuse/offline-state.js";
 import { renderRequestPreview } from "./request-preview.js";
 import { openPopup } from "/static/reuse/popup.js";
@@ -54,7 +55,7 @@ export async function loadRequestProfiles(requests) {
                         response.ok ? (await response.json()).data : null,
                     ];
                 } catch (error) {
-                    console.error("Request profile retrieval failed.", {
+                    void log("error", "Request profile retrieval failed.", {
                         component: "study-library",
                         operation: "loadRequestProfiles",
                         errorName: error?.name || "Error",

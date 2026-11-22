@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import {
+const {
     boundedKeyringActivity,
     MAX_ACTIVITY_BYTES,
     MAX_ACTIVITY_EVENTS,
     createActivityPersistence,
-} from "../ui/activity.js";
+} = await import("../ui/activity.js");
 import { values } from "./ui-environment.js";
 import { deriveKey, encodeBytes } from "../ui/crypto.js";
 

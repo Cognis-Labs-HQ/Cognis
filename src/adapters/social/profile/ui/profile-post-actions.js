@@ -1,3 +1,4 @@
+import { log } from "/static/reuse/diagnostics.js";
 import { profileFetch as apiFetch } from "./offline-client.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
@@ -61,7 +62,8 @@ export function createProfilePostActions({
                 });
             }
         } catch (error) {
-            console.error(
+            void log(
+                "error",
                 delivered
                     ? "[profile] post view refresh failed"
                     : "[profile] post delivery failed",

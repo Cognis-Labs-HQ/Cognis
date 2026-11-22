@@ -1,3 +1,4 @@
+import { writeTerminalReport } from "../reuse/terminal-output.ts";
 import assert from "node:assert/strict";
 import { access, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
@@ -93,4 +94,7 @@ for (const emittedPath of (await walk(path.join(serverRoot, "src"))).filter(
         `${path.relative(serverRoot, emittedPath)} retains a TypeScript runtime specifier`,
     );
 }
-console.log("Validated compiled server entrypoints and dynamic imports.");
+writeTerminalReport(
+    "stdout",
+    "Validated compiled server entrypoints and dynamic imports.",
+);

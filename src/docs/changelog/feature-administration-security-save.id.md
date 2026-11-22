@@ -18,6 +18,10 @@ Pemulihan koneksi membatalkan cache terjemahan inti dan komponen sebelum halaman
 
 Logging terpusat kini mengendalikan pengiriman ke server dan keluaran konsol peramban untuk diagnostik terjemahan, TFA, dan worker luring. Otorisasi gateway dan tingkat keparahan menentukan keluaran peramban; metadata tidak menyertakan kredensial atau pesan galat mentah.
 
+## Batas Logging
+
+Pemeriksaan sumber mewajibkan logging melalui gateway dalam kode aplikasi dan modul eksternal, termasuk skrip peramban dan penangan peristiwa. Sumber diagnostik menggunakan gateway secara langsung, sedangkan laporan perintah dan build tetap menggunakan keluaran terminal.
+
 ## Komit
 
 - [996af37783915d3246df5c1fc1044b01c4f46fa1](https://github.com/Cognis-Labs-HQ/Cognis/commit/996af37783915d3246df5c1fc1044b01c4f46fa1)

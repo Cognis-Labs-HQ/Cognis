@@ -1,3 +1,4 @@
+import { log } from "/static/reuse/diagnostics.js";
 import { findOverlappingEvents } from "./popup-manager-event-utils.js";
 
 export function createSubmitEvent({
@@ -79,7 +80,7 @@ export function createSubmitEvent({
         try {
             await reloadState();
         } catch (error) {
-            console.error("[calendar] saved event view refresh failed", {
+            void log("error", "[calendar] saved event view refresh failed", {
                 operation: "refreshAfterCreate",
                 errorName: error?.name,
             });

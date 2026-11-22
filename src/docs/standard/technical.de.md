@@ -12,6 +12,12 @@ Führen Sie `npm run check:docs` aus. PR-CI vergleicht neue Änderungsdateien zu
 
 ## Verhalten
 
+### Grenze der Protokollierung
+
+JavaScript und TypeScript der Anwendung sowie eingebettete Browserskripte und Ereignishandler veröffentlichen Diagnoseereignisse über die injizierte Log-Funktion oder den öffentlichen Browser-Diagnoseport. Nativer Konsolenzugriff ist auf die Protokollausgabeadapter und die Initialisierung des Logging-Gateways beschränkt. Andere Handler in derselben Datei erhalten keine Ausnahme. Befehls- und Buildberichte verwenden ausdrückliche Terminalausgaben. Die Prüfung nativer Konsolenzugriffe umfasst auch Werkzeugquellen; Test-Fixtures gehören nicht zum Produktionscode.
+
+Mit `node --import tsx --test src/tooling/tests/logging/*.test.js` werden das Repository und die Erkennungsfälle geprüft. Die Prüfung umfasst installierte externe Module, berücksichtigt `COGNIS_EXTERNAL_MODULES_ROOT` und meldet Datei und Zeile. Aliase, berechnete Zugriffe und `node:console`-Importe sind ohne Bestandsschutz verboten.
+
 Ein neues Thema öffnet Info. Info, Anwendung und Technik gehören zu einer Komponentenversion. Der Server liest alle Quelldateien vor der atomaren Veröffentlichung; fehlende Ansichten oder unvollständige Übersetzungen verhindern sie. Ansichtswechsel behalten die Version; historische Pakete bleiben nach dem Entfernen der Komponente lesbar.
 
 Inhalte, Navigationstitel und Suche bevorzugen die aktive UI-Sprache, danach konfigurierte Ausweichsprachen und Englisch. Dies gilt einheitlich für Info, Nutzung und Technik sowie archivierte Versionen.

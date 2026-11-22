@@ -66,5 +66,6 @@
     "./language-redraw.js": ["createLanguageRedraw"],
     "../../reuse/ui-language-state.js": ["uiLanguageMembershipChanged"],
     "../../reuse/app-router.js": ["navigateTo"],
-    "./guides.js": ["guides"]
+    "./guides.js": ["guides"],
+    "../../reuse/diagnostics.js": ["log"]
 }

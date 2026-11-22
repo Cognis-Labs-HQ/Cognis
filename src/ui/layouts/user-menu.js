@@ -10,6 +10,8 @@
  * bindUserMenuIntegrity(document.querySelector("#profile-dropdown"));
  */
 
+import { log } from "../reuse/diagnostics.js";
+
 import { uiCtx } from "../reuse/ui-ctx.js";
 import { transientSurfaces } from "../reuse/transient-surfaces.js";
 
@@ -30,9 +32,13 @@ export function reconcileUserMenuEntries(dropdown) {
             seenHrefs.add(href);
             continue;
         }
-        console.warn("[dashboard-layout]:duplicate-user-menu-entry-removed", {
-            href,
-        });
+        void log(
+            "warn",
+            "[dashboard-layout]:duplicate-user-menu-entry-removed",
+            {
+                href,
+            },
+        );
         item.remove();
         removed += 1;
     }

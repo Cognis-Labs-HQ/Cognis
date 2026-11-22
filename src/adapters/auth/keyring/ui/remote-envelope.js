@@ -1,4 +1,6 @@
 /** Load authoritative vault metadata once per current actor while a read is pending. */
+
+import { log } from "/static/reuse/diagnostics.js";
 export function createEnvelopeLoader({
     apiFetch,
     identityGuard,
@@ -55,7 +57,7 @@ export function createEnvelopeLoader({
         } catch (error) {
             if (error?.name === "AbortError") throw error;
             identityGuard.assertCurrent(actor);
-            console.error("[keyring] metadata read failed", {
+            void log("error", "[keyring] metadata read failed", {
                 component: "auth-keyring",
                 operation: "loadEnvelope",
                 errorName: error?.name,

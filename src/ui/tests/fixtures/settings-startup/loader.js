@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../../../tooling/reuse/diagnostic-fixture.ts";
 import { guides } from "../../../app/settings/guides.js";
 import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import { captureAccountGuard } from "../../../reuse/offline-identity.js";
@@ -63,6 +64,7 @@ export async function loadSettingsMount({
         },
     );
     const overrides = {
+        log: createDiagnosticFixture().log,
         guides,
         navigateTo: async (path, options) => {
             assert.equal(options.replace, true);

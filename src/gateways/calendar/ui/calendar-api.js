@@ -1,3 +1,4 @@
+import { log } from "/static/reuse/diagnostics.js";
 import { calendarFetch as apiFetch } from "./offline-client.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 
@@ -25,7 +26,7 @@ export async function refreshUserAvailability() {
             .get("ui:availabilityRenderer")
             ?.refresh?.(document);
     } catch (error) {
-        console.error("[calendar] availability refresh failed", {
+        void log("error", "[calendar] availability refresh failed", {
             operation: "refreshAvailability",
             errorName: error?.name,
         });

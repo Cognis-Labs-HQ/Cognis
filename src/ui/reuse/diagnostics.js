@@ -8,6 +8,7 @@
  * @param {string} level Event severity.
  * @param {string} message Event identifier or diagnostic message.
  * @param {object} [meta] Safe structured context.
+ * @param {...unknown} details Additional diagnostic context, normalized by the gateway.
  * @returns {Promise<boolean>} Whether the consumer accepted the event.
  */
 const stateKey = Symbol.for("cognis.browserDiagnostics");
@@ -19,8 +20,9 @@ const state =
     });
 const MAX_PENDING_EVENTS = 128;
 
-export function log(level, message, meta = {}) {
+export function log(level, message, meta = {}, ...details) {
     const entry = { level, message, meta };
+    if (details.length) entry.details = details;
     if (state.handler) return state.handler(entry);
     state.pending.push(entry);
     if (state.pending.length > MAX_PENDING_EVENTS) state.pending.shift();

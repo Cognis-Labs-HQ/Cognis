@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../../tooling/reuse/diagnostic-fixture.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
@@ -51,6 +52,7 @@ function element() {
 const { mountOfflineStatus } = loadTestModule(
     new URL("../offline-status.js", import.meta.url),
     {
+        "./diagnostics.js": createDiagnosticFixture(),
         "./ui-ctx.js": {
             uiCtx: {
                 ...uiCtx,

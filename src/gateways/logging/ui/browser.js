@@ -1,29 +1,25 @@
 import { captureConsole } from "./console.js";
-import { safeMetadata } from "./metadata.js";
+import { normalizeDiagnostic } from "./entry.js";
 import { submitBrowserLog } from "./client.js";
 import { subscribeDiagnostics } from "/static/reuse/diagnostics.js";
 
-const levels = new Set(["debug", "info", "warn", "error"]);
-
 export function mountProvider(ctx) {
     let consoleOutput;
+    const recentEntries = [];
     ctx.registerFlow("logging:emit", ["validate", "deliver", "publish"]);
     ctx.extendFlow(
         "logging:emit",
         "validate",
         { id: "logging:validate" },
         ({ input, data }) => {
-            if (
-                !levels.has(input.level) ||
-                typeof input.message !== "string" ||
-                !input.message.trim()
-            )
-                return;
-            data.entry = {
-                level: input.level,
-                message: input.message.slice(0, 2000),
-                meta: safeMetadata(input.meta) ?? {},
-            };
+            data.entry = normalizeDiagnostic(input);
+            if (!data.entry) return;
+            recentEntries.push({
+                timestamp: new Date().toISOString(),
+                level: data.entry.level,
+                message: `${data.entry.message} ${JSON.stringify(data.entry.meta)}`,
+            });
+            if (recentEntries.length > 30) recentEntries.shift();
         },
     );
     ctx.extendFlow(
@@ -86,8 +82,11 @@ export function mountProvider(ctx) {
     };
     ctx.signal?.addEventListener("abort", dispose, { once: true });
     ctx.capabilities.contribute("logging:browser", log);
+    ctx.capabilities.contribute("logging:recentEntries", () =>
+        recentEntries.map((entry) => ({ ...entry })),
+    );
     release = subscribeDiagnostics(log);
-    consoleOutput = captureConsole(console);
+    consoleOutput = captureConsole();
     worker?.addEventListener?.("message", receiveWorkerLog);
     worker?.controller?.postMessage({ type: "COGNIS_FLUSH_LOGS" });
     return dispose;

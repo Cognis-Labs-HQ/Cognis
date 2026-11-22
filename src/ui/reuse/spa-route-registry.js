@@ -1,3 +1,4 @@
+import { log } from "./diagnostics.js";
 import { offlineRouteAvailable } from "./offline-navigation.js";
 import { uiCtx } from "./ui-ctx.js";
 /**
@@ -85,7 +86,8 @@ function normalizeRoute(rawRoute) {
     } catch (error) {
         const errorMessage =
             error instanceof Error ? error.message : String(error);
-        console.warn(
+        void log(
+            "warn",
             "[spa-route-registry] Ignoring invalid SPA route descriptor.",
             {
                 routeId: rawRoute?.id,

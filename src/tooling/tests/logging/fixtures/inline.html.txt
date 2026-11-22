@@ -1,0 +1,3 @@
+<!-- <script>console.warn("inert")</script> -->
+<script>console.error("script_failed")</script>
+<button onclick="window[&quot;console&quot;].warn('handler_failed')">Action</button>

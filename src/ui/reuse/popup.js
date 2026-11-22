@@ -1,3 +1,4 @@
+import { log } from "./diagnostics.js";
 import { watchComposerPresentation } from "./page-composer/presentation.js";
 /**
  * Reusable popup / modal dialog.
@@ -141,7 +142,8 @@ async function getPopupStylesheetCache() {
     try {
         return await globalThis.caches.open(POPUP_STYLESHEET_CACHE);
     } catch (error) {
-        console.error(
+        void log(
+            "error",
             `[popup] Failed to open stylesheet cache "${POPUP_STYLESHEET_CACHE}":`,
             error,
         );
@@ -168,7 +170,8 @@ async function refreshPopupStylesheet() {
             installedStylesheet.textContent = await response.text();
         }
     } catch (error) {
-        console.error(
+        void log(
+            "error",
             `[popup] Failed to refresh stylesheet cache for "${POPUP_STYLESHEET_URL}":`,
             error,
         );
@@ -781,8 +784,9 @@ export async function openPopup({
             if (overlays[overlays.length - 1] !== overlay) return;
             if (event.key === "Escape") {
                 if (mandatory) return;
-                dismiss(null).catch((error) =>
-                    console.error("[popup] dismiss failed:", error),
+                dismiss(null).catch(
+                    (error) =>
+                        void log("error", "[popup] dismiss failed:", error),
                 );
                 return;
             }
@@ -839,8 +843,13 @@ export async function openPopup({
         }
         if (Number.isFinite(timeoutMs) && timeoutMs > 0) {
             timeoutHandle = setTimeout(() => {
-                dismiss(timeoutActionId).catch((error) =>
-                    console.error("[popup] timeout dismiss failed:", error),
+                dismiss(timeoutActionId).catch(
+                    (error) =>
+                        void log(
+                            "error",
+                            "[popup] timeout dismiss failed:",
+                            error,
+                        ),
                 );
             }, timeoutMs);
 

@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { writeTerminalReport } from "../reuse/terminal-output.ts";
 import { describeProgress, withCommandProgress } from "./reuse/progress.ts";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -135,7 +136,7 @@ async function main(): Promise<void> {
     };
 
     if (argv[0] === "--version") {
-        console.log(packageJson.default.version);
+        writeTerminalReport("stdout", packageJson.default.version);
         return;
     }
 
@@ -159,8 +160,11 @@ async function main(): Promise<void> {
 
     if (!registry.has(command)) {
         if (printCommandGroupHelp(command)) return;
-        console.error(`Unknown command: ${command}`);
-        console.error("Run `cognisctl --help` to see available commands.");
+        writeTerminalReport("stderr", `Unknown command: ${command}`);
+        writeTerminalReport(
+            "stderr",
+            "Run `cognisctl --help` to see available commands.",
+        );
         process.exit(1);
     }
 
@@ -199,7 +203,8 @@ const isDirectExecution =
 if (isDirectExecution) {
     main().catch((error) => {
         if (error instanceof ApiRequestError) {
-            console.error(
+            writeTerminalReport(
+                "stderr",
                 renderApiErrorPayload({
                     status: error.status,
                     statusText: error.statusText,
@@ -208,7 +213,10 @@ if (isDirectExecution) {
                 }),
             );
         } else {
-            console.error(error instanceof Error ? error.message : error);
+            writeTerminalReport(
+                "stderr",
+                error instanceof Error ? error.message : error,
+            );
         }
         process.exit(1);
     });

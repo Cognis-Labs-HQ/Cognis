@@ -1,6 +1,6 @@
 import { log } from "/static/reuse/diagnostics.js";
 /** Routes browser console calls through gateway policy without printing directly. */
-export function captureConsole(target) {
+export function captureConsole(target = console) {
     const originals = new Map();
     const wrappers = new Map();
     for (const method of ["debug", "info", "log", "warn", "error"]) {

@@ -1,3 +1,4 @@
+import { log } from "./diagnostics.js";
 import { offlinePolicy } from "./offline-policy.js";
 /**
  * Bounded, session-only snapshots for explicitly selected lightweight reads.
@@ -133,10 +134,14 @@ export function createOfflineReadCache({
                 checkedAt.set(key, Date.now());
                 void execute(key, load, canCache, true).catch((error) => {
                     if (signal?.aborted || error?.name === "AbortError") return;
-                    console.error("[offline] cached read revalidation failed", {
-                        operation: "revalidateRead",
-                        errorName: error.name,
-                    });
+                    void log(
+                        "error",
+                        "[offline] cached read revalidation failed",
+                        {
+                            operation: "revalidateRead",
+                            errorName: error.name,
+                        },
+                    );
                 });
             }
             return restore();
@@ -160,7 +165,7 @@ export function createOfflineReadCache({
                 loadGeneration !== generation
             )
                 throw error;
-            console.info("[offline] restoring lightweight read", {
+            void log("info", "[offline] restoring lightweight read", {
                 operation: "restoreRead",
             });
             if (!offlinePolicy.allows())

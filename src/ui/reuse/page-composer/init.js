@@ -1,3 +1,4 @@
+import { log } from "../diagnostics.js";
 import { watchComposerPresentation } from "./presentation.js";
 import { mountViewportLayout } from "./viewport-layout.js";
 /**
@@ -805,7 +806,8 @@ export function createPageComposer(
                     render();
                 })
                 .catch((error) => {
-                    console.warn(
+                    void log(
+                        "warn",
                         "[page-composer] failed to load saved layout preferences:",
                         error,
                     );

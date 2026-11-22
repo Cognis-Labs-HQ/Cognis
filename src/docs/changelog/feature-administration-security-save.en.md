@@ -18,6 +18,10 @@ Connection recovery invalidates core and component translation snapshots before 
 
 Application logging now controls server delivery and browser-console visibility for translation, TFA and offline-worker diagnostics. Gateway authorization and severity determine browser output; diagnostic metadata excludes credentials and raw error messages.
 
+## Logging Boundary
+
+Source checks enforce gateway logging in application and external-module code, including browser scripts and event handlers. Diagnostic producers use the gateway directly, while command and build reports retain terminal output.
+
 ## Commits
 
 - [996af37783915d3246df5c1fc1044b01c4f46fa1](https://github.com/Cognis-Labs-HQ/Cognis/commit/996af37783915d3246df5c1fc1044b01c4f46fa1)

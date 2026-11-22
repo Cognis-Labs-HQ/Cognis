@@ -2,6 +2,8 @@
  * Route-path helpers for same-origin URL normalization and current-route reads.
  *
  * Public exports:
+ *   findMatchingRoute(routes, path) — match route patterns without query data.
+ *   internalNavigationPath(href) — resolve an internal navigation link.
  *   getCurrentRoutePath() — returns the browser's current in-app route string
  *     including pathname, search, and hash.
  *   normalizeSameOriginRoutePath(routePath, options?) — normalizes a route/path
@@ -21,7 +23,7 @@
  * @returns {string}
  */
 
-const log = (...messageParts) => console.error("[route-path]", ...messageParts);
+import { log } from "./diagnostics.js";
 
 export function getCurrentRoutePath() {
     if (typeof window === "undefined" || !window.location) return "";
@@ -50,8 +52,34 @@ export function normalizeSameOriginRoutePath(
         return `${routeUrl.pathname}${routeUrl.search}${routeUrl.hash}`;
     } catch (error) {
         if (logFailures) {
-            log("Failed to normalize route path.", routePath, error);
+            void log("error", "route_path_normalization_failed", {
+                component: "core",
+                operation: "normalizeRoutePath",
+                errorName: error?.name,
+            });
         }
         return "";
     }
+}
+
+/** Match a declared route against a path without incidental query or fragment data.
+ * @param {object[]} routes Available route descriptors.
+ * @param {string} path Destination URL path.
+ * @returns {object | undefined} Matching descriptor.
+ */
+export function findMatchingRoute(routes, path) {
+    const cleanPath = String(path).split("?")[0].split("#")[0];
+    return routes.find((route) => route.pattern.test(cleanPath));
+}
+
+/** Resolve an internal navigation link using the shared same-origin policy.
+ * @param {string} href Link destination.
+ * @returns {string | null} Allowed in-app path.
+ */
+export function internalNavigationPath(href) {
+    if (!href || href.startsWith("#")) return null;
+    return (
+        normalizeSameOriginRoutePath(href, { baseUrl: window.location.href }) ||
+        null
+    );
 }

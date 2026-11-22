@@ -1,0 +1,30 @@
+{
+    "forbidden": [
+        "console.error(\"failed\")",
+        "console?.warn(\"failed\")",
+        "console[method](\"failed\")",
+        "console[\"warn\"](\"failed\")",
+        "const output = console.error.bind(console); output(\"failed\")",
+        "const { error: output } = console; output(\"failed\")",
+        "const native = console; native.error(\"failed\")",
+        "window.console.info(\"failed\")",
+        "globalThis?.[\"console\"]?.error(\"failed\")",
+        "self[\"console\"].log(\"failed\")",
+        "const { console: native } = globalThis; native.error(\"failed\")",
+        "import { error } from \"node:console\"; error(\"failed\")",
+        "const native = require(\"console\"); native.log(\"failed\")",
+        "const native = await import(\"node:console\"); native.log(\"failed\")",
+        "`${console.error(\"failed\")}`",
+        "`outer ${`inner ${console.warn(\"failed\")}`}`"
+    ],
+    "allowed": [
+        "// console.error(\"example\")\nlog(\"error\", \"failed\")",
+        "const label = \"console.error(ignored)\";",
+        "const pattern = /console\\.error/;",
+        "const example = `console.warn(\"example\")`;",
+        "const config = { console: { level: \"info\" } };",
+        "settings.console.level = \"warn\";",
+        "log(\"error\", \"failed\", { component: \"example\" });",
+        "ctx.capabilities.get(\"ui:log\")?.(\"warn\", \"failed\");"
+    ]
+}

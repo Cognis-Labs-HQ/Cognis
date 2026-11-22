@@ -1,3 +1,4 @@
+import { log } from "/static/reuse/diagnostics.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { isOffline } from "/static/reuse/offline-state.js";
@@ -43,10 +44,14 @@ export function mountProvider(ctx) {
                 try {
                     await request(emailRoot());
                 } catch (error) {
-                    console.error("[notify] email snapshot refresh failed", {
-                        operation: "refreshEmailSnapshot",
-                        errorName: error.name,
-                    });
+                    void log(
+                        "error",
+                        "[notify] email snapshot refresh failed",
+                        {
+                            operation: "refreshEmailSnapshot",
+                            errorName: error.name,
+                        },
+                    );
                 }
             }
             return response;

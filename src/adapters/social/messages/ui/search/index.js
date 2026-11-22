@@ -1,3 +1,4 @@
+import { log } from "/static/reuse/diagnostics.js";
 import { hexToBytes } from "/static/reuse/crypto-utils.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { registerSearchIndex } from "/static/reuse/search-util/popup.js";
@@ -31,7 +32,7 @@ async function decryptSearchMessage(roomKey, messageRecord) {
         return messagesSearchDecoder.decode(decrypted).trim();
     } catch (error) {
         if (error?.name !== "OperationError") {
-            console.warn("[messages-search]:decrypt-failed", {
+            void log("warn", "[messages-search]:decrypt-failed", {
                 messageId: messageRecord.id,
                 error,
             });

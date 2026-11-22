@@ -1,10 +1,13 @@
+import { createDiagnosticFixture } from "../../../../tooling/reuse/diagnostic-fixture.ts";
 import { readFile } from "node:fs/promises";
 import vm from "node:vm";
 
 export async function loadPopupManager() {
     const context = vm.createContext({ Date, Map, Set, AbortController });
     const modules = new Map();
+    const diagnostics = createDiagnosticFixture();
     const contracts = {
+        "/static/reuse/diagnostics.js": ["log"],
         "/static/reuse/ui-ctx.js": ["uiCtx"],
         "/static/reuse/info-tooltip.js": ["renderInfoTooltip"],
         "/static/reuse/timestamp.js": ["formatDate", "formatDateTime"],
@@ -29,11 +32,16 @@ export async function loadPopupManager() {
                 contracts[specifier],
                 function () {
                     for (const name of contracts[specifier]) {
-                        this.setExport(name, () => {
-                            throw new Error(
-                                `Unexpected call: ${specifier}:${name}`,
-                            );
-                        });
+                        this.setExport(
+                            name,
+                            specifier === "/static/reuse/diagnostics.js"
+                                ? diagnostics.log
+                                : () => {
+                                      throw new Error(
+                                          `Unexpected call: ${specifier}:${name}`,
+                                      );
+                                  },
+                        );
                     }
                 },
                 { context },

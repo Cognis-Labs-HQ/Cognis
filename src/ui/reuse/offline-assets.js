@@ -1,3 +1,4 @@
+import { log } from "./diagnostics.js";
 import {
     isOffline,
     offlineEnabled,
@@ -108,10 +109,14 @@ export function registerOfflineAssets(ctx) {
             const warm = () =>
                 prepare(assets, { signal }).catch((error) => {
                     if (!signal.aborted && !isOffline())
-                        console.info("[offline] optional assets not prepared", {
-                            operation: "prepareAssets",
-                            errorName: error?.name,
-                        });
+                        void log(
+                            "info",
+                            "[offline] optional assets not prepared",
+                            {
+                                operation: "prepareAssets",
+                                errorName: error?.name,
+                            },
+                        );
                 });
             for (const type of [
                 "cognis:connectivity-changed",

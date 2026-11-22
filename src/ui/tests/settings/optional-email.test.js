@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../../tooling/reuse/diagnostic-fixture.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
@@ -44,6 +45,7 @@ for (const notifyState of ["absent", "failed", "available"]) {
         const { initGeneralPrefs } = loadTestModule(
             new URL("../../app/settings/general-prefs.js", import.meta.url),
             {
+                "../../reuse/diagnostics.js": createDiagnosticFixture(),
                 "../../reuse/escape-html.js": { escapeHtml },
                 "../../reuse/ui-ctx.js": {
                     uiCtx: { capabilities: { get: () => emailClient } },

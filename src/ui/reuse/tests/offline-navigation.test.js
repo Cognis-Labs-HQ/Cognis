@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../../tooling/reuse/diagnostic-fixture.ts";
 import { escapeHtml } from "../escape-html.js";
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -32,7 +33,7 @@ const navigationImports = {
 };
 const navigation = loadTestModule(
     new URL("../offline-navigation.js", import.meta.url),
-    navigationImports,
+    { ...navigationImports, "./diagnostics.js": createDiagnosticFixture() },
 );
 
 test("the registered offline navigation flow requires public opt-in and available assets", async () => {
@@ -222,7 +223,7 @@ test("loading the navigation utility again preserves providers registered by ano
     register(["social-messages-page"], controller.signal);
     const duplicate = loadTestModule(
         new URL("../offline-navigation.js", import.meta.url),
-        navigationImports,
+        { ...navigationImports, "./diagnostics.js": createDiagnosticFixture() },
     );
     assert.equal(
         uiCtx.capabilities.get("offline:registerSessionRoutes"),

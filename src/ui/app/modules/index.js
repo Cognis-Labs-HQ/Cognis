@@ -1,3 +1,4 @@
+import { log } from "../../reuse/diagnostics.js";
 import { guides } from "./guides.js";
 import { formatModuleTag } from "./filters.js";
 import {
@@ -780,7 +781,7 @@ function bindInteractions(root, signal) {
                         });
                     }
                 } catch (error) {
-                    console.error("module_lifecycle_action_failed", {
+                    void log("error", "module_lifecycle_action_failed", {
                         action,
                         moduleId: module.id,
                         moduleUuid: module.uuid,

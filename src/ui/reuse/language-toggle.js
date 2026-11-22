@@ -11,6 +11,8 @@
  * @param {{ i18n: { t: (key: string) => string }, navigateTo: (url: string) => void, showToast: Function }} options
  * @returns {Promise<void>}
  */
+
+import { log } from "./diagnostics.js";
 import {
     loadUiLanguageCatalog,
     changeUiLanguage,
@@ -135,7 +137,8 @@ export async function bindLanguageToggle({
                         if (scope.signal.aborted) return;
                         selectedIndex = currentIndex();
                         render();
-                        console.error(
+                        void log(
+                            "error",
                             "[language-toggle]:language-save-failed",
                             {
                                 error,
@@ -160,7 +163,7 @@ export async function bindLanguageToggle({
     } catch (error) {
         if (scope.signal.aborted) return;
         toggle.hidden = true;
-        console.error("[language-toggle]:catalog-load-failed", { error });
+        void log("error", "[language-toggle]:catalog-load-failed", { error });
         showToast(i18n.t("ui.reuse.error"), { variant: "error" });
     }
 }

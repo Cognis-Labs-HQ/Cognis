@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../../tooling/reuse/diagnostic-fixture.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
@@ -47,6 +48,7 @@ function setup(context, { fail = false } = {}) {
     const { createLanguageRedraw } = loadTestModule(
         new URL("../../app/settings/language-redraw.js", import.meta.url),
         {
+            "../../reuse/diagnostics.js": createDiagnosticFixture(errors),
             "../../reuse/ui-language-catalog.js": {
                 changeUiLanguage: async (locale) => {
                     attempts.push(locale);
@@ -149,7 +151,7 @@ test("delayed redraw reports failures and cannot apply a prior account's saved l
     fixture.host.changeAccount("other");
     context.mock.timers.tick(2000);
     await new Promise(setImmediate);
-    assert.equal(fixture.errors[1][1].errorName, "Error");
+    assert.equal(fixture.errors[1][2].errorName, "Error");
     assert.deepEqual(fixture.choices, []);
     assert.deepEqual(fixture.attempts, ["de"]);
 });

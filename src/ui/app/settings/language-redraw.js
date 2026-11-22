@@ -1,3 +1,4 @@
+import { log } from "../../reuse/diagnostics.js";
 import { changeUiLanguage } from "../../reuse/ui-language-catalog.js";
 import { captureAccountGuard } from "../../reuse/offline-identity.js";
 import { showToast } from "../../reuse/toast.js";
@@ -19,7 +20,7 @@ export function createLanguageRedraw({ i18n, signal }) {
                 await changeUiLanguage(locale);
             } catch (error) {
                 if (signal?.aborted) return;
-                console.error("[settings]:language-redraw-failed", {
+                void log("error", "[settings]:language-redraw-failed", {
                     operation: "redrawLanguage",
                     errorName: error?.name,
                 });

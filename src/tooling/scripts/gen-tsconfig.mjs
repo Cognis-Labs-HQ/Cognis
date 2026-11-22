@@ -1,3 +1,4 @@
+import { writeTerminalReport } from "../reuse/terminal-output.ts";
 /**
  * Generates the root tsconfig.json by scanning src/ for all subdirectories that
  * contain a tsconfig.json with "composite": true. This avoids maintaining a
@@ -65,6 +66,7 @@ const tsconfig = {
 const output = JSON.stringify(tsconfig, null, 4) + "\n";
 writeFileSync(path.join(repoRoot, "tsconfig.json"), output, "utf8");
 
-console.log(
+writeTerminalReport(
+    "stdout",
     `tsconfig.json updated with ${projects.length} project reference(s).`,
 );

@@ -18,6 +18,10 @@ Bei der Wiederherstellung der Verbindung werden Übersetzungsspeicher vor dem er
 
 Die zentrale Protokollierung steuert die Serverübertragung und Browserkonsolenausgabe für Übersetzungs-, TFA- und Offline-Worker-Diagnosen. Gateway-Berechtigungen und Schweregrad bestimmen die Browserausgabe; Metadaten enthalten keine Zugangsdaten oder unverarbeiteten Fehlermeldungen.
 
+## Grenze der Protokollierung
+
+Quellprüfungen erzwingen Gateway-Protokollierung im Anwendungs- und externen Modulcode, einschließlich Browserskripten und Ereignishandlern. Diagnosequellen nutzen das Gateway direkt; Befehls- und Buildberichte behalten ihre Terminalausgabe.
+
 ## Commits
 
 - [996af37783915d3246df5c1fc1044b01c4f46fa1](https://github.com/Cognis-Labs-HQ/Cognis/commit/996af37783915d3246df5c1fc1044b01c4f46fa1)

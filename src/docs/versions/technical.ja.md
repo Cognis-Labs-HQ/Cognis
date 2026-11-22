@@ -53,11 +53,11 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | コンポーネント             | パス                                | バージョン |
 | -------------------------- | ----------------------------------- | ---------- |
 | SMTP Notification          | `src/adapters/notify/smtp/`         | `0.5.2`    |
-| Internal Notification      | `src/adapters/notify/internal/`     | `0.5.35`   |
+| Internal Notification      | `src/adapters/notify/internal/`     | `0.5.36`   |
 | Local File Storage         | `src/adapters/file/local/`          | `0.1.26`   |
 | File Quota                 | `src/adapters/file/quota/`          | `1.0.24`   |
 | Local Auth                 | `src/adapters/auth/local/`          | `0.4.1`    |
-| User Keyring               | `src/adapters/auth/keyring/`        | `2.1.3`    |
+| User Keyring               | `src/adapters/auth/keyring/`        | `2.1.4`    |
 | LDAP Auth                  | `src/adapters/auth/ldap/`           | `0.5.37`   |
 | OIDC Auth                  | `src/adapters/auth/oidc/`           | `0.1.24`   |
 | SAML Auth                  | `src/adapters/auth/saml/`           | `0.1.24`   |
@@ -69,13 +69,13 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Memory Database            | `src/adapters/db/memory/`           | `0.1.24`   |
 | Registration Token         | `src/adapters/registration/token/`  | `0.1.40`   |
 | Public Registration        | `src/adapters/registration/public/` | `0.1.23`   |
-| Profile (Social)           | `src/adapters/social/profile/`      | `3.0.17`   |
-| Messages (Social)          | `src/adapters/social/messages/`     | `2.7.46`   |
-| Calls (Social)             | `src/adapters/social/call/`         | `0.5.36`   |
-| Link Share                 | `src/adapters/share/link/`          | `1.1.39`   |
+| Profile (Social)           | `src/adapters/social/profile/`      | `3.0.18`   |
+| Messages (Social)          | `src/adapters/social/messages/`     | `2.7.47`   |
+| Calls (Social)             | `src/adapters/social/call/`         | `0.5.37`   |
+| Link Share                 | `src/adapters/share/link/`          | `1.1.40`   |
 | User Share                 | `src/adapters/share/user/`          | `1.1.20`   |
-| Classes (Study)            | `src/adapters/study/classes/`       | `1.4.11`   |
-| Library (Study)            | `src/adapters/study/library/`       | `4.1.28`   |
+| Classes (Study)            | `src/adapters/study/classes/`       | `1.4.12`   |
+| Library (Study)            | `src/adapters/study/library/`       | `4.1.29`   |
 | Drawing (Study)            | `src/adapters/study/drawing/`       | `1.1.3`    |
 | フラッシュカードアダプター | `src/adapters/study/flashcards/`    | `1.5.33`   |
 | Progress (Study)           | `src/adapters/study/progress/`      | `1.3.1`    |
@@ -88,23 +88,23 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | コンポーネント        | パス                          | バージョン |
 | --------------------- | ----------------------------- | ---------- |
 | Database (db)         | `src/gateways/db/`            | `1.4.0`    |
-| Authentication (auth) | `src/gateways/auth/`          | `2.2.6`    |
-| Share                 | `src/gateways/share/`         | `1.9.8`    |
+| Authentication (auth) | `src/gateways/auth/`          | `2.2.7`    |
+| Share                 | `src/gateways/share/`         | `1.9.9`    |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.3.7`    |
-| Notification (notify) | `src/gateways/notify/`        | `2.2.9`    |
+| Notification (notify) | `src/gateways/notify/`        | `2.2.10`   |
 | Social                | `src/gateways/social/`        | `1.4.5`    |
 | File Storage (files)  | `src/gateways/files/`         | `2.3.6`    |
-| Registration          | `src/gateways/registration/`  | `1.2.6`    |
+| Registration          | `src/gateways/registration/`  | `1.2.7`    |
 | Logging               | `src/gateways/logging/`       | `1.5.20`   |
 | Observability         | `src/gateways/observability/` | `1.0.7`    |
-| Study                 | `src/gateways/study/`         | `2.6.13`   |
-| Calendar              | `src/gateways/calendar/`      | `1.7.19`   |
+| Study                 | `src/gateways/study/`         | `2.6.14`   |
+| Calendar              | `src/gateways/calendar/`      | `1.7.20`   |
 
 ### ツール
 
 | コンポーネント | パス               | バージョン |
 | -------------- | ------------------ | ---------- |
-| Cognis CLI     | `src/tooling/cli/` | `0.4.1`    |
+| Cognis CLI     | `src/tooling/cli/` | `0.4.2`    |
 
 [c]: https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/core/package.json
 [a]: https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/api/package.json

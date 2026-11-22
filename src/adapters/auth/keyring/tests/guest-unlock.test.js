@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { authenticate } from "./ui-environment.js";
 import { uiCtx } from "../../../../ui/reuse/ui-ctx.js";
-import { requestKeyringUnlock } from "../ui/keyring.js";
+const { requestKeyringUnlock } = await import("../ui/keyring.js");
 
 for (const available of [true, false, undefined]) {
     test(`guest unlock uses the session contract without an account prompt (${available})`, async () => {
