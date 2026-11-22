@@ -18,7 +18,7 @@ Preferensi akun memilih tema, bahasa, dan font. Katalog komponen menyediakan ter
 
 ## Perilaku
 
-Pembacaan terjemahan biasa langsung menggunakan paket dalam cache, termasuk saat mulai luring. Pemulihan koneksi menandai paket yang pernah dimuat untuk satu pembaruan jaringan; paket yang baru diminta setelahnya tetap memakai cache biasa. XML yang tidak valid dapat dicoba kembali, dan pembacaan berikutnya memaksa pembaruan sampai paket valid diterima. Perubahan revisi yang dideklarasikan juga memperbarui paket yang telah dimuat.
+Pembacaan terjemahan publik biasa langsung menggunakan paket dalam cache, termasuk saat mulai luring. Pemulihan koneksi menandai paket yang pernah dimuat untuk satu pembaruan jaringan; paket yang baru diminta setelahnya tetap memakai cache biasa. XML yang tidak valid dapat dicoba kembali, dan pembacaan berikutnya memaksa pembaruan sampai paket valid diterima. Perubahan revisi yang dideklarasikan juga memperbarui paket yang telah dimuat. Paket privat yang peka terhadap revisi melewati cache HTTP setiap kali cache memori tidak memiliki entri, termasuk pada dokumen baru, pengaturan ulang siklus hidup, atau perubahan akun/sesi. Pemuatan yang berhasil tetap digabungkan dan disimpan menurut revisi dan identitas dalam dokumen.
 
 ### Ikhtisar
 

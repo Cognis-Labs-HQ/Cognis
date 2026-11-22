@@ -18,7 +18,7 @@ Kontoeinstellungen wählen Thema, Sprache und Schrift. Komponentenkataloge liefe
 
 ## Verhalten
 
-Normale Übersetzungsabfragen verwenden vorhandene Pakete sofort, auch beim Offline-Start. Nach der Verbindungswiederherstellung werden bereits geladene Pakete einmal über das Netzwerk aktualisiert; erstmals danach angeforderte Pakete behalten das normale Cache-Verhalten. Ungültiges XML bleibt erneut abrufbar und erzwingt beim nächsten Lesen eine Aktualisierung, bis ein gültiges Paket vorliegt. Eine geänderte deklarierte Revision aktualisiert ebenfalls ein bereits geladenes Paket.
+Normale öffentliche Übersetzungsabfragen verwenden vorhandene Pakete sofort, auch beim Offline-Start. Nach der Verbindungswiederherstellung werden bereits geladene Pakete einmal über das Netzwerk aktualisiert; erstmals danach angeforderte Pakete behalten das normale Cache-Verhalten. Ungültiges XML bleibt erneut abrufbar und erzwingt beim nächsten Lesen eine Aktualisierung, bis ein gültiges Paket vorliegt. Eine geänderte deklarierte Revision aktualisiert ebenfalls ein bereits geladenes Paket. Revisionsabhängige private Pakete umgehen den HTTP-Cache bei jedem fehlenden Eintrag im Arbeitsspeicher, auch nach einem neuen Dokument, einem Lebenszykluswechsel oder einem Konto- beziehungsweise Sitzungswechsel. Erfolgreiche Ladevorgänge werden innerhalb des Dokuments nach Revision und Identität zusammengefasst und gespeichert.
 
 ### Überblick
 

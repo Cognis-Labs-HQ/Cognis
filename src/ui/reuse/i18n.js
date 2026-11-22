@@ -82,11 +82,17 @@ async function fetchStrings(path, revision) {
     ]);
     let request = stringRequestCache.get(key);
     if (!request) {
+        const privateRevision =
+            requestTargetsApi(path) &&
+            typeof revision === "string" &&
+            revision.length > 0;
         const requestFunction = requestTargetsApi(path) ? apiFetch : fetch;
         request = requestFunction(path, {
-            cache: recoveryReloads.has(JSON.stringify([path, revision]))
-                ? "reload"
-                : "default",
+            cache:
+                privateRevision ||
+                recoveryReloads.has(JSON.stringify([path, revision]))
+                    ? "reload"
+                    : "default",
             signal: globalThis.AbortSignal?.timeout?.(
                 STRING_REQUEST_TIMEOUT_MS,
             ),

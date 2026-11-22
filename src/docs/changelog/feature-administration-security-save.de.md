@@ -8,7 +8,7 @@ Die Verwaltung speichert nur Bereiche mit ausstehenden Änderungen. Sicherheitsf
 
 ## Übersetzungen nach Neustart
 
-Nach der Verbindungswiederherstellung werden bereits geladene Übersetzungspakete vor dem Seitenaufbau aktualisiert. Normale Abfragen nutzen den Offlinecache sofort; ungültiges XML wird abgelehnt und mit einer Aktualisierung erneut geladen.
+Nach der Verbindungswiederherstellung werden bereits geladene Übersetzungspakete vor dem Seitenaufbau aktualisiert. Normale Abfragen nutzen den Offlinecache sofort; ungültiges XML wird abgelehnt und mit einer Aktualisierung erneut geladen. Private Übersetzungsrevisionen werden auch nach einem Dokument- oder Lebenszykluswechsel aktualisiert, damit zwischengespeichertes XML nicht unter einer neueren Revision erhalten bleibt.
 
 ## Erste E-Mail-Bestätigung
 

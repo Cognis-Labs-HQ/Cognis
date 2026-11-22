@@ -18,7 +18,7 @@ Account preferences select theme, language and font. Component catalogs supply t
 
 ## Behavior
 
-Ordinary translation reads use cached bundles immediately, including during offline startup. Connection recovery marks previously loaded bundles for one network refresh; bundles first requested afterward keep ordinary cache behavior. Invalid XML remains retryable, and its next read forces a refresh until a valid bundle is received. A changed declared revision also refreshes an already loaded bundle.
+Ordinary public translation reads use cached bundles immediately, including during offline startup. Connection recovery marks previously loaded bundles for one network refresh; bundles first requested afterward keep ordinary cache behavior. Invalid XML remains retryable, and its next read forces a refresh until a valid bundle is received. A changed declared revision also refreshes an already loaded bundle. Revision-sensitive private bundles bypass the HTTP cache on each in-memory cache miss, including a fresh document, lifecycle reset or account/session change. Successful loads remain coalesced and cached by revision and identity within the document.
 
 ### Overview
 

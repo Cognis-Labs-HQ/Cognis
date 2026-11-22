@@ -8,7 +8,7 @@ Administration saves only sections with pending changes. Security controls becom
 
 ## Translation Recovery
 
-Connection recovery refreshes previously loaded translation bundles before redrawing pages. Ordinary reads retain immediate offline-cache access; invalid XML is rejected and retried with a refresh.
+Connection recovery refreshes previously loaded translation bundles before redrawing pages. Ordinary reads retain immediate offline-cache access; invalid XML is rejected and retried with a refresh. Private translation revisions also refresh after a document or lifecycle reset, preventing cached XML from being retained under a newer revision.
 
 ## Initial Email Verification
 

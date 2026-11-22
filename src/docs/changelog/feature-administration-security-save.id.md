@@ -8,7 +8,7 @@ Administrasi hanya menyimpan bagian dengan perubahan tertunda. Kontrol keamanan 
 
 ## Pemulihan Terjemahan
 
-Pemulihan koneksi memperbarui paket terjemahan yang pernah dimuat sebelum menggambar ulang halaman. Pembacaan biasa langsung memakai cache luring; XML tidak valid ditolak dan dicoba kembali dengan pembaruan.
+Pemulihan koneksi memperbarui paket terjemahan yang pernah dimuat sebelum menggambar ulang halaman. Pembacaan biasa langsung memakai cache luring; XML tidak valid ditolak dan dicoba kembali dengan pembaruan. Revisi terjemahan privat juga diperbarui setelah pengaturan ulang dokumen atau siklus hidup agar XML dalam cache tidak disimpan sebagai revisi yang lebih baru.
 
 ## Verifikasi Email Awal
 
