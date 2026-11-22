@@ -8,13 +8,13 @@ Antarmuka publik dan aturan operasional Versi Komponen.
 
 | Komponen     | Jalur       | Versi   |
 | ------------ | ----------- | ------- |
-| Core Package | `src/core/` | `0.6.2` |
+| Core Package | `src/core/` | `0.6.3` |
 
 ### API
 
 | Komponen   | Jalur      | Versi     |
 | ---------- | ---------- | --------- |
-| API Server | `src/api/` | `0.13.33` |
+| API Server | `src/api/` | `0.13.34` |
 
 ## Konfigurasi
 

@@ -8,7 +8,7 @@
 
 | Komponente | Pfad       | Version   |
 | ---------- | ---------- | --------- |
-| API Server | `src/api/` | `0.13.33` |
+| API Server | `src/api/` | `0.13.34` |
 
 ## Konfiguration
 
@@ -90,7 +90,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 | Komponente   | Pfad        | Version |
 | ------------ | ----------- | ------- |
-| Core Package | `src/core/` | `0.6.2` |
+| Core Package | `src/core/` | `0.6.3` |
 
 ### Werkzeuge
 

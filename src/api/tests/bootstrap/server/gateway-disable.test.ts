@@ -1,3 +1,4 @@
+import { moduleManifest } from "../../reuse/module-fixtures.js";
 import { readFile } from "node:fs/promises";
 import { discoverCoreComponentDependencies } from "../../../components/discovery.js";
 import { isModuleCapabilityAvailable } from "../../../reuse/module-capability-availability.js";
@@ -26,11 +27,11 @@ import { createDefaultRouteContext } from "../../../reuse/route-context.js";
 import { UIRegistry } from "../../../reuse/ui-registry.js";
 
 test("external module dependencies must be installed and enabled", () => {
-    const dependency = {
+    const dependency = moduleManifest({
         id: "calendar",
         uuid: "calendar-uuid",
         name: "Calendar",
-    } as never;
+    });
     assert.doesNotThrow(() =>
         assertExternalModuleDependencies(
             "classroom",

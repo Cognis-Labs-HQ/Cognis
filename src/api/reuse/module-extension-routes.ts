@@ -86,17 +86,18 @@ export function createModuleExtensionRoutes(
     runtime: ModuleRuntimeGateway,
     isModuleEnabled: (moduleId: string) => boolean,
     log?: BootstrapLog,
-    options?: ModuleExtensionOptions,
+    inputOptions?: ModuleExtensionOptions,
 ): ModuleExtensionRoutes {
-    const bootstrapTimeoutMs = options?.bootstrapTimeoutMs ?? 120_000;
+    const bootstrapTimeoutMs = inputOptions?.bootstrapTimeoutMs ?? 120_000;
     let refreshQueue = Promise.resolve();
     const activeRequests = new Set<Promise<boolean>>();
     let handlers: RouteHandler[] = [];
-    if (!options?.routeContext) {
+    if (!inputOptions?.routeContext) {
         throw new Error(
             "module_extension_route_context_missing: createModuleExtensionRoutes requires route context for module routes",
         );
     }
+    const options = inputOptions;
     const { requireRoleAccess } = options.routeContext;
     const loadedModules = new Map<
         string,
@@ -375,13 +376,13 @@ export function createModuleExtensionRoutes(
                     if (key === "system:ctx") return false;
                     return resolveCapability(key) !== undefined;
                 },
-                require(key) {
+                require<T>(key: string): T {
                     if (key === "system:ctx") {
                         throw new Error(
                             'Required capability "system:ctx" is not available.',
                         );
                     }
-                    const capability = resolveCapability(key);
+                    const capability = resolveCapability<T>(key);
                     if (capability === undefined) {
                         throw new Error(
                             `Required capability "${key}" is not available.`,

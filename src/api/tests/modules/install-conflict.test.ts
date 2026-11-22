@@ -1,3 +1,4 @@
+import { createDefaultRouteContext } from "../../reuse/route-context.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createModuleRoutes } from "../../routes/modules/index.js";
@@ -9,6 +10,16 @@ for (const role of ["admin", "user"] as const) {
         const logs: Array<Record<string, unknown>> = [];
         let listCalls = 0;
         let installs = 0;
+        const routeContext = createDefaultRouteContext();
+        routeContext.requireAuth = (_request, response, minRole) => {
+            assert.equal(minRole, "admin");
+            if (role !== "admin") {
+                response.writeHead(403);
+                response.end(JSON.stringify({ error: { code: "forbidden" } }));
+                return null;
+            }
+            return { sub: "tester", role };
+        };
         const route = createModuleRoutes(
             {
                 list: async () => {
@@ -17,19 +28,7 @@ for (const role of ["admin", "user"] as const) {
                 },
             } as never,
             { log: (_level, _message, metadata) => logs.push(metadata ?? {}) },
-            {
-                requireAuth(_request, response, minRole) {
-                    assert.equal(minRole, "admin");
-                    if (role !== "admin") {
-                        response.writeHead(403);
-                        response.end(
-                            JSON.stringify({ error: { code: "forbidden" } }),
-                        );
-                        return null;
-                    }
-                    return { sub: "tester", role };
-                },
-            } as never,
+            routeContext,
             {
                 install: async () => {
                     installs++;

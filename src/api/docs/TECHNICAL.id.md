@@ -43,6 +43,8 @@ Gunakan `renderMarkdownDocumentDiff(diff)` dari kapabilitas browser `ui:document
 
 Ketiga tampilan beserta terjemahan yang tersedia disimpan secara atomik dalam satu `bundle.json` di bawah versi komponen. Hanya paket lengkap yang ditampilkan. Membaca ulang versi terpasang memperbarui seluruh paket; versi lengkap lain yang telah diterbitkan tetap tersedia.
 
+Masukan basis data menggunakan kontrak publik terstruktur `ensureTable` dan `executeCommand` milik gateway DB. Pembuatan penyimpanan dan metode penyimpanan yang tidak dapat diubah memiliki kontrak TypeScript eksplisit tanpa memerlukan driver basis data tertentu.
+
 ## Keamanan
 
 Titik akhir dokumentasi menyediakan informasi baca-saja. Jangan masukkan kredensial dan data akun pribadi ke sumber ini. Rute kemampuan perbandingan dokumen terpisah menegakkan autentikasi dan izin dokumennya sendiri.

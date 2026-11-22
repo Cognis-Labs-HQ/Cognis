@@ -116,6 +116,12 @@ Domänenverträge werden während des Bootstraps durch ihre Besitzer über die �
 
 Verschachtelte Bootstrap-Bereiche erben die Berechtigung ihres übergeordneten Bereichs und können nach dessen Ende keine Verträge mehr registrieren.
 
+### Öffentliche Typverträge
+
+Der Core-Export stellt einen einheitlichen Typ `AccessRole` bereit. Modulmanifeste deklarieren optionale `requiresCapabilities` neben den bereitgestellten Fähigkeiten. Kontolisten enthalten die stabile `accountId` für kontobezogene Verbraucher. Komponenteninhaber behalten ihre Namen und Lokalisierungsmetadaten in UI-Anbieterbeschreibungen.
+
+Datei-Namespace-Definitionen akzeptieren schreibgeschützte `allowComponents`-Listen. Flow-Helfer akzeptieren eine nicht vorhandene Ergebnissammlung, ohne Ergebnisauswahl oder Autorisierung zu ändern.
+
 ## Sicherheit
 
 Startbereiche identifizieren Eigentümer. Handler prüfen vor Änderungen; eine gefundene Fähigkeit beweist kein Benutzerrecht.

@@ -37,6 +37,8 @@ Use `renderMarkdownDocumentDiff(diff)` from the browser `ui:documentDiff` capabi
 
 All three views and their available translations are saved in one atomic `bundle.json` snapshot under the component version. Only complete bundles are advertised. Re-reading an installed version refreshes its content as one bundle; other published complete versions remain available.
 
+The database input uses the DB gateway’s public structured `ensureTable` and `executeCommand` contract. Store creation and immutable store methods carry explicit TypeScript contracts; they do not require a concrete database driver.
+
 ## Security
 
 Documentation endpoints publish read-only information. Keep credentials and private account data out of these sources. Routes using the separate document-diff capability enforce their own authentication and document authorization.

@@ -1,3 +1,4 @@
+import type { ModuleMarketplaceService } from "@cognis/core";
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
@@ -529,9 +530,13 @@ test("module catalog discovery accepts caller-selected sources", async () => {
                           contentType: "application/xml",
                       }
                     : undefined,
-            discoverWithReport: async (sourceUuids, force) => {
+            discoverWithReport: async (
+                ...[sourceUuids, force]: Parameters<
+                    ModuleMarketplaceService["discoverWithReport"]
+                >
+            ) => {
                 selectedSources = sourceUuids;
-                forceRefresh = force;
+                forceRefresh = force ?? false;
                 return {
                     modules: [
                         {

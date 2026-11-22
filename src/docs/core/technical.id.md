@@ -116,6 +116,12 @@ export interface HealthStatus {
 | `modules:lifecycle` | Rute modul         | Daftar modul, kontrol aktifkan/nonaktifkan, dan pemeriksaan kebijakan    |
 | `ui:shell`          | Rute UI            | Perutean shell aplikasi bersama dan permukaan operasi admin              |
 
+### Kontrak Tipe Publik
+
+Ekspor Core menyediakan satu tipe `AccessRole` yang baku. Manifest modul mendeklarasikan `requiresCapabilities` opsional selain kapabilitas yang disediakan, dan daftar akun menyertakan `accountId` stabil untuk konsumen yang bekerja dalam lingkup akun. Pemilik komponen mempertahankan nama dan metadata pelokalan dalam deskriptor penyedia UI.
+
+Definisi namespace berkas menerima daftar `allowComponents` hanya-baca. Helper alur menerima kumpulan hasil tahap yang tidak tersedia tanpa mengubah pemilihan hasil atau otorisasi.
+
 ## Keamanan
 
 Cakupan bootstrap mengenali pemilik. Handler mengotorisasi sebelum perubahan; kapabilitas tersedia bukan bukti hak pengguna.

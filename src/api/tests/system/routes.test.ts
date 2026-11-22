@@ -1,3 +1,5 @@
+import { VolatileUserPreferenceStore } from "../../reuse/preference-store.js";
+import { CapabilityStore, HealthService } from "@cognis/core";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
@@ -8,16 +10,7 @@ import { createDefaultRouteContext } from "../../reuse/route-context.js";
 import { issueAccessToken } from "../../../gateways/auth/access-tokens.js";
 import { loadReleaseChangelogEntries } from "../../reuse/release-changelog-feed.js";
 
-const healthService = {
-    status() {
-        return {
-            status: "ok",
-            timestamp: "2026-01-01T00:00:00.000Z",
-            startedAt: "2026-01-01T00:00:00.000Z",
-            uptimeMs: 1,
-        };
-    },
-};
+const healthService = new HealthService();
 
 test("reachability responds without waiting for component health probes", async () => {
     let probes = 0;
@@ -50,15 +43,17 @@ test("reachability responds without waiting for component health probes", async 
 });
 
 test("owner can list every registered capability", async () => {
+    const capabilities = new CapabilityStore();
+    capabilities.contribute("system:listCapabilities", () => [
+        "auth:requireAuth",
+        "ui:profileAvatarRenderer",
+    ]);
     const route = createSystemRoutes(
-        healthService as any,
+        healthService,
         undefined,
         undefined,
         createDefaultRouteContext({
-            getCapability: (id) =>
-                id === "system:listCapabilities"
-                    ? () => ["auth:requireAuth", "ui:profileAvatarRenderer"]
-                    : undefined,
+            getCapability: capabilities.get.bind(capabilities),
         }),
     );
     const token = issueAccessToken("owner", "owner", 60);
@@ -89,7 +84,7 @@ test("owner can list every registered capability", async () => {
 
 test("system route exposes env-backed ui config", async () => {
     process.env.COGNIS_UI_DEMO_MODE = "true";
-    const route = createSystemRoutes(healthService as any);
+    const route = createSystemRoutes(healthService);
     let body = "";
 
     await route(
@@ -107,7 +102,7 @@ test("system route exposes env-backed ui config", async () => {
 });
 
 test("system release changelog feed requires authentication", async () => {
-    const route = createSystemRoutes(healthService as any);
+    const route = createSystemRoutes(healthService);
     let status = 0;
     let body = "";
 
@@ -131,7 +126,7 @@ test("system release changelog feed requires authentication", async () => {
 
 test("system release changelog feed returns release version and entries", async () => {
     const token = issueAccessToken("alice", "user", 60);
-    const route = createSystemRoutes(healthService as any);
+    const route = createSystemRoutes(healthService);
     let status = 0;
     let body = "";
 
@@ -167,7 +162,7 @@ test("system release changelog feed returns release version and entries", async 
 
 test("system release changelog feed resolves localized entry summaries across supported languages", async () => {
     const token = issueAccessToken("alice", "user", 60);
-    const route = createSystemRoutes(healthService as any);
+    const route = createSystemRoutes(healthService);
     const localizedExpectations = [
         {
             lang: "en",
@@ -275,7 +270,7 @@ test("release changelog feed includes section details and installed module entri
 });
 
 test("system route serves license markdown payload", async () => {
-    const route = createSystemRoutes(healthService as any);
+    const route = createSystemRoutes(healthService);
     let status = 0;
     let body = "";
 
@@ -298,7 +293,7 @@ test("system route serves license markdown payload", async () => {
 });
 
 test("system security settings require authentication", async () => {
-    const route = createSystemRoutes(healthService as any);
+    const route = createSystemRoutes(healthService);
     let status = 0;
     let body = "";
 
@@ -324,7 +319,7 @@ test("system security settings accept disabled session expiry", async () => {
     const token = issueAccessToken("admin-timeout", "admin", 60);
     let status = 0;
     let persisted = "";
-    const route = createSystemRoutes(healthService as any, {
+    const route = createSystemRoutes(healthService, {
         async get() {
             return null;
         },
@@ -366,10 +361,7 @@ test("system security settings sanitize and survive malformed persisted data", a
         get: async () =>
             '{ "trustedDomains": ["Example.COM", " ", 7], "userValidationMode": "email" }',
     };
-    const route = createSystemRoutes(
-        healthService as any,
-        preferenceStore as any,
-    );
+    const route = createSystemRoutes(healthService, preferenceStore as any);
 
     await route(
         { method: "GET", headers } as any,
@@ -390,7 +382,7 @@ test("system security settings sanitize and survive malformed persisted data", a
 
     const malformedStore = { get: async () => "not-json" };
     const malformedRoute = createSystemRoutes(
-        healthService as any,
+        healthService,
         malformedStore as any,
     );
 
@@ -421,7 +413,7 @@ test("system security settings log malformed persisted data", async () => {
         meta?: Record<string, unknown>;
     }> = [];
     const route = createSystemRoutes(
-        healthService as any,
+        healthService,
         { get: async () => "not-json" } as any,
         (level, message, meta) => {
             entries.push({ level, message, meta });
@@ -474,7 +466,7 @@ test("security PUT rejects unavailable validation modes", async () => {
         set: async () => {},
     };
     const route = createSystemRoutes(
-        healthService as any,
+        healthService,
         preferenceStore as any,
         undefined,
         createDefaultRouteContext({
@@ -530,7 +522,7 @@ test("security PUT accepts a dynamically registered validation mode", async () =
         },
     };
     const route = createSystemRoutes(
-        healthService as any,
+        healthService,
         preferenceStore as any,
         undefined,
         createDefaultRouteContext({
@@ -578,35 +570,32 @@ test("security PUT revokes setup-pending tokens when mandatory TFA is disabled",
     let status = 0;
     let setEnforceValue: boolean | null = null;
     let revokeExcludedSubject = "";
-    const preferenceStore = {
-        get: async () => null,
-        set: async () => {},
-    };
+    const preferenceStore = new VolatileUserPreferenceStore();
+    const capabilities = new CapabilityStore();
+    capabilities.contribute(
+        "tfa:applyEnforcementPolicy",
+        async ({
+            required,
+            excludedSubject,
+        }: {
+            required: boolean;
+            excludedSubject?: string;
+        }) => {
+            setEnforceValue = required;
+            revokeExcludedSubject = String(excludedSubject ?? "");
+            return {
+                required,
+                previousRequired: true,
+                revokedSetupPendingCount: 2,
+            };
+        },
+    );
     const route = createSystemRoutes(
-        healthService as any,
-        preferenceStore as any,
+        healthService,
+        preferenceStore,
         undefined,
         createDefaultRouteContext({
-            getCapability: (capabilityName) => {
-                if (capabilityName === "tfa:applyEnforcementPolicy") {
-                    return async ({
-                        required,
-                        excludedSubject,
-                    }: {
-                        required: boolean;
-                        excludedSubject?: string;
-                    }) => {
-                        setEnforceValue = required;
-                        revokeExcludedSubject = String(excludedSubject ?? "");
-                        return {
-                            required,
-                            previousRequired: true,
-                            revokedSetupPendingCount: 2,
-                        };
-                    };
-                }
-                return undefined;
-            },
+            getCapability: capabilities.get.bind(capabilities),
         }),
     );
 
@@ -643,28 +632,23 @@ test("security PUT does not revoke setup-pending tokens when mandatory TFA was a
     };
     let status = 0;
     let revokeCalled = false;
-    const preferenceStore = {
-        get: async () => null,
-        set: async () => {},
-    };
+    const preferenceStore = new VolatileUserPreferenceStore();
+    const capabilities = new CapabilityStore();
+    capabilities.contribute("tfa:applyEnforcementPolicy", async () => {
+        revokeCalled = false;
+        return {
+            required: false,
+            previousRequired: false,
+            revokedSetupPendingCount: 0,
+        };
+    });
     const route = createSystemRoutes(
-        healthService as any,
-        preferenceStore as any,
+        healthService,
+        preferenceStore,
         undefined,
-        undefined,
-        (capabilityName) => {
-            if (capabilityName === "tfa:applyEnforcementPolicy") {
-                return async () => {
-                    revokeCalled = false;
-                    return {
-                        required: false,
-                        previousRequired: false,
-                        revokedSetupPendingCount: 0,
-                    };
-                };
-            }
-            return undefined;
-        },
+        createDefaultRouteContext({
+            getCapability: capabilities.get.bind(capabilities),
+        }),
     );
 
     const handled = await route(
