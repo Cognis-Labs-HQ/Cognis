@@ -64,13 +64,15 @@ Anonymous guests never unlock an account keyring. Share activates the delivered 
 
 Share records now carry gateway-owned access controls: read/write permissions, typed recipients for in-app users, groups/classes, and email recipients, optional password protection, and a readonly watermark flag. The Share gateway exposes generic token create/update routes so modules request a share through `ctx` or `/api/v1/share/tokens` and do not own recipient delivery or permission editing. Readonly shares default to watermarking, while write-enabled shares clear that default unless a caller explicitly keeps it. The gateway-owned button renderer always pairs the canonical share icon with the localized Share label.
 
+`PATCH /api/v1/share/tokens/:id` preserves `grantedCapabilities` when omitted and replaces it when an array is supplied; `[]` revokes every grant. Recipient, password and adapter restrictions still apply. Resource owners reconcile delivered access after updates and authorize requests against current grants.
+
 ### Share Method Adapters
 
 The popup discovers sharing methods from Share gateway adapters and displays them as a method row. Link and User each own their input preparation and popup-page behavior, while history is filtered to the selected method.
 
 ### Expiry and Protection
 
-Both built-in methods accept an optional exact expiry date and time; leaving it unset creates a non-expiring share. Password hashing and verification remain owned by the Share gateway. Resource components may provide Link access modes with method-specific permissions and granted capabilities.
+Both built-in methods accept an optional exact expiry date and time. An empty expiry is unlimited; malformed nonempty values deny access. Direct-user authorization checks the current expiry on every access, including retained and password-unlocked grants. Password hashing and verification remain owned by the Share gateway. Resource components may provide Link access modes with method-specific permissions and granted capabilities.
 
 ### Recipient delivery feedback and password aliases
 
@@ -85,14 +87,6 @@ The browser probes token resolution without opening the account keyring. Only a 
 A mounted link-share page may programmatically spawn an otherwise valid component page. This authorization covers only the browser window operation. For API access, the Share gateway resolves delegation generically through the `resolve-share-delegated-access` flow: the source-resource owner proves its relationship to the requested target and declares the allowed target capabilities, while Share verifies that the guest token grants the required source capability and keeps the result bound to both resource identifiers. Share never hardcodes resource pairings or treats one resource share as another.
 
 Share page startup checks the page abort signal after asynchronous preparation. Closing a guest page prevents late rendering; disabling Share cancels its maintenance lifetime so a pending expiry scan cannot send later notices.
-
-### Enforce expiry at access checks
-
-Direct user shares stop granting access at expiry, including password-unlocked shares retained for history. An empty expiry remains unlimited; malformed nonempty expiry values deny access.
-
-### Honor explicit grant revocation
-
-PATCH with `grantedCapabilities: []` removes every granted capability. Omitting the field preserves grants; a nonempty array replaces them. Recipient, password and adapter checks remain in force.
 
 ## Security
 

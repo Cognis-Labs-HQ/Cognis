@@ -20,7 +20,6 @@ import {
     type ResolveAccountId,
 } from "./helpers.js";
 import type { CalendarShareRegistry } from "./share-registry.js";
-import { requireSharedCalendarPassword } from "./shared-password.js";
 import { rejectInactiveSharedCalendar } from "./shared-calendar-guards.js";
 
 export async function handleCalendarMutationRoutes({

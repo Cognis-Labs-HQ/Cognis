@@ -1,21 +1,16 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
-export async function requireSharedCalendarPassword(input: {
+export async function requireSharedCalendarAccess(input: {
     req: IncomingMessage;
     res: ServerResponse;
     shareTokenId?: string | null;
     accountId: string;
     ownerCalendarId: string;
+    requiredCapability?: "calendar:read" | "calendar:write";
     getCapability: <T>(capabilityId: string) => T | undefined;
 }): Promise<boolean> {
     if (!input.shareTokenId) return true;
-    const getTokenById = input.getCapability<
-        (shareId: string) => Promise<{
-            accessControls?: { passwordProtected?: boolean };
-        } | null>
-    >("share:getTokenById");
-    const tokenRecord = await getTokenById?.(input.shareTokenId);
-    if (!tokenRecord?.accessControls?.passwordProtected) return true;
+    const requiredCapability = input.requiredCapability ?? "calendar:read";
     const resolveUserAccess = input.getCapability<
         (access: {
             accountId: string;
@@ -28,9 +23,32 @@ export async function requireSharedCalendarPassword(input: {
         accountId: input.accountId,
         resourceType: "calendar",
         resourceId: input.ownerCalendarId,
-        requiredCapability: "calendar:read",
+        requiredCapability,
     });
     if (accountAccess?.authorized) return true;
+    const getTokenById = input.getCapability<
+        (shareId: string) => Promise<{
+            grantedCapabilities?: string[];
+            accessControls?: { passwordProtected?: boolean };
+        } | null>
+    >("share:getTokenById");
+    const tokenRecord = await getTokenById?.(input.shareTokenId);
+    if (
+        !resolveUserAccess ||
+        !tokenRecord?.accessControls?.passwordProtected ||
+        !tokenRecord.grantedCapabilities?.includes(requiredCapability)
+    ) {
+        input.res.writeHead(403, { "content-type": "application/json" });
+        input.res.end(
+            JSON.stringify({
+                error: {
+                    code: "share_access_denied",
+                    message: "Calendar share access denied.",
+                },
+            }),
+        );
+        return false;
+    }
     const header = input.req.headers["x-cognis-share-password"];
     const password = String(Array.isArray(header) ? header[0] : (header ?? ""));
     const unlockUserAccess = input.getCapability<
@@ -49,7 +67,7 @@ export async function requireSharedCalendarPassword(input: {
               accountId: input.accountId,
               resourceType: "calendar",
               resourceId: input.ownerCalendarId,
-              requiredCapability: "calendar:read",
+              requiredCapability,
               password,
           })
         : false;

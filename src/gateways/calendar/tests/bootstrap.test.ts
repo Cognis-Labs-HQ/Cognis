@@ -254,6 +254,23 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
         grantedCapabilities: ["calendar:read"],
         expiresAt: "",
     };
+    capabilities.contribute(
+        "share:resolveUserAccess",
+        async (access: {
+            accountId: string;
+            resourceType: string;
+            resourceId: string;
+            requiredCapability: string;
+        }) => ({
+            authorized:
+                access.accountId === delivery.recipientAccountId &&
+                access.resourceType === delivery.resourceType &&
+                access.resourceId === delivery.resourceId &&
+                delivery.grantedCapabilities.includes(
+                    access.requiredCapability,
+                ),
+        }),
+    );
     const delivered = await deliverUserShare?.(delivery);
     assert.match(delivered?.navigationUrl ?? "", /^\/calendar\?calendarId=/);
     assert.equal(

@@ -8,7 +8,7 @@ Direkte Benutzerfreigaben gewähren nach Ablauf keinen Zugriff mehr, auch nach P
 
 ## Ausdrücklichen Rechteentzug beachten
 
-PATCH mit `grantedCapabilities: []` entfernt alle gewährten Fähigkeiten. Ohne dieses Feld bleiben sie erhalten; ein nichtleeres Array ersetzt sie. Empfänger-, Passwort- und Adapterprüfungen bleiben wirksam.
+PATCH mit `grantedCapabilities: []` entfernt alle gewährten Fähigkeiten. Ohne dieses Feld bleiben sie erhalten; ein nichtleeres Array ersetzt sie. Empfänger-, Passwort- und Adapterprüfungen bleiben wirksam. Zugestellter Kalenderzugriff wird beim Entfernen des Leserechts gelöscht. Anfragen und Tokenexporte prüfen aktuelle Rechte auch während eines noch ausstehenden Zustellabgleichs.
 
 ## Übersetzungskataloge
 

@@ -8,7 +8,7 @@ Berbagi langsung kepada pengguna tidak lagi memberi akses setelah kedaluwarsa, t
 
 ## Hormati pencabutan hak eksplisit
 
-PATCH dengan `grantedCapabilities: []` menghapus semua kapabilitas yang diberikan. Tanpa bidang tersebut, hak tetap dipertahankan; larik tidak kosong menggantikannya. Pemeriksaan penerima, kata sandi, dan adaptor tetap berlaku.
+PATCH dengan `grantedCapabilities: []` menghapus semua kapabilitas yang diberikan. Tanpa bidang tersebut, hak tetap dipertahankan; larik tidak kosong menggantikannya. Pemeriksaan penerima, kata sandi, dan adaptor tetap berlaku. Akses Kalender yang dikirim dihapus saat izin baca dicabut. Permintaan dan ekspor token memeriksa izin saat ini meskipun rekonsiliasi pengiriman masih tertunda.
 
 ## Katalog Terjemahan
 

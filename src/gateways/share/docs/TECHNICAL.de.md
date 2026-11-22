@@ -68,13 +68,15 @@ Anonyme Gäste entsperren niemals einen Kontoschlüsselbund. Share aktiviert den
 
 Freigabedatensätze enthalten jetzt vom Gateway verwaltete Zugriffskontrollen: Lese-/Schreibberechtigungen, typisierte Empfänger für In-App-Benutzer, Gruppen/Klassen und E-Mail-Empfänger, optionalen Passwortschutz und ein Wasserzeichen-Flag für schreibgeschützte Freigaben. Das Share-Gateway stellt generische Routen zum Erstellen und Aktualisieren von Tokens bereit, sodass Module Freigaben über `ctx` oder `/api/v1/share/tokens` anfordern und weder Empfängerzustellung noch Berechtigungsbearbeitung selbst besitzen. Schreibgeschützte Freigaben erhalten standardmäßig ein Wasserzeichen, während schreibbare Freigaben diese Vorgabe entfernen, sofern der Aufrufer sie nicht ausdrücklich beibehält. Der gatewayeigene Schaltflächen-Renderer kombiniert stets das kanonische Freigabesymbol mit der lokalisierten Bezeichnung „Teilen“.
 
+`PATCH /api/v1/share/tokens/:id` behält `grantedCapabilities` bei Auslassung bei und ersetzt sie bei Übergabe eines Arrays; `[]` entzieht alle Rechte. Empfänger-, Passwort- und Adapterbeschränkungen gelten weiterhin. Ressourcenbesitzer gleichen zugestellte Zugriffe nach Änderungen ab und autorisieren Anfragen anhand der aktuellen Rechte.
+
 ### Adapter für Freigabemethoden
 
 Das Popup erkennt Freigabemethoden über Adapter des Share-Gateways und zeigt sie in einer Methodenleiste. Link und Benutzer verwalten jeweils ihre Eingabeaufbereitung und Popup-Seite; der Verlauf wird nach der ausgewählten Methode gefiltert.
 
 ### Ablauf und Schutz
 
-Beide integrierten Methoden akzeptieren optional ein genaues Ablaufdatum mit Uhrzeit; ohne Angabe läuft die Freigabe nicht ab. Hashing und Prüfung von Passwörtern verbleiben im Share-Gateway. Ressourcenkomponenten können Link-Zugriffsarten mit passenden Berechtigungen und Fähigkeiten bereitstellen.
+Beide integrierten Methoden akzeptieren optional ein genaues Ablaufdatum mit Uhrzeit. Ein leerer Ablaufwert ist unbegrenzt; ungültige nichtleere Werte verweigern den Zugriff. Direkte Benutzerzugriffe prüfen den aktuellen Ablauf bei jeder Autorisierung, auch bei aufbewahrten und per Passwort entsperrten Freigaben. Hashing und Prüfung von Passwörtern verbleiben im Share-Gateway. Ressourcenkomponenten können Link-Zugriffsarten mit passenden Berechtigungen und Fähigkeiten bereitstellen.
 
 ### Rückmeldung zur Empfängerzustellung und Passwort-Aliasse
 
@@ -89,14 +91,6 @@ Der Browser prüft die Tokenauflösung, ohne den Kontoschlüsselbund zu öffnen.
 Eine eingebundene Link-Freigabeseite darf eine ansonsten gültige Komponentenseite programmgesteuert öffnen. Diese Autorisierung gilt nur für den Browser-Fenstervorgang. Für API-Zugriff löst das Share-Gateway Delegierungen allgemein über den Flow `resolve-share-delegated-access` auf: Der Besitzer der Quellressource weist seine Beziehung zum angeforderten Ziel nach und deklariert die erlaubten Zielfähigkeiten, während Share prüft, dass das Gasttoken die erforderliche Quellfähigkeit gewährt, und das Ergebnis an beide Ressourcenkennungen bindet. Share codiert keine Ressourcenpaare fest und behandelt eine Ressourcenfreigabe niemals als eine andere.
 
 Die Freigabeseite prüft nach asynchroner Vorbereitung das Abbruchsignal. Schließen verhindert spätes Rendern; Deaktivieren beendet Wartungsaufgaben und spätere Ablaufhinweise.
-
-### Ablauf bei Zugriff prüfen
-
-Direkte Benutzerfreigaben gewähren nach Ablauf keinen Zugriff mehr, auch nach Passwortentsperrung und während der Aufbewahrung im Verlauf. Ein leerer Ablaufwert bleibt unbegrenzt; ungültige nichtleere Werte verweigern den Zugriff.
-
-### Ausdrücklichen Rechteentzug beachten
-
-PATCH mit `grantedCapabilities: []` entfernt alle gewährten Fähigkeiten. Ohne dieses Feld bleiben sie erhalten; ein nichtleeres Array ersetzt sie. Empfänger-, Passwort- und Adapterprüfungen bleiben wirksam.
 
 ## Sicherheit
 

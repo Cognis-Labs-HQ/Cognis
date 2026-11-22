@@ -8,7 +8,7 @@ Direct user shares stop granting access at expiry, including password-unlocked s
 
 ## Honor explicit grant revocation
 
-PATCH with `grantedCapabilities: []` removes every granted capability. Omitting the field preserves grants; a nonempty array replaces them. Recipient, password and adapter checks remain in force.
+PATCH with `grantedCapabilities: []` removes every granted capability. Omitting the field preserves grants; a nonempty array replaces them. Recipient, password and adapter checks remain in force. Delivered Calendar access is removed when the read grant is cleared. Requests and token exports check current grants even while delivery reconciliation is pending.
 
 ## Translation Catalogs
 

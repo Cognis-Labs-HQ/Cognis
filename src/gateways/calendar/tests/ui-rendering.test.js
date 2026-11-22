@@ -102,8 +102,8 @@ test("calendar event composer imports its HTML escaping dependency", () => {
     );
     assert.match(EVENT_COMPOSER_SOURCE, /createFormBuilder\([\s\S]*escapeHtml/);
 });
-const SHARED_PASSWORD_SOURCE = readFileSync(
-    resolve(ROOT, "src/gateways/calendar/bootstrap/shared-password.ts"),
+const SHARED_ACCESS_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/calendar/bootstrap/shared-access.ts"),
     "utf8",
 );
 const POPUP_MANAGER_PENDING_RESPONSE_SOURCE = readFileSync(
@@ -831,9 +831,9 @@ test("shared calendar event loading resolves password protection through keyring
     assert.match(CALENDAR_API_SOURCE, /share:fetchProtectedResource/);
     assert.match(CALENDAR_API_SOURCE, /x-cognis-share-password/);
     assert.match(CALENDAR_API_SOURCE, /sharePasswordProtected/);
-    assert.match(CALENDAR_ROUTES_SOURCE, /requireSharedCalendarPassword/);
-    assert.match(SHARED_PASSWORD_SOURCE, /share_password_required/);
-    assert.match(SHARED_PASSWORD_SOURCE, /share:unlockUserAccess/);
+    assert.match(CALENDAR_ROUTES_SOURCE, /requireSharedCalendarAccess/);
+    assert.match(SHARED_ACCESS_SOURCE, /share_password_required/);
+    assert.match(SHARED_ACCESS_SOURCE, /share:unlockUserAccess/);
     assert.match(CALENDAR_API_SOURCE, /calendar_share_secrets_refused/);
     assert.match(APP_SOURCE, /secretsUnavailable/);
     assert.match(HELPERS_SOURCE, /calendar-item-btn--locked/);

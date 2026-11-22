@@ -68,6 +68,8 @@ Adapter contract registration follows [the shared gateway bootstrap contract](/d
 
 See the [shared contract](/docs/gateways/share/technical) for this behavior.
 
+Calendar delivery requires an explicit `calendar:read` grant. Removing it deletes recipient copies, and later reconciliation cannot recreate them without a new read grant. Event reads and mutations authorize through Share on each request, including unprotected tokens; mutations require `calendar:write`. Denied grants on an existing token-backed delivery return 403; removed or inactive calendar copies retain their not-found or inactive responses, while an otherwise permitted protected share can request its password with 401. ICS and CalDAV token exports also require the read grant.
+
 ### Lifecycle Boundaries
 
 See the [shared contract](/docs/gateways/share/technical) for this behavior.
