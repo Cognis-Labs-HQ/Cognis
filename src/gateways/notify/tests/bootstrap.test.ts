@@ -51,6 +51,13 @@ async function makeCtx() {
     capabilities.contribute("auth:routeContext", createAuthContext());
     capabilities.contribute("db:executor", db);
     capabilities.contribute("system:ctx", systemCtx);
+    const onboardingOperations = new Map<string, unknown>();
+    capabilities.contribute("auth:onboarding", {
+        registerOperation(operation: { id: string }) {
+            assert.equal(onboardingOperations.has(operation.id), false);
+            onboardingOperations.set(operation.id, operation);
+        },
+    });
     return {
         gatewayRegistry,
         routeRegistry,

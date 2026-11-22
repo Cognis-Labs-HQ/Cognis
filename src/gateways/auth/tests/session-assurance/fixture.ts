@@ -132,6 +132,7 @@ export async function createLoginFixture() {
         readSecuritySettings: context.readSecuritySettings,
     });
     return {
+        context,
         root,
         capabilities,
         gatewayRegistry,
