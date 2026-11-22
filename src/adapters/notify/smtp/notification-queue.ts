@@ -34,6 +34,7 @@ type SmtpQueueStatus =
     "queued" | "waiting_rate_limit" | "sending" | "sent" | "failed";
 
 interface SmtpQueueEntry extends NotificationSenderQueueEntry {
+    subject: string;
     purpose: string;
     status: SmtpQueueStatus;
     failure?: Error;

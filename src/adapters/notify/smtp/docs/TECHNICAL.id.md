@@ -10,8 +10,6 @@ SMTP mendeklarasikan kontrak tujuan surel, pengiriman, kebijakan, dan pabrik tem
 
 ## Konfigurasi
 
-### Konfigurasi
-
 Konfigurasikan `COGNIS_SMTP_HOST`, `COGNIS_SMTP_PORT` (587), `COGNIS_SMTP_FROM`, `COGNIS_SMTP_USER`/`COGNIS_SMTP_PASS` opsional serta `COGNIS_SMTP_SECURE` (`none`, `starttls` atau `tls`). Nama pengirim, host EHLO, kebijakan sertifikat/autentikasi dan panjang kode menggunakan pengaturan adapter yang ada. Pesan uji dapat membawa penggantian konfigurasi dalam antrean.
 
 ## Perilaku
@@ -89,6 +87,10 @@ Pengujian konfigurasi SMTP dapat berjalan ketika pengirim dinonaktifkan tanpa me
 ### Peninjauan dan Siklus Hidup
 
 Pembentukan koneksi SMTP dan negosiasi TLS masing-masing memiliki batas tiga puluh detik. Koneksi yang macet dihancurkan agar permintaan diagnostik tidak terus tertunda. TLS langsung dan STARTTLS memakai nama host yang dikonfigurasi untuk identitas TLS dan SNI nama DNS; alamat IP tidak dikirim sebagai nama SNI.
+
+### Kontrak Pengiriman Bertipe
+
+Entri antrean SMTP mempertahankan subjek wajibnya selama pengiriman dan percobaan ulang. Opsi koneksi TLS membawa sinyal pembatalan untuk TLS langsung dan STARTTLS; kebijakan sertifikat, batas waktu, dan pembersihan koneksi tidak berubah.
 
 ## Keamanan
 

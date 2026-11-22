@@ -14,6 +14,7 @@ import { DbInternalNotificationStore } from "./db-store.js";
 import type { RouteContext } from "../../../api/reuse/route-context.js";
 import { getDataEncryptionKey } from "../../../api/reuse/crypto.js";
 import { createInternalNotificationRoutes } from "./routes/index.js";
+import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import type { Ctx } from "@cognis/core";
 
 const SENDER_ID = "internal";
@@ -86,7 +87,7 @@ export async function bootstrapNotifyAdapter(
     ctx.capabilities.require<(id: string) => void>(
         "notify:registerAlwaysOnSender",
     )(SENDER_ID);
-    const dbExecutor = ctx.capabilities.get("db:executor");
+    const dbExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
 
     if (dbExecutor) {
         const secret = getDataEncryptionKey();

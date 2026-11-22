@@ -1,3 +1,4 @@
+import type { BootstrapLog } from "@cognis/core";
 /**
  * Database-backed encrypted notification store for the internal adapter.
  *
@@ -37,17 +38,11 @@ interface EncryptedPayload {
 
 const MAX_PER_USER = 50;
 
-type StoreLog = (
-    level: string,
-    msg: string,
-    meta?: Record<string, unknown>,
-) => void;
-
 export class DbInternalNotificationStore implements IInternalNotificationStore {
     constructor(
         private readonly db: DbExecutor,
         private readonly serverSecret: string,
-        private readonly log?: StoreLog,
+        private readonly log?: BootstrapLog,
     ) {}
 
     async ensureSchema(): Promise<void> {

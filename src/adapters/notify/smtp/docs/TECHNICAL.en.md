@@ -10,8 +10,6 @@ SMTP declares its email-purpose, delivery, policy and factory contracts during i
 
 ## Configuration
 
-### Configuration
-
 Configure `COGNIS_SMTP_HOST`, `COGNIS_SMTP_PORT` (587), `COGNIS_SMTP_FROM`, optional `COGNIS_SMTP_USER`/`COGNIS_SMTP_PASS` and `COGNIS_SMTP_SECURE` (`none`, `starttls` or `tls`). Sender name, EHLO host, certificate policy, authentication policy and verification-code length use the existing adapter settings. Tests may supply a configuration override, retained with the queued message.
 
 ## Behavior
@@ -89,6 +87,10 @@ SMTP configuration tests can run while the sender is disabled without enabling o
 ### Lifecycle Boundaries
 
 SMTP connection establishment and TLS negotiation each have a thirty-second deadline. A stalled connection is destroyed rather than leaving the diagnostic request pending. Direct TLS and STARTTLS use the configured hostname for TLS identity and DNS-name SNI; IP addresses are not sent as SNI names.
+
+### Typed Delivery Contracts
+
+SMTP queue entries retain their required subject through delivery and retries. TLS connection options carry the cancellation signal for direct TLS and STARTTLS; certificate policy, timeout handling and connection cleanup remain unchanged.
 
 ## Security
 

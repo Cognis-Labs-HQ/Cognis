@@ -1,3 +1,5 @@
+import { createRequest, createResponse } from "./reuse/http.js";
+import { createAuthContext } from "./reuse/auth.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
@@ -15,28 +17,29 @@ test("email delivery availability is authenticated and independent of sender ide
     const route = createNotificationRoutes(gateway, undefined, {
         emailAvailable: () => available,
         routeContext: {
+            ...createAuthContext(),
             requireAuth(_request, response) {
                 if (authenticated) return { sub: "reader", role: "user" };
                 response.writeHead(401);
                 response.end();
                 return null;
             },
-        } as never,
+        },
     });
     for (const state of [true, false]) {
         available = state;
         let status = 0;
         let payload = "";
         const handled = await route(
-            { method: "GET" } as never,
-            {
+            createRequest({ method: "GET" }),
+            createResponse({
                 writeHead(code: number) {
                     status = code;
                 },
                 end(body: string) {
                     payload = body;
                 },
-            } as never,
+            }),
             new URL("http://localhost/api/v1/notify/email-delivery"),
         );
         assert.equal(handled, true);
@@ -46,13 +49,13 @@ test("email delivery availability is authenticated and independent of sender ide
     authenticated = false;
     let status = 0;
     await route(
-        { method: "GET" } as never,
-        {
+        createRequest({ method: "GET" }),
+        createResponse({
             writeHead(code: number) {
                 status = code;
             },
             end() {},
-        } as never,
+        }),
         new URL("http://localhost/api/v1/notify/email-delivery"),
     );
     assert.equal(status, 401);

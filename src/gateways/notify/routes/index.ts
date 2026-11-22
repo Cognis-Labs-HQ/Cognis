@@ -117,7 +117,7 @@ function validateBroadcastSchedule(
     return null;
 }
 
-function getBroadcastCreateValidationError(input: {
+function validateBroadcastCreate(input: {
     title: string;
     message: string;
     displayMode: string;
@@ -127,17 +127,29 @@ function getBroadcastCreateValidationError(input: {
     redirectUrl: string | null;
     trustedBaseUrl: string;
     trustedDomains: string[];
-}): { code: string; message: string } | null {
+}):
+    | { error: { code: string; message: string } }
+    | {
+          value: {
+              targetRoles: NotificationBroadcastRole[];
+              startAt: number | null;
+              endAt: number | null;
+          };
+      } {
     if (!input.title) {
         return {
-            code: "missing_broadcast_title",
-            message: "Broadcast title is required",
+            error: {
+                code: "missing_broadcast_title",
+                message: "Broadcast title is required",
+            },
         };
     }
     if (!input.message) {
         return {
-            code: "missing_broadcast_message",
-            message: "Broadcast message is required",
+            error: {
+                code: "missing_broadcast_message",
+                message: "Broadcast message is required",
+            },
         };
     }
     if (
@@ -146,14 +158,19 @@ function getBroadcastCreateValidationError(input: {
         )
     ) {
         return {
-            code: "invalid_broadcast_display_mode",
-            message: "Broadcast displayMode must be either 'bar' or 'popup'",
+            error: {
+                code: "invalid_broadcast_display_mode",
+                message:
+                    "Broadcast displayMode must be either 'bar' or 'popup'",
+            },
         };
     }
     if (!input.targetRoles || input.targetRoles.length === 0) {
         return {
-            code: "missing_broadcast_roles",
-            message: "At least one target role is required",
+            error: {
+                code: "missing_broadcast_roles",
+                message: "At least one target role is required",
+            },
         };
     }
 
@@ -161,22 +178,28 @@ function getBroadcastCreateValidationError(input: {
         input.startAt,
         input.endAt,
     );
-    if (scheduleValidationError === "invalid_broadcast_timestamp") {
+    if (input.startAt === undefined || input.endAt === undefined) {
         return {
-            code: "invalid_broadcast_timestamp",
-            message: "Broadcast startAt and endAt must be valid timestamps",
+            error: {
+                code: "invalid_broadcast_timestamp",
+                message: "Broadcast startAt and endAt must be valid timestamps",
+            },
         };
     }
     if (scheduleValidationError === "partial_broadcast_window") {
         return {
-            code: "partial_broadcast_window",
-            message: "Broadcast startAt and endAt must both be provided",
+            error: {
+                code: "partial_broadcast_window",
+                message: "Broadcast startAt and endAt must both be provided",
+            },
         };
     }
     if (scheduleValidationError === "invalid_broadcast_window_range") {
         return {
-            code: "invalid_broadcast_window_range",
-            message: "Broadcast startAt must be earlier than endAt",
+            error: {
+                code: "invalid_broadcast_window_range",
+                message: "Broadcast startAt must be earlier than endAt",
+            },
         };
     }
     if (
@@ -187,12 +210,20 @@ function getBroadcastCreateValidationError(input: {
         })
     ) {
         return {
-            code: "invalid_broadcast_redirect",
-            message:
-                "Broadcast redirectUrl must stay on the current origin or trusted domains",
+            error: {
+                code: "invalid_broadcast_redirect",
+                message:
+                    "Broadcast redirectUrl must stay on the current origin or trusted domains",
+            },
         };
     }
-    return null;
+    return {
+        value: {
+            targetRoles: input.targetRoles,
+            startAt: input.startAt,
+            endAt: input.endAt,
+        },
+    };
 }
 
 export function createNotificationRoutes(
@@ -395,7 +426,7 @@ export function createNotificationRoutes(
             const trustedDomains = options?.getTrustedDomains
                 ? await options.getTrustedDomains().catch(() => [])
                 : [];
-            const validationError = getBroadcastCreateValidationError({
+            const validation = validateBroadcastCreate({
                 title,
                 message,
                 displayMode,
@@ -407,11 +438,11 @@ export function createNotificationRoutes(
                 trustedDomains,
             });
 
-            if (validationError !== null) {
+            if ("error" in validation) {
                 res.writeHead(400, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
-                        error: validationError,
+                        error: validation.error,
                     }),
                 );
                 return true;
@@ -421,9 +452,7 @@ export function createNotificationRoutes(
                 title,
                 message,
                 displayMode,
-                targetRoles,
-                startAt,
-                endAt,
+                ...validation.value,
                 requireAcknowledgement,
                 redirectUrl,
                 enabled,

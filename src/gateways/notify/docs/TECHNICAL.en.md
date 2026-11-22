@@ -51,6 +51,10 @@ Disable and unmount revoke owned registrations and pending delivery. Re-enable r
 
 Administrator configuration tests are available before a sender is enabled. Testing does not activate normal delivery; each provider owns its diagnostic transport and cleanup.
 
+### Typed Delivery Contracts
+
+Sender queue inspection is optional and typed by the Notify contract. Bootstrap loads the gateway-owned store directly and exposes its email and preference operations without partial constructor assertions. Broadcast validation returns validated roles and scheduling values before persistence.
+
 ## Security
 
 Email verification binds account ID and address. Missing delivery does not waive validation policy; purpose registration is bootstrap-scoped and disposal prevents late messages from entering a cancelled delivery lifetime.

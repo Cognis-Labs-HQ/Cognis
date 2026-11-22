@@ -38,8 +38,8 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 
 | Komponente            | Pfad                                | Version  |
 | --------------------- | ----------------------------------- | -------- |
-| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.5.2`  |
-| Internal Notification | `src/adapters/notify/internal/`     | `0.5.35` |
+| SMTP Notification     | `src/adapters/notify/smtp/`         | `0.5.3`  |
+| Internal Notification | `src/adapters/notify/internal/`     | `0.5.36` |
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.26` |
 | File Quota            | `src/adapters/file/quota/`          | `1.0.24` |
 | Local Auth            | `src/adapters/auth/local/`          | `0.4.1`  |
@@ -77,7 +77,7 @@ Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested
 | Authentication (auth) | `src/gateways/auth/`          | `2.2.6`  |
 | Share                 | `src/gateways/share/`         | `1.9.9`  |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.3.7`  |
-| Notification (notify) | `src/gateways/notify/`        | `2.2.9`  |
+| Notification (notify) | `src/gateways/notify/`        | `2.2.10` |
 | Social                | `src/gateways/social/`        | `1.4.5`  |
 | File Storage (files)  | `src/gateways/files/`         | `2.3.6`  |
 | Registration          | `src/gateways/registration/`  | `1.2.6`  |
