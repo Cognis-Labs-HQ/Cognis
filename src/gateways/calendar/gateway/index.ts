@@ -184,7 +184,7 @@ export class CoreCalendarGateway {
             .map((calendarId) => this.calendarsById.get(calendarId))
             .find(
                 (calendar): calendar is CalendarRecord =>
-                    Boolean(calendar) &&
+                    calendar !== undefined &&
                     calendar.name.trim().toLowerCase() === normalizedName,
             );
         if (existingCalendar) return existingCalendar;
@@ -913,7 +913,7 @@ export class CoreCalendarGateway {
     }
 
     private scheduleStoreWrite(
-        operation: (() => Promise<void> | undefined) | undefined,
+        operation: (() => Promise<void> | void) | undefined,
     ): void {
         if (!this.store || typeof operation !== "function") return;
         this.storeWriteQueue = this.storeWriteQueue
@@ -926,3 +926,13 @@ export class CoreCalendarGateway {
             });
     }
 }
+
+export type {
+    CalendarAdapter,
+    CalendarAdapterBootstrapCtx,
+    CalendarEventRecord,
+    CalendarEventResponse,
+    CalendarEventResponseRecord,
+    CalendarRecord,
+    CalendarVisibility,
+} from "./utils.js";

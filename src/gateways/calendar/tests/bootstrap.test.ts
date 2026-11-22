@@ -243,7 +243,10 @@ test("calendar bootstrap registers gateway, routes, and ui hooks", async () => {
             recipientAccountId: string;
             grantedCapabilities: string[];
             expiresAt: string;
-        }) => Promise<{ navigationUrl?: string } | null>
+        }) => Promise<{
+            navigationUrl?: string;
+            feedback?: { messageKey: string } | null;
+        } | null>
     >("share:deliverUserShare:calendar");
     const delivery = {
         shareId: "calendar-share-1",

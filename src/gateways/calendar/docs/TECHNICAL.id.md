@@ -88,6 +88,10 @@ Judul periode kalender bersama mengikuti tanggal dan tampilan saat ini saat tata
 
 Tombol tampilan memperbarui pilihan visual dan status ditekan secara bersamaan untuk setiap penyajian tanggal. Tombol tampilan menjaga pilihan visual dan status ditekan tetap selaras.
 
+### Batas Kalender Bertipe
+
+Kontrak acara, penyimpanan, inisialisasi, dan HTTP adaptor Kalender kini menjelaskan perilaku yang diterapkan. ICS dan CalDAV mempertahankan izin, penanganan frasa sandi, dan format umpan yang ada.
+
 ## Keamanan
 
 Mutasi kalender memerlukan kepemilikan atau izin edit terdelegasi. Berbagi memeriksa cakupan, kedaluwarsa, dan perlindungan; pengingat memakai kategori notifikasi terdaftar saat bootstrap.

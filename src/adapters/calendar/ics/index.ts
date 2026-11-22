@@ -29,7 +29,9 @@ function escapeXml(value: string): string {
         .replaceAll("'", "&apos;");
 }
 
-function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
+function createIcsRoutes(
+    ctx: CalendarAdapterBootstrapCtx,
+): Parameters<CalendarAdapterBootstrapCtx["registerRoute"]>[0] {
     const routeContext = resolveRouteContext(
         ctx.capabilities.get<RouteContext>("auth:routeContext"),
     );

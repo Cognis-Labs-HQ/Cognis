@@ -88,6 +88,10 @@ Die Zeitraumüberschrift geteilter Kalender folgt auch nach responsivem Neuzeich
 
 Ansichtsschaltflächen aktualisieren ihre sichtbare Auswahl und den gedrückten Zustand für jede Datumsdarstellung gemeinsam. Ansichtsschaltflächen halten ihre sichtbaren und gedrückten Auswahlzustände synchron.
 
+### Typisierte Kalendergrenzen
+
+Die Verträge für Kalenderereignisse, Speicherung, Initialisierung und Adapter-HTTP beschreiben jetzt das implementierte Verhalten. ICS und CalDAV behalten ihre Berechtigungen, Passwortverarbeitung und Feedformate bei.
+
 ## Sicherheit
 
 Kalenderänderungen brauchen Eigentum oder übertragenes Bearbeitungsrecht. Freigaben prüfen Bereich, Ablauf und Schutz; Erinnerungen nutzen die beim Start registrierte Kategorie.
