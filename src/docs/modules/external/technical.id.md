@@ -226,6 +226,14 @@ Pembungkus popup adaptor yang disuntikkan memiliki sinyal tutorial sejak pembuka
 
 Pengaturan modul menangkap cabang tutorial sebelum mengaktifkan sementara modul yang dinonaktifkan dan meneruskan sinyal yang sama selama persiapan konfigurasi. Pembatalan saat aktivasi mencegah editor terbuka terlambat dan mengembalikan status nonaktif. Jika pengguna menolak penutupan terlindungi pada editor adaptor khusus, perpindahan halaman berikutnya tetap diinisialisasi secara normal tanpa mengulangi permintaan pembatalan.
 
+### Terjemahan formulir sumber
+
+Sumber Modul memakai katalog halaman Modul di `/static/app/modules/languages/<locale>/strings.xml`, termasuk tooltip kredensial bersama. Nilai bahasa pilihan menggunakan bahasa Inggris sebagai cadangan per kunci; nilai bahasa Inggris yang hilang menghasilkan `missing_translation` alih-alih menyembunyikan masalah. Panduan marketplace yang ada tetap mengarah ke Pengaturan; kontrol dan alurnya tidak berubah.
+
+Service worker menyegarkan katalog terjemahan host yang dapat berubah sebelum memberikannya kepada resolver halaman baru dan menggabungkan pembacaan serentak. Batas waktu jaringan empat detik yang sudah ada membatasi penyegaran yang macet. Kegagalan jaringan atau gateway yang tidak tersedia mempertahankan katalog cache lengkap jika ada. Respons HTTP 401, 403, dan 404 tetap berlaku. Berkas bahasa dengan hash konten tetap tidak berubah dan mengutamakan cache. Resolver yang sudah memegang katalog lama tidak ditulis ulang. Terbitkan aset UI, berkas bahasa, dan manifes aset yang sesuai secara bersamaan, lalu biarkan siklus pembaruan worker biasa selesai dan buka kembali halaman.
+
+Untuk menelusuri terjemahan yang hilang, bandingkan aset halaman yang dimuat serta respons katalog bahasa pilihan dan Inggris dengan manifes rilis yang sama. Catat status, hash konten, dan apakah respons berasal dari cache service worker; jangan sertakan kredensial. Pesan luring Flashcards `snapshot not prepared` menunjukkan kegagalan persiapan latar belakang yang telah ditangani. Pesan ini tidak membuktikan kegagalan terjemahan atau penjadwalan ganda. Daftar dek kosong yang normal tidak memicunya. Diagnostik tambahan yang berguna mencakup tahap persiapan, status HTTP, pemicu, durasi, dan penanda luring/dibatalkan, tanpa nilai akun, token, atau isi dek.
+
 ## Keamanan
 
 ### Izin PAT GitHub untuk pemindaian privat

@@ -226,6 +226,14 @@ Der übergebene Adapter-Popup-Wrapper übernimmt das erfasste Tutorialsignal zu 
 
 Die Moduleinstellungen erfassen den Tutorial-Zweig vor dem vorübergehenden Aktivieren eines deaktivierten Moduls und verwenden dasselbe Signal bei der Konfigurationsvorbereitung. Ein Abbruch während der Aktivierung verhindert einen verspäteten Editor und stellt den deaktivierten Zustand wieder her. Wird das geschützte Schließen eines benutzerdefinierten Adaptereditors abgelehnt, werden spätere Seiten weiterhin normal initialisiert, ohne die Abbruchanfrage zu wiederholen.
 
+### Übersetzungen im Quellenformular
+
+Modulquellen verwenden den Katalog der Modulseite unter `/static/app/modules/languages/<locale>/strings.xml`, einschließlich des Tooltips für gemeinsame Zugangsdaten. Fehlende Werte der bevorzugten Sprache werden je Schlüssel durch Englisch ersetzt. Fehlt auch Englisch, erscheint `missing_translation`, statt das Problem zu verbergen. Die vorhandene Marktplatzführung verweist weiterhin auf Einstellungen; Bedienelemente und Ablauf bleiben unverändert.
+
+Der Service Worker aktualisiert veränderliche Host-Übersetzungskataloge, bevor ein neuer Seitenresolver sie erhält, und bündelt gleichzeitige Lesezugriffe. Die bestehende Netzwerkfrist von vier Sekunden begrenzt blockierte Aktualisierungen. Bei Netzwerkfehlern oder nicht verfügbarem Gateway bleibt ein vollständiger Cache-Katalog nutzbar, falls vorhanden. HTTP-Antworten 401, 403 und 404 bleiben maßgeblich. Inhaltsadressierte Sprachdateien bleiben unveränderlich und werden zuerst aus dem Cache geladen. Ein Resolver mit älteren Daten wird nicht nachträglich überschrieben. Veröffentlichen Sie zusammenpassende UI-Dateien, Sprachdateien und das Asset-Manifest gemeinsam, lassen Sie den normalen Worker-Aktualisierungsablauf abschließen und öffnen Sie die Seite erneut.
+
+Vergleichen Sie bei fehlenden Übersetzungen die geladene Seitendatei sowie die bevorzugten und englischen Katalogantworten mit demselben Release-Manifest. Erfassen Sie Status, Inhalts-Hash und die Herkunft aus dem Service-Worker-Cache, jedoch keine Zugangsdaten. Die Flashcards-Offlinemeldung `snapshot not prepared` bezeichnet einen abgefangenen Fehler bei der Vorbereitung im Hintergrund. Sie belegt weder einen Übersetzungsfehler noch doppelte Planung. Normale leere Decklisten erzeugen sie nicht. Hilfreich sind Vorbereitungsstufe, HTTP-Status, Auslöser, Dauer und Offline-/Abbruchstatus, ohne Kontowerte, Token oder Deckinhalte.
+
 ## Sicherheit
 
 ### GitHub-PAT-Berechtigungen für private Scans
