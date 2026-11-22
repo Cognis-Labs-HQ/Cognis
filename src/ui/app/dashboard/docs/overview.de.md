@@ -12,6 +12,10 @@ Die Analoguhr befindet sich zunächst unter den verfügbaren Elementen. Öffnen 
 
 Diese Vorgaben gelten für neu platzierte Karten. Gespeicherte Positionen, Größen und ausgeblendete Elemente bleiben erhalten, auch eine zuvor hinzugefügte Analoguhr. Schmale Ansichten verwenden die vorhandene inhaltsabhängige Darstellung über die volle Breite von Page Composer, ohne Desktop-Profile zu überschreiben.
 
+## Laufende Uhranzeige
+
+Jede sichtbare Uhr wird einmal pro Sekunde mit Ihrer aktuellen Zeitzone und Zeitformat-Einstellung aktualisiert. Beim Umordnen der Karten oder Ändern der Bildschirmgröße bleibt pro Anzeige genau eine Uhr aktiv. Das Ausblenden einer Uhr oder Verlassen des Dashboards beendet ihre Aktualisierungen; beim erneuten Anzeigen startet sie wieder.
+
 ## Arbeitsbereich-Anleitung
 
 Unter /dashboard erklärt die Arbeitsbereich-Anleitung die standardmäßige Digitaluhr, die optionale Analoguhr und die Terminlinks. Seitenelemente anordnen erklärt Hinzufügen, Touch-Bedienung, Verschieben und Größenänderung per Tastatur sowie Speichern oder Verwerfen. Das Fragezeichen neben dem Seitentitel startet die Anleitung erneut. Ihre bisherigen Ziele und die Interaktionsreihenfolge bleiben unverändert.

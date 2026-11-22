@@ -1,8 +1,15 @@
 import assert from "node:assert/strict";
 import { importTestModule } from "../../../../tooling/reuse/test-module.ts";
+import { replaceMountScope } from "../../../reuse/mount-scope.js";
 import { escapeHtml } from "../../../reuse/escape-html.js";
 
-export async function loadDashboard({ events = [], extensions = [] } = {}) {
+export async function loadDashboard({
+    events = [],
+    extensions = [],
+    clockModule,
+    i18nReady,
+    onInit,
+} = {}) {
     const composers = [];
     const clocks = [];
     const i18n = { t: (key) => key };
@@ -21,7 +28,10 @@ export async function loadDashboard({ events = [], extensions = [] } = {}) {
                 },
             },
             "../../reuse/i18n.js": {
-                createI18n: async () => i18n,
+                createI18n: async () => {
+                    await i18nReady;
+                    return i18n;
+                },
                 applyDocumentTitle: (_i18n, key) =>
                     assert.equal(key, "ui.page.title.dashboard"),
             },
@@ -32,14 +42,17 @@ export async function loadDashboard({ events = [], extensions = [] } = {}) {
                         options,
                         refreshed: [],
                         initialized: false,
+                        refreshes: 0,
                     };
                     composers.push(record);
                     return {
                         init: async () => {
                             record.initialized = true;
+                            await onInit?.(record);
                         },
                         refresh: (elements) => {
                             record.options.elements = elements;
+                            record.refreshes++;
                         },
                         refreshElements: (ids) => record.refreshed.push(...ids),
                     };
@@ -52,7 +65,8 @@ export async function loadDashboard({ events = [], extensions = [] } = {}) {
             },
             "../../reuse/escape-html.js": { escapeHtml },
             "../../reuse/timestamp.js": { formatDateTime: (value) => value },
-            "../../reuse/clock-display.js": {
+            "../../reuse/mount-scope.js": { replaceMountScope },
+            "../../reuse/clock-display.js": clockModule ?? {
                 buildAnalogueClockMarkup: () => "analogue",
                 buildDigitalClockMarkup: () => "digital",
                 createDateTimeFormatters: () => ({
@@ -61,7 +75,6 @@ export async function loadDashboard({ events = [], extensions = [] } = {}) {
                 }),
                 mountLiveClock: (options) => clocks.push(options),
             },
-            "../../reuse/access-role.js": { getRoleLabel: () => "user" },
             "../../reuse/dynamic-contribution-loader.js": {
                 loadDynamicContributions: async (_data, options) => {
                     assert.equal(options.exportName, "createPageElement");

@@ -12,6 +12,10 @@ The analogue clock starts in available elements. Open Arrange Page Widgets, then
 
 These defaults apply to newly placed cards. Saved positions, sizes and hidden choices remain intact, including a previously added analogue clock. Narrow views use the existing full-width, content-sized Page Composer presentation without overwriting desktop profiles.
 
+## Live Clock Updates
+
+Each visible clock refreshes once per second using your current timezone and time-format preferences. Rearranging cards or changing screen size keeps one live clock per display. Hiding a clock or leaving the dashboard stops its updates; showing it again starts a fresh display.
+
 ## Workspace Guide
 
 On /dashboard, the workspace guide explains the default digital clock, optional analogue clock and upcoming-event links. Arrange Page Widgets explains Add, touch controls, keyboard movement and resizing, and Save or Discard. Use the question-mark control beside the page title to replay the guide. Its existing targets and interaction sequence are unchanged.
