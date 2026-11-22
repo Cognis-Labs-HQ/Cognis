@@ -39,6 +39,10 @@ Alle drei Ansichten und ihre verfügbaren Übersetzungen werden atomar in einer 
 
 Die Datenbankeingabe verwendet den öffentlichen strukturierten Vertrag `ensureTable` und `executeCommand` des DB-Gateways. Speichererstellung und unveränderliche Speichermethoden besitzen explizite TypeScript-Verträge und benötigen keinen konkreten Datenbanktreiber.
 
+Gemeinsames Verhalten: [TFA](/docs/gateways/tfa/technical).
+
+Unabhängige Einstellungsänderungen wenden keine TFA-Richtlinie an. Wenn die TFA-Lesecapability vorhanden ist, verwenden Systemabfragen und Schreibvorgänge ohne TFA-Feld deren aktuelle Richtlinie. Lesefehler werden gemeldet, statt die Erzwingung als deaktiviert anzuzeigen. Ohne diese optionale Capability ist die gespeicherte Einstellung lediglich eine möglicherweise veraltete Kopie. Explizite Richtlinienänderungen erfordern weiterhin die zuständige Capability.
+
 ## Sicherheit
 
 Dokumentationsendpunkte liefern nur lesbare Informationen. Zugangsdaten und private Kontodaten gehören nicht in diese Quellen. Routen der getrennten Dokumentvergleichsfunktion prüfen Anmeldung und Dokumentrechte selbst.

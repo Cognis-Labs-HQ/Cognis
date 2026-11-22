@@ -1,3 +1,4 @@
+import { registerEnforcementPolicy } from "./enforcement-policy.js";
 import { createRouteLifetime } from "./route-lifetime.js";
 import { registerSessionAssessment } from "./session-assessment.js";
 import { readGatewayManifestVersion } from "../../reuse/manifest-version.js";
@@ -51,9 +52,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         adapterFactoryContext: { log: ctx.log },
         log: ctx.log,
     });
-    const revokeSetupPendingAccessTokens = ctx.capabilities.get<
-        (excludedSubject?: string) => number
-    >("auth:revokeSetupPendingAccessTokens");
     const tfaAdaptersRoot = path.join(ctx.adaptersRoot, "tfa");
     await gateway.discoverAdapters(tfaAdaptersRoot);
     await gateway.loadPersistedConfigs();
@@ -159,28 +157,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.capabilities.contribute("tfa:getEnforceAllUsers", async () =>
         gateway.getEnforceAllUsers(),
     );
-    ctx.capabilities.contribute(
-        "tfa:setEnforceAllUsers",
-        async (required: boolean) => gateway.setEnforceAllUsers(required),
-    );
-    ctx.capabilities.contribute(
-        "tfa:applyEnforcementPolicy",
-        async (input: { required: boolean; excludedSubject?: string }) => {
-            const previousRequired = await gateway.getEnforceAllUsers();
-            await gateway.setEnforceAllUsers(input.required);
-            let revokedSetupPendingCount = 0;
-            if (previousRequired && !input.required) {
-                revokedSetupPendingCount =
-                    revokeSetupPendingAccessTokens?.(input.excludedSubject) ??
-                    0;
-            }
-            return {
-                required: input.required,
-                previousRequired,
-                revokedSetupPendingCount,
-            };
-        },
-    );
     if (ctx.flow.exists("construct-login-ui")) {
         ctx.flow.extend(
             "construct-login-ui",
@@ -202,7 +178,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             }),
         );
     }
-    registerSessionAssessment(ctx, gateway);
+    const suspendAssessments = registerSessionAssessment(ctx, gateway);
+    registerEnforcementPolicy(ctx, gateway, suspendAssessments);
 
     ctx.log?.("info", "TFA gateway initialized.", {
         component: "tfa-gateway",

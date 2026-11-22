@@ -9,6 +9,7 @@ export function createStoreMock(): Omit<DbTfaStore, never> & {
     recoveryCodes: RecoveryCodeRecord[];
 } {
     const state = {
+        enforceAllUsers: false,
         methods: [] as Array<{
             accountId: string;
             methodId: string;
@@ -118,8 +119,10 @@ export function createStoreMock(): Omit<DbTfaStore, never> & {
         },
         replaceRecoveryCodes: async () => undefined,
         clearUserState: async () => undefined,
-        getEnforceAllUsers: async () => false,
-        setEnforceAllUsers: async () => undefined,
+        getEnforceAllUsers: async () => state.enforceAllUsers,
+        setEnforceAllUsers: async (required: boolean) => {
+            state.enforceAllUsers = required;
+        },
         recoveryCodes: state.recoveryCodes,
     };
 }

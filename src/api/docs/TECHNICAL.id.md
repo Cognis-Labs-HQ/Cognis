@@ -45,6 +45,10 @@ Ketiga tampilan beserta terjemahan yang tersedia disimpan secara atomik dalam sa
 
 Masukan basis data menggunakan kontrak publik terstruktur `ensureTable` dan `executeCommand` milik gateway DB. Pembuatan penyimpanan dan metode penyimpanan yang tidak dapat diubah memiliki kontrak TypeScript eksplisit tanpa memerlukan driver basis data tertentu.
 
+Perilaku bersama: [TFA](/docs/gateways/tfa/technical).
+
+Penulisan pengaturan yang tidak terkait tidak menerapkan kebijakan TFA. Jika kapabilitas pembacaan TFA tersedia, pembacaan sistem dan penulisan tanpa kolom TFA memakai kebijakan terkini dari pemiliknya; kegagalan pembacaan menghasilkan kesalahan, bukan laporan bahwa penegakan dinonaktifkan. Tanpa kapabilitas opsional tersebut, preferensi tersimpan hanya merupakan salinan yang mungkin usang. Perubahan kebijakan eksplisit tetap memerlukan kapabilitas pemilik.
+
 ## Keamanan
 
 Titik akhir dokumentasi menyediakan informasi baca-saja. Jangan masukkan kredensial dan data akun pribadi ke sumber ini. Rute kemampuan perbandingan dokumen terpisah menegakkan autentikasi dan izin dokumennya sendiri.

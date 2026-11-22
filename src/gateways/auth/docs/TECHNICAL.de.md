@@ -194,6 +194,12 @@ Faktorprüfung und Einrichtungsabschluss verwenden beide den Auth-eigenen Sitzun
 
 Gemeinsames Verhalten: [TFA](/docs/gateways/tfa/technical).
 
+### Eingeschränkte Zugangstoken
+
+Das gespeicherte Tokenformat 2 verlangt explizite Sicherheitsfelder und verwirft nicht unterstützte Formate sowie ungültige oder mehrdeutige Datensätze. Abgewiesene Sitzungen erfordern eine erneute Anmeldung; Formate werden nicht automatisch umgewandelt. Gültige normale, eingeschränkte und widerrufene Zugangstoken behalten ihre Berechtigungen nach einem Neustart. Speicherfehler werden gemeldet statt als erfolgreiche Schreibvorgänge bestätigt.
+
+Die Capability auth:revokeSetupPendingAccessTokens akzeptiert keine Argumente und widerruft alle ausstehenden Sitzungen; Ausnahmen für einzelne Konten werden nicht mehr unterstützt.
+
 ## Sicherheit
 
 Authentifizierung prüft Zugangsdaten vor Sitzung und nötiger TFA. Konto-, Rollen- und Inhaltsrechte bleiben getrennt; verweigerte Schlüsselbundfreigabe ändert keine Identität.

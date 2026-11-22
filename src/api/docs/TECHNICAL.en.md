@@ -39,6 +39,10 @@ All three views and their available translations are saved in one atomic `bundle
 
 The database input uses the DB gateway’s public structured `ensureTable` and `executeCommand` contract. Store creation and immutable store methods carry explicit TypeScript contracts; they do not require a concrete database driver.
 
+Shared behavior: [TFA](/docs/gateways/tfa/technical).
+
+Unrelated settings writes never apply TFA policy. When the TFA read capability exists, system reads and omitted-field writes use its current policy; read failure returns an error instead of reporting disabled enforcement. Without that optional capability, the stored preference is only a mirror and may be stale. Explicit policy changes still require the owner capability.
+
 ## Security
 
 Documentation endpoints publish read-only information. Keep credentials and private account data out of these sources. Routes using the separate document-diff capability enforce their own authentication and document authorization.

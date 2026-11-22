@@ -88,6 +88,10 @@ Built-in `cognisctl` commands can render response-aware terminal output with hea
 
 `healthcheck.mjs` is used as the Docker `HEALTHCHECK` command. It issues a `GET /health` request to the running server and exits with code 0 on success or 1 on failure.
 
+### Isolated Test Credentials
+
+`npm test` and `npm run ci:test` allocate a temporary token-store directory for each run and a separate writable file for every test worker. A static preload sets the file before test modules load, ignoring any inherited production token-store path. Tests may deliberately override their own path afterward for restart or failure cases. The runner removes its temporary directory after successful or failed child execution and forwards ordinary termination signals. Forced process termination or host failure can leave temporary files for operating-system cleanup. Production token persistence remains fail-closed and unchanged.
+
 ## Security
 
 CLI authentication reads COGNIS_CLI_TOKEN_PATH; the server still enforces role and resource authorization. Keep token files private and avoid including secrets in verbose output or shared command transcripts.
