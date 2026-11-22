@@ -1,12 +1,10 @@
 import {
-    clampVerificationCodeLength,
+    MIN_VERIFICATION_CODE_LENGTH,
+    MAX_VERIFICATION_CODE_LENGTH,
     generateNumericVerificationCode,
 } from "../../../gateways/reuse/verification-codes.js";
 
-import type {
-    RegisterNotificationAction,
-    SendEmailAction,
-} from "../../notify/smtp/contracts/action-delivery.js";
+import { requireBootstrapScope } from "@cognis/core";
 import type { TfaAdapterBootstrapContext } from "../../../gateways/tfa/gateway.js";
 import type { TfaMethodAdapter } from "../../../gateways/tfa/gateway.js";
 
@@ -66,20 +64,27 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
     };
     readonly name = "Email Code";
 
+    private active = true;
     private readonly challenges = new Map<string, CodeChallenge>();
     private readonly loginChallengeLastSentAt = new Map<string, number>();
 
-    private get codeLength() {
-        return clampVerificationCodeLength(
-            this.context.getEmailDeliveryPolicy?.().codeLength,
-        );
+    private readDeliveryPolicy() {
+        const policy = this.context.getEmailDeliveryPolicy?.();
+        if (
+            !policy ||
+            !Number.isInteger(policy.codeLength) ||
+            policy.codeLength < MIN_VERIFICATION_CODE_LENGTH ||
+            policy.codeLength > MAX_VERIFICATION_CODE_LENGTH ||
+            !Number.isFinite(policy.minimumIntervalMs) ||
+            policy.minimumIntervalMs < 0
+        ) {
+            throw new Error("email_delivery_unavailable");
+        }
+        return policy;
     }
 
     private get deliveryIntervalMs() {
-        return Math.max(
-            0,
-            this.context.getEmailDeliveryPolicy?.().minimumIntervalMs ?? 0,
-        );
+        return this.readDeliveryPolicy().minimumIntervalMs;
     }
 
     constructor(private readonly context: SmtpTfaAdapterContext = {}) {}
@@ -89,9 +94,32 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
             ctx.capabilities.require<
                 () => { minimumIntervalMs: number; codeLength: number }
             >("notify:emailDeliveryPolicy")();
-        const register = ctx.capabilities.get<RegisterNotificationAction>(
-            "notify:registerEmailPurpose",
+        this.active = ctx.isEnabled();
+        const clearChallenges = () => {
+            this.active = false;
+            this.challenges.clear();
+            this.loginChallengeLastSentAt.clear();
+        };
+        requireBootstrapScope().registerDisposer(
+            Object.assign(clearChallenges, {
+                reactivate: () => {
+                    this.active = ctx.isEnabled();
+                },
+            }),
         );
+        ctx.onEnabledChange("tfa:smtpChallenges", async (enabled) => {
+            if (!enabled) clearChallenges();
+            else this.active = true;
+        });
+        const register = ctx.capabilities.get<
+            (
+                id: string,
+                action: (variables: Record<string, string>) => {
+                    subject: string;
+                    body: string;
+                },
+            ) => Promise<string>
+        >("notify:registerEmailPurpose");
         if (register) {
             const purpose = await register("loginCode", (variables) => ({
                 subject: "Your Cognis verification code",
@@ -103,7 +131,17 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
                 _verifyUrl?: string,
                 _theme?: string,
             ) =>
-                ctx.capabilities.require<SendEmailAction>("notify:sendEmail")({
+                ctx.capabilities.require<
+                    (input: {
+                        purpose: string;
+                        recipientEmail: string;
+                        variables: Record<string, string>;
+                    }) => ReturnType<
+                        NonNullable<
+                            SmtpTfaAdapterContext["queueVerificationEmail"]
+                        >
+                    >
+                >("notify:sendEmail")({
                     purpose,
                     recipientEmail: to,
                     variables: { code },
@@ -133,7 +171,10 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
     }
 
     private assertEmailCodeAvailable(): void {
-        if (typeof this.context.sendVerificationEmail !== "function") {
+        if (
+            !this.active ||
+            typeof this.context.sendVerificationEmail !== "function"
+        ) {
             throw new Error("email_delivery_unavailable");
         }
         if (this.context.canSendVerificationEmail?.() !== true) {
@@ -165,13 +206,14 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
     private issueCode(key: string): string {
         this.cleanupExpiredChallenges();
         const existingCode = this.getLiveChallenge(key)?.code;
-        let code = generateNumericVerificationCode(this.codeLength);
+        const codeLength = this.readDeliveryPolicy().codeLength;
+        let code = generateNumericVerificationCode(codeLength);
         let generationAttempts = 1;
         while (existingCode && code === existingCode) {
             if (generationAttempts >= MAX_CODE_GENERATION_ATTEMPTS) {
                 throw new Error("smtp_code_generation_failed");
             }
-            code = generateNumericVerificationCode(this.codeLength);
+            code = generateNumericVerificationCode(codeLength);
             generationAttempts += 1;
         }
         this.challenges.set(key, {
@@ -207,17 +249,30 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
             accountId: string;
             email: string;
         },
-    ): Promise<void> {
+    ): Promise<string> {
         this.assertEmailCodeAvailable();
         const key = challengeKey(scope, input.accountId);
+        const previousChallenge = this.getLiveChallenge(key);
         const code = this.issueCode(key);
-        await this.context.sendVerificationEmail?.(input.email, code);
+        try {
+            await this.context.sendVerificationEmail?.(input.email, code);
+        } catch (error) {
+            if (this.getLiveChallenge(key)?.code === code) {
+                this.rollbackChallenge(key, previousChallenge);
+            }
+            throw error;
+        }
+        if (!this.active || this.getLiveChallenge(key)?.code !== code) {
+            throw new Error("email_delivery_unavailable");
+        }
+        return code;
     }
 
     private extractRetryMetadata(availableAt: string | undefined): {
         retryAfterSeconds?: number;
         resendAvailableAt?: string;
     } {
+        const log = this.context.log;
         if (typeof availableAt !== "string") {
             return {};
         }
@@ -227,15 +282,11 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         }
         const resendTimestamp = Date.parse(resendAvailableAt);
         if (!Number.isFinite(resendTimestamp)) {
-            this.context.log?.(
-                "warn",
-                "Ignored invalid SMTP retry timestamp metadata.",
-                {
-                    component: "adapter-tfa-smtp",
-                    operation: "parse_retry_metadata",
-                    availableAt: resendAvailableAt,
-                },
-            );
+            log?.("warn", "Ignored invalid SMTP retry timestamp metadata.", {
+                component: "adapter-tfa-smtp",
+                operation: "parse_retry_metadata",
+                availableAt: resendAvailableAt,
+            });
             return {};
         }
         return {
@@ -247,15 +298,16 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         };
     }
 
-    private buildCooldownMetadata(sentAtMs = Date.now()): {
+    private buildCooldownMetadata(
+        sentAtMs: number,
+        intervalMs: number,
+    ): {
         retryAfterSeconds: number;
         resendAvailableAt: string;
     } {
         return {
-            retryAfterSeconds: Math.ceil(this.deliveryIntervalMs / 1000),
-            resendAvailableAt: new Date(
-                sentAtMs + this.deliveryIntervalMs,
-            ).toISOString(),
+            retryAfterSeconds: Math.ceil(intervalMs / 1000),
+            resendAvailableAt: new Date(sentAtMs + intervalMs).toISOString(),
         };
     }
 
@@ -283,7 +335,7 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         if (!primaryEmail) {
             throw new Error("primary_email_required");
         }
-        await this.sendCode("setup", {
+        const code = await this.sendCode("setup", {
             accountId: input.accountId,
             email: primaryEmail,
         });
@@ -299,7 +351,7 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
                         label: "ui.app.login.tfa.code_label",
                         type: "text",
                         inputMode: "numeric",
-                        maxLength: this.codeLength,
+                        maxLength: code.length,
                     },
                 ],
             },
@@ -355,6 +407,7 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         message?: string;
         retryAfterSeconds?: number;
         resendAvailableAt?: string;
+        maxLength?: number;
     }> {
         const email = String(input.state.email ?? "").trim();
         if (!email) {
@@ -366,10 +419,15 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         ) {
             return { ready: false, message: "email_delivery_unavailable" };
         }
-        if (this.context.canSendVerificationEmail?.() !== true) {
+        if (
+            !this.active ||
+            this.context.canSendVerificationEmail?.() !== true
+        ) {
             return { ready: false, message: "email_delivery_unavailable" };
         }
+        const log = this.context.log;
         try {
+            const cooldownIntervalMs = this.deliveryIntervalMs;
             if (typeof this.context.queueVerificationEmail === "function") {
                 const challengeSentAt = Date.now();
                 const key = challengeKey("login", input.accountId);
@@ -382,8 +440,13 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
                         code,
                     );
                 } catch (error) {
-                    this.rollbackChallenge(key, previousChallenge);
+                    if (this.getLiveChallenge(key)?.code === code) {
+                        this.rollbackChallenge(key, previousChallenge);
+                    }
                     throw error;
+                }
+                if (!this.active || this.getLiveChallenge(key)?.code !== code) {
+                    throw new Error("email_delivery_unavailable");
                 }
                 if (
                     queued.status === "waiting_rate_limit" ||
@@ -398,21 +461,18 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
                     return {
                         ready: true,
                         message: "email_rate_limited",
+                        maxLength: previousChallenge?.code.length,
                         retryAfterSeconds: retryMetadata.retryAfterSeconds,
                         resendAvailableAt: retryMetadata.resendAvailableAt,
                     };
                 }
                 if (queued.status === "failed") {
-                    this.context.log?.(
-                        "error",
-                        "Failed to queue SMTP TFA challenge code.",
-                        {
-                            component: "adapter-tfa-smtp",
-                            operation: "queue_login_code",
-                            accountId: input.accountId,
-                            error: queued.error ?? "queue_delivery_failed",
-                        },
-                    );
+                    log?.("error", "Failed to queue SMTP TFA challenge code.", {
+                        component: "adapter-tfa-smtp",
+                        operation: "queue_login_code",
+                        accountId: input.accountId,
+                        error: queued.error ?? "queue_delivery_failed",
+                    });
                     return {
                         ready: false,
                         message: "email_delivery_unavailable",
@@ -424,18 +484,26 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
                 );
                 return {
                     ready: true,
-                    ...this.buildCooldownMetadata(challengeSentAt),
+                    maxLength: code.length,
+                    ...this.buildCooldownMetadata(
+                        challengeSentAt,
+                        cooldownIntervalMs,
+                    ),
                 };
             }
             const challengeSentAt = Date.now();
-            await this.sendCode("login", {
+            const code = await this.sendCode("login", {
                 accountId: input.accountId,
                 email,
             });
             this.loginChallengeLastSentAt.set(input.accountId, challengeSentAt);
             return {
                 ready: true,
-                ...this.buildCooldownMetadata(challengeSentAt),
+                maxLength: code.length,
+                ...this.buildCooldownMetadata(
+                    challengeSentAt,
+                    cooldownIntervalMs,
+                ),
             };
         } catch (error) {
             const errorMessage =
@@ -451,20 +519,19 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
                 return {
                     ready: true,
                     message: "email_rate_limited",
+                    maxLength: this.getLiveChallenge(
+                        challengeKey("login", input.accountId),
+                    )?.code.length,
                     retryAfterSeconds: Math.ceil(retryMs / 1000),
                     resendAvailableAt: new Date(now + retryMs).toISOString(),
                 };
             }
-            this.context.log?.(
-                "error",
-                "Failed to send SMTP TFA challenge code.",
-                {
-                    component: "adapter-tfa-smtp",
-                    operation: "send_login_code",
-                    accountId: input.accountId,
-                    error: errorMessage,
-                },
-            );
+            log?.("error", "Failed to send SMTP TFA challenge code.", {
+                component: "adapter-tfa-smtp",
+                operation: "send_login_code",
+                accountId: input.accountId,
+                error: errorMessage,
+            });
             return { ready: false, message: "email_delivery_unavailable" };
         }
     }
@@ -504,10 +571,6 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
 
     getConfigSchema() {
         return [];
-    }
-
-    getCodeLength(): number {
-        return this.codeLength;
     }
 }
 

@@ -14,7 +14,9 @@ Konfigurieren Sie `COGNIS_SMTP_HOST`, `COGNIS_SMTP_PORT` (587), `COGNIS_SMTP_FRO
 
 ## Verhalten
 
-### Bootstrap und Kanäle
+Der SMTP-Benachrichtigungsadapter versendet registrierte E-Mail-Aktionen und verwaltet die gemeinsame Codelänge für E-Mail-Verifizierung und E-Mail-Code-TFA.
+
+### Anwendungsbeispiele
 
 SMTP verwaltet die Registrierung von Aktionen, deren Darstellung und Warteschlangen. `notify:registerEmailPurpose` erhält eine lokale Kennung und eine Aktionsfunktion, die aus Variablen eine Nachricht erstellt. Gateways, Adapter und externe Module registrieren nur innerhalb ihres eigenen Bootstraps; Kennungen enthalten den Besitzer. Auth, Registration, TFA und Share besitzen ihre Nachrichteninhalte. SMTP führt keine Liste anwendungsspezifischer Zwecke.
 
@@ -28,6 +30,10 @@ const sendEmail = ctx.getCapability("notify:sendEmail");
 await sendEmail({ purpose, recipientEmail, variables });
 ```
 
+### Technische Spezifikation
+
+### Bootstrap und Kanäle
+
 Jeder Aufruf von `notify:sendEmail` übergibt einen bestehenden Zweck und Variablen. `templateId` entfällt. Fehlende und unbekannte Zwecke werden abgewiesen; asynchrone Aktionen werden vor dem Einreihen erneut geprüft. Nach Abschluss, Fehler oder Zeitüberschreitung des Bootstraps ist die Registrierung gesperrt. Abschluss-Hooks laufen nach dem Start der Anbieter unter demselben Besitzer.
 
 Benachrichtigungskategorien verwenden weiterhin `notify:registerCategory`. SMTP erstellt die Warteschlange bei der Registrierung und gibt dem Gateway eine gebundene Zustellfunktion zurück. Das Gateway bleibt unabhängig vom Sender. Kein Versand erstellt oder erschließt einen Zweck; direkte SMTP-Aufrufe benötigen einen ausdrücklich registrierten Zweck.
@@ -37,6 +43,14 @@ Beim Deaktivieren eines Gateways oder Entfernen eines Moduls werden dessen Aktio
 Die Standardpause beträgt fünfzehn Sekunden je normalisiertem Empfänger und Warteschlange. Unabhängige Warteschlangen laufen gleichzeitig. Nur erfolgreiche Zustellungen setzen die Pause fort. Im Arbeitsspeicher bleiben je Warteschlange bis zu 200 abgeschlossene Einträge erhalten. `sendEmail` gibt den tatsächlichen Warteschlangeneintrag zurück; das Einreihen bestätigt keine SMTP-Zustellung.
 
 Der Sendervertrag verwendet `test(recipient, config)` und optionale Bootstrap-, Kanal- und Lebenszyklus-Hooks. Das Gateway ruft `testSender(senderId, recipient, config)` auf und enthält keine SMTP-spezifischen Test-, Verifizierungs-, Einladungs- oder Anmeldemethoden. Die bisherigen speziellen Gateway-Hilfsmethoden und die separate Vorlagenregistrierung entfallen.
+
+Öffnen Sie in der Administration die SMTP-Konfiguration des Benachrichtigungs-Gateways und bearbeiten Sie **Codelänge**. Dies ist die einzige bearbeitbare und gespeicherte Einstellung für die Codelänge bei E-Mail-Verifizierung sowie Einrichtung und Anmeldung mit E-Mail-Code-TFA. Der Standardwert beträgt 6 Ziffern; numerische Werte werden in eine ganze Zahl umgewandelt und auf 4–10 Ziffern begrenzt. Der Informationshinweis am Feld erklärt diesen gemeinsamen Geltungsbereich.
+
+SMTP stellt den aktuellen Wert zusammen mit `minimumIntervalMs` über seinen öffentlichen Vertrag `notify:emailDeliveryPolicy` in Version 1 bereit. Verbraucher lesen die Richtlinie bei jeder neuen Codeausgabe. Eine gespeicherte Änderung gilt für nachfolgende Codes, einschließlich Ersatzcodes beim erneuten Senden. Bereits ausgegebene Codes behalten ihre ursprüngliche Länge, bis sie verwendet, ersetzt oder abgelaufen sind; eine Änderung deutet sie nicht neu aus.
+
+Erweiterungen lesen die Länge aus `notify:emailDeliveryPolicy().codeLength`. Stellen Sie das Benachrichtigungs-Gateway gemeinsam mit seinen SMTP- und E-Mail-Code-TFA-Adaptern bereit, damit Verbraucher und Richtlinienanbieter denselben Vertrag verwenden.
+
+Fehlt der SMTP-Richtlinienanbieter oder ist er deaktiviert oder nicht konfiguriert, schlagen neue Codeanforderungen zur E-Mail-Verifizierung und E-Mail-Code-TFA ausdrücklich fehl. Verbraucher setzen keinen eigenen Standardwert für die Codelänge ein.
 
 ### Fabriken und Empfängerthema
 
@@ -76,19 +90,19 @@ export async function registerReport(ctx, heading) {
 }
 ```
 
-### Lesbarer E-Mail-Text
+#### Lesbarer E-Mail-Text
 
 E-Mail-Inhalte verwenden einen Blockcontainer statt verschachtelter Absätze um erzeugte Blöcke. Absätze, Codes, Listeneinträge und Tabellenzellen erhalten explizite Themenfarben. Fußzeilen im dunklen Modus und Links im hellen Modus bieten einen lesbaren Kontrast.
 
-### Zuverlässige Freigaben und Tests
+#### Zuverlässige Freigaben und Tests
 
 SMTP-Konfigurationstests funktionieren bei deaktiviertem Sender, ohne normale Zustellung einzuschalten. Tests verwenden eine eigene, beim Bootstrap registrierte Diagnosewarteschlange und einen gestuften Ablauf; die Gateway-Deaktivierung beendet diese Warteschlange. Leere Passwortüberschreibungen behalten das gespeicherte, verborgene Passwort bei. Diagnoseprotokolle enthalten sichere Transportfehler- und Protokollantwortcodes, jedoch keine Zugangsdaten oder Serverantworttexte.
 
-### Prüfung und Lebenszyklus
+#### Prüfung und Lebenszyklus
 
 Für den SMTP-Verbindungsaufbau und die TLS-Aushandlung gilt jeweils eine Frist von dreißig Sekunden. Eine blockierte Verbindung wird geschlossen, statt die Diagnoseanfrage offen zu halten. Direktes TLS und STARTTLS verwenden den konfigurierten Hostnamen für die TLS-Identität und SNI mit DNS-Namen; IP-Adressen werden nicht als SNI-Namen gesendet.
 
-### Typisierte Zustellverträge
+#### Typisierte Zustellverträge
 
 SMTP-Warteschlangeneinträge behalten ihren erforderlichen Betreff bei Zustellung und Wiederholungen. TLS-Verbindungsoptionen enthalten das Abbruchsignal für direktes TLS und STARTTLS; Zertifikatsprüfung, Zeitlimits und Verbindungsbereinigung bleiben unverändert.
 

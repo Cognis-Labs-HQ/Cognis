@@ -23,7 +23,7 @@ const methods = [
 ];
 const path = "/api/v1/auth/login-attempt";
 
-async function fixture() {
+async function fixture(issuedMethods = methods) {
     const host = await createLoginFixture();
     const attempts: PendingTfaLoginAttempt[] = [];
     let deliveries = 0;
@@ -45,7 +45,7 @@ async function fixture() {
                 ...candidate,
                 outcome: "tfa_required",
                 loginAttemptId: attempt.id,
-                methods,
+                methods: issuedMethods,
             };
         },
     );
@@ -92,6 +92,35 @@ test("registered TFA login retains its issued metadata while no-TFA login commit
         null,
     );
     revokeAccessTokensForSubject("assurance-user");
+});
+
+test("continuation preserves issued input metadata across provider policy changes without redelivery", async () => {
+    const providerMethods = structuredClone(methods);
+    const host = await fixture(providerMethods);
+    const pending = await host.request();
+    const issued = JSON.parse(pending.payload).data;
+    const originalExpiry = host.attempts[0].expiresAt;
+    const headers = { cookie: cookie(pending) };
+    assert.equal(issued.methods[0].challenge.maxLength, 8);
+    providerMethods[0].challenge.maxLength = 4;
+    for (let i = 0; i < 2; i++) {
+        const resumed = await host.request(
+            {},
+            { path, method: "GET", headers },
+        );
+        const presentation = JSON.parse(resumed.payload).data;
+        assert.deepEqual(presentation.methods, issued.methods);
+        assert.equal(presentation.loginAttemptId, issued.loginAttemptId);
+        assert.equal(host.deliveries(), 1);
+        assert.equal(host.attempts[0].expiresAt, originalExpiry);
+        assert.equal(host.state.activations, 0);
+        presentation.methods[0].challenge.maxLength = 10;
+    }
+    const next = await host.request({}, { headers });
+    const replacement = JSON.parse(next.payload).data;
+    assert.equal(replacement.methods[0].challenge.maxLength, 4);
+    assert.notEqual(replacement.loginAttemptId, issued.loginAttemptId);
+    assert.equal(host.deliveries(), 2);
 });
 
 test("continuation requires the HttpOnly owner cookie and rejects malformed duplicate cookies", async () => {

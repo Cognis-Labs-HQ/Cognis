@@ -11,6 +11,7 @@
     <string name="adapter.smtp.config.allow_self_signed">自己署名証明書を許可する</string>
     <string name="adapter.smtp.config.auth_disabled">認証を無効にする</string>
     <string name="adapter.smtp.config.code_length">コード長</string>
+    <string name="adapter.smtp.config.code_length_help">メール確認とメールコードTFAで共有します。既定値は6桁、範囲は4～10桁です。変更は新しく発行するコードに適用されます。既存のコードは、使用・置き換え・有効期限切れまで元の長さを保持します。</string>
     <string name="adapter.smtp.config.sender_name">送信者名</string>
     <string name="adapter.smtp.template.standard">標準メール</string>
     <string name="adapter.smtp.template.code">確認コード</string>

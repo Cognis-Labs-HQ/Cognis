@@ -5,6 +5,10 @@ import { createAdapter } from "../index.js";
 test("smtp adapter setup sends a code and verifies it", async () => {
     const sentCodes: Array<{ to: string; code: string }> = [];
     const adapter = createAdapter({
+        getEmailDeliveryPolicy: () => ({
+            codeLength: 6,
+            minimumIntervalMs: 15000,
+        }),
         canSendVerificationEmail: () => true,
         sendVerificationEmail: async (to, code) => {
             sentCodes.push({ to, code });
@@ -30,6 +34,10 @@ test("smtp adapter setup sends a code and verifies it", async () => {
 test("smtp adapter login challenge sends a code and verifyLogin consumes it", async () => {
     const sentCodes: string[] = [];
     const adapter = createAdapter({
+        getEmailDeliveryPolicy: () => ({
+            codeLength: 6,
+            minimumIntervalMs: 15000,
+        }),
         canSendVerificationEmail: () => true,
         sendVerificationEmail: async (_to, code) => {
             sentCodes.push(code);
@@ -59,6 +67,10 @@ test("smtp adapter login challenge sends a code and verifyLogin consumes it", as
 test("smtp adapter resend invalidates the previous login code and issues a new one", async () => {
     const sentCodes: string[] = [];
     const adapter = createAdapter({
+        getEmailDeliveryPolicy: () => ({
+            codeLength: 6,
+            minimumIntervalMs: 15000,
+        }),
         canSendVerificationEmail: () => true,
         sendVerificationEmail: async (_to, code) => {
             sentCodes.push(code);
@@ -112,6 +124,10 @@ test("smtp adapter reads code length from the delivery policy", async () => {
 
 test("smtp adapter login challenge reports unavailable when SMTP sender is missing", async () => {
     const adapter = createAdapter({
+        getEmailDeliveryPolicy: () => ({
+            codeLength: 6,
+            minimumIntervalMs: 15000,
+        }),
         canSendVerificationEmail: () => false,
     });
     const challenge = await adapter.beginLoginChallenge?.({
@@ -123,6 +139,10 @@ test("smtp adapter login challenge reports unavailable when SMTP sender is missi
 
 test("smtp adapter login challenge surfaces retry countdown when SMTP is rate-limited", async () => {
     const adapter = createAdapter({
+        getEmailDeliveryPolicy: () => ({
+            codeLength: 6,
+            minimumIntervalMs: 15000,
+        }),
         canSendVerificationEmail: () => true,
         sendVerificationEmail: async () => {
             throw new Error("email_rate_limited");
@@ -143,6 +163,10 @@ test("smtp adapter login challenge surfaces queued rate limits without replacing
     let firstIssuedCode = "";
     let secondIssuedCode = "";
     const adapter = createAdapter({
+        getEmailDeliveryPolicy: () => ({
+            codeLength: 6,
+            minimumIntervalMs: 15000,
+        }),
         canSendVerificationEmail: () => true,
         queueVerificationEmail: async (_to, code) => {
             queueCallCount += 1;
@@ -198,6 +222,10 @@ test("smtp adapter login challenge rolls back on queued failed status", async ()
     let firstIssuedCode = "";
     let failedAttemptCode = "";
     const adapter = createAdapter({
+        getEmailDeliveryPolicy: () => ({
+            codeLength: 6,
+            minimumIntervalMs: 15000,
+        }),
         canSendVerificationEmail: () => true,
         queueVerificationEmail: async (_to, code) => {
             queueCallCount += 1;
@@ -263,4 +291,119 @@ test("smtp adapter renders management details without exposing setup state", asy
         issuer: "Cognis",
     });
     assert.deepEqual(details, { details: {} });
+});
+
+test("setup constraints retain the issued code length when policy changes during delivery", async () => {
+    let length = 10;
+    let deliveredCode = "";
+    const adapter = createAdapter({
+        getEmailDeliveryPolicy: () => ({
+            codeLength: length,
+            minimumIntervalMs: 0,
+        }),
+        canSendVerificationEmail: () => true,
+        getPrimaryEmail: async () => "pending@example.test",
+        sendVerificationEmail: async (_recipient, code) => {
+            deliveredCode = code;
+            length = 4;
+        },
+    });
+    const setup = await adapter.beginSetup({
+        accountId: "pending",
+        displayName: "Pending",
+        issuer: "Cognis",
+    });
+    assert.equal(deliveredCode.length, 10);
+    assert.equal(setup.view.fields?.[0].maxLength, 10);
+    assert.equal(
+        (
+            await adapter.verifySetup({
+                accountId: "pending",
+                pendingPayload: setup.pendingPayload,
+                verification: { code: deliveredCode },
+            })
+        ).verified,
+        true,
+    );
+    const next = await adapter.beginSetup({
+        accountId: "pending",
+        displayName: "Pending",
+        issuer: "Cognis",
+    });
+    assert.equal(next.view.fields?.[0].maxLength, 4);
+    assert.equal(deliveredCode.length, 4);
+});
+
+for (const length of [undefined, 0, 3, 11, 5.5, Number.NaN]) {
+    test(`TFA rejects missing or invalid owner policy (${String(length)}) without delivery`, async () => {
+        let deliveries = 0;
+        const adapter = createAdapter({
+            getEmailDeliveryPolicy:
+                length === undefined
+                    ? undefined
+                    : () => ({ codeLength: length, minimumIntervalMs: 0 }),
+            canSendVerificationEmail: () => true,
+            getPrimaryEmail: async () => "pending@example.test",
+            sendVerificationEmail: async () => {
+                deliveries++;
+            },
+        });
+        await assert.rejects(
+            adapter.beginSetup({
+                accountId: "pending",
+                displayName: "Pending",
+                issuer: "Cognis",
+            }),
+            /email_delivery_unavailable/,
+        );
+        assert.equal(
+            (
+                await adapter.beginLoginChallenge!({
+                    accountId: "pending",
+                    state: { email: "pending@example.test" },
+                })
+            ).ready,
+            false,
+        );
+        assert.equal(deliveries, 0);
+    });
+}
+
+test("rate-limited resend keeps the pending code input length after a policy change", async () => {
+    let length = 10;
+    let calls = 0;
+    let pendingCode = "";
+    const adapter = createAdapter({
+        getEmailDeliveryPolicy: () => ({
+            codeLength: length,
+            minimumIntervalMs: 0,
+        }),
+        canSendVerificationEmail: () => true,
+        queueVerificationEmail: async (_recipient, code) => {
+            calls++;
+            if (calls === 1) pendingCode = code;
+            return {
+                notificationId: String(calls),
+                status: calls === 1 ? "queued" : "waiting_rate_limit",
+                createdAt: "",
+                updatedAt: "",
+            };
+        },
+    });
+    const input = {
+        accountId: "pending",
+        state: { email: "pending@example.test" },
+    };
+    assert.equal((await adapter.beginLoginChallenge!(input)).maxLength, 10);
+    length = 4;
+    assert.equal((await adapter.beginLoginChallenge!(input)).maxLength, 10);
+    assert.equal(
+        (
+            await adapter.verifyLogin({
+                ...input,
+                payload: { code: pendingCode },
+            })
+        ).verified,
+        true,
+    );
 });

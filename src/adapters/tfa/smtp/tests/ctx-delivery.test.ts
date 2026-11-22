@@ -1,7 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { CapabilityStore, createCtx, runBootstrapScope } from "@cognis/core";
-import type { NotificationAction } from "../../../notify/smtp/contracts/action-delivery.js";
+type NotificationAction = (variables: Record<string, string>) => {
+    subject: string;
+    body: string;
+};
 import { createAdapter } from "../index.js";
 
 for (const enabled of [false, true])

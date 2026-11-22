@@ -67,6 +67,7 @@ export interface TfaMethodAdapter {
         message?: string;
         retryAfterSeconds?: number;
         resendAvailableAt?: string;
+        maxLength?: number;
     }>;
     renderMethodDetails?(input: {
         accountId: string;
