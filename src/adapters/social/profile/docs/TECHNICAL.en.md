@@ -64,8 +64,6 @@ The profile navbar plugin provides `ui:profileAvatarRenderer`. Modules that rend
 
 ## Configuration
 
-### Configuration
-
 The adapter reads `db:executor` and `db:type` from the capability store
 (contributed by the database gateway) and optionally `file:gateway`
 (contributed by the files gateway). No environment variables are required.
@@ -188,6 +186,10 @@ On phones and tablets, profile identity, post composition and the post timeline 
 Preview shows the current title and body before publishing. Return to Compose or rotate the device without losing your draft.
 
 Published posts appear immediately, and deletions update the timeline without reloading.
+
+### Typed Storage and Routes
+
+Profile roles and visibility types match the stored records, including moderator accounts and private, friends and community visibility. Preference reads expose the stored JSON text. Persistence tests use a profile-owned structured database fixture with rollback support.
 
 ## Security
 

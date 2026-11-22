@@ -1,4 +1,4 @@
-import { hasMinRole } from "@cognis/core";
+import { hasMinRole, isAccessRole } from "@cognis/core";
 import type { FlowApi } from "@cognis/core";
 import type { RouteContext } from "../../../../api/reuse/route-context.js";
 import type { DbMessagesStore, MemberRow } from "../store.js";
@@ -109,7 +109,7 @@ export async function canDirectMessageNowOrByApprovedRequest(
 }
 
 export function hasAdminBypass(role: string | null | undefined): boolean {
-    return Boolean(role && hasMinRole(role, "admin"));
+    return isAccessRole(role) && hasMinRole(role, "admin");
 }
 
 export function publicProfileSummary(profile: SocialMessagesProfile) {

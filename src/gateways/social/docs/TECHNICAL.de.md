@@ -124,6 +124,10 @@ Soziale Komponenten verwenden für Mitgliedschaftsänderungen dieselben zwei Ver
 
 HTTP-Routen authentifizieren und autorisieren den Handelnden. Capabilities sind die vertrauenswürdige Server-zu-Server-Oberfläche; Aufrufer müssen bereits berechtigt sein und den Handelnden ausdrücklich angeben. Sie werden nur über `ctx.capabilities` bezogen.
 
+### Typisierte Speicherung und Routen
+
+Bootstrap-Verträge für Adapter deklarieren die benötigten Seitenfähigkeiten und Host-Protokollstufen. Adapter erhalten die Gateway-Registrierung über ihren Bootstrap-Kontext. Profilzeilendeklarationen behalten die aktuellen Rollen und Sichtbarkeitswerte bei, ohne gespeicherte Datensätze umzuwandeln.
+
 ## Sicherheit
 
 Adapter erhalten begrenzte Registrierungen und ctx-Fähigkeiten. Mitgliedschaft, Blockierungen und Sichtbarkeit prüft die zuständige Aktion; Aktivierung allein gewährt keinen Zugriff.

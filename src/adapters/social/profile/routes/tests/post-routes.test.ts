@@ -2,7 +2,6 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { rmSync } from "node:fs";
 import { DbProfileStore } from "../../store.js";
-import { DbLocalAccountStore } from "../../../../../adapters/auth/local/store.js";
 import { createPostRoutes } from "../posts.js";
 import { issueAccessToken } from "../../../../../gateways/auth/access-tokens.js";
 import { makeTempDb } from "./helpers.js";
@@ -23,11 +22,8 @@ async function setupUser(
     username: string,
     visibility = "community",
 ) {
-    const accountStore = new DbLocalAccountStore(executor);
-    await accountStore.ensureSchema();
     const profileStore = new DbProfileStore(executor);
     await profileStore.ensureSchema();
-    await accountStore.register(username, "pw");
     await profileStore.createProfile(username, username);
     if (visibility !== "hidden")
         await profileStore.updateProfile(username, {
@@ -236,12 +232,8 @@ test("post routes - create and list own posts", async () => {
 test("post routes - list visible posts across authors for search", async () => {
     const { dir, executor } = makeTempDb();
     try {
-        const accountStore = new DbLocalAccountStore(executor);
-        await accountStore.ensureSchema();
         const profileStore = new DbProfileStore(executor);
         await profileStore.ensureSchema();
-        await accountStore.register("alice", "pw");
-        await accountStore.register("bob", "pw");
         await profileStore.createProfile("alice", "alice");
         await profileStore.createProfile("bob", "bob");
         await profileStore.updateProfile("alice", { visibility: "community" });
@@ -375,12 +367,8 @@ test("post routes - delete own post", async () => {
 test("post routes - cannot delete another user post without elevated role", async () => {
     const { dir, executor } = makeTempDb();
     try {
-        const accountStore = new DbLocalAccountStore(executor);
-        await accountStore.ensureSchema();
         const profileStore = new DbProfileStore(executor);
         await profileStore.ensureSchema();
-        await accountStore.register("alice", "pw");
-        await accountStore.register("bob", "pw");
         await profileStore.createProfile("alice", "alice");
         await profileStore.createProfile("bob", "bob");
         await profileStore.updateProfile("alice", { visibility: "community" });
@@ -531,12 +519,8 @@ test("post routes - admin can delete another user post", async () => {
 test("post routes - only_me posts not visible to others", async () => {
     const { dir, executor } = makeTempDb();
     try {
-        const accountStore = new DbLocalAccountStore(executor);
-        await accountStore.ensureSchema();
         const profileStore = new DbProfileStore(executor);
         await profileStore.ensureSchema();
-        await accountStore.register("alice", "pw");
-        await accountStore.register("bob", "pw");
         await profileStore.createProfile("alice", "alice");
         await profileStore.createProfile("bob", "bob");
         await profileStore.updateProfile("alice", { visibility: "community" });
@@ -589,12 +573,8 @@ test("post routes - only_me posts not visible to others", async () => {
 test("post routes - blocked caller gets 404 on user posts", async () => {
     const { dir, executor } = makeTempDb();
     try {
-        const accountStore = new DbLocalAccountStore(executor);
-        await accountStore.ensureSchema();
         const profileStore = new DbProfileStore(executor);
         await profileStore.ensureSchema();
-        await accountStore.register("alice", "pw");
-        await accountStore.register("bob", "pw");
         await profileStore.createProfile("alice", "alice");
         await profileStore.createProfile("bob", "bob");
         await profileStore.updateProfile("alice", { visibility: "community" });
@@ -623,13 +603,8 @@ test("post routes - blocked caller gets 404 on user posts", async () => {
 test("post routes - private account posts only visible to followers", async () => {
     const { dir, executor } = makeTempDb();
     try {
-        const accountStore = new DbLocalAccountStore(executor);
-        await accountStore.ensureSchema();
         const profileStore = new DbProfileStore(executor);
         await profileStore.ensureSchema();
-        await accountStore.register("alice", "pw");
-        await accountStore.register("bob", "pw");
-        await accountStore.register("carol", "pw");
         await profileStore.createProfile("alice", "alice");
         await profileStore.createProfile("bob", "bob");
         await profileStore.createProfile("carol", "carol");

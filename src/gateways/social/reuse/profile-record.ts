@@ -3,8 +3,10 @@ export {
     normalizeHandleKeys,
 } from "../../../api/reuse/normalize-handle.js";
 
-export type SocialProfileRole = "user" | "teacher" | "admin" | "owner";
-export type SocialProfileVisibility = "hidden" | "community" | "public";
+export type SocialProfileRole =
+    "user" | "teacher" | "moderator" | "admin" | "owner";
+export type SocialProfileVisibility =
+    "hidden" | "private" | "friends" | "community";
 export type SocialProfileLifecycleState = "active" | "deactivated" | "archived";
 
 export interface SocialProfileRecord {

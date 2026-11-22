@@ -18,8 +18,6 @@ Die Vertragsregistrierung von Adaptern folgt dem [gemeinsamen Gateway-Bootstrap-
 
 ## Konfiguration
 
-### Konfiguration
-
 | Variable         | Standard     | Beschreibung                                                                                       |
 | ---------------- | ------------ | -------------------------------------------------------------------------------------------------- |
 | `MEDIA_LOCATION` | `/app/media` | Stammverzeichnis für Medienspeicherung; Uploads gehen an `$MEDIA_LOCATION/uploads/<namespace>/...` |
@@ -109,6 +107,10 @@ Komponenten sollten für reguläre Dateioperationen über `ctx` bevorzugt `files
 ### Bootstrap-Reihenfolge-Einschränkung
 
 `GatewayService.bootstrap()` bootstrapt das Datei-Gateway immer vor dem Datenbank-Gateway. Folglich kann das Datei-Gateway nicht davon ausgehen, dass `db:executor` zum Zeitpunkt seines eigenen Bootstraps verfügbar ist — die datenbankgestützte Schemaerstellung (Metadaten der Dateiobjekte, Kontingenttabellen) wird auf den ersten tatsächlichen Aufruf verschoben, anstatt eifrig ausgeführt zu werden.
+
+### Typisierte Speicherung und Routen
+
+ACL-Prüfungen erhalten neben dem Akteur eine explizite aufrufende Komponente. Die Namensraumregistrierung behält ihre unveränderliche Zulassungsliste; Objekteigentum, Namensraumidentität und Berechtigungsregeln bleiben unverändert.
 
 ## Sicherheit
 

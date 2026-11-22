@@ -122,6 +122,10 @@ Eine Nachrichtenanfrage erstellt keinen Chatraum. Der Direktnachrichtenraum, der
 
 Die Nachrichtenseite löst Raumschlüssel über den Schlüsselbundbereich `Social Messages` auf. Beim Öffnen wird Zugriff zum Laden vorhandener Chat-Geheimnisse angefordert; nach einem abgebrochenen Entsperren folgt keine zweite Abfrage zum Speichern eines zugestellten Schlüssels. Nach erfolgreicher oder nach dem Neuladen wiederhergestellter Entsperrung aktualisiert die Seite sowohl die Vorschauen der Raumliste als auch die aktive Unterhaltung, sodass verschlüsselte Platzhalter sofort ersetzt werden.
 
+### Typisierte Speicherung und Routen
+
+Rollen und Sichtbarkeitsdeklarationen sozialer Profile entsprechen jetzt den gespeicherten Datensätzen. Nachrichten- und Profilrouten behalten ihre Berechtigungsprüfungen bei; Rückrufe, Benachrichtigungen und Datenbankbefehle verwenden explizite Verträge. Fehlt die Auflösung der Gastsitzung, schlägt der Vorgang weiterhin vor dem Lesen des Gastprofils fehl.
+
 ## Sicherheit
 
 Raumzugang, Mitgliedschaft und Nachrichtenlesen werden getrennt geprüft. Verschlüsselte Räume benötigen Clientschlüssel; das Bedrohungsmodell unterscheidet Inhalte von sichtbaren Routingdaten.

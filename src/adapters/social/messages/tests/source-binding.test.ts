@@ -10,15 +10,23 @@ function fixture() {
         source_type: null,
         source_id: null,
     };
-    const executor = {
+    const executor: DbExecutor = {
+        async ensureTable() {
+            throw new Error("Schema setup is not part of this binding fixture");
+        },
+        async transaction(callback) {
+            return callback(executor);
+        },
         async executeCommand(command: StructuredDbCommand) {
             if (command.option === "SELECT")
                 return {
                     rows: command.table === "chatrooms" ? [{ ...room }] : [],
                 };
+            assert.equal(command.option, "UPDATE");
+            if (command.option !== "UPDATE") throw new Error("Expected update");
             if (
-                command.where.every(
-                    (clause: any) =>
+                command.where?.every(
+                    (clause) =>
                         clause.column === "id" ||
                         (clause.operator === "IS NULL"
                             ? room[clause.column] == null
@@ -28,7 +36,7 @@ function fixture() {
                 Object.assign(room, command.set);
             return { rowCount: 1 };
         },
-    } as DbExecutor;
+    };
     return { executor, room };
 }
 const input = {

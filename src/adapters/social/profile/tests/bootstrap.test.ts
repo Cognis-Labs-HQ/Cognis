@@ -1,22 +1,14 @@
+import { ProfileTestExecutor } from "./reuse/executor.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { access } from "node:fs/promises";
 import { readFileSync, rmSync } from "node:fs";
 import path from "node:path";
-import { GatewayRegistry, CapabilityStore } from "@cognis/core";
+import { GatewayRegistry, CapabilityStore, createCtx } from "@cognis/core";
 import { RouteRegistry } from "../../../../api/reuse/route-registry.js";
 import { UIRegistry } from "../../../../api/reuse/ui-registry.js";
 import { bootstrapSocialAdapter } from "../index.js";
 import { makeTempDb } from "../routes/tests/helpers.js";
-
-function makeInMemoryDb() {
-    return {
-        executeCommand: async (_command: unknown) => ({ rows: [] }),
-        ensureTable: async (_def: unknown) => {},
-        transaction: async (cb: (db: unknown) => Promise<unknown>) =>
-            cb(makeInMemoryDb()),
-    };
-}
 
 function makeAdapterCtx(
     overrides: {
@@ -35,7 +27,7 @@ function makeAdapterCtx(
     );
     const uiRegistry = overrides.uiRegistry;
     if (!capabilities.get("db:executor")) {
-        capabilities.contribute("db:executor", makeInMemoryDb());
+        capabilities.contribute("db:executor", new ProfileTestExecutor());
     }
     const registeredAdapters: Array<{
         adapterId: string;
@@ -49,6 +41,7 @@ function makeAdapterCtx(
     return {
         ctx: {
             gateway,
+            flow: createCtx().flow,
             adapterId: "profile",
             adapterRoot: "/nonexistent",
             capabilities,
@@ -71,8 +64,11 @@ function makeAdapterCtx(
                     isEnabled,
                     providesCapabilities,
                 }),
-            registerCapabilityProvider: (provider) =>
-                uiRegistry?.registerCapabilityProvider(provider),
+            registerCapabilityProvider: (
+                provider: Parameters<
+                    UIRegistry["registerCapabilityProvider"]
+                >[0],
+            ) => uiRegistry?.registerCapabilityProvider(provider),
             registerStaticDir: (prefix: string, dir: string) =>
                 uiRegistry?.registerStaticDir(prefix, dir),
             registerAdapterStaticDir: (gw: string, ad: string, dir: string) =>

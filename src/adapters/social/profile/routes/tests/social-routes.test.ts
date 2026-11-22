@@ -2,7 +2,6 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { rmSync } from "node:fs";
 import { DbProfileStore } from "../../store.js";
-import { DbLocalAccountStore } from "../../../../../adapters/auth/local/store.js";
 import { createSocialRoutes } from "../social.js";
 import { issueAccessToken } from "../../../../../gateways/auth/access-tokens.js";
 import { makeTempDb } from "./helpers.js";
@@ -16,12 +15,9 @@ function makeReq(method: string, token: string | null) {
 }
 
 async function setupUsers(executor: any, ...usernames: string[]) {
-    const accountStore = new DbLocalAccountStore(executor);
-    await accountStore.ensureSchema();
     const profileStore = new DbProfileStore(executor);
     await profileStore.ensureSchema();
     for (const username of usernames) {
-        await accountStore.register(username, "pw");
         await profileStore.createProfile(username, username);
     }
     return profileStore;

@@ -198,6 +198,10 @@ A message request does not create a chatroom. The direct-message room, key, memb
 
 The Messages page resolves room keys through the `Social Messages` keyring scope. Opening the page requests access to load existing chat secrets; a cancelled unlock does not fall through to a second prompt for saving a delivered key. When an unlock succeeds or is restored after reload, the page refreshes both room-list previews and the active conversation so ciphertext placeholders are replaced immediately.
 
+### Typed Storage and Routes
+
+Social profile roles and visibility declarations now match stored records. Messages and profile routes retain their authorization checks while their callbacks, notification envelopes and database commands use explicit contracts. Missing guest-session resolution still fails before a guest profile is read.
+
 ## Security
 
 Room eligibility, membership changes and message reads are authorized independently. Encrypted rooms depend on client-held keys; the threat model below distinguishes protected content from visible routing metadata.

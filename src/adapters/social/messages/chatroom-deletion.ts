@@ -1,14 +1,19 @@
-import type { DbMessagesStore } from "./store.js";
+import type { BootstrapLog } from "@cognis/core";
+export interface ChatroomDeletionStore {
+    ensureSchema(): Promise<void>;
+    getRoom(roomId: string): Promise<{ id: string } | null>;
+    deleteRoom(roomId: string): Promise<void>;
+    deleteRoomForActor(
+        roomId: string,
+        actorAccountId: string,
+    ): Promise<"deleted" | "not_found" | "forbidden">;
+}
 
 class ChatroomDeletionRequestError extends Error {}
 
 export function createChatroomDeletionCapability(
-    store: DbMessagesStore,
-    log?: (
-        level: string,
-        message: string,
-        metadata?: Record<string, unknown>,
-    ) => void,
+    store: ChatroomDeletionStore,
+    log?: BootstrapLog,
     resolveActorRole?: (accountId: string) => Promise<string | null>,
 ) {
     return async function deleteChatroom(input: {
