@@ -74,6 +74,8 @@ registering routes or contributing capabilities.
 
 ## Behavior
 
+Navbar avatar lookup and offline preparation of the current account profile require an account session. Share guests skip these account-only reads, including when their guest authentication succeeds; public profile views retain their separate access rules.
+
 ### Overview
 
 The Profile Adapter owns user profiles, the social graph, posts, and file

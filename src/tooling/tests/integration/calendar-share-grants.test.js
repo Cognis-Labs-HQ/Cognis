@@ -1,65 +1,22 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import path from "node:path";
 import {
-    CapabilityStore,
-    createCtx,
-    GatewayRegistry,
-    runBootstrapScope,
-} from "@cognis/core";
-import { RouteRegistry } from "../../../api/reuse/route-registry.js";
-import { UIRegistry } from "../../../api/reuse/ui-registry.js";
-import {
-    createAuthContext,
-    createJsonDispatcher,
     dispatchRoute,
     RequestRecorder,
     ResponseRecorder,
 } from "../../../api/tests/reuse/route-test-helpers.js";
+import { createGatewayHost } from "../../reuse/gateway-host.js";
 import { bootstrap as bootstrapShare } from "../../../gateways/share/bootstrap.js";
 import { bootstrap as bootstrapCalendar } from "../../../gateways/calendar/bootstrap.js";
-import { MemoryDatabase } from "../../reuse/memory-database.js";
 
 async function host(t, { password } = {}) {
-    const root = createCtx();
-    const capabilities = new CapabilityStore();
-    const routes = new RouteRegistry();
-    const context = {
-        capabilities,
-        flow: root.flow,
-        routeRegistry: routes,
-        gatewayRegistry: new GatewayRegistry(),
-        uiRegistry: new UIRegistry(),
-        adaptersRoot: path.resolve("src/adapters"),
-    };
-    capabilities.contribute("system:ctx", root);
-    capabilities.contribute("db:executor", new MemoryDatabase());
-    capabilities.contribute(
-        "auth:routeContext",
-        createAuthContext(
-            new Map([
-                ["owner-token", { sub: "owner", role: "admin" }],
-                ["recipient-token", { sub: "recipient", role: "user" }],
-            ]),
-        ),
+    const { root, capabilities, routes, dispatch } = await createGatewayHost(
+        t,
+        [
+            ["share", bootstrapShare],
+            ["calendar", bootstrapCalendar],
+        ],
     );
-    const disposers = [];
-    t.after(async () => {
-        for (const dispose of disposers.reverse()) await dispose();
-    });
-    await runBootstrapScope(
-        root,
-        "gateway:share",
-        () => bootstrapShare(context),
-        (dispose) => disposers.push(dispose),
-    );
-    await runBootstrapScope(
-        root,
-        "gateway:calendar",
-        () => bootstrapCalendar(context),
-        (dispose) => disposers.push(dispose),
-    );
-    const dispatch = createJsonDispatcher(routes);
     const calendar = await dispatch(
         "POST",
         "owner-token",

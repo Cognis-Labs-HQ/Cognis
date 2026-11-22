@@ -72,6 +72,19 @@ test(
             ]) {
                 await browser.resize(width, height);
                 await assertSelection();
+                const geometry = await browser.evaluate(`(() => {
+                    const section = document.querySelector('.shared-calendar');
+                    const header = section.querySelector('.calendar-view-header').getBoundingClientRect();
+                    const canvas = section.querySelector('.calendar-view-canvas').getBoundingClientRect();
+                    return { headerHeight: header.height, overlap: header.bottom - canvas.top,
+                        styles: [...document.querySelectorAll('link[rel=stylesheet]')].some(link => link.href.includes('share-renderer.css')) };
+                })()`);
+                assert.equal(geometry.styles, true);
+                assert.ok(
+                    geometry.headerHeight >= 40,
+                    JSON.stringify(geometry),
+                );
+                assert.ok(geometry.overlap <= 1, JSON.stringify(geometry));
                 assert.equal(
                     await browser.evaluate(
                         "document.querySelector('.calendar-nav-month-label').textContent",

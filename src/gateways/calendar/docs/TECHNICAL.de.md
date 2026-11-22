@@ -12,6 +12,8 @@ Kalender enthalten Name, Sichtbarkeit und Termine. Erinnerungen und Kontostatus 
 
 ## Verhalten
 
+Der öffentliche Renderer wartet vor dem Aufbau auf die Calendar-eigenen Stylesheets. Titel, Bedienelemente und der scrollbar dargestellte Kalender belegen getrennte Rasterzeilen; der Page Composer bestimmt die Anpassung an den Viewport und die Mindesthöhe des Arbeitsbereichs.
+
 ### Zustellung von Freigaben
 
 Calendar erweitert das Share-Gateway über `ctx`-Flow-Hooks und Fähigkeiten. Die Zustellung an Benutzer legt einen eigenen geteilten Kalender für die empfangende Person an und gibt eine allgemeine Navigations-URL sowie eine einmalige lokalisierte Erfolgsmeldung zurück. Passwörter verbleiben im Besitz von Share und werden unter der kanonischen Freigabekennung aus dem Schlüsselbund gelesen.

@@ -755,7 +755,7 @@ test("calendar share renderer displays one calendar and enables scoped writes", 
     );
     assert.match(
         SHARE_RENDERER_CSS_SOURCE,
-        /\.widget-card:has\(\.calendar-share-page\)\s*\{[\s\S]*overflow-y:\s*hidden/,
+        /\.shared-calendar:has\(\.calendar-view-canvas\)\s*\{[\s\S]*grid-template-rows:\s*auto auto minmax\(0, 1fr\)/,
     );
 });
 

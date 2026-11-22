@@ -1,15 +1,9 @@
+import { createNavbarAvatarProvider } from "./navbar-avatar.js";
 import { bindCapability } from "/static/reuse/capabilities.js";
-import { isOffline } from "/static/reuse/offline-state.js";
-import { apiFetch } from "/static/reuse/api-client.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import "./provider.js";
 import { applyStaticTranslations, createI18n } from "/static/reuse/i18n.js";
-import {
-    ensureProfileAvatarStyles,
-    fetchProfileAvatarBlobUrl,
-    getProfileInitials,
-    getProfileInitialsColor,
-} from "./profile-avatar.js";
+import { ensureProfileAvatarStyles } from "./profile-avatar.js";
 import { bindProfilePreviews } from "./profile-preview.js";
 import { registerSearchIndexing } from "./search/index.js";
 import {
@@ -159,44 +153,10 @@ function updateAvailabilitySelection(container, indicator, status, i18n) {
     indicator.setAttribute("aria-label", label);
 }
 
-uiCtx.capabilities.contribute("ui:navbarAvatarProvider", async () => {
-    const handle = localStorage.getItem("cognis_account") ?? "";
-    const storedDisplayName =
-        localStorage.getItem("cognis_display_name") ?? handle;
-    const fallbackFor = (label) => ({
-        avatarInitials: getProfileInitials(label),
-        avatarColor: getProfileInitialsColor(label),
-    });
-    let fallback = fallbackFor(storedDisplayName);
-    try {
-        const pingRes = isOffline()
-            ? { ok: true }
-            : await apiFetch("/api/v1/social/profile/ping");
-        if (!pingRes.ok) return { ...fallback, profileAvailable: false };
-    } catch {
-        return { ...fallback, profileAvailable: false };
-    }
-
-    try {
-        const res = await apiFetch("/api/v1/social/profile");
-        if (!res.ok) return { ...fallback, profileAvailable: true };
-        const payload = await res.json();
-        const profileLabel =
-            payload?.data?.displayName ||
-            payload?.data?.handle ||
-            storedDisplayName;
-        fallback = fallbackFor(profileLabel);
-        const avatarKey = payload?.data?.avatarKey;
-        if (!avatarKey) return { ...fallback, profileAvailable: true };
-
-        const avatarBlobUrl = await fetchProfileAvatarBlobUrl(avatarKey);
-        if (avatarBlobUrl)
-            return { ...fallback, profileAvailable: true, avatarBlobUrl };
-        return { ...fallback, profileAvailable: true };
-    } catch {
-        return { ...fallback, profileAvailable: true };
-    }
-});
+uiCtx.capabilities.contribute(
+    "ui:navbarAvatarProvider",
+    createNavbarAvatarProvider(uiCtx),
+);
 
 registerSearchIndexing();
 mountAvailabilityControl().catch((error) => {

@@ -18,6 +18,8 @@ Teilbare Manifeste deklarieren Renderer und Gastbereiche. Freigaben speichern Re
 
 ## Verhalten
 
+Die Authentifizierung verwendet die aufgelöste Sitzung für dieselbe Freigabe und Kontoidentität erneut. Gleichzeitige Anfragen teilen sich eine Auflösung und Passwortabfrage; ein entsperrter Gastschlüsselbund wird wiederverwendet. Das Verlassen der Freigabe, ein Kontowechsel oder ein Zugriffsentzug macht ausstehende oder zwischengespeicherte Auflösungen ungültig. Nach Abbruch oder fehlgeschlagener Aktivierung ist ein neuer Versuch möglich.
+
 ### Share-Browserclient
 
 Adapter deklarieren ihre eigenen Navbar-Anbieter, die ihrem Aktivierungszustand folgen. Die Senderermittlung nutzt `notify:listSenders` ohne konkrete Notification-Gateway-Instanz. Regelmäßige Share-Wartung stoppt bei Deaktivierung und beginnt bei Aktivierung erneut.

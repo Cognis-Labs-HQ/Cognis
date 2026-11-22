@@ -14,6 +14,10 @@ PATCH mit `grantedCapabilities: []` entfernt alle gewährten Fähigkeiten. Ohne 
 
 Schlüsselbundkataloge verwenden das Laufzeit-XML-Wurzelelement, damit Gast-Freigabelinks ihren temporären Schlüsselbund ohne fehlende Übersetzung erstellen können. Fehlende Beschriftungen für Raumschlüssel, Reaktionen, Terminserien, E-Mail-Aktionen, Benachrichtigungen, SSO-Rückmeldungen und den Verwaltungsstatus liegen in allen vier Sprachen vor. Prüfungen der Katalogwurzel und wörtlicher Verweise verhindern entsprechende Lücken in anderen Komponenten.
 
+## Freigabesitzungen und Layout
+
+Geschützte Links verwenden bei wiederholter oder gleichzeitiger Authentifizierung eine Passwortabfrage und einen Gastschlüsselbund. Navigation und Kontowechsel verwerfen ausstehende Auflösungen. Gastseiten überspringen kontobezogene Profilanfragen. Link-Popup-Ressourcen werden innerhalb des Adapterpfads aufgelöst. Kalenderfreigaben warten auf ihre eigenen Stylesheets und halten Titel, Navigation und scrollbar dargestellten Inhalt auf Mobilgeräten, Tablets und Desktops in getrennten Zeilen.
+
 ## Commits
 
 - [37279a34a3891cca73dbc5cc5c85f3b00b2b2e8a](https://github.com/Cognis-Labs-HQ/Cognis/commit/37279a34a3891cca73dbc5cc5c85f3b00b2b2e8a)

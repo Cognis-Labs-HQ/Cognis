@@ -69,10 +69,10 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Memory Database            | `src/adapters/db/memory/`           | `0.1.24`   |
 | Registration Token         | `src/adapters/registration/token/`  | `0.1.40`   |
 | Public Registration        | `src/adapters/registration/public/` | `0.1.23`   |
-| Profile (Social)           | `src/adapters/social/profile/`      | `3.0.18`   |
+| Profile (Social)           | `src/adapters/social/profile/`      | `3.0.19`   |
 | Messages (Social)          | `src/adapters/social/messages/`     | `2.7.48`   |
 | Calls (Social)             | `src/adapters/social/call/`         | `0.5.37`   |
-| Link Share                 | `src/adapters/share/link/`          | `1.1.40`   |
+| Link Share                 | `src/adapters/share/link/`          | `1.1.41`   |
 | User Share                 | `src/adapters/share/user/`          | `1.1.20`   |
 | Classes (Study)            | `src/adapters/study/classes/`       | `1.4.12`   |
 | Library (Study)            | `src/adapters/study/library/`       | `4.1.29`   |
@@ -89,7 +89,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | --------------------- | ----------------------------- | ---------- |
 | Database (db)         | `src/gateways/db/`            | `1.4.0`    |
 | Authentication (auth) | `src/gateways/auth/`          | `2.2.8`    |
-| Share                 | `src/gateways/share/`         | `1.9.10`   |
+| Share                 | `src/gateways/share/`         | `1.9.11`   |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.3.8`    |
 | Notification (notify) | `src/gateways/notify/`        | `2.2.11`   |
 | Social                | `src/gateways/social/`        | `1.4.5`    |
@@ -98,7 +98,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Logging               | `src/gateways/logging/`       | `1.5.21`   |
 | Observability         | `src/gateways/observability/` | `1.0.7`    |
 | Study                 | `src/gateways/study/`         | `2.6.14`   |
-| Calendar              | `src/gateways/calendar/`      | `1.7.22`   |
+| Calendar              | `src/gateways/calendar/`      | `1.7.23`   |
 
 ### ツール
 

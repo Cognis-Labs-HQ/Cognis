@@ -18,6 +18,8 @@ Shareable manifests declare renderer and guest API scopes. Each share records pe
 
 ## Behavior
 
+Authentication reuses the resolved session for the same share and account identity. Concurrent requests share one resolution and password prompt; an unlocked guest keyring is reused. Leaving the share, switching accounts or revoking access invalidates pending or cached resolution. Cancellation and failed activation allow a later retry.
+
 ### Share browser client
 
 Adapter navbar providers are declared by the owning adapter and follow its enabled state. Sender discovery uses `notify:listSenders`, without receiving the Notification Gateway implementation. Periodic Share maintenance stops on gateway disable and resumes on activation.

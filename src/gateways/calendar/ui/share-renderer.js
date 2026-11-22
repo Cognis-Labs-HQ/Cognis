@@ -1,3 +1,4 @@
+import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
 import { bindCapability } from "/static/reuse/capabilities.js";
 import {
     renderCalendarViewSwitcher,
@@ -196,6 +197,13 @@ export async function mount(
     root,
     { shareContext, i18n, signal = new AbortController().signal } = {},
 ) {
+    if (signal.aborted) return;
+    await Promise.all(
+        [
+            "/static/gateways/calendar/ui/calendar.css",
+            "/static/gateways/calendar/ui/share-renderer.css",
+        ].map((url) => ensurePageStylesheet(url)),
+    );
     if (signal.aborted) return;
     const client = uiCtx.capabilities.get("calendar:sharedClient");
     if (!client) throw new Error("calendar_shared_client_unavailable");

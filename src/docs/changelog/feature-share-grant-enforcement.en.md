@@ -14,6 +14,10 @@ PATCH with `grantedCapabilities: []` removes every granted capability. Omitting 
 
 Keyring catalogs use the runtime XML root so guest Share URLs can create their temporary keyring without a missing-translation failure. Missing labels in room-key prompts, reactions, calendar series editing, email actions, notification controls, SSO callbacks and Administration status are supplied in all four languages. Catalog-root and literal-reference checks prevent the same omissions in other components.
 
+## Share page sessions and layout
+
+Protected links reuse one password prompt and guest keyring across repeated or concurrent authentication. Pending resolution is discarded when navigation or account identity changes. Guest pages skip account-only profile requests. Link popup assets resolve within their adapter mount. Calendar share renderers await their owned stylesheets and keep title, navigation controls and scrollable content in separate rows at mobile, tablet and desktop sizes.
+
 ## Commits
 
 - [37279a34a3891cca73dbc5cc5c85f3b00b2b2e8a](https://github.com/Cognis-Labs-HQ/Cognis/commit/37279a34a3891cca73dbc5cc5c85f3b00b2b2e8a)

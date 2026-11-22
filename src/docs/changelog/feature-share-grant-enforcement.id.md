@@ -14,6 +14,10 @@ PATCH dengan `grantedCapabilities: []` menghapus semua kapabilitas yang diberika
 
 Katalog keyring memakai akar XML runtime sehingga URL berbagi tamu dapat membuat keyring sementara tanpa kegagalan terjemahan. Label yang hilang untuk kunci ruang, reaksi, rangkaian kalender, tindakan email, kontrol notifikasi, callback SSO, dan status Administrasi tersedia dalam empat bahasa. Pemeriksaan akar katalog dan referensi literal mencegah kelalaian yang sama di komponen lain.
 
+## Sesi dan tata letak berbagi
+
+Tautan terlindungi menggunakan satu dialog kata sandi dan keyring tamu untuk autentikasi berulang atau bersamaan. Resolusi tertunda dibatalkan saat navigasi atau identitas akun berubah. Halaman tamu melewati permintaan profil khusus akun. Aset popup Link diresolusikan di jalur adaptor. Renderer kalender berbagi menunggu stylesheet miliknya dan memisahkan judul, navigasi, serta konten yang dapat digulir pada ukuran ponsel, tablet, dan desktop.
+
 ## Komit
 
 - [37279a34a3891cca73dbc5cc5c85f3b00b2b2e8a](https://github.com/Cognis-Labs-HQ/Cognis/commit/37279a34a3891cca73dbc5cc5c85f3b00b2b2e8a)

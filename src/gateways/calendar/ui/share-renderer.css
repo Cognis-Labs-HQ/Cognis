@@ -1,5 +1,6 @@
-.shared-calendar {
-    min-height: min(46rem, calc(100vh - 4rem));
+.shared-calendar:has(.calendar-view-canvas) {
+    grid-template-rows: auto auto minmax(0, 1fr);
+    min-height: 0;
 }
 
 .shared-calendar-event-form {
@@ -13,14 +14,8 @@
 }
 
 .shared-calendar .calendar-view-canvas {
-    min-height: 36rem;
-    overflow-y: hidden;
-}
-
-.content-panel:has(.calendar-share-page),
-.composer-cell-content:has(.calendar-share-page),
-.widget-card:has(.calendar-share-page) {
-    overflow-y: hidden;
+    min-height: 0;
+    overflow: auto;
 }
 
 .calendar-share-page .calendar-timeslot-grid {

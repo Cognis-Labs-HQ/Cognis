@@ -12,6 +12,8 @@ Calendar resources define name, visibility and event data. Reminder preferences 
 
 ## Behavior
 
+The public renderer awaits its Calendar-owned stylesheets before mounting. Its title, controls and scrollable calendar occupy separate grid rows; the page composer determines the viewport fit and minimum workspace height.
+
 ### Share delivery
 
 Calendar contributes to the Share gateway through `ctx` flow hooks and capabilities. User-recipient delivery materializes a recipient-owned shared calendar and returns a generic navigation URL plus one-time localized success feedback. Passwords remain owned by Share and are retrieved from the keyring under the canonical share identifier.

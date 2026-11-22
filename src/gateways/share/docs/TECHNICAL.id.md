@@ -18,6 +18,8 @@ Manifes berbagi menyatakan renderer dan cakupan API tamu. Setiap berbagi menyimp
 
 ## Perilaku
 
+Autentikasi menggunakan kembali sesi yang sudah diresolusikan untuk tautan berbagi dan identitas akun yang sama. Permintaan bersamaan memakai satu resolusi dan satu dialog kata sandi; keyring tamu yang terbuka digunakan kembali. Meninggalkan tautan, berganti akun, atau pencabutan akses membatalkan resolusi tertunda atau tersimpan. Pembatalan dan kegagalan aktivasi memungkinkan percobaan berikutnya.
+
 ### Klien browser Berbagi
 
 Adapter mendeklarasikan penyedia navbar sendiri yang mengikuti status aktifnya. Penemuan pengirim memakai `notify:listSenders` tanpa implementasi Gateway Notifikasi. Pemeliharaan Share berkala berhenti saat gateway nonaktif dan dilanjutkan saat aktif.

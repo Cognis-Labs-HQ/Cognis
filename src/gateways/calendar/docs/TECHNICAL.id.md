@@ -12,6 +12,8 @@ Kalender menetapkan nama, visibilitas, dan acara. Pengingat serta status memakai
 
 ## Perilaku
 
+Renderer publik menunggu stylesheet milik Calendar sebelum memasang tampilan. Judul, kontrol, dan kalender yang dapat digulir menempati baris kisi terpisah; page composer menentukan penyesuaian viewport dan tinggi minimum ruang kerja.
+
 ### Pengiriman berbagi
 
 Calendar berkontribusi ke gateway Share melalui hook alur dan kapabilitas `ctx`. Pengiriman kepada pengguna membuat kalender bersama milik penerima dan mengembalikan URL navigasi generik beserta umpan balik berhasil terlokalisasi satu kali. Kata sandi tetap dimiliki Share dan diambil dari keyring dengan pengenal berbagi kanonis.

@@ -28,6 +28,8 @@ Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
 
 ## Verhalten
 
+Die Avatarabfrage der Navigation und die Offline-Vorbereitung des eigenen Profils erfordern eine Kontositzung. Freigabegäste überspringen diese kontobezogenen Lesezugriffe auch nach erfolgreicher Gastauthentifizierung; für öffentliche Profilansichten gelten weiterhin deren eigene Zugriffsregeln.
+
 ### Überblick
 
 Das Profil-Gateway besitzt Benutzerprofile, den sozialen Graph, Beiträge und die Dateiverwaltung für Avatar- und Banner-Uploads. Es gibt jedem Cognis-Account eine öffentliche Identität und einen Platz im Community-Graph. Das Entfernen dieses Gateways entfernt alle Profil-, Social-, Post- und Dateifeatures von der Plattform, ohne Core, Auth oder andere Gateways zu beeinträchtigen.
