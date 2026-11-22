@@ -63,4 +63,5 @@
   <string name="gateway.tfa.tutorial.enforcement.enforcement.policy.body">Tinjau dampaknya pada semua akun sebelum mewajibkan autentikasi dua faktor.</string>
   <string name="gateway.tfa.tutorial.enforcement.apply.policy.title">Terapkan Kebijakan</string>
   <string name="gateway.tfa.tutorial.enforcement.apply.policy.body">Simpan setelah meninjau pilihan kewajiban dan penyiapan yang diperlukan pengguna.</string>
+  <string name="ui.app.login.tfa.challenge_unavailable">Kode verifikasi tidak dapat dikirim. Coba lagi atau pilih metode verifikasi lain.</string>
 </resources>

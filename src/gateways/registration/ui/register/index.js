@@ -1,3 +1,4 @@
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import {
     loadAuthFooterPlugins,
@@ -46,6 +47,8 @@ import {
     loadRegistrationConfig,
 } from "/static/gateways/auth/login-client.js";
 import { buildPasswordCriteria, resetAuthSessionForRegister } from "./form.js";
+
+const log = bindCapability("ui:log");
 const REGISTER_EMAIL_MAX_CHARACTERS = 320;
 const REGISTER_USERNAME_MAX_CHARACTERS = 25;
 const REGISTER_DISPLAY_NAME_MAX_CHARACTERS = 80;
@@ -140,7 +143,8 @@ export async function mount(root, { signal } = {}) {
                     i18n: await extendI18n(i18n, descriptor.stringsBaseUrl),
                 });
             } catch (error) {
-                console.error(
+                void log(
+                    "error",
                     JSON.stringify({
                         level: "error",
                         component: "register-page",
@@ -308,7 +312,8 @@ export async function mount(root, { signal } = {}) {
                 });
                 if (field) registerFormFields.push(field);
             } catch (error) {
-                console.error(
+                void log(
+                    "error",
                     JSON.stringify({
                         level: "error",
                         component: "register-page",
@@ -675,7 +680,8 @@ export async function mount(root, { signal } = {}) {
                                         i18n.t("ui.app.register.error.generic"),
                                         { variant: "error" },
                                     );
-                                    console.error(
+                                    void log(
+                                        "error",
                                         JSON.stringify({
                                             level: "error",
                                             component: "auth",
@@ -770,7 +776,8 @@ export async function mount(root, { signal } = {}) {
                                         const body = await response
                                             .json()
                                             .catch((error) => {
-                                                console.warn(
+                                                void log(
+                                                    "warn",
                                                     JSON.stringify({
                                                         level: "warn",
                                                         component:
@@ -866,7 +873,8 @@ export async function mount(root, { signal } = {}) {
                                     window.location.href = "/login";
                                 }, 1200);
                             } catch (error) {
-                                console.error(
+                                void log(
+                                    "error",
                                     JSON.stringify({
                                         level: "error",
                                         component: "register-page",

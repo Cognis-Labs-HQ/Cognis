@@ -4,6 +4,12 @@ Antarmuka publik dan aturan operasional UI.
 
 ## Antarmuka
 
+Registri kapabilitas peramban bersama tersedia sebelum inisialisasi kerangka. `bindCapability(id)` menggunakan kontribusi yang dapat dipanggil saat ini dan membatasi pemanggilan awal tertunda seluruh ikatan hingga 128. Kontribusi memiliki kepemilikan eksklusif dan hanya dapat dihapus dengan identitas yang cocok; penyedia memiliki kontrak domain dan pemrosesannya.
+
+Diagnostik diterbitkan melalui `ui:log`; kebijakan keluaran dimiliki oleh [Gateway Logging](/docs/gateways/logging/technical).
+
+`reportClientError(error)` menerima objek Error atau konteks terstruktur dan menerbitkannya melalui diagnostik gateway. Penggantian logger lokal oleh pemanggil dihapus; konfigurasi keluaran dilakukan melalui gateway logging.
+
 UIRegistry menerbitkan direktori aset, plugin navigasi, bagian administrasi, dan perluasan halaman. Penyedia peramban memakai uiCtx serta sinyal pembersihan; halaman memakai Page Composer.
 
 ## Konfigurasi
@@ -11,6 +17,8 @@ UIRegistry menerbitkan direktori aset, plugin navigasi, bagian administrasi, dan
 Preferensi akun memilih tema, bahasa, dan font. Katalog komponen menyediakan terjemahan dan metadata; opsi tata letak tetap pada Page Composer.
 
 ## Perilaku
+
+Pembacaan terjemahan publik biasa langsung menggunakan paket dalam cache, termasuk saat mulai luring. Pemulihan koneksi menandai paket yang pernah dimuat untuk satu pembaruan jaringan; paket yang baru diminta setelahnya tetap memakai cache biasa. XML yang tidak valid dapat dicoba kembali, dan pembacaan berikutnya memaksa pembaruan sampai paket valid diterima. Perubahan revisi yang dideklarasikan juga memperbarui paket yang telah dimuat. Paket privat yang peka terhadap revisi melewati cache HTTP setiap kali cache memori tidak memiliki entri, termasuk pada dokumen baru, pengaturan ulang siklus hidup, atau perubahan akun/sesi. Pemuatan yang berhasil tetap digabungkan dan disimpan menurut revisi dan identitas dalam dokumen.
 
 ### Ikhtisar
 

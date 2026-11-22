@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../../tooling/reuse/diagnostic-fixture.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
@@ -10,6 +11,7 @@ test(
         const client = loadTestModule(
             new URL("../ui/calendar-api.js", import.meta.url),
             {
+                "/static/reuse/capabilities.js": createDiagnosticFixture(),
                 "./offline-client.js": {
                     calendarFetch: async () =>
                         Response.json({ data: { id: "event" } }),

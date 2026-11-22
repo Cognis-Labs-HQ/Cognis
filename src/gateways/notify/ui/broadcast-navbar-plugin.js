@@ -1,3 +1,4 @@
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { isOffline } from "/static/reuse/offline-state.js";
 import { createI18n } from "/static/reuse/i18n.js";
@@ -12,6 +13,8 @@ import {
     isTrustedHttpUrl,
     loadTrustedDomains,
 } from "/static/reuse/trusted-domains.js";
+
+const log = bindCapability("ui:log");
 
 const CSS_HREF = "/static/styles/reuse/top-banners.css";
 const POLL_INTERVAL_VISIBLE_MILLISECONDS = 20_000;
@@ -285,7 +288,7 @@ export async function mountProvider(ctx) {
         await startPolling(i18n, signal);
     } catch (error) {
         if (!signal.aborted)
-            console.error("[notify] broadcast provider failed", {
+            void log("error", "[notify] broadcast provider failed", {
                 operation: "mountBroadcastProvider",
                 errorName: error?.name,
             });

@@ -242,7 +242,7 @@ uiRegistry.registerCapabilityProvider({
 });
 uiRegistry.registerCapabilityProvider({
     scriptUrl: "/static/reuse/feedback-capabilities.js",
-    providesCapabilities: ["ui:log", "ui:showToast", "ui:openErrorPopup"],
+    providesCapabilities: ["ui:showToast", "ui:openErrorPopup"],
 });
 uiRegistry.registerCapabilityProvider({
     scriptUrl: "/static/reuse/resource-loader.js",

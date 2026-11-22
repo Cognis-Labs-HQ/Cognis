@@ -1,5 +1,8 @@
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { encodeBytes, decodeBytes } from "./crypto.js";
 import { keyringStorageKeys } from "./storage-keys.js";
+
+const log = bindCapability("ui:log");
 
 /** Persist only session-encrypted unlock material in the current tab, never a password or plaintext key. */
 export function createSessionUnlockCache({
@@ -47,7 +50,7 @@ export function createSessionUnlockCache({
         try {
             if (binding) storage().removeItem(cacheKey(binding));
         } catch (error) {
-            console.info("[keyring] unlock cleanup unavailable", {
+            void log("info", "[keyring] unlock cleanup unavailable", {
                 operation: "removeUnlock",
                 errorName: error?.name,
             });
@@ -97,10 +100,14 @@ export function createSessionUnlockCache({
                 return true;
             } catch (error) {
                 if (error?.name !== "AbortError")
-                    console.info("[keyring] unlock persistence unavailable", {
-                        operation: "rememberUnlock",
-                        errorName: error?.name,
-                    });
+                    void log(
+                        "info",
+                        "[keyring] unlock persistence unavailable",
+                        {
+                            operation: "rememberUnlock",
+                            errorName: error?.name,
+                        },
+                    );
                 if (
                     last?.binding === binding &&
                     last.key === key &&
@@ -156,7 +163,7 @@ export function createSessionUnlockCache({
                 : null;
         } catch (error) {
             if (error?.name !== "AbortError") {
-                console.info("[keyring] cached unlock unavailable", {
+                void log("info", "[keyring] cached unlock unavailable", {
                     operation: "restoreUnlock",
                     errorName: error?.name,
                 });
@@ -180,7 +187,7 @@ export function createSessionUnlockCache({
                     target.removeItem(id);
             }
         } catch (error) {
-            console.info("[keyring] unlock cleanup unavailable", {
+            void log("info", "[keyring] unlock cleanup unavailable", {
                 operation: "clearActorUnlocks",
                 errorName: error?.name,
             });

@@ -1,3 +1,4 @@
+import { writeTerminalReport } from "../reuse/terminal-output.ts";
 import { COMMON_STYLESHEETS } from "../../ui/reuse/resources.js";
 import assert from "node:assert/strict";
 import { access, readFile, readdir } from "node:fs/promises";
@@ -141,6 +142,7 @@ await checkUiHostContracts(async (moduleUrl) => {
     );
     return readFile(path.join(outputRoot, emittedUrl), "utf8");
 });
-console.log(
+writeTerminalReport(
+    "stdout",
     `Validated ${Object.keys(manifest).length} dynamic contribution URLs.`,
 );

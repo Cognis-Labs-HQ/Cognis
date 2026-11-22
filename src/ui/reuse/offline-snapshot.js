@@ -1,8 +1,11 @@
+import { bindCapability } from "./capabilities.js";
 import {
     isOffline,
     offlineEnabled,
     offlineCacheGeneration,
 } from "./offline-state.js";
+
+const log = bindCapability("ui:log");
 
 /** Refresh an owner's lightweight snapshots after verified authentication and cache invalidation. */
 export function bindOfflineSnapshotRefresh(ctx, { id, refresh, events = [] }) {
@@ -37,7 +40,7 @@ export function bindOfflineSnapshotRefresh(ctx, { id, refresh, events = [] }) {
             if (isOffline() || ctx.signal.aborted) prepared = undefined;
         } catch (error) {
             if (prepared === actor) prepared = undefined;
-            console.info("[offline] snapshot not prepared", {
+            void log("info", "[offline] snapshot not prepared", {
                 operation: id,
                 errorName: error?.name,
             });

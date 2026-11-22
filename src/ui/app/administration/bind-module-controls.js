@@ -1,3 +1,7 @@
+import { bindCapability } from "../../reuse/capabilities.js";
+
+const log = bindCapability("ui:log");
+
 function refreshAdministrationComposer(getComposer, getElements) {
     getComposer()?.refresh(getElements());
 }
@@ -188,7 +192,7 @@ export function bindModuleConfigureButtons(
                     showToast(i18n.t("ui.reuse.save_failed"), {
                         variant: "error",
                     });
-                    console.error(error);
+                    void log("error", error);
                 }
             }
             row.addEventListener("click", openConfig);
@@ -266,7 +270,7 @@ export function bindGithubModuleImportButton(
                 variant: "success",
             });
         } catch (error) {
-            console.error(error);
+            void log("error", error);
             showToast(i18n.t("ui.reuse.save_failed"), {
                 variant: "error",
             });

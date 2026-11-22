@@ -1,4 +1,7 @@
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { findOverlappingEvents } from "./popup-manager-event-utils.js";
+
+const log = bindCapability("ui:log");
 
 export function createSubmitEvent({
     getMeetingsAvailable,
@@ -79,7 +82,7 @@ export function createSubmitEvent({
         try {
             await reloadState();
         } catch (error) {
-            console.error("[calendar] saved event view refresh failed", {
+            void log("error", "[calendar] saved event view refresh failed", {
                 operation: "refreshAfterCreate",
                 errorName: error?.name,
             });

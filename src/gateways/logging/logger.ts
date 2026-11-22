@@ -11,7 +11,8 @@ import {
 import path from "node:path";
 import { gzipSync } from "node:zlib";
 
-export type LogLevel = "debug" | "info" | "warn" | "error";
+import { LEVEL_PRIORITY, type LogLevel } from "./ui/reuse/levels.js";
+export type { LogLevel } from "./ui/reuse/levels.js";
 export type ConsoleLogFormat = "pretty" | "json";
 
 export interface LogEntry {
@@ -21,12 +22,6 @@ export interface LogEntry {
     meta?: Record<string, unknown>;
 }
 
-const priorities: Record<LogLevel, number> = {
-    debug: 10,
-    info: 20,
-    warn: 30,
-    error: 40,
-};
 const ROTATED_LOG_SUFFIX_PATTERN =
     /^\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}-\d{3}Z-[a-z0-9]+(?:\.gz)?$/;
 
@@ -187,10 +182,10 @@ export class Logger {
     ): Promise<void> {
         const entry = createLogEntry(level, message, meta);
         const line = `${serializeLogEntry(entry)}\n`;
-        if (priorities[level] >= priorities[this.consoleLevel]) {
+        if (LEVEL_PRIORITY[level] >= LEVEL_PRIORITY[this.consoleLevel]) {
             writeConsoleLog(level, message, meta, this.consoleFormat);
         }
-        if (priorities[level] < priorities[this.fileLevel]) {
+        if (LEVEL_PRIORITY[level] < LEVEL_PRIORITY[this.fileLevel]) {
             return;
         }
         const appendLogEntry = async () => {

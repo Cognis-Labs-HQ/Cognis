@@ -1,3 +1,4 @@
+import { bindCapability } from "./capabilities.js";
 import { watchComposerPresentation } from "./page-composer/presentation.js";
 /**
  * Reusable popup / modal dialog.
@@ -115,6 +116,8 @@ import { createI18n } from "./i18n.js";
 import { lockPageScroll } from "./page-scroll-lock.js";
 import { createFormDirtyTracker } from "./unsaved-changes.js";
 
+const log = bindCapability("ui:log");
+
 /** @typedef {ReturnType<typeof createPopupContentApi> & {updateBody: (body: string | (() => string)) => HTMLElement | null, setPage: (id: string) => boolean, pageId?: string, markDirty: () => void, requestClose?: () => void}} PopupApi */
 
 let stylesheetReady = null;
@@ -141,7 +144,8 @@ async function getPopupStylesheetCache() {
     try {
         return await globalThis.caches.open(POPUP_STYLESHEET_CACHE);
     } catch (error) {
-        console.error(
+        void log(
+            "error",
             `[popup] Failed to open stylesheet cache "${POPUP_STYLESHEET_CACHE}":`,
             error,
         );
@@ -168,7 +172,8 @@ async function refreshPopupStylesheet() {
             installedStylesheet.textContent = await response.text();
         }
     } catch (error) {
-        console.error(
+        void log(
+            "error",
             `[popup] Failed to refresh stylesheet cache for "${POPUP_STYLESHEET_URL}":`,
             error,
         );
@@ -781,8 +786,9 @@ export async function openPopup({
             if (overlays[overlays.length - 1] !== overlay) return;
             if (event.key === "Escape") {
                 if (mandatory) return;
-                dismiss(null).catch((error) =>
-                    console.error("[popup] dismiss failed:", error),
+                dismiss(null).catch(
+                    (error) =>
+                        void log("error", "[popup] dismiss failed:", error),
                 );
                 return;
             }
@@ -839,8 +845,13 @@ export async function openPopup({
         }
         if (Number.isFinite(timeoutMs) && timeoutMs > 0) {
             timeoutHandle = setTimeout(() => {
-                dismiss(timeoutActionId).catch((error) =>
-                    console.error("[popup] timeout dismiss failed:", error),
+                dismiss(timeoutActionId).catch(
+                    (error) =>
+                        void log(
+                            "error",
+                            "[popup] timeout dismiss failed:",
+                            error,
+                        ),
                 );
             }, timeoutMs);
 

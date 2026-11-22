@@ -1,20 +1,20 @@
 /**
- * Reports structured browser failures through a caller-selectable local logger.
- *
- * This deliberately avoids authenticated telemetry so it is safe for public
- * pages and for failures that occur before a user session exists.
- *
+ * Normalizes browser failures and publishes them to the logging gateway.
  * Public exports:
- *   reportClientError(meta, logger) — writes structured failure metadata to
- *                                     the supplied logger or `console.error`.
- *
- * Usage:
- *   reportClientError({ component: 'public-page', operation: 'load' });
- *
- * @param {Record<string, unknown>} meta - Structured failure metadata.
- * @param {(meta: Record<string, unknown>) => void} [logger=console.error] - Local error sink.
- * @returns {void}
+ * - reportClientError(error) — report structured context or an Error safely.
+ * @example reportClientError({ component: 'public-page', operation: 'load' });
+ * @param {Record<string, unknown> | Error} error Failure or safe diagnostic context.
+ * @returns {Promise<boolean>} Whether the gateway accepted the event.
  */
-export function reportClientError(meta, logger = console.error) {
-    logger(meta);
+import { bindCapability } from "./capabilities.js";
+
+const log = bindCapability("ui:log");
+
+export function reportClientError(error) {
+    const context = error instanceof Error ? { errorName: error.name } : error;
+    return log("error", "client_error", {
+        component: "ui",
+        operation: "runtime",
+        ...context,
+    });
 }

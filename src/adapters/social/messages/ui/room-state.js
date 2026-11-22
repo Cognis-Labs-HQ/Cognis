@@ -1,3 +1,8 @@
+import { bindCapability } from "/static/reuse/capabilities.js";
+import {
+    handleProfileAvatarError,
+    hydrateProfileAvatars,
+} from "./runtime-bridges.js";
 import { nextReactionState } from "./reaction-state.js";
 import { isOffline } from "/static/reuse/offline-state.js";
 import { canOpenCachedRoom, selectInitialRoomId } from "./offline-room.js";
@@ -27,14 +32,7 @@ import {
     renderConversationPrompt,
 } from "./room-render.js";
 
-const profileAvatars = () => {
-    const capability = uiCtx.capabilities.get("ui:profileAvatarRenderer");
-    if (!capability) throw new Error("Profile avatar capability unavailable");
-    return capability;
-};
-const handleProfileAvatarError = (event) => profileAvatars().handleError(event);
-const hydrateProfileAvatars = (container) =>
-    profileAvatars().hydrate(container);
+const log = bindCapability("ui:log");
 
 export function createMessagesRoomState({
     i18n,
@@ -251,12 +249,16 @@ export function createMessagesRoomState({
             try {
                 selectedRoomActions = await resolveRoomActions(room);
             } catch (error) {
-                console.error("[messages] VoIP room capability check failed", {
-                    component: "social-messages",
-                    operation: "resolve_voip_room_action",
-                    roomId: String(room.id ?? ""),
-                    error,
-                });
+                void log(
+                    "error",
+                    "[messages] VoIP room capability check failed",
+                    {
+                        component: "social-messages",
+                        operation: "resolve_voip_room_action",
+                        roomId: String(room.id ?? ""),
+                        error,
+                    },
+                );
             }
         }
         if (headerSlot && room) {
@@ -366,7 +368,7 @@ export function createMessagesRoomState({
             `/api/v1/social/messages/requests/${encodeURIComponent(requestId)}/${action}`,
             { method: "POST" },
         ).catch((error) => {
-            console.error("[messages] pending-request action failed", {
+            void log("error", "[messages] pending-request action failed", {
                 action,
                 requestId,
                 error: error instanceof Error ? error.message : String(error),

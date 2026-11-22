@@ -1,3 +1,4 @@
+import { bindCapability } from "./capabilities.js";
 import { offlineRouteAvailable } from "./offline-navigation.js";
 import { uiCtx } from "./ui-ctx.js";
 /**
@@ -16,9 +17,12 @@ import { uiCtx } from "./ui-ctx.js";
  * const routes = await loadSpaRoutes();
  * ```
  */
+import { reportClientError } from "./error-reporting.js";
 
 import { isOffline, offlineWorkerRequest } from "./offline-state.js";
 import { apiFetch } from "./api-client.js";
+
+const log = bindCapability("ui:log");
 
 const catalog = uiCtx.capabilities.get("navigation:routeCatalog") ?? {
     routes: null,
@@ -84,7 +88,8 @@ function normalizeRoute(rawRoute) {
     } catch (error) {
         const errorMessage =
             error instanceof Error ? error.message : String(error);
-        console.warn(
+        void log(
+            "warn",
             "[spa-route-registry] Ignoring invalid SPA route descriptor.",
             {
                 routeId: rawRoute?.id,
@@ -167,7 +172,7 @@ export async function loadSpaRoutes() {
                 catalog.routes = normalizedRoutes;
                 void offlineWorkerRequest(
                     "COGNIS_REFRESH_OFFLINE_ROUTES",
-                ).catch(console.error);
+                ).catch(reportClientError);
             }
             return normalizedRoutes;
         } catch {

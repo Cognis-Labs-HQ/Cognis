@@ -37,6 +37,7 @@
  * hook is registered before `index.js` runs the flow.
  */
 
+import { bindCapability } from "/static/reuse/capabilities.js";
 import "/static/reuse/page-flow-catalog.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { resolveReceivedShare } from "./received-share.js";
@@ -50,6 +51,8 @@ import {
     publishShareRevoked,
 } from "./session-events.js";
 import { stopShareStatusWatch, watchShareStatus } from "./status-monitor.js";
+
+const log = bindCapability("ui:log");
 
 const ACCESS_TOKEN_KEY = "cognis_access_token";
 const PREV_ACCESS_TOKEN_KEY = "cognis_prev_access_token";
@@ -119,7 +122,7 @@ async function navigateToMissingShare() {
     try {
         await navigate?.(errorPath);
     } catch (error) {
-        console.error("[share] failed to open missing-share error route", {
+        void log("error", "[share] failed to open missing-share error route", {
             operation: "navigate_missing_share_error",
             error,
         });
@@ -158,7 +161,7 @@ window.addEventListener("cognis:api-access-denied", (event) => {
         navigate?.(`/share/${encodeURIComponent(shareToken)}`) ?? false,
     )
         .catch((error) => {
-            console.error("[share] failed to open access-denied route", {
+            void log("error", "[share] failed to open access-denied route", {
                 operation: "navigateAccessDenied",
                 errorName: error?.name,
             });
@@ -329,7 +332,7 @@ listenForShareRevocation((shareId) => {
     const sharePath = `/share/${encodeURIComponent(shareToken)}`;
     const navigate = uiCtx.capabilities.get("ui:navigate");
     Promise.resolve(navigate?.(sharePath) ?? false).catch((error) => {
-        console.error("[share] failed to navigate revoked share", {
+        void log("error", "[share] failed to navigate revoked share", {
             operation: "navigateRevokedShare",
             errorName: error?.name,
         });

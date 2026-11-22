@@ -32,7 +32,7 @@ Das Gateway registriert diese Capabilities über `ctx.capabilities`:
 
 Diese Oberfläche ist der unterstützte Integrationspunkt. Andere Komponenten dürfen keine TFA-Adapter-Interna direkt importieren.
 
-`tfa:getLoginMethods(accountId)` löst eine Login-Challenge (z. B. SMTP-E-Mail) nur aus, wenn genau eine Methode für den Nutzer konfiguriert ist. Bei mehreren Methoden enthält die Antwort nur Methodenidentitäten ohne Challenge-Daten. Die Login-UI löst die Challenge über `POST /api/v1/tfa/login/resend` on-demand aus, sobald der Nutzer eine Methode explizit auswählt.
+`tfa:getLoginMethods(accountId)` bereitet eine Challenge nur bei genau einer verfügbaren Methode ohne unbenutzte Wiederherstellungscodes vor. Andernfalls fordert die Login-Oberfläche über `POST /api/v1/tfa/login/resend` eine Challenge für die anfänglich gewählte Methode mit `challengeOnSelect` sowie für spätere Auswahlen ohne bestehende Challenge an. Vorbereitete Challenges werden wiederverwendet. Zustellfehler erscheinen lokalisiert; Protokolle erfassen Methode, Konto, Bereitschaft und Fehlergrund ohne Codes oder E-Mail-Inhalte.
 
 ### API-Routen
 
@@ -60,6 +60,8 @@ Jeder Adapter unter `src/adapters/tfa/<adapter-id>/` implementiert methodenspezi
 Adapter deklarieren Metadaten und Einstellungen. Konten verwalten bestätigte Methoden; verfügbare Anbieter bestimmen hinzufügbare und prüfbare Methoden.
 
 ## Verhalten
+
+Die Eingabe gibt ihre Anmeldeversuchs-ID vor Abschluss der Zustellung zurück. Authenticator und Wiederherstellungscodes bleiben während einer ausstehenden E-Mail nutzbar. Erst- und Wiederholungsanfragen haben eine Frist von 15 Sekunden. Solange die Zustellung läuft, startet dieselbe Methode keine doppelte Anfrage. Eine neue Eingabe bricht die vorherige Anfrage ab und ersetzt deren Wiederholungsaktion; verspätete Antworten ändern weder die neue Eingabe noch die ausgewählte Methode.
 
 ### TFA Gateway
 

@@ -1,4 +1,7 @@
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { formatDateTime } from "/static/reuse/timestamp.js";
+
+const log = bindCapability("ui:log");
 
 const MAX_DISPLAYED_LOGS = 400;
 const RECONNECT_DELAY_MS = 2000;
@@ -307,7 +310,8 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
                         queueLog(JSON.parse(parsed.data));
                         setStatus("");
                     } catch (parseError) {
-                        console.warn(
+                        void log(
+                            "warn",
                             "[logs] Ignoring malformed SSE log event.",
                             parseError,
                         );
@@ -349,7 +353,11 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
             ) {
                 return;
             }
-            console.warn("[logs] Log stream connection failed.", streamError);
+            void log(
+                "warn",
+                "[logs] Log stream connection failed.",
+                streamError,
+            );
             reconnectAttempts += 1;
             setStatus(i18n.t("ui.app.admin.logs.stream_failed"));
             if (reconnectAttempts > MAX_SILENT_RECONNECT_ATTEMPTS) {

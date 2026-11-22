@@ -1,3 +1,4 @@
+import { bindCapability } from "/static/reuse/capabilities.js";
 import {
     renderCalendarViewSwitcher,
     mountCalendarViewControls,
@@ -18,6 +19,8 @@ import { createCalendarPopupManager } from "./popup-manager.js";
 import { mount as mountSharedCalendar } from "../share-renderer.js";
 import * as calendarUi from "../calendar-ui-helpers.js";
 
+const log = bindCapability("ui:log");
+
 const SELECTED_VIEW_STORAGE_KEY = "calendar.selectedView";
 
 export async function mount(root, { signal, shareContext = null } = {}) {
@@ -31,7 +34,6 @@ export async function mount(root, { signal, shareContext = null } = {}) {
         return mountSharedCalendar(root, { shareContext, i18n, signal });
     }
 
-    const log = uiCtx.capabilities.get("ui:log");
     let calendars = [];
     const routeCalendarId = calendarUi.parseCalendarSelection();
     const routeEventId = calendarUi.parseEventSelection();
@@ -162,7 +164,9 @@ export async function mount(root, { signal, shareContext = null } = {}) {
         const invitationsPromise = calendarUi
             .fetchInvitations()
             .catch((error) => {
-                console.warn("[calendar]:invitations-load-failed", { error });
+                void log("warn", "[calendar]:invitations-load-failed", {
+                    error,
+                });
                 return [];
             });
         const calendarState = await calendarUi.fetchCalendarState();

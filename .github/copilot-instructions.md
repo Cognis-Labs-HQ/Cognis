@@ -79,6 +79,7 @@ Use the shared `ui:floatingMenus` queue and its staged flows for floating action
 - Check cold/direct navigation, repeated SPA mounts, disabled/uninstalled providers, admin/user permissions, pending/approved requests, transactional failures and dictionary/card duplication.
 - Keep versions, manifests, lockfiles, dependency ceilings and all four localized documents/changelogs synchronized. Document capabilities, constraints and lifecycle behavior accurately. Regenerate and verify provider package hashes after the final edits.
 - Avoid raw provider payloads in UI, unsafe error metadata and silent catches. Use appropriate user-facing errors and structured safe logs.
+- Route browser, worker and server diagnostics through the logging gateway. The gateway alone chooses browser-console and server outputs; only its own initialization may use a direct console fallback. Prefer structured event identifiers and safe metadata, and test the gateway boundary, output policy and lifecycle cleanup.
 
 ### Evidence and full review archive
 

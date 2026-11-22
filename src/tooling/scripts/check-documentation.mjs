@@ -1,3 +1,4 @@
+import { writeTerminalReport } from "../reuse/terminal-output.ts";
 import { componentManifestFiles } from "../reuse/component-files.js";
 import {
     documentationBundleFiles,
@@ -66,9 +67,10 @@ if (base) {
 }
 
 if (failures.length) {
-    console.error(failures.join("\n"));
+    writeTerminalReport("stderr", failures.join("\n"));
     process.exitCode = 1;
 } else
-    console.log(
+    writeTerminalReport(
+        "stdout",
         "Component documentation bundles and requested branch comparison are valid.",
     );

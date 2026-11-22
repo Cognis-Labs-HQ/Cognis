@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../../../../tooling/reuse/diagnostic-fixture.ts";
 import { loadTestModule } from "../../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
@@ -48,6 +49,7 @@ test("request previews use the normal card renderer with staged fields and persi
         loadTestModule(
             new URL("../../ui/app/request-preview.js", import.meta.url),
             {
+                "/static/reuse/capabilities.js": createDiagnosticFixture(),
                 "/static/reuse/toast.js": context,
                 "./cards.js": context,
                 "./presentation.js": context,

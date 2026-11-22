@@ -4,6 +4,10 @@
 
 ## Schnittstellen
 
+### Anbietererkennung
+
+`GET /api/v1/ui/capability-providers` unterstützt auch anonyme Aufrufe. Ohne gültige Kontodaten liefert der Endpunkt nur ausdrücklich mit `public: true` markierte Anbieter ohne Rollenrichtlinie. Bei angemeldeten Aufrufen gilt weiterhin die Kontorolle. Antworten werden nicht zwischengespeichert; bei geändertem Sitzungstoken lädt der Browser den Katalog erneut.
+
 ### UI-Erweiterungen
 
 | Methode | Pfad                                 | Beschreibung                             | Auth   |
@@ -332,6 +336,10 @@ Empfehlungsfeeds werden vom Marketplace-Dienst gemeinsam genutzt, bündeln gleic
 ### Erkennung von Prüfmethoden
 
 Die Systemsicherheitsantwort enthält `userValidationModes` aus Auth. Eine geänderte Richtlinie prüft registrierte Kennung und Verfügbarkeit. Nicht verfügbare gespeicherte Kennungen bleiben bei unabhängigen Änderungen erhalten. Adapterkonfiguration liefert eigene Schemas, Sprachressourcen, bedingte Felder, Geheimnispräsenz und Testfelder; das gemeinsame Popup leitet keine Transportart aus Feldnamen ab.
+
+### Verwaltung speichern
+
+Die Verwaltung speichert nur Bereiche mit ausstehenden Änderungen. Sicherheitsfelder werden erst nach dem erfolgreichen Laden der Sicherheitseinstellungen und der Passwortrichtlinie bearbeitbar. Beim erneuten Darstellen bleiben Änderungen erhalten; beim Verlassen eines geänderten Bereichs ist weiterhin die Bestätigung zum Verwerfen erforderlich. Nach einem teilweise erfolgreichen Speichern bleiben fehlgeschlagene oder neuere Änderungen offen. Ein erneuter Versuch sendet bereits gespeicherte Einstellungen nicht erneut. Die Sicherheitsanleitung erklärt weiterhin Sitzungsrichtlinien und vertrauenswürdige Domains.
 
 ## Sicherheit
 

@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../../tooling/reuse/diagnostic-fixture.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
@@ -9,6 +10,7 @@ const events = [];
 const { prepareOfflineRouteAssets } = loadTestModule(
     new URL("../offline-route-assets.js", import.meta.url),
     {
+        "./capabilities.js": createDiagnosticFixture(),
         "./ui-ctx.js": { uiCtx },
         "./offline-state.js": {
             isOffline: () => offline,
@@ -73,6 +75,7 @@ test("a separately loaded utility reuses the existing ctx flow and cache capabil
     const duplicate = loadTestModule(
         new URL("../offline-route-assets.js", import.meta.url),
         {
+            "./capabilities.js": createDiagnosticFixture(),
             "./ui-ctx.js": { uiCtx },
             "./offline-state.js": {
                 isOffline: () => false,

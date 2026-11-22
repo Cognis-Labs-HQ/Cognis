@@ -10,7 +10,11 @@
  *   import { bindThemeToggle } from '../reuse/theme-toggle.js';
  *   bindThemeToggle({ onThemeChange: async (mode) => savePrefs({ mode }) });
  */
+
+import { bindCapability } from "./capabilities.js";
 import { ensurePersistentStylesheet } from "./page-styles.js";
+
+const log = bindCapability("ui:log");
 
 const THEME_KEY = "cognis_theme";
 const TOGGLE_HANDLER_KEY = "__cognisThemeToggleHandler";
@@ -44,7 +48,7 @@ export function applyTheme(mode) {
         ensurePersistentStylesheet("/static/styles/fonts.css"),
         ensurePersistentStylesheet("/static/styles/optional-fonts.css"),
     ]).catch((error) => {
-        console.info("[theme] optional fonts unavailable", {
+        void log("info", "[theme] optional fonts unavailable", {
             operation: "loadFonts",
             errorName: error?.name,
         });

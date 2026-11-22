@@ -1,3 +1,5 @@
+import { bindCapability } from "../../reuse/capabilities.js";
+
 import { guides } from "./guides.js";
 import { navigateTo } from "../../reuse/app-router.js";
 import { createLanguageRedraw } from "./language-redraw.js";
@@ -66,6 +68,8 @@ import {
     getSettingsShellOptions,
     resolveSettingsSetupRedirect,
 } from "./setup-requirement.js";
+
+const log = bindCapability("ui:log");
 
 async function loadSettingsSections() {
     if (isOffline()) return [];
@@ -174,7 +178,7 @@ export async function mount(root, { signal } = {}) {
     const refreshOnlineControls = bindOnlineSettingsControls(root, signal);
     const reportGeneralFailure = (error) => {
         if (signal?.aborted) return;
-        console.error(i18n.t("ui.app.settings.emails_add_failed"), {
+        void log("error", i18n.t("ui.app.settings.emails_add_failed"), {
             operation: "loadEmailSettings",
             errorName: error.name,
         });
@@ -223,7 +227,8 @@ export async function mount(root, { signal } = {}) {
                     signal,
                 }),
                 onError: (error, descriptor) => {
-                    console.warn(
+                    void log(
+                        "warn",
                         `[settings] Failed loading ${descriptor?.scriptUrl}:`,
                         error,
                     );
@@ -231,7 +236,7 @@ export async function mount(root, { signal } = {}) {
             },
         );
     } catch (error) {
-        console.warn(`[settings] sections-load-failed:`, error);
+        void log("warn", `[settings] sections-load-failed:`, error);
         contributedSections = [];
     }
     const generalContributions = contributedSections.filter(

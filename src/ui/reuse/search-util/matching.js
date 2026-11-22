@@ -7,6 +7,9 @@
  * filterSearchGroupsForType(groups, "user");
  * @module reuse/search-util/matching
  */
+
+import { bindCapability } from "../capabilities.js";
+
 import { uiCtx } from "../ui-ctx.js";
 import { search } from "./capability.js";
 import { REGISTERED_SEARCH_CATEGORY_HOOKS } from "./state.js";
@@ -14,6 +17,8 @@ import {
     filterVisibleSearchGroups as filterVisibleGroups,
     isSearchResultVisibleToUser as isVisibleResult,
 } from "./visibility.js";
+
+const log = bindCapability("ui:log");
 export { search } from "./capability.js";
 /**
  * Converts a singular category token into a basic plural form for placeholder
@@ -575,7 +580,7 @@ async function resolveSearchProviderContribution(
         }
     } catch (error) {
         if (options.signal?.aborted) return;
-        console.warn("[search-bar]:category-provider-failed", {
+        void log("warn", "[search-bar]:category-provider-failed", {
             categoryId,
             error,
         });
@@ -606,7 +611,7 @@ async function getRegisteredSearchGroups(query = "", searchOptions = {}) {
             }
             return groups;
         } catch (error) {
-            console.warn("[search-bar]:search-flow-failed", { error });
+            void log("warn", "[search-bar]:search-flow-failed", { error });
         }
     }
 
@@ -736,7 +741,7 @@ export async function filterLocalGroupsIncrementally(
             );
         } catch (error) {
             if (options.signal?.aborted) return;
-            console.warn("[search-bar]:category-provider-failed", {
+            void log("warn", "[search-bar]:category-provider-failed", {
                 categoryId: avenue.categoryId,
                 error,
             });

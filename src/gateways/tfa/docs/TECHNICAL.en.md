@@ -32,7 +32,7 @@ The gateway contributes these capabilities through `ctx.capabilities`:
 
 These capabilities are the supported integration surface for auth and UI code. Other components must not import TFA adapter internals directly.
 
-`tfa:getLoginMethods(accountId)` only initiates a login challenge (e.g. sends an SMTP email) when exactly one method is configured for the user. When multiple methods are available, the response includes method identity only — no challenge data. The login UI triggers challenge initiation on demand via `POST /api/v1/tfa/login/resend` when the user explicitly selects a method.
+`tfa:getLoginMethods(accountId)` prepares a challenge only when one method is available and no unused recovery codes exist. Otherwise the login UI requests a challenge through `POST /api/v1/tfa/login/resend` for the initially selected method when its `challengeOnSelect` metadata is true, and for subsequent selections without an existing challenge. Server-prepared challenges are reused. Delivery failures show a localized error; gateway logs record method, account, readiness and failure reason without codes or email content.
 
 ### API Routes
 
@@ -60,6 +60,8 @@ Each adapter directory under `src/adapters/tfa/<adapter-id>/` provides the metho
 Method adapters declare setup/login metadata and configuration schemas. Accounts manage confirmed methods in Settings; provider availability determines which methods can be added or challenged.
 
 ## Behavior
+
+The prompt returns its login attempt ID before challenge delivery completes, so authenticator and recovery-code verification remain available while email is pending. Initial and resend requests have a 15-second deadline. A method cannot start a duplicate request while its delivery is pending. Opening a new prompt aborts the previous request and replaces its resend handler; late responses cannot change the new prompt or the selected method.
 
 ### TFA Gateway
 

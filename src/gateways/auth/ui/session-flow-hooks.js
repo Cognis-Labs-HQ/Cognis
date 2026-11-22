@@ -1,3 +1,4 @@
+import { bindCapability } from "/static/reuse/capabilities.js";
 import "./external-profile-sync.js";
 /**
  * Auth-gateway default hooks for the `authenticate-session` and `load-page`
@@ -36,6 +37,8 @@ import "/static/adapters/auth/keyring/keyring.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { isOffline } from "/static/reuse/offline-state.js";
 import { apiFetch } from "/static/reuse/api-client.js";
+
+const log = bindCapability("ui:log");
 
 const AUTH_SETUP_CACHE_TTL_MS = 5_000;
 let authSetupCacheExpiresAt = 0;
@@ -333,7 +336,7 @@ uiCtx.extendFlow(
             ) {
                 return { requiresSetup: false, redirectTo: null };
             }
-            console.error("[auth]:setup-enforcement-failed", {
+            void log("error", "[auth]:setup-enforcement-failed", {
                 component: "auth",
                 operation: "enforceSetup",
                 error,
@@ -480,7 +483,9 @@ window.addEventListener("cognis:api-access-denied", async (event) => {
         }
         window.location.replace("/dashboard");
     } catch (error) {
-        console.error("[auth-gateway]:session-revalidation-failed", { error });
+        void log("error", "[auth-gateway]:session-revalidation-failed", {
+            error,
+        });
         sessionExpiryNavigationPending = false;
     }
 });

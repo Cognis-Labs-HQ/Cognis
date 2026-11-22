@@ -4,8 +4,12 @@
  * @module reuse/search-util/capability
  */
 
+import { bindCapability } from "../capabilities.js";
+
 import { uiCtx } from "../ui-ctx.js";
 import "../flow-registry.js";
+
+const log = bindCapability("ui:log");
 
 function normalizeSearchOptions(options = {}) {
     return {
@@ -146,7 +150,7 @@ function createSearchCapability() {
         const results = await Promise.allSettled(
             getAvenues(stageContext?.stageId).map((avenue) =>
                 runAvenue(avenue, providerContext).catch((error) => {
-                    console.warn("[search-bar]:avenue-failed", {
+                    void log("warn", "[search-bar]:avenue-failed", {
                         componentId: avenue.componentId,
                         avenueId: avenue.id,
                         error,

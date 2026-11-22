@@ -1,3 +1,4 @@
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { createLoginSubmitHandler } from "./submit.js";
 import { renderInPageCallout } from "/static/reuse/in-page-callout.js";
 import {
@@ -39,6 +40,8 @@ import {
 } from "./client-loaders.js";
 import "/static/reuse/flow-registry.js";
 import "/static/adapters/auth/keyring/keyring.js";
+
+const log = bindCapability("ui:log");
 
 const AUTH_SOURCE_PREFERENCE_KEY = "cognis_login_auth_source";
 
@@ -781,7 +784,7 @@ export async function mount(root, { signal } = {}) {
                                 runTypingShowcase(typingSamples);
                             })
                             .catch((error) => {
-                                console.error(error);
+                                void log("error", error);
                                 loadLoginMethods();
                                 runTypingShowcase(typingSamples);
                             });

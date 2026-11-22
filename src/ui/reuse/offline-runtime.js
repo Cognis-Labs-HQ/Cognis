@@ -5,6 +5,8 @@
  * @param {object} ctx Browser flow and capability context.
  * @returns {void}
  */
+
+import { bindCapability } from "./capabilities.js";
 import { offlinePolicy } from "./offline-policy.js";
 import { registerOfflineAssets } from "./offline-assets.js";
 import { createOfflineOutbox } from "./offline-outbox.js";
@@ -13,6 +15,8 @@ import {
     offlineEnabled,
     offlineWorkerRequest,
 } from "./offline-state.js";
+
+const log = bindCapability("ui:log");
 
 export function registerOfflineRuntime(ctx) {
     registerOfflineAssets(ctx);
@@ -54,7 +58,7 @@ export function registerOfflineRuntime(ctx) {
                 await ctx.runFlow("authenticate-session", {});
                 if (await outbox.hasPending()) scheduleRetry();
             } catch (error) {
-                console.error("[offline] queued delivery retry failed", {
+                void log("error", "[offline] queued delivery retry failed", {
                     operation: "retryOutbox",
                     errorName: error?.name,
                 });
@@ -140,7 +144,7 @@ export function registerOfflineRuntime(ctx) {
                 );
             }
         } catch (error) {
-            console.error("[offline] queued delivery could not start", {
+            void log("error", "[offline] queued delivery could not start", {
                 operation: "flushOutbox",
                 errorName: error?.name,
             });
@@ -153,10 +157,14 @@ export function registerOfflineRuntime(ctx) {
             )
                 scheduleRetry();
         } catch (error) {
-            console.error("[offline] queued delivery state could not be read", {
-                operation: "readOutbox",
-                errorName: error?.name,
-            });
+            void log(
+                "error",
+                "[offline] queued delivery state could not be read",
+                {
+                    operation: "readOutbox",
+                    errorName: error?.name,
+                },
+            );
         }
     };
     ctx.extendFlow(
@@ -191,7 +199,7 @@ export function registerOfflineRuntime(ctx) {
                     globalThis.localStorage?.getItem("cognis_account"),
                 );
             } catch (error) {
-                console.error("[offline] queued activity cleanup failed", {
+                void log("error", "[offline] queued activity cleanup failed", {
                     operation: "clearOutbox",
                     errorName: error?.name,
                 });
@@ -225,14 +233,16 @@ export function registerOfflineRuntime(ctx) {
                     retryTimer = null;
                 }
             })
-            .catch((error) =>
-                console.error(
-                    "[offline] queued delivery state could not be read",
-                    {
-                        operation: "scheduleOutbox",
-                        errorName: error?.name,
-                    },
-                ),
+            .catch(
+                (error) =>
+                    void log(
+                        "error",
+                        "[offline] queued delivery state could not be read",
+                        {
+                            operation: "scheduleOutbox",
+                            errorName: error?.name,
+                        },
+                    ),
             );
     });
     let blocker;
@@ -253,7 +263,7 @@ export function registerOfflineRuntime(ctx) {
             allowed,
         }).catch((error) => {
             if (lastPolicySync === sync) lastPolicySync = undefined;
-            console.error("[offline] worker policy sync failed", {
+            void log("error", "[offline] worker policy sync failed", {
                 operation: "syncAccess",
                 errorName: error?.name,
                 code: error?.message,
@@ -313,19 +323,25 @@ export function registerOfflineRuntime(ctx) {
         "cognis:connectivity-changed",
     ])
         window.addEventListener(event, () => {
-            void updatePolicy().catch((error) =>
-                console.error("[offline] access policy update failed", {
-                    operation: "updatePolicy",
-                    errorName: error?.name,
-                }),
+            void updatePolicy().catch(
+                (error) =>
+                    void log("error", "[offline] access policy update failed", {
+                        operation: "updatePolicy",
+                        errorName: error?.name,
+                    }),
             );
         });
     queueMicrotask(() => {
-        void updatePolicy().catch((error) =>
-            console.error("[offline] initial access policy check failed", {
-                operation: "initializePolicy",
-                errorName: error?.name,
-            }),
+        void updatePolicy().catch(
+            (error) =>
+                void log(
+                    "error",
+                    "[offline] initial access policy check failed",
+                    {
+                        operation: "initializePolicy",
+                        errorName: error?.name,
+                    },
+                ),
         );
     });
 }

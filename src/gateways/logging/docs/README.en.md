@@ -2,6 +2,8 @@
 
 Application logs help administrators investigate errors and understand important account activity.
 
+Page and background-loading diagnostics are handled by the same logging gateway as server activity.
+
 ## What You Can Do
 
 Inspect application logs and configure console and file output.

@@ -1,4 +1,3 @@
-import { activeUiLanguage, enabledUiLanguages } from "./ui-language-state.js";
 /**
  * Lightweight i18n layer backed by per-locale strings.xml files.
  *
@@ -25,7 +24,12 @@ import { activeUiLanguage, enabledUiLanguages } from "./ui-language-state.js";
  *   i18n.t('ui.reuse.save');   // → 'Guardar'
  *   applyStaticTranslations(i18n);
  */
+
+import { activeUiLanguage, enabledUiLanguages } from "./ui-language-state.js";
 import { apiFetch, requestTargetsApi } from "./api-client.js";
+import { bindCapability } from "./capabilities.js";
+
+const log = bindCapability("ui:log");
 
 export const DEFAULT_LOCALE = "en";
 const STRINGS_BASE_PATH = "/static/languages";
@@ -35,6 +39,33 @@ const stringRequestCache = new Map();
 const publicBundleCache = new Map();
 const privateBundleCache = new Map();
 let privateBundleOwner;
+let translationGeneration = 0;
+const recoveryReloads = new Set();
+
+function requireTranslationReload(path, revision) {
+    const key = JSON.stringify([path, revision]);
+    recoveryReloads.delete(key);
+    if (recoveryReloads.size >= PUBLIC_BUNDLE_CACHE_LIMIT * 2)
+        recoveryReloads.delete(recoveryReloads.values().next().value);
+    recoveryReloads.add(key);
+}
+
+globalThis.window?.addEventListener?.("cognis:connection-restoring", () => {
+    translationGeneration += 1;
+    for (const key of [
+        ...publicBundleCache.keys(),
+        ...privateBundleCache.keys(),
+        ...stringRequestCache.keys(),
+    ]) {
+        const [path, revision] = JSON.parse(key);
+        requireTranslationReload(path, revision);
+    }
+    for (const locale of cache.keys())
+        requireTranslationReload(`${STRINGS_BASE_PATH}/${locale}/strings.xml`);
+    cache.clear();
+    publicBundleCache.clear();
+    privateBundleCache.clear();
+});
 const PUBLIC_BUNDLE_CACHE_LIMIT = 128;
 globalThis.window?.addEventListener?.("cognis:module-lifecycle-changed", () => {
     publicBundleCache.clear();
@@ -43,14 +74,25 @@ globalThis.window?.addEventListener?.("cognis:module-lifecycle-changed", () => {
 const STRING_REQUEST_TIMEOUT_MS = 15_000;
 
 async function fetchStrings(path, revision) {
-    const key = requestTargetsApi(path)
-        ? JSON.stringify([path, translationIdentity(), revision])
-        : JSON.stringify([path, revision]);
+    const key = JSON.stringify([
+        path,
+        revision,
+        translationGeneration,
+        requestTargetsApi(path) ? translationIdentity() : undefined,
+    ]);
     let request = stringRequestCache.get(key);
     if (!request) {
+        const privateRevision =
+            requestTargetsApi(path) &&
+            typeof revision === "string" &&
+            revision.length > 0;
         const requestFunction = requestTargetsApi(path) ? apiFetch : fetch;
         request = requestFunction(path, {
-            ...(revision ? { cache: "reload" } : {}),
+            cache:
+                privateRevision ||
+                recoveryReloads.has(JSON.stringify([path, revision]))
+                    ? "reload"
+                    : "default",
             signal: globalThis.AbortSignal?.timeout?.(
                 STRING_REQUEST_TIMEOUT_MS,
             ),
@@ -264,6 +306,12 @@ export function selectSupportedLanguage(
 
 function parseStringsXml(xmlText) {
     const xml = new DOMParser().parseFromString(xmlText, "application/xml");
+    if (
+        xml.querySelector("parsererror") ||
+        xml.documentElement?.nodeName !== "resources"
+    ) {
+        throw new Error("translation_bundle_invalid");
+    }
     const map = new Map();
     xml.querySelectorAll("string[name]").forEach((node) => {
         map.set(node.getAttribute("name"), (node.textContent || "").trim());
@@ -276,6 +324,7 @@ async function readTranslationBundle(path, revision) {
     const cacheable =
         url.origin === window.location.origin &&
         url.pathname.startsWith("/static/");
+    const generation = translationGeneration;
     const owner = translationIdentity();
     if (owner !== privateBundleOwner) {
         privateBundleOwner = owner;
@@ -287,8 +336,17 @@ async function readTranslationBundle(path, revision) {
         : requestTargetsApi(path) && versioned
           ? privateBundleCache
           : undefined;
-    const key = JSON.stringify([path, revision]);
+    const key = JSON.stringify([path, revision, translationGeneration]);
     if (bundleCache?.has(key)) return bundleCache.get(key);
+    if (
+        bundleCache &&
+        [...bundleCache.keys()].some((cachedKey) => {
+            const [cachedPath, cachedRevision] = JSON.parse(cachedKey);
+            return cachedPath === path && cachedRevision !== revision;
+        })
+    ) {
+        requireTranslationReload(path, revision);
+    }
     const load = async () => {
         const response = await fetchStrings(path, revision);
         if (!response.ok) {
@@ -296,9 +354,19 @@ async function readTranslationBundle(path, revision) {
                 status: response.status,
             });
         }
-        const parsed = parseStringsXml(await response.text());
+        let parsed;
+        try {
+            parsed = parseStringsXml(await response.text());
+        } catch (error) {
+            if (generation === translationGeneration)
+                requireTranslationReload(path, revision);
+            throw error;
+        }
+        if (generation !== translationGeneration)
+            throw new Error("translation_generation_changed");
         if (requestTargetsApi(path) && owner !== translationIdentity())
             throw new Error("translation_identity_changed");
+        recoveryReloads.delete(JSON.stringify([path, revision]));
         return parsed;
     };
     if (!bundleCache) return load();
@@ -318,9 +386,12 @@ async function loadLocaleStrings(locale) {
     const normalized = normalizeLocale(locale);
     if (cache.has(normalized)) return cache.get(normalized);
 
+    const generation = translationGeneration;
     const parsed = await readTranslationBundle(
         `${STRINGS_BASE_PATH}/${normalized}/strings.xml`,
     );
+    if (generation !== translationGeneration)
+        throw new Error("translation_generation_changed");
     cache.set(normalized, parsed);
     return parsed;
 }
@@ -336,7 +407,7 @@ async function loadLocalizedStrings(activeLocale, pathForLocale, revision) {
             try {
                 return await readTranslationBundle(path, revision);
             } catch (error) {
-                console.error("[i18n] translation_bundle_load_failed", {
+                log("error", "translation_bundle_load_failed", {
                     component: "core",
                     operation: "loadTranslationBundle",
                     locale,
@@ -433,7 +504,7 @@ export async function createI18n(options = {}) {
                     strings.set(key, value);
             });
         } catch (error) {
-            console.error("[i18n] translation_bundle_load_failed", {
+            log("error", "translation_bundle_load_failed", {
                 component: "core",
                 operation: "loadCoreTranslationBundle",
                 locale,

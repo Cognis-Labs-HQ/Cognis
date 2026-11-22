@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { subscribeDiagnostics } from "../../../../tooling/reuse/diagnostic-fixture.ts";
 import { installI18nEnvironment } from "../fixtures/i18n-environment.js";
 
 const xml = (strings) =>
@@ -119,7 +120,14 @@ test("missing English keys in core, module and component resolvers reject empty 
 
 test("unavailable locale bundles log diagnostics and English fallback still resolves", async (context) => {
     const failures = [];
-    context.mock.method(console, "error", (...args) => failures.push(args));
+    const release = subscribeDiagnostics(async (entry) => {
+        failures.push(entry);
+        return true;
+    });
+    context.after(release);
+    context.mock.method(console, "error", () =>
+        assert.fail("Translations must use the logging gateway"),
+    );
     installI18nEnvironment((path) =>
         path.includes("/de/")
             ? new Response("", { status: 404 })
@@ -133,7 +141,12 @@ test("unavailable locale bundles log diagnostics and English fallback still reso
         "/missing-locale",
     );
     assert.equal(i18n.t("title"), "English title");
-    assert.deepEqual(failures[0][1], {
+    const failure = failures.find(
+        (entry) => entry.meta.path === "/missing-locale/de/strings.xml",
+    );
+    assert.equal(failure.level, "error");
+    assert.equal(failure.message, "translation_bundle_load_failed");
+    assert.deepEqual(failure.meta, {
         component: "core",
         operation: "loadTranslationBundle",
         locale: "de",

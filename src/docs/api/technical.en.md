@@ -4,6 +4,10 @@ The public interfaces and operational rules of API.
 
 ## Interfaces
 
+### Provider Discovery
+
+`GET /api/v1/ui/capability-providers` also serves anonymous callers. Without valid claims it returns only providers explicitly marked `public: true` with no role policy; authenticated discovery still applies the caller’s role. Responses are not cached, and the browser reloads discovery when the session token changes.
+
 ### UI extensions
 
 | Method | Path                                 | Description                           | Auth   |
@@ -332,6 +336,10 @@ Recommendation feeds are shared by the marketplace service, coalesce concurrent 
 ### Validation Discovery
 
 System security responses include `userValidationModes` metadata from Auth. Saving a changed policy validates the registered ID and current availability. Existing unavailable IDs are preserved when unrelated settings change. Adapter configuration responses include provider-owned schemas, language bases, conditional fields, stored-secret presence and test fields; the shared popup does not infer a transport from field names.
+
+### Administration Saves
+
+Administration saves only sections with pending changes. Security controls become editable after both security settings and password policy load successfully. A form redraw preserves pending edits; leaving a changed section still requires the existing discard confirmation. A partial save keeps failed or newer edits pending, so retry does not resend settings already saved. The Security tutorial continues to explain session policy and trusted domains.
 
 ## Security
 

@@ -1,5 +1,16 @@
 /* Public assets only. API requests and authenticated documents stay network-only. */
-const CACHE_VERSION = "v13";
+const CACHE_VERSION = "v15";
+const pendingLogs = [];
+async function log(level, message, meta = {}) {
+    if (level) pendingLogs.push({ level, message, meta });
+    if (pendingLogs.length > 64) pendingLogs.shift();
+    const clients = await self.clients.matchAll({ type: "window" });
+    const client = clients.find((entry) => entry.focused) ?? clients[0];
+    if (!client) return;
+    for (const entry of pendingLogs.splice(0))
+        client.postMessage({ type: "COGNIS_LOG", entry });
+}
+
 const CACHE_PREFIX = "cognis-offline-";
 const CACHE_NAME = `${CACHE_PREFIX}${CACHE_VERSION}`;
 const CONTROL_CACHE_NAME = `${CACHE_NAME}-control`;
@@ -273,6 +284,10 @@ let accessWrite = Promise.resolve();
 self.addEventListener("message", (event) => {
     const reply = event.ports?.[0];
     const task = (async () => {
+        if (event.data?.type === "COGNIS_FLUSH_LOGS") {
+            await log();
+            return null;
+        }
         if (event.data?.type === "COGNIS_OFFLINE_REQUIREMENTS") {
             const response = await (
                 await caches.open(CONTROL_CACHE_NAME)
@@ -356,11 +371,12 @@ self.addEventListener("message", (event) => {
     event.waitUntil(
         task
             .then((result) => reply?.postMessage({ result }))
-            .catch((error) => {
-                console.error(
-                    "[cognis-sw] offline catalog operation failed",
-                    error,
-                );
+            .catch(async (error) => {
+                await log("error", "offline_catalog_operation_failed", {
+                    component: "core",
+                    operation: "offlineCatalog",
+                    errorName: error?.name,
+                });
                 reply?.postMessage({ error: "offline_catalog_unavailable" });
             }),
     );
@@ -453,10 +469,11 @@ async function assetResponse(request, moduleAsset, event) {
                     response.clone(),
                     previousSnapshot,
                 ).catch((error) => {
-                    console.error(
-                        "[cognis-sw] public asset cache write failed",
-                        error,
-                    );
+                    return log("error", "public_asset_cache_write_failed", {
+                        component: "core",
+                        operation: "cachePublicAsset",
+                        errorName: error?.name,
+                    });
                 });
                 event.waitUntil(cacheWrite);
             }
@@ -465,14 +482,20 @@ async function assetResponse(request, moduleAsset, event) {
             if (request.signal?.aborted) throw error;
             if (!cached) await announceOffline();
             if (cached && (!moduleAsset || generation === catalogGeneration)) {
-                console.info("[cognis-sw] cached public asset retained", {
-                    errorName: error?.name,
-                });
+                event.waitUntil(
+                    log("info", "cached_public_asset_retained", {
+                        component: "core",
+                        operation: "loadPublicAsset",
+                        errorName: error?.name,
+                    }),
+                );
                 return cached;
             }
             throw error;
         }
     };
+    if (request.cache === "reload" || request.cache === "no-cache")
+        return refresh();
     if (!cached) {
         const loadKey = JSON.stringify([
             cacheKey,
@@ -503,10 +526,11 @@ async function assetResponse(request, moduleAsset, event) {
                     })
                     .finally(release)
                     .catch((error) => {
-                        console.info(
-                            "[cognis-sw] shared public asset load failed",
-                            { errorName: error?.name },
-                        );
+                        return log("error", "shared_public_asset_load_failed", {
+                            component: "core",
+                            operation: "loadPublicAsset",
+                            errorName: error?.name,
+                        });
                     }),
             );
         }
@@ -530,10 +554,11 @@ async function assetResponse(request, moduleAsset, event) {
             event.waitUntil(
                 refresh()
                     .catch((error) => {
-                        console.info(
-                            "[cognis-sw] public asset refresh deferred",
-                            { errorName: error?.name },
-                        );
+                        return log("error", "public_asset_refresh_deferred", {
+                            component: "core",
+                            operation: "refreshPublicAsset",
+                            errorName: error?.name,
+                        });
                     })
                     .finally(() => {
                         entry.pending = false;

@@ -4,6 +4,8 @@
 
 ## Schnittstellen
 
+`logging:recentEntries` liefert Kopien von höchstens 30 bereinigten Diagnoseeinträgen mit `timestamp`, `level` und `message`. Fehlerberichte nutzen diese öffentliche Fähigkeit, statt Konsolenmethoden in Core umzuleiten. Der lokale Verlauf enthält auch anonyme Diagnosen; Serverübertragung und Browserausgabe folgen weiterhin den getrennten Gateway-Richtlinien.
+
 ### Architektur
 
 ```ts
@@ -61,6 +63,18 @@ Die DB-Gateway-Ereignisse verwenden ebenfalls den gemeinsamen Logger, protokolli
 | `LOG_ROTATE_COMPRESS`  | `true`              | Wenn `true`, werden rotierte Logs als gzip (`.gz`) komprimiert         |
 
 ## Verhalten
+
+`ui/reuse/levels.json` ist der einzige Katalog für Schweregradprioritäten und Konsolen-Aliasse. Das gemeinsame Modul leitet erlaubte Stufen, Zugehörigkeitsprüfungen und Konsolenzuordnungen daraus ab; Serverfilter, Browserannahme und Konsolenerfassung verwenden diese Definitionen gemeinsam.
+
+### Zentrale Browserdiagnose
+
+Browseraufrufer binden `ui:log` über die gemeinsame ctx-Fähigkeitsregistrierung. Der Host hält über alle Bindungen hinweg höchstens 128 aufgeschobene Fähigkeitsaufrufe vor; er besitzt weder eine protokollspezifische Abonnement- noch eine Ausgaberichtlinie. Der Logging-Anbieter stellt `ui:log` für seine begrenzte Laufzeit bereit und verwaltet Prüfung, Verlauf, Übertragung und Konsolenerfassung. Beim Entfernen des Anbieters wird die Fähigkeit freigegeben; aufgeschobene Aufrufe können einen späteren Anbieter ohne Implementierungsimport erreichen.
+
+Der öffentliche Browseranbieter besitzt den Ablauf `logging:emit` (`validate`, `deliver`, `publish`). Metadaten werden begrenzt und Zugangsdaten sowie rohe Fehlermeldungen entfernt.
+
+Service Worker leiten strukturierte `COGNIS_LOG`-Ereignisse an genau ein kontrolliertes Fenster weiter. Ohne verfügbares Fenster bleiben höchstens 64 Ereignisse im Puffer. Der Anbieter akzeptiert Nachrichten ausschließlich vom aktuellen Service-Worker-Controller und entfernt beim Beenden seine Listener, Konsolenumleitung und Ereignisübernahme.
+
+`POST /api/v1/logging/entries` erfordert weiterhin eine Anmeldung. Die Antwort mit Status 204 enthält `x-cognis-log-console: true` nur für Administratoren, wenn das Ereignis den aktuellen Schwellwert des Konsolenadapters erreicht. Erst diese Freigabe erlaubt die Browserausgabe. Abgelehnte oder fehlgeschlagene Übertragungen erzeugen keine Konsolenausgabe und keine rekursiven Meldungen. Anonyme Ereignisse erreichen den Gateway-Anbieter, werden jedoch weder an den geschützten Endpunkt gesendet noch ausgegeben. Die Filter für Serverkonsole und Datei bleiben unabhängig.
 
 ### Überblick
 

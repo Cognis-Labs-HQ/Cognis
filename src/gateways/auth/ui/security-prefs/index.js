@@ -1,3 +1,4 @@
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { showToast } from "/static/reuse/toast.js";
 import { openPopup } from "/static/reuse/popup.js";
@@ -15,6 +16,8 @@ import {
     splitDurationMinutes,
 } from "/static/reuse/duration-input.js";
 import { openPasswordChangePopup } from "/static/gateways/auth/security-prefs/password-change.js";
+
+const log = bindCapability("ui:log");
 
 const LOGIN_SESSION_TIMEOUT_DIRTY_KEY = "auth-login-session-timeout";
 
@@ -132,7 +135,7 @@ export function createSettingsSection({ i18n, root, markDirty, signal }) {
             rerender();
             syncLoginSessionTimeoutDirtyState();
         } catch (error) {
-            console.error("[security] Failed to load the global timeout.", {
+            void log("error", "[security] Failed to load the global timeout.", {
                 operation: "resetLoginSessionTimeoutToGlobal",
                 error,
             });
@@ -337,7 +340,8 @@ export function createSettingsSection({ i18n, root, markDirty, signal }) {
                     signal,
                 }),
                 onError: (error, descriptor) => {
-                    console.warn(
+                    void log(
+                        "warn",
                         `[security] Failed loading sub-section '${descriptor?.id}' from ${descriptor?.scriptUrl}:`,
                         error,
                     );

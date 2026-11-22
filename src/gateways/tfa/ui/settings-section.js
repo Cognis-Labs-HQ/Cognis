@@ -1,3 +1,4 @@
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { createSetupDismissalGuard } from "./setup-dismissal.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { showToast } from "/static/reuse/toast.js";
@@ -24,6 +25,8 @@ import {
     rotateRecoveryCodes,
     loadRecoveryCodesStatus,
 } from "/static/gateways/tfa/security-api.js";
+
+const log = bindCapability("ui:log");
 
 let requiredSetupPromptActive = false;
 
@@ -314,7 +317,7 @@ export function createSettingsSection({ i18n, root, markDirty, signal }) {
         const dismissal = createSetupDismissalGuard({
             signal,
             onError: (error) => {
-                console.error("[tfa] setup dismissal failed", {
+                void log("error", "[tfa] setup dismissal failed", {
                     component: "tfa",
                     operation: "dismissSetup",
                     errorName: error?.name,
@@ -397,7 +400,7 @@ export function createSettingsSection({ i18n, root, markDirty, signal }) {
                     ));
                 } catch (error) {
                     cancellationFailed = true;
-                    console.error("[tfa] enrollment cancellation failed", {
+                    void log("error", "[tfa] enrollment cancellation failed", {
                         component: "tfa",
                         operation: "cancelSetup",
                         errorName: error?.name,
@@ -406,7 +409,8 @@ export function createSettingsSection({ i18n, root, markDirty, signal }) {
             }
         }
         if (cancellationFailed) {
-            console.error(
+            void log(
+                "error",
                 "[tfa] enrollment cancellation was not acknowledged",
                 { component: "tfa", operation: "cancelSetup" },
             );

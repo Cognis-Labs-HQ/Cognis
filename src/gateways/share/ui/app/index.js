@@ -1,3 +1,4 @@
+import { bindCapability } from "/static/reuse/capabilities.js";
 import "../session-flow-hooks.js";
 import {
     applyDocumentTitle,
@@ -12,8 +13,10 @@ import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
 import { installGuestNavigationGuard } from "/static/reuse/guest-blocked-popup.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 
-const log = (operation, error) =>
-    console.error("Share page operation failed.", {
+const log = bindCapability("ui:log");
+
+const reportFailure = (operation, error) =>
+    void log("error", "Share page operation failed.", {
         component: "share",
         operation,
         errorName: error instanceof Error ? error.name : "UnknownError",
@@ -48,7 +51,7 @@ async function navigateToShareError(i18n, reason, showFallback) {
     try {
         if (await navigateTo(destination)) return;
     } catch (error) {
-        log("navigateShareError", error);
+        reportFailure("navigateShareError", error);
     }
     showFallback(notFound ? "share.error.not_found" : "share.error.expired");
 }

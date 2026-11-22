@@ -1,8 +1,11 @@
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { profileFetch as apiFetch } from "./offline-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { showToast } from "/static/reuse/toast.js";
 import { openImageCropPopup } from "./crop-popup.js";
 import { sourceRectToCoverObjectPositionPercent } from "./image-crop.js";
+
+const log = bindCapability("ui:log");
 
 function clampBannerPanPercent(value) {
     return Math.min(100, Math.max(0, Number(value) || 0));
@@ -134,7 +137,8 @@ export function createProfileImageUploadActions({
                 const receipt = await response.json();
                 responseData = receipt?.data ?? {};
             } catch (error) {
-                console.error(
+                void log(
+                    "error",
                     "[profile] unable to read optional upload response",
                     {
                         component: "social-profile",
@@ -192,11 +196,15 @@ export function createProfileImageUploadActions({
                         panY: nextBannerPanY,
                     });
                 } catch (error) {
-                    console.error("[profile] unable to save banner layout", {
-                        component: "social-profile",
-                        operation: "save-banner-layout",
-                        error,
-                    });
+                    void log(
+                        "error",
+                        "[profile] unable to save banner layout",
+                        {
+                            component: "social-profile",
+                            operation: "save-banner-layout",
+                            error,
+                        },
+                    );
                 }
             }
 
@@ -206,7 +214,7 @@ export function createProfileImageUploadActions({
             return true;
         } catch (error) {
             if (!delivered) throw error;
-            console.error("[profile] uploaded image view refresh failed", {
+            void log("error", "[profile] uploaded image view refresh failed", {
                 operation: "refreshAfterUpload",
                 errorName: error?.name,
             });

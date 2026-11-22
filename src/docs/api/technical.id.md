@@ -4,6 +4,10 @@ Antarmuka publik dan aturan operasional API.
 
 ## Antarmuka
 
+### Penemuan Penyedia
+
+`GET /api/v1/ui/capability-providers` juga melayani pemanggil anonim. Tanpa klaim yang sah, endpoint hanya mengembalikan penyedia dengan `public: true` yang tidak memiliki kebijakan peran. Penemuan terautentikasi tetap mengikuti peran pemanggil. Respons tidak disimpan dalam cache, dan peramban memuat ulang katalog ketika token sesi berubah.
+
 Registri rute meneruskan permintaan kepada pemilik fitur. GET /api/v1/ui/page-extensions/:pageId menyediakan kontribusi halaman aktif; rute Docs menyediakan indeks serta paket dokumentasi versi. Rute terlindungi tetap menerapkan autentikasi dan otorisasi sumber daya.
 
 ## Konfigurasi
@@ -223,6 +227,10 @@ Feed rekomendasi dibagikan oleh layanan marketplace, menggabungkan pembacaan ser
 ### Penemuan Validasi
 
 Respons keamanan sistem menyertakan metadata `userValidationModes` dari Auth. Penyimpanan kebijakan yang berubah memeriksa ID terdaftar dan ketersediaannya. ID tersimpan yang tidak tersedia dipertahankan saat pengaturan lain berubah. Respons konfigurasi adapter menyertakan skema penyedia, basis bahasa, bidang bersyarat, keberadaan rahasia, dan bidang pengujian; popup bersama tidak menebak transportasi dari nama bidang.
+
+### Penyimpanan Administrasi
+
+Administrasi hanya menyimpan bagian dengan perubahan tertunda. Kontrol keamanan dapat diedit setelah pengaturan keamanan dan kebijakan kata sandi berhasil dimuat. Penggambaran ulang formulir mempertahankan perubahan; meninggalkan bagian yang diubah tetap memerlukan konfirmasi pembuangan. Penyimpanan yang berhasil sebagian mempertahankan perubahan yang gagal atau lebih baru, sehingga percobaan ulang tidak mengirim ulang pengaturan yang sudah tersimpan. Panduan Keamanan tetap menjelaskan kebijakan sesi dan domain tepercaya.
 
 ## Keamanan
 

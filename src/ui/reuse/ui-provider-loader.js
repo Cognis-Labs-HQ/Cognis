@@ -1,4 +1,3 @@
-import { offlinePolicy } from "./offline-policy.js";
 /**
  * Loads every active host browser capability provider before dependent UI mounts.
  *
@@ -16,6 +15,8 @@ import { offlinePolicy } from "./offline-policy.js";
  * ```
  */
 
+import { offlinePolicy } from "./offline-policy.js";
+
 import { apiFetch } from "./api-client.js";
 import { uiCtx } from "./ui-ctx.js";
 import { createProviderLifecycle } from "./provider-lifecycle.js";
@@ -32,6 +33,7 @@ const providerLifecycle =
 uiCtx.capabilities.contribute(lifecycleCapability, providerLifecycle);
 
 let providersLoaded = false;
+let providerIdentity;
 let providersLoadPromise = null;
 let navbarPluginsLoaded = false;
 let navbarPluginsLoadPromise = null;
@@ -73,10 +75,13 @@ async function importCatalog(
 export async function ensureUiProvidersLoaded({ force = false } = {}) {
     if (force && providersLoadPromise) await providersLoadPromise;
     if (force) providersLoaded = false;
+    if (typeof localStorage === "undefined") return;
+    const identity =
+        globalThis.localStorage?.getItem("cognis_access_token") ?? null;
+    if (identity !== providerIdentity) providersLoaded = false;
     if (providersLoaded) return;
     if (providersLoadPromise) return providersLoadPromise;
-    if (typeof localStorage === "undefined") return;
-    if (!localStorage.getItem("cognis_access_token")) return;
+    providerIdentity = identity;
     providersLoadPromise = (async () => {
         providersLoaded = await importCatalog(
             "/api/v1/ui/capability-providers",

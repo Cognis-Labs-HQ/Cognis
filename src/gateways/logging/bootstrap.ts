@@ -20,30 +20,28 @@ import {
     type LoggingPreferenceValue,
 } from "./preference-store.js";
 
-export const SUPPORTED_LOG_LEVELS = ["debug", "info", "warn", "error"] as const;
-type LogLevel = (typeof SUPPORTED_LOG_LEVELS)[number];
+import {
+    SUPPORTED_LOG_LEVELS,
+    LEVEL_PRIORITY,
+    isLogLevel,
+    type LogLevel,
+} from "./ui/reuse/levels.js";
+export { SUPPORTED_LOG_LEVELS } from "./ui/reuse/levels.js";
 
-const ALLOWED_LEVELS = new Set<LogLevel>(["debug", "info", "warn", "error"]);
 const DEFAULT_ROTATE_MAX_BYTES = 10 * 1024 * 1024;
 const DEFAULT_ROTATE_MAX_FILES = 10;
 const MAX_KEYWORD_LENGTH = 120;
 const MAX_SNAPSHOT_ENTRIES = 300;
 const STREAM_POLL_INTERVAL_MS = 1500;
 const STREAM_HEARTBEAT_INTERVAL_MS = 15000;
-const LEVEL_PRIORITY: Record<LogLevel, number> = {
-    debug: 10,
-    info: 20,
-    warn: 30,
-    error: 40,
-};
 
 function parseSeverityThreshold(value: string | null): LogLevel | null {
     if (!value || value === "all") return null;
     const normalizedValue = value.trim().toLowerCase();
     // Severity filtering accepts exactly one threshold level.
     if (normalizedValue.includes(",")) return null;
-    if (!ALLOWED_LEVELS.has(normalizedValue as LogLevel)) return null;
-    return normalizedValue as LogLevel;
+    if (!isLogLevel(normalizedValue)) return null;
+    return normalizedValue;
 }
 
 function parseKeywordFilter(value: string | null): string {
@@ -78,7 +76,7 @@ function normalizeLogEntry(rawLine: string): Record<string, unknown> {
         return {
             ...parsed,
             ts,
-            level: ALLOWED_LEVELS.has(level as LogLevel) ? level : "info",
+            level: isLogLevel(level) ? level : "info",
             message,
         };
     } catch {
@@ -98,7 +96,7 @@ function matchesFilters(
     timeRangeMs: number | null,
 ): boolean {
     const level = String(entry.level ?? "").toLowerCase() as LogLevel;
-    if (!ALLOWED_LEVELS.has(level)) {
+    if (!isLogLevel(level)) {
         return false;
     }
     if (
@@ -148,6 +146,7 @@ function createLoggingRoutes(
     getFilePath: () => string,
     log?: BootstrapLog,
     routeContext?: RouteContext,
+    browserConsoleAllowed: (level: LogLevel) => boolean = () => false,
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
@@ -164,11 +163,7 @@ function createLoggingRoutes(
             const body = (await readJson(req)) as Record<string, unknown>;
             const level = String(body.level ?? "info") as LogLevel;
             const message = String(body.message ?? "").trim();
-            if (
-                !ALLOWED_LEVELS.has(level) ||
-                !message ||
-                message.length > 2000
-            ) {
+            if (!isLogLevel(level) || !message || message.length > 2000) {
                 res.writeHead(400, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -191,7 +186,13 @@ function createLoggingRoutes(
                 source: "browser",
                 accountId: claims.sub,
             });
-            res.writeHead(204);
+            res.writeHead(204, {
+                "x-cognis-log-console": String(
+                    ctx.hasMinRole(claims.role, "admin") &&
+                        browserConsoleAllowed(level),
+                ),
+                "cache-control": "no-store",
+            });
             res.end();
             return true;
         }
@@ -581,10 +582,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const dbExecutor = ctx.capabilities.require<DbExecutor>("db:executor");
     const preferenceStore = new LoggingPreferenceStore(dbExecutor);
     await preferenceStore.ensureSchema();
-    const level = ALLOWED_LEVELS.has(process.env.LOG_LEVEL as LogLevel)
+    const level = isLogLevel(process.env.LOG_LEVEL)
         ? (process.env.LOG_LEVEL as LogLevel)
         : "info";
-    const fileLevel = ALLOWED_LEVELS.has(process.env.LOG_FILE_LEVEL as LogLevel)
+    const fileLevel = isLogLevel(process.env.LOG_FILE_LEVEL)
         ? (process.env.LOG_FILE_LEVEL as LogLevel)
         : "debug";
     const filePath = process.env.LOG_FILE ?? "/app/logs/app.log";
@@ -637,6 +638,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             () => logger.getConfiguration().filePath,
             runtimeLog,
             routeContext,
+            (entryLevel) =>
+                LEVEL_PRIORITY[entryLevel] >=
+                LEVEL_PRIORITY[logger.getConfiguration().consoleLevel],
         ),
         "logging",
     );
@@ -694,6 +698,15 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.uiRegistry?.registerStaticDir("logging", uiDir);
 
     ctx.routeRegistry.registerPrefix("/api/v1/logging", "logging");
+    ctx.uiRegistry?.registerCapabilityProvider({
+        scriptUrl: "/static/gateways/logging/browser.js",
+        providesCapabilities: [
+            "ui:log",
+            "logging:browser",
+            "logging:recentEntries",
+        ],
+        public: true,
+    });
     ctx.uiRegistry?.registerCapabilityProvider({
         scriptUrl: "/static/gateways/logging/tutorials.js",
         providesCapabilities: ["logging:pageTutorials"],

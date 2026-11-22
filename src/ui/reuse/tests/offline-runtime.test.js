@@ -1,3 +1,5 @@
+import { createCapabilityRegistry } from "../capabilities.js";
+import { createDiagnosticFixture } from "../../../tooling/reuse/diagnostic-fixture.ts";
 import { registerFloatingMenus } from "../floating-menu-queue.js";
 import { installPageReadiness } from "../page-readiness.js";
 import { installTutorials } from "../tutorials/index.js";
@@ -26,6 +28,7 @@ function fixture({ browser = false } = {}) {
     const runtime = loadTestModule(
         new URL("../offline-runtime.js", import.meta.url),
         {
+            "./capabilities.js": createDiagnosticFixture(),
             "./offline-assets.js": { registerOfflineAssets },
             "./offline-policy.js": {
                 offlinePolicy: { allows: () => consented },
@@ -63,6 +66,7 @@ function fixture({ browser = false } = {}) {
         },
     );
     const { uiCtx } = loadTestModule(new URL("../ui-ctx.js", import.meta.url), {
+        "./capabilities.js": { uiCapabilities: createCapabilityRegistry() },
         "./tutorials/index.js": { installTutorials },
         "./page-readiness.js": { installPageReadiness },
         "./floating-menu-queue.js": { registerFloatingMenus },

@@ -5,14 +5,21 @@ export function installI18nEnvironment(respond) {
         getItem: (key) => storage.get(key) ?? null,
         setItem: (key, value) => storage.set(key, value),
     };
+    const events = new EventTarget();
     globalThis.window = {
+        addEventListener: events.addEventListener.bind(events),
+        dispatchEvent: events.dispatchEvent.bind(events),
         location: { origin: "https://cognis.test" },
-        dispatchEvent() {},
     };
     globalThis.document = { cookie: "", documentElement: { lang: "de" } };
     globalThis.DOMParser = class {
         parseFromString(xml) {
             return {
+                documentElement: {
+                    nodeName: /^\s*<resources[>\s]/.test(xml)
+                        ? "resources"
+                        : "html",
+                },
                 querySelector: () => null,
                 querySelectorAll: () =>
                     [

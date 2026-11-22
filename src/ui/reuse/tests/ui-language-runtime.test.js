@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../../tooling/reuse/diagnostic-fixture.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
@@ -22,7 +23,7 @@ function languageState() {
         values,
         state: loadTestModule(
             new URL("../ui-language-state.js", import.meta.url),
-            {},
+            { "./capabilities.js": createDiagnosticFixture() },
             globals,
         ),
     };
@@ -187,6 +188,7 @@ test("language shortcut commits after two seconds, coalesces clicks and releases
     const client = loadTestModule(
         new URL("../language-toggle.js", import.meta.url),
         {
+            "./capabilities.js": createDiagnosticFixture(),
             "./ui-language-catalog.js": {
                 loadUiLanguageCatalog: async () =>
                     ["en", "de", "ja"].map((iso_code) => ({

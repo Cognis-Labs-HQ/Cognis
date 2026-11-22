@@ -1,3 +1,5 @@
+import { bindCapability } from "../../reuse/capabilities.js";
+
 import { guides } from "./guides.js";
 import { formatModuleTag } from "./filters.js";
 import {
@@ -75,6 +77,8 @@ import {
     renderRepositoryLink as renderRepository,
     renderRestartWarning as renderRestart,
 } from "./detail-rendering.js";
+
+const log = bindCapability("ui:log");
 
 let i18n;
 let composer;
@@ -780,7 +784,7 @@ function bindInteractions(root, signal) {
                         });
                     }
                 } catch (error) {
-                    console.error("module_lifecycle_action_failed", {
+                    void log("error", "module_lifecycle_action_failed", {
                         action,
                         moduleId: module.id,
                         moduleUuid: module.uuid,

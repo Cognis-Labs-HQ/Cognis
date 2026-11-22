@@ -1,7 +1,10 @@
+import { registerPublicDiagnosticImport } from "../../../../tooling/reuse/diagnostic-fixture.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { webcrypto } from "node:crypto";
-import { createSessionUnlockCache } from "../ui/session-unlock.js";
+const releaseDiagnosticImport = registerPublicDiagnosticImport();
+test.after(releaseDiagnosticImport);
+const { createSessionUnlockCache } = await import("../ui/session-unlock.js");
 import { createKeyringIdentityGuard } from "../ui/identity-guard.js";
 import { deriveKey } from "../ui/crypto.js";
 

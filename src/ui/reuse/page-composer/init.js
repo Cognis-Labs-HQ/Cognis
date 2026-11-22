@@ -1,3 +1,5 @@
+import { bindCapability } from "../capabilities.js";
+
 import { watchComposerPresentation } from "./presentation.js";
 import { mountViewportLayout } from "./viewport-layout.js";
 /**
@@ -66,6 +68,8 @@ import {
     restoreWindowScrollPosition,
 } from "./dom-position.js";
 import { mountComposerToolbarDrawer } from "./toolbar-drawer.js";
+
+const log = bindCapability("ui:log");
 
 export function createPageComposer(
     root,
@@ -805,7 +809,8 @@ export function createPageComposer(
                     render();
                 })
                 .catch((error) => {
-                    console.warn(
+                    void log(
+                        "warn",
                         "[page-composer] failed to load saved layout preferences:",
                         error,
                     );

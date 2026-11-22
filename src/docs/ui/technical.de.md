@@ -4,6 +4,12 @@
 
 ## Schnittstellen
 
+Die gemeinsame Browser-Fähigkeitsregistrierung steht vor der Shell-Initialisierung bereit. `bindCapability(id)` verwendet den aktuellen aufrufbaren Beitrag und begrenzt aufgeschobene Startaufrufe über alle Bindungen auf 128. Beiträge bleiben exklusiv und können nur mit passender Identität entfernt werden; Anbieter besitzen ihre Fachverträge und Verarbeitung.
+
+Diagnoseereignisse werden über `ui:log` veröffentlicht; die Ausgaberichtlinie gehört dem [Logging-Gateway](/docs/gateways/logging/technical).
+
+`reportClientError(error)` übernimmt ein Error-Objekt oder strukturierten Kontext und veröffentlicht es über die Gateway-Diagnose. Eigene lokale Logger lassen sich nicht mehr übergeben; die Ausgabe wird im Logging-Gateway konfiguriert.
+
 UIRegistry veröffentlicht Ressourcen, Navigationsplugins, Verwaltungsabschnitte und Seitenerweiterungen. Browseranbieter registrieren Fähigkeiten über uiCtx mit eigenem Abbruchsignal; Seiten nutzen Page Composer.
 
 ## Konfiguration
@@ -11,6 +17,8 @@ UIRegistry veröffentlicht Ressourcen, Navigationsplugins, Verwaltungsabschnitte
 Kontoeinstellungen wählen Thema, Sprache und Schrift. Komponentenkataloge liefern Übersetzungen und Metadaten; Layoutoptionen bleiben in Page Composer statt fremder Hüllenregeln.
 
 ## Verhalten
+
+Normale öffentliche Übersetzungsabfragen verwenden vorhandene Pakete sofort, auch beim Offline-Start. Nach der Verbindungswiederherstellung werden bereits geladene Pakete einmal über das Netzwerk aktualisiert; erstmals danach angeforderte Pakete behalten das normale Cache-Verhalten. Ungültiges XML bleibt erneut abrufbar und erzwingt beim nächsten Lesen eine Aktualisierung, bis ein gültiges Paket vorliegt. Eine geänderte deklarierte Revision aktualisiert ebenfalls ein bereits geladenes Paket. Revisionsabhängige private Pakete umgehen den HTTP-Cache bei jedem fehlenden Eintrag im Arbeitsspeicher, auch nach einem neuen Dokument, einem Lebenszykluswechsel oder einem Konto- beziehungsweise Sitzungswechsel. Erfolgreiche Ladevorgänge werden innerhalb des Dokuments nach Revision und Identität zusammengefasst und gespeichert.
 
 ### Überblick
 

@@ -1,3 +1,5 @@
+import { bindCapability } from "../../reuse/capabilities.js";
+
 import { createFormBuilder } from "../../reuse/form-builder.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { renderInfoTooltip } from "../../reuse/info-tooltip.js";
@@ -11,6 +13,8 @@ import {
     saveModuleSource,
 } from "./api.js";
 
+const log = bindCapability("ui:log");
+
 let sources = [];
 let sourceFormBuilder = null;
 let settingsFormBuilder = null;
@@ -21,7 +25,7 @@ async function reloadSources(i18n) {
     try {
         sources = await loadModuleSources();
     } catch (error) {
-        console.error("modules_source_list_refresh_failed", {
+        void log("error", "modules_source_list_refresh_failed", {
             component: "ui",
             operation: "reloadSources",
             errorName: error?.name,
@@ -321,7 +325,7 @@ export async function openMarketplaceSettings(
                 ];
             } catch (error) {
                 if (signal?.aborted) return false;
-                console.error("modules_source_save_failed", {
+                void log("error", "modules_source_save_failed", {
                     component: "ui",
                     operation: "saveSource",
                     code: error?.code,

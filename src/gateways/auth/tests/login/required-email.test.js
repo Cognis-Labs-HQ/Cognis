@@ -101,7 +101,7 @@ test("login UI handles TFA prompt restore failures by falling back to login meth
     );
     assert.match(
         source,
-        /\.catch\(\(error\) => \{[\s\S]*console\.error\(error\);[\s\S]*loadLoginMethods\(\);[\s\S]*runTypingShowcase\(typingSamples\);[\s\S]*\}\)/,
+        /\.catch\(\(error\) => \{[\s\S]*log\("error",\s*error\);[\s\S]*loadLoginMethods\(\);[\s\S]*runTypingShowcase\(typingSamples\);[\s\S]*\}\)/,
     );
 });
 

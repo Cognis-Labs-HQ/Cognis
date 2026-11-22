@@ -1,9 +1,12 @@
+import { bindCapability } from "./capabilities.js";
 import {
     isOffline,
     offlineEnabled,
     offlineWorkerRequest,
 } from "./offline-state.js";
 import { offlinePolicy } from "./offline-policy.js";
+
+const log = bindCapability("ui:log");
 
 /**
  * Prepare public, lazy UI resources without blocking provider or page mounting.
@@ -108,10 +111,14 @@ export function registerOfflineAssets(ctx) {
             const warm = () =>
                 prepare(assets, { signal }).catch((error) => {
                     if (!signal.aborted && !isOffline())
-                        console.info("[offline] optional assets not prepared", {
-                            operation: "prepareAssets",
-                            errorName: error?.name,
-                        });
+                        void log(
+                            "info",
+                            "[offline] optional assets not prepared",
+                            {
+                                operation: "prepareAssets",
+                                errorName: error?.name,
+                            },
+                        );
                 });
             for (const type of [
                 "cognis:connectivity-changed",

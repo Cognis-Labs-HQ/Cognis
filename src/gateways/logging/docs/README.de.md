@@ -2,6 +2,8 @@
 
 Anwendungsprotokolle helfen Administratoren bei der Fehlersuche und beim Nachvollziehen wichtiger Kontoaktivitäten.
 
+Diagnoseereignisse von Seiten und Hintergrundladevorgängen werden vom selben Logging-Gateway wie Serveraktivitäten verarbeitet.
+
 ## Möglichkeiten
 
 Prüfe Anwendungsprotokolle und konfiguriere Konsolen- und Dateiausgabe.

@@ -1,3 +1,4 @@
+import { writeTerminalReport } from "../reuse/terminal-output.ts";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
@@ -70,5 +71,8 @@ if (
         assert.ok(response.ok, `${moduleUrl}: HTTP ${response.status}`);
         return response.text();
     });
-    console.log("Validated standalone authentication host exports.");
+    writeTerminalReport(
+        "stdout",
+        "Validated standalone authentication host exports.",
+    );
 }

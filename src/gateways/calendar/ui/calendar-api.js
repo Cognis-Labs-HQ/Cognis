@@ -1,5 +1,8 @@
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { calendarFetch as apiFetch } from "./offline-client.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
+
+const log = bindCapability("ui:log");
 
 const STATUS_STYLESHEET_ID = "calendar-event-status-styles";
 
@@ -25,7 +28,7 @@ export async function refreshUserAvailability() {
             .get("ui:availabilityRenderer")
             ?.refresh?.(document);
     } catch (error) {
-        console.error("[calendar] availability refresh failed", {
+        void log("error", "[calendar] availability refresh failed", {
             operation: "refreshAvailability",
             errorName: error?.name,
         });

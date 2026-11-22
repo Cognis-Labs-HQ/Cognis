@@ -18,7 +18,10 @@
  * @returns {void}
  */
 
+import { bindCapability } from "./capabilities.js";
 import { offlineEnabled } from "./offline-state.js";
+
+const log = bindCapability("ui:log");
 
 let deferredInstallPrompt = null;
 
@@ -62,7 +65,8 @@ export async function registerServiceWorker(options = {}) {
             // promise so a later call (e.g. after a transient network blip
             // or a manual page-level retry) can attempt registration again
             // instead of returning the cached null forever.
-            console.warn(
+            void log(
+                "warn",
                 "[cognis-pwa] service worker registration failed",
                 error,
             );
