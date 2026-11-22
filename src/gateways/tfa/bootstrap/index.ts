@@ -1,3 +1,5 @@
+import { createRouteLifetime } from "./route-lifetime.js";
+import { registerSessionAssessment } from "./session-assessment.js";
 import { readGatewayManifestVersion } from "../../reuse/manifest-version.js";
 import { readdir } from "node:fs/promises";
 import path from "node:path";
@@ -11,23 +13,21 @@ import { CoreTfaGateway } from "../gateway.js";
 import { createTfaRoutes } from "./tfa-routes.js";
 import { createTfaAdapterAdminRoutes } from "./adapter-admin-routes.js";
 
-type PendingLoginAttemptInput = {
-    accountId: string;
-    role: "user" | "teacher" | "moderator" | "admin" | "owner";
-    isFounder: boolean;
-    provider: string;
-    providerId: string;
-    displayName: string;
-    userValidationMode: "none" | "email";
-    requiredUserValidation: boolean;
-    ttlSeconds: number | null;
-};
-
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const manifestVersion = await readGatewayManifestVersion(
         import.meta.url,
         "../manifest.json",
     );
+    ctx.gatewayRegistry.register({
+        id: "tfa",
+        name: "Two-Factor Authentication Gateway",
+        version: manifestVersion,
+        description:
+            "Manages two-factor authentication methods and login checks.",
+        publisher: "Cognis Labs HQ",
+        required: false,
+        hasAdapters: true,
+    });
     const dbExecutor = ctx.capabilities.require<DbExecutor>("db:executor");
 
     const store = new DbTfaStore(dbExecutor);
@@ -58,14 +58,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     await gateway.discoverAdapters(tfaAdaptersRoot);
     await gateway.loadPersistedConfigs();
     await gateway.bootstrapAdapters(ctx.capabilities);
-    ctx.routeRegistry.register(
-        createTfaRoutes(gateway, ctx.capabilities, ctx.log),
-        "tfa",
+    const routeLifetime = createRouteLifetime(ctx);
+    routeLifetime.register(
+        createTfaRoutes(gateway, ctx.capabilities, ctx.log, routeLifetime),
     );
-    ctx.routeRegistry.register(
-        createTfaAdapterAdminRoutes(gateway, ctx.log),
-        "tfa",
-    );
+    routeLifetime.register(createTfaAdapterAdminRoutes(gateway, ctx.log));
     if (typeof registerNotificationCategory === "function") {
         registerNotificationCategory("security", "Security");
     }
@@ -75,16 +72,6 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         scriptUrl: "/static/gateways/tfa/tutorials.js",
         providesCapabilities: ["tfa:pageTutorials"],
         access: { minRole: "user" },
-    });
-    ctx.gatewayRegistry.register({
-        id: "tfa",
-        name: "Two-Factor Authentication Gateway",
-        version: manifestVersion,
-        description:
-            "Manages two-factor authentication methods and login checks.",
-        publisher: "Cognis Labs HQ",
-        required: false,
-        hasAdapters: true,
     });
     const gatewayUiDir = path.resolve(
         process.cwd(),
@@ -215,150 +202,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             }),
         );
     }
-    if (ctx.flow.exists("login")) {
-        ctx.flow.extend(
-            "login",
-            "establish-session",
-            { id: "tfa-gateway:enforce-second-factor", order: 100 },
-            async (stageCtx) => {
-                if (!isGatewayEnabled()) {
-                    return null;
-                }
-                const currentSessionResult = stageCtx.data["sessionResult"] as
-                    Record<string, unknown> | undefined;
-                if (currentSessionResult?.outcome !== "success") {
-                    return null;
-                }
-                const accountId = String(
-                    currentSessionResult.accountId ?? "",
-                ).trim();
-                if (!accountId) {
-                    return null;
-                }
-                const userStatus = await gateway
-                    .getUserStatus(accountId)
-                    .catch(() => null);
-                if (!userStatus) {
-                    return null;
-                }
-                if (userStatus.hasConfiguredMethod) {
-                    const methods = await gateway
-                        .getLoginMethods(accountId)
-                        .catch(() => [])
-                        .then((items) =>
-                            items.filter(
-                                (item) =>
-                                    typeof item.id === "string" &&
-                                    typeof item.name === "string",
-                            ),
-                        );
-                    if (methods.length < 1) {
-                        const unavailableResult = {
-                            outcome: "tfa_unavailable",
-                        };
-                        stageCtx.data["sessionResult"] = unavailableResult;
-                        return { sessionResult: unavailableResult };
-                    }
-                    const createPendingLoginAttempt = ctx.capabilities.get<
-                        (input: PendingLoginAttemptInput) => { id: string }
-                    >("tfa:createPendingLoginAttempt");
-                    if (!createPendingLoginAttempt) {
-                        const unavailableResult = {
-                            outcome: "tfa_unavailable",
-                        };
-                        stageCtx.data["sessionResult"] = unavailableResult;
-                        return { sessionResult: unavailableResult };
-                    }
-                    const pendingAttempt = createPendingLoginAttempt({
-                        accountId,
-                        role:
-                            (currentSessionResult.role as
-                                | "user"
-                                | "teacher"
-                                | "moderator"
-                                | "admin"
-                                | "owner") ?? "user",
-                        isFounder: currentSessionResult.isFounder === true,
-                        provider: String(currentSessionResult.provider ?? ""),
-                        providerId: String(
-                            currentSessionResult.providerId ?? "",
-                        ),
-                        displayName: String(
-                            currentSessionResult.displayName ?? accountId,
-                        ),
-                        userValidationMode:
-                            currentSessionResult.userValidationMode === "email"
-                                ? "email"
-                                : "none",
-                        requiredUserValidation:
-                            currentSessionResult.requiredUserValidation ===
-                            true,
-                        ttlSeconds:
-                            typeof currentSessionResult.ttlSeconds === "number"
-                                ? currentSessionResult.ttlSeconds
-                                : null,
-                    });
-                    const tfaRequiredResult = {
-                        ...currentSessionResult,
-                        outcome: "tfa_required",
-                        loginAttemptId: pendingAttempt.id,
-                        methods,
-                    };
-                    stageCtx.data["sessionResult"] = tfaRequiredResult;
-                    return { sessionResult: tfaRequiredResult };
-                }
-                if (userStatus.requiresSetup) {
-                    const issueAccessTokenFn = ctx.capabilities.get<
-                        (
-                            subject: string,
-                            role:
-                                | "user"
-                                | "teacher"
-                                | "moderator"
-                                | "admin"
-                                | "owner",
-                            ttlSeconds: number | null,
-                            options?: Record<string, unknown>,
-                        ) => string
-                    >("auth:issueAccessToken");
-                    if (!issueAccessTokenFn) {
-                        const unavailableResult = {
-                            outcome: "tfa_unavailable",
-                        };
-                        stageCtx.data["sessionResult"] = unavailableResult;
-                        return { sessionResult: unavailableResult };
-                    }
-                    const ttlSeconds =
-                        typeof currentSessionResult.ttlSeconds === "number"
-                            ? currentSessionResult.ttlSeconds
-                            : null;
-                    const setupToken = issueAccessTokenFn(
-                        accountId,
-                        (currentSessionResult.role as
-                            | "user"
-                            | "teacher"
-                            | "moderator"
-                            | "admin"
-                            | "owner") ?? "user",
-                        ttlSeconds,
-                        {
-                            providerId: currentSessionResult.providerId,
-                            setupPending: true,
-                        },
-                    );
-                    const tfaSetupRequiredResult = {
-                        ...currentSessionResult,
-                        outcome: "tfa_setup_required",
-                        token: setupToken,
-                        ttlSeconds,
-                    };
-                    stageCtx.data["sessionResult"] = tfaSetupRequiredResult;
-                    return { sessionResult: tfaSetupRequiredResult };
-                }
-                return null;
-            },
-        );
-    }
+    registerSessionAssessment(ctx, gateway);
 
     ctx.log?.("info", "TFA gateway initialized.", {
         component: "tfa-gateway",

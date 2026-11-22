@@ -37,6 +37,8 @@ export function showLoginReasonToast({ reason, i18n, showToast }) {
     const key = {
         session_expired: "ui.app.login.reason.session_expired",
         account_disabled: "ui.app.login.reason.account_disabled",
+        session_unavailable: "ui.app.login.error.generic",
+        tfa_unavailable: "ui.app.login.error.generic",
         account_archived: "ui.app.login.reason.account_archived",
         account_deactivated: "ui.app.login.reason.account_deactivated",
         account_deleted: "ui.app.login.reason.account_deleted",

@@ -47,6 +47,21 @@ export interface GatewayEntry extends GatewayManifest {
 }
 
 export class GatewayRegistry {
+    private readonly bootstrapFailures = new Set<string>();
+
+    /** Failed initialization is policy evidence, never executable authority. */
+    hasBootstrapFailure(id: string): boolean {
+        return this.bootstrapFailures.has(id);
+    }
+
+    markBootstrapFailure(id: string): void {
+        this.bootstrapFailures.add(id);
+    }
+
+    clearBootstrapFailure(id: string): void {
+        this.bootstrapFailures.delete(id);
+    }
+
     private readonly transitions = new Map<string, Promise<boolean>>();
     private readonly bootstrapDisposers = new Map<
         string,
@@ -173,7 +188,7 @@ export class GatewayRegistry {
 
     assertRequiredInitialized(requiredIds: readonly string[]): void {
         for (const id of requiredIds) {
-            if (!this.gateways.has(id)) {
+            if (!this.gateways.has(id) || this.hasBootstrapFailure(id)) {
                 throw new Error(
                     `Required gateway "${id}" did not initialize successfully.`,
                 );
@@ -448,13 +463,15 @@ export class GatewayService {
                                 dispose,
                             ),
                     );
-                }
+                } else throw new Error("gateway_bootstrap_unavailable");
                 if (mod.completeBootstrap)
                     completionHooks.push({
                         id: gatewayId,
                         run: () => mod.completeBootstrap!(ctx),
                     });
+                else ctx.gatewayRegistry.clearBootstrapFailure(gatewayId);
             } catch (error) {
+                ctx.gatewayRegistry.markBootstrapFailure(gatewayId);
                 const message =
                     error instanceof Error ? error.message : String(error);
                 void ctx.log?.("error", "Gateway bootstrap failed.", {
@@ -496,16 +513,23 @@ export class GatewayService {
 
         // Complete owner registrations after optional providers have bootstrapped.
         for (const hook of completionHooks) {
-            await runBootstrapScope(
-                ctx.capabilities.get<object>("system:ctx") ?? ctx.capabilities,
-                `gateway:${hook.id}`,
-                hook.run,
-                (dispose) =>
-                    ctx.gatewayRegistry.retainBootstrapDisposer(
-                        hook.id,
-                        dispose,
-                    ),
-            );
+            try {
+                await runBootstrapScope(
+                    ctx.capabilities.get<object>("system:ctx") ??
+                        ctx.capabilities,
+                    `gateway:${hook.id}`,
+                    hook.run,
+                    (dispose) =>
+                        ctx.gatewayRegistry.retainBootstrapDisposer(
+                            hook.id,
+                            dispose,
+                        ),
+                );
+                ctx.gatewayRegistry.clearBootstrapFailure(hook.id);
+            } catch (error) {
+                ctx.gatewayRegistry.markBootstrapFailure(hook.id);
+                throw error;
+            }
         }
 
         // Validate cross-gateway dependencies now that all gateways have

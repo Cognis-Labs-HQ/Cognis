@@ -135,6 +135,10 @@ The Core export provides one canonical `AccessRole` type. Module manifests decla
 
 File namespace definitions accept readonly `allowComponents` lists. Flow helpers accept an undefined stage-results collection without changing result selection or authorization.
 
+### Gateway Bootstrap Failures
+
+`GatewayRegistry.hasBootstrapFailure(id)` distinguishes a discovered gateway that failed to import or initialize from an optional gateway that is absent. The host records failures without creating executable registrations. Early registration, rollback, disable and re-enable do not clear this evidence; only a complete successful bootstrap does. Required gateway failures still abort startup. Invalid or missing manifests without a usable identity remain outside this signal. Policy consumers may honor deliberate administrative disablement while rejecting failed enabled initialization.
+
 ## Security
 
 Bootstrap scopes identify registration owners. Flow handlers must authorize before state changes; a capability lookup is not proof that the user may access its data.

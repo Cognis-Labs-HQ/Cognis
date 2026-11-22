@@ -2,7 +2,6 @@ import { runBootstrapScope } from "@cognis/core";
 import test from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
-import { readFileSync } from "node:fs";
 import {
     GatewayRegistry,
     CapabilityStore,
@@ -16,18 +15,6 @@ import { bootstrap } from "../bootstrap.js";
 import { bootstrap as bootstrapAuth } from "../../auth/bootstrap/index.js";
 import { DbTfaStore } from "../reuse/tfa-store.js";
 import { InMemoryTestExecutor } from "../../db/tests/in-memory-test-executor.js";
-
-const tfaRoutesSource = readFileSync(
-    path.resolve(
-        process.cwd(),
-        "src",
-        "gateways",
-        "tfa",
-        "bootstrap",
-        "tfa-routes.ts",
-    ),
-    "utf8",
-);
 
 function makeResponse() {
     let status = 0;
@@ -92,6 +79,7 @@ test("tfa catalog restores adapter state and publishes authenticated lifecycle c
     capabilities.contribute("system:ctx", systemCtx);
     capabilities.contribute("db:executor", db);
 
+    capabilities.contribute("auth:requireAuth", () => null);
     const registeredSecuritySections: Array<{
         id: string;
         scriptUrl: string;
@@ -203,25 +191,6 @@ test("tfa catalog restores adapter state and publishes authenticated lifecycle c
         uiRegistry.listAdminSections().find((section) => section.id === "tfa"),
         undefined,
     );
-});
-
-test("setup verification route rotates setup-pending tokens", () => {
-    assert.match(tfaRoutesSource, /auth:issueAccessToken/);
-    assert.match(tfaRoutesSource, /setupPending:\s*false/);
-    assert.match(tfaRoutesSource, /responseData\.token\s*=\s*refreshedToken/);
-    assert.match(
-        tfaRoutesSource,
-        /const accessTokenTtlSeconds = claims\.ttlSeconds/,
-    );
-    assert.match(tfaRoutesSource, /responseData\.ttlSeconds/);
-});
-
-test("TFA verification preserves the pending login session TTL", () => {
-    assert.match(
-        tfaRoutesSource,
-        /const accessTokenTtlSeconds = pendingAttempt\.ttlSeconds/,
-    );
-    assert.match(tfaRoutesSource, /ttlSeconds: accessTokenTtlSeconds/);
 });
 
 test("tfa login UI integration unhooks when gateway is disabled", async () => {

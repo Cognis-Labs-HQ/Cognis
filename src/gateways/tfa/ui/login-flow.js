@@ -142,6 +142,10 @@ function resolveTranslatedMessage(i18n, key) {
 function resolveTranslatedTfaErrorMessage(i18n, message) {
     const normalizedMessage = String(message ?? "").trim();
     const messageKeyByCode = {
+        session_unavailable: "ui.app.login.error.generic",
+        account_archived: "ui.app.login.reason.account_archived",
+        account_disabled: "ui.app.login.reason.account_disabled",
+
         invalid_verification_code: "ui.app.login.tfa.error_invalid",
         invalid_recovery_code: "ui.app.login.tfa.error_invalid",
         code_required: "ui.app.login.tfa.error_invalid",

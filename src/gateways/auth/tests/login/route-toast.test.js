@@ -69,3 +69,17 @@ test("login reason helper reports SSO callback failures", () => {
 
     assert.equal(message, "ui.app.login.reason.sso_callback_failed");
 });
+
+for (const reason of ["session_unavailable", "tfa_unavailable"]) {
+    test(`login reason translates ${reason}`, () => {
+        let message;
+        showLoginReasonToast({
+            reason,
+            i18n: { t: (key) => `translated:${key}` },
+            showToast: (value) => {
+                message = value;
+            },
+        });
+        assert.equal(message, "translated:ui.app.login.error.generic");
+    });
+}
