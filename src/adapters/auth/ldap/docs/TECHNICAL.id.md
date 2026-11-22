@@ -36,6 +36,10 @@ Penghapusan sumber menjalankan alur `reconcile-auth-sources`. Alur ini mencabut 
 
 Permintaan Uji dan Temukan yang berhasil menampilkan toast keberhasilan yang dilokalkan sebelum penyiapan beralih ke filter dan pemetaan peran.
 
+### Kontrak Tipe
+
+Fungsi pembuat adapter mempertahankan metode injeksi klien milik adapter dan gabungan tipe hasil pengujian direktori atau kredensial. Konsumen mempersempit tipe hasil sebelum membaca grup direktori atau detail kredensial. Pencarian direktori menggunakan halaman ldapts berukuran 100; autentikasi dan pemetaan grup tidak berubah.
+
 ## Keamanan
 
 Kredensial direktori divalidasi klien LDAP terkonfigurasi. Akses administrator mengikuti pemetaan grup; lindungi kredensial bind dan validasi sertifikat TLS direktori.

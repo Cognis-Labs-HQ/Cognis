@@ -26,7 +26,7 @@ test("public registration persists display name through the account store", asyn
                 registerArgs = { username, password, role, displayName };
                 return { username, role: role ?? "user", enabled: true };
             },
-        } as never,
+        },
         async createProfile(accountId, handle, role, displayName) {
             profileArgs = { accountId, handle, role, displayName };
         },

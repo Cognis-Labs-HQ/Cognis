@@ -420,12 +420,9 @@ export class CoreRegistrationGateway {
         return adapter.consumeExternalAccountToken(input);
     }
 
-    async redeemInvite(input: {
-        token: string;
-        username: string;
-        password: string;
-        displayName?: string;
-    }) {
+    async redeemInvite(
+        input: Parameters<RegistrationInviteAdapter["redeemInvite"]>[0],
+    ) {
         const adapter = this.getInviteAdapter();
         if (!adapter) throw new Error("invite_disabled");
         return adapter.redeemInvite(input);

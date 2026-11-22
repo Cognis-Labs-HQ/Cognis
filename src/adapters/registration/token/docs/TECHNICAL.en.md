@@ -22,6 +22,10 @@ The mandatory Registration Token adapter owns invitation and account-creation au
 
 Administrators and owners can open `/invite` without founder status. Invitation policy still controls issuance. The enabled Registration Token adapter contributes `cognisctl invite:token:generate` to create a standalone token without SMTP delivery, and `cognisctl invite:email:send person@example.com` to send an invitation. Omitting the email opens the CLI input wizard. Both commands use the authenticated registration API and respect role, domain and delivery restrictions.
 
+### Type Contracts
+
+The token adapter requires account registration, existence lookup and deletion, together with the structured database executor. Tests provide these contracts directly, including generic transactions and account cleanup after failed redemption. Token validation and authorization rules are unchanged.
+
 ## Security
 
 Invitation authorization binds the invited email and current policy. External-account persistence must succeed before redemption; failed delivery must not supersede a usable invitation.

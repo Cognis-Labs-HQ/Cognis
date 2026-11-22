@@ -36,6 +36,10 @@ Das Entfernen einer Quelle führt den Ablauf `reconcile-auth-sources` aus. Er wi
 
 Nach erfolgreichem „Testen und ermitteln“ wird eine lokalisierte Erfolgsmeldung angezeigt, bevor die Einrichtung zu Filtern und Rollenzuordnungen wechselt.
 
+### Typverträge
+
+Die Adapter-Fabrik erhält die adaptereigene Methode zur Client-Injektion und den Ergebnistyp für Verzeichnis- oder Zugangsdatenprüfungen. Verbraucher grenzen den Ergebnistyp ein, bevor sie Verzeichnisgruppen oder Zugangsdaten lesen. Verzeichnissuchen verwenden ldapts mit einer Seitengröße von 100; Authentifizierung und Gruppenzuordnung bleiben unverändert.
+
 ## Sicherheit
 
 Verzeichniszugangsdaten prüft der konfigurierte LDAP-Client. Administratorzugriff folgt Gruppenzuordnungen; schütze Bind-Daten und prüfe das TLS-Zertifikat.

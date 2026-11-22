@@ -457,9 +457,10 @@ export class DbLocalAccountStore implements LocalAccountStore {
             password,
         );
         if (!passwordOk) return null;
+        // Structured query cells are unknown; both projected role columns are nullable text.
         const derivedRole =
-            account.role ??
-            account.profile_role ??
+            (account.role as string | null | undefined) ??
+            (account.profile_role as string | null | undefined) ??
             (Boolean(account.is_admin) ? "admin" : "user");
         return {
             accountId: lowercaseUsername,
@@ -820,6 +821,8 @@ export class DbLocalAccountStore implements LocalAccountStore {
         lastLogin: string | null;
         enabled: boolean;
         isFounder: boolean;
+        role: string;
+        provider: string;
     } | null> {
         const lowercaseUsername = normalizeUsername(username);
         const result = await this.db.executeCommand({

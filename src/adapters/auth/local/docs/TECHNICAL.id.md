@@ -10,8 +10,6 @@ Antarmuka publik dan aturan operasional Akun Lokal.
 
 ## Konfigurasi
 
-### Konfigurasi
-
 Tidak ada field yang dapat dikonfigurasi. Manajemen kredensial dilakukan melalui perintah CLI `user:*` atau route API register/login.
 
 Pembersihan identitas eksternal dapat menghapus identitas berdasarkan awalan sumber milik penyedia. Autentikasi ulang memperbarui email, nama tampilan, peran, dan status aktif akun eksternal yang dipertahankan sebelum mengaitkan identitas baru.
@@ -49,6 +47,10 @@ Akun lokal dikelola melalui CLI `cognisctl` menggunakan namespace perintah `user
 | `user:disable`      | Menonaktifkan akun                           |
 | `user:enable`       | Mengaktifkan kembali akun yang dinonaktifkan |
 | `user:delete`       | Menghapus akun                               |
+
+### Kontrak Tipe
+
+Detail akun menampilkan peran tersimpan dan penyedia dalam tipe hasilnya. Verifikasi kata sandi membaca kolom peran yang dapat bernilai null sesuai bentuk kolom teks yang dideklarasikan dan mempertahankan urutan prioritas peran.
 
 ## Keamanan
 

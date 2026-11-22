@@ -2,7 +2,7 @@ import type { LocalAccountStore } from "../../../gateways/auth/reuse/account-sto
 import type { RegistrationGatewayAdapter } from "../../../gateways/registration/gateway.js";
 
 export function createAdapter(deps: {
-    accountStore: LocalAccountStore;
+    accountStore: Pick<LocalAccountStore, "register">;
     createProfile?: (
         accountId: string,
         handle: string,

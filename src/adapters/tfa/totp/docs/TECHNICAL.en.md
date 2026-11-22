@@ -8,8 +8,6 @@ The method implements the TFA adapter contract: setup returns manualSecret and q
 
 ## Configuration
 
-### Configuration
-
 The adapter exposes one admin setting:
 
 - `algorithm` — HMAC algorithm used for setup verification and login verification.
@@ -40,6 +38,10 @@ Provides time-based one-time password verification for the TFA gateway.
 - Allowed drift: previous, current, and next window.
 - Default algorithm: `SHA256`.
 - Supported algorithms: `SHA1`, `SHA256`, `SHA512`.
+
+### Type Contracts
+
+The adapter owns a narrow declaration for the QR renderer’s promise-based SVG operation, including correction level, margin and width options. Setup tests exercise the real renderer. Code length, algorithm selection and verification windows are unchanged.
 
 ## Security
 

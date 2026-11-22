@@ -6,6 +6,8 @@ Create an account without an invitation when public registration is enabled.
 
 Let new users create ordinary local accounts without invitation tokens.
 
+Public registration creates an account through the enabled registration provider and can create its profile through an injected capability.
+
 ## Before You Start
 
 An administrator must explicitly enable public registration.

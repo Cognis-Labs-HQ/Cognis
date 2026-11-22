@@ -10,8 +10,6 @@ The public interfaces and operational rules of Local Accounts.
 
 ## Configuration
 
-### Configuration
-
 No configurable fields. The local adapter reads its storage from whichever database executor is active (`db:executor` capability). Credential management is done exclusively through the `user:*` CLI commands or the register/login API routes.
 
 External identity cleanup can remove identities by provider-owned source prefix. Re-authentication updates a retained external account's current email, display name, role, and enabled state before attaching the new identity.
@@ -65,6 +63,10 @@ Local accounts are managed via the `cognisctl` CLI using the `user:*` command na
 | `user:delete`       | Delete an account            |
 
 The local adapter is also the target of `POST /api/v1/auth/register` for self-registration (always issues the `user` role) and `POST /api/v1/auth/login` when no provider is specified.
+
+### Type Contracts
+
+Account details expose the persisted role and provider in their return type. Password verification reads nullable role columns using the declared text-column shape and retains the existing role precedence.
 
 ## Security
 

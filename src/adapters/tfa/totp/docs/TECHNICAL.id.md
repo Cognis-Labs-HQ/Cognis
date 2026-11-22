@@ -8,8 +8,6 @@ Metode menerapkan kontrak TFA: penyiapan memberi manualSecret dan qrSvg, konfirm
 
 ## Konfigurasi
 
-### Konfigurasi
-
 Adaptor menyediakan satu pengaturan admin:
 
 - `algorithm` — algoritma HMAC untuk verifikasi penyiapan dan verifikasi login.
@@ -40,6 +38,10 @@ Menyediakan verifikasi kata sandi sekali pakai berbasis waktu untuk gateway TFA.
 - Toleransi waktu: jendela sebelumnya, saat ini, dan berikutnya.
 - Algoritma default: `SHA256`.
 - Algoritma yang didukung: `SHA1`, `SHA256`, `SHA512`.
+
+### Kontrak Tipe
+
+Adapter memiliki deklarasi terbatas untuk operasi SVG berbasis Promise pada perender QR, termasuk tingkat koreksi, margin, dan lebar. Pengujian penyiapan menggunakan perender sebenarnya. Panjang kode, pilihan algoritma, dan jendela verifikasi tidak berubah.
 
 ## Keamanan
 

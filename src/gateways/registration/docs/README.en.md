@@ -6,6 +6,8 @@ Create an account using an invitation or the registration options enabled for th
 
 Control account creation and issue invitations under installation policy.
 
+The registration gateway owns public signup and invitation redemption, exposing provider operations through gateway capabilities and routes.
+
 ## Before You Start
 
 Owners manage invitation policy; issuance depends on role and enabled providers.

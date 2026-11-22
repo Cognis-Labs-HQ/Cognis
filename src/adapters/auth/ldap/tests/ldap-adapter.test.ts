@@ -379,10 +379,7 @@ test("ldap adapter config schema has required fields", () => {
 });
 
 test("ldap adapter reports a completed multi-server configuration", () => {
-    const adapter = createAdapter() as {
-        configure(config: Record<string, unknown>): void;
-        isConfigured(): boolean;
-    };
+    const adapter = createAdapter();
     assert.equal(adapter.isConfigured(), false);
     adapter.configure({
         unify: true,
@@ -402,20 +399,7 @@ test("ldap adapter reports a completed multi-server configuration", () => {
 });
 
 test("ldap test configuration returns only client-discovered directory entries", async () => {
-    const adapter = createAdapter() as {
-        setClient(client: {
-            authenticate: () => Promise<null>;
-            discover: (options: Record<string, unknown>) => Promise<{
-                users: never[];
-                groups: Array<{ name: string; dn: string }>;
-                supportsMemberOf: boolean;
-                directoryFlavor: "freeipa";
-            }>;
-        }): void;
-        testConfiguration(config: Record<string, unknown>): Promise<{
-            groups: Array<{ name: string }>;
-        }>;
-    };
+    const adapter = createAdapter();
     adapter.setClient({
         authenticate: async () => null,
         discover: async (options) => {
@@ -444,6 +428,7 @@ test("ldap test configuration returns only client-discovered directory entries",
         bindPassword: "secret",
         userAttribute: "employeeNumber",
     });
+    assert.ok("groups" in result);
     assert.deepEqual(
         result.groups.map(({ name }) => name),
         ["real-directory-admins"],
@@ -451,13 +436,7 @@ test("ldap test configuration returns only client-discovered directory entries",
 });
 
 test("ldap test configuration explains rejected bind credentials", async () => {
-    const adapter = createAdapter() as {
-        setClient(client: {
-            authenticate: () => Promise<null>;
-            discover: () => Promise<never>;
-        }): void;
-        testConfiguration(config: Record<string, unknown>): Promise<unknown>;
-    };
+    const adapter = createAdapter();
     adapter.setClient({
         authenticate: async () => null,
         discover: async () => {
@@ -487,11 +466,9 @@ test("ldap test configuration explains rejected bind credentials", async () => {
 });
 
 test("ldap test configuration identifies every possible missing DN field", async () => {
-    const adapter = createAdapter() as {
-        setClient(client: { discover: () => Promise<never> }): void;
-        testConfiguration(config: Record<string, unknown>): Promise<unknown>;
-    };
+    const adapter = createAdapter();
     adapter.setClient({
+        authenticate: async () => null,
         discover: async () => {
             throw new Error("LDAP code 32: no such object");
         },
@@ -517,24 +494,7 @@ test("ldap test configuration identifies every possible missing DN field", async
 });
 
 test("LDAP setup credential test returns user details and mapped role", async () => {
-    const adapter = createAdapter() as {
-        setClient(client: {
-            authenticate: () => Promise<{
-                id: string;
-                dn: string;
-                email: string;
-                displayName: string;
-                groups: string[];
-            }>;
-        }): void;
-        testConfiguration(config: Record<string, unknown>): Promise<{
-            credentialTest: {
-                accountId: string;
-                role: string;
-                groups: string[];
-            };
-        }>;
-    };
+    const adapter = createAdapter();
     adapter.setClient({
         authenticate: async () => ({
             id: "alice",
@@ -554,6 +514,7 @@ test("LDAP setup credential test returns user details and mapped role", async ()
         testUsername: "alice",
         testPassword: "user-secret",
     });
+    assert.ok("credentialTest" in result);
     assert.deepEqual(result.credentialTest, {
         accountId: "alice",
         dn: "uid=alice,ou=people,dc=example,dc=org",
@@ -565,12 +526,7 @@ test("LDAP setup credential test returns user details and mapped role", async ()
 });
 
 test("LDAP setup credential test rejects a user outside the mapped user group", async () => {
-    const adapter = createAdapter() as {
-        setClient(client: {
-            authenticate: () => Promise<{ id: string; groups: string[] }>;
-        }): void;
-        testConfiguration(config: Record<string, unknown>): Promise<unknown>;
-    };
+    const adapter = createAdapter();
     adapter.setClient({
         authenticate: async () => ({ id: "outsider", groups: ["staff"] }),
     });
@@ -589,23 +545,7 @@ test("LDAP setup credential test rejects a user outside the mapped user group", 
 });
 
 test("ldap adapter password reset is blocked when current-password validation is unavailable", async () => {
-    const adapter = createAdapter() as {
-        configure(config: Record<string, unknown>): void;
-        setClient(client: {
-            authenticate: (token: string) => Promise<null>;
-            updatePassword: (
-                accountId: string,
-                nextPassword: string,
-                options?: { baseDn?: string; userAttribute?: string },
-            ) => Promise<boolean>;
-        }): void;
-        getPasswordResetSupport: () => { supported: boolean; reason?: string };
-        resetPassword: (
-            accountId: string,
-            currentPassword: string,
-            nextPassword: string,
-        ) => Promise<{ updated: boolean; message?: string }>;
-    };
+    const adapter = createAdapter();
     assert.equal(adapter.getPasswordResetSupport().supported, false);
     adapter.configure({
         writebackEnabled: true,
@@ -635,28 +575,7 @@ test("ldap adapter password reset is blocked when current-password validation is
 });
 
 test("LDAP password writeback uses the source persisted in the provider", async () => {
-    const adapter = createAdapter() as {
-        configure(config: Record<string, unknown>): void;
-        setClient(client: {
-            authenticate: () => Promise<null>;
-            validatePassword: (
-                accountId: string,
-                password: string,
-                options: LdapRuntimeOptions,
-            ) => Promise<boolean>;
-            updatePassword: (
-                accountId: string,
-                password: string,
-                options: LdapRuntimeOptions,
-            ) => Promise<boolean>;
-        }): void;
-        resetPassword(
-            accountId: string,
-            currentPassword: string,
-            nextPassword: string,
-            providerId: string,
-        ): Promise<{ updated: boolean }>;
-    };
+    const adapter = createAdapter();
     adapter.configure({
         unify: true,
         servers: [
