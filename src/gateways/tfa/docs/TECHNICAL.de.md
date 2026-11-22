@@ -110,6 +110,10 @@ Die Fähigkeit `tfa:assessSession` der Version 1 führt die TFA-eigenen Stufen `
 
 Der Host behält außerdem nicht ausführbare Fehlernachweise für gefundene Gateways, deren gültiges Manifest sie identifiziert, deren Bootstrap aber nicht importiert werden kann. Nur erfolgreicher Bootstrap löscht diesen Nachweis. Rückabwicklung entfernt ausführbare Routen und Prüfungshooks; bewusste Deaktivierung bleibt erlaubt, erneute Aktivierung ohne erfolgreiche Initialisierung sperrt den Zugriff. Fehlende oder ungültige Manifeste ohne nutzbare Identität werden dadurch nicht klassifiziert. Auth-Aufrufer verwenden die Fähigkeit `auth:login` der Version 1 statt roher Vorbereitungsabläufe.
 
+### Typisierte Authentifizierungsgrenzen
+
+Die Deklarationen von Auth und TFA beschreiben die bestehenden Kontorollen, externen Identitätsfelder, Datenbankbefehle und Cookie-Sitzungsdaten. Die Prüfung des Sitzungslimits akzeptiert dieselben Zahlenwerte. Die Anmeldeabsicherung und einmalig verwendbare Faktorversuche bleiben unverändert.
+
 ## Sicherheit
 
 Einrichtung, Bestätigung, Löschung und Login nutzen geschützte Abläufe. Adapter prüfen Challenges; unbestätigte Methoden oder Fehler gelten nicht als erfolgreiche Verifikation.

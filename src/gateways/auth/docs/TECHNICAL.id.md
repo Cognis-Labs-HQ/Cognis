@@ -186,6 +186,10 @@ TFA menyediakan kapabilitas versi 1 `tfa:assessSession` beserta alur bertahapnya
 
 Verifikasi faktor dan penyelesaian penyiapan sama-sama memakai penyelesaian sesi milik Auth. `auth:consumePendingLoginAttempt` menghabiskan percobaan terautentikasi utama yang belum kedaluwarsa secara atomik setelah faktor berhasil diverifikasi; penyelesaian bersamaan atau berulang tidak dapat memakainya lagi. Verifikasi penyiapan juga mencegah penyelesaian bersamaan untuk penyiapan yang sama. Kegagalan penyelesaian tidak mengembalikan token biasa atau cookie; login kembali setelah penyebabnya diperbaiki. Pembersihan pemilik menghapus alur penilaian dan penyelesaian serta percobaan login tertunda; pekerjaan lama yang masih berjalan ditolak dengan aman. Kontrol dan urutan tutorial login serta penyiapan tetap sama; sesi yang tidak tersedia menggunakan notifikasi kesalahan terjemahan.
 
+### Batas Autentikasi Bertipe
+
+Perilaku bersama: [TFA](/docs/gateways/tfa/technical).
+
 ## Keamanan
 
 Autentikasi memvalidasi kredensial sebelum sesi dan TFA wajib. Otorisasi akun, peran, dan sumber daya tetap terpisah; penolakan keyring tidak mengubah identitas.

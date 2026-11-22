@@ -63,7 +63,7 @@ test("redeemInvite deletes created account when token cannot be marked redeemed"
             return callback(dbExecutor);
         },
     };
-    const accountStore = {
+    const accountStore: Parameters<typeof createAdapter>[0]["accountStore"] = {
         async register(username: string) {
             return { username, role: "user", enabled: true };
         },

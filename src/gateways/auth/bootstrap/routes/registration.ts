@@ -1,3 +1,4 @@
+import type { AccessRole } from "@cognis/core";
 import { issueAccessToken } from "../../access-tokens.js";
 import { validateUsername } from "../../reuse/account-store.js";
 import type { AuthAccountStore } from "../index.js";
@@ -112,7 +113,7 @@ export function createRegistrationRoutes({
                 displayName?: string;
             }) => Promise<{
                 username: string;
-                role?: string;
+                role?: AccessRole;
                 enabled: boolean;
             }>
         >("registration:public:register");

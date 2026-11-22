@@ -164,19 +164,33 @@ test("GET /api/v1/auth/login-ui returns flow-resolved methods and integrations",
         "startSsoLogin",
         "initiateAuthorization",
         { id: "test:reject-protocol-relative-redirect" },
-        (stageContext) => ({
-            providerId: stageContext.input.providerId,
-            redirectUrl: "//malicious.example.com/authorize",
-        }),
+        (stageContext) => {
+            assert.ok(
+                stageContext.input && typeof stageContext.input === "object",
+            );
+            assert.ok("providerId" in stageContext.input);
+            assert.equal(typeof stageContext.input.providerId, "string");
+            return {
+                providerId: stageContext.input.providerId,
+                redirectUrl: "//malicious.example.com/authorize",
+            };
+        },
     );
     systemCtx.flow.extend(
         "startSsoLogin",
         "initiateAuthorization",
         { id: "test:start-faculty-sso" },
-        (stageContext) => ({
-            providerId: stageContext.input.providerId,
-            redirectUrl: "https://identity.example.com/authorize",
-        }),
+        (stageContext) => {
+            assert.ok(
+                stageContext.input && typeof stageContext.input === "object",
+            );
+            assert.ok("providerId" in stageContext.input);
+            assert.equal(typeof stageContext.input.providerId, "string");
+            return {
+                providerId: stageContext.input.providerId,
+                redirectUrl: "https://identity.example.com/authorize",
+            };
+        },
     );
 
     const handlers = routeRegistry.getHandlers();

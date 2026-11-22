@@ -190,6 +190,10 @@ TFA stellt `tfa:assessSession` als Fähigkeit der Version 1 mit eigenem gestufte
 
 Faktorprüfung und Einrichtungsabschluss verwenden beide den Auth-eigenen Sitzungsabschluss. `auth:consumePendingLoginAttempt` verbraucht einen nicht abgelaufenen, primär authentifizierten Versuch nach erfolgreicher Faktorprüfung atomar. Gleichzeitige oder wiederholte Abschlüsse können ihn nicht erneut verwenden. Auch die Einrichtungsprüfung verhindert einen gleichzeitigen Abschluss derselben Einrichtung. Bei einem fehlgeschlagenen Abschluss werden weder gewöhnliches Token noch Cookie geliefert; nach Behebung erneut anmelden. Beim Bereinigen des Besitzers werden Prüf- und Abschlussabläufe sowie ausstehende Anmeldeversuche entfernt; veraltete laufende Arbeit wird sicher abgelehnt. Bedienelemente und Ablauf der bestehenden Tutorials bleiben gleich; nicht verfügbare Sitzungen zeigen übersetzte Fehlermeldungen.
 
+### Typisierte Authentifizierungsgrenzen
+
+Gemeinsames Verhalten: [TFA](/docs/gateways/tfa/technical).
+
 ## Sicherheit
 
 Authentifizierung prüft Zugangsdaten vor Sitzung und nötiger TFA. Konto-, Rollen- und Inhaltsrechte bleiben getrennt; verweigerte Schlüsselbundfreigabe ändert keine Identität.

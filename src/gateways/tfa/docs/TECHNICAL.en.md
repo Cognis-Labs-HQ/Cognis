@@ -112,6 +112,10 @@ The version-1 `tfa:assessSession` capability runs the TFA-owned `readPolicy` and
 
 The host also retains non-executable failure evidence for a discovered gateway whose valid manifest identifies it but whose bootstrap cannot be imported. Only a successful bootstrap clears this evidence. Rollback removes executable routes and assessment hooks; deliberate disablement remains permitted, while re-enable without successful initialization fails closed. Missing or invalid manifests without usable identity cannot be classified by this signal. Auth callers use the version-1 `auth:login` capability, not raw preparation flows.
 
+### Typed Authentication Boundaries
+
+Auth and TFA declarations now describe the existing account roles, external identity fields, database commands and cookie session projections. Session timeout validation retains the same accepted numeric values. Login assurance and single-use factor attempts remain unchanged.
+
 ## Security
 
 Setup, confirmation, deletion and login verification use authenticated gateway flows. Method adapters own challenge validation; primary authentication must not treat an unconfirmed method or failed challenge as successful verification.
