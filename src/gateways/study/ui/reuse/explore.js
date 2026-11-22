@@ -55,5 +55,7 @@ export function languageStudyPage({ pathname, language }) {
         !/^[a-z]{2,3}(?:-[a-z0-9]+)*$/.test(language)
     )
         return false;
-    return pathname === "/study";
+    return pathname.startsWith(
+        `/study/explore/${encodeURIComponent(language)}/`,
+    );
 }
