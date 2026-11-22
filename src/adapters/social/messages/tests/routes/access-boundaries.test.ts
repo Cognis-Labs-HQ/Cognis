@@ -13,7 +13,7 @@ function unexpectedCall(): never {
     throw new Error("Unexpected access-boundary fixture operation");
 }
 
-function fixture(guestAuthorized: boolean) {
+function fixture(guestAuthorized: boolean, existingMember = false) {
     let messageReads = 0;
     let profileReads = 0;
     const executor: DbExecutor = {
@@ -39,7 +39,18 @@ function fixture(guestAuthorized: boolean) {
                 command.table === "chatroom_members" ||
                 command.table === "chat_message_requests"
             ) {
-                return { rows: [] };
+                return {
+                    rows:
+                        existingMember && command.table === "chatroom_members"
+                            ? [
+                                  {
+                                      chatroom_id: "room",
+                                      account_id: "visitor",
+                                      role: "member",
+                                  },
+                              ]
+                            : [],
+                };
             }
             if (command.table === "chat_messages") {
                 messageReads++;
@@ -62,10 +73,15 @@ function fixture(guestAuthorized: boolean) {
         },
     };
     const capabilities = new CapabilityStore();
-    if (guestAuthorized) {
+    if (guestAuthorized || existingMember) {
+        capabilities.contribute("share:getGuestClaims", async () => ({
+            sub: "visitor",
+            role: "user",
+            purpose: "share",
+        }));
         capabilities.contribute(
             "social:messages:authorizeExternalRoomAccess",
-            async () => ({ external: true, authorized: true }),
+            async () => ({ external: true, authorized: guestAuthorized }),
         );
     }
     capabilities.contribute("share:getGuestProfile", async () => {
@@ -73,7 +89,11 @@ function fixture(guestAuthorized: boolean) {
         return { displayName: "Guest", avatarKey: null };
     });
     const routeContext: RouteContext = {
-        requireAuth: () => ({ sub: "visitor", role: "user" }),
+        requireAuth: () => ({
+            sub: "visitor",
+            role: "user",
+            purpose: "session",
+        }),
         getAuthClaims: unexpectedCall,
         requireRoleAccess: unexpectedCall,
         canAccessUserData: unexpectedCall,
@@ -152,4 +172,10 @@ test("missing guest-session resolver rejects enrichment without granting nonmemb
     );
     assert.equal(guest.messageReads(), 1);
     assert.equal(guest.profileReads(), 0);
+});
+
+test("guest credential cannot fall back to existing account membership after scope denial", async () => {
+    const state = fixture(false, true);
+    assert.equal((await state.invoke("GET", "messages")).statusCode, 403);
+    assert.equal(state.messageReads(), 0);
 });

@@ -609,6 +609,10 @@ Studienkarten verwenden die gemeinsame Lesefläche. Der Dialog folgt der verfüg
 
 Testfabriken in `tests/reuse/` liefern vollständige Einträge, Schemas und Nachbildungen öffentlicher Fähigkeiten. Nicht konfigurierte Operationen werfen Fehler, statt stillschweigend erfolgreich zu sein. Dateischreibvorgänge liefern Objektmetadaten; Datenbanktransaktionen behalten ihren Ergebnistyp. Der Bildspeicherungstest prüft strukturierte Speicherung und Rückabwicklung lokal. Library-Tests werden mit den Node-Optionen `--experimental-vm-modules --import tsx --test` ausgeführt. Diese reinen Teständerungen aktivieren die repositoryweite Typprüfung nicht; deren Integration erfolgt erst nach der Reparatur der anderen Komponenten.
 
+### Sitzungsidentität
+
+Gemeinsames Verhalten: [Study](/docs/gateways/study/technical).
+
 ## Sicherheit
 
 ### Authentifizierte Audiowiedergabe

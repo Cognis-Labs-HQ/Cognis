@@ -1,3 +1,5 @@
+import { readCredentialClaims } from "../guard.js";
+import { type CapabilityContracts, type Ctx } from "@cognis/core";
 import { registerPageScriptOrigins } from "../../shared.js";
 import {
     issueAccessToken,
@@ -20,6 +22,19 @@ export async function registerAuthBootstrapHook({
     routeContext,
 }: AuthBootstrapHookContext): Promise<void> {
     const externalProfiles = createExternalProfileRegistry();
+    ctx.capabilities
+        .require<Ctx>("system:ctx")
+        .requireCapability<CapabilityContracts>("system:contracts")
+        .define("auth:readCredentialClaims", {
+            version: 1,
+            kind: "function",
+            description:
+                "Verify a credential for an explicitly selected purpose.",
+        });
+    ctx.capabilities.contribute(
+        "auth:readCredentialClaims",
+        readCredentialClaims,
+    );
     ctx.capabilities.contribute("auth:accountStore", accountStore);
     ctx.capabilities.contribute(
         "auth:registerExternalProfileProvider",

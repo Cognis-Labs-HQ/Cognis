@@ -32,8 +32,6 @@ const password = await keyring.resolve("meeting:123:password", {
 
 ## Konfiguration
 
-### Konfiguration
-
 Der erforderliche Adapter verwendet den aktiven `db:executor`. Administratoren konfigurieren die maximale Größe des verschlüsselten Tresors in MiB und die Iterationszahl der Passwortableitung über die Adaptereinstellungen. Bestehende Tresore behalten ihre gespeicherte Ableitungszahl; der konfigurierte Wert gilt beim Erstellen eines Tresors. Die Standardkapazität des verschlüsselten Tresors beträgt 2 MiB.
 
 ## Verhalten
@@ -83,6 +81,10 @@ Die Schlüsselbund-Einstellungen lesen beim Anzeigen den aktuellen Zustand, auch
 ### Lokalisierte Adapterfelder
 
 Die Keyring-Konfiguration deklariert ihr eigenes Sprachpaket und lokalisierte Bezeichnungen für maximale Tresorgröße und Iterationen zur Passwortableitung. Das gemeinsame Administrations-Popup löst diese Bezeichnungen über dieselben XML-Ressourcen wie der Adapter auf.
+
+### Geltungsbereich der Anmeldung
+
+Gemeinsames Verhalten: [Auth](/docs/gateways/auth/technical).
 
 ## Sicherheit
 

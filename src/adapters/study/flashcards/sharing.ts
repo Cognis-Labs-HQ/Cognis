@@ -46,22 +46,24 @@ export async function canReadSharedDeck(
         ctx.gatewayRegistry.get("study")?.status === "disabled"
     )
         return false;
-    if (actor.accountId.startsWith("share:")) {
-        const resolveId = ctx.capabilities.get<
-            (claims: { sub: string }) => string
-        >("share:resolveGuestId");
-        const getToken =
-            ctx.capabilities.get<(id: string) => Promise<ShareRecord | null>>(
-                "share:getTokenById",
-            );
-        const id = resolveId?.({ sub: actor.accountId });
-        const token = id && getToken ? await getToken(id) : null;
+    if (actor.claims?.purpose === "share") {
+        const resolveGuestAccess = ctx.capabilities.get<
+            (input: {
+                claims: { sub: string; purpose?: string };
+                resourceType: string;
+                resourceId: string;
+                requiredCapability: string;
+            }) => Promise<{ authorized: boolean }>
+        >("share:resolveGuestAccess");
         return (
-            !!token &&
-            token.resourceType === DECK_RESOURCE &&
-            token.resourceId === deck.id &&
-            token.grantedCapabilities.includes(DECK_READ) &&
-            (!token.expiresAt || Date.parse(token.expiresAt) > Date.now())
+            (
+                await resolveGuestAccess?.({
+                    claims: actor.claims,
+                    resourceType: DECK_RESOURCE,
+                    resourceId: deck.id,
+                    requiredCapability: DECK_READ,
+                })
+            )?.authorized === true
         );
     }
     const resolve = ctx.capabilities.get<

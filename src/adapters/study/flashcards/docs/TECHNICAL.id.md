@@ -104,6 +104,10 @@ Latihan Flashcard tamu memakai pilihan mode sementara dan menonaktifkan fitur ak
 
 Pemuatan halaman tamu memeriksa pembatalan setelah lokalisasi, inisialisasi composer, pemuatan sesi dan penyedia, serta impor gaya dan renderer. Composer, popup Calendar, dan permintaan sumber daya memakai sinyal halaman. Halaman yang dibatalkan tidak dapat menimpa halaman berikutnya atau melaporkan hasil lama. Putaran pemeliharaan juga meneruskan sinyal pembatalan kepada tugasnya; penonaktifan Share mencegah notifikasi kedaluwarsa berikutnya dalam pemindaian yang sedang berjalan.
 
+### Cakupan Kredensial
+
+Perilaku bersama: [Auth](/docs/gateways/auth/technical).
+
 ## Keamanan
 
 Operasi dek memeriksa kepemilikan dan akses berbagi. Ekspor memerlukan pembuat atau administrator; berbagi tidak memberi keanggotaan kelas atau hadiah dari peristiwa impor sembarang.

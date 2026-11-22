@@ -34,7 +34,7 @@ export function createFavouriteRoutes(
                 {
                     handlers: {
                         authorize: () => {
-                            if (claims.sub.startsWith("share:"))
+                            if (claims.purpose === "share")
                                 throw new Error("forbidden");
                         },
                         validate: () => validateFavourite(input),

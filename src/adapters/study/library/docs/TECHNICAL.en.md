@@ -604,6 +604,10 @@ Study card previews use the shared reader surface. The dialog follows the availa
 
 Test factories in `tests/reuse/` provide complete entries, schemas and public capability fakes. Unconfigured capability operations throw instead of silently succeeding. File writes return object metadata, and database transactions preserve their result type. The image persistence fixture exercises structured storage and rollback locally. Run Library tests with Node’s `--experimental-vm-modules --import tsx --test` options. These test-only changes do not enable the repository-wide typecheck pipeline; that requires separate integration after the other components are repaired.
 
+### Session Identity
+
+Shared behavior: [Study](/docs/gateways/study/technical).
+
 ## Security
 
 ### Access

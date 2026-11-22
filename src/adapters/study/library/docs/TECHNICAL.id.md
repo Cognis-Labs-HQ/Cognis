@@ -656,6 +656,10 @@ Pratinjau kartu belajar memakai permukaan pembaca bersama. Dialog mengikuti leba
 
 Fungsi pembuat data uji dalam `tests/reuse/` menyediakan entri, skema, dan tiruan kapabilitas publik yang lengkap. Operasi yang belum dikonfigurasi menghasilkan galat, bukan keberhasilan diam-diam. Penulisan berkas mengembalikan metadata objek, dan transaksi basis data mempertahankan tipe hasilnya. Pengujian penyimpanan gambar menjalankan penyimpanan terstruktur dan pembatalan transaksi secara lokal. Jalankan pengujian Library dengan opsi Node `--experimental-vm-modules --import tsx --test`. Perubahan khusus pengujian ini tidak mengaktifkan pemeriksaan tipe seluruh repositori; integrasinya menunggu perbaikan komponen lain.
 
+### Identitas Sesi
+
+Perilaku bersama: [Study](/docs/gateways/study/technical).
+
 ## Keamanan
 
 Referensi konten harus berupa UUID kanonis yang dapat diselesaikan. Kepemilikan, cakupan, dan visibilitas mengatur edit serta publikasi; keanggotaan kelas diperiksa saat operasi, bukan dari hasil cache lama.

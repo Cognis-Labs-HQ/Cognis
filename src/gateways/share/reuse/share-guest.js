@@ -2,12 +2,12 @@
  * Extracts the share token ID from a share-guest subject claim. Guest
  * subjects are encoded as `share:<shareId>` or `share:<shareId>:<guestId>`.
  *
- * @param {{ sub?: string } | undefined} claims
+ * @param {{ sub?: string, purpose?: string } | undefined} claims
  * @returns {string}
  */
 export function resolveShareGuestId(claims) {
     const subject = String(claims?.sub ?? "").trim();
-    if (!subject.startsWith("share:")) return "";
+    if (claims?.purpose !== "share" || !subject.startsWith("share:")) return "";
     const remainder = subject.slice("share:".length).trim();
     const separatorIndex = remainder.indexOf(":");
     return separatorIndex === -1
@@ -20,12 +20,12 @@ export function resolveShareGuestId(claims) {
  * resolve a guest's temporary display profile. Returns "" when the claim
  * predates guest-profile support and carries no guest ID segment.
  *
- * @param {{ sub?: string } | undefined} claims
+ * @param {{ sub?: string, purpose?: string } | undefined} claims
  * @returns {string}
  */
 export function resolveShareGuestSessionId(claims) {
     const subject = String(claims?.sub ?? "").trim();
-    if (!subject.startsWith("share:")) return "";
+    if (claims?.purpose !== "share" || !subject.startsWith("share:")) return "";
     const remainder = subject.slice("share:".length).trim();
     const separatorIndex = remainder.indexOf(":");
     if (separatorIndex === -1) return "";
@@ -52,7 +52,7 @@ export function hasShareCapability(tokenRecord, requiredCapability) {
  * exposing share token or guest-profile internals to consumers.
  *
  * @param {object} options
- * @param {{ sub?: string } | undefined} options.claims
+ * @param {{ sub?: string, purpose?: string } | undefined} options.claims
  * @param {string} options.resourceType
  * @param {string} options.resourceId
  * @param {string} [options.requiredCapability]
@@ -99,7 +99,7 @@ export async function resolveShareGuestAccess({
  * share without teaching the Share gateway about either resource type.
  *
  * @param {object} options
- * @param {{ sub?: string } | undefined} options.claims
+ * @param {{ sub?: string, purpose?: string } | undefined} options.claims
  * @param {string} options.resourceType
  * @param {string} options.resourceId
  * @param {string} options.requiredCapability

@@ -191,6 +191,10 @@ Published posts appear immediately, and deletions update the timeline without re
 
 Profile roles and visibility types match the stored records, including moderator accounts and private, friends and community visibility. Preference reads expose the stored JSON text. Persistence tests use a profile-owned structured database fixture with rollback support.
 
+### Credential Scope
+
+Shared behavior: [Auth](/docs/gateways/auth/technical).
+
 ## Security
 
 ### Account privacy and keyring isolation

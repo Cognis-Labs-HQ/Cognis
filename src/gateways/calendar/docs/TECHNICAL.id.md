@@ -92,6 +92,10 @@ Tombol tampilan memperbarui pilihan visual dan status ditekan secara bersamaan u
 
 Kontrak acara, penyimpanan, inisialisasi, dan HTTP adaptor Kalender kini menjelaskan perilaku yang diterapkan. ICS dan CalDAV mempertahankan izin, penanganan frasa sandi, dan format umpan yang ada.
 
+### Cakupan Kredensial
+
+Perilaku bersama: [Auth](/docs/gateways/auth/technical).
+
 ## Keamanan
 
 Mutasi kalender memerlukan kepemilikan atau izin edit terdelegasi. Berbagi memeriksa cakupan, kedaluwarsa, dan perlindungan; pengingat memakai kategori notifikasi terdaftar saat bootstrap.

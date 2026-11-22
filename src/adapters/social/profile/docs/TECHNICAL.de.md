@@ -126,6 +126,10 @@ Veröffentlichte Beiträge erscheinen sofort; nach dem Löschen wird die Beitrag
 
 Profilrollen und Sichtbarkeitstypen entsprechen den gespeicherten Datensätzen, einschließlich Moderatoren sowie privater, Freundes- und Community-Sichtbarkeit. Einstellungsabfragen liefern den gespeicherten JSON-Text. Persistenztests verwenden eine profileigene strukturierte Datenbanknachbildung mit Rollback.
 
+### Geltungsbereich der Anmeldung
+
+Gemeinsames Verhalten: [Auth](/docs/gateways/auth/technical).
+
 ## Sicherheit
 
 Profilzugriff beachtet Sichtbarkeit, Blockierungen und aktuelle Beziehungen. Eigene Änderungen benötigen die passende Identität; öffentliche Handles und Avatarvorschauen umgehen diese Prüfung nicht.

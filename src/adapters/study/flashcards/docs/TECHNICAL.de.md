@@ -100,6 +100,10 @@ Die Flashcard-Übung für Gäste verwendet eine vorübergehende Modusauswahl und
 
 Gastseiten prüfen den Abbruch nach Lokalisierung, Composer-Initialisierung, Sitzungs- und Anbieterladen sowie Stil- und Renderer-Importen. Composer, Kalender-Popups und Ressourcenanfragen verwenden das Seitensignal. Abgebrochene Seiten überschreiben keine Folgeseite und melden keine veralteten Ergebnisse. Wartungsdurchläufe übergeben ihren Aufgaben ebenfalls ein Abbruchsignal; die Deaktivierung von Share verhindert spätere Ablaufbenachrichtigungen innerhalb einer laufenden Prüfung.
 
+### Geltungsbereich der Anmeldung
+
+Gemeinsames Verhalten: [Auth](/docs/gateways/auth/technical).
+
 ## Sicherheit
 
 Stapelaktionen prüfen Eigentum und Freigabe. Export braucht Ersteller- oder Administratorrechte; Freigaben begründen weder Klassenmitgliedschaft noch Belohnungen aus beliebigen Importereignissen.

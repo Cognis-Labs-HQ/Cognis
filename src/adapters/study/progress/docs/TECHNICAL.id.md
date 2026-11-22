@@ -32,6 +32,10 @@ Adaptor Kemajuan mencatat peristiwa belajar yang tidak dapat diubah dan idempote
 
 ID proyeksi kemajuan memakai tupel identitas JSON yang tidak ambigu tanpa byte NUL yang ditolak kolom teks PostgreSQL. Hasil menggambar dan kartu belajar tepercaya memakai `study:progress:recordPractice` melalui tahap otorisasi, validasi, pencatatan peristiwa, dan imbalan. Impor peristiwa mentah tidak memberikan XP. `GET /api/v1/study/progress/engagement` yang terautentikasi mengembalikan ringkasan imbalan pelajar sendiri. Percobaan benar tanpa bantuan dapat memperoleh lencana latihan terlokalisasi. Koreksi membatalkan imbalan dan bukti peringkat terkait. Pengiriman ulang mempertahankan identitas peristiwa dan imbalan kanonis.
 
+### Identitas Sesi
+
+Perilaku bersama: [Study](/docs/gateways/study/technical).
+
 ## Keamanan
 
 ### Privasi dan otorisasi

@@ -3,7 +3,7 @@ import test from "node:test";
 import { recordStudyResult } from "../progress.js";
 import type { LearningEventInput } from "../reuse/progress.js";
 
-function fixture() {
+function fixture(expectedAccount = "learner") {
     const events: LearningEventInput[] = [];
     const readers: string[] = [];
     let available = true;
@@ -40,7 +40,7 @@ function fixture() {
                     actor: { accountId: string },
                     event: LearningEventInput,
                 ) => {
-                    assert.equal(actor.accountId, "learner");
+                    assert.equal(actor.accountId, expectedAccount);
                     events.push(event);
                 },
             },
@@ -177,4 +177,28 @@ test("authorized classroom practice retains scope while a deck share does not gr
         readerAccountId: "teacher",
     });
     assert.deepEqual(state.events[2].context, {});
+});
+
+test("verified prefixed accounts retain progress while share-purpose actors cannot record it", async () => {
+    const account = "share:ordinary";
+    const state = fixture(account);
+    const claims = { sub: account, purpose: "session" as const };
+    await recordStudyResult(
+        state.ports,
+        { ...actor, accountId: account, claims },
+        { ...result, accountId: account },
+    );
+    assert.equal(state.events.length, 1);
+    await assert.rejects(
+        recordStudyResult(
+            state.ports,
+            {
+                ...actor,
+                accountId: account,
+                claims: { ...claims, purpose: "share" },
+            },
+            { ...result, accountId: account },
+        ),
+        /forbidden/,
+    );
 });

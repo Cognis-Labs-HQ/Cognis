@@ -1,3 +1,4 @@
+import { createDefaultRouteContext } from "../../../reuse/route-context.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createUiRoutes } from "../../../routes/ui/index.js";
@@ -82,7 +83,29 @@ test("GET /api/v1/ui/capability-providers accepts scoped share guests", async ()
         scriptUrl: "/static/profile-avatar.js",
         providesCapabilities: ["ui:profileAvatarRenderer"],
     });
-    const route = createUiRoutes(undefined, uiRegistry);
+    let live = true;
+    const context = createDefaultRouteContext({
+        getCapability: <T>(name: string) =>
+            (name === "share:getGuestClaims"
+                ? async () =>
+                      live
+                          ? {
+                                sub: "share:example:guest",
+                                role: "user",
+                                purpose: "share",
+                            }
+                          : null
+                : undefined) as T | undefined,
+    });
+    const route = createUiRoutes(
+        undefined,
+        uiRegistry,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        context,
+    );
     const guestToken = issueAccessToken("share:example:guest", "user", 60, {
         providerId: "share",
         purpose: "share",
@@ -100,6 +123,17 @@ test("GET /api/v1/ui/capability-providers accepts scoped share guests", async ()
 
     assert.equal(recorder.status, 200);
     assert.match(recorder.body, /profile-avatar/);
+    live = false;
+    const denied = createResponseRecorder();
+    await route(
+        {
+            method: "GET",
+            headers: { authorization: `Bearer ${guestToken}` },
+        } as never,
+        denied.res as never,
+        new URL("http://localhost/api/v1/ui/capability-providers"),
+    );
+    assert.equal(denied.status, 401);
 });
 
 test("GET /api/v1/ui/page-extensions/:pageId filters extensions by access policy", async () => {

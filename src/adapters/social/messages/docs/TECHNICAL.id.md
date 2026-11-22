@@ -149,6 +149,10 @@ Halaman Pesan menyelesaikan kunci ruang melalui lingkup keyring `Social Messages
 
 Deklarasi peran dan visibilitas profil sosial kini sesuai dengan rekaman tersimpan. Rute pesan dan profil tetap mempertahankan pemeriksaan izin, sementara callback, notifikasi, dan perintah basis data menggunakan kontrak eksplisit. Resolusi sesi tamu yang tidak tersedia tetap menggagalkan proses sebelum profil tamu dibaca.
 
+### Cakupan Kredensial
+
+Perilaku bersama: [Auth](/docs/gateways/auth/technical).
+
 ## Keamanan
 
 Kelayakan ruang, keanggotaan, dan pembacaan pesan diperiksa terpisah. Ruang terenkripsi bergantung pada kunci klien; model ancaman membedakan konten dan metadata perutean.

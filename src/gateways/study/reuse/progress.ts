@@ -4,6 +4,7 @@ export type CompletionState =
     "started" | "inProgress" | "completed" | "abandoned";
 
 export interface ProgressActor {
+    claims?: { sub: string; purpose?: "session" | "share" };
     accountId: string;
     role: AccessRole;
 }

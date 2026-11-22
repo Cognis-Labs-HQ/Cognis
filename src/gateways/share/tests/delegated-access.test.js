@@ -34,7 +34,7 @@ function delegationResult(overrides = {}) {
 test("share delegates guest access through a resource-owned flow hook", async () => {
     let flowInput;
     const access = await resolveShareDelegatedAccess({
-        claims: { sub: "share:share-1:guest-1" },
+        claims: { sub: "share:share-1:guest-1", purpose: "share" },
         resourceType: "whiteboard",
         resourceId: "board-1",
         requiredCapability: "whiteboard:read",
@@ -73,7 +73,7 @@ test("delegated access stays bound to the source share and target request", asyn
         { allowedCapabilities: ["whiteboard:write"] },
     ]) {
         const access = await resolveShareDelegatedAccess({
-            claims: { sub: "share:share-1:guest-1" },
+            claims: { sub: "share:share-1:guest-1", purpose: "share" },
             resourceType: "whiteboard",
             resourceId: "board-1",
             requiredCapability: "whiteboard:read",

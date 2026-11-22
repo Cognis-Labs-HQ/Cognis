@@ -48,7 +48,7 @@ export function createDrawingRoutes(
                 {
                     handlers: {
                         authorize: () => {
-                            if (claims.sub.startsWith("share:"))
+                            if (claims.purpose === "share")
                                 throw new Error("forbidden");
                         },
                         validate: () => {

@@ -92,6 +92,10 @@ Calendar and Flashcards sharing hooks tolerate unrelated resource providers retu
 
 Guest Flashcard practice uses a temporary mode selection and disables account enhancements and persisted layout settings. It does not read or write account practice preferences.
 
+### Credential Scope
+
+Shared behavior: [Auth](/docs/gateways/auth/technical).
+
 ## Security
 
 Deck operations validate ownership and permitted shared access. Exports require creator or administrator authority; a deck share does not establish classroom membership or authorize rewards from arbitrary imported events.

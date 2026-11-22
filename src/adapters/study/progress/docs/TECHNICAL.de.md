@@ -39,6 +39,10 @@ const events = await progress.listEvents(actor, {});
 
 Fortschrittsprojektionen verwenden eindeutige JSON-Identitätstupel ohne NUL-Bytes, die PostgreSQL-Textspalten ablehnen. Vertrauenswürdige Zeichen- und Karteikartenergebnisse durchlaufen `study:progress:recordPractice` mit Autorisierung, Validierung, Ereignisspeicherung und Belohnung. Rohe Ereignisimporte vergeben keine XP. Der authentifizierte Aufruf `GET /api/v1/study/progress/engagement` liefert die eigene Belohnungsübersicht. Ein selbstständig korrekt gelöster Versuch kann das lokalisierte Übungsabzeichen vergeben. Korrekturen entwerten betroffene Belohnungen und Ranglistennachweise. Wiederholte Zustellung behält die kanonische Ereignis- und Belohnungsidentität.
 
+### Sitzungsidentität
+
+Gemeinsames Verhalten: [Study](/docs/gateways/study/technical).
+
 ## Sicherheit
 
 ### Datenschutz und Berechtigung

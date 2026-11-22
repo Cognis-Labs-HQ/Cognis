@@ -92,6 +92,10 @@ Ansichtsschaltflächen aktualisieren ihre sichtbare Auswahl und den gedrückten 
 
 Die Verträge für Kalenderereignisse, Speicherung, Initialisierung und Adapter-HTTP beschreiben jetzt das implementierte Verhalten. ICS und CalDAV behalten ihre Berechtigungen, Passwortverarbeitung und Feedformate bei.
 
+### Geltungsbereich der Anmeldung
+
+Gemeinsames Verhalten: [Auth](/docs/gateways/auth/technical).
+
 ## Sicherheit
 
 Kalenderänderungen brauchen Eigentum oder übertragenes Bearbeitungsrecht. Freigaben prüfen Bereich, Ablauf und Schutz; Erinnerungen nutzen die beim Start registrierte Kategorie.

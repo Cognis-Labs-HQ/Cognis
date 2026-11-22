@@ -100,6 +100,10 @@ Share 1.9.9 declares the token fields returned by issue, update and list capabil
 
 Synthetic tests exercise persisted token results, denied owner updates and guest profile cleanup. Recipient, password, adapter and expiry checks retain their existing behavior.
 
+### Credential Scope
+
+Shared behavior: [Auth](/docs/gateways/auth/technical).
+
 ## Security
 
 ### Security Boundary

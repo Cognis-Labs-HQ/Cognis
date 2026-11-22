@@ -42,6 +42,7 @@
  * @returns {HTMLButtonElement | null}
  */
 
+import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createI18n } from "/static/reuse/i18n.js";
 import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
 
@@ -61,14 +62,7 @@ const GUEST_SESSION_ACTIVE_STORAGE_KEY = "cognis_share_guest_token_active";
  * @returns {boolean}
  */
 export function isViewingAsGuest() {
-    if (typeof sessionStorage === "undefined") return false;
-    const accountId = String(
-        globalThis.localStorage?.getItem("cognis_account") ?? "",
-    ).trim();
-    return (
-        sessionStorage.getItem(GUEST_SESSION_ACTIVE_STORAGE_KEY) === "1" ||
-        accountId.startsWith("share:")
-    );
+    return uiCtx.capabilities.get("session:isGuest")?.() === true;
 }
 
 export function mountShareButton({

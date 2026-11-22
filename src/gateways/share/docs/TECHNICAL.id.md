@@ -106,6 +106,10 @@ Share 1.9.9 mendeklarasikan bidang token yang dikembalikan oleh kapabilitas pene
 
 Pengujian sintetis mencakup hasil token tersimpan, penolakan pembaruan oleh bukan pemilik, dan pembersihan profil tamu. Pemeriksaan penerima, kata sandi, adaptor, dan kedaluwarsa mempertahankan perilaku sebelumnya.
 
+### Cakupan Kredensial
+
+Perilaku bersama: [Auth](/docs/gateways/auth/technical).
+
 ## Keamanan
 
 ### Batas Keamanan

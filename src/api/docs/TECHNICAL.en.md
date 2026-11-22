@@ -43,6 +43,10 @@ Shared behavior: [TFA](/docs/gateways/tfa/technical).
 
 Unrelated settings writes never apply TFA policy. When the TFA read capability exists, system reads and omitted-field writes use its current policy; read failure returns an error instead of reporting disabled enforcement. Without that optional capability, the stored preference is only a mirror and may be stale. Explicit policy changes still require the owner capability.
 
+Account guards now accept only session-purpose credentials. A mixed resource route must explicitly obtain `share:getGuestClaims(request)`, then apply its resource and capability authorization. Missing or invalid guest admission falls back only to normal account authentication, never to account authorization with guest claims. A module route that performs this complete admission in its handler omits outer account-role metadata; management routes keep it. Only provider and app-route discovery accept live guest credentials for rendering, with existing role visibility filters. The no-store identity endpoint returns only verified subject, role, provider, purpose and setup state.
+
+`Promise<{ sub: string; role: "user"; providerId: string; purpose: "share"; setupPending: false } | null>`
+
 ## Security
 
 Documentation endpoints publish read-only information. Keep credentials and private account data out of these sources. Routes using the separate document-diff capability enforce their own authentication and document authorization.

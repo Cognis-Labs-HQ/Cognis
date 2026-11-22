@@ -112,6 +112,10 @@ Pos yang diterbitkan langsung tampil, dan penghapusan memperbarui linimasa tanpa
 
 Tipe peran dan visibilitas profil sesuai dengan rekaman tersimpan, termasuk akun moderator serta visibilitas privat, teman, dan komunitas. Pembacaan preferensi menyediakan teks JSON tersimpan. Pengujian penyimpanan menggunakan simulasi basis data terstruktur milik profil dengan dukungan rollback.
 
+### Cakupan Kredensial
+
+Perilaku bersama: [Auth](/docs/gateways/auth/technical).
+
 ## Keamanan
 
 ### Privasi akun dan isolasi keyring
