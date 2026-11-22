@@ -12,6 +12,5 @@ PATCH with `grantedCapabilities: []` removes every granted capability. Omitting 
 
 ## Commits
 
-- [1f5c4f101876d150f9ee130a00297fbb266d4399](https://github.com/Cognis-Labs-HQ/Cognis/commit/1f5c4f101876d150f9ee130a00297fbb266d4399)
-- [bb1d6a4e69171f0abfe3792028a9137855224315](https://github.com/Cognis-Labs-HQ/Cognis/commit/bb1d6a4e69171f0abfe3792028a9137855224315)
-- [05885663480dbd75b40b8fa5b5ea29faeb156fed](https://github.com/Cognis-Labs-HQ/Cognis/commit/05885663480dbd75b40b8fa5b5ea29faeb156fed)
+- [37279a34a3891cca73dbc5cc5c85f3b00b2b2e8a](https://github.com/Cognis-Labs-HQ/Cognis/commit/37279a34a3891cca73dbc5cc5c85f3b00b2b2e8a)
+- [5244359630d1cdc12910d11cfb9d20e2c916fbf0](https://github.com/Cognis-Labs-HQ/Cognis/commit/5244359630d1cdc12910d11cfb9d20e2c916fbf0)
