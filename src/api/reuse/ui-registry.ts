@@ -69,6 +69,8 @@ export interface NavbarPlugin {
 }
 
 export interface UiCapabilityProvider {
+    /** Explicitly safe to discover and mount without a session. */
+    public?: boolean;
     access?: RoleAccessPolicy;
     component?: NavbarPlugin["component"];
     offlineAccessGuard?: string;

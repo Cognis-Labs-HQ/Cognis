@@ -27,6 +27,14 @@ The public interfaces and operational rules of Application Logs.
 
 ## Behavior
 
+### Gateway-Controlled Diagnostics
+
+The public browser provider contributes `logging:browser` and owns the `logging:emit` flow (`validate`, `deliver`, `publish`). Core publishes diagnostics through `ui:log` and buffers at most 128 events before the provider subscribes. While mounted, the gateway also captures console calls; components cannot force browser output by choosing a console method. Structured metadata is bounded and credentials and raw error messages are removed.
+
+Service workers relay structured `COGNIS_LOG` events to one controlled window, retaining at most 64 events when none is available. The provider accepts messages only from its current service-worker controller and removes its listeners, console capture and subscription on disposal.
+
+`POST /api/v1/logging/entries` remains authenticated. Its 204 response includes `x-cognis-log-console: true` only for administrators when the event meets the current console adapter threshold. The browser publishes only after that permission; rejected or failed deliveries do not print or recursively report themselves. Anonymous events reach the gateway provider but are not submitted to the authenticated endpoint or printed. Server console and file filters remain independent.
+
 ### Overview
 
 The Logging Gateway provides structured application logging to stdout/stderr and optionally to a persistent log file. It creates a `Logger` instance from environment variables and contributes it to the capability store so that any component that needs to log can do so through a uniform interface without importing a logger library directly.

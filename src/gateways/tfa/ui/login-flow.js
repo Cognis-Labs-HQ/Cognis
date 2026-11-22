@@ -1,3 +1,4 @@
+import { log } from "/static/reuse/diagnostics.js";
 import { redirectToRequiredTfaSetup } from "/static/reuse/auth-setup-route.js";
 import { extendI18n } from "/static/reuse/i18n.js";
 import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
@@ -201,9 +202,10 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                 if (resendLink && !(resendLink instanceof HTMLAnchorElement)) {
                     if (!invalidResendLinkTypeWarned) {
                         invalidResendLinkTypeWarned = true;
-                        console.warn(
-                            "Expected #login-tfa-resend-action to be an anchor element.",
-                        );
+                        log("warn", "invalid_resend_control", {
+                            component: "tfa",
+                            operation: "resolveResendControl",
+                        });
                     }
                     return null;
                 }
@@ -308,13 +310,12 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                     return;
                 }
                 if (!methodId || !loginAttemptId) {
-                    console.warn(
-                        "Cannot resend TFA challenge without methodId and loginAttemptId.",
-                        {
-                            methodId,
-                            loginAttemptId,
-                        },
-                    );
+                    log("warn", "challenge_context_unavailable", {
+                        component: "tfa",
+                        operation: "beginLoginChallenge",
+                        hasMethod: Boolean(methodId),
+                        hasLoginAttempt: Boolean(loginAttemptId),
+                    });
                     return;
                 }
                 resendLocked = true;
@@ -361,7 +362,7 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                         syncDisabledResendState();
                     }
                 } catch (error) {
-                    console.error("[tfa] challenge request failed", {
+                    log("error", "challenge_request_failed", {
                         component: "tfa",
                         operation: "beginLoginChallenge",
                         methodId,

@@ -4,6 +4,10 @@
 
 ## Schnittstellen
 
+### Anbietererkennung
+
+`GET /api/v1/ui/capability-providers` unterstützt auch anonyme Aufrufe. Ohne gültige Kontodaten liefert der Endpunkt nur ausdrücklich mit `public: true` markierte Anbieter ohne Rollenrichtlinie. Bei angemeldeten Aufrufen gilt weiterhin die Kontorolle. Antworten werden nicht zwischengespeichert; bei geändertem Sitzungstoken lädt der Browser den Katalog erneut.
+
 ### UI-Erweiterungen
 
 | Methode | Pfad                                 | Beschreibung                             | Auth   |

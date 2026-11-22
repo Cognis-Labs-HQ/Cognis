@@ -62,6 +62,14 @@ Peristiwa pada gateway DB juga memakai logger bersama, tetapi hanya mencatat met
 
 ## Perilaku
 
+### Diagnostik Terpusat
+
+Penyedia peramban publik menyediakan `logging:browser` dan mengelola alur `logging:emit` (`validate`, `deliver`, `publish`). Core menerbitkan diagnostik melalui `ui:log` dan menampung maksimal 128 peristiwa sebelum penyedia berlangganan. Selama aktif, gateway juga menangkap panggilan konsol; komponen tidak dapat memaksa keluaran peramban melalui pemilihan metode konsol. Metadata dibatasi; kredensial dan pesan galat mentah dihapus.
+
+Service worker meneruskan peristiwa terstruktur `COGNIS_LOG` ke satu jendela yang dikendalikan dan menampung maksimal 64 peristiwa jika tidak ada jendela tersedia. Penyedia hanya menerima pesan dari pengendali service worker saat ini dan melepas pendengar, penangkapan konsol, serta langganannya ketika dihentikan.
+
+`POST /api/v1/logging/entries` tetap memerlukan autentikasi. Respons 204 menyertakan `x-cognis-log-console: true` hanya bagi administrator ketika peristiwa memenuhi ambang adaptor konsol saat ini. Peramban hanya menampilkan keluaran setelah izin tersebut; pengiriman yang ditolak atau gagal tidak mencetak atau melaporkan dirinya secara rekursif. Peristiwa anonim mencapai penyedia gateway, tetapi tidak dikirim ke endpoint terautentikasi atau ditampilkan. Filter konsol server dan berkas tetap terpisah.
+
 ### Ikhtisar
 
 Gateway Logging menyediakan pencatatan log aplikasi terstruktur ke stdout/stderr dan secara opsional ke file log persisten. Gateway ini membuat instance `Logger` dari variabel environment dan berkontribusi ke capability store, sehingga komponen mana pun yang perlu mencatat log dapat melakukannya melalui antarmuka seragam tanpa mengimpor library logger secara langsung.

@@ -14,6 +14,10 @@ Bei der Wiederherstellung der Verbindung werden Übersetzungsspeicher vor dem er
 
 `tfa:getLoginMethods(accountId)` bereitet eine Challenge nur bei genau einer verfügbaren Methode ohne unbenutzte Wiederherstellungscodes vor. Andernfalls fordert die Login-Oberfläche über `POST /api/v1/tfa/login/resend` eine Challenge für die anfänglich gewählte Methode mit `challengeOnSelect` sowie für spätere Auswahlen ohne bestehende Challenge an. Vorbereitete Challenges werden wiederverwendet. Zustellfehler erscheinen lokalisiert; Protokolle erfassen Methode, Konto, Bereitschaft und Fehlergrund ohne Codes oder E-Mail-Inhalte.
 
+## Zentrale Browserdiagnose
+
+Die zentrale Protokollierung steuert die Serverübertragung und Browserkonsolenausgabe für Übersetzungs-, TFA- und Offline-Worker-Diagnosen. Gateway-Berechtigungen und Schweregrad bestimmen die Browserausgabe; Metadaten enthalten keine Zugangsdaten oder unverarbeiteten Fehlermeldungen.
+
 ## Commits
 
 - [996af37783915d3246df5c1fc1044b01c4f46fa1](https://github.com/Cognis-Labs-HQ/Cognis/commit/996af37783915d3246df5c1fc1044b01c4f46fa1)

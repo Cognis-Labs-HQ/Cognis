@@ -14,6 +14,10 @@ Connection recovery invalidates core and component translation snapshots before 
 
 `tfa:getLoginMethods(accountId)` prepares a challenge only when one method is available and no unused recovery codes exist. Otherwise the login UI requests a challenge through `POST /api/v1/tfa/login/resend` for the initially selected method when its `challengeOnSelect` metadata is true, and for subsequent selections without an existing challenge. Server-prepared challenges are reused. Delivery failures show a localized error; gateway logs record method, account, readiness and failure reason without codes or email content.
 
+## Gateway-Controlled Diagnostics
+
+Application logging now controls server delivery and browser-console visibility for translation, TFA and offline-worker diagnostics. Gateway authorization and severity determine browser output; diagnostic metadata excludes credentials and raw error messages.
+
 ## Commits
 
 - [996af37783915d3246df5c1fc1044b01c4f46fa1](https://github.com/Cognis-Labs-HQ/Cognis/commit/996af37783915d3246df5c1fc1044b01c4f46fa1)

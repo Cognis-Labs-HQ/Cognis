@@ -126,11 +126,8 @@ test("provider discovery retains injected authorization and live owner lifecycle
     });
     let allowed = false;
     const context = {
-        requireAuth(_request: IncomingMessage, response: ServerResponse) {
-            if (allowed) return { sub: "fixture", role: "user" };
-            response.writeHead(401);
-            response.end();
-            return null;
+        getAuthClaims() {
+            return allowed ? { sub: "fixture", role: "user" } : null;
         },
         getCapability() {
             return undefined;
@@ -151,7 +148,7 @@ test("provider discovery retains injected authorization and live owner lifecycle
         );
         return response;
     };
-    assert.equal((await read()).status, 401);
+    assert.deepEqual(JSON.parse((await read()).body).data, []);
     allowed = true;
     assert.equal(
         JSON.parse((await read()).body).data[0].scriptUrl,
@@ -164,5 +161,5 @@ test("provider discovery retains injected authorization and live owner lifecycle
     registry.unregisterModuleContributions("example");
     assert.deepEqual(JSON.parse((await read()).body).data, []);
     allowed = false;
-    assert.equal((await read()).status, 401);
+    assert.deepEqual(JSON.parse((await read()).body).data, []);
 });

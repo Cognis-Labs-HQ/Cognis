@@ -4,6 +4,10 @@
 
 ## Schnittstellen
 
+Diagnoseereignisse werden über `ui:log` veröffentlicht; die Ausgaberichtlinie gehört dem [Logging-Gateway](/docs/gateways/logging/technical).
+
+`reportClientError(error)` übernimmt ein Error-Objekt oder strukturierten Kontext und veröffentlicht es über die Gateway-Diagnose. Eigene lokale Logger lassen sich nicht mehr übergeben; die Ausgabe wird im Logging-Gateway konfiguriert.
+
 UIRegistry veröffentlicht Ressourcen, Navigationsplugins, Verwaltungsabschnitte und Seitenerweiterungen. Browseranbieter registrieren Fähigkeiten über uiCtx mit eigenem Abbruchsignal; Seiten nutzen Page Composer.
 
 ## Konfiguration

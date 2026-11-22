@@ -14,8 +14,11 @@ export function createOfflineClientFixture(send, { window } = {}) {
         session: "fixture-token",
     };
     const values = new Map();
+    const logs = [];
+    const log = (...entry) => logs.push(entry);
     const capabilities = new Map([
         ["ui:scopedActions", registerScopedUiActions],
+        ["ui:log", log],
         ["session:isOfflineValid", () => true],
         ["offline:accessPolicy", { allows: () => true }],
     ]);
@@ -36,7 +39,7 @@ export function createOfflineClientFixture(send, { window } = {}) {
         }),
         withLock: (operation) => Promise.resolve().then(operation),
         withDeliveryLock: (operation) => Promise.resolve().then(operation),
-        log: () => {},
+        log,
     });
     capabilities.set("offline:outbox", outbox);
     capabilities.set("offline:state", state);
@@ -133,6 +136,7 @@ export function createOfflineClientFixture(send, { window } = {}) {
         globals,
     );
     return {
+        logs,
         values,
         invalidateCache: () => {
             cacheGeneration++;
@@ -144,6 +148,7 @@ export function createOfflineClientFixture(send, { window } = {}) {
         ctx,
         outbox,
         imports: {
+            "/static/reuse/diagnostics.js": { log },
             "/static/reuse/offline-snapshot.js": snapshots,
             "/static/reuse/offline-identity.js": guard,
             "/static/reuse/offline-http-client.js": http,

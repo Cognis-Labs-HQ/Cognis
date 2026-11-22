@@ -1,3 +1,4 @@
+import { reportClientError } from "../reuse/error-reporting.js";
 import { loadTestModule } from "../../tooling/reuse/test-module.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -138,6 +139,7 @@ test("route invalidation prevents in-flight anonymous loads from restoring stale
     const values = new Map();
     const pending = [];
     const imports = {
+        "./error-reporting.js": { reportClientError },
         "./ui-ctx.js": {
             uiCtx: {
                 capabilities: {

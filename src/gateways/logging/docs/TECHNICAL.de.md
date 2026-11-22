@@ -62,6 +62,14 @@ Die DB-Gateway-Ereignisse verwenden ebenfalls den gemeinsamen Logger, protokolli
 
 ## Verhalten
 
+### Zentrale Browserdiagnose
+
+Der öffentliche Browseranbieter stellt `logging:browser` bereit und verwaltet den Ablauf `logging:emit` (`validate`, `deliver`, `publish`). Core veröffentlicht Diagnoseereignisse über `ui:log` und puffert höchstens 128 Ereignisse, bis der Anbieter sie übernimmt. Während seiner Laufzeit fängt das Gateway auch Konsolenaufrufe ab; Komponenten können die Browserausgabe nicht durch die Wahl einer Konsolenmethode erzwingen. Metadaten werden begrenzt; Zugangsdaten und unverarbeitete Fehlermeldungen werden entfernt.
+
+Service Worker leiten strukturierte `COGNIS_LOG`-Ereignisse an genau ein kontrolliertes Fenster weiter. Ohne verfügbares Fenster bleiben höchstens 64 Ereignisse im Puffer. Der Anbieter akzeptiert Nachrichten ausschließlich vom aktuellen Service-Worker-Controller und entfernt beim Beenden seine Listener, Konsolenumleitung und Ereignisübernahme.
+
+`POST /api/v1/logging/entries` erfordert weiterhin eine Anmeldung. Die Antwort mit Status 204 enthält `x-cognis-log-console: true` nur für Administratoren, wenn das Ereignis den aktuellen Schwellwert des Konsolenadapters erreicht. Erst diese Freigabe erlaubt die Browserausgabe. Abgelehnte oder fehlgeschlagene Übertragungen erzeugen keine Konsolenausgabe und keine rekursiven Meldungen. Anonyme Ereignisse erreichen den Gateway-Anbieter, werden jedoch weder an den geschützten Endpunkt gesendet noch ausgegeben. Die Filter für Serverkonsole und Datei bleiben unabhängig.
+
 ### Überblick
 
 Das Logging-Gateway stellt strukturiertes Anwendungslogging auf stdout/stderr und optional in eine persistente Protokolldatei bereit. Es erstellt eine `Logger`-Instanz aus Umgebungsvariablen und trägt sie zum Capability-Store bei, sodass jede Komponente, die loggen muss, dies über eine einheitliche Schnittstelle tun kann, ohne eine Logger-Bibliothek direkt zu importieren.

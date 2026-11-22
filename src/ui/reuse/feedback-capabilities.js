@@ -1,8 +1,8 @@
 /**
- * Publishes host-owned feedback and logging capabilities to browser components.
+ * Publishes host feedback and gateway-routed diagnostic capabilities to browser components.
  *
  * Public exports:
- * - `registerFeedbackCapabilities()` — registers toast, error-popup, and server-log functions on `uiCtx`.
+ * - `registerFeedbackCapabilities()` — registers toast, error-popup, and diagnostic functions on `uiCtx`.
  *
  * @example
  * ```js
@@ -14,7 +14,7 @@
  * ```
  */
 
-import { apiFetch } from "./api-client.js";
+import { log } from "./diagnostics.js";
 import { openRuntimeErrorPopup } from "./runtime-error-popup.js";
 import { showToast } from "./toast.js";
 import { uiCtx } from "./ui-ctx.js";
@@ -27,29 +27,7 @@ import { uiCtx } from "./ui-ctx.js";
 export function registerFeedbackCapabilities() {
     uiCtx.capabilities.contribute("ui:showToast", showToast);
     uiCtx.capabilities.contribute("ui:openErrorPopup", openRuntimeErrorPopup);
-    uiCtx.capabilities.contribute(
-        "ui:log",
-        async (level, message, meta = {}) => {
-            try {
-                if (!localStorage.getItem("cognis_access_token")) return false;
-                const response = await apiFetch("/api/v1/logging/entries", {
-                    method: "POST",
-                    headers: { "content-type": "application/json" },
-                    body: JSON.stringify({ level, message, meta }),
-                    suppressAccessDeniedEvent: true,
-                    suppressConnectionRecoveryToast: true,
-                });
-                if (response.ok) return true;
-                console.warn("Browser log delivery failed.", {
-                    status: response.status,
-                });
-            } catch {
-                // Delivery is best effort; the caller owns user feedback.
-                console.warn("Browser log delivery failed.");
-            }
-            return false;
-        },
-    );
+    uiCtx.capabilities.contribute("ui:log", log);
 }
 
 registerFeedbackCapabilities();

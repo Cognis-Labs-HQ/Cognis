@@ -18,10 +18,12 @@ export async function serveProviders(
     ) {
         return false;
     }
-    const claims = routeContext.requireAuth(req, res, "user");
-    if (!claims) return true;
+    const claims = routeContext.getAuthClaims(req);
     let providers = (uiRegistry?.listCapabilityProviders() ?? []).filter(
-        (provider) => isRoleAllowed(claims.role, provider.access),
+        (provider) =>
+            claims
+                ? isRoleAllowed(claims.role, provider.access)
+                : provider.public === true && !provider.access,
     );
     const management = routeContext
         .getCapability<Ctx>("system:ctx")
@@ -36,7 +38,10 @@ export async function serveProviders(
             providers,
             "capabilities",
         );
-    res.writeHead(200, { "content-type": "application/json" });
+    res.writeHead(200, {
+        "content-type": "application/json",
+        "cache-control": "no-store",
+    });
     res.end(
         JSON.stringify({ data: versionDescriptor(providers, assetVersion) }),
     );

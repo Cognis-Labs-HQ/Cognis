@@ -1,4 +1,6 @@
 /** Keep the displayed locale separate from the account's configured language order. */
+
+import { log } from "./diagnostics.js";
 const selection = (globalThis[Symbol.for("cognis.uiLanguageSelection")] ??= {});
 const identity = () =>
     JSON.stringify([
@@ -10,7 +12,8 @@ function storedJson(key) {
     try {
         return JSON.parse(globalThis.localStorage?.getItem(key) ?? "null");
     } catch (error) {
-        console.error("[i18n] invalid stored language preferences", {
+        log("error", "invalid_stored_language_preferences", {
+            component: "core",
             operation: "readLanguageSettings",
             errorName: error?.name,
         });

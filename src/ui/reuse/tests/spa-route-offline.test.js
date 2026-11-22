@@ -1,3 +1,4 @@
+import { reportClientError } from "../error-reporting.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
@@ -13,6 +14,7 @@ test("a warm offline catalog keeps both cached public pages and provider-authori
         scriptUrl: "/static/app/legal/index.js",
     };
     const imports = {
+        "./error-reporting.js": { reportClientError },
         "./ui-ctx.js": { uiCtx },
         "./offline-navigation.js": { offlineRouteAvailable },
         "./offline-state.js": {

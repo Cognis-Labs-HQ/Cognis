@@ -14,7 +14,7 @@
 
 | コンポーネント | パス       | バージョン |
 | -------------- | ---------- | ---------- |
-| API Server     | `src/api/` | `0.13.33`  |
+| API Server     | `src/api/` | `0.13.34`  |
 
 ## 設定
 
@@ -95,7 +95,7 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 | Social                | `src/gateways/social/`        | `1.4.5`    |
 | File Storage (files)  | `src/gateways/files/`         | `2.3.6`    |
 | Registration          | `src/gateways/registration/`  | `1.2.6`    |
-| Logging               | `src/gateways/logging/`       | `1.5.19`   |
+| Logging               | `src/gateways/logging/`       | `1.5.20`   |
 | Observability         | `src/gateways/observability/` | `1.0.7`    |
 | Study                 | `src/gateways/study/`         | `2.6.13`   |
 | Calendar              | `src/gateways/calendar/`      | `1.7.19`   |

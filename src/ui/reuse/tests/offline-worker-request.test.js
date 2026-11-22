@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "./fixtures/diagnostics.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
@@ -31,7 +32,7 @@ function fixture() {
     }
     const module = loadTestModule(
         new URL("../offline-state.js", import.meta.url),
-        {},
+        { "./diagnostics.js": createDiagnosticFixture() },
         {
             navigator: { serviceWorker: { controller: worker } },
             MessageChannel,

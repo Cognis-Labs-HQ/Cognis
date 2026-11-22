@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../fixtures/diagnostics.js";
 import test from "node:test";
 import loadingFallback from "../../../languages/en/loading.json" with { type: "json" };
 import assert from "node:assert/strict";
@@ -34,6 +35,7 @@ function fixture({ deferred = false, fallback = loadingFallback } = {}) {
     const module = loadTestModule(
         new URL("../../page-entry.js", import.meta.url),
         {
+            "./diagnostics.js": createDiagnosticFixture(),
             "../languages/en/loading.json": fallback,
             "./i18n.js": {
                 readPreferredLanguages: () => languages,

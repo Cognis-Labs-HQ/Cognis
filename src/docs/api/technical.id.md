@@ -4,6 +4,10 @@ Antarmuka publik dan aturan operasional API.
 
 ## Antarmuka
 
+### Penemuan Penyedia
+
+`GET /api/v1/ui/capability-providers` juga melayani pemanggil anonim. Tanpa klaim yang sah, endpoint hanya mengembalikan penyedia dengan `public: true` yang tidak memiliki kebijakan peran. Penemuan terautentikasi tetap mengikuti peran pemanggil. Respons tidak disimpan dalam cache, dan peramban memuat ulang katalog ketika token sesi berubah.
+
 Registri rute meneruskan permintaan kepada pemilik fitur. GET /api/v1/ui/page-extensions/:pageId menyediakan kontribusi halaman aktif; rute Docs menyediakan indeks serta paket dokumentasi versi. Rute terlindungi tetap menerapkan autentikasi dan otorisasi sumber daya.
 
 ## Konfigurasi

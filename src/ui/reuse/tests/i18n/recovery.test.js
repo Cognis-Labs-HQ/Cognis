@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { subscribeDiagnostics } from "../../diagnostics.js";
 import { installI18nEnvironment } from "../fixtures/i18n-environment.js";
 
 const xml = (value) =>
@@ -30,7 +31,16 @@ for (const component of [false, true]) {
     });
 }
 
-test("an HTML response during restart cannot poison a component translation cache", async () => {
+test("an HTML response during restart cannot poison a component translation cache", async (t) => {
+    const logs = [];
+    const release = subscribeDiagnostics(async (entry) => {
+        logs.push(entry);
+        return true;
+    });
+    t.after(release);
+    t.mock.method(console, "error", () =>
+        assert.fail("Translations must use the logging gateway"),
+    );
     let restarting = true;
     installI18nEnvironment(() =>
         restarting
@@ -50,6 +60,14 @@ test("an HTML response during restart cannot poison a component translation cach
     };
     const load = () => extendI18n(base, "/static/gateways/example/languages");
     const unavailable = await load();
+    assert.ok(
+        logs.some(
+            (entry) =>
+                entry.level === "error" &&
+                entry.message === "translation_bundle_load_failed" &&
+                entry.meta.operation === "loadTranslationBundle",
+        ),
+    );
     assert.throws(() => unavailable.t("title"), {
         code: "missing_translation",
     });

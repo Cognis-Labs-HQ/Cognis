@@ -482,7 +482,14 @@ test("mutable public assets return cached bytes immediately, coalesce refreshes 
         await (await fixture.request(path)).text(),
         "updated toast styles",
     );
-    assert.equal(fixture.messages.length, 0);
+    assert.deepEqual(
+        fixture.messages.map((entry) => entry.type),
+        ["COGNIS_LOG"],
+    );
+    assert.equal(
+        fixture.messages[0].entry.message,
+        "cached_public_asset_retained",
+    );
 });
 
 test("an authoritative public asset denial replaces cached access with the current server response", async () => {

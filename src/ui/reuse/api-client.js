@@ -1,4 +1,3 @@
-import { isOffline, offlineEnabled, setOffline } from "./offline-state.js";
 /**
  * Authenticated fetch wrapper. Reads the Bearer token from localStorage
  * and attaches it as an Authorization header on every request.
@@ -13,6 +12,9 @@ import { isOffline, offlineEnabled, setOffline } from "./offline-state.js";
  * @param {RequestInit & { accessToken?: string, suppressAccessDeniedEvent?: boolean, suppressConnectionRecoveryToast?: boolean }} [options]
  * @returns {Promise<Response>}
  */
+
+import { log } from "./diagnostics.js";
+import { isOffline, offlineEnabled, setOffline } from "./offline-state.js";
 import { showToast } from "./toast.js";
 
 const RETRYABLE_SERVER_STATUS_CODES = new Set([502, 503, 504]);
@@ -140,8 +142,8 @@ async function signalConnectionFailure(error) {
     markConnectionRecoveryFailure(error);
     if (offlineEnabled()) {
         setOffline(true);
-        console.info("[offline] connection lost", {
-            component: "ui",
+        log("info", "connection_lost", {
+            component: "core",
             operation: "enterOffline",
         });
         return;

@@ -38,6 +38,7 @@ import { registerPageRedraw } from "./page-redraw.js";
  * @param {HTMLElement} root — the #app element.
  * @returns {void}
  */
+import { reportClientError } from "./error-reporting.js";
 
 import { isOffline, offlineWorkerRequest } from "./offline-state.js";
 import {
@@ -706,7 +707,7 @@ export function invalidateSpaRouteCache() {
                 !isOffline() &&
                 offlineWorkerRequest("COGNIS_REFRESH_OFFLINE_ROUTES"),
         )
-        .catch(console.error);
+        .catch(reportClientError);
     routerState.allRoutes = null;
     routerState.allRoutesPromise = null;
 }

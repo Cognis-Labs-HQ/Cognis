@@ -40,7 +40,10 @@ function fixture() {
                     "../../../../ui/reuse/ui-language-state.js",
                     import.meta.url,
                 ),
-                {},
+                {
+                    "./diagnostics.js":
+                        host.imports["/static/reuse/diagnostics.js"],
+                },
                 globals,
             ),
         },

@@ -4,6 +4,10 @@ The public interfaces and operational rules of UI.
 
 ## Interfaces
 
+Diagnostics are published through `ui:log`; output policy belongs to the [Logging Gateway](/docs/gateways/logging/technical).
+
+`reportClientError(error)` accepts an Error or structured context and publishes through gateway diagnostics. Caller-selected local logger overrides are removed; configure output in the logging gateway.
+
 UIRegistry publishes static directories, navbar plugins, administration sections and page extensions. Browser providers register capabilities through uiCtx and own their cleanup signal; page contributions render through the shared Page Composer.
 
 ## Configuration

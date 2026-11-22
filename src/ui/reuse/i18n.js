@@ -1,4 +1,3 @@
-import { activeUiLanguage, enabledUiLanguages } from "./ui-language-state.js";
 /**
  * Lightweight i18n layer backed by per-locale strings.xml files.
  *
@@ -25,7 +24,10 @@ import { activeUiLanguage, enabledUiLanguages } from "./ui-language-state.js";
  *   i18n.t('ui.reuse.save');   // → 'Guardar'
  *   applyStaticTranslations(i18n);
  */
+
+import { activeUiLanguage, enabledUiLanguages } from "./ui-language-state.js";
 import { apiFetch, requestTargetsApi } from "./api-client.js";
+import { log } from "./diagnostics.js";
 
 export const DEFAULT_LOCALE = "en";
 const STRINGS_BASE_PATH = "/static/languages";
@@ -360,7 +362,7 @@ async function loadLocalizedStrings(activeLocale, pathForLocale, revision) {
             try {
                 return await readTranslationBundle(path, revision);
             } catch (error) {
-                console.error("[i18n] translation_bundle_load_failed", {
+                log("error", "translation_bundle_load_failed", {
                     component: "core",
                     operation: "loadTranslationBundle",
                     locale,
@@ -457,7 +459,7 @@ export async function createI18n(options = {}) {
                     strings.set(key, value);
             });
         } catch (error) {
-            console.error("[i18n] translation_bundle_load_failed", {
+            log("error", "translation_bundle_load_failed", {
                 component: "core",
                 operation: "loadCoreTranslationBundle",
                 locale,

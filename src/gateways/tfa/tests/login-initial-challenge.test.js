@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 
-function clientFixture() {
+function clientFixture({ invalidResend = false } = {}) {
     class Element {
         hidden = false;
         childElementCount = 1;
@@ -38,12 +38,16 @@ function clientFixture() {
             "#login-tfa-resend-action",
         ].map((selector) => [selector, new Element()]),
     );
+    if (invalidResend) elements.set("#login-tfa-resend-action", {});
     const root = { querySelector: (selector) => elements.get(selector) };
     const toasts = [];
     const logs = [];
     const exports = loadTestModule(
         new URL("../ui/login-flow.js", import.meta.url),
         {
+            "/static/reuse/diagnostics.js": {
+                log: (...args) => logs.push(structuredClone(args)),
+            },
             "/static/reuse/auth-setup-route.js": {
                 redirectToRequiredTfaSetup() {},
             },
@@ -67,7 +71,14 @@ function clientFixture() {
                 },
                 clearInterval() {},
             },
-            console: { warn() {}, error: (...args) => logs.push(args) },
+            console: {
+                warn() {
+                    assert.fail("TFA must use the logging gateway");
+                },
+                error() {
+                    assert.fail("TFA must use the logging gateway");
+                },
+            },
             Date,
             Map,
             Set,
@@ -199,4 +210,23 @@ test("selecting email after an authenticator requests its first challenge", asyn
         .children[1].listeners.get("click")({ preventDefault() {} });
     await new Promise(setImmediate);
     assert.equal(requests, 1);
+});
+
+test("an invalid resend control reports one structured gateway diagnostic", async () => {
+    const host = clientFixture({ invalidResend: true });
+    const client = await host.createTfaLoginClient({
+        baseI18n: { t: (key) => key },
+        root: host.root,
+    });
+    await client.switchToTfaPrompt({
+        loginAttemptId: "attempt",
+        methods: [{ id: "totp", loginUi: {} }],
+    });
+    assert.deepEqual(host.logs, [
+        [
+            "warn",
+            "invalid_resend_control",
+            { component: "tfa", operation: "resolveResendControl" },
+        ],
+    ]);
 });

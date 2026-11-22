@@ -3,6 +3,8 @@
  * Exports: offlineEnabled, isOffline, isOfflineTransition, setOffline, offlineCacheGeneration and offlineWorkerRequest.
  * @example if (isOffline()) return;
  */
+
+import { log } from "./diagnostics.js";
 const stateKey = Symbol.for("cognis.offlineState");
 const state = (globalThis[stateKey] ??= { offline: false });
 
@@ -25,7 +27,8 @@ export function offlineEnabled() {
         );
         return preferences?.offlineEnabled !== false;
     } catch (error) {
-        console.error("[offline] preference read failed", {
+        log("error", "offline_preference_read_failed", {
+            component: "core",
             operation: "readPreference",
         });
         return true;
@@ -167,7 +170,11 @@ if (
         void offlineWorkerRequest("COGNIS_OFFLINE_PREFERENCE", {
             enabled: offlineEnabled(),
         }).catch((error) =>
-            console.error("[offline] preference sync failed", error),
+            log("error", "offline_preference_sync_failed", {
+                component: "core",
+                operation: "syncOfflinePreference",
+                errorName: error?.name,
+            }),
         );
     });
     window.addEventListener("storage", (event) => {
@@ -177,7 +184,11 @@ if (
             void offlineWorkerRequest("COGNIS_OFFLINE_PREFERENCE", {
                 enabled: offlineEnabled(),
             }).catch((error) =>
-                console.error("[offline] preference sync failed", error),
+                log("error", "offline_preference_sync_failed", {
+                    component: "core",
+                    operation: "syncOfflinePreference",
+                    errorName: error?.name,
+                }),
             );
         }
         if (
@@ -187,7 +198,11 @@ if (
             state.cacheGeneration = offlineCacheGeneration() + 1;
             void offlineWorkerRequest("COGNIS_INVALIDATE_OFFLINE_ROUTES").catch(
                 (error) => {
-                    console.error("[offline] account cleanup failed", error);
+                    log("error", "offline_account_cleanup_failed", {
+                        component: "core",
+                        operation: "cleanupOfflineAccount",
+                        errorName: error?.name,
+                    });
                 },
             );
         }
@@ -235,13 +250,11 @@ async function restoreConnection() {
             await Promise.all(tasks);
             void offlineWorkerRequest("COGNIS_REFRESH_OFFLINE_ROUTES").catch(
                 (error) => {
-                    console.error(
-                        "[offline] recovery cache maintenance failed",
-                        {
-                            operation: "refreshAfterRecovery",
-                            code: error?.message,
-                        },
-                    );
+                    log("error", "offline_recovery_cache_maintenance_failed", {
+                        component: "core",
+                        operation: "refreshAfterRecovery",
+                        errorName: error?.name,
+                    });
                 },
             );
             window.dispatchEvent(new CustomEvent("cognis:connection-restored"));
@@ -250,13 +263,15 @@ async function restoreConnection() {
         }
     } catch (error) {
         if (reachable) {
-            console.error("[offline] session recovery failed", {
+            log("error", "offline_session_recovery_failed", {
+                component: "core",
                 operation: "restoreSession",
                 errorName: error?.name,
             });
             return false;
         }
-        console.info("[offline] server still unavailable", {
+        log("info", "offline_server_unavailable", {
+            component: "core",
             operation: "recoveryProbe",
         });
     }

@@ -4,6 +4,10 @@ Antarmuka publik dan aturan operasional UI.
 
 ## Antarmuka
 
+Diagnostik diterbitkan melalui `ui:log`; kebijakan keluaran dimiliki oleh [Gateway Logging](/docs/gateways/logging/technical).
+
+`reportClientError(error)` menerima objek Error atau konteks terstruktur dan menerbitkannya melalui diagnostik gateway. Penggantian logger lokal oleh pemanggil dihapus; konfigurasi keluaran dilakukan melalui gateway logging.
+
 UIRegistry menerbitkan direktori aset, plugin navigasi, bagian administrasi, dan perluasan halaman. Penyedia peramban memakai uiCtx serta sinyal pembersihan; halaman memakai Page Composer.
 
 ## Konfigurasi

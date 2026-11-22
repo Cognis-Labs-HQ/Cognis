@@ -16,6 +16,7 @@ import { uiCtx } from "./ui-ctx.js";
  * const routes = await loadSpaRoutes();
  * ```
  */
+import { reportClientError } from "./error-reporting.js";
 
 import { isOffline, offlineWorkerRequest } from "./offline-state.js";
 import { apiFetch } from "./api-client.js";
@@ -167,7 +168,7 @@ export async function loadSpaRoutes() {
                 catalog.routes = normalizedRoutes;
                 void offlineWorkerRequest(
                     "COGNIS_REFRESH_OFFLINE_ROUTES",
-                ).catch(console.error);
+                ).catch(reportClientError);
             }
             return normalizedRoutes;
         } catch {

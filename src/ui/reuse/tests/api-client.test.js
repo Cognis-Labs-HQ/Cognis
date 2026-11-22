@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "./fixtures/diagnostics.js";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -80,12 +81,13 @@ function loadApiClientForTests({
     vm.createContext(context);
     const offlineState = loadTestModule(
         new URL("../offline-state.js", import.meta.url),
-        {},
+        { "./diagnostics.js": createDiagnosticFixture() },
         context,
     );
     const apiClient = loadTestModule(
         new URL("../api-client.js", import.meta.url),
         {
+            "./diagnostics.js": createDiagnosticFixture(),
             "./toast.js": context,
             "./offline-state.js": offlineState,
         },

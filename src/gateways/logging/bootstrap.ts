@@ -148,6 +148,7 @@ function createLoggingRoutes(
     getFilePath: () => string,
     log?: BootstrapLog,
     routeContext?: RouteContext,
+    browserConsoleAllowed: (level: LogLevel) => boolean = () => false,
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
@@ -191,7 +192,13 @@ function createLoggingRoutes(
                 source: "browser",
                 accountId: claims.sub,
             });
-            res.writeHead(204);
+            res.writeHead(204, {
+                "x-cognis-log-console": String(
+                    ctx.hasMinRole(claims.role, "admin") &&
+                        browserConsoleAllowed(level),
+                ),
+                "cache-control": "no-store",
+            });
             res.end();
             return true;
         }
@@ -637,6 +644,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             () => logger.getConfiguration().filePath,
             runtimeLog,
             routeContext,
+            (entryLevel) =>
+                LEVEL_PRIORITY[entryLevel] >=
+                LEVEL_PRIORITY[logger.getConfiguration().consoleLevel],
         ),
         "logging",
     );
@@ -694,6 +704,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.uiRegistry?.registerStaticDir("logging", uiDir);
 
     ctx.routeRegistry.registerPrefix("/api/v1/logging", "logging");
+    ctx.uiRegistry?.registerCapabilityProvider({
+        scriptUrl: "/static/gateways/logging/browser.js",
+        providesCapabilities: ["logging:browser"],
+        public: true,
+    });
     ctx.uiRegistry?.registerCapabilityProvider({
         scriptUrl: "/static/gateways/logging/tutorials.js",
         providesCapabilities: ["logging:pageTutorials"],

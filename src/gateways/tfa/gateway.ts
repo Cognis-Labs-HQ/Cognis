@@ -693,6 +693,7 @@ export class CoreTfaGateway {
         retryAfterSeconds?: number;
         resendAvailableAt?: string;
     }> {
+        const log = this.options.log;
         const methods = await this.store.listUserMethods(accountId);
         const configuredMethod = methods.find(
             (method) => method.methodId === methodId && method.enabled,
@@ -707,23 +708,19 @@ export class CoreTfaGateway {
                 configuredMethod.state,
             );
         } catch (error) {
-            this.options.log?.(
-                "error",
-                "Failed to prepare TFA login challenge.",
-                {
-                    component: "tfa-gateway",
-                    operation: "prepare_login_challenge",
-                    accountId,
-                    methodId,
-                    error:
-                        error instanceof Error ? error.message : String(error),
-                },
-            );
+            log?.("error", "Failed to prepare TFA login challenge.", {
+                component: "tfa-gateway",
+                operation: "prepare_login_challenge",
+                accountId,
+                methodId,
+                errorName: error instanceof Error ? error.name : undefined,
+            });
             return { ready: false, message: "tfa_method_unavailable" };
         }
     }
 
     async getLoginMethods(accountId: string): Promise<TfaLoginMethod[]> {
+        const log = this.options.log;
         const configuredMethods = await this.store.listUserMethods(accountId);
         const enabledConfiguredMethods = configuredMethods
             .filter((method) => method.enabled)
@@ -774,7 +771,7 @@ export class CoreTfaGateway {
                                 : {}),
                         };
                     } catch (error) {
-                        this.options.log?.(
+                        log?.(
                             "error",
                             "Failed to prepare TFA login challenge.",
                             {
@@ -782,10 +779,10 @@ export class CoreTfaGateway {
                                 operation: "prepare_login_challenge",
                                 accountId,
                                 methodId: method.methodId,
-                                error:
+                                errorName:
                                     error instanceof Error
-                                        ? error.message
-                                        : String(error),
+                                        ? error.name
+                                        : undefined,
                             },
                         );
                         return null;
@@ -832,6 +829,7 @@ export class CoreTfaGateway {
     }
 
     private async notifyLowRecoveryCodeCount(accountId: string): Promise<void> {
+        const log = this.options.log;
         const dispatchNotification = this.options.dispatchNotification;
         if (typeof dispatchNotification !== "function") {
             return;
@@ -854,7 +852,7 @@ export class CoreTfaGateway {
                 },
             });
         } catch (error) {
-            this.options.log?.(
+            log?.(
                 "error",
                 "Failed to dispatch low recovery-code notification.",
                 {
@@ -862,8 +860,7 @@ export class CoreTfaGateway {
                     operation: "notify_low_recovery_codes",
                     accountId,
                     remainingCount,
-                    error:
-                        error instanceof Error ? error.message : String(error),
+                    errorName: error instanceof Error ? error.name : undefined,
                 },
             );
         }

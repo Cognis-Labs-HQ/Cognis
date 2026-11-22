@@ -14,6 +14,10 @@ Pemulihan koneksi membatalkan cache terjemahan inti dan komponen sebelum halaman
 
 `tfa:getLoginMethods(accountId)` menyiapkan tantangan hanya saat satu metode tersedia tanpa kode pemulihan yang belum digunakan. Jika tidak, UI login meminta tantangan melalui `POST /api/v1/tfa/login/resend` untuk metode awal dengan `challengeOnSelect` dan pilihan berikutnya yang belum memiliki tantangan. Tantangan dari server digunakan kembali. Kegagalan pengiriman ditampilkan dalam bahasa pengguna; log mencatat metode, akun, kesiapan, dan alasan kegagalan tanpa kode atau isi email.
 
+## Diagnostik Terpusat
+
+Logging terpusat kini mengendalikan pengiriman ke server dan keluaran konsol peramban untuk diagnostik terjemahan, TFA, dan worker luring. Otorisasi gateway dan tingkat keparahan menentukan keluaran peramban; metadata tidak menyertakan kredensial atau pesan galat mentah.
+
 ## Komit
 
 - [996af37783915d3246df5c1fc1044b01c4f46fa1](https://github.com/Cognis-Labs-HQ/Cognis/commit/996af37783915d3246df5c1fc1044b01c4f46fa1)

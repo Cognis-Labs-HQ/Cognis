@@ -1,3 +1,4 @@
+import { reportClientError } from "../error-reporting.js";
 import { uiCtx as flowEngine } from "../ui-ctx.js";
 import { registerPageRedraw } from "../page-redraw.js";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
@@ -125,6 +126,7 @@ function createRouter({
     };
     vm.createContext(sandbox);
     const imports = {
+        "./error-reporting.js": { reportClientError },
         "./page-redraw.js": { registerPageRedraw },
         "./offline-state.js": sandbox,
         "./offline-route-assets.js": { prepareOfflineRouteAssets() {} },

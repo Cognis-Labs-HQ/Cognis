@@ -4,6 +4,10 @@ The public interfaces and operational rules of API.
 
 ## Interfaces
 
+### Provider Discovery
+
+`GET /api/v1/ui/capability-providers` also serves anonymous callers. Without valid claims it returns only providers explicitly marked `public: true` with no role policy; authenticated discovery still applies the caller’s role. Responses are not cached, and the browser reloads discovery when the session token changes.
+
 ### UI extensions
 
 | Method | Path                                 | Description                           | Auth   |
