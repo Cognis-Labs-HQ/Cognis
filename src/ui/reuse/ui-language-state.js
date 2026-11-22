@@ -1,6 +1,9 @@
 /** Keep the displayed locale separate from the account's configured language order. */
 
-import { log } from "./diagnostics.js";
+import { bindCapability } from "./capabilities.js";
+
+const log = bindCapability("ui:log");
+
 const selection = (globalThis[Symbol.for("cognis.uiLanguageSelection")] ??= {});
 const identity = () =>
     JSON.stringify([

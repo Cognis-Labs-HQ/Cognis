@@ -1,5 +1,7 @@
-import { log } from "/static/reuse/diagnostics.js";
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { findOverlappingEvents } from "./popup-manager-event-utils.js";
+
+const log = bindCapability("ui:log");
 
 export function createSubmitEvent({
     getMeetingsAvailable,

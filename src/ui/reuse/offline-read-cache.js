@@ -1,4 +1,4 @@
-import { log } from "./diagnostics.js";
+import { bindCapability } from "./capabilities.js";
 import { offlinePolicy } from "./offline-policy.js";
 /**
  * Bounded, session-only snapshots for explicitly selected lightweight reads.
@@ -13,6 +13,8 @@ import {
     offlineEnabled,
     offlineCacheGeneration,
 } from "./offline-state.js";
+
+const log = bindCapability("ui:log");
 
 export function createOfflineReadCache({
     signal,

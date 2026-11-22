@@ -14,7 +14,7 @@ test("login submission shows loading during a delayed request, prevents duplicat
     const { createLoginSubmitHandler } = loadTestModule(
         new URL("../../ui/login-page/submit.js", import.meta.url),
         {
-            "/static/reuse/diagnostics.js": createDiagnosticFixture(),
+            "/static/reuse/capabilities.js": createDiagnosticFixture(),
             "/static/reuse/page-entry.js": {
                 beginPageLoading: () => {
                     loading++;

@@ -86,7 +86,7 @@ test("runtime error handlers ignore benign ResizeObserver loop errors", async ()
     context.__testExports = loadTestModule(
         new URL("../../reuse/runtime-error-popup.js", import.meta.url),
         {
-            "./diagnostics.js": createDiagnosticFixture(),
+            "./capabilities.js": createDiagnosticFixture(),
             "./ui-ctx.js": context,
             "./popup.js": context,
             "./api-client.js": context,

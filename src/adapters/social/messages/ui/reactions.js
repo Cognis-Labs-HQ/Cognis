@@ -1,10 +1,12 @@
-import { log } from "/static/reuse/diagnostics.js";
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { nextReactionState } from "./reaction-state.js";
 import { fetchEmojiCatalog } from "./emoji-catalog.js";
 import { messagesFetch as apiFetch } from "./offline-client.js";
 import { createAnchoredPopup, openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { resolveMemberDisplayName } from "/static/reuse/member-display-name.js";
+
+const log = bindCapability("ui:log");
 
 const MAX_EMOJI_PICKER_DISPLAY_COUNT = 80;
 

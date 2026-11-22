@@ -1,9 +1,9 @@
-import { log } from "/static/reuse/diagnostics.js";
+import { CONSOLE_LEVELS } from "./reuse/levels.js";
 /** Routes browser console calls through gateway policy without printing directly. */
-export function captureConsole(target = console) {
+export function captureConsole(log, target = console) {
     const originals = new Map();
     const wrappers = new Map();
-    for (const method of ["debug", "info", "log", "warn", "error"]) {
+    for (const [method, level] of Object.entries(CONSOLE_LEVELS)) {
         if (typeof target[method] !== "function") continue;
         const original = target[method].bind(target);
         const wrapper = (...args) => {
@@ -20,7 +20,7 @@ export function captureConsole(target = console) {
                 )
                     Object.assign(meta, value);
             }
-            void log(method === "log" ? "info" : method, message, meta);
+            void log(level, message, meta);
         };
         originals.set(method, original);
         wrappers.set(method, { original: target[method], wrapper });

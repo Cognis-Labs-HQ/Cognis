@@ -48,7 +48,7 @@ function setup(context, { fail = false } = {}) {
     const { createLanguageRedraw } = loadTestModule(
         new URL("../../app/settings/language-redraw.js", import.meta.url),
         {
-            "../../reuse/diagnostics.js": createDiagnosticFixture(errors),
+            "../../reuse/capabilities.js": createDiagnosticFixture(errors),
             "../../reuse/ui-language-catalog.js": {
                 changeUiLanguage: async (locale) => {
                     attempts.push(locale);

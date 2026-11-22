@@ -1,4 +1,5 @@
-import { log } from "../../reuse/diagnostics.js";
+import { bindCapability } from "../../reuse/capabilities.js";
+
 import { guides } from "./guides.js";
 import { ensurePageStylesheet } from "../../reuse/page-styles.js";
 import { createCollapsibleSectionComposer } from "../../reuse/collapsible-section-composer.js";
@@ -19,6 +20,8 @@ import {
     getRoleLabel,
     hasMinAccessRole,
 } from "../../reuse/access-role.js";
+
+const log = bindCapability("ui:log");
 
 let root = null;
 let i18n = null;

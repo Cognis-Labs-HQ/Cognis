@@ -1,9 +1,11 @@
-import { log } from "/static/reuse/diagnostics.js";
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { hexToBytes } from "/static/reuse/crypto-utils.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { registerSearchIndex } from "/static/reuse/search-util/popup.js";
 import { formatDate } from "/static/reuse/timestamp.js";
 import { loadChatRoomKey } from "../chat-loading.js";
+
+const log = bindCapability("ui:log");
 
 export const componentSearchId = "social-messages";
 

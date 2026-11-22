@@ -1,8 +1,8 @@
 /**
- * Publishes host feedback and gateway-routed diagnostic capabilities to browser components.
+ * Publishes host feedback capabilities to browser components.
  *
  * Public exports:
- * - `registerFeedbackCapabilities()` — registers toast, error-popup, and diagnostic functions on `uiCtx`.
+ * - `registerFeedbackCapabilities()` — registers toast and error-popup functions on `uiCtx`.
  *
  * @example
  * ```js
@@ -14,7 +14,6 @@
  * ```
  */
 
-import { log } from "./diagnostics.js";
 import { openRuntimeErrorPopup } from "./runtime-error-popup.js";
 import { showToast } from "./toast.js";
 import { uiCtx } from "./ui-ctx.js";
@@ -27,7 +26,6 @@ import { uiCtx } from "./ui-ctx.js";
 export function registerFeedbackCapabilities() {
     uiCtx.capabilities.contribute("ui:showToast", showToast);
     uiCtx.capabilities.contribute("ui:openErrorPopup", openRuntimeErrorPopup);
-    uiCtx.capabilities.contribute("ui:log", log);
 }
 
 registerFeedbackCapabilities();

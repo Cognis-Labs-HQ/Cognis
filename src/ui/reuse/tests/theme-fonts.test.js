@@ -10,7 +10,7 @@ test("theme application completes while optional web fonts remain pending", () =
     const { applyTheme } = loadTestModule(
         new URL("../theme-toggle.js", import.meta.url),
         {
-            "./diagnostics.js": createDiagnosticFixture(),
+            "./capabilities.js": createDiagnosticFixture(),
             "./page-styles.js": {
                 ensurePersistentStylesheet: (href) => {
                     requested.push(href);

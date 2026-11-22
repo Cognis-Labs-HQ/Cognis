@@ -1,4 +1,4 @@
-import { log } from "/static/reuse/diagnostics.js";
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { showToast } from "/static/reuse/toast.js";
@@ -12,6 +12,8 @@ import {
     renderSecretVisibilityField,
 } from "/static/reuse/secret-visibility-toggle.js";
 import { KEYRING_RELOCK_OPTIONS } from "./relock-options.js";
+
+const log = bindCapability("ui:log");
 export function createSettingsSection({ i18n, root, signal }) {
     signal?.throwIfAborted();
     const settingsRoot = root ?? document;

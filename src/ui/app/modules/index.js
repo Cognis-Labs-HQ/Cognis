@@ -1,4 +1,5 @@
-import { log } from "../../reuse/diagnostics.js";
+import { bindCapability } from "../../reuse/capabilities.js";
+
 import { guides } from "./guides.js";
 import { formatModuleTag } from "./filters.js";
 import {
@@ -76,6 +77,8 @@ import {
     renderRepositoryLink as renderRepository,
     renderRestartWarning as renderRestart,
 } from "./detail-rendering.js";
+
+const log = bindCapability("ui:log");
 
 let i18n;
 let composer;

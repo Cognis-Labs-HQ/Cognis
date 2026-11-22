@@ -1,4 +1,4 @@
-import { log } from "/static/reuse/diagnostics.js";
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { guides } from "./guides.js";
 import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
@@ -21,6 +21,8 @@ import {
 } from "../../reuse/share-api.js";
 import { navigateAccountShare } from "../../received-share-action.js";
 import { publishShareRevoked } from "../../session-events.js";
+
+const log = bindCapability("ui:log");
 
 let markupTemplates = null;
 let deleteConfirmationPending = false;

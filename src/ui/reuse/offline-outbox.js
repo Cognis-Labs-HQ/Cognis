@@ -6,7 +6,10 @@
  * @returns {object} Register, submit, flush and clear operations.
  */
 
-import { log as defaultLog } from "./diagnostics.js";
+import { bindCapability } from "./capabilities.js";
+
+const defaultLog = bindCapability("ui:log");
+
 const STORAGE_KEY = "cognis_offline_outbox";
 const MAX_ITEMS = 1000;
 const MAX_BYTES = 1_000_000;

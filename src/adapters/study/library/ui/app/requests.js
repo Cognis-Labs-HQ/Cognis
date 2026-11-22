@@ -1,4 +1,4 @@
-import { log } from "/static/reuse/diagnostics.js";
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { isOffline } from "/static/reuse/offline-state.js";
 import { renderRequestPreview } from "./request-preview.js";
 import { openPopup } from "/static/reuse/popup.js";
@@ -12,6 +12,8 @@ import {
     withdrawLibraryPromotion,
 } from "/static/gateways/study/library-client.js";
 import { renderScope } from "./presentation.js";
+
+const log = bindCapability("ui:log");
 
 export async function loadLibraryRequests(i18n) {
     if (isOffline()) return [];

@@ -6,7 +6,9 @@
  * @param {Record<string, unknown> | Error} error Failure or safe diagnostic context.
  * @returns {Promise<boolean>} Whether the gateway accepted the event.
  */
-import { log } from "./diagnostics.js";
+import { bindCapability } from "./capabilities.js";
+
+const log = bindCapability("ui:log");
 
 export function reportClientError(error) {
     const context = error instanceof Error ? { errorName: error.name } : error;

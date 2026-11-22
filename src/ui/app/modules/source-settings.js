@@ -1,4 +1,5 @@
-import { log } from "../../reuse/diagnostics.js";
+import { bindCapability } from "../../reuse/capabilities.js";
+
 import { createFormBuilder } from "../../reuse/form-builder.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { renderInfoTooltip } from "../../reuse/info-tooltip.js";
@@ -11,6 +12,8 @@ import {
     saveModuleMarketplaceSettings,
     saveModuleSource,
 } from "./api.js";
+
+const log = bindCapability("ui:log");
 
 let sources = [];
 let sourceFormBuilder = null;

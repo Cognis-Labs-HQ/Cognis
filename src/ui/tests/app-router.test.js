@@ -163,7 +163,7 @@ test("route invalidation prevents in-flight anonymous loads from restoring stale
     const load = () =>
         loadTestModule(
             new URL("../reuse/spa-route-registry.js", import.meta.url),
-            { ...imports, "./diagnostics.js": createDiagnosticFixture() },
+            { ...imports, "./capabilities.js": createDiagnosticFixture() },
         );
     const first = load();
     const old = first.loadSpaRoutes();

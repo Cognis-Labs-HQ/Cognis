@@ -13,7 +13,7 @@
  * @module notify-internal/navbar-plugin
  */
 
-import { log } from "/static/reuse/diagnostics.js";
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { transientSurfaces } from "/static/reuse/transient-surfaces.js";
 import { createI18n } from "/static/reuse/i18n.js";
 import { apiFetch } from "/static/reuse/api-client.js";
@@ -26,6 +26,8 @@ import { showToast } from "/static/reuse/toast.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { hexToBytes } from "/static/reuse/crypto-utils.js";
 import { renderNotificationItem as renderItem } from "./notification-item.js";
+
+const log = bindCapability("ui:log");
 
 const POLL_INTERVAL_VISIBLE_MS = 10_000;
 const POLL_INTERVAL_HIDDEN_MS = 30_000;

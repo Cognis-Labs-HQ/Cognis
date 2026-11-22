@@ -10,7 +10,7 @@ const events = [];
 const { prepareOfflineRouteAssets } = loadTestModule(
     new URL("../offline-route-assets.js", import.meta.url),
     {
-        "./diagnostics.js": createDiagnosticFixture(),
+        "./capabilities.js": createDiagnosticFixture(),
         "./ui-ctx.js": { uiCtx },
         "./offline-state.js": {
             isOffline: () => offline,
@@ -75,7 +75,7 @@ test("a separately loaded utility reuses the existing ctx flow and cache capabil
     const duplicate = loadTestModule(
         new URL("../offline-route-assets.js", import.meta.url),
         {
-            "./diagnostics.js": createDiagnosticFixture(),
+            "./capabilities.js": createDiagnosticFixture(),
             "./ui-ctx.js": { uiCtx },
             "./offline-state.js": {
                 isOffline: () => false,

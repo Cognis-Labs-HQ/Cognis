@@ -1,6 +1,9 @@
 /** Route styles are staged without affecting the visible page, then exchanged at commit. */
 
-import { log } from "./diagnostics.js";
+import { bindCapability } from "./capabilities.js";
+
+const log = bindCapability("ui:log");
+
 const state = (globalThis[Symbol.for("cognis.pageStyles")] ??= {
     entries: new Map(),
     route: new Set(),

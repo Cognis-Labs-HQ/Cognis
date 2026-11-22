@@ -65,3 +65,20 @@ test("the initialization exception cannot authorize route handlers or inline bro
         "src/ui/public/pages/example.html:3",
     ]);
 });
+
+test("browser-accepted script end tags cannot bypass source inspection", (t) => {
+    const directory = mkdtempSync(resolve(tmpdir(), "cognis-console-script-"));
+    t.after(() => rmSync(directory, { recursive: true, force: true }));
+    const destination = resolve(directory, "src/ui/public/pages/example.html");
+    mkdirSync(dirname(destination), { recursive: true });
+    copyFileSync(
+        new URL("./fixtures/script-endings.html.txt", import.meta.url),
+        destination,
+    );
+    assert.deepEqual(
+        consoleLoggingViolations(directory),
+        [1, 3, 4, 5, 7].map(
+            (line) => `src/ui/public/pages/example.html:${line}`,
+        ),
+    );
+});

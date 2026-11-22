@@ -117,7 +117,7 @@ function codeSections(source, extension) {
         comment.replace(/[^\n]/g, " "),
     );
     for (const match of source.matchAll(
-        /<script\b[^>]*>([\s\S]*?)<\/script\s*>/gi,
+        /<script(?=[\t\n\f\r />])(?:[^"'>]|"[^"]*"|'[^']*')*>([\s\S]*?)(?:<\/script(?=[\t\n\f\r />])(?:[^"'>]|"[^"]*"|'[^']*')*>|$)/gi,
     ))
         sections.push({
             source: match[1],

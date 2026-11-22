@@ -1,4 +1,8 @@
-import { log } from "/static/reuse/diagnostics.js";
+import { bindCapability } from "/static/reuse/capabilities.js";
+import {
+    handleProfileAvatarError,
+    hydrateProfileAvatars,
+} from "./runtime-bridges.js";
 import { nextReactionState } from "./reaction-state.js";
 import { isOffline } from "/static/reuse/offline-state.js";
 import { canOpenCachedRoom, selectInitialRoomId } from "./offline-room.js";
@@ -28,14 +32,7 @@ import {
     renderConversationPrompt,
 } from "./room-render.js";
 
-const profileAvatars = () => {
-    const capability = uiCtx.capabilities.get("ui:profileAvatarRenderer");
-    if (!capability) throw new Error("Profile avatar capability unavailable");
-    return capability;
-};
-const handleProfileAvatarError = (event) => profileAvatars().handleError(event);
-const hydrateProfileAvatars = (container) =>
-    profileAvatars().hydrate(container);
+const log = bindCapability("ui:log");
 
 export function createMessagesRoomState({
     i18n,

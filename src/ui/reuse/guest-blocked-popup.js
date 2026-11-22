@@ -22,13 +22,14 @@
  * @returns {Promise<void>}
  */
 
-import { log } from "./diagnostics.js";
-
+import { bindCapability } from "./capabilities.js";
 import { openPopup } from "./popup.js";
 import { createI18n } from "./i18n.js";
 import { escapeHtml } from "./escape-html.js";
 import { normalizeSameOriginRoutePath } from "./route-path.js";
 import { uiCtx } from "./ui-ctx.js";
+
+const log = bindCapability("ui:log");
 
 export const ALLOWED_GUEST_ROUTE_BASES = ["/share", "/login", "/register"];
 

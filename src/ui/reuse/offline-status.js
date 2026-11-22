@@ -1,4 +1,4 @@
-import { log } from "./diagnostics.js";
+import { bindCapability } from "./capabilities.js";
 import { uiCtx } from "./ui-ctx.js";
 import { beginButtonLoading } from "./button-loading.js";
 import {
@@ -9,6 +9,8 @@ import {
     recheckConnectivity,
 } from "./offline-state.js";
 import { escapeHtml } from "./escape-html.js";
+
+const log = bindCapability("ui:log");
 
 const owners = new WeakMap();
 const refreshFlow = "offline:refreshPage";

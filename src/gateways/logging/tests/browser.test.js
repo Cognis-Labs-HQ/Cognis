@@ -1,3 +1,4 @@
+import { CONSOLE_LEVELS } from "../ui/reuse/levels.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
@@ -5,7 +6,9 @@ import { normalizeDiagnostic } from "../ui/entry.js";
 import { safeMetadata } from "../ui/metadata.js";
 import { uiCtx } from "../../../ui/reuse/ui-ctx.js";
 import { createProviderLifecycle } from "../../../ui/reuse/provider-lifecycle.js";
-import { log, subscribeDiagnostics } from "../../../ui/reuse/diagnostics.js";
+import { bindCapability } from "../../../ui/reuse/capabilities.js";
+
+const log = bindCapability("ui:log");
 
 async function fixture(t, { failHandshake = false } = {}) {
     let token = "test-token";
@@ -21,7 +24,7 @@ async function fixture(t, { failHandshake = false } = {}) {
         },
     };
     const consoleTarget = Object.fromEntries(
-        ["debug", "info", "warn", "error", "log"].map((level) => [
+        Object.keys(CONSOLE_LEVELS).map((level) => [
             level,
             (...args) => output.push({ level, args }),
         ]),
@@ -32,7 +35,12 @@ async function fixture(t, { failHandshake = false } = {}) {
         {
             "./console.js": loadTestModule(
                 new URL("../ui/console.js", import.meta.url),
-                { "/static/reuse/diagnostics.js": { log } },
+                {
+                    "/static/reuse/capabilities.js": {
+                        bindCapability: () => log,
+                    },
+                    "./reuse/levels.js": { CONSOLE_LEVELS },
+                },
                 { console: consoleTarget },
             ),
             "./entry.js": { normalizeDiagnostic },
@@ -53,7 +61,6 @@ async function fixture(t, { failHandshake = false } = {}) {
                     },
                 },
             ),
-            "/static/reuse/diagnostics.js": { subscribeDiagnostics },
         },
         {
             globalThis: {
@@ -220,4 +227,25 @@ test("recent diagnostics remain bounded and cannot be mutated by crash-report co
     assert.match(entries.at(-1).message, /^history_34 /);
     entries[0].message = "changed";
     assert.match(recent()[0].message, /^history_5 /);
+});
+
+test("the gateway owns its public log capability and receives deferred calls across remounts", async (t) => {
+    await log("error", "before_provider", { component: "startup" });
+    const host = await fixture(t);
+    await new Promise(setImmediate);
+    assert.equal(typeof uiCtx.capabilities.get("ui:log"), "function");
+    assert.equal(
+        JSON.parse(host.requests.at(-1).options.body).message,
+        "before_provider",
+    );
+    await host.lifecycle.reconcile([]);
+    await log("warn", "between_providers");
+    const count = host.requests.length;
+    await host.lifecycle.reconcile([{ scriptUrl: "/logging-provider.js" }]);
+    await new Promise(setImmediate);
+    assert.equal(host.requests.length, count + 1);
+    assert.equal(
+        JSON.parse(host.requests.at(-1).options.body).message,
+        "between_providers",
+    );
 });

@@ -11,6 +11,8 @@ import {
     RequestRecorder,
     ResponseRecorder,
 } from "./fixtures/runtime.js";
+import { isLogLevel } from "../ui/reuse/levels.js";
+import type { LogLevel } from "../ui/reuse/levels.js";
 import type { Logger } from "../logger.js";
 
 test("logging gateway bootstrap registers admin logs section and static UI script", async () => {
@@ -155,12 +157,9 @@ test("logging adapter level overrides reconfigure the running logger immediately
         assert.equal(logger.getConfiguration().consoleLevel, "debug");
         assert.equal(logger.getConfiguration().consoleFormat, "json");
         const runtimeLog =
-            ctx.capabilities.get<
-                (
-                    level: "debug" | "info" | "warn" | "error",
-                    message: string,
-                ) => void
-            >("logging:log");
+            ctx.capabilities.get<(level: LogLevel, message: string) => void>(
+                "logging:log",
+            );
         const consoleWrites: string[] = [];
         const originalStdoutWrite = process.stdout.write.bind(process.stdout);
         process.stdout.write = ((chunk: string | Uint8Array) => {
@@ -272,9 +271,7 @@ test("logging adapter overrides survive a gateway restart", async () => {
     const resetContext = await makeContext(dbExecutor);
     await bootstrap(resetContext as any);
     const resetLogger = resetContext.capabilities.get<Logger>("logging:logger");
-    const expectedLevel = ["debug", "info", "warn", "error"].includes(
-        process.env.LOG_LEVEL ?? "",
-    )
+    const expectedLevel = isLogLevel(process.env.LOG_LEVEL)
         ? process.env.LOG_LEVEL
         : "info";
     const expectedFormat =

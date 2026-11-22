@@ -65,6 +65,8 @@ Adapter mendeklarasikan metadata dan skema. Akun mengelola metode terkonfirmasi;
 
 ## Perilaku
 
+Formulir mengembalikan ID percobaan masuk sebelum pengiriman tantangan selesai, sehingga autentikator dan kode pemulihan tetap dapat digunakan saat email tertunda. Permintaan awal dan kirim ulang dibatasi 15 detik. Metode yang sedang menunggu pengiriman tidak dapat memulai permintaan duplikat. Membuka formulir baru membatalkan permintaan sebelumnya dan mengganti penangan kirim ulang; respons terlambat tidak mengubah formulir baru atau metode yang dipilih.
+
 ### TFA Gateway
 
 Sumber bahasa adapter ditemukan dari metode terpasang, bukan daftar penyedia tetap. Metode melaporkan `invalid_verification_code` melalui kontrak kesalahan bersama; konfigurasi penerbit menjadi milik adapter.

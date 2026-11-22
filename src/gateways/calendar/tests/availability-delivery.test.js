@@ -11,7 +11,7 @@ test(
         const client = loadTestModule(
             new URL("../ui/calendar-api.js", import.meta.url),
             {
-                "/static/reuse/diagnostics.js": createDiagnosticFixture(),
+                "/static/reuse/capabilities.js": createDiagnosticFixture(),
                 "./offline-client.js": {
                     calendarFetch: async () =>
                         Response.json({ data: { id: "event" } }),

@@ -64,9 +64,13 @@ Die DB-Gateway-Ereignisse verwenden ebenfalls den gemeinsamen Logger, protokolli
 
 ## Verhalten
 
+`ui/reuse/levels.json` ist der einzige Katalog für Schweregradprioritäten und Konsolen-Aliasse. Das gemeinsame Modul leitet erlaubte Stufen, Zugehörigkeitsprüfungen und Konsolenzuordnungen daraus ab; Serverfilter, Browserannahme und Konsolenerfassung verwenden diese Definitionen gemeinsam.
+
 ### Zentrale Browserdiagnose
 
-Der öffentliche Browseranbieter stellt `logging:browser` bereit und verwaltet den Ablauf `logging:emit` (`validate`, `deliver`, `publish`). Core veröffentlicht Diagnoseereignisse über `ui:log` und puffert höchstens 128 Ereignisse, bis der Anbieter sie übernimmt. Während seiner Laufzeit fängt das Gateway auch Konsolenaufrufe ab; Komponenten können die Browserausgabe nicht durch die Wahl einer Konsolenmethode erzwingen. Metadaten werden begrenzt; Zugangsdaten und unverarbeitete Fehlermeldungen werden entfernt.
+Browseraufrufer binden `ui:log` über die gemeinsame ctx-Fähigkeitsregistrierung. Der Host hält über alle Bindungen hinweg höchstens 128 aufgeschobene Fähigkeitsaufrufe vor; er besitzt weder eine protokollspezifische Abonnement- noch eine Ausgaberichtlinie. Der Logging-Anbieter stellt `ui:log` für seine begrenzte Laufzeit bereit und verwaltet Prüfung, Verlauf, Übertragung und Konsolenerfassung. Beim Entfernen des Anbieters wird die Fähigkeit freigegeben; aufgeschobene Aufrufe können einen späteren Anbieter ohne Implementierungsimport erreichen.
+
+Der öffentliche Browseranbieter besitzt den Ablauf `logging:emit` (`validate`, `deliver`, `publish`). Metadaten werden begrenzt und Zugangsdaten sowie rohe Fehlermeldungen entfernt.
 
 Service Worker leiten strukturierte `COGNIS_LOG`-Ereignisse an genau ein kontrolliertes Fenster weiter. Ohne verfügbares Fenster bleiben höchstens 64 Ereignisse im Puffer. Der Anbieter akzeptiert Nachrichten ausschließlich vom aktuellen Service-Worker-Controller und entfernt beim Beenden seine Listener, Konsolenumleitung und Ereignisübernahme.
 

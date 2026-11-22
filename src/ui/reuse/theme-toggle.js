@@ -11,8 +11,10 @@
  *   bindThemeToggle({ onThemeChange: async (mode) => savePrefs({ mode }) });
  */
 
-import { log } from "./diagnostics.js";
+import { bindCapability } from "./capabilities.js";
 import { ensurePersistentStylesheet } from "./page-styles.js";
+
+const log = bindCapability("ui:log");
 
 const THEME_KEY = "cognis_theme";
 const TOGGLE_HANDLER_KEY = "__cognisThemeToggleHandler";

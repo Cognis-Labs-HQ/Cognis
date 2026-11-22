@@ -124,7 +124,7 @@ export function loadLibraryUiModule(
     return loadTestModule(
         new URL(`../../ui/${path}`, import.meta.url),
         {
-            "/static/reuse/diagnostics.js": createDiagnosticFixture(),
+            "/static/reuse/capabilities.js": createDiagnosticFixture(),
             ...Object.fromEntries(
                 CONTRACTS[path].map((specifier) => [specifier, dependencies]),
             ),

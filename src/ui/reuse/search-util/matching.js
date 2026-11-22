@@ -8,7 +8,8 @@
  * @module reuse/search-util/matching
  */
 
-import { log } from "../diagnostics.js";
+import { bindCapability } from "../capabilities.js";
+
 import { uiCtx } from "../ui-ctx.js";
 import { search } from "./capability.js";
 import { REGISTERED_SEARCH_CATEGORY_HOOKS } from "./state.js";
@@ -16,6 +17,8 @@ import {
     filterVisibleSearchGroups as filterVisibleGroups,
     isSearchResultVisibleToUser as isVisibleResult,
 } from "./visibility.js";
+
+const log = bindCapability("ui:log");
 export { search } from "./capability.js";
 /**
  * Converts a singular category token into a basic plural form for placeholder

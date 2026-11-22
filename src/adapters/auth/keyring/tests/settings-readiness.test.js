@@ -61,7 +61,7 @@ function fixture({
     const { createSettingsSection } = loadTestModule(
         new URL("../ui/settings.js", import.meta.url),
         {
-            "/static/reuse/diagnostics.js": createDiagnosticFixture(),
+            "/static/reuse/capabilities.js": createDiagnosticFixture(),
             "/static/reuse/escape-html.js": { escapeHtml: String },
             "/static/reuse/popup.js": {
                 openPopup: () =>

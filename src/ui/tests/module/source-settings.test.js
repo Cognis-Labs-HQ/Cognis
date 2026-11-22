@@ -39,7 +39,7 @@ function fixture({ refreshFails = false, abortDuringRead = false } = {}) {
     const { openMarketplaceSettings } = loadTestModule(
         new URL("../../app/modules/source-settings.js", import.meta.url),
         {
-            "../../reuse/diagnostics.js": createDiagnosticFixture(),
+            "../../reuse/capabilities.js": createDiagnosticFixture(),
             "../../reuse/form-builder.js": {
                 createFormBuilder: (_ctx, schema) => {
                     forms.push(schema);

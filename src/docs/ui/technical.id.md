@@ -4,6 +4,8 @@ Antarmuka publik dan aturan operasional UI.
 
 ## Antarmuka
 
+Registri kapabilitas peramban bersama tersedia sebelum inisialisasi kerangka. `bindCapability(id)` menggunakan kontribusi yang dapat dipanggil saat ini dan membatasi pemanggilan awal tertunda seluruh ikatan hingga 128. Kontribusi memiliki kepemilikan eksklusif dan hanya dapat dihapus dengan identitas yang cocok; penyedia memiliki kontrak domain dan pemrosesannya.
+
 Diagnostik diterbitkan melalui `ui:log`; kebijakan keluaran dimiliki oleh [Gateway Logging](/docs/gateways/logging/technical).
 
 `reportClientError(error)` menerima objek Error atau konteks terstruktur dan menerbitkannya melalui diagnostik gateway. Penggantian logger lokal oleh pemanggil dihapus; konfigurasi keluaran dilakukan melalui gateway logging.
@@ -16,7 +18,7 @@ Preferensi akun memilih tema, bahasa, dan font. Katalog komponen menyediakan ter
 
 ## Perilaku
 
-Pemulihan koneksi membatalkan cache terjemahan inti dan komponen sebelum halaman digambar ulang. Permintaan pembaruan mengambil konten server terbaru sambil mempertahankan salinan luring lengkap saat terjadi gangguan. Respons XML yang tidak valid tidak disimpan sehingga pemuatan berikutnya dapat pulih tanpa pemuatan ulang penuh.
+Pembacaan terjemahan biasa langsung menggunakan paket dalam cache, termasuk saat mulai luring. Pemulihan koneksi menandai paket yang pernah dimuat untuk satu pembaruan jaringan; paket yang baru diminta setelahnya tetap memakai cache biasa. XML yang tidak valid dapat dicoba kembali, dan pembacaan berikutnya memaksa pembaruan sampai paket valid diterima. Perubahan revisi yang dideklarasikan juga memperbarui paket yang telah dimuat.
 
 ### Ikhtisar
 

@@ -1,6 +1,8 @@
-import { log } from "./diagnostics.js";
+import { bindCapability } from "./capabilities.js";
 import { escapeHtml } from "./escape-html.js";
 import { ensurePersistentStylesheet } from "./page-styles.js";
+
+const log = bindCapability("ui:log");
 
 /** Render shared top-of-page notices; callers supply sanitized rich text and owned action markup. */
 export function renderTopBanner({

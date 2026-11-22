@@ -1,9 +1,12 @@
-import { log } from "../../reuse/diagnostics.js";
+import { bindCapability } from "../../reuse/capabilities.js";
+
 import { offlinePolicy } from "../../reuse/offline-policy.js";
 import { offlineWorkerRequest } from "../../reuse/offline-state.js";
 import { setOffline } from "../../reuse/offline-state.js";
 import { initRouter, navigateTo } from "../../reuse/app-router.js";
 import { loadWithSpaImportGuard } from "../../reuse/page-entry.js";
+
+const log = bindCapability("ui:log");
 
 void log("info", "offline:restoreShell", {
     component: "ui",

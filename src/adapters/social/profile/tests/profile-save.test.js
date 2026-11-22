@@ -10,7 +10,7 @@ function fixture(receipt, { refreshError } = {}) {
     const { saveProfileFields } = loadTestModule(
         new URL("../ui/profile-save.js", import.meta.url),
         {
-            "/static/reuse/diagnostics.js": createDiagnosticFixture(),
+            "/static/reuse/capabilities.js": createDiagnosticFixture(),
             "./client.js": {
                 profileUiClient: {
                     updateProfile: async () => Response.json(receipt),

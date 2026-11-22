@@ -1,4 +1,4 @@
-import { log } from "/static/reuse/diagnostics.js";
+import { bindCapability } from "/static/reuse/capabilities.js";
 import {
     renderCalendarViewSwitcher,
     mountCalendarViewControls,
@@ -18,6 +18,8 @@ import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createCalendarPopupManager } from "./popup-manager.js";
 import { mount as mountSharedCalendar } from "../share-renderer.js";
 import * as calendarUi from "../calendar-ui-helpers.js";
+
+const log = bindCapability("ui:log");
 
 const SELECTED_VIEW_STORAGE_KEY = "calendar.selectedView";
 

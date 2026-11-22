@@ -49,7 +49,7 @@ test("request previews use the normal card renderer with staged fields and persi
         loadTestModule(
             new URL("../../ui/app/request-preview.js", import.meta.url),
             {
-                "/static/reuse/diagnostics.js": createDiagnosticFixture(),
+                "/static/reuse/capabilities.js": createDiagnosticFixture(),
                 "/static/reuse/toast.js": context,
                 "./cards.js": context,
                 "./presentation.js": context,

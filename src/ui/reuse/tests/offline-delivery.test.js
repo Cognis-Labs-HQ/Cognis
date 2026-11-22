@@ -12,13 +12,13 @@ test("waiting for pending activity cannot send or enqueue a previous account's o
             ]);
             const guard = loadTestModule(
                 new URL("../offline-identity.js", import.meta.url),
-                { "./diagnostics.js": createDiagnosticFixture() },
+                { "./capabilities.js": createDiagnosticFixture() },
                 { localStorage: { getItem: (key) => values.get(key) } },
             );
             const { deliverOrQueue } = loadTestModule(
                 new URL("../offline-delivery.js", import.meta.url),
                 {
-                    "./diagnostics.js": createDiagnosticFixture(),
+                    "./capabilities.js": createDiagnosticFixture(),
                     "./offline-identity.js": guard,
                     "./offline-state.js": {
                         isOffline: () => offline,

@@ -4,6 +4,8 @@
 
 ## Schnittstellen
 
+Die gemeinsame Browser-Fähigkeitsregistrierung steht vor der Shell-Initialisierung bereit. `bindCapability(id)` verwendet den aktuellen aufrufbaren Beitrag und begrenzt aufgeschobene Startaufrufe über alle Bindungen auf 128. Beiträge bleiben exklusiv und können nur mit passender Identität entfernt werden; Anbieter besitzen ihre Fachverträge und Verarbeitung.
+
 Diagnoseereignisse werden über `ui:log` veröffentlicht; die Ausgaberichtlinie gehört dem [Logging-Gateway](/docs/gateways/logging/technical).
 
 `reportClientError(error)` übernimmt ein Error-Objekt oder strukturierten Kontext und veröffentlicht es über die Gateway-Diagnose. Eigene lokale Logger lassen sich nicht mehr übergeben; die Ausgabe wird im Logging-Gateway konfiguriert.
@@ -16,7 +18,7 @@ Kontoeinstellungen wählen Thema, Sprache und Schrift. Komponentenkataloge liefe
 
 ## Verhalten
 
-Bei der Wiederherstellung der Verbindung werden Übersetzungsspeicher vor dem erneuten Seitenaufbau verworfen. Explizite Aktualisierungen laden aktuelle Serverinhalte und behalten bei Ausfällen vollständige Offlinekopien. Ungültige XML-Antworten werden nicht gespeichert; nachfolgende Ladeversuche können ohne vollständiges Neuladen erfolgreich sein.
+Normale Übersetzungsabfragen verwenden vorhandene Pakete sofort, auch beim Offline-Start. Nach der Verbindungswiederherstellung werden bereits geladene Pakete einmal über das Netzwerk aktualisiert; erstmals danach angeforderte Pakete behalten das normale Cache-Verhalten. Ungültiges XML bleibt erneut abrufbar und erzwingt beim nächsten Lesen eine Aktualisierung, bis ein gültiges Paket vorliegt. Eine geänderte deklarierte Revision aktualisiert ebenfalls ein bereits geladenes Paket.
 
 ### Überblick
 

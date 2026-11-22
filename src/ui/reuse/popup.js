@@ -1,4 +1,4 @@
-import { log } from "./diagnostics.js";
+import { bindCapability } from "./capabilities.js";
 import { watchComposerPresentation } from "./page-composer/presentation.js";
 /**
  * Reusable popup / modal dialog.
@@ -115,6 +115,8 @@ import { confirmPopupDiscard } from "./popup/discard-confirmation.js";
 import { createI18n } from "./i18n.js";
 import { lockPageScroll } from "./page-scroll-lock.js";
 import { createFormDirtyTracker } from "./unsaved-changes.js";
+
+const log = bindCapability("ui:log");
 
 /** @typedef {ReturnType<typeof createPopupContentApi> & {updateBody: (body: string | (() => string)) => HTMLElement | null, setPage: (id: string) => boolean, pageId?: string, markDirty: () => void, requestClose?: () => void}} PopupApi */
 

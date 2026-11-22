@@ -10,7 +10,7 @@ export async function loadCalendarMount({ hold, signal }) {
         throw new Error("unexpected calendar dependency");
     };
     const contracts = {
-        "/static/reuse/diagnostics.js": createDiagnosticFixture(),
+        "/static/reuse/capabilities.js": createDiagnosticFixture(),
         "./guides.js": { guides },
         "../calendar-view-controls.js": {
             renderCalendarViewSwitcher: unexpected,

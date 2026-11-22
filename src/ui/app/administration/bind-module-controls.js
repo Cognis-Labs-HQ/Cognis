@@ -1,4 +1,7 @@
-import { log } from "../../reuse/diagnostics.js";
+import { bindCapability } from "../../reuse/capabilities.js";
+
+const log = bindCapability("ui:log");
+
 function refreshAdministrationComposer(getComposer, getElements) {
     getComposer()?.refresh(getElements());
 }

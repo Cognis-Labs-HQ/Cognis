@@ -1,5 +1,7 @@
-import { log } from "/static/reuse/diagnostics.js";
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { beginPageLoading } from "/static/reuse/page-entry.js";
+
+const log = bindCapability("ui:log");
 
 /** Creates one guarded submit handler for native login and TFA verification. */
 export function createLoginSubmitHandler({

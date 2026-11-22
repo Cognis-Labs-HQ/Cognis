@@ -8,19 +8,19 @@ Administrasi hanya menyimpan bagian dengan perubahan tertunda. Kontrol keamanan 
 
 ## Pemulihan Terjemahan
 
-Pemulihan koneksi membatalkan cache terjemahan inti dan komponen sebelum halaman digambar ulang. Permintaan pembaruan mengambil konten server terbaru sambil mempertahankan salinan luring lengkap saat terjadi gangguan. Respons XML yang tidak valid tidak disimpan sehingga pemuatan berikutnya dapat pulih tanpa pemuatan ulang penuh.
+Pemulihan koneksi memperbarui paket terjemahan yang pernah dimuat sebelum menggambar ulang halaman. Pembacaan biasa langsung memakai cache luring; XML tidak valid ditolak dan dicoba kembali dengan pembaruan.
 
 ## Verifikasi Email Awal
 
-`tfa:getLoginMethods(accountId)` menyiapkan tantangan hanya saat satu metode tersedia tanpa kode pemulihan yang belum digunakan. Jika tidak, UI login meminta tantangan melalui `POST /api/v1/tfa/login/resend` untuk metode awal dengan `challengeOnSelect` dan pilihan berikutnya yang belum memiliki tantangan. Tantangan dari server digunakan kembali. Kegagalan pengiriman ditampilkan dalam bahasa pengguna; log mencatat metode, akun, kesiapan, dan alasan kegagalan tanpa kode atau isi email.
+Tantangan email awal diminta jika metode terpilih memerlukan pengiriman. Pengiriman dan kirim ulang dibatasi 15 detik tanpa memblokir autentikator atau kode pemulihan. Permintaan tertunda tidak diduplikasi dan dibatalkan ketika formulir masuk baru dibuka.
 
 ## Diagnostik Terpusat
 
-Logging terpusat kini mengendalikan pengiriman ke server dan keluaran konsol peramban untuk diagnostik terjemahan, TFA, dan worker luring. Otorisasi gateway dan tingkat keparahan menentukan keluaran peramban; metadata tidak menyertakan kredensial atau pesan galat mentah.
+Logging mengendalikan pengiriman server dan tampilan peramban melalui izin gateway dan tingkat keparahan. Server dan peramban memakai satu katalog tingkat, prioritas, dan alias konsol. Metadata tidak menyertakan kredensial atau pesan kesalahan mentah. Gateway menyediakan logging melalui ctx; inti hanya menyediakan kesiapan kapabilitas umum dan pemanggilan tertunda yang dibatasi.
 
 ## Batas Logging
 
-Pemeriksaan sumber mewajibkan logging melalui gateway dalam kode aplikasi dan modul eksternal, termasuk skrip peramban dan penangan peristiwa. Sumber diagnostik menggunakan gateway secara langsung, sedangkan laporan perintah dan build tetap menggunakan keluaran terminal.
+Pemeriksaan sumber mewajibkan logging gateway dalam aplikasi dan modul eksternal, termasuk skrip peramban dan penangan peristiwa. Ekstraksi skrip menangani spasi dan atribut tag penutup yang diterima peramban, pemisah dalam kutipan, dan skrip tanpa penutup. Laporan perintah dan build tetap memakai keluaran terminal.
 
 ## Komit
 

@@ -1,10 +1,10 @@
 import { safeMetadata } from "./metadata.js";
 
-const levels = new Set(["debug", "info", "warn", "error"]);
+import { isLogLevel } from "./reuse/levels.js";
 
 /** Normalize public diagnostics and console-shaped arguments at their gateway. */
 export function normalizeDiagnostic(input) {
-    if (!input || !levels.has(input.level)) return null;
+    if (!input || !isLogLevel(input.level)) return null;
     const values = [input.message, input.meta, ...(input.details ?? [])];
     const messages = values.filter((value) => typeof value === "string");
     const meta = { component: "browser", operation: "diagnostic" };

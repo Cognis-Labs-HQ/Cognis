@@ -37,8 +37,7 @@
  * hook is registered before `index.js` runs the flow.
  */
 
-import { log } from "/static/reuse/diagnostics.js";
-
+import { bindCapability } from "/static/reuse/capabilities.js";
 import "/static/reuse/page-flow-catalog.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { resolveReceivedShare } from "./received-share.js";
@@ -52,6 +51,8 @@ import {
     publishShareRevoked,
 } from "./session-events.js";
 import { stopShareStatusWatch, watchShareStatus } from "./status-monitor.js";
+
+const log = bindCapability("ui:log");
 
 const ACCESS_TOKEN_KEY = "cognis_access_token";
 const PREV_ACCESS_TOKEN_KEY = "cognis_prev_access_token";

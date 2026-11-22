@@ -4,6 +4,8 @@ The public interfaces and operational rules of UI.
 
 ## Interfaces
 
+The shared browser capability registry is available before shell initialization. `bindCapability(id)` resolves the current callable contribution and bounds deferred startup invocations across bindings to 128. Contributions retain exclusive ownership and identity-checked removal; providers own their domain contracts and processing.
+
 Diagnostics are published through `ui:log`; output policy belongs to the [Logging Gateway](/docs/gateways/logging/technical).
 
 `reportClientError(error)` accepts an Error or structured context and publishes through gateway diagnostics. Caller-selected local logger overrides are removed; configure output in the logging gateway.
@@ -16,7 +18,7 @@ Account preferences select theme, language and font. Component catalogs supply t
 
 ## Behavior
 
-Connection recovery invalidates core and component translation snapshots before pages redraw. Explicit bundle refreshes fetch current server content while retaining complete offline snapshots during outages. Non-resource XML responses fail validation and are evicted so a subsequent load can recover without a hard refresh.
+Ordinary translation reads use cached bundles immediately, including during offline startup. Connection recovery marks previously loaded bundles for one network refresh; bundles first requested afterward keep ordinary cache behavior. Invalid XML remains retryable, and its next read forces a refresh until a valid bundle is received. A changed declared revision also refreshes an already loaded bundle.
 
 ### Overview
 

@@ -45,7 +45,7 @@ for (const notifyState of ["absent", "failed", "available"]) {
         const { initGeneralPrefs } = loadTestModule(
             new URL("../../app/settings/general-prefs.js", import.meta.url),
             {
-                "../../reuse/diagnostics.js": createDiagnosticFixture(),
+                "../../reuse/capabilities.js": createDiagnosticFixture(),
                 "../../reuse/escape-html.js": { escapeHtml },
                 "../../reuse/ui-ctx.js": {
                     uiCtx: { capabilities: { get: () => emailClient } },

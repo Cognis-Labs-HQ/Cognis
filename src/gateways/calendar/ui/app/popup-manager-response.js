@@ -1,4 +1,7 @@
-import { log } from "/static/reuse/diagnostics.js";
+import { bindCapability } from "/static/reuse/capabilities.js";
+
+const log = bindCapability("ui:log");
+
 export function createCalendarResponseHandler({
     i18n,
     calendarUi,

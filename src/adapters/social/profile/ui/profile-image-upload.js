@@ -1,9 +1,11 @@
-import { log } from "/static/reuse/diagnostics.js";
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { profileFetch as apiFetch } from "./offline-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { showToast } from "/static/reuse/toast.js";
 import { openImageCropPopup } from "./crop-popup.js";
 import { sourceRectToCoverObjectPositionPercent } from "./image-crop.js";
+
+const log = bindCapability("ui:log");
 
 function clampBannerPanPercent(value) {
     return Math.min(100, Math.max(0, Number(value) || 0));

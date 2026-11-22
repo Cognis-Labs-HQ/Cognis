@@ -4,7 +4,10 @@
  * @example if (isOffline()) return;
  */
 
-import { log } from "./diagnostics.js";
+import { bindCapability } from "./capabilities.js";
+
+const log = bindCapability("ui:log");
+
 const stateKey = Symbol.for("cognis.offlineState");
 const state = (globalThis[stateKey] ??= { offline: false });
 

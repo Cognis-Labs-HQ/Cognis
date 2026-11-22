@@ -1,4 +1,4 @@
-import { log } from "/static/reuse/diagnostics.js";
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { guides } from "./guides.js";
 /**
  * My Classes page — student view for class enrollment management.
@@ -20,6 +20,8 @@ import { showToast } from "/static/reuse/toast.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { navigateTo } from "/static/reuse/app-router.js";
+
+const log = bindCapability("ui:log");
 
 export async function mount(root, { signal } = {}) {
     const i18n = await createI18n({

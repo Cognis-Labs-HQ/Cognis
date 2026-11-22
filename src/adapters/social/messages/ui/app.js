@@ -9,8 +9,7 @@
  * the authenticated user's encrypted keyring and cached for the page lifetime.
  */
 
-import { log } from "/static/reuse/diagnostics.js";
-
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { guides } from "./guides.js";
 
 import { messagesFetch as apiFetch } from "./offline-client.js";
@@ -68,6 +67,8 @@ import {
     requireRoomKey,
     resolveThreadRoomKey,
 } from "./runtime-bridges.js";
+
+const log = bindCapability("ui:log");
 
 export async function mount(root, { signal } = {}) {
     const i18n = await createMessagesI18n();

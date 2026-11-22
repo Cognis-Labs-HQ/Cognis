@@ -19,8 +19,7 @@
  *   await mountWhenDirect(mount);
  */
 
-import { log } from "./diagnostics.js";
-
+import { bindCapability } from "./capabilities.js";
 import loadingFallback from "../languages/en/loading.json" with { type: "json" };
 import { createI18n, readPreferredLanguages } from "./i18n.js";
 import {
@@ -31,6 +30,8 @@ import { uiCtx } from "./ui-ctx.js";
 import "./feedback-capabilities.js";
 import "./floating-window.js";
 import { ensureUiProvidersLoaded } from "./ui-provider-loader.js";
+
+const log = bindCapability("ui:log");
 
 const activePageLoadingTokens = new Set();
 let nextPageLoadingToken = 0;

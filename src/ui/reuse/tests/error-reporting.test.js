@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { reportClientError } from "../error-reporting.js";
-import { subscribeDiagnostics } from "../diagnostics.js";
+import { subscribeDiagnostics } from "../../../tooling/reuse/diagnostic-fixture.ts";
 
 test("client failures and early callbacks reach gateway diagnostics with safe context", async (t) => {
     const entries = [];

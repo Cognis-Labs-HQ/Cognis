@@ -58,7 +58,7 @@ export async function mountUsers(options = {}) {
     const { mount } = await importTestModule(
         new URL("../../../app/users/index.js", import.meta.url),
         {
-            "../../reuse/diagnostics.js": createDiagnosticFixture(),
+            "../../reuse/capabilities.js": createDiagnosticFixture(),
             "./guides.js": { guides },
             "../../reuse/page-styles.js": {
                 ensurePageStylesheet: async () => {},

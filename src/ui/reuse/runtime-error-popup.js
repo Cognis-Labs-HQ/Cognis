@@ -1,4 +1,4 @@
-import { log } from "./diagnostics.js";
+import { bindCapability } from "./capabilities.js";
 import { uiCtx } from "./ui-ctx.js";
 /**
  * Global runtime error reporting popup for dashboard pages.
@@ -45,6 +45,8 @@ import {
     getCurrentRoutePath,
     normalizeSameOriginRoutePath,
 } from "./route-path.js";
+
+const log = bindCapability("ui:log");
 
 const MAX_CONSOLE_ENTRY_COUNT = 30;
 const HANDLED_RESOURCE_FALLBACK = Symbol("handledResourceFallback");

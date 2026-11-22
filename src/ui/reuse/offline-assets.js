@@ -1,10 +1,12 @@
-import { log } from "./diagnostics.js";
+import { bindCapability } from "./capabilities.js";
 import {
     isOffline,
     offlineEnabled,
     offlineWorkerRequest,
 } from "./offline-state.js";
 import { offlinePolicy } from "./offline-policy.js";
+
+const log = bindCapability("ui:log");
 
 /**
  * Prepare public, lazy UI resources without blocking provider or page mounting.

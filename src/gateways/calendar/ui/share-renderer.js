@@ -1,4 +1,4 @@
-import { log } from "/static/reuse/diagnostics.js";
+import { bindCapability } from "/static/reuse/capabilities.js";
 import {
     renderCalendarViewSwitcher,
     mountCalendarViewControls,
@@ -16,6 +16,8 @@ import {
     renderCalendarView,
     toDateTimeLocalValue,
 } from "./calendar-ui-helpers.js";
+
+const log = bindCapability("ui:log");
 
 const reportFailure = (operation, error) =>
     void log("error", "Shared calendar request failed.", {

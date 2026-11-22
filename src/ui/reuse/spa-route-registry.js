@@ -1,4 +1,4 @@
-import { log } from "./diagnostics.js";
+import { bindCapability } from "./capabilities.js";
 import { offlineRouteAvailable } from "./offline-navigation.js";
 import { uiCtx } from "./ui-ctx.js";
 /**
@@ -21,6 +21,8 @@ import { reportClientError } from "./error-reporting.js";
 
 import { isOffline, offlineWorkerRequest } from "./offline-state.js";
 import { apiFetch } from "./api-client.js";
+
+const log = bindCapability("ui:log");
 
 const catalog = uiCtx.capabilities.get("navigation:routeCatalog") ?? {
     routes: null,

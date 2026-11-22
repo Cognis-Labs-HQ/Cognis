@@ -1,9 +1,11 @@
-import { log } from "./diagnostics.js";
+import { bindCapability } from "./capabilities.js";
 import {
     isOffline,
     offlineEnabled,
     offlineCacheGeneration,
 } from "./offline-state.js";
+
+const log = bindCapability("ui:log");
 
 /** Refresh an owner's lightweight snapshots after verified authentication and cache invalidation. */
 export function bindOfflineSnapshotRefresh(ctx, { id, refresh, events = [] }) {

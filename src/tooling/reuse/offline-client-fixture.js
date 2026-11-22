@@ -79,7 +79,7 @@ export function createOfflineClientFixture(send, { window } = {}) {
         },
     };
     const dependency = {
-        "./diagnostics.js": { log },
+        "./capabilities.js": { bindCapability: () => log },
         "./offline-state.js": state,
         "./offline-policy.js": { offlinePolicy: { allows: () => true } },
     };
@@ -122,7 +122,7 @@ export function createOfflineClientFixture(send, { window } = {}) {
     const http = loadTestModule(
         new URL("../../ui/reuse/offline-http-client.js", import.meta.url),
         {
-            "./diagnostics.js": { log },
+            "./capabilities.js": { bindCapability: () => log },
             "./offline-read-cache.js": cache,
             "./offline-delivery.js": delivery,
             "./scoped-actions.js": { registerScopedUiActions },
@@ -133,7 +133,10 @@ export function createOfflineClientFixture(send, { window } = {}) {
     );
     const snapshots = loadTestModule(
         new URL("../../ui/reuse/offline-snapshot.js", import.meta.url),
-        { "./diagnostics.js": { log }, "./offline-state.js": state },
+        {
+            "./capabilities.js": { bindCapability: () => log },
+            "./offline-state.js": state,
+        },
         globals,
     );
     return {
@@ -149,7 +152,7 @@ export function createOfflineClientFixture(send, { window } = {}) {
         ctx,
         outbox,
         imports: {
-            "/static/reuse/diagnostics.js": { log },
+            "/static/reuse/capabilities.js": { bindCapability: () => log },
             "/static/reuse/offline-snapshot.js": snapshots,
             "/static/reuse/offline-identity.js": guard,
             "/static/reuse/offline-http-client.js": http,

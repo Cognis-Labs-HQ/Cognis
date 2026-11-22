@@ -13,11 +13,11 @@ const SOURCE = readFileSync(
 test("tfa login resend action toggles disabled state while cooldown is active", () => {
     assert.match(
         SOURCE,
-        /classList\.toggle\(\s*"auth-text-action--disabled",\s*resendLocked,\s*\)/,
+        /classList\.toggle\(\s*"auth-text-action--disabled",\s*locked,\s*\)/,
     );
     assert.match(
         SOURCE,
-        /setAttribute\(\s*"aria-disabled",\s*resendLocked \? "true" : "false",\s*\)/,
+        /setAttribute\(\s*"aria-disabled",\s*locked \? "true" : "false",\s*\)/,
     );
 });
 
@@ -40,7 +40,7 @@ test("tfa login resend success responses always show the resend success toast", 
     assert.match(SOURCE, /deliveryToastShownOnce = true;/);
     assert.match(
         SOURCE,
-        /setResendStateForMethod\(\s*resolveMethod\(methodId\),\s*\{\s*skipDeliveryToast:\s*true,?\s*\}\s*\)/,
+        /setResendStateForMethod\(\s*selectedMethod\(\),\s*\{\s*skipDeliveryToast:\s*true,?\s*\}\s*\)/,
     );
 });
 

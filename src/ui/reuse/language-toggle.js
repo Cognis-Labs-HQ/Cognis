@@ -12,7 +12,7 @@
  * @returns {Promise<void>}
  */
 
-import { log } from "./diagnostics.js";
+import { bindCapability } from "./capabilities.js";
 import {
     loadUiLanguageCatalog,
     changeUiLanguage,
@@ -20,6 +20,8 @@ import {
 import { activeUiLanguage } from "./ui-language-state.js";
 import { readPreferredLanguages } from "./i18n.js";
 import { loadUiPreferences } from "./ui-preferences.js";
+
+const log = bindCapability("ui:log");
 
 const COMMIT_DELAY_MS = 2000;
 const bindings = (globalThis[Symbol.for("cognis.languageToggleBindings")] ??=

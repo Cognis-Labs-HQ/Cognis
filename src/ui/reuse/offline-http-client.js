@@ -7,12 +7,14 @@
  * @returns {((path: string, options?: object) => Promise<Response>) & {hasCachedRead: (path: string) => boolean}} Scoped request executor and snapshot readiness.
  */
 
-import { log } from "./diagnostics.js";
+import { bindCapability } from "./capabilities.js";
 import { captureAccountGuard } from "./offline-identity.js";
 import { createOfflineReadCache } from "./offline-read-cache.js";
 import { deliverOrQueue, recordQueuedActivity } from "./offline-delivery.js";
 import { registerScopedUiActions } from "./scoped-actions.js";
 import { isOffline } from "./offline-state.js";
+
+const log = bindCapability("ui:log");
 
 export function registerOfflineHttpClient(
     ctx,

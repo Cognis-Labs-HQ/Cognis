@@ -10,10 +10,12 @@
  * bindUserMenuIntegrity(document.querySelector("#profile-dropdown"));
  */
 
-import { log } from "../reuse/diagnostics.js";
+import { bindCapability } from "../reuse/capabilities.js";
 
 import { uiCtx } from "../reuse/ui-ctx.js";
 import { transientSurfaces } from "../reuse/transient-surfaces.js";
+
+const log = bindCapability("ui:log");
 
 /**
  * Removes all but the first menu entry for each link destination.

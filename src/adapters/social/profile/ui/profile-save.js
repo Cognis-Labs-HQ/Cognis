@@ -1,7 +1,9 @@
-import { log } from "/static/reuse/diagnostics.js";
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { profileUiClient } from "./client.js";
 import { updateNavbarAvatar } from "/static/layouts/dashboard-layout.js";
 import { showToast } from "/static/reuse/toast.js";
+
+const log = bindCapability("ui:log");
 
 /**
  * Apply the acknowledged or durably queued profile before refreshing its views.

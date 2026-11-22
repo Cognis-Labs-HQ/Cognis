@@ -1,4 +1,5 @@
-import { log } from "../../reuse/diagnostics.js";
+import { bindCapability } from "../../reuse/capabilities.js";
+
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { uiCtx } from "../../reuse/ui-ctx.js";
 import { isOffline } from "../../reuse/offline-state.js";
@@ -7,6 +8,8 @@ import { openPopup } from "../../reuse/popup.js";
 import { watchToken } from "../../reuse/validation-url.js";
 import { showToast } from "../../reuse/toast.js";
 import { matchesTrustedDomain } from "../../reuse/trusted-domains.js";
+
+const log = bindCapability("ui:log");
 
 /**
  * General preferences sub-module for the Settings page.

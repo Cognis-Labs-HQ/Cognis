@@ -8,19 +8,19 @@ Administration saves only sections with pending changes. Security controls becom
 
 ## Translation Recovery
 
-Connection recovery invalidates core and component translation snapshots before pages redraw. Explicit bundle refreshes fetch current server content while retaining complete offline snapshots during outages. Non-resource XML responses fail validation and are evicted so a subsequent load can recover without a hard refresh.
+Connection recovery refreshes previously loaded translation bundles before redrawing pages. Ordinary reads retain immediate offline-cache access; invalid XML is rejected and retried with a refresh.
 
 ## Initial Email Verification
 
-`tfa:getLoginMethods(accountId)` prepares a challenge only when one method is available and no unused recovery codes exist. Otherwise the login UI requests a challenge through `POST /api/v1/tfa/login/resend` for the initially selected method when its `challengeOnSelect` metadata is true, and for subsequent selections without an existing challenge. Server-prepared challenges are reused. Delivery failures show a localized error; gateway logs record method, account, readiness and failure reason without codes or email content.
+Initial email challenges are requested when the selected method requires delivery. Delivery and resend requests have a 15-second deadline and do not block authenticator or recovery-code verification. Pending requests are deduplicated and canceled when a new login prompt opens.
 
 ## Gateway-Controlled Diagnostics
 
-Application logging now controls server delivery and browser-console visibility for translation, TFA and offline-worker diagnostics. Gateway authorization and severity determine browser output; diagnostic metadata excludes credentials and raw error messages.
+Application logging controls server delivery and browser visibility through gateway authorization and severity. Server and browser consumers share one catalog of levels, priorities and console aliases. Diagnostic metadata excludes credentials and raw error messages. Logging is contributed by its gateway through ctx; core only supplies generic capability readiness and bounded deferred calls.
 
 ## Logging Boundary
 
-Source checks enforce gateway logging in application and external-module code, including browser scripts and event handlers. Diagnostic producers use the gateway directly, while command and build reports retain terminal output.
+Source checks enforce gateway logging in application and external-module code, including browser scripts and event handlers. Script extraction handles browser-accepted closing-tag whitespace and attributes, quoted delimiters and unclosed scripts. Command and build reports retain terminal output.
 
 ## Commits
 

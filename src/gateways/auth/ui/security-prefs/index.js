@@ -1,4 +1,4 @@
-import { log } from "/static/reuse/diagnostics.js";
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { showToast } from "/static/reuse/toast.js";
 import { openPopup } from "/static/reuse/popup.js";
@@ -16,6 +16,8 @@ import {
     splitDurationMinutes,
 } from "/static/reuse/duration-input.js";
 import { openPasswordChangePopup } from "/static/gateways/auth/security-prefs/password-change.js";
+
+const log = bindCapability("ui:log");
 
 const LOGIN_SESSION_TIMEOUT_DIRTY_KEY = "auth-login-session-timeout";
 

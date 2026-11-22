@@ -147,7 +147,7 @@ async function fixture(context, { failTranslations = false, settings } = {}) {
     const page = await importTestModule(
         new URL("../../app/modules/index.js", import.meta.url),
         {
-            "../../reuse/diagnostics.js": createDiagnosticFixture(),
+            "../../reuse/capabilities.js": createDiagnosticFixture(),
             "./guides.js": { guides },
             "./catalog.js": catalog,
             "./filters.js": filters,

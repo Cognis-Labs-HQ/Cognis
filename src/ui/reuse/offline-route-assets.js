@@ -1,8 +1,10 @@
-import { log } from "./diagnostics.js";
+import { bindCapability } from "./capabilities.js";
 import { uiCtx } from "./ui-ctx.js";
 import { isOffline, offlineEnabled } from "./offline-state.js";
 import { loadWithSpaImportGuard } from "./page-entry.js";
 import { preparePageStylesheets } from "./page-styles.js";
+
+const log = bindCapability("ui:log");
 
 const flow = "offline:prepareRouteAssets";
 if (!uiCtx.flowExists(flow)) {

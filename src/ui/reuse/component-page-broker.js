@@ -23,11 +23,13 @@
  * }));
  */
 
-import { log } from "./diagnostics.js";
+import { bindCapability } from "./capabilities.js";
 import { ensurePageStylesheet } from "./page-styles.js";
 import { loadWithSpaImportGuard } from "./page-entry.js";
 import { resolveComponentPage } from "./spa-route-registry.js";
 import { uiCtx } from "./ui-ctx.js";
+
+const log = bindCapability("ui:log");
 
 const INSTALL_KEY = Symbol.for("cognis.componentPageBrokerInstalled");
 const ELEMENT_ID_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9._:-]{0,127}$/;

@@ -67,5 +67,5 @@
     "../../reuse/ui-language-state.js": ["uiLanguageMembershipChanged"],
     "../../reuse/app-router.js": ["navigateTo"],
     "./guides.js": ["guides"],
-    "../../reuse/diagnostics.js": ["log"]
+    "../../reuse/capabilities.js": ["bindCapability"]
 }

@@ -1,8 +1,10 @@
-import { log } from "/static/reuse/diagnostics.js";
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { isOffline } from "/static/reuse/offline-state.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
+
+const log = bindCapability("ui:log");
 
 export function isOfflineContentMiss(error) {
     return isOffline() && error?.message === "offline_read_unavailable";

@@ -1,6 +1,8 @@
-import { log } from "/static/reuse/diagnostics.js";
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { calendarFetch as apiFetch } from "./offline-client.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
+
+const log = bindCapability("ui:log");
 
 const STATUS_STYLESHEET_ID = "calendar-event-status-styles";
 

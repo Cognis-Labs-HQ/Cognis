@@ -150,7 +150,7 @@ function createRouter({
         "./page-entry.js": sandbox,
         "./route-path.js": loadTestModule(
             new URL("../route-path.js", import.meta.url),
-            { "./diagnostics.js": createDiagnosticFixture() },
+            { "./capabilities.js": createDiagnosticFixture() },
             { window, URL },
         ),
         "./spa-route-registry.js": sandbox,
@@ -164,7 +164,7 @@ function createRouter({
     const reload = () =>
         loadTestModule(
             new URL("../app-router.js", import.meta.url),
-            { ...imports, "./diagnostics.js": createDiagnosticFixture() },
+            { ...imports, "./capabilities.js": createDiagnosticFixture() },
             sandbox,
         );
     sandbox.router = reload();

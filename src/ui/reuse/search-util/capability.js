@@ -4,10 +4,12 @@
  * @module reuse/search-util/capability
  */
 
-import { log } from "../diagnostics.js";
+import { bindCapability } from "../capabilities.js";
 
 import { uiCtx } from "../ui-ctx.js";
 import "../flow-registry.js";
+
+const log = bindCapability("ui:log");
 
 function normalizeSearchOptions(options = {}) {
     return {

@@ -1,4 +1,4 @@
-import { log } from "/static/reuse/diagnostics.js";
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { guides } from "./guides.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { isOffline } from "/static/reuse/offline-state.js";
@@ -56,6 +56,8 @@ import {
     bindFollowButtonHover,
     bindSocialCardFollowButtons,
 } from "./follow-buttons.js";
+
+const log = bindCapability("ui:log");
 
 const boundProfileControls = new WeakSet();
 

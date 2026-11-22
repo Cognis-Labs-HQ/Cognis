@@ -1,4 +1,4 @@
-import { log } from "/static/reuse/diagnostics.js";
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { showOfflineContentNotice } from "./offline-content.js";
 /**
  * Study hub — welcome onboarding, dashboard, and settings.
@@ -40,6 +40,8 @@ import {
 } from "/static/gateways/study/language.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
+
+const log = bindCapability("ui:log");
 
 function bindOnlineControls(root, signal, canStart = () => true) {
     const update = () => {

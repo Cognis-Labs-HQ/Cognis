@@ -1,4 +1,5 @@
-import { log } from "../reuse/diagnostics.js";
+import { bindCapability } from "../reuse/capabilities.js";
+
 import { bindCompactNavigation } from "./compact-navigation.js";
 import { replaceMountScope } from "../reuse/mount-scope.js";
 import { registerPageReadinessBlocker } from "../reuse/page-readiness.js";
@@ -44,6 +45,8 @@ import {
     invalidateNavbarPlugins,
     invalidateUiProviders,
 } from "../reuse/ui-provider-loader.js";
+
+const log = bindCapability("ui:log");
 
 capturePwaInstallPrompt();
 const BUTTON_STYLESHEET = "/static/styles/reuse/buttons.css";

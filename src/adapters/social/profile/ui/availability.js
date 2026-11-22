@@ -1,10 +1,12 @@
-import { log as defaultLog } from "/static/reuse/diagnostics.js";
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { isOffline } from "/static/reuse/offline-state.js";
 import { profileFetch as apiFetch } from "./offline-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createI18n } from "/static/reuse/i18n.js";
 import { subscribePresenceActivity } from "/static/reuse/page-composer/presence-tracker.js";
+
+const defaultLog = bindCapability("ui:log");
 
 const availabilityCache = new Map();
 const availabilitySubscribers = new Set();

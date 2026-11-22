@@ -17,7 +17,7 @@ for (const usageFails of [false, true]) {
         const { createMessageReactionsController } = loadTestModule(
             new URL("../ui/reactions.js", import.meta.url),
             {
-                "/static/reuse/diagnostics.js": diagnostics,
+                "/static/reuse/capabilities.js": diagnostics,
                 "./reaction-state.js": {
                     nextReactionState: (messageId, emoji) => {
                         assert.equal(messageId, "message");

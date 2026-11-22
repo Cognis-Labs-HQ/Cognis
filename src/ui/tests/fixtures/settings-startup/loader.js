@@ -64,7 +64,7 @@ export async function loadSettingsMount({
         },
     );
     const overrides = {
-        log: createDiagnosticFixture().log,
+        bindCapability: createDiagnosticFixture().bindCapability,
         guides,
         navigateTo: async (path, options) => {
             assert.equal(options.replace, true);

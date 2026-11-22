@@ -29,7 +29,7 @@ test("Broadcast publishes through ctx and releases only its own banner on dispos
     const plugin = loadTestModule(
         new URL("../ui/broadcast-navbar-plugin.js", import.meta.url),
         {
-            "/static/reuse/diagnostics.js": createDiagnosticFixture(),
+            "/static/reuse/capabilities.js": createDiagnosticFixture(),
             "/static/reuse/ui-ctx.js": { uiCtx: ctx },
             "/static/reuse/offline-state.js": { isOffline: () => false },
             "/static/reuse/i18n.js": {

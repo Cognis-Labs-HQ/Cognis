@@ -6,7 +6,7 @@
  * @returns {void}
  */
 
-import { log } from "./diagnostics.js";
+import { bindCapability } from "./capabilities.js";
 import { offlinePolicy } from "./offline-policy.js";
 import { registerOfflineAssets } from "./offline-assets.js";
 import { createOfflineOutbox } from "./offline-outbox.js";
@@ -15,6 +15,8 @@ import {
     offlineEnabled,
     offlineWorkerRequest,
 } from "./offline-state.js";
+
+const log = bindCapability("ui:log");
 
 export function registerOfflineRuntime(ctx) {
     registerOfflineAssets(ctx);

@@ -41,8 +41,8 @@ function fixture() {
                     import.meta.url,
                 ),
                 {
-                    "./diagnostics.js":
-                        host.imports["/static/reuse/diagnostics.js"],
+                    "./capabilities.js":
+                        host.imports["/static/reuse/capabilities.js"],
                 },
                 globals,
             ),

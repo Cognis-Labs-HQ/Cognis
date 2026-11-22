@@ -22,7 +22,7 @@ for (const blocked of ["i18n", "composer", "providers", "strings", "styles"]) {
         const page = await importTestModule(
             new URL("../ui/app/index.js", import.meta.url),
             {
-                "/static/reuse/diagnostics.js": createDiagnosticFixture(),
+                "/static/reuse/capabilities.js": createDiagnosticFixture(),
                 "../session-flow-hooks.js": {},
                 "/static/reuse/i18n.js": {
                     createI18n: () => step("i18n", i18n),

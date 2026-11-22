@@ -1,4 +1,4 @@
-import { log } from "/static/reuse/diagnostics.js";
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { createSubmitEvent } from "./submit-event.js";
 import { bindViewInteractions as bindCalendarViewInteractions } from "./bind-view-interactions.js";
 import { createCalendarEditPopupHandler } from "./popup-manager-calendar-edit.js";
@@ -31,6 +31,8 @@ import {
 } from "./popup-manager-event-utils.js";
 import { createCalendarResponseHandler } from "./popup-manager-response.js";
 import { handlePendingResponseClick } from "./popup-manager-pending-response.js";
+
+const log = bindCapability("ui:log");
 export function createCalendarPopupManager({
     root,
     signal,

@@ -25,7 +25,7 @@ test("documentation titles arrive before content, content concurrency is bounded
     const { collectGlobalDocsSearchGroups } = loadTestModule(
         new URL("../docs-index.js", import.meta.url),
         {
-            "../diagnostics.js": createDiagnosticFixture(),
+            "../capabilities.js": createDiagnosticFixture(),
             "../docs-client.js": {
                 loadDocsBundleMarkdown,
                 loadDocsIndex,

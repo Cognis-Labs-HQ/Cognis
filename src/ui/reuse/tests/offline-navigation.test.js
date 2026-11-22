@@ -33,7 +33,7 @@ const navigationImports = {
 };
 const navigation = loadTestModule(
     new URL("../offline-navigation.js", import.meta.url),
-    { ...navigationImports, "./diagnostics.js": createDiagnosticFixture() },
+    { ...navigationImports, "./capabilities.js": createDiagnosticFixture() },
 );
 
 test("the registered offline navigation flow requires public opt-in and available assets", async () => {
@@ -223,7 +223,10 @@ test("loading the navigation utility again preserves providers registered by ano
     register(["social-messages-page"], controller.signal);
     const duplicate = loadTestModule(
         new URL("../offline-navigation.js", import.meta.url),
-        { ...navigationImports, "./diagnostics.js": createDiagnosticFixture() },
+        {
+            ...navigationImports,
+            "./capabilities.js": createDiagnosticFixture(),
+        },
     );
     assert.equal(
         uiCtx.capabilities.get("offline:registerSessionRoutes"),

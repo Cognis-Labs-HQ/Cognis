@@ -1,6 +1,8 @@
-import { log } from "/static/reuse/diagnostics.js";
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { encodeBytes, decodeBytes } from "./crypto.js";
 import { keyringStorageKeys } from "./storage-keys.js";
+
+const log = bindCapability("ui:log");
 
 /** Persist only session-encrypted unlock material in the current tab, never a password or plaintext key. */
 export function createSessionUnlockCache({

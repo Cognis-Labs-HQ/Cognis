@@ -12,10 +12,12 @@
  * @module reuse/search-util/results
  */
 
-import { log } from "../diagnostics.js";
+import { bindCapability } from "../capabilities.js";
 
 import { createSearchMatchResolver, escapeHtml } from "./matching.js";
 import { MIN_SEARCH_QUERY_LENGTH } from "./state.js";
+
+const log = bindCapability("ui:log");
 
 export function renderResultContent(listItem, item) {
     const label = document.createElement("span");

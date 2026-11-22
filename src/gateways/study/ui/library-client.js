@@ -1,4 +1,4 @@
-import { log } from "/static/reuse/diagnostics.js";
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { registerEnrolledLibrarySnapshots } from "./reuse/library-offline-snapshot.js";
 import { readStudySnapshot } from "./offline-content.js";
 import { deliverOrQueue } from "/static/reuse/offline-delivery.js";
@@ -6,6 +6,8 @@ import { createOfflineReadCache } from "/static/reuse/offline-read-cache.js";
 import { isOffline } from "/static/reuse/offline-state.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { apiFetch } from "/static/reuse/api-client.js";
+
+const log = bindCapability("ui:log");
 
 async function executeFetchLibrarySchemas(request, languageCode) {
     const query = new URLSearchParams();

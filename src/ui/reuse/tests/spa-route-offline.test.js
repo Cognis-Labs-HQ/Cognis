@@ -50,7 +50,7 @@ test("a warm offline catalog keeps both cached public pages and provider-authori
     const load = () =>
         loadTestModule(new URL("../spa-route-registry.js", import.meta.url), {
             ...imports,
-            "./diagnostics.js": createDiagnosticFixture(),
+            "./capabilities.js": createDiagnosticFixture(),
         });
     const { loadSpaRoutes } = load();
     await loadSpaRoutes();

@@ -19,7 +19,7 @@ async function session(testContext, request, dependencies = {}) {
             import.meta.url,
         ),
         {
-            "/static/reuse/diagnostics.js": createDiagnosticFixture(),
+            "/static/reuse/capabilities.js": createDiagnosticFixture(),
             "/static/reuse/offline-state.js":
                 dependencies.offlineState ?? offlineState,
             "/static/reuse/ui-ctx.js": { uiCtx },
@@ -53,7 +53,7 @@ async function session(testContext, request, dependencies = {}) {
             import.meta.url,
         ),
         {
-            "/static/reuse/diagnostics.js": createDiagnosticFixture(),
+            "/static/reuse/capabilities.js": createDiagnosticFixture(),
             "./offline-content.js": offlineContent,
             "./reuse/library-offline-snapshot.js": snapshots,
             "/static/reuse/offline-state.js":
@@ -380,7 +380,7 @@ test("registered Library flows restore opted-in character data and stop media, d
     const cache = loadTestModule(
         new URL("../../../../ui/reuse/offline-read-cache.js", import.meta.url),
         {
-            "./diagnostics.js": createDiagnosticFixture(),
+            "./capabilities.js": createDiagnosticFixture(),
             "./offline-state.js": state,
             "./offline-policy.js": { offlinePolicy: { allows: () => true } },
         },

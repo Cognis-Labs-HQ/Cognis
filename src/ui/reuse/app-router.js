@@ -1,4 +1,4 @@
-import { log } from "./diagnostics.js";
+import { bindCapability } from "./capabilities.js";
 import { registerPageRedraw } from "./page-redraw.js";
 /**
  * Client-side application router for the Cognis dashboard shell.
@@ -78,6 +78,8 @@ import {
     observePerformance,
     recordRouteMount,
 } from "./performance-telemetry.js";
+
+const log = bindCapability("ui:log");
 
 observePerformance();
 

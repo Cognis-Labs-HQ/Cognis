@@ -8,7 +8,7 @@ function loadClient(host) {
     const offline = loadTestModule(
         new URL("../ui/offline-content.js", import.meta.url),
         {
-            "/static/reuse/diagnostics.js": createDiagnosticFixture(),
+            "/static/reuse/capabilities.js": createDiagnosticFixture(),
             "/static/reuse/offline-state.js":
                 host.imports["/static/reuse/offline-state.js"],
             "/static/reuse/ui-ctx.js": { uiCtx: host.ctx },

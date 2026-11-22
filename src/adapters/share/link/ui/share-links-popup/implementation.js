@@ -12,7 +12,7 @@
  * @returns {Promise<void>} Resolves after the popup closes.
  */
 
-import { log } from "/static/reuse/diagnostics.js";
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { openPopup } from "/static/reuse/popup.js";
@@ -33,6 +33,8 @@ import {
     renderShareStatus,
     showSharePasswordPopup,
 } from "./rendering.js";
+
+const log = bindCapability("ui:log");
 
 const SHARE_LINKS_REFRESH_INTERVAL_MS = 10_000;
 

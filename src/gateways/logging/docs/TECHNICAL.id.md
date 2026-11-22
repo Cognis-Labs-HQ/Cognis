@@ -64,9 +64,13 @@ Peristiwa pada gateway DB juga memakai logger bersama, tetapi hanya mencatat met
 
 ## Perilaku
 
+`ui/reuse/levels.json` menjadi satu-satunya katalog prioritas tingkat keparahan dan alias konsol. Modul bersama menurunkan tingkat yang diterima, pemeriksaan keanggotaan, dan pemetaan konsol darinya; penyaringan server, penerimaan peramban, dan penangkapan konsol menggunakan definisi yang sama.
+
 ### Diagnostik Terpusat
 
-Penyedia peramban publik menyediakan `logging:browser` dan mengelola alur `logging:emit` (`validate`, `deliver`, `publish`). Core menerbitkan diagnostik melalui `ui:log` dan menampung maksimal 128 peristiwa sebelum penyedia berlangganan. Selama aktif, gateway juga menangkap panggilan konsol; komponen tidak dapat memaksa keluaran peramban melalui pemilihan metode konsol. Metadata dibatasi; kredensial dan pesan galat mentah dihapus.
+Pemanggil peramban mengikat `ui:log` melalui registri kapabilitas ctx bersama. Host menyimpan paling banyak 128 pemanggilan kapabilitas tertunda untuk seluruh ikatan; host tidak memiliki langganan khusus logging atau kebijakan keluaran. Penyedia logging menyumbangkan `ui:log` selama masa hidupnya dan memiliki validasi, riwayat, pengiriman, serta penangkapan konsol. Penghapusan penyedia melepas kapabilitas; pemanggilan tertunda dapat mencapai penyedia berikutnya tanpa mengimpor implementasinya.
+
+Penyedia peramban publik memiliki alur `logging:emit` (`validate`, `deliver`, `publish`). Metadata dibatasi, sedangkan kredensial dan pesan kesalahan mentah dihapus.
 
 Service worker meneruskan peristiwa terstruktur `COGNIS_LOG` ke satu jendela yang dikendalikan dan menampung maksimal 64 peristiwa jika tidak ada jendela tersedia. Penyedia hanya menerima pesan dari pengendali service worker saat ini dan melepas pendengar, penangkapan konsol, serta langganannya ketika dihentikan.
 

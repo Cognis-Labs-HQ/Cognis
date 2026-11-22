@@ -1,10 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { subscribeDiagnostics } from "../diagnostics.js";
+import { subscribeDiagnostics } from "../../../tooling/reuse/diagnostic-fixture.ts";
 import { uiCtx } from "../ui-ctx.js";
 import { registerFeedbackCapabilities } from "../feedback-capabilities.js";
 
-test("browser feedback capabilities expose host toast, popup, and logging processes", () => {
+test("browser feedback capabilities expose host toast and popup processes", () => {
     registerFeedbackCapabilities();
 
     assert.equal(typeof uiCtx.capabilities.get("ui:showToast"), "function");
@@ -12,7 +12,6 @@ test("browser feedback capabilities expose host toast, popup, and logging proces
         typeof uiCtx.capabilities.get("ui:openErrorPopup"),
         "function",
     );
-    assert.equal(typeof uiCtx.capabilities.get("ui:log"), "function");
 });
 
 test("feedback logging reaches the registered diagnostic consumer", async () => {

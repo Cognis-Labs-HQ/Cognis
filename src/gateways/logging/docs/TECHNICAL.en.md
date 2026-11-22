@@ -29,9 +29,13 @@ The public interfaces and operational rules of Application Logs.
 
 ## Behavior
 
+`ui/reuse/levels.json` is the single catalog of severity priorities and console aliases. The shared module derives accepted levels, membership checks and console mappings from it; server filtering, browser ingestion and console capture reuse those definitions.
+
 ### Gateway-Controlled Diagnostics
 
-The public browser provider contributes `logging:browser` and owns the `logging:emit` flow (`validate`, `deliver`, `publish`). Core publishes diagnostics through `ui:log` and buffers at most 128 events before the provider subscribes. While mounted, the gateway also captures console calls; components cannot force browser output by choosing a console method. Structured metadata is bounded and credentials and raw error messages are removed.
+Browser callers bind `ui:log` through the shared ctx capability registry. The host keeps at most 128 deferred capability invocations across all bindings; it has no logging-specific subscription or output policy. The logging provider contributes `ui:log` for its scoped lifetime and owns validation, recent history, delivery and console capture. Provider removal releases the capability; deferred calls can reach a subsequent provider without importing its implementation.
+
+The public browser provider owns the `logging:emit` flow (`validate`, `deliver`, `publish`). Structured metadata is bounded and credentials and raw error messages are removed.
 
 Service workers relay structured `COGNIS_LOG` events to one controlled window, retaining at most 64 events when none is available. The provider accepts messages only from its current service-worker controller and removes its listeners, console capture and subscription on disposal.
 

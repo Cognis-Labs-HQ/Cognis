@@ -35,7 +35,10 @@
  * @returns {() => void} A stop function that cancels the polling loop.
  */
 
-import { log } from "./diagnostics.js";
+import { bindCapability } from "./capabilities.js";
+
+const log = bindCapability("ui:log");
+
 export function watchToken({
     token,
     apiFetch,

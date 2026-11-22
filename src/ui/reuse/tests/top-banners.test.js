@@ -52,7 +52,7 @@ test("the ctx publisher shares a top-of-page stack, keeps priority and scopes re
     const { createTopBanners, renderTopBanner } = loadTestModule(
         new URL("../top-banners.js", import.meta.url),
         {
-            "./diagnostics.js": createDiagnosticFixture(),
+            "./capabilities.js": createDiagnosticFixture(),
             "./escape-html.js": { escapeHtml },
             "./page-styles.js": {
                 ensurePersistentStylesheet: async (path) => styles.add(path),

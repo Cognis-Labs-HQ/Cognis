@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../tooling/reuse/diagnostic-fixture.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -301,6 +302,7 @@ test("clear-all click does not open popup when empty inbox is rendered", async (
 
     let openPopupCalls = 0;
     const context = {
+        bindCapability: createDiagnosticFixture().bindCapability,
         console,
         document,
         window: {

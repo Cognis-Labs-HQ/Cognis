@@ -1,4 +1,4 @@
-import { log } from "/static/reuse/diagnostics.js";
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import {
     loadAuthFooterPlugins,
@@ -47,6 +47,8 @@ import {
     loadRegistrationConfig,
 } from "/static/gateways/auth/login-client.js";
 import { buildPasswordCriteria, resetAuthSessionForRegister } from "./form.js";
+
+const log = bindCapability("ui:log");
 const REGISTER_EMAIL_MAX_CHARACTERS = 320;
 const REGISTER_USERNAME_MAX_CHARACTERS = 25;
 const REGISTER_DISPLAY_NAME_MAX_CHARACTERS = 80;

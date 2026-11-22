@@ -1,9 +1,11 @@
-import { log } from "/static/reuse/diagnostics.js";
+import { bindCapability } from "/static/reuse/capabilities.js";
 import {
     dispatchKeyringEvent,
     showKeyringLifecycleToast,
 } from "./lifecycle-notifications.js";
 import { loadKeyringI18n } from "./resources.js";
+
+const log = bindCapability("ui:log");
 
 export const MAX_ACTIVITY_EVENTS = 1000;
 export const MAX_ACTIVITY_BYTES = 64 * 1024;

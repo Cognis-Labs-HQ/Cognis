@@ -7,7 +7,7 @@ export async function loadPopupManager() {
     const modules = new Map();
     const diagnostics = createDiagnosticFixture();
     const contracts = {
-        "/static/reuse/diagnostics.js": ["log"],
+        "/static/reuse/capabilities.js": ["bindCapability"],
         "/static/reuse/ui-ctx.js": ["uiCtx"],
         "/static/reuse/info-tooltip.js": ["renderInfoTooltip"],
         "/static/reuse/timestamp.js": ["formatDate", "formatDateTime"],
@@ -34,8 +34,8 @@ export async function loadPopupManager() {
                     for (const name of contracts[specifier]) {
                         this.setExport(
                             name,
-                            specifier === "/static/reuse/diagnostics.js"
-                                ? diagnostics.log
+                            specifier === "/static/reuse/capabilities.js"
+                                ? diagnostics.bindCapability.bind(diagnostics)
                                 : () => {
                                       throw new Error(
                                           `Unexpected call: ${specifier}:${name}`,

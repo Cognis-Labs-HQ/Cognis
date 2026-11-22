@@ -8,7 +8,7 @@ function fixture(navigate, syncTimezoneOnLogin) {
     const client = loadTestModule(
         new URL("../../ui/login-page/navigation.js", import.meta.url),
         {
-            "/static/reuse/diagnostics.js": createDiagnosticFixture(),
+            "/static/reuse/capabilities.js": createDiagnosticFixture(),
             "/static/reuse/page-entry.js": {
                 beginPageLoading: () => {
                     loading++;

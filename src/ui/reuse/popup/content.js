@@ -3,7 +3,10 @@
  * @returns {void}
  */
 
-import { log } from "../diagnostics.js";
+import { bindCapability } from "../capabilities.js";
+
+const log = bindCapability("ui:log");
+
 export function bindPopupActionIcons(overlay) {
     for (const image of overlay.querySelectorAll(
         ".popup-header-action-icon img",

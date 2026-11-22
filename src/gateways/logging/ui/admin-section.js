@@ -1,5 +1,7 @@
-import { log } from "/static/reuse/diagnostics.js";
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { formatDateTime } from "/static/reuse/timestamp.js";
+
+const log = bindCapability("ui:log");
 
 const MAX_DISPLAYED_LOGS = 400;
 const RECONNECT_DELAY_MS = 2000;

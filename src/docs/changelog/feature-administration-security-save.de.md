@@ -8,19 +8,19 @@ Die Verwaltung speichert nur Bereiche mit ausstehenden Änderungen. Sicherheitsf
 
 ## Übersetzungen nach Neustart
 
-Bei der Wiederherstellung der Verbindung werden Übersetzungsspeicher vor dem erneuten Seitenaufbau verworfen. Explizite Aktualisierungen laden aktuelle Serverinhalte und behalten bei Ausfällen vollständige Offlinekopien. Ungültige XML-Antworten werden nicht gespeichert; nachfolgende Ladeversuche können ohne vollständiges Neuladen erfolgreich sein.
+Nach der Verbindungswiederherstellung werden bereits geladene Übersetzungspakete vor dem Seitenaufbau aktualisiert. Normale Abfragen nutzen den Offlinecache sofort; ungültiges XML wird abgelehnt und mit einer Aktualisierung erneut geladen.
 
 ## Erste E-Mail-Bestätigung
 
-`tfa:getLoginMethods(accountId)` bereitet eine Challenge nur bei genau einer verfügbaren Methode ohne unbenutzte Wiederherstellungscodes vor. Andernfalls fordert die Login-Oberfläche über `POST /api/v1/tfa/login/resend` eine Challenge für die anfänglich gewählte Methode mit `challengeOnSelect` sowie für spätere Auswahlen ohne bestehende Challenge an. Vorbereitete Challenges werden wiederverwendet. Zustellfehler erscheinen lokalisiert; Protokolle erfassen Methode, Konto, Bereitschaft und Fehlergrund ohne Codes oder E-Mail-Inhalte.
+Die anfangs ausgewählte Methode fordert bei Bedarf eine E-Mail-Challenge an. Zustellung und erneute Anfragen haben eine Frist von 15 Sekunden und blockieren weder Authenticator noch Wiederherstellungscodes. Laufende Anfragen werden nicht dupliziert und beim Öffnen einer neuen Anmeldeeingabe abgebrochen.
 
 ## Zentrale Browserdiagnose
 
-Die zentrale Protokollierung steuert die Serverübertragung und Browserkonsolenausgabe für Übersetzungs-, TFA- und Offline-Worker-Diagnosen. Gateway-Berechtigungen und Schweregrad bestimmen die Browserausgabe; Metadaten enthalten keine Zugangsdaten oder unverarbeiteten Fehlermeldungen.
+Die Protokollierung steuert Serverübertragung und Browserausgabe nach Gateway-Berechtigung und Schweregrad. Server und Browser verwenden einen gemeinsamen Katalog für Stufen, Prioritäten und Konsolen-Aliasse. Metadaten enthalten weder Zugangsdaten noch rohe Fehlermeldungen. Das Gateway stellt Logging über ctx bereit; Core liefert nur allgemeine Fähigkeitsbereitschaft und begrenzte aufgeschobene Aufrufe.
 
 ## Grenze der Protokollierung
 
-Quellprüfungen erzwingen Gateway-Protokollierung im Anwendungs- und externen Modulcode, einschließlich Browserskripten und Ereignishandlern. Diagnosequellen nutzen das Gateway direkt; Befehls- und Buildberichte behalten ihre Terminalausgabe.
+Quelltextprüfungen erzwingen Gateway-Protokollierung in Anwendung und externen Modulen, auch in Browserskripten und Ereignisbehandlungen. Die Skripterkennung berücksichtigt vom Browser akzeptierte Leerzeichen und Attribute in End-Tags, zitierte Trennzeichen und nicht geschlossene Skripte. Befehls- und Buildberichte bleiben Terminalausgaben.
 
 ## Commits
 

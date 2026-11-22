@@ -1,7 +1,6 @@
 import { captureConsole } from "./console.js";
 import { normalizeDiagnostic } from "./entry.js";
 import { submitBrowserLog } from "./client.js";
-import { subscribeDiagnostics } from "/static/reuse/diagnostics.js";
 
 export function mountProvider(ctx) {
     let consoleOutput;
@@ -73,10 +72,8 @@ export function mountProvider(ctx) {
             return;
         void log(event.data.entry);
     };
-    let release;
     const dispose = () => {
         consoleOutput?.dispose();
-        release?.();
         worker?.removeEventListener?.("message", receiveWorkerLog);
         ctx.signal?.removeEventListener("abort", dispose);
     };
@@ -85,8 +82,19 @@ export function mountProvider(ctx) {
     ctx.capabilities.contribute("logging:recentEntries", () =>
         recentEntries.map((entry) => ({ ...entry })),
     );
-    release = subscribeDiagnostics(log);
-    consoleOutput = captureConsole();
+    consoleOutput = captureConsole((level, message, meta) =>
+        log({ level, message, meta }),
+    );
+    ctx.capabilities.contribute(
+        "ui:log",
+        (level, message, meta = {}, ...details) =>
+            log({
+                level,
+                message,
+                meta,
+                ...(details.length ? { details } : {}),
+            }),
+    );
     worker?.addEventListener?.("message", receiveWorkerLog);
     worker?.controller?.postMessage({ type: "COGNIS_FLUSH_LOGS" });
     return dispose;

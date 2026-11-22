@@ -58,7 +58,7 @@ function fixture() {
     const availability = loadTestModule(
         new URL("../ui/availability.js", import.meta.url),
         {
-            "/static/reuse/diagnostics.js": createDiagnosticFixture(),
+            "/static/reuse/capabilities.js": createDiagnosticFixture(),
             "./offline-client.js": { profileFetch: client.profileFetch },
             "/static/reuse/offline-state.js":
                 host.imports["/static/reuse/offline-state.js"],

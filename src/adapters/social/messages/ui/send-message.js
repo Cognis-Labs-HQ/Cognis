@@ -1,8 +1,10 @@
-import { log } from "/static/reuse/diagnostics.js";
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { messagesFetch as apiFetch } from "./offline-client.js";
 import { encryptMessage } from "./message-utils.js";
 import { resolveMessageTemplateVariables } from "./message-templates.js";
 import { showToast } from "/static/reuse/toast.js";
+
+const log = bindCapability("ui:log");
 
 /** Retain the draft until encrypted delivery or durable queuing has succeeded. */
 export function createMessageSender({

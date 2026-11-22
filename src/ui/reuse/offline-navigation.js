@@ -1,4 +1,4 @@
-import { log } from "./diagnostics.js";
+import { bindCapability } from "./capabilities.js";
 import { createI18n } from "./i18n.js";
 import { openPopup } from "./popup.js";
 import { escapeHtml } from "./escape-html.js";
@@ -9,6 +9,8 @@ import {
     offlineWorkerRequest,
     enableOfflineAutoRefresh,
 } from "./offline-state.js";
+
+const log = bindCapability("ui:log");
 
 if (!uiCtx.capabilities.get("offline:registerSessionRoutes")) {
     const sessionRoutes = new Map();

@@ -52,7 +52,7 @@ function element() {
 const { mountOfflineStatus } = loadTestModule(
     new URL("../offline-status.js", import.meta.url),
     {
-        "./diagnostics.js": createDiagnosticFixture(),
+        "./capabilities.js": createDiagnosticFixture(),
         "./ui-ctx.js": {
             uiCtx: {
                 ...uiCtx,

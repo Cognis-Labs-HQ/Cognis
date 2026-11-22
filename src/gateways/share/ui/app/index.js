@@ -1,4 +1,4 @@
-import { log } from "/static/reuse/diagnostics.js";
+import { bindCapability } from "/static/reuse/capabilities.js";
 import "../session-flow-hooks.js";
 import {
     applyDocumentTitle,
@@ -12,6 +12,8 @@ import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
 import { installGuestNavigationGuard } from "/static/reuse/guest-blocked-popup.js";
 import { navigateTo } from "/static/reuse/app-router.js";
+
+const log = bindCapability("ui:log");
 
 const reportFailure = (operation, error) =>
     void log("error", "Share page operation failed.", {

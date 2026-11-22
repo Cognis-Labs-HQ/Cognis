@@ -10,9 +10,11 @@
  * @returns {Promise<unknown>} Server result or explicit queued result.
  */
 
-import { log } from "./diagnostics.js";
+import { bindCapability } from "./capabilities.js";
 import { captureAccountGuard } from "./offline-identity.js";
 import { isOffline, offlineEnabled } from "./offline-state.js";
+
+const log = bindCapability("ui:log");
 
 /**
  * Telemetry failures must not turn an already persisted user action into a failed write.

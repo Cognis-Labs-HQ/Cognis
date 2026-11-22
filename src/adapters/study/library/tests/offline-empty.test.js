@@ -17,7 +17,7 @@ function fixture(overrides = {}) {
             import.meta.url,
         ),
         {
-            "/static/reuse/diagnostics.js": createDiagnosticFixture(),
+            "/static/reuse/capabilities.js": createDiagnosticFixture(),
             "/static/reuse/offline-state.js": { isOffline: () => true },
             "/static/reuse/ui-ctx.js": { uiCtx },
             "/static/reuse/popup.js": {

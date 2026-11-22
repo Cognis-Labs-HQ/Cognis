@@ -2,16 +2,28 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 
-function clientFixture({ invalidResend = false } = {}) {
+function clientFixture({
+    invalidResend = false,
+    respond = () => assert.fail("unexpected fetch"),
+    abortSignal = AbortSignal,
+} = {}) {
     class Element {
         hidden = false;
         childElementCount = 1;
         isConnected = true;
         value = "";
-        classList = { toggle() {}, add() {} };
+        classes = new Set();
+        attributes = new Map();
+        classList = {
+            toggle: (name, active) =>
+                active ? this.classes.add(name) : this.classes.delete(name),
+            add: (name) => this.classes.add(name),
+        };
         listeners = new Map();
         children = [];
-        setAttribute() {}
+        setAttribute(name, value) {
+            this.attributes.set(name, value);
+        }
         focus() {}
         replaceChildren() {
             this.children = [];
@@ -19,8 +31,16 @@ function clientFixture({ invalidResend = false } = {}) {
         appendChild(child) {
             this.children.push(child);
         }
-        addEventListener(type, callback) {
+        addEventListener(type, callback, options) {
             this.listeners.set(type, callback);
+            options?.signal?.addEventListener(
+                "abort",
+                () => {
+                    if (this.listeners.get(type) === callback)
+                        this.listeners.delete(type);
+                },
+                { once: true },
+            );
         }
         querySelectorAll() {
             return this.children;
@@ -45,8 +65,11 @@ function clientFixture({ invalidResend = false } = {}) {
     const exports = loadTestModule(
         new URL("../ui/login-flow.js", import.meta.url),
         {
-            "/static/reuse/diagnostics.js": {
-                log: (...args) => logs.push(structuredClone(args)),
+            "/static/reuse/capabilities.js": {
+                bindCapability:
+                    () =>
+                    (...args) =>
+                        logs.push(structuredClone(args)),
             },
             "/static/reuse/auth-setup-route.js": {
                 redirectToRequiredTfaSetup() {},
@@ -61,6 +84,9 @@ function clientFixture({ invalidResend = false } = {}) {
             },
         },
         {
+            fetch: respond,
+            AbortController,
+            AbortSignal: abortSignal,
             HTMLElement: Element,
             HTMLInputElement: Element,
             HTMLAnchorElement: Element,
@@ -172,6 +198,7 @@ for (const failure of ["response", "network"]) {
                 },
             ],
         });
+        await new Promise(setImmediate);
         assert.ok(
             host.toasts.some(
                 (toast) =>
@@ -229,4 +256,195 @@ test("an invalid resend control reports one structured gateway diagnostic", asyn
             { component: "tfa", operation: "resolveResendControl" },
         ],
     ]);
+});
+
+for (const alternative of ["totp", "recovery_code"]) {
+    test(`a stalled initial email does not block ${alternative} verification`, async (t) => {
+        const verified = [];
+        const host = clientFixture({
+            respond: async (path, options) => {
+                assert.equal(path, "/api/v1/tfa/login/verify");
+                verified.push(JSON.parse(options.body));
+                return Response.json({ data: { accountId: "account" } });
+            },
+        });
+        const client = await host.createTfaLoginClient({
+            baseI18n: { t: (key) => key },
+            root: host.root,
+        });
+        let finishDelivery;
+        const delivery = new Promise((resolve) => {
+            finishDelivery = resolve;
+        });
+        t.after(() =>
+            finishDelivery({
+                response: { ok: true },
+                body: { data: { challenge: {} } },
+            }),
+        );
+        let requests = 0;
+        client.resendCode = () => {
+            requests++;
+            return delivery;
+        };
+        let attempt;
+        const prompt = client
+            .switchToTfaPrompt({
+                loginAttemptId: "attempt",
+                methods: [
+                    {
+                        id: "email",
+                        loginUi: {
+                            challengeOnSelect: true,
+                            supportsResend: true,
+                        },
+                    },
+                    { id: alternative },
+                ],
+            })
+            .then((value) => {
+                attempt = value;
+            });
+        await new Promise(setImmediate);
+        assert.equal(attempt, "attempt");
+        await prompt;
+        const tabs = host.root.querySelector("#login-tfa-method-nav").children;
+        const click = (index) =>
+            tabs[index].listeners.get("click")({ preventDefault() {} });
+        click(1);
+        click(0);
+        assert.equal(requests, 1);
+        assert.equal(
+            host.root
+                .querySelector("#login-tfa-resend-action")
+                .attributes.get("aria-disabled"),
+            "true",
+        );
+        click(1);
+        const result = await client.verifyCode({
+            loginAttemptId: attempt,
+            methodId: host.root.querySelector("#login-tfa-method").value,
+            code: "123456",
+        });
+        assert.equal(result.body.data.accountId, "account");
+        assert.deepEqual(verified, [
+            {
+                loginAttemptId: "attempt",
+                methodId: alternative,
+                code: "123456",
+            },
+        ]);
+        finishDelivery({
+            response: { ok: true },
+            body: { data: { challenge: {} } },
+        });
+        await new Promise(setImmediate);
+        assert.equal(
+            host.root.querySelector("#login-tfa-method").value,
+            alternative,
+        );
+        assert.equal(
+            host.root.querySelector("#login-tfa-resend-action").hidden,
+            true,
+        );
+    });
+}
+
+test("initial challenge delivery times out without retaining the resend lock", async (t) => {
+    t.mock.timers.enable({ apis: ["setTimeout"] });
+    const deadlines = [];
+    const host = clientFixture({
+        abortSignal: {
+            any: AbortSignal.any,
+            timeout(ms) {
+                deadlines.push(ms);
+                const controller = new AbortController();
+                setTimeout(
+                    () =>
+                        controller.abort(
+                            new DOMException("expired", "TimeoutError"),
+                        ),
+                    ms,
+                );
+                return controller.signal;
+            },
+        },
+        respond: (_path, { signal }) =>
+            new Promise((_resolve, reject) =>
+                signal.addEventListener("abort", () => reject(signal.reason), {
+                    once: true,
+                }),
+            ),
+    });
+    const client = await host.createTfaLoginClient({
+        baseI18n: { t: (key) => key },
+        root: host.root,
+    });
+    assert.equal(
+        await client.switchToTfaPrompt({
+            loginAttemptId: "attempt",
+            methods: [
+                {
+                    id: "email",
+                    loginUi: { challengeOnSelect: true, supportsResend: true },
+                },
+            ],
+        }),
+        "attempt",
+    );
+    assert.deepEqual(deadlines, [15_000]);
+    t.mock.timers.tick(15_000);
+    await new Promise(setImmediate);
+    assert.equal(
+        host.root
+            .querySelector("#login-tfa-resend-action")
+            .attributes.get("aria-disabled"),
+        "false",
+    );
+    assert.equal(host.logs.at(-1)[2].errorName, "TimeoutError");
+    assert.equal(host.toasts.at(-1).variant, "error");
+});
+
+test("a new login prompt aborts obsolete challenge delivery and rebinds resend", async () => {
+    const requests = [];
+    const host = clientFixture({
+        respond: (_path, options) => {
+            requests.push({ ...options, payload: JSON.parse(options.body) });
+            return new Promise((_resolve, reject) =>
+                options.signal.addEventListener(
+                    "abort",
+                    () => reject(options.signal.reason),
+                    { once: true },
+                ),
+            );
+        },
+    });
+    const client = await host.createTfaLoginClient({
+        baseI18n: { t: (key) => key },
+        root: host.root,
+    });
+    const email = {
+        id: "email",
+        loginUi: { challengeOnSelect: true, supportsResend: true },
+    };
+    await client.switchToTfaPrompt({
+        loginAttemptId: "first",
+        methods: [email],
+    });
+    await client.switchToTfaPrompt({
+        loginAttemptId: "second",
+        methods: [{ ...email, challenge: {} }],
+    });
+    assert.equal(requests[0].signal.aborted, true);
+    await new Promise(setImmediate);
+    assert.equal(host.toasts.length, 0);
+    const resend = host.root
+        .querySelector("#login-tfa-resend-action")
+        .listeners.get("click");
+    void resend({ preventDefault() {} });
+    assert.equal(requests[1].payload.loginAttemptId, "second");
+    await client.switchToTfaPrompt({
+        loginAttemptId: "third",
+        methods: [{ id: "totp" }],
+    });
 });

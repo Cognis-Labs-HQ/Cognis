@@ -4,7 +4,10 @@
  * @example offlinePolicy.configure(['legal']); offlinePolicy.allows();
  */
 
-import { log } from "./diagnostics.js";
+import { bindCapability } from "./capabilities.js";
+
+const log = bindCapability("ui:log");
+
 const REQUIREMENTS_KEY = "cognis_offline_requirements";
 const RECEIPTS_KEY = "cognis_offline_receipts";
 const policyKey = Symbol.for("cognis.offlinePolicy");

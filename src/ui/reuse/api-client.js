@@ -13,9 +13,11 @@
  * @returns {Promise<Response>}
  */
 
-import { log } from "./diagnostics.js";
+import { bindCapability } from "./capabilities.js";
 import { isOffline, offlineEnabled, setOffline } from "./offline-state.js";
 import { showToast } from "./toast.js";
+
+const log = bindCapability("ui:log");
 
 const RETRYABLE_SERVER_STATUS_CODES = new Set([502, 503, 504]);
 const RETRYABLE_SERVER_STATUS_MESSAGE_REGEX = new RegExp(

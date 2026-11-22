@@ -37,7 +37,7 @@ test("Calendar delegates meeting creation to the installed provider through ctx"
     const client = loadTestModule(
         new URL("../ui/calendar-api.js", import.meta.url),
         {
-            "/static/reuse/diagnostics.js": createDiagnosticFixture(),
+            "/static/reuse/capabilities.js": createDiagnosticFixture(),
             "./offline-client.js": {
                 calendarFetch: () =>
                     assert.fail(

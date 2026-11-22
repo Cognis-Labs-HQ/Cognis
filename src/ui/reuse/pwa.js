@@ -18,9 +18,10 @@
  * @returns {void}
  */
 
-import { log } from "./diagnostics.js";
-
+import { bindCapability } from "./capabilities.js";
 import { offlineEnabled } from "./offline-state.js";
+
+const log = bindCapability("ui:log");
 
 let deferredInstallPrompt = null;
 

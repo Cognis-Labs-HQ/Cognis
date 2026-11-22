@@ -1,4 +1,4 @@
-import { log } from "/static/reuse/diagnostics.js";
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { isOffline } from "/static/reuse/offline-state.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
@@ -20,6 +20,8 @@ import {
     subscribeAvailabilityUpdates,
     STATUS_OPTIONS,
 } from "./availability.js";
+
+const log = bindCapability("ui:log");
 
 let availabilityMountPromise = null;
 

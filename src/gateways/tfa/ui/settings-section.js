@@ -1,4 +1,4 @@
-import { log } from "/static/reuse/diagnostics.js";
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { createSetupDismissalGuard } from "./setup-dismissal.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { showToast } from "/static/reuse/toast.js";
@@ -25,6 +25,8 @@ import {
     rotateRecoveryCodes,
     loadRecoveryCodesStatus,
 } from "/static/gateways/tfa/security-api.js";
+
+const log = bindCapability("ui:log");
 
 let requiredSetupPromptActive = false;
 

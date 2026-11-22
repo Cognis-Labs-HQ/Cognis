@@ -14,7 +14,7 @@ function fixture(send, { refreshError } = {}) {
     const { createMessageSender } = loadTestModule(
         new URL("../ui/send-message.js", import.meta.url),
         {
-            "/static/reuse/diagnostics.js": createDiagnosticFixture(),
+            "/static/reuse/capabilities.js": createDiagnosticFixture(),
             "./offline-client.js": { messagesFetch: send },
             "./message-utils.js": {
                 encryptMessage: async (_key, text) => ({

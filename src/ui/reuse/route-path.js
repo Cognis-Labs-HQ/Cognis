@@ -23,7 +23,9 @@
  * @returns {string}
  */
 
-import { log } from "./diagnostics.js";
+import { bindCapability } from "./capabilities.js";
+
+const log = bindCapability("ui:log");
 
 export function getCurrentRoutePath() {
     if (typeof window === "undefined" || !window.location) return "";

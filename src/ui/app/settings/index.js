@@ -1,4 +1,5 @@
-import { log } from "../../reuse/diagnostics.js";
+import { bindCapability } from "../../reuse/capabilities.js";
+
 import { guides } from "./guides.js";
 import { navigateTo } from "../../reuse/app-router.js";
 import { createLanguageRedraw } from "./language-redraw.js";
@@ -67,6 +68,8 @@ import {
     getSettingsShellOptions,
     resolveSettingsSetupRedirect,
 } from "./setup-requirement.js";
+
+const log = bindCapability("ui:log");
 
 async function loadSettingsSections() {
     if (isOffline()) return [];

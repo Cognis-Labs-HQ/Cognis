@@ -1,5 +1,5 @@
 import { uiCtx } from "../../reuse/ui-ctx.js";
-import { subscribeDiagnostics } from "../../reuse/diagnostics.js";
+import { subscribeDiagnostics } from "../../../tooling/reuse/diagnostic-fixture.ts";
 import { createDiagnosticFixture } from "../../../tooling/reuse/diagnostic-fixture.ts";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import test from "node:test";
@@ -252,7 +252,7 @@ test("runtime error popup suppresses crash dialogs for connection-interruption f
     context.__testExports = loadTestModule(
         new URL("../../reuse/runtime-error-popup.js", import.meta.url),
         {
-            "./diagnostics.js": createDiagnosticFixture(),
+            "./capabilities.js": createDiagnosticFixture(),
             "./ui-ctx.js": { uiCtx },
             "./popup.js": context,
             "./api-client.js": context,
@@ -344,7 +344,7 @@ test("runtime error popup uses full navigation fallback after reload-origin fail
     context.__testExports = loadTestModule(
         new URL("../../reuse/runtime-error-popup.js", import.meta.url),
         {
-            "./diagnostics.js": createDiagnosticFixture(),
+            "./capabilities.js": createDiagnosticFixture(),
             "./ui-ctx.js": { uiCtx },
             "./popup.js": context,
             "./api-client.js": context,
@@ -438,7 +438,7 @@ test("runtime error popup preserves SPA back navigation when main boilerplate is
     context.__testExports = loadTestModule(
         new URL("../../reuse/runtime-error-popup.js", import.meta.url),
         {
-            "./diagnostics.js": createDiagnosticFixture(),
+            "./capabilities.js": createDiagnosticFixture(),
             "./ui-ctx.js": { uiCtx },
             "./popup.js": context,
             "./api-client.js": context,
@@ -523,7 +523,7 @@ test("runtime error popup keeps users on loaded pages after post-load crashes", 
     context.__testExports = loadTestModule(
         new URL("../../reuse/runtime-error-popup.js", import.meta.url),
         {
-            "./diagnostics.js": createDiagnosticFixture(),
+            "./capabilities.js": createDiagnosticFixture(),
             "./ui-ctx.js": { uiCtx },
             "./popup.js": context,
             "./api-client.js": context,
@@ -581,7 +581,7 @@ test("runtime error popup caches main boilerplate lookup across recovery actions
     const module = loadTestModule(
         new URL("../../reuse/runtime-error-popup.js", import.meta.url),
         {
-            "./diagnostics.js": createDiagnosticFixture(),
+            "./capabilities.js": createDiagnosticFixture(),
             "./ui-ctx.js": { uiCtx },
             "./popup.js": context,
             "./api-client.js": context,
@@ -692,7 +692,7 @@ test("runtime error popup copy action writes full crash detail text", async () =
     context.__testExports = loadTestModule(
         new URL("../../reuse/runtime-error-popup.js", import.meta.url),
         {
-            "./diagnostics.js": createDiagnosticFixture(),
+            "./capabilities.js": createDiagnosticFixture(),
             "./ui-ctx.js": { uiCtx },
             "./popup.js": context,
             "./api-client.js": context,
@@ -816,7 +816,7 @@ test("runtime error popup copy action adds and removes copied class on success",
     context.__testExports = loadTestModule(
         new URL("../../reuse/runtime-error-popup.js", import.meta.url),
         {
-            "./diagnostics.js": createDiagnosticFixture(),
+            "./capabilities.js": createDiagnosticFixture(),
             "./ui-ctx.js": { uiCtx },
             "./popup.js": context,
             "./api-client.js": context,
@@ -916,7 +916,7 @@ test("runtime error popup copy action skips class toggle when overlay is not an 
     context.__testExports = loadTestModule(
         new URL("../../reuse/runtime-error-popup.js", import.meta.url),
         {
-            "./diagnostics.js": createDiagnosticFixture(),
+            "./capabilities.js": createDiagnosticFixture(),
             "./ui-ctx.js": { uiCtx },
             "./popup.js": context,
             "./api-client.js": context,

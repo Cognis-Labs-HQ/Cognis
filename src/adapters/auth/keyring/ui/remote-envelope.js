@@ -1,6 +1,9 @@
 /** Load authoritative vault metadata once per current actor while a read is pending. */
 
-import { log } from "/static/reuse/diagnostics.js";
+import { bindCapability } from "/static/reuse/capabilities.js";
+
+const log = bindCapability("ui:log");
+
 export function createEnvelopeLoader({
     apiFetch,
     identityGuard,
