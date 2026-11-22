@@ -1,4 +1,6 @@
+import type { BootstrapLog } from "../../shared.js";
 import { createHash, randomBytes } from "node:crypto";
+import type { StructuredDbWhereClause } from "../../db/reuse/db-command.js";
 import type { DbExecutor } from "../../db/reuse/db-executor.js";
 import {
     issueShareTokenValue,
@@ -49,11 +51,7 @@ const EXPIRED_TOKEN_RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
 
 function parseRecord(
     row: Record<string, unknown>,
-    log?: (
-        level: string,
-        message: string,
-        meta?: Record<string, unknown>,
-    ) => void,
+    log?: BootstrapLog,
 ): ShareTokenRecord | null {
     const id = String(row.id ?? "").trim();
     const ownerAccountId = String(row.owner_account_id ?? "").trim();
@@ -132,11 +130,7 @@ function parseRecord(
 export class ShareTokenStore {
     constructor(
         private readonly db: DbExecutor,
-        private readonly log?: (
-            level: string,
-            message: string,
-            meta?: Record<string, unknown>,
-        ) => void,
+        private readonly log?: BootstrapLog,
     ) {}
 
     async ensureSchema(): Promise<void> {
@@ -661,7 +655,7 @@ export class ShareTokenStore {
         // expiry deletion must first exclude empty rows before applying the
         // timestamp comparison. Tokens that expired within the retention
         // window are kept so their owner can still see them as "Expired".
-        const where = [
+        const where: StructuredDbWhereClause[] = [
             { column: "expires_at", operator: "!=", value: "" as const },
             { column: "expires_at", operator: "<", value: retentionCutoffIso },
         ];
