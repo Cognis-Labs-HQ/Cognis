@@ -63,6 +63,8 @@ Otoritas diperiksa kembali sebelum efek setelah pembacaan asinkron. Menonaktifka
 
 Alamat mungkin sudah tersimpan saat pengiriman atau pencabutan gagal; kode yang valid dapat terpakai sebelum pemeriksaan otoritas atau kegagalan basis data berikutnya. Periksa keadaan terkini sebelum mencoba kembali.
 
+Pendaftaran memvalidasi judul dan langkah panduan terhadap katalog milik gateway sebelum menyediakan panduan. Bahasa Inggris, Jerman, Indonesia, dan Jepang didukung; nilai bahasa pilihan yang hilang atau kosong menggunakan kunci bahasa Inggris yang sama. Teks bahasa Inggris yang hilang tetap menghasilkan kesalahan terjemahan yang eksplisit. Mendaftarkan panduan di halaman dasbor lain tidak membuka Pengaturan atau Administrasi.
+
 ## Keamanan
 
 Verifikasi email mengikat akun dan alamat. Pengiriman hilang tidak membatalkan kebijakan; registrasi tujuan terbatas pada bootstrap dan pelepasan mencegah pesan terlambat.

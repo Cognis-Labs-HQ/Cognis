@@ -65,6 +65,8 @@ Nach asynchronen Lesevorgängen wird die Berechtigung vor Wirkungen erneut gepr�
 
 Eine Adresse kann bereits gespeichert sein, wenn Zustellung oder Widerruf fehlschlagen; ein gültiger Code kann vor einer späteren Berechtigungsprüfung oder einem Datenbankfehler verbraucht werden. Vor erneutem Versuch den aktuellen Zustand prüfen.
 
+Die Registrierung prüft Titel und Schritte anhand des eigenen Katalogs des Gateways, bevor die Anleitungen verfügbar werden. Englisch, Deutsch, Indonesisch und Japanisch werden unterstützt. Fehlende oder leere Werte der bevorzugten Sprache verwenden denselben englischen Schlüssel. Fehlender englischer Text bleibt ein ausdrücklicher Übersetzungsfehler. Die Registrierung auf einer anderen Dashboard-Seite navigiert nicht zu Einstellungen oder Verwaltung.
+
 ## Sicherheit
 
 E-Mail-Bestätigung bindet Konto und Adresse. Fehlende Zustellung hebt Richtlinien nicht auf; Zwecke werden beim Start registriert und nach Entsorgung nicht weiter genutzt.

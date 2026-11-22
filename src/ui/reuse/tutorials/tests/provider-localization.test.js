@@ -3,11 +3,17 @@ import assert from "node:assert/strict";
 import { installI18nEnvironment } from "../../tests/fixtures/i18n-environment.js";
 import { tutorialHost } from "./fixtures/host.js";
 import { mountTutorialProvider } from "../pages.js";
+import { workerFixture } from "../../../tests/fixtures/offline-worker.js";
 
-test("provider localization refreshes an earlier public catalog for its declared keys, preserves English fallback and reuses the result offline", async (context) => {
+test("provider localization refreshes an earlier worker-cached gateway catalog, preserves English fallback and reuses the result offline", async (context) => {
     let published = false;
     const baseUrl = "/static/gateways/example/languages";
-    const environment = installI18nEnvironment((path) => {
+    const worker = workerFixture();
+    const environment = installI18nEnvironment((path, options) =>
+        worker.request(path, undefined, options),
+    );
+    worker.serve((url) => {
+        const path = new URL(url).pathname;
         const entries = path.startsWith(baseUrl)
             ? published
                 ? path.includes("/en/")
