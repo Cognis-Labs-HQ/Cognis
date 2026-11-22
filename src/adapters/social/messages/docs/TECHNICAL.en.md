@@ -206,6 +206,12 @@ Social profile roles and visibility declarations now match stored records. Messa
 
 Shared behavior: [Auth](/docs/gateways/auth/technical).
 
+### Message Text Wrapping
+
+Message text wraps to the available conversation width in the default, speech-bubble and IRC styles. Short messages stay on one line when they fit. Explicit line breaks, Markdown formatting and literal HTML-like text retain their existing presentation; long unbroken text can wrap inside the message. The same behavior applies to incoming and outgoing messages without changing avatars, reactions or delivery metadata.
+
+The room-history step covers the same conversation region in the default, speech-bubble and IRC styles. Messages wrap within that region while preserving authored line breaks and Markdown. The guide keeps its existing targets, sequence and completion identity.
+
 ## Security
 
 Room eligibility, membership changes and message reads are authorized independently. Encrypted rooms depend on client-held keys; the threat model below distinguishes protected content from visible routing metadata.

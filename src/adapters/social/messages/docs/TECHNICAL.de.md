@@ -130,6 +130,12 @@ Rollen und Sichtbarkeitsdeklarationen sozialer Profile entsprechen jetzt den ges
 
 Gemeinsames Verhalten: [Auth](/docs/gateways/auth/technical).
 
+### Zeilenumbruch im Chat
+
+Nachrichtentext wird im Standard-, Sprechblasen- und IRC-Stil an die verfügbare Gesprächsbreite angepasst. Kurze Nachrichten bleiben einzeilig, wenn sie hineinpassen. Ausdrückliche Zeilenumbrüche, Markdown-Formatierung und wörtlicher HTML-ähnlicher Text behalten ihre Darstellung; lange Zeichenfolgen ohne Leerzeichen können innerhalb der Nachricht umbrechen. Dies gilt für eingehende und ausgehende Nachrichten, ohne Avatare, Reaktionen oder Zustellinformationen zu verändern.
+
+Der Schritt zum Nachrichtenverlauf zeigt im Standard-, Sprechblasen- und IRC-Stil denselben Gesprächsbereich. Nachrichten werden darin umgebrochen; gesetzte Zeilenumbrüche und Markdown bleiben erhalten. Ziele, Reihenfolge und Abschlusskennung des Rundgangs bleiben unverändert.
+
 ## Sicherheit
 
 Raumzugang, Mitgliedschaft und Nachrichtenlesen werden getrennt geprüft. Verschlüsselte Räume benötigen Clientschlüssel; das Bedrohungsmodell unterscheidet Inhalte von sichtbaren Routingdaten.

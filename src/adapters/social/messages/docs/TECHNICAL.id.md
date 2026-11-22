@@ -153,6 +153,12 @@ Deklarasi peran dan visibilitas profil sosial kini sesuai dengan rekaman tersimp
 
 Perilaku bersama: [Auth](/docs/gateways/auth/technical).
 
+### Pembungkusan Teks Pesan
+
+Teks pesan membungkus sesuai lebar percakapan yang tersedia dalam gaya bawaan, gelembung percakapan, dan IRC. Pesan pendek tetap satu baris jika muat. Pergantian baris eksplisit, format Markdown, dan teks literal menyerupai HTML tetap dipertahankan; teks panjang tanpa spasi dapat membungkus di dalam pesan. Perilaku ini berlaku untuk pesan masuk dan keluar tanpa mengubah avatar, reaksi, atau informasi pengiriman.
+
+Langkah riwayat percakapan mencakup area percakapan yang sama dalam gaya bawaan, gelembung percakapan, dan IRC. Pesan membungkus di dalam area tersebut dengan tetap mempertahankan pergantian baris dan Markdown. Panduan mempertahankan target, urutan, dan identitas penyelesaiannya.
+
 ## Keamanan
 
 Kelayakan ruang, keanggotaan, dan pembacaan pesan diperiksa terpisah. Ruang terenkripsi bergantung pada kunci klien; model ancaman membedakan konten dan metadata perutean.
