@@ -22,6 +22,10 @@ Ein neues Thema öffnet Info. Info, Anwendung und Technik gehören zu einer Komp
 
 Inhalte, Navigationstitel und Suche bevorzugen die aktive UI-Sprache, danach konfigurierte Ausweichsprachen und Englisch. Dies gilt einheitlich für Info, Nutzung und Technik sowie archivierte Versionen.
 
+### Übersetzungskataloge
+
+Jeder ausgelieferte Katalog `strings.xml` verwendet das Wurzelelement `<resources>`. Englische Einträge dürfen nicht leer sein; andere Sprachen behalten dieselben Schlüssel und deren Reihenfolge. Wörtliche Übersetzungsaufrufe und HTML-Übersetzungsattribute müssen einen englischen Eintrag auflösen. `node --import tsx --test src/ui/tests/strings-coverage.test.js src/tooling/tests/translations/*.test.js` prüft Kataloge und Quelltextverweise. Berechnete Schlüssel benötigen weiterhin Verhaltenstests der Komponente.
+
 ## Sicherheit
 
 Dokumentation ist öffentlich: Zugangsdaten, private Kontodaten und Betriebsgeheimnisse gehören nicht hinein. Manifestverweise verbleiben im eigenen Dokumentationsbereich. Die Kernerkennung liest Verzeichnispakete statt beliebiger Markdown-Dateinamen.

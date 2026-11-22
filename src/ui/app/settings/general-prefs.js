@@ -398,11 +398,18 @@ export function initGeneralPrefs(
                                 ? err.message
                                 : "remove_failed";
                         if (code === "cannot_remove_primary_email") {
-                            showToast(i18n.t("ui.reuse.remove_primary_body"), {
-                                variant: "warning",
-                            });
+                            showToast(
+                                i18n.t(
+                                    "ui.app.settings.emails_remove_primary_body",
+                                ),
+                                {
+                                    variant: "warning",
+                                },
+                            );
                         } else {
-                            showStatus(i18n.t("ui.reuse.remove_failed"));
+                            showStatus(
+                                i18n.t("ui.app.settings.emails_remove_failed"),
+                            );
                         }
                     }
                     return;

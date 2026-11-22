@@ -98,4 +98,7 @@
   <string name="module.social.messages.tutorial.messages.manage.room.body">Judul percakapan menunjukkan ruang dan pesertanya. Periksa tindakan yang tersedia sebelum mengubah anggota atau keluar.</string>
   <string name="module.social.messages.conversations">Percakapan</string>
   <string name="module.social.messages.choose_conversation">Pilih percakapan untuk membaca dan mengirim pesan.</string>
+  <string name="adapter.social.messages.room_key_prompt_title">Kunci Enkripsi Ruang</string>
+  <string name="adapter.social.messages.room_key_prompt">Masukkan kunci enkripsi ruang.</string>
+  <string name="adapter.social.messages.reactions">Reaksi</string>
 </resources>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<strings>
+<resources>
   <string name="adapter.auth.keyring.unlock_title">Schlüsselbund entsperren</string>
   <string name="adapter.auth.keyring.unlock_message">{{component}} hat Zugriff auf den Schlüsselbund angefordert, um {{action}} {{process}}.</string>
   <string name="adapter.auth.keyring.unlock_prompt">Gib das Schlüsselbund-Passwort ein, um fortzufahren.</string>
@@ -97,4 +97,4 @@
   <string name="gateway.auth.keyring.unavailable">Der Schlüsselbund ist nicht verfügbar. Versuchen Sie es erneut, sobald die Verbindung wiederhergestellt ist.</string>
   <string name="adapter.auth.keyring.config.maximum_vault_size">Maximale Tresorgröße (MiB)</string>
   <string name="adapter.auth.keyring.config.derivation_iterations">Iterationen zur Passwortableitung</string>
-</strings>
+</resources>

@@ -57,7 +57,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Local File Storage    | `src/adapters/file/local/`          | `0.1.26` |
 | File Quota            | `src/adapters/file/quota/`          | `1.0.24` |
 | Local Auth            | `src/adapters/auth/local/`          | `0.4.1`  |
-| User Keyring          | `src/adapters/auth/keyring/`        | `2.1.4`  |
+| User Keyring          | `src/adapters/auth/keyring/`        | `2.1.5`  |
 | LDAP Auth             | `src/adapters/auth/ldap/`           | `0.5.37` |
 | OIDC Auth             | `src/adapters/auth/oidc/`           | `0.1.24` |
 | SAML Auth             | `src/adapters/auth/saml/`           | `0.1.24` |
@@ -70,7 +70,7 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Registration Token    | `src/adapters/registration/token/`  | `0.1.40` |
 | Public Registration   | `src/adapters/registration/public/` | `0.1.23` |
 | Profile (Social)      | `src/adapters/social/profile/`      | `3.0.18` |
-| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.47` |
+| Messages (Social)     | `src/adapters/social/messages/`     | `2.7.48` |
 | Calls (Social)        | `src/adapters/social/call/`         | `0.5.37` |
 | Link Share            | `src/adapters/share/link/`          | `1.1.40` |
 | User Share            | `src/adapters/share/user/`          | `1.1.20` |
@@ -88,17 +88,17 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Komponen              | Jalur                         | Versi    |
 | --------------------- | ----------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`            | `1.4.0`  |
-| Authentication (auth) | `src/gateways/auth/`          | `2.2.7`  |
+| Authentication (auth) | `src/gateways/auth/`          | `2.2.8`  |
 | Share                 | `src/gateways/share/`         | `1.9.10` |
 | Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.3.8`  |
-| Notification (notify) | `src/gateways/notify/`        | `2.2.10` |
+| Notification (notify) | `src/gateways/notify/`        | `2.2.11` |
 | Social                | `src/gateways/social/`        | `1.4.5`  |
 | File Storage (files)  | `src/gateways/files/`         | `2.3.6`  |
 | Registration          | `src/gateways/registration/`  | `1.2.7`  |
 | Logging               | `src/gateways/logging/`       | `1.5.21` |
 | Observability         | `src/gateways/observability/` | `1.0.7`  |
 | Study                 | `src/gateways/study/`         | `2.6.14` |
-| Calendar              | `src/gateways/calendar/`      | `1.7.20` |
+| Calendar              | `src/gateways/calendar/`      | `1.7.21` |
 
 ### Peralatan
 

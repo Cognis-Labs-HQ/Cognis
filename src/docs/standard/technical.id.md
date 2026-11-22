@@ -22,6 +22,10 @@ Topik baru membuka Info. Info, Penggunaan, dan Teknis adalah tiga tampilan satu 
 
 Isi dokumen, judul navigasi, dan pencarian mendahulukan bahasa UI aktif, lalu bahasa cadangan terkonfigurasi dan Inggris. Pilihan berlaku konsisten untuk Info, Penggunaan, Teknis, serta versi arsip.
 
+### Katalog Terjemahan
+
+Setiap katalog `strings.xml` yang dikirim menggunakan akar `<resources>`. Entri bahasa Inggris tidak boleh kosong; bahasa lain mempertahankan kunci dan urutan yang sama. Pemanggilan terjemahan literal dan atribut terjemahan HTML harus merujuk ke entri bahasa Inggris. Jalankan `node --import tsx --test src/ui/tests/strings-coverage.test.js src/tooling/tests/translations/*.test.js` untuk memeriksa katalog dan referensi sumber. Kunci yang dihitung tetap memerlukan pengujian perilaku komponen.
+
 ## Keamanan
 
 Dokumentasi bersifat publik: jangan sertakan kredensial, data akun pribadi, atau rahasia operasional. Penunjuk manifes tetap di ruang dokumentasi pemiliknya. Penemuan inti membaca paket entri direktori, bukan nama berkas Markdown sembarang.

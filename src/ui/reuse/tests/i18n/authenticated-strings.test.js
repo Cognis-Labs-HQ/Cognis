@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { installI18nEnvironment } from "../fixtures/i18n-environment.js";
+import { installI18nEnvironment } from "../../../../tooling/reuse/i18n-environment.js";
 
 test("component strings use authenticated API requests for protected catalogs", async () => {
     const authorizations = [];

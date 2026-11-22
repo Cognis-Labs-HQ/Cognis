@@ -208,4 +208,5 @@
   <string name="gateway.calendar.tutorial.calendar.plan.event.body">日時を選んで予定を作ります。保存前にカレンダー、時刻、繰り返し、公開範囲、通知を設定します。</string>
   <string name="gateway.calendar.tutorial.calendar.review.upcoming.title">今後の予定を確認する</string>
   <string name="gateway.calendar.tutorial.calendar.review.upcoming.body">今後の予定から詳細や招待を確認します。繰り返し予定の編集では、今回だけかシリーズ全体かを確認します。</string>
+  <string name="gateway.calendar.update_series">この繰り返しのすべての予定を更新</string>
 </resources>

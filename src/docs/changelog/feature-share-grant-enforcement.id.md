@@ -1,4 +1,4 @@
-# Penegakan Hak Berbagi
+# Berbagi dan Terjemahan
 
 **Cabang Fitur:** feature-share-grant-enforcement
 
@@ -9,6 +9,10 @@ Berbagi langsung kepada pengguna tidak lagi memberi akses setelah kedaluwarsa, t
 ## Hormati pencabutan hak eksplisit
 
 PATCH dengan `grantedCapabilities: []` menghapus semua kapabilitas yang diberikan. Tanpa bidang tersebut, hak tetap dipertahankan; larik tidak kosong menggantikannya. Pemeriksaan penerima, kata sandi, dan adaptor tetap berlaku.
+
+## Katalog Terjemahan
+
+Katalog keyring memakai akar XML runtime sehingga URL berbagi tamu dapat membuat keyring sementara tanpa kegagalan terjemahan. Label yang hilang untuk kunci ruang, reaksi, rangkaian kalender, tindakan email, kontrol notifikasi, callback SSO, dan status Administrasi tersedia dalam empat bahasa. Pemeriksaan akar katalog dan referensi literal mencegah kelalaian yang sama di komponen lain.
 
 ## Komit
 

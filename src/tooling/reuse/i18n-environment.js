@@ -14,9 +14,10 @@ export function installI18nEnvironment(respond) {
     globalThis.document = { cookie: "", documentElement: { lang: "de" } };
     globalThis.DOMParser = class {
         parseFromString(xml) {
+            const documentXml = xml.replace(/^\s*<\?xml[^>]*>\s*/, "");
             return {
                 documentElement: {
-                    nodeName: /^\s*<resources[>\s]/.test(xml)
+                    nodeName: /^\s*<resources[>\s]/.test(documentXml)
                         ? "resources"
                         : "html",
                 },

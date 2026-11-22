@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<strings>
+<resources>
   <string name="adapter.auth.keyring.unlock_title">キーリングを解除</string>
   <string name="adapter.auth.keyring.unlock_message">{{component}} がキーリングへアクセスし、{{action}} {{process}}することを要求しています。</string>
   <string name="adapter.auth.keyring.unlock_prompt">続行するにはキーリングのパスワードを入力してください。</string>
@@ -97,4 +97,4 @@
   <string name="gateway.auth.keyring.unavailable">キーリングを利用できません。接続が回復したら、もう一度お試しください。</string>
   <string name="adapter.auth.keyring.config.maximum_vault_size">保管庫の最大サイズ (MiB)</string>
   <string name="adapter.auth.keyring.config.derivation_iterations">パスワード導出の反復回数</string>
-</strings>
+</resources>

@@ -778,4 +778,8 @@
   <string name="ui.tutorial.docs.read.document.views.title">Lesestufe wählen</string>
   <string name="ui.tutorial.docs.read.document.views.body">Info bietet eine Einführung, Anwendung erklärt Abläufe und Technik beschreibt Schnittstellen und Konfiguration. Alle drei folgen der gewählten Version.</string>
   <string name="ui.reuse.components">Komponenten</string>
+  <string name="ui.reuse.email">E-Mail</string>
+  <string name="ui.reuse.enabled">Aktiviert</string>
+  <string name="ui.reuse.disabled">Deaktiviert</string>
+  <string name="ui.app.admin.started">Gestartet</string>
 </resources>

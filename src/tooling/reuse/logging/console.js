@@ -1,6 +1,7 @@
 import { readFileSync, existsSync } from "node:fs";
 import { extname, relative, resolve } from "node:path";
-import { createScanner, SyntaxKind } from "typescript/unstable/ast";
+import { SyntaxKind } from "typescript/unstable/ast";
+import { sourceTokens } from "../source-tokens.js";
 import { sourceFiles } from "../component-files.js";
 
 const OUTPUT_OWNERS = new Set([
@@ -9,58 +10,9 @@ const OUTPUT_OWNERS = new Set([
 ]);
 const CODE_EXTENSIONS = new Set([".js", ".ts", ".mjs", ".cjs", ".jsx", ".tsx"]);
 const GLOBALS = new Set(["globalThis", "window", "self", "global"]);
-const REGEX_PREFIXES = new Set([
-    "=",
-    "(",
-    "[",
-    ",",
-    ":",
-    "return",
-    "=>",
-    "!",
-    "&&",
-    "||",
-    "??",
-    ";",
-    "{",
-]);
-
-function tokens(source) {
-    const scanner = createScanner(true, undefined, source);
-    const values = [];
-    const templates = [];
-    let kind;
-    while ((kind = scanner.scan()) !== SyntaxKind.EndOfFile) {
-        if (
-            kind === SyntaxKind.SlashToken &&
-            (!values.length || REGEX_PREFIXES.has(values.at(-1).text))
-        )
-            kind = scanner.reScanSlashToken();
-        if (kind === SyntaxKind.TemplateHead) templates.push(0);
-        else if (kind === SyntaxKind.OpenBraceToken && templates.length)
-            templates[templates.length - 1]++;
-        else if (kind === SyntaxKind.CloseBraceToken && templates.length) {
-            if (templates.at(-1) === 0) {
-                kind = scanner.reScanTemplateToken(false);
-                if (kind === SyntaxKind.TemplateTail) templates.pop();
-            } else templates[templates.length - 1]--;
-        }
-        values.push({
-            kind,
-            text:
-                kind === SyntaxKind.Identifier
-                    ? scanner.getTokenValue()
-                    : scanner.getTokenText(),
-            value: scanner.getTokenValue(),
-            offset: scanner.getTokenStart(),
-        });
-    }
-    return values;
-}
-
 /** Find native console references, including aliases, computed access and imports. */
 export function consoleReferences(source) {
-    const values = tokens(source);
+    const values = sourceTokens(source);
     return values.flatMap((token, index) => {
         const previous = values[index - 1];
         const next = values[index + 1];
@@ -134,7 +86,7 @@ function codeSections(source, extension) {
 }
 
 function isGatewayInitialization(source, offset) {
-    const values = tokens(source);
+    const values = sourceTokens(source);
     const start = values.findIndex(
         (entry, index) =>
             entry.text === "function" &&

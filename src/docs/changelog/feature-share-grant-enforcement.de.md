@@ -1,4 +1,4 @@
-# Freigaberechte absichern
+# Freigaben und Übersetzungen
 
 **Feature-Zweig:** feature-share-grant-enforcement
 
@@ -9,6 +9,10 @@ Direkte Benutzerfreigaben gewähren nach Ablauf keinen Zugriff mehr, auch nach P
 ## Ausdrücklichen Rechteentzug beachten
 
 PATCH mit `grantedCapabilities: []` entfernt alle gewährten Fähigkeiten. Ohne dieses Feld bleiben sie erhalten; ein nichtleeres Array ersetzt sie. Empfänger-, Passwort- und Adapterprüfungen bleiben wirksam.
+
+## Übersetzungskataloge
+
+Schlüsselbundkataloge verwenden das Laufzeit-XML-Wurzelelement, damit Gast-Freigabelinks ihren temporären Schlüsselbund ohne fehlende Übersetzung erstellen können. Fehlende Beschriftungen für Raumschlüssel, Reaktionen, Terminserien, E-Mail-Aktionen, Benachrichtigungen, SSO-Rückmeldungen und den Verwaltungsstatus liegen in allen vier Sprachen vor. Prüfungen der Katalogwurzel und wörtlicher Verweise verhindern entsprechende Lücken in anderen Komponenten.
 
 ## Commits
 

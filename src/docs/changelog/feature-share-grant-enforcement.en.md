@@ -1,4 +1,4 @@
-# Share Grant Enforcement
+# Share Access and Translations
 
 **Feature Branch:** feature-share-grant-enforcement
 
@@ -9,6 +9,10 @@ Direct user shares stop granting access at expiry, including password-unlocked s
 ## Honor explicit grant revocation
 
 PATCH with `grantedCapabilities: []` removes every granted capability. Omitting the field preserves grants; a nonempty array replaces them. Recipient, password and adapter checks remain in force.
+
+## Translation Catalogs
+
+Keyring catalogs use the runtime XML root so guest Share URLs can create their temporary keyring without a missing-translation failure. Missing labels in room-key prompts, reactions, calendar series editing, email actions, notification controls, SSO callbacks and Administration status are supplied in all four languages. Catalog-root and literal-reference checks prevent the same omissions in other components.
 
 ## Commits
 

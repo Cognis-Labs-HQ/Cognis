@@ -208,4 +208,5 @@
   <string name="gateway.calendar.tutorial.calendar.plan.event.body">Wählen Sie Datum oder Uhrzeit für einen neuen Termin. Legen Sie Kalender, Zeit, Wiederholung, Sichtbarkeit und Erinnerungen vor dem Speichern fest.</string>
   <string name="gateway.calendar.tutorial.calendar.review.upcoming.title">Anstehende Termine prüfen</string>
   <string name="gateway.calendar.tutorial.calendar.review.upcoming.body">Öffnen Sie anstehende Termine für Details und Einladungen. Prüfen Sie bei Serien, ob Änderungen einen Termin oder die Serie betreffen.</string>
+  <string name="gateway.calendar.update_series">Alle Termine dieser Serie aktualisieren</string>
 </resources>

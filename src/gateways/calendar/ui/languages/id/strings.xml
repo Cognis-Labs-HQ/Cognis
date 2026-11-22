@@ -208,4 +208,5 @@
   <string name="gateway.calendar.tutorial.calendar.plan.event.body">Pilih tanggal atau waktu untuk membuat acara. Atur kalender, waktu, pengulangan, visibilitas, dan pengingat sebelum menyimpan.</string>
   <string name="gateway.calendar.tutorial.calendar.review.upcoming.title">Tinjau Acara Mendatang</string>
   <string name="gateway.calendar.tutorial.calendar.review.upcoming.body">Buka acara mendatang untuk meninjau detail dan undangan. Untuk acara berulang, periksa apakah perubahan berlaku pada satu kejadian atau seluruh rangkaian.</string>
+  <string name="gateway.calendar.update_series">Perbarui Semua Acara dalam Rangkaian Ini</string>
 </resources>

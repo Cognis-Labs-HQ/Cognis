@@ -98,4 +98,7 @@
   <string name="module.social.messages.tutorial.messages.manage.room.body">Der Gesprächskopf zeigt Raum und Teilnehmer. Prüfen Sie verfügbare Aktionen, bevor Sie Mitglieder ändern oder austreten.</string>
   <string name="module.social.messages.conversations">Unterhaltungen</string>
   <string name="module.social.messages.choose_conversation">Wähle eine Unterhaltung, um Nachrichten zu lesen und zu senden.</string>
+  <string name="adapter.social.messages.room_key_prompt_title">Raumverschlüsselungsschlüssel</string>
+  <string name="adapter.social.messages.room_key_prompt">Gib den Verschlüsselungsschlüssel des Raums ein.</string>
+  <string name="adapter.social.messages.reactions">Reaktionen</string>
 </resources>

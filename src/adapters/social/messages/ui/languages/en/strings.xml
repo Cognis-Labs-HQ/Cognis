@@ -98,4 +98,7 @@
   <string name="module.social.messages.tutorial.messages.manage.room.body">The room header identifies the room and its participants. Review its available actions before changing membership or leaving.</string>
   <string name="module.social.messages.conversations">Conversations</string>
   <string name="module.social.messages.choose_conversation">Choose a conversation to read and send messages.</string>
+  <string name="adapter.social.messages.room_key_prompt_title">Room Encryption Key</string>
+  <string name="adapter.social.messages.room_key_prompt">Enter the room encryption key.</string>
+  <string name="adapter.social.messages.reactions">Reactions</string>
 </resources>

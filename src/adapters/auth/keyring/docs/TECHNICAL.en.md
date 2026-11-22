@@ -80,6 +80,8 @@ Keyring Settings reads current state when the section is shown, including its fi
 
 Keyring configuration declares its own string bundle and localized labels for maximum vault size and password derivation iterations. The shared Administration popup resolves these labels through the same XML resources as the adapter.
 
+Keyring lifecycle notifications, unlock controls and Settings labels load from the adapter-owned `ui/languages/<locale>/strings.xml` catalogs. These use the runtime `<resources>` document root; guest keyring creation uses the same localized lifecycle messages as account keyring creation. Resolvers are rebuilt for the current UI language on each use while the host coalesces and caches valid bundles. A failed catalog load is therefore retryable rather than retained as a permanent missing-key snapshot.
+
 ## Security
 
 ### Account privacy and keyring isolation

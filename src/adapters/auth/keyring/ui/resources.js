@@ -1,15 +1,8 @@
-let keyringI18nPromise = null;
-
-export function loadKeyringI18n() {
-    keyringI18nPromise ??= import("/static/reuse/i18n.js").then(
-        ({ createI18n }) =>
-            createI18n({
-                componentStringBaseUrls: [
-                    "/static/adapters/auth/keyring/languages",
-                ],
-            }),
-    );
-    return keyringI18nPromise;
+export async function loadKeyringI18n() {
+    const { createI18n } = await import("/static/reuse/i18n.js");
+    return createI18n({
+        componentStringBaseUrls: ["/static/adapters/auth/keyring/languages"],
+    });
 }
 
 export async function ensureKeyringFormStyles() {

@@ -22,6 +22,10 @@ A new topic opens Info. Info, Usage and Technical are three views of one compone
 
 Document bodies, navigation titles and search prioritize the active UI language, then configured fallbacks and English. This selection applies consistently to Info, Usage and Technical, including archived versions.
 
+### Translation Catalogs
+
+Every shipped `strings.xml` catalog uses a `<resources>` root. English entries must be nonempty; other locales keep the same keys and order. Literal translation calls and HTML translation attributes must resolve to an English entry. Run `node --import tsx --test src/ui/tests/strings-coverage.test.js src/tooling/tests/translations/*.test.js` to check catalogs and source references. Computed translation keys still require component behavioral coverage.
+
 ## Security
 
 Documentation is public: exclude credentials, private account data and operational secrets. Component manifest pointers stay within their owned docs space. Core discovery reads directory entry bundles rather than arbitrary Markdown filenames.

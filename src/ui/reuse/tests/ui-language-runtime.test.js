@@ -4,7 +4,7 @@ import assert from "node:assert/strict";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import { createOfflineClientFixture } from "../../../tooling/reuse/offline-client-fixture.js";
 import { registerPageRedraw } from "../page-redraw.js";
-import { installI18nEnvironment } from "./fixtures/i18n-environment.js";
+import { installI18nEnvironment } from "../../../tooling/reuse/i18n-environment.js";
 
 function languageState() {
     const values = new Map([

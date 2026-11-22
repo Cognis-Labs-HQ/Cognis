@@ -566,12 +566,8 @@ export function parseEncodedPayload(rawPayload) {
 export async function openReactionDetailsPopup(reactionDetailsRows, i18n) {
     const rows = Array.isArray(reactionDetailsRows) ? reactionDetailsRows : [];
     if (rows.length === 0) return;
-    const heading =
-        i18n?.t("module.social.messages.emoji_more") ??
-        i18n?.t("module.social.messages.reactions") ??
-        "Reactions";
-    const closeLabel =
-        i18n?.t("ui.reuse.close") ?? i18n?.t("ui.reuse.cancel") ?? "Close";
+    const heading = i18n.t("adapter.social.messages.reactions");
+    const closeLabel = i18n.t("ui.reuse.close");
     const detailRows = rows.flatMap((row) => {
         const emoji = String(row?.emoji ?? "").trim();
         const emojiLabel = emojiDisplayName(emoji, i18n);
