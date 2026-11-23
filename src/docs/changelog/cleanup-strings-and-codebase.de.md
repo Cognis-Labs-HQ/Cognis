@@ -32,7 +32,7 @@ Längenangabe in Index- oder Schlüssel-Constraints ablehnt.
 - KI-Beitragsanweisungen:
     - `.github/copilot-instructions.md`
 - Dokumentationsindex/Versionierung:
-    - `src/docs/index.en.md`
+    - `src/docs/INFO.en.md`
     - `src/docs/versions.en.md`
     - `src/docs/versions.de.md`
     - `src/docs/versions.id.md`

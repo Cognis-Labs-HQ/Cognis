@@ -1,7 +1,7 @@
 {
     "name": "cognis",
     "private": true,
-    "version": "0.1.14",
+    "version": "0.1.15",
     "description": "Cognis monorepo scaffold",
     "workspaces": [
         "src/api",
@@ -37,8 +37,8 @@
         "node": ">=24"
     },
     "documentation": {
-        "readme": "src/docs/index.en.md",
-        "usage": "src/docs/usage.en.md",
-        "technical": "src/docs/technical.en.md"
+        "readme": "src/docs/INFO.en.md",
+        "usage": "src/docs/USAGE.en.md",
+        "technical": "src/docs/TECHNICAL.en.md"
     }
 }

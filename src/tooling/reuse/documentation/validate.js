@@ -11,6 +11,8 @@ export const documents = {
     technical: "TECHNICAL",
 };
 
+export const coreDocuments = { ...documents, readme: "INFO" };
+
 export function documentName(kind, language) {
     return `${documents[kind]}.${language}.md`;
 }
@@ -113,7 +115,7 @@ export function validateComponent(manifestPath, docsDirectory = "docs") {
         ];
     for (const kind of Object.keys(documents)) {
         const name = core
-            ? `${{ readme: "index", usage: "usage", technical: "technical" }[kind]}.en.md`
+            ? `${coreDocuments[kind]}.en.md`
             : documentName(kind, "en");
         if (pointers[kind] !== `${docsDirectory}/${name}`) {
             issues.push(
@@ -126,7 +128,7 @@ export function validateComponent(manifestPath, docsDirectory = "docs") {
                 root,
                 docsDirectory,
                 core
-                    ? `${{ readme: "index", usage: "usage", technical: "technical" }[kind]}.${language}.md`
+                    ? `${coreDocuments[kind]}.${language}.md`
                     : documentName(kind, language),
             );
             try {
@@ -180,7 +182,7 @@ export function validateCoreDocumentation(directory) {
             path.endsWith(".md") && !path.includes(`${sep}changelog${sep}`),
     );
     const folders = new Set(paths.map(dirname));
-    const names = { readme: "index", usage: "usage", technical: "technical" };
+    const names = coreDocuments;
     const allowed = new Set(
         Object.values(names).flatMap((name) =>
             languages.map((language) => `${name}.${language}.md`),

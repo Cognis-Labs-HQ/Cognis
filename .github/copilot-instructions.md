@@ -384,6 +384,8 @@ Changelog entry structure is mandatory:
 - body content under each `##` — full details shown on the changelogs page only
 - `## Commits` — the final section containing a Markdown list of full GitHub commit links; localize this heading in each language file
 
+Commit link labels use short references (for example, the first seven characters), never a full commit SHA; preserve the immutable full SHA in the destination URL.
+
 Commit-list items must be contiguous: never place blank lines between commit links in a changelog's final commit section.
 
 The final commit section is bookkeeping metadata, not a release-summary change point. Do not omit the feature-branch line or commit section merely because the title, change headings, and bodies are already present. Use `N/A` as the branch and leave the commit list empty only for changelogs that do not belong to a feature branch.
@@ -403,7 +405,7 @@ Gateways, adapters, and modules are responsible for their own resources. This in
 - **Styles**: adapter-specific CSS lives inside the adapter, not under `src/ui/styles/`.
 - **Strings (i18n)**: each component can carry its own `languages/<lang>/strings.xml`; the i18n loader merges these at startup. Core-level `src/ui/languages/` files must contain only keys that are genuinely cross-component.
 - **User preferences**: adapters and gateways can contribute preference fields to the settings UI; the settings page is assembled from contributions rather than hardcoded sections.
-- **Docs**: each component places its documentation under a `docs/` subdirectory. The docs route auto-discovers all `docs/` directories across the codebase and serves them dynamically. Do not hardcode doc paths in the docs route. Follow the enforced document contract in `src/docs/standard/technical.en.md` and `src/tooling/reuse/documentation/structure.json`.
+- **Docs**: each component places its documentation under a `docs/` subdirectory. The docs route auto-discovers all `docs/` directories across the codebase and serves them dynamically. Do not hardcode doc paths in the docs route. Follow the enforced document contract in `src/docs/standard/TECHNICAL.en.md` and `src/tooling/reuse/documentation/structure.json`.
 - Implementation contracts, technical details, and usage examples belong in component docs, not source-file overview comments. Keep source comments limited to non-obvious constraints.
 
 ### Component documentation contract
@@ -422,7 +424,7 @@ Every component declares exactly `documentation.readme`, `documentation.usage` a
 
 The exact localized H2 names and order are defined in `src/tooling/reuse/documentation/structure.json`; extra, missing, duplicate, reordered or empty sections fail validation. Begin with one H1 of at most 30 characters and an informative introductory paragraph. Code fences must balance and headings must not skip levels. Unsupported interfaces or settings require an explicit explanation of the actual boundary, not an empty section or template placeholder.
 
-Core documentation is discovered by directory. Each directory in `src/docs/` supplies `index.<locale>.md` for Info, `usage.<locale>.md` and `technical.<locale>.md` in all four languages. Put an API topic in `src/docs/api/index.en.md`, never `src/docs/api.en.md`. Changelogs use their separate branch convention. Components continue to declare their own README/USAGE/TECHNICAL paths rather than depending on core discovery.
+Core documentation is discovered by directory. Document basenames are case-sensitive: INFO, README, USAGE and TECHNICAL must be uppercase; lowercase and mixed-case variants fail validation. Each directory in `src/docs/` supplies `INFO.<locale>.md` for Info, `USAGE.<locale>.md` and `TECHNICAL.<locale>.md` in all four languages. Put an API topic in `src/docs/api/INFO.en.md`, never `src/docs/api.en.md`. Changelogs use their separate branch convention. Components continue to declare their own README/USAGE/TECHNICAL paths rather than depending on core discovery.
 
 The Docs reader opens Info on a new topic and offers Info, Usage and Technical controls. One component version snapshots all three views atomically; view changes preserve that version. Tests enforce complete bundles, manifest pointers, localization, structural rules and core entry paths. Run `npm run check:docs`; PR CI additionally compares newly added changelogs to the head branch.
 

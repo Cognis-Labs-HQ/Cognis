@@ -31,7 +31,7 @@ export function documentationBundleFiles(root) {
     return sourceFiles(resolve(root, "src")).filter(
         (path) =>
             /\/docs\//.test(path) &&
-            /\/(?:README|USAGE|TECHNICAL|index|usage|technical)(?:\.(?:en|de|id|ja))?\.md$/.test(
+            /\/(?:README|INFO|USAGE|TECHNICAL)(?:\.(?:en|de|id|ja))?\.md$/.test(
                 path,
             ) &&
             !path.includes("/changelog/"),
@@ -65,4 +65,26 @@ export function sourceReferenceIssues(markdown, root) {
             .filter((path) => !existsSync(resolve(root, path)))
             .map((path) => `Documented source does not exist: ${path}`),
     ];
+}
+
+export function changelogFiles(root) {
+    return sourceFiles(resolve(root, "src")).filter((path) =>
+        /\/docs\/changelog\/[^/]+\.md$/.test(path),
+    );
+}
+
+export function changelogLinkIssues(markdown) {
+    const labels = [
+        ...[...markdown.matchAll(/\[([^\]\n]+)\](?=[ \t]*(?:\(|\[|:))/g)].map(
+            (match) => match[1],
+        ),
+        ...[...markdown.matchAll(/<a\b[^>]*>([\s\S]*?)<\/a>/gi)].map((match) =>
+            match[1].replace(/<[^>]+>/g, ""),
+        ),
+    ];
+    return labels.some((label) => /[0-9a-f]{40,}/i.test(label))
+        ? [
+              "Changelog link text must use a short commit reference, never a full SHA",
+          ]
+        : [];
 }

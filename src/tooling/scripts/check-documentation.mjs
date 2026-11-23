@@ -1,6 +1,8 @@
 import { writeTerminalReport } from "../reuse/terminal-output.ts";
 import { componentManifestFiles } from "../reuse/component-files.js";
 import {
+    changelogFiles,
+    changelogLinkIssues,
     documentationBundleFiles,
     sourceReferenceIssues,
 } from "../reuse/documentation/content.js";
@@ -26,6 +28,14 @@ const failures = componentManifestFiles(root).flatMap((manifest) =>
 for (const path of documentationBundleFiles(root)) {
     failures.push(
         ...sourceReferenceIssues(readFileSync(path, "utf8"), root).map(
+            (issue) => `${path}: ${issue}`,
+        ),
+    );
+}
+
+for (const path of changelogFiles(root)) {
+    failures.push(
+        ...changelogLinkIssues(readFileSync(path, "utf8")).map(
             (issue) => `${path}: ${issue}`,
         ),
     );

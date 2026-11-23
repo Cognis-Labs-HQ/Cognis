@@ -17,6 +17,8 @@ The public interfaces and operational rules of Application Server.
 
 The `langs` query is an ordered comma-separated language list for both index titles and document bodies. A regional locale tries its base language before the next preference; English remains available as the mandatory fallback. The same resolution applies to Info, Usage and Technical at the requested component version.
 
+Core source filenames follow the [documentation contract](/docs/standard/technical); document URLs and versioned bundles retain the same topic slugs.
+
 ## Configuration
 
 ### Documentation Reader

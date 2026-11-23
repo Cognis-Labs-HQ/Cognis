@@ -32,7 +32,7 @@ batasan indeks atau kunci.
 - Instruksi kontribusi AI:
     - `.github/copilot-instructions.md`
 - Indeks dokumentasi/versi:
-    - `src/docs/index.en.md`
+    - `src/docs/INFO.en.md`
     - `src/docs/versions.en.md`
     - `src/docs/versions.de.md`
     - `src/docs/versions.id.md`

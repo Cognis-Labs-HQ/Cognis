@@ -4,7 +4,9 @@ Dokumentation trennt Einführung, praktische Abläufe und technische Referenz, d
 
 ## Schnittstellen
 
-Jede Komponente deklariert `documentation.readme`, `documentation.usage` und `documentation.technical` mit `docs/README.en.md`, `docs/USAGE.en.md` und `docs/TECHNICAL.en.md`. Jede Sprache behält ihr Suffix: `.en`, `.de`, `.id` oder `.ja`. Manifestpfade benennen das englische Mitglied einer lokalisierten Dokumentfamilie statt einer festen Anzeigesprache. Kernthemen werden aus Verzeichnissen mit `index.<locale>.md`, `usage.<locale>.md` und `technical.<locale>.md` erkannt.
+Jede Komponente deklariert `documentation.readme`, `documentation.usage` und `documentation.technical` mit `docs/README.en.md`, `docs/USAGE.en.md` und `docs/TECHNICAL.en.md`. Jede Sprache behält ihr Suffix: `.en`, `.de`, `.id` oder `.ja`. Manifestpfade benennen das englische Mitglied einer lokalisierten Dokumentfamilie statt einer festen Anzeigesprache. Kernthemen werden aus Verzeichnissen mit `INFO.<locale>.md`, `USAGE.<locale>.md` und `TECHNICAL.<locale>.md` erkannt.
+
+Dokumentbasenamen sind großgeschrieben und unterscheiden Groß- und Kleinschreibung. Klein- oder gemischtgeschriebene Varianten von INFO, README, USAGE und TECHNICAL werden auch dann abgelehnt, wenn eine korrekt benannte Datei vorhanden ist.
 
 ## Konfiguration
 
@@ -43,3 +45,5 @@ Komponentenressourcen verwenden ihr eigenes öffentliches statisches Präfix. Ei
 Fülle jede Rolle mit nützlichen, am Quellcode geprüften Informationen statt Standardtext. Prüfe Methoden, Pfade, Felder, Rechte, Standardwerte, Persistenz und unvollständige Integrationen beim Eigentümer. Abläufe gehören in Nutzung, Implementierungsverträge in Technik. Prüfungen erkennen allgemeine Platzhalter und fehlende Quellen, beweisen aber nicht beliebige Prosa.
 
 GitHub-Quelldateilinks verwenden den Standardzweig-Alias `blob/HEAD` oder `raw/HEAD`, auch in archivierten Dokumenten. Commit-Links in Änderungsprotokollen behalten ihre unveränderlichen Ziele.
+
+Linktexte in Änderungsprotokollen verwenden kurze Commitreferenzen, etwa die ersten sieben Zeichen. Die Ziel-URL behält den vollständigen unveränderlichen SHA. Vollständige SHAs in Markdown- oder HTML-Linktexten lassen Dokumentationsprüfung und Repositorytests fehlschlagen.

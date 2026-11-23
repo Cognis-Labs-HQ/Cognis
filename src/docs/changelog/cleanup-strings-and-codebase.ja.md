@@ -29,7 +29,7 @@
 - AI 貢献ガイド:
     - `.github/copilot-instructions.md`
 - ドキュメント索引/バージョン管理:
-    - `src/docs/index.en.md`
+    - `src/docs/INFO.en.md`
     - `src/docs/versions.en.md`
     - `src/docs/versions.de.md`
     - `src/docs/versions.id.md`

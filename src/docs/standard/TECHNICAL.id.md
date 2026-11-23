@@ -4,7 +4,9 @@ Dokumentasi memisahkan pengenalan, prosedur praktis, dan referensi teknis agar p
 
 ## Antarmuka
 
-Setiap komponen menyatakan `documentation.readme`, `documentation.usage`, dan `documentation.technical` dengan nilai `docs/README.en.md`, `docs/USAGE.en.md`, dan `docs/TECHNICAL.en.md`. Setiap bahasa mempertahankan akhiran `.en`, `.de`, `.id`, atau `.ja`. Jalur manifes menunjuk anggota Inggris dalam keluarga dokumen lokal, bukan berkas bahasa tampilan tetap. Topik inti ditemukan dari direktori berisi `index.<locale>.md`, `usage.<locale>.md`, dan `technical.<locale>.md`.
+Setiap komponen menyatakan `documentation.readme`, `documentation.usage`, dan `documentation.technical` dengan nilai `docs/README.en.md`, `docs/USAGE.en.md`, dan `docs/TECHNICAL.en.md`. Setiap bahasa mempertahankan akhiran `.en`, `.de`, `.id`, atau `.ja`. Jalur manifes menunjuk anggota Inggris dalam keluarga dokumen lokal, bukan berkas bahasa tampilan tetap. Topik inti ditemukan dari direktori berisi `INFO.<locale>.md`, `USAGE.<locale>.md`, dan `TECHNICAL.<locale>.md`.
+
+Nama dasar dokumen peka huruf besar-kecil dan harus ditulis dengan huruf besar. Varian INFO, README, USAGE, dan TECHNICAL dengan huruf kecil atau campuran ditolak, meskipun berkas dengan nama yang benar juga tersedia.
 
 ## Konfigurasi
 
@@ -43,3 +45,5 @@ Aset komponen memakai awalan statis publik milik komponen. Aset yang hanya digun
 Isi setiap peran dengan informasi berguna yang diverifikasi pada sumber, bukan teks baku. Periksa metode, jalur, kolom, izin, nilai baku, persistensi, dan integrasi belum lengkap pada pemiliknya. Prosedur masuk Penggunaan, kontrak implementasi masuk Teknis. Pemeriksaan menolak petunjuk generik serta sumber hilang, tetapi tidak membuktikan kebenaran semua prosa.
 
 Tautan berkas sumber GitHub memakai alias cabang baku `blob/HEAD` atau `raw/HEAD`, termasuk dalam dokumentasi arsip. Tautan komit pada catatan perubahan tetap menunjuk komit permanen.
+
+Label tautan catatan perubahan memakai referensi commit singkat, misalnya tujuh karakter pertama. URL tujuan tetap menyimpan SHA lengkap yang tidak berubah. SHA lengkap dalam label tautan Markdown atau HTML menyebabkan perintah pemeriksaan dokumentasi dan pengujian repositori gagal.

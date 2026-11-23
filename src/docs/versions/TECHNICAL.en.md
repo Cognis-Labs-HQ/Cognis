@@ -1,56 +1,48 @@
-# Referensi Teknis
+# Technical Reference
 
-Antarmuka publik dan aturan operasional Versi Komponen.
+The public interfaces and operational rules of Component Versions.
 
-## Antarmuka
+## Interfaces
 
-### Kontrak inti
+### Core contracts
 
-| Komponen     | Jalur       | Versi   |
+| Component    | Path        | Version |
 | ------------ | ----------- | ------- |
 | Core Package | `src/core/` | `0.6.2` |
 
 ### API
 
-| Komponen   | Jalur      | Versi     |
+| Component  | Path       | Version   |
 | ---------- | ---------- | --------- |
-| API Server | `src/api/` | `0.13.35` |
+| API Server | `src/api/` | `0.13.36` |
 
-## Konfigurasi
+## Configuration
 
-Manifes dan package.json membawa versi. Dependensi Cognis memakai batas teruji seperti <=1.2.3; ini batas peringatan, bukan kesetaraan semua fitur lama.
+Manifests and package.json carry component versions. Cognis dependencies use tested ceilings such as <=1.2.3; this is a compatibility warning boundary, not a claim that every older feature is equivalent.
 
-## Perilaku
+## Behavior
 
-### Gambaran umum
+### Overview
 
-Dokumen ini melacak versi terkini dari setiap gateway, adapter, dan modul dalam codebase Cognis. Dokumen ini berfungsi sebagai indeks changelog dan referensi cepat untuk menentukan apakah sebuah komponen telah diperbarui sejak rilis sebelumnya.
+This document tracks the current version of every gateway, adapter, and module in the Cognis codebase. It serves as a changelog index and a quick reference for determining whether a component has been updated since a previous release.
 
-Setiap gateway, adapter, dan modul memiliki `package.json` dengan field `version`. Saat Anda mengubah sebuah komponen — termasuk logika internal, skema database, API publik, atau format konfigurasi — Anda harus menaikkan versi di `package.json` tersebut sesuai Semantic Versioning. Dokumen ini diperbarui pada saat yang sama. Entri changelog disimpan sebagai file per-PR di `src/docs/changelog/`.
+Every gateway, adapter, and module carries a `package.json` with a `version` field. When you modify a component — including its internal logic, database schema, public API, or configuration format — you must increment the version in that `package.json` following Semantic Versioning. This document is updated at the same time. Changelog entries are stored as per-PR files under `src/docs/changelog/`.
 
-### Tanggung jawab
+### Responsibilities
 
-- Mencatat versi terkini dari setiap komponen berversi dalam codebase.
-- Menjadi indeks changelog: menautkan dokumentasi per-komponen dan `src/docs/changelog/` untuk riwayat.
-- Memudahkan deteksi drift versi antara komponen yang terpasang dan codebase saat ini.
+- Record the current version of every versioned component in the codebase.
+- Serve as the changelog index: link to per-component docs and `src/docs/changelog/` for history.
+- Make it straightforward to detect version drift between deployed components and the current codebase.
 
-Tidak bertanggung jawab untuk: menegakkan kenaikan versi (itu tanggung jawab code review) atau melacak versi paket eksternal.
+Not responsible for: enforcing version bumps (that is a code review concern) or tracking dependency versions of external packages.
 
-### Aturan versi
+### Dependency rule
 
-Naikkan versi menggunakan [Semantic Versioning](https://semver.org/):
+Internal Cognis component dependencies use `<=<tested-version>` ranges. This records the latest dependency version the component was tested against while allowing the administration lifecycle view to warn when a newer installed dependency may be unverified.
 
-- **Patch** (`0.1.x`): perbaikan bug, perubahan internal yang tidak breaking.
-- **Minor** (`0.x.0`): fitur baru yang kompatibel ke belakang atau tambahan API.
-- **Major** (`x.0.0`): perubahan breaking pada API publik atau skema komponen.
+### Adapters
 
-### Aturan dependensi
-
-Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. Ini mencatat versi dependensi terbaru yang telah diuji untuk komponen tersebut, sekaligus memungkinkan tampilan siklus hidup Administrasi memberi peringatan saat dependensi terpasang yang lebih baru mungkin belum diverifikasi.
-
-### Adapter
-
-| Komponen              | Jalur                               | Versi    |
+| Component             | Path                                | Version  |
 | --------------------- | ----------------------------------- | -------- |
 | SMTP Notification     | `src/adapters/notify/smtp/`         | `0.5.2`  |
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.36` |
@@ -77,15 +69,15 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.4.12` |
 | Library (Study)       | `src/adapters/study/library/`       | `4.1.29` |
 | Drawing (Study)       | `src/adapters/study/drawing/`       | `1.1.3`  |
-| Adaptor Kartu Belajar | `src/adapters/study/flashcards/`    | `1.5.33` |
+| Flashcards Adapter    | `src/adapters/study/flashcards/`    | `1.5.33` |
 | Progress (Study)      | `src/adapters/study/progress/`      | `1.3.1`  |
 | Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.2.11` |
 | Console Logging       | `src/adapters/logging/console/`     | `1.1.4`  |
 | File Logging          | `src/adapters/logging/file/`        | `1.1.5`  |
 
-### Gerbang
+### Gateways
 
-| Komponen              | Jalur                         | Versi    |
+| Component             | Path                          | Version  |
 | --------------------- | ----------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`            | `1.4.0`  |
 | Authentication (auth) | `src/gateways/auth/`          | `2.2.8`  |
@@ -100,9 +92,9 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 | Study                 | `src/gateways/study/`         | `2.6.14` |
 | Calendar              | `src/gateways/calendar/`      | `1.7.23` |
 
-### Peralatan
+### Tooling
 
-| Komponen   | Jalur              | Versi   |
+| Component  | Path               | Version |
 | ---------- | ------------------ | ------- |
 | Cognis CLI | `src/tooling/cli/` | `0.4.2` |
 
@@ -111,11 +103,16 @@ Dependensi komponen internal Cognis menggunakan rentang `<=<tested-version>`. In
 [m]: https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/social/messages/package.json
 [p]: https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/social/profile/package.json
 
-## Keamanan
+## Security
 
-Versi atau batas teruji bukan izin mengaktifkan komponen. Integritas, dependensi, dan proteksi host tetap berlaku saat peningkatan.
+An installed version or tested ceiling is not authorization to enable a component. Package integrity, dependencies and required-host protections still apply during upgrades.
 
-## Referensi
+## Reference
 
-- [src/tooling/reuse/component-files.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/tooling/reuse/component-files.js)
-- [package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/package.json)
+### Versioning rule
+
+Increment using [Semantic Versioning](https://semver.org/):
+
+- **Patch** (`0.1.x`): bug fixes, non-breaking internal changes.
+- **Minor** (`0.x.0`): new backwards-compatible features or API additions.
+- **Major** (`x.0.0`): breaking changes to the component's public API or schema.

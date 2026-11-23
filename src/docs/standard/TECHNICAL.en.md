@@ -4,7 +4,9 @@ Documentation separates introductory information, practical procedures and techn
 
 ## Interfaces
 
-Every component declares `documentation.readme`, `documentation.usage` and `documentation.technical`. Their values are `docs/README.en.md`, `docs/USAGE.en.md` and `docs/TECHNICAL.en.md`. Every language keeps its suffix: `.en`, `.de`, `.id` or `.ja`. Manifest paths identify the English member of a localized document family, not a fixed display-language file. Core topics are discovered from directories containing `index.<locale>.md`, `usage.<locale>.md` and `technical.<locale>.md`.
+Every component declares `documentation.readme`, `documentation.usage` and `documentation.technical`. Their values are `docs/README.en.md`, `docs/USAGE.en.md` and `docs/TECHNICAL.en.md`. Every language keeps its suffix: `.en`, `.de`, `.id` or `.ja`. Manifest paths identify the English member of a localized document family, not a fixed display-language file. Core topics are discovered from directories containing `INFO.<locale>.md`, `USAGE.<locale>.md` and `TECHNICAL.<locale>.md`.
+
+Document basenames are case-sensitive and uppercase. Lowercase or mixed-case INFO, README, USAGE and TECHNICAL variants are rejected, even if a correctly named file also exists.
 
 ## Configuration
 
@@ -43,3 +45,5 @@ Component assets use the owning public static prefix. An asset consumed only by 
 Populate every role with useful, source-verified information rather than stock guidance. Check methods, paths, field names, permissions, defaults, persistence and incomplete integrations against their owners. Put procedural examples in Usage and implementation contracts in Technical. Automated checks reject generic placeholder guidance and missing concrete source references; they do not establish the truth of arbitrary prose.
 
 GitHub source-file links use the repository default-branch alias `blob/HEAD` or `raw/HEAD`, including from archived documentation. Commit links in changelogs retain their immutable commit targets.
+
+Changelog link labels use short commit references, such as the first seven characters. The destination URL retains the complete immutable SHA. Full SHAs in Markdown or HTML link labels fail both the documentation command and repository tests.

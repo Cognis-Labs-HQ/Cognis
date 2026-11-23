@@ -1,48 +1,42 @@
-# Technical Reference
+# Technische Referenz
 
-The public interfaces and operational rules of Component Versions.
+Öffentliche Schnittstellen und Betriebsregeln von Komponentenversionen.
 
-## Interfaces
-
-### Core contracts
-
-| Component    | Path        | Version |
-| ------------ | ----------- | ------- |
-| Core Package | `src/core/` | `0.6.2` |
+## Schnittstellen
 
 ### API
 
-| Component  | Path       | Version   |
+| Komponente | Pfad       | Version   |
 | ---------- | ---------- | --------- |
-| API Server | `src/api/` | `0.13.35` |
+| API Server | `src/api/` | `0.13.36` |
 
-## Configuration
+## Konfiguration
 
-Manifests and package.json carry component versions. Cognis dependencies use tested ceilings such as <=1.2.3; this is a compatibility warning boundary, not a claim that every older feature is equivalent.
+Manifeste und package.json enthalten Versionen. Cognis-Abhängigkeiten nutzen getestete Obergrenzen wie <=1.2.3; das ist eine Warngrenze, keine Gleichwertigkeit aller älteren Funktionen.
 
-## Behavior
+## Verhalten
 
-### Overview
+### Überblick
 
-This document tracks the current version of every gateway, adapter, and module in the Cognis codebase. It serves as a changelog index and a quick reference for determining whether a component has been updated since a previous release.
+Dieses Dokument erfasst die aktuelle Version jedes Gateways, Adapters und Moduls in der Cognis-Codebasis. Es dient als Changelog-Index und als schnelle Referenz, um zu erkennen, ob eine Komponente seit einer früheren Veröffentlichung aktualisiert wurde.
 
-Every gateway, adapter, and module carries a `package.json` with a `version` field. When you modify a component — including its internal logic, database schema, public API, or configuration format — you must increment the version in that `package.json` following Semantic Versioning. This document is updated at the same time. Changelog entries are stored as per-PR files under `src/docs/changelog/`.
+Jedes Gateway, jeder Adapter und jedes Modul besitzt eine `package.json` mit einem `version`-Feld. Wenn Sie eine Komponente ändern — einschließlich interner Logik, Datenbankschema, öffentlicher API oder Konfigurationsformat — müssen Sie die Version in dieser `package.json` nach Semantic Versioning erhöhen. Dieses Dokument wird gleichzeitig aktualisiert. Changelog-Einträge werden als PR-spezifische Dateien unter `src/docs/changelog/` gespeichert.
 
-### Responsibilities
+### Verantwortlichkeiten
 
-- Record the current version of every versioned component in the codebase.
-- Serve as the changelog index: link to per-component docs and `src/docs/changelog/` for history.
-- Make it straightforward to detect version drift between deployed components and the current codebase.
+- Die aktuelle Version jeder versionierten Komponente in der Codebasis festhalten.
+- Als Changelog-Index dienen: Verweise auf komponentenspezifische Dokumentation und `src/docs/changelog/` für die Historie.
+- Versionsdrift zwischen bereitgestellten Komponenten und der aktuellen Codebasis leicht erkennbar machen.
 
-Not responsible for: enforcing version bumps (that is a code review concern) or tracking dependency versions of external packages.
+Nicht verantwortlich für: das Erzwingen von Versionserhöhungen (das ist Aufgabe des Code-Reviews) oder das Nachverfolgen externer Paketversionen.
 
-### Dependency rule
+### Abhängigkeitsregel
 
-Internal Cognis component dependencies use `<=<tested-version>` ranges. This records the latest dependency version the component was tested against while allowing the administration lifecycle view to warn when a newer installed dependency may be unverified.
+Interne Cognis-Komponentenabhängigkeiten verwenden Bereiche der Form `<=<tested-version>`. Dadurch wird die neueste getestete Abhängigkeitsversion festgehalten, während die Administrations-Lebenszyklusansicht warnen kann, wenn eine neuere installierte Abhängigkeit möglicherweise nicht verifiziert ist.
 
-### Adapters
+### Adapter
 
-| Component             | Path                                | Version  |
+| Komponente            | Pfad                                | Version  |
 | --------------------- | ----------------------------------- | -------- |
 | SMTP Notification     | `src/adapters/notify/smtp/`         | `0.5.2`  |
 | Internal Notification | `src/adapters/notify/internal/`     | `0.5.36` |
@@ -69,7 +63,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Classes (Study)       | `src/adapters/study/classes/`       | `1.4.12` |
 | Library (Study)       | `src/adapters/study/library/`       | `4.1.29` |
 | Drawing (Study)       | `src/adapters/study/drawing/`       | `1.1.3`  |
-| Flashcards Adapter    | `src/adapters/study/flashcards/`    | `1.5.33` |
+| Lernkartenadapter     | `src/adapters/study/flashcards/`    | `1.5.33` |
 | Progress (Study)      | `src/adapters/study/progress/`      | `1.3.1`  |
 | Leaderboard (Study)   | `src/adapters/study/leaderboard/`   | `1.2.11` |
 | Console Logging       | `src/adapters/logging/console/`     | `1.1.4`  |
@@ -77,7 +71,7 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 
 ### Gateways
 
-| Component             | Path                          | Version  |
+| Komponente            | Pfad                          | Version  |
 | --------------------- | ----------------------------- | -------- |
 | Database (db)         | `src/gateways/db/`            | `1.4.0`  |
 | Authentication (auth) | `src/gateways/auth/`          | `2.2.8`  |
@@ -92,9 +86,15 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 | Study                 | `src/gateways/study/`         | `2.6.14` |
 | Calendar              | `src/gateways/calendar/`      | `1.7.23` |
 
-### Tooling
+### Kernverträge
 
-| Component  | Path               | Version |
+| Komponente   | Pfad        | Version |
+| ------------ | ----------- | ------- |
+| Core Package | `src/core/` | `0.6.2` |
+
+### Werkzeuge
+
+| Komponente | Pfad               | Version |
 | ---------- | ------------------ | ------- |
 | Cognis CLI | `src/tooling/cli/` | `0.4.2` |
 
@@ -103,16 +103,16 @@ Internal Cognis component dependencies use `<=<tested-version>` ranges. This rec
 [m]: https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/social/messages/package.json
 [p]: https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/social/profile/package.json
 
-## Security
+## Sicherheit
 
-An installed version or tested ceiling is not authorization to enable a component. Package integrity, dependencies and required-host protections still apply during upgrades.
+Version und getestete Grenze erlauben keine Aktivierung. Integrität, Abhängigkeiten und Hostschutz gelten auch beim Aktualisieren.
 
-## Reference
+## Referenz
 
-### Versioning rule
+### Versionierungsregel
 
-Increment using [Semantic Versioning](https://semver.org/):
+Erhöhungen erfolgen nach [Semantic Versioning](https://semver.org/):
 
-- **Patch** (`0.1.x`): bug fixes, non-breaking internal changes.
-- **Minor** (`0.x.0`): new backwards-compatible features or API additions.
-- **Major** (`x.0.0`): breaking changes to the component's public API or schema.
+- **Patch** (`0.1.x`): Fehlerbehebungen, nicht brechende interne Änderungen.
+- **Minor** (`0.x.0`): neue rückwärtskompatible Funktionen oder API-Erweiterungen.
+- **Major** (`x.0.0`): brechende Änderungen an öffentlicher API oder Schema der Komponente.

@@ -4,7 +4,9 @@
 
 ## インターフェース
 
-各コンポーネントは `documentation.readme`、`documentation.usage`、`documentation.technical` に `docs/README.en.md`、`docs/USAGE.en.md`、`docs/TECHNICAL.en.md` を指定します。英語も `.en` を維持し、各言語に `.en`、`.de`、`.id`、`.ja` を付けます。宣言のパスは表示言語を固定せず、翻訳を含む文書群の英語版を示します。コアのトピックは、`index.<locale>.md`、`usage.<locale>.md`、`technical.<locale>.md` があるディレクトリから検出します。
+各コンポーネントは `documentation.readme`、`documentation.usage`、`documentation.technical` に `docs/README.en.md`、`docs/USAGE.en.md`、`docs/TECHNICAL.en.md` を指定します。英語も `.en` を維持し、各言語に `.en`、`.de`、`.id`、`.ja` を付けます。宣言のパスは表示言語を固定せず、翻訳を含む文書群の英語版を示します。コアのトピックは、`INFO.<locale>.md`、`USAGE.<locale>.md`、`TECHNICAL.<locale>.md` があるディレクトリから検出します。
+
+文書のベース名は大文字と小文字を区別し、大文字で記述します。INFO、README、USAGE、TECHNICAL の小文字や大小混在の名前は、正しい名前のファイルが併存していても拒否されます。
 
 ## 設定
 
@@ -43,3 +45,5 @@ README は目的、作業、アクセス、使い始め方を説明し、エン�
 各種類に定型文ではなく、ソースで確認した有用な情報を記載します。メソッド、パス、項目、権限、既定値、永続性、不完全な連携を担当実装と照合します。手順例は使い方、実装契約は技術に置きます。自動検証は定型の空欄代替文と不足した参照を検出しますが、任意の文章の真偽を証明するものではありません。
 
 GitHub のソースリンクは保存済みの資料からも既定ブランチの別名 `blob/HEAD` または `raw/HEAD` を使います。変更履歴のコミットリンクは固定したコミットを指します。
+
+変更履歴のリンク表示には、先頭7文字などの短いコミット参照を使用します。リンク先 URL には不変の完全な SHA を保持します。Markdown または HTML のリンク表示に完全な SHA が含まれる場合、文書検証コマンドとリポジトリのテストは失敗します。

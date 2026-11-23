@@ -17,6 +17,8 @@
 
 Die Abfrage `langs` enthält eine geordnete, kommagetrennte Sprachliste für Indextitel und Inhalte. Regionale Angaben versuchen ihre Basissprache vor der nächsten Präferenz; Englisch bleibt als verpflichtende Ausweichsprache verfügbar. Dieselbe Auflösung gilt für Info, Nutzung und Technik der angeforderten Version.
 
+Quelldateinamen des Kerns folgen dem [Dokumentationsvertrag](/docs/standard/technical); Dokument-URLs und versionierte Pakete behalten dieselben Themenschlüssel.
+
 ## Konfiguration
 
 ### Dokumentationsleser

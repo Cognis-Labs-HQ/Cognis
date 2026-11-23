@@ -18,11 +18,15 @@
 
 保護されたリンクでは、繰り返しや同時の認証で一度のパスワード入力とゲストキーリングを再利用します。移動やアカウント変更で処理中の解決を無効にします。ゲストページはアカウント専用プロフィールを取得しません。Link ポップアップの画像はアダプター内で解決します。共有カレンダーは所有するスタイルシートを待ち、モバイル、タブレット、デスクトップでタイトル、操作部、スクロール可能な内容を別々の行に配置します。
 
+## 文書の命名規則
+
+コアのトピックは言語サフィックス付きの大文字 INFO、USAGE、TECHNICAL ファイル名を使用し、既存の URL とバージョン別表示を保持します。検証は小文字や大小混在のファイル名とマニフェストパスを拒否します。変更履歴のリンク表示を短いコミット参照にし、リンク先には不変の完全な SHA を保持します。コアとコンポーネントの既存の長いリンク表示も修正します。
+
 ## コミット
 
-- [37279a34a3891cca73dbc5cc5c85f3b00b2b2e8a](https://github.com/Cognis-Labs-HQ/Cognis/commit/37279a34a3891cca73dbc5cc5c85f3b00b2b2e8a)
-- [5244359630d1cdc12910d11cfb9d20e2c916fbf0](https://github.com/Cognis-Labs-HQ/Cognis/commit/5244359630d1cdc12910d11cfb9d20e2c916fbf0)
-- [d18f6f0a62926c095df90a4cd6c15f9484f287b4](https://github.com/Cognis-Labs-HQ/Cognis/commit/d18f6f0a62926c095df90a4cd6c15f9484f287b4)
-- [1f9c347e1ba3f836f54add76ce83592d85513f3e](https://github.com/Cognis-Labs-HQ/Cognis/commit/1f9c347e1ba3f836f54add76ce83592d85513f3e)
-- [ab2b8bbb31f93dbc3c816ed2988ff01e4d585c58](https://github.com/Cognis-Labs-HQ/Cognis/commit/ab2b8bbb31f93dbc3c816ed2988ff01e4d585c58)
-- [a7fe8ac3730ec41b4cacc15166715ddbef76eab3](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7fe8ac3730ec41b4cacc15166715ddbef76eab3)
+- [37279a3](https://github.com/Cognis-Labs-HQ/Cognis/commit/37279a34a3891cca73dbc5cc5c85f3b00b2b2e8a)
+- [5244359](https://github.com/Cognis-Labs-HQ/Cognis/commit/5244359630d1cdc12910d11cfb9d20e2c916fbf0)
+- [d18f6f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/d18f6f0a62926c095df90a4cd6c15f9484f287b4)
+- [1f9c347](https://github.com/Cognis-Labs-HQ/Cognis/commit/1f9c347e1ba3f836f54add76ce83592d85513f3e)
+- [ab2b8bb](https://github.com/Cognis-Labs-HQ/Cognis/commit/ab2b8bbb31f93dbc3c816ed2988ff01e4d585c58)
+- [a7fe8ac](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7fe8ac3730ec41b4cacc15166715ddbef76eab3)

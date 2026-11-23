@@ -17,6 +17,8 @@ Antarmuka publik dan aturan operasional Server Aplikasi.
 
 Kueri `langs` adalah daftar bahasa berurutan dipisahkan koma untuk judul indeks dan isi. Lokal regional mencoba bahasa dasar sebelum preferensi berikutnya; Inggris tetap tersedia sebagai cadangan wajib. Resolusi sama berlaku bagi Info, Penggunaan, dan Teknis pada versi komponen yang diminta.
 
+Nama berkas sumber inti mengikuti [kontrak dokumentasi](/docs/standard/technical); URL dokumen dan bundel berversi tetap memakai slug topik yang sama.
+
 ## Konfigurasi
 
 ### Pembaca Dokumentasi

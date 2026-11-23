@@ -18,11 +18,15 @@ Keyring catalogs use the runtime XML root so guest Share URLs can create their t
 
 Protected links reuse one password prompt and guest keyring across repeated or concurrent authentication. Pending resolution is discarded when navigation or account identity changes. Guest pages skip account-only profile requests. Link popup assets resolve within their adapter mount. Calendar share renderers await their owned stylesheets and keep title, navigation controls and scrollable content in separate rows at mobile, tablet and desktop sizes.
 
+## Documentation conventions
+
+Core topics use uppercase INFO, USAGE and TECHNICAL filenames with locale suffixes, retaining their existing URLs and versioned views. Validation rejects lowercase and mixed-case filenames and manifest pointers. Changelog links display concise commit references while keeping full immutable SHAs in their destinations; existing long labels are corrected across core and component changelogs.
+
 ## Commits
 
-- [37279a34a3891cca73dbc5cc5c85f3b00b2b2e8a](https://github.com/Cognis-Labs-HQ/Cognis/commit/37279a34a3891cca73dbc5cc5c85f3b00b2b2e8a)
-- [5244359630d1cdc12910d11cfb9d20e2c916fbf0](https://github.com/Cognis-Labs-HQ/Cognis/commit/5244359630d1cdc12910d11cfb9d20e2c916fbf0)
-- [d18f6f0a62926c095df90a4cd6c15f9484f287b4](https://github.com/Cognis-Labs-HQ/Cognis/commit/d18f6f0a62926c095df90a4cd6c15f9484f287b4)
-- [1f9c347e1ba3f836f54add76ce83592d85513f3e](https://github.com/Cognis-Labs-HQ/Cognis/commit/1f9c347e1ba3f836f54add76ce83592d85513f3e)
-- [ab2b8bbb31f93dbc3c816ed2988ff01e4d585c58](https://github.com/Cognis-Labs-HQ/Cognis/commit/ab2b8bbb31f93dbc3c816ed2988ff01e4d585c58)
-- [a7fe8ac3730ec41b4cacc15166715ddbef76eab3](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7fe8ac3730ec41b4cacc15166715ddbef76eab3)
+- [37279a3](https://github.com/Cognis-Labs-HQ/Cognis/commit/37279a34a3891cca73dbc5cc5c85f3b00b2b2e8a)
+- [5244359](https://github.com/Cognis-Labs-HQ/Cognis/commit/5244359630d1cdc12910d11cfb9d20e2c916fbf0)
+- [d18f6f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/d18f6f0a62926c095df90a4cd6c15f9484f287b4)
+- [1f9c347](https://github.com/Cognis-Labs-HQ/Cognis/commit/1f9c347e1ba3f836f54add76ce83592d85513f3e)
+- [ab2b8bb](https://github.com/Cognis-Labs-HQ/Cognis/commit/ab2b8bbb31f93dbc3c816ed2988ff01e4d585c58)
+- [a7fe8ac](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7fe8ac3730ec41b4cacc15166715ddbef76eab3)
