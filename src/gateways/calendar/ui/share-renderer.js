@@ -2,6 +2,8 @@ import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
 import { bindCapability } from "/static/reuse/capabilities.js";
 import {
     renderCalendarViewSwitcher,
+    renderCalendarNavigation,
+    getCalendarPeriodLabels,
     mountCalendarViewControls,
 } from "./calendar-view-controls.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
@@ -10,10 +12,8 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { showToast } from "/static/reuse/toast.js";
-import { formatMonthYear } from "/static/reuse/timestamp.js";
 import {
     CALENDAR_VIEWS,
-    addDays,
     renderCalendarView,
     toDateTimeLocalValue,
 } from "./calendar-ui-helpers.js";
@@ -26,18 +26,6 @@ const reportFailure = (operation, error) =>
         operation,
         errorName: error instanceof Error ? error.name : "UnknownError",
     });
-
-function shiftActiveDate(activeDate, selectedView, direction) {
-    const shiftedDate = new Date(activeDate);
-    if (selectedView === "day") return addDays(shiftedDate, direction);
-    if (selectedView === "week") return addDays(shiftedDate, direction * 7);
-    if (selectedView === "year") {
-        shiftedDate.setFullYear(shiftedDate.getFullYear() + direction);
-        return shiftedDate;
-    }
-    shiftedDate.setMonth(shiftedDate.getMonth() + direction);
-    return shiftedDate;
-}
 
 function buildEventFormMarkup(i18n, event = {}, slot = {}) {
     return createFormBuilder(
@@ -256,6 +244,7 @@ export async function mount(
     mountCalendarViewControls(root, {
         views: CALENDAR_VIEWS,
         getActiveDate: () => activeDate,
+        getSelectedView: () => selectedView,
         signal,
         onDateChange(date) {
             activeDate = date;
@@ -273,11 +262,20 @@ export async function mount(
             `[data-shared-calendar-id="${CSS.escape(calendarId)}"]`,
         );
         if (!(sharedCalendar instanceof HTMLElement)) return;
+        const labels = getCalendarPeriodLabels(selectedView, activeDate, i18n, {
+            compact: presentation.layout !== "regular",
+        });
         const periodLabel = sharedCalendar.querySelector(
             ".calendar-nav-month-label",
         );
-        if (periodLabel instanceof HTMLElement) {
-            periodLabel.textContent = resolvePeriodLabel();
+        if (periodLabel) periodLabel.textContent = labels.period;
+        const currentButton = sharedCalendar.querySelector(
+            '[data-calendar-nav="today"]',
+        );
+        if (currentButton) {
+            currentButton.textContent = labels.current;
+            currentButton.title = labels.current;
+            currentButton.setAttribute("aria-label", labels.current);
         }
         sharedCalendar
             .querySelectorAll("[data-calendar-view]")
@@ -310,12 +308,6 @@ export async function mount(
         }
     }
 
-    function resolvePeriodLabel() {
-        return selectedView === "year"
-            ? String(activeDate.getFullYear())
-            : formatMonthYear(activeDate);
-    }
-
     function buildCalendarElement() {
         return {
             id: "shared-calendar",
@@ -329,16 +321,10 @@ export async function mount(
             responsive: true,
             render: (context) => {
                 presentation = context;
-                const periodLabel = resolvePeriodLabel();
                 return `<section class="calendar-section shared-calendar" data-shared-calendar-id="${escapeHtml(calendarId)}">
                 <h2 class="shared-calendar-title">${escapeHtml(calendar.name || i18n.t("gateway.calendar.page_title"))}</h2>
                 <header class="calendar-view-header" data-composer-header>
-                    <div class="calendar-view-nav">
-                        <button type="button" class="btn-neutral" data-calendar-nav="prev" aria-label="${escapeHtml(i18n.t("gateway.calendar.previous"))}">&lt;</button>
-                        <button type="button" class="btn-neutral" data-calendar-nav="today" aria-label="${escapeHtml(i18n.t("gateway.calendar.today"))}" title="${escapeHtml(i18n.t("gateway.calendar.today"))}">${escapeHtml(i18n.t("gateway.calendar.today"))}</button>
-                        <button type="button" class="btn-neutral" data-calendar-nav="next" aria-label="${escapeHtml(i18n.t("gateway.calendar.next"))}">&gt;</button>
-                        <span class="calendar-nav-month-label">${escapeHtml(periodLabel)}</span>
-                    </div>
+                    ${renderCalendarNavigation(selectedView, activeDate, i18n, { compact: presentation.layout !== "regular" })}
                     ${renderCalendarViewSwitcher(CALENDAR_VIEWS, selectedView, i18n, activeDate)}
                 </header>
                 <div class="calendar-view-canvas" data-composer-viewport-body>${renderCalendarView(events, selectedView, activeDate, i18n, null, { compact: presentation.layout !== "regular", canCreate: canWrite })}</div>
@@ -355,38 +341,6 @@ export async function mount(
                 `[data-shared-calendar-id="${CSS.escape(calendarId)}"]`,
             );
             if (!(sharedCalendar instanceof HTMLElement)) return;
-            const viewButton = clickEvent.target.closest(
-                "[data-calendar-view]",
-            );
-            if (viewButton instanceof HTMLElement) {
-                clickEvent.preventDefault();
-                clickEvent.stopPropagation();
-                const requestedView = String(
-                    viewButton.dataset.calendarView ?? "",
-                );
-                if (!CALENDAR_VIEWS.includes(requestedView)) return;
-                selectedView = requestedView;
-                renderCalendar();
-                return;
-            }
-            const navigationButton = clickEvent.target.closest(
-                "[data-calendar-nav]",
-            );
-            if (navigationButton instanceof HTMLElement) {
-                clickEvent.preventDefault();
-                clickEvent.stopPropagation();
-                const direction = navigationButton.dataset.calendarNav;
-                activeDate =
-                    direction === "today"
-                        ? new Date()
-                        : shiftActiveDate(
-                              activeDate,
-                              selectedView,
-                              direction === "next" ? 1 : -1,
-                          );
-                renderCalendar();
-                return;
-            }
             const target = clickEvent.target.closest(
                 canWrite
                     ? "[data-calendar-event], [data-timeslot-add]"

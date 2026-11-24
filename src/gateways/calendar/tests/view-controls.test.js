@@ -10,6 +10,7 @@ const { mountCalendarViewControls } = loadTestModule(
     {
         "./calendar-ui-helpers.js": { toDateTimeLocalValue: unused },
         "/static/reuse/escape-html.js": { escapeHtml: unused },
+        "/static/reuse/timestamp.js": { formatMonthYear: unused },
     },
 );
 
@@ -139,4 +140,62 @@ test("Calendar period navigation validates indicators and ends with its page lif
     assert.equal(click(root, "data-year-month-index", "1"), false);
     assert.equal(click(root, "data-day-dot-date", "2032-01-01"), false);
     assert.deepEqual(changes, []);
+});
+
+for (const view of ["day", "week", "month", "year"]) {
+    test(`Calendar returns ${view} to the current date without changing its selected view`, () => {
+        const root = new EventTarget();
+        const lifetime = new AbortController();
+        let activeDate = new Date(2032, 4, 6);
+        const now = new Date(2026, 10, 24, 14, 30);
+        mountCalendarViewControls(root, {
+            views: ["day", "week", "month", "year"],
+            getActiveDate: () => activeDate,
+            getSelectedView: () => view,
+            getCurrentDate: () => now,
+            onDateChange: (date) => {
+                activeDate = date;
+            },
+            onViewChange: () =>
+                assert.fail(
+                    "Returning to the current period must retain the view",
+                ),
+            signal: lifetime.signal,
+        });
+        assert.equal(click(root, "data-calendar-nav", "today"), true);
+        assert.equal(activeDate.getTime(), now.getTime());
+        lifetime.abort();
+        activeDate = new Date(2032, 4, 6);
+        assert.equal(click(root, "data-calendar-nav", "today"), false);
+        assert.equal(activeDate.getFullYear(), 2032);
+    });
+}
+
+test("Calendar period arrows honor month, leap-year and year boundaries", () => {
+    for (const [view, start, direction, expected] of [
+        ["day", [2032, 1, 28], "next", [2032, 1, 29]],
+        ["week", [2032, 0, 2], "prev", [2031, 11, 26]],
+        ["month", [2032, 0, 31], "next", [2032, 1, 1]],
+        ["month", [2032, 0, 31], "prev", [2031, 11, 1]],
+        ["year", [2032, 1, 29], "next", [2033, 0, 1]],
+    ]) {
+        const root = new EventTarget();
+        let date = new Date(...start);
+        mountCalendarViewControls(root, {
+            views: [view],
+            getActiveDate: () => date,
+            getSelectedView: () => view,
+            onDateChange: (next) => {
+                date = next;
+            },
+        });
+        assert.equal(click(root, "data-calendar-nav", direction), true);
+        assert.deepEqual(
+            [date.getFullYear(), date.getMonth(), date.getDate()],
+            expected,
+        );
+        const previous = date.getTime();
+        assert.equal(click(root, "data-calendar-nav", "unknown"), false);
+        assert.equal(date.getTime(), previous);
+    }
 });

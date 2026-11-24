@@ -14,6 +14,7 @@ export async function loadCalendarMount({ hold, signal }) {
         "./guides.js": { guides },
         "../calendar-view-controls.js": {
             renderCalendarViewSwitcher: unexpected,
+            renderCalendarNavigation: unexpected,
             mountCalendarViewControls: unexpected,
         },
         "../offline-client.js": { calendarFetch: unexpected },

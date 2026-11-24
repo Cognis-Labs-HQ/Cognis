@@ -203,7 +203,7 @@
   <string name="gateway.calendar.tutorial.calendar.events.and.invitations.title">Events And Invitations</string>
   <string name="gateway.calendar.tutorial.calendar.events.and.invitations.body">Open an event to review details, participants and invitation status before making changes.</string>
   <string name="gateway.calendar.tutorial.calendar.navigate.dates.title">Find The Right Date</string>
-  <string name="gateway.calendar.tutorial.calendar.navigate.dates.body">Use the date navigation to move between periods, then choose the calendar view that best fits your schedule.</string>
+  <string name="gateway.calendar.tutorial.calendar.navigate.dates.body">Use Today, This Week, This Month or This Year to return to the current period without changing the selected view. The arrows move one selected period at a time; these controls also work in shared calendars.</string>
   <string name="gateway.calendar.tutorial.calendar.plan.event.title">Plan An Event</string>
   <string name="gateway.calendar.tutorial.calendar.plan.event.body">Select a date or time to create an event. Set its calendar, time, recurrence, visibility and reminders before saving.</string>
   <string name="gateway.calendar.tutorial.calendar.review.upcoming.title">Review Upcoming Events</string>

@@ -26,6 +26,8 @@ Core topics use uppercase INFO, USAGE and TECHNICAL filenames with locale suffix
 
 Shared calendars support the same month, week and day drill-down as account calendars through one lifecycle-bound control binding. The selected date and view update together. Week-number labels remain horizontal unless their own column is constrained, independently of viewport width.
 
+Use Today, This Week, This Month or This Year to return to the current period without changing the selected view. The arrows move one selected period at a time; these controls also work in shared calendars.
+
 ## Commits
 
 - [37279a3](https://github.com/Cognis-Labs-HQ/Cognis/commit/37279a34a3891cca73dbc5cc5c85f3b00b2b2e8a)

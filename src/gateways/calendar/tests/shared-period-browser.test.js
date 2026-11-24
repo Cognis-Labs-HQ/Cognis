@@ -40,7 +40,15 @@ test(
         );
         for (const [view, expected] of [
             ["day", month],
-            ["week", month],
+            [
+                "week",
+                month +
+                    " · " +
+                    (await browser.evaluate(
+                        "window.fixture.i18n.t('gateway.calendar.week_number_prefix')",
+                    )) +
+                    "19",
+            ],
             ["month", month],
             ["year", "2032"],
         ]) {
@@ -174,7 +182,54 @@ test(
                 );
             }
         };
+        const verifyCurrentPeriod = async () => {
+            for (const [width, height] of [
+                [390, 844],
+                [768, 1024],
+                [1440, 900],
+            ]) {
+                await browser.resize(width, height);
+                for (const view of ["day", "week", "month", "year"]) {
+                    const state = await browser.callFunction(
+                        `function(view) {
+                        const input = document.querySelector('[data-calendar-date]');
+                        input.value = '2032-05-06';
+                        input.dispatchEvent(new Event('change', { bubbles: true }));
+                        const select = document.querySelector('[data-calendar-view-select]');
+                        select.value = view;
+                        select.dispatchEvent(new Event('change', { bubbles: true }));
+                        const button = document.querySelector('[data-calendar-nav="today"]');
+                        const compact = button.closest('[data-composer-layout]').dataset.composerLayout !== 'regular';
+                        const label = window.fixture.i18n.t('gateway.calendar.' + (compact || view === 'day' ? 'today' : 'this_' + view));
+                        return {text:button.textContent, title:button.title, aria:button.getAttribute('aria-label'), label};
+                    }`,
+                        [view],
+                    );
+                    assert.equal(state.text, state.label);
+                    assert.equal(state.title, state.label);
+                    assert.equal(state.aria, state.label);
+                    await browser.evaluate(
+                        "document.querySelector('[data-calendar-nav=today]').click()",
+                    );
+                    assert.equal(
+                        await browser.evaluate(
+                            "document.querySelector('[data-calendar-view-select]').value",
+                        ),
+                        view,
+                    );
+                    assert.equal(
+                        await browser.evaluate(
+                            "document.querySelector('[data-calendar-date]').value",
+                        ),
+                        await browser.evaluate(
+                            "(()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')})()",
+                        ),
+                    );
+                }
+            }
+        };
         await verifyDrillDown();
+        await verifyCurrentPeriod();
         await browser.evaluate("window.fixture.lifetime.abort()");
         assert.equal(
             await browser.evaluate(
@@ -187,6 +242,7 @@ test(
             "window.fixtureReady === true && !document.querySelector('.shared-calendar')",
         );
         await verifyDrillDown();
+        await verifyCurrentPeriod();
         await browser.evaluate("window.fixture.lifetime.abort()");
     },
 );

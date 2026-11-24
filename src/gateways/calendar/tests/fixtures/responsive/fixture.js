@@ -10,6 +10,7 @@ import {
 } from "/static/gateways/calendar/ui/calendar-ui-helpers.js";
 import {
     renderCalendarViewSwitcher,
+    renderCalendarNavigation,
     mountCalendarViewControls,
 } from "/static/gateways/calendar/ui/calendar-view-controls.js";
 
@@ -89,6 +90,7 @@ if (new URLSearchParams(location.search).has("shared")) {
                 render: (presentation) => `
       <section class="calendar-section">
         <header class="calendar-view-header" data-composer-header>
+          ${renderCalendarNavigation(view, activeDate, i18n, { compact: presentation.layout !== "regular" })}
           ${renderCalendarViewSwitcher(CALENDAR_VIEWS, view, i18n, activeDate)}
         </header>
         <div class="calendar-view-canvas" data-composer-viewport-body>
@@ -102,6 +104,7 @@ if (new URLSearchParams(location.search).has("shared")) {
     mountCalendarViewControls(root, {
         views: CALENDAR_VIEWS,
         getActiveDate: () => activeDate,
+        getSelectedView: () => view,
         signal: lifetime.signal,
         onDateChange(date) {
             activeDate = date;
@@ -113,17 +116,6 @@ if (new URLSearchParams(location.search).has("shared")) {
             composer.refreshElements(["calendar"]);
         },
     });
-    root.addEventListener(
-        "click",
-        (event) => {
-            const button = event.target.closest("[data-calendar-view]");
-            if (button) {
-                view = button.dataset.calendarView;
-                composer.refreshElements(["calendar"]);
-            }
-        },
-        { signal: lifetime.signal },
-    );
     window.fixture = { composer, lifetime, data, i18n };
     finishLoading();
     window.fixtureReady = true;

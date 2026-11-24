@@ -203,7 +203,7 @@
   <string name="gateway.calendar.tutorial.calendar.events.and.invitations.title">Acara dan Undangan</string>
   <string name="gateway.calendar.tutorial.calendar.events.and.invitations.body">Buka acara untuk meninjau detail, peserta, dan status undangan sebelum mengubahnya.</string>
   <string name="gateway.calendar.tutorial.calendar.navigate.dates.title">Temukan Tanggal</string>
-  <string name="gateway.calendar.tutorial.calendar.navigate.dates.body">Gunakan navigasi tanggal untuk berpindah periode, lalu pilih tampilan kalender yang sesuai dengan jadwal Anda.</string>
+  <string name="gateway.calendar.tutorial.calendar.navigate.dates.body">Gunakan Hari Ini, Minggu Ini, Bulan Ini, atau Tahun Ini untuk kembali ke periode saat ini tanpa mengubah tampilan terpilih. Panah berpindah satu periode sesuai tampilan; kontrol ini juga tersedia pada kalender berbagi.</string>
   <string name="gateway.calendar.tutorial.calendar.plan.event.title">Rencanakan Acara</string>
   <string name="gateway.calendar.tutorial.calendar.plan.event.body">Pilih tanggal atau waktu untuk membuat acara. Atur kalender, waktu, pengulangan, visibilitas, dan pengingat sebelum menyimpan.</string>
   <string name="gateway.calendar.tutorial.calendar.review.upcoming.title">Tinjau Acara Mendatang</string>

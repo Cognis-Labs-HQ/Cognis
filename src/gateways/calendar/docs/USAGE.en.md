@@ -12,6 +12,8 @@ Add an event with its date and time, save and switch between available date view
 
 In a grid, choose a month title in Year to open that month, a week number to open its week, or a day indicator to open that date. These navigation controls also work in read-only shared calendars.
 
+Use Today, This Week, This Month or This Year to return to the current period without changing the selected view. The arrows move one selected period at a time; these controls also work in shared calendars.
+
 ## Expected Results
 
 Saved events appear in the selected calendar; narrow screens use a readable agenda while wide screens can use grids.

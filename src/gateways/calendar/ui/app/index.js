@@ -1,6 +1,7 @@
 import { bindCapability } from "/static/reuse/capabilities.js";
 import {
     renderCalendarViewSwitcher,
+    renderCalendarNavigation,
     mountCalendarViewControls,
 } from "../calendar-view-controls.js";
 import { guides } from "./guides.js";
@@ -317,24 +318,6 @@ export async function mount(root, { signal, shareContext = null } = {}) {
 
     registerSearchIndex("calendar-events", collectCalendarSearchGroups);
 
-    function formatMonthYearLabel(date) {
-        return new Date(date).toLocaleDateString(undefined, {
-            month: "long",
-            year: "numeric",
-        });
-    }
-
-    function formatYearLabel(date) {
-        return String(date.getFullYear());
-    }
-
-    function getTodayNavLabel(view) {
-        if (view === "week") return i18n.t("gateway.calendar.this_week");
-        if (view === "month") return i18n.t("gateway.calendar.this_month");
-        if (view === "year") return i18n.t("gateway.calendar.this_year");
-        return i18n.t("gateway.calendar.today");
-    }
-
     function syncWeekViewLayout() {
         const weekLayouts = Array.from(
             root.querySelectorAll("[data-calendar-week-view]"),
@@ -401,52 +384,6 @@ export async function mount(root, { signal, shareContext = null } = {}) {
         "click",
         (event) => {
             if (!(event.target instanceof Element)) return;
-            const viewButton = event.target.closest("[data-calendar-view]");
-            if (viewButton instanceof HTMLElement) {
-                const nextView = String(
-                    viewButton.getAttribute("data-calendar-view") ?? "month",
-                );
-                if (!calendarUi.CALENDAR_VIEWS.includes(nextView)) return;
-                setSelectedView(nextView);
-                refreshCalendarComposer();
-                return;
-            }
-            const navigationButton = event.target.closest(
-                "[data-calendar-nav]",
-            );
-            if (navigationButton instanceof HTMLElement) {
-                const navigation =
-                    navigationButton.getAttribute("data-calendar-nav");
-                if (navigation === "today") {
-                    activeDate = new Date();
-                } else if (selectedView === "day") {
-                    activeDate = calendarUi.addDays(
-                        activeDate,
-                        navigation === "next" ? 1 : -1,
-                    );
-                } else if (selectedView === "week") {
-                    activeDate = calendarUi.addDays(
-                        activeDate,
-                        navigation === "next" ? 7 : -7,
-                    );
-                } else if (selectedView === "month") {
-                    activeDate = new Date(
-                        activeDate.getFullYear(),
-                        activeDate.getMonth() +
-                            (navigation === "next" ? 1 : -1),
-                        1,
-                    );
-                } else {
-                    activeDate = new Date(
-                        activeDate.getFullYear() +
-                            (navigation === "next" ? 1 : -1),
-                        0,
-                        1,
-                    );
-                }
-                refreshCalendarComposer();
-                return;
-            }
             const timeslotAddButton = event.target.closest(
                 "[data-timeslot-add]",
             );
@@ -477,6 +414,7 @@ export async function mount(root, { signal, shareContext = null } = {}) {
     mountCalendarViewControls(root, {
         views: calendarUi.CALENDAR_VIEWS,
         getActiveDate: () => activeDate,
+        getSelectedView: () => selectedView,
         signal,
         onDateChange(date) {
             activeDate = date;
@@ -505,28 +443,10 @@ export async function mount(root, { signal, shareContext = null } = {}) {
                 onResize: syncWeekViewLayout,
                 render: ({ layout }) => {
                     const compact = layout !== "regular";
-                    const weekLabel =
-                        selectedView === "week"
-                            ? ` · ${i18n.t("gateway.calendar.week_number_prefix")}${calendarUi.getISOWeekNumber(activeDate)}`
-                            : "";
-                    const periodLabel =
-                        selectedView === "year"
-                            ? escapeHtml(formatYearLabel(activeDate))
-                            : `${escapeHtml(formatMonthYearLabel(activeDate))}${escapeHtml(weekLabel)}`;
-                    const todayLabel = escapeHtml(
-                        compact
-                            ? i18n.t("gateway.calendar.today")
-                            : getTodayNavLabel(selectedView),
-                    );
                     return `
           <section class="calendar-section">
             <header class="calendar-view-header" data-composer-header>
-              <div class="calendar-view-nav">
-                <button type="button" class="btn-neutral" data-calendar-nav="prev" aria-label="${escapeHtml(i18n.t("gateway.calendar.previous"))}">&lt;</button>
-                <button type="button" class="btn-neutral" data-calendar-nav="today" aria-label="${todayLabel}" title="${todayLabel}">${todayLabel}</button>
-                <button type="button" class="btn-neutral" data-calendar-nav="next" aria-label="${escapeHtml(i18n.t("gateway.calendar.next"))}">&gt;</button>
-                <span class="calendar-nav-month-label">${periodLabel}</span>
-              </div>
+              ${renderCalendarNavigation(selectedView, activeDate, i18n, { compact })}
               ${renderCalendarViewSwitcher(calendarUi.CALENDAR_VIEWS, selectedView, i18n, activeDate)}
             </header>
             <div class="calendar-view-canvas" data-composer-viewport-body>${calendarUi.renderCalendarView(allCalendarEvents(), selectedView, activeDate, i18n, currentAccountId, { compact })}</div>

@@ -26,6 +26,8 @@ Topik inti memakai nama berkas INFO, USAGE, dan TECHNICAL dengan huruf besar ser
 
 Kalender berbagi mendukung penelusuran bulan, minggu, dan hari yang sama dengan kalender akun melalui satu pengikatan kontrol yang mengikuti siklus hidup halaman. Tanggal dan tampilan terpilih berubah bersama. Label nomor minggu tetap mendatar kecuali kolomnya sendiri sempit, terlepas dari lebar viewport.
 
+Gunakan Hari Ini, Minggu Ini, Bulan Ini, atau Tahun Ini untuk kembali ke periode saat ini tanpa mengubah tampilan terpilih. Panah berpindah satu periode sesuai tampilan; kontrol ini juga tersedia pada kalender berbagi.
+
 ## Komit
 
 - [37279a3](https://github.com/Cognis-Labs-HQ/Cognis/commit/37279a34a3891cca73dbc5cc5c85f3b00b2b2e8a)

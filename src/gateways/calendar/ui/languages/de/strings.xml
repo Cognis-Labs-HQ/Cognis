@@ -203,7 +203,7 @@
   <string name="gateway.calendar.tutorial.calendar.events.and.invitations.title">Termine und Einladungen</string>
   <string name="gateway.calendar.tutorial.calendar.events.and.invitations.body">Öffnen Sie Termine und prüfen Sie Details, Teilnehmer und Einladungsstatus vor Änderungen.</string>
   <string name="gateway.calendar.tutorial.calendar.navigate.dates.title">Zum passenden Datum</string>
-  <string name="gateway.calendar.tutorial.calendar.navigate.dates.body">Wechseln Sie über die Datumsnavigation zwischen Zeiträumen und wählen Sie die passende Kalenderansicht.</string>
+  <string name="gateway.calendar.tutorial.calendar.navigate.dates.body">Mit Heute, Diese Woche, Dieser Monat oder Dieses Jahr kehrst du zum aktuellen Zeitraum zurück, ohne die Ansicht zu ändern. Die Pfeile wechseln jeweils einen Zeitraum. Diese Steuerung funktioniert auch in Kalenderfreigaben.</string>
   <string name="gateway.calendar.tutorial.calendar.plan.event.title">Termin planen</string>
   <string name="gateway.calendar.tutorial.calendar.plan.event.body">Wählen Sie Datum oder Uhrzeit für einen neuen Termin. Legen Sie Kalender, Zeit, Wiederholung, Sichtbarkeit und Erinnerungen vor dem Speichern fest.</string>
   <string name="gateway.calendar.tutorial.calendar.review.upcoming.title">Anstehende Termine prüfen</string>

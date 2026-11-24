@@ -26,6 +26,8 @@ Kernthemen verwenden großgeschriebene INFO-, USAGE- und TECHNICAL-Dateinamen mi
 
 Kalenderfreigaben unterstützen über dieselbe lebenszyklusgebundene Steuerung wie Kontokalender das Öffnen von Monat, Woche und Tag. Gewähltes Datum und Ansicht ändern sich gemeinsam. Wochennummern bleiben waagerecht, solange ihre eigene Spalte genügend Platz bietet, unabhängig von der Viewportbreite.
 
+Mit Heute, Diese Woche, Dieser Monat oder Dieses Jahr kehrst du zum aktuellen Zeitraum zurück, ohne die Ansicht zu ändern. Die Pfeile wechseln jeweils einen Zeitraum. Diese Steuerung funktioniert auch in Kalenderfreigaben.
+
 ## Commits
 
 - [37279a3](https://github.com/Cognis-Labs-HQ/Cognis/commit/37279a34a3891cca73dbc5cc5c85f3b00b2b2e8a)

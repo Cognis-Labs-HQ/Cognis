@@ -84,6 +84,8 @@ Datumssprünge und die native Ansichtsauswahl verwenden dieselbe Calendar-eigene
 
 Zeitraumanzeigen nutzen für Konto- und Freigabeseiten dieselbe am Seitenstamm delegierte Steuerung: Ein Monatstitel wählt den Monat im aktuellen Jahr, eine Wochennummer ihre Woche und eine Tagesanzeige ihr Datum. Ansicht und Datum ändern sich gemeinsam, ohne Bearbeitungsrechte zu gewähren. Wochennummern sind waagerecht; nur bei einer eigenen Spaltenbreite bis 3rem stellt eine Containerabfrage sie senkrecht dar.
 
+Vorheriger, nächster und aktueller Zeitraum verwenden auf Konto- und Freigabeseiten denselben Renderer und dieselbe delegierte Steuerung. Die Rückkehr zum aktuellen Zeitraum liest die Uhr beim Klick und behält die Ansicht. Text, Titel und zugängliche Beschriftung folgen Ansicht und kompakter Darstellung. Monatspfeile wählen den ersten Tag des Nachbarmonats, damit Monatsenden keinen Monat überspringen; Jahrespfeile wählen den 1. Januar des Nachbarjahres.
+
 ### Lesbare mobile Inhalte
 
 Der Kalender behält auch auf niedrigen Bildschirmen genügend Platz für Terminlisten und Zeitraster; Ereignisse scrollen intern. Das Symbol zum Hinzufügen neben jedem Datum bietet eine 44px große Touchfläche und eine zugängliche Beschriftung.
