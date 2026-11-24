@@ -4,11 +4,13 @@ Praktische Abläufe für Kalender.
 
 ## Voraussetzungen
 
-Melde dich an; Änderungen benötigen Eigentum oder Bearbeitungsrechte.
+Öffne den Kalender mit deinem Konto oder einem gültigen Freigabelink. Änderungen benötigen Eigentum oder Bearbeitungsrechte.
 
 ## Beispiele
 
 Erstelle einen Termin mit Datum und Uhrzeit, speichere und prüfe ihn in den verfügbaren Ansichten.
+
+Wähle im Raster einen Monatstitel im Jahr, um den Monat zu öffnen, eine Wochennummer für die Woche oder eine Tagesanzeige für das Datum. Diese Navigation funktioniert auch in schreibgeschützten Kalenderfreigaben.
 
 ## Erwartete Ergebnisse
 

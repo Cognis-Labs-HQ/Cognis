@@ -22,6 +22,10 @@ Geschützte Links verwenden bei wiederholter oder gleichzeitiger Authentifizieru
 
 Kernthemen verwenden großgeschriebene INFO-, USAGE- und TECHNICAL-Dateinamen mit Sprachsuffixen; URLs und versionierte Ansichten bleiben erhalten. Die Prüfung lehnt klein- und gemischtgeschriebene Dateinamen und Manifestpfade ab. Links in Änderungsprotokollen zeigen kurze Commitreferenzen und behalten vollständige unveränderliche SHAs im Ziel; vorhandene lange Linktexte werden in Kern- und Komponentenprotokollen korrigiert.
 
+## Navigation in Kalenderzeiträumen
+
+Kalenderfreigaben unterstützen über dieselbe lebenszyklusgebundene Steuerung wie Kontokalender das Öffnen von Monat, Woche und Tag. Gewähltes Datum und Ansicht ändern sich gemeinsam. Wochennummern bleiben waagerecht, solange ihre eigene Spalte genügend Platz bietet, unabhängig von der Viewportbreite.
+
 ## Commits
 
 - [37279a3](https://github.com/Cognis-Labs-HQ/Cognis/commit/37279a34a3891cca73dbc5cc5c85f3b00b2b2e8a)

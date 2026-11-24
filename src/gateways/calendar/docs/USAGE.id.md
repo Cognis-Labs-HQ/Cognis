@@ -4,11 +4,13 @@ Prosedur praktis untuk Kalender.
 
 ## Prasyarat
 
-Masuk; perubahan acara memerlukan kepemilikan atau izin edit.
+Buka Kalender dengan akun Anda atau tautan kalender berbagi yang valid. Perubahan acara memerlukan kepemilikan atau izin edit.
 
 ## Contoh
 
 Tambahkan acara dengan tanggal dan waktu, simpan, lalu ganti tampilan tanggal untuk memeriksa posisinya.
+
+Dalam kisi, pilih judul bulan pada tampilan Tahun untuk membuka bulan tersebut, nomor minggu untuk membuka minggunya, atau penanda hari untuk membuka tanggalnya. Kontrol navigasi ini juga tersedia pada kalender berbagi hanya-baca.
 
 ## Hasil yang Diharapkan
 

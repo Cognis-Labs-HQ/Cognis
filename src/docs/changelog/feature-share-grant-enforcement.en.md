@@ -22,6 +22,10 @@ Protected links reuse one password prompt and guest keyring across repeated or c
 
 Core topics use uppercase INFO, USAGE and TECHNICAL filenames with locale suffixes, retaining their existing URLs and versioned views. Validation rejects lowercase and mixed-case filenames and manifest pointers. Changelog links display concise commit references while keeping full immutable SHAs in their destinations; existing long labels are corrected across core and component changelogs.
 
+## Calendar period navigation
+
+Shared calendars support the same month, week and day drill-down as account calendars through one lifecycle-bound control binding. The selected date and view update together. Week-number labels remain horizontal unless their own column is constrained, independently of viewport width.
+
 ## Commits
 
 - [37279a3](https://github.com/Cognis-Labs-HQ/Cognis/commit/37279a34a3891cca73dbc5cc5c85f3b00b2b2e8a)

@@ -75,3 +75,68 @@ test("Calendar control listeners end with their page lifetime", () => {
         assert.deepEqual(changes, []);
     }
 });
+
+function click(root, attribute, value) {
+    const control = {
+        closest: (selector) => (selector === `[${attribute}]` ? control : null),
+        getAttribute: () => value,
+    };
+    const event = new Event("click", { cancelable: true });
+    Object.defineProperty(event, "target", { value: control });
+    root.dispatchEvent(event);
+    return event.defaultPrevented;
+}
+
+test("Calendar period indicators navigate to the clicked month, week and day through one binding", () => {
+    const root = new EventTarget();
+    const changes = [];
+    mountCalendarViewControls(root, {
+        views: ["year", "month", "week", "day"],
+        getActiveDate: () => new Date(2032, 11, 31),
+        onViewChange: (view, date) => changes.push([view, date]),
+    });
+    assert.equal(click(root, "data-year-month-index", "1"), true);
+    assert.equal(changes[0][0], "month");
+    assert.deepEqual(
+        [
+            changes[0][1].getFullYear(),
+            changes[0][1].getMonth(),
+            changes[0][1].getDate(),
+        ],
+        [2032, 1, 1],
+    );
+    for (const [attribute, view] of [
+        ["data-week-row-date", "week"],
+        ["data-day-dot-date", "day"],
+    ]) {
+        const value = "2031-12-28T00:00:00.000Z";
+        assert.equal(click(root, attribute, value), true);
+        assert.equal(changes.at(-1)[0], view);
+        assert.equal(changes.at(-1)[1].toISOString(), value);
+    }
+});
+
+test("Calendar period navigation validates indicators and ends with its page lifetime", () => {
+    const root = new EventTarget();
+    const lifetime = new AbortController();
+    const changes = [];
+    mountCalendarViewControls(root, {
+        views: ["month", "day"],
+        getActiveDate: () => new Date(2032, 5, 1),
+        onViewChange: (...args) => changes.push(args),
+        signal: lifetime.signal,
+    });
+    for (const [attribute, values] of [
+        ["data-year-month-index", ["", "-1", "12", "1x"]],
+        ["data-day-dot-date", ["", "invalid"]],
+        ["data-week-row-date", ["2032-01-01"]],
+    ]) {
+        for (const value of values)
+            assert.equal(click(root, attribute, value), false);
+    }
+    assert.deepEqual(changes, []);
+    lifetime.abort();
+    assert.equal(click(root, "data-year-month-index", "1"), false);
+    assert.equal(click(root, "data-day-dot-date", "2032-01-01"), false);
+    assert.deepEqual(changes, []);
+});

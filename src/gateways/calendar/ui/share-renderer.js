@@ -255,12 +255,14 @@ export async function mount(
     let presentation;
     mountCalendarViewControls(root, {
         views: CALENDAR_VIEWS,
+        getActiveDate: () => activeDate,
         signal,
         onDateChange(date) {
             activeDate = date;
             renderCalendar();
         },
-        onViewChange(view) {
+        onViewChange(view, date) {
+            if (date) activeDate = date;
             selectedView = view;
             renderCalendar();
         },

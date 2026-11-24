@@ -476,12 +476,14 @@ export async function mount(root, { signal, shareContext = null } = {}) {
 
     mountCalendarViewControls(root, {
         views: calendarUi.CALENDAR_VIEWS,
+        getActiveDate: () => activeDate,
         signal,
         onDateChange(date) {
             activeDate = date;
             refreshCalendarComposer();
         },
-        onViewChange(view) {
+        onViewChange(view, date) {
+            if (date) activeDate = date;
             setSelectedView(view);
             refreshCalendarComposer();
         },
@@ -559,72 +561,6 @@ export async function mount(root, { signal, shareContext = null } = {}) {
                                             endAt,
                                         ),
                                     });
-                                },
-                                { signal },
-                            );
-                        },
-                    );
-
-                    root.querySelectorAll("[data-year-month-index]").forEach(
-                        (button) => {
-                            button.addEventListener(
-                                "click",
-                                () => {
-                                    const monthIndex = Number.parseInt(
-                                        String(
-                                            button.getAttribute(
-                                                "data-year-month-index",
-                                            ) ?? "0",
-                                        ),
-                                        10,
-                                    );
-                                    activeDate = new Date(
-                                        activeDate.getFullYear(),
-                                        monthIndex,
-                                        1,
-                                    );
-                                    setSelectedView("month");
-                                    refreshCalendarComposer();
-                                },
-                                { signal },
-                            );
-                        },
-                    );
-
-                    root.querySelectorAll("[data-week-row-date]").forEach(
-                        (button) => {
-                            button.addEventListener(
-                                "click",
-                                () => {
-                                    activeDate = new Date(
-                                        String(
-                                            button.getAttribute(
-                                                "data-week-row-date",
-                                            ) ?? "",
-                                        ),
-                                    );
-                                    setSelectedView("week");
-                                    refreshCalendarComposer();
-                                },
-                                { signal },
-                            );
-                        },
-                    );
-
-                    root.querySelectorAll("[data-day-dot-date]").forEach(
-                        (button) => {
-                            button.addEventListener(
-                                "click",
-                                () => {
-                                    activeDate = new Date(
-                                        String(
-                                            button.getAttribute(
-                                                "data-day-dot-date",
-                                            ) ?? "",
-                                        ),
-                                    );
-                                    setSelectedView("day");
-                                    refreshCalendarComposer();
                                 },
                                 { signal },
                             );

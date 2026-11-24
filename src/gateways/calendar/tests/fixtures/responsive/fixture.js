@@ -101,12 +101,14 @@ if (new URLSearchParams(location.search).has("shared")) {
     await composer.init();
     mountCalendarViewControls(root, {
         views: CALENDAR_VIEWS,
+        getActiveDate: () => activeDate,
         signal: lifetime.signal,
         onDateChange(date) {
             activeDate = date;
             composer.refreshElements(["calendar"]);
         },
-        onViewChange(nextView) {
+        onViewChange(nextView, date) {
+            if (date) activeDate = date;
             view = nextView;
             composer.refreshElements(["calendar"]);
         },

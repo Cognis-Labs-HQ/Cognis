@@ -199,7 +199,7 @@
   <string name="gateway.calendar.tutorial.calendar.calendars.title">カレンダー一覧</string>
   <string name="gateway.calendar.tutorial.calendar.calendars.body">予定を追加する前に、カレンダーと公開範囲を確認します。</string>
   <string name="gateway.calendar.tutorial.calendar.calendar.views.title">表示の切り替え</string>
-  <string name="gateway.calendar.tutorial.calendar.calendar.views.body">日、週、月、年を選択します。スマートフォンの日、週、月の表示では、すべての予定と各日付の予定追加操作を見やすい一覧で表示します。</string>
+  <string name="gateway.calendar.tutorial.calendar.calendar.views.body">日、週、月、年を選択します。グリッドの月名、週番号、日付の表示から、その期間を開けます。スマートフォンの日、週、月の表示では、すべての予定と各日付の予定追加操作を一覧で表示します。</string>
   <string name="gateway.calendar.tutorial.calendar.events.and.invitations.title">予定と招待</string>
   <string name="gateway.calendar.tutorial.calendar.events.and.invitations.body">予定を開き、詳細、参加者、招待への回答を確認してから変更します。</string>
   <string name="gateway.calendar.tutorial.calendar.navigate.dates.title">目的の日付を探す</string>

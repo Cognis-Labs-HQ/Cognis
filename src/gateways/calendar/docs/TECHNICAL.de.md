@@ -82,6 +82,8 @@ Schmale Kalenderflächen zeigen eine Terminliste mit allen Ereignissen und dem g
 
 Datumssprünge und die native Ansichtsauswahl verwenden dieselbe Calendar-eigene Steuerung für Konto- und Freigabeseiten. Ungültige Eingaben ändern die Ansicht nicht; am Ende des Seitenlebenszyklus werden die Listener entfernt.
 
+Zeitraumanzeigen nutzen für Konto- und Freigabeseiten dieselbe am Seitenstamm delegierte Steuerung: Ein Monatstitel wählt den Monat im aktuellen Jahr, eine Wochennummer ihre Woche und eine Tagesanzeige ihr Datum. Ansicht und Datum ändern sich gemeinsam, ohne Bearbeitungsrechte zu gewähren. Wochennummern sind waagerecht; nur bei einer eigenen Spaltenbreite bis 3rem stellt eine Containerabfrage sie senkrecht dar.
+
 ### Lesbare mobile Inhalte
 
 Der Kalender behält auch auf niedrigen Bildschirmen genügend Platz für Terminlisten und Zeitraster; Ereignisse scrollen intern. Das Symbol zum Hinzufügen neben jedem Datum bietet eine 44px große Touchfläche und eine zugängliche Beschriftung.

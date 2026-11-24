@@ -22,6 +22,10 @@ Tautan terlindungi menggunakan satu dialog kata sandi dan keyring tamu untuk aut
 
 Topik inti memakai nama berkas INFO, USAGE, dan TECHNICAL dengan huruf besar serta akhiran bahasa, sambil mempertahankan URL dan tampilan berversi. Validasi menolak nama berkas dan jalur manifes dengan huruf kecil atau campuran. Tautan catatan perubahan menampilkan referensi commit ringkas dan mempertahankan SHA lengkap yang tidak berubah pada tujuan; label panjang yang ada diperbaiki pada catatan inti dan komponen.
 
+## Navigasi periode kalender
+
+Kalender berbagi mendukung penelusuran bulan, minggu, dan hari yang sama dengan kalender akun melalui satu pengikatan kontrol yang mengikuti siklus hidup halaman. Tanggal dan tampilan terpilih berubah bersama. Label nomor minggu tetap mendatar kecuali kolomnya sendiri sempit, terlepas dari lebar viewport.
+
 ## Komit
 
 - [37279a3](https://github.com/Cognis-Labs-HQ/Cognis/commit/37279a34a3891cca73dbc5cc5c85f3b00b2b2e8a)

@@ -11,7 +11,7 @@ const executable =
     process.env.COGNIS_BROWSER_TESTS === "1" ? findChromium() : null;
 
 test(
-    "shared Calendar keeps its selected period heading through responsive redraws",
+    "Calendar shared and account grids preserve periods, drill-down and responsive layout",
     { skip: !executable, timeout: 60000 },
     async (context) => {
         const server = await serveBrowserFixture(
@@ -105,6 +105,76 @@ test(
                 );
             }
         }
+        const verifyDrillDown = async () => {
+            await browser.resize(1440, 900);
+            await browser.evaluate(`(() => {
+                const date = document.querySelector('[data-calendar-date]');
+                date.value = '2032-05-06';
+                date.dispatchEvent(new Event('change', { bubbles: true }));
+                const select = document.querySelector('[data-calendar-view-select]');
+                select.value = 'year';
+                select.dispatchEvent(new Event('change', { bubbles: true }));
+                document.querySelector('[data-year-month-index="1"]').click();
+            })()`);
+            assert.equal(
+                await browser.evaluate(
+                    "document.querySelector('[data-calendar-view-select]').value",
+                ),
+                "month",
+            );
+            assert.equal(
+                await browser.evaluate(
+                    "document.querySelector('[data-calendar-date]').value",
+                ),
+                "2032-02-01",
+            );
+            assert.equal(
+                await browser.evaluate(
+                    "getComputedStyle(document.querySelector('.calendar-week-jump')).writingMode",
+                ),
+                "horizontal-tb",
+            );
+            await browser.evaluate(
+                "document.querySelector('.calendar-week-number').style.width = '2rem'",
+            );
+            await browser.waitFor(
+                "getComputedStyle(document.querySelector('.calendar-week-jump')).writingMode === 'vertical-rl'",
+            );
+            await browser.evaluate(
+                "document.querySelector('.calendar-week-number').style.width = ''",
+            );
+            await browser.waitFor(
+                "getComputedStyle(document.querySelector('.calendar-week-jump')).writingMode === 'horizontal-tb'",
+            );
+            for (const [selector, view, attribute] of [
+                ["[data-week-row-date]", "week", "data-week-row-date"],
+                ["[data-day-dot-date]", "day", "data-day-dot-date"],
+            ]) {
+                const expectedDate = await browser.callFunction(
+                    `function(selector, attribute) {
+                    const button = document.querySelector(selector);
+                    const date = new Date(button.getAttribute(attribute));
+                    const value = [date.getFullYear(), String(date.getMonth() + 1).padStart(2, '0'), String(date.getDate()).padStart(2, '0')].join('-');
+                    button.click();
+                    return value;
+                }`,
+                    [selector, attribute],
+                );
+                assert.equal(
+                    await browser.evaluate(
+                        "document.querySelector('[data-calendar-view-select]').value",
+                    ),
+                    view,
+                );
+                assert.equal(
+                    await browser.evaluate(
+                        "document.querySelector('[data-calendar-date]').value",
+                    ),
+                    expectedDate,
+                );
+            }
+        };
+        await verifyDrillDown();
         await browser.evaluate("window.fixture.lifetime.abort()");
         assert.equal(
             await browser.evaluate(
@@ -112,5 +182,11 @@ test(
             ),
             "",
         );
+        await browser.command("Page.navigate", { url: server.url });
+        await browser.waitFor(
+            "window.fixtureReady === true && !document.querySelector('.shared-calendar')",
+        );
+        await verifyDrillDown();
+        await browser.evaluate("window.fixture.lifetime.abort()");
     },
 );

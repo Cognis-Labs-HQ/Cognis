@@ -31,9 +31,40 @@ export function renderCalendarViewSwitcher(
  */
 export function mountCalendarViewControls(
     root,
-    { views, onDateChange, onViewChange, signal },
+    { views, getActiveDate, onDateChange, onViewChange, signal },
 ) {
     if (signal?.aborted) return;
+    root.addEventListener(
+        "click",
+        (event) => {
+            for (const [attribute, view] of [
+                ["data-year-month-index", "month"],
+                ["data-week-row-date", "week"],
+                ["data-day-dot-date", "day"],
+            ]) {
+                const control = event.target?.closest?.(`[${attribute}]`);
+                if (!control || !views.includes(view)) continue;
+                const value = control.getAttribute(attribute);
+                let date;
+                if (view === "month") {
+                    if (!/^(?:[0-9]|1[01])$/.test(value ?? "")) return;
+                    date = new Date(
+                        getActiveDate().getFullYear(),
+                        Number(value),
+                        1,
+                    );
+                } else {
+                    date = new Date(value ?? "");
+                }
+                if (!Number.isFinite(date.getTime())) return;
+                event.preventDefault();
+                event.stopPropagation();
+                onViewChange(view, date);
+                return;
+            }
+        },
+        { signal },
+    );
     root.addEventListener(
         "change",
         (event) => {

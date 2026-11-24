@@ -88,6 +88,8 @@ Narrow Calendar panels show an agenda containing every event and the selected da
 
 Date jumps and native view selection use one Calendar-owned control binding for both account and shared pages. Invalid inputs leave the current view unchanged, and the page lifetime removes its listeners.
 
+Period indicators use the same root-delegated control binding for account and shared pages: a month title selects that month in the current year, a week number selects its week, and a day indicator selects its date. View and date update together without granting edit access. Week-number labels are horizontal unless their own column is at most 3rem wide, where a container query makes them vertical.
+
 ### Readable Mobile Content
 
 Calendar retains usable space for agendas and time grids on short screens while scrolling its events internally. The Add Event icon beside each date provides a 44px touch target and an accessible label.

@@ -82,6 +82,8 @@ Panel Kalender sempit menampilkan agenda berisi setiap acara dan tanggal terpili
 
 Lompatan tanggal dan pemilihan tampilan bawaan memakai satu pengikatan kontrol milik Kalender untuk halaman akun maupun berbagi. Masukan tidak valid tidak mengubah tampilan, dan pendengar dilepas saat masa hidup halaman berakhir.
 
+Penanda periode memakai pengikatan kontrol terdelegasi pada akar halaman yang sama untuk halaman akun dan berbagi: judul bulan memilih bulan pada tahun aktif, nomor minggu memilih minggunya, dan penanda hari memilih tanggalnya. Tampilan dan tanggal berubah bersama tanpa memberikan izin edit. Label nomor minggu mendatar kecuali kolomnya sendiri selebar paling banyak 3rem; kueri kontainer lalu membuatnya vertikal.
+
 ### Konten Seluler yang Terbaca
 
 Kalender mempertahankan ruang yang cukup untuk agenda dan kisi waktu pada layar pendek dengan pengguliran acara secara internal. Ikon Tambah Acara di samping setiap tanggal memiliki sasaran sentuh 44px dan label yang aksesibel.
