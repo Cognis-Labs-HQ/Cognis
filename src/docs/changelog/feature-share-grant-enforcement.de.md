@@ -28,6 +28,8 @@ Kalenderfreigaben unterstützen über dieselbe lebenszyklusgebundene Steuerung w
 
 Mit Heute, Diese Woche, Dieser Monat oder Dieses Jahr kehrst du zum aktuellen Zeitraum zurück, ohne die Ansicht zu ändern. Die Pfeile wechseln jeweils einen Zeitraum. Diese Steuerung funktioniert auch in Kalenderfreigaben.
 
+Beschriftungen des aktuellen Zeitraums bleiben bei jeder Panelbreite ansichtsspezifisch, auch in Gastkalendern. Browserprüfungen decken frische und zwischengespeicherte Neuladungen unter dem tatsächlichen Service Worker ab.
+
 ## Commits
 
 - [37279a3](https://github.com/Cognis-Labs-HQ/Cognis/commit/37279a34a3891cca73dbc5cc5c85f3b00b2b2e8a)

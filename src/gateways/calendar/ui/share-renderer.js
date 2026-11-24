@@ -262,9 +262,7 @@ export async function mount(
             `[data-shared-calendar-id="${CSS.escape(calendarId)}"]`,
         );
         if (!(sharedCalendar instanceof HTMLElement)) return;
-        const labels = getCalendarPeriodLabels(selectedView, activeDate, i18n, {
-            compact: presentation.layout !== "regular",
-        });
+        const labels = getCalendarPeriodLabels(selectedView, activeDate, i18n);
         const periodLabel = sharedCalendar.querySelector(
             ".calendar-nav-month-label",
         );
@@ -324,7 +322,7 @@ export async function mount(
                 return `<section class="calendar-section shared-calendar" data-shared-calendar-id="${escapeHtml(calendarId)}">
                 <h2 class="shared-calendar-title">${escapeHtml(calendar.name || i18n.t("gateway.calendar.page_title"))}</h2>
                 <header class="calendar-view-header" data-composer-header>
-                    ${renderCalendarNavigation(selectedView, activeDate, i18n, { compact: presentation.layout !== "regular" })}
+                    ${renderCalendarNavigation(selectedView, activeDate, i18n)}
                     ${renderCalendarViewSwitcher(CALENDAR_VIEWS, selectedView, i18n, activeDate)}
                 </header>
                 <div class="calendar-view-canvas" data-composer-viewport-body>${renderCalendarView(events, selectedView, activeDate, i18n, null, { compact: presentation.layout !== "regular", canCreate: canWrite })}</div>

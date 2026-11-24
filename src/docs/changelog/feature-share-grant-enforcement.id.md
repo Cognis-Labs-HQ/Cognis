@@ -28,6 +28,8 @@ Kalender berbagi mendukung penelusuran bulan, minggu, dan hari yang sama dengan 
 
 Gunakan Hari Ini, Minggu Ini, Bulan Ini, atau Tahun Ini untuk kembali ke periode saat ini tanpa mengubah tampilan terpilih. Panah berpindah satu periode sesuai tampilan; kontrol ini juga tersedia pada kalender berbagi.
 
+Label periode saat ini tetap sesuai tampilan pada setiap lebar panel, termasuk kalender tamu. Pengujian browser mencakup pemuatan ulang baru dan tersimpan dengan service worker yang sebenarnya.
+
 ## Komit
 
 - [37279a3](https://github.com/Cognis-Labs-HQ/Cognis/commit/37279a34a3891cca73dbc5cc5c85f3b00b2b2e8a)

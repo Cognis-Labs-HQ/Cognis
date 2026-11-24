@@ -27,14 +27,9 @@ export function renderCalendarViewSwitcher(
     </div>`;
 }
 
-export function getCalendarPeriodLabels(
-    view,
-    date,
-    i18n,
-    { compact = false } = {},
-) {
+export function getCalendarPeriodLabels(view, date, i18n) {
     const current = i18n.t(
-        `gateway.calendar.${compact || view === "day" ? "today" : "this_" + view}`,
+        `gateway.calendar.${view === "day" ? "today" : "this_" + view}`,
     );
     const week =
         view === "week"
@@ -47,13 +42,8 @@ export function getCalendarPeriodLabels(
     return { current, period };
 }
 
-export function renderCalendarNavigation(view, date, i18n, options) {
-    const { current, period } = getCalendarPeriodLabels(
-        view,
-        date,
-        i18n,
-        options,
-    );
+export function renderCalendarNavigation(view, date, i18n) {
+    const { current, period } = getCalendarPeriodLabels(view, date, i18n);
     const label = escapeHtml(current);
     return `<div class="calendar-view-nav">
         <button type="button" class="btn-neutral" data-calendar-nav="prev" aria-label="${escapeHtml(i18n.t("gateway.calendar.previous"))}">&lt;</button>

@@ -90,7 +90,7 @@ if (new URLSearchParams(location.search).has("shared")) {
                 render: (presentation) => `
       <section class="calendar-section">
         <header class="calendar-view-header" data-composer-header>
-          ${renderCalendarNavigation(view, activeDate, i18n, { compact: presentation.layout !== "regular" })}
+          ${renderCalendarNavigation(view, activeDate, i18n)}
           ${renderCalendarViewSwitcher(CALENDAR_VIEWS, view, i18n, activeDate)}
         </header>
         <div class="calendar-view-canvas" data-composer-viewport-body>

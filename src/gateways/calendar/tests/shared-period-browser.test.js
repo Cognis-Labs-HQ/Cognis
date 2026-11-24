@@ -17,7 +17,28 @@ test(
         const server = await serveBrowserFixture(
             fileURLToPath(new URL("./fixtures/responsive", import.meta.url)),
             {
+                apiResponses: {
+                    "/api/v1/ui/offline-routes": {
+                        data: [],
+                        offlineGuards: [],
+                    },
+                },
                 staticRoots: {
+                    "/static/calendar-worker/page/": fileURLToPath(
+                        new URL("./fixtures/responsive/", import.meta.url),
+                    ),
+                    "/static/calendar-worker/": fileURLToPath(
+                        new URL("../../../ui/public/", import.meta.url),
+                    ),
+                    "/static/offline-": fileURLToPath(
+                        new URL(
+                            "./fixtures/responsive/offline/",
+                            import.meta.url,
+                        ),
+                    ),
+                    "/static/pages/": fileURLToPath(
+                        new URL("../../../ui/public/pages/", import.meta.url),
+                    ),
                     "/static/gateways/calendar/": fileURLToPath(
                         new URL("../", import.meta.url),
                     ),
@@ -31,6 +52,21 @@ test(
         await browser.waitFor("window.fixtureReady===true", {
             timeoutMs: 20000,
         });
+        await browser.evaluate(`(async () => {
+            const registration = await navigator.serviceWorker.register('/static/calendar-worker/sw.js');
+            const worker = registration.installing ?? registration.waiting ?? registration.active;
+            if (worker.state !== 'activated') await new Promise((resolve, reject) => worker.addEventListener('statechange', () => {
+                if (worker.state === 'activated') resolve();
+                if (worker.state === 'redundant') reject(new Error('worker_install_failed'));
+            }));
+            window.fixtureReady = false;
+        })()`);
+        await browser.command("Page.navigate", {
+            url: server.url + "/static/calendar-worker/page/index.html?shared",
+        });
+        await browser.waitFor(
+            "window.fixtureReady === true && Boolean(navigator.serviceWorker.controller)",
+        );
         await browser.resize(1440, 900);
         await browser.evaluate(
             `(()=>{const date=document.querySelector('[data-calendar-date]');date.value='2032-05-06';date.dispatchEvent(new Event('change',{bubbles:true}));})()`,
@@ -199,8 +235,7 @@ test(
                         select.value = view;
                         select.dispatchEvent(new Event('change', { bubbles: true }));
                         const button = document.querySelector('[data-calendar-nav="today"]');
-                        const compact = button.closest('[data-composer-layout]').dataset.composerLayout !== 'regular';
-                        const label = window.fixture.i18n.t('gateway.calendar.' + (compact || view === 'day' ? 'today' : 'this_' + view));
+                        const label = window.fixture.i18n.t('gateway.calendar.' + (view === 'day' ? 'today' : 'this_' + view));
                         return {text:button.textContent, title:button.title, aria:button.getAttribute('aria-label'), label};
                     }`,
                         [view],
@@ -229,6 +264,18 @@ test(
             }
         };
         await verifyDrillDown();
+        await verifyCurrentPeriod();
+        assert.equal(
+            await browser.evaluate(
+                "(async()=>Boolean(await caches.match('/static/gateways/calendar/ui/calendar-view-controls.js')))()",
+            ),
+            true,
+        );
+        await browser.evaluate("window.fixtureReady = false");
+        await browser.command("Page.reload");
+        await browser.waitFor(
+            "window.fixtureReady === true && Boolean(navigator.serviceWorker.controller)",
+        );
         await verifyCurrentPeriod();
         await browser.evaluate("window.fixture.lifetime.abort()");
         assert.equal(

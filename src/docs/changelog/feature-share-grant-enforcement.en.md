@@ -28,6 +28,8 @@ Shared calendars support the same month, week and day drill-down as account cale
 
 Use Today, This Week, This Month or This Year to return to the current period without changing the selected view. The arrows move one selected period at a time; these controls also work in shared calendars.
 
+Current-period labels remain specific to the selected view at every panel width, including guest calendars. Browser coverage checks fresh and cached reloads under the actual service worker.
+
 ## Commits
 
 - [37279a3](https://github.com/Cognis-Labs-HQ/Cognis/commit/37279a34a3891cca73dbc5cc5c85f3b00b2b2e8a)

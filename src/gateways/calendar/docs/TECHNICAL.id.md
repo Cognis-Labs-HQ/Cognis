@@ -84,7 +84,7 @@ Lompatan tanggal dan pemilihan tampilan bawaan memakai satu pengikatan kontrol m
 
 Penanda periode memakai pengikatan kontrol terdelegasi pada akar halaman yang sama untuk halaman akun dan berbagi: judul bulan memilih bulan pada tahun aktif, nomor minggu memilih minggunya, dan penanda hari memilih tanggalnya. Tampilan dan tanggal berubah bersama tanpa memberikan izin edit. Label nomor minggu mendatar kecuali kolomnya sendiri selebar paling banyak 3rem; kueri kontainer lalu membuatnya vertikal.
 
-Navigasi periode sebelumnya, berikutnya, dan saat ini memakai renderer serta pengikatan terdelegasi yang sama pada halaman akun dan berbagi. Tindakan periode saat ini membaca jam ketika diklik dan mempertahankan tampilan. Teks, judul, dan label aksesibel mengikuti tampilan serta tata letak ringkas. Panah bulan memilih tanggal pertama bulan sebelah agar akhir bulan tidak melewati satu bulan; panah tahun memilih 1 Januari tahun sebelah.
+Navigasi periode sebelumnya, berikutnya, dan saat ini memakai renderer serta pengikatan terdelegasi yang sama pada halaman akun dan berbagi. Tindakan periode saat ini membaca jam ketika diklik dan mempertahankan tampilan. Teks, judul, dan label aksesibel selalu mengikuti tampilan terpilih, terlepas dari lebar panel. Tata letak ringkas dapat memakai ikon tetapi tetap mempertahankan label aksesibel sesuai tampilan. Panah bulan memilih tanggal pertama bulan sebelah agar akhir bulan tidak melewati satu bulan; panah tahun memilih 1 Januari tahun sebelah.
 
 ### Konten Seluler yang Terbaca
 

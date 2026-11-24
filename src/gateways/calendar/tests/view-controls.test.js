@@ -199,3 +199,30 @@ test("Calendar period arrows honor month, leap-year and year boundaries", () => 
         assert.equal(date.getTime(), previous);
     }
 });
+
+test("Calendar current-period labels follow the view without viewport-dependent wording", () => {
+    const { getCalendarPeriodLabels } = loadTestModule(
+        new URL("../ui/calendar-view-controls.js", import.meta.url),
+        {
+            "./calendar-ui-helpers.js": {
+                getISOWeekNumber: () => 19,
+                toDateTimeLocalValue: unused,
+            },
+            "/static/reuse/escape-html.js": { escapeHtml: unused },
+            "/static/reuse/timestamp.js": { formatMonthYear: () => "May 2032" },
+        },
+    );
+    for (const [view, key] of [
+        ["day", "today"],
+        ["week", "this_week"],
+        ["month", "this_month"],
+        ["year", "this_year"],
+    ]) {
+        assert.equal(
+            getCalendarPeriodLabels(view, new Date(2032, 4, 6), {
+                t: (key) => key,
+            }).current,
+            `gateway.calendar.${key}`,
+        );
+    }
+});

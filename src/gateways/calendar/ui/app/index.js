@@ -446,7 +446,7 @@ export async function mount(root, { signal, shareContext = null } = {}) {
                     return `
           <section class="calendar-section">
             <header class="calendar-view-header" data-composer-header>
-              ${renderCalendarNavigation(selectedView, activeDate, i18n, { compact })}
+              ${renderCalendarNavigation(selectedView, activeDate, i18n)}
               ${renderCalendarViewSwitcher(calendarUi.CALENDAR_VIEWS, selectedView, i18n, activeDate)}
             </header>
             <div class="calendar-view-canvas" data-composer-viewport-body>${calendarUi.renderCalendarView(allCalendarEvents(), selectedView, activeDate, i18n, currentAccountId, { compact })}</div>
