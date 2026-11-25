@@ -47,3 +47,4 @@ Manual inti menjelaskan host HTTP, bootstrap komponen/adaptor, penemuan penyedia
 - [aace4dd](https://github.com/Cognis-Labs-HQ/Cognis/commit/aace4ddebf574a6bded9c525c017a0d862de855e)
 - [f1f86ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/f1f86ea0a157ac3486f0da039230e18bfd276b1e)
 - [4df7e6e](https://github.com/Cognis-Labs-HQ/Cognis/commit/4df7e6eb69aa07ab7528c346db81754b4574818b)
+- [2cadeac](https://github.com/Cognis-Labs-HQ/Cognis/commit/2cadeac36d4fa009791d3ecfb4f0c021e2a62c47)
