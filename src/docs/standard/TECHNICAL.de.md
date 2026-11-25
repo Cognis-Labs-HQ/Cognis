@@ -1,6 +1,6 @@
 # Dokumentationsverträge
 
-Dokumentation trennt Einführung, praktische Abläufe und technische Referenz, damit Leser die passende Detailtiefe wählen können.
+Dokumentpakete trennen Einführung, ausführbare Abläufe und technische Verträge mit geprüfter Struktur und lokalisierten Quelldateien.
 
 ## Schnittstellen
 
@@ -47,3 +47,5 @@ Fülle jede Rolle mit nützlichen, am Quellcode geprüften Informationen statt S
 GitHub-Quelldateilinks verwenden den Standardzweig-Alias `blob/HEAD` oder `raw/HEAD`, auch in archivierten Dokumenten. Commit-Links in Änderungsprotokollen behalten ihre unveränderlichen Ziele.
 
 Linktexte in Änderungsprotokollen verwenden kurze Commitreferenzen, etwa die ersten sieben Zeichen. Die Ziel-URL behält den vollständigen unveränderlichen SHA. Vollständige SHAs in Markdown- oder HTML-Linktexten lassen Dokumentationsprüfung und Repositorytests fehlschlagen.
+
+Die Dokumentationsprüfung validiert Themenziele und Repository-Quellen. Die Commit-Linktextprüfung zählt Zeichen, ohne HTML zu erzeugen; ihr Ergebnis ist eine Diagnose, kein bereinigtes Markup.

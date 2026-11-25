@@ -1,6 +1,6 @@
 # Technische Referenz
 
-Öffentliche Schnittstellen und Betriebsregeln von Page Composer.
+Page Composer verwaltet Elementanordnung, responsive Darstellung, DOM-Lebenszyklen sowie optionale Layout- und Entwurfsspeicherung.
 
 ## Schnittstellen
 

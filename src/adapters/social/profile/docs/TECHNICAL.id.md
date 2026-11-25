@@ -120,7 +120,7 @@ Perilaku ini dijelaskan dalam [kontrak bersama](/docs/gateways/auth/technical).
 
 ### Salinan Preferensi Terkonfirmasi
 
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
+Perilaku ini dijelaskan dalam [kontrak bersama](/docs/ui/technical).
 
 ### Spesifikasi Teknis
 

@@ -17,7 +17,7 @@ Antarmuka publik dan aturan operasional Server Aplikasi.
 
 Kueri `langs` adalah daftar bahasa berurutan dipisahkan koma untuk judul indeks dan isi. Lokal regional mencoba bahasa dasar sebelum preferensi berikutnya; Inggris tetap tersedia sebagai cadangan wajib. Resolusi sama berlaku bagi Info, Penggunaan, dan Teknis pada versi komponen yang diminta.
 
-Nama berkas sumber inti mengikuti [kontrak dokumentasi](/docs/standard/technical); URL dokumen dan bundel berversi tetap memakai slug topik yang sama.
+Direktori topik inti memakai nama direktori relatif sebagai slug; topik akar memakai `index`. Slug komponen mengidentifikasi pemilik manifes. Ketiga tampilan meresolusikan keluarga berkas lokal melalui [kontrak dokumentasi](/docs/standard/technical).
 
 ## Konfigurasi
 
@@ -28,6 +28,8 @@ Nama berkas sumber inti mengikuti [kontrak dokumentasi](/docs/standard/technical
 ## Perilaku
 
 ### Perbedaan Dokumen
+
+`docs:versionStore.createStore({ namespace, database, documents })` membuat penyimpanan bernamespace dengan operasi `ensureSchema`, `getLatest`, `getVersion`, `deleteAll`, `publish`, dan `diff`. `diff(fromHash, toHash)` memerlukan dua versi dengan slug yang sama.
 
 Perbedaan dokumen memungkinkan modul menjelaskan perubahan antara dua versi dokumen yang tidak dapat diubah sebelum pengguna mengambil tindakan terhadap salinan terbaru.
 

@@ -1,6 +1,6 @@
 # Technical Reference
 
-The public interfaces and operational rules of Guided Tutorials.
+The tutorial host discovers page-bound guides, resolves owned targets and persists completion for the authenticated account.
 
 ## Interfaces
 

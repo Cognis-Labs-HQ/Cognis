@@ -1,6 +1,6 @@
 # Technische Referenz
 
-Öffentliche Schnittstellen und Betriebsregeln von DevOps.
+Die Containerbereitstellung betreibt den kompilierten Node-Server hinter nginx mit dauerhaftem Datenbank-, Medien- und Konfigurationsspeicher.
 
 ## Schnittstellen
 

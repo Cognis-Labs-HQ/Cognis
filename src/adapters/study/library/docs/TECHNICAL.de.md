@@ -114,7 +114,7 @@ Das administrative Bearbeitungsfenster leitet seine Steuerelemente aus den Feld-
 
 Jedes bearbeitbare Feld deklariert seine Eingabeart und alle lokalisierten Bezeichnungen im Anbieter-Schema. Unveränderliche Klassifizierungen bleiben nach der Erstellung gesperrt; Audioauswahl und Upload sind auf den Sprachpräfix des Files-Gateway-Namensraums beschränkt. Zusammensetzungen müssen auf die nächstgelegene verfügbare Ebene verweisen: 日本語 verweist auf 日本 und 語, während 日本 auf 日 und 本 verweist.
 
-Schaltflächen für verwandte Einträge wiederholen ihre Bezeichnung nicht mehr in einer Hover-Einblendung. Vokabellinks enthalten die vom Anbieter gelieferte Aussprache, sodass eine gültige lexikalische Einheit mit einem Zeichen wie `人 ひと` vom Schriftzeichen-Datensatz `人` unterscheidbar bleibt, ohne bedeutungsvolle Ein-Zeichen-Wörter auszublenden. Variantenhinweise reservieren eine kompakte untere Ecke der Karte, statt den Hauptinhalt zu überdecken. Kartenflächen im dunklen Design werden zum Anwendungshintergrund statt zu Weiß gemischt.
+Schaltflächen für verwandte Einträge wiederholen ihre Bezeichnung nicht in einer Hover-Einblendung. Vokabellinks enthalten die vom Anbieter gelieferte Aussprache, sodass eine gültige lexikalische Einheit mit einem Zeichen wie `人 ひと` vom Schriftzeichen-Datensatz `人` unterscheidbar bleibt, ohne bedeutungsvolle Ein-Zeichen-Wörter auszublenden. Variantenhinweise reservieren eine kompakte untere Ecke der Karte, statt den Hauptinhalt zu überdecken. Kartenflächen im dunklen Design werden zum Anwendungshintergrund statt zu Weiß gemischt.
 
 Geöffnete Variantenäste bleiben auf das Basisraster begrenzt. Cognis berücksichtigt zuerst die vom Anbieter bevorzugte Richtung, prüft danach alternative Richtungen gegen die gerenderte Rastergrenze und wählt die erste passende Option; beim Schließen werden die Anbieterpräferenzen wiederhergestellt. Der Hinweis zum Gedrückthalten ist für scharfe Schrift statisch und verwendet eine um 25 % größere Beschriftung.
 
@@ -128,7 +128,7 @@ Wenn ein Link zu einem verwandten Eintrag eine lexikalische Einheit ohne eigene 
 
 Karten können mehrere Definitionsdatensätze in der vom Anbieter festgelegten Reihenfolge referenzieren. Die erste lokalisierte Definition wird im Titeldetail hervorgehoben, sofern sie nicht mit dem Kartentitel identisch ist; weitere Definitionen erscheinen in einem Abschnitt „Zusätzliche Definitionen“, der bei leerem Inhalt entfällt. Der von einer Ausgangskarte geerbte Kontext bleibt nur dann ein Rückfallwert, wenn die Zielvokabel keine Definition bereitstellt.
 
-Die Laufzeiteinpassung reserviert die Stammkarte und jede bereits platzierte Kindkarte des sichtbaren Zweigs. Ein Kind behält die vom Anbieter bevorzugte Richtung, wenn der begrenzte Platz frei ist; andernfalls wählt Cognis den begrenzten Kandidaten mit der geringsten Kartenüberlappung. Dadurch fallen Geschwisterkarten nicht mehr auf denselben Platz, während bei erschöpften Nachbarpositionen weiterhin nach außen in derselben Zeile oder Spalte gestapelt wird.
+Die Laufzeiteinpassung reserviert die Stammkarte und jede bereits platzierte Kindkarte des sichtbaren Zweigs. Ein Kind behält die vom Anbieter bevorzugte Richtung, wenn der begrenzte Platz frei ist; andernfalls wählt Cognis den begrenzten Kandidaten mit der geringsten Kartenüberlappung. Dadurch fallen Geschwisterkarten nicht auf denselben Platz, während bei erschöpften Nachbarpositionen weiterhin nach außen in derselben Zeile oder Spalte gestapelt wird.
 
 ### Nachverfolgung neuer Inhalte
 
@@ -227,7 +227,7 @@ Schichten für atomare Zeichen und Partikel sind unveränderliche Katalogdaten. 
 
 Geordnete Auswahlen verwenden nun über alle Eingabe-Karussells hinweg eine gemeinsame Positionsfolge. Positionsmarken beschreiben damit die gespeicherte Kartenreihenfolge, statt bei jedem Beziehungskarussell wieder bei eins zu beginnen.
 
-Autorenformulare zeigen die interne Inhaltsklassenauswahl von Cognis nicht mehr an. In Detailansichten kennzeichnet der lokalisierte Schichtname des Anbieters die Karte, und Datensätze geordneter Folgen verwenden die Schicht-ID des Anbieters statt semantischer Bezeichnungen wie `sentence` oder `composite`. Abgeleitete Aussprachen werden gemäß dem deklarierten Feldvertrag des Anbieters serialisiert, einschließlich listenwertiger Aussprachefelder.
+Autorenformulare zeigen die interne Inhaltsklassenauswahl von Cognis nicht an. In Detailansichten kennzeichnet der lokalisierte Schichtname des Anbieters die Karte, und Datensätze geordneter Folgen verwenden die Schicht-ID des Anbieters statt semantischer Bezeichnungen wie `sentence` oder `composite`. Abgeleitete Aussprachen werden gemäß dem deklarierten Feldvertrag des Anbieters serialisiert, einschließlich listenwertiger Aussprachefelder.
 
 Die Serialisierung abgeleiteter Felder löst ihren Vertrag aus dem Anbieterschema statt aus der vom Konstruktor gefilterten Editorschicht auf. Erforderliche Aussprachefelder bleiben dadurch auffindbar, auch wenn der Composer ihr direktes Eingabefeld absichtlich ausblendet.
 
@@ -235,7 +235,7 @@ Wenn ein Konstruktor Eingabe- oder Aussprache-Karussellschichten deklariert, ent
 
 Karussellgestützte Felder akzeptieren den anbietereigenen booleschen Wert `multi_value` auf Feldebene. Mehrwertige Felder erhalten eine ausdrückliche Aktion **{Feld} speichern**, zeigen bestätigte Werte als entfernbare Pillen über der aktiven Komposition und ermöglichen das erneute Öffnen eines bestätigten Werts zum Ersetzen. Jedes Karussell-Kompositionsfeld akzeptiert nur Text, der zu Karten aus seinen konfigurierten Karussells aufgelöst wurde; nicht aufgelöster Text macht das Formular ungültig. Das Entfernen einer ausgewählten Karte oder eines bestätigten Werts erfordert das eigene ×-Steuerelement und eine Bestätigung. Editoren bestehender Karten binden dieselben Beziehungskarussells wie Erstellungsformulare ein.
 
-Der boolesche Wert `multi_value` auf Feldebene ist die einzige Mehrwertdeklaration. Bestätigte Pillen füllen die Zwischenkomposition beim Anklicken nicht mehr. Die mehrwertige Zwischenablage beginnt leer, ihre kompakten ×-Steuerelemente entfernen ohne Bestätigung nur vorgemerkte Karten, und Referenzen werden erst durch die sichtbare feldspezifische Speicheraktion bestätigt. Gespeicherte Werte bleiben beim Entfernen ihrer vorgemerkten Karten unverändert. Kartenbezeichnungen werden aus der geordneten primären Input-Komposition erzeugt, statt als eigener editierbarer Wert angezeigt zu werden; nach erfolgreichem Speichern wird die sichtbare Kartenvorschau sofort aktualisiert.
+Der boolesche Wert `multi_value` auf Feldebene ist die einzige Mehrwertdeklaration. Bestätigte Pillen füllen die Zwischenkomposition beim Anklicken nicht. Die mehrwertige Zwischenablage beginnt leer, ihre kompakten ×-Steuerelemente entfernen ohne Bestätigung nur vorgemerkte Karten, und Referenzen werden erst durch die sichtbare feldspezifische Speicheraktion bestätigt. Gespeicherte Werte bleiben beim Entfernen ihrer vorgemerkten Karten unverändert. Kartenbezeichnungen werden aus der geordneten primären Input-Komposition erzeugt, statt als eigener editierbarer Wert angezeigt zu werden; nach erfolgreichem Speichern wird die sichtbare Kartenvorschau sofort aktualisiert.
 
 Karussellkarten zeigen wieder für jeden Eintrag eine Vorschau bei Mauszeigerkontakt und Tastaturfokus, auch wenn keine Definition vorhanden ist. Karussellvorschauen und Hinweise auf fehlendes Audio werden in verankerten Portalen auf Body-Ebene gerendert, sodass Überlaufregeln von Karten, Karussells und Pop-ups sie nicht abschneiden.
 
@@ -243,7 +243,7 @@ Gruppierte Beziehungen bewahren verschachtelte Referenzfelder für mehrwertige F
 
 Ausgeblendete Karten werden aus allen Karussells und Vorschlagslisten für Texteingaben ausgeschlossen. Bereits vorhandene ausgeblendete Abhängigkeiten bleiben beim Bearbeiten einer Karte in den zugrunde liegenden Beziehungssteuerelementen erhalten, werden aber nie als auswählbare Karusselloptionen angeboten.
 
-Aus dem Speicher geladene gruppierte Beziehungen werden vor der Sortierung ihrer Einträge nach Position komprimiert. Ein fehlender Gruppenindex kann daher den Endpunkt für Bibliothekseinträge nicht mehr fehlschlagen lassen, während die Reihenfolge jeder gespeicherten Aussprachegruppe deterministisch bleibt.
+Aus dem Speicher geladene gruppierte Beziehungen werden vor der Sortierung ihrer Einträge nach Position komprimiert. Ein fehlender Gruppenindex kann daher den Endpunkt für Bibliothekseinträge nicht fehlschlagen lassen, während die Reihenfolge jeder gespeicherten Aussprachegruppe deterministisch bleibt.
 
 Kartenvorschauen der Bibliothek zeigen höchstens die ersten beiden unterschiedlichen Aussprachen. Die Detailansicht des Eintrags stellt weiterhin alle Aussprachen bereit, ohne die Kartenübersicht unnötig hoch oder dicht zu machen.
 
@@ -328,13 +328,13 @@ Der Library-Editor delegiert Tab-Aktivierung, Markierungen ungültiger Tabs und 
 
 Formularnutzlasten für alternative Zeichen kopieren `pronunciation_carousels` direkt aus der Wortschatz-Formularnutzlast desselben Schemas. Der Composer verwendet diese angeglichene Nutzlast ohne spezielle Karussellableitung oder Beziehungsfilterung für alternative Zeichen. Die Zuordnung der Strichmuster-Suche platziert die Aktion **Nachschlagen** des Anbieters weiterhin im Abschnitt Strichmuster. Bibliotheksschichtrouten akzeptieren das optionale Ansichtssegment für anbieterseitig deklarierte Verben- und Adverbienansichten.
 
-Die Angleichung der Formularnutzlast für alternative Zeichen aktualisiert jetzt sowohl `pronunciation_carousels` als auch die Beziehungs-IDs, die diese Karussells darstellen. Beziehungen des ersetzten Wortschatz-Aussprachekarussells werden entfernt und die Zeichenbeziehungen des Aussprachekarussells der Wortschatzkarte eingefügt. Das Formular für alternative Zeichen zeigt daher das Zeichenkarussell und nicht mehr Wortschatz unter Aussprache.
+Die Angleichung der Formularnutzlast für alternative Zeichen aktualisiert jetzt sowohl `pronunciation_carousels` als auch die Beziehungs-IDs, die diese Karussells darstellen. Beziehungen des ersetzten Wortschatz-Aussprachekarussells werden entfernt und die Zeichenbeziehungen des Aussprachekarussells der Wortschatzkarte eingefügt. Das Formular für alternative Zeichen zeigt daher das Zeichenkarussell und nicht Wortschatz unter Aussprache.
 
-Die Ausspracheableitung endet jetzt bei der ersten expliziten Aussprache und verwendet nur bei atomaren Zeichenkarten ersatzweise die Beschriftung. Neue Wörter und Sätze werden dadurch nicht mehr zu Zeichenlesungen abgeflacht. Die Erstellung lehnt sichtbare Duplikate allein anhand der normalisierten Eingabe ab; die Bestätigung erklärt, dass beim Fortfahren die vorhandene Karte ausgewählt wird, statt eine weitere Zeile anzulegen. Speicherung und Prüfung von Push-Anfragen erkennen die Typen `update` und `merge`.
+Die Ausspracheableitung endet jetzt bei der ersten expliziten Aussprache und verwendet nur bei atomaren Zeichenkarten ersatzweise die Beschriftung. Neue Wörter und Sätze werden dadurch nicht zu Zeichenlesungen abgeflacht. Die Erstellung lehnt sichtbare Duplikate allein anhand der normalisierten Eingabe ab; die Bestätigung erklärt, dass beim Fortfahren die vorhandene Karte ausgewählt wird, statt eine weitere Zeile anzulegen. Speicherung und Prüfung von Push-Anfragen erkennen die Typen `update` und `merge`.
 
 Definitionen in Pop-ups belegen jetzt die zweite Rasterzeile direkt unter dem Kartentitel statt einer eigenen rechten Spalte. Lesungen bleiben in der Titelzeile zentriert, während lange Definitionen unter dem Titel natürlich umbrechen.
 
-Die Ausspracheauflösung für Partikeln endet wie bei atomaren Zeichen: Zuerst wird eine explizite Partikelaussprache verwendet, andernfalls die Partikelbeschriftung. Der Resolver steigt nicht mehr in die Zeichenreferenzen einer Partikel ab, sodass kontextabhängige Partikeln wie は und が wie verfasst ausgesprochen bleiben.
+Die Ausspracheauflösung für Partikeln endet wie bei atomaren Zeichen: Zuerst wird eine explizite Partikelaussprache verwendet, andernfalls die Partikelbeschriftung. Der Resolver steigt nicht in die Zeichenreferenzen einer Partikel ab, sodass kontextabhängige Partikeln wie は und が wie verfasst ausgesprochen bleiben.
 
 Beim Speichern einer leeren Aussprache-Stufe erscheint jetzt eine Fehlermeldung. Gespeicherte Aussprachekarten behalten ihre Entfernen-Schaltfläche innerhalb der Karte; die Auswahl einer gespeicherten Karte verschiebt ihre gruppierten Komponentenreferenzen zurück in die Stufe und wählt die zugehörigen Karussellkarten zur Bearbeitung erneut aus.
 
@@ -373,7 +373,7 @@ Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/adapters/study/flashc
 
 Beim Schreiben von Abhängigkeiten wird nun die Sichtbarkeit jeder Verbindung geprüft, einschließlich gruppierter Referenzen. Persönliche Karten dürfen lesbare geteilte Karten und eigene private Bestandteile verwenden; Klassenkarten benötigen globale Bestandteile oder Bestandteile derselben Klasse; globale Karten benötigen globale Bestandteile. Änderungsvorschläge prüfen das Referenzschema vor der Einreichung. Veröffentlichungen prüfen die aktuellen Abhängigkeiten bei der Genehmigung erneut, und Änderungen dürfen eine ausstehende Veröffentlichung nicht ungültig machen. Geteilte Inhalte können nicht in den persönlichen Bereich zurückkehren, solange geteilte abhängige Karten oder ausstehende Anfragen ihre größere Sichtbarkeit benötigen. Berechtigungshinweise werden nach Erstellung und Bearbeitung zurückgegeben und berücksichtigen Schreibrechte der Klasse.
 
-Beim Löschen werden alle löschbaren abhängigen Karten mit Kaskaden- oder Einschränkungsregel bestätigt, einschließlich gruppierter Referenzen. Karten mit Trennungsregel bleiben erhalten. Die Transaktion prüft Eigentum, Klassenzugriff, Schutz und ausstehende Prüfungen jeder betroffenen Karte, bevor etwas gelöscht wird. Einschränkungen scheitern nicht mehr an der Reihenfolge der Kaskadensuche. Bei zu geringer Sichtbarkeit von Abhängigkeiten bietet die Erstellung eine persönliche Speicherung an. Die Veröffentlichungshilfe kann zunächst geeignete unterste Bestandteile einschließlich verborgener Definitionen anfragen; nach ihrer Genehmigung kann die übergeordnete Karte eingereicht werden.
+Beim Löschen werden alle löschbaren abhängigen Karten mit Kaskaden- oder Einschränkungsregel bestätigt, einschließlich gruppierter Referenzen. Karten mit Trennungsregel bleiben erhalten. Die Transaktion prüft Eigentum, Klassenzugriff, Schutz und ausstehende Prüfungen jeder betroffenen Karte, bevor etwas gelöscht wird. Einschränkungen scheitern nicht an der Reihenfolge der Kaskadensuche. Bei zu geringer Sichtbarkeit von Abhängigkeiten bietet die Erstellung eine persönliche Speicherung an. Die Veröffentlichungshilfe kann zunächst geeignete unterste Bestandteile einschließlich verborgener Definitionen anfragen; nach ihrer Genehmigung kann die übergeordnete Karte eingereicht werden.
 
 Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/gateways/study/technical).
 
@@ -577,7 +577,7 @@ Mitteilungen über neue und entfernte Library-Inhalte enthalten englische, deuts
 
 ### Leere Offline-Lernseiten
 
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
+Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/ui/technical).
 
 ### Offline-Lernressourcen
 
@@ -585,7 +585,7 @@ Beide Designvarianten der Popup-Symbole werden über die lebenszyklusgebundene O
 
 ### Offline-Verfügbarkeit
 
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
+Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/ui/technical).
 
 ### Gemeinsame Lernfavoriten
 

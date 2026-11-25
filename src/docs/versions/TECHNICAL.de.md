@@ -1,6 +1,6 @@
 # Technische Referenz
 
-Öffentliche Schnittstellen und Betriebsregeln von Komponentenversionen.
+Dieser Index erfasst ausgelieferte Komponentenversionen und erklärt getestete Abhängigkeitsgrenzen sowie die Auswahl der Dokumentversion.
 
 ## Schnittstellen
 
@@ -8,7 +8,7 @@
 
 | Komponente | Pfad       | Version   |
 | ---------- | ---------- | --------- |
-| API Server | `src/api/` | `0.13.36` |
+| API Server | `src/api/` | `0.13.37` |
 
 ## Konfiguration
 

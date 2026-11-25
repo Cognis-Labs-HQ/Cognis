@@ -160,7 +160,7 @@ Auth publishes `session:isOfflineValid` as the synchronous, network-free authori
 
 ### Account-bound Queues
 
-See the [shared contract](/docs/api/technical) for this behavior.
+See the [shared contract](/docs/ui/technical) for this behavior.
 
 ### Bounded SSO Registration Attempts
 

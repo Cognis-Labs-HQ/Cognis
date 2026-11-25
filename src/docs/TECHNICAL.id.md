@@ -1,6 +1,6 @@
 # Referensi Teknis
 
-Antarmuka publik dan aturan operasional Cognis.
+Gunakan referensi ini untuk menemukan komponen pemilik fitur, kontrak publiknya, dan kebutuhan penerapannya.
 
 ## Antarmuka
 

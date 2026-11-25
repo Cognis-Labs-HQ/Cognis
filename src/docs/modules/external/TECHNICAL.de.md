@@ -1,6 +1,6 @@
 # Technische Referenz
 
-Öffentliche Schnittstellen und Betriebsregeln von Externe Module.
+Externe Repositorys werden über geprüfte Manifeste, begrenzte ctx-Registrierungen und entfernbare Server-/Browserbeiträge integriert.
 
 ## Schnittstellen
 
@@ -25,8 +25,6 @@ Module, die rechtliche, unterstützende oder andere vor der Anmeldung relevante 
 `bootstrapModule` kann einen Entsorger zurückgeben und ein Modul kann zusätzlich `teardownModule(ctx)` exportieren. Bei der Deaktivierung oder Deinstallation ruft Cognis diese Hooks auf und entfernt dann alle Routen, statischen Verzeichnisse, UI-Beiträge, Funktionen, erstellten Flows und injizierten Flow-Stufen, die vom bereichsbezogenen Kontext aufgezeichnet wurden. Module dürfen keine Timer, Listener, Sockets oder andere Arbeiten behalten, nachdem ihr Entsorger abgeschlossen ist. Beiträge, die durch den Import von Kerninterna oder durch die Umgehung des bereitgestellten `ctx` erfolgen, können nicht nachverfolgt werden und werden nicht unterstützt.
 
 Das Manifest deklariert `uuid`, `id`, `name`, `version`, `publisher`, `class`, `coreApiVersion`, `summary`, `description`, `categories`, `recommended`, `license`, `homepage`, `repository`, `support`, `capabilities`, UUID-basierter `requires`, `entrypoints` und `assets`. Asset-Pfade sind Repository-bezogen. `assets.icon` identifiziert das quadratische Store-Symbol, `assets.banner` identifiziert den Detailhelden und `assets.screenshots` ist eine geordnete Galerie. Pfade müssen innerhalb des Repositorys bleiben.
-
-Lokalisierungsschlüssel verwenden sowohl im Modulnamensraum als auch in Funktionsbezeichnungen kleingeschriebene, durch Punkte getrennte Wörter. Manifest-Metadaten, Kataloge und Codeverweise müssen übereinstimmen. Unveränderliche Modul-IDs begründen keine Ausnahme von dieser Regel.
 
 ### Öffentliche Capabilities
 
@@ -60,7 +58,9 @@ Bevor Sie ein gebündeltes Modul in sein eigenes Repository verschieben, kopiere
 
 ### Speichern Sie Assets und Tags
 
-Ein Modul kann `tags` neben seinem umfassenderen `categories` deklarieren. beide beteiligen sich an der Marktplatzfilterung. Speichern Sie Bildmaterial im Stammverzeichnis des Repositorys unter `assets/`: Geben Sie `assets/icon.svg` oder `assets/icon.png` für das Katalogsymbol und `assets/banner.svg`, `assets/banner.png` oder `assets/banner.jpg` für den Detailseiten-Helden an. Deklarieren Sie die gewählten Pfade als `assets.icon` und `assets.banner` in `manifest.json`. Optionale Galeriebilder sind in `assets.screenshots` aufgeführt. Halten Sie Kunstwerke frei von Geheimnissen und persönlichen Daten. Das Deaktivieren oder Neustarten eines Moduls muss diese gespeicherte Konfiguration erhalten; nur der Deinstallationsablauf darf sie löschen. Detailseiten installierter Module wählen für die aktive UI-Sprache `README.<locale>.md` und verwenden danach in dieser Reihenfolge `README.en.md`, `README.en.md` und die Katalogbeschreibung. Der optionale Kompatibilitätsalias `README.en.md` im Stammverzeichnis ist weder erforderlich noch wird seine Prüfsumme validiert; lokalisierte Dateien `README.<locale>.md` können weiterhin in das Integritätsinventar des Manifests aufgenommen werden.
+Ein Modul kann `tags` neben seinem umfassenderen `categories` deklarieren. beide beteiligen sich an der Marktplatzfilterung. Speichern Sie Bildmaterial im Stammverzeichnis des Repositorys unter `assets/`: Geben Sie `assets/icon.svg` oder `assets/icon.png` für das Katalogsymbol und `assets/banner.svg`, `assets/banner.png` oder `assets/banner.jpg` für den Detailseiten-Helden an. Deklarieren Sie die gewählten Pfade als `assets.icon` und `assets.banner` in `manifest.json`. Optionale Galeriebilder sind in `assets.screenshots` aufgeführt. Halten Sie Kunstwerke frei von Geheimnissen und persönlichen Daten. Das Deaktivieren oder Neustarten eines Moduls muss diese gespeicherte Konfiguration erhalten; nur der Deinstallationsablauf darf sie löschen.
+
+Details installierter Module wählen die Stamm-README nach exakter Sprache, Basissprache, Englisch, `README.md` im Stamm, Katalog-README und schließlich lokalisierter oder Katalogbeschreibung. Diese Marktplatzdarstellung ist vom Docs-Paket mit den deklarierten Dateien `docs/README.en.md`, `docs/USAGE.en.md` und `docs/TECHNICAL.en.md` getrennt.
 
 Modulbilder werden unabhängig von der Codeinstallation abgerufen. Öffentliche GitHub-Dateien werden von raw.githubusercontent.com gestreamt; private und Enterprise-Repositories verwenden authentifizierte Rohantworten, GitLab seinen Raw-Dateiendpunkt. Cognis speichert Bytes und Medientyp in einem separaten Hash-Cache und liefert sie über den authentifizierten Katalogendpunkt aus. So entfällt die Größenbegrenzung eingebetteter Inhalte im GitHub-Contents-JSON. Leere Dateien und Downloads über der bestehenden Grenze von 10 MiB werden abgewiesen. Protokolle nennen Quelle, Repository, Referenz, Pfad, Transport, Phase und HTTP-Status oder Fehlergrund. Aktualisieren Sie den Katalog, um den Abruf erneut zu versuchen. Fehlende Icons behalten das Fragezeichen-SVG; fehlende oder nicht dekodierbare Banner zeigen den lokalisierten Hinweis Bild nicht verfügbar.
 
@@ -130,7 +130,7 @@ Eine abgebrochene direkte Seite gibt ihr gemeinsames Ladetoken sofort frei, auch
 
 ### Punktgetrennte Übersetzungsnamensräume
 
-Lokalisierungsschlüssel verwenden ausschließlich kleingeschriebene, durch Punkte getrennte Wörter, auch im Modulnamensraum und bei Tutorialschlüsseln. Für die unveränderliche ID `terms-of-service` lautet ein Schlüssel `module.terms.of.service.admin.title`. Manifest-Metadaten, Kataloge und Verweise verwenden denselben Namensraum; Modul-IDs, UUIDs, Fähigkeitsnamen und Tutorial-Anbieter-/Abschlussbezeichner behalten ihre bestehenden Identitäten. Namensraumprüfungen dürfen nicht für ungültige Schlüssel gelockert werden. XML-Einrückung an benachbarte Einträge anpassen und Übersetzungswerte beim Formatieren erhalten.
+Lokalisierungsschlüssel verwenden `module.<module-id>.<period.delimited.suffix>`. Die unveränderliche Modul-ID einschließlich Bindestrichen bleibt erhalten; Suffixwörter sind kleingeschrieben und durch Punkte getrennt. Gemeinsame Texte verwenden flache `ui.reuse.*`-Schlüssel.
 
 Die Marktplatzdarstellung hält zwischengespeicherte Namen, Beschreibungen, Kategorien und Tags mit den zugehörigen Katalogübersetzungen zusammen, wenn das installierte Modul einen anderen Namensraum verwendet. Installierte Einstellungen behalten ihre eigene Übersetzungs-URL; eine neue Katalogsuche ersetzt die zwischengespeicherte Darstellung.
 
@@ -178,21 +178,21 @@ Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/adapters/social/messa
 
 Der Host stellt `ctx.capabilities.get("ui:broadcast").publish(id, descriptor, { signal, priority })` vor dem Einhängen von Anbietern und Seiten bereit. Beschreibungen enthalten den Klartexttitel `title`, bereinigtes `bodyHtml`, vertrauenswürdiges `actionsHtml` und die Variante `info`, `success`, `warning` oder `danger`. Der Rückgabewert bietet `element` und `remove()`. Dieselbe ID ersetzt nur den eigenen Hinweis; ein älterer Aufräumaufruf entfernt keinen Ersatz. `signal` bindet die Lebensdauer. Niedrigere Prioritäten erscheinen zuerst. Titel werden maskiert; Anbieter müssen Rich Text bereinigen. Mit `prepare()` können die gemeinsamen Banner- und Schaltflächenstile online vor der ersten Meldung vorgeladen werden.
 
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
+Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/ui/technical).
 
 ### Leere Offline-Lernseiten
 
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
+Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/ui/technical).
 
 ### Öffentliche Assets vorbereiten
 
 Der Host stellt `ctx.capabilities.get("offline:assets")` mit `prepare(paths, { signal })` und `register(paths, { signal })` bereit. Beide nutzen den gestuften Ablauf `offline:prepareAssets`. Die Registrierung startet die Vorbereitung im Hintergrund, wiederholt sie bei Verbindungs- oder Einstellungsänderungen und liefert eine Wiederholungsfunktion. Nur öffentliche, wurzelrelative Pfade unter `/static/` oder `/assets/` sind erlaubt; Anfragen senden keine Zugangsdaten und lehnen private/no-store-Antworten ab. Vier parallele Aufgaben lesen die Antwortinhalte. Gleichzeitige Anfragen werden je Besitzersignal zusammengeführt, Fehler bleiben wiederholbar und ein Abbruch beendet Arbeit und Listener. Private API-Daten werden nicht gespeichert und Offline-Zugriff wird nicht gewährt. `restoreRead`-Rückrufe im Offline-HTTP-Client laufen nur nach einem autorisierten Cache-Fehltreffer und verwenden denselben geschützten Snapshot-Leser. Zugriffsverweigerungen werden nie in leere oder vorgemerkte Ansichten umgewandelt.
 
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
+Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/ui/technical).
 
 ### Gemeinsame Lernfavoriten
 
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
+Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/ui/technical).
 
 ### Bootstrap und Kanäle
 

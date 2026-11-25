@@ -1,6 +1,6 @@
 # Technische Referenz
 
-Öffentliche Schnittstellen und Betriebsregeln von Passphrasen-Dienstprogramm.
+Die synchrone Passphrasenfunktion wählt unabhängige Wörter kryptografisch zufällig aus und prüft Wortzahl sowie Formatoptionen.
 
 ## Schnittstellen
 

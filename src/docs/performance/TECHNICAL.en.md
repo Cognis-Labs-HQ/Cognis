@@ -1,6 +1,6 @@
 # Technical Reference
 
-The public interfaces and operational rules of Performance budgets.
+Performance measurement separates cold loads, warm loads, route mounting and API latency under reproducible network and CPU conditions.
 
 ## Interfaces
 

@@ -201,7 +201,7 @@ See the [shared contract](/docs/gateways/auth/technical) for this behavior.
 
 ### Acknowledged Preference Snapshots
 
-See the [shared contract](/docs/api/technical) for this behavior.
+See the [shared contract](/docs/ui/technical) for this behavior.
 
 ### Technical Specification
 

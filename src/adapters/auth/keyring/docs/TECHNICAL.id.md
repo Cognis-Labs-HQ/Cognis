@@ -86,7 +86,7 @@ Notifikasi siklus hidup keyring, kontrol pembukaan kunci, dan label Pengaturan d
 
 ### Privasi akun dan isolasi keyring
 
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
+Perilaku ini dijelaskan dalam [kontrak bersama](/docs/ui/technical).
 
 ### Akses yang dibatalkan dan pemulihan manual
 

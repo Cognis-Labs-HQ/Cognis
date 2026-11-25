@@ -72,7 +72,7 @@ FlashcardsはExploreとRequestsと同じpage-builderおよびpage-sectionsの共
 
 ### オフライン学習の空画面
 
-この動作については[共通の契約](/docs/api/technical)を参照してください。
+この動作については[共通の契約](/docs/ui/technical)を参照してください。
 
 ### 保存済みキューの結果
 
@@ -84,7 +84,7 @@ Flashcards は登録済みの学習・指導言語で表示対象となる全デ
 
 ### オフラインの Study 練習
 
-この動作については[共通の契約](/docs/api/technical)を参照してください。
+この動作については[共通の契約](/docs/ui/technical)を参照してください。
 
 ### 共有とテストの信頼性
 

@@ -1,6 +1,6 @@
 # Referensi Teknis
 
-Antarmuka publik dan aturan operasional Tutorial Terpandu.
+Host tutorial menemukan panduan terikat halaman, meresolusikan target milik penyedia, dan menyimpan penyelesaian untuk akun terautentikasi.
 
 ## Antarmuka
 

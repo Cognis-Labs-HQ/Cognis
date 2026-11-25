@@ -72,7 +72,7 @@ Opening another deck brings its content into view immediately; returning from Ex
 
 ### Empty offline Study pages
 
-See the [shared contract](/docs/api/technical) for this behavior.
+See the [shared contract](/docs/ui/technical) for this behavior.
 
 ### Durable Queued Results
 
@@ -80,11 +80,11 @@ Queued card reviews retain their successful result even if optional activity rec
 
 ### Enrolled Offline Workspace
 
-See the [shared contract](/docs/api/technical) for this behavior.
+See the [shared contract](/docs/ui/technical) for this behavior.
 
 ### Offline Study Practice
 
-See the [shared contract](/docs/api/technical) for this behavior.
+See the [shared contract](/docs/ui/technical) for this behavior.
 
 ### Share Delivery
 

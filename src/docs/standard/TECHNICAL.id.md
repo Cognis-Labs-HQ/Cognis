@@ -1,6 +1,6 @@
 # Kontrak Dokumentasi
 
-Dokumentasi memisahkan pengenalan, prosedur praktis, dan referensi teknis agar pembaca dapat memilih kedalaman yang diperlukan.
+Bundel dokumentasi memisahkan informasi pengantar, prosedur yang dapat dijalankan, dan kontrak teknis dengan struktur serta keluarga sumber lokal yang tervalidasi.
 
 ## Antarmuka
 
@@ -47,3 +47,5 @@ Isi setiap peran dengan informasi berguna yang diverifikasi pada sumber, bukan t
 Tautan berkas sumber GitHub memakai alias cabang baku `blob/HEAD` atau `raw/HEAD`, termasuk dalam dokumentasi arsip. Tautan komit pada catatan perubahan tetap menunjuk komit permanen.
 
 Label tautan catatan perubahan memakai referensi commit singkat, misalnya tujuh karakter pertama. URL tujuan tetap menyimpan SHA lengkap yang tidak berubah. SHA lengkap dalam label tautan Markdown atau HTML menyebabkan perintah pemeriksaan dokumentasi dan pengujian repositori gagal.
+
+Pemeriksa dokumentasi memvalidasi tujuan topik dan sumber repositori. Pemeriksaan label commit menghitung teks tanpa membuat HTML; hasilnya berupa diagnostik, bukan markup yang disanitasi.

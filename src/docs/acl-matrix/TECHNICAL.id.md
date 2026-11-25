@@ -1,6 +1,6 @@
 # Referensi Teknis
 
-Antarmuka publik dan aturan operasional Matriks ACL.
+Kebijakan akses menggabungkan peringkat peran akun dengan pemeriksaan kepemilikan, keanggotaan, dan visibilitas sesuai operasi.
 
 ## Antarmuka
 

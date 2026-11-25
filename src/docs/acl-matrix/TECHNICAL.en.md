@@ -1,6 +1,6 @@
 # Technical Reference
 
-The public interfaces and operational rules of ACL Matrix.
+Access policy combines ranked account roles with operation-specific ownership, membership and visibility checks.
 
 ## Interfaces
 

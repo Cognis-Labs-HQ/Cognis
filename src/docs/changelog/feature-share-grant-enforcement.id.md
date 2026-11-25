@@ -30,6 +30,10 @@ Gunakan Hari Ini, Minggu Ini, Bulan Ini, atau Tahun Ini untuk kembali ke periode
 
 Label periode saat ini tetap sesuai tampilan pada setiap lebar panel, termasuk kalender tamu. Pengujian browser mencakup pemuatan ulang baru dan tersimpan dengan service worker yang sebenarnya.
 
+## Kontrak referensi dokumentasi
+
+Manual inti menjelaskan host HTTP, bootstrap komponen/adaptor, penemuan penyedia bahasa, batas browser/offline, dan lokasi sumber publik. Referensi teknis memisahkan kontrak dari prosedur serta riwayat rilis. Rute preferensi, fallback bahasa README, dan namespace ID modul tetap diperbaiki; contoh frasa sandi berulang digabungkan. Pemeriksaan memvalidasi tujuan dokumentasi serta tautan sumber repositori. Validasi label HTML menghitung teks langsung tanpa membentuk HTML yang dilucuti, termasuk label dengan tag rusak atau terpisah.
+
 ## Komit
 
 - [37279a3](https://github.com/Cognis-Labs-HQ/Cognis/commit/37279a34a3891cca73dbc5cc5c85f3b00b2b2e8a)

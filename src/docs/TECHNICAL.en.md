@@ -1,6 +1,6 @@
 # Technical Reference
 
-The public interfaces and operational rules of Cognis.
+Use these references to locate the component that owns a feature, its public contracts and its deployment requirements.
 
 ## Interfaces
 

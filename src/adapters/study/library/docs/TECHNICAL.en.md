@@ -22,7 +22,7 @@ Every editable field must declare an `input.control`; its localized label and ch
 
 Composition references must always target the closest available structural unit. For example, 日本語 references the lexical unit 日本 and the compound unit 語 when 日本 exists; 日本 then references 日 and 本. The resolver prefers the longest higher-level match and only descends to smaller writing units when no closer record exists.
 
-Related-entry buttons no longer repeat their label in a hover overlay. Vocabulary links include their provider-supplied pronunciation, so a valid single-character lexical unit such as `人 ひと` remains distinguishable from the writing-unit record `人` without suppressing meaningful one-character words. Variant hints reserve their own compact lower corner inside the card instead of covering its primary content. Dark-theme card surfaces blend toward the application background rather than white.
+Related-entry buttons do not repeat their label in a hover overlay. Vocabulary links include their provider-supplied pronunciation, so a valid single-character lexical unit such as `人 ひと` remains distinguishable from the writing-unit record `人` without suppressing meaningful one-character words. Variant hints reserve their own compact lower corner inside the card instead of covering its primary content. Dark-theme card surfaces blend toward the application background rather than white.
 
 Expanded variant branches remain clipped to the base grid. Cognis first honors each provider-preferred direction, then evaluates alternate directions against the rendered grid boundary and selects the first fitting option, restoring provider preferences when the branch closes. The long-press hint is static to preserve crisp text and uses a 25% larger label.
 
@@ -192,7 +192,7 @@ While Drawing Practice is open, selecting another card with a stroke pattern loa
 
 Vocabulary, sentences, and composite cards derive drawing guidance recursively from their ordered writing-unit references and cannot declare their own stroke patterns. Provider-owned alternate characters reuse related character audio when possible; a user-owned card's explicitly uploaded audio remains authoritative.
 
-Creation forms use the shared form builder for required labels and localized definition fields. Alternate-character input is free text but becomes valid only after a dictionary provider confirms it; provider results persist hidden required fields such as stroke patterns. Pronunciation selectors are embedded in the Pronunciation field, words may compose pronunciations from character cards, and particle is no longer an author-selectable content class. Composite drawing resolution follows the primary written label before pronunciation links.
+Creation forms use the shared form builder for required labels and localized definition fields. Alternate-character input is free text but becomes valid only after a dictionary provider confirms it; provider results persist hidden required fields such as stroke patterns. Pronunciation selectors are embedded in the Pronunciation field, words may compose pronunciations from character cards, and particle is not an author-selectable content class. Composite drawing resolution follows the primary written label before pronunciation links.
 
 Editing validates existing records against the provider's current schema and migrates their stored schema version, so audio retrieval and updates remain valid after a provider upgrade. Detail traces retain edit permissions after the editor closes. Drawing is limited to writing units and vocabulary, and vocabulary stroke resolution uses the primary written label rather than pronunciation links.
 
@@ -211,7 +211,7 @@ Vocabulary, sentence, and composite forms never render the generic list-value ed
 
 Vocabulary and sentence cards play their ordered dependencies’ audio as one sequence when they have no uploaded audio of their own. An optional audio upload on the card overrides that derived sequence. If any dependency is missing audio, the disabled speaker explains the missing dependency on hover.
 
-Pronunciation carousels now load every relationship implied by the constructor’s carousel layer declarations, even when a runtime form contribution omits that relationship from its scalar relationship list. Selecting carousel items updates the pronunciation value immediately; the redundant free-text pronunciation input and commit button have been removed from both create and edit forms.
+Pronunciation carousels load every relationship implied by the constructor’s carousel layer declarations, even when a runtime form contribution omits that relationship from its scalar relationship list. Selecting carousel items updates the pronunciation value immediately; the redundant free-text pronunciation input and commit button have been removed from both create and edit forms.
 
 Compound writing units compose pronunciations from atomic writing units. Lexical units use atomic writing units for pronunciation and writing or lexical units for input. Ordered lexical sequences derive pronunciations from their selected lexical units and particles. These semantic roles define the current composer contract.
 
@@ -221,7 +221,7 @@ Atomic character and particle layers are immutable catalog data. The Library API
 
 Ordered selections now share one composition-wide position sequence across every Input carousel. Position badges therefore describe the saved card order rather than restarting at one for each relationship carousel.
 
-Authoring forms no longer expose Cognis' internal content-class selector. The provider's localized layer name identifies the card in detail views, and ordered-sequence records use the provider layer ID instead of semantic `sentence` or `composite` labels. Derived pronunciation is serialized according to the provider's declared field contract, including list-valued pronunciation fields.
+Authoring forms do not expose Cognis' internal content-class selector. The provider's localized layer name identifies the card in detail views, and ordered-sequence records use the provider layer ID instead of semantic `sentence` or `composite` labels. Derived pronunciation is serialized according to the provider's declared field contract, including list-valued pronunciation fields.
 
 Derived-field serialization resolves its contract from the provider schema rather than the constructor-filtered editor layer. Required pronunciation fields therefore remain discoverable even when the composer intentionally omits their direct input control.
 
@@ -229,7 +229,7 @@ Whenever a constructor declares Input or Pronunciation carousel layers, the corr
 
 Carousel-backed fields accept the provider-owned field-level `multi_value` boolean. Multi-value fields add an explicit **Save {field}** action, keep committed values as removable pills above the active composition, and allow a committed value to be reopened for replacement. Every carousel composition field accepts only text resolved to cards offered by its configured carousels; unresolved text makes the form invalid. Removing a selected card or committed value requires the dedicated × control and confirmation. Existing-card editors mount the same relationship carousels as creation forms.
 
-The field-level `multi_value` boolean is the sole multi-value declaration. Committed pills no longer repopulate the staging composition when clicked. Multi-value staging starts empty, its compact × controls remove only staged cards without confirmation, and references are committed only by the visible field-specific Save action. Saved values remain unchanged when their staged cards are removed. Card labels are generated from the ordered primary Input composition rather than exposed as a separate editable value, and successful edits immediately refresh the visible card preview.
+The field-level `multi_value` boolean is the sole multi-value declaration. Committed pills do not repopulate the staging composition when clicked. Multi-value staging starts empty, its compact × controls remove only staged cards without confirmation, and references are committed only by the visible field-specific Save action. Saved values remain unchanged when their staged cards are removed. Card labels are generated from the ordered primary Input composition rather than exposed as a separate editable value, and successful edits immediately refresh the visible card preview.
 
 Carousel cards once again show a hover and keyboard-focus preview for every item, including entries without a definition. Carousel previews and missing-audio tooltips are rendered in body-level anchored portals so card, carousel, and popup overflow cannot clip them.
 
@@ -249,13 +249,13 @@ A single multi-value field group may span several declared link relationships. G
 
 When a linked pronunciation spells the card's primary value exactly, title details descend one presentation level and show the linked cards' own pronunciation values. A Kana spelling such as `さ` + `き` can therefore present its character-layer readings instead of redundantly repeating `さき`.
 
-Title reference de-duplication now treats an ordered spelling as one unit instead of removing individual matching characters. When that complete spelling matches the primary value, its linked character cards display their pronunciation values; partial fragments can no longer produce a title whose visible pronunciation disagrees with its primary value. Kanji detail views continue to show the provider's complete authored reading list rather than readings inferred from neighboring cards.
+Title reference de-duplication treats an ordered spelling as one unit instead of removing individual matching characters. When that complete spelling matches the primary value, its linked character cards display their pronunciation values; partial fragments cannot produce a title whose visible pronunciation disagrees with its primary value. Kanji detail views continue to show the provider's complete authored reading list rather than readings inferred from neighboring cards.
 
 Removing a staged composer card requires clicking its compact × button exactly; the surrounding selected-card pill and empty composition area do not activate deletion. Before a creation popup closes, the composer also verifies every provider-required relationship minimum. Missing definitions now produce the standard validation toast and leave the popup, selected cards, typed input, and nested definitions intact for correction.
 
 Long pronunciation and definition details in entry headings keep their original starting position but use at most 40% of the heading width and wrap onto additional rows. An em dash now separates definitions from pronunciations. Creation composers accept no more than 8 tags, 10 definitions, and 16 pronunciations, showing a localized toast when an author reaches a limit.
 
-Dense pronunciation headings now use a four-column arrangement only when readings are present: the speaker sits beneath the scope icon, the pronunciation cluster retains up to 40% of the heading, and definitions wrap independently to its right. The 8-tag, 10-definition, and 16-pronunciation limits now apply equally to create and edit composers.
+Dense pronunciation headings use a four-column arrangement only when readings are present: the speaker sits beneath the scope icon, the pronunciation cluster retains up to 40% of the heading, and definitions wrap independently to its right. The 8-tag, 10-definition, and 16-pronunciation limits apply equally to create and edit composers.
 
 When an expanded character-child branch would cross the visible Library grid, runtime fitting now evaluates every diagonal slot before falling back to the opposite cardinal directions. It also treats all visible root cards as occupied, selecting the first in-bounds, collision-free diagonal and keeping both the child card and its connector on the canvas.
 
@@ -324,13 +324,13 @@ The Library editor delegates tab activation, invalid-tab markers, and earliest-i
 
 Alternate-character form payloads copy `pronunciation_carousels` directly from the same schema’s vocabulary form payload. The composer consumes that aligned payload without alternate-character-specific carousel inference or relationship filtering. Stroke lookup routing continues to place the provider’s **Lookup** action inside Stroke Pattern. Library layer routes accept the optional view segment used by provider-declared Verbs and Adverbs views.
 
-Alternate-character form payload alignment now updates both `pronunciation_carousels` and the relationship IDs that render those carousels. Relationships belonging to the replaced Vocabulary pronunciation carousel are removed, and the character relationships used by the Vocabulary card’s pronunciation carousel are inserted. The alt-character form therefore renders the character carousel and no longer renders Vocabulary beneath Pronunciation.
+Alternate-character form payload alignment updates both `pronunciation_carousels` and the relationship IDs that render those carousels. Relationships belonging to the replaced Vocabulary pronunciation carousel are removed, and the character relationships used by the Vocabulary card’s pronunciation carousel are inserted. The alt-character form therefore renders the character carousel and does not render Vocabulary beneath Pronunciation.
 
 Pronunciation derivation now stops at the first explicit pronunciation and only falls back to a label for atomic character cards, preventing newly created words and sentences from being flattened into character readings. Creation rejects visible duplicates by normalized input alone; the confirmation explains that continuing selects the existing card rather than creating another row. Push-request persistence and review recognize both `update` and `merge` request kinds.
 
 Popup definitions now occupy the second grid row beginning directly beneath the card title instead of a dedicated right-hand column. Readings remain centered in the title row, while long definitions wrap naturally under the title.
 
-Particle pronunciation resolution is terminal, like atomic characters: an explicit particle pronunciation is used first, and otherwise the particle label is used. The resolver no longer descends through a particle’s character references, so context-sensitive particles such as は and が remain pronounced as authored.
+Particle pronunciation resolution is terminal, like atomic characters: an explicit particle pronunciation is used first, and otherwise the particle label is used. The resolver does not descend through a particle’s character references, so context-sensitive particles such as は and が remain pronounced as authored.
 
 Saving an empty pronunciation stage now shows an error toast. Saved pronunciation cards keep their remove control inside the card; selecting a saved card moves its grouped component references back into the stage and reselects the corresponding carousel cards for editing.
 
@@ -368,7 +368,7 @@ See the [shared contract](/docs/adapters/study/flashcards/technical) for this be
 
 Dependency writes now enforce the visibility of every edge, including grouped references. Personal cards may use readable shared cards and their own private components; class cards require global or same-class components; global cards require global components. Update proposals validate their reference schema before submission, publication approvals recheck current dependencies, and edits cannot invalidate a pending publication. Moving shared content back to personal scope is blocked when shared dependants or pending requests still need its wider visibility. Permission hints are returned after creation and editing and respect class write access.
 
-Deletion confirms all deletable cascade and restricted dependants, including grouped references, while detached cards remain. The transaction checks ownership, class access, protection, and pending review for every affected card before deleting anything. Restricted dependants reached by another cascade no longer fail due to traversal order. Shared creation offers a personal save when dependencies are too narrow. Publication assistance can request eligible leaf components, including hidden definitions, before submitting the parent after approval.
+Deletion confirms all deletable cascade and restricted dependants, including grouped references, while detached cards remain. The transaction checks ownership, class access, protection, and pending review for every affected card before deleting anything. Restricted dependants are validated independently of cascade traversal order. Shared creation offers a personal save when dependencies are too narrow. Publication assistance can request eligible leaf components, including hidden definitions, before submitting the parent after approval.
 
 Deletion confirmation is planned by the server using stored schema versions and includes dependant cards absent from the current page. The Study gateway client exposes the read-only deletion preflight.
 
@@ -444,7 +444,7 @@ Core 0.3.109 · Library 2.24.43 · Study 1.8.44
 
 Hovering a carousel card highlights every matching placement instead of showing position counters. Pointer dragging reorders individual placements without selecting text. Typed verb suggestions use the transformation chooser, whose wider two-column layout preserves readable cards. Committed definitions support unlinking with a trash control and retain dictionary sense order. Rebinding page interactions removes previous listeners, and batch deletion has one in-flight confirmation.
 
-Shared-to-private relocation requires confirmation and an administrator review request, including requests submitted by administrators. Approval recomputes inaccessible dependents and deletes their cascades atomically with the move; compatible personal cards remain. Protected or provider-owned cards and pending dependent requests prevent approval. Ordinary deletion permissions remain unchanged. Successful requests show a toast; owners of removed cards receive notifications in the Study category. The move-to-personal endpoint now returns HTTP 201 with a pending request rather than a relocated card.
+Shared-to-private relocation requires confirmation and an administrator review request, including requests submitted by administrators. Approval recomputes inaccessible dependents and deletes their cascades atomically with the move; compatible personal cards remain. Protected or provider-owned cards and pending dependent requests prevent approval. Ordinary deletion permissions remain unchanged. Successful requests show a toast; owners of removed cards receive notifications in the Study category. The move-to-personal endpoint returns HTTP 201 with a pending request rather than a relocated card.
 
 ### Dictionary transformations
 
@@ -502,7 +502,7 @@ Explore card links include canonical card identity in `/study/explore/<language>
 
 ### Media Lifecycle
 
-Reference images now load as thumbnails in the Library editor and its read-only detail view, including bundled module images. Uploaded thumbnails have a red remove control on hover or keyboard focus (always visible on touch screens). Removal needs no confirmation, clears the draft and file picker, and discards unused staged uploads. Closing an unsaved editor also releases previews and staged files; saved cards and request history retain their referenced images. The remove button has an opaque background so it remains readable over photographs. Custom image files and saved references persist across server restarts and provider reloads, including provider updates to edited cards.
+Reference images load as thumbnails in the Library editor and its read-only detail view, including bundled module images. Uploaded thumbnails have a red remove control on hover or keyboard focus (always visible on touch screens). Removal needs no confirmation, clears the draft and file picker, and discards unused staged uploads. Closing an unsaved editor also releases previews and staged files; saved cards and request history retain their referenced images. The remove button has an opaque background so it remains readable over photographs. Custom image files and saved references persist across server restarts and provider reloads, including provider updates to edited cards.
 
 Microphone recording waits for the browser’s permission response, blocks duplicate requests and saving while permission is pending, and releases a stream granted after the editor closes. Permission denial and unavailable recording have separate messages. Microphone, Play and Reload share one equally sized row. Collective Plural uses a single checkbox for its matching noun families; unrelated opt-ins remain hidden. Audio filenames are hidden. Play previews the latest staged upload or microphone recording; a delayed saved-audio response cannot replace it. Recording colors the microphone icon itself red, including while hovering; the button retains its ordinary theme styling.
 
@@ -572,7 +572,7 @@ Library content and deletion announcements include English, German, Indonesian a
 
 ### Empty offline Study pages
 
-See the [shared contract](/docs/api/technical) for this behavior.
+See the [shared contract](/docs/ui/technical) for this behavior.
 
 ### Offline Study Assets
 
@@ -580,7 +580,7 @@ Both theme variants of popup icons are prepared through the host’s scoped offl
 
 ### Offline Availability
 
-See the [shared contract](/docs/api/technical) for this behavior.
+See the [shared contract](/docs/ui/technical) for this behavior.
 
 ### Shared Study Favourites
 
@@ -612,7 +612,7 @@ The Study gateway client fetches entry audio through the authenticated API clien
 
 When a composition contains exactly one entry whose label matches the current entry, the duplicate composition block is suppressed and that deep link replaces the popup heading instead.
 
-The page-composer widget now shrink-wraps the Library schema and remains capped to the available width, preventing unused widget width from creating horizontal overflow.
+The page-composer widget shrink-wraps the Library schema and remains capped to the available width, preventing unused widget width from creating horizontal overflow.
 
 Deletion resolves the final relationship cascade and authorizes every affected entry within the same transaction. A relationship added concurrently therefore cannot expand a deletion beyond the actor's authorized content.
 

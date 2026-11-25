@@ -1,6 +1,6 @@
 # Referensi Teknis
 
-Antarmuka publik dan aturan operasional DevOps.
+Penerapan kontainer menjalankan server Node terkompilasi di belakang nginx dengan penyimpanan basis data, media, dan konfigurasi persisten.
 
 ## Antarmuka
 

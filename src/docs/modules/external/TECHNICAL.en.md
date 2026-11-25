@@ -1,6 +1,6 @@
 # Technical Reference
 
-The public interfaces and operational rules of External Modules.
+External repositories integrate through verified manifests, scoped ctx registrations and removable server/browser contributions.
 
 ## Interfaces
 
@@ -26,8 +26,6 @@ Modules that publish legal, support, or other documents relevant before authenti
 
 The manifest declares `uuid`, `id`, `name`, `version`, `publisher`, `class`, `coreApiVersion`, `summary`, `description`, `categories`, `recommended`, `license`, `homepage`, `repository`, `support`, `capabilities`, UUID-based `requires`, `entrypoints`, and `assets`. Asset paths are repository-relative. `assets.icon` identifies the square store icon, `assets.banner` identifies the detail hero, and `assets.screenshots` is an ordered gallery. Paths must remain inside the repository.
 
-Localization keys use lowercase period-delimited words in both the module namespace and feature labels. Keep manifest metadata, catalogs and code references aligned. Immutable module IDs do not create an exception to this rule.
-
 ### Public capability lookup
 
 External modules publish shared server capabilities with `ctx.contributePublicCapability(key, value)`. Module `ctx.getCapability`, `ctx.capabilities.get`, `has`, and `require` resolve public capabilities from the live system registry, including capabilities published after the consumer bootstraps. Private system capabilities remain outside this surface; `system:ctx` is never exposed to modules. Refresh requests execute sequentially so teardown and registration cannot overlap. Disabling a provider removes its contributions; re-enabling it republishes them. A failed refresh rejects its caller without blocking later refreshes.
@@ -52,7 +50,7 @@ Every module has a human-readable `id` and an RFC 4122 `uuid`. The ID may be ren
 
 Administrators manage one instance-wide source registry and marketplace catalog. Source credentials are concealed server-owned values encrypted with the persistent `DATA_ENCRYPTION_KEY`; every administrator can use, replace or clear them, but read APIs and forms expose only whether a credential is configured. Leaving the password field blank preserves it. Browser keyrings are not consulted: configure the shared credential once in Module Sources. Private scanning requires a configured read-only PAT with repository and metadata access. Startup discovery and installations use that same stored credential without a browser session. Credential scope is bound to the source identity and endpoint; changing either requires replacement or removal. Failed scans retain the shared catalog, concurrent scans coalesce, and a completed scan cannot overwrite a newer source configuration. Provider requests reject redirects and have bounded deadlines.
 
-The source-save API accepts `token` and `clearCredential` and returns only public source metadata, `credentialConfigured` and a revision. Discovery and installation no longer accept caller-supplied tokens. Installation resolves authoritative cached repository metadata and stored credentials on the server.
+The source-save API accepts `token` and `clearCredential` and returns only public source metadata, `credentialConfigured` and a revision. Discovery and installation use server-owned source credentials. Installation resolves authoritative cached repository metadata and stored credentials on the server.
 
 ### Installation and safety
 
@@ -66,7 +64,9 @@ Before moving a bundled module into its own repository, copy the module director
 
 ### Store assets and tags
 
-A module may declare `tags` alongside its broader `categories`; both participate in marketplace filtering. Store artwork lives at the repository root under `assets/`: provide `assets/icon.svg` or `assets/icon.png` for the catalog icon, and `assets/banner.svg`, `assets/banner.png`, or `assets/banner.jpg` for the detail-page hero. Declare the chosen paths as `assets.icon` and `assets.banner` in `manifest.json`. Optional gallery images are listed in `assets.screenshots`. Keep artwork free of secrets and personal data. Installed module detail pages select `README.<locale>.md` for the active UI language, then fall back to `README.en.md`, `README.en.md`, and the catalog description in that order. The optional root `README.en.md` compatibility alias is not required or checksum-validated; localized `README.<locale>.md` files remain eligible for the manifest integrity inventory.
+A module may declare `tags` alongside its broader `categories`; both participate in marketplace filtering. Store artwork lives at the repository root under `assets/`: provide `assets/icon.svg` or `assets/icon.png` for the catalog icon, and `assets/banner.svg`, `assets/banner.png`, or `assets/banner.jpg` for the detail-page hero. Declare the chosen paths as `assets.icon` and `assets.banner` in `manifest.json`. Optional gallery images are listed in `assets.screenshots`. Keep artwork free of secrets and personal data.
+
+Installed-module details resolve a root README by exact locale, base language, English, the root `README.md`, catalog README content, then the localized or catalog description. This marketplace presentation is separate from the Docs reader’s manifest-declared `docs/README.en.md`, `docs/USAGE.en.md` and `docs/TECHNICAL.en.md` bundle.
 
 Module artwork is fetched independently of code installation. Public GitHub assets stream from raw.githubusercontent.com; private and enterprise repositories use authenticated raw responses, while GitLab uses its raw-file endpoint. Cognis stores the bytes and media type in a separate content-hash cache and serves them through its authenticated catalog asset endpoint. This avoids GitHub Contents JSON inline-size limits. Empty assets and downloads above the existing 10 MiB bound are rejected. Logs identify source, repository, reference, path, transport, stage and HTTP status or failure reason. Refresh the catalog to retry failed retrieval. Missing icons retain the question-mark SVG; missing or undecodable banners display a localized Image Not Available message.
 
@@ -132,7 +132,7 @@ An administrator installing a module with an ID already owned by another UUID re
 
 ### Period-delimited locale namespaces
 
-Localization keys use lowercase words separated only by periods, including the module namespace and tutorial keys. For the immutable ID `terms-of-service`, use `module.terms.of.service.admin.title`. Manifest metadata, catalogs and references share this namespace; module IDs, UUIDs, capability names and tutorial owner/completion IDs retain their established identities. Never weaken namespace validation to admit an invalid key. Match XML sibling indentation and preserve translated values when formatting.
+Localization keys use `module.<module-id>.<period.delimited.suffix>`. Preserve the immutable module ID, including its hyphens; suffix words are lowercase and separated by periods. Shared labels use flat `ui.reuse.*` keys.
 
 Marketplace presentation keeps cached names, descriptions, categories and tags with their catalog locale bundle when an installed module uses a different namespace. Installed preferences retain their own locale URL; a fresh catalog discovery replaces the cached presentation.
 
@@ -180,21 +180,21 @@ See the [shared contract](/docs/adapters/social/messages/technical) for this beh
 
 The host exposes `ctx.capabilities.get("ui:broadcast").publish(id, descriptor, { signal, priority })` before providers or pages mount. Descriptors accept a plain-text `title`, sanitized `bodyHtml`, trusted `actionsHtml` and an `info`, `success`, `warning` or `danger` variant. The returned handle has `element` and `remove()`. Reusing an ID replaces only that owner’s notice; an older disposer cannot remove its replacement. Bind provider/page lifetimes with `signal`. Lower priorities appear first. Titles are escaped; callers must sanitize rich text. Call `prepare()` while online to preload shared banner and button styles before the first notice.
 
-See the [shared contract](/docs/api/technical) for this behavior.
+See the [shared contract](/docs/ui/technical) for this behavior.
 
 ### Empty offline Study pages
 
-See the [shared contract](/docs/api/technical) for this behavior.
+See the [shared contract](/docs/ui/technical) for this behavior.
 
 ### Public Asset Preparation
 
 The host exposes `ctx.capabilities.get("offline:assets")` with `prepare(paths, { signal })` and `register(paths, { signal })`. Both use the staged `offline:prepareAssets` flow. Registration starts background preparation, retries on connectivity/preference changes and returns a retry function. Only root-relative public `/static/` or `/assets/` paths are accepted; requests omit credentials and reject private/no-store responses. Four workers consume response bodies, concurrent requests coalesce per owner signal, failures remain retryable, and aborting the owner cancels work and listeners. This facility caches no private API data and grants no offline access. Component `restoreRead` callbacks in the offline HTTP client run only after an authorized cache miss and use the same guarded snapshot reader. Access denials are never converted into empty or queued views.
 
-See the [shared contract](/docs/api/technical) for this behavior.
+See the [shared contract](/docs/ui/technical) for this behavior.
 
 ### Shared Study Favourites
 
-See the [shared contract](/docs/api/technical) for this behavior.
+See the [shared contract](/docs/ui/technical) for this behavior.
 
 ### Bootstrap and Channels
 

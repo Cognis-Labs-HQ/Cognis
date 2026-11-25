@@ -1,6 +1,6 @@
 # Referensi Teknis
 
-Antarmuka publik dan aturan operasional Versi Komponen.
+Indeks ini mencatat versi komponen yang dikirim serta menjelaskan batas versi dependensi teruji dan pemilihan versi dokumentasi.
 
 ## Antarmuka
 
@@ -14,7 +14,7 @@ Antarmuka publik dan aturan operasional Versi Komponen.
 
 | Komponen   | Jalur      | Versi     |
 | ---------- | ---------- | --------- |
-| API Server | `src/api/` | `0.13.36` |
+| API Server | `src/api/` | `0.13.37` |
 
 ## Konfigurasi
 

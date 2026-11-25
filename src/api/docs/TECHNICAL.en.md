@@ -17,7 +17,7 @@ The public interfaces and operational rules of Application Server.
 
 The `langs` query is an ordered comma-separated language list for both index titles and document bodies. A regional locale tries its base language before the next preference; English remains available as the mandatory fallback. The same resolution applies to Info, Usage and Technical at the requested component version.
 
-Core source filenames follow the [documentation contract](/docs/standard/technical); document URLs and versioned bundles retain the same topic slugs.
+A core topic directory supplies its relative directory name as the slug; the root topic uses `index`. Component slugs identify the manifest owner. All three views resolve their localized file family through the [documentation contract](/docs/standard/technical).
 
 ## Configuration
 
@@ -28,6 +28,8 @@ Core source filenames follow the [documentation contract](/docs/standard/technic
 ## Behavior
 
 ### Document Diffs
+
+`docs:versionStore.createStore({ namespace, database, documents })` creates a namespaced store with `ensureSchema`, `getLatest`, `getVersion`, `deleteAll`, `publish` and `diff` operations. `diff(fromHash, toHash)` requires both versions to belong to the same slug.
 
 Document diffs let a module explain the differences between two immutable document versions before a user acts on the newer copy.
 

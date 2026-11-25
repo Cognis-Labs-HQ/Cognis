@@ -19,17 +19,6 @@ const passphrase = generatePassphrase({
 });
 ```
 
-モジュールのブートストラップコンテキストから capability を取得し、必要な単語数と表示形式を指定します。
-
-```js
-const generatePassphrase = ctx.capabilities.require("reuse:generatePassphrase");
-const passphrase = generatePassphrase({
-    words: 6,
-    separator: "-",
-    capitalization: "titlecase",
-});
-```
-
 ## 期待される結果
 
 独立に選んだ単語を組み合わせ、生成だけでは保存・配信・アクセス承認は行いません。

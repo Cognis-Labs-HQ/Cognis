@@ -1,6 +1,6 @@
 # Cognis – Überblick
 
-Cognis ist eine modulare Sprachlernplattform, die für unabhängige Lernende, Lehrkräfte und Gemeinschaften konzipiert wurde. Sie kombiniert strukturierte Lerninhalte mit sozialen Funktionen, Echtzeitkollaborationsbereitschaft und einer tief erweiterbaren Backend-Architektur. Das Ziel ist, die Bereitstellung einer selbst gehosteten Sprachlernumgebung zu erleichtern, die von einem einzelnen Benutzer zu einer vollständigen Gemeinschaft wachsen kann, ohne die Kern-Codebasis zu ändern.
+Cognis verbindet Sprachenlernen, Gespräche und Kalender. Aktive Komponenten und Sprachpakete der Installation bestimmen verfügbare Werkzeuge und Inhalte.
 
 ## Möglichkeiten
 

@@ -1,6 +1,6 @@
 # Technical Reference
 
-The public interfaces and operational rules of Passphrase Utility.
+The synchronous passphrase capability samples independent words with cryptographic randomness and validates word-count and formatting options.
 
 ## Interfaces
 

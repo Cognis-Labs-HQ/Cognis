@@ -1,139 +1,26 @@
 # Technical Reference
 
-The public interfaces and operational rules of Core.
+Core defines ctx execution, component lifecycle and provider-neutral type contracts.
 
 ## Interfaces
 
-### AuthAccountStore interface
-
-`AuthAccountStore` in `src/core/contracts/auth-account.ts` is the interface that auth adapters must implement for account persistence. It covers finding accounts by external identity, creating external accounts, and creating local accounts.
-
-```ts
-export interface AuthAccountStore {
-    findByExternalIdentity(
-        provider: string,
-        externalUserId: string,
-    ): Promise<AuthAccount | null>;
-    createExternalAccount(identity: ExternalIdentity): Promise<AuthAccount>;
-    updateExternalAccount(
-        accountId: string,
-        identity: ExternalIdentity,
-    ): Promise<AuthAccount>;
-    createLocalAccount(input: {
-        username: string;
-        passwordHash: string;
-        email?: string;
-        role?: string;
-    }): Promise<AuthAccount>;
-}
-```
-
-### Capability namespaces
-
-| Capability          | Owner                | Description                                                        |
-| ------------------- | -------------------- | ------------------------------------------------------------------ |
-| `system:health`     | Core / system routes | Exposes platform health and uptime via `GET /api/v1/system/health` |
-| `auth:accounts`     | Auth gateway         | Built-in account lifecycle and authentication policy wiring        |
-| `modules:lifecycle` | Module routes        | Module listing, enable/disable controls, and policy checks         |
-| `ui:shell`          | UI routes            | Shared application shell routing and admin operations surface      |
-
-### Runtime Contracts
-
-Domain contracts are declared by their owners through the public `system:contracts` registry during bootstrap. `define(id, { version, kind, members, description })` records a structural contract; `resolve(id, version)` checks the public implementation and returns a handle bound to that registration. Definitions are removed on rollback or disable and restored on reactivation. Module IDs must use their own namespace. Module-scoped resolution preserves the host’s permission wrappers. A new module contract requires no Core source file; optional type declarations remain in the provider’s public contract directory. Verification-code generation now belongs to shared server reuse and is exposed by Auth as `auth:verificationCodes`, not exported by Core.
-
-Nested bootstrap scopes inherit their parent’s authority and cannot register contracts after that parent closes.
+`createCtx()` exposes capability registration/lookup and staged flows. `ctx.flow.exists`, `extend` and `run` operate on named flows; run results contain `data` and `stageResults`. `system:contracts` is the versioned runtime contract registry; domain owners define their contracts there. `AuthAccountStore`, `AccessRole` and `RoleAccessPolicy` are exported types, not automatically registered capability IDs.
 
 ## Configuration
 
-Core receives stores, capability registries and provider contexts from host bootstrap. It does not discover a database connection from a user preference; deployment owners configure those services.
+The host supplies stores and registries. Module manifests declare stable UUIDs, dependencies and entrypoints. Database transport configuration belongs to [DB](/docs/gateways/db/technical); role ordering and exact-role checks are defined in [Access Policy](/docs/acl-matrix/technical).
 
 ## Behavior
 
-### Overview
-
-`src/core/` is the foundation layer of Cognis. It contains provider-agnostic contracts, interfaces, policy services, and the ctx flow bus that the rest of the platform depends on. Core defines what capabilities exist and what rules govern them — it never contains provider-specific implementation.
-
-The critical rule is that core never imports from gateway or adapter code. The dependency arrow always points inward: gateways import from core; core does not know gateways exist. This invariant keeps core stable and testable in isolation, and it ensures that swapping a gateway or adapter cannot break the contract layer.
-
-Core currently exposes service primitives plus the ctx capability/flow bus. The design philosophy remains minimal: domain behavior lives in gateways/adapters/modules, while core provides orchestration contracts and shared lifecycle primitives.
-
-### Responsibilities
-
-- Define the `DatabaseGateway`, `FileStorageGateway`, `AuthAccountStore`, `AuthContext`, and other cross-cutting interfaces consumed by gateways.
-- Provide `ModuleService` for module lifecycle management (discovery, enable, disable, pointer writing, route safety enforcement).
-- Provide `HealthService` for platform health and uptime metadata.
-- Provide `createCtx` as the cross-component capability bus and staged flow orchestrator.
-- Define the `ModuleManifest` contract that all modules must satisfy.
-- Expose the capability namespaces `system:health`, `auth:accounts`, `modules:lifecycle`, and `ui:shell`.
-
-Not responsible for: implementing authentication, storing data, sending notifications, or any operation that touches a provider SDK.
-
-### Key source locations
-
-| Path                                                | Purpose                                                          |
-| --------------------------------------------------- | ---------------------------------------------------------------- |
-| `src/core/contracts/auth-account.ts`                | `AuthAccount`, `ExternalIdentity`, `AuthAccountStore` interfaces |
-| `src/core/contracts/module-manifest.ts`             | `ModuleManifest` interface                                       |
-| `src/core/services/module-loader/module-service.ts` | `ModuleService` class                                            |
-| `src/core/services/health-service.ts`               | `HealthService` class                                            |
-| `src/core/services/gateway-service.ts`              | Gateway registry service                                         |
-| `src/core/ctx/`                                     | Ctx capability bus and staged flow orchestration primitives      |
-| `src/core/index.ts`                                 | Public exports for the `@cognis/core` package                    |
-
-### ModuleService
-
-`ModuleService` in `src/core/services/module-loader/module-service.ts` governs the full module lifecycle. It operates on a `ModuleRuntimeGateway` abstraction and an optional `ModulePathResolver`. When a path resolver is present, enable/disable operations write and remove pointer files (nginx-style `<id>.load` symlinks) that point to either a trusted internal directory or a runtime extraction directory for external archives.
-
-Before enabling any module, `ModuleService` enforces two guardrails:
-
-- Core modules (`class: "core"` in the manifest) cannot be toggled at runtime.
-- External modules require explicit disclaimer acknowledgement before the pointer is written.
-
-Route safety is enforced before any module is activated: if the module's `routes.json` declares a path under a protected prefix (`/api/v1/system`, `/api/v1/auth`, `/api/v1/users`, `/public`, `/ui`), enablement is rejected.
-
-```ts
-// src/core/services/module-loader/module-service.ts
-export class ModuleService {
-    async enable(
-        moduleId: string,
-        options?: { acknowledgeExternalDisclaimer?: boolean },
-    ): Promise<{ moduleId: string; enabled: boolean }>;
-    async disable(
-        moduleId: string,
-    ): Promise<{ moduleId: string; enabled: boolean }>;
-    async list(): Promise<ModuleManifest[]>;
-}
-```
-
-### HealthService
-
-`HealthService` in `src/core/services/health-service.ts` records the server start time and returns a `HealthStatus` object on demand. It is stateless beyond the start timestamp.
-
-```ts
-export interface HealthStatus {
-    status: "ok";
-    timestamp: string;
-    startedAt: string;
-    uptimeMs: number;
-}
-```
-
-### Ctx flow bus
-
-`src/core/ctx/` defines a composable `createCtx()` surface that supports:
-
-- capability contribution and lookup (`contributeCapability`, `getCapability`, `requireCapability`)
-- flow lifecycle registration (`registerFlow`, `unregisterFlow`, `hasFlow`, `listFlows`)
-- staged hook injection (`addFlowStageHook`, `removeFlowStageHook`)
-- deterministic flow execution (`runFlow`)
-
-Flows are ordered stage pipelines that components can extend without direct imports between owners. A single flow can orchestrate backend behavior (e.g. login, password change) and UI construction behavior (e.g. construct login page, construct settings page), while optional adapters/modules hook into stages only when enabled.
+Gateway and module services load enabled contributions within owner scopes. Disposal removes owned registrations; failed bootstrap rolls them back. A flow executes its declared stages in order, collecting stage results for subsequent handlers. Module installation, enablement and removal follow the host’s module lifecycle rather than importing sibling implementations.
 
 ## Security
 
-Bootstrap scopes identify registration owners. Flow handlers must authorize before state changes; a capability lookup is not proof that the user may access its data.
+Core lifecycle and structural contract resolution do not authorize a resource operation. The owner must validate the current account, role and resource before executing protected work. External modules receive scoped public contracts rather than unrestricted host internals.
 
 ## Reference
 
+- [src/core/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/core/index.ts)
 - [src/core/ctx/types.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/core/ctx/types.ts)
-- [src/core/ctx/flow-api.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/core/ctx/flow-api.ts)
+- [src/core/contracts/auth-account.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/core/contracts/auth-account.ts)
+- [src/core/contracts/access-policy.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/core/contracts/access-policy.ts)

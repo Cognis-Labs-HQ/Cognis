@@ -1,6 +1,6 @@
 # Technical Reference
 
-The public interfaces and operational rules of Focus Control.
+Component-page and focus contracts embed eligible provider pages inside caller-owned stages with explicit activation and lifecycle controls.
 
 ## Interfaces
 

@@ -1,6 +1,6 @@
 # Technical Reference
 
-The public interfaces and operational rules of Page Composer.
+Page Composer manages element layout, responsive presentation, owned DOM lifetime and optional layout/draft persistence.
 
 ## Interfaces
 
@@ -40,8 +40,8 @@ An element is a named content block declared as a plain object:
 ```js
 {
   id: 'my-widget',
-  label: 'My Widget',
-  render: () => '<h2>Content</h2>',
+  label: i18n.t('ui.reuse.settings'),
+  render: () => renderSettingsContent(),
   gridSize: { default: [4, 3], min: [2, 2] },
   pinned: false,
 }
@@ -107,7 +107,7 @@ DOM parking is disabled by default. Set `enableDomParking: true` on the page com
 
 ### Persistence
 
-Layouts are stored via `PUT /api/v1/users/:username/preferences` under the key supplied as `preferenceKey`. The stored value is `{ placements: [{id, col, row, w, h}], hidden: [] }`.
+Layouts are stored via `PUT /api/v1/social/users/:accountId/preferences/:preferenceKey` under the key supplied as `preferenceKey`. The stored value is `{ placements: [{id, col, row, w, h}], hidden: [] }`.
 
 Form drafts are also persisted in `localStorage` per user, page path, and composer preference key. This keeps typed inputs when the page reloads or when a responsive re-render rebuilds the element cards. Persistent form draft storage is opt-in: only fields whose closest ancestor carries `data-composer-include-form-memory="true"` are written to localStorage. Fields without an opted-in ancestor are still captured in the transient in-memory snapshot so they survive responsive re-renders within the same session, but they are never written to persistent storage. Sensitive fields (`password`, `file`, `hidden`, and identifiers containing `password`/`secret`/`token`) are always excluded from persistent draft storage regardless of opt-in status.
 

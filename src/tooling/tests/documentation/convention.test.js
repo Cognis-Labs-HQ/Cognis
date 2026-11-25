@@ -99,3 +99,29 @@ test("all shipped changelogs use concise link labels", () => {
         [],
     );
 });
+
+test("HTML commit-label detection counts text across markup without producing sanitized HTML", () => {
+    const sha = "1234567890abcdef1234567890abcdef12345678";
+    for (const body of [
+        sha,
+        `<code>${sha}</code>`,
+        `${sha.slice(0, 20)}<em></em>${sha.slice(20)}`,
+        `<script<script>>${sha}</script>`,
+    ]) {
+        assert.ok(
+            changelogLinkIssues(`<a href="https://example.test">${body}</a>`)
+                .length,
+        );
+    }
+    for (const body of [
+        "<script<script>>ordinary text</script>",
+        "<code>1234567</code>",
+        '<span title="' + sha + '">short</span>',
+        '<span title=">' + sha + '">short</span>',
+    ]) {
+        assert.deepEqual(
+            changelogLinkIssues(`<a href="https://example.test">${body}</a>`),
+            [],
+        );
+    }
+});

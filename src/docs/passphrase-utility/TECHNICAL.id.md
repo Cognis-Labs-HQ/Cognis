@@ -1,6 +1,6 @@
 # Referensi Teknis
 
-Antarmuka publik dan aturan operasional Utilitas Frasa Sandi.
+Kapabilitas frasa sandi sinkron memilih kata independen dengan keacakan kriptografis serta memvalidasi jumlah kata dan format.
 
 ## Antarmuka
 

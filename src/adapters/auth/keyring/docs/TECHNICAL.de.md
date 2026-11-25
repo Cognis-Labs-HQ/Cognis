@@ -66,7 +66,7 @@ Während der Anmeldung versucht der Adapter lediglich, einen vorhandenen Tresor 
 
 ### Kontodatenschutz und Schlüsselbund-Isolation
 
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
+Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/ui/technical).
 
 ### Zerstörendes Zurücksetzen
 

@@ -18,15 +18,19 @@ const composer = createPageComposer(document.querySelector("#app"), {
     elements,
     preferenceKey: "my-page-layout",
     i18n,
-    pageContext: { title: "My Page", subtitle: "Subtitle text" },
+    pageContext: { title: i18n.t("ui.page.title.settings") },
     onRender: () => bindPageEvents(),
     toolbar: [
-        { id: "nav", label: "Navigation", render: () => renderNavHtml() },
+        {
+            id: "nav",
+            label: i18n.t("ui.reuse.navigation"),
+            render: () => renderNavHtml(),
+        },
     ],
     floatingMenu: [
         {
             id: "save-bar",
-            label: "Save bar",
+            label: i18n.t("ui.reuse.save"),
             render: () => renderSaveBarHtml(),
         },
     ],

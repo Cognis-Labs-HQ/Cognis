@@ -1,63 +1,25 @@
 # Referensi Teknis
 
-Antarmuka publik dan aturan operasional Adapter.
+Adaptor menyediakan implementasi, registrasi, dan konfigurasi milik gateway untuk fitur yang terpasang.
 
 ## Antarmuka
 
-Adapter menyediakan factory dan hook sesuai kontrak gateway. Basis data memakai factory executor terstruktur, autentikasi AuthProviderAdapter, dan notifikasi metadata serta diagnosis pengiriman.
+Adaptor berada di `src/adapters/<gateway>/<adapter>/`. Titik masuk paket mengekspor factory atau hook bootstrap yang diperlukan gateway. Hook opsional `defineContracts(ctx)` mendeklarasikan kontrak runtime milik adaptor melalui `system:contracts`.
 
 ## Konfigurasi
 
-Adapter mendeklarasikan pengaturan lewat gateway. Penyedia autentikasi, notifikasi, dan basis data berbeda skema; manifes saja tidak membuktikan koneksi terimplementasi.
+Pengaturan penyedia berasal dari skema konfigurasi dan rute gateway pemilik. Kredensial, status aktif, dan kebutuhan koneksi bergantung pada adaptor. [Kontrak gateway](/docs/gateways/technical) menjelaskan penemuan serta siklus hidup.
 
 ## Perilaku
 
-OIDC dan SAML dalam sumber ini memerlukan klien protokol terinjeksi. Formulir tidak membuat klien; periksa Teknis adapter sebelum penerapan.
-
-### Ikhtisar
-
-`src/adapters/` berisi semua implementasi spesifik penyedia dari antarmuka gateway. Adapter adalah kelas konkret yang mengimplementasikan kontrak yang didefinisikan di `src/core/` atau gateway. Mengganti backend database berarti mengubah `DB_TYPE` di environment; tidak ada kode aplikasi di luar gateway yang berubah.
-
-Setiap adapter berada di bawah `src/adapters/<gateway-id>/<adapter-id>/` dan membawa `package.json`, tes, dan dokumentasinya sendiri. Gateway yang memiliki menemukan adapter dengan memindai direktori tersebut saat startup.
-
-### Tanggung Jawab
-
-- Mengimplementasikan antarmuka gateway untuk penyedia eksternal tertentu.
-- Mengelola detail koneksi spesifik penyedia, dialek SQL, dan penanganan error secara internal.
-- Membawa SQL inisialisasi skema sendiri (untuk adapter DB).
-- Membawa tes, dokumentasi, dan manifes versi sendiri.
-
-### Konvensi Struktur File
-
-Field `main` dalam `package.json` harus selalu menunjuk ke `index.ts` — ini adalah titik masuk yang mengorkestrasikan adapter dan file yang diimpor secara dinamis oleh gateway:
-
-```json
-{
-    "name": "@cognis/adapter-notify-smtp",
-    "version": "0.2.1",
-    "private": true,
-    "type": "module",
-    "main": "index.ts"
-}
-```
-
-`index.ts` adalah permukaan publik adapter dan mengekspor semua yang dibutuhkan pemanggil eksternal. File implementasi internal berada sebagai saudara dari `index.ts` dan tidak pernah diimpor langsung dari luar adapter.
-
-### Titik Ekstensi
-
-Untuk menambahkan adapter baru untuk gateway yang ada, buat direktori di bawah `src/adapters/<gateway-id>/<adapter-id>/` berisi:
-
-- Implementasi adapter (kelas TypeScript yang mengimplementasikan antarmuka gateway).
-- `package.json` dengan `name`, `version`, dan field `main`.
-- Fungsi `createAdapter()` yang diekspor.
-- `docs/index.en.md` mengikuti standar dokumentasi.
-- Tes di bawah `tests/`.
+Adaptor dapat memiliki penyimpanan domain, rute, dan UI: Social Profile merupakan adaptor Social, bukan gateway. Driver basis data menjalankan perintah terstruktur; skema akun, profil, dan pesan dimiliki komponen domainnya. Registrasi adaptor terikat pada lingkup pemilik dan dihapus ketika pemuatan gagal atau adaptor dinonaktifkan.
 
 ## Keamanan
 
-Adapter memiliki rahasia transportasi dan kontrak. Pengujian tidak membocorkan kata sandi; penonaktifan membersihkan registrasi.
+Tindakan lintas komponen memakai kapabilitas atau flow ctx publik. Impor paket atau adaptor aktif tidak memberikan otorisasi pengguna. Diagnostik penyedia tidak boleh mengungkap kredensial.
 
 ## Referensi
 
 - [src/gateways/reuse/adapter-bootstrap.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/gateways/reuse/adapter-bootstrap.ts)
 - [src/gateways/shared.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/gateways/shared.ts)
+- [src/adapters/social/profile/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/social/profile/index.ts)

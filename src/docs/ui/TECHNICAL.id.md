@@ -1,84 +1,30 @@
 # Referensi Teknis
 
-Antarmuka publik dan aturan operasional UI.
+Host browser memiliki perutean, tampilan bersama, pelokalan, dan pemulihan aset publik.
 
 ## Antarmuka
 
-Registri kapabilitas peramban bersama tersedia sebelum inisialisasi kerangka. `bindCapability(id)` menggunakan kontribusi yang dapat dipanggil saat ini dan membatasi pemanggilan awal tertunda seluruh ikatan hingga 128. Kontribusi memiliki kepemilikan eksklusif dan hanya dapat dihapus dengan identitas yang cocok; penyedia memiliki kontrak domain dan pemrosesannya.
-
-Diagnostik diterbitkan melalui `ui:log`; kebijakan keluaran dimiliki oleh [Gateway Logging](/docs/gateways/logging/technical).
-
-`reportClientError(error)` menerima objek Error atau konteks terstruktur dan menerbitkannya melalui diagnostik gateway. Penggantian logger lokal oleh pemanggil dihapus; konfigurasi keluaran dilakukan melalui gateway logging.
-
-UIRegistry menerbitkan direktori aset, plugin navigasi, bagian administrasi, dan perluasan halaman. Penyedia peramban memakai uiCtx serta sinyal pembersihan; halaman memakai Page Composer.
+`uiCtx.capabilities` meresolusikan penyedia browser aktif; `bindCapability(id)` menunda panggilan awal secara terbatas hingga registrasi tersedia. `ui:log` mengirim diagnostik ke [Logging](/docs/gateways/logging/technical). Halaman menerima AbortSignal dan melepaskan registrasinya saat selesai. [Page Composer](/docs/page-composer/technical), [Tutorial](/docs/tutorials/technical), dan [jendela komponen](/docs/focus-control/technical) mendefinisikan kontrak UI publiknya.
 
 ## Konfigurasi
 
-Preferensi akun memilih tema, bahasa, dan font. Katalog komponen menyediakan terjemahan dan metadata; opsi tata letak tetap pada Page Composer.
+Bahasa, tema, dan fon berasal dari Pengaturan akun. Label bersama memakai kunci datar `ui.reuse.*`; katalog komponen memakai namespace pemilik. Resolusi mencoba bahasa terpilih lalu Inggris; kunci Inggris yang hilang merupakan galat. Permukaan memakai token tema. [Profile](/docs/adapters/social/profile/technical) memiliki penyimpanan preferensi akun.
 
 ## Perilaku
 
-Pembacaan terjemahan publik biasa langsung menggunakan paket dalam cache, termasuk saat mulai luring. Pemulihan koneksi menandai paket yang pernah dimuat untuk satu pembaruan jaringan; paket yang baru diminta setelahnya tetap memakai cache biasa. XML yang tidak valid dapat dicoba kembali, dan pembacaan berikutnya memaksa pembaruan sampai paket valid diterima. Perubahan revisi yang dideklarasikan juga memperbarui paket yang telah dimuat. Paket privat yang peka terhadap revisi melewati cache HTTP setiap kali cache memori tidak memiliki entri, termasuk pada dokumen baru, pengaturan ulang siklus hidup, atau perubahan akun/sesi. Pemuatan yang berhasil tetap digabungkan dan disimpan menurut revisi dan identitas dalam dokumen.
+Router SPA memuat halaman yang dideklarasikan dan membatalkan mount yang tergantikan; URL langsung memakai titik masuk yang sama. Aset shell terpisah dari halaman milik gateway/adaptor.
 
-### Ikhtisar
+Service worker menyimpan aset publik, bukan respons API pribadi atau dokumen terautentikasi. Sumber daya yang berubah dapat mengembalikan salinan cache sambil melakukan penyegaran jaringan sesuai permintaan, paling sering sekali per menit. Aset dengan hash konten memakai ulang data tetap. Pembaruan worker menunggu tab yang dikendalikan ditutup. Pemulihan koneksi menawarkan penyegaran terlindungi.
 
-`src/ui/` menjadi tuan rumah frontend browser Cognis. Menyediakan alur kerja studi, permukaan interaksi sosial, panel administrasi, dan browser dokumentasi yang tertanam. UI adalah aplikasi multi-halaman yang di-render oleh server.
-
-Lapisan UI tidak mengetahui gateway atau adapter mana yang terinstal. Sebaliknya, gateway berkontribusi elemen UI saat runtime melalui `UIRegistry` dan API page-extensions.
-
-Semua teks yang terlihat pengguna melewati sistem i18n di `src/ui/reuse/i18n.js`. Tidak ada teks yang dikodekan secara keras di JavaScript atau template HTML.
-
-### Tanggung Jawab
-
-- Menjalankan semua titik masuk halaman dan template HTML terkait.
-- Menyediakan shell layout yang digunakan semua halaman non-login untuk merender.
-- Memelihara utilitas reuse untuk i18n, page composer, guard perubahan yang belum disimpan.
-- Menegakkan paritas tema: setiap elemen menyelesaikan warnanya dari variabel CSS.
-- Menyediakan paket string i18n untuk keempat bahasa yang diperlukan.
-
-### Struktur Direktori
-
-| Path                | Tujuan                                            |
-| ------------------- | ------------------------------------------------- |
-| `src/ui/layouts/`   | Shell HTML bersama                                |
-| `src/ui/app/`       | Modul JavaScript titik masuk halaman              |
-| `src/ui/reuse/`     | Modul utilitas lintas halaman                     |
-| `src/ui/styles/`    | CSS: token dasar, layout, aturan spesifik halaman |
-| `src/ui/languages/` | Paket string i18n (en, de, ja, id)                |
-
-### Konvensi Kunci i18n
-
-| Awalan               | Penggunaan                                                  |
-| -------------------- | ----------------------------------------------------------- |
-| `ui.reuse.*`         | Label yang dibagikan di beberapa halaman                    |
-| `ui.reuse.generic.*` | Kata aksi mandiri bebas konteks (simpan, buang, atur ulang) |
-| `ui.app.<page>.*`    | Teks spesifik halaman                                       |
-| `ui.layout.*`        | Teks shell layout dan label ARIA                            |
-
-### Pratinjau Gambar Bersama
-
-Kapabilitas global `ui:imagePreview` menyediakan tampilan gambar mini, pengikatan interaksi, dan tindakan `open` melalui alur terdaftar `ui:imagePreview:open`. Fitur ini juga tersedia melalui `ui:reuse` sebagai `image-preview.js`; penyedianya memuat lembar gaya bersama sebelum menerbitkan kontrol. Tombol gambar membuka gambar asli dalam ukuran alaminya, dibatasi area layar, dengan hanya tombol X standar yang terlihat. Aktivasi papan ketik, Escape, pemulihan fokus, dan penutupan saat tampilan atau penyedia dilepas memakai siklus hidup popup bersama. Pemanggil mengelola URL gambar dan tindakan penghapusan opsional. Library memakai kontrol ini untuk gambar unggahan dan bawaan dalam editor serta galeri detail.
-
-Penyedia pratinjau gambar bersama memuat lembar gayanya sebelum menerbitkan kontrol. Popup khusus gambar menghapus elemen judul dan menyesuaikan gambar asli lanskap, potret, serta panorama ke area layar tanpa gulir horizontal maupun vertikal. Pratinjau detail Library tetap dibatasi 20rem × 18rem; gambar mini editor tetap 8rem × 6rem.
-
-### Navigasi Sesi Responsif
-
-Keluar membersihkan data sesi pribadi tanpa menunggu pemeliharaan rute publik oleh pekerja layanan. Permintaan kebijakan identik memakai satu pertukaran tanpa menggabungkan keputusan akses yang berubah. Pengalih bahasa menunggu penyedia katalog dan menyembunyikan kontrol khusus akun setelah keluar. Salinan router dalam bundel dan yang dimuat langsung berbagi status dokumen, pendengar, dan pembatalan tampilan, termasuk navigasi Pengaturan ke Dasbor.
-
-### Polling Marketplace Ringan
-
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
+Salinan offline pribadi dan antrean perubahan terikat pada akun/sesi serta pemiliknya. Kode publik dalam cache tidak memberikan akses data. Banner, indikator pemuatan, dan popup mengikuti siklus hidup host; kegagalan penyedia dicatat melalui gateway.
 
 ## Keamanan
 
-Navigasi tersembunyi bukan kontrol akses. Penyedia memakai kapabilitas pemilik dan membatalkan pekerjaan saat unmount atau pergantian akun; data privat terikat akun.
+Pemilik memvalidasi izin sebelum pembacaan dan mutasi; navigasi tersembunyi hanya aturan tampilan. Jangan menaruh data akun, kredensial, atau HTML terautentikasi dalam API cache publik. Teks kaya memakai renderer yang sesuai.
 
 ## Referensi
 
-### Tutorial terpandu
-
-Tutorial terikat pada halaman atau URL. Kunjungan pertama yang memenuhi syarat otomatis memulai tutorial halaman yang belum selesai. SVG tanda tanya di samping judul dalam `page-context` memutar ulang tutorial yang tersedia pada halaman itu. Host memiliki tampilan dan siklus hidup; fitur memiliki teks, target, dan skrip. Tutorial tidak mengubah izin.
-
-`showToast(message, { minRole: "admin" })` membatasi informasi operasional kepada administrator dan pemilik. Peran lain atau tidak dikenal tidak membuat DOM toast, timer, atau callback penutupan. Tanpa `minRole`, umpan balik biasa tetap terlihat oleh semua pengguna. Opsi tampilan ini bukan otorisasi operasi server.
-
-Menu mengambang memakai kapabilitas `ui:floatingMenus` versi 1 dan alur bertahap `ui:floatingMenu:request`, `present`, `dismiss`, serta `release`. Prioritas sama mengikuti urutan permintaan; prioritas lebih tinggi menangguhkan menu di bawahnya. Reservasi menyediakan `ready` untuk izin pertama atau pembatalan, `present(element, { visible })`, `dismiss(element)`, dan `dispose()`. Tutorial menahan prioritas 100 sampai selesai, dibatalkan, atau pemilik dilepas, termasuk di antara langkah. Slot komposer dan pemilih pemutaran ulang memakai antrean yang sama. Permintaan batal dan tampilan lama tidak dapat menggantikan menu baru; slot kosong mengalah, dan pelepasan halaman membersihkan observer serta reservasi.
+- [src/ui/reuse/ui-ctx.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/ui-ctx.js)
+- [src/ui/reuse/app-router.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/app-router.js)
+- [src/ui/reuse/i18n.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/i18n.js)
+- [src/ui/public/sw.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/public/sw.js)

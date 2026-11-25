@@ -1,6 +1,6 @@
 # Referensi Teknis
 
-Antarmuka publik dan aturan operasional Anggaran kinerja.
+Pengukuran kinerja memisahkan pemuatan dingin, hangat, pemasangan rute, dan latensi API pada kondisi jaringan serta CPU yang dapat diulang.
 
 ## Antarmuka
 

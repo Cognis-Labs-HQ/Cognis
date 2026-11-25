@@ -1,88 +1,30 @@
 # Technische Referenz
 
-Öffentliche Schnittstellen und Betriebsregeln von UI.
+Der Browser-Host besitzt Routing, gemeinsame Darstellung, Lokalisierung und Wiederherstellung öffentlicher Ressourcen.
 
 ## Schnittstellen
 
-Die gemeinsame Browser-Fähigkeitsregistrierung steht vor der Shell-Initialisierung bereit. `bindCapability(id)` verwendet den aktuellen aufrufbaren Beitrag und begrenzt aufgeschobene Startaufrufe über alle Bindungen auf 128. Beiträge bleiben exklusiv und können nur mit passender Identität entfernt werden; Anbieter besitzen ihre Fachverträge und Verarbeitung.
-
-Diagnoseereignisse werden über `ui:log` veröffentlicht; die Ausgaberichtlinie gehört dem [Logging-Gateway](/docs/gateways/logging/technical).
-
-`reportClientError(error)` übernimmt ein Error-Objekt oder strukturierten Kontext und veröffentlicht es über die Gateway-Diagnose. Eigene lokale Logger lassen sich nicht mehr übergeben; die Ausgabe wird im Logging-Gateway konfiguriert.
-
-UIRegistry veröffentlicht Ressourcen, Navigationsplugins, Verwaltungsabschnitte und Seitenerweiterungen. Browseranbieter registrieren Fähigkeiten über uiCtx mit eigenem Abbruchsignal; Seiten nutzen Page Composer.
+`uiCtx.capabilities` löst aktive Browseranbieter auf; `bindCapability(id)` wartet mit begrenzten Startaufrufen auf deren Registrierung. `ui:log` sendet Diagnosen an [Logging](/docs/gateways/logging/technical). Seiten erhalten ein AbortSignal und entfernen eigene Registrierungen beim Ende. [Page Composer](/docs/page-composer/technical), [Tutorials](/docs/tutorials/technical) und [Komponentenfenster](/docs/focus-control/technical) definieren ihre öffentlichen UI-Verträge.
 
 ## Konfiguration
 
-Kontoeinstellungen wählen Thema, Sprache und Schrift. Komponentenkataloge liefern Übersetzungen und Metadaten; Layoutoptionen bleiben in Page Composer statt fremder Hüllenregeln.
+Sprache, Thema und Schrift kommen aus den Kontoeinstellungen. Gemeinsame Texte verwenden flache `ui.reuse.*`-Schlüssel, Komponentenkataloge ihren Eigentümernamensraum. Die Auflösung versucht die gewählte Sprache und dann Englisch; ein fehlender englischer Schlüssel ist ein Fehler. Oberflächen verwenden Thementokens. [Profile](/docs/adapters/social/profile/technical) speichert Kontoeinstellungen.
 
 ## Verhalten
 
-Normale öffentliche Übersetzungsabfragen verwenden vorhandene Pakete sofort, auch beim Offline-Start. Nach der Verbindungswiederherstellung werden bereits geladene Pakete einmal über das Netzwerk aktualisiert; erstmals danach angeforderte Pakete behalten das normale Cache-Verhalten. Ungültiges XML bleibt erneut abrufbar und erzwingt beim nächsten Lesen eine Aktualisierung, bis ein gültiges Paket vorliegt. Eine geänderte deklarierte Revision aktualisiert ebenfalls ein bereits geladenes Paket. Revisionsabhängige private Pakete umgehen den HTTP-Cache bei jedem fehlenden Eintrag im Arbeitsspeicher, auch nach einem neuen Dokument, einem Lebenszykluswechsel oder einem Konto- beziehungsweise Sitzungswechsel. Erfolgreiche Ladevorgänge werden innerhalb des Dokuments nach Revision und Identität zusammengefasst und gespeichert.
+Der SPA-Router lädt deklarierte Seiten und bricht überholte Mounts ab; direkte URLs verwenden dieselben Einstiegspunkte. Shell-Ressourcen sind von Gateway-/Adapterseiten getrennt.
 
-### Überblick
+Der Service Worker speichert öffentliche Ressourcen, keine privaten API-Antworten oder authentifizierten Dokumente. Veränderliche Ressourcen können Cache-Daten ausliefern, während eine bedarfsgesteuerte Netzaktualisierung höchstens einmal pro Minute läuft. Inhaltsgehashte Ressourcen verwenden unveränderliche Daten. Worker-Updates warten, bis vorhandene kontrollierte Tabs geschlossen sind. Verbindungswiederherstellung bietet geschütztes Neuladen.
 
-`src/ui/` hostet das Cognis-Browser-Frontend. Es stellt die Studieworkflows, sozialen Interaktionsoberflächen, Administrationspanels und den eingebetteten Dokumentationsbrowser bereit. Die UI ist eine server-seitig gerenderte Multi-Page-Anwendung.
-
-Die UI-Schicht hat keine Kenntnis davon, welche Gateways oder Adapter installiert sind. Stattdessen tragen Gateways UI-Elemente zur Laufzeit über die `UIRegistry` und die Page-Extensions-API bei.
-
-Alle benutzersichtbaren Texte gehen durch das i18n-System in `src/ui/reuse/i18n.js`. Kein Text ist in JavaScript oder HTML-Templates fest codiert.
-
-### Verantwortlichkeiten
-
-- Alle Seiten-Einstiegspunkte und zugehörige HTML-Templates hosten.
-- Die Layout-Shells bereitstellen, durch die alle Nicht-Login-Seiten gerendert werden.
-- Die Reuse-Utilities pflegen für i18n, Page Composer, Unsaved-Changes-Guards.
-- Theme-Parität durchsetzen: jedes Element löst seine Farben aus CSS-Variablen auf.
-- Die i18n-String-Packs für alle vier erforderlichen Sprachen bereitstellen.
-
-### Verzeichnisstruktur
-
-| Pfad                | Zweck                                               |
-| ------------------- | --------------------------------------------------- |
-| `src/ui/layouts/`   | Gemeinsame HTML-Shells                              |
-| `src/ui/app/`       | Seiten-Einstiegspunkt-JavaScript-Module             |
-| `src/ui/reuse/`     | Seitenübergreifende Utility-Module                  |
-| `src/ui/styles/`    | CSS: Basis-Tokens, Layout, seitenspezifische Regeln |
-| `src/ui/languages/` | i18n-String-Packs (en, de, ja, id)                  |
-
-### UIRegistry
-
-Gateways injizieren Admin-Panels und seitenspezifische UI-Beiträge zur Laufzeit über die `UIRegistry`. Der Endpunkt `GET /api/v1/ui/page-extensions/:pageId` gibt von allen aktivierten Gateways beigetragene Elemente für die benannte Seite zurück.
-
-### i18n-Schlüssel-Konventionen
-
-| Präfix               | Verwendung                                                                    |
-| -------------------- | ----------------------------------------------------------------------------- |
-| `ui.reuse.*`         | Labels, die über mehrere Seiten geteilt werden                                |
-| `ui.reuse.generic.*` | Kontextfreie eigenständige Aktionswörter (speichern, verwerfen, zurücksetzen) |
-| `ui.app.<page>.*`    | Seitenspezifischer Text                                                       |
-| `ui.layout.*`        | Layout-Shell-Text und ARIA-Labels                                             |
-
-### Wiederverwendbare Bildvorschau
-
-Die globale Fähigkeit `ui:imagePreview` bietet Vorschaubilder, Ereignisbindung und die Aktion `open` über den registrierten Ablauf `ui:imagePreview:open`. Sie ist außerdem über `ui:reuse` als `image-preview.js` verfügbar; der Anbieter lädt das gemeinsame Stylesheet vor der Veröffentlichung der Steuerelemente. Bildschaltflächen öffnen das Original in natürlicher Größe, begrenzt auf den sichtbaren Bereich, wobei nur das übliche X sichtbar ist. Tastaturbedienung, Escape, Fokusrückkehr und das Schließen beim Entfernen der Ansicht oder des Anbieters nutzen den gemeinsamen Popup-Lebenszyklus. Aufrufer verwalten Bild-URLs und optionale Löschaktionen. Library verwendet dieses Steuerelement für hochgeladene und mitgelieferte Bilder im Editor und in Detailgalerien.
-
-Der gemeinsame Bildvorschau-Anbieter lädt sein Stylesheet, bevor er Steuerelemente veröffentlicht. Das reine Bild-Popup entfernt Überschriften und passt Originale im Quer-, Hoch- und Panoramaformat ohne horizontales oder vertikales Scrollen in den sichtbaren Bereich ein. Library-Detailvorschauen behalten ihre Grenzen von 20rem × 18rem; Editor-Vorschaubilder bleiben 8rem × 6rem groß.
-
-### Reaktionsfähige Sitzungsnavigation
-
-Die Abmeldung löscht private Sitzungsdaten, ohne auf die öffentliche Routenpflege des Service-Workers zu warten. Identische Richtlinienanfragen teilen einen Austausch; geänderte Zugriffsentscheidungen bleiben getrennt. Der Sprachschalter wartet auf seinen Kataloganbieter und blendet kontogebundene Steuerelemente nach der Abmeldung aus. Gebündelte und direkt geladene Router teilen Dokumentzustand, Listener und Abbruch laufender Ansichten, einschließlich Einstellungen zum Dashboard.
-
-### Ruhiges Marketplace-Polling
-
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
+Private Offline-Kopien und vorgemerkte Änderungen gehören zu Konto/Sitzung und Eigentümer. Öffentlicher Code im Cache gewährt keine Datenrechte. Hinweise, Ladeanzeigen und Popups folgen dem Host-Lebenszyklus; Anbieterfehler werden über das Gateway protokolliert.
 
 ## Sicherheit
 
-Verborgene Navigation ist kein Zugriffsschutz. Anbieter nutzen Eigentümerfähigkeiten und brechen bei Seitenende oder Kontowechsel ab; private Daten bleiben kontogebunden.
+Eigentümer prüfen Rechte vor Datenzugriff und Änderungen; versteckte Navigation ist nur Darstellung. Private Daten, Zugangsdaten und authentifiziertes HTML gehören nicht in öffentliche Cache-APIs. Rich Text verwendet den geeigneten Renderer.
 
 ## Referenz
 
-### Geführte Tutorials
-
-Anleitungen gehören zu einer Seite oder URL. Beim ersten zulässigen Besuch starten die noch nicht abgeschlossenen Anleitungen automatisch. Ein Fragezeichen-SVG neben dem Titel in `page-context` wiederholt die verfügbaren Anleitungen dieser Seite. Der Host besitzt Darstellung und Lebenszyklus; die Funktion besitzt Texte, Ziele und Skript. Berechtigungen werden nie geändert.
-
-`showToast(message, { minRole: "admin" })` beschränkt Betriebsinformationen auf Administratoren und Eigentümer. Andere oder unbekannte Rollen erzeugen weder Toast-DOM noch Timer oder Schließ-Callbacks. Ohne `minRole` bleibt normales Feedback für alle sichtbar. Diese Anzeigeoption ersetzt keine serverseitige Berechtigung.
-
-Schwebende Menüs verwenden die Capability `ui:floatingMenus` Version 1 und die gestuften Flows `ui:floatingMenu:request`, `present`, `dismiss` und `release`. Gleiche Prioritäten folgen der Anforderungsreihenfolge; höhere Prioritäten unterbrechen niedrigere. Eine Reservierung bietet `ready` für die erste Freigabe oder Abmeldung, `present(element, { visible })`, `dismiss(element)` und `dispose()`. Tutorials behalten Priorität 100 bis Abschluss, Abbruch oder Anbieterentfernung, auch zwischen Schritten. Composer-Slots und die Wiederholungsauswahl verwenden dieselbe Warteschlange. Abgebrochene Anforderungen und veraltete Darstellungen ersetzen keine neueren Menüs; leere Slots geben frei, und beim Seitenabbau werden Beobachter und Reservierungen entfernt.
+- [src/ui/reuse/ui-ctx.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/ui-ctx.js)
+- [src/ui/reuse/app-router.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/app-router.js)
+- [src/ui/reuse/i18n.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/i18n.js)
+- [src/ui/public/sw.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/public/sw.js)

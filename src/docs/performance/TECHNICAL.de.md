@@ -1,6 +1,6 @@
 # Technische Referenz
 
-Öffentliche Schnittstellen und Betriebsregeln von Leistungsbudgets.
+Leistungsmessungen trennen kalte und warme Starts, Seitenaufbau und API-Latenz unter reproduzierbaren Netzwerk- und CPU-Bedingungen.
 
 ## Schnittstellen
 

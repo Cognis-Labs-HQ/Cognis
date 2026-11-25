@@ -30,6 +30,10 @@ Mit Heute, Diese Woche, Dieser Monat oder Dieses Jahr kehrst du zum aktuellen Ze
 
 Beschriftungen des aktuellen Zeitraums bleiben bei jeder Panelbreite ansichtsspezifisch, auch in Gastkalendern. Browserprüfungen decken frische und zwischengespeicherte Neuladungen unter dem tatsächlichen Service Worker ab.
 
+## Verträge der Dokumentreferenz
+
+Kernhandbücher beschreiben HTTP-Host, Komponenten-/Adapterstart, Sprachanbietererkennung, Browser-/Offline-Grenzen und öffentliche Quelldateien. Technische Referenzen trennen Verträge von Abläufen und Änderungshistorie. Korrigiert sind Einstellungsrouten, README-Sprachauswahl und unveränderliche Modul-ID-Namensräume; wiederholte Passphrasenbeispiele sind zusammengeführt. Prüfungen validieren Dokumentziele und Repository-Links. Die HTML-Linktextprüfung zählt Text direkt, ohne bereinigtes HTML zu erzeugen, auch bei fehlerhaften oder geteilten Tags.
+
 ## Commits
 
 - [37279a3](https://github.com/Cognis-Labs-HQ/Cognis/commit/37279a34a3891cca73dbc5cc5c85f3b00b2b2e8a)

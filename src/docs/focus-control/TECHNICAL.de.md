@@ -1,6 +1,6 @@
 # Technische Referenz
 
-Öffentliche Schnittstellen und Betriebsregeln von Fokussteuerung.
+Komponentenseiten- und Fokusverträge betten freigegebene Anbieterseiten in aufrufereigene Bereiche mit expliziter Aktivierung und Lebenszyklus ein.
 
 ## Schnittstellen
 

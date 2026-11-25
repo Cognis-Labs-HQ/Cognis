@@ -1,6 +1,6 @@
 # Referensi Teknis
 
-Antarmuka publik dan aturan operasional Kontrol Fokus.
+Kontrak halaman komponen dan fokus menyematkan halaman penyedia yang memenuhi syarat dalam panggung milik pemanggil dengan aktivasi serta siklus hidup eksplisit.
 
 ## Antarmuka
 

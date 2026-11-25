@@ -19,17 +19,6 @@ const passphrase = generatePassphrase({
 });
 ```
 
-Die Capability wird aus dem Modul-Bootstrap-Kontext abgerufen und mit der gewünschten Wortanzahl und Darstellung aufgerufen:
-
-```js
-const generatePassphrase = ctx.capabilities.require("reuse:generatePassphrase");
-const passphrase = generatePassphrase({
-    words: 6,
-    separator: "-",
-    capitalization: "titlecase",
-});
-```
-
 ## Erwartete Ergebnisse
 
 Unabhängig gewählte Wörter werden kombiniert; Erzeugung speichert, versendet oder autorisiert das Geheimnis nicht.

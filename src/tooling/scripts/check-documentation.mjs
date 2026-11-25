@@ -14,7 +14,13 @@ import {
     validateChangelogChanges,
 } from "../reuse/documentation/validate.js";
 
+import {
+    documentationTargets,
+    documentationLinkIssues,
+} from "../reuse/documentation/links.js";
+
 const root = process.cwd();
+const targets = documentationTargets(root);
 const argumentsList = process.argv.slice(2);
 const baseIndex = argumentsList.indexOf("--base");
 const base = baseIndex >= 0 ? argumentsList[baseIndex + 1] : undefined;
@@ -27,6 +33,9 @@ const failures = componentManifestFiles(root).flatMap((manifest) =>
 
 for (const path of documentationBundleFiles(root)) {
     failures.push(
+        ...documentationLinkIssues(readFileSync(path, "utf8"), targets).map(
+            (issue) => `${path}: ${issue}`,
+        ),
         ...sourceReferenceIssues(readFileSync(path, "utf8"), root).map(
             (issue) => `${path}: ${issue}`,
         ),

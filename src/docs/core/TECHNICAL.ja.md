@@ -1,126 +1,26 @@
 # 技術リファレンス
 
-コア の公開インターフェースと運用規則を説明します。
+Core は ctx の実行、コンポーネントのライフサイクル、提供者に依存しない型契約を定義します。
 
 ## インターフェース
 
-### AuthAccountStore インターフェース
-
-`src/core/contracts/auth-account.ts` の `AuthAccountStore` は、認証アダプターがアカウントの永続化に実装しなければならないインターフェースです。外部IDによるアカウントの検索、外部アカウントの作成、ローカルアカウントの作成をカバーします。
-
-```ts
-export interface AuthAccountStore {
-    findByExternalIdentity(
-        provider: string,
-        externalUserId: string,
-    ): Promise<AuthAccount | null>;
-    createExternalAccount(identity: ExternalIdentity): Promise<AuthAccount>;
-    updateExternalAccount(
-        accountId: string,
-        identity: ExternalIdentity,
-    ): Promise<AuthAccount>;
-    createLocalAccount(input: {
-        username: string;
-        passwordHash: string;
-        email?: string;
-        role?: string;
-    }): Promise<AuthAccount>;
-}
-```
+`createCtx()` は機能の登録と取得、段階付きフローを公開します。`ctx.flow.exists`、`extend`、`run` は名前付きフローを操作し、実行結果には `data` と `stageResults` が含まれます。`system:contracts` はドメイン所有者が定義する版付き実行時契約のレジストリーです。`AuthAccountStore`、`AccessRole`、`RoleAccessPolicy` は公開された型であり、自動登録される機能 ID ではありません。
 
 ## 設定
 
-コアはホスト起動時に保存機能や登録機能を受け取ります。データベース接続は個人設定ではなく運用側で構成します。
+ストアとレジストリーはホストが渡します。モジュールは固定 UUID、依存関係、入口をマニフェストに宣言します。接続設定は [DB](/docs/gateways/db/technical)、ロールの順序と完全一致の判定は[アクセス規則](/docs/acl-matrix/technical)を参照してください。
 
 ## 動作
 
-### 概要
-
-`src/core/` はCognisの基盤レイヤーです。プラットフォームの残りの部分が依存するプロバイダーに依存しないコントラクト、インターフェース、およびポリシーサービスが含まれています。コアはどのような機能が存在し、それらを統治するどのようなルールがあるかを定義します — それらの機能の具体的な実装を含むことはありません。
-
-重要なルールは、コアがゲートウェイまたはアダプターコードからインポートしないことです。依存関係の矢印は常に内側を向いています：ゲートウェイはコアからインポートし、コアはゲートウェイが存在することを知りません。この不変条件によりコアは安定して独立してテスト可能であり、ゲートウェイやアダプターを交換してもコントラクトレイヤーが壊れないことが保証されます。
-
-コアは現在2つのサービスと4つのケイパビリティネームスペースを公開しています。これらは意図的に最小限です — 設計哲学はドメインロジックがコアではなくゲートウェイに存在するというものです。コアはライフサイクル（モジュール）、ヘルスレポート、およびゲートウェイが実装する共有インターフェースの定義に関心を持ちます。
-
-### 責任範囲
-
-- ゲートウェイが使用する `DatabaseGateway`、`FileStorageGateway`、`AuthAccountStore`、`AuthContext`、その他の横断的インターフェースを定義する。
-- モジュールのライフサイクル管理（検出、有効化、無効化、ポインター書き込み、ルート安全性強制）のための `ModuleService` を提供する。
-- プラットフォームのヘルスとアップタイムメタデータのための `HealthService` を提供する。
-- すべてのモジュールが満たさなければならない `ModuleManifest` コントラクトを定義する。
-- ケイパビリティネームスペース `system:health`、`auth:accounts`、`modules:lifecycle`、`ui:shell` を公開する。
-
-担当外: 認証の実装、データの保存、通知の送信、またはプロバイダーSDKに触れる操作。
-
-### 主要なソースの場所
-
-| パス                                                | 目的                                                                   |
-| --------------------------------------------------- | ---------------------------------------------------------------------- |
-| `src/core/contracts/auth-account.ts`                | `AuthAccount`、`ExternalIdentity`、`AuthAccountStore` インターフェース |
-| `src/core/contracts/module-manifest.ts`             | `ModuleManifest` インターフェース                                      |
-| `src/core/services/module-loader/module-service.ts` | `ModuleService` クラス                                                 |
-| `src/core/services/health-service.ts`               | `HealthService` クラス                                                 |
-| `src/core/services/gateway-service.ts`              | ゲートウェイレジストリサービス                                         |
-| `src/core/index.ts`                                 | `@cognis/core` パッケージのパブリックエクスポート                      |
-
-### ModuleService
-
-`src/core/services/module-loader/module-service.ts` の `ModuleService` は完全なモジュールライフサイクルを管理します。`ModuleRuntimeGateway` 抽象化とオプションの `ModulePathResolver` で動作します。パスリゾルバーが存在する場合、有効化/無効化操作は信頼された内部ディレクトリまたは外部アーカイブのランタイム抽出ディレクトリを指すポインターファイル（nginx スタイルの `<id>.load` シンボリックリンク）を書き込み、削除します。
-
-モジュールを有効化する前に、`ModuleService` は2つのガードレールを強制します：
-
-- コアモジュール（マニフェストの `class: "core"`）は実行時に切り替えることができません。
-- 外部モジュールはポインターが書き込まれる前に明示的な免責事項の確認が必要です。
-
-ルート安全性はモジュールが有効化される前に強制されます：モジュールの `routes.json` が保護されたプレフィックス（`/api/v1/system`、`/api/v1/auth`、`/api/v1/users`、`/public`、`/ui`）の下のパスを宣言している場合、有効化は拒否されます。
-
-```ts
-// src/core/services/module-loader/module-service.ts
-export class ModuleService {
-    async enable(
-        moduleId: string,
-        options?: { acknowledgeExternalDisclaimer?: boolean },
-    ): Promise<{ moduleId: string; enabled: boolean }>;
-    async disable(
-        moduleId: string,
-    ): Promise<{ moduleId: string; enabled: boolean }>;
-    async list(): Promise<ModuleManifest[]>;
-}
-```
-
-### HealthService
-
-`src/core/services/health-service.ts` の `HealthService` はサーバーの起動時刻を記録し、要求に応じて `HealthStatus` オブジェクトを返します。起動タイムスタンプ以外はステートレスです。
-
-```ts
-export interface HealthStatus {
-    status: "ok";
-    timestamp: string;
-    startedAt: string;
-    uptimeMs: number;
-}
-```
-
-### ケイパビリティネームスペース
-
-| ケイパビリティ      | 所有者                | 説明                                                                                 |
-| ------------------- | --------------------- | ------------------------------------------------------------------------------------ |
-| `system:health`     | コア / システムルート | `GET /api/v1/system/health` を通じてプラットフォームのヘルスとアップタイムを公開する |
-| `auth:accounts`     | 認証ゲートウェイ      | 組み込みアカウントライフサイクルと認証ポリシーの配線                                 |
-| `modules:lifecycle` | モジュールルート      | モジュール一覧表示、有効化/無効化コントロール、ポリシーチェック                      |
-| `ui:shell`          | UIルート              | 共有アプリケーションシェルルーティングと管理操作サーフェス                           |
-
-### 実行時コントラクト
-
-ドメインの所有者はブートストラップ中に公開レジストリ `system:contracts` へコントラクトを登録します。`define(id, { version, kind, members, description })` で構造を宣言し、`resolve(id, version)` は公開実装を検査して登録の有効期間に結び付いたハンドルを返します。ロールバックと無効化で定義を削除し、再有効化で復元します。モジュールは自身の名前空間を使います。モジュール側での解決もホストの権限検査を維持します。新しいモジュールコントラクトにCoreのソースファイルは不要です。任意の型宣言は提供元の公開コントラクトディレクトリに置きます。確認コード生成は共通サーバー再利用層が所有し、Authが `auth:verificationCodes` として公開します。Coreからはエクスポートしません。
-
-入れ子のブートストラップスコープは親の権限に従い、親の終了後は契約を登録できません。
+ゲートウェイとモジュールのサービスは所有者のスコープ内で登録を読み込み、破棄で解除し、起動失敗で取り消します。フローは宣言した段階を順に実行し、後続処理へ結果を渡します。導入、有効化、削除は他の実装を直接インポートせず、ホストのライフサイクルに従います。
 
 ## セキュリティ
 
-起動範囲で登録元を特定します。状態変更前に権限を検証し、機能が見つかっただけではデータを許可しません。
+ライフサイクル管理や契約構造の確認は、リソース操作を認可しません。担当側が保護された操作の前にアカウント、ロール、リソースを検証します。外部モジュールにはホスト内部への無制限なアクセスではなく、範囲を限定した公開契約を渡します。
 
 ## リファレンス
 
+- [src/core/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/core/index.ts)
 - [src/core/ctx/types.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/core/ctx/types.ts)
-- [src/core/ctx/flow-api.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/core/ctx/flow-api.ts)
+- [src/core/contracts/auth-account.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/core/contracts/auth-account.ts)
+- [src/core/contracts/access-policy.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/core/contracts/access-policy.ts)

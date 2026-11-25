@@ -1,6 +1,6 @@
 # Technical Reference
 
-The public interfaces and operational rules of DevOps.
+The container deployment runs the compiled Node server behind nginx with persistent database, media and configuration storage.
 
 ## Interfaces
 
@@ -50,7 +50,7 @@ The application image installs production dependencies, runs as the non-root `co
 - Build a runnable, non-root Node 24 application image from the repository source.
 - Run install, typecheck, and tests on every push and pull request (CI).
 - Build and push the application image to a container registry on release (CD).
-- Provide database-specific production and development Compose files for PostgreSQL and MariaDB.
+- Provide `docker-compose.yaml`, `docker-compose.postgres.yaml` and `docker-compose.mariadb.yaml` for the selected database.
 
 Not responsible for: infrastructure provisioning, secrets management beyond env var documentation, or deployment orchestration beyond the image itself.
 

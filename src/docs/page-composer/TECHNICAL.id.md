@@ -1,6 +1,6 @@
 # Referensi Teknis
 
-Antarmuka publik dan aturan operasional Page Composer.
+Page Composer mengelola tata letak elemen, tampilan responsif, siklus hidup DOM, dan penyimpanan tata letak/draf opsional.
 
 ## Antarmuka
 

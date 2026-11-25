@@ -1,6 +1,6 @@
 # Technische Referenz
 
-Öffentliche Schnittstellen und Betriebsregeln von Komponentenwiederherstellung.
+Die Komponentenverwaltung prüft Abhängigkeiten und führt autorisiertes Aktivieren, Deaktivieren und Aktualisieren externer Module aus.
 
 ## Schnittstellen
 

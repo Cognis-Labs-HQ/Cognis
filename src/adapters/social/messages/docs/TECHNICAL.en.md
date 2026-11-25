@@ -75,7 +75,7 @@ Messages prepares its room list, translations, sidebar template and emoji catalo
 
 ### Independent Emoji Usage
 
-See the [shared contract](/docs/api/technical) for this behavior.
+See the [shared contract](/docs/ui/technical) for this behavior.
 
 ### Readable Mobile Content
 
@@ -83,7 +83,7 @@ Open conversations with the common double-chevron sidebar button at the top left
 
 ### Compact Sidebars
 
-Messages keeps New Room, conversations and Templates together, filling the available sidebar width. Empty and short lists no longer stretch to the drawer height; long room and template lists use Composer’s single scroll surface.
+Messages keeps New Room, conversations and Templates together, filling the available sidebar width. Empty and short lists size to their content; long room and template lists use Composer’s single scroll surface.
 
 ### Overview
 

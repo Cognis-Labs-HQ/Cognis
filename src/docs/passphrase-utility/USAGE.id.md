@@ -19,17 +19,6 @@ const passphrase = generatePassphrase({
 });
 ```
 
-Ambil kapabilitas dari konteks bootstrap modul dan minta jumlah kata serta tampilan yang diperlukan:
-
-```js
-const generatePassphrase = ctx.capabilities.require("reuse:generatePassphrase");
-const passphrase = generatePassphrase({
-    words: 6,
-    separator: "-",
-    capitalization: "titlecase",
-});
-```
-
 ## Hasil yang Diharapkan
 
 Kata dipilih secara independen; pembuatan tidak menyimpan, mengirim, atau mengotorisasi rahasianya.

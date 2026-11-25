@@ -19,17 +19,6 @@ const passphrase = generatePassphrase({
 });
 ```
 
-Retrieve the capability from the module bootstrap context and request the desired word count and presentation:
-
-```js
-const generatePassphrase = ctx.capabilities.require("reuse:generatePassphrase");
-const passphrase = generatePassphrase({
-    words: 6,
-    separator: "-",
-    capitalization: "titlecase",
-});
-```
-
 ## Expected Results
 
 Generation combines independently sampled words; it does not itself persist, deliver or authorize the resulting secret.

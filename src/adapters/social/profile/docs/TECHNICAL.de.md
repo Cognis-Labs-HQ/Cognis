@@ -24,7 +24,7 @@ Das Profil-Navbar-Plugin stellt `ui:profileAvatarRenderer` bereit. Module, die P
 
 ### Bestätigte Einstellungskopien
 
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
+Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/ui/technical).
 
 ## Verhalten
 

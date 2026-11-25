@@ -1,6 +1,6 @@
 # Technische Referenz
 
-Öffentliche Schnittstellen und Betriebsregeln von Geführte Anleitungen.
+Der Tutorial-Host erkennt seitengebundene Anleitungen, löst eigene Ziele auf und speichert den Abschluss für das authentifizierte Konto.
 
 ## Schnittstellen
 

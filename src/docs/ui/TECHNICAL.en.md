@@ -1,110 +1,30 @@
 # Technical Reference
 
-The public interfaces and operational rules of UI.
+The browser host owns routing, shared presentation, localization and public-asset recovery.
 
 ## Interfaces
 
-The shared browser capability registry is available before shell initialization. `bindCapability(id)` resolves the current callable contribution and bounds deferred startup invocations across bindings to 128. Contributions retain exclusive ownership and identity-checked removal; providers own their domain contracts and processing.
-
-Diagnostics are published through `ui:log`; output policy belongs to the [Logging Gateway](/docs/gateways/logging/technical).
-
-`reportClientError(error)` accepts an Error or structured context and publishes through gateway diagnostics. Caller-selected local logger overrides are removed; configure output in the logging gateway.
-
-UIRegistry publishes static directories, navbar plugins, administration sections and page extensions. Browser providers register capabilities through uiCtx and own their cleanup signal; page contributions render through the shared Page Composer.
+`uiCtx.capabilities` resolves active browser providers; `bindCapability(id)` defers bounded startup calls until registration. `ui:log` sends diagnostics to [Logging](/docs/gateways/logging/technical). Owners mount page content with an AbortSignal and release registrations on disposal. [Page Composer](/docs/page-composer/technical), [Tutorials](/docs/tutorials/technical) and [component windows](/docs/focus-control/technical) specify their own public UI contracts.
 
 ## Configuration
 
-Account preferences select theme, language and font. Component catalogs supply their own translations and page metadata; layout options remain in Page Composer instead of per-feature shell overrides.
+Language, theme and font come from account Settings. Shared labels use flat `ui.reuse.*` keys; component catalogs use their owner namespace. The resolver tries the selected language and then English; an absent English key is an error. Visual surfaces use theme tokens. [Profile](/docs/adapters/social/profile/technical) owns account preference persistence.
 
 ## Behavior
 
-Ordinary public translation reads use cached bundles immediately, including during offline startup. Connection recovery marks previously loaded bundles for one network refresh; bundles first requested afterward keep ordinary cache behavior. Invalid XML remains retryable, and its next read forces a refresh until a valid bundle is received. A changed declared revision also refreshes an already loaded bundle. Revision-sensitive private bundles bypass the HTTP cache on each in-memory cache miss, including a fresh document, lifecycle reset or account/session change. Successful loads remain coalesced and cached by revision and identity within the document.
+The SPA router loads declared pages and cancels superseded mounts; direct URLs use the same page entrypoints. Core shell assets are separate from gateway/adapter-owned pages.
 
-### Overview
+The service worker caches public assets, not private API responses or authenticated documents. Mutable public resources may return cached bytes while an on-demand network refresh runs, bounded to once per minute. Content-hashed resources reuse immutable bytes. Worker updates wait for existing controlled tabs to close. Connection recovery offers a guarded refresh.
 
-`src/ui/` hosts the Cognis browser frontend. It provides the study workflows, social interaction surfaces, administration panels, and the embedded documentation browser. The UI is a server-rendered multi-page application: each page is an HTML file with its own JavaScript entry point; shared layout shells and reuse utilities keep common behaviour consistent across pages.
-
-The UI layer has no knowledge of which gateways or adapters are installed. Instead, gateways contribute UI elements at runtime through the `UIRegistry` and the page-extensions API. The core pages load only what the server reports as available for the current user, so the frontend remains coherent whether or not optional gateways like profile or notify are enabled.
-
-All user-visible text goes through the i18n system defined in `src/ui/reuse/i18n.js`. No copy is hardcoded in JavaScript or HTML templates. Automated tests in `src/ui/tests/hardcoded-strings.test.js` enforce this at CI time.
-
-### Responsibilities
-
-- Host all page entry points and their associated HTML templates.
-- Provide the layout shells (`ui/layouts/`) that all non-login pages render through.
-- Maintain the reuse utilities (`ui/reuse/`) for i18n, page composer, unsaved-change guards, and other cross-page behaviour.
-- Enforce theme parity: every element resolves its colors from CSS variables, never hard-coded hex values.
-- Provide the i18n string packs for all four required languages (en, de, ja, id) at `src/ui/languages/`.
-
-Not responsible for: generating API responses, owning authentication logic, or injecting gateway-specific UI — gateways contribute their own sections via `UIRegistry`.
-
-### Directory structure
-
-| Path                       | Purpose                                                |
-| -------------------------- | ------------------------------------------------------ |
-| `src/ui/layouts/`          | Shared HTML shells that page entries render inside     |
-| `src/ui/public/templates/` | Reusable markup fragments                              |
-| `src/ui/public/pages/`     | Per-page HTML files served to the browser              |
-| `src/ui/app/`              | Page entry point JavaScript modules                    |
-| `src/ui/reuse/`            | Cross-page utility modules (i18n, page composer, etc.) |
-| `src/ui/styles/`           | CSS: base tokens, layout, page-specific rules          |
-| `src/ui/languages/`        | i18n string packs (en, de, ja, id)                     |
-
-Each page entry point lives in its own subdirectory under `src/ui/app/` as `index.js`. Sub-modules for that page sit alongside `index.js`, dropping any shared prefix (e.g. `settings/font-prefs.js` rather than `settings-font-prefs.js`).
-
-### Page composer
-
-The `createPageComposer` utility in `src/ui/reuse/page-composer/init.js` handles widget grid layout, persistence, sub-page navigation, toolbar slots, and floating menus. Pages declare an array of `elements` with `id`, `label`, `render`, and optional `gridSize`; the composer handles everything else. See `src/docs/page-composer.en.md` for full API reference.
-
-### UIRegistry
-
-Gateways inject admin panels, static assets, and per-page UI contributions at runtime through the `UIRegistry` (`src/api/reuse/ui-registry.ts`). The `GET /api/v1/ui/page-extensions/:pageId` endpoint returns elements contributed by all enabled gateways for the named page. The `GET /api/v1/admin/sections` endpoint returns gateway-contributed admin UI sections.
-
-### State model
-
-- The bearer token and account ID are stored client-side after login.
-- Page layout preferences are saved via `PUT /api/v1/social/users/:accountId/preferences/:pageId`.
-- The auth token is also available in the `cognis_access_token` HttpOnly cookie for server-rendered route guards.
-
-### Theme coverage requirement
-
-Every HTML element added to templates or injected from page scripts must resolve its visual colors from CSS theme variables defined in `src/ui/styles/reuse/theme.css`. Hard-coded hex or rgb values are a policy violation. Both `light` and `dark` modes must remain readable, including hover, focus, disabled, and active states.
-
-### i18n key conventions
-
-| Prefix               | Use                                                              |
-| -------------------- | ---------------------------------------------------------------- |
-| `ui.reuse.*`         | Labels shared across multiple pages                              |
-| `ui.reuse.generic.*` | Context-free standalone action words (save, discard, reset, add) |
-| `ui.app.<page>.*`    | Page-specific copy                                               |
-| `ui.layout.*`        | Layout shell text and ARIA labels                                |
-| `ui.page.title.*`    | Document `<title>` values                                        |
-| `module.<id>.*`      | Module-owned strings loaded on demand                            |
-
-### Reusable Image Previews
-
-Global `ui:imagePreview` provides thumbnail rendering, binding and an `open` action through the registered `ui:imagePreview:open` flow. It is also available from `ui:reuse` as `image-preview.js`; its provider loads the shared stylesheet before publishing controls. Image buttons open the original image at its natural size, constrained to the viewport, with only the standard X control visible. Keyboard activation, Escape, focus return and owner/provider teardown use the shared popup lifecycle. Callers retain ownership of image URLs and optional removal actions. Library uses this shared control for uploaded and bundled images in editors and detail galleries.
-
-The shared image-preview provider loads its stylesheet before publishing controls. The image-only popup removes heading markup and fits landscape, portrait and panoramic originals inside the viewport without horizontal or vertical scrolling. Library detail previews retain their 20rem × 18rem limits; editor thumbnails remain 8rem × 6rem.
-
-### Responsive Session Navigation
-
-Logout clears private session data without waiting for public service-worker route maintenance. Identical worker policy requests share one exchange without merging changed access decisions. The language switcher waits for its catalog provider and hides account-only controls when signed out. Bundled and directly served router copies share document state, listeners and mount cancellation, including Settings to Dashboard navigation.
-
-### Quiet Marketplace Polling
-
-See the [shared contract](/docs/api/technical) for this behavior.
+Private offline snapshots and queued writes belong to their authenticated account/session and owner. Public cached code does not grant offline resource access. Shared banners, loading feedback and popups follow the host lifetime; provider failures are logged through the gateway.
 
 ## Security
 
-Hidden navigation is not access control. Browser providers resolve owner capabilities and abort pending work on unmount or account changes; private reads remain account-scoped.
+Owners validate permissions before data reads and mutations; hidden navigation is only presentation. Do not put account payloads, credentials or private HTML into public cache APIs. Rich text must pass the appropriate renderer.
 
 ## Reference
 
-### Guided tutorials
-
-Tutorials belong to a page or URL. The first eligible visit starts the page’s unseen tutorials automatically. A question-mark SVG beside the title in `page-context` replays tutorials available on that page. The host owns presentation and lifecycle; each feature owns its text, targets and script. Tutorials never change permissions.
-
-`showToast(message, { minRole: "admin" })` limits operational feedback to administrators and owners. Other or unknown roles receive no toast DOM, timers or dismissal callbacks. Omitting `minRole` keeps normal feedback available to everyone. This client presentation option does not authorize server operations.
-
-Floating menus use the version-one `ui:floatingMenus` capability and the staged `ui:floatingMenu:request`, `present`, `dismiss` and `release` flows. Equal priorities queue in request order; higher priorities suspend lower menus. A lease exposes `ready` (first grant or cancellation), `present(element, { visible })`, `dismiss(element)` and `dispose()`. Tutorial sessions reserve priority 100 until completion, cancellation or owner removal, including between steps. Composer slots and replay choosers use the same queue. Aborted requests and stale presentations cannot replace newer menus; empty slots yield and page teardown removes observers and reservations.
+- [src/ui/reuse/ui-ctx.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/ui-ctx.js)
+- [src/ui/reuse/app-router.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/app-router.js)
+- [src/ui/reuse/i18n.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/i18n.js)
+- [src/ui/public/sw.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/public/sw.js)

@@ -1,6 +1,6 @@
 # Referensi Teknis
 
-Antarmuka publik dan aturan operasional Modul Eksternal.
+Repositori eksternal terintegrasi melalui manifes terverifikasi, registrasi ctx terbatas, dan kontribusi server/browser yang dapat dilepas.
 
 ## Antarmuka
 
@@ -26,8 +26,6 @@ Modul yang menerbitkan dokumen hukum, dukungan, atau dokumen lain yang relevan s
 
 Manifes menyatakan `uuid`, `id`, `name`, `version`, `publisher`, `class`, `coreApiVersion`, `summary`, `description`, `categories`, `recommended`, `license`, `homepage`, `repository`, `support`, `capabilities`, `requires` berbasis UUID, `entrypoints`, dan `assets`. Jalur aset bersifat relatif terhadap repositori. `assets.icon` mengidentifikasi ikon toko persegi, `assets.banner` mengidentifikasi pahlawan detail, dan `assets.screenshots` adalah galeri terurut. Jalur harus tetap berada di dalam repositori.
 
-Kunci pelokalan menggunakan kata huruf kecil yang dipisahkan titik pada namespace modul maupun label fitur. Selaraskan metadata manifes, katalog, dan referensi kode. ID modul yang tetap tidak menjadi pengecualian dari aturan ini.
-
 ## Konfigurasi
 
 Sumber dan root instalasi dikonfigurasi host. Modul mendeklarasikan identitas, dependensi, rute, dokumentasi, serta skema; rahasia diperoleh melalui kapabilitas terlindungi.
@@ -48,7 +46,7 @@ Setiap modul memiliki `id` yang dapat dibaca manusia dan RFC 4122 `uuid`. ID dap
 
 Administrator mengelola satu registri sumber dan katalog modul bersama untuk seluruh instans. Kredensial sumber disembunyikan di server dan dienkripsi menggunakan `DATA_ENCRYPTION_KEY` yang persisten. Semua administrator dapat menggunakan, mengganti atau menghapusnya; API baca dan formulir hanya menampilkan apakah kredensial sudah dikonfigurasi. Kolom kata sandi kosong mempertahankan nilai tersimpan. Keyring browser tidak digunakan: atur kredensial bersama sekali di Sumber Modul. Pemindaian privat memerlukan PAT hanya baca dengan akses repositori dan metadata. Penemuan saat startup dan instalasi menggunakan kredensial tersimpan yang sama tanpa sesi browser. Lingkup enkripsi terikat pada identitas dan endpoint sumber; perubahannya memerlukan penggantian atau penghapusan. Pemindaian gagal mempertahankan katalog, pemindaian bersamaan digabungkan, dan hasil lama tidak menimpa konfigurasi sumber yang lebih baru. Permintaan penyedia menolak pengalihan dan memiliki batas waktu.
 
-API penyimpanan sumber menerima `token` dan `clearCredential` dan hanya mengembalikan metadata publik, `credentialConfigured` serta revisi. Penemuan dan instalasi tidak lagi menerima token dari pemanggil. Instalasi menggunakan metadata repositori otoritatif dalam cache dan kredensial tersimpan pada server.
+API penyimpanan sumber menerima `token` dan `clearCredential` dan hanya mengembalikan metadata publik, `credentialConfigured` serta revisi. Penemuan dan instalasi tidak menerima token dari pemanggil. Instalasi menggunakan metadata repositori otoritatif dalam cache dan kredensial tersimpan pada server.
 
 ### Daftar periksa ekstraksi
 
@@ -56,7 +54,9 @@ Sebelum memindahkan modul yang dibundel ke dalam repositorinya sendiri, salin di
 
 ### Simpan aset dan tag
 
-Sebuah modul dapat mendeklarasikan `tags` bersama dengan `categories` yang lebih luas; keduanya berpartisipasi dalam penyaringan pasar. Simpan karya seni di akar repositori di bawah `assets/`: sediakan `assets/icon.svg` atau `assets/icon.png` untuk ikon katalog, dan `assets/banner.svg`, `assets/banner.png`, atau `assets/banner.jpg` untuk pahlawan halaman detail. Deklarasikan jalur yang dipilih sebagai `assets.icon` dan `assets.banner` di `manifest.json`. Gambar galeri opsional tercantum di `assets.screenshots`. Jaga karya seni bebas dari rahasia dan data pribadi. Halaman detail modul terpasang memilih `README.<locale>.md` untuk bahasa UI aktif, lalu beralih ke `README.en.md`, `README.en.md`, dan deskripsi katalog secara berurutan. Alias kompatibilitas `README.en.md` opsional di akar tidak diwajibkan atau divalidasi checksum-nya; berkas `README.<locale>.md` yang dilokalkan tetap dapat dimasukkan dalam inventaris integritas manifes.
+Sebuah modul dapat mendeklarasikan `tags` bersama dengan `categories` yang lebih luas; keduanya berpartisipasi dalam penyaringan pasar. Simpan karya seni di akar repositori di bawah `assets/`: sediakan `assets/icon.svg` atau `assets/icon.png` untuk ikon katalog, dan `assets/banner.svg`, `assets/banner.png`, atau `assets/banner.jpg` untuk pahlawan halaman detail. Deklarasikan jalur yang dipilih sebagai `assets.icon` dan `assets.banner` di `manifest.json`. Gambar galeri opsional tercantum di `assets.screenshots`. Jaga karya seni bebas dari rahasia dan data pribadi.
+
+Detail modul terpasang memilih README akar berdasarkan locale tepat, bahasa dasar, Inggris, `README.md` akar, konten README katalog, lalu deskripsi lokal atau katalog. Tampilan marketplace ini terpisah dari bundel pembaca Docs yang dideklarasikan melalui `docs/README.en.md`, `docs/USAGE.en.md`, dan `docs/TECHNICAL.en.md`.
 
 Ilustrasi modul diambil terpisah dari pemasangan kode. Aset GitHub publik dialirkan dari raw.githubusercontent.com; repositori privat dan Enterprise memakai respons mentah terautentikasi, sedangkan GitLab memakai endpoint berkas mentah. Cognis menyimpan byte dan jenis media pada cache hash terpisah lalu menyajikannya melalui endpoint aset katalog terautentikasi. Ini menghindari batas konten inline JSON GitHub Contents. Aset kosong dan unduhan di atas batas 10 MiB yang sudah ada ditolak. Log mencatat sumber, repositori, referensi, jalur, transport, tahap serta status HTTP atau alasan kegagalan. Segarkan katalog untuk mencoba pengambilan kembali. Ikon hilang tetap memakai SVG tanda tanya; banner hilang atau gagal didekode menampilkan pesan Gambar Tidak Tersedia yang dilokalkan.
 
@@ -130,7 +130,7 @@ Halaman langsung yang dibatalkan segera melepas token pemuatan bersama, meskipun
 
 ### Namespace terjemahan bertitik
 
-Kunci pelokalan menggunakan kata huruf kecil yang hanya dipisahkan titik, termasuk namespace modul dan kunci tutorial. Untuk ID tetap `terms-of-service`, gunakan `module.terms.of.service.admin.title`. Metadata manifes, katalog, dan referensi memakai namespace yang sama; ID modul, UUID, nama kapabilitas, dan ID pemilik/penyelesaian tutorial mempertahankan identitasnya. Jangan melonggarkan validasi namespace untuk menerima kunci yang tidak valid. Ikuti indentasi entri XML di sekitarnya dan pertahankan nilai terjemahan saat memformat.
+Kunci pelokalan memakai `module.<module-id>.<period.delimited.suffix>`. Pertahankan ID modul tetap termasuk tanda hubungnya; kata pada akhiran memakai huruf kecil dan dipisahkan titik. Label bersama memakai kunci datar `ui.reuse.*`.
 
 Tampilan marketplace mempertahankan nama, deskripsi, kategori, dan tag yang tersimpan bersama berkas terjemahan katalognya ketika modul terpasang menggunakan namespace berbeda. Preferensi modul terpasang mempertahankan URL terjemahannya sendiri; penemuan katalog baru menggantikan tampilan yang tersimpan.
 
@@ -178,21 +178,21 @@ Perilaku ini dijelaskan dalam [kontrak bersama](/docs/adapters/social/messages/t
 
 Host menyediakan `ctx.capabilities.get("ui:broadcast").publish(id, descriptor, { signal, priority })` sebelum halaman atau penyedia dipasang. Deskriptor menerima `title` berupa teks biasa, `bodyHtml` yang disanitasi, `actionsHtml` tepercaya, serta varian `info`, `success`, `warning`, atau `danger`. Hasilnya memiliki `element` dan `remove()`. ID yang sama hanya mengganti pemberitahuan pemiliknya; pembersih lama tidak menghapus penggantinya. Ikat masa hidup dengan `signal`; prioritas lebih kecil tampil dahulu. Judul di-escape dan pemanggil wajib menyanitasi teks kaya. Panggil `prepare()` saat daring untuk memuat gaya banner dan tombol bersama sebelum pemberitahuan pertama.
 
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
+Perilaku ini dijelaskan dalam [kontrak bersama](/docs/ui/technical).
 
 ### Halaman Study luring kosong
 
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
+Perilaku ini dijelaskan dalam [kontrak bersama](/docs/ui/technical).
 
 ### Persiapan Aset Publik
 
 Host menyediakan `ctx.capabilities.get("offline:assets")` dengan `prepare(paths, { signal })` dan `register(paths, { signal })`. Keduanya menggunakan alur bertahap `offline:prepareAssets`. Pendaftaran memulai persiapan latar belakang, mencoba kembali saat koneksi atau preferensi berubah, dan mengembalikan fungsi coba lagi. Hanya jalur publik relatif akar `/static/` atau `/assets/` yang diterima; permintaan tidak mengirim kredensial dan menolak respons private/no-store. Empat pekerja membaca isi respons. Permintaan bersamaan digabung per sinyal pemilik, kegagalan dapat dicoba kembali, dan pembatalan pemilik menghentikan pekerjaan serta pendengar. Fasilitas ini tidak menyimpan data API pribadi dan tidak memberikan akses luring. Callback `restoreRead` pada klien HTTP luring hanya berjalan setelah cache tidak ditemukan dengan akses yang sah dan menggunakan pembaca snapshot terlindungi yang sama. Penolakan akses tidak pernah diubah menjadi tampilan kosong atau antrean.
 
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
+Perilaku ini dijelaskan dalam [kontrak bersama](/docs/ui/technical).
 
 ### Favorit Study Bersama
 
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
+Perilaku ini dijelaskan dalam [kontrak bersama](/docs/ui/technical).
 
 ### Bootstrap dan Kanal
 

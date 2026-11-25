@@ -1,6 +1,6 @@
 # Ikhtisar Cognis
 
-Cognis adalah platform belajar bahasa modular yang dirancang untuk pelajar mandiri, guru, dan komunitas. Platform ini menggabungkan konten pembelajaran terstruktur dengan fitur sosial, kesiapan kolaborasi real-time, dan arsitektur backend yang sangat dapat diperluas. Tujuannya adalah mempermudah penerapan lingkungan belajar bahasa yang di-host sendiri yang dapat berkembang dari satu pengguna hingga komunitas penuh tanpa mengubah basis kode inti.
+Cognis menggabungkan pembelajaran bahasa, percakapan, dan kalender. Komponen serta paket bahasa aktif pada instalasi menentukan alat dan konten yang tersedia.
 
 ## Yang Dapat Anda Lakukan
 

@@ -160,7 +160,7 @@ Auth menyediakan `session:isOfflineValid` sebagai otoritas sinkron tanpa jaringa
 
 ### Antrean Terikat Akun
 
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
+Perilaku ini dijelaskan dalam [kontrak bersama](/docs/ui/technical).
 
 ### Percobaan Pendaftaran SSO Terbatas
 

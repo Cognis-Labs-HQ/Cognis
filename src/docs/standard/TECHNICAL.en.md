@@ -1,6 +1,6 @@
 # Documentation Contracts
 
-Documentation separates introductory information, practical procedures and technical reference so each reader can choose the detail they need.
+Document bundles separate introductory information, executable procedures and technical contracts, with validated structure and localized source families.
 
 ## Interfaces
 
@@ -47,3 +47,5 @@ Populate every role with useful, source-verified information rather than stock g
 GitHub source-file links use the repository default-branch alias `blob/HEAD` or `raw/HEAD`, including from archived documentation. Commit links in changelogs retain their immutable commit targets.
 
 Changelog link labels use short commit references, such as the first seven characters. The destination URL retains the complete immutable SHA. Full SHAs in Markdown or HTML link labels fail both the documentation command and repository tests.
+
+The documentation checker validates topic destinations and repository source targets. Commit-label checks count text without producing HTML; their output is a diagnostic, not sanitized markup.

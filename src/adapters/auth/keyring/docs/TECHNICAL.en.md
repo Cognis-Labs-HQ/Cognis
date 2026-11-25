@@ -86,7 +86,7 @@ Keyring lifecycle notifications, unlock controls and Settings labels load from t
 
 ### Account privacy and keyring isolation
 
-See the [shared contract](/docs/api/technical) for this behavior.
+See the [shared contract](/docs/ui/technical) for this behavior.
 
 ### Cancelled access and manual recovery
 

@@ -1,6 +1,6 @@
 # Technische Referenz
 
-Öffentliche Schnittstellen und Betriebsregeln von Cognis.
+Diese Referenzen führen zur zuständigen Komponente, ihren öffentlichen Verträgen und ihren Bereitstellungsanforderungen.
 
 ## Schnittstellen
 

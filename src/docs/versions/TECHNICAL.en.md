@@ -1,6 +1,6 @@
 # Technical Reference
 
-The public interfaces and operational rules of Component Versions.
+This index records shipped component versions and explains tested dependency ceilings and documentation-version selection.
 
 ## Interfaces
 
@@ -14,7 +14,7 @@ The public interfaces and operational rules of Component Versions.
 
 | Component  | Path       | Version   |
 | ---------- | ---------- | --------- |
-| API Server | `src/api/` | `0.13.36` |
+| API Server | `src/api/` | `0.13.37` |
 
 ## Configuration
 

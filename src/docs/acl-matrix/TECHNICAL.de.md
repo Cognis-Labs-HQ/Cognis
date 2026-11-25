@@ -1,6 +1,6 @@
 # Technische Referenz
 
-Öffentliche Schnittstellen und Betriebsregeln von ACL-Matrix.
+Zugriffsregeln verbinden geordnete Kontorollen mit aktionsbezogenen Eigentums-, Mitgliedschafts- und Sichtbarkeitsprüfungen.
 
 ## Schnittstellen
 
