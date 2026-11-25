@@ -16,7 +16,7 @@ Providers register definitions with ranking criteria, evidence minimums, windows
 
 Unauthenticated definitions and standings requests invoke the injected authentication guard and finish with HTTP 401 before reading leaderboard data. Route parameters use the existing typed HTTP and authorization contracts.
 
-Snapshots are split at Unicode boundaries into rows of at most 60,000 UTF-8 bytes and replaced transactionally. Existing single-row snapshots use the same read path. Metadata methods registerDefinition, assignCohort and setParticipation now return Promise<void> and must be awaited; they execute named ctx flows, propagate storage failures and roll back failed metadata changes. Rollover also returns an awaited promise. Concurrent classroom-board registration shares one pending registration.
+Snapshots are split at Unicode boundaries into rows of at most 60,000 UTF-8 bytes and replaced transactionally. Existing single-row snapshots use the same read path. Metadata methods registerDefinition, assignCohort and setParticipation return Promise<void> and must be awaited; they execute named ctx flows, propagate storage failures and roll back failed metadata changes. Rollover also returns an awaited promise. Concurrent classroom-board registration shares one pending registration.
 
 The Leaderboard adapter ranks verified learning evidence within authorized cohorts and presents accessible standings.
 

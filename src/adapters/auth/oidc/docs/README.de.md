@@ -1,6 +1,6 @@
 # OpenID Connect
 
-Diese Anmeldemethode benötigt eine zusätzliche Integration der Installation. Das ausgefüllte Einstellungsformular allein verbindet keinen Identitätsdienst.
+OpenID Connect bietet eine Anmeldung über externe Identitätsdienste für Installationen mit eingerichteter Protokollintegration.
 
 ## Möglichkeiten
 

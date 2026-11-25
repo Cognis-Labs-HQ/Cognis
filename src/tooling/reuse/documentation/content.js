@@ -43,7 +43,7 @@ export function contentIssues(prose) {
         ? ["Replace generic guidance with component-specific documentation"]
         : [];
     if (
-        /\b(?:now (?:use|uses|means|record|accept|supports?|traverse)|no longer|older .+ still work|previous(?:ly)? (?:used|returned|supported))\b/i.test(
+        /\b(?:now (?:use|uses|means|record|accept|supports?|traverse|issues?|carry|validates?|register|return|reveals?|evaluates?|show|scroll|applies|rejects?|share|produce|separates?|expose|retain|provide|render|stops?|occupy|shares|begin|keep|opens?|commits?|enforce|fills?)|no longer|older .+ still work|previous(?:ly)? (?:used|returned|supported))\b/i.test(
             prose,
         )
     ) {
@@ -61,7 +61,7 @@ export function contentIssues(prose) {
         );
     }
     if (
-        /\b(?:jetzt|nun) (?:verwendet|nutzt|bedeutet|unterstützt)\b|\b(?:kini|sekarang) (?:menggunakan|memakai|mendukung)\b|ようになりました|変更前と同じ/i.test(
+        /\b(?:jetzt|nun) (?:verwendet|nutzt|bedeutet|unterstützt|liefert|stellt|enthalten|gilt|wertet|zeigen|öffnet|prüft|übernimmt)\b|\b(?:kini|sekarang) (?:menggunakan|memakai|mendukung|memiliki)\b|ようになりました|変更前と同じ/i.test(
             prose,
         )
     ) {

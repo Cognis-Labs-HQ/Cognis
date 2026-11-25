@@ -88,6 +88,9 @@ test("documentation links validate topics, views and source files against the cu
 test("reference prose describes the current contract without release comparisons", () => {
     for (const prose of [
         "The browser now uses the shared renderer.",
+        "The Share gateway now issues a guest token.",
+        "Metadata methods now return Promise<void>.",
+        "Pohon transformasi kini memiliki simpul baru.",
         "Older servers still work with this client.",
         "The module no longer imports a private implementation.",
         "Document bundles retain the same topic slugs.",
@@ -99,6 +102,7 @@ test("reference prose describes the current contract without release comparisons
         assert.ok(contentIssues(prose).length, prose);
     for (const prose of [
         "PATCH preserves omitted fields unchanged.",
+        "Mark room read up to now.",
         "The worker returns cached public assets while refreshing them online.",
         "GET reads a versioned localized document.",
     ])
