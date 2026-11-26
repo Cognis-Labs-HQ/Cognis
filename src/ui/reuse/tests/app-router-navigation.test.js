@@ -1,3 +1,5 @@
+import { createDiagnosticFixture } from "../../../tooling/reuse/diagnostic-fixture.ts";
+import { reportClientError } from "../error-reporting.js";
 import { uiCtx as flowEngine } from "../ui-ctx.js";
 import { registerPageRedraw } from "../page-redraw.js";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
@@ -125,6 +127,7 @@ function createRouter({
     };
     vm.createContext(sandbox);
     const imports = {
+        "./error-reporting.js": { reportClientError },
         "./page-redraw.js": { registerPageRedraw },
         "./offline-state.js": sandbox,
         "./offline-route-assets.js": { prepareOfflineRouteAssets() {} },
@@ -147,7 +150,7 @@ function createRouter({
         "./page-entry.js": sandbox,
         "./route-path.js": loadTestModule(
             new URL("../route-path.js", import.meta.url),
-            {},
+            { "./capabilities.js": createDiagnosticFixture() },
             { window, URL },
         ),
         "./spa-route-registry.js": sandbox,
@@ -161,7 +164,7 @@ function createRouter({
     const reload = () =>
         loadTestModule(
             new URL("../app-router.js", import.meta.url),
-            imports,
+            { ...imports, "./capabilities.js": createDiagnosticFixture() },
             sandbox,
         );
     sandbox.router = reload();

@@ -1,9 +1,13 @@
+import { bindCapability } from "../capabilities.js";
+
 import {
     loadDocsIndex,
     loadDocsBundleMarkdown,
     readDocsLanguages,
 } from "../docs-client.js";
 import { createI18n } from "../i18n.js";
+
+const log = bindCapability("ui:log");
 /**
  * Documentation search emits navigation metadata before reading document bodies.
  * Public export: collectGlobalDocsSearchGroups({ signal, onResults }).
@@ -126,7 +130,7 @@ export async function collectGlobalDocsSearchGroups({
                 }
             } catch (error) {
                 if (signal?.aborted) return;
-                console.error("[search-bar]:document-index-failed", {
+                void log("error", "[search-bar]:document-index-failed", {
                     component: "search",
                     operation: "indexDocument",
                     slug: entry.slug,

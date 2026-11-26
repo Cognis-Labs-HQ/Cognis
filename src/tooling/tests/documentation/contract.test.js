@@ -11,6 +11,7 @@ import {
     readFileSync,
     writeFileSync,
     rmSync,
+    renameSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
@@ -21,15 +22,13 @@ import {
     documentName,
     languages,
     documents,
+    coreDocuments,
     validateCoreDocumentation,
 } from "../../reuse/documentation/validate.js";
 import structure from "../../reuse/documentation/structure.json" with { type: "json" };
+import { markdown } from "./fixtures/documents.js";
 
 const ROOT = resolve(import.meta.dirname, "../../../..");
-
-function markdown(kind, language = "en") {
-    return `# Example\n\nA useful introduction for the component.\n\n${structure[language][kind].map((heading) => `## ${heading}\n\nConcrete instructions and expected behavior.\n`).join("\n")}`;
-}
 
 test("every shipped component declares its complete localized documentation bundle", () => {
     const failures = componentManifestFiles(ROOT).flatMap((manifest) =>
@@ -162,9 +161,9 @@ test("core topics require directory entry bundles rather than arbitrary flat fil
     context.after(() => rmSync(root, { recursive: true, force: true }));
     mkdirSync(resolve(root, "example"));
     for (const [kind, name] of Object.entries({
-        readme: "index",
-        usage: "usage",
-        technical: "technical",
+        readme: "INFO",
+        usage: "USAGE",
+        technical: "TECHNICAL",
     }))
         for (const language of languages)
             writeFileSync(
@@ -179,17 +178,17 @@ test("core topics require directory entry bundles rather than arbitrary flat fil
         ),
     );
     rmSync(resolve(root, "example.en.md"));
-    rmSync(resolve(root, "example", "technical.ja.md"));
+    rmSync(resolve(root, "example", "TECHNICAL.ja.md"));
     assert.ok(
         validateCoreDocumentation(root).some((issue) =>
-            issue.includes("technical.ja.md"),
+            issue.includes("TECHNICAL.ja.md"),
         ),
     );
 });
 
 test("technical paragraphs have one authoritative owner", () => {
     const paths = sourceFiles(resolve(ROOT, "src")).filter((path) =>
-        /\/(?:TECHNICAL|technical)\.(?:en|de|id|ja)\.md$/.test(path),
+        /\/TECHNICAL\.(?:en|de|id|ja)\.md$/.test(path),
     );
     assert.deepEqual(duplicateTechnicalParagraphs(paths), []);
 });
@@ -223,3 +222,71 @@ test("code examples may contain headings and shorter fences inside an outer Mark
         "\n````md\n## Sample Heading\n```sh\ncommand --help\n```\n````\n";
     assert.deepEqual(validateMarkdown(example, "technical", "en"), []);
 });
+
+for (const core of [true, false]) {
+    test(`${core ? "core" : "component"} document filenames and manifest pointers require exact uppercase basenames`, (context) => {
+        const root = mkdtempSync(resolve(tmpdir(), "cognis-doc-case-"));
+        context.after(() => rmSync(root, { recursive: true, force: true }));
+        const directory = core ? "src/docs" : "docs";
+        const names = core ? coreDocuments : documents;
+        mkdirSync(resolve(root, directory), { recursive: true });
+        const manifest = resolve(root, "package.json");
+        const pointers = Object.fromEntries(
+            Object.entries(names).map(([kind, name]) => [
+                kind,
+                `${directory}/${name}.en.md`,
+            ]),
+        );
+        const publish = (documentation = pointers) =>
+            writeFileSync(manifest, JSON.stringify({ documentation }));
+        publish();
+        for (const [kind, name] of Object.entries(names)) {
+            for (const language of languages)
+                writeFileSync(
+                    resolve(root, directory, `${name}.${language}.md`),
+                    markdown(kind, language),
+                );
+        }
+        assert.deepEqual(validateComponent(manifest, directory), []);
+        for (const [kind, name] of Object.entries(names)) {
+            for (const language of languages) {
+                const canonical = resolve(
+                    root,
+                    directory,
+                    `${name}.${language}.md`,
+                );
+                for (const invalidName of [
+                    `${name.toLowerCase()}.${language}.md`,
+                    `${name[0] + name.slice(1).toLowerCase()}.${language}.md`,
+                    `${name}.${language}.MD`,
+                    `${name}.${language.toUpperCase()}.md`,
+                ]) {
+                    const invalid = resolve(root, directory, invalidName);
+                    // A duplicate with the wrong case is invalid even when the canonical file exists.
+                    writeFileSync(invalid, markdown(kind, language));
+                    assert.ok(
+                        validateComponent(manifest, directory).length,
+                        invalid,
+                    );
+                    rmSync(invalid);
+                    renameSync(canonical, invalid);
+                    if (language === "en")
+                        publish({
+                            ...pointers,
+                            [kind]: `${directory}/${invalidName}`,
+                        });
+                    assert.ok(
+                        validateComponent(manifest, directory).length,
+                        invalid,
+                    );
+                    renameSync(invalid, canonical);
+                    publish();
+                    assert.deepEqual(
+                        validateComponent(manifest, directory),
+                        [],
+                    );
+                }
+            }
+        }
+    });
+}

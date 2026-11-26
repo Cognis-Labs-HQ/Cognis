@@ -1,4 +1,8 @@
+import { bindCapability } from "../reuse/capabilities.js";
+
 import { uiCtx } from "../reuse/ui-ctx.js";
+
+const log = bindCapability("ui:log");
 
 /**
  * Refreshes the navbar avatar through the optional profile-owned CTX provider.
@@ -32,7 +36,7 @@ export async function updateNavbarAvatar() {
             avatarInitials = result?.avatarInitials ?? avatarInitials;
             avatarColor = result?.avatarColor ?? avatarColor;
         } catch (error) {
-            console.error("[dashboard-layout]:avatar-provider-failed", {
+            void log("error", "[dashboard-layout]:avatar-provider-failed", {
                 error,
             });
             profileAvailable = false;

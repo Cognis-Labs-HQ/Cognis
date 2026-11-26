@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../../../tooling/reuse/diagnostic-fixture.ts";
 import { loadProfileOfflineClient } from "./reuse/offline-client.js";
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -57,6 +58,7 @@ function fixture() {
     const availability = loadTestModule(
         new URL("../ui/availability.js", import.meta.url),
         {
+            "/static/reuse/capabilities.js": createDiagnosticFixture(),
             "./offline-client.js": { profileFetch: client.profileFetch },
             "/static/reuse/offline-state.js":
                 host.imports["/static/reuse/offline-state.js"],

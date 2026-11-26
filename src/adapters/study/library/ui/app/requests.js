@@ -1,3 +1,4 @@
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { isOffline } from "/static/reuse/offline-state.js";
 import { renderRequestPreview } from "./request-preview.js";
 import { openPopup } from "/static/reuse/popup.js";
@@ -11,6 +12,8 @@ import {
     withdrawLibraryPromotion,
 } from "/static/gateways/study/library-client.js";
 import { renderScope } from "./presentation.js";
+
+const log = bindCapability("ui:log");
 
 export async function loadLibraryRequests(i18n) {
     if (isOffline()) return [];
@@ -54,7 +57,7 @@ export async function loadRequestProfiles(requests) {
                         response.ok ? (await response.json()).data : null,
                     ];
                 } catch (error) {
-                    console.error("Request profile retrieval failed.", {
+                    void log("error", "Request profile retrieval failed.", {
                         component: "study-library",
                         operation: "loadRequestProfiles",
                         errorName: error?.name || "Error",

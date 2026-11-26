@@ -1,6 +1,6 @@
 # SAML-Anmeldung
 
-Diese Anmeldemethode benötigt eine zusätzliche Integration der Installation. Das ausgefüllte Einstellungsformular allein verbindet keinen Identitätsdienst.
+SAML bietet eine Anmeldung über externe Identitätsdienste für Installationen mit eingerichteter Protokollintegration.
 
 ## Möglichkeiten
 

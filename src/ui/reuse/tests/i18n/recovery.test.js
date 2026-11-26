@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { installI18nEnvironment } from "../fixtures/i18n-environment.js";
+import { subscribeDiagnostics } from "../../../../tooling/reuse/diagnostic-fixture.ts";
+import { installI18nEnvironment } from "../../../../tooling/reuse/i18n-environment.js";
 
 const xml = (value) =>
     new Response(
@@ -21,16 +22,31 @@ for (const component of [false, true]) {
                 : [],
         };
         assert.equal((await createI18n(options)).t("title"), title);
+        const firstReadCount = host.requests.length;
+        assert.ok(
+            host.requests.every(({ options }) => options.cache === "default"),
+        );
         title = "After restart";
         window.dispatchEvent(new Event("cognis:connection-restoring"));
         assert.equal((await createI18n(options)).t("title"), title);
         assert.ok(
-            host.requests.every(({ options }) => options.cache === "reload"),
+            host.requests
+                .slice(firstReadCount)
+                .every(({ options }) => options.cache === "reload"),
         );
     });
 }
 
-test("an HTML response during restart cannot poison a component translation cache", async () => {
+test("an HTML response during restart cannot poison a component translation cache", async (t) => {
+    const logs = [];
+    const release = subscribeDiagnostics(async (entry) => {
+        logs.push(entry);
+        return true;
+    });
+    t.after(release);
+    t.mock.method(console, "error", () =>
+        assert.fail("Translations must use the logging gateway"),
+    );
     let restarting = true;
     installI18nEnvironment(() =>
         restarting
@@ -50,6 +66,14 @@ test("an HTML response during restart cannot poison a component translation cach
     };
     const load = () => extendI18n(base, "/static/gateways/example/languages");
     const unavailable = await load();
+    assert.ok(
+        logs.some(
+            (entry) =>
+                entry.level === "error" &&
+                entry.message === "translation_bundle_load_failed" &&
+                entry.meta.operation === "loadTranslationBundle",
+        ),
+    );
     assert.throws(() => unavailable.t("title"), {
         code: "missing_translation",
     });
@@ -83,3 +107,30 @@ test(
         assert.equal((await load()).t("title"), "Current");
     },
 );
+
+test("new bundles after recovery use ordinary reads and failed reloads remain retryable", async () => {
+    let fail = false;
+    const host = installI18nEnvironment(() =>
+        fail ? new Response("<html>Starting</html>") : xml("Ready"),
+    );
+    const { extendI18n } = await import(
+        `../../i18n.js?reload=${crypto.randomUUID()}`
+    );
+    const base = { locale: "en", t: (key) => key };
+    await extendI18n(base, "/static/gateways/known/languages");
+    window.dispatchEvent(new Event("cognis:connection-restoring"));
+    await extendI18n(base, "/static/gateways/new/languages");
+    assert.equal(host.requests.at(-1).options.cache, "default");
+    fail = true;
+    await extendI18n(base, "/static/gateways/known/languages");
+    assert.equal(host.requests.at(-1).options.cache, "reload");
+    fail = false;
+    assert.equal(
+        (await extendI18n(base, "/static/gateways/known/languages")).t("title"),
+        "Ready",
+    );
+    assert.equal(host.requests.at(-1).options.cache, "reload");
+    window.dispatchEvent(new Event("cognis:module-lifecycle-changed"));
+    await extendI18n(base, "/static/gateways/known/languages");
+    assert.equal(host.requests.at(-1).options.cache, "default");
+});

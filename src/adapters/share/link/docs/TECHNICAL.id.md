@@ -12,6 +12,8 @@ Setiap berbagi menyediakan accessControls, kedaluwarsa, dan kata sandi opsional.
 
 ## Perilaku
 
+Gaya popup meresolusikan aset gambar secara relatif terhadap stylesheet di direktori statis yang diterbitkan adaptor. Ikon surat tetap dimiliki dan disajikan oleh adaptor ini.
+
 ### Adapter berbagi tautan
 
 Adapter mendeklarasikan popup Link beserta kapabilitasnya melalui `navbarPlugins`. Gateway memuat kontribusi yang dideklarasikan dan menonaktifkannya bersama adapter pemilik.

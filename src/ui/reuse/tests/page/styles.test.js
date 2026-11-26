@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../../../tooling/reuse/diagnostic-fixture.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
@@ -36,7 +37,7 @@ function fixture(initial = ["/old.css"], declared = initial) {
     };
     const styles = loadTestModule(
         new URL("../../page-styles.js", import.meta.url),
-        {},
+        { "./capabilities.js": createDiagnosticFixture() },
         {
             document,
             window: { location: { origin: "https://cognis.test" } },
@@ -131,7 +132,7 @@ test("production stylesheet aliases are adopted and reused without a second fetc
     // Use a fresh document so adoption reads the server-provided attribute.
     const module = loadTestModule(
         new URL("../../page-styles.js", import.meta.url),
-        {},
+        { "./capabilities.js": createDiagnosticFixture() },
         {
             document: { head: { querySelectorAll: () => links } },
             window: { location: { origin: "https://cognis.test" } },

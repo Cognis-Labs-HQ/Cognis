@@ -1,3 +1,5 @@
+import { after } from "node:test";
+import { registerPublicDiagnosticImport } from "../../../../tooling/reuse/diagnostic-fixture.ts";
 import { webcrypto } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -136,3 +138,6 @@ export async function provisionAndUnlock(keyring, password) {
     });
     return created || keyring.unlockKeyring(password);
 }
+
+const releaseDiagnosticImport = registerPublicDiagnosticImport();
+after(releaseDiagnosticImport);

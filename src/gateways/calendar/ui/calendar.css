@@ -335,6 +335,11 @@ body[data-theme="dark"] .calendar-visibility-icon--public {
     vertical-align: top;
 }
 
+.calendar-week-number {
+    container-type: inline-size;
+    container-name: calendar-week-number;
+}
+
 .calendar-week-jump {
     border: 1px solid var(--field-border);
     border-radius: 8px;
@@ -344,8 +349,15 @@ body[data-theme="dark"] .calendar-visibility-icon--public {
     text-align: center;
     padding: 0.25rem 0.15rem;
     color: inherit;
-    writing-mode: vertical-rl;
-    text-orientation: mixed;
+    writing-mode: horizontal-tb;
+    white-space: nowrap;
+}
+
+@container calendar-week-number (max-width: 3rem) {
+    .calendar-week-jump {
+        writing-mode: vertical-rl;
+        text-orientation: mixed;
+    }
 }
 
 .calendar-all-day-create {

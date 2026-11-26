@@ -19,6 +19,7 @@
  *   await mountWhenDirect(mount);
  */
 
+import { bindCapability } from "./capabilities.js";
 import loadingFallback from "../languages/en/loading.json" with { type: "json" };
 import { createI18n, readPreferredLanguages } from "./i18n.js";
 import {
@@ -29,6 +30,8 @@ import { uiCtx } from "./ui-ctx.js";
 import "./feedback-capabilities.js";
 import "./floating-window.js";
 import { ensureUiProvidersLoaded } from "./ui-provider-loader.js";
+
+const log = bindCapability("ui:log");
 
 const activePageLoadingTokens = new Set();
 let nextPageLoadingToken = 0;
@@ -57,7 +60,6 @@ const FALLBACK_LOADING_MESSAGES = LOADING_MESSAGE_KEYS.map((key) => {
         throw new Error(`Missing translation: ${key}`);
     return value;
 });
-const log = (...messageParts) => console.warn("[page-entry]", ...messageParts);
 
 /**
  * Leave a standalone page for a same-origin server document. Dashboard page
@@ -134,7 +136,11 @@ function loadLoadingMessagesI18n() {
     try {
         preferredLanguages = readPreferredLanguages();
     } catch (error) {
-        log("Failed to read preferred languages, using fallback.", error);
+        log("error", "preferred_languages_read_failed", {
+            component: "core",
+            operation: "readPreferredLanguages",
+            errorName: error?.name,
+        });
     }
     const languageKey = JSON.stringify(preferredLanguages);
     if (loadingLanguageKey === languageKey && loadingI18nPromise)
@@ -155,9 +161,11 @@ function loadLoadingMessagesI18n() {
             if (error?.code === "missing_translation") throw error;
             loadingI18nPromise = null;
             loadingMessages = FALLBACK_LOADING_MESSAGES;
-            log(
-                "Failed to load localized loading messages; using fallback copy.",
-            );
+            log("error", "loading_message_translation_failed", {
+                component: "core",
+                operation: "loadLoadingMessages",
+                errorName: error?.name,
+            });
             return loadingMessages;
         });
     return loadingI18nPromise;
@@ -382,13 +390,12 @@ export async function mountWhenDirect(
     } catch (error) {
         if (controller.signal.aborted) return;
         controller.abort();
-        console.error("[page-entry] Direct mount failed.", {
+        log("error", "direct_mount_failed", {
+            component: "core",
             operation: "mountWhenDirect",
             routePath:
-                typeof window !== "undefined"
-                    ? `${window.location.pathname}${window.location.search}${window.location.hash}`
-                    : "",
-            error,
+                typeof window !== "undefined" ? window.location.pathname : "",
+            errorName: error?.name,
         });
         mountError = error;
     } finally {

@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../../../tooling/reuse/diagnostic-fixture.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
@@ -9,6 +10,7 @@ function fixture(receipt, { refreshError } = {}) {
     const { saveProfileFields } = loadTestModule(
         new URL("../ui/profile-save.js", import.meta.url),
         {
+            "/static/reuse/capabilities.js": createDiagnosticFixture(),
             "./client.js": {
                 profileUiClient: {
                     updateProfile: async () => Response.json(receipt),

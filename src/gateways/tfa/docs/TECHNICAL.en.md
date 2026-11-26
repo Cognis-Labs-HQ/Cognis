@@ -61,6 +61,8 @@ Method adapters declare setup/login metadata and configuration schemas. Accounts
 
 ## Behavior
 
+The prompt returns its login attempt ID before challenge delivery completes, so authenticator and recovery-code verification remain available while email is pending. Initial and resend requests have a 15-second deadline. A method cannot start a duplicate request while its delivery is pending. Opening a new prompt aborts the previous request and replaces its resend handler; late responses cannot change the new prompt or the selected method.
+
 ### TFA Gateway
 
 Adapter language resources are discovered from the installed methods rather than a fixed provider list. Methods report `invalid_verification_code` through the common error contract; issuer-specific configuration belongs to the adapter.

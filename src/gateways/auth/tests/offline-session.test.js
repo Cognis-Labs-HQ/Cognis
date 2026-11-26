@@ -1,3 +1,5 @@
+import { createCapabilityRegistry } from "../../../ui/reuse/capabilities.js";
+import { createDiagnosticFixture } from "../../../tooling/reuse/diagnostic-fixture.ts";
 import { registerFloatingMenus } from "../../../ui/reuse/floating-menu-queue.js";
 import { installPageReadiness } from "../../../ui/reuse/page-readiness.js";
 import { installTutorials } from "../../../ui/reuse/tutorials/index.js";
@@ -28,6 +30,7 @@ function fixture() {
     const { uiCtx } = loadTestModule(
         new URL("../../../ui/reuse/ui-ctx.js", import.meta.url),
         {
+            "./capabilities.js": { uiCapabilities: createCapabilityRegistry() },
             "./flow-contracts.js": { BROWSER_FLOW_CONTRACTS },
             "./tutorials/index.js": { installTutorials },
             "./page-readiness.js": { installPageReadiness },
@@ -43,6 +46,7 @@ function fixture() {
     const auth = loadTestModule(
         new URL("../ui/session-flow-hooks.js", import.meta.url),
         {
+            "/static/reuse/capabilities.js": createDiagnosticFixture(),
             "./external-profile-sync.js": {},
             "/static/reuse/flow-registry.js": {},
             "/static/gateways/auth/reuse/password-confirmation.js": {},

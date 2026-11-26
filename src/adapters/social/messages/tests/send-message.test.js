@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../../../tooling/reuse/diagnostic-fixture.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
@@ -13,6 +14,7 @@ function fixture(send, { refreshError } = {}) {
     const { createMessageSender } = loadTestModule(
         new URL("../ui/send-message.js", import.meta.url),
         {
+            "/static/reuse/capabilities.js": createDiagnosticFixture(),
             "./offline-client.js": { messagesFetch: send },
             "./message-utils.js": {
                 encryptMessage: async (_key, text) => ({

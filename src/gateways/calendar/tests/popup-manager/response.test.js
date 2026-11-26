@@ -1,6 +1,10 @@
+import { registerPublicDiagnosticImport } from "../../../../tooling/reuse/diagnostic-fixture.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createCalendarResponseHandler } from "../../ui/app/popup-manager-response.js";
+const releaseDiagnosticImport = registerPublicDiagnosticImport();
+test.after(releaseDiagnosticImport);
+const { createCalendarResponseHandler } =
+    await import("../../ui/app/popup-manager-response.js");
 
 function createHarness({
     calendars = [

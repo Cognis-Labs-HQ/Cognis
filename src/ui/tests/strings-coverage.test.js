@@ -1,20 +1,12 @@
+import { sourceFiles } from "../../tooling/reuse/component-files.js";
+import { translationReferences } from "../../tooling/reuse/translations/references.js";
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readdirSync, readFileSync, statSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
-
-function walk(dir) {
-    const out = [];
-    for (const entry of readdirSync(dir)) {
-        const fullPath = join(dir, entry);
-        if (statSync(fullPath).isDirectory()) out.push(...walk(fullPath));
-        else out.push(fullPath);
-    }
-    return out;
-}
 
 function parseKeys(xml) {
     const keys = [];
@@ -29,7 +21,7 @@ function parseKeys(xml) {
 // src/ui/languages/en/strings.xml and src/ui/languages/de/strings.xml.
 function discoverClusters() {
     const clusters = new Map();
-    for (const filePath of walk(ROOT)) {
+    for (const filePath of sourceFiles(ROOT)) {
         if (!filePath.endsWith("/strings.xml")) continue;
         if (filePath.includes("node_modules")) continue;
         const langDir = dirname(filePath);
@@ -140,4 +132,49 @@ test("key order in translated strings.xml files matches the English baseline", (
         0,
         `Key order in translated files does not match the English baseline:\n${hits.join("\n")}`,
     );
+});
+
+test("every shipped translation catalog uses the runtime resources root", () => {
+    const invalid = [];
+    for (const languages of clusters.values()) {
+        for (const path of languages.values()) {
+            const xml = readFileSync(path, "utf8").replace(
+                /^\s*<\?xml[^>]*>\s*/,
+                "",
+            );
+            if (
+                !/^<resources(?:\s[^>]*)?>/.test(xml) ||
+                !/<\/resources>\s*$/.test(xml)
+            )
+                invalid.push(path);
+        }
+    }
+    assert.deepEqual(invalid, []);
+});
+
+test("literal translation calls and HTML attributes resolve nonempty English catalog entries", () => {
+    const known = new Set();
+    for (const languages of clusters.values()) {
+        const english = languages.get("en");
+        if (!english) continue;
+        const xml = readFileSync(english, "utf8");
+        for (const [, key, value] of xml.matchAll(
+            /<string\s+name="([^"]+)"[^>]*>([\s\S]*?)<\/string>/g,
+        ))
+            if (value.trim()) known.add(key);
+    }
+    const missing = [];
+    for (const path of sourceFiles(resolve(ROOT, "src"))) {
+        if (!/\.(?:js|ts|mjs|cjs|html)$/.test(path) || path.endsWith(".d.ts"))
+            continue;
+        const source = readFileSync(path, "utf8");
+        for (const { key, offset } of translationReferences(source, {
+            html: path.endsWith(".html"),
+        }))
+            if (!known.has(key))
+                missing.push(
+                    `${path}:${source.slice(0, offset).split("\n").length}: ${key}`,
+                );
+    }
+    assert.deepEqual(missing, []);
 });

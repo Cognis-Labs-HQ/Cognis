@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../../../tooling/reuse/diagnostic-fixture.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
@@ -16,6 +17,7 @@ function fixture(overrides = {}) {
             import.meta.url,
         ),
         {
+            "/static/reuse/capabilities.js": createDiagnosticFixture(),
             "/static/reuse/offline-state.js": { isOffline: () => true },
             "/static/reuse/ui-ctx.js": { uiCtx },
             "/static/reuse/popup.js": {

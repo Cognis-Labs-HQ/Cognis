@@ -3,6 +3,11 @@
  * Public exports: offlinePolicy — configure requirements, update receipts and check access.
  * @example offlinePolicy.configure(['legal']); offlinePolicy.allows();
  */
+
+import { bindCapability } from "./capabilities.js";
+
+const log = bindCapability("ui:log");
+
 const REQUIREMENTS_KEY = "cognis_offline_requirements";
 const RECEIPTS_KEY = "cognis_offline_receipts";
 const policyKey = Symbol.for("cognis.offlinePolicy");
@@ -16,7 +21,8 @@ export function createOfflinePolicy({
         try {
             return JSON.parse(storage()?.getItem(key) ?? "null");
         } catch (error) {
-            console.error("[offline] policy read failed", {
+            log("error", "offline_policy_read_failed", {
+                component: "core",
                 operation: "readPolicy",
             });
             return null;

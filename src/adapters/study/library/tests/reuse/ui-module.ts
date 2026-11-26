@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../../../../tooling/reuse/diagnostic-fixture.ts";
 import * as entryGraph from "../../ui/reuse/entry-graph.js";
 import * as offlineState from "../../../../../ui/reuse/offline-state.js";
 import { loadTestModule } from "../../../../../tooling/reuse/test-module.ts";
@@ -123,6 +124,7 @@ export function loadLibraryUiModule(
     return loadTestModule(
         new URL(`../../ui/${path}`, import.meta.url),
         {
+            "/static/reuse/capabilities.js": createDiagnosticFixture(),
             ...Object.fromEntries(
                 CONTRACTS[path].map((specifier) => [specifier, dependencies]),
             ),

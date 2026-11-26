@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../../tooling/reuse/diagnostic-fixture.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { importTestModule } from "../../../tooling/reuse/test-module.ts";
@@ -21,6 +22,7 @@ for (const blocked of ["i18n", "composer", "providers", "strings", "styles"]) {
         const page = await importTestModule(
             new URL("../ui/app/index.js", import.meta.url),
             {
+                "/static/reuse/capabilities.js": createDiagnosticFixture(),
                 "../session-flow-hooks.js": {},
                 "/static/reuse/i18n.js": {
                     createI18n: () => step("i18n", i18n),

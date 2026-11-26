@@ -12,9 +12,13 @@ Kalender enthalten Name, Sichtbarkeit und Termine. Erinnerungen und Kontostatus 
 
 ## Verhalten
 
+Der öffentliche Renderer wartet vor dem Aufbau auf die Calendar-eigenen Stylesheets. Titel, Bedienelemente und der scrollbar dargestellte Kalender belegen getrennte Rasterzeilen; der Page Composer bestimmt die Anpassung an den Viewport und die Mindesthöhe des Arbeitsbereichs.
+
 ### Zustellung von Freigaben
 
 Calendar erweitert das Share-Gateway über `ctx`-Flow-Hooks und Fähigkeiten. Die Zustellung an Benutzer legt einen eigenen geteilten Kalender für die empfangende Person an und gibt eine allgemeine Navigations-URL sowie eine einmalige lokalisierte Erfolgsmeldung zurück. Passwörter verbleiben im Besitz von Share und werden unter der kanonischen Freigabekennung aus dem Schlüsselbund gelesen.
+
+Kalenderzustellung erfordert ausdrücklich `calendar:read`. Wird dieses Recht entfernt, werden Empfängerkopien gelöscht und ohne neues Leserecht nicht erneut erzeugt. Lesen und Ändern von Terminen werden bei jeder Anfrage über Share autorisiert, auch bei ungeschützten Tokens; Änderungen benötigen `calendar:write`. Verweigerte Rechte einer bestehenden tokengebundenen Zustellung ergeben 403; entfernte oder inaktive Kalenderkopien behalten ihre Antworten für nicht gefundene oder inaktive Kalender, während eine ansonsten erlaubte geschützte Freigabe mit 401 ihr Passwort anfordern kann. Auch ICS- und CalDAV-Tokenexporte benötigen das Leserecht.
 
 ### Öffentliche Freigabedarstellung
 
@@ -77,6 +81,10 @@ Calendar erkennt `meetings:createMeeting` beim aktiven Browseranbieter. Der Anbi
 Schmale Kalenderflächen zeigen eine Terminliste mit allen Ereignissen und dem gewählten Datum sowie einer kompakten Ansichts- und Datumsauswahl. Breite Flächen behalten Kalendergitter. Das Datumsfeld erreicht leere Tage ohne Scrollen durch einen Monat. Geteilte Kalender nutzen dieselben Darstellungen und beachten Nur-Lese-Rechte.
 
 Datumssprünge und die native Ansichtsauswahl verwenden dieselbe Calendar-eigene Steuerung für Konto- und Freigabeseiten. Ungültige Eingaben ändern die Ansicht nicht; am Ende des Seitenlebenszyklus werden die Listener entfernt.
+
+Zeitraumanzeigen nutzen für Konto- und Freigabeseiten dieselbe am Seitenstamm delegierte Steuerung: Ein Monatstitel wählt den Monat im aktuellen Jahr, eine Wochennummer ihre Woche und eine Tagesanzeige ihr Datum. Ansicht und Datum ändern sich gemeinsam, ohne Bearbeitungsrechte zu gewähren. Wochennummern sind waagerecht; nur bei einer eigenen Spaltenbreite bis 3rem stellt eine Containerabfrage sie senkrecht dar.
+
+Vorheriger, nächster und aktueller Zeitraum verwenden auf Konto- und Freigabeseiten denselben Renderer und dieselbe delegierte Steuerung. Die Rückkehr zum aktuellen Zeitraum liest die Uhr beim Klick und behält die Ansicht. Text, Titel und zugängliche Beschriftung folgen immer der gewählten Ansicht, unabhängig von der Panelbreite. Kompakte Layouts können ein Symbol anzeigen, behalten aber die ansichtsspezifische zugängliche Beschriftung. Monatspfeile wählen den ersten Tag des Nachbarmonats, damit Monatsenden keinen Monat überspringen; Jahrespfeile wählen den 1. Januar des Nachbarjahres.
 
 ### Lesbare mobile Inhalte
 

@@ -1,6 +1,6 @@
 # OpenID Connect
 
-Metode masuk ini memerlukan integrasi penerapan tambahan. Mengisi formulir pengaturan saja tidak menghubungkan layanan identitas.
+OpenID Connect menyediakan opsi masuk melalui identitas eksternal bagi penerapan dengan integrasi protokol yang dikonfigurasi.
 
 ## Yang Dapat Anda Lakukan
 

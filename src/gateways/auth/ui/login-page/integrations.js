@@ -1,3 +1,7 @@
+import { bindCapability } from "/static/reuse/capabilities.js";
+
+const log = bindCapability("ui:log");
+
 export function createLoginIntegrationLoader() {
     let configLoadPromise = null;
 
@@ -20,7 +24,7 @@ export function createLoginIntegrationLoader() {
                     };
                 })
                 .catch((error) => {
-                    console.error(error);
+                    void log("error", error);
                     return { methods: [], integrations: [] };
                 });
         }
@@ -39,7 +43,7 @@ export function createLoginIntegrationLoader() {
         try {
             return createClient(await import(integration.scriptUrl));
         } catch (error) {
-            console.error(error);
+            void log("error", error);
             return null;
         }
     }

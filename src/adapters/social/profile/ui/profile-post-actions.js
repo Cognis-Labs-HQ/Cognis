@@ -1,8 +1,11 @@
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { profileFetch as apiFetch } from "./offline-client.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { showToast } from "/static/reuse/toast.js";
 import { navigateTo } from "/static/reuse/app-router.js";
+
+const log = bindCapability("ui:log");
 
 export function createProfilePostActions({
     getState,
@@ -61,7 +64,8 @@ export function createProfilePostActions({
                 });
             }
         } catch (error) {
-            console.error(
+            void log(
+                "error",
                 delivered
                     ? "[profile] post view refresh failed"
                     : "[profile] post delivery failed",

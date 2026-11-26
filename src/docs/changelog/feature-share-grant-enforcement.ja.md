@@ -1,4 +1,4 @@
-# 共有権限の厳格な適用
+# 共有アクセスと翻訳
 
 **機能ブランチ:** feature-share-grant-enforcement
 
@@ -8,10 +8,48 @@
 
 ## 明示的な権限取り消しを反映
 
-`grantedCapabilities: []` を指定した PATCH は、付与済みの権限をすべて削除します。このフィールドを省略すると権限を保持し、空でない配列を指定すると置き換えます。受信者、パスワード、アダプターの確認は引き続き適用されます。
+`grantedCapabilities: []` を指定した PATCH は、付与済みの権限をすべて削除します。このフィールドを省略すると権限を保持し、空でない配列を指定すると置き換えます。受信者、パスワード、アダプターの確認は引き続き適用されます。 読み取り権限を取り消すと、配信済みのカレンダーアクセスを削除します。配信の同期が完了していなくても、要求とトークン経由のエクスポートは現在の権限を検証します。
+
+## 翻訳カタログ
+
+キーリングカタログのXMLルートを実行時の形式に統一し、ゲスト共有URLで一時キーリングを作成するときの翻訳エラーを防ぎます。ルーム鍵の入力、リアクション、繰り返し予定の編集、メール操作、通知設定、SSO応答、管理画面の状態に不足していたラベルを4言語で用意します。カタログのルートとリテラル参照の検査で、他のコンポーネントでも同じ不足を防ぎます。
+
+## 共有セッションとレイアウト
+
+保護されたリンクでは、繰り返しや同時の認証で一度のパスワード入力とゲストキーリングを再利用します。移動やアカウント変更で処理中の解決を無効にします。ゲストページはアカウント専用プロフィールを取得しません。Link ポップアップの画像はアダプター内で解決します。共有カレンダーは所有するスタイルシートを待ち、モバイル、タブレット、デスクトップでタイトル、操作部、スクロール可能な内容を別々の行に配置します。
+
+## 文書の命名規則
+
+コアのトピックは言語サフィックス付きの大文字 INFO、USAGE、TECHNICAL ファイル名を使用し、既存の URL とバージョン別表示を保持します。検証は小文字や大小混在のファイル名とマニフェストパスを拒否します。変更履歴のリンク表示を短いコミット参照にし、リンク先には不変の完全な SHA を保持します。コアとコンポーネントの既存の長いリンク表示も修正します。
+
+## カレンダーの期間移動
+
+共有カレンダーでも、アカウントのカレンダーと同じライフサイクル管理付きバインドで月、週、日へ移動できます。選択した日付と表示を同時に更新します。週番号はビューポート幅ではなく、その列自体が狭い場合だけ縦書きになり、通常は横書きを維持します。
+
+「今日」「今週」「今月」「今年」で、選択中の表示を変えずに現在の期間へ戻れます。矢印は選択した表示の期間単位で移動します。共有カレンダーでも同じ操作を使えます。
+
+現在の期間のラベルは、ゲストカレンダーを含め、すべてのパネル幅で選択中の表示に従います。ブラウザーテストでは実際のサービスワーカーの制御下で、初回とキャッシュを使う再読み込みを検証します。
+
+## 文書リファレンスの契約
+
+コアのマニュアルは、現在の HTTP ホスト、コンポーネントとアダプターの起動、言語提供者の検出、ブラウザーとオフラインの境界、公開ソースを説明します。技術契約を手順とリリース履歴から分離しました。設定ルート、README の言語選択、不変のモジュール ID の名前空間を訂正し、重複するパスフレーズ例を統合しました。検証は文書の移動先とリポジトリーのソースリンクを確認します。HTML リンク表示はタグ除去後の HTML を作らず直接文字を数え、不正なタグや分割タグも検証します。
+
+## 厳密な文書構成
+
+Info、使用例、技術情報は4言語の見出し表に従います。構成検証は、表示内容のない節、コメントだけの内容、別形式の見出し、不正なコード記号を拒否します。ファイル名では拡張子と言語接尾辞の大文字・小文字も検証します。テストで各言語の標準と実行するスキーマの一致を確認します。
 
 ## コミット
 
-- [1f5c4f101876d150f9ee130a00297fbb266d4399](https://github.com/Cognis-Labs-HQ/Cognis/commit/1f5c4f101876d150f9ee130a00297fbb266d4399)
-- [bb1d6a4e69171f0abfe3792028a9137855224315](https://github.com/Cognis-Labs-HQ/Cognis/commit/bb1d6a4e69171f0abfe3792028a9137855224315)
-- [05885663480dbd75b40b8fa5b5ea29faeb156fed](https://github.com/Cognis-Labs-HQ/Cognis/commit/05885663480dbd75b40b8fa5b5ea29faeb156fed)
+- [37279a3](https://github.com/Cognis-Labs-HQ/Cognis/commit/37279a34a3891cca73dbc5cc5c85f3b00b2b2e8a)
+- [5244359](https://github.com/Cognis-Labs-HQ/Cognis/commit/5244359630d1cdc12910d11cfb9d20e2c916fbf0)
+- [d18f6f0](https://github.com/Cognis-Labs-HQ/Cognis/commit/d18f6f0a62926c095df90a4cd6c15f9484f287b4)
+- [1f9c347](https://github.com/Cognis-Labs-HQ/Cognis/commit/1f9c347e1ba3f836f54add76ce83592d85513f3e)
+- [ab2b8bb](https://github.com/Cognis-Labs-HQ/Cognis/commit/ab2b8bbb31f93dbc3c816ed2988ff01e4d585c58)
+- [a7fe8ac](https://github.com/Cognis-Labs-HQ/Cognis/commit/a7fe8ac3730ec41b4cacc15166715ddbef76eab3)
+- [915ed28](https://github.com/Cognis-Labs-HQ/Cognis/commit/915ed288e7efc3c2be5a471126793ab81400d018)
+- [67775d4](https://github.com/Cognis-Labs-HQ/Cognis/commit/67775d47445dd7a6cd070645c7c39bd0ee10678a)
+- [aace4dd](https://github.com/Cognis-Labs-HQ/Cognis/commit/aace4ddebf574a6bded9c525c017a0d862de855e)
+- [f1f86ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/f1f86ea0a157ac3486f0da039230e18bfd276b1e)
+- [4df7e6e](https://github.com/Cognis-Labs-HQ/Cognis/commit/4df7e6eb69aa07ab7528c346db81754b4574818b)
+- [2cadeac](https://github.com/Cognis-Labs-HQ/Cognis/commit/2cadeac36d4fa009791d3ecfb4f0c021e2a62c47)
+- [9b619f1](https://github.com/Cognis-Labs-HQ/Cognis/commit/9b619f145410bad15307953c0668e8cc6a68dcb7)

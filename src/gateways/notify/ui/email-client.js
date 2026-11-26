@@ -1,3 +1,4 @@
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { apiFetch } from "/static/reuse/api-client.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { isOffline } from "/static/reuse/offline-state.js";
@@ -6,6 +7,8 @@ import { registerOfflineHttpClient } from "/static/reuse/offline-http-client.js"
 import { loadTrustedDomains } from "/static/reuse/trusted-domains.js";
 import { captureAccountGuard } from "/static/reuse/offline-identity.js";
 import { isEmailDeliveryAvailable } from "./email-delivery.js";
+
+const log = bindCapability("ui:log");
 
 function emailRoot() {
     return `/api/v1/notify/users/${encodeURIComponent(localStorage.getItem("cognis_account") ?? "")}/emails`;
@@ -43,10 +46,14 @@ export function mountProvider(ctx) {
                 try {
                     await request(emailRoot());
                 } catch (error) {
-                    console.error("[notify] email snapshot refresh failed", {
-                        operation: "refreshEmailSnapshot",
-                        errorName: error.name,
-                    });
+                    void log(
+                        "error",
+                        "[notify] email snapshot refresh failed",
+                        {
+                            operation: "refreshEmailSnapshot",
+                            errorName: error.name,
+                        },
+                    );
                 }
             }
             return response;

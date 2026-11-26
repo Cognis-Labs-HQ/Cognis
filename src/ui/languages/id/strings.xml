@@ -778,4 +778,8 @@
   <string name="ui.tutorial.docs.read.document.views.title">Pilih Tingkat Bacaan</string>
   <string name="ui.tutorial.docs.read.document.views.body">Gunakan Info untuk pengenalan, Penggunaan untuk prosedur, dan Teknis untuk antarmuka serta konfigurasi. Ketiganya mengikuti versi yang dipilih.</string>
   <string name="ui.reuse.components">Komponen</string>
+  <string name="ui.reuse.email">Email</string>
+  <string name="ui.reuse.enabled">Diaktifkan</string>
+  <string name="ui.reuse.disabled">Dinonaktifkan</string>
+  <string name="ui.app.admin.started">Dimulai</string>
 </resources>

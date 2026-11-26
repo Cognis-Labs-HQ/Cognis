@@ -27,6 +27,7 @@
  * ```
  */
 
+import { uiCapabilities } from "./capabilities.js";
 import { registerFloatingMenus } from "./floating-menu-queue.js";
 import { installPageReadiness } from "./page-readiness.js";
 import { installTutorials } from "./tutorials/index.js";
@@ -46,25 +47,7 @@ function sortHooks(hooks) {
 
 function createFlowEngine() {
     const flows = new Map();
-    const capabilityValues = new Map();
-
-    const capabilities = {
-        contribute(id, value) {
-            const normalizedId = String(id ?? "").trim();
-            if (!normalizedId || capabilityValues.has(normalizedId))
-                return false;
-            capabilityValues.set(normalizedId, value);
-            return true;
-        },
-        remove(id, value) {
-            const normalizedId = String(id ?? "").trim();
-            if (capabilityValues.get(normalizedId) !== value) return false;
-            return capabilityValues.delete(normalizedId);
-        },
-        get(id) {
-            return capabilityValues.get(String(id ?? "").trim());
-        },
-    };
+    const capabilities = uiCapabilities;
 
     function registerFlow(id, stages) {
         const normalizedId = String(id ?? "").trim();

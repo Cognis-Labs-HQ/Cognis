@@ -1,0 +1,19 @@
+[
+    {
+        "source": "i18n.t('example.title'); i18n?.t?.(`example.body`);",
+        "keys": ["example.title", "example.body"]
+    },
+    {
+        "source": "// i18n.t('comment.title')\nconst pattern = /i18n.t('regex.title')/; i18n.t('example.' + kind);",
+        "keys": []
+    },
+    {
+        "source": "const markup = `Title ${i18n.t('example.label')}`;",
+        "keys": ["example.label"]
+    },
+    {
+        "source": "<!-- <b data-i18n='comment.title'> --><input data-i18n-aria-label='example.title'><span data-i18n=\"example.body\">",
+        "html": true,
+        "keys": ["example.title", "example.body"]
+    }
+]

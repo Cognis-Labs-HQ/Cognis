@@ -1,10 +1,11 @@
+import { bindCapability } from "./capabilities.js";
 import { uiCtx } from "./ui-ctx.js";
 /**
  * Global runtime error reporting popup for dashboard pages.
  *
  * Public exports:
  *   installRuntimeErrorHandlers() — installs window error/rejection listeners
- *     and captures recent console output for debugging.
+ *     and reads recent gateway diagnostics for debugging.
  *   openRuntimeErrorPopup(options) — opens a popup containing error summary,
  *     stack trace, and captured console lines users can share in bug reports.
  *
@@ -21,10 +22,8 @@ import { uiCtx } from "./ui-ctx.js";
  *   });
  *
  * Notes:
- *   installRuntimeErrorHandlers() wraps console methods to record recent log
- *   lines for report popups. The original console methods are still invoked for
- *   normal devtools output, but the wrapped methods have a different function
- *   identity than the native console methods.
+ *   Recent diagnostic entries come from the logging gateway's public capability.
+ *   This reporter neither captures console methods nor chooses diagnostic sinks.
  *
  * @param {{
  *   error?: unknown,
@@ -47,6 +46,8 @@ import {
     normalizeSameOriginRoutePath,
 } from "./route-path.js";
 
+const log = bindCapability("ui:log");
+
 const MAX_CONSOLE_ENTRY_COUNT = 30;
 const HANDLED_RESOURCE_FALLBACK = Symbol("handledResourceFallback");
 const POPUP_DEDUPLICATION_WINDOW_MILLISECONDS = 1500;
@@ -58,8 +59,6 @@ const IGNORED_RUNTIME_ERROR_PATTERNS = [
     /ResizeObserver loop completed with undelivered notifications/i,
     /ResizeObserver loop limit exceeded/i,
 ];
-const consoleEntryBuffer = [];
-const originalConsoleMethods = new Map();
 
 let i18nPromise = null;
 let handlersInstalled = false;
@@ -68,8 +67,6 @@ let recentPopupSignature = "";
 let recentPopupTimestamp = 0;
 let hasCheckedMainPageBoilerplate = false;
 let hasMainPageBoilerplate = false;
-const log = (...messageParts) =>
-    console.warn("[runtime-error-popup]", ...messageParts);
 
 function getI18nPromise() {
     if (!i18nPromise) {
@@ -125,52 +122,6 @@ function shouldIgnoreRuntimeError(value) {
     return IGNORED_RUNTIME_ERROR_PATTERNS.some((pattern) =>
         pattern.test(normalizedMessage),
     );
-}
-
-function stringifyConsoleArgument(value) {
-    if (value instanceof Error) {
-        return normalizeErrorStack(value);
-    }
-    if (typeof value === "string") {
-        return value;
-    }
-    if (value == null) {
-        return String(value);
-    }
-    try {
-        return JSON.stringify(value);
-    } catch {
-        return String(value);
-    }
-}
-
-function pushConsoleEntry(level, consoleArguments) {
-    const message = consoleArguments.map(stringifyConsoleArgument).join(" ");
-    consoleEntryBuffer.push({
-        timestamp: new Date().toISOString(),
-        level,
-        message: message.trim(),
-    });
-    if (consoleEntryBuffer.length > MAX_CONSOLE_ENTRY_COUNT) {
-        consoleEntryBuffer.splice(
-            0,
-            consoleEntryBuffer.length - MAX_CONSOLE_ENTRY_COUNT,
-        );
-    }
-}
-
-function installConsoleCapture() {
-    const consoleMethodNames = ["error", "warn", "info", "log"];
-    for (const consoleMethodName of consoleMethodNames) {
-        const originalConsoleMethod = console[consoleMethodName];
-        if (typeof originalConsoleMethod !== "function") continue;
-        if (originalConsoleMethods.has(consoleMethodName)) continue;
-        originalConsoleMethods.set(consoleMethodName, originalConsoleMethod);
-        console[consoleMethodName] = (...consoleArguments) => {
-            pushConsoleEntry(consoleMethodName, consoleArguments);
-            originalConsoleMethod.apply(console, consoleArguments);
-        };
-    }
 }
 
 function buildResourceLoadError(event) {
@@ -249,7 +200,9 @@ function shouldSuppressPopup(signature) {
 function getConsoleEntriesMarkup(i18n, consoleEntries = null) {
     const effectiveConsoleEntries = Array.isArray(consoleEntries)
         ? consoleEntries
-        : consoleEntryBuffer.slice(-MAX_CONSOLE_ENTRY_COUNT);
+        : (uiCtx.capabilities.get("logging:recentEntries")?.() ?? []).slice(
+              -MAX_CONSOLE_ENTRY_COUNT,
+          );
     if (!effectiveConsoleEntries.length) {
         return `<p>${escapeHtml(i18n.t("ui.reuse.runtime_error_popup_console_empty"))}</p>`;
     }
@@ -265,7 +218,9 @@ function getConsoleEntriesMarkup(i18n, consoleEntries = null) {
 function getConsoleEntriesText(i18n, consoleEntries = null) {
     const effectiveConsoleEntries = Array.isArray(consoleEntries)
         ? consoleEntries
-        : consoleEntryBuffer.slice(-MAX_CONSOLE_ENTRY_COUNT);
+        : (uiCtx.capabilities.get("logging:recentEntries")?.() ?? []).slice(
+              -MAX_CONSOLE_ENTRY_COUNT,
+          );
     if (!effectiveConsoleEntries.length) {
         return i18n.t("ui.reuse.runtime_error_popup_console_empty");
     }
@@ -499,11 +454,15 @@ function navigateToPreviousRouteIfDifferent(
     if (normalizedCurrentRoutePath === normalizedPreviousRoutePath) return;
     const normalizedLatestRoutePath = normalizeRoutePath(getCurrentRoutePath());
     if (normalizedLatestRoutePath !== normalizedCurrentRoutePath) {
-        log("Skipping back navigation because route already changed.", {
-            currentRoutePath: normalizedCurrentRoutePath,
-            latestRoutePath: normalizedLatestRoutePath,
-            previousRoutePath: normalizedPreviousRoutePath,
-        });
+        void log(
+            "warn",
+            "Skipping back navigation because route already changed.",
+            {
+                currentRoutePath: normalizedCurrentRoutePath,
+                latestRoutePath: normalizedLatestRoutePath,
+                previousRoutePath: normalizedPreviousRoutePath,
+            },
+        );
         return;
     }
     if (didReloadIntoCurrentDocument() && !hasLoadedMainPageBoilerplate()) {
@@ -538,7 +497,6 @@ export function installRuntimeErrorHandlers() {
     if (handlersInstalled) return;
     handlersInstalled = true;
 
-    installConsoleCapture();
     void primePopupStylesheet();
 
     window.addEventListener(
@@ -556,7 +514,8 @@ export function installRuntimeErrorHandlers() {
                     ? "ui.reuse.runtime_error_context_window_resource"
                     : "ui.reuse.runtime_error_context_window_runtime",
             }).catch((popupError) => {
-                log(
+                void log(
+                    "warn",
                     "Failed to open runtime error popup for window error.",
                     popupError,
                 );
@@ -573,7 +532,8 @@ export function installRuntimeErrorHandlers() {
             error: event.reason,
             contextKey: "ui.reuse.runtime_error_context_unhandled_rejection",
         }).catch((popupError) => {
-            log(
+            void log(
+                "warn",
                 "Failed to open runtime error popup for unhandled rejection.",
                 popupError,
             );

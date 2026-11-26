@@ -52,7 +52,7 @@ async function promptForRoomKey(roomId) {
         actions: [
             {
                 id: "save",
-                label: i18n.t("adapter.social.messages.room_key_save"),
+                label: i18n.t("ui.reuse.save"),
                 variant: "confirm",
             },
             {

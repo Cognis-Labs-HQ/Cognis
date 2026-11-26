@@ -1,7 +1,12 @@
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { redirectToRequiredTfaSetup } from "/static/reuse/auth-setup-route.js";
 import { extendI18n } from "/static/reuse/i18n.js";
 import { ensurePageStylesheet } from "/static/reuse/page-styles.js";
 import { showToast } from "/static/reuse/toast.js";
+
+const log = bindCapability("ui:log");
+
+const CHALLENGE_REQUEST_TIMEOUT_MS = 15_000;
 
 function setActiveTfaInputPlaceholder(i18n, method, tfaCodeInput) {
     if (!(tfaCodeInput instanceof HTMLInputElement)) {
@@ -165,17 +170,31 @@ function resolveTranslatedTfaErrorMessage(i18n, message) {
 export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
     await ensurePageStylesheet("/static/gateways/tfa/login.css");
     let i18n = await extendI18n(baseI18n, ["/static/gateways/tfa/languages"]);
+    let promptGeneration = 0;
+    let stopPromptCountdown;
+    let promptController;
     return {
         i18n,
         async switchToTfaPrompt(payload) {
-            i18n = await extendI18n(i18n, [
+            const generation = ++promptGeneration;
+            stopPromptCountdown?.();
+            promptController?.abort();
+            promptController = new AbortController();
+            const promptSignal = promptController.signal;
+            const promptI18n = await extendI18n(i18n, [
                 ...new Set(
                     (payload?.methods ?? [])
                         .map((method) => method.stringsBaseUrl)
                         .filter(Boolean),
                 ),
             ]);
+            if (generation !== promptGeneration) return null;
+            i18n = promptI18n;
             const fields = root.querySelector("#login-tfa-fields");
+            const isCurrentPrompt = () =>
+                generation === promptGeneration &&
+                fields?.isConnected !== false;
+            const challengesInFlight = new Set();
             const methods = Array.isArray(payload?.methods)
                 ? payload.methods
                 : [];
@@ -201,9 +220,10 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                 if (resendLink && !(resendLink instanceof HTMLAnchorElement)) {
                     if (!invalidResendLinkTypeWarned) {
                         invalidResendLinkTypeWarned = true;
-                        console.warn(
-                            "Expected #login-tfa-resend-action to be an anchor element.",
-                        );
+                        log("warn", "invalid_resend_control", {
+                            component: "tfa",
+                            operation: "resolveResendControl",
+                        });
                     }
                     return null;
                 }
@@ -215,13 +235,18 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                 if (!resendLink) {
                     return null;
                 }
+                const locked =
+                    resendLocked ||
+                    challengesInFlight.has(
+                        root.querySelector("#login-tfa-method")?.value,
+                    );
                 resendLink.classList.toggle(
                     "auth-text-action--disabled",
-                    resendLocked,
+                    locked,
                 );
                 resendLink.setAttribute(
                     "aria-disabled",
-                    resendLocked ? "true" : "false",
+                    locked ? "true" : "false",
                 );
                 return resendLink;
             };
@@ -232,6 +257,8 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                     countdownTimer = null;
                 }
             };
+
+            stopPromptCountdown = stopCountdown;
 
             const showDeliveryToastOnce = ({
                 skipDeliveryToast = false,
@@ -304,26 +331,38 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
             };
 
             const sendChallenge = async (methodId) => {
-                if (resendLocked) {
+                if (
+                    !isCurrentPrompt() ||
+                    resendLocked ||
+                    challengesInFlight.has(methodId)
+                ) {
                     return;
                 }
                 if (!methodId || !loginAttemptId) {
-                    console.warn(
-                        "Cannot resend TFA challenge without methodId and loginAttemptId.",
-                        {
-                            methodId,
-                            loginAttemptId,
-                        },
-                    );
+                    log("warn", "challenge_context_unavailable", {
+                        component: "tfa",
+                        operation: "beginLoginChallenge",
+                        hasMethod: Boolean(methodId),
+                        hasLoginAttempt: Boolean(loginAttemptId),
+                    });
                     return;
                 }
+                challengesInFlight.add(methodId);
                 resendLocked = true;
                 syncDisabledResendState();
+                const selectedMethod = () =>
+                    resolveMethod(
+                        root.querySelector("#login-tfa-method")?.value,
+                    );
                 try {
-                    const { response, body } = await this.resendCode({
-                        loginAttemptId,
-                        methodId,
-                    });
+                    const { response, body } = await this.resendCode(
+                        {
+                            loginAttemptId,
+                            methodId,
+                        },
+                        { signal: promptSignal },
+                    );
+                    if (!isCurrentPrompt()) return;
                     const resolvedMethod = resolveMethod(methodId);
                     if (response.ok) {
                         if (resolvedMethod) {
@@ -336,7 +375,7 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                         showToast(i18n.t("ui.app.login.tfa.resend_sent"), {
                             variant: "success",
                         });
-                        setResendStateForMethod(resolveMethod(methodId), {
+                        setResendStateForMethod(selectedMethod(), {
                             skipDeliveryToast: true,
                         });
                         return;
@@ -355,13 +394,14 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                                 body?.error?.resendAvailableAt ??
                                 body?.error?.details?.resendAvailableAt,
                         });
-                        setResendStateForMethod(resolveMethod(methodId));
+                        setResendStateForMethod(selectedMethod());
                     } else {
                         resendLocked = false;
                         syncDisabledResendState();
                     }
                 } catch (error) {
-                    console.error("[tfa] challenge request failed", {
+                    if (!isCurrentPrompt()) return;
+                    log("error", "challenge_request_failed", {
                         component: "tfa",
                         operation: "beginLoginChallenge",
                         methodId,
@@ -373,6 +413,9 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                     );
                     resendLocked = false;
                     syncDisabledResendState();
+                } finally {
+                    challengesInFlight.delete(methodId);
+                    if (isCurrentPrompt()) syncDisabledResendState();
                 }
             };
 
@@ -389,22 +432,18 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                   <input id="login-tfa-code" autocomplete="one-time-code" inputmode="numeric" placeholder="${placeholderText}" aria-label="${placeholderText}" />
                   <a href="#" id="login-tfa-resend-action" class="auth-text-action auth-text-action--stacked" hidden></a>
                 `;
-                const resendLink = fields.querySelector(
-                    "#login-tfa-resend-action",
-                );
-                if (resendLink instanceof HTMLAnchorElement) {
-                    resendLink.addEventListener("click", async (event) => {
-                        event.preventDefault();
-                        const methodInput =
-                            root.querySelector("#login-tfa-method");
-                        const selectedMethodId =
-                            methodInput instanceof HTMLInputElement
-                                ? methodInput.value
-                                : "";
-                        await sendChallenge(selectedMethodId);
-                    });
-                }
             }
+            const resendLink = getResendLink();
+            resendLink?.addEventListener(
+                "click",
+                async (event) => {
+                    event.preventDefault();
+                    await sendChallenge(
+                        root.querySelector("#login-tfa-method")?.value,
+                    );
+                },
+                { signal: promptSignal },
+            );
             const activateMethod = async (method) => {
                 if (
                     method?.loginUi?.challengeOnSelect === true &&
@@ -420,17 +459,23 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                 (method) => setResendStateForMethod(resolveMethod(method.id)),
                 activateMethod,
             );
-            await activateMethod(methods[0]);
+            void activateMethod(methods[0]);
             return attemptId;
         },
 
-        async resendCode(payload) {
+        async resendCode(payload, { signal } = {}) {
             const response = await fetch("/api/v1/tfa/login/resend", {
                 method: "POST",
                 headers: { "content-type": "application/json" },
                 body: JSON.stringify(payload),
+                signal: signal
+                    ? AbortSignal.any([
+                          signal,
+                          AbortSignal.timeout(CHALLENGE_REQUEST_TIMEOUT_MS),
+                      ])
+                    : AbortSignal.timeout(CHALLENGE_REQUEST_TIMEOUT_MS),
             });
-            const body = await response.json().catch(() => null);
+            const body = await response.json();
             return { response, body };
         },
         async verifyCode(payload) {

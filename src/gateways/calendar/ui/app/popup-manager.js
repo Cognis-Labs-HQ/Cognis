@@ -1,3 +1,4 @@
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { createSubmitEvent } from "./submit-event.js";
 import { bindViewInteractions as bindCalendarViewInteractions } from "./bind-view-interactions.js";
 import { createCalendarEditPopupHandler } from "./popup-manager-calendar-edit.js";
@@ -30,6 +31,8 @@ import {
 } from "./popup-manager-event-utils.js";
 import { createCalendarResponseHandler } from "./popup-manager-response.js";
 import { handlePendingResponseClick } from "./popup-manager-pending-response.js";
+
+const log = bindCapability("ui:log");
 export function createCalendarPopupManager({
     root,
     signal,
@@ -353,10 +356,7 @@ export function createCalendarPopupManager({
                                 hydrateEventPopupParticipants(popupBody);
                             }
                         } catch (error) {
-                            console.warn(
-                                "Failed to refresh calendar participant responses.",
-                                error,
-                            );
+                            void log("warn", "responses_refresh_failed", error);
                         }
                     }, 60000);
                     const popupRemovalObserver = new MutationObserver(() => {

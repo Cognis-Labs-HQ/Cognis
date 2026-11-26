@@ -1,4 +1,7 @@
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { beginPageLoading } from "/static/reuse/page-entry.js";
+
+const log = bindCapability("ui:log");
 
 /** Creates one guarded submit handler for native login and TFA verification. */
 export function createLoginSubmitHandler({
@@ -105,7 +108,7 @@ export function createLoginSubmitHandler({
                 : body?.error?.message || i18n.t("ui.app.login.error.generic");
             showToast(errorMsg, { variant: "error" });
         } catch (error) {
-            console.error("[auth] login submission failed", {
+            void log("error", "[auth] login submission failed", {
                 component: "auth",
                 operation: "submitLogin",
                 errorName: error?.name,

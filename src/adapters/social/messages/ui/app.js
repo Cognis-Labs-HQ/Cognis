@@ -9,6 +9,7 @@
  * the authenticated user's encrypted keyring and cached for the page lifetime.
  */
 
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { guides } from "./guides.js";
 
 import { messagesFetch as apiFetch } from "./offline-client.js";
@@ -66,6 +67,8 @@ import {
     requireRoomKey,
     resolveThreadRoomKey,
 } from "./runtime-bridges.js";
+
+const log = bindCapability("ui:log");
 
 export async function mount(root, { signal } = {}) {
     const i18n = await createMessagesI18n();
@@ -156,7 +159,7 @@ export async function mount(root, { signal } = {}) {
             try {
                 await activateRoomAction(action, room, { signal });
             } catch (error) {
-                console.error("[messages] VoIP call action failed", {
+                void log("error", "[messages] VoIP call action failed", {
                     component: "social-messages",
                     operation: "start_voip_call",
                     roomId: roomState.getSelectedRoomId(),

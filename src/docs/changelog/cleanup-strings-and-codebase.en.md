@@ -28,7 +28,7 @@ MariaDB requires when a TEXT column is used in an index or key constraint.
 - AI contribution instructions:
     - `.github/copilot-instructions.md`
 - Documentation index/versioning:
-    - `src/docs/index.en.md`
+    - `src/docs/INFO.en.md`
     - `src/docs/versions.en.md`
     - `src/docs/versions.de.md`
     - `src/docs/versions.id.md`

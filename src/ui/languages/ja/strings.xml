@@ -778,4 +778,8 @@
   <string name="ui.tutorial.docs.read.document.views.title">読む内容を選ぶ</string>
   <string name="ui.tutorial.docs.read.document.views.body">概要で紹介、使用例で手順、技術情報でインターフェースと設定を確認できます。三つとも選択したバージョンに対応します。</string>
   <string name="ui.reuse.components">コンポーネント</string>
+  <string name="ui.reuse.email">メールアドレス</string>
+  <string name="ui.reuse.enabled">有効</string>
+  <string name="ui.reuse.disabled">無効</string>
+  <string name="ui.app.admin.started">起動日時</string>
 </resources>

@@ -130,7 +130,7 @@ Pemulihan memperbarui penyedia dan menjalankan `authenticate-session` sebelum ta
 
 ### Halaman Study luring kosong
 
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
+Perilaku ini dijelaskan dalam [kontrak bersama](/docs/ui/technical).
 
 ### Aset Study Luring
 
@@ -138,11 +138,11 @@ Study menyiapkan ikon popup, templat gambar, gaya gambar, dan ikon tutup saat da
 
 ### Ketersediaan Luring
 
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
+Perilaku ini dijelaskan dalam [kontrak bersama](/docs/ui/technical).
 
 ### Favorit Study Bersama
 
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
+Perilaku ini dijelaskan dalam [kontrak bersama](/docs/ui/technical).
 
 ### Ruang Kerja Luring
 
@@ -152,7 +152,7 @@ Setelah masuk terverifikasi, Study menyiapkan skema, lokasi yang dapat dibaca, f
 
 Pengelolaan Library serta halaman pengeditan, pencarian, dan permintaannya memerlukan koneksi. Submenu Study tetap menampilkan tautan tersebut tetapi menonaktifkannya saat luring, termasuk segera setelah koneksi terputus. Explore tetap tersedia untuk membaca konten tersimpan dan menggambar. Penyedia Library hanya mendaftarkan Explore sebagai rute sesi luring.
 
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
+Perilaku ini dijelaskan dalam [kontrak bersama](/docs/ui/technical).
 
 ### Transisi dan Navigasi Lancar
 
@@ -164,7 +164,7 @@ Tujuan yang tidak tersedia tetap terlihat dengan gaya nonaktif yang sama pada na
 
 ### Favorit yang Dikonfirmasi
 
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
+Perilaku ini dijelaskan dalam [kontrak bersama](/docs/ui/technical).
 
 ## Keamanan
 

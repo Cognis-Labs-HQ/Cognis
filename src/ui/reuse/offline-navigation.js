@@ -1,3 +1,4 @@
+import { bindCapability } from "./capabilities.js";
 import { createI18n } from "./i18n.js";
 import { openPopup } from "./popup.js";
 import { escapeHtml } from "./escape-html.js";
@@ -8,6 +9,8 @@ import {
     offlineWorkerRequest,
     enableOfflineAutoRefresh,
 } from "./offline-state.js";
+
+const log = bindCapability("ui:log");
 
 if (!uiCtx.capabilities.get("offline:registerSessionRoutes")) {
     const sessionRoutes = new Map();
@@ -83,7 +86,7 @@ uiCtx.extendFlow(
     async ({ input, stageResults }) => {
         const allowed = stageResults.validate[0].allowed;
         if (!allowed && !input.signal?.aborted) {
-            console.info("[offline] navigation unavailable", {
+            void log("info", "[offline] navigation unavailable", {
                 component: "ui",
                 operation: "prepareNavigation",
             });
@@ -113,7 +116,7 @@ uiCtx.extendFlow(
     () => {
         void offlineWorkerRequest("COGNIS_INVALIDATE_OFFLINE_ROUTES").catch(
             (error) =>
-                console.error("[offline] account cleanup failed", {
+                void log("error", "[offline] account cleanup failed", {
                     component: "ui",
                     operation: "clearOfflineRoutes",
                     errorName: error?.name,
@@ -134,11 +137,16 @@ uiCtx.extendFlow(
                     !isOffline() &&
                     offlineWorkerRequest("COGNIS_REFRESH_OFFLINE_ROUTES"),
             )
-            .catch((error) =>
-                console.error("[offline] login cache maintenance failed", {
-                    operation: "refreshAfterLogin",
-                    code: error?.message,
-                }),
+            .catch(
+                (error) =>
+                    void log(
+                        "error",
+                        "[offline] login cache maintenance failed",
+                        {
+                            operation: "refreshAfterLogin",
+                            code: error?.message,
+                        },
+                    ),
             );
         return { scheduled: true };
     },
@@ -177,7 +185,7 @@ if (!uiCtx.flowExists(recoveryFlow)) {
                 data.restored = (await input.restore()) === true;
             } catch (error) {
                 data.restored = false;
-                console.info("[offline] previous page unavailable", {
+                void log("info", "[offline] previous page unavailable", {
                     operation: "restorePreviousPage",
                     errorName: error?.name,
                 });

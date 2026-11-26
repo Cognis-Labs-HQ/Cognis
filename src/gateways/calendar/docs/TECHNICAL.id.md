@@ -12,9 +12,13 @@ Kalender menetapkan nama, visibilitas, dan acara. Pengingat serta status memakai
 
 ## Perilaku
 
+Renderer publik menunggu stylesheet milik Calendar sebelum memasang tampilan. Judul, kontrol, dan kalender yang dapat digulir menempati baris kisi terpisah; page composer menentukan penyesuaian viewport dan tinggi minimum ruang kerja.
+
 ### Pengiriman berbagi
 
 Calendar berkontribusi ke gateway Share melalui hook alur dan kapabilitas `ctx`. Pengiriman kepada pengguna membuat kalender bersama milik penerima dan mengembalikan URL navigasi generik beserta umpan balik berhasil terlokalisasi satu kali. Kata sandi tetap dimiliki Share dan diambil dari keyring dengan pengenal berbagi kanonis.
+
+Pengiriman Kalender memerlukan izin eksplisit `calendar:read`. Menghapusnya menghapus salinan penerima, dan rekonsiliasi berikutnya tidak membuatnya kembali tanpa izin baca baru. Pembacaan dan perubahan acara diotorisasi melalui Share pada setiap permintaan, termasuk token tanpa kata sandi; perubahan memerlukan `calendar:write`. Izin yang ditolak pada pengiriman berbasis token yang masih ada menghasilkan 403; salinan kalender yang dihapus atau tidak aktif tetap memberikan respons tidak ditemukan atau tidak aktif, sedangkan berbagi terlindungi yang diizinkan dapat meminta kata sandinya dengan 401. Ekspor token ICS dan CalDAV juga memerlukan izin baca.
 
 ### Perender berbagi publik
 
@@ -77,6 +81,10 @@ Calendar menemukan `meetings:createMeeting` dari penyedia browser yang aktif. Pe
 Panel Kalender sempit menampilkan agenda berisi setiap acara dan tanggal terpilih, dengan pemilih tampilan serta tanggal yang ringkas. Panel lebar mempertahankan kisi kalender. Kolom tanggal mencapai tanggal kosong tanpa menggulir satu bulan. Kalender bersama memakai presentasi yang sama dan menegakkan akses baca saja.
 
 Lompatan tanggal dan pemilihan tampilan bawaan memakai satu pengikatan kontrol milik Kalender untuk halaman akun maupun berbagi. Masukan tidak valid tidak mengubah tampilan, dan pendengar dilepas saat masa hidup halaman berakhir.
+
+Penanda periode memakai pengikatan kontrol terdelegasi pada akar halaman yang sama untuk halaman akun dan berbagi: judul bulan memilih bulan pada tahun aktif, nomor minggu memilih minggunya, dan penanda hari memilih tanggalnya. Tampilan dan tanggal berubah bersama tanpa memberikan izin edit. Label nomor minggu mendatar kecuali kolomnya sendiri selebar paling banyak 3rem; kueri kontainer lalu membuatnya vertikal.
+
+Navigasi periode sebelumnya, berikutnya, dan saat ini memakai renderer serta pengikatan terdelegasi yang sama pada halaman akun dan berbagi. Tindakan periode saat ini membaca jam ketika diklik dan mempertahankan tampilan. Teks, judul, dan label aksesibel selalu mengikuti tampilan terpilih, terlepas dari lebar panel. Tata letak ringkas dapat memakai ikon tetapi tetap mempertahankan label aksesibel sesuai tampilan. Panah bulan memilih tanggal pertama bulan sebelah agar akhir bulan tidak melewati satu bulan; panah tahun memilih 1 Januari tahun sebelah.
 
 ### Konten Seluler yang Terbaca
 

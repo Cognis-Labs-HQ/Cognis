@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../../tooling/reuse/diagnostic-fixture.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
@@ -38,6 +39,7 @@ function fixture({ refreshFails = false, abortDuringRead = false } = {}) {
     const { openMarketplaceSettings } = loadTestModule(
         new URL("../../app/modules/source-settings.js", import.meta.url),
         {
+            "../../reuse/capabilities.js": createDiagnosticFixture(),
             "../../reuse/form-builder.js": {
                 createFormBuilder: (_ctx, schema) => {
                     forms.push(schema);

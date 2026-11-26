@@ -17,9 +17,9 @@
  *   const stop = watchToken({
  *     token: 'abc123...',
  *     apiFetch,
- *     onConsumed: () => console.log('link was used'),
+ *     onConsumed: () => void log("info", 'link was used'),
  *     timeoutMs: 15 * 60 * 1000,
- *     onExpired: () => console.log('link expired'),
+ *     onExpired: () => void log("info", 'link expired'),
  *   });
  *
  *   stop(); // call to cancel before consumption is detected
@@ -34,6 +34,11 @@
  * @param {Function} [options.onExpired] - Called when timeoutMs elapses without consumption.
  * @returns {() => void} A stop function that cancels the polling loop.
  */
+
+import { bindCapability } from "./capabilities.js";
+
+const log = bindCapability("ui:log");
+
 export function watchToken({
     token,
     apiFetch,

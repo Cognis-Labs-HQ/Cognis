@@ -10,6 +10,7 @@ const sources = [
     "src/gateways/files/bootstrap.ts",
     "src/gateways/share/bootstrap/index.ts",
     "src/api/main.ts",
+    "src/gateways/logging/bootstrap.ts",
 ].map((path) => readFileSync(resolve(ROOT, path), "utf8"));
 const providerCatalog = sources.join("\n");
 

@@ -12,6 +12,8 @@ Freigaben enthalten accessControls, Ablauf und optionales Passwort. allowedPermi
 
 ## Verhalten
 
+Popup-Styles lösen Bildressourcen relativ zum Stylesheet innerhalb des veröffentlichten statischen Adapterverzeichnisses auf. Das E-Mail-Symbol bleibt Eigentum dieses Adapters und wird von ihm ausgeliefert.
+
 ### Adapter für Linkfreigaben
 
 Der Adapter deklariert das Link-Popup samt Fähigkeiten über `navbarPlugins`. Das Gateway lädt die deklarierten Beiträge und deaktiviert sie mit ihrem Adapter.

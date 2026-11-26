@@ -88,7 +88,7 @@ Messages menyiapkan daftar ruang, terjemahan, templat panel samping, dan katalog
 
 ### Penggunaan Emoji Terpisah
 
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
+Perilaku ini dijelaskan dalam [kontrak bersama](/docs/ui/technical).
 
 ### Konten Seluler yang Terbaca
 
@@ -96,7 +96,7 @@ Buka percakapan melalui tombol panel sudut ganda bersama di kiri atas. Judul rua
 
 ### Bilah Samping Ringkas
 
-Pesan menampilkan Ruang Baru, percakapan, dan Templat berdekatan dengan menggunakan seluruh lebar bilah samping. Daftar kosong dan pendek tidak lagi direntangkan setinggi panel. Daftar ruang dan templat yang panjang memakai satu area gulir Composer.
+Pesan menampilkan Ruang Baru, percakapan, dan Templat berdekatan dengan menggunakan seluruh lebar bilah samping. Daftar kosong dan pendek tidak direntangkan setinggi panel. Daftar ruang dan templat yang panjang memakai satu area gulir Composer.
 
 ### Ringkasan
 

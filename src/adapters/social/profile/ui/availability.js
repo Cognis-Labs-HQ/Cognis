@@ -1,9 +1,12 @@
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { isOffline } from "/static/reuse/offline-state.js";
 import { profileFetch as apiFetch } from "./offline-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { createI18n } from "/static/reuse/i18n.js";
 import { subscribePresenceActivity } from "/static/reuse/page-composer/presence-tracker.js";
+
+const defaultLog = bindCapability("ui:log");
 
 const availabilityCache = new Map();
 const availabilitySubscribers = new Set();
@@ -211,9 +214,7 @@ function isCurrent(scope) {
 
 function reportFailure(scope, operation, error) {
     if (isOffline() || error?.name === "AbortError") return;
-    const log =
-        scope.capabilities.get("ui:log") ??
-        ((level, message, metadata) => console[level](message, metadata));
+    const log = scope.capabilities.get("ui:log") ?? defaultLog;
     log("error", "Profile availability update failed.", {
         component: "social-profile",
         operation,

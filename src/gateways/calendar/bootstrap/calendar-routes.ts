@@ -35,7 +35,7 @@ import { handleCalendarEventRoutes } from "./calendar-event-routes.js";
 import { handleCalendarResponseRoute } from "./respond-route.js";
 import { handleCalendarShareRoutes } from "./share-routes.js";
 import type { CalendarShareRegistry } from "./share-registry.js";
-import { requireSharedCalendarPassword } from "./shared-password.js";
+import { requireSharedCalendarAccess } from "./shared-access.js";
 import { rejectInactiveSharedCalendar } from "./shared-calendar-guards.js";
 
 export function createCalendarCoreRoutes({
@@ -477,7 +477,7 @@ export function createCalendarCoreRoutes({
                     : null;
             if (
                 activeSharedCalendar &&
-                !(await requireSharedCalendarPassword({
+                !(await requireSharedCalendarAccess({
                     req,
                     res,
                     shareTokenId: activeSharedCalendar.shareTokenId,
@@ -560,12 +560,13 @@ export function createCalendarCoreRoutes({
                         : null;
                 if (
                     activeSharedCalendar &&
-                    !(await requireSharedCalendarPassword({
+                    !(await requireSharedCalendarAccess({
                         req,
                         res,
                         shareTokenId: activeSharedCalendar.shareTokenId,
                         accountId: claims.sub,
                         ownerCalendarId: activeSharedCalendar.ownerCalendarId,
+                        requiredCapability: "calendar:write",
                         getCapability,
                     }))
                 ) {
@@ -794,7 +795,7 @@ export function createCalendarCoreRoutes({
                 );
             if (
                 responseSharedCalendar?.recipientAccountId === claims.sub &&
-                !(await requireSharedCalendarPassword({
+                !(await requireSharedCalendarAccess({
                     req,
                     res,
                     shareTokenId: responseSharedCalendar.shareTokenId,

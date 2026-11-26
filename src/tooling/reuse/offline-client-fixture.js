@@ -14,8 +14,11 @@ export function createOfflineClientFixture(send, { window } = {}) {
         session: "fixture-token",
     };
     const values = new Map();
+    const logs = [];
+    const log = (...entry) => logs.push(entry);
     const capabilities = new Map([
         ["ui:scopedActions", registerScopedUiActions],
+        ["ui:log", log],
         ["session:isOfflineValid", () => true],
         ["offline:accessPolicy", { allows: () => true }],
     ]);
@@ -36,7 +39,7 @@ export function createOfflineClientFixture(send, { window } = {}) {
         }),
         withLock: (operation) => Promise.resolve().then(operation),
         withDeliveryLock: (operation) => Promise.resolve().then(operation),
-        log: () => {},
+        log,
     });
     capabilities.set("offline:outbox", outbox);
     capabilities.set("offline:state", state);
@@ -76,6 +79,7 @@ export function createOfflineClientFixture(send, { window } = {}) {
         },
     };
     const dependency = {
+        "./capabilities.js": { bindCapability: () => log },
         "./offline-state.js": state,
         "./offline-policy.js": { offlinePolicy: { allows: () => true } },
     };
@@ -83,7 +87,6 @@ export function createOfflineClientFixture(send, { window } = {}) {
         ...(window ? { window } : {}),
         crypto: webcrypto,
         AbortSignal,
-        console,
         structuredClone,
         Response,
         Headers,
@@ -119,6 +122,7 @@ export function createOfflineClientFixture(send, { window } = {}) {
     const http = loadTestModule(
         new URL("../../ui/reuse/offline-http-client.js", import.meta.url),
         {
+            "./capabilities.js": { bindCapability: () => log },
             "./offline-read-cache.js": cache,
             "./offline-delivery.js": delivery,
             "./scoped-actions.js": { registerScopedUiActions },
@@ -129,10 +133,14 @@ export function createOfflineClientFixture(send, { window } = {}) {
     );
     const snapshots = loadTestModule(
         new URL("../../ui/reuse/offline-snapshot.js", import.meta.url),
-        { "./offline-state.js": state },
+        {
+            "./capabilities.js": { bindCapability: () => log },
+            "./offline-state.js": state,
+        },
         globals,
     );
     return {
+        logs,
         values,
         invalidateCache: () => {
             cacheGeneration++;
@@ -144,6 +152,7 @@ export function createOfflineClientFixture(send, { window } = {}) {
         ctx,
         outbox,
         imports: {
+            "/static/reuse/capabilities.js": { bindCapability: () => log },
             "/static/reuse/offline-snapshot.js": snapshots,
             "/static/reuse/offline-identity.js": guard,
             "/static/reuse/offline-http-client.js": http,

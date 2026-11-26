@@ -4,6 +4,8 @@ The public interfaces and operational rules of Application Logs.
 
 ## Interfaces
 
+`logging:recentEntries` returns a copy of up to 30 sanitized diagnostic records with `timestamp`, `level` and `message`. Crash reports consume this public capability instead of wrapping console methods in core. This local history includes anonymous diagnostics; server ingestion and browser output retain their separate gateway policy.
+
 ### Capabilities contributed
 
 | Capability       | Type                              | Description                                                       |
@@ -26,6 +28,18 @@ The public interfaces and operational rules of Application Logs.
 | `LOG_ROTATE_COMPRESS`  | `true`              | When `true`, rotated logs are gzip-compressed (`.gz`)                    |
 
 ## Behavior
+
+`ui/reuse/levels.json` is the single catalog of severity priorities and console aliases. The shared module derives accepted levels, membership checks and console mappings from it; server filtering, browser ingestion and console capture reuse those definitions.
+
+### Gateway-Controlled Diagnostics
+
+Browser callers bind `ui:log` through the shared ctx capability registry. The host keeps at most 128 deferred capability invocations across all bindings; it has no logging-specific subscription or output policy. The logging provider contributes `ui:log` for its scoped lifetime and owns validation, recent history, delivery and console capture. Provider removal releases the capability; deferred calls can reach a subsequent provider without importing its implementation.
+
+The public browser provider owns the `logging:emit` flow (`validate`, `deliver`, `publish`). Structured metadata is bounded and credentials and raw error messages are removed.
+
+Service workers relay structured `COGNIS_LOG` events to one controlled window, retaining at most 64 events when none is available. The provider accepts messages only from its current service-worker controller and removes its listeners, console capture and subscription on disposal.
+
+`POST /api/v1/logging/entries` remains authenticated. Its 204 response includes `x-cognis-log-console: true` only for administrators when the event meets the current console adapter threshold. The browser publishes only after that permission; rejected or failed deliveries do not print or recursively report themselves. Anonymous events reach the gateway provider but are not submitted to the authenticated endpoint or printed. Server console and file filters remain independent.
 
 ### Overview
 

@@ -778,4 +778,8 @@
   <string name="ui.tutorial.docs.read.document.views.title">Choose A Reading Level</string>
   <string name="ui.tutorial.docs.read.document.views.body">Use Info for an introduction, Usage for procedures, and Technical for interfaces and configuration. All three follow the selected version.</string>
   <string name="ui.reuse.components">Components</string>
+  <string name="ui.reuse.email">Email</string>
+  <string name="ui.reuse.enabled">Enabled</string>
+  <string name="ui.reuse.disabled">Disabled</string>
+  <string name="ui.app.admin.started">Started</string>
 </resources>

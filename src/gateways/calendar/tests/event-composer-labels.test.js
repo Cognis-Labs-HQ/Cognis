@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 import vm from "node:vm";
-import { installI18nEnvironment } from "../../../ui/reuse/tests/fixtures/i18n-environment.js";
+import { installI18nEnvironment } from "../../../tooling/reuse/i18n-environment.js";
 
 const context = vm.createContext({});
 const module = new vm.SourceTextModule(

@@ -22,11 +22,14 @@
  * @returns {Promise<void>}
  */
 
+import { bindCapability } from "./capabilities.js";
 import { openPopup } from "./popup.js";
 import { createI18n } from "./i18n.js";
 import { escapeHtml } from "./escape-html.js";
 import { normalizeSameOriginRoutePath } from "./route-path.js";
 import { uiCtx } from "./ui-ctx.js";
+
+const log = bindCapability("ui:log");
 
 export const ALLOWED_GUEST_ROUTE_BASES = ["/share", "/login", "/register"];
 
@@ -168,7 +171,8 @@ export function installGuestNavigationGuard({ root = document, signal } = {}) {
             event.preventDefault();
             openGuestBlockedPopup({ allowBackNavigation: false }).catch(
                 (error) => {
-                    console.error(
+                    void log(
+                        "error",
                         "[guest-blocked-popup] Failed to open popup:",
                         error,
                     );

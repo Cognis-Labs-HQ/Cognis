@@ -66,7 +66,7 @@ for (const englishAvailable of [true, false]) {
     test(`adapter configuration resolves provider labels with English availability ${englishAvailable}`, async () => {
         const { readFile } = await import("node:fs/promises");
         const { installI18nEnvironment } =
-            await import("../reuse/tests/fixtures/i18n-environment.js");
+            await import("../../tooling/reuse/i18n-environment.js");
         const { createI18n } = await import("../reuse/i18n.js");
         const baseUrl = `/provider-labels/${englishAvailable}`;
         installI18nEnvironment(async (path) => {

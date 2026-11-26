@@ -1,3 +1,4 @@
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { favouriteClient } from "./favourites-client.js";
 /**
  * Shared Study favourites and browse sorting for Library cards and flashcard decks.
@@ -9,6 +10,8 @@ import { favouriteClient } from "./favourites-client.js";
  */
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { showToast } from "/static/reuse/toast.js";
+
+const log = bindCapability("ui:log");
 
 /** @param {string} kind Resource kind. @param {string} id Resource identity. @param {object} i18n Labels. @returns {string} Toggle markup. */
 export function renderFavourite(kind, id, i18n) {
@@ -75,7 +78,8 @@ export async function loadFavourites({ signal } = {}) {
                         if (signal?.aborted || error?.name === "AbortError")
                             return;
                         if (saved) {
-                            console.error(
+                            void log(
+                                "error",
                                 "[study] saved favourite view refresh failed",
                                 {
                                     operation: "refreshFavourite",

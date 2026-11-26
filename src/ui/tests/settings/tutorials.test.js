@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { guides } from "../../app/settings/guides.js";
-import { installI18nEnvironment } from "../../reuse/tests/fixtures/i18n-environment.js";
+import { installI18nEnvironment } from "../../../tooling/reuse/i18n-environment.js";
 import { tutorialHost } from "../../reuse/tutorials/tests/fixtures/host.js";
 import { mountPageTutorials } from "../../reuse/tutorials/pages.js";
 

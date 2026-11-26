@@ -1,6 +1,9 @@
+import { registerPublicDiagnosticImport } from "../../../tooling/reuse/diagnostic-fixture.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
-import { createSubmitEvent } from "../ui/app/submit-event.js";
+const releaseDiagnosticImport = registerPublicDiagnosticImport();
+test.after(releaseDiagnosticImport);
+const { createSubmitEvent } = await import("../ui/app/submit-event.js");
 import { createOfflineClientFixture } from "../../../tooling/reuse/offline-client-fixture.js";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 

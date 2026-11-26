@@ -1,3 +1,4 @@
+import { captureTerminalOutput } from "./fixtures/output.ts";
 /**
  * Tests CLI output formatting helpers.
  *
@@ -26,20 +27,6 @@ import { renderApiErrorPayload } from "../formatters.ts";
 import { loadModuleCliPlugins } from "../plugins.ts";
 import { registry } from "../registry.ts";
 import { ApiRequestError } from "../http.ts";
-
-function captureConsoleLog(run: () => void): string {
-    const originalLog = console.log;
-    const lines: string[] = [];
-    try {
-        console.log = (...args: unknown[]) => {
-            lines.push(args.join(" "));
-        };
-        run();
-    } finally {
-        console.log = originalLog;
-    }
-    return lines.join("\n");
-}
 
 test("formatStructured pretty-prints JSON strings", () => {
     assert.equal(

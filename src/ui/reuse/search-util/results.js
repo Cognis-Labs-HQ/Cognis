@@ -12,8 +12,12 @@
  * @module reuse/search-util/results
  */
 
+import { bindCapability } from "../capabilities.js";
+
 import { createSearchMatchResolver, escapeHtml } from "./matching.js";
 import { MIN_SEARCH_QUERY_LENGTH } from "./state.js";
+
+const log = bindCapability("ui:log");
 
 export function renderResultContent(listItem, item) {
     const label = document.createElement("span");
@@ -48,7 +52,7 @@ export function renderResultContent(listItem, item) {
 export function selectSearchResult(item, onSelect, closeOverlay) {
     Promise.resolve(onSelect(item))
         .catch((error) => {
-            console.warn("[search-bar]:result-selection-failed", { error });
+            void log("warn", "[search-bar]:result-selection-failed", { error });
         })
         .finally(() => {
             requestAnimationFrame(() => closeOverlay());

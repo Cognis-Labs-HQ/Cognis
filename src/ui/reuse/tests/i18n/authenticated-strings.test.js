@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { installI18nEnvironment } from "../fixtures/i18n-environment.js";
+import { installI18nEnvironment } from "../../../../tooling/reuse/i18n-environment.js";
 
 test("component strings use authenticated API requests for protected catalogs", async () => {
     const authorizations = [];
@@ -33,11 +33,14 @@ async function versionedHost(respond) {
     const environment = installI18nEnvironment(respond);
     environment.storage.set("cognis_account", "administrator");
     environment.storage.set("cognis_access_token", "first-session");
-    const { extendI18n } = await import(
-        `../../i18n.js?fixture=${crypto.randomUUID()}`
-    );
+    const importI18n = () =>
+        import(`../../i18n.js?fixture=${crypto.randomUUID()}`);
+    let { extendI18n } = await importI18n();
     return {
         ...environment,
+        async newDocument() {
+            ({ extendI18n } = await importI18n());
+        },
         load: (revision = "first") =>
             extendI18n(
                 {
@@ -145,3 +148,43 @@ test("a late response from an earlier session cannot overwrite current private t
     );
     assert.equal(host.requests.length, 2);
 });
+
+for (const reset of ["document", "lifecycle"]) {
+    test(`versioned private translations bypass fresh HTTP-cache entries after a ${reset} reset`, async () => {
+        let published =
+            '<resources><string name="module.example.name">Original</string></resources>';
+        const httpCache = new Map();
+        const host = await versionedHost(async (path, options) => {
+            const key = JSON.stringify([
+                path,
+                options.headers.get("authorization"),
+            ]);
+            if (options.cache !== "reload" && httpCache.has(key))
+                return httpCache.get(key).clone();
+            const response = new Response(published, {
+                headers: { "cache-control": "private, max-age=3600" },
+            });
+            httpCache.set(key, response.clone());
+            return response;
+        });
+        assert.equal((await host.load()).t("module.example.name"), "Original");
+        published =
+            '<resources><string name="module.example.name">Updated</string><string name="module.example.new">New Label</string></resources>';
+        if (reset === "document") await host.newDocument();
+        else window.dispatchEvent(new Event("cognis:module-lifecycle-changed"));
+        const resolvers = await Promise.all(
+            Array.from({ length: 20 }, () => host.load("second")),
+        );
+        for (const resolver of resolvers) {
+            assert.equal(resolver.t("module.example.name"), "Updated");
+            assert.equal(resolver.t("module.example.new"), "New Label");
+        }
+        assert.equal(host.requests.length, 2);
+        assert.equal(host.requests.at(-1).options.cache, "reload");
+        assert.equal(
+            (await host.load("second")).t("module.example.new"),
+            "New Label",
+        );
+        assert.equal(host.requests.length, 2);
+    });
+}

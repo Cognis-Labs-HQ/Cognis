@@ -1,0 +1,7 @@
+<script>console.error("whitespace");</script	
+ bar>
+<script>console.warn("attributes");</SCRIPT data-extra="ignored">
+<script data-extra=">">console.info("quoted-opening");</script/>
+<script>const example = "</script-other>"; console.warn("real-script");</script>
+<script-other>console.error("inert-tag")</script-other>
+<script>console.error("unterminated");

@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../../tooling/reuse/diagnostic-fixture.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
@@ -42,7 +43,7 @@ function fixture() {
             },
             "./ui-language-state.js": loadTestModule(
                 new URL("../ui-language-state.js", import.meta.url),
-                {},
+                { "./capabilities.js": createDiagnosticFixture() },
                 globals,
             ),
             "./offline-identity.js": guard,

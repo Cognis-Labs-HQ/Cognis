@@ -4,6 +4,8 @@ Antarmuka publik dan aturan operasional Log Aplikasi.
 
 ## Antarmuka
 
+`logging:recentEntries` mengembalikan salinan maksimal 30 catatan diagnostik yang telah dibersihkan, dengan `timestamp`, `level`, dan `message`. Laporan galat menggunakan kapabilitas publik ini alih-alih membungkus metode konsol dalam Core. Riwayat lokal juga mencakup diagnostik anonim; pengiriman server dan keluaran peramban tetap mengikuti kebijakan gateway yang terpisah.
+
 ### Arsitektur
 
 ```ts
@@ -61,6 +63,18 @@ Peristiwa pada gateway DB juga memakai logger bersama, tetapi hanya mencatat met
 | `LOG_ROTATE_COMPRESS`  | `true`              | Jika `true`, log hasil rotasi dikompresi gzip (`.gz`)                           |
 
 ## Perilaku
+
+`ui/reuse/levels.json` menjadi satu-satunya katalog prioritas tingkat keparahan dan alias konsol. Modul bersama menurunkan tingkat yang diterima, pemeriksaan keanggotaan, dan pemetaan konsol darinya; penyaringan server, penerimaan peramban, dan penangkapan konsol menggunakan definisi yang sama.
+
+### Diagnostik Terpusat
+
+Pemanggil peramban mengikat `ui:log` melalui registri kapabilitas ctx bersama. Host menyimpan paling banyak 128 pemanggilan kapabilitas tertunda untuk seluruh ikatan; host tidak memiliki langganan khusus logging atau kebijakan keluaran. Penyedia logging menyumbangkan `ui:log` selama masa hidupnya dan memiliki validasi, riwayat, pengiriman, serta penangkapan konsol. Penghapusan penyedia melepas kapabilitas; pemanggilan tertunda dapat mencapai penyedia berikutnya tanpa mengimpor implementasinya.
+
+Penyedia peramban publik memiliki alur `logging:emit` (`validate`, `deliver`, `publish`). Metadata dibatasi, sedangkan kredensial dan pesan kesalahan mentah dihapus.
+
+Service worker meneruskan peristiwa terstruktur `COGNIS_LOG` ke satu jendela yang dikendalikan dan menampung maksimal 64 peristiwa jika tidak ada jendela tersedia. Penyedia hanya menerima pesan dari pengendali service worker saat ini dan melepas pendengar, penangkapan konsol, serta langganannya ketika dihentikan.
+
+`POST /api/v1/logging/entries` tetap memerlukan autentikasi. Respons 204 menyertakan `x-cognis-log-console: true` hanya bagi administrator ketika peristiwa memenuhi ambang adaptor konsol saat ini. Peramban hanya menampilkan keluaran setelah izin tersebut; pengiriman yang ditolak atau gagal tidak mencetak atau melaporkan dirinya secara rekursif. Peristiwa anonim mencapai penyedia gateway, tetapi tidak dikirim ke endpoint terautentikasi atau ditampilkan. Filter konsol server dan berkas tetap terpisah.
 
 ### Ikhtisar
 

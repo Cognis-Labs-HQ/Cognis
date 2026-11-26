@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../../tooling/reuse/diagnostic-fixture.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
@@ -9,6 +10,7 @@ test("theme application completes while optional web fonts remain pending", () =
     const { applyTheme } = loadTestModule(
         new URL("../theme-toggle.js", import.meta.url),
         {
+            "./capabilities.js": createDiagnosticFixture(),
             "./page-styles.js": {
                 ensurePersistentStylesheet: (href) => {
                     requested.push(href);

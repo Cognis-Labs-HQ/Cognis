@@ -1,3 +1,5 @@
+import { bindCapability } from "../../reuse/capabilities.js";
+
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { uiCtx } from "../../reuse/ui-ctx.js";
 import { isOffline } from "../../reuse/offline-state.js";
@@ -6,6 +8,8 @@ import { openPopup } from "../../reuse/popup.js";
 import { watchToken } from "../../reuse/validation-url.js";
 import { showToast } from "../../reuse/toast.js";
 import { matchesTrustedDomain } from "../../reuse/trusted-domains.js";
+
+const log = bindCapability("ui:log");
 
 /**
  * General preferences sub-module for the Settings page.
@@ -275,7 +279,7 @@ export function initGeneralPrefs(
         try {
             allowed = await isDomainAllowed(address);
         } catch (error) {
-            console.error(i18n.t("ui.app.settings.emails_add_failed"), {
+            void log("error", i18n.t("ui.app.settings.emails_add_failed"), {
                 operation: "loadEmailDomainPolicy",
                 errorName: error.name,
             });
@@ -394,11 +398,18 @@ export function initGeneralPrefs(
                                 ? err.message
                                 : "remove_failed";
                         if (code === "cannot_remove_primary_email") {
-                            showToast(i18n.t("ui.reuse.remove_primary_body"), {
-                                variant: "warning",
-                            });
+                            showToast(
+                                i18n.t(
+                                    "ui.app.settings.emails_remove_primary_body",
+                                ),
+                                {
+                                    variant: "warning",
+                                },
+                            );
                         } else {
-                            showStatus(i18n.t("ui.reuse.remove_failed"));
+                            showStatus(
+                                i18n.t("ui.app.settings.emails_remove_failed"),
+                            );
                         }
                     }
                     return;

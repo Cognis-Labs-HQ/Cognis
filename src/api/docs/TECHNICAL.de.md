@@ -17,6 +17,8 @@
 
 Die Abfrage `langs` enthält eine geordnete, kommagetrennte Sprachliste für Indextitel und Inhalte. Regionale Angaben versuchen ihre Basissprache vor der nächsten Präferenz; Englisch bleibt als verpflichtende Ausweichsprache verfügbar. Dieselbe Auflösung gilt für Info, Nutzung und Technik der angeforderten Version.
 
+Ein Kernthema verwendet den relativen Verzeichnisnamen als Slug; das Wurzelthema heißt `index`. Komponentenschlüssel bezeichnen den Manifesteigentümer. Alle drei Ansichten lösen ihre lokalisierte Dateifamilie nach dem [Dokumentationsvertrag](/docs/standard/technical) auf.
+
 ## Konfiguration
 
 ### Dokumentationsleser
@@ -26,6 +28,8 @@ Die Abfrage `langs` enthält eine geordnete, kommagetrennte Sprachliste für Ind
 ## Verhalten
 
 ### Dokumentunterschiede
+
+`docs:versionStore.createStore({ namespace, database, documents })` erzeugt einen Namensraumspeicher mit `ensureSchema`, `getLatest`, `getVersion`, `deleteAll`, `publish` und `diff`. `diff(fromHash, toHash)` verlangt zwei Versionen desselben Slugs.
 
 Dokumentunterschiede ermöglichen es einem Modul, die Abweichungen zwischen zwei unveränderlichen Dokumentversionen zu erklären, bevor ein Benutzer auf die neuere Fassung reagiert.
 

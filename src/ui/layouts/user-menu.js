@@ -10,8 +10,12 @@
  * bindUserMenuIntegrity(document.querySelector("#profile-dropdown"));
  */
 
+import { bindCapability } from "../reuse/capabilities.js";
+
 import { uiCtx } from "../reuse/ui-ctx.js";
 import { transientSurfaces } from "../reuse/transient-surfaces.js";
+
+const log = bindCapability("ui:log");
 
 /**
  * Removes all but the first menu entry for each link destination.
@@ -30,9 +34,13 @@ export function reconcileUserMenuEntries(dropdown) {
             seenHrefs.add(href);
             continue;
         }
-        console.warn("[dashboard-layout]:duplicate-user-menu-entry-removed", {
-            href,
-        });
+        void log(
+            "warn",
+            "[dashboard-layout]:duplicate-user-menu-entry-removed",
+            {
+                href,
+            },
+        );
         item.remove();
         removed += 1;
     }

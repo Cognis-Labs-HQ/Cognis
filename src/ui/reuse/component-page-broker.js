@@ -22,10 +22,14 @@
  *     signal,
  * }));
  */
+
+import { bindCapability } from "./capabilities.js";
 import { ensurePageStylesheet } from "./page-styles.js";
 import { loadWithSpaImportGuard } from "./page-entry.js";
 import { resolveComponentPage } from "./spa-route-registry.js";
 import { uiCtx } from "./ui-ctx.js";
+
+const log = bindCapability("ui:log");
 
 const INSTALL_KEY = Symbol.for("cognis.componentPageBrokerInstalled");
 const ELEMENT_ID_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9._:-]{0,127}$/;
@@ -317,7 +321,7 @@ export function installComponentPageBroker({
                 try {
                     await releaseMountResult(mountResult);
                 } catch (error) {
-                    console.error("component_page_cleanup_failed", {
+                    void log("error", "component_page_cleanup_failed", {
                         componentUuid: data.request.componentUuid,
                         routeId: data.request.routeId,
                         elementId: data.request.elementId,
@@ -431,7 +435,7 @@ export function installComponentPageBroker({
                 }
                 data.window = handle;
             } catch (error) {
-                console.error("component_page_mount_failed", {
+                void log("error", "component_page_mount_failed", {
                     componentUuid: data.request.componentUuid,
                     routeId: data.request.routeId,
                     elementId: data.request.elementId,

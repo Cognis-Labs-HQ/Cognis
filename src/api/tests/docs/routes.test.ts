@@ -2,9 +2,18 @@ import {
     initializeDocsStore,
     readStoredMarkdown,
 } from "../../routes/docs/store.js";
+import { discoverDocSources } from "../../routes/docs/sources.js";
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, readdir, rm, stat, writeFile } from "node:fs/promises";
+import {
+    mkdtemp,
+    mkdir,
+    readdir,
+    rm,
+    stat,
+    writeFile,
+    rename,
+} from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import {
@@ -67,16 +76,13 @@ function manifest(version: string, name = "Example") {
 
 async function writeBundle(docsRoot: string, info: string, core = false) {
     await mkdir(docsRoot, { recursive: true });
+    await writeFile(join(docsRoot, core ? "INFO.en.md" : "README.en.md"), info);
     await writeFile(
-        join(docsRoot, core ? "index.en.md" : "README.en.md"),
-        info,
-    );
-    await writeFile(
-        join(docsRoot, core ? "usage.en.md" : "USAGE.en.md"),
+        join(docsRoot, "USAGE.en.md"),
         "# Usage\n\nConcrete usage procedure.",
     );
     await writeFile(
-        join(docsRoot, core ? "technical.en.md" : "TECHNICAL.en.md"),
+        join(docsRoot, "TECHNICAL.en.md"),
         "# Technical\n\nPublic interfaces.",
     );
 }
@@ -661,9 +667,9 @@ for (const core of [false, true]) {
                 for (const [view, name] of Object.entries(
                     core
                         ? {
-                              info: "index",
-                              usage: "usage",
-                              technical: "technical",
+                              info: "INFO",
+                              usage: "USAGE",
+                              technical: "TECHNICAL",
                           }
                         : {
                               info: "README",
@@ -747,4 +753,36 @@ test("generated changelog navigation and heading use the localized index title",
             .markdown,
         /^# 変更履歴/,
     );
+});
+
+test("core discovery reads uppercase entry bundles without case aliases", async (context) => {
+    const root = await mkdtemp(join(tmpdir(), "cognis-core-doc-case-"));
+    context.after(() => rm(root, { recursive: true, force: true }));
+    const sourceRoot = join(root, "src");
+    const docsRoot = join(sourceRoot, "docs/example");
+    await writeBundle(docsRoot, "# Example\n\nPublic guidance.", true);
+    await writeFile(
+        join(sourceRoot, "package.json"),
+        JSON.stringify({ version: "1.0.0" }),
+    );
+    assert.equal((await discoverDocSources(sourceRoot))[0].slug, "example");
+    for (const name of ["INFO", "USAGE", "TECHNICAL"]) {
+        const canonical = join(docsRoot, `${name}.en.md`);
+        for (const invalidName of [
+            name.toLowerCase(),
+            name[0] + name.slice(1).toLowerCase(),
+        ]) {
+            const invalid = join(docsRoot, `${invalidName}.en.md`);
+            await rename(canonical, invalid);
+            if (name === "INFO")
+                assert.deepEqual(await discoverDocSources(sourceRoot), []);
+            else
+                await assert.rejects(
+                    discoverDocSources(sourceRoot),
+                    /docs_english_source_missing/,
+                );
+            await rename(invalid, canonical);
+        }
+    }
+    assert.equal((await discoverDocSources(sourceRoot)).length, 1);
 });

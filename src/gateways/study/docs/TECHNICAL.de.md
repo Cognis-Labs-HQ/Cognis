@@ -124,7 +124,7 @@ Die Wiederherstellung aktualisiert Anbieter und führt `authenticate-session` au
 
 ### Leere Offline-Lernseiten
 
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
+Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/ui/technical).
 
 ### Offline-Lernressourcen
 
@@ -132,11 +132,11 @@ Study bereitet verzögert benötigte Popup-Symbole, Zeichenvorlage, Zeichenstile
 
 ### Offline-Verfügbarkeit
 
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
+Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/ui/technical).
 
 ### Gemeinsame Lernfavoriten
 
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
+Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/ui/technical).
 
 ### Offline-Arbeitsbereich
 
@@ -146,7 +146,7 @@ Nach bestätigter Anmeldung bereitet Study Schemas, lesbare Speicherorte, Formul
 
 Die Library-Verwaltung und ihre Bearbeitungs-, Such- und Anfrageseiten benötigen eine Verbindung. Das Study-Untermenü behält diese Links offline bei, deaktiviert sie jedoch auch unmittelbar nach einem Verbindungsabbruch. Explore bleibt zum Lesen gespeicherter Inhalte und zum Zeichnen verfügbar. Der Library-Provider meldet nur Explore als Offline-Sitzungsroute an.
 
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
+Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/ui/technical).
 
 ### Sanfte Übergänge und Navigation
 
@@ -158,7 +158,7 @@ Nicht verfügbare Ziele bleiben in der Hauptnavigation, im Benutzermenü und im 
 
 ### Bestätigte Favoriten
 
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
+Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/ui/technical).
 
 ## Sicherheit
 

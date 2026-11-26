@@ -61,6 +61,8 @@ Adapter deklarieren Metadaten und Einstellungen. Konten verwalten bestätigte Me
 
 ## Verhalten
 
+Die Eingabe gibt ihre Anmeldeversuchs-ID vor Abschluss der Zustellung zurück. Authenticator und Wiederherstellungscodes bleiben während einer ausstehenden E-Mail nutzbar. Erst- und Wiederholungsanfragen haben eine Frist von 15 Sekunden. Solange die Zustellung läuft, startet dieselbe Methode keine doppelte Anfrage. Eine neue Eingabe bricht die vorherige Anfrage ab und ersetzt deren Wiederholungsaktion; verspätete Antworten ändern weder die neue Eingabe noch die ausgewählte Methode.
+
 ### TFA Gateway
 
 Adapter-Sprachressourcen werden aus installierten Methoden statt einer festen Anbieterliste ermittelt. Methoden melden `invalid_verification_code` über den gemeinsamen Fehlervertrag; ausstellerspezifische Konfiguration bleibt beim Adapter.

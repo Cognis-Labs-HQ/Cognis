@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../../../tooling/reuse/diagnostic-fixture.ts";
 import { guides } from "../../ui/app/guides.js";
 import { readFile } from "node:fs/promises";
 import vm from "node:vm";
@@ -9,9 +10,11 @@ export async function loadCalendarMount({ hold, signal }) {
         throw new Error("unexpected calendar dependency");
     };
     const contracts = {
+        "/static/reuse/capabilities.js": createDiagnosticFixture(),
         "./guides.js": { guides },
         "../calendar-view-controls.js": {
             renderCalendarViewSwitcher: unexpected,
+            renderCalendarNavigation: unexpected,
             mountCalendarViewControls: unexpected,
         },
         "../offline-client.js": { calendarFetch: unexpected },

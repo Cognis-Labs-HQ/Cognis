@@ -1,3 +1,4 @@
+import { createDiagnosticFixture } from "../../../tooling/reuse/diagnostic-fixture.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
@@ -14,6 +15,7 @@ function fixture(options = {}) {
     const module = loadTestModule(
         new URL("../offline-read-cache.js", import.meta.url),
         {
+            "./capabilities.js": createDiagnosticFixture(),
             "./offline-policy.js": { offlinePolicy: { allows: () => true } },
             "./offline-state.js": {
                 isOffline: () => offline && enabled,

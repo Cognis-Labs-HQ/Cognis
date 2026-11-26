@@ -1,3 +1,4 @@
+import { writeTerminalReport } from "../reuse/terminal-output.ts";
 import { declarationSpacingIssues } from "./declaration-spacing.mjs";
 import { readFileSync } from "node:fs";
 import { execSync } from "node:child_process";
@@ -15,17 +16,24 @@ for (const file of files) {
     const text = readFileSync(file, "utf8");
 
     if (/\t/.test(text)) {
-        console.error(`Readability lint failed (tab character): ${file}`);
+        writeTerminalReport(
+            "stderr",
+            `Readability lint failed (tab character): ${file}`,
+        );
         failed = true;
     }
 
     if (/ +$/m.test(text)) {
-        console.error(`Readability lint failed (trailing whitespace): ${file}`);
+        writeTerminalReport(
+            "stderr",
+            `Readability lint failed (trailing whitespace): ${file}`,
+        );
         failed = true;
     }
 
     if (/\n\n\n/.test(text)) {
-        console.error(
+        writeTerminalReport(
+            "stderr",
             `Readability lint failed (consecutive blank lines): ${file}`,
         );
         failed = true;
@@ -50,7 +58,8 @@ for (const file of structuredClassFiles) {
         if (!callableMemberPattern.test(lines[index])) continue;
         const previousLine = lines[index - 1].trim();
         if (previousLine && !/(?:^|\s)(?:class|{)$/.test(previousLine)) {
-            console.error(
+            writeTerminalReport(
+                "stderr",
                 `Readability lint failed (class methods require a blank-line boundary): ${file}:${index + 1}`,
             );
             failed = true;
@@ -68,7 +77,8 @@ for (const file of files.filter(
         ) && /\.(?:ts|js)$/.test(file),
 )) {
     for (const line of declarationSpacingIssues(readFileSync(file, "utf8"))) {
-        console.error(
+        writeTerminalReport(
+            "stderr",
             `Readability lint failed (declarations require a blank-line boundary): ${file}:${line}`,
         );
         failed = true;

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<strings>
+<resources>
   <string name="adapter.auth.keyring.unlock_title">Unlock keyring</string>
   <string name="adapter.auth.keyring.unlock_message">{{component}} has requested access to the keyring to {{action}} {{process}}.</string>
   <string name="adapter.auth.keyring.unlock_prompt">Enter the keyring password to continue.</string>
@@ -97,4 +97,4 @@
   <string name="gateway.auth.keyring.unavailable">The keyring is unavailable. Retry when the connection is restored.</string>
   <string name="adapter.auth.keyring.config.maximum_vault_size">Maximum Vault Size (MiB)</string>
   <string name="adapter.auth.keyring.config.derivation_iterations">Password Derivation Iterations</string>
-</strings>
+</resources>

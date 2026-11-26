@@ -37,6 +37,7 @@
  * hook is registered before `index.js` runs the flow.
  */
 
+import { bindCapability } from "/static/reuse/capabilities.js";
 import "/static/reuse/page-flow-catalog.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import { resolveReceivedShare } from "./received-share.js";
@@ -51,6 +52,8 @@ import {
 } from "./session-events.js";
 import { stopShareStatusWatch, watchShareStatus } from "./status-monitor.js";
 
+const log = bindCapability("ui:log");
+
 const ACCESS_TOKEN_KEY = "cognis_access_token";
 const PREV_ACCESS_TOKEN_KEY = "cognis_prev_access_token";
 const PREV_ACCOUNT_KEY = "cognis_prev_account";
@@ -63,6 +66,15 @@ let activeGuestSession = null;
 let activeShareSession = null;
 let accessDeniedNavigationPending = false;
 let activeGuestKeyring = null;
+let pendingShareResolution = null;
+const sessionIdentity = () =>
+    JSON.stringify([
+        localStorage.getItem(ACCOUNT_KEY),
+        localStorage.getItem(ACCESS_TOKEN_KEY),
+    ]);
+const isCurrentResolution = (resolution) =>
+    pendingShareResolution === resolution &&
+    resolution.identity === sessionIdentity();
 
 uiCtx.extendFlow(
     "spawn-component-page",
@@ -98,6 +110,7 @@ function hasStoredAccountSession() {
 }
 
 function discardStaleGuestMarkers() {
+    pendingShareResolution = null;
     stopShareStatusMonitor();
     sessionStorage.removeItem(PREV_ACCESS_TOKEN_KEY);
     sessionStorage.removeItem(PREV_ACCOUNT_KEY);
@@ -119,7 +132,7 @@ async function navigateToMissingShare() {
     try {
         await navigate?.(errorPath);
     } catch (error) {
-        console.error("[share] failed to open missing-share error route", {
+        void log("error", "[share] failed to open missing-share error route", {
             operation: "navigate_missing_share_error",
             error,
         });
@@ -158,7 +171,7 @@ window.addEventListener("cognis:api-access-denied", (event) => {
         navigate?.(`/share/${encodeURIComponent(shareToken)}`) ?? false,
     )
         .catch((error) => {
-            console.error("[share] failed to open access-denied route", {
+            void log("error", "[share] failed to open access-denied route", {
                 operation: "navigateAccessDenied",
                 errorName: error?.name,
             });
@@ -170,6 +183,7 @@ window.addEventListener("cognis:api-access-denied", (event) => {
 
 uiCtx.capabilities.contribute("session:ensureGuestKeyring", async () => {
     if (!isViewingAsGuest() || !activeGuestKeyring) return false;
+    if (uiCtx.capabilities.get("keyring:isUnlocked")?.() === true) return true;
     const activateTemporaryKeyring = uiCtx.capabilities.get(
         "keyring:activateTemporary",
     );
@@ -230,6 +244,7 @@ async function activateGuestToken(
     guestAccessToken,
     guestProfile = null,
     guestKeyring = null,
+    resolution,
 ) {
     const normalized = String(guestAccessToken ?? "").trim();
     if (!normalized) return null;
@@ -269,23 +284,31 @@ async function activateGuestToken(
         const activateTemporaryKeyring = uiCtx.capabilities.get(
             "keyring:activateTemporary",
         );
+        resolution.identity = sessionIdentity();
         const activated = await activateTemporaryKeyring?.(
             guestKeyringAccountId,
             guestKeyringPassphrase,
         );
+        if (!isCurrentResolution(resolution)) return null;
         if (!activated) {
+            log("error", "share_keyring_activation_failed", {
+                component: "share",
+                operation: "activateGuestKeyring",
+            });
             restoreGuestToken();
             return null;
         }
     } else {
         localStorage.removeItem(ACCOUNT_KEY);
     }
+    resolution.identity = sessionIdentity();
     const displayName = String(guestProfile?.displayName ?? "").trim();
     if (displayName) localStorage.setItem(DISPLAY_NAME_KEY, displayName);
     return new AbortController();
 }
 
 function restoreGuestToken() {
+    pendingShareResolution = null;
     stopShareStatusMonitor();
     if (sessionStorage.getItem(GUEST_TOKEN_ACTIVE_KEY) !== "1") return;
     uiCtx.capabilities.get("keyring:endTemporary")?.();
@@ -329,7 +352,7 @@ listenForShareRevocation((shareId) => {
     const sharePath = `/share/${encodeURIComponent(shareToken)}`;
     const navigate = uiCtx.capabilities.get("ui:navigate");
     Promise.resolve(navigate?.(sharePath) ?? false).catch((error) => {
-        console.error("[share] failed to navigate revoked share", {
+        void log("error", "[share] failed to navigate revoked share", {
             operation: "navigateRevokedShare",
             errorName: error?.name,
         });
@@ -379,165 +402,208 @@ uiCtx.extendFlow(
             if (isActiveShareContentRoute(activeShareSession)) {
                 return resolveActiveShareContentSession(activeShareSession);
             }
+            pendingShareResolution = null;
             if (isViewingAsGuest()) restoreGuestToken();
             return null;
-        }
-        if (
-            isViewingAsGuest() &&
-            sessionStorage.getItem(PREV_ACCESS_TOKEN_KEY)
-        ) {
-            restoreGuestToken();
         }
         if (sessionStorage.getItem(ACCESS_DENIED_TOKEN_KEY) === shareToken) {
             sessionStorage.removeItem(ACCESS_DENIED_TOKEN_KEY);
             return { authenticated: false, reason: "share_access_denied" };
         }
 
-        if (activeShareSession?.shareToken === shareToken) {
+        if (
+            activeShareSession?.shareToken === shareToken &&
+            activeShareSession.identity === sessionIdentity()
+        ) {
             return activeShareSession.session;
         }
-
-        // If the visitor already has a valid full-account session, send
-        // their existing token along so the server can check whether they
-        // already have direct access to the shared resource through their
-        // own account (e.g. they are the meeting owner or an invited
-        // participant). Read this *before* any guest-token swap below.
-        const priorSessionResult =
-            (stageCtx.stageResults?.["validate-stored-token"] ?? [])[0] ?? null;
-        const ownAccountId = String(
-            localStorage.getItem(ACCOUNT_KEY) ?? "",
-        ).trim();
-        const hasValidatedAccountSession =
-            priorSessionResult?.valid === true &&
-            !isViewingAsGuest() &&
-            !ownAccountId.startsWith("share:");
-        let response;
-        try {
-            response = await resolveReceivedShare(shareToken, {
-                useAccountKeyring: hasValidatedAccountSession,
-            });
-        } catch {
-            return {
-                authenticated: false,
-                reason: "share_resolve_failed",
-            };
+        if (
+            pendingShareResolution?.shareToken === shareToken &&
+            pendingShareResolution.identity === sessionIdentity()
+        ) {
+            return pendingShareResolution.promise;
         }
-
-        if (!response) {
-            return {
-                authenticated: false,
-                reason: "share_unlock_cancelled",
-            };
-        }
-
-        if (!response.ok) {
-            const wasDeniedWhileOpen =
-                sessionStorage.getItem(ACCESS_DENIED_TOKEN_KEY) === shareToken;
-            if (wasDeniedWhileOpen) {
-                sessionStorage.removeItem(ACCESS_DENIED_TOKEN_KEY);
-            }
-            const errorPayload = await response
-                .clone()
-                .json()
-                .catch(() => null);
-            const errorCode = String(errorPayload?.error?.code ?? "");
-            return {
-                authenticated: false,
-                reason: wasDeniedWhileOpen
-                    ? "share_access_denied"
-                    : errorCode === "recipient_restricted" ||
-                        errorCode === "forbidden"
-                      ? "share_access_denied"
-                      : response.status === 404
-                        ? "share_not_found"
-                        : "share_expired",
-            };
-        }
-
-        const body = await response.json().catch(() => ({ data: null }));
-        const shareData = body?.data ?? null;
-        if (!shareData?.resourceType) {
-            return { authenticated: false, reason: "share_malformed" };
-        }
-        const isUserShare = Array.isArray(shareData.accessControls?.recipients)
-            ? shareData.accessControls.recipients.some(
-                  (recipient) => recipient?.type === "user",
-              )
-            : false;
-        if (isUserShare && shareData.directAccess !== true) {
-            return {
-                authenticated: false,
-                reason: "recipient_restricted",
-            };
-        }
-
-        const shareContext = {
-            shareId: String(shareData.shareId ?? ""),
-            resourceType: shareData.resourceType,
-            resourceId: shareData.resourceId ?? null,
-            payload: shareData.payload ?? {},
-            contentUrl: String(shareData.contentUrl ?? "").trim(),
-            grantedCapabilities: Array.isArray(shareData.grantedCapabilities)
-                ? shareData.grantedCapabilities
-                : [],
-            page: {
-                ...SHARE_GUEST_PAGE_DEFAULTS,
-                ...(shareData.page ?? {}),
-            },
-            guestAccessToken: shareData.guestAccessToken ?? null,
-            guestProfile: shareData.guestProfile ?? null,
-            guestKeyring: shareData.guestKeyring ?? null,
-            directAccess: shareData.directAccess === true,
+        if (isViewingAsGuest() && sessionStorage.getItem(PREV_ACCESS_TOKEN_KEY))
+            restoreGuestToken();
+        const resolution = {
+            shareToken,
+            identity: sessionIdentity(),
+            promise: null,
         };
-
-        if (shareData.directAccess === true) {
-            // Logged-in recipients retain their full account session. The
-            // renderer receives the scoped guest token separately for
-            // share-only API calls, so notification navigation never swaps
-            // localStorage credentials or appears to log the user out.
-            const accountSession = {
-                authenticated: true,
-                accountId: priorSessionResult?.accountId ?? ownAccountId,
-                role:
-                    priorSessionResult?.role ??
-                    localStorage.getItem("cognis_role") ??
-                    "user",
-                isGuestSession: false,
-                shareContext,
-            };
-            activeShareSession = { shareToken, session: accountSession };
-            startShareStatusMonitor(shareContext.shareId);
-            return accountSession;
-        }
-
-        if (!shareToken.startsWith("shr_")) {
-            return { authenticated: false, reason: "recipient_restricted" };
-        }
-        const abortController = await activateGuestToken(
-            shareData.guestAccessToken,
-            shareData.guestProfile,
-            shareData.guestKeyring,
+        pendingShareResolution = resolution;
+        resolution.promise = resolveShareSession(
+            stageCtx,
+            shareToken,
+            resolution,
         );
-        if (abortController && stageCtx.data) {
-            stageCtx.data.shareAbortController = abortController;
+        try {
+            return await resolution.promise;
+        } finally {
+            if (pendingShareResolution === resolution)
+                pendingShareResolution = null;
         }
-
-        if (typeof window !== "undefined") {
-            window.addEventListener("beforeunload", restoreGuestToken, {
-                signal: abortController?.signal,
-            });
-        }
-
-        const guestSession = {
-            authenticated: true,
-            accountId: null,
-            role: "user",
-            isGuestSession: true,
-            shareContext,
-        };
-        activeGuestSession = { shareToken, session: guestSession };
-        activeShareSession = activeGuestSession;
-        startShareStatusMonitor(shareContext.shareId);
-        return guestSession;
     },
 );
+
+async function resolveShareSession(stageCtx, shareToken, resolution) {
+    // If the visitor already has a valid full-account session, send
+    // their existing token along so the server can check whether they
+    // already have direct access to the shared resource through their
+    // own account (e.g. they are the meeting owner or an invited
+    // participant). Read this *before* any guest-token swap below.
+    const priorSessionResult =
+        (stageCtx.stageResults?.["validate-stored-token"] ?? [])[0] ?? null;
+    const ownAccountId = String(localStorage.getItem(ACCOUNT_KEY) ?? "").trim();
+    const hasValidatedAccountSession =
+        priorSessionResult?.valid === true &&
+        !isViewingAsGuest() &&
+        !ownAccountId.startsWith("share:");
+    let response;
+    try {
+        response = await resolveReceivedShare(shareToken, {
+            useAccountKeyring: hasValidatedAccountSession,
+        });
+    } catch (error) {
+        log("error", "share_session_resolution_failed", {
+            component: "share",
+            operation: "resolveSession",
+            errorName: error?.name,
+        });
+        return {
+            authenticated: false,
+            reason: "share_resolve_failed",
+        };
+    }
+
+    if (!isCurrentResolution(resolution))
+        return { authenticated: false, reason: "share_resolution_cancelled" };
+    if (!response) {
+        return {
+            authenticated: false,
+            reason: "share_unlock_cancelled",
+        };
+    }
+
+    if (!response.ok) {
+        const wasDeniedWhileOpen =
+            sessionStorage.getItem(ACCESS_DENIED_TOKEN_KEY) === shareToken;
+        if (wasDeniedWhileOpen) {
+            sessionStorage.removeItem(ACCESS_DENIED_TOKEN_KEY);
+        }
+        const errorPayload = await response
+            .clone()
+            .json()
+            .catch(() => null);
+        const errorCode = String(errorPayload?.error?.code ?? "");
+        return {
+            authenticated: false,
+            reason: wasDeniedWhileOpen
+                ? "share_access_denied"
+                : errorCode === "recipient_restricted" ||
+                    errorCode === "forbidden"
+                  ? "share_access_denied"
+                  : response.status === 404
+                    ? "share_not_found"
+                    : "share_expired",
+        };
+    }
+
+    const body = await response.json().catch(() => ({ data: null }));
+    const shareData = body?.data ?? null;
+    if (!isCurrentResolution(resolution))
+        return { authenticated: false, reason: "share_resolution_cancelled" };
+    if (!shareData?.resourceType) {
+        return { authenticated: false, reason: "share_malformed" };
+    }
+    const isUserShare = Array.isArray(shareData.accessControls?.recipients)
+        ? shareData.accessControls.recipients.some(
+              (recipient) => recipient?.type === "user",
+          )
+        : false;
+    if (isUserShare && shareData.directAccess !== true) {
+        return {
+            authenticated: false,
+            reason: "recipient_restricted",
+        };
+    }
+
+    const shareContext = {
+        shareId: String(shareData.shareId ?? ""),
+        resourceType: shareData.resourceType,
+        resourceId: shareData.resourceId ?? null,
+        payload: shareData.payload ?? {},
+        contentUrl: String(shareData.contentUrl ?? "").trim(),
+        grantedCapabilities: Array.isArray(shareData.grantedCapabilities)
+            ? shareData.grantedCapabilities
+            : [],
+        page: {
+            ...SHARE_GUEST_PAGE_DEFAULTS,
+            ...(shareData.page ?? {}),
+        },
+        guestAccessToken: shareData.guestAccessToken ?? null,
+        guestProfile: shareData.guestProfile ?? null,
+        guestKeyring: shareData.guestKeyring ?? null,
+        directAccess: shareData.directAccess === true,
+    };
+
+    if (shareData.directAccess === true) {
+        // Logged-in recipients retain their full account session. The
+        // renderer receives the scoped guest token separately for
+        // share-only API calls, so notification navigation never swaps
+        // localStorage credentials or appears to log the user out.
+        const accountSession = {
+            authenticated: true,
+            accountId: priorSessionResult?.accountId ?? ownAccountId,
+            role:
+                priorSessionResult?.role ??
+                localStorage.getItem("cognis_role") ??
+                "user",
+            isGuestSession: false,
+            shareContext,
+        };
+        activeShareSession = {
+            shareToken,
+            session: accountSession,
+            identity: sessionIdentity(),
+        };
+        startShareStatusMonitor(shareContext.shareId);
+        return accountSession;
+    }
+
+    if (!shareToken.startsWith("shr_")) {
+        return { authenticated: false, reason: "recipient_restricted" };
+    }
+    const abortController = await activateGuestToken(
+        shareData.guestAccessToken,
+        shareData.guestProfile,
+        shareData.guestKeyring,
+        resolution,
+    );
+    if (!abortController || !isCurrentResolution(resolution))
+        return { authenticated: false, reason: "share_resolution_cancelled" };
+    if (abortController && stageCtx.data) {
+        stageCtx.data.shareAbortController = abortController;
+    }
+
+    if (typeof window !== "undefined") {
+        window.addEventListener("beforeunload", restoreGuestToken, {
+            signal: abortController?.signal,
+        });
+    }
+
+    const guestSession = {
+        authenticated: true,
+        accountId: null,
+        role: "user",
+        isGuestSession: true,
+        shareContext,
+    };
+    activeGuestSession = {
+        shareToken,
+        session: guestSession,
+        identity: sessionIdentity(),
+    };
+    activeShareSession = activeGuestSession;
+    startShareStatusMonitor(shareContext.shareId);
+    return guestSession;
+}

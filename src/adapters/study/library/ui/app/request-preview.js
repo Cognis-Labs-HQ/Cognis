@@ -1,9 +1,12 @@
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { showToast } from "/static/reuse/toast.js";
 import { renderEntryCard } from "./cards.js";
 import { layerForEntry } from "./presentation.js";
 import { openEntryPopup } from "./entry-popup.js";
 import { stageLibraryPromotion } from "/static/gateways/study/library-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
+
+const log = bindCapability("ui:log");
 
 export function requestPreviewContext(request, entries, staged = true) {
     const entry =
@@ -116,7 +119,7 @@ export function bindRequestPreviews(
                     },
                 );
             } catch (error) {
-                console.error("Study request preview failed.", {
+                void log("error", "Study request preview failed.", {
                     component: "study-library",
                     operation: "requestPreview",
                     requestId: request.id,

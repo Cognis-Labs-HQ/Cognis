@@ -26,7 +26,7 @@ Progress uses the active DB executor. Event queries accept actor, content scope 
 
 ### Learning Progress
 
-Shared Progress event, actor, projection and capability types live in gateways/study/reuse/progress.ts. The gateway no longer imports an optional adapter entry point for these contracts; the adapter implements the same capability and keeps its public exports. Event and correction JSON bodies are limited to 60,000 bytes; oversized requests return 413 before recording. Existing privacy, classroom checks, correction, rewards and rebuild flows remain active.
+Shared Progress event, actor, projection and capability types live in gateways/study/reuse/progress.ts. The adapter implements the gateway-owned capability contract. Event and correction JSON bodies are limited to 60,000 bytes; oversized requests return 413 before recording. Existing privacy, classroom checks, correction, rewards and rebuild flows remain active.
 
 The Progress adapter records append-only, idempotent learning events and derives rebuildable learner projections. Each event identifies its actor, canonical content and revision, activity and scope, attempt result, hint use, duration, completion state, and bounded metadata.
 

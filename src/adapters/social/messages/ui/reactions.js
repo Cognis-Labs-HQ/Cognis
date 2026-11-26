@@ -1,9 +1,12 @@
+import { bindCapability } from "/static/reuse/capabilities.js";
 import { nextReactionState } from "./reaction-state.js";
 import { fetchEmojiCatalog } from "./emoji-catalog.js";
 import { messagesFetch as apiFetch } from "./offline-client.js";
 import { createAnchoredPopup, openPopup } from "/static/reuse/popup.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { resolveMemberDisplayName } from "/static/reuse/member-display-name.js";
+
+const log = bindCapability("ui:log");
 
 const MAX_EMOJI_PICKER_DISPLAY_COUNT = 80;
 
@@ -69,7 +72,6 @@ export function createMessageReactionsController({
     maxEmojiDisplayCount = MAX_EMOJI_PICKER_DISPLAY_COUNT,
     onReactionUpdated,
 } = {}) {
-    const log = console.error.bind(console);
     const stateCache = {
         emojiList: null,
         emojiUsage: [],
@@ -175,7 +177,7 @@ export function createMessageReactionsController({
                 }),
             )
             .catch((error) => {
-                log("[messages] emoji usage recording failed", {
+                void log("error", "[messages] emoji usage recording failed", {
                     component: "messages",
                     operation: "recordEmojiUsage",
                     errorName: error?.name,

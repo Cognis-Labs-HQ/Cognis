@@ -12,4 +12,4 @@ Beim Ziehen eines Widgets unter das aktuelle Raster werden Inhalt, Rasterüberla
 
 ## Commits
 
-- [42d72de61ab7765abe866b3fd3a0214bcfb2b006](https://github.com/Cognis-Labs-HQ/Cognis/commit/42d72de61ab7765abe866b3fd3a0214bcfb2b006)
+- [42d72de](https://github.com/Cognis-Labs-HQ/Cognis/commit/42d72de61ab7765abe866b3fd3a0214bcfb2b006)
