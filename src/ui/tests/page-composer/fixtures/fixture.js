@@ -197,6 +197,7 @@ try {
     window.fixture = {
         menu,
         menuChoices,
+        elementCount: elements.length,
         composer,
         lifetime,
         openFixturePopup,

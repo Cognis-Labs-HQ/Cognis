@@ -53,6 +53,8 @@ Mode penyuntingan menggunakan baris tetap dan geometri piksel yang memperhitungk
 
 Penangkapan penunjuk mempertahankan titik pegangan saat menggulir, bukan memusatkan kartu di bawah penunjuk. Editor utama dan bersarang berbagi pemeriksaan identitas penunjuk, pengguliran tepi, pembatalan, dan pembersihan penangkapan. Pembatalan penunjuk atau pelepasan editor membuang perpindahan dan perluasan kisi sementara. Kontrol ukuran dan hapus pada layar sentuh menyediakan sasaran 44px; memperkecil Elemen menyembunyikan isi dan tindakannya sampai diperluas kembali. Mode penyuntingan tetap aktif sampai penyimpanan berhasil agar perenderan responsif tidak memulihkan tata letak lama selama penulisan berlangsung.
 
+Pegangan ukuran hanya muncul jika perubahan ukuran mematuhi batas elemen dan tidak bertabrakan dengan kisi yang terisi. Pengecilan tetap tersedia di samping elemen lain. Kursor membedakan pembesaran, pengecilan, dan gerakan sudut campuran; percobaan yang bertabrakan dengan elemen lain menampilkan `not-allowed`. Penghapusan elemen menggunakan tampilan bersama `btn-cancel`.
+
 ### Navigasi Sub-Halaman
 
 Saat `subPageNavigation: true`, hanya satu elemen yang terlihat pada satu waktu. Tombol toolbar dengan `[data-composer-scroll]` berfungsi sebagai pemilih bagian.

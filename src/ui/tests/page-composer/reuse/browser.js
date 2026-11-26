@@ -29,7 +29,7 @@ export async function startFixture(
     await browser.waitFor("Boolean(window.fixture)");
     assert.equal(await browser.evaluate("window.fixture.error ?? null"), null);
     await browser.waitFor(
-        'document.querySelectorAll("[data-composer-element]").length === 2',
+        'document.querySelectorAll("[data-composer-element]").length === window.fixture.elementCount',
     );
     await browser.evaluate(
         `document.fonts.ready.then(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))))`,

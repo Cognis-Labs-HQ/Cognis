@@ -53,6 +53,8 @@ Im Bearbeitungsmodus verwenden Karten, Ziehvorschauen und Größenänderungsgrif
 
 Die Zeigererfassung erhält den angefassten Punkt auch beim Scrollen, statt die Karte unter dem Zeiger zu zentrieren. Haupt- und verschachtelte Editoren teilen Zeigerprüfung, Randscrollen, Abbruch und Freigabe der Erfassung. Zeigerabbruch oder Entfernen des Editors verwirft vorläufige Bewegung und Rastererweiterung. Größenregler und Entfernen bieten auf Touchscreens 44px große Ziele. Das Minimieren von Elemente blendet Inhalt und Aktionen bis zum erneuten Öffnen aus. Der Bearbeitungsmodus bleibt bis zum erfolgreichen Speichern aktiv, damit eine responsive Neudarstellung während des Schreibens kein älteres Layout wiederherstellt.
 
+Größenregler erscheinen nur, wenn eine zulässige Größenänderung innerhalb der Grenzen und ohne Überschneidung mit belegten Rasterfeldern möglich ist. Verkleinern bleibt neben anderen Elementen verfügbar. Zeiger unterscheiden Vergrößern, Verkleinern und gemischte Eckbewegungen; Versuche mit Überschneidungen zeigen `not-allowed`. Das Entfernen verwendet die gemeinsame Darstellung von `btn-cancel`.
+
 ### Unterseiten-Navigation
 
 Wenn `subPageNavigation: true`, ist jeweils nur ein Element sichtbar. Toolbar-Schaltflächen mit `[data-composer-scroll]` dienen als Abschnittsselektoren. Der aktive Abschnitt wird im URL-Hash für Deep-Links gespeichert.

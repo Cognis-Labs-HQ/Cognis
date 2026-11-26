@@ -55,5 +55,43 @@
                 "min": [1, 1]
             }
         }
+    ],
+    "blocked": [
+        {
+            "id": "form",
+            "template": "form-content",
+            "gridSize": {
+                "default": [5, 2],
+                "min": [5, 2],
+                "max": [7, 4]
+            }
+        },
+        {
+            "id": "right",
+            "template": "form-content",
+            "gridSize": {
+                "default": [5, 2],
+                "min": [5, 2],
+                "max": [7, 4]
+            }
+        },
+        {
+            "id": "below",
+            "template": "form-content",
+            "gridSize": {
+                "default": [5, 2],
+                "min": [5, 2],
+                "max": [7, 4]
+            }
+        },
+        {
+            "id": "corner",
+            "template": "form-content",
+            "gridSize": {
+                "default": [5, 2],
+                "min": [5, 2],
+                "max": [7, 4]
+            }
+        }
     ]
 }

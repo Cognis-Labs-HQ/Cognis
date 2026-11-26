@@ -1,3 +1,4 @@
+import { resolveResizeAvailability } from "./resize-availability.js";
 import { bindComposerPointerDrag } from "./pointer-drag.js";
 /**
  * Main grid overlay helpers for page composer edit mode.
@@ -218,7 +219,7 @@ export function createGridOverlayHandlers({
         cell.style.width = `${gridColumnSpanSize(placement.w)}px`;
         cell.style.height = `${gridRowSpanSize(placement.h)}px`;
         const closeBtn = document.createElement("button");
-        closeBtn.className = "composer-close-btn";
+        closeBtn.className = "composer-close-btn btn-cancel";
         closeBtn.type = "button";
         closeBtn.textContent = "×";
         closeBtn.setAttribute("aria-label", i18n.t("ui.reuse.remove"));
@@ -470,7 +471,7 @@ export function createGridOverlayHandlers({
             });
             if (!el.pinned) {
                 const closeBtn = document.createElement("button");
-                closeBtn.className = "composer-close-btn";
+                closeBtn.className = "composer-close-btn btn-cancel";
                 closeBtn.type = "button";
                 closeBtn.textContent = "×";
                 closeBtn.setAttribute("aria-label", i18n.t("ui.reuse.remove"));
@@ -497,27 +498,32 @@ export function createGridOverlayHandlers({
         }
         if (state.editing) {
             const gridSize = getGridSize(el);
-            const canResizeE =
-                !gridSize.fullWidth &&
-                (!gridSize.max || gridSize.max[0] > gridSize.min[0]);
-            const canResizeS =
-                !gridSize.max || gridSize.max[1] > gridSize.min[1];
-            if (canResizeE) {
+            const availability = resolveResizeAvailability({
+                placement,
+                gridSize,
+                columns: state.gridCols,
+                rows: state.gridRows,
+                canPlace: canPlace,
+            });
+            if (availability.east) {
                 const handleE = document.createElement("div");
                 handleE.className = "composer-resize-handle composer-resize-e";
+                handleE.style.cursor = availability.east;
                 bindResizeHandle(handleE, "e", el, placement);
                 cell.appendChild(handleE);
             }
-            if (canResizeS) {
+            if (availability.south) {
                 const handleS = document.createElement("div");
                 handleS.className = "composer-resize-handle composer-resize-s";
+                handleS.style.cursor = availability.south;
                 bindResizeHandle(handleS, "s", el, placement);
                 cell.appendChild(handleS);
             }
-            if (canResizeE && canResizeS) {
+            if (availability.southeast) {
                 const handleSE = document.createElement("div");
                 handleSE.className =
                     "composer-resize-handle composer-resize-se";
+                handleSE.style.cursor = availability.southeast;
                 bindResizeHandle(handleSE, "se", el, placement);
                 cell.appendChild(handleSE);
             }
@@ -529,6 +535,7 @@ export function createGridOverlayHandlers({
             if (e.button !== 0 || e.isPrimary === false) return;
             e.preventDefault();
             e.stopPropagation();
+            const resizeCursor = handle.style.cursor;
             const gridSize = getGridSize(el);
             const shade = document.createElement("div");
             shade.className = "composer-shade";
@@ -585,8 +592,14 @@ export function createGridOverlayHandlers({
                         el.id,
                     ),
                 );
+                handle.style.cursor = shade.classList.contains(
+                    "composer-shade--invalid",
+                )
+                    ? "not-allowed"
+                    : resizeCursor;
             }
             function onUp(event) {
+                handle.style.cursor = resizeCursor;
                 shade.remove();
                 cell.classList.remove("composer-cell--resizing");
                 if (event.type === "pointercancel") return;

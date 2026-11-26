@@ -68,6 +68,8 @@ Edit mode uses fixed row tracks and the same gap-aware pixel geometry for cards,
 
 Pointer capture preserves the grabbed point through scrolling rather than centering a card under the pointer. Main and nested editors share pointer identity checks, edge scrolling, cancellation and capture cleanup. Pointer cancellation or unmounting discards provisional movement and grid growth. Touch resize and remove controls provide 44px targets; minimizing Elements hides its body and actions until expanded. Edit mode remains active until saving succeeds, so responsive redraws cannot restore an older layout during a pending write.
 
+Resize handles appear only when the element has a legal size change within its limits and the occupied grid. Shrinking remains available beside other elements. Cursors distinguish expansion, shrinking and mixed-axis corner moves; attempts that overlap another tile show `not-allowed`. Element removal uses the shared `btn-cancel` appearance.
+
 ### Sub-page navigation
 
 When `subPageNavigation: true`, only one element is visible at a time. Toolbar buttons with `[data-composer-scroll]` act as section selectors. The active section is stored in the URL hash for deep-links.

@@ -1,3 +1,4 @@
+import { resolveResizeAvailability } from "./resize-availability.js";
 import { bindComposerPointerDrag } from "./pointer-drag.js";
 import {
     composerPresentation,
@@ -268,6 +269,7 @@ export function createSubComposerHandlers({
             e.preventDefault();
             e.stopPropagation();
 
+            const resizeCursor = handle.style.cursor;
             const gridSize = getGridSize(el);
 
             const shade = document.createElement("div");
@@ -332,9 +334,15 @@ export function createSubComposerHandlers({
                         el.id,
                     ),
                 );
+                handle.style.cursor = shade.classList.contains(
+                    "composer-shade--invalid",
+                )
+                    ? "not-allowed"
+                    : resizeCursor;
             }
 
             function onUp(event) {
+                handle.style.cursor = resizeCursor;
                 shade.remove();
                 cell.classList.remove("composer-cell--resizing");
                 if (event.type === "pointercancel") return;
@@ -591,7 +599,7 @@ export function createSubComposerHandlers({
 
             if (!el.pinned) {
                 const closeBtn = document.createElement("button");
-                closeBtn.className = "composer-close-btn";
+                closeBtn.className = "composer-close-btn btn-cancel";
                 closeBtn.type = "button";
                 closeBtn.textContent = "×";
                 closeBtn.setAttribute("aria-label", i18n.t("ui.reuse.remove"));
@@ -620,28 +628,32 @@ export function createSubComposerHandlers({
 
         if (state.editing) {
             const gridSize = getGridSize(el);
-            const canResizeE =
-                !gridSize.fullWidth &&
-                (!gridSize.max || gridSize.max[0] > gridSize.min[0]);
-            const canResizeS =
-                !gridSize.max || gridSize.max[1] > gridSize.min[1];
-
-            if (canResizeE) {
+            const availability = resolveResizeAvailability({
+                placement,
+                gridSize,
+                columns: state.gridCols,
+                rows: state.gridRows,
+                canPlace: (...args) => canSubPlace(state, ...args),
+            });
+            if (availability.east) {
                 const handleE = document.createElement("div");
                 handleE.className = "composer-resize-handle composer-resize-e";
+                handleE.style.cursor = availability.east;
                 bindSubResizeHandle(handleE, "e", el, placement, state);
                 cell.appendChild(handleE);
             }
-            if (canResizeS) {
+            if (availability.south) {
                 const handleS = document.createElement("div");
                 handleS.className = "composer-resize-handle composer-resize-s";
+                handleS.style.cursor = availability.south;
                 bindSubResizeHandle(handleS, "s", el, placement, state);
                 cell.appendChild(handleS);
             }
-            if (canResizeE && canResizeS) {
+            if (availability.southeast) {
                 const handleSE = document.createElement("div");
                 handleSE.className =
                     "composer-resize-handle composer-resize-se";
+                handleSE.style.cursor = availability.southeast;
                 bindSubResizeHandle(handleSE, "se", el, placement, state);
                 cell.appendChild(handleSE);
             }
