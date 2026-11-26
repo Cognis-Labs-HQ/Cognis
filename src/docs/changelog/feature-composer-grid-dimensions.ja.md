@@ -26,6 +26,10 @@
 
 メインと入れ子の編集画面で、すべての辺と角から8方向のサイズ変更が可能になりました。左辺と上辺からの変更では反対側の辺を固定し、サイズと重なりの制限を適用してタッチのプレビューをつかんだ位置に合わせます。「完了」、レイアウトのショートカット、リセット操作は、共通の保存フローで翻訳済みの成功または失敗の通知を表示します。失敗時は変更内容を保持して再試行でき、同時保存は1つのリクエストを共有し、ページ終了後の通知を抑止します。
 
+## 編集ヘルパーの契約
+
+再利用可能な編集モジュールに、公開エクスポート、呼び出し例、入出力契約、解放処理の責任を記載しました。技術リファレンスでは、保存結果、編集状態、実際の列数別の保存形式を対応する4言語で説明します。
+
 ## コミット
 
 - [42d72de](https://github.com/Cognis-Labs-HQ/Cognis/commit/42d72de61ab7765abe866b3fd3a0214bcfb2b006)
@@ -34,3 +38,4 @@
 - [cb2952d](https://github.com/Cognis-Labs-HQ/Cognis/commit/cb2952d3be976a2bdb224022153b5f34aec0c434)
 - [fcc204f](https://github.com/Cognis-Labs-HQ/Cognis/commit/fcc204fe09b8fa86814d5f24b5d3839dfbc51c2b)
 - [286d397](https://github.com/Cognis-Labs-HQ/Cognis/commit/286d397650ef4e285375d95201a7eee6c70b6528)
+- [f038150](https://github.com/Cognis-Labs-HQ/Cognis/commit/f03815014aee59973f68dc3f040c2bf248309f9e)

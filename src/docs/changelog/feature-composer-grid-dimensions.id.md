@@ -26,6 +26,10 @@ Penghapusan elemen kini menggunakan tampilan tombol batal bersama. Pegangan ukur
 
 Widget kini dapat diubah ukurannya dari delapan tepi dan sudut di editor utama maupun bersarang. Pengubahan dari kiri dan atas mempertahankan tepi yang berlawanan, mengikuti batas ukuran dan tabrakan, serta menjaga pratinjau sentuh pada titik pegangan. Selesai, pintasan tata letak, dan Atur Ulang menampilkan notifikasi sukses atau gagal melalui satu alur penyimpanan bersama. Kegagalan mempertahankan perubahan untuk dicoba kembali; penyimpanan bersamaan berbagi satu permintaan dan pembatalan halaman mencegah notifikasi terlambat.
 
+## Kontrak Helper Editor
+
+Modul editor yang dapat digunakan kembali mendokumentasikan ekspor publik, contoh pemanggilan, kontrak masukan/keluaran, dan tanggung jawab pembersihan. Referensi teknis menjelaskan hasil penyimpanan, state editor, dan struktur persistensi per kolom yang sebenarnya dalam keempat bahasa yang didukung.
+
 ## Komit
 
 - [42d72de](https://github.com/Cognis-Labs-HQ/Cognis/commit/42d72de61ab7765abe866b3fd3a0214bcfb2b006)
@@ -34,3 +38,4 @@ Widget kini dapat diubah ukurannya dari delapan tepi dan sudut di editor utama m
 - [cb2952d](https://github.com/Cognis-Labs-HQ/Cognis/commit/cb2952d3be976a2bdb224022153b5f34aec0c434)
 - [fcc204f](https://github.com/Cognis-Labs-HQ/Cognis/commit/fcc204fe09b8fa86814d5f24b5d3839dfbc51c2b)
 - [286d397](https://github.com/Cognis-Labs-HQ/Cognis/commit/286d397650ef4e285375d95201a7eee6c70b6528)
+- [f038150](https://github.com/Cognis-Labs-HQ/Cognis/commit/f03815014aee59973f68dc3f040c2bf248309f9e)

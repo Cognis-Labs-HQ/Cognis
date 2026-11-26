@@ -26,6 +26,10 @@ Das Entfernen von Elementen verwendet jetzt die gemeinsame Darstellung der Abbre
 
 Widgets lassen sich in Haupt- und verschachtelten Editoren an allen acht Kanten und Ecken skalieren. Links und oben bleibt die gegenüberliegende Kante fest; Größen- und Kollisionsgrenzen gelten weiter, und Touch-Vorschauen bleiben am Griffpunkt. Fertig, das Layout-Kürzel und Zurücksetzen melden Erfolg oder Fehler über einen gemeinsamen Speicherablauf. Fehlgeschlagene Schreibvorgänge erhalten ausstehende Änderungen; gleichzeitige Speicheraufrufe teilen eine Anfrage, und Seitenabbruch verhindert spätere Meldungen.
 
+## Verträge der Editor-Helfer
+
+Wiederverwendbare Editormodule dokumentieren öffentliche Exporte, Aufrufbeispiele, Ein- und Ausgabeverträge sowie Bereinigungsaufgaben. Die technische Referenz beschreibt Speicherergebnisse, Editorzustand und die tatsächliche spaltenbezogene Speicherstruktur in allen vier unterstützten Sprachen.
+
 ## Commits
 
 - [42d72de](https://github.com/Cognis-Labs-HQ/Cognis/commit/42d72de61ab7765abe866b3fd3a0214bcfb2b006)
@@ -34,3 +38,4 @@ Widgets lassen sich in Haupt- und verschachtelten Editoren an allen acht Kanten 
 - [cb2952d](https://github.com/Cognis-Labs-HQ/Cognis/commit/cb2952d3be976a2bdb224022153b5f34aec0c434)
 - [fcc204f](https://github.com/Cognis-Labs-HQ/Cognis/commit/fcc204fe09b8fa86814d5f24b5d3839dfbc51c2b)
 - [286d397](https://github.com/Cognis-Labs-HQ/Cognis/commit/286d397650ef4e285375d95201a7eee6c70b6528)
+- [f038150](https://github.com/Cognis-Labs-HQ/Cognis/commit/f03815014aee59973f68dc3f040c2bf248309f9e)
