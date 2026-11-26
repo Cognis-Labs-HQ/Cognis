@@ -49,10 +49,10 @@ for (const { viewport, query } of cases) {
                 );
                 assert.equal(action.lines, 1, "Action labels stay on one line");
             }
-            if (viewport[0] >= 900)
+            if (viewport[0] >= 900 && !query.includes("lang="))
                 assert.ok(
-                    panel.width > 300,
-                    "Desktop panel uses available width",
+                    panel.width < 320,
+                    "Empty Elements panel uses only the width its labels require",
                 );
             // Move the floating controls clear of the pointer target without changing grid layout.
             await browser.evaluate(
@@ -101,6 +101,10 @@ for (const { viewport, query } of cases) {
                 `document.querySelector('.composer-shade')?.getBoundingClientRect().toJSON()`,
             );
             assert.ok(shade, "Dragging displays a preview");
+            assert.ok(
+                shade.top >= initialShade.top - 1,
+                "A small movement never recenters the preview above the grabbed card",
+            );
             for (const dimension of ["width", "height"])
                 assert.ok(
                     Math.abs(bounds.card[dimension] - shade[dimension]) < 1,
@@ -115,3 +119,36 @@ for (const { viewport, query } of cases) {
         },
     );
 }
+
+test(
+    "Elements actions fit a small screen with enlarged German text",
+    { skip, timeout: 60000 },
+    async (context) => {
+        const { browser } = await startFixture(context, "?lang=de", [390, 844]);
+        await browser.command("Emulation.setTouchEmulationEnabled", {
+            enabled: true,
+            maxTouchPoints: 2,
+        });
+        await browser.evaluate(
+            `document.documentElement.style.fontSize = '24px'; document.querySelector('#composer-edit-toggle').click()`,
+        );
+        await browser.waitFor(
+            `Boolean(document.querySelector('.composer-panel'))`,
+        );
+        const bounds = await browser.evaluate(`(() => {
+        const panel = document.querySelector('.composer-panel');
+        return { ...panel.getBoundingClientRect().toJSON(), actions: [...panel.querySelectorAll('.composer-panel-actions a')].map(action => ({ width: action.clientWidth, scrollWidth: action.scrollWidth, height: action.getBoundingClientRect().height })) };
+    })()`);
+        assertHorizontallyContained(bounds, 390, "Enlarged Elements panel");
+        for (const action of bounds.actions) {
+            assert.ok(
+                action.scrollWidth <= action.width + 1,
+                "Enlarged labels fit their controls",
+            );
+            assert.ok(
+                action.height >= 44,
+                "Touch actions retain their target height",
+            );
+        }
+    },
+);

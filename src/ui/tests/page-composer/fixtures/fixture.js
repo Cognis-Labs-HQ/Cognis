@@ -68,7 +68,7 @@ try {
     const composer = createPageComposer(root, {
         i18n,
         preferenceKey: nested ? "responsive-nested" : "responsive-grid",
-        allowCustomization: true,
+        allowCustomization: !nested,
         frameless: options.has("frameless"),
         requireAccountSession: false,
         enableAccountEnhancements: false,

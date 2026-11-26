@@ -51,6 +51,8 @@ Baris kisi yang dapat disunting memiliki tinggi dasar 90 px; kolom berbagi lebar
 
 Mode penyuntingan menggunakan baris tetap dan geometri piksel yang memperhitungkan jarak untuk kartu, pratinjau seret, dan pegangan pengubahan ukuran, termasuk penempatan setengah kisi. Konten gulir menyediakan ruang bilah gulir sebelum pengukuran; koordinat penunjuk tidak menyertakan inset konten bersama. Panel Elemen menyesuaikan lebar dengan isinya dalam batas layar. Lebar terukur menentukan posisi awal dan pembatasan posisi berikutnya.
 
+Penangkapan penunjuk mempertahankan titik pegangan saat menggulir, bukan memusatkan kartu di bawah penunjuk. Editor utama dan bersarang berbagi pemeriksaan identitas penunjuk, pengguliran tepi, pembatalan, dan pembersihan penangkapan. Pembatalan penunjuk atau pelepasan editor membuang perpindahan dan perluasan kisi sementara. Kontrol ukuran dan hapus pada layar sentuh menyediakan sasaran 44px; memperkecil Elemen menyembunyikan isi dan tindakannya sampai diperluas kembali. Mode penyuntingan tetap aktif sampai penyimpanan berhasil agar perenderan responsif tidak memulihkan tata letak lama selama penulisan berlangsung.
+
 ### Navigasi Sub-Halaman
 
 Saat `subPageNavigation: true`, hanya satu elemen yang terlihat pada satu waktu. Tombol toolbar dengan `[data-composer-scroll]` berfungsi sebagai pemilih bagian.

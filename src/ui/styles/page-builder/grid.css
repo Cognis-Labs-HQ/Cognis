@@ -1,4 +1,5 @@
-.content-grid.composer-grid-active > .content-panel {
+.content-grid.composer-grid-active > .content-panel,
+.content-panel:has(.sub-composer-inner.composer-grid-active) {
     scrollbar-gutter: stable;
 }
 
@@ -8,10 +9,10 @@
     z-index: 0;
 }
 
-.composer-grid-active .composer-grid-overlay,
-.composer-grid-active .composer-cell,
-.composer-grid-active .composer-shade,
-.composer-grid-active .composer-dropzone-line {
+.composer-view-grid.composer-grid-active > .composer-grid-overlay,
+.composer-view-grid.composer-grid-active > .composer-cell,
+.composer-view-grid.composer-grid-active > .composer-shade,
+.composer-view-grid.composer-grid-active > .composer-dropzone-line {
     transform: translate(
         var(--composer-grid-inset, 0px),
         var(--composer-grid-inset, 0px)
@@ -185,8 +186,7 @@
     box-shadow: var(--shadow);
     box-sizing: border-box;
     width: max-content;
-    min-width: min(20rem, calc(100vw - 24px));
-    max-width: min(28rem, calc(100vw - 24px));
+    max-width: calc(100vw - 24px);
     user-select: none;
 }
 
@@ -195,7 +195,8 @@
     width: auto;
 }
 
-.composer-panel--minimized .composer-panel-body {
+.composer-panel--minimized .composer-panel-body,
+.composer-panel--minimized .composer-panel-actions {
     display: none;
 }
 
@@ -277,15 +278,22 @@
 }
 
 .composer-panel-actions {
-    display: flex;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 8px;
     padding: 10px 12px;
     border-top: 1px solid var(--border);
 }
 
-.composer-panel-actions .composer-done-btn {
-    flex: 1;
+.composer-panel-decisions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.composer-panel-decisions .composer-done-btn,
+.composer-panel-decisions .composer-discard-btn {
+    flex: 1 0 auto;
 }
 
 .composer-panel-actions .composer-done-btn,
@@ -447,11 +455,13 @@
     }
 
     .composer-resize-e {
-        width: 20px;
+        width: 44px;
+        min-height: 44px;
     }
 
     .composer-resize-s {
-        height: 20px;
+        height: 44px;
+        min-width: 44px;
     }
 
     .composer-resize-se {

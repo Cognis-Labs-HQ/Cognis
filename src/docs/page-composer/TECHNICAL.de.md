@@ -51,6 +51,8 @@ Bearbeitbare Rasterzeilen haben eine Basishöhe von 90 px; die Spalten teilen di
 
 Im Bearbeitungsmodus verwenden Karten, Ziehvorschauen und Größenänderungsgriffe dieselbe Pixelgeometrie mit festen Zeilen und berücksichtigten Abständen, auch für halbe Rastereinheiten. Der scrollbare Inhalt reserviert den Platz für die Bildlaufleiste vor der Messung; Zeigerkoordinaten schließen den gemeinsamen Inhaltsabstand aus. Elementfenster passen ihre Breite innerhalb des sichtbaren Bereichs an ihren Inhalt an. Die gemessene Breite bestimmt ihre anfängliche und begrenzte Position.
 
+Die Zeigererfassung erhält den angefassten Punkt auch beim Scrollen, statt die Karte unter dem Zeiger zu zentrieren. Haupt- und verschachtelte Editoren teilen Zeigerprüfung, Randscrollen, Abbruch und Freigabe der Erfassung. Zeigerabbruch oder Entfernen des Editors verwirft vorläufige Bewegung und Rastererweiterung. Größenregler und Entfernen bieten auf Touchscreens 44px große Ziele. Das Minimieren von Elemente blendet Inhalt und Aktionen bis zum erneuten Öffnen aus. Der Bearbeitungsmodus bleibt bis zum erfolgreichen Speichern aktiv, damit eine responsive Neudarstellung während des Schreibens kein älteres Layout wiederherstellt.
+
 ### Unterseiten-Navigation
 
 Wenn `subPageNavigation: true`, ist jeweils nur ein Element sichtbar. Toolbar-Schaltflächen mit `[data-composer-scroll]` dienen als Abschnittsselektoren. Der aktive Abschnitt wird im URL-Hash für Deep-Links gespeichert.

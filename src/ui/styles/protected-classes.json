@@ -45,6 +45,7 @@
     "composer-panel--minimized",
     "composer-panel-actions",
     "composer-panel-body",
+    "composer-panel-decisions",
     "composer-panel-header",
     "composer-panel-minimize-btn",
     "composer-panel-title",

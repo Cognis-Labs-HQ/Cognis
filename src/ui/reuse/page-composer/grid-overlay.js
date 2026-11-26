@@ -1,3 +1,4 @@
+import { bindComposerPointerDrag } from "./pointer-drag.js";
 /**
  * Main grid overlay helpers for page composer edit mode.
  * Export: createGridOverlayHandlers(deps). @param {object} deps @returns {object}
@@ -262,6 +263,7 @@ export function createGridOverlayHandlers({
         return overlay;
     }
     function refreshGridBounds(minimumRows = 0) {
+        if (!state.gridSection?.isConnected) return;
         computeGridDimensions({ minimumRows });
         state.gridSection
             .querySelector(".composer-grid-overlay")
@@ -288,10 +290,12 @@ export function createGridOverlayHandlers({
                 i18n,
             });
             cell.addEventListener("pointerdown", (e) => {
-                if (e.button !== 0) return;
+                if (e.button !== 0 || e.isPrimary === false) return;
                 if (e.target.closest("button")) return;
                 e.preventDefault();
-                cell.setPointerCapture(e.pointerId);
+                const cellBounds = cell.getBoundingClientRect();
+                const grabX = e.clientX - cellBounds.left;
+                const grabY = e.clientY - cellBounds.top;
                 const shade = document.createElement("div");
                 shade.className = "composer-shade";
                 shade.style.left = `${gridColumnOffset(placement.col)}px`;
@@ -337,7 +341,7 @@ export function createGridOverlayHandlers({
                         Math.min(
                             state.gridCols - placement.w,
                             snapGridRound(
-                                pixelToGridColumn(x) - placement.w / 2,
+                                pixelToGridColumn(x - grabX),
                                 state.gridCols,
                             ),
                         ),
@@ -345,7 +349,7 @@ export function createGridOverlayHandlers({
                     const rawRow = Math.max(
                         0,
                         snapGridRound(
-                            pixelToGridRow(y) - placement.h / 2,
+                            pixelToGridRow(y - grabY),
                             state.gridRows,
                         ),
                     );
@@ -384,9 +388,6 @@ export function createGridOverlayHandlers({
                     }
                 }
                 async function onUp(e) {
-                    cell.removeEventListener("pointermove", onMove);
-                    cell.removeEventListener("pointerup", onUp);
-                    cell.removeEventListener("pointercancel", onUp);
                     document
                         .getElementById("composer-elements-panel")
                         ?.classList.remove("composer-panel--drop-target");
@@ -465,9 +466,7 @@ export function createGridOverlayHandlers({
                         }
                     }
                 }
-                cell.addEventListener("pointermove", onMove);
-                cell.addEventListener("pointerup", onUp);
-                cell.addEventListener("pointercancel", onUp);
+                bindComposerPointerDrag(cell, e, onMove, onUp);
             });
             if (!el.pinned) {
                 const closeBtn = document.createElement("button");
@@ -527,10 +526,9 @@ export function createGridOverlayHandlers({
     }
     function bindResizeHandle(handle, direction, el, placement) {
         handle.addEventListener("pointerdown", (e) => {
-            if (e.button !== 0) return;
+            if (e.button !== 0 || e.isPrimary === false) return;
             e.preventDefault();
             e.stopPropagation();
-            handle.setPointerCapture(e.pointerId);
             const gridSize = getGridSize(el);
             const shade = document.createElement("div");
             shade.className = "composer-shade";
@@ -589,9 +587,6 @@ export function createGridOverlayHandlers({
                 );
             }
             function onUp(event) {
-                handle.removeEventListener("pointermove", onMove);
-                handle.removeEventListener("pointerup", onUp);
-                handle.removeEventListener("pointercancel", onUp);
                 shade.remove();
                 cell.classList.remove("composer-cell--resizing");
                 if (event.type === "pointercancel") return;
@@ -615,9 +610,7 @@ export function createGridOverlayHandlers({
                     renderGridComposer();
                 }
             }
-            handle.addEventListener("pointermove", onMove);
-            handle.addEventListener("pointerup", onUp);
-            handle.addEventListener("pointercancel", onUp);
+            bindComposerPointerDrag(handle, e, onMove, onUp);
         });
     }
     function canPlaceInSet(set, col, row, w, h) {
@@ -661,7 +654,6 @@ export function createGridOverlayHandlers({
         item.addEventListener("pointerdown", (e) => {
             if (e.button !== 0 || e.target.closest("button")) return;
             e.preventDefault();
-            item.setPointerCapture(e.pointerId);
             const gridSize = getGridSize(el);
             const w = resolveInitialGridWidth(gridSize, state.gridCols);
             const h = gridSize.fillHeight
@@ -714,9 +706,6 @@ export function createGridOverlayHandlers({
                 }
             }
             function onUp(event) {
-                item.removeEventListener("pointermove", onMove);
-                item.removeEventListener("pointerup", onUp);
-                item.removeEventListener("pointercancel", onUp);
                 if (shade) shade.remove();
                 if (event.type === "pointercancel") return;
                 if (overGrid && canPlace(currentCol, currentRow, w, h, null)) {
@@ -733,9 +722,7 @@ export function createGridOverlayHandlers({
                     renderGridComposer();
                 }
             }
-            item.addEventListener("pointermove", onMove);
-            item.addEventListener("pointerup", onUp);
-            item.addEventListener("pointercancel", onUp);
+            bindComposerPointerDrag(item, e, onMove, onUp, state.gridSection);
         });
     }
     const {

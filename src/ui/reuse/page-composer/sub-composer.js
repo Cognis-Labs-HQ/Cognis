@@ -1,3 +1,4 @@
+import { bindComposerPointerDrag } from "./pointer-drag.js";
 import {
     composerPresentation,
     applyComposerPresentation,
@@ -251,12 +252,21 @@ export function createSubComposerHandlers({
         return overlay;
     }
 
+    function refreshSubGridBounds(state, minimumRows = 0) {
+        if (!state.container?.isConnected) return;
+        computeSubGridDimensions(state);
+        state.gridRows = Math.max(state.gridRows, minimumRows);
+        state.container.style.minHeight = `${state.gridRows * UNIT}px`;
+        state.container
+            .querySelector(".composer-grid-overlay")
+            ?.replaceWith(createSubGridOverlay(state));
+    }
+
     function bindSubResizeHandle(handle, direction, el, placement, state) {
         handle.addEventListener("pointerdown", (e) => {
-            if (e.button !== 0) return;
+            if (e.button !== 0 || e.isPrimary === false) return;
             e.preventDefault();
             e.stopPropagation();
-            handle.setPointerCapture(e.pointerId);
 
             const gridSize = getGridSize(el);
 
@@ -325,9 +335,6 @@ export function createSubComposerHandlers({
             }
 
             function onUp(event) {
-                handle.removeEventListener("pointermove", onMove);
-                handle.removeEventListener("pointerup", onUp);
-                handle.removeEventListener("pointercancel", onUp);
                 shade.remove();
                 cell.classList.remove("composer-cell--resizing");
                 if (event.type === "pointercancel") return;
@@ -353,9 +360,7 @@ export function createSubComposerHandlers({
                 }
             }
 
-            handle.addEventListener("pointermove", onMove);
-            handle.addEventListener("pointerup", onUp);
-            handle.addEventListener("pointercancel", onUp);
+            bindComposerPointerDrag(handle, e, onMove, onUp);
         });
     }
 
@@ -383,10 +388,12 @@ export function createSubComposerHandlers({
             });
 
             cell.addEventListener("pointerdown", (e) => {
-                if (e.button !== 0) return;
+                if (e.button !== 0 || e.isPrimary === false) return;
                 if (e.target.closest("button")) return;
                 e.preventDefault();
-                cell.setPointerCapture(e.pointerId);
+                const cellBounds = cell.getBoundingClientRect();
+                const grabX = e.clientX - cellBounds.left;
+                const grabY = e.clientY - cellBounds.top;
 
                 const shade = document.createElement("div");
                 shade.className = "composer-shade";
@@ -441,22 +448,18 @@ export function createSubComposerHandlers({
                         Math.min(
                             state.gridCols - placement.w,
                             snapGridRound(
-                                x / state.gridTrackSize - placement.w / 2,
+                                (x - grabX) / state.gridTrackSize,
                                 state.gridCols,
                             ),
                         ),
                     );
                     const row = Math.max(
                         0,
-                        snapGridRound(
-                            y / UNIT - placement.h / 2,
-                            state.gridRows,
-                        ),
+                        snapGridRound((y - grabY) / UNIT, state.gridRows),
                     );
 
                     if (row + placement.h > state.gridRows) {
-                        state.gridRows = row + placement.h + 1;
-                        state.container.style.minHeight = `${state.gridRows * UNIT}px`;
+                        refreshSubGridBounds(state, row + placement.h + 1);
                     }
 
                     currentCol = col;
@@ -499,9 +502,6 @@ export function createSubComposerHandlers({
                 }
 
                 async function onUp(e) {
-                    cell.removeEventListener("pointermove", onMove);
-                    cell.removeEventListener("pointerup", onUp);
-                    cell.removeEventListener("pointercancel", onUp);
                     document
                         .getElementById(getSubPanelId(state.preferenceKey))
                         ?.classList.remove("composer-panel--drop-target");
@@ -511,6 +511,7 @@ export function createSubComposerHandlers({
                     }
                     shade.remove();
                     cell.classList.remove("composer-cell--dragging");
+                    refreshSubGridBounds(state);
                     if (e.type === "pointercancel") return;
 
                     const panel = document.getElementById(
@@ -585,9 +586,7 @@ export function createSubComposerHandlers({
                     }
                 }
 
-                cell.addEventListener("pointermove", onMove);
-                cell.addEventListener("pointerup", onUp);
-                cell.addEventListener("pointercancel", onUp);
+                bindComposerPointerDrag(cell, e, onMove, onUp);
             });
 
             if (!el.pinned) {
@@ -674,6 +673,7 @@ export function createSubComposerHandlers({
             state.layout = { placements: [], hidden: [] };
         }
 
+        state.container.classList.toggle("composer-grid-active", state.editing);
         computeSubGridDimensions(state);
         initializeSubPlacements(state);
         computeSubGridDimensions(state);
@@ -699,7 +699,6 @@ export function createSubComposerHandlers({
         );
 
         if (state.editing) {
-            state.container.classList.add("composer-grid-active");
             state.container.style.minHeight = `${state.gridRows * UNIT}px`;
             state.container.style.width = "";
             state.container.appendChild(createSubGridOverlay(state));
@@ -717,7 +716,6 @@ export function createSubComposerHandlers({
                 );
             }
         } else {
-            state.container.classList.remove("composer-grid-active");
             state.container.style.minHeight = "";
             state.container.style.width = "";
 

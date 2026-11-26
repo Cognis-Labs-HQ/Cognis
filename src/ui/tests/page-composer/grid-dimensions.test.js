@@ -57,6 +57,12 @@ class GridElement extends EventTarget {
     setAttribute() {}
 
     setPointerCapture() {}
+
+    hasPointerCapture() {
+        return true;
+    }
+
+    releasePointerCapture() {}
 }
 
 function dispatchPointer(element, type, coordinates = {}) {
@@ -117,7 +123,11 @@ for (const columns of [2, 3, 8]) {
                     createElement: () => new GridElement(),
                     getElementById: () => null,
                 };
-                globalThis.window = { getComputedStyle: () => ({}) };
+                globalThis.window = {
+                    getComputedStyle: () => ({}),
+                    requestAnimationFrame: () => 1,
+                    cancelAnimationFrame() {},
+                };
                 context.after(() => {
                     globalThis.document = previousDocument;
                     globalThis.window = previousWindow;
@@ -166,7 +176,9 @@ for (const columns of [2, 3, 8]) {
                 state.gridSection.appendChild(cell);
                 const targetRow = height === 3 ? 8.5 : 8;
                 const clientY = (targetRow + height / 2) * 98;
-                dispatchPointer(cell, "pointerdown");
+                dispatchPointer(cell, "pointerdown", {
+                    clientY: (height / 2) * 98,
+                });
                 dispatchPointer(cell, "pointermove", { clientY });
                 const overlay = state.gridSection.querySelector(
                     ".composer-grid-overlay",
@@ -273,7 +285,11 @@ test("half-grid spans share gaps and pointer origin with CSS tracks", (context) 
 
 test("grid width is measured after height growth reserves scrollbar space", (context) => {
     const previousWindow = globalThis.window;
-    globalThis.window = { getComputedStyle: () => ({}) };
+    globalThis.window = {
+        getComputedStyle: () => ({}),
+        requestAnimationFrame: () => 1,
+        cancelAnimationFrame() {},
+    };
     context.after(() => {
         globalThis.window = previousWindow;
     });

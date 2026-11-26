@@ -752,7 +752,7 @@
   <string name="ui.tutorial.workspace.dock.language.body">Gunakan pengalih bahasa untuk mengganti bahasa antarmuka. Atur urutan bahasa pilihan di Pengaturan.</string>
   <string name="ui.tutorial.workspace.dock.theme.body">Tombol tampilan beralih antara tema terang dan gelap. Klik kanan untuk membuka pengaturan tampilan lainnya.</string>
   <string name="ui.tutorial.workspace.dock.layout.title">Atur Widget Halaman</string>
-  <string name="ui.tutorial.workspace.dock.layout.body">Gunakan Tambah untuk menempatkan elemen tanpa menyeret. Pada layar sentuh, gunakan kontrol ukuran dan hapus yang terlihat. Dengan papan ketik, fokuskan widget lalu gunakan panah untuk memindahkan atau Shift bersama panah untuk mengubah ukuran. Simpan atau buang susunan setelah selesai.</string>
+  <string name="ui.tutorial.workspace.dock.layout.body">Seret widget; tahan di dekat tepi atas atau bawah untuk menggulir. Perkecil Elemen agar ruang lebih luas. Gunakan Tambah tanpa menyeret. Pada layar sentuh, gunakan kontrol ukuran dan hapus yang terlihat. Dengan papan ketik, gunakan panah untuk memindahkan widget yang difokuskan atau Shift bersama panah untuk mengubah ukuran. Pilih Selesai untuk menyimpan atau Batalkan untuk membatalkan perubahan.</string>
   <string name="ui.tutorial.restart">Mulai Ulang Tutorial</string>
   <string name="ui.tutorial.docs.read.browse.documents.title">Jelajahi Dokumen</string>
   <string name="ui.tutorial.docs.read.browse.documents.body">Gunakan menu samping untuk memilih topik atau komponen. Buka grup untuk menemukan halamannya; dokumen pilihan tampil di sebelah menu.</string>

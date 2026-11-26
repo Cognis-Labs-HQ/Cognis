@@ -477,14 +477,14 @@ export function createPageComposer(
                 "click",
                 async () => {
                     compactSubPlacements(state);
-                    state.editing = false;
-                    endEditMode();
                     state.layoutProfiles = await saveLayoutByKey(
                         state.preferenceKey,
                         state.layoutProfiles,
                         state.gridCols,
                         state.layout,
                     );
+                    state.editing = false;
+                    endEditMode();
                     renderSubGrid(state);
                 },
                 { signal },
@@ -531,9 +531,9 @@ export function createPageComposer(
                     if (!subPageNavigation) {
                         compactPlacements();
                     }
+                    await saveLayout();
                     editing = false;
                     endEditMode();
-                    await saveLayout();
                     render();
                 },
                 { signal },

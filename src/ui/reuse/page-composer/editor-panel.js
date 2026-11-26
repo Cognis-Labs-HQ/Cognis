@@ -128,14 +128,16 @@ export function createEditorPanelHandlers({
         panel.innerHTML = `
       <div id="composer-panel-drag-handle" class="composer-panel-header">
         <span class="composer-panel-title">${i18n.t("ui.reuse.elements")}</span>
-        <button class="composer-panel-minimize-btn btn-neutral" type="button">−</button>
+        <button aria-label="${i18n.t("ui.reuse.elements")}" aria-expanded="true" class="composer-panel-minimize-btn btn-neutral" type="button">−</button>
       </div>
       <div class="composer-panel-body">
         <ul class="composer-library-list">${listHtml}</ul>
       </div>
       <div class="composer-panel-actions">
-        <a href="#" class="composer-discard-btn btn-cancel btn-animated" role="button">${i18n.t("ui.reuse.discard")}</a>
-        <a href="#" class="composer-done-btn btn-confirm btn-animated" role="button">${i18n.t("ui.reuse.done")}</a>
+        <div class="composer-panel-decisions">
+          <a href="#" class="composer-discard-btn btn-cancel btn-animated" role="button">${i18n.t("ui.reuse.discard")}</a>
+          <a href="#" class="composer-done-btn btn-confirm btn-animated" role="button">${i18n.t("ui.reuse.done")}</a>
+        </div>
         <a href="#" class="composer-reset-btn btn-neutral btn-animated" role="button">↺ ${i18n.t("ui.reuse.reset_layout")}</a>
       </div>
     `;
@@ -171,6 +173,10 @@ export function createEditorPanelHandlers({
                 panel.querySelector(
                     ".composer-panel-minimize-btn",
                 ).textContent = minimized ? "+" : "−";
+                panel
+                    .querySelector(".composer-panel-minimize-btn")
+                    .setAttribute("aria-expanded", String(!minimized));
+                fitComposerPanel(panel);
             });
 
         panel
@@ -178,9 +184,9 @@ export function createEditorPanelHandlers({
             .addEventListener("click", async (event) => {
                 event.preventDefault();
                 compactPlacements();
+                await saveLayout();
                 state.editing = false;
                 endEditMode();
-                await saveLayout();
                 renderGridComposer();
             });
 

@@ -18,8 +18,9 @@ export async function startFixture(
     context,
     suffix = "",
     viewport = [1440, 900],
+    serverOptions = {},
 ) {
-    const server = await serveBrowserFixture(fixtureDirectory);
+    const server = await serveBrowserFixture(fixtureDirectory, serverOptions);
     context.after(() => server.close());
     const browser = await launchChromium(executable);
     context.after(() => browser.close());

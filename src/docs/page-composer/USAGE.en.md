@@ -8,6 +8,8 @@ Each page supplies its content; the shared composer controls layout and sidebar 
 
 ## Examples
 
+Open Edit Layout on a customizable page. Grab any part of a widget and drag it; holding near the top or bottom edge scrolls to off-screen rows. On a phone, use the visible corner handle to resize. Minimize Elements when it covers your work, then expand it to choose Done or Discard. Add places a hidden element without dragging.
+
 Resize to a phone width, open the sidebar, select a destination and return to the main content; repeat at tablet and desktop widths.
 
 ```js

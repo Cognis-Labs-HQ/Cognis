@@ -1,3 +1,4 @@
+import { bindComposerPointerDrag } from "./pointer-drag.js";
 /** Sub-composer panel helpers for nested composer edit mode.
  * Export: createSubComposerPanelHandlers(deps). @param {object} deps @returns {object}
  */
@@ -24,7 +25,6 @@ export function createSubComposerPanelHandlers({
         item.addEventListener("pointerdown", (e) => {
             if (e.button !== 0 || e.target.closest("button")) return;
             e.preventDefault();
-            item.setPointerCapture(e.pointerId);
 
             const gridSize = getGridSize(el);
             const w = resolveInitialGridWidth(gridSize, state.gridCols);
@@ -84,9 +84,6 @@ export function createSubComposerPanelHandlers({
             }
 
             function onUp(event) {
-                item.removeEventListener("pointermove", onMove);
-                item.removeEventListener("pointerup", onUp);
-                item.removeEventListener("pointercancel", onUp);
                 if (shade) shade.remove();
                 if (event.type === "pointercancel") return;
                 if (
@@ -107,9 +104,7 @@ export function createSubComposerPanelHandlers({
                 }
             }
 
-            item.addEventListener("pointermove", onMove);
-            item.addEventListener("pointerup", onUp);
-            item.addEventListener("pointercancel", onUp);
+            bindComposerPointerDrag(item, e, onMove, onUp, state.container);
         });
     }
 
@@ -138,14 +133,16 @@ export function createSubComposerPanelHandlers({
         panel.innerHTML = `
       <div id="${panelId}-drag-handle" class="composer-panel-header">
         <span class="composer-panel-title">${i18n.t("ui.reuse.elements")}</span>
-        <button class="composer-panel-minimize-btn" type="button">−</button>
+        <button aria-label="${i18n.t("ui.reuse.elements")}" aria-expanded="true" class="composer-panel-minimize-btn" type="button">−</button>
       </div>
       <div class="composer-panel-body">
         <ul class="composer-library-list">${listHtml}</ul>
       </div>
       <div class="composer-panel-actions">
-        <a href="#" class="composer-discard-btn btn-cancel btn-animated" role="button">${i18n.t("ui.reuse.discard")}</a>
-        <a href="#" class="composer-done-btn btn-confirm btn-animated" role="button">${i18n.t("ui.reuse.done")}</a>
+        <div class="composer-panel-decisions">
+          <a href="#" class="composer-discard-btn btn-cancel btn-animated" role="button">${i18n.t("ui.reuse.discard")}</a>
+          <a href="#" class="composer-done-btn btn-confirm btn-animated" role="button">${i18n.t("ui.reuse.done")}</a>
+        </div>
         <a href="#" class="composer-reset-btn btn-neutral btn-animated" role="button">↺ ${i18n.t("ui.reuse.reset_layout")}</a>
       </div>
     `;
@@ -224,6 +221,10 @@ export function createSubComposerPanelHandlers({
                 panel.querySelector(
                     ".composer-panel-minimize-btn",
                 ).textContent = minimized ? "+" : "−";
+                panel
+                    .querySelector(".composer-panel-minimize-btn")
+                    .setAttribute("aria-expanded", String(!minimized));
+                fitComposerPanel(panel);
             });
 
         panel
@@ -231,14 +232,14 @@ export function createSubComposerPanelHandlers({
             .addEventListener("click", async (event) => {
                 event.preventDefault();
                 compactSubPlacements(state);
-                state.editing = false;
-                endEditMode();
                 state.layoutProfiles = await saveLayoutFor(
                     state.preferenceKey,
                     state.layoutProfiles,
                     state.gridCols,
                     state.layout,
                 );
+                state.editing = false;
+                endEditMode();
                 renderSubGrid(state);
             });
 
