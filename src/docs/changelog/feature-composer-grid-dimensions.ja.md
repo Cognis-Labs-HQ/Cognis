@@ -18,9 +18,14 @@
 
 ウィジェットがポインターの中央へ飛ばず、つかんだ位置を保持するようになりました。メインと入れ子の編集機能は、画面端でのスクロール、ポインターのキャンセル、タッチ用のサイズ変更領域に対応します。要素パネルは内容に合った幅を使い、見出しだけに最小化できます。画面サイズが変わっても、保存が成功するまで編集状態を維持します。
 
+## 正確なサイズ変更操作
+
+要素の削除に共通のキャンセルボタンの外観を使用するようになりました。サイズ変更ハンドルは、サイズ制限、グリッド境界、隣接する要素を確認します。拡大ができなくても縮小できるハンドルは残し、方向カーソルで可能な操作を示します。他の要素に重なる拡大操作には操作不可のカーソルを表示します。
+
 ## コミット
 
 - [42d72de](https://github.com/Cognis-Labs-HQ/Cognis/commit/42d72de61ab7765abe866b3fd3a0214bcfb2b006)
 - [e025238](https://github.com/Cognis-Labs-HQ/Cognis/commit/e025238e3c4bab7a938cd2b6de30728c6495e30b)
 - [6756c5f](https://github.com/Cognis-Labs-HQ/Cognis/commit/6756c5fadd4cd220aa045a063cb9c5fd0237269a)
 - [cb2952d](https://github.com/Cognis-Labs-HQ/Cognis/commit/cb2952d3be976a2bdb224022153b5f34aec0c434)
+- [fcc204f](https://github.com/Cognis-Labs-HQ/Cognis/commit/fcc204fe09b8fa86814d5f24b5d3839dfbc51c2b)

@@ -18,9 +18,14 @@ Ziehvorschauen und Größenänderungsgriffe verwenden dieselben Abmessungen mit 
 
 Widgets behalten den angefassten Punkt bei, statt unter den Zeiger zu springen. Haupt- und verschachtelte Editoren unterstützen Scrollen am Rand, Zeigerabbruch und ausreichend große Größenregler für Touchscreens. Das Elementfenster passt sich seinem Inhalt an und lässt sich auf die Kopfzeile minimieren. Beim Speichern bleibt der Editor bis zum erfolgreichen Abschluss aktiv, auch bei geänderter Ansichtsgröße.
 
+## Passende Größenregler
+
+Das Entfernen von Elementen verwendet jetzt die gemeinsame Darstellung der Abbrechen-Schaltflächen. Größenregler prüfen Größenlimits, Rastergrenzen und benachbarte Elemente. Ist Vergrößern blockiert, bleiben sie zum zulässigen Verkleinern verfügbar. Richtungszeiger zeigen die möglichen Bewegungen; Vergrößerungsversuche in belegte Felder erhalten einen Sperrzeiger.
+
 ## Commits
 
 - [42d72de](https://github.com/Cognis-Labs-HQ/Cognis/commit/42d72de61ab7765abe866b3fd3a0214bcfb2b006)
 - [e025238](https://github.com/Cognis-Labs-HQ/Cognis/commit/e025238e3c4bab7a938cd2b6de30728c6495e30b)
 - [6756c5f](https://github.com/Cognis-Labs-HQ/Cognis/commit/6756c5fadd4cd220aa045a063cb9c5fd0237269a)
 - [cb2952d](https://github.com/Cognis-Labs-HQ/Cognis/commit/cb2952d3be976a2bdb224022153b5f34aec0c434)
+- [fcc204f](https://github.com/Cognis-Labs-HQ/Cognis/commit/fcc204fe09b8fa86814d5f24b5d3839dfbc51c2b)
