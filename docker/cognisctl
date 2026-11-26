@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+exec node /app/dist/server/src/tooling/cli/index.js "$@"

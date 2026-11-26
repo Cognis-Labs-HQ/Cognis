@@ -1,0 +1,71 @@
+# Pooled PostgreSQL Connections
+
+**Feature Branch:** feature-refactor-postgresql-adapter-for-connection-pooling
+
+## PostgreSQL now uses a bounded connection pool
+
+Ordinary database operations can run concurrently through `pg.Pool`, while every transaction remains pinned to one client through commit or rollback. Environment settings bound pool size and connection, idle, and optional statement timeouts.
+
+## Server shutdown drains database connections
+
+The PostgreSQL adapter registers pool shutdown through the ctx lifecycle capability, allowing server termination to stop accepting requests and drain the pool cleanly.
+
+## Docker setups now use explicit environment profiles
+
+Shared, PostgreSQL, development, and production env files now carry container defaults. Compose selects the appropriate profiles without interpolating unset pool variables, eliminating blank-variable warnings.
+
+## MariaDB now uses equivalent connection pooling
+
+The MariaDB adapter now uses a bounded `mysql2` pool for concurrent queries, pins transactions to one connection, drains during lifecycle shutdown, and supports bounded maximum-size, idle-timeout, and connection-timeout settings.
+
+## Docker profiles now select the database driver
+
+PostgreSQL and MariaDB now have separate production and development Compose and env files. Administration marks only the configured database adapter active, locks every driver toggle, and explains Docker ownership in the database gateway heading.
+
+## Production containers require secrets before startup
+
+The PostgreSQL and MariaDB container entrypoint now rejects missing database settings and data-encryption keys immediately, identifying the env file that needs each value.
+
+## Environment profiles replace the obsolete example
+
+The obsolete root environment example has been removed. The selected files under `docker/env/` and the translated DevOps guide now provide the complete setup reference.
+
+## The container constructs database connection URLs
+
+Every database profile supplies its engine-specific host, port, database, username, and password values to the container entrypoint, which validates them and constructs `DATABASE_URL` without relying on Compose interpolation. The root `.env` links to the shared default profile, while the default Compose link selects the best-supported PostgreSQL deployment.
+
+## Driver defaults are isolated by engine
+
+PostgreSQL and MariaDB host, port, database, username, and pool defaults now live exclusively in their respective driver env profiles. The shared default profile contains only engine-neutral application settings.
+
+## User-managed secret files stay untracked
+
+Production secret env files are now ignored by Git and have tracked `.example` templates. Compose validation errors identify the exact profile file where each missing value must be set.
+
+## Compose env imports stay repository-relative
+
+Container-internal runtime paths remain absolute where their locations are known. Compose env-file and Dockerfile imports now use explicit repository-relative paths so checkouts reached through symlinked working directories do not depend on a host absolute path.
+
+## Interactive setup replaces profile sprawl
+
+The new `setup.sh` guides users through deployment and database choices, generates secrets, writes one ignored runtime env file, and selects the matching Compose driver. Separate development, production, driver, and example env profiles are no longer required.
+
+## Public deployment identity is required
+
+Setup now collects the Cognis service host, public URL, and contact email. Docker validates all three, the application also requires the public URL and contact email, and image-layout paths are fixed by the entrypoint instead of exposed as env configuration.
+
+## Preserve release asset versions
+
+Docker images now retain the build-provided asset version so upgraded deployments invalidate cached static resources.
+
+## Safely construct database URLs
+
+The container entrypoint percent-encodes PostgreSQL and MariaDB credentials before placing them in connection URLs.
+
+## Keep database components isolated and versioned
+
+Pool setting validation now belongs to each database adapter, and the adapter and gateway workspace versions and dependency ceilings are synchronized.
+
+## Commits
+
+- [6c88739](https://github.com/Cognis-Labs-HQ/Cognis/commit/6c887390888a10a8acbf3535860f4d85d9908cef)

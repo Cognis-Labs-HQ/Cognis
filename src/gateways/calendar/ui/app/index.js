@@ -1,0 +1,693 @@
+import { bindCapability } from "/static/reuse/capabilities.js";
+import {
+    renderCalendarViewSwitcher,
+    renderCalendarNavigation,
+    mountCalendarViewControls,
+} from "../calendar-view-controls.js";
+import { guides } from "./guides.js";
+import { calendarFetch as apiFetch } from "../offline-client.js";
+import { isOffline } from "/static/reuse/offline-state.js";
+import { applyDocumentTitle, createI18n } from "/static/reuse/i18n.js";
+import { createPageComposer } from "/static/reuse/page-composer/index.js";
+import { registerSearchIndex } from "/static/reuse/search-util/popup.js";
+import { formatDateTime } from "/static/reuse/timestamp.js";
+import { showToast } from "/static/reuse/toast.js";
+import { openPopup } from "/static/reuse/popup.js";
+import { escapeHtml } from "/static/reuse/escape-html.js";
+import { createFormBuilder } from "/static/reuse/form-builder.js";
+import { uiCtx } from "/static/reuse/ui-ctx.js";
+import { createCalendarPopupManager } from "./popup-manager.js";
+import { mount as mountSharedCalendar } from "../share-renderer.js";
+import * as calendarUi from "../calendar-ui-helpers.js";
+
+const log = bindCapability("ui:log");
+
+const SELECTED_VIEW_STORAGE_KEY = "calendar.selectedView";
+
+export async function mount(root, { signal, shareContext = null } = {}) {
+    const i18n = await createI18n({
+        componentStringBaseUrls: ["/static/gateways/calendar/ui/languages"],
+    });
+    if (signal?.aborted) return;
+    applyDocumentTitle(i18n, "gateway.calendar.page_title");
+
+    if (shareContext?.guestAccessToken) {
+        return mountSharedCalendar(root, { shareContext, i18n, signal });
+    }
+
+    let calendars = [];
+    const routeCalendarId = calendarUi.parseCalendarSelection();
+    const routeEventId = calendarUi.parseEventSelection();
+    let selectedCalendarId = routeCalendarId;
+    let selectedEventId = routeEventId;
+    let eventsByCalendar = {};
+    let pendingInvitations = [];
+    let canInviteExternal = false;
+    let currentAccountId = "";
+    let selectedView = "month";
+    let activeDate = new Date();
+    let composer = null;
+    let availabilityBoundaryTimer = null;
+    const MAX_TIMEOUT_MS = 2_147_000_000;
+
+    signal?.addEventListener(
+        "abort",
+        () => window.clearTimeout(availabilityBoundaryTimer),
+        { once: true },
+    );
+
+    function loadSelectedViewPreference() {
+        try {
+            const stored = window.localStorage.getItem(
+                SELECTED_VIEW_STORAGE_KEY,
+            );
+            if (
+                stored &&
+                calendarUi.CALENDAR_VIEWS.includes(String(stored).trim())
+            ) {
+                return String(stored).trim();
+            }
+        } catch {}
+        return "month";
+    }
+
+    function setSelectedView(nextView) {
+        if (!calendarUi.CALENDAR_VIEWS.includes(nextView)) return;
+        if (selectedView !== nextView)
+            log?.("info", "Calendar view changed.", {
+                component: "calendar",
+                operation: "selectCalendarView",
+                view: nextView,
+            });
+        selectedView = nextView;
+        try {
+            window.localStorage.setItem(SELECTED_VIEW_STORAGE_KEY, nextView);
+        } catch {}
+    }
+
+    selectedView = loadSelectedViewPreference();
+
+    function refreshCalendarComposer() {
+        const focused = document.activeElement;
+        const focusSelector = focused?.matches("[data-calendar-date]")
+            ? "[data-calendar-date]"
+            : focused?.matches("[data-calendar-view-select]")
+              ? "[data-calendar-view-select]"
+              : focused?.matches("[data-calendar-nav]")
+                ? `[data-calendar-nav="${CSS.escape(focused.dataset.calendarNav)}"]`
+                : focused?.matches("[data-calendar-view]")
+                  ? `[data-calendar-view="${CSS.escape(focused.dataset.calendarView)}"]`
+                  : null;
+        composer?.refreshElements(["calendar-view"]);
+        if (focusSelector)
+            root.querySelector(focusSelector)?.focus({ preventScroll: true });
+    }
+
+    function ensureSelectedCalendarId() {
+        const hasSelectedCalendar =
+            selectedCalendarId &&
+            calendars.some((calendar) => calendar.id === selectedCalendarId);
+        if (!hasSelectedCalendar) {
+            selectedCalendarId = calendars[0]?.id ?? "";
+        }
+    }
+
+    function syncRouteSelection() {
+        const query = new URLSearchParams(window.location.search);
+        if (selectedCalendarId) {
+            query.set("calendarId", selectedCalendarId);
+        } else {
+            query.delete("calendarId");
+        }
+        if (selectedEventId) {
+            query.set("eventId", selectedEventId);
+        } else {
+            query.delete("eventId");
+        }
+        const nextPath = `/calendar${query.toString() ? `?${query.toString()}` : ""}`;
+        window.history.replaceState(null, "", nextPath);
+    }
+
+    function normalizeDateTimeInputValue(value) {
+        const trimmed = String(value ?? "").trim();
+        if (!trimmed) return "";
+        if (
+            /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?$/.test(
+                trimmed,
+            )
+        ) {
+            return trimmed.slice(0, 16);
+        }
+        const parsed = new Date(trimmed);
+        if (Number.isNaN(parsed.getTime())) return "";
+        return calendarUi.toDateTimeLocalValue(parsed);
+    }
+
+    async function reloadState() {
+        if (signal?.aborted) return;
+        if (shareContext?.payload?.calendar) {
+            const sharedCalendar = {
+                ...shareContext.payload.calendar,
+                visibility: "shared",
+            };
+            calendars = [sharedCalendar];
+            selectedCalendarId = String(sharedCalendar.id ?? "");
+            eventsByCalendar = {
+                [selectedCalendarId]: Array.isArray(shareContext.payload.events)
+                    ? shareContext.payload.events
+                    : [],
+            };
+            pendingInvitations = [];
+            canInviteExternal = false;
+            currentAccountId = "";
+            return;
+        }
+        const invitationsPromise = calendarUi
+            .fetchInvitations()
+            .catch((error) => {
+                void log("warn", "[calendar]:invitations-load-failed", {
+                    error,
+                });
+                return [];
+            });
+        const calendarState = await calendarUi.fetchCalendarState();
+        if (signal?.aborted) return;
+        calendarUi.setEventStatusOptions(
+            calendarState.meta.availabilityStatuses,
+        );
+        calendars = calendarState.calendars;
+        canInviteExternal = Boolean(calendarState.meta?.canInviteExternal);
+        currentAccountId = String(calendarState.meta?.currentAccountId ?? "");
+        ensureSelectedCalendarId();
+        const eventResults = await Promise.allSettled(
+            calendars.map(async (calendar) => [
+                calendar.id,
+                await calendarUi.fetchEvents(calendar.id, calendar, {
+                    promptWhenLocked: true,
+                }),
+            ]),
+        );
+        if (signal?.aborted) return;
+        calendars = calendars.map((calendar, index) => ({
+            ...calendar,
+            secretsUnavailable:
+                eventResults[index]?.status === "rejected" &&
+                eventResults[index]?.reason?.code ===
+                    "calendar_share_secrets_refused",
+        }));
+        eventsByCalendar = Object.fromEntries(
+            eventResults
+                .filter((result) => result.status === "fulfilled")
+                .map((result) => result.value),
+        );
+        const invitations = await invitationsPromise;
+        if (signal?.aborted) return;
+        pendingInvitations = invitations;
+        scheduleAvailabilityBoundaryRefresh();
+    }
+
+    async function retryCalendarUnlock(calendar) {
+        try {
+            const events = await calendarUi.fetchEvents(calendar.id, calendar, {
+                promptWhenLocked: true,
+            });
+            eventsByCalendar[calendar.id] = events;
+            calendar.secretsUnavailable = false;
+            return true;
+        } catch {
+            calendar.secretsUnavailable = true;
+            return false;
+        }
+    }
+
+    try {
+        await reloadState();
+    } catch {
+        if (signal?.aborted) return;
+        showToast(i18n.t("gateway.calendar.load_failed"), "error");
+    }
+
+    if (signal?.aborted) return;
+
+    function allCalendarEvents() {
+        const calendarById = new Map(
+            calendars.map((calendar) => [calendar.id, calendar]),
+        );
+        return Object.entries(eventsByCalendar)
+            .flatMap(([calendarId, events]) =>
+                events.map((event) => ({
+                    ...event,
+                    calendarId,
+                    calendarColor: calendarUi.normalizeHexColor(
+                        calendarById.get(calendarId)?.color,
+                    ),
+                    calendarName: String(
+                        calendarById.get(calendarId)?.name ?? "",
+                    ),
+                })),
+            )
+            .sort((left, right) => left.startAt.localeCompare(right.startAt));
+    }
+
+    function scheduleAvailabilityBoundaryRefresh() {
+        window.clearTimeout(availabilityBoundaryTimer);
+        if (signal?.aborted || isOffline()) return;
+        const now = Date.now();
+        const nextBoundary = allCalendarEvents()
+            .flatMap((event) => [
+                Date.parse(event.startAt),
+                Date.parse(event.endAt),
+            ])
+            .filter((boundary) => Number.isFinite(boundary) && boundary > now)
+            .sort((first, second) => first - second)[0];
+        if (!nextBoundary) return;
+        availabilityBoundaryTimer = window.setTimeout(
+            async () => {
+                await calendarUi.refreshUserAvailability();
+                scheduleAvailabilityBoundaryRefresh();
+            },
+            Math.min(MAX_TIMEOUT_MS, nextBoundary - now + 50),
+        );
+    }
+
+    function collectCalendarSearchGroups() {
+        const items = allCalendarEvents().map((event) => {
+            const timeLabel = `${formatDateTime(event.startAt)} - ${formatDateTime(event.endAt)}`;
+            return {
+                id: `calendar-event:${event.calendarId}:${event.id}`,
+                label: event.title,
+                description: [timeLabel, event.calendarName]
+                    .filter(Boolean)
+                    .join(" · "),
+                url: `/calendar?calendarId=${encodeURIComponent(event.calendarId)}&eventId=${encodeURIComponent(event.id)}`,
+                resultClass: "event",
+                searchText: [
+                    event.title,
+                    timeLabel,
+                    event.calendarName,
+                    event.location,
+                    event.description,
+                    event.startAt,
+                    event.endAt,
+                ]
+                    .filter(Boolean)
+                    .join(" "),
+            };
+        });
+        return items.length ? [{ category: "Calendar Events", items }] : [];
+    }
+
+    function allUpcomingEvents() {
+        return calendarUi.collectUpcomingEvents(
+            eventsByCalendar,
+            calendars,
+            "",
+            currentAccountId,
+        );
+    }
+
+    function allPendingEvents() {
+        return calendarUi.collectPendingEvents(
+            eventsByCalendar,
+            calendars,
+            "",
+            currentAccountId,
+            pendingInvitations,
+        );
+    }
+
+    registerSearchIndex("calendar-events", collectCalendarSearchGroups);
+
+    function syncWeekViewLayout() {
+        const weekLayouts = Array.from(
+            root.querySelectorAll("[data-calendar-week-view]"),
+        )
+            .map((weekView) => {
+                const scrollGrid = weekView.querySelector(
+                    "[data-calendar-week-scroll-grid]",
+                );
+                if (!(scrollGrid instanceof HTMLElement)) return null;
+                const measuredScrollbarWidth =
+                    scrollGrid.offsetWidth - scrollGrid.clientWidth;
+                return {
+                    weekView,
+                    scrollbarWidth: Math.max(0, measuredScrollbarWidth),
+                };
+            })
+            .filter(Boolean);
+        weekLayouts.forEach(({ weekView, scrollbarWidth }) => {
+            weekView.style.setProperty(
+                "--calendar-week-scrollbar-width",
+                `${scrollbarWidth}px`,
+            );
+        });
+    }
+
+    const popupManager = createCalendarPopupManager({
+        root,
+        signal,
+        i18n,
+        calendarUi,
+        apiFetch,
+        showToast,
+        openPopup,
+        escapeHtml,
+        normalizeDateTimeInputValue,
+        getCalendars: () => calendars,
+        getSelectedCalendarId: () => selectedCalendarId,
+        setSelectedCalendarId: (value) => {
+            selectedCalendarId = value;
+        },
+        setSelectedEventId: (value) => {
+            selectedEventId = value;
+        },
+        getEventsByCalendar: () => eventsByCalendar,
+        getCanInviteExternal: () => canInviteExternal,
+        getCurrentAccountId: () => currentAccountId,
+        getMeetingsAvailable: () =>
+            !isOffline() &&
+            typeof uiCtx.capabilities.get("meetings:createMeeting") ===
+                "function",
+        reloadState,
+        syncRouteSelection,
+        refreshComposer: refreshCalendarComposer,
+    });
+
+    const {
+        bindViewInteractions,
+        openEventComposerPopup,
+        openEventPopup,
+        openCalendarEditPopup,
+    } = popupManager;
+
+    root.addEventListener(
+        "click",
+        (event) => {
+            if (!(event.target instanceof Element)) return;
+            const timeslotAddButton = event.target.closest(
+                "[data-timeslot-add]",
+            );
+            if (timeslotAddButton instanceof HTMLElement) {
+                void openEventComposerPopup({
+                    startAt: String(
+                        timeslotAddButton.getAttribute("data-slot-start") ?? "",
+                    ),
+                    endAt: String(
+                        timeslotAddButton.getAttribute("data-slot-end") ?? "",
+                    ),
+                });
+                return;
+            }
+            const timeslotCell = event.target.closest("[data-timeslot-events]");
+            if (!(timeslotCell instanceof HTMLElement)) return;
+            if (event.target.closest("[data-calendar-event]")) return;
+            void openEventComposerPopup({
+                startAt: String(
+                    timeslotCell.getAttribute("data-slot-start") ?? "",
+                ),
+                endAt: String(timeslotCell.getAttribute("data-slot-end") ?? ""),
+            });
+        },
+        { signal },
+    );
+
+    mountCalendarViewControls(root, {
+        views: calendarUi.CALENDAR_VIEWS,
+        getActiveDate: () => activeDate,
+        getSelectedView: () => selectedView,
+        signal,
+        onDateChange(date) {
+            activeDate = date;
+            refreshCalendarComposer();
+        },
+        onViewChange(view, date) {
+            if (date) activeDate = date;
+            setSelectedView(view);
+            refreshCalendarComposer();
+        },
+    });
+
+    composer = createPageComposer(root, {
+        tutorials: guides,
+        signal,
+        allowCustomization: false,
+        fillViewport: true,
+        requireAccountSession: !shareContext,
+        elements: [
+            {
+                id: "calendar-view",
+                label: i18n.t("gateway.calendar.calendar_view"),
+                pinned: true,
+                gridSize: { default: [12, 9], min: [6, 6], max: "full" },
+                responsive: true,
+                onResize: syncWeekViewLayout,
+                render: ({ layout }) => {
+                    const compact = layout !== "regular";
+                    return `
+          <section class="calendar-section">
+            <header class="calendar-view-header" data-composer-header>
+              ${renderCalendarNavigation(selectedView, activeDate, i18n)}
+              ${renderCalendarViewSwitcher(calendarUi.CALENDAR_VIEWS, selectedView, i18n, activeDate)}
+            </header>
+            <div class="calendar-view-canvas" data-composer-viewport-body>${calendarUi.renderCalendarView(allCalendarEvents(), selectedView, activeDate, i18n, currentAccountId, { compact })}</div>
+          </section>
+        `;
+                },
+                onRender: () => {
+                    syncWeekViewLayout();
+
+                    root.querySelectorAll("[data-month-create-date]").forEach(
+                        (button) => {
+                            button.addEventListener(
+                                "click",
+                                () => {
+                                    const startAt = new Date(
+                                        String(
+                                            button.getAttribute(
+                                                "data-month-create-date",
+                                            ) ?? "",
+                                        ),
+                                    );
+                                    if (Number.isNaN(startAt.getTime())) return;
+                                    const endAt = new Date(
+                                        startAt.getTime() + 24 * 60 * 60 * 1000,
+                                    );
+                                    openEventComposerPopup({
+                                        startAt:
+                                            calendarUi.toDateTimeLocalValue(
+                                                startAt,
+                                            ),
+                                        endAt: calendarUi.toDateTimeLocalValue(
+                                            endAt,
+                                        ),
+                                    });
+                                },
+                                { signal },
+                            );
+                        },
+                    );
+                },
+            },
+        ],
+        toolbar: [
+            {
+                id: "calendar-manager",
+                label: i18n.t("gateway.calendar.my_calendars"),
+                render: () => `
+          <section class="toolbar-section calendar-toolbar-section">
+            <header class="calendar-toolbar-heading">
+              <h3>${i18n.t("gateway.calendar.my_calendars")}</h3>
+              <button type="button" class="calendar-toolbar-add btn-confirm" id="calendar-create-trigger" aria-label="${i18n.t("gateway.calendar.create_calendar")}">${i18n.t("gateway.calendar.new_calendar_short")}</button>
+            </header>
+            <div id="calendar-toolbar-list">${calendarUi.renderCalendarToolbarList(calendars, selectedCalendarId, i18n)}</div>
+            <div id="calendar-toolbar-summary">${calendarUi.renderPendingEvents(allPendingEvents(), i18n)}</div>
+          </section>
+        `,
+            },
+            {
+                id: "upcoming-events",
+                label: i18n.t("gateway.calendar.upcoming_events"),
+                render: () => `
+          <section class="toolbar-section calendar-toolbar-section">
+            <header class="calendar-toolbar-heading">
+              <h3>${i18n.t("gateway.calendar.upcoming_events")}</h3>
+            </header>
+            <div id="calendar-toolbar-upcoming">${calendarUi.renderToolbarSummary(allUpcomingEvents(), /* pendingEvents */ [], i18n)}</div>
+          </section>
+        `,
+            },
+        ],
+        preferenceKey: "calendar-layout",
+        i18n,
+        pageContext: {
+            title: i18n.t("gateway.calendar.page_title"),
+            subtitle: i18n.t("gateway.calendar.page_subtitle"),
+        },
+        onRender: () => {
+            bindViewInteractions();
+            const createTrigger = root.querySelector(
+                "#calendar-create-trigger",
+            );
+            if (createTrigger && !createTrigger.dataset.calendarCreateBound) {
+                createTrigger.dataset.calendarCreateBound = "true";
+                createTrigger.addEventListener(
+                    "click",
+                    () => openCreateCalendarPopup(),
+                    { signal },
+                );
+            }
+
+            const toolbarList = root.querySelector("#calendar-toolbar-list");
+            if (toolbarList) {
+                toolbarList.innerHTML = calendarUi.renderCalendarToolbarList(
+                    calendars,
+                    selectedCalendarId,
+                    i18n,
+                );
+                if (!toolbarList.dataset.calendarSelectBound) {
+                    toolbarList.dataset.calendarSelectBound = "true";
+                    toolbarList.addEventListener(
+                        "click",
+                        (event) => {
+                            const button = event.target.closest(
+                                "[data-calendar-edit]",
+                            );
+                            if (!(button instanceof HTMLElement)) return;
+                            const calendarId = String(
+                                button.getAttribute("data-calendar-edit") ?? "",
+                            ).trim();
+                            const calendar = calendars.find(
+                                (c) => c.id === calendarId,
+                            );
+                            if (!calendar) return;
+                            if (calendar.secretsUnavailable) {
+                                openCalendarEditPopup(calendar);
+                                return;
+                            }
+                            selectedCalendarId = calendarId;
+                            selectedEventId = "";
+                            syncRouteSelection();
+                            refreshCalendarComposer();
+                            openCalendarEditPopup(calendar);
+                        },
+                        { signal },
+                    );
+                }
+            }
+            const toolbarSummary = root.querySelector(
+                "#calendar-toolbar-summary",
+            );
+            if (toolbarSummary) {
+                toolbarSummary.innerHTML = calendarUi.renderPendingEvents(
+                    allPendingEvents(),
+                    i18n,
+                );
+            }
+            const toolbarUpcoming = root.querySelector(
+                "#calendar-toolbar-upcoming",
+            );
+            if (toolbarUpcoming) {
+                toolbarUpcoming.innerHTML = calendarUi.renderToolbarSummary(
+                    allUpcomingEvents(),
+                    /* pendingEvents */ [],
+                    i18n,
+                );
+            }
+        },
+    });
+
+    async function openCreateCalendarPopup() {
+        let popupNameValue = "";
+        let popupVisibilityValue = "private";
+        let popupColorValue = calendarUi.createRandomCalendarColor();
+        const calendarFormBuilder = createFormBuilder(
+            { i18n, escapeHtml },
+            {
+                formId: "calendar-create-popup-form",
+                formClassName: "calendar-create-form",
+                includeSubmitButton: false,
+                fields: [],
+                trustedContentHtml: `
+          <div class="calendar-create-row">
+            <input id="calendar-popup-color" type="color" value="${popupColorValue}" class="calendar-color-picker-bare" />
+            <input id="calendar-popup-name" type="text" maxlength="30" placeholder="${i18n.t("gateway.calendar.calendar_name_placeholder")}" value="${popupNameValue}" required />
+          </div>
+          <div class="calendar-visibility-row">
+            <p class="calendar-share-label">${escapeHtml(i18n.t("gateway.calendar.visibility_heading"))}</p>
+            <select id="calendar-popup-visibility">
+              <option value="private"${popupVisibilityValue === "private" ? " selected" : ""}>${i18n.t("gateway.calendar.visibility_private")}</option>
+              <option value="public"${popupVisibilityValue === "public" ? " selected" : ""}>${i18n.t("gateway.calendar.visibility_public")}</option>
+            </select>
+          </div>
+        `,
+            },
+        );
+        await openPopup({
+            title: i18n.t("gateway.calendar.create_calendar"),
+            body: () => calendarFormBuilder.render(),
+            closeProtection: false,
+            actions: [
+                {
+                    id: "save",
+                    label: i18n.t("gateway.calendar.create_calendar"),
+                    variant: "confirm",
+                },
+                {
+                    id: "cancel",
+                    label: i18n.t("ui.reuse.cancel"),
+                    variant: "cancel",
+                },
+            ],
+            onAction: async (actionId, overlay) => {
+                if (actionId !== "save") return true;
+                const name = String(
+                    overlay.querySelector("#calendar-popup-name")?.value ?? "",
+                ).trim();
+                const visibility = String(
+                    overlay.querySelector("#calendar-popup-visibility")
+                        ?.value ?? "private",
+                );
+                const color = calendarUi.normalizeHexColor(
+                    overlay.querySelector("#calendar-popup-color")?.value,
+                );
+                if (!name) return false;
+                const response = await apiFetch("/api/v1/calendar/calendars", {
+                    method: "POST",
+                    headers: { "content-type": "application/json" },
+                    body: JSON.stringify({ name, visibility, color }),
+                });
+                if (!response.ok) {
+                    showToast(
+                        i18n.t("gateway.calendar.create_calendar_failed"),
+                        "error",
+                    );
+                    return false;
+                }
+                await reloadState();
+                syncRouteSelection();
+                showToast(
+                    i18n.t("gateway.calendar.create_calendar_success"),
+                    "success",
+                );
+                refreshCalendarComposer();
+                return true;
+            },
+        });
+    }
+
+    await composer.init();
+    if (signal?.aborted) return;
+    const syncOnlineActions = () => {
+        scheduleAvailabilityBoundaryRefresh();
+        const createCalendar = root.querySelector("#calendar-create-trigger");
+        if (createCalendar) createCalendar.disabled = isOffline();
+    };
+    window.addEventListener("cognis:connectivity-changed", syncOnlineActions, {
+        signal,
+    });
+    syncOnlineActions();
+    syncRouteSelection();
+    if (routeCalendarId && routeEventId) {
+        void openEventPopup(routeCalendarId, routeEventId);
+    }
+}

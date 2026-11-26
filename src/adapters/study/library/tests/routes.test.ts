@@ -1,0 +1,485 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+import {
+    createAuthContext,
+    RequestRecorder,
+    ResponseRecorder,
+} from "../../../../api/tests/reuse/route-test-helpers.js";
+import { createLibraryRoutes } from "../routes/index.js";
+
+const schemas = [
+    {
+        id: "mock-language",
+        version: 1,
+        language: "X-Mock",
+        label: "Mock Language",
+        layers: [],
+    },
+    { id: "german", version: 1, language: "de", label: "German", layers: [] },
+    {
+        id: "private-use",
+        version: 1,
+        language: "X-Test",
+        label: "Test Language",
+        layers: [],
+    },
+];
+
+async function request(path: string, token = "learner") {
+    const route = createLibraryRoutes(
+        { listSchemas: () => schemas } as never,
+        createAuthContext(
+            new Map([["learner", { sub: "alice", role: "user" }]]),
+        ) as never,
+    );
+    const response = new ResponseRecorder();
+    await route(
+        new RequestRecorder({ method: "GET", token }) as never,
+        response as never,
+        new URL(`http://localhost${path}`),
+    );
+    return {
+        status: response.statusCode,
+        body: JSON.parse(response.payload),
+    };
+}
+
+test("schema route returns only the requested BCP-47 language", async () => {
+    const result = await request(
+        "/api/v1/study/library/schemas?language=X-Mock",
+    );
+    assert.equal(result.status, 200);
+    assert.deepEqual(
+        result.body.data.map((schema: { id: string }) => schema.id),
+        ["mock-language"],
+    );
+});
+
+test("schema route rejects malformed language codes", async () => {
+    const result = await request(
+        "/api/v1/study/library/schemas?language=not_a_language",
+    );
+    assert.equal(result.status, 400);
+    assert.equal(result.body.error.code, "invalid_language");
+});
+
+test("schema route supports private-use BCP-47 languages", async () => {
+    const result = await request(
+        "/api/v1/study/library/schemas?language=x-test",
+    );
+    assert.equal(result.status, 200);
+    assert.deepEqual(
+        result.body.data.map((schema: { id: string }) => schema.id),
+        ["private-use"],
+    );
+});
+
+test("schema route rejects unauthorized requests", async () => {
+    const result = await request(
+        "/api/v1/study/library/schemas?language=x-mock",
+        "",
+    );
+    assert.equal(result.status, 401);
+    assert.equal(result.body.error.code, "unauthorized");
+});
+
+test("viewed-entry routes read and update the authenticated user's cache", async () => {
+    const calls: Array<{ accountId: string; entryIds: readonly string[] }> = [];
+    const route = createLibraryRoutes(
+        {
+            viewedEntryIds: async (actor) =>
+                actor.accountId === "alice" ? ["entry-a"] : [],
+            markEntriesViewed: async (actor, entryIds) => {
+                calls.push({ accountId: actor.accountId, entryIds });
+            },
+        } as never,
+        createAuthContext(
+            new Map([["learner", { sub: "alice", role: "user" }]]),
+        ) as never,
+    );
+    const getResponse = new ResponseRecorder();
+    await route(
+        new RequestRecorder({ method: "GET", token: "learner" }) as never,
+        getResponse as never,
+        new URL("http://localhost/api/v1/study/library/viewed-entries"),
+    );
+    assert.deepEqual(JSON.parse(getResponse.payload).data, ["entry-a"]);
+
+    const putResponse = new ResponseRecorder();
+    await route(
+        new RequestRecorder({
+            method: "PUT",
+            token: "learner",
+            body: JSON.stringify({ entryIds: ["entry-b"] }),
+        }) as never,
+        putResponse as never,
+        new URL("http://localhost/api/v1/study/library/viewed-entries"),
+    );
+    assert.equal(putResponse.statusCode, 200);
+    assert.deepEqual(calls, [{ accountId: "alice", entryIds: ["entry-b"] }]);
+});
+
+test("visibility requests can be withdrawn by their submitter", async () => {
+    let withdrawn = "";
+    const route = createLibraryRoutes(
+        {
+            withdrawPush: async (_actor, requestId) => {
+                withdrawn = requestId;
+                return { id: requestId, status: "withdrawn" };
+            },
+        } as never,
+        createAuthContext(
+            new Map([["learner", { sub: "alice", role: "user" }]]),
+        ) as never,
+    );
+    const response = new ResponseRecorder();
+    await route(
+        new RequestRecorder({ method: "DELETE", token: "learner" }) as never,
+        response as never,
+        new URL(
+            "http://localhost/api/v1/study/library/push-requests/request-1",
+        ),
+    );
+    assert.equal(response.statusCode, 200);
+    assert.equal(withdrawn, "request-1");
+    assert.equal(JSON.parse(response.payload).data.status, "withdrawn");
+});
+
+test("entry deletion passes validated selections to the Library capability", async () => {
+    let request:
+        | {
+              actor: { accountId: string; role: string };
+              entryIds: readonly string[];
+              blacklistContentHashes: boolean;
+          }
+        | undefined;
+    const route = createLibraryRoutes(
+        {
+            deleteEntries: async (actor, entryIds, blacklistContentHashes) => {
+                request = { actor, entryIds, blacklistContentHashes };
+                return [...entryIds, "dependent"];
+            },
+        } as never,
+        createAuthContext(
+            new Map([["admin", { sub: "ada", role: "admin" }]]),
+        ) as never,
+    );
+    const response = new ResponseRecorder();
+    await route(
+        new RequestRecorder({
+            method: "DELETE",
+            token: "admin",
+            body: JSON.stringify({
+                entryIds: ["one", "two"],
+                blacklistContentHashes: true,
+            }),
+        }) as never,
+        response as never,
+        new URL("http://localhost/api/v1/study/library/entries"),
+    );
+
+    assert.equal(response.statusCode, 200);
+    assert.deepEqual(request, {
+        actor: { accountId: "ada", role: "admin" },
+        entryIds: ["one", "two"],
+        blacklistContentHashes: true,
+    });
+    assert.deepEqual(JSON.parse(response.payload).data, {
+        deleted: 3,
+        entryIds: ["one", "two", "dependent"],
+    });
+});
+
+test("asset route keeps authenticated package bytes out of shared caches", async () => {
+    const route = createLibraryRoutes(
+        {
+            readContentPackAsset: async () => ({
+                mediaType: "image/svg+xml",
+                data: Buffer.from("<svg/>"),
+            }),
+        } as never,
+        createAuthContext(
+            new Map([["learner", { sub: "alice", role: "user" }]]),
+        ) as never,
+    );
+    const response = new ResponseRecorder();
+    await route(
+        new RequestRecorder({ method: "GET", token: "learner" }) as never,
+        response as never,
+        new URL(
+            "http://localhost/api/v1/study/library/assets/Publisher/pack/1.0.0/strokes/a.svg",
+        ),
+    );
+
+    assert.equal(response.statusCode, 200);
+    assert.equal(response.headers["content-type"], "image/svg+xml");
+    assert.equal(response.headers["cache-control"], "private, no-store");
+    assert.equal(response.payload, "<svg/>");
+});
+
+test("Library browser resolves labels from localized schema metadata", async () => {
+    const { readFile } = await import("node:fs/promises");
+    const source = await readFile(
+        new URL("../ui/app/layer-cards.js", import.meta.url),
+        "utf8",
+    );
+    const presentationSource = await readFile(
+        new URL("../ui/app/presentation.js", import.meta.url),
+        "utf8",
+    );
+    assert.match(
+        source,
+        /localizedLabel\(\s*schema\.metadata,\s*schema\.language,?\s*\)/,
+    );
+    assert.match(
+        source,
+        /localizedLabel\(\s*layer\.metadata,\s*schema\.language,?\s*\)/,
+    );
+    assert.match(presentationSource, /parseLanguageCode\(language\)/);
+    assert.match(
+        presentationSource,
+        /import \{ parseLanguageCode \} from "\/static\/gateways\/study\/language\.js"/,
+    );
+});
+
+test("packaged audio remains behind authenticated entry access", async () => {
+    let requestedEntry = "";
+    let requestedField = "";
+    const route = createLibraryRoutes(
+        {
+            readAudio: async (_actor, entryId, fieldId) => {
+                requestedEntry = entryId;
+                requestedField = fieldId;
+                return { mediaType: "audio/mpeg", data: Buffer.from("audio") };
+            },
+        } as never,
+        createAuthContext(
+            new Map([["learner", { sub: "alice", role: "user" }]]),
+        ) as never,
+    );
+    const response = new ResponseRecorder();
+    await route(
+        new RequestRecorder({ method: "GET", token: "learner" }) as never,
+        response as never,
+        new URL(
+            "http://localhost/api/v1/study/library/entries/character-a/audio/audio",
+        ),
+    );
+    assert.equal(response.statusCode, 200);
+    assert.equal(response.headers["content-type"], "audio/mpeg");
+    assert.equal(response.headers["cache-control"], "private, no-cache");
+    assert.equal(requestedEntry, "character-a");
+    assert.equal(requestedField, "audio");
+});
+
+test("entry update delegates validated identity to the Library capability", async () => {
+    let updatedId = "";
+    const entry = {
+        schemaId: "mock-language",
+        schemaVersion: 1,
+        layer: "words",
+        label: "updated",
+        fields: { reading: "spoken" },
+        references: [],
+    };
+    const route = createLibraryRoutes(
+        {
+            update: async (_actor, entryId, input) => {
+                updatedId = entryId;
+                return { id: entryId, ...input };
+            },
+        } as never,
+        createAuthContext(
+            new Map([["admin", { sub: "ada", role: "admin" }]]),
+        ) as never,
+    );
+    const response = new ResponseRecorder();
+    await route(
+        new RequestRecorder({
+            method: "PUT",
+            token: "admin",
+            body: JSON.stringify({ entry }),
+        }) as never,
+        response as never,
+        new URL("http://localhost/api/v1/study/library/entries/entry-1"),
+    );
+    assert.equal(response.statusCode, 200);
+    assert.equal(updatedId, "entry-1");
+    assert.equal(JSON.parse(response.payload).data.label, "updated");
+});
+
+test("malformed lookup is rejected before calling the provider", async () => {
+    let invoked = false;
+    const route = createLibraryRoutes(
+        {
+            lookup: async () => {
+                invoked = true;
+            },
+        } as never,
+        createAuthContext(
+            new Map([["admin", { sub: "admin", role: "admin" }]]),
+        ) as never,
+    );
+    const response = new ResponseRecorder();
+    await route(
+        new RequestRecorder({
+            method: "POST",
+            token: "admin",
+            body: "{}",
+        }) as never,
+        response as never,
+        new URL("http://localhost/api/v1/study/library/lookup"),
+    );
+    assert.equal(response.statusCode, 400);
+    assert.equal(
+        JSON.parse(response.payload).error.code,
+        "invalid_lookup_request",
+    );
+    assert.equal(invoked, false);
+});
+
+test("unexpected persistence failures return a generic server error", async () => {
+    const route = createLibraryRoutes(
+        {
+            lookup: async () => {
+                throw new Error(
+                    'duplicate key value violates unique constraint "private_index"',
+                );
+            },
+        } as never,
+        createAuthContext(
+            new Map([["admin", { sub: "admin", role: "admin" }]]),
+        ) as never,
+    );
+    const response = new ResponseRecorder();
+    await route(
+        new RequestRecorder({
+            method: "POST",
+            token: "admin",
+            body: JSON.stringify({
+                providerId: "dictionary",
+                entry: { schemaId: "test", layer: "words", label: "word" },
+            }),
+        }) as never,
+        response as never,
+        new URL("http://localhost/api/v1/study/library/lookup"),
+    );
+    assert.equal(response.statusCode, 500);
+    assert.equal(JSON.parse(response.payload).error.code, "request_failed");
+    assert.equal(response.payload.includes("private_index"), false);
+});
+
+for (const role of ["admin", "user"] as const) {
+    test(`merge route returns the ${role === "admin" ? "immediate result" : "review request"} from its owning service`, async () => {
+        let merged: unknown;
+        const input = {
+            schemaId: "mock-language",
+            layer: "words",
+            label: "年",
+        };
+        const route = createLibraryRoutes(
+            {
+                merge: async (
+                    actor: unknown,
+                    id: string,
+                    proposal: unknown,
+                ) => {
+                    merged = { actor, id, proposal };
+                    return {
+                        entry: { id: "canonical" },
+                        ...(role === "user"
+                            ? { request: { id: "request", status: "pending" } }
+                            : {}),
+                    };
+                },
+            } as never,
+            createAuthContext(
+                new Map([["token", { sub: "account", role }]]),
+            ) as never,
+        );
+        const response = new ResponseRecorder();
+        await route(
+            new RequestRecorder({
+                method: "POST",
+                token: "token",
+                body: JSON.stringify(input),
+            }) as never,
+            response as never,
+            new URL(
+                "http://localhost/api/v1/study/library/entries/canonical/merge",
+            ),
+        );
+        assert.equal(response.statusCode, role === "admin" ? 200 : 201);
+        assert.deepEqual(merged, {
+            actor: { accountId: "account", role },
+            id: "canonical",
+            proposal: input,
+        });
+        assert.equal(JSON.parse(response.payload).data.entry.id, "canonical");
+    });
+}
+
+test("transformed audio requests keep descriptors in an authenticated POST body", async () => {
+    const descriptor = { setId: "noun", path: ["plural"] };
+    let received: unknown;
+    const route = createLibraryRoutes(
+        {
+            readAudio: async (actor, entryId, fieldId, transformation) => {
+                received = { actor, entryId, fieldId, transformation };
+                return { mediaType: "audio/mpeg", data: Buffer.from("audio") };
+            },
+        } as never,
+        createAuthContext(
+            new Map([["learner", { sub: "alice", role: "user" }]]),
+        ) as never,
+    );
+    const response = new ResponseRecorder();
+    await route(
+        new RequestRecorder({
+            method: "POST",
+            token: "learner",
+            body: JSON.stringify({ transformation: descriptor }),
+        }) as never,
+        response as never,
+        new URL(
+            "http://localhost/api/v1/study/library/entries/dog/audio/audio",
+        ),
+    );
+    assert.equal(response.statusCode, 200);
+    assert.deepEqual(received, {
+        actor: { accountId: "alice", role: "user" },
+        entryId: "dog",
+        fieldId: "audio",
+        transformation: descriptor,
+    });
+});
+
+test("Library rejects oversized JSON before invoking a mutation", async () => {
+    let writes = 0;
+    const route = createLibraryRoutes(
+        {
+            create: async () => {
+                writes++;
+            },
+        } as never,
+        createAuthContext(
+            new Map([["learner", { sub: "alice", role: "user" }]]),
+        ) as never,
+    );
+    const response = new ResponseRecorder();
+    await route(
+        new RequestRecorder({
+            method: "POST",
+            token: "learner",
+            body: JSON.stringify({ label: "a".repeat(5 * 1024 * 1024) }),
+        }) as never,
+        response as never,
+        new URL("http://localhost/api/v1/study/library/entries"),
+    );
+    assert.equal(response.statusCode, 413);
+    assert.equal(
+        JSON.parse(response.payload).error.code,
+        "request_body_too_large",
+    );
+    assert.equal(writes, 0);
+});

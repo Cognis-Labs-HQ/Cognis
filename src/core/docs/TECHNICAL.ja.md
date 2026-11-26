@@ -1,0 +1,141 @@
+# 技術リファレンス
+
+コア の公開インターフェースと運用規則を説明します。
+
+## インターフェース
+
+### 拡張ポイント
+
+- `ctx.contributeCapability(key, value)` でクロスコンポーネント capability を提供する。
+- 終了処理では `ctx.removeCapability(key)` で所有する capability を削除する。スコープ付きモジュールブートストラップでは自動的に処理される。
+- `ctx.registerFlow({ id, stages })` で新しいオーケストレーション pipeline を登録する。
+- `ctx.addFlowStageHook(flowId, stageId, hook, handler)` で flow 振る舞いを注入する。
+- 無効化時は `ctx.removeFlowStageHook(...)` と `ctx.unregisterFlow(...)` で振る舞いを解除する。
+
+### API ルート
+
+このコンポーネントは HTTP ルートを直接登録しません。
+
+### ctx.flow API
+
+`ctx.flow`はガード＆インジェクトパターン向けの狭いインターフェースです。
+コンポーネントはフックを注入する前にフローが存在するかどうかを確認します。
+
+### インターフェース
+
+- **`exists(flowId)`** — フローが登録されている場合に`true`を返します。
+- **`extend(flowId, stageId, hook, handler)`** — ステージフックを登録します。成功時は`true`、フックIDが重複している場合は`false`を返します（冪等、例外なし）。
+- **`run(flowId, input?)`** — フローを実行します。
+
+## 設定
+
+### 設定
+
+このコンポーネントにランタイム環境変数設定はありません。
+
+## 動作
+
+### Core Ctx と Flow バス
+
+`startSsoLogin` フローは、認証情報フィールドを送信せずにリダイレクト型認証を開始します。プロバイダーのフックは `validateProvider` で選択されたプロバイダーを検証し、状態を作成して `initiateAuthorization` から `{ providerId, redirectUrl }` を返します。Cognis は相対 URL または HTTPS のリダイレクト URL のみを受け付けます。
+
+必須の `gateAccountCreation` フローは、外部 ID が Cognis アカウントを作成する前に実行されます。公開登録が有効な場合は作成を直接許可し、それ以外の場合は登録ゲートウェイが、プロバイダー ID とメールアドレスが一致する使い捨て登録トークンを要求します。プロバイダーのメールアドレスがない場合は `emailRequired: true` を返して SSO 画面で入力を求められるようにし、キャンセルまたは未認可の場合はアカウントを作成せずログインを中止します。
+
+### 概要
+
+`src/core/ctx/` は、プラットフォーム全体で使う `ctx` ケーパビリティバスを core の独立した面として定義します。設計は非前提です。各コンポーネントは他コンポーネントの内部実装を直接 import せず、ケーパビリティ提供・flow 登録・stage hook 注入を行います。
+
+同一の ctx インスタンスを core、gateway、adapter、module、route bootstrap で共有する想定です。これにより機能合成は明示的かつ可逆になります。コンポーネント無効化時には、その flow hook と capability だけを外せます。
+
+flow モデルは処理を名前付きライフサイクルとして扱い、各 stage を決定的順序で実行します。flow はバックエンド処理（ユーザー追加、パスワード変更）、メッセージ処理（送信、ミーティング作成）、UI 構築（設定ページ、ログインページ）を表現できます。
+
+### 責務
+
+- capability の提供と参照の単一サーフェスを提供する。
+- 順序付き stage 定義を持つ名前付き flow を登録する。
+- コンポーネントによる stage hook の注入/解除を可能にする。
+- 安定した順序で stage ごとに flow を実行する。
+- 観測性とテストのために stage 実行結果を返す。
+
+責務外: 永続化、HTTP ルート配線、adapter 発見、コンポーネント有効/無効の方針決定。
+
+### 主要ソース位置
+
+| パス                                  | 目的                                                    |
+| ------------------------------------- | ------------------------------------------------------- |
+| `src/core/ctx/create-ctx.ts`          | 関数分割されたモジュールから ctx インスタンスを構築する |
+| `src/core/ctx/types.ts`               | capability、flow、hook、実行結果の公開契約              |
+| `src/core/ctx/register-flow.ts`       | flow 登録と stage 検証                                  |
+| `src/core/ctx/add-flow-stage-hook.ts` | コンポーネント注入用の stage hook 登録                  |
+| `src/core/ctx/run-flow.ts`            | 順序付き stage 実行ランタイム                           |
+
+flow は明示的な stage ID で一度登録します。各 stage hook は `order` 値付きで追加されます。実行時は `order` 昇順、同値時は hook ID 順で処理され、決定的動作を保証します。
+
+flow は `context.ctx.runFlow(...)` で別 flow を呼び出せます。例: ログイン UI 構築 flow がログイン flow を呼び、ログイン flow が LDAP 条件成立時に LDAP flow を呼びます。
+
+### 例: ガード＆インジェクト
+
+```ts
+if (ctx.flow.exists("construct-settings-ui")) {
+    ctx.flow.extend(
+        "construct-settings-ui",
+        "resolve-sections",
+        { id: "notify-gateway:resolve-sections" },
+        () => ({ gatewayId: "notify", sectionId: "notifications" }),
+    );
+}
+```
+
+### モジュールのケイパビリティ宣言
+
+モジュールは、使用するサービスをマニフェスト最上位の `requiresCapabilities` で宣言します。サーバーケイパビリティは `auth:requireAuth` などの登録 ID を使用し、ブラウザーケイパビリティは `ui:profileAvatarRenderer` などの `ui:` 名前空間を使用します。Cognis は宣言された UI 要件をモジュールの SPA ルートへ関連付け、ルートのマウント前に一致する登録済みプロバイダースクリプトだけを読み込みます。有効化時にはサーバー機能をサーバーコンテキストで、`ui:` 機能を UI レジストリのアクティブなプロバイダーで解決します。SPA ルーティングはマウント前にブラウザープロバイダーを再確認します。
+
+プロバイダーはコンポーネント文書にケイパビリティ ID を記載し、ブラウザープロバイダーは `providesCapabilities` で登録する必要があります。Owner は `GET /api/v1/system/capabilities` または `cognisctl system:capabilities` で稼働中の登録一覧を確認できます。 ナビゲーションスクリプトがブラウザーケイパビリティを提供するモジュールは、`registerNavbarPlugin({ providesCapabilities: [...] })` でその ID を宣言します。これにより、ホストはケイパビリティを利用するページをマウントする前にスクリプトを読み込みます。
+
+### 呼び出しごとの所有者ステージ
+
+Core 0.3.109 は `FlowRunOptions` に呼び出しごとの任意の `handlers` を追加します。所有者の処理は登録されたステージの拡張フックより先に実行し、結果を `stageResults` に加え、その呼び出しだけの `data` を共有します。不明なステージは実行前に拒否し、ステージの失敗は後続処理を止めます。コンポーネントは自身のトランザクション内で保存し、拡張フックの失敗時に書き込みを取り消します。呼び出し別の処理はグローバルフックとして保存しません。
+
+### 所有するサーバーとブラウザー資源
+
+外部 Bootstrap コンテキストは `registerDisposer(dispose)` を提供します。無効化、更新、Bootstrap 失敗時に登録の逆順で解除し、失敗を記録して他の解除を続けます。ブラウザープロバイダーは `mountProvider(scopedUiCtx)` を公開し、限定コンテキストで機能とフローを登録し、signal でリスナーを停止し、追加の後始末を返します。ローダーは両カタログを同期し、キャッシュ済みスクリプトを再有効化します。`ui:navbarLinks` がナビゲーション DOM を所有します。
+
+### エンゲージメント採点
+
+コアの学習活動エンジンは、段階的なctxフローを通じて証拠に基づく経験値を計算し、登録された実績を付与します。
+
+### 使用方法
+
+```ts
+const record = ctx.requireCapability("engagement:recordActivity");
+await record(activity);
+```
+
+### プロバイダーの手順
+
+言語およびアクティビティのプロバイダーは、公開 `ctx` Capability のみを通じてエンゲージメントを拡張します。Bootstrap 時に `engagement:scoring` を取得し、アクティビティ種別の既定ウェイト、スコープ付き期間限定倍率、引き換え式ブースターを登録します。`engagement:achievements` では通常、レア、レジェンダリーのバッジ定義を登録します。完了したイベント集合は `engagement:recordActivity` に送信し、自己ペース学習の単一項目の閲覧には XP を付与しません。
+
+アクティビティには一意な証拠イベント ID、プロバイダー ID、参加者 ID、コンテンツ難易度、完了時刻、任意のプロバイダーウェイト、`language` や `activity` などのスコープを含めます。明示ウェイトは種別の既定値より優先されます。難易度、ウェイト、倍率、ヒント、正答率、自力正答、初回完了、反復、プロバイダーの時間目標が採点に反映されます。反復には連続的な減衰ではなく、固定の減額率を一度適用します。
+
+### オーケストレーション
+
+`engagement:recordActivity` は `validate`、`score`、`achievements`、`publish` の各段階で `engagement:scoreActivity` を実行します。Achievement 段階は `collect`、`evaluate`、`award` を持つ `engagement:evaluateAchievements` を合成します。プロバイダーは Core 内部を import せずに、解除可能な Flow フックを追加できます。
+
+### 安全性と証拠
+
+ウェイトと倍率は `0.01` から `10`、難易度は `0.1` から `10` です。イベント ID は一意で、所要時間とヒント数は非負、時間目標は順序どおりである必要があります。消費型ブースターは参加者ごとに管理され、最初に一致した採点後に削除されます。Achievement の授与時に表示名、難易度、アイコン、時刻、証拠 ID を固定し、定義の変更によって獲得済みバッジが書き換わらないようにします。
+
+### 練習報酬の永続化
+
+`engagement:recordActivity`は検証、採点、実績の評価、結果の保存を行ってから公開します。ホストが`engagement:store`を注入し、本番の保存処理はDatabaseゲートウェイが管理します。参加者ごとのリビジョンで競合する書き込みを検出します。同じ活動の再送ではXPと実績を保持し、変更された入力や証拠の再利用は拒否します。採点と実績の評価は保存が成功するまで独立した状態で行います。`engagement:ledger`は正規の集計、ブースター引き換えの永続化、活動の無効化を提供します。引き換え済みブースターと使用済み証拠は再起動後も保持されます。`repeatKey`は元の記録を変更せずに反復練習をまとめます。訂正時は履歴を保持したまま無効なXPと実績の投影を除外します。低水準の採点メソッドは方針計算用であり、永続化が必要な処理は台帳と記録Capabilityを使用します。
+
+台帳の集計、ブースターの引き換え、活動の無効化は、検証と実行の段階を持つ専用のctxフローを通ります。不正な参加者識別子は、保存データを読み書きする前に拒否します。
+
+## セキュリティ
+
+機能の所有元と起動範囲で登録期間を管理します。状態変更前に呼び出し元を承認し、報酬公開前に学習者・証拠・再送時の識別を検証します。
+
+## リファレンス
+
+- [src/core/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/core/package.json)
+- [src/core/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/core/index.ts)

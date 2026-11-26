@@ -1,0 +1,56 @@
+# Referensi Teknis
+
+Antarmuka publik dan aturan operasional Alat Baris Perintah.
+
+## Antarmuka
+
+Perintah CLI mendeklarasikan nama, penggunaan, deskripsi, argumen, dan execute dalam registri. Core serta plugin mendaftarkan kelompok sendiri; helper HTTP mengirim permintaan terlindungi.
+
+## Konfigurasi
+
+### Konfigurasi
+
+| Variabel                       | Default            | Keterangan                                                                   |
+| ------------------------------ | ------------------ | ---------------------------------------------------------------------------- |
+| `COGNIS_CLI_TOKEN_PATH`        | —                  | Path ke file yang berisi token API untuk perintah `cognisctl` terautentikasi |
+| `COGNIS_EXTERNAL_MODULES_ROOT` | `external-modules` | Digunakan untuk menemukan subperintah modul                                  |
+| `COGNIS_GATEWAY_CLI_PATHS`     | —                  | Daftar path opsional untuk subperintah gateway                               |
+| `COGNIS_ADAPTER_CLI_PATHS`     | —                  | Daftar path opsional untuk subperintah adapter                               |
+
+## Perilaku
+
+### Ikhtisar
+
+Direktori `src/tooling/` berisi semua tooling pengembang untuk kodebase Cognis: skrip linting, generator konfigurasi TypeScript, skrip healthcheck container, dan CLI operasional `cognisctl`.
+
+### Tanggung Jawab
+
+- Menegakkan aturan keterbacaan (tidak ada tab, tidak ada spasi trailing) melalui `lint-readable.mjs`.
+- Menegakkan standar placeholder melalui `lint-placeholder.mjs`.
+- Menghasilkan `tsconfig.json` yang terkonsolidasi untuk monorepo.
+- Menyediakan perintah manajemen operasional melalui `cognisctl`.
+
+### CLI `cognisctl`
+
+`cognisctl` adalah permukaan kontrol operasional utama. Modul perintah ditemukan secara otomatis dari:
+
+- `src/tooling/cli/commands/` — perintah inti bawaan
+- Setiap `cli/index.js` yang diekspor oleh modul yang terinstal
+
+| Namespace     | Contoh perintah                                                                                                               |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `user:*`      | `user:create`, `user:role`, `user:set-password`, `user:disable`, `user:enable`, `user:delete`                                 |
+| `system:*`    | `system:health`, `system:info`                                                                                                |
+| `component:*` | `component:list`, `component:enable`, `component:disable`, `component:import`, `component:config:get`, `component:config:set` |
+| `api:*`       | `api:token` (menerbitkan token admin darurat sementara 1 jam untuk curl)                                                      |
+
+Perintah bawaan `cognisctl` dapat merender keluaran terminal yang memahami respons dengan judul, kolom sejajar, dan warna ANSI saat terminal mendukungnya; perintah tanpa perender khusus akan kembali ke JSON yang diformat.
+
+## Keamanan
+
+Autentikasi CLI membaca COGNIS_CLI_TOKEN_PATH; server tetap memeriksa peran dan sumber daya. Lindungi berkas token dan jangan bagikan rahasia dalam keluaran rinci.
+
+## Referensi
+
+- [src/tooling/cli/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/tooling/cli/package.json)
+- [src/tooling/cli/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/tooling/cli/index.ts)

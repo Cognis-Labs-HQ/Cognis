@@ -1,0 +1,10 @@
+<resources>
+  <string name="adapter.logging.file.level">Log level</string>
+  <string name="adapter.logging.file.rotate_max_bytes">Rotation size (bytes)</string>
+  <string name="adapter.logging.file.rotate_max_files">Rotated files to keep</string>
+  <string name="adapter.logging.file.rotate_compress">Compress rotated logs</string>
+  <string name="adapter.logging.file.error.level">Unsupported log level</string>
+  <string name="adapter.logging.file.error.rotate_max_bytes">Rotation size must be a positive number</string>
+  <string name="adapter.logging.file.error.rotate_max_files">Rotated file count must be a non-negative integer</string>
+  <string name="adapter.logging.file.error.rotate_compress">Compression setting must be a boolean</string>
+</resources>

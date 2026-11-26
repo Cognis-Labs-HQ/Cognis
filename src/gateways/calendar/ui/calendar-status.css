@@ -1,0 +1,134 @@
+.calendar-view-canvas .calendar-event-status--busy,
+.app-shell .calendar-view-canvas .calendar-event-status--busy:hover {
+    background: color-mix(
+        in srgb,
+        var(--calendar-event-stripe, var(--calendar-accent, #1f8ceb)) 22%,
+        var(--surface, transparent)
+    ) !important;
+}
+
+.calendar-view-canvas .calendar-event-status--free,
+.app-shell .calendar-view-canvas .calendar-event-status--free:hover {
+    background: transparent !important;
+    opacity: 0.78;
+}
+
+.calendar-view-canvas .calendar-event-status--tentative,
+.app-shell .calendar-view-canvas .calendar-event-status--tentative:hover {
+    background:
+        repeating-linear-gradient(
+            135deg,
+            color-mix(
+                    in srgb,
+                    var(
+                            --calendar-event-stripe,
+                            var(--calendar-accent, #1f8ceb)
+                        )
+                        18%,
+                    transparent
+                )
+                0 8px,
+            transparent 8px 16px
+        ),
+        var(--surface, transparent) !important;
+}
+
+.app-shell
+    .calendar-view-canvas
+    .calendar-slot-event.calendar-event-status:hover {
+    border-color: color-mix(
+        in srgb,
+        var(--calendar-event-stripe, var(--calendar-accent, #1f8ceb)) 40%,
+        var(--field-border)
+    ) !important;
+    border-left-color: color-mix(
+        in srgb,
+        var(--calendar-event-stripe, var(--calendar-accent, #1f8ceb)) 75%,
+        white
+    ) !important;
+    transform: none;
+}
+
+.calendar-events-list .calendar-event-status--tentative,
+.app-shell
+    .calendar-events-list
+    .calendar-upcoming-button.calendar-event-status--tentative:hover,
+.dashboard-upcoming-event-link.calendar-event-status--tentative {
+    background:
+        repeating-linear-gradient(
+            135deg,
+            color-mix(
+                    in srgb,
+                    var(
+                            --calendar-event-stripe,
+                            var(--calendar-accent, #1f8ceb)
+                        )
+                        18%,
+                    transparent
+                )
+                0 8px,
+            transparent 8px 16px
+        ),
+        var(--surface, transparent) !important;
+}
+
+.calendar-events-list .calendar-event-status--busy,
+.app-shell
+    .calendar-events-list
+    .calendar-upcoming-button.calendar-event-status--busy:hover,
+.dashboard-upcoming-event-link.calendar-event-status--busy {
+    background: color-mix(
+        in srgb,
+        var(--calendar-event-stripe, var(--calendar-accent, #1f8ceb)) 22%,
+        var(--surface, transparent)
+    ) !important;
+}
+
+.calendar-events-list .calendar-event-status--free,
+.app-shell
+    .calendar-events-list
+    .calendar-upcoming-button.calendar-event-status--free:hover,
+.dashboard-upcoming-event-link.calendar-event-status--free {
+    background: transparent !important;
+}
+
+.calendar-events-list .calendar-upcoming-item {
+    padding: 0;
+    border: 0;
+    background: transparent;
+}
+
+.toolbar .calendar-upcoming-button.calendar-event-status {
+    min-width: 0;
+    min-height: 0;
+    padding: 0.35rem 0.5rem;
+    border: 1px solid var(--field-border);
+    border-left: 4px solid
+        var(--calendar-event-stripe, var(--calendar-accent, #1f8ceb));
+    border-radius: 10px;
+}
+
+.app-shell
+    .calendar-events-list
+    .calendar-upcoming-button.calendar-event-status:hover {
+    border-color: var(--field-border) !important;
+    border-left-color: color-mix(
+        in srgb,
+        var(--calendar-event-stripe, var(--calendar-accent, #1f8ceb)) 75%,
+        white
+    ) !important;
+    transform: none;
+}
+
+.dashboard-upcoming-event-link.calendar-event-status {
+    padding: 0.4rem 0.5rem;
+    border: 1px solid
+        color-mix(
+            in srgb,
+            var(--calendar-event-stripe, var(--calendar-accent, #1f8ceb)) 40%,
+            var(--field-border)
+        );
+    border-left: 4px solid
+        var(--calendar-event-stripe, var(--calendar-accent, #1f8ceb));
+    border-radius: 10px;
+}

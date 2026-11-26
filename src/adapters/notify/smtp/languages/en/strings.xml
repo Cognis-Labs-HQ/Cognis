@@ -1,0 +1,30 @@
+<resources>
+    <string name="adapter.smtp.config.host">SMTP Host</string>
+    <string name="adapter.smtp.config.port">Port</string>
+    <string name="adapter.smtp.config.secure">Security</string>
+    <string name="adapter.smtp.config.from">From Address</string>
+    <string name="adapter.smtp.config.user">Username</string>
+    <string name="adapter.smtp.config.password">Password</string>
+    <string name="adapter.smtp.config.secure_none">None</string>
+    <string name="adapter.smtp.config.secure_starttls">STARTTLS</string>
+    <string name="adapter.smtp.config.secure_tls">TLS</string>
+    <string name="adapter.smtp.config.allow_self_signed">Allow Self-Signed Certificate</string>
+    <string name="adapter.smtp.config.auth_disabled">Disable Authentication</string>
+    <string name="adapter.smtp.config.code_length">Code Length</string>
+    <string name="adapter.smtp.config.sender_name">Sender Name</string>
+    <string name="adapter.smtp.template.standard">Standard Email</string>
+    <string name="adapter.smtp.template.code">Verification Code</string>
+    <string name="adapter.smtp.template.action">Action Email</string>
+    <string name="adapter.smtp.template.digest">Digest</string>
+    <string name="adapter.smtp.template.option.brand_name">Brand Name</string>
+    <string name="adapter.smtp.template.option.brand_url">Brand URL</string>
+    <string name="adapter.smtp.template.option.logo_url">Logo URL</string>
+    <string name="adapter.smtp.template.option.footer_text">Footer Text</string>
+    <string name="adapter.smtp.template.option.preview_text">Preview Text</string>
+    <string name="adapter.smtp.template.option.heading">Heading</string>
+    <string name="adapter.smtp.email.footer">This is an automated notification. Please do not reply.</string>
+    <string name="adapter.smtp.email.action">Open Message</string>
+    <string name="adapter.smtp.config.greylist_retries">Greylist Retries</string>
+    <string name="adapter.smtp.config.greylist_retry_delay">Greylist Retry Delay (ms)</string>
+    <string name="adapter.smtp.config.test_recipient">Test Recipient</string>
+</resources>

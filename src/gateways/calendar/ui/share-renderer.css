@@ -1,0 +1,28 @@
+.shared-calendar:has(.calendar-view-canvas) {
+    grid-template-rows: auto auto minmax(0, 1fr);
+    min-height: 0;
+}
+
+.shared-calendar-event-form {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.shared-calendar-event-form label {
+    display: grid;
+    gap: 0.3rem;
+}
+
+.shared-calendar .calendar-view-canvas {
+    min-height: 0;
+    overflow: auto;
+}
+
+.calendar-share-page .calendar-timeslot-grid {
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.shared-calendar-title {
+    margin: 0;
+}

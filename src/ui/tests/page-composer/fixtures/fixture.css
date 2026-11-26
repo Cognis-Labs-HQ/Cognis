@@ -1,0 +1,29 @@
+.fixture-scroll-pane {
+    max-height: 160px;
+    overflow: auto;
+}
+
+.fixture-owned-sidebar,
+.fixture-owned-content {
+    background: rgb(30, 20, 40) !important;
+    opacity: 0.2 !important;
+    border: 6px solid purple !important;
+    box-shadow: 0 0 20px black !important;
+}
+.fixture-owned-menu {
+    background: purple !important;
+    border: 6px solid purple !important;
+    border-radius: 30px !important;
+    padding: 0 !important;
+}
+
+.content-panel > .content-section {
+    padding: 0 !important;
+    --composer-grid-inset: 0px !important;
+}
+
+.fixture-owned-sidebar h3 {
+    text-align: center !important;
+    padding: 0 !important;
+    margin-inline-start: 40px !important;
+}

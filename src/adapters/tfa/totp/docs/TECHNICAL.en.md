@@ -1,0 +1,52 @@
+# Technical Reference
+
+The public interfaces and operational rules of Authenticator Verification.
+
+## Interfaces
+
+The method implements the TFA adapter contract: setup returns manualSecret and qrSvg, confirmation validates a code, and verification uses the stored secret, algorithm, digits and period.
+
+## Configuration
+
+### Configuration
+
+The adapter exposes one admin setting:
+
+- `algorithm` — HMAC algorithm used for setup verification and login verification.
+
+The method declares its login placeholder, language base and configuration labels; the gateway renders that metadata without a provider-ID branch.
+
+## Behavior
+
+### TOTP Adapter
+
+This adapter owns the `COGNIS_TOTP_ISSUER` override. Invalid codes use the common `invalid_verification_code` error, so the gateway does not need provider-specific error handling.
+
+### Purpose
+
+Provides time-based one-time password verification for the TFA gateway.
+
+### Setup Flow
+
+1. The adapter generates a Base32 secret.
+2. It returns `manualSecret` and `qrSvg` for setup UI rendering.
+3. The user confirms setup with a 6-digit code.
+4. On success, state stores `secret`, `algorithm`, `digits`, and `period`.
+
+### Verification Rules
+
+- Token length: `6` digits.
+- Time step: `30` seconds.
+- Allowed drift: previous, current, and next window.
+- Default algorithm: `SHA256`.
+- Supported algorithms: `SHA1`, `SHA256`, `SHA512`.
+
+## Security
+
+Setup is enabled only after a valid six-digit confirmation. The stored secret permits code generation and must remain protected; verification accepts the current thirty-second window and one neighboring window on either side.
+
+## Reference
+
+- [src/adapters/tfa/totp/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/tfa/totp/manifest.json)
+- [src/adapters/tfa/totp/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/tfa/totp/package.json)
+- [src/adapters/tfa/totp/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/tfa/totp/index.ts)

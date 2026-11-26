@@ -1,0 +1,19 @@
+import { SECURITY_SETTINGS_HASH_PATH } from "../../reuse/auth-setup-route.js";
+
+export function resolveSettingsSetupRedirect(
+    pathname,
+    hash,
+    authSetupRequired,
+) {
+    if (!authSetupRequired) {
+        return null;
+    }
+    if (`${pathname}${hash}` === SECURITY_SETTINGS_HASH_PATH) {
+        return null;
+    }
+    return SECURITY_SETTINGS_HASH_PATH;
+}
+
+export function getSettingsShellOptions() {
+    return {};
+}

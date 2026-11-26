@@ -1,0 +1,7 @@
+<resources>
+    <string name="adapter.oidc.config.providername">Nama Penyedia</string>
+    <string name="adapter.oidc.config.clientid">ID Klien</string>
+    <string name="adapter.oidc.config.clientsecret">Rahasia Klien</string>
+    <string name="adapter.oidc.config.discoveryurl">URL Penemuan</string>
+    <string name="adapter.oidc.config.adminroles">Peran Admin (Dipisahkan Koma)</string>
+</resources>

@@ -1,0 +1,163 @@
+@layer composerSurfaces {
+    .workspace:not(.app-page--frameless):not(
+            .component-page-window--borderless *
+        )
+        :is(.toolbar, .content-panel) {
+        background: var(--toolbar-bg) !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+        opacity: 1 !important;
+    }
+
+    .workspace:not(.app-page--frameless):not(
+            .component-page-window--borderless *
+        )
+        :is(.content-panel, .content-panel > .content-section) {
+        --composer-grid-inset: 28px !important;
+    }
+
+    .workspace:not(.app-page--frameless):not(
+            .component-page-window--borderless *
+        )
+        .content-panel
+        > .content-section {
+        padding: var(--composer-grid-inset) !important;
+    }
+
+    @media (max-width: 640px) {
+        .workspace:not(.app-page--frameless):not(
+                .component-page-window--borderless *
+            )
+            :is(.content-panel, .content-panel > .content-section) {
+            --composer-grid-inset: 14px !important;
+        }
+    }
+
+    .composer-sidebar-section :is(ul, ol) {
+        margin: 0 !important;
+        padding: 0 !important;
+        list-style: none;
+    }
+
+    .composer-sidebar-section :is(ul, ol) > li {
+        background: transparent !important;
+        border: 0 !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+    }
+
+    .composer-sidebar-section :is(h2, h3, h4) {
+        margin: 0 !important;
+        padding: 10px 17px !important;
+        text-align: start !important;
+        min-width: 0 !important;
+        overflow-wrap: anywhere;
+    }
+
+    .composer-sidebar-section > * > header {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 0.5rem !important;
+    }
+
+    .toolbar .side-menu-link {
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.5rem !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        min-height: 44px !important;
+        padding: 10px 14px !important;
+        border-inline-start: 3px solid transparent !important;
+        text-align: start !important;
+    }
+
+    .toolbar
+        .side-menu-link:is(
+            .active,
+            [data-current="true"],
+            [aria-current="page"],
+            [aria-pressed="true"]
+        ) {
+        border-inline-start-color: var(--accent-2) !important;
+    }
+
+    .composer-sidebar-section {
+        min-width: 0;
+    }
+
+    .composer-sidebar-section > :not(input, select, textarea, button, a) {
+        background: transparent !important;
+        border: 0 !important;
+        box-shadow: none !important;
+        opacity: 1 !important;
+        backdrop-filter: none !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .workspace:not(.app-page--frameless):not(
+            .component-page-window--borderless *
+        )
+        .content-panel
+        .widget-card:not(.widget-card--missing),
+    .workspace:not(.app-page--frameless):not(
+            .component-page-window--borderless *
+        )
+        .content-panel
+        .widget-card
+        > :only-child:not(input, select, textarea, button, a) {
+        background: transparent !important;
+        box-shadow: none !important;
+        opacity: 1 !important;
+    }
+
+    .toolbar
+        :where(
+            button:not(.btn-confirm, .btn-cancel, .btn-neutral),
+            button.side-menu-link.btn-neutral
+        ) {
+        background: transparent !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        color: var(--text) !important;
+        font: inherit !important;
+    }
+
+    .toolbar
+        :where(
+            button:not(.btn-confirm, .btn-cancel, .btn-neutral),
+            button.side-menu-link.btn-neutral
+        ):is(
+            :hover,
+            :focus-visible,
+            .active,
+            .is-active,
+            [aria-pressed="true"],
+            [aria-current="page"],
+            [data-current="true"]
+        ) {
+        background: var(--surface-soft) !important;
+    }
+
+    .toolbar
+        :where(
+            button:not(.btn-confirm, .btn-cancel, .btn-neutral),
+            button.side-menu-link.btn-neutral
+        ):focus-visible {
+        outline: 2px solid var(--text) !important;
+        outline-offset: -2px !important;
+    }
+
+    .toolbar
+        .composer-sidebar-section
+        > *
+        > header
+        > button:not(:where(.btn-confirm, .btn-cancel, .btn-neutral)) {
+        text-align: center;
+    }
+}

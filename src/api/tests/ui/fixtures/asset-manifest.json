@@ -1,0 +1,5 @@
+{
+    "/static/adapters/example/sample/ui/provider.js": "/assets/provider-ABC123.js",
+    "/static/adapters/example/sample/ui/styles.css": "/assets/styles-ABC123.css",
+    "/static/gateways/example/ui/direct.js": "/assets/direct-ABC123.js"
+}

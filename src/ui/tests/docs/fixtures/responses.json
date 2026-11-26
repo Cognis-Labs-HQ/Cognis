@@ -1,0 +1,112 @@
+{
+    "/api/v1/docs": {
+        "data": [
+            {
+                "slug": "example",
+                "title": "Example",
+                "group": "platform",
+                "version": "2.0.0",
+                "versions": ["2.0.0", "1.0.0"],
+                "views": ["info", "usage", "technical"]
+            },
+            {
+                "slug": "other",
+                "title": "Other",
+                "group": "platform",
+                "version": "2.0.0",
+                "versions": ["2.0.0", "1.0.0"],
+                "views": ["info", "usage", "technical"]
+            }
+        ]
+    },
+    "/api/v1/docs/latest/example": {
+        "data": {
+            "markdown": "# Example README 2.0.0\n\nDocumentation fixture content.\n\n[Usage](/docs/example/usage)"
+        }
+    },
+    "/api/v1/docs/latest/example/usage": {
+        "data": {
+            "markdown": "# Example Usage 2.0.0\n\nDocumentation fixture content."
+        }
+    },
+    "/api/v1/docs/latest/example/technical": {
+        "data": {
+            "markdown": "# Example Technical 2.0.0\n\nDocumentation fixture content."
+        }
+    },
+    "/api/v1/docs/2.0.0/example": {
+        "data": {
+            "markdown": "# Example README 2.0.0\n\nDocumentation fixture content.\n\n[Usage](/docs/example/usage)"
+        }
+    },
+    "/api/v1/docs/2.0.0/example/usage": {
+        "data": {
+            "markdown": "# Example Usage 2.0.0\n\nDocumentation fixture content."
+        }
+    },
+    "/api/v1/docs/2.0.0/example/technical": {
+        "data": {
+            "markdown": "# Example Technical 2.0.0\n\nDocumentation fixture content."
+        }
+    },
+    "/api/v1/docs/1.0.0/example": {
+        "data": {
+            "markdown": "# Example README 1.0.0\n\nDocumentation fixture content.\n\n[Usage](/docs/example/usage)"
+        }
+    },
+    "/api/v1/docs/1.0.0/example/usage": {
+        "data": {
+            "markdown": "# Example Usage 1.0.0\n\nDocumentation fixture content."
+        }
+    },
+    "/api/v1/docs/1.0.0/example/technical": {
+        "data": {
+            "markdown": "# Example Technical 1.0.0\n\nDocumentation fixture content."
+        }
+    },
+    "/api/v1/docs/latest/other": {
+        "data": {
+            "markdown": "# Other README 2.0.0\n\nDocumentation fixture content."
+        }
+    },
+    "/api/v1/docs/latest/other/usage": {
+        "data": {
+            "markdown": "# Other Usage 2.0.0\n\nDocumentation fixture content."
+        }
+    },
+    "/api/v1/docs/latest/other/technical": {
+        "data": {
+            "markdown": "# Other Technical 2.0.0\n\nDocumentation fixture content."
+        }
+    },
+    "/api/v1/docs/2.0.0/other": {
+        "data": {
+            "markdown": "# Other README 2.0.0\n\nDocumentation fixture content."
+        }
+    },
+    "/api/v1/docs/2.0.0/other/usage": {
+        "data": {
+            "markdown": "# Other Usage 2.0.0\n\nDocumentation fixture content."
+        }
+    },
+    "/api/v1/docs/2.0.0/other/technical": {
+        "data": {
+            "markdown": "# Other Technical 2.0.0\n\nDocumentation fixture content."
+        }
+    },
+    "/api/v1/docs/1.0.0/other": {
+        "data": {
+            "markdown": "# Other README 1.0.0\n\nDocumentation fixture content."
+        }
+    },
+    "/api/v1/docs/1.0.0/other/usage": {
+        "data": {
+            "markdown": "# Other Usage 1.0.0\n\nDocumentation fixture content."
+        }
+    },
+    "/api/v1/docs/1.0.0/other/technical": {
+        "data": {
+            "markdown": "# Other Technical 1.0.0\n\nDocumentation fixture content."
+        }
+    }
+}

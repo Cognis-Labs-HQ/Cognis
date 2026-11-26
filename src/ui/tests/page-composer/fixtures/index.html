@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link rel="stylesheet" href="/static/styles/page-builder.css" />
+        <link rel="stylesheet" href="/static/styles/reuse/buttons.css" />
+        <link rel="stylesheet" href="/static/styles/reuse/search-bar.css" />
+        <link rel="stylesheet" href="/fixture.css" />
+        <title>Responsive component fixture</title>
+    </head>
+    <body>
+        <div id="app"></div>
+        <template id="form-content">
+            <section class="fixture-owned-content">
+                <h2 data-i18n="ui.reuse.settings"></h2>
+                <label
+                    ><span data-i18n="ui.reuse.name"></span
+                    ><input name="draft" type="text"
+                /></label>
+                <label
+                    ><input name="enabled" type="checkbox" /><span
+                        data-i18n="ui.reuse.enable"
+                    ></span
+                ></label>
+                <label
+                    ><span data-i18n="ui.reuse.more_information"></span
+                    ><textarea name="notes"></textarea>
+                </label>
+                <button
+                    type="button"
+                    data-fixture-popup
+                    data-i18n="ui.reuse.settings"
+                ></button>
+            </section>
+        </template>
+        <template id="long-content">
+            <h2 data-i18n="ui.reuse.more_information"></h2>
+            <div class="fixture-scroll-pane" data-fixture-scroll>
+                <p data-fixture-paragraph></p>
+            </div>
+            <button
+                type="button"
+                data-fixture-last
+                data-i18n="ui.reuse.done"
+            ></button>
+        </template>
+        <template id="subnav-content">
+            <ul class="page-subnav-list">
+                <li>
+                    <a
+                        href="#settings"
+                        data-fixture-nav
+                        data-i18n="ui.reuse.settings"
+                    ></a>
+                </li>
+                <li>
+                    <a
+                        href="#information"
+                        data-fixture-nav
+                        data-i18n="ui.reuse.more_information"
+                    ></a>
+                </li>
+            </ul>
+        </template>
+        <template id="sidebar-controls">
+            <section class="fixture-owned-sidebar">
+                <header><h3 data-i18n="ui.reuse.settings"></h3></header>
+                <ul>
+                    <li>
+                        <button
+                            type="button"
+                            class="fixture-owned-menu side-menu-link btn-neutral"
+                            data-theme-menu-entry
+                            data-i18n="ui.reuse.settings"
+                        ></button>
+                    </li>
+                    <li>
+                        <button
+                            type="button"
+                            class="fixture-owned-menu side-menu-link btn-neutral"
+                            data-theme-menu-entry
+                            data-i18n="ui.reuse.more_information"
+                        ></button>
+                    </li>
+                </ul>
+                <label
+                    ><span data-i18n="ui.reuse.search"></span
+                    ><input data-theme-field
+                /></label>
+                <button
+                    type="button"
+                    class="btn-neutral"
+                    data-theme-action
+                    data-i18n="ui.reuse.search"
+                ></button>
+            </section>
+            <span
+                id="fixture-root-field-label"
+                data-i18n="ui.reuse.search"
+            ></span>
+            <input
+                data-theme-root-field
+                aria-labelledby="fixture-root-field-label"
+                size="1"
+            />
+            <button
+                class="btn-neutral"
+                type="button"
+                data-theme-root-action
+                data-i18n="ui.reuse.search"
+            ></button>
+        </template>
+        <template id="toolbar-content">
+            <button
+                type="button"
+                data-composer-scroll="form"
+                data-i18n="ui.reuse.settings"
+            ></button>
+            <button
+                type="button"
+                data-composer-scroll="nested"
+                data-i18n="ui.reuse.elements"
+            ></button>
+            <button
+                type="button"
+                data-fixture-popup
+                data-i18n="ui.reuse.edit"
+            ></button>
+            <button
+                type="button"
+                data-fixture-search
+                data-i18n="ui.reuse.search"
+            ></button>
+        </template>
+        <script type="module" src="/fixture.js"></script>
+    </body>
+</html>

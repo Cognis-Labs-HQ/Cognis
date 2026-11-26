@@ -1,0 +1,429 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import {
+    GatewayRegistry,
+    CapabilityStore,
+    createCtx,
+    runBootstrapScope,
+} from "@cognis/core";
+import type { NotificationEnvelope } from "../contracts/sender.js";
+import { RouteRegistry } from "../../../api/reuse/route-registry.js";
+import { bootstrap as bootstrapImplementation } from "../bootstrap.js";
+import { issueAccessToken } from "../../auth/access-tokens.js";
+
+function makeInMemoryDb() {
+    return {
+        executeCommand: async () => ({ rows: [], rowCount: 0 }),
+        ensureTable: async () => {},
+        transaction: async <T>(
+            cb: (db: ReturnType<typeof makeInMemoryDb>) => Promise<T>,
+        ) => cb(makeInMemoryDb()),
+    };
+}
+
+function makeResponse() {
+    let status = 0;
+    let payload = "";
+    return {
+        writeHead(code: number) {
+            status = code;
+        },
+        end(p: string) {
+            payload = p;
+        },
+        get status() {
+            return status;
+        },
+        get payload() {
+            return payload;
+        },
+    } as any;
+}
+
+const adminToken = issueAccessToken("test-session", "admin", 60);
+
+async function bootstrap(input: Parameters<typeof bootstrapImplementation>[0]) {
+    const root =
+        input.capabilities.require<ReturnType<typeof createCtx>>("system:ctx");
+    return runBootstrapScope(root, "gateway:notify", () =>
+        bootstrapImplementation(input),
+    );
+}
+
+async function makeCtx() {
+    const gatewayRegistry = new GatewayRegistry();
+    const routeRegistry = new RouteRegistry();
+    const capabilities = new CapabilityStore();
+    const db = makeInMemoryDb();
+    const systemCtx = createCtx();
+    capabilities.contribute("db:executor", db);
+    capabilities.contribute("system:ctx", systemCtx);
+    return {
+        gatewayRegistry,
+        routeRegistry,
+        capabilities,
+        db,
+        flow: systemCtx.flow,
+        systemCtx,
+    };
+}
+
+async function bootstrapCapture(
+    context: Awaited<ReturnType<typeof makeCtx>>,
+    receive: (message: NotificationEnvelope) => void,
+) {
+    context.capabilities.contribute("test:receiveNotification", receive);
+    await runBootstrapScope(context.systemCtx, "gateway:notify", () =>
+        bootstrap({
+            ...context,
+            adaptersRoot: path.resolve(
+                "src/gateways/notify/tests/fixtures/adapters",
+            ),
+        }),
+    );
+}
+
+test("bootstrap registers notify gateway with GatewayRegistry", async () => {
+    const { gatewayRegistry, routeRegistry, capabilities, flow } =
+        await makeCtx();
+
+    await bootstrap({
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        flow,
+    });
+
+    const gateways = gatewayRegistry.list();
+    assert.equal(gateways.length, 1);
+    assert.equal(gateways[0].id, "notify");
+    assert.equal(gateways[0].name, "Notification Gateway");
+});
+
+test("bootstrap contributes LDAP email provisioning capability", async () => {
+    const { gatewayRegistry, routeRegistry, capabilities, flow } =
+        await makeCtx();
+
+    await bootstrap({
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        flow,
+    });
+
+    const provision = capabilities.get<
+        (accountId: string, emails: string[]) => Promise<void>
+    >("notify:provisionUserEmails");
+    assert.ok(provision);
+    await assert.doesNotReject(
+        provision("ldap-user", [
+            "primary@example.org",
+            "secondary@example.org",
+        ]),
+    );
+});
+
+test("notify dispatch resolves profile handles to canonical account IDs", async () => {
+    const context = await makeCtx();
+    const { capabilities } = context;
+    capabilities.contribute("social:profile:identity", {
+        async resolveAccountId(handle: unknown) {
+            return handle === "provider-handle" ? "sso-account-id" : null;
+        },
+    });
+
+    const received: Array<{ recipientUsername: string }> = [];
+    await bootstrapCapture(context, (message) => received.push(message));
+    const dispatch =
+        capabilities.require<
+            (envelope: Record<string, unknown>) => Promise<unknown>
+        >("notify:dispatch");
+
+    await dispatch({
+        category: "social",
+        recipientUsername: "provider-handle",
+        subject: "Hello",
+        body: "World",
+    });
+
+    assert.equal(received[0]?.recipientUsername, "sso-account-id");
+});
+
+for (const [role, expected] of [
+    ["admin", ["u_admin", "u_owner"]],
+    ["teacher", ["u_teacher"]],
+    ["user", ["local-user"]],
+] as const) {
+    test(`role notifications deliver to immutable ${role} account IDs`, async () => {
+        const context = await makeCtx();
+        context.capabilities.contribute("auth:accountStore", {
+            list: async () => [
+                {
+                    accountId: "u_admin",
+                    username: "admin-handle",
+                    role: "admin",
+                },
+                {
+                    accountId: "u_owner",
+                    username: "owner-handle",
+                    role: "owner",
+                },
+                {
+                    accountId: "u_teacher",
+                    username: "teacher-handle",
+                    role: "teacher",
+                },
+                {
+                    accountId: "local-user",
+                    username: "local-user",
+                    role: "user",
+                },
+            ],
+        });
+        const received: string[] = [];
+        await bootstrapCapture(context, (message) =>
+            received.push(message.recipientUsername),
+        );
+        const dispatch = context.capabilities.require<any>(
+            "notify:dispatchToRole",
+        );
+        const result = await dispatch(role, {
+            category: "study",
+            subject: "Request",
+            body: "Review request",
+        });
+        assert.deepEqual(result.recipients, expected);
+        assert.deepEqual(received, expected);
+        assert.deepEqual(
+            result.dispatched.map((item: any) => item.recipientUsername),
+            expected,
+        );
+    });
+}
+
+test("bootstrap registers routes with RouteRegistry", async () => {
+    const { gatewayRegistry, routeRegistry, capabilities, flow } =
+        await makeCtx();
+
+    await bootstrap({
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        flow,
+    });
+
+    assert.ok(
+        routeRegistry.getHandlers().length >= 3,
+        "Expected at least three handlers registered (notification routes + email routes + adapter routes)",
+    );
+});
+
+test("GET /api/v1/gateways/notify/adapters returns empty list when no senders", async () => {
+    const { gatewayRegistry, routeRegistry, capabilities, flow } =
+        await makeCtx();
+
+    await bootstrap({
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        flow,
+    });
+
+    const handlers = routeRegistry.getHandlers();
+    const adapterHandler = handlers[handlers.length - 1];
+    const req = {
+        method: "GET",
+        headers: { authorization: `Bearer ${adminToken}` },
+    } as any;
+    const res = makeResponse();
+
+    const handled = await adapterHandler(
+        req,
+        res,
+        new URL("/api/v1/gateways/notify/adapters", "http://localhost"),
+    );
+
+    assert.ok(handled);
+    assert.equal(res.status, 200);
+    const body = JSON.parse(res.payload);
+    assert.ok(Array.isArray(body.data));
+});
+
+test("gateway adapter route requires admin auth", async () => {
+    const { gatewayRegistry, routeRegistry, capabilities, flow } =
+        await makeCtx();
+
+    await bootstrap({
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        flow,
+    });
+
+    const handlers = routeRegistry.getHandlers();
+    const adapterHandler = handlers[handlers.length - 1];
+    const req = { method: "GET", headers: {} } as any;
+    const res = makeResponse();
+
+    await adapterHandler(
+        req,
+        res,
+        new URL("/api/v1/gateways/notify/adapters", "http://localhost"),
+    );
+
+    assert.equal(res.status, 401);
+});
+
+import { access } from "node:fs/promises";
+import path from "node:path";
+import { UIRegistry } from "../../../api/reuse/ui-registry.js";
+
+test("notify gateway bootstrap registers correct static dir and admin-section.js exists on disk", async () => {
+    const { gatewayRegistry, routeRegistry, capabilities, flow } =
+        await makeCtx();
+    const uiRegistry = new UIRegistry();
+
+    await bootstrap({
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        flow,
+        uiRegistry,
+    });
+
+    const staticDir = uiRegistry.getStaticDir("notify");
+    assert.ok(
+        staticDir,
+        "notify gateway must register a static dir with UIRegistry",
+    );
+
+    await assert.doesNotReject(
+        access(staticDir),
+        `static dir must exist on disk: ${staticDir}`,
+    );
+
+    const adminSectionPath = path.join(staticDir, "admin-section.js");
+    await assert.doesNotReject(
+        access(adminSectionPath),
+        `admin-section.js must exist in the registered static dir: ${adminSectionPath}`,
+    );
+});
+
+test("notify gateway bootstrap registers admin section scriptUrl that resolves within static dir", async () => {
+    const { gatewayRegistry, routeRegistry, capabilities, flow } =
+        await makeCtx();
+    const uiRegistry = new UIRegistry();
+
+    await bootstrap({
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        flow,
+        uiRegistry,
+    });
+
+    const sections = uiRegistry.listAdminSections();
+    const notifSection = sections.find((s) => s.id === "notifications");
+    assert.ok(
+        notifSection,
+        "notify gateway must register a 'notifications' admin section",
+    );
+
+    const staticDir = uiRegistry.getStaticDir("notify");
+    assert.ok(staticDir, "notify gateway must register a static dir");
+
+    const urlPrefix = "/static/gateways/notify/";
+    assert.ok(
+        notifSection.scriptUrl.startsWith(urlPrefix),
+        `scriptUrl must start with ${urlPrefix}, got: ${notifSection.scriptUrl}`,
+    );
+
+    const filePart = notifSection.scriptUrl.slice(urlPrefix.length);
+    const resolvedPath = path.join(staticDir, filePart);
+    await assert.doesNotReject(
+        access(resolvedPath),
+        `file referenced by scriptUrl must exist on disk: ${resolvedPath}`,
+    );
+});
+
+test("notify gateway bootstrap registers broadcasts admin section scriptUrl that resolves within static dir", async () => {
+    const { gatewayRegistry, routeRegistry, capabilities, flow } =
+        await makeCtx();
+    const uiRegistry = new UIRegistry();
+
+    await bootstrap({
+        adaptersRoot: "/nonexistent",
+        routeRegistry,
+        gatewayRegistry,
+        capabilities,
+        flow,
+        uiRegistry,
+    });
+
+    const sections = uiRegistry.listAdminSections();
+    const broadcastsSection = sections.find(
+        (section) => section.id === "broadcasts",
+    );
+    assert.ok(
+        broadcastsSection,
+        "notify gateway must register a 'broadcasts' admin section",
+    );
+
+    const staticDir = uiRegistry.getStaticDir("notify");
+    assert.ok(staticDir, "notify gateway must register a static dir");
+
+    const urlPrefix = "/static/gateways/notify/";
+    assert.ok(
+        broadcastsSection.scriptUrl.startsWith(urlPrefix),
+        `scriptUrl must start with ${urlPrefix}, got: ${broadcastsSection.scriptUrl}`,
+    );
+
+    const filePart = broadcastsSection.scriptUrl.slice(urlPrefix.length);
+    const resolvedPath = path.join(staticDir, filePart);
+    await assert.doesNotReject(
+        access(resolvedPath),
+        `file referenced by scriptUrl must exist on disk: ${resolvedPath}`,
+    );
+});
+
+test("notification email validation contributes its own account verifier to Auth", async () => {
+    const { InMemoryTestExecutor } =
+        await import("../../db/tests/in-memory-test-executor.js");
+    const context = await makeCtx();
+    context.capabilities.contribute("db:executor", new InMemoryTestExecutor());
+    let policy: {
+        validate(account: { accountId: string }): Promise<boolean>;
+        requiredFields: string[];
+        integration: { scriptUrl: string };
+        available(): boolean;
+    };
+    context.capabilities.contribute("auth:userValidationModes", {
+        register(mode: typeof policy) {
+            policy = mode;
+        },
+    });
+    await bootstrap({ ...context, adaptersRoot: "/nonexistent" });
+    const provision = context.capabilities.require<
+        (id: string, emails: string[]) => Promise<void>
+    >("notify:provisionUserEmails");
+    const verify = context.capabilities.require<
+        (id: string, email: string) => Promise<void>
+    >("notify:upsertVerifiedPrimaryEmail");
+    await provision("x:person", ["person@example.com"]);
+    assert.equal(await policy!.validate({ accountId: "x:person" }), false);
+    assert.deepEqual(policy!.requiredFields, ["email"]);
+    assert.equal(
+        policy!.integration.scriptUrl,
+        "/static/gateways/notify/login-required-email-flow.js",
+    );
+    assert.equal(policy!.available(), false);
+    await verify("x:person", "person@example.com");
+    assert.equal(await policy!.validate({ accountId: "x:person" }), true);
+});

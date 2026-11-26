@@ -1,0 +1,7 @@
+<resources>
+    <string name="adapter.saml.config.entrypoint">エントリーポイントURL</string>
+    <string name="adapter.saml.config.issuer">発行者</string>
+    <string name="adapter.saml.config.certificate">証明書</string>
+    <string name="adapter.saml.config.adminattribute">管理者属性</string>
+    <string name="adapter.saml.config.adminvalue">管理者属性値</string>
+</resources>

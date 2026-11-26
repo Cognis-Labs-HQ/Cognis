@@ -1,0 +1,545 @@
+# Modul-Marktplatz
+
+**Feature-Zweig:** feature-remove-modules-from-administration-page
+
+## Eindeutiger Veröffentlichungskanal
+
+Veröffentlichungskanäle verwenden nun neutrale Bedienelemente mit einer klar erkennbaren Auswahl. Die Moduldetails zeigen den installierten Kanal zusammen mit der tatsächlichen Manifestversion; aktualisierte Module tragen bis zum Neustart des Cognis-Containers und der Aktivierung aller eingebundenen Routen einen Neustarthinweis.
+
+## Einheitliche Modulaktionsmenüs
+
+Die Detailansicht installierter Module verwendet nun das gemeinsame verankerte Hamburger-Menü für erweiterte Aktionen und entspricht damit Aussehen und Bedienung der Aktionsmenüs in anderen Bereichen von Cognis.
+
+## Ein eigener App-Store
+
+Module besitzen nun eine separate Verwaltungsseite mit Ansichten für installierte, verfügbare, empfohlene und kategorisierte Angebote sowie konfigurierbaren GitHub- und GitLab-Quellen.
+
+## Externe Repositorys
+
+Administratoren können öffentliche oder private Repositorys mit optionalen, im Schlüsselbund geschützten PATs finden; Cognis prüft bei der Installation Manifest und unveränderliche UUID.
+
+## UUID-Abhängigkeiten
+
+Alle Komponentenmanifeste behalten lesbare Namen und IDs, verwenden für Abhängigkeiten aber stabile UUIDs.
+
+## Zuverlässige Marktplatz-Steuerung
+
+Modulkarten, Filter, Quelleneinstellungen und Lebenszyklusaktionen aktualisieren nun sofort den Marktplatzinhalt, ohne das umgebende Seitenlayout zurückzusetzen. Moduldetails behalten die Store-Navigation bei, während einheitlich große Karten Beschreibungen und Lebenszyklusaktionen ausrichten.
+
+Externe Checkouts durchlaufen nun vor dem Ersetzen einer aktiven Installation eine Repository-Prüfung für Paket- und Routenverträge, Einstiegspunkte, Grafiken, sichere Pfade und optionale Datei-Prüfsummen.
+
+Installierte Repositorys werden nun als vollständige Laufzeitkomponenten erkannt. Ihr Bootstrap-Einstiegspunkt kann Routen, UI, Dokumentation, Änderungsnotizen, Fähigkeiten und Flow-Stufen über einen verfolgten `ctx`-Bereich beitragen; Deaktivieren oder Deinstallieren baut alle Beiträge vollständig ab.
+
+Gebündelte Modulimplementierungen wurden aus dem Quellbaum entfernt und werden nun über den Marketplace bereitgestellt. Cognis Labs HQ auf GitHub ist immer als unveränderliche vertrauenswürdige Modulquelle vorhanden.
+
+## Ungültige Repositorys überspringen
+
+Der Modul-Marktplatz ignoriert jetzt Repositorys, die kein vollständiges und gültiges Modulmanifest bereitstellen. Ein unabhängiges Repository oder eine nicht erreichbare Quelle kann das Laden der Modulseite nicht mehr verhindern.
+
+## Ersatz für fehlende Symbole
+
+Modulkarten ersetzen jetzt nicht verfügbare externe Grafiken durch ein theme-kompatibles Fragezeichensymbol, ohne das Laufzeitfehlerfenster zu öffnen.
+
+## Modulquellen aktualisieren
+
+Die Modulseite bietet jetzt neben den Modulquellen eine Schaltfläche zum Aktualisieren, die alle konfigurierten Anbieter erneut abfragt und den sichtbaren Katalog neu aufbaut.
+
+## Quellen verwalten und schrittweise entdecken
+
+Modulquellen werden jetzt in einer eigenen Listen- und Bearbeitungsansicht geöffnet. Die vertrauenswürdige Standardorganisation bleibt sichtbar und schreibgeschützt, während benutzerdefinierte Quellen hinzugefügt, bearbeitet oder entfernt werden können. Die Modulseite erscheint sofort mit bekannten Modulen und ergänzt Funde unabhängig voneinander, sobald die jeweilige konfigurierte Quelle antwortet.
+
+## Zweige auswählen und Updates erkennen
+
+Marktplatzdetails zeigen jetzt alle Repository-Zweige und wählen automatisch den Standardzweig. Installationen speichern den gewählten Zweig und Commit, sodass Modulkarten und Details eine Aktualisierung anbieten, sobald sich dieser Zweig weiterentwickelt.
+
+## Marketplace-Grafiken sicher bereitstellen
+
+Marketplace-Grafiken werden nun vom Server abgerufen und über nicht erratbare URLs derselben Herkunft bereitgestellt. Fehlende Grafiken verwenden das mitgelieferte Fragezeichen-Symbol, ohne die Content Security Policy zu lockern.
+
+## Empfohlene Module kuratieren
+
+Der Empfehlungsstatus stammt nun aus einer von Administratoren konfigurierbaren, veröffentlichten UUID-Liste statt aus Modulmanifesten. Die Marketplace-Einstellungen enthalten Empfehlungs- und Quellenkonfiguration.
+
+## Modulinstallation abschließen
+
+Installierte Module werden sofort in die Laufzeit importiert und bleiben deaktiviert, bis ein Administrator sie aktiviert. Marketplace-Bilder laden über öffentliche, nicht erratbare URLs derselben Herkunft.
+
+## Marketplace-Details verfeinern
+
+Lizenzen werden getrennt von Tags angezeigt, Details nutzen die gesamte Ergebnisbreite und kompakte SVG-Steuerelemente ersetzen textlastige Zurück- und Aktualisierungsaktionen.
+
+## Installation und Aktivierung trennen
+
+Ein installiertes Modul bleibt nun deaktiviert, bis ein Administrator es ausdrücklich aktiviert. Beim Aktivieren oder Deaktivieren werden die Navbar-Plugins im Browser sofort aktualisiert, sodass neue Navigationseinträge ohne Neuladen erscheinen.
+
+## Marketplace-Steuerelemente gestalten
+
+Zurück- und Aktualisierungssteuerung verwenden nun eigene helle und dunkle SVG-Dateien, die zum aktiven Dashboard-Design passen.
+
+## Entdeckte Module verfügbar halten
+
+Marketplace-Manifeste werden je konfigurierter Quelle zwischengespeichert. Nach der Deinstallation kehrt ein Modul sofort zu Verfügbar zurück, vorübergehende Quellfehler behalten den Eintrag und ein Modul verschwindet erst, wenn alle konfigurierten Quellen seine Abwesenheit erfolgreich bestätigen.
+
+## Core aus Modulen heraushalten
+
+Cognis Core wird nicht mehr in der Modulverwaltung zurückgegeben, da der Plattformkern kein installierbares Modul ist.
+
+## Angegebene Lizenzen prüfen
+
+Lizenzmetadaten werden nur angezeigt, wenn eine erkannte Lizenzdatei im Repository-Stamm vorhanden ist. Die Installationsprüfung lehnt Lizenzangaben ohne diesen Repository-Nachweis ab.
+
+## Zeit für Modulinstallationen
+
+Marketplace-Installationen verwenden nun ein zweiminütiges Anfragefenster, damit das Klonen und Prüfen größerer Repositorys nicht am allgemeinen API-Zeitlimit von dreißig Sekunden scheitert.
+
+## Zuerst alle Module anzeigen
+
+Der Modulstatusfilter enthält nun Alle und wählt diese Ansicht standardmäßig aus, sodass installierte, verfügbare und empfohlene Module beim Öffnen gemeinsam erscheinen.
+
+## Veröffentlichungen mit direkter Rückmeldung installieren
+
+Die Modulsuche erfasst nun Repository-Tags zusätzlich zu Branches; die Detailauswahl verwendet weiterhin standardmäßig den Standard-Branch des Repositorys. Schaltflächen für Lebenszyklusaktionen zeigen einen integrierten Fortschrittsindikator, und Installationen verwenden ein begrenztes Zeitfenster von zwei Minuten.
+
+## Marketplace-Einstellungen zusammenführen
+
+Modulquellen befinden sich jetzt ausschließlich als eigener Abschnitt im Einstellungsdialog des Marketplace. Anbieter und Version werden getrennt von Kategorie-Tags angezeigt, und das Einstellungssymbol unterstützt helle und dunkle Designs.
+
+## Module vor der Aktivierung testen
+
+Beim Aktivieren eines Moduls werden nun alle standardmäßigen JavaScript- und TypeScript-Tests aus seinem Checkout ausgeführt, bevor sich der Laufzeitstatus ändert. Ein fehlgeschlagener oder abgelaufener Test verhindert die Aktivierung und meldet den Modultestfehler.
+
+## Externe Module im Core-Testbefehl berücksichtigen
+
+Der zentrale Befehl `npm test` findet Tests jetzt sowohl im Cognis-Quellbaum als auch im konfigurierten Checkout-Verzeichnis für externe Module. Über `COGNIS_EXTERNAL_MODULES_ROOT` werden auch Verzeichnisse außerhalb des Repositorys berücksichtigt.
+
+## Marketplace-Katalog sofort wiederherstellen
+
+Die Modulseite lädt nun zuerst den gespeicherten Katalog jeder Quelle, bevor die Erkennung im Hintergrund beginnt. Bekannte Module bleiben dadurch bei Navigation und Serverneustarts sichtbar. Repository-Abfragen aktualisieren erfolgreiche Kandidaten unabhängig und behalten zwischengespeicherte Einträge bei nicht eindeutigen Einzelabfragen.
+
+## Katalogkompatibilität wiederherstellen
+
+Die Installation akzeptiert Kataloge aus der Zeit vor den Release-Tag-Metadaten, während unabhängige Repository-Abfragen verhindern, dass andere Repositorys gültige Katalogeinträge ausblenden.
+
+## Installationsfehler lokal behandeln
+
+Erwartete Fehler bei der Modulinstallation lösen nicht mehr den globalen Zustand „Verbindung unterbrochen“ oder eine dauerhafte Benachrichtigung aus; die Marketplace-Aktion meldet den Fehler weiterhin selbst.
+
+## Änderungen am Modul-Lebenszyklus sofort veröffentlichen
+
+Abgeschlossene Installations-, Aktivierungs-, Deaktivierungs-, Aktualisierungs- und Deinstallationsvorgänge aktualisieren den Marketplace jetzt sofort, veröffentlichen ein strukturiertes Lebenszyklusereignis, erneuern die Navigationsregistrierungen und gleichen den Zustand ohne Neuladen der Seite mit dem Server ab. Die Versionsauswahl der Detailansicht folgt außerdem dem aktiven Design.
+
+## Modulaktionen synchron halten
+
+Der Fortschritt von Modulaktionen wird nun anhand der Modul-UUID statt nur am angeklickten DOM-Element gespeichert. Deaktivierte Steuerelemente und der Ladeindikator bleiben dadurch beim Wechsel zwischen Karten- und Detailansicht erhalten. Erfolgreiche Vorgänge zeigen sofort die nächsten gültigen Steuerelemente. Die Release-Auswahl verwendet die kollidierende Hellmodus-Klasse nicht mehr. Fehlgeschlagene Installationen zeigen den genauen Serverfehler an und erzeugen strukturierte Server- und Browserprotokolle.
+
+## Marketplace-Installationen robust und releasebewusst machen
+
+Modulinstallationen laufen nun als abgefragte Hintergrundaufträge, damit Reverse-Proxys einen erfolgreichen Klon nicht mehr in einen 504-Fehler verwandeln. Cognis aktualisiert konfigurierte Quellen beim Serverstart, vergleicht Manifestversionen statt reiner Commitänderungen, unterstützt den Wechsel des Veröffentlichungskanals, bestätigt Herabstufungen und bietet eine erweiterte erzwungene Aktualisierung.
+
+## Mediengalerien und designsichere Steuerelemente hinzufügen
+
+Ein Modul-Repository kann im Stammverzeichnis `media/` unterstützte Bilder und Videos bereitstellen. Die Detailansicht zeigt sie in einer horizontalen Galerie; der native Veröffentlichungskanal-Selektor verwendet explizite Designfarben ohne widersprüchliche Select-Klassen.
+
+## Unterbrochene Modul-Downloads erneut versuchen
+
+Die Modulinstallation erzwingt nun den breiter kompatiblen HTTP/1.1-Transport von Git und wiederholt vorübergehende Klonfehler wie Verbindungsabbrüche, Zeitüberschreitungen, DNS-Fehler und unterbrochene TLS-Übertragungen. Jeder Versuch beginnt mit einem sauberen Staging-Verzeichnis; dauerhafte Repository- oder Validierungsfehler werden weiterhin sofort mit ihrer genauen Diagnose beendet.
+
+## GitHub-Zeitüberschreitungen erkennen
+
+Moduldownloads beenden nun einen festgefahrenen GitHub-Klonversuch nach dreißig Sekunden, wiederholen vorübergehende Fehler und erfassen die bekannte Ursache einer Container-Netzwerk-MTU in strukturierten Serverprotokollen. Administratoren erhalten eine gezielte Benachrichtigung zur Prüfung der Host- oder Docker-Netzwerk-MTU, anstatt dass Cognis die Bereitstellungsnetzwerke überschreibt.
+
+## Externe Module vollständig laden
+
+Der Bootstrap-Kontext externer Module nimmt nun alle unterstützten HTTP-Methoden sowie Navbar-, SPA-Routen-, Einstellungs-, Administrations-, Seiten-, Authentifizierungstext-, statische Ressourcen-, Flow-, Protokollierungs- und bereichsgebundenen Capability-Beiträge auf. Externe Meeting-Anbieter können Navigation und Routen damit über dieselben entfernbaren Verträge wie integrierte Komponenten registrieren.
+
+## Moduldetail-Steuerung ausrichten
+
+Das erweiterte Hamburger-Menü befindet sich nun zusammen mit der Zurück-Steuerung in der oberen Navigationszeile der Moduldetails. Installations- und Lebenszyklusaktionen bleiben in einer eigenen Aktionszeile.
+
+## Installierte Module und Grafiken bewahren
+
+Docker-Bereitstellungen speichern externe Module nun in einem eigenen benannten Volume, das am konfigurierten Stammverzeichnis für externe Module eingehängt ist. Dadurch bleiben installierte Module beim Neubau des Anwendungscontainers erhalten. Der Marketplace behält außerdem die über den Katalog bereitgestellten Symbol- und Banner-URLs beim Zusammenführen des installierten Manifestzustands bei, sodass Grafiken nicht mehr bis zur nächsten Seitenaktualisierung verschwinden.
+
+## Aktivierung bei erzwungenen Updates bewahren
+
+„Update erzwingen“ deaktiviert ein aktives Modul nun vorübergehend, bevor sein Checkout ersetzt wird, und aktiviert es anschließend erneut. Schlägt der Download oder die Prüfung fehl, aktiviert Cognis den bestehenden Checkout trotzdem wieder, damit ein fehlgeschlagenes erzwungenes Update das Modul nicht unerwartet deaktiviert lässt.
+
+## Veröffentlichungskanäle gezielt wechseln
+
+Bei installierten Modulen befindet sich die Auswahl des Veröffentlichungskanals nun im erweiterten Menü. Administratoren wählen aus einer scrollbaren Schaltflächenliste und bestätigen, bevor Cognis den Kanal automatisch installiert. Lebenszyklus-Schaltflächen zeigen während der Verarbeitung mit Ladeanzeige „Wird installiert“, „Wird aktualisiert“, „Wird herabgestuft“ oder „Veröffentlichungskanal wird gewechselt“ und wechseln nach erfolgreichem Abschluss zu „Installiert“.
+
+## UI-Routen externer Module aus ihrem Installationsverzeichnis laden
+
+Installierte Module werden jetzt anhand ihrer stabilen UUID im Verzeichnis für externe Module aufgelöst. Ihre deklarierten Seiten und Navigationseinträge werden beim Start automatisch geladen, anstatt im Pfad der mitgelieferten Module gesucht zu werden.
+
+## Modulstart vor Anfragen abschließen
+
+Cognis wartet jetzt, bis gespeicherte Modulzustände wiederhergestellt und Module vollständig gestartet wurden, bevor eine Anfrage verarbeitet wird. Skripte und Styles externer Module sind dadurch registriert, bevor ihre Seiten sie anfordern.
+
+## Authentifizierungsfunktionen bereitstellen
+
+Das Authentifizierungs-Gateway veröffentlicht jetzt seine Funktionen zur Anfrageauthentifizierung und Rollenprüfung über den Capability-Bus. Externe Module können geschützte API-Routen ohne Importe aus Gateway-Interna starten, sodass ihre UI-Ressourcen und Navigationseinträge aktiv bleiben.
+
+## Nur deklarierte UI-Funktionen laden
+
+Module können `requiresCapabilities` in ihrem Manifest deklarieren. Vor dem Einhängen einer Modulroute importiert Cognis ausschließlich die registrierten Anbieter-Skripte für die deklarierten `ui:*`-Funktionen. Benötigte UI-Dienste sind damit verfügbar, ohne unbeteiligte Integrationen freizugeben.
+
+## Capabilities prüfen und dokumentieren
+
+Owner können alle registrierten Capability-IDs über `GET /api/v1/system/capabilities` oder `cognisctl system:capabilities` auflisten. Die Dokumentation für Module, Authentifizierungs-Gateway und Profil-Adapter beschreibt nun Anforderungsdeklarationen und die bereitgestellten Capabilities.
+
+## Richtung der Version anzeigen
+
+Karten und Detailansichten installierter Module zeigen eine abweichende Version des ausgewählten Kanals jetzt unterhalb der aktuellen Version. Upgrades verwenden einen Aufwärtspfeil, während ein ungewöhnliches Downgrade mit Abwärtspfeil in einer hellorangenen Plakette erscheint.
+
+## Moduldetails stabil halten
+
+Beim Öffnen oder Aktualisieren einer Moduldetailansicht bleibt die Seitenposition jetzt erhalten. Jede angezeigte Version trägt das Präfix `v`, und die Aktualisierung eines aktiven Moduls führt Deaktivieren, Installieren und erneutes Aktivieren in einer Aktion aus.
+
+## Steuerelemente stabil halten
+
+Moduldetailseiten verwenden jetzt Router-gestützte UUID-Deep-Links und bleiben dabei im Page Composer. Aktualisierungen des Lebenszyklus halten die sichtbare Zusammenstellung der Schaltflächen stabil, auch während ein aktives Modul für ein Upgrade vorübergehend deaktiviert wird.
+
+## Direkte Modulseiten einmal starten
+
+Direkte Aufrufe externer Modul-SPA-Routen verwenden jetzt einen Core-Einstiegspunkt, der deklarierte Capability-Anbieter vor der Modulroute importiert. Anbieter- und Routen-URLs verwenden dieselbe Asset-Version wie die Router-Navigation, wodurch zeitweise fehlende Capabilities und doppelte Navbar-Beiträge verhindert werden.
+
+## Mitgelieferte Module auslagern
+
+Externe Modul-Repositorys können eigene Metadaten, Lizenzen, READMEs, vollständige Integritätslisten, übersetzte Bereitstellungshinweise, UUID-Abhängigkeiten und explizite Capability-Anforderungen bereitstellen.
+
+## Durchsuchen von Modul-Screenshots verbessern
+
+Screenshots in der Moduldetailansicht bleiben nun in einem begrenzten Karussell mit Zurück- und Weiter-Steuerung, verblassten benachbarten Vorschauen, animierten Übergängen und automatischer Rotation. Manifeste mit dem optionalen Feld `template: true` werden aus Marktplatzergebnissen und direkten Detailansichten ausgeschlossen.
+
+## Eindeutige Marktplatzmodule erzwingen
+
+Externe Module können in eigene Repositorys verschoben werden, ohne mitgeliefert zu werden. Die Marketplace-Erkennung akzeptiert das erste Repository pro Modul-UUID, protokolliert und verwirft spätere Duplikate und aktualisiert Darstellungsmetadaten bei erhaltenem Lebenszyklusstatus.
+
+## Infrastrukturverzeichnisse der Gateways ignorieren
+
+Die automatische Gateway-Erkennung startet jetzt nur Verzeichnisse mit einem Gateway-Manifest. Dadurch wird das Infrastrukturverzeichnis `gateways/reuse` in Produktions-Builds nicht mehr als Gateway importiert.
+
+## Rückmeldungen zum Modul-Lebenszyklus verdeutlichen
+
+Das Deaktivieren von Modulen wird nun als Warnung protokolliert und das Löschen externer Module ausdrücklich erfasst. Marktplatz-Aktualisierungen zeigen pro Klick genau eine Abschlussmeldung, während Module sichtbar bleiben, sofern ihr Manifest `template` nicht ausdrücklich auf `true` setzt.
+
+## Cognis-HQ-Module empfehlen
+
+Das integrierte Empfehlungsdokument wird von Cognis bereitgestellt und enthält nur ausdrücklich konfigurierte Modul-UUID-Werte.
+
+## Protokollierung des Modul-Lebenszyklus erweitern
+
+Hinzufügen, Aktualisieren, Löschen und Scannen von Modulquellen sowie Ergebniszahlen werden mit passender Priorität protokolliert; Validierungs- und Aktivierungsfehler erscheinen als Fehler. Die Bildsuche kann eine andere unterstützte Erweiterung verwenden, wenn die deklarierte Asset-Erweiterung fehlt.
+
+## Aufblitzen von Modulbildern verhindern
+
+Modulkarten und Detailmedien bleiben nun verborgen, bis jedes aktualisierte Bild gültige Abmessungen meldet. Feste Symbolabmessungen reservieren außerdem den Platz in der Karte vor dem Laden, sodass rohe oder übergroße Modulgrafiken bei Marktplatz-Aktualisierungen nicht mehr kurz aufblitzen.
+
+## Module bei uneindeutigen Scans behalten
+
+Marktplatz-Scans werten eine leere Repository-Antwort, ein vorübergehend fehlendes Manifest, eine vorübergehend ungültige Antwort oder einen fehlgeschlagenen Quellenabruf nicht mehr als Beweis für die Löschung eines zuvor gefundenen Moduls. Zwischengespeicherte Einträge bleiben bis zum ausdrücklichen Entfernen ihrer Quelle sichtbar; Warnprotokolle nennen fehlgeschlagene Scans und die Anzahl beibehaltener Module.
+
+## Sicherere, effiziente Modulsuche
+
+Marketplace-Aktualisierungen wurden in einem authentifizierten Scan gebündelt, Benutzer-Token für GitHub an der vertrauenswürdigen Quelle ergänzt, Abhängigkeits- und Bestätigungsprüfungen vor der Ausführung externen Codes wiederhergestellt und Manifestanfragen für GitHub Enterprise auf die konfigurierte API umgestellt.
+
+## Direktes Modulladen abschließen
+
+Beim direkten Laden der Modulseite wird die erfasste Ladeaufgabe nach Abschluss oder Fehlschlagen des Seitenaufbaus immer beendet. Dadurch bleibt das Ladesymbol nach einer Browser-Aktualisierung nicht mehr sichtbar.
+
+## Scans speichern und begrenzen
+
+Nach Serverneustarts werden Module zuerst aus dem gespeicherten Marketplace-Katalog geladen. Automatische Scans beim Seitenladen und Serverstart verbrauchen keine Anbieter-Kontingente mehr. Scanversuche werden mit einem einstündigen Intervall gespeichert, sodass wiederholte Aktualisierungen den Katalog auf dem Datenträger verwenden.
+
+## Autorität des Quellcaches
+
+Die integrierte Quelle Cognis Labs HQ akzeptiert nun PAT-Aktualisierungen, während ihre Identitätsfelder gesperrt bleiben. Doppelte Modul-UUIDs werden zugunsten der Cognis-Quelle aufgelöst. Kataloge, Scan-Metadaten und Assets liegen im konfigurierten Modulverzeichnis unter .cache.
+
+## GitHub-Zugang sofort nutzen
+
+Konfigurierte PAT-Felder zeigen einen maskierten Wert, ohne das Geheimnis offenzulegen. Beim Speichern neuer Zugangsdaten wird die Scan-Sperrzeit dieser Quelle gelöscht, sodass die nächste Marketplace-Anfrage sofort die neue GitHub-Autorisierung verwendet.
+
+## Anbieter-Token prüfen
+
+Neue Marketplace-PATs werden vor dem Speichern gegen den konfigurierten Anbieter-Namensraum geprüft. Ungültige, nicht autorisierte, nicht prüfbare oder unzureichend berechtigte Zugangsdaten zeigen eine lokalisierte Warnung und lassen den Quelleneditor zur Korrektur geöffnet.
+
+## PAT-Konfiguration behalten
+
+Marketplace-Zugangsdatenkennungen werden nun zusätzlich im Cache des Modulverzeichnisses gespeichert. Die integrierte Cognis-Quelle stellt ihre konfigurierte PAT-Markierung nach einem Server- oder Containerneustart wieder her, ohne das PAT außerhalb des Benutzer-Schlüsselbunds zu speichern.
+
+## PAT-Berechtigungen angeben
+
+Hinweise zu Zugangsdaten sind in der Oberfläche nun kurz. Serverprotokolle nennen das genaue Problem sowie die erforderlichen fein abgestuften GitHub-Berechtigungen (Repository-Zugriff, Metadaten lesen, Inhalte lesen), den klassischen Bereich repo für private Repositorys, die Organisations-SSO-Freigabe und offizielle Dokumentationsverweise.
+
+## Release-Wechsel stabilisieren
+
+Installationen durch Release-Kanalwechsel, Upgrades und Downgrades speichern nun den gewählten Branch, Commit und die Version vor dem Neustart. Neustarthinweise erscheinen nur für zuvor aktivierte Module, betroffene Module lehnen bis zum Neustart weitere Lebenszyklusaktionen ab und unveränderte oder abgebrochene Kanalwechsel kollidieren nicht mit späteren Aktionen.
+
+## Moduldetails stabil halten
+
+Aktionen in Moduldetails verwenden nun das schwebende Composer-Menü, während Status- und Kategorienavigation die ausgewogene, scrollbare Seitenleiste nutzt. Die Detailauswahl bleibt bei Aktualisierungen, Lebenszyklusereignissen und Hinweisen erhalten; nur eine ausdrückliche Navigation verlässt die Detailansicht.
+
+## Modulaktionen ausrichten
+
+Schwebende Modulaktionen haben nun eine einheitliche Höhe und vertikale Ausrichtung, einschließlich der Zurück-Steuerung. Das erweiterte Hamburger-Menü bleibt im Detailkopf, damit sein Popup zuverlässig verankert ist. Leichte Aktionsaktualisierungen vermeiden das Neuzeichnen der gesamten Modulkarte bei nicht zugehörigen Klicks.
+
+## Modulaktionen eindeutig zuordnen
+
+Aktionen auf Modulkarten werden jetzt in lesbare Rasterspalten umgebrochen, damit Installiert, Upgrade oder Downgrade, Aktivieren und Deinstallieren eindeutig getrennten Steuerelementen zugeordnet bleiben. Beim Aktivieren eines Moduls werden deaktivierte Gateway-Abhängigkeiten aktiviert und gespeichert; tatsächlich fehlende Abhängigkeiten liefern statt eines allgemeinen 400-Fehlers eine konkrete, umsetzbare Antwort.
+
+## Versionen der Veröffentlichungskanäle aktualisieren
+
+Eine ausdrückliche Katalogaktualisierung umgeht jetzt die normale Wartezeit für Anbieter-Scans und liest jedes Branch-Manifest erneut. Wenn ein ausgewählter Branch die installierte Version erreicht, entfernt Cognis die veraltete Herabstufungsaktion sofort. Tatsächliche Herabstufungen installieren nun den ausgewählten Branch und werden mit Wird herabgestuft und Modul herabgestuft klar von Upgrades unterschieden.
+
+## Ausgewählte Downgrade-Revision installieren
+
+Herabstufungen installieren jetzt genau den vom aktualisierten Katalog angegebenen Commit, selbst wenn der Branch vor Installationsbeginn fortschreitet. Die Herabstufungsanzeige besitzt ein eigenes dunkles Design, und Moduldetail-Kopfzeilen erhalten einen undurchsichtigen Hintergrund, damit Bannerbilder nicht durch die fixierte Anwendungskopfzeile scheinen.
+
+## Branch-Versionen über Commits auflösen
+
+Die Marketplace-Erkennung liest jetzt jedes Branch- und Release-Manifest über die unveränderliche Commit-SHA des Anbieters statt über den veränderlichen Branch-Namen. Dadurch werden veraltete Antworten der GitHub Contents API oder zwischengeschalteter Caches vermieden, und Katalogversion, angezeigte Aktualisierungsrichtung und installierte Revision stimmen mit dem vom Anbieter gelieferten Branch-Commit überein.
+
+## Modulabhängigkeiten vor der Installation prüfen
+
+Modulmanifeste können erforderliche Kernkomponenten jetzt über eine stabile UUID oder eine ältere ID angeben. Cognis prüft das verbindliche Manifest aus dem ausgecheckten Repository, bevor ein installiertes Modul ersetzt wird. Die Installation schlägt mit einem konkreten Fehler fehl, wenn eine referenzierte Komponente fehlt oder deaktiviert ist; aktive UUID-Abhängigkeiten werden normal installiert.
+
+## Adapter-UUID-Abhängigkeiten auflösen
+
+Die Installation erkennt Komponentenmanifeste automatisch und löst deklarierte UUID-Abhängigkeiten über die zuständigen Gateways auf; aktive Abhängigkeiten werden akzeptiert, deaktivierte oder fehlende abgelehnt.
+
+## Adapterabhängigkeiten bei der Aktivierung auflösen
+
+Die Modulaktivierung verwendet jetzt denselben erkannten Kernkomponentenkatalog wie die Installation. Adapter-UUID-Anforderungen wie Social Profile und Social Messages werden ihrem zuständigen Social-Gateway zugeordnet, statt fälschlich als nicht verfügbare Gateways gemeldet zu werden.
+
+## Absichtlich deaktivierte Abhängigkeiten respektieren
+
+Beim Aktivieren eines Moduls werden deaktivierte Gateways nicht mehr automatisch aktiviert, um dessen Manifest zu erfüllen. Cognis lässt die Abhängigkeit deaktiviert, lehnt die Aktivierung ab und gibt den lesbaren Komponentennamen wie Profile Adapter oder File Gateway zurück, damit die Modulseite eine klare Korrekturmeldung anzeigen kann.
+
+## Modulaktionen füllen die Karte
+
+Die Aktionsschaltflächen einer Modulkarte teilen nun die gesamte verfügbare Zeile gleichmäßig auf. Karten mit einer, zwei oder drei Aktionen lassen keine ungenutzten Schaltflächenlücken mehr und verschieben keine einzelne Aktion in eine neue Zeile.
+
+## SPA-Navigation für Module stabilisieren
+
+Von Modulen bereitgestellte SPA-Seiten behalten authentifizierte Sitzungen nun bei, wenn nur ein Modulendpunkt einen Autorisierungsfehler zurückgibt; Cognis prüft die Kontositzung, bevor sie als abgelaufen gilt. Das Profil-Verfügbarkeitsmenü wird nach Aktualisierungen der Dashboard-Hülle außerdem idempotent neu eingebunden und wartet auf sein Stylesheet, wodurch fehlende oder doppelte Anwesenheitssteuerelemente vermieden werden. Die Modulnavigation wächst nun ohne eigene vertikale Bildlaufleiste auf ihre natürliche Höhe, während überlaufender Hauptinhalt im dazu passenden Inhaltsbereich scrollt.
+
+## Modulüberschrift und Zeigerinitialisierung korrigieren
+
+Die Inhaltskarte der Module behält nun die feste Überschrift „Module“, während Statusfilter in der Navigation verbleiben. Die gemeinsame Zeigerverfolgung importiert ihren CTX-Fähigkeitsbus nun ausdrücklich, sodass von Modulen bereitgestellte Seiten bei direktem Aufruf nicht mehr fehlschlagen.
+
+## Gebündelte Sprachmodule entfernen
+
+Externe Module werden ausschließlich aus eigenständigen Marketplace-Repositorys installiert. Laufzeiterkennung, UI-Routing, Integritätsprüfungen, CLI-Plugins und Komponentenregistrierung verwenden nur UUID-adressierte Installationen unter `COGNIS_EXTERNAL_MODULES_ROOT`.
+
+## Standardgestaltung für die Modulnavigation verwenden
+
+Die seitliche Modulnavigation verwendet nun vollständig das etablierte Toolbar-Layout des Seiten-Composers einschließlich Abständen, aktivem Zustand, responsivem Verhalten und Bildlaufvorgaben, statt seitenspezifische Überschreibungen anzuwenden.
+
+## Moduleinstellungen
+
+Module können unter `ui.preferences` bearbeitbare boolesche, Text- und Zahlenwerte für Administratoren deklarieren. Die Detailansicht zeigt Einstellungen nur, wenn solche Felder vorhanden sind. Werte werden auf deklarierte Schlüssel beschränkt und pro Administrator im Cognis-Einstellungsspeicher gesichert.
+
+## Sicherere Lebenszyklusaktionen
+
+Die Aktivierung externer Module erfordert nun die Bestätigung, bevor Modultests ausgeführt werden, und die Deinstallation akzeptiert nur kanonische UUID-Installationspfade. Erfolgreiche Marktplatzprüfungen entfernen zurückgezogene Repositorys; bei nicht eindeutigen Aktualisierungen bleibt der letzte bekannte Eintrag erhalten.
+
+## Interna des Modul-Laders organisieren
+
+Alle verbleibenden Core-Dienste für den Modul-Lebenszyklus und die Testausführung liegen nun gemeinsam unter `services/module-loader/`; ihre Tests spiegeln diese Struktur wider. Die Dokumentation für externe Module und das Study-Sprachframework ist nun in jeder unterstützten Sprache umfassend und strukturell synchronisiert.
+
+## Modulnavigation kompakt halten
+
+Die Seite „Module“ verwendet jetzt das Unternavigationslayout des Seiten-Composers. Dadurch bleibt das Seitenmenü nur so breit, wie es sein Navigationsinhalt erfordert, und die verbleibende Breite steht den Modulergebnissen zur Verfügung.
+
+## Sicheres Laden des Marktplatzes
+
+Die Modulseite unterdrückt nun ihr direktes Einbinden während Router-Importen und löst Repository-Zugangsdaten über den Schlüsselbund auf, sodass gesperrte Tresore vor privater Erkennung oder Installation entsperrt werden können. GitHub-Repository-Dateien und Präsentationsmedien verwenden jetzt den konfigurierten API-Host jeder Quelle, einschließlich GitHub Enterprise.
+
+## Kompakte Navigation und Abhängigkeiten
+
+Das Seitenmenü der Modulseite passt seine Breite jetzt dynamisch an den längsten Eintrag an und entspricht damit der Dokumentationsnavigation, statt eine feste Breite zu verwenden. Die Administration löst ausschließlich als UUID gespeicherte Komponentenabhängigkeiten in die Namen installierter Gateways, Adapter sowie gebündelter oder externer Module auf und behält Links zur aufgelösten Komponente bei. Status- und Kategoriefilter kennzeichnen jede aktive Auswahl sichtbar, und Administratoren können mehrere Kategorien kombinieren, um Module einzubeziehen, die einem der ausgewählten Tags entsprechen.
+
+## Aktivierung von Laufzeitmodulen absichern
+
+Das Starten externer Module wird nun sicher zeitlich begrenzt, fehlgeschlagene Module werden deaktiviert, deklarierte Server-Fähigkeiten werden vor der Aktivierung geprüft und SPA-Routen können keine Fähigkeiten inaktiver Anbieter laden. Study-Sprachbeschreibungen werden nach Modulaktualisierungen erneuert. Zeitlich abgelaufene Startvorgänge können nach ihrer Frist außerdem keine Routen oder Fähigkeiten registrieren.
+
+## Moduleinstellungen schnell öffnen
+
+Installierte Module mit bearbeitbaren Administratoreinstellungen zeigen nun direkt rechts neben dem Menü für erweiterte Optionen ein themenfähiges SVG-Einstellungssymbol. Es öffnet das vorhandene Konfigurationsfenster, in dem Werte geändert und gespeichert werden können.
+
+## Alle Komponentenabhängigkeiten auflösen
+
+Der Gateway-Start bewahrt nun UUID-Metadaten aus Manifesten auch für Komponenten ohne Abhängigkeiten, sodass die Administration jede UUID als Komponentenname und Link darstellt. Adapterlinks klappen das zugehörige Gateway auf und scrollen zum Adapter, Modullinks öffnen die Moduldetails und Repository-Prüfungen erzwingen ausschließlich UUID-basierte Manifestabhängigkeiten.
+
+## Browser-Capability-Prüfung trennen
+
+Bei der Modulaktivierung werden Server- und Browser-Capabilities nun über ihre jeweils zuständigen Laufzeitkontexte geprüft. Reine Browseranforderungen im Namensraum `ui:` werden bei der Aktivierung gegen aktive Anbieter der UI-Registry und erneut vor dem Einhängen der SPA-Route aufgelöst, statt umgangen oder im Serverkontext gesucht zu werden.
+
+## Modulkonfigurationsfelder stabilisieren
+
+Modulkonfigurationsfenster verwenden nun eine einheitliche Feldbreite und ausgerichtete boolesche Steuerelemente. Jede deklarierte Feldbeschreibung erscheint über das wiederverwendbare Informationsfenster neben ihrer Beschriftung, statt Höhe oder Ausrichtung des Formulars zu verändern.
+
+## Verfügbarkeitssteuerung einmalig halten
+
+Der Profiladapter reserviert den Platz für das Verfügbarkeitsmenü nun synchron, bevor Stile, Übersetzungen oder Vorlagen geladen werden. Gleichzeitige Navbar-Plugin-Instanzen verwenden diesen Platz gemeinsam, entfernen veraltete Duplikate und geben eine fehlgeschlagene Reservierung für einen erneuten Versuch frei. Dadurch entstehen nach Modul- oder SPA-Aktualisierungen keine doppelten Verfügbarkeitsmenüs mehr.
+
+## Moduleinstellungen gezielt anwenden
+
+Moduleinstellungen fokussieren nun das erste Formularfeld, statt dessen Beschreibung zu öffnen, und zeigen eine Erfolgsmeldung nur nach abgeschlossenem Speichern. Cognis rendert die im Manifest deklarierten Felder, lädt ihre Werte vom moduleigenen Endpunkt `GET /api/v1/modules/<id>/config` und schreibt Änderungen mit `PUT` an diesen Endpunkt, sodass allein das Modul für Validierung, Anwendung und Speicherung zuständig bleibt.
+
+## Moduleigene Konfigurationsendpunkte verwenden
+
+Cognis rendert nun die in Modulmanifesten deklarierten Felder und lädt sowie speichert Werte über den moduleigenen `GET`- und `PUT`-Konfigurationsendpunkt. Module bleiben für Validierung, Anwendung und Speicherung ihrer Betriebseinstellungen zuständig; Cognis führt keine parallele, einstellungsbasierte Konfiguration mehr.
+
+## Module erhalten Protokollierungs- und Feedbackprozesse des Hosts
+
+Modulserverkontexte schreiben nun zugeordnete Einträge in das Anwendungsprotokoll. Browsermodule können Host-Funktionen für authentifizierte Serverprotokollierung, thematisierte Hinweise und Laufzeitfehlerdialoge nutzen, statt Betriebsfehler nur in der Browserkonsole zu hinterlassen.
+
+## Installierten Veröffentlichungskanal aktualisieren
+
+Die Marketplace-Aktualisierung liest nun zuerst den aktiven Branch oder das aktive Release eines installierten Moduls und erst danach den Repository-Standard, einschließlich Manifest, Version, README und Präsentationsmedien. Die Aktualisierung bewahrt die Startansicht, hält eine geöffnete Detailansicht ausgewählt und zeichnet deren schwebende Aktionen aus dem aktualisierten Lebenszyklusstatus neu.
+
+## Modul-UI-Clients und lokalisierte Konfiguration bereitstellen
+
+Profil, Nachrichten, Dateien und Freigaben veröffentlichen ihre Browserclients nun als aktive UI-Capabilities. Externe Routen können dadurch Gateway-eigene Daten verwenden, ohne mit dem Navbar-Start zu konkurrieren oder Gateway-Endpunkte direkt aufzurufen. Sprachpakete installierter Module bleiben vor dem Bootstrap verfügbar; Moduleinstellungen lösen diese Texte auf und lesen sowie schreiben über den moduleigenen `/config`-Endpunkt.
+
+## Alle Modul-Browserclients abwarten
+
+Direkte und geroutete Modulaufrufe warten nun vor dem Import der Moduloberfläche auf alle aktiven Navbar-Capability-Anbieter. Dadurch sind Files, Profile, Messages, Share, Feedback und weitere deklarierte Hostclients rechtzeitig verfügbar. Die Dokumentation besitzt nun eine verborgene kanonische Struktur und eine automatisierte Überschriftenprüfung für jedes echte Nicht-Changelog-Dokument.
+
+## Eigenständige und Navbar-Capability-Provider gemeinsam laden
+
+Der Browser-Provider-Katalog umfasst nun sowohl Navbar-gebundene Clients als auch eigenständige Host-Provider. Modulrouten erhalten dadurch den Files-Client und Feedback-Capabilities vor dem Mounten, statt sich allein auf die Navbar-Erkennung zu verlassen.
+
+## Moduleinstellungen nur einmal mounten
+
+Die Modulseite beendet nun vor einem SPA-Remount ihren vorherigen Interaktionsbereich des Direktaufrufs. Beim Öffnen einer Moduldetailroute bleibt dadurch kein Einstellungen-Handler der Startansicht aktiv, sodass ein Klick genau ein Popup öffnet.
+
+## Modulaktualisierungen im Standard-Branch erkennen
+
+Die Katalogaktualisierung vergleicht nun den installierten Commit und die Version mit dem Kopf des ausgewählten Branches. Neue Commits im Standard-Branch erzeugen auch ohne Versionssprung eine Aktualisieren-Aktion; neuere Manifest-Versionen zeigen die Upgrade-Aktion und die verfügbare Version.
+
+## Capability- und Navbar-Aktualisierungszyklen stabilisieren
+
+Authentifizierte vollständige Aktualisierungen laden Capability-Provider nun über das Sitzungscookie vor dem Mounten von Modulen, während visuelle Navbar-Plugins auf die Dashboard-Shell warten. Benannte Browser-Capabilities wie `share:openPopup` werden unabhängig vom Präfix über die UI-Registry aufgelöst; Messages und Shares erholen sich nach frühen Provider-Imports zuverlässig.
+
+## Profilpräsenz gestalten und Modulwechsel sofort übernehmen
+
+Die Profilavatar-Capability lädt nun vor der Hydrierung ihr eigenes Verfügbarkeits-Stylesheet. Dadurch bleiben Präsenzkarten in Modulen korrekt begrenzt und ihre Statusanzeigen sichtbar. Vor der Validierung eines Ersatzes aktualisiert die Modulaktivierung außerdem den installierten Laufzeitstatus, sodass Deinstallation, Neuinstallation und Aktivierung keinen Serverneustart mehr erfordern.
+
+## Browser-Capabilities nach Sitzungsauthentifizierung erneut laden
+
+Direkte und SPA-Seitenaufrufe laden Host-UI-Provider nun erneut, nachdem der Authentifizierungsablauf die Browsersitzung hergestellt hat. Über Cookies wiederhergestellte Seiten setzen den Modul-Mount nicht mehr nach einer frühen, nicht authentifizierten Provider-Anfrage fort; außerdem ruft die Navbar-Loader-Capability jetzt tatsächlich den Navbar-Plugin-Loader statt nur den Provider-Loader auf.
+
+## Modulkonfiguration vor der Aktivierung verlangen
+
+Beschreibungen von Moduleinstellungen können nun `required: true` deklarieren. Die Modulseite liest vor der Aktivierung den moduleigenen `/config`-Endpunkt und blockiert sie, solange ein erforderlicher Zeichenfolgen-, Zahlen- oder boolescher Wert fehlt; erforderliche Text- und Zahlenfelder werden außerdem für die barrierefreie Formularvalidierung markiert.
+
+## Bestätigung bei Risiken für die Modulintegrität verlangen
+
+Vor der Aktivierung wird jede Moduldatei geprüft. Cognis blockiert die Aktivierung und zeigt fehlende Dateien, fehlende SHASUM-Deklarationen und Prüfsummenabweichungen in einer Risikowarnung an. Nur die ausdrückliche Aktion „Ich bestätige das Risiko“ erlaubt dem Server fortzufahren; die Bestätigung wird protokolliert.
+
+## Neu aktivierte Module transaktional konfigurieren
+
+Deaktivierte Module scheitern nicht mehr an der Aktivierung, wenn ihr moduleigener `/config`-Endpunkt noch nicht eingebunden ist. Cognis schließt zuerst die abgesicherte Aktivierungsanfrage ab und öffnet danach die erforderlichen Einstellungen, sobald die Modulroute vorhanden ist. Wird die Einrichtung abgebrochen oder schlägt sie fehl, wird das Modul wieder deaktiviert und bleibt nie ohne erforderliche Konfiguration aktiv.
+
+## Installationsmetadaten von Modulintegritätsprüfungen ausschließen
+
+Generierte `.cognis-install.json`-Metadaten werden nun von den SHASUM-Vollständigkeitsprüfungen ausgeschlossen, einschließlich Kopien in verschachtelten Extraktionspfaden. Integritätswarnungen konzentrieren sich damit auf vom Modul gelieferte Dateien statt auf Cognis-Installationsdatensätze.
+
+## Deaktivierte Module vor der Aktivierung konfigurieren
+
+Alle Moduleinstellungsdialoge laden und speichern Werte nun über denselben moduleigenen `/config`-Endpunkt und dieselbe typisierte Formularauswertung. Werden die Einstellungen eines deaktivierten Moduls geöffnet, bindet Cognis die Route nur für den Konfigurationsvorgang ein und stellt danach den deaktivierten Zustand wieder her, sodass das Speichern eines API-Schlüssels das Modul nicht stillschweigend aktiviert.
+
+## Erforderliche Einrichtung nach leeren Aktivierungsantworten abschließen
+
+Der direkte Aktivierungsablauf setzt die erforderliche Konfiguration nun fort, wenn der Aktivierungsendpunkt ordnungsgemäß eine leere Erfolgsantwort liefert. Übermittelte Zeichenfolgen, Wahrheitswerte und Zahlen verwenden denselben Konfigurationsmechanismus wie das Einstellungszahnrad in den Moduldetails; eine fehlgeschlagene oder abgebrochene Einrichtung setzt das Modul weiterhin auf deaktiviert zurück.
+
+## Präsenzavatare und Statusanzeigen stabilisieren
+
+Die Profilavatar-Fähigkeit stellt nun eigene begrenzte Geometrie für Bilder, Initialen und Verfügbarkeitsanzeigen bereit, statt von Modul-CSS abhängig zu sein. Präsenzavatare bleiben auf externen Modulseiten rund und begrenzt; verknüpfte, unverknüpfte und Navigationsleisten-Avatare erhalten eine sichtbare Statusanzeige.
+
+## Bereinigung bei der Moduldeinstallation ausdrücklich steuern
+
+Die Deinstallation entfernt nun immer die Konfiguration im Modul-Checkout und verlangt vor dem Löschen eine Bestätigung. Ein optionales Kontrollkästchen übergibt `deleteContent: true` an den Deinstallations-Hook des Moduls, um Inhalte dauerhaft zu entfernen; die reine Einstellungsbereinigung erfolgt bei jeder Deinstallation, sodass nach einer Neuinstallation eine erneute Konfiguration erforderlich ist.
+
+## Files-UI-Provider über den kanonischen Pfad bereitstellen
+
+Das Files-Gateway registriert sein UI-Verzeichnis nun unter dem Gateway-Schlüssel `files`, der `/static/gateways/files/*` bedient. Direkte und SPA-Modulaufrufe können `provider.js` zuverlässig importieren, bevor `files:uiClient` aufgelöst wird.
+
+## Marketplace-Installation und Assets absichern
+
+Marketplace-Assets haben jetzt strenge Downloadlimits und erfordern eine Administratorauthentifizierung. Modul-UUID- und ID-Prüfungen, die Serialisierung pro Modul, geschützte Laufzeitrouten und gemeldete Aktivierungsfehler verhindern unsichere oder irreführende Lebenszykluszustände.
+
+## Modul-Assets und Konfiguration wiederherstellen
+
+Authentifizierte Marketplace-Assets werden jetzt über den API-Client statt über nicht authentifizierte Medienanfragen des Browsers geladen. Erforderliche Moduleinstellungen verwenden den wiederverwendbaren Formulargenerator, unterstützen verdeckte Geheimfelder, bleiben nach der Konfiguration verfügbar und werden beim Deaktivieren von Modulen beibehalten.
+
+## Marketplace-Assets in der SPA stabilisieren
+
+Geschützte Marketplace-Grafiken werden niemals direkt Browser-Medienelementen zugewiesen. Die SPA-Navigation bricht nun veraltetes Laden von Assets ab, unterdrückt Autorisierungsereignisse untergeordneter Assets und widerruft verspätete Objekt-URLs, ohne Laufzeitfehler-Popups auszulösen.
+
+## Modulquellen-Steuerung vervollständigen
+
+Die Einstellungen für Modulquellen verwenden den gemeinsamen Formulargenerator und bieten einen Schieberegler zum Durchsuchen privater Repositorys, der ein PAT erfordert. Änderungen des Veröffentlichungskanals verwechseln den temporären Checkout nicht mehr mit einem ID-Konflikt, und Cognis stellt das konfigurierbare Standardempfehlungsdokument bereit.
+
+## Modulpasswörter bei Aktualisierungen erhalten
+
+Moduleinstellungen vom Typ `password` zeigen jetzt eine verdeckte Maske für gespeicherte Werte und erfüllen die Pflichtfeldprüfung über den konfigurierten Zustand des Moduls. Unveränderte Masken senden einen leeren Ersatz, damit Module das gespeicherte Passwort beibehalten. Ladeanzeigen im Marketplace bleiben in einer Zeile, während benachbarte Aktionen schmaler werden, und Meldungen über Verbindungsunterbrechungen werden über UI-Bundles hinweg dedupliziert.
+
+## Empfehlungen wiederherstellen und Marketplace-Metadaten lokalisieren
+
+Die veröffentlichten Empfehlungs-UUIDs bleiben im Standardkatalog enthalten. Marketplace-Karten, Details, Kategorien und Schlagwörter lösen jetzt Lokalisierungsschlüssel aus jedem Manifest über dessen deklariertes Modul-Stringpaket auf. Module ohne `ui.stringsBaseUrl` verwenden jetzt automatisch das Standardpaket unter `ui/languages`; nicht aufgelöste Werte bleiben sichtbar, statt als leerer Text zu erscheinen. Objekt-URLs für Modulbilder bleiben jetzt über SPA-Wechsel hinweg zwischengespeichert, um ein Aufblitzen von Ersatzbildern zu verhindern; installierte README-Varianten folgen der aktiven UI-Sprache mit englischem Fallback. Der Installer behandelt den optionalen Kompatibilitätsalias `README.md` im Stammverzeichnis nicht mehr als erforderliche Integritätsdatei, sodass er ein Symlink auf die lokalisierte englische README sein kann. Eingeschränkte Freigabegäste laden aktive UI-Capability-Provider des Hosts jetzt nach der Authentifizierung und vor dem Einhängen eines freigegebenen Moduls; dadurch funktioniert die Profilavatar-Darstellung wieder, ohne Provider-Anfragen vor dem Vorhandensein eines Gast-Tokens zu senden.
+
+## Authentifizierte Modulverwaltung korrigieren
+
+Die Ermittlung von Capability-Providern wartet jetzt auf eine angemeldete Sitzung. Modulfilter verlassen Detail-URLs, Modulquellen-Einstellungen erhalten ihre Lokalisierungsabhängigkeit ausdrücklich, und Deinstallationen löschen die Modulkonfiguration vor dem Entfernen der Installation. Der Hinweis zur Datenlöschung macht keine Annahmen mehr darüber, was ein Modul speichert.
+
+## Profilstatusanzeige wiederhergestellt
+
+Die Dashboard-Oberfläche initialisiert Erweiterungen für angemeldete Konten nun korrekt, wenn die Gastsitzungsfunktion eine normale authentifizierte Sitzung meldet. Dadurch erscheint die Verfügbarkeitsanzeige wieder über dem Navigationsavatar.
+
+## Veröffentlichungskanäle ohne Cache aktualisiert
+
+Die Seitennavigation für Marketplace-Repositorys umgeht nun zwischengeschaltete HTTP-Caches, sodass eine manuelle Aktualisierung neu erstellte Modul-Branches und Tags sofort abruft.
+
+## Freigabefunktionen und Steuerelemente vereinheitlicht
+
+Renderer für Freigabegäste erhalten nun eigenständige Profilfunktionen und vollständig geladene Avatar-Stile, bevor sie eingebunden werden. Vom Gateway bereitgestellte Freigabesteuerelemente zeigen einheitlich die lokalisierte Bezeichnung „Teilen“ neben dem kanonischen Freigabesymbol.
+
+## UI-Eigentum geklärt
+
+Die Bereinigung von SPA-Routen bewahrt nun hosteigene Stylesheets. Der Modulvertrag trennt wiederverwendbare UI und Navigation des Hosts klar von modulnamensräumigen Inhaltsstilen.
+
+## Installationsfehler geschützt
+
+Die Abfrage von Modulinstallationen liefert nun stabile öffentliche Fehlercodes, ohne interne Details zu Dateisystem, Repository oder Validierung offenzulegen.
+
+## Modulvoraussetzungen wiederhergestellt
+
+Der herkömmliche README-Alias im Stammverzeichnis nimmt nicht mehr an Modul-Integritätsprüfungen teil, Konfigurationsabfragen deaktivierter Module zeigen erwartete fehlende Routen nicht mehr als Fehler an, und das Share-Gateway veröffentlicht nun seine kanonische Browser-Trigger-Capability für abhängige Module.
+
+## Anbieter für Freigabeseiten aktualisiert
+
+Freigabeseiten aktualisieren nun die Host-Capability-Anbieter nach Aktivierung ihrer begrenzten Gastsitzung, und Cognis veröffentlicht einen validierten Laufzeit-Ressourcenlader für Modulseiten.
+
+## Navigation und Modul-UI stabilisiert
+
+Primäre Navigationslinks können nun in eine kontoweise gespeicherte Reihenfolge gezogen werden. Ein einziger Browser-Capability-Kontext umfasst kompilierte und statische Assets, erhält Profilanbieter bei der Modulnavigation und Freigabesteuerungen verwenden das etablierte themenabhängige Freigabe-Asset.
+
+## Stabile Modulaktionsmenüs
+
+Erweiterte Modulaktionen ersetzen den Hamburger-Auslöser während einer laufenden Aktion nicht mehr durch einen Ladekreisel. Teilen-Schaltflächen verwenden nun dasselbe Verknüpfungssymbol wie das kanonische Kopiersteuerelement für Freigabelinks.
+
+## Module atomar deaktivieren und Lebenszyklusgrenzen härten
+
+Beim Deaktivieren eines Moduls werden Navigation, UI-Beiträge, Routen, Abläufe, Hooks und Fähigkeiten entfernt, bevor die Lebenszyklusanfrage abgeschlossen ist. Fehlgeschlagene Aktivierungen werden zurückgesetzt, die Konfiguration bleibt bis zur erfolgreichen Bereinigung erhalten, Marketplace-Medien werden aus einem begrenzten Plattenspeicher ausgeliefert, alle beanspruchten Gateway-API-Präfixe sind geschützt und Änderungsprotokolle sind von Integritäts-Hashes ausgenommen, werden aber weiterhin sicher gerendert.
+
+## Navigationssortierung bewusst aktivieren
+
+Jeder primäre Navigationseintrag besitzt nun einen Griff mit sechs Punkten. Links behalten ihren normalen Zeiger und können erst nach einem Klick auf ihren Griff verschoben werden; verdrängte Einträge werden während des Ziehens animiert und die Reihenfolge wird beim Ablegen gespeichert. Die Dokumentation externer Module folgt nun der Beitragsvorlage und beschreibt atomare Deaktivierung sowie Deinstallationsbereinigung korrekt. Die SMTP-Warteschlangen-Testvorrichtung verwendet nun einen nicht blockierenden Test-Timer, damit der vollständige Testlauf nach seinen Prüfungen beendet wird.
+
+## Änderungen
+
+- [c685eda](https://github.com/Cognis-Labs-HQ/Cognis/commit/c685eda06183d56a3a250df8b66178db1e8553d6)

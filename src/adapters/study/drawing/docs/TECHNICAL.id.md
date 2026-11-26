@@ -1,0 +1,46 @@
+# Referensi Teknis
+
+Antarmuka publik dan aturan operasional Latihan Menulis.
+
+## Antarmuka
+
+Kapabilitas peramban study:drawing:open, study:drawing:load, dan study:drawing:observe mengikat permintaan serta pengamat pada sinyal halaman dan penyedia.
+
+## Konfigurasi
+
+Penyedia bahasa memasok pola goresan kanonis. Panduan, pengungkapan, dan posisi milik permukaan Study; tidak ada server gambar terpisah.
+
+## Perilaku
+
+### Latihan Menulis
+
+Study memiliki papan gambar lengkap di `src/gateways/study/ui/reuse/drawing.js`, termasuk kanvas, kontrol, panduan, penilaian dan hasil. Adaptor Gambar opsional menyediakan `study:drawing:open` dan `study:drawing:load` melalui `uiCtx` browser. Pemanggil menunggu tindakan ini dan memberikan kartu Library lengkap serta `strokePattern` tervalidasi.
+
+### Spesifikasi Teknis
+
+Masukan pena, sentuhan dan tetikus dinilai menurut urutan, arah dan kedekatan. Goresan yang diterima diganti dengan pola baku. Sebelum masukan pertama, pola yang belum diselesaikan akun saat ini menampilkan semua panduan bernomor. Setelah masukan dimulai dan pada pola yang pernah diselesaikan, hanya goresan berikutnya yang dipandu, termasuk saat berpindah karakter. Tombol panduan dinonaktifkan ketika semua panduan terlihat. Sepuluh kesalahan beruntun mengakhiri percobaan; hasil menunjukkan jumlah kesalahan dan kontrol ulang. Status penyelesaian dan jumlah goresan tersembunyi disimpan per akun dan kartu. Penyelesaian dengan paling banyak satu kesalahan menambah jumlahnya hingga batas goresan pola. Setiap percobaan, pengaturan ulang, dan pengulangan memilih posisi acak baru.
+
+Pola gabungan mempertahankan proporsi, urutan, waktu, tekanan dan keselarasan penunjuk tanpa mengubah data penyedia. Label menghindari lintasan goresan, dan kanvas diperbarui sekali per bingkai. Jendela mengambang memakai SVG tutup standar; papan tertanam tetap berada di kontainer. Gaya milik komponen tidak mengubah composer, kerangka halaman atau menu samping.
+
+Buka, muat, goresan, reset, panduan, ulang dan tutup menjalankan alur `study:drawing` dengan tahap before, execute dan after. Navigasi atau pembatalan melepaskan penangan penunjuk, pengamat ukuran dan render. Library dan Flashcards menggunakan kontrak reuse publik Study.
+
+Papan gambar bersama memuat templat HTML miliknya sekali per modul browser. Permintaan gagal menolak tindakan buka; navigasi saat pemuatan membatalkan pemasangan. Kelompok karakter penyedia tetap utuh dalam pola banyak karakter.
+
+### Sembunyikan jawaban menulis
+
+Perilaku ini dijelaskan dalam [kontrak bersama](/docs/gateways/study/technical).
+
+### Aset Study Luring
+
+Penyedia menyiapkan templat gambar, gaya, dan ikon tutup saat daring agar karakter tersimpan dapat membuka papan gambar pertama kali saat luring. Persiapan, tindakan, pengamat kartu, dan gaya mengikuti masa hidup penyedia. Menutup papan menghapus pendengar masa hidupnya. Persiapan ini tidak mengambil data audio atau kamus.
+
+## Keamanan
+
+Latihan memakai identitas pelajar dan pola kanonis. Hanya percobaan selesai tepercaya masuk alur pencatatan; papan gambar tidak memberi hak edit konten.
+
+## Referensi
+
+- [src/adapters/study/drawing/manifest.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/study/drawing/manifest.json)
+- [src/adapters/study/drawing/package.json](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/study/drawing/package.json)
+- [src/adapters/study/drawing/index.ts](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/study/drawing/index.ts)
+- [src/adapters/study/drawing/ui/provider.js](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/adapters/study/drawing/ui/provider.js)

@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+        />
+        <title data-i18n="ui.page.title.verify_email">Verify Email</title>
+        <link
+            rel="icon"
+            href="/static/assets/icons/cognis-icon.png"
+            type="image/png"
+        />
+        <link rel="manifest" href="/manifest.webmanifest" />
+        <meta name="theme-color" content="#0f172a" />
+        <meta name="application-name" content="Cognis" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta
+            name="apple-mobile-web-app-status-bar-style"
+            content="black-translucent"
+        />
+        <meta name="apple-mobile-web-app-title" content="Cognis" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <link
+            rel="apple-touch-icon"
+            href="/static/assets/icons/cognis-apple-touch-180.png"
+        />
+        <link rel="stylesheet" href="/static/styles/page-builder.css" />
+        <link
+            rel="stylesheet"
+            href="/static/gateways/notify/verify-email.css"
+        />
+    </head>
+    <body>
+        <div class="verify-card" id="verify-card">
+            <div class="brandline verify-brand">
+                <img
+                    src="/static/assets/icons/cognis-icon.png"
+                    alt=""
+                    class="topbar-icon"
+                />
+                <strong data-i18n="ui.reuse.brand_name">Cognis</strong>
+            </div>
+            <div class="verify-icon" id="verify-icon" aria-hidden="true"></div>
+            <h1
+                class="verify-title"
+                id="verify-title"
+                data-i18n="ui.app.verify_email.verifying"
+            >
+                Verifying…
+            </h1>
+            <p class="verify-body" id="verify-body"></p>
+            <a
+                href="/dashboard"
+                class="verify-link btn-neutral btn-animated"
+                id="verify-link"
+                style="display: none"
+                data-i18n="ui.app.verify_email.return_link"
+                >Return to Cognis</a
+            >
+        </div>
+        <script
+            type="module"
+            src="/static/gateways/notify/verify-email.js"
+        ></script>
+    </body>
+</html>
