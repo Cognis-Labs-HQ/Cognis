@@ -114,7 +114,7 @@ Recovery refreshes providers and runs `authenticate-session` before the final `a
 
 ### Empty offline Study pages
 
-See the [shared contract](/docs/api/technical) for this behavior.
+See the [shared contract](/docs/ui/technical) for this behavior.
 
 ### Offline Study Assets
 
@@ -122,11 +122,11 @@ Study prepares its lazy popup icons, drawing template, drawing styles and close 
 
 ### Offline Availability
 
-See the [shared contract](/docs/api/technical) for this behavior.
+See the [shared contract](/docs/ui/technical) for this behavior.
 
 ### Shared Study Favourites
 
-See the [shared contract](/docs/api/technical) for this behavior.
+See the [shared contract](/docs/ui/technical) for this behavior.
 
 ### Enrolled Offline Workspace
 
@@ -136,7 +136,7 @@ After verified sign-in, Study prepares schemas, readable locations, forms, viewe
 
 Library management and its edit/search/request pages require a connection. The Study submenu retains those links but disables them offline, including immediately after disconnection; Explore remains available for cached browsing and drawing. The Library provider declares only Explore as an offline session route.
 
-See the [shared contract](/docs/api/technical) for this behavior.
+See the [shared contract](/docs/ui/technical) for this behavior.
 
 ### Smooth Recovery and Navigation
 
@@ -148,7 +148,7 @@ Unavailable destinations stay visible with the same disabled styling in the prim
 
 ### Acknowledged Favourites
 
-See the [shared contract](/docs/api/technical) for this behavior.
+See the [shared contract](/docs/ui/technical) for this behavior.
 
 ## Security
 

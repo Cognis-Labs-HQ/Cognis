@@ -36,7 +36,9 @@ export {
 import { hashSharePassword, verifySharePassword } from "./password.js";
 
 export function isExpired(expiresAt: string): boolean {
-    return Boolean(expiresAt) && new Date(expiresAt).getTime() <= Date.now();
+    if (expiresAt === "") return false;
+    const timestamp = new Date(expiresAt).getTime();
+    return !Number.isFinite(timestamp) || timestamp <= Date.now();
 }
 
 // Expired share tokens are kept around for this long after expiry so their

@@ -66,7 +66,7 @@ Während der Anmeldung versucht der Adapter lediglich, einen vorhandenen Tresor 
 
 ### Kontodatenschutz und Schlüsselbund-Isolation
 
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
+Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/ui/technical).
 
 ### Zerstörendes Zurücksetzen
 
@@ -83,6 +83,8 @@ Die Schlüsselbund-Einstellungen lesen beim Anzeigen den aktuellen Zustand, auch
 ### Lokalisierte Adapterfelder
 
 Die Keyring-Konfiguration deklariert ihr eigenes Sprachpaket und lokalisierte Bezeichnungen für maximale Tresorgröße und Iterationen zur Passwortableitung. Das gemeinsame Administrations-Popup löst diese Bezeichnungen über dieselben XML-Ressourcen wie der Adapter auf.
+
+Lebenszyklusmeldungen, Entsperrsteuerung und Einstellungsbeschriftungen des Schlüsselbunds stammen aus den adaptereigenen Katalogen `ui/languages/<locale>/strings.xml`. Diese verwenden das Laufzeit-Wurzelelement `<resources>`; auch die Erstellung eines Gast-Schlüsselbunds nutzt dieselben lokalisierten Lebenszyklusmeldungen wie ein Konto-Schlüsselbund. Resolver werden bei jeder Verwendung für die aktuelle Oberflächensprache aufgebaut; der Host fasst gültige Pakete zusammen und speichert sie. Ein fehlgeschlagener Katalogabruf bleibt dadurch erneut abrufbar, statt dauerhaft als Snapshot mit fehlenden Schlüsseln erhalten zu bleiben.
 
 ## Sicherheit
 

@@ -53,7 +53,7 @@ Browser providers obtain `ui:scopedActions` from their scoped ctx. Calling it wi
 
 ### Offline Social Changes
 
-Profile and Messages providers now register lifecycle-scoped HTTP actions through ctx. Previously loaded profiles, posts, room lists and encrypted threads remain available in the verified tab. Profile text, availability, follow/block state, banner layout, post creation/deletion, existing-room encrypted messages, final reaction states and read receipts use the account-bound offline buffer. Later online edits wait behind buffered edits from the same owner. Account or session changes during preparation or buffer waits cancel the action. Message/post creation uses stable `operationId` UUIDs; changed or cross-account retries are rejected, and message replay does not repeat notifications. Read receipts retain the original read time.
+Profile and Messages providers register lifecycle-scoped HTTP actions through ctx. Previously loaded profiles, posts, room lists and encrypted threads remain available in the verified tab. Profile text, availability, follow/block state, banner layout, post creation/deletion, existing-room encrypted messages, final reaction states and read receipts use the account-bound offline buffer. Later online edits wait behind buffered edits from the same owner. Account or session changes during preparation or buffer waits cancel the action. Message/post creation uses stable `operationId` UUIDs; changed or cross-account retries are rejected, and message replay does not repeat notifications. Read receipts retain the original read time.
 
 Chat is encrypted before buffering: plaintext, room keys and credentials are never added to the queue. Profile text and post content are stored in browser storage for the current account. Avatar/banner uploads up to 350,000 binary bytes may share the existing 1 MB/1,000-record/seven-day queue; larger images require connectivity. A full buffer reports a localized error; message and post drafts are cleared only after durable submission succeeds. These limits apply to the complete buffer, not each component separately.
 
@@ -75,7 +75,7 @@ Messages prepares its room list, translations, sidebar template and emoji catalo
 
 ### Independent Emoji Usage
 
-See the [shared contract](/docs/api/technical) for this behavior.
+See the [shared contract](/docs/ui/technical) for this behavior.
 
 ### Readable Mobile Content
 
@@ -83,7 +83,7 @@ Open conversations with the common double-chevron sidebar button at the top left
 
 ### Compact Sidebars
 
-Messages keeps New Room, conversations and Templates together, filling the available sidebar width. Empty and short lists no longer stretch to the drawer height; long room and template lists use Composer’s single scroll surface.
+Messages keeps New Room, conversations and Templates together, filling the available sidebar width. Empty and short lists size to their content; long room and template lists use Composer’s single scroll surface.
 
 ### Overview
 

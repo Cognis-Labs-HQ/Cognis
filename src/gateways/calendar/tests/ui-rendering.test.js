@@ -102,8 +102,8 @@ test("calendar event composer imports its HTML escaping dependency", () => {
     );
     assert.match(EVENT_COMPOSER_SOURCE, /createFormBuilder\([\s\S]*escapeHtml/);
 });
-const SHARED_PASSWORD_SOURCE = readFileSync(
-    resolve(ROOT, "src/gateways/calendar/bootstrap/shared-password.ts"),
+const SHARED_ACCESS_SOURCE = readFileSync(
+    resolve(ROOT, "src/gateways/calendar/bootstrap/shared-access.ts"),
     "utf8",
 );
 const POPUP_MANAGER_PENDING_RESPONSE_SOURCE = readFileSync(
@@ -373,11 +373,8 @@ test("calendar composer supports multiple reminders and remembers selected view"
 
 test("calendar navigation and event creation use a persistent delegated boundary", () => {
     assert.match(APP_SOURCE, /root\.addEventListener\(/);
-    assert.match(
-        APP_SOURCE,
-        /event\.target\.closest\("\[data-calendar-view\]"\)/,
-    );
-    assert.match(APP_SOURCE, /"\[data-calendar-nav\]"/);
+    assert.match(APP_SOURCE, /mountCalendarViewControls\(root/);
+    assert.match(APP_SOURCE, /renderCalendarNavigation/);
     assert.match(APP_SOURCE, /"\[data-timeslot-add\]"/);
     assert.match(APP_SOURCE, /void openEventComposerPopup/);
 });
@@ -721,20 +718,20 @@ test("calendar share renderer displays one calendar and enables scoped writes", 
     assert.match(SHARE_RENDERER_SOURCE, /button\.classList\.toggle/);
     assert.match(SHARE_RENDERER_SOURCE, /renderCalendarView/);
     assert.match(SHARE_RENDERER_SOURCE, /let selectedView = "month"/);
-    assert.match(
-        SHARE_RENDERER_SOURCE,
-        /root\.addEventListener\([\s\S]*data-shared-calendar-id[\s\S]*data-calendar-view[\s\S]*data-calendar-nav/,
-    );
+    assert.match(SHARE_RENDERER_SOURCE, /mountCalendarViewControls\(root/);
     assert.match(SHARE_RENDERER_SOURCE, /CALENDAR_VIEWS/);
     assert.match(
         SHARE_RENDERER_SOURCE,
         /renderCalendarViewSwitcher\(CALENDAR_VIEWS/,
     );
-    assert.match(SHARE_RENDERER_SOURCE, /data-calendar-nav/);
-    assert.match(SHARE_RENDERER_SOURCE, /shiftActiveDate/);
+    assert.match(SHARE_RENDERER_SOURCE, /renderCalendarNavigation/);
+    assert.match(
+        SHARE_RENDERER_SOURCE,
+        /getSelectedView: \(\) => selectedView/,
+    );
     assert.match(SHARE_RENDERER_SOURCE, /fillViewport: true/);
     assert.match(SHARE_RENDERER_SOURCE, /\{ signal \}/);
-    assert.match(SHARE_RENDERER_SOURCE, /CALENDAR_VIEWS\.includes/);
+
     assert.match(SHARE_RENDERER_SOURCE, /data-timeslot-add/);
     assert.match(SHARE_RENDERER_SOURCE, /calendar:write/);
     assert.match(SHARE_RENDERER_SOURCE, /calendar:sharedClient/);
@@ -755,7 +752,7 @@ test("calendar share renderer displays one calendar and enables scoped writes", 
     );
     assert.match(
         SHARE_RENDERER_CSS_SOURCE,
-        /\.widget-card:has\(\.calendar-share-page\)\s*\{[\s\S]*overflow-y:\s*hidden/,
+        /\.shared-calendar:has\(\.calendar-view-canvas\)\s*\{[\s\S]*grid-template-rows:\s*auto auto minmax\(0, 1fr\)/,
     );
 });
 
@@ -831,9 +828,9 @@ test("shared calendar event loading resolves password protection through keyring
     assert.match(CALENDAR_API_SOURCE, /share:fetchProtectedResource/);
     assert.match(CALENDAR_API_SOURCE, /x-cognis-share-password/);
     assert.match(CALENDAR_API_SOURCE, /sharePasswordProtected/);
-    assert.match(CALENDAR_ROUTES_SOURCE, /requireSharedCalendarPassword/);
-    assert.match(SHARED_PASSWORD_SOURCE, /share_password_required/);
-    assert.match(SHARED_PASSWORD_SOURCE, /share:unlockUserAccess/);
+    assert.match(CALENDAR_ROUTES_SOURCE, /requireSharedCalendarAccess/);
+    assert.match(SHARED_ACCESS_SOURCE, /share_password_required/);
+    assert.match(SHARED_ACCESS_SOURCE, /share:unlockUserAccess/);
     assert.match(CALENDAR_API_SOURCE, /calendar_share_secrets_refused/);
     assert.match(APP_SOURCE, /secretsUnavailable/);
     assert.match(HELPERS_SOURCE, /calendar-item-btn--locked/);

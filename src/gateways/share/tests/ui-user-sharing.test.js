@@ -239,7 +239,7 @@ test("anonymous share guests activate a temporary unlocked keyring", () => {
     );
     assert.match(
         sessionFlowSource,
-        /activeGuestSession = \{ shareToken, session: guestSession \}/,
+        /activeGuestSession = \{\s*shareToken,\s*session: guestSession,\s*identity: sessionIdentity\(\)/,
     );
     assert.match(sessionFlowSource, /guestSessionAlreadyActive/);
     assert.match(sessionFlowSource, /keyring:endTemporary/);

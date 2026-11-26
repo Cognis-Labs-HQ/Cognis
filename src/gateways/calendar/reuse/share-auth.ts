@@ -1,3 +1,4 @@
+import { calendarSharePermission } from "./share-permission.js";
 import { timingSafeEqual } from "node:crypto";
 
 export function readSharePassphrase(
@@ -77,6 +78,8 @@ export async function resolveGatewayCalendarShare(
         ? await resolveToken(token, password || null)
         : null;
     if (share?.resourceType === "calendar") {
+        const permission = calendarSharePermission(share.grantedCapabilities);
+        if (!permission) return { unauthorized: true };
         const recipients = share.accessControls?.recipients;
         if (Array.isArray(recipients) && recipients.length > 0) {
             const requesterId = String(requesterAccountId ?? "").trim();
@@ -101,9 +104,7 @@ export async function resolveGatewayCalendarShare(
         return calendarId
             ? {
                   calendarId,
-                  writable:
-                      Array.isArray(share.grantedCapabilities) &&
-                      share.grantedCapabilities.includes("calendar:write"),
+                  writable: permission === "write",
               }
             : null;
     }

@@ -18,6 +18,8 @@ Manifes berbagi menyatakan renderer dan cakupan API tamu. Setiap berbagi menyimp
 
 ## Perilaku
 
+Autentikasi menggunakan kembali sesi yang sudah diresolusikan untuk tautan berbagi dan identitas akun yang sama. Permintaan bersamaan memakai satu resolusi dan satu dialog kata sandi; keyring tamu yang terbuka digunakan kembali. Meninggalkan tautan, berganti akun, atau pencabutan akses membatalkan resolusi tertunda atau tersimpan. Pembatalan dan kegagalan aktivasi memungkinkan percobaan berikutnya.
+
 ### Klien browser Berbagi
 
 Adapter mendeklarasikan penyedia navbar sendiri yang mengikuti status aktifnya. Penemuan pengirim memakai `notify:listSenders` tanpa implementasi Gateway Notifikasi. Pemeliharaan Share berkala berhenti saat gateway nonaktif dan dilanjutkan saat aktif.
@@ -68,7 +70,9 @@ Tamu anonim tidak pernah membuka keyring akun. Share mengaktifkan keyring tamu y
 
 ### Kontrol berbagi
 
-Catatan berbagi kini membawa kontrol akses milik gateway: izin baca/tulis, penerima bertipe untuk pengguna dalam aplikasi, grup/kelas, dan penerima email, perlindungan kata sandi opsional, serta penanda watermark untuk berbagi hanya-baca. Gateway Share menyediakan rute umum untuk membuat dan memperbarui token sehingga modul meminta berbagi melalui `ctx` atau `/api/v1/share/tokens` dan tidak memiliki pengiriman penerima atau pengeditan izin sendiri. Berbagi hanya-baca memakai watermark secara default, sementara berbagi dengan izin tulis menghapus default itu kecuali pemanggil secara eksplisit mempertahankannya. Perender tombol milik gateway selalu memasangkan ikon berbagi kanonis dengan label Bagikan yang dilokalkan.
+Catatan berbagi membawa kontrol akses milik gateway: izin baca/tulis, penerima bertipe untuk pengguna dalam aplikasi, grup/kelas, dan penerima email, perlindungan kata sandi opsional, serta penanda watermark untuk berbagi hanya-baca. Gateway Share menyediakan rute umum untuk membuat dan memperbarui token sehingga modul meminta berbagi melalui `ctx` atau `/api/v1/share/tokens` dan tidak memiliki pengiriman penerima atau pengeditan izin sendiri. Berbagi hanya-baca memakai watermark secara default, sementara berbagi dengan izin tulis menghapus default itu kecuali pemanggil secara eksplisit mempertahankannya. Perender tombol milik gateway selalu memasangkan ikon berbagi kanonis dengan label Bagikan yang dilokalkan.
+
+`PATCH /api/v1/share/tokens/:id` mempertahankan `grantedCapabilities` jika dihilangkan dan menggantinya jika array diberikan; `[]` mencabut semua izin. Batasan penerima, kata sandi, dan adaptor tetap berlaku. Pemilik sumber daya merekonsiliasi akses yang dikirim setelah pembaruan dan mengotorisasi permintaan berdasarkan izin saat ini.
 
 ### Adapter metode berbagi
 
@@ -76,7 +80,7 @@ Popup menemukan metode berbagi dari adapter gateway Share dan menampilkannya dal
 
 ### Kedaluwarsa dan perlindungan
 
-Kedua metode bawaan menerima tanggal dan waktu kedaluwarsa yang opsional; jika tidak diisi, berbagi tidak kedaluwarsa. Hash dan verifikasi kata sandi tetap dimiliki gateway Share. Komponen sumber daya dapat menyediakan mode akses Tautan beserta izin dan kemampuan yang sesuai.
+Kedua metode bawaan menerima tanggal dan waktu kedaluwarsa yang opsional. Nilai kosong berarti tanpa batas; nilai tidak kosong yang tidak valid menolak akses. Otorisasi pengguna langsung memeriksa kedaluwarsa saat ini pada setiap akses, termasuk izin yang masih disimpan dan telah dibuka dengan kata sandi. Hashing dan verifikasi kata sandi tetap dimiliki gateway Share. Komponen sumber daya dapat menyediakan mode akses Tautan dengan izin dan kapabilitas khusus metode.
 
 ### Umpan balik pengiriman penerima dan alias kata sandi
 

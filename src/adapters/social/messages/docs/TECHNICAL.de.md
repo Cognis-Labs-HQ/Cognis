@@ -78,7 +78,7 @@ Messages bereitet Raumliste, Übersetzungen, Seitenleistenvorlage und Emoji-Kata
 
 ### Unabhängige Emoji-Nutzung
 
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
+Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/ui/technical).
 
 ### Lesbare mobile Inhalte
 
@@ -86,7 +86,7 @@ Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
 
 ### Kompakte Seitenleisten
 
-Nachrichten zeigt Neuer Raum, Unterhaltungen und Vorlagen direkt untereinander und nutzt die verfügbare Breite. Leere und kurze Listen werden nicht mehr auf die gesamte Schubladenhöhe gestreckt. Lange Raum- und Vorlagenlisten verwenden die gemeinsame Scroll-Fläche von Composer.
+Nachrichten zeigt Neuer Raum, Unterhaltungen und Vorlagen direkt untereinander und nutzt die verfügbare Breite. Leere und kurze Listen werden nicht auf die gesamte Schubladenhöhe gestreckt. Lange Raum- und Vorlagenlisten verwenden die gemeinsame Scroll-Fläche von Composer.
 
 ### Überblick
 

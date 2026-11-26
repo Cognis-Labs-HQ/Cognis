@@ -48,7 +48,7 @@ The deck side menu scrolls with the document. Revealing the primary navigation d
 
 ### Visible Practice Mode and Themed Controls
 
-The persistent Read/Write selector now reveals its floating slot on Flashcards. Mode changes retain the saved preference and session restart confirmation. Export and Study settings icons use the active control color, following the app’s light/dark theme and hover state regardless of the operating-system theme.
+The persistent Read/Write selector reveals its floating slot on Flashcards. Mode changes retain the saved preference and session restart confirmation. Export and Study settings icons use the active control color, following the app’s light/dark theme and hover state regardless of the operating-system theme.
 
 Answer submissions may include an `attempt` object with `id` and ISO `occurredAt`. Re-deliver the same object and grade to retry; a new answer uses a new ID. Review receipts and scheduling changes commit together, and stable event IDs prevent duplicate Progress records. Browser history retains pending attempts without putting them in URLs. Flashcards declares Library and Progress dependencies. Shared cards and their schemas resolve current Library data after share authorization.
 
@@ -72,7 +72,7 @@ Opening another deck brings its content into view immediately; returning from Ex
 
 ### Empty offline Study pages
 
-See the [shared contract](/docs/api/technical) for this behavior.
+See the [shared contract](/docs/ui/technical) for this behavior.
 
 ### Durable Queued Results
 
@@ -80,11 +80,11 @@ Queued card reviews retain their successful result even if optional activity rec
 
 ### Enrolled Offline Workspace
 
-See the [shared contract](/docs/api/technical) for this behavior.
+See the [shared contract](/docs/ui/technical) for this behavior.
 
 ### Offline Study Practice
 
-See the [shared contract](/docs/api/technical) for this behavior.
+See the [shared contract](/docs/ui/technical) for this behavior.
 
 ### Share Delivery
 

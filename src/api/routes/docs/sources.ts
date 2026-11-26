@@ -179,7 +179,7 @@ export async function discoverDocSources(
     for (const path of paths.filter(
         (path) =>
             path.startsWith(coreRoot + sep) &&
-            path.endsWith(`${sep}index.en.md`) &&
+            path.endsWith(`${sep}INFO.en.md`) &&
             !path.includes(`${sep}changelog${sep}`),
     )) {
         const directory = dirname(path);
@@ -192,8 +192,8 @@ export async function discoverDocSources(
             version: await versionFor(directory, boundary),
             files: await bundleFiles({
                 info: path,
-                usage: join(directory, "usage.en.md"),
-                technical: join(directory, "technical.en.md"),
+                usage: join(directory, "USAGE.en.md"),
+                technical: join(directory, "TECHNICAL.en.md"),
             }),
         });
     }

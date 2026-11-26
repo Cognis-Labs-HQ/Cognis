@@ -12,6 +12,8 @@ Konfigurasi disediakan melalui gerbang pemilik. Profil dan Kiriman tidak menyata
 
 ## Perilaku
 
+Pencarian avatar navigasi dan persiapan profil akun saat ini untuk mode offline memerlukan sesi akun. Tamu berbagi melewati pembacaan khusus akun ini, termasuk setelah autentikasi tamu berhasil; tampilan profil publik tetap mengikuti aturan aksesnya sendiri.
+
 ### Ikhtisar
 
 Gateway Profil memiliki profil pengguna, grafik sosial, postingan, dan manajemen file untuk upload avatar dan banner. Gateway ini memberikan identitas publik kepada setiap akun Cognis dan tempat dalam grafik komunitas. Menghapus gateway ini menghapus semua fitur profil, sosial, postingan, dan file dari platform tanpa mempengaruhi inti, autentikasi, atau gateway lainnya.
@@ -118,7 +120,7 @@ Perilaku ini dijelaskan dalam [kontrak bersama](/docs/gateways/auth/technical).
 
 ### Salinan Preferensi Terkonfirmasi
 
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
+Perilaku ini dijelaskan dalam [kontrak bersama](/docs/ui/technical).
 
 ### Spesifikasi Teknis
 

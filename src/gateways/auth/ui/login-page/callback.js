@@ -38,7 +38,7 @@ export async function mount(root) {
                     renderInPageCallout({
                         variant: "danger",
                         title: i18n.t("ui.app.login.sso_callback_failed"),
-                        bodyHtml: `<a class="btn-neutral btn-animated" href="/login">${escapeHtml(i18n.t("ui.reuse.go_back"))}</a>`,
+                        bodyHtml: `<a class="btn-neutral btn-animated" href="/login">${escapeHtml(i18n.t("ui.reuse.back"))}</a>`,
                     }),
             },
         ],

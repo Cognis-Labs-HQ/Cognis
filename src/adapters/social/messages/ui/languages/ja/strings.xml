@@ -98,4 +98,7 @@
   <string name="module.social.messages.tutorial.messages.manage.room.body">会話の見出しでルームと参加者を確認します。メンバー変更や退出には、表示される操作を使います。</string>
   <string name="module.social.messages.conversations">会話</string>
   <string name="module.social.messages.choose_conversation">会話を選択してメッセージを読んだり送信したりできます。</string>
+  <string name="adapter.social.messages.room_key_prompt_title">ルームの暗号鍵</string>
+  <string name="adapter.social.messages.room_key_prompt">ルームの暗号鍵を入力してください。</string>
+  <string name="adapter.social.messages.reactions">リアクション</string>
 </resources>

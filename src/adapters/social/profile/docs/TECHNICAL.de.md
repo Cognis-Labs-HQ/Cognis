@@ -24,9 +24,11 @@ Das Profil-Navbar-Plugin stellt `ui:profileAvatarRenderer` bereit. Module, die P
 
 ### Bestätigte Einstellungskopien
 
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
+Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/ui/technical).
 
 ## Verhalten
+
+Die Avatarabfrage der Navigation und die Offline-Vorbereitung des eigenen Profils erfordern eine Kontositzung. Freigabegäste überspringen diese kontobezogenen Lesezugriffe auch nach erfolgreicher Gastauthentifizierung; für öffentliche Profilansichten gelten weiterhin deren eigene Zugriffsregeln.
 
 ### Überblick
 

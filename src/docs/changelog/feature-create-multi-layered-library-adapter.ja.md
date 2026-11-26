@@ -261,7 +261,7 @@ Study ゲートウェイの公開インポート URL を修正し、共有の定
 
 任意の単一選択欄にはローカライズした **未設定** を用意します。未分類のカードを編集しても先頭の難易度を自動選択せず、不明な状態を維持します。
 
-実装参照: [`1eae7cd32a771b2d5cab37e5e1b9a981851ca3ab`](https://github.com/Cognis-Labs-HQ/Cognis/commit/1eae7cd32a771b2d5cab37e5e1b9a981851ca3ab).
+実装参照: [`1eae7cd`](https://github.com/Cognis-Labs-HQ/Cognis/commit/1eae7cd32a771b2d5cab37e5e1b9a981851ca3ab).
 
 デッキのサイドメニューは表示中のページの高さに収まり、独立してスクロールします。デッキが増えてもページ全体を引き伸ばしたり、練習画面を下へ押し出したりしません。
 
@@ -269,11 +269,11 @@ Study ゲートウェイの公開インポート URL を修正し、共有の定
 
 別のデッキを開くと内容をすぐに表示します。Explore から戻る場合は保存済みの練習位置を維持します。
 
-実装参照: [`23555ea0ac51246cd349ad1534991d78c4810f2a`](https://github.com/Cognis-Labs-HQ/Cognis/commit/23555ea0ac51246cd349ad1534991d78c4810f2a).
+実装参照: [`23555ea`](https://github.com/Cognis-Labs-HQ/Cognis/commit/23555ea0ac51246cd349ad1534991d78c4810f2a).
 
 辞書検索コンテキストの読み取りは、認可と解決のステージを持つ `study:library:readSearchContext` を使用します。書き込みは `study:library:searchContext` を維持し、保存前の検証ステージで拡張機能が入力を調整できます。その後サービス側でも検証します。両操作は共有リンクの主体を拒否します。書き込みは 16 KiB を超えると HTTP 413 で停止し、不正な JSON は HTTP 400 を返して保存済みの状態を変更しません。予期しない失敗では固定のエラーコードだけを公開します。
 
-実装参照: [`d88441ce8a0bedb3c6c03488b0ad7ede5a2fdfac`](https://github.com/Cognis-Labs-HQ/Cognis/commit/d88441ce8a0bedb3c6c03488b0ad7ede5a2fdfac).
+実装参照: [`d88441c`](https://github.com/Cognis-Labs-HQ/Cognis/commit/d88441ce8a0bedb3c6c03488b0ad7ede5a2fdfac).
 
 ## コンポーネントの分離と稼働状態
 
@@ -287,4 +287,4 @@ Libraryの追加・削除通知はXMLカタログの英語、ドイツ語、イ�
 
 ブラウザーテストは共有テストツールで実際のモジュール公開関数を読み込み、依存関係を明示的に置き換えます。編集、描画、フローの検証は非公開関数の抽出ではなく公開操作を実行します。Flashcardsは専用のデッキ編集モジュールを直接使用します。
 
-実装: [b2bbcf43ddfcdcfa9ae780cf33aab1c7527a2f61](https://github.com/Cognis-Labs-HQ/Cognis/commit/b2bbcf43ddfcdcfa9ae780cf33aab1c7527a2f61).
+実装: [b2bbcf4](https://github.com/Cognis-Labs-HQ/Cognis/commit/b2bbcf43ddfcdcfa9ae780cf33aab1c7527a2f61).

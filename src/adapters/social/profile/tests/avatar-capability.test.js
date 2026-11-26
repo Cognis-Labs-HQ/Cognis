@@ -69,7 +69,10 @@ test("Profile standalone provider waits for avatar styles and contributes its cl
 
 test("navbar and profile cards derive initials from the same profile label", () => {
     const navbar = readFileSync(
-        resolve(process.cwd(), "src/adapters/social/profile/ui/navbar.js"),
+        resolve(
+            process.cwd(),
+            "src/adapters/social/profile/ui/navbar-avatar.js",
+        ),
         "utf8",
     );
     assert.match(navbar, /payload\?\.data\?\.displayName/);

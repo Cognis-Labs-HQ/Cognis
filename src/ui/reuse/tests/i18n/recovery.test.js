@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { subscribeDiagnostics } from "../../../../tooling/reuse/diagnostic-fixture.ts";
-import { installI18nEnvironment } from "../fixtures/i18n-environment.js";
+import { installI18nEnvironment } from "../../../../tooling/reuse/i18n-environment.js";
 
 const xml = (value) =>
     new Response(

@@ -261,7 +261,7 @@ Opening a detail popup through a direct link, relationship or previous/next navi
 
 Optional single-select fields include a localized **Not specified** choice. Editing an unclassified card therefore preserves its unknown difficulty instead of silently selecting the first level.
 
-Implementation reference: [`1eae7cd32a771b2d5cab37e5e1b9a981851ca3ab`](https://github.com/Cognis-Labs-HQ/Cognis/commit/1eae7cd32a771b2d5cab37e5e1b9a981851ca3ab).
+Implementation reference: [`1eae7cd`](https://github.com/Cognis-Labs-HQ/Cognis/commit/1eae7cd32a771b2d5cab37e5e1b9a981851ca3ab).
 
 The deck sidebar scrolls independently within the visible page height, keeping long deck lists from expanding the page or pushing practice below the fold.
 
@@ -269,11 +269,11 @@ Page overlays mount at the document body to keep viewport positioning independen
 
 Opening another deck brings its content into view immediately; returning from Explore preserves the saved practice position.
 
-Implementation reference: [`23555ea0ac51246cd349ad1534991d78c4810f2a`](https://github.com/Cognis-Labs-HQ/Cognis/commit/23555ea0ac51246cd349ad1534991d78c4810f2a).
+Implementation reference: [`23555ea`](https://github.com/Cognis-Labs-HQ/Cognis/commit/23555ea0ac51246cd349ad1534991d78c4810f2a).
 
 Dictionary search-context reads use `study:library:readSearchContext` with authorize and resolve stages. Writes retain `study:library:searchContext` and add validation before persistence, allowing flow extensions to adjust input before service validation. Both operations reject shared-link principals. Writes stop at 16 KiB with HTTP 413; malformed JSON returns HTTP 400 and does not replace saved state. Unexpected failures expose only a stable error code.
 
-Implementation reference: [`d88441ce8a0bedb3c6c03488b0ad7ede5a2fdfac`](https://github.com/Cognis-Labs-HQ/Cognis/commit/d88441ce8a0bedb3c6c03488b0ad7ede5a2fdfac).
+Implementation reference: [`d88441c`](https://github.com/Cognis-Labs-HQ/Cognis/commit/d88441ce8a0bedb3c6c03488b0ad7ede5a2fdfac).
 
 ## Component isolation and lifecycle
 
@@ -287,4 +287,4 @@ Library content and deletion announcements include English, German, Indonesian a
 
 Browser tests load actual module exports with explicit dependency fakes through shared tooling. Editor, drawing and flow checks exercise public operations rather than extracted private functions. The deck editor now has a dedicated owner module used directly by Flashcards.
 
-Implementation: [b2bbcf43ddfcdcfa9ae780cf33aab1c7527a2f61](https://github.com/Cognis-Labs-HQ/Cognis/commit/b2bbcf43ddfcdcfa9ae780cf33aab1c7527a2f61).
+Implementation: [b2bbcf4](https://github.com/Cognis-Labs-HQ/Cognis/commit/b2bbcf43ddfcdcfa9ae780cf33aab1c7527a2f61).

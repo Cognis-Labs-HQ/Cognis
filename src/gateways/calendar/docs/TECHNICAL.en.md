@@ -12,6 +12,8 @@ Calendar resources define name, visibility and event data. Reminder preferences 
 
 ## Behavior
 
+The public renderer awaits its Calendar-owned stylesheets before mounting. Its title, controls and scrollable calendar occupy separate grid rows; the page composer determines the viewport fit and minimum workspace height.
+
 ### Share delivery
 
 Calendar contributes to the Share gateway through `ctx` flow hooks and capabilities. User-recipient delivery materializes a recipient-owned shared calendar and returns a generic navigation URL plus one-time localized success feedback. Passwords remain owned by Share and are retrieved from the keyring under the canonical share identifier.
@@ -68,6 +70,8 @@ Adapter contract registration follows [the shared gateway bootstrap contract](/d
 
 See the [shared contract](/docs/gateways/share/technical) for this behavior.
 
+Calendar delivery requires an explicit `calendar:read` grant. Removing it deletes recipient copies, and later reconciliation cannot recreate them without a new read grant. Event reads and mutations authorize through Share on each request, including unprotected tokens; mutations require `calendar:write`. Denied grants on an existing token-backed delivery return 403; removed or inactive calendar copies retain their not-found or inactive responses, while an otherwise permitted protected share can request its password with 401. ICS and CalDAV token exports also require the read grant.
+
 ### Lifecycle Boundaries
 
 See the [shared contract](/docs/gateways/share/technical) for this behavior.
@@ -83,6 +87,10 @@ Calendar discovers `meetings:createMeeting` from the active browser provider. Th
 Narrow Calendar panels show an agenda containing every event and the selected date, with a compact view selector and date jump. Wide panels retain calendar grids. The date field reaches empty dates without scrolling through a month. Shared calendars use the same presentations and enforce read-only access.
 
 Date jumps and native view selection use one Calendar-owned control binding for both account and shared pages. Invalid inputs leave the current view unchanged, and the page lifetime removes its listeners.
+
+Period indicators use the same root-delegated control binding for account and shared pages: a month title selects that month in the current year, a week number selects its week, and a day indicator selects its date. View and date update together without granting edit access. Week-number labels are horizontal unless their own column is at most 3rem wide, where a container query makes them vertical.
+
+Previous, next and current-period navigation share the same renderer and delegated binding on account and shared pages. The current-period action reads the clock when clicked and retains the selected view. Its visible text, title and accessible label always follow the selected view, independent of panel width. Compact layouts may show an icon but retain the view-specific accessible label. Month arrows select the first day of the adjacent month so month-end dates cannot skip a month; year arrows select January 1 of the adjacent year.
 
 ### Readable Mobile Content
 

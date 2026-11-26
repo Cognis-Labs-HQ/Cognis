@@ -1,6 +1,6 @@
 # SAML Sign In
 
-This sign-in method needs an additional deployment integration before it can work. Completing the settings form alone does not connect an identity service.
+SAML provides an external identity sign-in option for deployments with a configured protocol integration.
 
 ## What You Can Do
 

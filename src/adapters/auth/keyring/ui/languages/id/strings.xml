@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<strings>
+<resources>
   <string name="adapter.auth.keyring.unlock_title">Buka keyring</string>
   <string name="adapter.auth.keyring.unlock_message">{{component}} meminta akses ke gantungan kunci untuk {{action}} {{process}}.</string>
   <string name="adapter.auth.keyring.unlock_prompt">Masukkan kata sandi gantungan kunci untuk melanjutkan.</string>
@@ -97,4 +97,4 @@
   <string name="gateway.auth.keyring.unavailable">Gantungan kunci tidak tersedia. Coba lagi setelah koneksi pulih.</string>
   <string name="adapter.auth.keyring.config.maximum_vault_size">Ukuran Maksimum Brankas (MiB)</string>
   <string name="adapter.auth.keyring.config.derivation_iterations">Iterasi Derivasi Kata Sandi</string>
-</strings>
+</resources>

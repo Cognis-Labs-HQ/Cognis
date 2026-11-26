@@ -164,7 +164,7 @@ Auth veröffentlicht `session:isOfflineValid` als synchrone, netzwerkfreie Insta
 
 ### Kontogebundene Warteschlangen
 
-Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/api/technical).
+Dieses Verhalten beschreibt der [gemeinsame Vertrag](/docs/ui/technical).
 
 ### Begrenzte SSO-Registrierungsversuche
 

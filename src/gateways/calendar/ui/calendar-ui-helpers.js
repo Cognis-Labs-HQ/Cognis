@@ -706,7 +706,7 @@ function renderMonthGrid(events, currentDate, i18n, currentAccountId = null) {
         const weekEnd = addDays(weekStart, 7);
         const weekNumber = getISOWeekNumber(weekStart);
         rows.push(`<tr class="calendar-month-row">
-      <th scope="row"><button type="button" class="calendar-week-jump" data-week-row-date="${weekStart.toISOString()}" title="${escapeHtml(i18n.t("gateway.calendar.open_week_view"))}">${i18n.t("gateway.calendar.week_number_prefix")}${weekNumber}</button></th>
+      <th scope="row"><div class="calendar-week-number"><button type="button" class="calendar-week-jump" data-week-row-date="${weekStart.toISOString()}" title="${escapeHtml(i18n.t("gateway.calendar.open_week_view"))}">${i18n.t("gateway.calendar.week_number_prefix")}${weekNumber}</button></div></th>
       ${Array.from({ length: 7 }, (_, dayIndex) => {
           const day = addDays(weekStart, dayIndex);
           const dayStart = startOfDay(day);

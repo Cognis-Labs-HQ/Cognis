@@ -1,3 +1,4 @@
+import { canLoadOwnProfile } from "./session-policy.js";
 import { createOfflineReadCache } from "/static/reuse/offline-read-cache.js";
 import { bindOfflineSnapshotRefresh } from "/static/reuse/offline-snapshot.js";
 import { captureAccountGuard } from "/static/reuse/offline-identity.js";
@@ -104,6 +105,7 @@ export function registerOwnProfileOffline(ctx, request, transport) {
         id: "profile:prepareOwnSnapshot",
         refresh: async () => {
             prepared = false;
+            if (!canLoadOwnProfile(ctx)) return;
             const assertAccount = captureAccountGuard();
             const response = await request("/api/v1/social/profile", {
                 signal: ctx.signal,

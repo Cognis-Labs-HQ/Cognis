@@ -80,11 +80,13 @@ Pengaturan Keyring membaca status terkini saat bagian ditampilkan, termasuk kunj
 
 Konfigurasi Keyring mendeklarasikan paket bahasanya sendiri serta label terlokalisasi untuk ukuran maksimum brankas dan iterasi derivasi kata sandi. Popup Administrasi bersama menerjemahkan label tersebut melalui sumber daya XML yang sama dengan adaptor.
 
+Notifikasi siklus hidup keyring, kontrol pembukaan kunci, dan label Pengaturan dimuat dari katalog milik adaptor `ui/languages/<locale>/strings.xml`. Katalog memakai akar dokumen runtime `<resources>`; pembuatan keyring tamu menggunakan pesan siklus hidup terlokalisasi yang sama dengan keyring akun. Resolver dibuat ulang untuk bahasa antarmuka saat ini pada setiap penggunaan, sementara host menggabungkan dan menyimpan paket valid. Pemuatan katalog yang gagal dapat dicoba kembali tanpa mempertahankan salinan permanen dengan kunci yang hilang.
+
 ## Keamanan
 
 ### Privasi akun dan isolasi keyring
 
-Perilaku ini dijelaskan dalam [kontrak bersama](/docs/api/technical).
+Perilaku ini dijelaskan dalam [kontrak bersama](/docs/ui/technical).
 
 ### Akses yang dibatalkan dan pemulihan manual
 

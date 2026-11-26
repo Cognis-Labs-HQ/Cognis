@@ -12,6 +12,8 @@ Each share supplies accessControls, expiry and optional password protection. all
 
 ## Behavior
 
+Popup styles resolve image assets relative to the stylesheet within the adapter’s published static directory. The mail icon remains owned and served by this adapter.
+
 ### Link sharing adapter
 
 The adapter declares the Link popup with `navbarPlugins`, including its provided capabilities. The gateway loads declared contributions and disables them with their owning adapter.

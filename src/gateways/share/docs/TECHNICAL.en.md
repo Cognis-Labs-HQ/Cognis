@@ -18,6 +18,8 @@ Shareable manifests declare renderer and guest API scopes. Each share records pe
 
 ## Behavior
 
+Authentication reuses the resolved session for the same share and account identity. Concurrent requests share one resolution and password prompt; an unlocked guest keyring is reused. Leaving the share, switching accounts or revoking access invalidates pending or cached resolution. Cancellation and failed activation allow a later retry.
+
 ### Share browser client
 
 Adapter navbar providers are declared by the owning adapter and follow its enabled state. Sender discovery uses `notify:listSenders`, without receiving the Notification Gateway implementation. Periodic Share maintenance stops on gateway disable and resumes on activation.
@@ -56,13 +58,15 @@ Guest component windows also receive the active Share context as a provider moun
 
 ### Guest Sessions
 
-When a share token is resolved, the Share gateway now issues a short-lived guest access token (`purpose: share`) bound to that share record (`sub: share:<shareId>`). The share page temporarily swaps this token into `localStorage` so API calls made by mounted shared pages run as an anonymous guest session, then restores the previous token on unload. After the scoped guest token is active, the Share page loads host UI capability providers before importing the resource renderer, so shared components can consume declared capabilities such as profile-avatar rendering.
+When a share token is resolved, the Share gateway issues a short-lived guest access token (`purpose: share`) bound to that share record (`sub: share:<shareId>`). The share page temporarily swaps this token into `localStorage` so API calls made by mounted shared pages run as an anonymous guest session, then restores the previous token on unload. After the scoped guest token is active, the Share page loads host UI capability providers before importing the resource renderer, so shared components can consume declared capabilities such as profile-avatar rendering.
 
 Anonymous guests never unlock an account keyring. Share activates the delivered guest keyring with its server-issued session material, keeps it unlocked without a user password for the guest session, and deletes its session-only encrypted vault when that session ends. Account keyring lookup and persistence remain available only when the visitor entered with a validated non-guest account session, including after a guest page refresh.
 
 ### Share Controls
 
-Share records now carry gateway-owned access controls: read/write permissions, typed recipients for in-app users, groups/classes, and email recipients, optional password protection, and a readonly watermark flag. The Share gateway exposes generic token create/update routes so modules request a share through `ctx` or `/api/v1/share/tokens` and do not own recipient delivery or permission editing. Readonly shares default to watermarking, while write-enabled shares clear that default unless a caller explicitly keeps it. The gateway-owned button renderer always pairs the canonical share icon with the localized Share label.
+Share records carry gateway-owned access controls: read/write permissions, typed recipients for in-app users, groups/classes, and email recipients, optional password protection, and a readonly watermark flag. The Share gateway exposes generic token create/update routes so modules request a share through `ctx` or `/api/v1/share/tokens` and do not own recipient delivery or permission editing. Readonly shares default to watermarking, while write-enabled shares clear that default unless a caller explicitly keeps it. The gateway-owned button renderer always pairs the canonical share icon with the localized Share label.
+
+`PATCH /api/v1/share/tokens/:id` preserves `grantedCapabilities` when omitted and replaces it when an array is supplied; `[]` revokes every grant. Recipient, password and adapter restrictions still apply. Resource owners reconcile delivered access after updates and authorize requests against current grants.
 
 ### Share Method Adapters
 
@@ -70,7 +74,7 @@ The popup discovers sharing methods from Share gateway adapters and displays the
 
 ### Expiry and Protection
 
-Both built-in methods accept an optional exact expiry date and time; leaving it unset creates a non-expiring share. Password hashing and verification remain owned by the Share gateway. Resource components may provide Link access modes with method-specific permissions and granted capabilities.
+Both built-in methods accept an optional exact expiry date and time. An empty expiry is unlimited; malformed nonempty values deny access. Direct-user authorization checks the current expiry on every access, including retained and password-unlocked grants. Password hashing and verification remain owned by the Share gateway. Resource components may provide Link access modes with method-specific permissions and granted capabilities.
 
 ### Recipient delivery feedback and password aliases
 

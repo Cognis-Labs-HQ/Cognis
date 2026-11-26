@@ -261,7 +261,7 @@ Das Öffnen von Details über Direktlinks, Beziehungen oder Vor-/Zurück-Navigat
 
 Optionale Einzelauswahlfelder enthalten die lokalisierte Auswahl **Nicht angegeben**. Beim Bearbeiten einer nicht eingestuften Karte bleibt ihre unbekannte Schwierigkeit erhalten, statt stillschweigend die erste Stufe zu wählen.
 
-Implementierungsnachweis: [`1eae7cd32a771b2d5cab37e5e1b9a981851ca3ab`](https://github.com/Cognis-Labs-HQ/Cognis/commit/1eae7cd32a771b2d5cab37e5e1b9a981851ca3ab).
+Implementierungsnachweis: [`1eae7cd`](https://github.com/Cognis-Labs-HQ/Cognis/commit/1eae7cd32a771b2d5cab37e5e1b9a981851ca3ab).
 
 Die Stapelseitenleiste scrollt innerhalb der sichtbaren Seitenhöhe unabhängig. Lange Stapellisten verlängern die Seite nicht und schieben die Übung nicht nach unten.
 
@@ -269,11 +269,11 @@ Seitenüberlagerungen werden am Dokumentkörper eingehängt, damit Hintergrundfi
 
 Beim Öffnen eines anderen Stapels wird dessen Inhalt sofort sichtbar; die Rückkehr von Explore erhält die gespeicherte Übungsposition.
 
-Implementierungsnachweis: [`23555ea0ac51246cd349ad1534991d78c4810f2a`](https://github.com/Cognis-Labs-HQ/Cognis/commit/23555ea0ac51246cd349ad1534991d78c4810f2a).
+Implementierungsnachweis: [`23555ea`](https://github.com/Cognis-Labs-HQ/Cognis/commit/23555ea0ac51246cd349ad1534991d78c4810f2a).
 
 Lesezugriffe auf den Wörterbuchsuchkontext verwenden `study:library:readSearchContext` mit Autorisierung und Auflösung. Schreibzugriffe behalten `study:library:searchContext` und prüfen Eingaben vor dem Speichern; Erweiterungen können sie vor der Dienstvalidierung anpassen. Beide Vorgänge weisen Identitäten geteilter Links zurück. Schreibzugriffe stoppen bei 16 KiB mit HTTP 413; fehlerhaftes JSON liefert HTTP 400 und ersetzt keinen gespeicherten Zustand. Unerwartete Fehler geben nur einen stabilen Fehlercode zurück.
 
-Implementierungsnachweis: [`d88441ce8a0bedb3c6c03488b0ad7ede5a2fdfac`](https://github.com/Cognis-Labs-HQ/Cognis/commit/d88441ce8a0bedb3c6c03488b0ad7ede5a2fdfac).
+Implementierungsnachweis: [`d88441c`](https://github.com/Cognis-Labs-HQ/Cognis/commit/d88441ce8a0bedb3c6c03488b0ad7ede5a2fdfac).
 
 ## Komponentengrenzen und Laufzeit
 
@@ -287,4 +287,4 @@ Mitteilungen über neue und entfernte Library-Inhalte enthalten englische, deuts
 
 Browsertests laden echte Modulexporte mit ausdrücklich vorgegebenen Abhängigkeiten über gemeinsame Testwerkzeuge. Editor-, Zeichen- und Ablaufprüfungen verwenden öffentliche Aktionen statt extrahierter privater Funktionen. Flashcards nutzt direkt ein eigenes Modul für den Stapel-Editor.
 
-Implementierung: [b2bbcf43ddfcdcfa9ae780cf33aab1c7527a2f61](https://github.com/Cognis-Labs-HQ/Cognis/commit/b2bbcf43ddfcdcfa9ae780cf33aab1c7527a2f61).
+Implementierung: [b2bbcf4](https://github.com/Cognis-Labs-HQ/Cognis/commit/b2bbcf43ddfcdcfa9ae780cf33aab1c7527a2f61).

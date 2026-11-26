@@ -52,7 +52,7 @@ test("reading reminder selections returns all checked values and preserves empty
 test("custom reminder labels use locale catalogs with English fallback and explicit missing-key failure", async () => {
     const { readFile } = await import("node:fs/promises");
     const { installI18nEnvironment } =
-        await import("../../../../ui/reuse/tests/fixtures/i18n-environment.js");
+        await import("../../../../tooling/reuse/i18n-environment.js");
     async function translations(locale, omitted = []) {
         installI18nEnvironment(async (path) => {
             const language = path.split("/").at(-2);

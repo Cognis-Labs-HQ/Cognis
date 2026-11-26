@@ -1,3 +1,4 @@
+import { calendarSharePermission } from "../reuse/share-permission.js";
 import path from "node:path";
 import {
     registerCanonicalFlow,
@@ -260,6 +261,13 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             expiresAt: string;
         }) => {
             if (delivery.resourceType !== "calendar") return null;
+            const permission = calendarSharePermission(
+                delivery.grantedCapabilities,
+            );
+            if (!permission) {
+                await removeDeliveredCalendarShare(delivery.shareId);
+                return null;
+            }
             if (delivery.ownerAccountId === delivery.recipientAccountId) {
                 return {
                     navigationUrl: `/calendar?calendarId=${encodeURIComponent(delivery.resourceId)}`,
@@ -293,11 +301,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 ownerCalendarId: delivery.resourceId,
                 recipientAccountId: delivery.recipientAccountId,
                 recipientCalendarId,
-                permission: delivery.grantedCapabilities.includes(
-                    "calendar:write",
-                )
-                    ? "write"
-                    : "read",
+                permission,
                 expiresAt: delivery.expiresAt,
             });
             scheduleCalendarShareExpiry(delivery.shareId, delivery.expiresAt);
@@ -307,11 +311,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 operation: "deliver_user_share",
                 calendarId: delivery.resourceId,
                 recipientAccountId: delivery.recipientAccountId,
-                permission: delivery.grantedCapabilities.includes(
-                    "calendar:write",
-                )
-                    ? "write"
-                    : "read",
+                permission,
             });
             return {
                 navigationUrl: `/calendar?calendarId=${encodeURIComponent(recipientCalendarId)}`,
@@ -740,6 +740,13 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 ) {
                     return null;
                 }
+                const permission = calendarSharePermission(
+                    updatedToken.grantedCapabilities,
+                );
+                if (!permission) {
+                    await removeDeliveredCalendarShare(updatedToken.id);
+                    return { reconciled: true, deliveredCount: 0 };
+                }
                 const recipientIds = new Set(
                     (updatedToken.accessControls?.recipients ?? [])
                         .filter((recipient) => recipient.type === "user")
@@ -765,11 +772,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                         recipientDisplayName:
                             deliveredShare.recipientDisplayName,
                         recipientAvatarKey: deliveredShare.recipientAvatarKey,
-                        permission: updatedToken.grantedCapabilities?.includes(
-                            "calendar:write",
-                        )
-                            ? "write"
-                            : "read",
+                        permission,
                         expiresAt: String(updatedToken.expiresAt ?? ""),
                     });
                 }

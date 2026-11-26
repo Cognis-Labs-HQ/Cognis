@@ -3,6 +3,7 @@ import { readFileSync, lstatSync } from "node:fs";
 import { dirname, relative, resolve, sep } from "node:path";
 import structure from "./structure.json" with { type: "json" };
 import { contentIssues } from "./content.js";
+import { markdownLayout } from "./markdown-layout.js";
 
 export const languages = Object.keys(structure);
 export const documents = {
@@ -11,39 +12,20 @@ export const documents = {
     technical: "TECHNICAL",
 };
 
+export const coreDocuments = { ...documents, readme: "INFO" };
+
 export function documentName(kind, language) {
     return `${documents[kind]}.${language}.md`;
 }
 
 export function validateMarkdown(markdown, kind, language) {
-    const issues = [];
-    let fence = "";
-    const prose = markdown
-        .split("\n")
-        .filter((line) => {
-            const marker = line.match(/^\s*(`{3,}|~{3,})/);
-            if (marker && !fence) {
-                fence = marker[1];
-                return true;
-            }
-            if (
-                marker &&
-                marker[1][0] === fence[0] &&
-                marker[1].length >= fence.length
-            ) {
-                fence = "";
-                return false;
-            }
-            return !fence;
-        })
-        .map((line) => (/^\s*(`{3,}|~{3,})/.test(line) ? "Code example" : line))
-        .join("\n");
-    if (fence) issues.push("Unclosed code fence");
+    const { prose, issues, hasCode } = markdownLayout(markdown);
     issues.push(...contentIssues(prose));
     const headings = [...prose.matchAll(/^(#{1,6})\s+(.+)$/gm)];
     if (
         headings.filter((heading) => heading[1] === "#").length !== 1 ||
-        !/^# [^\n]+\n/.test(markdown)
+        !/^# [^\n]+\n/.test(markdown) ||
+        !headings[0]?.[2].trim()
     )
         issues.push("Start with exactly one H1");
     if ((headings[0]?.[2].length ?? 0) > 30)
@@ -59,9 +41,24 @@ export function validateMarkdown(markdown, kind, language) {
             issues.push(`Skipped heading level: ${headings[index][2]}`);
     }
     const firstSection = prose.indexOf("\n## ");
-    if (!prose.slice(prose.indexOf("\n") + 1, firstSection).trim())
+    const introduction = prose
+        .slice(prose.indexOf("\n") + 1, firstSection)
+        .trim();
+    if (
+        !introduction ||
+        /^(?:Code example|#{1,6}\s|[-*+]\s|\d+[.)]\s|[>|]| {4}|\t)/.test(
+            introduction,
+        )
+    )
         issues.push("Missing introductory paragraph");
-    for (const section of prose.split(/^## .+$/m).slice(1)) {
+    for (let index = 1; index < headings.length; index++) {
+        const heading = headings[index];
+        const end =
+            headings
+                .slice(index + 1)
+                .find((next) => next[1].length <= heading[1].length)?.index ??
+            prose.length;
+        const section = prose.slice(heading.index + heading[0].length, end);
         if (!section.replace(/^#{3,6} .+$/gm, "").trim())
             issues.push("Empty section");
     }
@@ -86,13 +83,13 @@ export function validateMarkdown(markdown, kind, language) {
         issues.push("Release history belongs in the branch changelog");
     if (
         kind === "readme" &&
-        (/```/.test(markdown) ||
+        (hasCode ||
             /\/api\/v\d|ctx\.capabilities|\b(?:GET|POST|PUT|PATCH|DELETE)\s+\//.test(
                 markdown,
             ))
     )
         issues.push(
-            "README is for non-technical readers; move code and endpoints to TECHNICAL",
+            "README is for non-technical readers; move examples to USAGE and endpoints to TECHNICAL",
         );
     return issues;
 }
@@ -113,7 +110,7 @@ export function validateComponent(manifestPath, docsDirectory = "docs") {
         ];
     for (const kind of Object.keys(documents)) {
         const name = core
-            ? `${{ readme: "index", usage: "usage", technical: "technical" }[kind]}.en.md`
+            ? `${coreDocuments[kind]}.en.md`
             : documentName(kind, "en");
         if (pointers[kind] !== `${docsDirectory}/${name}`) {
             issues.push(
@@ -126,7 +123,7 @@ export function validateComponent(manifestPath, docsDirectory = "docs") {
                 root,
                 docsDirectory,
                 core
-                    ? `${{ readme: "index", usage: "usage", technical: "technical" }[kind]}.${language}.md`
+                    ? `${coreDocuments[kind]}.${language}.md`
                     : documentName(kind, language),
             );
             try {
@@ -159,7 +156,7 @@ export function validateComponent(manifestPath, docsDirectory = "docs") {
             excludeDirectories: [],
         })) {
             if (
-                path.endsWith(".md") &&
+                /\.md$/i.test(path) &&
                 !path.includes(`${sep}changelog${sep}`) &&
                 !allowed.has(relative(resolve(root, docsDirectory), path))
             )
@@ -177,10 +174,10 @@ export function validateCoreDocumentation(directory) {
     const issues = [];
     const paths = sourceFiles(directory, { excludeDirectories: [] }).filter(
         (path) =>
-            path.endsWith(".md") && !path.includes(`${sep}changelog${sep}`),
+            /\.md$/i.test(path) && !path.includes(`${sep}changelog${sep}`),
     );
     const folders = new Set(paths.map(dirname));
-    const names = { readme: "index", usage: "usage", technical: "technical" };
+    const names = coreDocuments;
     const allowed = new Set(
         Object.values(names).flatMap((name) =>
             languages.map((language) => `${name}.${language}.md`),

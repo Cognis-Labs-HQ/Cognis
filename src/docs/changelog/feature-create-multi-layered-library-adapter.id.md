@@ -261,7 +261,7 @@ Membuka detail melalui tautan langsung, relasi, atau navigasi sebelumnya/berikut
 
 Kolom pilihan tunggal opsional menyertakan pilihan **Belum ditentukan** yang dilokalkan. Mengedit kartu tanpa klasifikasi tetap mempertahankan tingkat yang belum diketahui alih-alih otomatis memilih tingkat pertama.
 
-Referensi implementasi: [`1eae7cd32a771b2d5cab37e5e1b9a981851ca3ab`](https://github.com/Cognis-Labs-HQ/Cognis/commit/1eae7cd32a771b2d5cab37e5e1b9a981851ca3ab).
+Referensi implementasi: [`1eae7cd`](https://github.com/Cognis-Labs-HQ/Cognis/commit/1eae7cd32a771b2d5cab37e5e1b9a981851ca3ab).
 
 Menu samping dek bergulir sendiri dalam tinggi halaman yang terlihat. Daftar dek panjang tidak memperpanjang halaman atau mendorong latihan ke bawah layar.
 
@@ -269,11 +269,11 @@ Overlay halaman dipasang pada badan dokumen agar posisi viewport tidak dipengaru
 
 Membuka dek lain langsung menampilkan kontennya; kembali dari Explore mempertahankan posisi latihan tersimpan.
 
-Referensi implementasi: [`23555ea0ac51246cd349ad1534991d78c4810f2a`](https://github.com/Cognis-Labs-HQ/Cognis/commit/23555ea0ac51246cd349ad1534991d78c4810f2a).
+Referensi implementasi: [`23555ea`](https://github.com/Cognis-Labs-HQ/Cognis/commit/23555ea0ac51246cd349ad1534991d78c4810f2a).
 
 Pembacaan konteks pencarian kamus memakai `study:library:readSearchContext` dengan tahap otorisasi dan resolusi. Penulisan tetap memakai `study:library:searchContext` dengan validasi sebelum penyimpanan agar ekstensi alur dapat menyesuaikan masukan sebelum validasi layanan. Kedua operasi menolak identitas tautan berbagi. Penulisan berhenti pada 16 KiB dengan HTTP 413; JSON rusak mengembalikan HTTP 400 tanpa mengganti status tersimpan. Kegagalan tak terduga hanya menampilkan kode kesalahan stabil.
 
-Referensi implementasi: [`d88441ce8a0bedb3c6c03488b0ad7ede5a2fdfac`](https://github.com/Cognis-Labs-HQ/Cognis/commit/d88441ce8a0bedb3c6c03488b0ad7ede5a2fdfac).
+Referensi implementasi: [`d88441c`](https://github.com/Cognis-Labs-HQ/Cognis/commit/d88441ce8a0bedb3c6c03488b0ad7ede5a2fdfac).
 
 ## Isolasi dan siklus komponen
 
@@ -287,4 +287,4 @@ Pengumuman konten dan penghapusan Library memuat teks bahasa Inggris, Jerman, In
 
 Pengujian peramban memuat ekspor modul sebenarnya dengan pengganti dependensi eksplisit melalui perkakas bersama. Pemeriksaan editor, menggambar, dan alur menggunakan operasi publik, bukan mengekstrak fungsi privat. Flashcards langsung memakai modul tersendiri untuk editor dek.
 
-Implementasi: [b2bbcf43ddfcdcfa9ae780cf33aab1c7527a2f61](https://github.com/Cognis-Labs-HQ/Cognis/commit/b2bbcf43ddfcdcfa9ae780cf33aab1c7527a2f61).
+Implementasi: [b2bbcf4](https://github.com/Cognis-Labs-HQ/Cognis/commit/b2bbcf43ddfcdcfa9ae780cf33aab1c7527a2f61).

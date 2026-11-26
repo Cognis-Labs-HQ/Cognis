@@ -31,7 +31,7 @@ export function documentationBundleFiles(root) {
     return sourceFiles(resolve(root, "src")).filter(
         (path) =>
             /\/docs\//.test(path) &&
-            /\/(?:README|USAGE|TECHNICAL|index|usage|technical)(?:\.(?:en|de|id|ja))?\.md$/.test(
+            /\/(?:README|INFO|USAGE|TECHNICAL)(?:\.(?:en|de|id|ja))?\.md$/.test(
                 path,
             ) &&
             !path.includes("/changelog/"),
@@ -39,9 +39,35 @@ export function documentationBundleFiles(root) {
 }
 
 export function contentIssues(prose) {
-    return emptyGuidance.some((pattern) => pattern.test(prose))
+    const issues = emptyGuidance.some((pattern) => pattern.test(prose))
         ? ["Replace generic guidance with component-specific documentation"]
         : [];
+    if (
+        /\b(?:now (?:use|uses|means|record|accept|supports?|traverse|issues?|carry|validates?|register|return|reveals?|evaluates?|show|scroll|applies|rejects?|share|produce|separates?|expose|retain|provide|render|stops?|occupy|shares|begin|keep|opens?|commits?|enforce|fills?)|no longer|older .+ still work|previous(?:ly)? (?:used|returned|supported))\b/i.test(
+            prose,
+        )
+    ) {
+        issues.push(
+            "Describe the current contract without release comparisons",
+        );
+    }
+    if (
+        /\b(?:retain|keep|preserve)s? (?:the )?same (?:topic )?(?:slugs|URLs|filenames)\b|\b(?:after|before) (?:this|the) (?:change|rename|refactor|fix)\b/i.test(
+            prose,
+        )
+    ) {
+        issues.push(
+            "State the concrete document identity contract without rename history",
+        );
+    }
+    if (
+        /\b(?:jetzt|nun) (?:verwendet|nutzt|bedeutet|unterstützt|liefert|stellt|enthalten|gilt|wertet|zeigen|öffnet|prüft|übernimmt)\b|\b(?:kini|sekarang) (?:menggunakan|memakai|mendukung|memiliki)\b|ようになりました|変更前と同じ/i.test(
+            prose,
+        )
+    ) {
+        issues.push("Keep localized references free of release chronology");
+    }
+    return issues;
 }
 
 export function sourceReferenceIssues(markdown, root) {
@@ -54,6 +80,14 @@ export function sourceReferenceIssues(markdown, root) {
                 `GitHub file links must follow the default branch through HEAD: ${match[0]}`,
             );
     }
+    for (const match of markdown.matchAll(
+        /https:\/\/github\.com\/Cognis-Labs-HQ\/Cognis\/(?:blob|raw)\/HEAD\/([^\s)<>"`#?]+)/g,
+    )) {
+        const source = decodeURIComponent(match[1]);
+        const target = resolve(root, source);
+        if (!target.startsWith(resolve(root) + "/") || !existsSync(target))
+            issues.push(`GitHub source target does not exist: ${source}`);
+    }
     const paths = new Set(
         [
             ...markdown.matchAll(/`(src\/[\w./-]+\.(?:ts|js|html|css|json))`/g),
@@ -65,4 +99,53 @@ export function sourceReferenceIssues(markdown, root) {
             .filter((path) => !existsSync(resolve(root, path)))
             .map((path) => `Documented source does not exist: ${path}`),
     ];
+}
+
+export function changelogFiles(root) {
+    return sourceFiles(resolve(root, "src")).filter((path) =>
+        /\/docs\/changelog\/[^/]+\.md$/.test(path),
+    );
+}
+
+export function changelogLinkIssues(markdown) {
+    const labels = [
+        ...[...markdown.matchAll(/\[([^\]\n]+)\](?=[ \t]*(?:\(|\[|:))/g)].map(
+            (match) => match[1],
+        ),
+        ...[...markdown.matchAll(/<a\b[^>]*>([\s\S]*?)<\/a>/gi)].map(
+            (match) => ({ html: match[1] }),
+        ),
+    ];
+    return labels.some((label) =>
+        typeof label === "string"
+            ? /[0-9a-f]{40,}/i.test(label)
+            : containsFullHtmlCommit(label.html),
+    )
+        ? [
+              "Changelog link text must use a short commit reference, never a full SHA",
+          ]
+        : [];
+}
+
+function containsFullHtmlCommit(html) {
+    let insideTag = false;
+    let quote = "";
+    let digits = 0;
+    for (const character of html) {
+        if (character === "<") {
+            insideTag = true;
+            continue;
+        }
+        if (insideTag) {
+            if (quote) {
+                if (character === quote) quote = "";
+            } else if (character === '"' || character === "'") {
+                quote = character;
+            } else if (character === ">") insideTag = false;
+            continue;
+        }
+        digits = /[0-9a-f]/i.test(character) ? digits + 1 : 0;
+        if (digits >= 40) return true;
+    }
+    return false;
 }
