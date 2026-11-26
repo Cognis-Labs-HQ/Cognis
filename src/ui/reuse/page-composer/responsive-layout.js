@@ -1,10 +1,21 @@
 /**
- * Adapts composer presentation to its available content width.
- * Exports isCompactComposer for container sizing and stackComposerPlacements
- * for a full-width presentation without changing saved layouts.
- * fitComposerPanel keeps floating editor actions inside the viewport.
- * resolveComposerResize distinguishes pixel redraws from logical grid changes.
- * @example const visible = stackComposerPlacements(placements, columns);
+ * Adapts composer presentation and editor panels to available content space.
+ *
+ * Public exports:
+ *   COMPOSER_COMPACT_BREAKPOINT — maximum compact content width in CSS pixels.
+ *   COMPOSER_MEDIUM_BREAKPOINT — maximum medium content width in CSS pixels.
+ *   COMPOSER_DRAWER_BREAKPOINT — content width boundary for the toolbar drawer.
+ *   isCompactWidth(width) — tests a measured width against the compact boundary.
+ *   isCompactComposer(container, stackAt) — measures the container at a stacking boundary.
+ *   stackComposerPlacements(placements, columns) — returns independent full-width placements.
+ *   fitComposerPanel(panel) — clamps a mounted editor panel within the viewport.
+ *   resolveComposerResize(previous, next, editing) — distinguishes redraw from grid reflow.
+ *
+ * Usage:
+ *   const visible = isCompactComposer(contentGrid)
+ *     ? stackComposerPlacements(layout.placements, columns)
+ *     : layout.placements;
+ *   fitComposerPanel(elementsPanel);
  */
 
 export const COMPOSER_COMPACT_BREAKPOINT = 640;

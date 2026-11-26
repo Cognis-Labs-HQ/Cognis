@@ -6,6 +6,17 @@ Page Composer mengelola tata letak elemen, tampilan responsif, siklus hidup DOM,
 
 createPageComposer(root, options) membuat siklus halaman. Elemen memasok konten dan callback; init memasang shell dan refresh memperbarui deskriptor.
 
+Helper editor milik Composer menyediakan kontrak berikut. Header sumbernya memuat contoh pemanggilan; halaman biasanya menggunakannya melalui `createPageComposer`.
+
+| Helper                                                                                                                              | Kontrak                                                                                                                     |
+| ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| [`createLayoutSaveHandler`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/layout-save.js)           | Membuat handler penyimpanan bertahap yang menggabungkan permintaan; lihat kontrak persistensi di bawah.                     |
+| [`commitLayoutEdit`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/layout-save.js)                  | Menerapkan state editor dengan interaksi terlindungi dan kegagalan yang dapat dicoba kembali.                               |
+| [`bindComposerPointerDrag`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/pointer-drag.js)          | Mengelola penangkapan penunjuk, pengguliran tepi, pelepasan/pembatalan, dan pembersihan gerakan.                            |
+| [`RESIZE_EDGES / resizePlacement`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/resize-model.js)   | Mendeskripsikan delapan tepi/sudut dan menghitung geometri terbatas yang mengikuti grid tanpa memeriksa tabrakan.           |
+| [`resolveResizeAvailability`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/resize-availability.js) | Menghasilkan kursor CSS arah yang tersedia atau `null` untuk setiap tepi/sudut.                                             |
+| [`appendResizeControls`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/resize-controls.js)          | Menghubungkan geometri dan pemeriksaan tabrakan dari pemilik ke pratinjau ukuran dan perubahan penempatan; tidak menyimpan. |
+
 ## Konfigurasi
 
 createPageComposer menerima elements, pageManifest, i18n, signal, dan opsi tata letak. Elemen viewport mengikuti kontrak responsif; preferensi memakai preferenceKey.
@@ -49,8 +60,6 @@ Sebuah elemen adalah blok konten bernama:
 
 Editor utama dan bersarang berbagi pengubahan ukuran delapan arah melalui `resize-model.js` dan `resize-controls.js`. Pegangan kiri dan atas menggeser titik awal sambil mempertahankan tepi yang berlawanan. Perubahan posisi penunjuk mengikuti satuan grid; batas ukuran, batas grid, dan pemeriksaan tabrakan berlaku untuk semua arah. Target sentuh tetap 44px; kontrol hapus digeser ke dalam agar pegangan sudut tetap dapat dijangkau.
 
-Penulisan tata letak menggunakan `ui:pageComposer:saveLayout` dengan tahap `validate`, `persist`, dan `notify`. Penyimpanan bersamaan untuk kunci preferensi yang sama berbagi satu snapshot permintaan yang tidak berubah. Selesai, pintasan tata letak, dan Atur Ulang menampilkan notifikasi sukses atau gagal yang dilokalkan. Kesalahan HTTP dan sesi yang tidak tersedia tidak boleh dilaporkan berhasil. Kontrol pengeditan dinonaktifkan selama penyimpanan; kegagalan memulihkan perubahan tertunda dan mempertahankan editor untuk mencoba kembali. Pembatalan halaman membatalkan penyimpanan dan mencegah notifikasi terlambat. Diagnostik menggunakan `ui:log`.
-
 Baris kisi yang dapat disunting memiliki tinggi dasar 90 px; kolom berbagi lebar konten yang tersedia dengan jarak 8 px antarjalur. `gridSize.max: 'full'` merentangkan elemen di semua kolom yang tersedia.
 
 Mode penyuntingan menggunakan baris tetap dan geometri piksel yang memperhitungkan jarak untuk kartu, pratinjau seret, dan pegangan pengubahan ukuran, termasuk penempatan setengah kisi. Konten gulir menyediakan ruang bilah gulir sebelum pengukuran; koordinat penunjuk tidak menyertakan inset konten bersama. Panel Elemen menyesuaikan lebar dengan isinya dalam batas layar. Lebar terukur menentukan posisi awal dan pembatasan posisi berikutnya.
@@ -69,7 +78,15 @@ Parkir DOM dinonaktifkan secara bawaan. Tetapkan `enableDomParking: true` pada p
 
 ### Persistensi
 
-Layout tetap disimpan melalui API preferensi menggunakan `preferenceKey`. Selain itu, draf formulir disimpan di `localStorage` per pengguna, path halaman, dan kunci composer agar input tetap muncul setelah halaman dimuat ulang atau setelah render ulang responsif. Penyimpanan draf formulir yang persisten bersifat opt-in: hanya field yang leluhur terdekatnya memiliki atribut `data-composer-include-form-memory="true"` yang ditulis ke localStorage. Field tanpa leluhur opt-in tetap diambil dalam snapshot sementara di memori agar bertahan selama render ulang responsif dalam sesi yang sama, namun tidak pernah ditulis ke penyimpanan persisten. Field sensitif (`password`, `file`, `hidden`, dan pengenal yang memuat `password`/`secret`/`token`) selalu dikecualikan dari penyimpanan draf persisten terlepas dari status opt-in.
+Penulisan tata letak menggunakan `ui:pageComposer:saveLayout` dengan tahap `validate`, `persist`, dan `notify`. Penyimpanan bersamaan untuk kunci preferensi yang sama berbagi satu snapshot permintaan yang tidak berubah. Selesai, pintasan tata letak, dan Atur Ulang menampilkan notifikasi sukses atau gagal yang dilokalkan. Kesalahan HTTP dan sesi yang tidak tersedia tidak boleh dilaporkan berhasil. Kontrol pengeditan dinonaktifkan selama penyimpanan; kegagalan memulihkan perubahan tertunda dan mempertahankan editor untuk mencoba kembali. Pembatalan halaman membatalkan penyimpanan dan mencegah notifikasi terlambat. Diagnostik menggunakan `ui:log`.
+
+`createLayoutSaveHandler({ctx, save, notify, i18n, signal})` menghasilkan `update(key, profiles, columns, layout)`. Fungsi `save(key, profiles, columns, layout, signal)` yang diinjeksi harus menghasilkan profil terbaru dan menolak penulisan yang gagal. `update` menghasilkan profil tersebut atau `null` jika penyimpanan gagal/halaman dibatalkan; kesalahan alur dan terjemahan tetap diteruskan. ctx harus mendukung pendaftaran/eksekusi alur dan kapabilitas. `notify` memakai tanda tangan toast bersama; `i18n.t` menyediakan kunci sukses/gagal.
+
+`commitLayoutEdit({state, prepare, save, finish?, render})` memerlukan `state.layout` yang dapat dikloning, penanda `editing`/`saving` yang dapat diubah, dan callback yang memakai state yang sama. Fungsi ini mengelola `layoutSnapshot`; `container` atau `contentGrid`, `elementsPanel`, dan `signal` opsional mengatur interaksi dan masa hidup halaman. `prepare()` bersifat sinkron. `save()` harus menghasilkan boolean dan memperbarui profil pemilik saat berhasil. Hasil false memulihkan tata letak sebelum prepare; true memperbarui snapshot dan mengakhiri pengeditan hanya jika `finish` diberikan. Kesalahan callback yang tidak diharapkan diteruskan setelah interaksi dipulihkan.
+
+Tata letak memakai `PUT /api/v1/social/users/:accountId/preferences/:preferenceKey` dengan isi `{ layout: profiles }`. `profiles.layoutsByGrid` memetakan kunci `cols-<count>` ke tata letak `{ placements: [{id, col, row, w, h}], hidden: [] }`. GET yang sesuai mengembalikan profil terserialisasi dalam `data.layoutJson`. Penyimpanan memerlukan akun dan token akses saat ini.
+
+Selain itu, draf formulir disimpan di `localStorage` per pengguna, path halaman, dan kunci composer agar input tetap muncul setelah halaman dimuat ulang atau setelah render ulang responsif. Penyimpanan draf formulir yang persisten bersifat opt-in: hanya field yang leluhur terdekatnya memiliki atribut `data-composer-include-form-memory="true"` yang ditulis ke localStorage. Field tanpa leluhur opt-in tetap diambil dalam snapshot sementara di memori agar bertahan selama render ulang responsif dalam sesi yang sama, namun tidak pernah ditulis ke penyimpanan persisten. Field sensitif (`password`, `file`, `hidden`, dan pengenal yang memuat `password`/`secret`/`token`) selalu dikecualikan dari penyimpanan draf persisten terlepas dari status opt-in.
 
 Kartu dengan formulir besar (minimal 6 field yang dapat dipersistensikan) menampilkan tombol **Setel ulang draf**. Tombol ini menghapus draf tersimpan untuk kartu tersebut dan mengembalikan field saat ini ke nilai bawaan.
 

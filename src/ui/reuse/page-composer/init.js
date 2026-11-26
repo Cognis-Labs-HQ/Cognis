@@ -1,8 +1,3 @@
-import { createLayoutSaveHandler, commitLayoutEdit } from "./layout-save.js";
-import { bindCapability } from "../capabilities.js";
-
-import { watchComposerPresentation } from "./presentation.js";
-import { mountViewportLayout } from "./viewport-layout.js";
 /**
  * Page composer orchestration.
  * Export: createPageComposer(root, options).
@@ -39,6 +34,12 @@ import { mountViewportLayout } from "./viewport-layout.js";
  * }} options
  * @returns {{ init(): Promise<void>, refresh(elements: Array): void, refreshElements(elementIds: string[]): void, openToolbar(trigger?: HTMLElement): void, closeToolbar(): void, getFloatingSlot(id: string): HTMLElement|null, showToast(message: string, options?: object): () => void }}
  */
+import { createLayoutSaveHandler, commitLayoutEdit } from "./layout-save.js";
+import { bindCapability } from "../capabilities.js";
+
+import { watchComposerPresentation } from "./presentation.js";
+import { mountViewportLayout } from "./viewport-layout.js";
+
 import { apiFetch, configureConnectionRecoveryPrompt } from "../api-client.js";
 import { renderDashboardLayout } from "../../layouts/dashboard-layout.js";
 import { prefersReducedMotion } from "../motion.js";

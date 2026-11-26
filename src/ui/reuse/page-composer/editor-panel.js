@@ -1,4 +1,3 @@
-import { commitLayoutEdit } from "./layout-save.js";
 /**
  * Renders and positions the composer element panel and its save/discard actions.
  * Exports createEditorPanelHandlers for one main composer instance.
@@ -6,6 +5,8 @@ import { commitLayoutEdit } from "./layout-save.js";
  * @param {object} dependencies Composer state, rendering and persistence callbacks.
  * @returns {object} Panel creation and positioning operations.
  */
+import { commitLayoutEdit } from "./layout-save.js";
+
 import { fitComposerPanel } from "./responsive-layout.js";
 export function createEditorPanelHandlers({
     state,

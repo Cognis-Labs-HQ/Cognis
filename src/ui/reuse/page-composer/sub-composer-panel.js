@@ -1,8 +1,19 @@
+/**
+ * Builds the nested composer's element library and save/discard/reset panel.
+ *
+ * Public exports:
+ *   createSubComposerPanelHandlers(deps) — creates the panel renderer for nested editor states.
+ *
+ * Usage:
+ *   const panels = createSubComposerPanelHandlers(dependencies);
+ *   panels.createSubElementsPanel(state); // state identifies the active nested grid.
+ *
+ * @param {object} deps Injected sizing, placement, panel bounds, rendering and editing callbacks.
+ * @returns {{createSubElementsPanel: function(object): void}} Panel creation for a nested state; the owner removes the panel on unmount.
+ */
 import { commitLayoutEdit } from "./layout-save.js";
 import { bindComposerPointerDrag } from "./pointer-drag.js";
-/** Sub-composer panel helpers for nested composer edit mode.
- * Export: createSubComposerPanelHandlers(deps). @param {object} deps @returns {object}
- */
+
 import { halfGrid, snapGridFloor } from "./grid-math.js";
 
 import { resolveInitialGridWidth } from "./grid-sizing.js";

@@ -6,6 +6,17 @@ Page Composer は、要素配置、画面幅に応じた表示、DOM のライ�
 
 createPageComposer(root, options) が画面の動作期間を作ります。要素が内容と描画を提供し、init で組み込み、refresh で記述を更新します。
 
+Composer 内部の編集用ヘルパーは次の契約を提供します。ソース冒頭に呼び出し例があり、ページは通常 `createPageComposer` を通じて利用します。
+
+| ヘルパー                                                                                                                            | 契約                                                                                             |
+| ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| [`createLayoutSaveHandler`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/layout-save.js)           | 同時リクエストをまとめる段階的な保存ハンドラーを作成します。下記の永続化契約を参照してください。 |
+| [`commitLayoutEdit`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/layout-save.js)                  | 操作を保護して編集状態を確定し、保存失敗時は再試行できます。                                     |
+| [`bindComposerPointerDrag`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/pointer-drag.js)          | ポインターの捕捉、端でのスクロール、ドロップ・中断通知、操作終了時の解放を管理します。           |
+| [`RESIZE_EDGES / resizePlacement`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/resize-model.js)   | 8方向の辺・角を定義し、グリッドに合わせて制限した配置を計算します。重なりは検査しません。        |
+| [`resolveResizeAvailability`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/resize-availability.js) | 各辺・角について可能な方向の CSS カーソル、または `null` を返します。                            |
+| [`appendResizeControls`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/resize-controls.js)          | 所有側の座標変換と重なり検査をサイズ変更プレビュー・配置更新に結び付けます。保存はしません。     |
+
 ## 設定
 
 createPageComposer に elements、pageManifest、i18n、signal と配置設定を渡します。画面に合わせる要素は対応する契約を使い、保存配置は preferenceKey に結び付きます。
@@ -49,8 +60,6 @@ createPageComposer に elements、pageManifest、i18n、signal と配置設定�
 
 メインと入れ子の編集画面は、`resize-model.js` と `resize-controls.js` による8方向のサイズ変更を共有します。左辺と上辺のハンドルは、反対側の辺を固定して開始位置を変更します。ポインターの移動量はグリッド単位に丸められ、すべての方向にサイズ制限、グリッド境界、重なりの検査を適用します。タッチ対象は44pxを維持し、削除ボタンは角のハンドルを操作できる位置に配置します。
 
-レイアウトの保存は `ui:pageComposer:saveLayout` の `validate`、`persist`、`notify` ステージを通ります。同じ設定キーへの同時保存は、変更されないリクエストのスナップショットを共有します。「完了」、レイアウトのショートカット、リセット操作は、翻訳済みの成功または失敗の通知を表示します。HTTPエラーやセッションがない場合は成功として扱いません。保存中は編集操作を無効にし、失敗時は保留中の配置を復元して編集画面を維持します。ページの終了時は保存を中断し、遅れて届く通知を抑止します。診断には `ui:log` を使用します。
-
 編集用グリッドの行は90pxを基本の高さとし、列は利用可能なコンテンツ幅を共有します。トラック間の間隔は8pxです。`gridSize.max: 'full'` は要素をすべての利用可能な列にまたがらせます。
 
 編集モードでは行の高さを固定し、カード、ドラッグプレビュー、サイズ変更ハンドルに同じ間隔を考慮したピクセル座標を使用します。半グリッド配置にも対応します。スクロール領域は計測前にスクロールバーの幅を確保し、ポインター座標から共通の内側余白を除きます。要素パネルは画面内で内容に合わせた幅を取り、実測した幅で初期位置と移動範囲を決めます。
@@ -69,7 +78,15 @@ DOM パーキングは既定では無効です。メディア DOM を composer �
 
 ### 永続化
 
-レイアウトは引き続き `preferenceKey` を使って設定APIに保存されます。これに加えて、フォーム下書きはユーザー・ページパス・コンポーザーキー単位で `localStorage` に保存されるため、ページ再読み込みやレスポンシブ再レンダリング後も入力内容が復元されます。永続的な下書き保存はオプトイン方式です。最も近い祖先要素に `data-composer-include-form-memory="true"` が指定されているフィールドのみが localStorage に書き込まれます。オプトインされていないフィールドは、同一セッション内のレスポンシブ再レンダリングを乗り越えられるようにメモリ内の一時スナップショットには引き続きキャプチャされますが、永続ストレージには書き込まれません。`password` / `file` / `hidden` フィールド、および識別子に `password` / `secret` / `token` を含む項目は、オプトイン状態に関わらず常に永続的な下書き保存の対象外です。
+レイアウトの保存は `ui:pageComposer:saveLayout` の `validate`、`persist`、`notify` ステージを通ります。同じ設定キーへの同時保存は、変更されないリクエストのスナップショットを共有します。「完了」、レイアウトのショートカット、リセット操作は、翻訳済みの成功または失敗の通知を表示します。HTTPエラーやセッションがない場合は成功として扱いません。保存中は編集操作を無効にし、失敗時は保留中の配置を復元して編集画面を維持します。ページの終了時は保存を中断し、遅れて届く通知を抑止します。診断には `ui:log` を使用します。
+
+`createLayoutSaveHandler({ctx, save, notify, i18n, signal})` は `update(key, profiles, columns, layout)` を返します。注入する `save(key, profiles, columns, layout, signal)` は更新済みプロファイルを返し、書き込み失敗時は拒否する必要があります。`update` はそのプロファイル、または保存失敗・ページ中断時に `null` を返します。フローと翻訳のエラーは拒否として伝わります。ctx はフローの登録・実行と capabilities を提供し、`notify` は共通トーストのシグネチャを使い、`i18n.t` は成功・失敗のキーを解決します。
+
+`commitLayoutEdit({state, prepare, save, finish?, render})` は複製可能な `state.layout`、変更可能な `editing`/`saving` フラグ、同じ状態を操作するコールバックを必要とします。`layoutSnapshot` を管理し、任意の `container` または `contentGrid`、`elementsPanel`、`signal` が操作の無効化とページの生存期間を制御します。`prepare()` は同期処理です。`save()` は真偽値を返し、成功時に所有側のプロファイルを更新する必要があります。false は準備前の配置を復元し、true はスナップショットを更新して `finish` がある場合のみ編集を終了します。想定外のコールバックエラーは、操作を復元した後に呼び出し元へ伝わります。
+
+配置は `PUT /api/v1/social/users/:accountId/preferences/:preferenceKey` に `{ layout: profiles }` を送信して保存します。`profiles.layoutsByGrid` は `cols-<count>` キーを `{ placements: [{id, col, row, w, h}], hidden: [] }` 形式の配置に対応付けます。同じパスへの GET は、シリアライズされたプロファイルを `data.layoutJson` に返します。保存には現在のアカウントとアクセストークンが必要です。
+
+これに加えて、フォーム下書きはユーザー・ページパス・コンポーザーキー単位で `localStorage` に保存されるため、ページ再読み込みやレスポンシブ再レンダリング後も入力内容が復元されます。永続的な下書き保存はオプトイン方式です。最も近い祖先要素に `data-composer-include-form-memory="true"` が指定されているフィールドのみが localStorage に書き込まれます。オプトインされていないフィールドは、同一セッション内のレスポンシブ再レンダリングを乗り越えられるようにメモリ内の一時スナップショットには引き続きキャプチャされますが、永続ストレージには書き込まれません。`password` / `file` / `hidden` フィールド、および識別子に `password` / `secret` / `token` を含む項目は、オプトイン状態に関わらず常に永続的な下書き保存の対象外です。
 
 大きなフォーム（永続化対象フィールドが6個以上）を含むカードには **下書きをリセット** ボタンが表示されます。このボタンはそのカードの保存済み下書きを削除し、現在のフィールドを既定値に戻します。
 

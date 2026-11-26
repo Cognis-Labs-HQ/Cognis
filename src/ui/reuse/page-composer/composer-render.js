@@ -1,7 +1,3 @@
-import {
-    composerPresentation,
-    applyComposerPresentation,
-} from "./presentation.js";
 /**
  * Rendering helpers for page composer grid and sub-page views.
  *
@@ -15,6 +11,11 @@ import {
  * @param {object} deps
  * @returns {object}
  */
+import {
+    composerPresentation,
+    applyComposerPresentation,
+} from "./presentation.js";
+
 import { PAGE_COMPOSER_GRID_GAP } from "./grid-math.js";
 import { isCompactComposer } from "./responsive-layout.js";
 import { createDomPreservation } from "./dom-preservation.js";

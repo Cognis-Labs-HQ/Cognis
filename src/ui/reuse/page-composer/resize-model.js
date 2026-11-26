@@ -1,4 +1,19 @@
-/** Shared eight-edge resize geometry; opposite edges remain fixed. */
+/**
+ * Calculates snapped resize geometry without mutating the original placement.
+ *
+ * Public exports:
+ *   RESIZE_EDGES — eight named edges/corners with CSS classes and axis signs.
+ *   resizePlacement(options) — bounds a pointer delta while retaining opposite edges.
+ *
+ * Usage:
+ *   const next = resizePlacement({
+ *     placement: { id: "card", col: 2, row: 2, w: 4, h: 4 },
+ *     edge: RESIZE_EDGES.find((edge) => edge.name === "west"),
+ *     delta: { col: -1, row: 0 }, columns: 12, rows: 10,
+ *     gridSize: { min: [2, 2], max: [8, 8], fullWidth: false },
+ *   });
+ *   // next has col: 1 and w: 5; its right edge remains at column 6.
+ */
 import { snapGridRound } from "./grid-math.js";
 import { resolveGridWidthBounds } from "./grid-sizing.js";
 
@@ -61,7 +76,19 @@ export const RESIZE_EDGES = [
     },
 ];
 
-/** @param {object} options Original placement, edge, pointer delta, grid dimensions and sizing. @returns {object} Candidate placement within size and origin limits. */
+/**
+ * Applies size/origin bounds only; callers must separately reject occupied tiles.
+ * Full-width declarations lock horizontal sizing. Southward growth is not row-capped.
+ *
+ * @param {object} options Resize inputs in logical grid units, not pixels.
+ * @param {{id: string, col: number, row: number, w: number, h: number}} options.placement Original placement.
+ * @param {{horizontal: number, vertical: number}} options.edge Descriptor from RESIZE_EDGES; signs are -1, 0 or 1.
+ * @param {{col: number, row: number}} options.delta Pointer displacement from the initial press.
+ * @param {{min: number[], max?: number[]|null, fullWidth?: boolean}} options.gridSize Normalized sizing from resolveElementGridSize.
+ * @param {number} options.columns Initial positive grid column count; controls horizontal snapping and bounds.
+ * @param {number} options.rows Initial positive grid row count; controls vertical snapping, not maximum height.
+ * @returns {{id: string, col: number, row: number, w: number, h: number}} A new candidate preserving the placement's other fields.
+ */
 export function resizePlacement({
     placement,
     edge,

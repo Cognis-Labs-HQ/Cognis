@@ -1,9 +1,39 @@
-/** Shared resize interaction for main and nested composers, using owner-supplied pixel geometry. */
+/**
+ * Appends legal resize controls using geometry supplied by the owning composer.
+ *
+ * Public exports:
+ *   appendResizeControls(options) — binds previews, collision checks and placement commits for one cell.
+ *
+ * Usage:
+ *   appendResizeControls({ cell, placement, state, gridSize, container: grid,
+ *     geometry: {
+ *       point: (event) => ({ col: (event.clientX - grid.getBoundingClientRect().left) / track,
+ *         row: (event.clientY - grid.getBoundingClientRect().top) / unit }),
+ *       columnOffset: (col) => col * track, rowOffset: (row) => row * unit,
+ *       columnSpan: (width) => width * track, rowSpan: (height) => height * unit,
+ *     }, canPlace, refreshBounds, render: renderGrid });
+ */
 import { resolveResizeAvailability } from "./resize-availability.js";
 import { RESIZE_EDGES, resizePlacement } from "./resize-model.js";
 import { bindComposerPointerDrag } from "./pointer-drag.js";
 
-/** @param {object} options Cell, placement, grid state, geometry, collision and render operations. @returns {void} */
+/**
+ * Geometry must match the owner's padding, gaps and tracks. Recreate controls on
+ * render; the cell owns their listeners. Gestures clean up on capture loss or
+ * detachment. Valid releases update placement geometry, but do not persist it.
+ *
+ * @param {object} options Owner-supplied grid state and geometry operations.
+ * @param {HTMLElement} options.cell Connected editable cell receiving the handles.
+ * @param {{id: string, col: number, row: number, w: number, h: number}} options.placement Cell's current placement.
+ * @param {{gridCols: number, gridRows: number, layout: {placements: object[]}}} options.state Live mutable grid state.
+ * @param {object} options.gridSize Normalized sizing from resolveElementGridSize.
+ * @param {HTMLElement} options.container Preview parent in the same coordinate system as geometry.
+ * @param {{point: function(PointerEvent): {col: number, row: number}, columnOffset: function(number): number, rowOffset: function(number): number, columnSpan: function(number): number, rowSpan: function(number): number}} options.geometry Pointer-to-grid and grid-to-pixel operations; read live scroll position.
+ * @param {function(number, number, number, number, string): boolean} options.canPlace Tests col, row, w, h, ignoring the supplied ID.
+ * @param {function(number=): void} options.refreshBounds Recomputes bounds, optionally growing to a minimum row count; no argument restores normal bounds.
+ * @param {function(): void} options.render Rebuilds the owner after a valid resize.
+ * @returns {void} Adds controls; placement is mutated only after a valid pointerup.
+ */
 export function appendResizeControls({
     cell,
     placement,

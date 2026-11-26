@@ -1,4 +1,22 @@
-/** Shared staged layout-save feedback and editing-session commit lifecycle. */
+/**
+ * Coordinates staged layout persistence, localized feedback and editor commits.
+ *
+ * Public exports:
+ *   createLayoutSaveHandler(options) — coalesces writes and returns profiles or null.
+ *   commitLayoutEdit(options) — guards a save and retains edits on a false result.
+ *
+ * Usage:
+ *   const update = createLayoutSaveHandler({ ctx, save: persistence.saveLayoutByKey,
+ *     notify: showToast, i18n, signal: pageLifetime.signal });
+ *   await commitLayoutEdit({ state, prepare: compactPlacements,
+ *     save: async () => {
+ *       const profiles = await update(preferenceKey, state.layoutProfiles,
+ *         state.gridCols, state.layout);
+ *       if (profiles === null) return false;
+ *       state.layoutProfiles = profiles;
+ *       return true;
+ *     }, finish: endEditMode, render: renderGrid });
+ */
 const FLOW = "ui:pageComposer:saveLayout";
 
 function registerSaveFlow(ctx) {
@@ -43,7 +61,20 @@ function registerSaveFlow(ctx) {
     ctx.signal?.addEventListener("abort", dispose, { once: true });
 }
 
-/** @param {object} options Public context, persistence, localized toast and page lifetime. @returns {Function} A coalesced save returning profiles on success or null on failure/cancellation. */
+/**
+ * Registers the shared save flow once per ctx; each returned handler owns pending writes.
+ * Persistence must resolve with updated layout profiles and reject on failed writes.
+ * Calls sharing a pending preference key share its promise and first layout snapshot.
+ * Persistence failures resolve to null after feedback; flow/translation failures reject.
+ *
+ * @param {object} options Injected persistence, feedback and lifetime dependencies.
+ * @param {object} options.ctx Host with flowExists/registerFlow/extendFlow/runFlow and capabilities.
+ * @param {function(string, object, number, object, AbortSignal=): Promise<object>} options.save Raw persistence operation.
+ * @param {function(string, object): void} options.notify Localized toast presenter.
+ * @param {{t: function(string): string}} options.i18n Translation lookup, including save feedback keys.
+ * @param {AbortSignal} [options.signal] Page lifetime; cancels requests and suppresses late feedback.
+ * @returns {function(string, object, number, object): Promise<object|null>} Save(key, profiles, columns, layout); updated profiles on success, null on persistence failure/cancellation.
+ */
 export function createLayoutSaveHandler({ ctx, save, notify, i18n, signal }) {
     registerSaveFlow(ctx);
     const pending = new Map();
@@ -68,7 +99,25 @@ export function createLayoutSaveHandler({ ctx, save, notify, i18n, signal }) {
     };
 }
 
-/** @param {object} options Mutable editor state, preparation, saving, completion and rendering. @returns {Promise<boolean>} Whether the layout was persisted. */
+/**
+ * Prepares and commits the live editor layout while its controls are inert.
+ * A false save restores the pre-prepare layout and keeps editing active. Success
+ * updates layoutSnapshot; supplying finish also exits edit mode. Unexpected callback
+ * errors propagate, with interaction restored in finally. Save should handle expected
+ * persistence errors and return false, as in the module example.
+ *
+ * @param {object} options Editor state and callbacks operating on that same state.
+ * @param {object} options.state Mutable state with cloneable layout, editing and saving flags; receives layoutSnapshot.
+ * @param {HTMLElement} [options.state.container] Nested grid; otherwise contentGrid is used.
+ * @param {HTMLElement} [options.state.contentGrid] Main grid made inert while saving.
+ * @param {HTMLElement} [options.state.elementsPanel] Current panel made inert while saving.
+ * @param {AbortSignal} [options.state.signal] Suppresses rendering after page cancellation.
+ * @param {function(): void} options.prepare Synchronous compaction or reset of state.layout.
+ * @param {function(): Promise<boolean>} options.save True only after successful persistence; updates owner profiles.
+ * @param {function(): void} [options.finish] End edit-mode effects; omit for Reset to remain in edit mode.
+ * @param {function(): void} options.render Rebuilds from state after settlement unless the page ended.
+ * @returns {Promise<boolean>} True after persistence, false for a pending commit or a false save result.
+ */
 export async function commitLayoutEdit({
     state,
     prepare,

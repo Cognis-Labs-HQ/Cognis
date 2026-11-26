@@ -1,4 +1,20 @@
-/** Captures one composer pointer and scrolls visible ancestors while dragging at their edges. */
+/**
+ * Captures a composer gesture and scrolls visible ancestors near their top/bottom edges.
+ *
+ * Public exports:
+ *   bindComposerPointerDrag(target, event, onMove, onEnd, scrollHost) — owns one pointer through drop or cancellation.
+ *
+ * Usage:
+ *   handle.addEventListener("pointerdown", (event) => {
+ *     if (event.button !== 0 || event.isPrimary === false) return;
+ *     event.preventDefault();
+ *     event.stopPropagation();
+ *     bindComposerPointerDrag(handle, event, updatePreview, (completion) => {
+ *       if (completion.type === "pointerup") commitPreview();
+ *       else discardPreview();
+ *     }, grid);
+ *   });
+ */
 function scrollAtPointer(target, pointer, elapsed) {
     const document = target.ownerDocument;
     const view = document.defaultView;
@@ -52,7 +68,18 @@ function scrollAtPointer(target, pointer, elapsed) {
     return false;
 }
 
-/** @param {HTMLElement} target Pointer capture owner. @param {PointerEvent} event Initial press. @param {Function} onMove Grid preview update. @param {Function} onEnd Drop or cancellation. @param {HTMLElement} scrollHost Grid whose ancestors may scroll. @returns {void} */
+/**
+ * Removes capture listeners and animation frames on completion, capture loss or detachment.
+ * Callers filter/consume the initial press and own preview cleanup. Scroll-driven moves
+ * reuse the last pointer coordinates; cancellation supplies only type and pointerId.
+ *
+ * @param {HTMLElement} target Connected pointer capture owner.
+ * @param {PointerEvent} event Initial primary press, already accepted by the caller.
+ * @param {function(PointerEvent): void} onMove Updates provisional geometry without persisting it.
+ * @param {function(PointerEvent|{type: string, pointerId: number}): void} onEnd Commits on pointerup or discards on pointercancel.
+ * @param {HTMLElement} [scrollHost=target] Grid whose scrollable ancestors may scroll.
+ * @returns {void} The gesture cleans itself up; it does not return a disposer.
+ */
 export function bindComposerPointerDrag(
     target,
     event,

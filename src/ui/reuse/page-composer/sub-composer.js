@@ -1,12 +1,25 @@
+/**
+ * Owns nested composer grids, placement profiles and their editing lifetimes.
+ *
+ * Public exports:
+ *   createSubComposerHandlers(deps) — creates nested mounting, rendering, sizing, saving and cleanup operations.
+ *
+ * Usage:
+ *   const nested = createSubComposerHandlers(dependencies);
+ *   await nested.mountSubComposer(element, section); // element declares subComposerOptions.
+ *   nested.unmountSubComposer(element);
+ *   nested.destroy(); // Also releases any remaining mounted grids.
+ *
+ * @param {object} deps Page lifetime, edit-mode callbacks, persistence, form-state and grid dependencies.
+ * @returns {object} Nested mount/unmount, rendering, dimension, placement, save and destroy operations.
+ */
 import { appendResizeControls } from "./resize-controls.js";
 import { bindComposerPointerDrag } from "./pointer-drag.js";
 import {
     composerPresentation,
     applyComposerPresentation,
 } from "./presentation.js";
-/** Sub-composer helpers for nested page composer sections.
- * Export: createSubComposerHandlers(deps). @param {object} deps @returns {object}
- */
+
 import {
     buildOccupiedSet,
     checkPlacement,

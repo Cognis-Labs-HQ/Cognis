@@ -1,9 +1,22 @@
+/**
+ * Builds main-grid cells, drag/resize previews and the element editing panel.
+ *
+ * Public exports:
+ *   createGridOverlayHandlers(deps) — creates grid geometry, placement and editing operations.
+ *
+ * Usage:
+ *   const grid = createGridOverlayHandlers(dependencies);
+ *   grid.computeGridDimensions();
+ *   gridSection.appendChild(grid.createGridOverlay());
+ *   // Remove the floating panel owned by the handlers when the page ends.
+ *   grid.destroy();
+ *
+ * @param {object} deps Live composer state and injected sizing, rendering, save and edit-mode callbacks.
+ * @returns {object} Grid measurement, placement, cell/panel creation and destroy operations.
+ */
 import { appendResizeControls } from "./resize-controls.js";
 import { bindComposerPointerDrag } from "./pointer-drag.js";
-/**
- * Main grid overlay helpers for page composer edit mode.
- * Export: createGridOverlayHandlers(deps). @param {object} deps @returns {object}
- */
+
 import {
     composerPresentation,
     applyComposerPresentation,

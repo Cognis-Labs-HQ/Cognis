@@ -6,6 +6,17 @@ Page Composer manages element layout, responsive presentation, owned DOM lifetim
 
 createPageComposer(root, options) creates the page lifecycle. Elements supply content and owned render callbacks; init mounts the shared shell and refresh updates descriptors while preserving registered lifetimes.
 
+Composer-owned editor helpers expose the following contracts. Their source headers include call examples; pages normally consume them through `createPageComposer`.
+
+| Helper                                                                                                                              | Contract                                                                                                    |
+| ----------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| [`createLayoutSaveHandler`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/layout-save.js)           | Creates a coalesced staged save handler; see the persistence contract below.                                |
+| [`commitLayoutEdit`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/layout-save.js)                  | Commits live editor state with guarded interaction and retryable failure.                                   |
+| [`bindComposerPointerDrag`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/pointer-drag.js)          | Owns pointer capture, edge scrolling, drop/cancel callbacks and gesture cleanup.                            |
+| [`RESIZE_EDGES / resizePlacement`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/resize-model.js)   | Describes eight edges/corners and computes snapped, bounded geometry without collision checks.              |
+| [`resolveResizeAvailability`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/resize-availability.js) | Returns a legal-direction CSS cursor or `null` for each edge/corner.                                        |
+| [`appendResizeControls`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/resize-controls.js)          | Binds owner-supplied geometry and collision checks to resize previews and placement updates; does not save. |
+
 ## Configuration
 
 createPageComposer accepts elements, pageManifest, i18n, signal and layout options. Viewport-filling elements opt in to the documented responsive layout contract; persisted layout preferences use the page preferenceKey.
@@ -60,13 +71,11 @@ An element is a named content block declared as a plain object:
 
 Main and nested editors share eight-direction resizing through `resize-model.js` and `resize-controls.js`. Left and top handles adjust the origin while preserving the opposite edge. Pointer deltas snap to grid increments; size limits, grid boundaries and collision checks apply to every direction. Touch targets remain 44px, with removal controls inset to leave corner handles accessible.
 
-Layout writes run through `ui:pageComposer:saveLayout` with `validate`, `persist` and `notify` stages. Concurrent saves for the same preference key share one immutable request snapshot. Done, the layout shortcut and Reset show localized success or error toasts. HTTP errors and missing sessions cannot report success. While saving, editing controls are inert; a failed write restores the pending layout and keeps editing active for retry. Page cancellation aborts persistence and suppresses late feedback. Diagnostics use `ui:log`.
-
 Editable grid rows have a 90 px base height; columns share the available content width, with 8 px gaps between tracks. `gridSize.max: 'full'` spans the element across all available columns. `gridSize.max: 'half'` spans the element across half the available columns. Mixed forms like `['half', n]` (half-width, numeric max height) are also supported.
 
 Array declarations support `['full', 'fill']` for full width and filling the available height, or `['full', n]` for full width with a numeric height limit. Both main and nested composers honor these dimensions on narrow and wide grids. While dragging below the grid, the editor grows its content bounds and visible grid together before the widget is dropped.
 
-In edit mode, hover effects, overflow scrolling, and animations inside each element are suppressed so the full cell surface is draggable. Dragging an element onto an occupied cell swaps the two elements when geometrically feasible; a coloured axis line highlights where the swap will occur before the pointer is released.
+In edit mode, hover effects, overflow scrolling, and animations inside each element are suppressed so the cell interior can be dragged without activating embedded controls. Resize handles and removal controls retain their own interactions. Dragging an element onto an occupied cell swaps the two elements when geometrically feasible; a coloured axis line highlights where the swap will occur before the pointer is released.
 
 Edit mode uses fixed row tracks and the same gap-aware pixel geometry for cards, drag previews and resize handles, including half-grid placements. The scrolling content reserves its scrollbar gutter before measurement; pointer coordinates exclude the shared content inset. Elements panels size to their contents within the viewport, and their measured width controls initial placement and subsequent clamping.
 
@@ -119,7 +128,13 @@ DOM parking is disabled by default. Set `enableDomParking: true` on the page com
 
 ### Persistence
 
-Layouts are stored via `PUT /api/v1/social/users/:accountId/preferences/:preferenceKey` under the key supplied as `preferenceKey`. The stored value is `{ placements: [{id, col, row, w, h}], hidden: [] }`.
+Layout writes run through `ui:pageComposer:saveLayout` with `validate`, `persist` and `notify` stages. Concurrent saves for the same preference key share one immutable request snapshot. Done, the layout shortcut and Reset show localized success or error toasts. HTTP errors and missing sessions cannot report success. While saving, editing controls are inert; a failed write restores the pending layout and keeps editing active for retry. Page cancellation aborts persistence and suppresses late feedback. Diagnostics use `ui:log`.
+
+`createLayoutSaveHandler({ctx, save, notify, i18n, signal})` returns `update(key, profiles, columns, layout)`. The injected `save(key, profiles, columns, layout, signal)` must resolve with updated profiles and reject failed writes. `update` resolves to those profiles or `null` for persistence failure/page cancellation; flow and translation errors reject. Its ctx must support flow registration/execution and capabilities. `notify` uses the shared toast signature; `i18n.t` supplies the success/error keys.
+
+`commitLayoutEdit({state, prepare, save, finish?, render})` requires cloneable `state.layout`, mutable `editing`/`saving` flags and callbacks using that same state. It manages `layoutSnapshot`; optional `container` or `contentGrid`, `elementsPanel` and `signal` control interaction and page lifetime. `prepare()` is synchronous. `save()` must resolve to a boolean and update owner profiles on success. A false result restores the pre-prepare layout; a true result updates the snapshot and exits editing only when `finish` is supplied. Unexpected callback errors propagate after interaction is restored.
+
+Layouts use `PUT /api/v1/social/users/:accountId/preferences/:preferenceKey` with body `{ layout: profiles }`. `profiles.layoutsByGrid` maps `cols-<count>` keys to `{ placements: [{id, col, row, w, h}], hidden: [] }` layouts. The corresponding GET returns the serialized profiles in `data.layoutJson`. Saving requires the current account and access token.
 
 Form drafts are also persisted in `localStorage` per user, page path, and composer preference key. This keeps typed inputs when the page reloads or when a responsive re-render rebuilds the element cards. Persistent form draft storage is opt-in: only fields whose closest ancestor carries `data-composer-include-form-memory="true"` are written to localStorage. Fields without an opted-in ancestor are still captured in the transient in-memory snapshot so they survive responsive re-renders within the same session, but they are never written to persistent storage. Sensitive fields (`password`, `file`, `hidden`, and identifiers containing `password`/`secret`/`token`) are always excluded from persistent draft storage regardless of opt-in status.
 

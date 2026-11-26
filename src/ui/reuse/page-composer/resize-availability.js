@@ -1,11 +1,32 @@
-/** Resolves legal resize directions and their cursors from bounds and occupied tiles. */
+/**
+ * Resolves resize handles and cursors from size limits and occupied grid cells.
+ *
+ * Public exports:
+ *   resolveResizeAvailability(options) — returns a legal-direction cursor or null for each edge/corner.
+ *
+ * Usage:
+ *   const handles = resolveResizeAvailability({ placement, gridSize,
+ *     columns: state.gridCols, rows: state.gridRows, canPlace });
+ *   if (handles.west) westHandle.style.cursor = handles.west;
+ */
 import { gridStep } from "./grid-math.js";
 import { RESIZE_EDGES, resizePlacement } from "./resize-model.js";
 
 const cursor = (horizontal, vertical) =>
     `${vertical < 0 ? "n" : vertical > 0 ? "s" : ""}${horizontal < 0 ? "w" : horizontal > 0 ? "e" : ""}-resize`;
 
-/** @param {object} options Placement, sizing declaration, grid dimensions and collision checker. @returns {object} Cursor for each usable edge and corner. */
+/**
+ * Probes one snapped inward/outward step, including mixed corner directions.
+ * A blocked expansion retains a shrink handle; no legal change yields null.
+ *
+ * @param {object} options Grid inputs shared with resizePlacement, plus collision checking.
+ * @param {{id: string, col: number, row: number, w: number, h: number}} options.placement Current placement.
+ * @param {object} options.gridSize Normalized sizing from resolveElementGridSize.
+ * @param {number} options.columns Positive grid column count.
+ * @param {number} options.rows Positive grid row count used for snapping.
+ * @param {function(number, number, number, number, string): boolean} options.canPlace Tests col, row, w, h, ignoring the supplied element ID.
+ * @returns {Object<string, string|null>} Keys east/south/southeast/west/north/northwest/northeast/southwest; CSS cursor or null.
+ */
 export function resolveResizeAvailability(options) {
     const { placement, columns, rows, canPlace } = options;
     return Object.fromEntries(
