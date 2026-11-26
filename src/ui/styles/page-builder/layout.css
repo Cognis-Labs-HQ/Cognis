@@ -234,7 +234,7 @@ button:hover:not(:disabled):not(.dropdown-item):not([class*="btn-"]):not(
     min-height: 380px;
 }
 
-.app-page--document-scroll .composer-view-grid {
+.app-page--document-scroll .composer-view-grid:not(.composer-grid-active) {
     grid-auto-rows: minmax(var(--composer-grid-row-size, 90px), auto);
 }
 

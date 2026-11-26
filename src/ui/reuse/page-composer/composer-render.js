@@ -15,6 +15,7 @@ import {
  * @param {object} deps
  * @returns {object}
  */
+import { PAGE_COMPOSER_GRID_GAP } from "./grid-math.js";
 import { isCompactComposer } from "./responsive-layout.js";
 import { createDomPreservation } from "./dom-preservation.js";
 import { createPlacementResolver } from "./placement-resolver.js";
@@ -108,7 +109,7 @@ export function createComposerRenderer({
         );
         section.style.setProperty(
             "--composer-grid-row-size",
-            `${UNIT / scale}px`,
+            `${(UNIT + PAGE_COMPOSER_GRID_GAP) / scale - PAGE_COMPOSER_GRID_GAP}px`,
         );
         return scale;
     }

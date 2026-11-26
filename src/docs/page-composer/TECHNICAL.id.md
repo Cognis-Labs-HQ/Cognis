@@ -47,7 +47,9 @@ Sebuah elemen adalah blok konten bernama:
 
 ### Layout Grid
 
-Unit grid adalah 90 px lebar dan tinggi. `gridSize.max: 'full'` merentangkan elemen di semua kolom yang tersedia.
+Baris kisi yang dapat disunting memiliki tinggi dasar 90 px; kolom berbagi lebar konten yang tersedia dengan jarak 8 px antarjalur. `gridSize.max: 'full'` merentangkan elemen di semua kolom yang tersedia.
+
+Mode penyuntingan menggunakan baris tetap dan geometri piksel yang memperhitungkan jarak untuk kartu, pratinjau seret, dan pegangan pengubahan ukuran, termasuk penempatan setengah kisi. Konten gulir menyediakan ruang bilah gulir sebelum pengukuran; koordinat penunjuk tidak menyertakan inset konten bersama. Panel Elemen menyesuaikan lebar dengan isinya dalam batas layar. Lebar terukur menentukan posisi awal dan pembatasan posisi berikutnya.
 
 ### Navigasi Sub-Halaman
 

@@ -47,7 +47,9 @@ Ein Element ist ein benannter Inhaltsblock:
 
 ### Raster-Layout
 
-Rastereinheiten sind 90 px breit und hoch. `gridSize.max: 'full'` erstreckt das Element über alle verfügbaren Spalten. `gridSize.max: 'half'` erstreckt es über die Hälfte der Spalten.
+Bearbeitbare Rasterzeilen haben eine Basishöhe von 90 px; die Spalten teilen die verfügbare Inhaltsbreite mit 8 px Abstand zwischen den Rasterspuren. `gridSize.max: 'full'` erstreckt das Element über alle verfügbaren Spalten. `gridSize.max: 'half'` erstreckt es über die Hälfte der Spalten.
+
+Im Bearbeitungsmodus verwenden Karten, Ziehvorschauen und Größenänderungsgriffe dieselbe Pixelgeometrie mit festen Zeilen und berücksichtigten Abständen, auch für halbe Rastereinheiten. Der scrollbare Inhalt reserviert den Platz für die Bildlaufleiste vor der Messung; Zeigerkoordinaten schließen den gemeinsamen Inhaltsabstand aus. Elementfenster passen ihre Breite innerhalb des sichtbaren Bereichs an ihren Inhalt an. Die gemessene Breite bestimmt ihre anfängliche und begrenzte Position.
 
 ### Unterseiten-Navigation
 

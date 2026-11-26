@@ -58,11 +58,13 @@ An element is a named content block declared as a plain object:
 
 ### Grid layout
 
-Grid units are 90 px wide and tall. `gridSize.max: 'full'` spans the element across all available columns. `gridSize.max: 'half'` spans the element across half the available columns. Mixed forms like `['half', n]` (half-width, numeric max height) are also supported.
+Editable grid rows have a 90 px base height; columns share the available content width, with 8 px gaps between tracks. `gridSize.max: 'full'` spans the element across all available columns. `gridSize.max: 'half'` spans the element across half the available columns. Mixed forms like `['half', n]` (half-width, numeric max height) are also supported.
 
 Array declarations support `['full', 'fill']` for full width and filling the available height, or `['full', n]` for full width with a numeric height limit. Both main and nested composers honor these dimensions on narrow and wide grids. While dragging below the grid, the editor grows its content bounds and visible grid together before the widget is dropped.
 
 In edit mode, hover effects, overflow scrolling, and animations inside each element are suppressed so the full cell surface is draggable. Dragging an element onto an occupied cell swaps the two elements when geometrically feasible; a coloured axis line highlights where the swap will occur before the pointer is released.
+
+Edit mode uses fixed row tracks and the same gap-aware pixel geometry for cards, drag previews and resize handles, including half-grid placements. The scrolling content reserves its scrollbar gutter before measurement; pointer coordinates exclude the shared content inset. Elements panels size to their contents within the viewport, and their measured width controls initial placement and subsequent clamping.
 
 ### Sub-page navigation
 

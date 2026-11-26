@@ -21,6 +21,21 @@ export function createGridGeometry(state, unit) {
             Number.parseFloat(styles.paddingRight || "0");
         return Math.max(1, rect.width - padding);
     };
+    const gridPointerPosition = (event) => {
+        const section = state.gridSection;
+        const rect = section.getBoundingClientRect();
+        const styles = window.getComputedStyle(section);
+        return {
+            x:
+                event.clientX -
+                rect.left -
+                (Number.parseFloat(styles.paddingLeft) || 0),
+            y:
+                event.clientY -
+                rect.top -
+                (Number.parseFloat(styles.paddingTop) || 0),
+        };
+    };
     const columnSize = () => state.gridTrackSize ?? unit;
     const rowSize = () => unit;
     const gridColumnOffset = (coordinate) =>
@@ -28,9 +43,17 @@ export function createGridGeometry(state, unit) {
     const gridRowOffset = (coordinate) =>
         coordinate * (rowSize() + PAGE_COMPOSER_GRID_GAP);
     const gridColumnSpanSize = (span) =>
-        span * columnSize() + Math.max(0, span - 1) * PAGE_COMPOSER_GRID_GAP;
+        Math.max(
+            0,
+            span * (columnSize() + PAGE_COMPOSER_GRID_GAP) -
+                PAGE_COMPOSER_GRID_GAP,
+        );
     const gridRowSpanSize = (span) =>
-        span * rowSize() + Math.max(0, span - 1) * PAGE_COMPOSER_GRID_GAP;
+        Math.max(
+            0,
+            span * (rowSize() + PAGE_COMPOSER_GRID_GAP) -
+                PAGE_COMPOSER_GRID_GAP,
+        );
     const pixelToGridColumn = (pixel) =>
         pixel / (columnSize() + PAGE_COMPOSER_GRID_GAP);
     const pixelToGridRow = (pixel) =>
@@ -45,14 +68,6 @@ export function createGridGeometry(state, unit) {
         const width = state.contentGrid.getBoundingClientRect().width;
         if (!state.editing)
             state.gridCols = Math.max(1, Math.floor(width / unit));
-        if (state.editing) {
-            const totalGap =
-                Math.max(0, state.gridCols - 1) * PAGE_COMPOSER_GRID_GAP;
-            state.gridTrackSize = Math.max(
-                1,
-                (getEditGridWidth() - totalGap) / state.gridCols,
-            );
-        } else state.gridTrackSize = unit;
         const visible = (state.layout?.placements ?? []).filter(
             (placement) => !(state.layout?.hidden ?? []).includes(placement.id),
         );
@@ -68,7 +83,6 @@ export function createGridGeometry(state, unit) {
             maxBottom + extra,
         );
         state.gridPixelHeight = gridRowSpanSize(state.gridRows);
-        state.gridPixelWidth = gridColumnSpanSize(state.gridCols);
         state.contentGrid.style.minHeight =
             (state.frameless || state.fillViewport) && !state.editing
                 ? ""
@@ -78,9 +92,19 @@ export function createGridGeometry(state, unit) {
             state.gridSection.style.minHeight = `${state.gridPixelHeight}px`;
             state.gridSection.style.width = "";
         }
+        if (state.editing) {
+            const totalGap =
+                Math.max(0, state.gridCols - 1) * PAGE_COMPOSER_GRID_GAP;
+            state.gridTrackSize = Math.max(
+                1,
+                (getEditGridWidth() - totalGap) / state.gridCols,
+            );
+        } else state.gridTrackSize = unit;
+        state.gridPixelWidth = gridColumnSpanSize(state.gridCols);
     }
     return {
         computeGridDimensions,
+        gridPointerPosition,
         gridColumnOffset,
         gridRowOffset,
         gridColumnSpanSize,

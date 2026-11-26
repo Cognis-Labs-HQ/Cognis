@@ -56,6 +56,12 @@ export function stackComposerPlacements(placements, columns) {
  */
 export function fitComposerPanel(panel) {
     const window = panel.ownerDocument.defaultView;
+    const viewportWidth = window.visualViewport?.width ?? window.innerWidth;
+    if (Number.isFinite(viewportWidth)) {
+        const desiredLeft = Number.parseFloat(panel.style.left) || 12;
+        const width = panel.getBoundingClientRect().width;
+        panel.style.left = `${Math.max(12, Math.min(desiredLeft, viewportWidth - width - 12))}px`;
+    }
     const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
     const desiredTop = Number.parseFloat(panel.style.top) || 12;
     const height = Math.min(

@@ -150,21 +150,25 @@ export function createSubComposerPanelHandlers({
       </div>
     `;
 
+        document.body.appendChild(panel);
+        const panelWidth = panel.getBoundingClientRect().width;
         const safeTop = getComposerPanelSafeTop();
         if (state.panelPosition !== null) {
             panel.style.top = `${Math.max(safeTop, state.panelPosition.top)}px`;
-            panel.style.left = `${clampComposerPanelLeft(state.panelPosition.left, 240)}px`;
+            panel.style.left = `${clampComposerPanelLeft(state.panelPosition.left, panelWidth)}px`;
             panel.style.right = "auto";
         } else {
             const gridRect = state.container.getBoundingClientRect();
-            const panelLeft = clampComposerPanelLeft(gridRect.right + 12, 240);
+            const panelLeft = clampComposerPanelLeft(
+                gridRect.right + 12,
+                panelWidth,
+            );
             const panelTop = gridRect.top;
             panel.style.top = `${Math.max(safeTop, panelTop)}px`;
             panel.style.left = `${panelLeft}px`;
             panel.style.right = "auto";
         }
 
-        document.body.appendChild(panel);
         fitComposerPanel(panel);
 
         const dragHandle = panel.querySelector(`#${panelId}-drag-handle`);

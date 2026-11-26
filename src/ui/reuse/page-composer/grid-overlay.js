@@ -33,6 +33,7 @@ export function createGridOverlayHandlers({
 }) {
     const {
         computeGridDimensions,
+        gridPointerPosition,
         gridColumnOffset,
         gridRowOffset,
         gridColumnSpanSize,
@@ -330,9 +331,7 @@ export function createGridOverlayHandlers({
                     }
                     shade.classList.remove("composer-shade--invalid");
                     panel?.classList.remove("composer-panel--drop-target");
-                    const gridRect = state.gridSection.getBoundingClientRect();
-                    const x = e.clientX - gridRect.left;
-                    const y = e.clientY - gridRect.top;
+                    const { x, y } = gridPointerPosition(e);
                     const col = Math.max(
                         0,
                         Math.min(
@@ -357,6 +356,8 @@ export function createGridOverlayHandlers({
                     currentRow = rawRow;
                     shade.style.left = `${gridColumnOffset(col)}px`;
                     shade.style.top = `${gridRowOffset(rawRow)}px`;
+                    shade.style.width = `${gridColumnSpanSize(placement.w)}px`;
+                    shade.style.height = `${gridRowSpanSize(placement.h)}px`;
                     if (
                         !canPlace(col, rawRow, placement.w, placement.h, el.id)
                     ) {
@@ -547,9 +548,7 @@ export function createGridOverlayHandlers({
                 return Math.max(min, val);
             }
             function onMove(e) {
-                const gridRect = state.gridSection.getBoundingClientRect();
-                const x = e.clientX - gridRect.left;
-                const y = e.clientY - gridRect.top;
+                const { x, y } = gridPointerPosition(e);
                 if (direction === "e" || direction === "se") {
                     const rawW = snapGridRound(
                         pixelToGridColumn(x) - placement.col,
@@ -675,10 +674,8 @@ export function createGridOverlayHandlers({
             let currentRow = -1;
             let overGrid = false;
             function onMove(e) {
-                const gridRect = state.gridSection.getBoundingClientRect();
-                const x = e.clientX - gridRect.left;
-                const y = e.clientY - gridRect.top;
-                const inGrid = x >= 0 && x <= gridRect.width && y >= 0;
+                const { x, y } = gridPointerPosition(e);
+                const inGrid = x >= 0 && x <= state.gridPixelWidth && y >= 0;
                 if (inGrid) {
                     if (!shade) {
                         shade = document.createElement("div");

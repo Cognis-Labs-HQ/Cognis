@@ -250,7 +250,7 @@ test("page composer elements panels stay below header and use viewport top", () 
     assert.match(source, /const panelTop = gridRect\.top;/);
     assert.match(
         source,
-        /clampComposerPanelLeft\(gridRect\.right \+ 12, 240\)/,
+        /clampComposerPanelLeft\(\s*gridRect\.right \+ 12,\s*panelWidth,?\s*\)/,
     );
     assert.match(
         source,

@@ -73,6 +73,7 @@ try {
         requireAccountSession: false,
         enableAccountEnhancements: false,
         toolbarScrollable: true,
+        contentScrolling: !options.has("document-scroll"),
         signal: lifetime.signal,
         pageContext: {
             title: i18n.t("ui.reuse.settings"),

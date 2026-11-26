@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { createGridGeometry } from "../../reuse/page-composer/grid-geometry.js";
 import { createGridOverlayHandlers } from "../../reuse/page-composer/grid-overlay.js";
 import { createSubComposerHandlers } from "../../reuse/page-composer/sub-composer.js";
 import { resolveElementGridSize } from "../../reuse/page-composer/grid-sizing.js";
@@ -238,3 +239,57 @@ for (const columns of [2, 3, 8]) {
         }
     }
 }
+
+test("half-grid spans share gaps and pointer origin with CSS tracks", (context) => {
+    const previousWindow = globalThis.window;
+    globalThis.window = {
+        getComputedStyle: () => ({
+            paddingLeft: "28px",
+            paddingRight: "28px",
+            paddingTop: "14px",
+        }),
+    };
+    context.after(() => {
+        globalThis.window = previousWindow;
+    });
+    const state = {
+        contentGrid: new GridElement(720),
+        gridSection: new GridElement(720),
+        gridCols: 4,
+        editing: true,
+        layout: { placements: [], hidden: [] },
+    };
+    const geometry = createGridGeometry(state, 90);
+    geometry.computeGridDimensions();
+    assert.equal(geometry.gridRowSpanSize(0.5), 41);
+    assert.equal(geometry.gridRowOffset(0.5), 49);
+    assert.equal(geometry.gridColumnSpanSize(0.5), 76);
+    assert.equal(geometry.gridColumnOffset(0.5), 84);
+    assert.deepEqual(
+        geometry.gridPointerPosition({ clientX: 112, clientY: 63 }),
+        { x: 84, y: 49 },
+    );
+});
+
+test("grid width is measured after height growth reserves scrollbar space", (context) => {
+    const previousWindow = globalThis.window;
+    globalThis.window = { getComputedStyle: () => ({}) };
+    context.after(() => {
+        globalThis.window = previousWindow;
+    });
+    const section = new GridElement(720);
+    section.getBoundingClientRect = () => ({
+        width: section.style.minHeight ? 705 : 720,
+    });
+    const state = {
+        contentGrid: new GridElement(720),
+        gridSection: section,
+        gridCols: 4,
+        editing: true,
+        layout: { placements: [], hidden: [] },
+    };
+    const geometry = createGridGeometry(state, 90);
+    geometry.computeGridDimensions();
+    assert.equal(state.gridPixelWidth, 705);
+    assert.equal(geometry.gridColumnSpanSize(4), 705);
+});

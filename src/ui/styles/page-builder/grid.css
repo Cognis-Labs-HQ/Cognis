@@ -1,3 +1,7 @@
+.content-grid.composer-grid-active > .content-panel {
+    scrollbar-gutter: stable;
+}
+
 .composer-grid-overlay {
     position: absolute;
     pointer-events: none;
@@ -179,8 +183,10 @@
     border: 1px solid var(--border);
     border-radius: 12px;
     box-shadow: var(--shadow);
-    min-width: 200px;
-    max-width: 240px;
+    box-sizing: border-box;
+    width: max-content;
+    min-width: min(20rem, calc(100vw - 24px));
+    max-width: min(28rem, calc(100vw - 24px));
     user-select: none;
 }
 
@@ -285,8 +291,11 @@
 .composer-panel-actions .composer-done-btn,
 .composer-panel-actions .composer-discard-btn,
 .composer-panel-actions .composer-reset-btn {
+    flex-shrink: 0;
     text-align: center;
     text-decoration: none;
+    word-break: normal;
+    overflow-wrap: normal;
 }
 
 .composer-panel-actions .btn-animated {
