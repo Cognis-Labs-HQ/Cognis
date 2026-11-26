@@ -8,6 +8,23 @@ Every component declares `documentation.readme`, `documentation.usage` and `docu
 
 Document basenames are case-sensitive and uppercase. Lowercase or mixed-case INFO, README, USAGE and TECHNICAL variants are rejected, even if a correctly named file also exists.
 
+### Required layouts
+
+Use exactly the following H2 headings, in this order, for the document’s language. Info uses the README layout, including core INFO files. Do not translate identifiers or use alternate heading names.
+
+| Language | Info / README                                                                            | Usage                                                                       | Technical                                                                    |
+| -------- | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| en       | `What You Can Do` → `Before You Start` → `Get Started` → `Learn More`                    | `Prerequisites` → `Examples` → `Expected Results` → `Troubleshooting`       | `Interfaces` → `Configuration` → `Behavior` → `Security` → `Reference`       |
+| de       | `Möglichkeiten` → `Vor dem Start` → `Erste Schritte` → `Weitere Informationen`           | `Voraussetzungen` → `Beispiele` → `Erwartete Ergebnisse` → `Fehlerbehebung` | `Schnittstellen` → `Konfiguration` → `Verhalten` → `Sicherheit` → `Referenz` |
+| id       | `Yang Dapat Anda Lakukan` → `Sebelum Memulai` → `Langkah Awal` → `Pelajari Lebih Lanjut` | `Prasyarat` → `Contoh` → `Hasil yang Diharapkan` → `Pemecahan Masalah`      | `Antarmuka` → `Konfigurasi` → `Perilaku` → `Keamanan` → `Referensi`          |
+| ja       | `できること` → `始める前に` → `はじめに` → `詳しい情報`                                  | `前提条件` → `使用例` → `期待される結果` → `問題の解決`                     | `インターフェース` → `設定` → `動作` → `セキュリティ` → `リファレンス`       |
+
+Start with one unindented `# Title` of at most 30 characters, then a blank line and an informative prose paragraph. Follow with the required H2 sections. Surround every heading with blank lines; do not indent headings or use HTML or Setext headings. H3–H6 subsections are allowed inside a required section, without skipping levels. Every section and subsection needs visible content; a parent may contain populated subsections. Comments do not count as content.
+
+Info contains no implementation code or endpoint specifications. Usage and Technical may use balanced backtick or tilde code fences; a closing fence must use the same character, be at least as long as its opener and have no trailing text. Headings and comments inside examples are literal content. Introductory code or lists do not replace the prose introduction.
+
+The complete filename matrix is three files for each of `en`, `de`, `id` and `ja` (12 files per topic). Component manifests declare exactly the English README, USAGE and TECHNICAL paths; core directories use INFO, USAGE and TECHNICAL without a component manifest per topic. Basenames must be uppercase and locale suffixes lowercase. No extra Markdown manuals are accepted outside the separate changelog space.
+
 ## Configuration
 
 Run `npm run check:docs`. Pull-request CI also compares the added changelog files against the head branch using `--base` and `--branch`. Exactly one four-language changelog set is permitted.
@@ -27,6 +44,10 @@ Document bodies, navigation titles and search prioritize the active UI language,
 ### Translation Catalogs
 
 Every shipped `strings.xml` catalog uses a `<resources>` root. English entries must be nonempty; other locales keep the same keys and order. Literal translation calls and HTML translation attributes must resolve to an English entry. Run `node --import tsx --test src/ui/tests/strings-coverage.test.js src/tooling/tests/translations/*.test.js` to check catalogs and source references. Computed translation keys still require component behavioral coverage.
+
+### Validation and limits
+
+`npm run check:docs` checks real component manifests and core directories. The documentation tests mutate headings, order, content, fences, filenames and manifest pointers across every role and locale; they also compare the section matrix in every localized standard with the machine-readable schema. CI runs both the documentation command and the full test suite. These checks enforce layout and concrete reference integrity; authors must still verify factual claims against the owning implementation.
 
 ## Security
 

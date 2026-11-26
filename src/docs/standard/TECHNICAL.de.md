@@ -8,6 +8,23 @@ Jede Komponente deklariert `documentation.readme`, `documentation.usage` und `do
 
 Dokumentbasenamen sind großgeschrieben und unterscheiden Groß- und Kleinschreibung. Klein- oder gemischtgeschriebene Varianten von INFO, README, USAGE und TECHNICAL werden auch dann abgelehnt, wenn eine korrekt benannte Datei vorhanden ist.
 
+### Verbindliche Gliederung
+
+Verwenden Sie genau die folgenden H2-Überschriften in dieser Reihenfolge für die jeweilige Dokumentsprache. Info verwendet die README-Gliederung, auch bei INFO-Dateien im Kern. Bezeichner bleiben unverändert; alternative Überschriften sind nicht zulässig.
+
+| Sprache | Info / README                                                                            | Anwendung                                                                   | Technik                                                                      |
+| ------- | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| en      | `What You Can Do` → `Before You Start` → `Get Started` → `Learn More`                    | `Prerequisites` → `Examples` → `Expected Results` → `Troubleshooting`       | `Interfaces` → `Configuration` → `Behavior` → `Security` → `Reference`       |
+| de      | `Möglichkeiten` → `Vor dem Start` → `Erste Schritte` → `Weitere Informationen`           | `Voraussetzungen` → `Beispiele` → `Erwartete Ergebnisse` → `Fehlerbehebung` | `Schnittstellen` → `Konfiguration` → `Verhalten` → `Sicherheit` → `Referenz` |
+| id      | `Yang Dapat Anda Lakukan` → `Sebelum Memulai` → `Langkah Awal` → `Pelajari Lebih Lanjut` | `Prasyarat` → `Contoh` → `Hasil yang Diharapkan` → `Pemecahan Masalah`      | `Antarmuka` → `Konfigurasi` → `Perilaku` → `Keamanan` → `Referensi`          |
+| ja      | `できること` → `始める前に` → `はじめに` → `詳しい情報`                                  | `前提条件` → `使用例` → `期待される結果` → `問題の解決`                     | `インターフェース` → `設定` → `動作` → `セキュリティ` → `リファレンス`       |
+
+Beginnen Sie mit genau einem nicht eingerückten `# Titel` mit höchstens 30 Zeichen, einer Leerzeile und einem informativen Einleitungsabsatz. Danach folgen die vorgeschriebenen H2-Abschnitte. Umgeben Sie jede Überschrift mit Leerzeilen. Eingerückte, HTML- und Setext-Überschriften sind nicht zulässig. H3–H6-Unterabschnitte sind innerhalb vorgeschriebener Abschnitte ohne übersprungene Ebenen erlaubt. Jeder Abschnitt benötigt sichtbaren Inhalt; übergeordnete Abschnitte dürfen ausgefüllte Unterabschnitte enthalten. Kommentare zählen nicht als Inhalt.
+
+Info enthält weder Implementierungscode noch Endpunktspezifikationen. Anwendung und Technik dürfen ausgeglichene Codeblöcke mit Backticks oder Tilden verwenden. Die schließende Markierung verwendet dasselbe Zeichen, ist mindestens so lang wie die öffnende und enthält keinen nachfolgenden Text. Überschriften und Kommentare in Beispielen bleiben wörtlicher Inhalt. Code und Listen ersetzen keinen Einleitungsabsatz.
+
+Die vollständige Dateimatrix besteht aus drei Dateien für jede Sprache `en`, `de`, `id` und `ja`, also zwölf Dateien je Thema. Komponentenmanifeste deklarieren genau die englischen Pfade für README, USAGE und TECHNICAL. Kernverzeichnisse verwenden INFO, USAGE und TECHNICAL ohne eigenes Komponentenmanifest je Thema. Basenamen sind groß-, Sprachsuffixe kleingeschrieben. Zusätzliche Markdown-Handbücher außerhalb des getrennten Änderungsbereichs sind nicht zulässig.
+
 ## Konfiguration
 
 Führen Sie `npm run check:docs` aus. PR-CI vergleicht neue Änderungsdateien zusätzlich mittels `--base` und `--branch` mit dem Quellzweig. Genau ein viersprachiger Änderungssatz ist erlaubt.
@@ -27,6 +44,10 @@ Inhalte, Navigationstitel und Suche bevorzugen die aktive UI-Sprache, danach kon
 ### Übersetzungskataloge
 
 Jeder ausgelieferte Katalog `strings.xml` verwendet das Wurzelelement `<resources>`. Englische Einträge dürfen nicht leer sein; andere Sprachen behalten dieselben Schlüssel und deren Reihenfolge. Wörtliche Übersetzungsaufrufe und HTML-Übersetzungsattribute müssen einen englischen Eintrag auflösen. `node --import tsx --test src/ui/tests/strings-coverage.test.js src/tooling/tests/translations/*.test.js` prüft Kataloge und Quelltextverweise. Berechnete Schlüssel benötigen weiterhin Verhaltenstests der Komponente.
+
+### Prüfung und Grenzen
+
+`npm run check:docs` prüft echte Komponentenmanifeste und Kernverzeichnisse. Dokumentationstests verändern Überschriften, Reihenfolge, Inhalte, Codeblöcke, Dateinamen und Manifestpfade für jede Rolle und Sprache. Außerdem vergleichen sie die Abschnittsmatrix aller lokalisierten Standards mit dem maschinenlesbaren Schema. CI führt die Dokumentationsprüfung und alle Tests aus. Diese Prüfungen sichern Gliederung und konkrete Verweise; sachliche Aussagen müssen weiterhin anhand der zuständigen Implementierung geprüft werden.
 
 ## Sicherheit
 

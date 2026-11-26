@@ -34,6 +34,10 @@ Label periode saat ini tetap sesuai tampilan pada setiap lebar panel, termasuk k
 
 Manual inti menjelaskan host HTTP, bootstrap komponen/adaptor, penemuan penyedia bahasa, batas browser/offline, dan lokasi sumber publik. Referensi teknis memisahkan kontrak dari prosedur serta riwayat rilis. Rute preferensi, fallback bahasa README, dan namespace ID modul tetap diperbaiki; contoh frasa sandi berulang digabungkan. Pemeriksaan memvalidasi tujuan dokumentasi serta tautan sumber repositori. Validasi label HTML menghitung teks langsung tanpa membentuk HTML yang dilucuti, termasuk label dengan tag rusak atau terpisah.
 
+## Susunan dokumentasi ketat
+
+Info, Penggunaan, dan Teknis mengikuti matriks judul yang didokumentasikan dalam empat bahasa. Validasi menolak bagian tanpa isi terlihat, isi komentar tersembunyi, judul alternatif, serta pagar kode yang tidak valid. Pemeriksaan nama berkas mencakup kapitalisasi ekstensi dan sufiks bahasa. Pengujian menyelaraskan semua standar terlokalisasi dengan skema yang dijalankan.
+
 ## Komit
 
 - [37279a3](https://github.com/Cognis-Labs-HQ/Cognis/commit/37279a34a3891cca73dbc5cc5c85f3b00b2b2e8a)

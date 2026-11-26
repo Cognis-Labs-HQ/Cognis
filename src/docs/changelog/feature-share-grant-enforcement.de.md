@@ -34,6 +34,10 @@ Beschriftungen des aktuellen Zeitraums bleiben bei jeder Panelbreite ansichtsspe
 
 Kernhandbücher beschreiben HTTP-Host, Komponenten-/Adapterstart, Sprachanbietererkennung, Browser-/Offline-Grenzen und öffentliche Quelldateien. Technische Referenzen trennen Verträge von Abläufen und Änderungshistorie. Korrigiert sind Einstellungsrouten, README-Sprachauswahl und unveränderliche Modul-ID-Namensräume; wiederholte Passphrasenbeispiele sind zusammengeführt. Prüfungen validieren Dokumentziele und Repository-Links. Die HTML-Linktextprüfung zählt Text direkt, ohne bereinigtes HTML zu erzeugen, auch bei fehlerhaften oder geteilten Tags.
 
+## Strikte Dokumentgliederung
+
+Info, Anwendung und Technik folgen der dokumentierten Abschnittsmatrix in allen vier Sprachen. Die Prüfung lehnt leere sichtbare Abschnitte, versteckte Kommentarinhalte, alternative Überschriften und fehlerhafte Codeblöcke ab. Dateiprüfungen berücksichtigen die Schreibweise von Endung und Sprachsuffix. Tests halten jeden lokalisierten Standard mit dem ausführbaren Schema synchron.
+
 ## Commits
 
 - [37279a3](https://github.com/Cognis-Labs-HQ/Cognis/commit/37279a34a3891cca73dbc5cc5c85f3b00b2b2e8a)

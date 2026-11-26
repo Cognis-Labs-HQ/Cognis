@@ -26,12 +26,9 @@ import {
     validateCoreDocumentation,
 } from "../../reuse/documentation/validate.js";
 import structure from "../../reuse/documentation/structure.json" with { type: "json" };
+import { markdown } from "./fixtures/documents.js";
 
 const ROOT = resolve(import.meta.dirname, "../../../..");
-
-function markdown(kind, language = "en") {
-    return `# Example\n\nA useful introduction for the component.\n\n${structure[language][kind].map((heading) => `## ${heading}\n\nConcrete instructions and expected behavior.\n`).join("\n")}`;
-}
 
 test("every shipped component declares its complete localized documentation bundle", () => {
     const failures = componentManifestFiles(ROOT).flatMap((manifest) =>
@@ -259,14 +256,12 @@ for (const core of [true, false]) {
                     `${name}.${language}.md`,
                 );
                 for (const invalidName of [
-                    name.toLowerCase(),
-                    name[0] + name.slice(1).toLowerCase(),
+                    `${name.toLowerCase()}.${language}.md`,
+                    `${name[0] + name.slice(1).toLowerCase()}.${language}.md`,
+                    `${name}.${language}.MD`,
+                    `${name}.${language.toUpperCase()}.md`,
                 ]) {
-                    const invalid = resolve(
-                        root,
-                        directory,
-                        `${invalidName}.${language}.md`,
-                    );
+                    const invalid = resolve(root, directory, invalidName);
                     // A duplicate with the wrong case is invalid even when the canonical file exists.
                     writeFileSync(invalid, markdown(kind, language));
                     assert.ok(
@@ -278,7 +273,7 @@ for (const core of [true, false]) {
                     if (language === "en")
                         publish({
                             ...pointers,
-                            [kind]: `${directory}/${invalidName}.en.md`,
+                            [kind]: `${directory}/${invalidName}`,
                         });
                     assert.ok(
                         validateComponent(manifest, directory).length,

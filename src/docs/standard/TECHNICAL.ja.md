@@ -8,6 +8,23 @@
 
 文書のベース名は大文字と小文字を区別し、大文字で記述します。INFO、README、USAGE、TECHNICAL の小文字や大小混在の名前は、正しい名前のファイルが併存していても拒否されます。
 
+### 必須の構成
+
+文書の言語に対応する次の H2 見出しを、表の順序どおりに使います。Info はコアの INFO ファイルも含めて README の構成を使います。識別子は翻訳せず、見出しを別の名前に置き換えないでください。
+
+| 言語 | Info / README                                                                            | 使用例                                                                      | 技術情報                                                                     |
+| ---- | ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| en   | `What You Can Do` → `Before You Start` → `Get Started` → `Learn More`                    | `Prerequisites` → `Examples` → `Expected Results` → `Troubleshooting`       | `Interfaces` → `Configuration` → `Behavior` → `Security` → `Reference`       |
+| de   | `Möglichkeiten` → `Vor dem Start` → `Erste Schritte` → `Weitere Informationen`           | `Voraussetzungen` → `Beispiele` → `Erwartete Ergebnisse` → `Fehlerbehebung` | `Schnittstellen` → `Konfiguration` → `Verhalten` → `Sicherheit` → `Referenz` |
+| id   | `Yang Dapat Anda Lakukan` → `Sebelum Memulai` → `Langkah Awal` → `Pelajari Lebih Lanjut` | `Prasyarat` → `Contoh` → `Hasil yang Diharapkan` → `Pemecahan Masalah`      | `Antarmuka` → `Konfigurasi` → `Perilaku` → `Keamanan` → `Referensi`          |
+| ja   | `できること` → `始める前に` → `はじめに` → `詳しい情報`                                  | `前提条件` → `使用例` → `期待される結果` → `問題の解決`                     | `インターフェース` → `設定` → `動作` → `セキュリティ` → `リファレンス`       |
+
+先頭は字下げのない `# タイトル` を一つだけ置き、30文字以内にします。空行の後に内容を説明する導入段落を置き、その後に必須の H2 節を並べます。各見出しの前後を空行で区切ります。字下げした見出し、HTML 見出し、Setext 見出しは使いません。必須節の中には H3〜H6 の小節を設けられますが、階層を飛ばしてはいけません。各節と小節には表示される内容が必要です。親節は内容のある小節を含む形でも構いません。コメントは内容に数えません。
+
+Info に実装コードやエンドポイント仕様を記載しません。使用例と技術情報では、バッククォートまたはチルダで囲むコード例を使えます。閉じる記号は開始と同じ文字を使い、開始以上の長さで、後ろに文字列を付けません。例の中の見出しやコメントはそのままの内容として扱います。コードや箇条書きを導入段落の代わりにはできません。
+
+各トピックには `en`、`de`、`id`、`ja` ごとに3ファイル、合計12ファイルが必要です。コンポーネントのマニフェストには英語の README、USAGE、TECHNICAL のパスだけを宣言します。コアの各ディレクトリでは INFO、USAGE、TECHNICAL を使い、トピックごとのコンポーネントマニフェストは置きません。基本名は大文字、言語の接尾辞は小文字にします。独立した変更履歴領域を除き、追加の Markdown マニュアルは認めません。
+
 ## 設定
 
 `npm run check:docs` を実行してください。PR の CI は `--base` と `--branch` で新しい変更履歴を比較し、ブランチ名による四言語の一組のみを許可します。
@@ -27,6 +44,10 @@
 ### 翻訳カタログ
 
 配布するすべての `strings.xml` カタログは `<resources>` をルート要素にします。英語の値を空にせず、他の言語も同じキーと順序を維持します。リテラルの翻訳呼び出しとHTMLの翻訳属性は英語の項目に解決できなければなりません。`node --import tsx --test src/ui/tests/strings-coverage.test.js src/tooling/tests/translations/*.test.js` でカタログとソース内の参照を検査します。動的に組み立てるキーは、引き続き各コンポーネントの動作テストで検証します。
+
+### 検証と限界
+
+`npm run check:docs` は実際のコンポーネントマニフェストとコアのディレクトリを検証します。文書テストでは、すべての役割と言語について見出し、順序、内容、コード記号、ファイル名、マニフェストのパスを変えて違反の検出を確認します。また、各言語の標準にある節の表と機械可読スキーマを照合します。CI は文書チェックと全テストを実行します。これらは構成と具体的な参照先を検証するものであり、記述の正確性は担当する実装と照らして確認する必要があります。
 
 ## セキュリティ
 

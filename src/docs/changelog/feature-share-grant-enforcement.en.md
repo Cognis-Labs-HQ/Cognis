@@ -34,6 +34,10 @@ Current-period labels remain specific to the selected view at every panel width,
 
 Core manuals describe the current HTTP host, component/adapter bootstraps, language-provider discovery, browser/offline boundaries and public source locations. Technical references separate contracts from procedures and release history. Corrected preferences routes, module README language fallback and immutable module-ID namespaces; repeated passphrase examples are consolidated. Checks validate documentation destinations and repository source links. Changelog HTML-label validation counts text directly without constructing stripped HTML, including malformed and split-tag labels.
 
+## Strict documentation layouts
+
+Info, Usage and Technical enforce the documented heading matrix in all four languages. Layout validation rejects empty visible sections, hidden comment content, alternate headings and malformed fences. Filename checks include extension and locale casing. Tests keep every localized standard synchronized with the executable schema.
+
 ## Commits
 
 - [37279a3](https://github.com/Cognis-Labs-HQ/Cognis/commit/37279a34a3891cca73dbc5cc5c85f3b00b2b2e8a)
