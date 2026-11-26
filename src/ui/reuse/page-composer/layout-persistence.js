@@ -119,25 +119,37 @@ export function createLayoutPersistence({ apiFetch }) {
         }
     }
 
-    async function saveLayoutByKey(key, profiles, gridColumnCount, nextLayout) {
+    async function saveLayoutByKey(
+        key,
+        profiles,
+        gridColumnCount,
+        nextLayout,
+        signal,
+    ) {
         const account = localStorage.getItem("cognis_account");
         const token = localStorage.getItem("cognis_access_token");
         if (!account || !token) {
-            return normalizeLayoutProfiles(profiles);
+            throw new Error("layout_session_unavailable");
         }
         const nextProfiles = setLayoutForGrid(
             profiles,
             gridColumnCount,
             nextLayout,
         );
-        await apiFetch(
+        const response = await apiFetch(
             `/api/v1/social/users/${encodeURIComponent(account)}/preferences/${encodeURIComponent(key)}`,
             {
                 method: "PUT",
+                signal,
+                suppressConnectionRecoveryToast: true,
                 headers: { "content-type": "application/json" },
                 body: JSON.stringify({ layout: nextProfiles }),
             },
         );
+        if (!response.ok)
+            throw Object.assign(new Error("layout_save_failed"), {
+                httpStatus: response.status,
+            });
         return nextProfiles;
     }
 

@@ -10,7 +10,9 @@ Each page supplies its content; the shared composer controls layout and sidebar 
 
 Resize cursors indicate whether an edge can grow, shrink or move in both directions. A handle remains available for shrinking when another element blocks expansion; handles disappear when no legal resize remains.
 
-Open Edit Layout on a customizable page. Grab any part of a widget and drag it; holding near the top or bottom edge scrolls to off-screen rows. On a phone, use the visible corner handle to resize. Minimize Elements when it covers your work, then expand it to choose Done or Discard. Add places a hidden element without dragging.
+Open Edit Layout on a customizable page. Drag inside a widget to move it; holding near the top or bottom of the screen scrolls to off-screen rows. Drag a highlighted edge or corner to resize, including the left and top edges. The opposite edge stays in place. Minimize Elements when it covers your work, then expand it to choose Done or Discard. Add places a hidden element without dragging.
+
+Done, the layout shortcut and Reset report success or failure with a notification. If saving fails, the editor stays open and your pending changes remain available to retry.
 
 Resize to a phone width, open the sidebar, select a destination and return to the main content; repeat at tablet and desktop widths.
 

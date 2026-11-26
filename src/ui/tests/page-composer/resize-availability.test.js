@@ -16,7 +16,7 @@ function availability({
     rows = 6,
 } = {}) {
     const occupied = buildOccupiedSet(neighbours, hidden);
-    return resolveResizeAvailability({
+    const result = resolveResizeAvailability({
         placement,
         columns,
         rows,
@@ -25,6 +25,11 @@ function availability({
             col + width <= columns &&
             checkPlacement(occupied, col, row, width, height),
     });
+    return {
+        east: result.east,
+        south: result.south,
+        southeast: result.southeast,
+    };
 }
 const right = { id: "right", col: 2, row: 0, w: 2, h: 2 };
 const below = { id: "below", col: 0, row: 2, w: 2, h: 2 };

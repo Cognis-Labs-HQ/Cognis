@@ -47,6 +47,10 @@ Sebuah elemen adalah blok konten bernama:
 
 ### Layout Grid
 
+Editor utama dan bersarang berbagi pengubahan ukuran delapan arah melalui `resize-model.js` dan `resize-controls.js`. Pegangan kiri dan atas menggeser titik awal sambil mempertahankan tepi yang berlawanan. Perubahan posisi penunjuk mengikuti satuan grid; batas ukuran, batas grid, dan pemeriksaan tabrakan berlaku untuk semua arah. Target sentuh tetap 44px; kontrol hapus digeser ke dalam agar pegangan sudut tetap dapat dijangkau.
+
+Penulisan tata letak menggunakan `ui:pageComposer:saveLayout` dengan tahap `validate`, `persist`, dan `notify`. Penyimpanan bersamaan untuk kunci preferensi yang sama berbagi satu snapshot permintaan yang tidak berubah. Selesai, pintasan tata letak, dan Atur Ulang menampilkan notifikasi sukses atau gagal yang dilokalkan. Kesalahan HTTP dan sesi yang tidak tersedia tidak boleh dilaporkan berhasil. Kontrol pengeditan dinonaktifkan selama penyimpanan; kegagalan memulihkan perubahan tertunda dan mempertahankan editor untuk mencoba kembali. Pembatalan halaman membatalkan penyimpanan dan mencegah notifikasi terlambat. Diagnostik menggunakan `ui:log`.
+
 Baris kisi yang dapat disunting memiliki tinggi dasar 90 px; kolom berbagi lebar konten yang tersedia dengan jarak 8 px antarjalur. `gridSize.max: 'full'` merentangkan elemen di semua kolom yang tersedia.
 
 Mode penyuntingan menggunakan baris tetap dan geometri piksel yang memperhitungkan jarak untuk kartu, pratinjau seret, dan pegangan pengubahan ukuran, termasuk penempatan setengah kisi. Konten gulir menyediakan ruang bilah gulir sebelum pengukuran; koordinat penunjuk tidak menyertakan inset konten bersama. Panel Elemen menyesuaikan lebar dengan isinya dalam batas layar. Lebar terukur menentukan posisi awal dan pembatasan posisi berikutnya.

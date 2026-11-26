@@ -1,3 +1,4 @@
+import { createLayoutSaveHandler, commitLayoutEdit } from "./layout-save.js";
 import { bindCapability } from "../capabilities.js";
 
 import { watchComposerPresentation } from "./presentation.js";
@@ -212,9 +213,17 @@ export function createPageComposer(
     const {
         getLayoutForGrid,
         loadLayoutByKey,
-        saveLayoutByKey,
+        saveLayoutByKey: persistLayoutByKey,
         cloneLayoutData,
     } = createLayoutPersistence({ apiFetch });
+
+    const saveLayoutByKey = createLayoutSaveHandler({
+        ctx: uiCtx,
+        save: persistLayoutByKey,
+        notify: showToast,
+        i18n,
+        signal: tutorialLifetime.signal,
+    });
 
     const {
         captureFormState,
@@ -239,12 +248,15 @@ export function createPageComposer(
     }
 
     async function saveLayout() {
-        layoutProfiles = await saveLayoutByKey(
+        const saved = await saveLayoutByKey(
             preferenceKey,
             layoutProfiles,
             gridCols,
             layout,
         );
+        if (!saved) return false;
+        layoutProfiles = saved;
+        return true;
     }
 
     function applyLayoutForCurrentGridColumns() {
@@ -370,6 +382,7 @@ export function createPageComposer(
     });
 
     subComposerHandlers = createSubComposerHandlers({
+        signal: tutorialLifetime.signal,
         i18n,
         UNIT,
         beginEditMode,
@@ -476,16 +489,13 @@ export function createPageComposer(
             editBtn.addEventListener(
                 "click",
                 async () => {
-                    compactSubPlacements(state);
-                    state.layoutProfiles = await saveLayoutByKey(
-                        state.preferenceKey,
-                        state.layoutProfiles,
-                        state.gridCols,
-                        state.layout,
-                    );
-                    state.editing = false;
-                    endEditMode();
-                    renderSubGrid(state);
+                    await commitLayoutEdit({
+                        state,
+                        prepare: () => compactSubPlacements(state),
+                        save: () => subComposerHandlers.saveSubLayout(state),
+                        finish: endEditMode,
+                        render: () => renderSubGrid(state),
+                    });
                 },
                 { signal },
             );
@@ -528,13 +538,15 @@ export function createPageComposer(
             editBtn.addEventListener(
                 "click",
                 async () => {
-                    if (!subPageNavigation) {
-                        compactPlacements();
-                    }
-                    await saveLayout();
-                    editing = false;
-                    endEditMode();
-                    render();
+                    await commitLayoutEdit({
+                        state: composerState,
+                        prepare: () => {
+                            if (!subPageNavigation) compactPlacements();
+                        },
+                        save: saveLayout,
+                        finish: endEditMode,
+                        render,
+                    });
                 },
                 { signal },
             );

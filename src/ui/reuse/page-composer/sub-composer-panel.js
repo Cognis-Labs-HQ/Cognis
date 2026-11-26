@@ -1,3 +1,4 @@
+import { commitLayoutEdit } from "./layout-save.js";
 import { bindComposerPointerDrag } from "./pointer-drag.js";
 /** Sub-composer panel helpers for nested composer edit mode.
  * Export: createSubComposerPanelHandlers(deps). @param {object} deps @returns {object}
@@ -17,7 +18,7 @@ export function createSubComposerPanelHandlers({
     canSubPlace,
     compactSubPlacements,
     endEditMode,
-    saveLayoutFor,
+    saveLayout,
     initializeSubPlacements,
     renderSubGrid,
 }) {
@@ -117,6 +118,7 @@ export function createSubComposerPanelHandlers({
         const panel = document.createElement("div");
         panel.id = panelId;
         panel.className = "composer-panel";
+        panel.inert = state.saving === true;
 
         let listHtml;
         if (hiddenElements.length === 0) {
@@ -147,6 +149,7 @@ export function createSubComposerPanelHandlers({
       </div>
     `;
 
+        state.elementsPanel = panel;
         document.body.appendChild(panel);
         const panelWidth = panel.getBoundingClientRect().width;
         const safeTop = getComposerPanelSafeTop();
@@ -231,16 +234,13 @@ export function createSubComposerPanelHandlers({
             .querySelector(".composer-done-btn")
             .addEventListener("click", async (event) => {
                 event.preventDefault();
-                compactSubPlacements(state);
-                state.layoutProfiles = await saveLayoutFor(
-                    state.preferenceKey,
-                    state.layoutProfiles,
-                    state.gridCols,
-                    state.layout,
-                );
-                state.editing = false;
-                endEditMode();
-                renderSubGrid(state);
+                await commitLayoutEdit({
+                    state,
+                    prepare: () => compactSubPlacements(state),
+                    save: () => saveLayout(state),
+                    finish: endEditMode,
+                    render: () => renderSubGrid(state),
+                });
             });
 
         panel
@@ -257,16 +257,15 @@ export function createSubComposerPanelHandlers({
             .querySelector(".composer-reset-btn")
             .addEventListener("click", async (event) => {
                 event.preventDefault();
-                state.layout = { placements: [], hidden: [] };
-                initializeSubPlacements(state);
-                state.layoutSnapshot = JSON.parse(JSON.stringify(state.layout));
-                state.layoutProfiles = await saveLayoutFor(
-                    state.preferenceKey,
-                    state.layoutProfiles,
-                    state.gridCols,
-                    state.layout,
-                );
-                renderSubGrid(state);
+                await commitLayoutEdit({
+                    state,
+                    prepare: () => {
+                        state.layout = { placements: [], hidden: [] };
+                        initializeSubPlacements(state);
+                    },
+                    save: () => saveLayout(state),
+                    render: () => renderSubGrid(state),
+                });
             });
 
         panel.querySelectorAll("[data-composer-panel-item]").forEach((item) => {

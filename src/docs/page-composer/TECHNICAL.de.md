@@ -47,6 +47,10 @@ Ein Element ist ein benannter Inhaltsblock:
 
 ### Raster-Layout
 
+Haupt- und verschachtelte Editoren teilen die Größenänderung in acht Richtungen über `resize-model.js` und `resize-controls.js`. Linke und obere Griffe verschieben den Ursprung und halten die gegenüberliegende Kante fest. Zeigerbewegungen rasten in Rastereinheiten ein; Größenlimits, Rastergrenzen und Kollisionsprüfungen gelten in jeder Richtung. Touch-Ziele bleiben 44px groß; eingerückte Entfernen-Schaltflächen lassen die Eckgriffe frei.
+
+Layout-Schreibvorgänge nutzen `ui:pageComposer:saveLayout` mit den Stufen `validate`, `persist` und `notify`. Gleichzeitige Speichervorgänge für denselben Einstellungsschlüssel teilen einen unveränderlichen Anfrage-Schnappschuss. Fertig, das Layout-Kürzel und Zurücksetzen zeigen lokalisierte Erfolgs- oder Fehlermeldungen. HTTP-Fehler und fehlende Sitzungen können keinen Erfolg melden. Während des Speicherns sind Bearbeitungsaktionen gesperrt; bei einem Fehler werden ausstehende Änderungen wiederhergestellt und der Editor bleibt für einen erneuten Versuch offen. Seitenabbruch beendet die Speicherung und unterdrückt spätere Meldungen. Diagnosen nutzen `ui:log`.
+
 Bearbeitbare Rasterzeilen haben eine Basishöhe von 90 px; die Spalten teilen die verfügbare Inhaltsbreite mit 8 px Abstand zwischen den Rasterspuren. `gridSize.max: 'full'` erstreckt das Element über alle verfügbaren Spalten. `gridSize.max: 'half'` erstreckt es über die Hälfte der Spalten.
 
 Im Bearbeitungsmodus verwenden Karten, Ziehvorschauen und Größenänderungsgriffe dieselbe Pixelgeometrie mit festen Zeilen und berücksichtigten Abständen, auch für halbe Rastereinheiten. Der scrollbare Inhalt reserviert den Platz für die Bildlaufleiste vor der Messung; Zeigerkoordinaten schließen den gemeinsamen Inhaltsabstand aus. Elementfenster passen ihre Breite innerhalb des sichtbaren Bereichs an ihren Inhalt an. Die gemessene Breite bestimmt ihre anfängliche und begrenzte Position.

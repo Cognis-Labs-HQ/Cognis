@@ -6,6 +6,8 @@ Cognis pages arrange content for your screen and keep navigation and controls us
 
 Use a consistent layout across phones, tablets and desktop screens.
 
+On customizable pages, move widgets and resize them from any available edge or corner. A notification confirms whether your layout was saved.
+
 ## Before You Start
 
 Each page supplies its content; the shared composer controls layout and sidebar presentation.

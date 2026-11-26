@@ -1,4 +1,4 @@
-import { resolveResizeAvailability } from "./resize-availability.js";
+import { appendResizeControls } from "./resize-controls.js";
 import { bindComposerPointerDrag } from "./pointer-drag.js";
 /**
  * Main grid overlay helpers for page composer edit mode.
@@ -18,10 +18,7 @@ import {
 } from "./grid-math.js";
 import { createEditorPanelHandlers } from "./editor-panel.js";
 import { createGridGeometry } from "./grid-geometry.js";
-import {
-    resolveInitialGridWidth,
-    resolveGridWidthBounds,
-} from "./grid-sizing.js";
+import { resolveInitialGridWidth } from "./grid-sizing.js";
 import { bindLayoutKeyboard } from "./keyboard-layout.js";
 export function createGridOverlayHandlers({
     state,
@@ -498,133 +495,31 @@ export function createGridOverlayHandlers({
         }
         if (state.editing) {
             const gridSize = getGridSize(el);
-            const availability = resolveResizeAvailability({
+            appendResizeControls({
+                cell,
                 placement,
+                state,
                 gridSize,
-                columns: state.gridCols,
-                rows: state.gridRows,
-                canPlace: canPlace,
+                container: state.gridSection,
+                canPlace,
+                refreshBounds: refreshGridBounds,
+                render: renderGridComposer,
+                geometry: {
+                    point(event) {
+                        const point = gridPointerPosition(event);
+                        return {
+                            col: pixelToGridColumn(point.x),
+                            row: pixelToGridRow(point.y),
+                        };
+                    },
+                    columnOffset: gridColumnOffset,
+                    rowOffset: gridRowOffset,
+                    columnSpan: gridColumnSpanSize,
+                    rowSpan: gridRowSpanSize,
+                },
             });
-            if (availability.east) {
-                const handleE = document.createElement("div");
-                handleE.className = "composer-resize-handle composer-resize-e";
-                handleE.style.cursor = availability.east;
-                bindResizeHandle(handleE, "e", el, placement);
-                cell.appendChild(handleE);
-            }
-            if (availability.south) {
-                const handleS = document.createElement("div");
-                handleS.className = "composer-resize-handle composer-resize-s";
-                handleS.style.cursor = availability.south;
-                bindResizeHandle(handleS, "s", el, placement);
-                cell.appendChild(handleS);
-            }
-            if (availability.southeast) {
-                const handleSE = document.createElement("div");
-                handleSE.className =
-                    "composer-resize-handle composer-resize-se";
-                handleSE.style.cursor = availability.southeast;
-                bindResizeHandle(handleSE, "se", el, placement);
-                cell.appendChild(handleSE);
-            }
         }
         return cell;
-    }
-    function bindResizeHandle(handle, direction, el, placement) {
-        handle.addEventListener("pointerdown", (e) => {
-            if (e.button !== 0 || e.isPrimary === false) return;
-            e.preventDefault();
-            e.stopPropagation();
-            const resizeCursor = handle.style.cursor;
-            const gridSize = getGridSize(el);
-            const shade = document.createElement("div");
-            shade.className = "composer-shade";
-            shade.style.left = `${gridColumnOffset(placement.col)}px`;
-            shade.style.top = `${gridRowOffset(placement.row)}px`;
-            shade.style.width = `${gridColumnSpanSize(placement.w)}px`;
-            shade.style.height = `${gridRowSpanSize(placement.h)}px`;
-            state.gridSection.appendChild(shade);
-            const cell = handle.closest(".composer-cell");
-            cell.classList.add("composer-cell--resizing");
-            let currentW = placement.w;
-            let currentH = placement.h;
-            function clampValue(val, min, max) {
-                if (max != null) return Math.max(min, Math.min(max, val));
-                return Math.max(min, val);
-            }
-            function onMove(e) {
-                const { x, y } = gridPointerPosition(e);
-                if (direction === "e" || direction === "se") {
-                    const rawW = snapGridRound(
-                        pixelToGridColumn(x) - placement.col,
-                        state.gridCols,
-                    );
-                    const widthBounds = resolveGridWidthBounds(
-                        gridSize,
-                        state.gridCols - placement.col,
-                    );
-                    currentW = clampValue(
-                        rawW,
-                        widthBounds.min,
-                        widthBounds.max,
-                    );
-                }
-                if (direction === "s" || direction === "se") {
-                    const rawH = snapGridRound(
-                        pixelToGridRow(y) - placement.row,
-                        state.gridRows,
-                    );
-                    currentH = clampValue(
-                        rawH,
-                        gridSize.min[1],
-                        gridSize.max ? gridSize.max[1] : null,
-                    );
-                }
-                shade.style.width = `${gridColumnSpanSize(currentW)}px`;
-                shade.style.height = `${gridRowSpanSize(currentH)}px`;
-                shade.classList.toggle(
-                    "composer-shade--invalid",
-                    !canPlace(
-                        placement.col,
-                        placement.row,
-                        currentW,
-                        currentH,
-                        el.id,
-                    ),
-                );
-                handle.style.cursor = shade.classList.contains(
-                    "composer-shade--invalid",
-                )
-                    ? "not-allowed"
-                    : resizeCursor;
-            }
-            function onUp(event) {
-                handle.style.cursor = resizeCursor;
-                shade.remove();
-                cell.classList.remove("composer-cell--resizing");
-                if (event.type === "pointercancel") return;
-                const sizeChanged =
-                    currentW !== placement.w || currentH !== placement.h;
-                const valid = canPlace(
-                    placement.col,
-                    placement.row,
-                    currentW,
-                    currentH,
-                    el.id,
-                );
-                if (sizeChanged && valid) {
-                    const targetPlacement = state.layout.placements.find(
-                        (lp) => lp.id === el.id,
-                    );
-                    if (targetPlacement) {
-                        targetPlacement.w = currentW;
-                        targetPlacement.h = currentH;
-                    }
-                    renderGridComposer();
-                }
-            }
-            bindComposerPointerDrag(handle, e, onMove, onUp);
-        });
     }
     function canPlaceInSet(set, col, row, w, h) {
         if (col < 0 || row < 0 || col + w > state.gridCols) return false;

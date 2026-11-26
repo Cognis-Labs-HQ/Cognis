@@ -1,3 +1,4 @@
+import { commitLayoutEdit } from "./layout-save.js";
 /**
  * Renders and positions the composer element panel and its save/discard actions.
  * Exports createEditorPanelHandlers for one main composer instance.
@@ -112,6 +113,7 @@ export function createEditorPanelHandlers({
         const panel = document.createElement("div");
         panel.id = "composer-elements-panel";
         panel.className = "composer-panel";
+        panel.inert = state.saving === true;
 
         let listHtml;
         if (hiddenElements.length === 0) {
@@ -183,11 +185,13 @@ export function createEditorPanelHandlers({
             .querySelector(".composer-done-btn")
             .addEventListener("click", async (event) => {
                 event.preventDefault();
-                compactPlacements();
-                await saveLayout();
-                state.editing = false;
-                endEditMode();
-                renderGridComposer();
+                await commitLayoutEdit({
+                    state,
+                    prepare: compactPlacements,
+                    save: saveLayout,
+                    finish: endEditMode,
+                    render: renderGridComposer,
+                });
             });
 
         panel
@@ -204,11 +208,15 @@ export function createEditorPanelHandlers({
             .querySelector(".composer-reset-btn")
             .addEventListener("click", async (event) => {
                 event.preventDefault();
-                state.layout = { placements: [], hidden: [] };
-                initializePlacements();
-                state.layoutSnapshot = JSON.parse(JSON.stringify(state.layout));
-                await saveLayout();
-                renderGridComposer();
+                await commitLayoutEdit({
+                    state,
+                    prepare: () => {
+                        state.layout = { placements: [], hidden: [] };
+                        initializePlacements();
+                    },
+                    save: saveLayout,
+                    render: renderGridComposer,
+                });
             });
 
         panel.querySelectorAll("[data-composer-panel-item]").forEach((item) => {

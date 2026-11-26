@@ -58,6 +58,10 @@ An element is a named content block declared as a plain object:
 
 ### Grid layout
 
+Main and nested editors share eight-direction resizing through `resize-model.js` and `resize-controls.js`. Left and top handles adjust the origin while preserving the opposite edge. Pointer deltas snap to grid increments; size limits, grid boundaries and collision checks apply to every direction. Touch targets remain 44px, with removal controls inset to leave corner handles accessible.
+
+Layout writes run through `ui:pageComposer:saveLayout` with `validate`, `persist` and `notify` stages. Concurrent saves for the same preference key share one immutable request snapshot. Done, the layout shortcut and Reset show localized success or error toasts. HTTP errors and missing sessions cannot report success. While saving, editing controls are inert; a failed write restores the pending layout and keeps editing active for retry. Page cancellation aborts persistence and suppresses late feedback. Diagnostics use `ui:log`.
+
 Editable grid rows have a 90 px base height; columns share the available content width, with 8 px gaps between tracks. `gridSize.max: 'full'` spans the element across all available columns. `gridSize.max: 'half'` spans the element across half the available columns. Mixed forms like `['half', n]` (half-width, numeric max height) are also supported.
 
 Array declarations support `['full', 'fill']` for full width and filling the available height, or `['full', n]` for full width with a numeric height limit. Both main and nested composers honor these dimensions on narrow and wide grids. While dragging below the grid, the editor grows its content bounds and visible grid together before the widget is dropped.

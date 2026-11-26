@@ -36,7 +36,9 @@ for (const mode of ["grid", "nested"]) {
                 );
                 const before = await editorBounds(browser);
                 const point = {
-                    x: before.cell.left + 16,
+                    x:
+                        before.cell.left +
+                        Math.min(84, before.cell.width * 0.35),
                     y: Math.min(before.cell.bottom - 60, viewport[1] / 2),
                 };
                 const hit = await browser.callFunction(
@@ -158,7 +160,10 @@ for (const mode of ["grid", "nested"]) {
         async (context) => {
             const browser = await startEditorFixture(context, mode, [390, 844]);
             const bounds = await editorBounds(browser);
-            const point = { x: bounds.cell.left + 16, y: 422 };
+            const point = {
+                x: bounds.cell.left + Math.min(84, bounds.cell.width * 0.35),
+                y: 422,
+            };
             await pointerInput(browser, true, "down", point);
             const edge = { x: point.x, y: 786 };
             await pointerInput(browser, true, "move", edge);
@@ -274,7 +279,10 @@ for (const mode of ["grid", "nested"]) {
         async (context) => {
             const browser = await startEditorFixture(context, mode, [390, 844]);
             const bounds = await editorBounds(browser);
-            const point = { x: bounds.cell.left + 16, y: 422 };
+            const point = {
+                x: bounds.cell.left + Math.min(84, bounds.cell.width * 0.35),
+                y: 422,
+            };
             await pointerInput(browser, true, "down", point);
             await pointerInput(browser, true, "move", { ...point, y: 786 });
             assert.ok((await editorBounds(browser)).shade);

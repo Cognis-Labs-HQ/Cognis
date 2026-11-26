@@ -77,6 +77,8 @@
   <string name="ui.reuse.confirm">Confirm</string>
   <string name="ui.reuse.error">Error</string>
   <string name="ui.reuse.coming_soon">Coming Soon</string>
+  <string name="ui.reuse.layout_saved">Page layout updated.</string>
+  <string name="ui.reuse.layout_save_failed">Could not update the page layout. Your changes are still available to retry.</string>
   <string name="ui.reuse.save_failed">Save Failed</string>
   <string name="ui.reuse.more_information">More information</string>
   <string name="ui.reuse.system">System</string>
@@ -752,7 +754,7 @@
   <string name="ui.tutorial.workspace.dock.language.body">Use the language switcher to change the interface language. Manage the order of your preferred languages in Settings.</string>
   <string name="ui.tutorial.workspace.dock.theme.body">The appearance button switches between light and dark themes. Right-click it to open the appearance settings for more options.</string>
   <string name="ui.tutorial.workspace.dock.layout.title">Arrange Page Widgets</string>
-  <string name="ui.tutorial.workspace.dock.layout.body">Drag widgets; hold near the top or bottom edge to scroll. Minimize Elements to free space. Use Add without dragging. Resize cursors show the available directions. On touchscreens, use the visible resize and remove controls. With a keyboard, use arrows to move a focused widget or Shift plus arrows to resize. Choose Done to save or Discard to undo.</string>
+  <string name="ui.tutorial.workspace.dock.layout.body">Drag inside widgets; hold near the top or bottom screen edge to scroll. Resize using any highlighted edge or corner. Minimize Elements to free space or use Add without dragging. Cursors show available resize directions. Touch controls stay visible. Use arrows to move a focused widget or Shift plus arrows to resize. Done saves and Discard undoes changes. A notification confirms saving; failed saves keep your changes available to retry.</string>
   <string name="ui.tutorial.restart">Restart Tutorial</string>
   <string name="ui.tutorial.docs.read.browse.documents.title">Browse Documents</string>
   <string name="ui.tutorial.docs.read.browse.documents.body">Use the side menu to choose a topic or component. Expand a group to find its pages; the selected document opens beside the menu.</string>

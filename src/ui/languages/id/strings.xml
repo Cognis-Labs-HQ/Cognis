@@ -77,6 +77,8 @@
   <string name="ui.reuse.confirm">Konfirmasi</string>
   <string name="ui.reuse.error">Kesalahan</string>
   <string name="ui.reuse.coming_soon">Segera Hadir</string>
+  <string name="ui.reuse.layout_saved">Tata letak halaman diperbarui.</string>
+  <string name="ui.reuse.layout_save_failed">Tata letak halaman tidak dapat diperbarui. Perubahan Anda tetap tersedia untuk dicoba kembali.</string>
   <string name="ui.reuse.save_failed">Gagal Menyimpan</string>
   <string name="ui.reuse.more_information">Informasi lainnya</string>
   <string name="ui.reuse.system">Sistem</string>
@@ -752,7 +754,7 @@
   <string name="ui.tutorial.workspace.dock.language.body">Gunakan pengalih bahasa untuk mengganti bahasa antarmuka. Atur urutan bahasa pilihan di Pengaturan.</string>
   <string name="ui.tutorial.workspace.dock.theme.body">Tombol tampilan beralih antara tema terang dan gelap. Klik kanan untuk membuka pengaturan tampilan lainnya.</string>
   <string name="ui.tutorial.workspace.dock.layout.title">Atur Widget Halaman</string>
-  <string name="ui.tutorial.workspace.dock.layout.body">Seret widget; tahan di dekat tepi atas atau bawah untuk menggulir. Perkecil Elemen agar ruang lebih luas. Gunakan Tambah tanpa menyeret. Kursor ukuran menunjukkan arah yang tersedia. Pada layar sentuh, gunakan kontrol ukuran dan hapus yang terlihat. Dengan papan ketik, gunakan panah untuk memindahkan widget yang difokuskan atau Shift bersama panah untuk mengubah ukuran. Pilih Selesai untuk menyimpan atau Batalkan untuk membatalkan perubahan.</string>
+  <string name="ui.tutorial.workspace.dock.layout.body">Seret bagian dalam widget; tahan di dekat tepi atas atau bawah layar untuk menggulir. Ubah ukuran melalui tepi atau sudut yang disorot. Perkecil Elemen atau gunakan Tambah tanpa menyeret. Kursor menunjukkan arah yang tersedia dan kontrol sentuh tetap terlihat. Panah memindahkan widget yang difokuskan; Shift bersama panah mengubah ukuran. Selesai menyimpan dan Batalkan membatalkan perubahan. Notifikasi mengonfirmasi penyimpanan; perubahan tetap tersedia untuk dicoba kembali jika gagal.</string>
   <string name="ui.tutorial.restart">Mulai Ulang Tutorial</string>
   <string name="ui.tutorial.docs.read.browse.documents.title">Jelajahi Dokumen</string>
   <string name="ui.tutorial.docs.read.browse.documents.body">Gunakan menu samping untuk memilih topik atau komponen. Buka grup untuk menemukan halamannya; dokumen pilihan tampil di sebelah menu.</string>
