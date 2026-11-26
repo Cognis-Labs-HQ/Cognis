@@ -22,6 +22,10 @@ Widgets behalten den angefassten Punkt bei, statt unter den Zeiger zu springen. 
 
 Das Entfernen von Elementen verwendet jetzt die gemeinsame Darstellung der Abbrechen-Schaltflächen. Größenregler prüfen Größenlimits, Rastergrenzen und benachbarte Elemente. Ist Vergrößern blockiert, bleiben sie zum zulässigen Verkleinern verfügbar. Richtungszeiger zeigen die möglichen Bewegungen; Vergrößerungsversuche in belegte Felder erhalten einen Sperrzeiger.
 
+## Alle Kanten und Speicherbestätigung
+
+Widgets lassen sich in Haupt- und verschachtelten Editoren an allen acht Kanten und Ecken skalieren. Links und oben bleibt die gegenüberliegende Kante fest; Größen- und Kollisionsgrenzen gelten weiter, und Touch-Vorschauen bleiben am Griffpunkt. Fertig, das Layout-Kürzel und Zurücksetzen melden Erfolg oder Fehler über einen gemeinsamen Speicherablauf. Fehlgeschlagene Schreibvorgänge erhalten ausstehende Änderungen; gleichzeitige Speicheraufrufe teilen eine Anfrage, und Seitenabbruch verhindert spätere Meldungen.
+
 ## Commits
 
 - [42d72de](https://github.com/Cognis-Labs-HQ/Cognis/commit/42d72de61ab7765abe866b3fd3a0214bcfb2b006)
@@ -29,3 +33,4 @@ Das Entfernen von Elementen verwendet jetzt die gemeinsame Darstellung der Abbre
 - [6756c5f](https://github.com/Cognis-Labs-HQ/Cognis/commit/6756c5fadd4cd220aa045a063cb9c5fd0237269a)
 - [cb2952d](https://github.com/Cognis-Labs-HQ/Cognis/commit/cb2952d3be976a2bdb224022153b5f34aec0c434)
 - [fcc204f](https://github.com/Cognis-Labs-HQ/Cognis/commit/fcc204fe09b8fa86814d5f24b5d3839dfbc51c2b)
+- [286d397](https://github.com/Cognis-Labs-HQ/Cognis/commit/286d397650ef4e285375d95201a7eee6c70b6528)

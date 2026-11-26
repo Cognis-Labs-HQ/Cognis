@@ -22,6 +22,10 @@ Widget mempertahankan titik pegangan alih-alih melompat ke bawah penunjuk. Edito
 
 Penghapusan elemen kini menggunakan tampilan tombol batal bersama. Pegangan ukuran memeriksa batas ukuran, batas kisi, dan elemen tetangga. Pegangan tetap tersedia untuk pengecilan yang diizinkan saat pembesaran terhalang, dengan kursor arah yang menunjukkan gerakan yang tersedia. Percobaan memperbesar ke elemen lain menampilkan kursor tidak tersedia.
 
+## Semua Tepi dan Konfirmasi Simpan
+
+Widget kini dapat diubah ukurannya dari delapan tepi dan sudut di editor utama maupun bersarang. Pengubahan dari kiri dan atas mempertahankan tepi yang berlawanan, mengikuti batas ukuran dan tabrakan, serta menjaga pratinjau sentuh pada titik pegangan. Selesai, pintasan tata letak, dan Atur Ulang menampilkan notifikasi sukses atau gagal melalui satu alur penyimpanan bersama. Kegagalan mempertahankan perubahan untuk dicoba kembali; penyimpanan bersamaan berbagi satu permintaan dan pembatalan halaman mencegah notifikasi terlambat.
+
 ## Komit
 
 - [42d72de](https://github.com/Cognis-Labs-HQ/Cognis/commit/42d72de61ab7765abe866b3fd3a0214bcfb2b006)
@@ -29,3 +33,4 @@ Penghapusan elemen kini menggunakan tampilan tombol batal bersama. Pegangan ukur
 - [6756c5f](https://github.com/Cognis-Labs-HQ/Cognis/commit/6756c5fadd4cd220aa045a063cb9c5fd0237269a)
 - [cb2952d](https://github.com/Cognis-Labs-HQ/Cognis/commit/cb2952d3be976a2bdb224022153b5f34aec0c434)
 - [fcc204f](https://github.com/Cognis-Labs-HQ/Cognis/commit/fcc204fe09b8fa86814d5f24b5d3839dfbc51c2b)
+- [286d397](https://github.com/Cognis-Labs-HQ/Cognis/commit/286d397650ef4e285375d95201a7eee6c70b6528)

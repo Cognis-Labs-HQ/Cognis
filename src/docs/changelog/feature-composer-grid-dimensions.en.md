@@ -22,6 +22,10 @@ Widgets retain the point where they were grabbed instead of jumping under the po
 
 Element removal now uses the shared cancel-button appearance. Resize handles check size limits, grid boundaries and neighbouring tiles. They remain available for legal shrinking when expansion is blocked, with directional cursors showing the available moves. Attempts to expand into another tile show an unavailable cursor.
 
+## Resize from Every Edge and Confirm Saves
+
+Widgets can now resize from all eight edges and corners in main and nested editors. Left and top resizing retain the opposite edge, respect size and collision limits, and keep touch previews aligned with the grabbed point. Done, the layout shortcut and Reset show localized success or failure notifications through one shared save flow. Failed writes preserve pending edits for retry; repeated saves share a request and page cancellation prevents late feedback.
+
 ## Commits
 
 - [42d72de](https://github.com/Cognis-Labs-HQ/Cognis/commit/42d72de61ab7765abe866b3fd3a0214bcfb2b006)
@@ -29,3 +33,4 @@ Element removal now uses the shared cancel-button appearance. Resize handles che
 - [6756c5f](https://github.com/Cognis-Labs-HQ/Cognis/commit/6756c5fadd4cd220aa045a063cb9c5fd0237269a)
 - [cb2952d](https://github.com/Cognis-Labs-HQ/Cognis/commit/cb2952d3be976a2bdb224022153b5f34aec0c434)
 - [fcc204f](https://github.com/Cognis-Labs-HQ/Cognis/commit/fcc204fe09b8fa86814d5f24b5d3839dfbc51c2b)
+- [286d397](https://github.com/Cognis-Labs-HQ/Cognis/commit/286d397650ef4e285375d95201a7eee6c70b6528)

@@ -22,6 +22,10 @@
 
 要素の削除に共通のキャンセルボタンの外観を使用するようになりました。サイズ変更ハンドルは、サイズ制限、グリッド境界、隣接する要素を確認します。拡大ができなくても縮小できるハンドルは残し、方向カーソルで可能な操作を示します。他の要素に重なる拡大操作には操作不可のカーソルを表示します。
 
+## 全方向のサイズ変更と保存通知
+
+メインと入れ子の編集画面で、すべての辺と角から8方向のサイズ変更が可能になりました。左辺と上辺からの変更では反対側の辺を固定し、サイズと重なりの制限を適用してタッチのプレビューをつかんだ位置に合わせます。「完了」、レイアウトのショートカット、リセット操作は、共通の保存フローで翻訳済みの成功または失敗の通知を表示します。失敗時は変更内容を保持して再試行でき、同時保存は1つのリクエストを共有し、ページ終了後の通知を抑止します。
+
 ## コミット
 
 - [42d72de](https://github.com/Cognis-Labs-HQ/Cognis/commit/42d72de61ab7765abe866b3fd3a0214bcfb2b006)
@@ -29,3 +33,4 @@
 - [6756c5f](https://github.com/Cognis-Labs-HQ/Cognis/commit/6756c5fadd4cd220aa045a063cb9c5fd0237269a)
 - [cb2952d](https://github.com/Cognis-Labs-HQ/Cognis/commit/cb2952d3be976a2bdb224022153b5f34aec0c434)
 - [fcc204f](https://github.com/Cognis-Labs-HQ/Cognis/commit/fcc204fe09b8fa86814d5f24b5d3839dfbc51c2b)
+- [286d397](https://github.com/Cognis-Labs-HQ/Cognis/commit/286d397650ef4e285375d95201a7eee6c70b6528)
