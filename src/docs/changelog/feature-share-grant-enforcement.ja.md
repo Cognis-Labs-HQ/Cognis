@@ -52,3 +52,4 @@ Info、使用例、技術情報は4言語の見出し表に従います。構成
 - [f1f86ea](https://github.com/Cognis-Labs-HQ/Cognis/commit/f1f86ea0a157ac3486f0da039230e18bfd276b1e)
 - [4df7e6e](https://github.com/Cognis-Labs-HQ/Cognis/commit/4df7e6eb69aa07ab7528c346db81754b4574818b)
 - [2cadeac](https://github.com/Cognis-Labs-HQ/Cognis/commit/2cadeac36d4fa009791d3ecfb4f0c021e2a62c47)
+- [9b619f1](https://github.com/Cognis-Labs-HQ/Cognis/commit/9b619f145410bad15307953c0668e8cc6a68dcb7)
