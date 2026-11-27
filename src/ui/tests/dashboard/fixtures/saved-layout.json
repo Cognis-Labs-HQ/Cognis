@@ -1,0 +1,58 @@
+{
+    "layoutsByGrid": {
+        "cols-20": {
+            "placements": [
+                {
+                    "id": "app-icon",
+                    "col": 0,
+                    "row": 0,
+                    "w": 2,
+                    "h": 2
+                },
+                {
+                    "id": "welcome",
+                    "col": 2,
+                    "row": 0,
+                    "w": 4,
+                    "h": 2
+                },
+                {
+                    "id": "account-info",
+                    "col": 6,
+                    "row": 0,
+                    "w": 4,
+                    "h": 3
+                },
+                {
+                    "id": "last-login",
+                    "col": 10,
+                    "row": 0,
+                    "w": 3,
+                    "h": 2
+                },
+                {
+                    "id": "digital-clock",
+                    "col": 13,
+                    "row": 0,
+                    "w": 5,
+                    "h": 2
+                },
+                {
+                    "id": "analogue-clock",
+                    "col": 0,
+                    "row": 2,
+                    "w": 4,
+                    "h": 2
+                },
+                {
+                    "id": "calendar-upcoming",
+                    "col": 10,
+                    "row": 2,
+                    "w": 6,
+                    "h": 3
+                }
+            ],
+            "hidden": []
+        }
+    }
+}

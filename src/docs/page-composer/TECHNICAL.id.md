@@ -58,6 +58,8 @@ Sebuah elemen adalah blok konten bernama:
 
 ### Layout Grid
 
+Ukuran bawaan dan lebar minimum elemen harus menyediakan ruang untuk padding kartu dan kontennya. Merek dasbor menggunakan minimal tiga kolom grid; detail akun memakai dua baris secara bawaan, sedangkan kartu sambutan/login terakhir mempertahankan minimal tiga kolom. Jika batas lebar saat ini tidak lagi muat dalam baris tersimpan, Composer menyusun ulang dengan mengikuti batas tersebut tanpa menimpa profil tersimpan. Tampilan utama dan bersarang memakai aturan yang sama.
+
 Editor utama dan bersarang berbagi pengubahan ukuran delapan arah melalui `resize-model.js` dan `resize-controls.js`. Pegangan kiri dan atas menggeser titik awal sambil mempertahankan tepi yang berlawanan. Perubahan posisi penunjuk mengikuti satuan grid; batas ukuran, batas grid, dan pemeriksaan tabrakan berlaku untuk semua arah. Target sentuh tetap 44px; kontrol hapus digeser ke dalam agar pegangan sudut tetap dapat dijangkau.
 
 Baris kisi yang dapat disunting memiliki tinggi dasar 90 px; kolom berbagi lebar konten yang tersedia dengan jarak 8 px antarjalur. `gridSize.max: 'full'` merentangkan elemen di semua kolom yang tersedia.

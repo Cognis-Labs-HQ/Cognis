@@ -35,19 +35,8 @@ export function createPlacementResolver({
         const packed = [];
         const cStep = gridStep(maxCols);
         for (const orig of sortedVisible) {
-            const element = elems.find((e) => e.id === orig.id);
-            const gridSize = element ? getGridSize(element) : null;
-            let w;
-            if (gridSize?.fullWidth) {
-                w = maxCols;
-            } else if (gridSize?.halfWidth) {
-                w = Math.min(
-                    maxCols,
-                    Math.max(gridSize.min[0], halfGrid(maxCols)),
-                );
-            } else {
-                w = Math.min(orig.w, maxCols);
-            }
+            const bounds = resolvePlacementWidthBounds(orig, maxCols, elems);
+            const w = Math.min(bounds.max, Math.max(bounds.min, orig.w));
             const h = orig.h;
             let placed = false;
             for (let row = 0; !placed; row += cStep) {
@@ -448,6 +437,22 @@ export function createPlacementResolver({
             },
         );
     }
+    function hasWidthViolation(placements, columns, elements) {
+        return placements.some((placement) => {
+            const bounds = resolvePlacementWidthBounds(
+                placement,
+                columns,
+                elements,
+            );
+            return (
+                placement.col < 0 ||
+                placement.col + placement.w > columns ||
+                placement.w < bounds.min ||
+                placement.w > bounds.max
+            );
+        });
+    }
+
     function computeViewPlacements() {
         const visible = state.layout.placements
             .filter((p) => !state.layout.hidden.includes(p.id))
@@ -473,22 +478,8 @@ export function createPlacementResolver({
         if (normalizedRows) {
             return normalizedRows;
         }
-        const needsRepack = visible.some((p) => {
-            if (p.col + p.w > state.gridCols) return true;
-            const element = state.elements.find((e) => e.id === p.id);
-            if (!element) return false;
-            const gridSize = getGridSize(element);
-            if (gridSize.fullWidth && p.w !== state.gridCols) return true;
-            if (gridSize.halfWidth) {
-                const target = Math.min(
-                    state.gridCols,
-                    Math.max(gridSize.min[0], halfGrid(state.gridCols)),
-                );
-                if (p.w !== target) return true;
-            }
-            return false;
-        });
-        if (!needsRepack) return visible;
+        if (!hasWidthViolation(visible, state.gridCols, state.elements))
+            return visible;
         return repackPlacementsIntoColumns(visible, state.gridCols);
     }
     function computeSubViewPlacements(subState) {
@@ -506,22 +497,8 @@ export function createPlacementResolver({
         if (normalizedRows) {
             return normalizedRows;
         }
-        const needsRepack = visible.some((pl) => {
-            if (pl.col + pl.w > subState.gridCols) return true;
-            const element = subState.elements.find((e) => e.id === pl.id);
-            if (!element) return false;
-            const gridSize = getGridSize(element);
-            if (gridSize.fullWidth && pl.w !== subState.gridCols) return true;
-            if (gridSize.halfWidth) {
-                const target = Math.min(
-                    subState.gridCols,
-                    Math.max(gridSize.min[0], halfGrid(subState.gridCols)),
-                );
-                if (pl.w !== target) return true;
-            }
-            return false;
-        });
-        if (!needsRepack) return visible;
+        if (!hasWidthViolation(visible, subState.gridCols, subState.elements))
+            return visible;
         return repackPlacementsIntoColumns(
             visible,
             subState.gridCols,

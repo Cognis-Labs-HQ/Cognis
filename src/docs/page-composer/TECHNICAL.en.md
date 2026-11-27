@@ -69,6 +69,8 @@ An element is a named content block declared as a plain object:
 
 ### Grid layout
 
+Element defaults and minimum widths must include room for card padding and their content. Dashboard branding uses at least three grid columns; account details use a two-row default, and welcome/last-login cards retain at least three columns. When current width bounds cannot fit a saved row, Composer repacks it within those bounds without overwriting the stored profile. Main and nested views use the same rule.
+
 Main and nested editors share eight-direction resizing through `resize-model.js` and `resize-controls.js`. Left and top handles adjust the origin while preserving the opposite edge. Pointer deltas snap to grid increments; size limits, grid boundaries and collision checks apply to every direction. Touch targets remain 44px, with removal controls inset to leave corner handles accessible.
 
 Editable grid rows have a 90 px base height; columns share the available content width, with 8 px gaps between tracks. `gridSize.max: 'full'` spans the element across all available columns. `gridSize.max: 'half'` spans the element across half the available columns. Mixed forms like `['half', n]` (half-width, numeric max height) are also supported.

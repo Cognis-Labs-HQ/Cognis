@@ -58,6 +58,8 @@ Ein Element ist ein benannter Inhaltsblock:
 
 ### Raster-Layout
 
+Standardmaße und Mindestbreiten der Elemente müssen Kartenabstände und Inhalt berücksichtigen. Die Dashboard-Marke nutzt mindestens drei Rasterspalten; Kontodaten verwenden standardmäßig zwei Zeilen, Begrüßung und letzte Anmeldung mindestens drei Spalten. Passen aktuelle Breitengrenzen nicht mehr in eine gespeicherte Zeile, ordnet Composer sie innerhalb dieser Grenzen neu an, ohne das gespeicherte Profil zu überschreiben. Haupt- und verschachtelte Ansichten verwenden dieselbe Regel.
+
 Haupt- und verschachtelte Editoren teilen die Größenänderung in acht Richtungen über `resize-model.js` und `resize-controls.js`. Linke und obere Griffe verschieben den Ursprung und halten die gegenüberliegende Kante fest. Zeigerbewegungen rasten in Rastereinheiten ein; Größenlimits, Rastergrenzen und Kollisionsprüfungen gelten in jeder Richtung. Touch-Ziele bleiben 44px groß; eingerückte Entfernen-Schaltflächen lassen die Eckgriffe frei.
 
 Bearbeitbare Rasterzeilen haben eine Basishöhe von 90 px; die Spalten teilen die verfügbare Inhaltsbreite mit 8 px Abstand zwischen den Rasterspuren. `gridSize.max: 'full'` erstreckt das Element über alle verfügbaren Spalten. `gridSize.max: 'half'` erstreckt es über die Hälfte der Spalten.
