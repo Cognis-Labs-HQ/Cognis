@@ -557,7 +557,7 @@ Tests outside `src/core` must assume any gateway, adapter, or module outside the
 
 Prefer fully qualified database table names instead of aliases. When an alias is necessary, it must preserve the complete, descriptive table name; never shorten table names to initials, abbreviations, or single-letter aliases such as `a`, `i`, or `c`.
 
-Variable names, import bindings, function/class bindings, signature parameter labels and private members must use descriptive words. Do not use clipped forms such as `req`, `res`, `msg`, `prefs`, `dbExec`, `orig` or `tgtRow`, including inside camel-case names or constants. The shared glossary is `src/tooling/reuse/ambiguous-name-words.json`.
+Variable names, import bindings, function/class and runtime enum/namespace bindings, signature parameter labels and private members must use descriptive words. Do not use clipped forms such as `req`, `res`, `msg`, `prefs`, `dbExec`, `orig` or `tgtRow`, including inside camel-case names or constants. The shared glossary is `src/tooling/reuse/ambiguous-name-words.json`.
 
 The only short binding exceptions are:
 

@@ -144,11 +144,15 @@ export function ambiguousNameIssues(source) {
         )
             binding(node.local);
         if (
-            /^(?:FunctionDeclaration|FunctionExpression|ClassDeclaration|ClassExpression)$/.test(
+            /^(?:FunctionDeclaration|FunctionExpression|ClassDeclaration|ClassExpression|TSEnumDeclaration|TSModuleDeclaration)$/.test(
                 node.type,
             )
         )
-            binding(node.id, false, !/^Export/.test(parent?.type ?? ""));
+            binding(
+                node.id?.type === "Identifier" ? node.id : null,
+                false,
+                !/^Export/.test(parent?.type ?? ""),
+            );
         if (
             node.type === "Property" &&
             (node.key.name ?? node.key.value) === "alias" &&
@@ -167,7 +171,14 @@ export function ambiguousNameIssues(source) {
             const publicLabel =
                 relation === "exported" || relation === "imported";
             const typeLabel =
-                parent?.type.startsWith("TS") && parent.type !== "TSTypeQuery";
+                parent?.type.startsWith("TS") &&
+                parent.type !== "TSTypeQuery" &&
+                !(
+                    relation === "expression" &&
+                    /^TS(?:AsExpression|SatisfiesExpression|NonNullExpression|TypeAssertion|InstantiationExpression)$/.test(
+                        parent.type,
+                    )
+                );
             if (!propertyKey && !memberKey && !publicLabel && !typeLabel)
                 report(node, "used ignored binding");
         }

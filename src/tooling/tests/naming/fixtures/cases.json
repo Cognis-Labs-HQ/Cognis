@@ -278,5 +278,25 @@
         "name": "plural abbreviation words and constants",
         "source": "const ancestorRects = []; const settingsExts = []; const MSGS_LIMIT = 10;",
         "names": ["ancestorRects", "settingsExts", "MSGS_LIMIT"]
+    },
+    {
+        "name": "asserted ignored values are still consumed",
+        "source": "const _ = input; use(_ as number); use(_!); use(_ satisfies unknown); use(<number>_);",
+        "names": ["_", "_", "_", "_"]
+    },
+    {
+        "name": "enum and namespace runtime bindings",
+        "source": "enum a { Value } namespace b { export const label = 1; }",
+        "names": ["a", "b"]
+    },
+    {
+        "name": "module labels and descriptive namespaces remain valid",
+        "source": "declare module \"x\" {} namespace Network { export const value = 1; } enum Status { Ready }",
+        "names": []
+    },
+    {
+        "name": "type heritage and generic identifiers are not value reads",
+        "source": "interface Example<_> extends _ {} type Identity<_> = _;",
+        "names": []
     }
 ]
