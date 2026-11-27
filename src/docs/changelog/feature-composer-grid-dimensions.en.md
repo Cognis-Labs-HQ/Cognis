@@ -34,6 +34,10 @@ Reusable editor modules document their public exports, call examples, input/outp
 
 Dashboard branding has room for its icon and full title, welcome and login cards retain readable widths, and account details use a compact default height. Composer applies current minimum and maximum widths when a saved row requires repacking, keeping visible cards within their bounds without overwriting stored profiles. Normalized placements are validated before rendering, so a widened saved card at the right edge is repacked within the declared grid.
 
+## Collision-Safe Widget Exchanges
+
+Main and nested editors validate both full destination rectangles before exchanging widgets, including unequal sizes, other visible elements and grid boundaries. Mouse, touch and keyboard moves share the same checks; release revalidates the live layout before changing either position. Nested edge scrolling retains provisional grid height and remeasures previews after growth changes ancestor scrolling.
+
 ## Commits
 
 - [42d72de](https://github.com/Cognis-Labs-HQ/Cognis/commit/42d72de61ab7765abe866b3fd3a0214bcfb2b006)
@@ -45,3 +49,4 @@ Dashboard branding has room for its icon and full title, welcome and login cards
 - [f038150](https://github.com/Cognis-Labs-HQ/Cognis/commit/f03815014aee59973f68dc3f040c2bf248309f9e)
 - [fc698c8](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc698c84645f30eabbc25306ecf3eccbbb3b8828)
 - [ba219ba](https://github.com/Cognis-Labs-HQ/Cognis/commit/ba219ba88b792c7535934b4dd5e78e93ba601777)
+- [935c670](https://github.com/Cognis-Labs-HQ/Cognis/commit/935c670f7a9447e83355662c8facfbfd090255fa)

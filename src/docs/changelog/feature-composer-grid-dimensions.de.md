@@ -34,6 +34,10 @@ Wiederverwendbare Editormodule dokumentieren öffentliche Exporte, Aufrufbeispie
 
 Die Dashboard-Marke bietet Platz für Symbol und vollständigen Titel; Begrüßung und Anmeldung behalten lesbare Breiten, Kontodaten eine kompakte Standardhöhe. Muss eine gespeicherte Zeile neu angeordnet werden, berücksichtigt Composer aktuelle Mindest- und Höchstbreiten, ohne gespeicherte Profile zu überschreiben. Normalisierte Platzierungen werden vor der Darstellung geprüft, damit eine verbreiterte gespeicherte Karte am rechten Rand innerhalb des deklarierten Rasters neu angeordnet wird.
 
+## Kollisionsfreier Widget-Tausch
+
+Haupt- und verschachtelte Editoren prüfen vor dem Widget-Tausch beide vollständigen Zielflächen einschließlich unterschiedlicher Größen, anderer sichtbarer Elemente und Rastergrenzen. Maus, Touch und Tastatur verwenden dieselben Prüfungen; beim Ablegen wird das aktuelle Layout erneut geprüft, bevor eine Position geändert wird. Beim Scrollen am Rand bleibt die vorläufige Rasterhöhe erhalten; verändert die Erweiterung den Scrollversatz übergeordneter Elemente, wird die Vorschau neu vermessen.
+
 ## Commits
 
 - [42d72de](https://github.com/Cognis-Labs-HQ/Cognis/commit/42d72de61ab7765abe866b3fd3a0214bcfb2b006)
@@ -45,3 +49,4 @@ Die Dashboard-Marke bietet Platz für Symbol und vollständigen Titel; Begrüßu
 - [f038150](https://github.com/Cognis-Labs-HQ/Cognis/commit/f03815014aee59973f68dc3f040c2bf248309f9e)
 - [fc698c8](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc698c84645f30eabbc25306ecf3eccbbb3b8828)
 - [ba219ba](https://github.com/Cognis-Labs-HQ/Cognis/commit/ba219ba88b792c7535934b4dd5e78e93ba601777)
+- [935c670](https://github.com/Cognis-Labs-HQ/Cognis/commit/935c670f7a9447e83355662c8facfbfd090255fa)

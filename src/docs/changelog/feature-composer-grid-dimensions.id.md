@@ -34,6 +34,10 @@ Modul editor yang dapat digunakan kembali mendokumentasikan ekspor publik, conto
 
 Merek dasbor menyediakan ruang untuk ikon dan judul lengkap, kartu sambutan dan login mempertahankan lebar yang mudah dibaca, dan detail akun memakai tinggi bawaan yang ringkas. Composer menerapkan lebar minimum dan maksimum saat baris tersimpan perlu disusun ulang, tanpa menimpa profil tersimpan. Penempatan yang dinormalisasi divalidasi sebelum ditampilkan, sehingga kartu tersimpan di tepi kanan yang melebar disusun ulang di dalam grid yang ditetapkan.
 
+## Pertukaran Widget Tanpa Tabrakan
+
+Editor utama dan bertingkat memvalidasi kedua area tujuan widget secara penuh sebelum pertukaran, termasuk ukuran berbeda, elemen terlihat lainnya, dan batas kisi. Gerakan tetikus, sentuh, dan papan ketik memakai pemeriksaan yang sama; saat dilepas, tata letak terkini divalidasi ulang sebelum posisi mana pun diubah. Pengguliran tepi bertingkat mempertahankan tinggi kisi sementara dan mengukur ulang pratinjau setelah perluasan mengubah posisi gulir elemen induk.
+
 ## Komit
 
 - [42d72de](https://github.com/Cognis-Labs-HQ/Cognis/commit/42d72de61ab7765abe866b3fd3a0214bcfb2b006)
@@ -45,3 +49,4 @@ Merek dasbor menyediakan ruang untuk ikon dan judul lengkap, kartu sambutan dan 
 - [f038150](https://github.com/Cognis-Labs-HQ/Cognis/commit/f03815014aee59973f68dc3f040c2bf248309f9e)
 - [fc698c8](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc698c84645f30eabbc25306ecf3eccbbb3b8828)
 - [ba219ba](https://github.com/Cognis-Labs-HQ/Cognis/commit/ba219ba88b792c7535934b4dd5e78e93ba601777)
+- [935c670](https://github.com/Cognis-Labs-HQ/Cognis/commit/935c670f7a9447e83355662c8facfbfd090255fa)

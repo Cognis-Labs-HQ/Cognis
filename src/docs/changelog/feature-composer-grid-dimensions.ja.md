@@ -34,6 +34,10 @@
 
 ダッシュボードのブランドにアイコンと名前全体の領域を確保し、挨拶とログインのカードは読みやすい幅、アカウント情報はコンパクトな既定の高さを使います。保存済みの行を再配置するときは、プロファイルを上書きせず、現在の最小幅と最大幅に従って表示します。 正規化した配置を描画前に検証し、右端に保存されたカードが広がる場合は指定されたグリッド内へ再配置します。
 
+## 衝突を防ぐウィジェット交換
+
+メインと入れ子のエディターは、ウィジェットを交換する前に両方の移動先の領域全体を検証し、サイズの違い、他の表示要素、グリッド境界を確認します。マウス、タッチ、キーボードで共通の検証を使用し、リリース時に現在のレイアウトを再検証してから両方の位置を変更します。入れ子の端スクロールでは仮のグリッド高さを維持し、拡張で親要素のスクロール位置が変化した場合はプレビューを再計測します。
+
 ## コミット
 
 - [42d72de](https://github.com/Cognis-Labs-HQ/Cognis/commit/42d72de61ab7765abe866b3fd3a0214bcfb2b006)
@@ -45,3 +49,4 @@
 - [f038150](https://github.com/Cognis-Labs-HQ/Cognis/commit/f03815014aee59973f68dc3f040c2bf248309f9e)
 - [fc698c8](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc698c84645f30eabbc25306ecf3eccbbb3b8828)
 - [ba219ba](https://github.com/Cognis-Labs-HQ/Cognis/commit/ba219ba88b792c7535934b4dd5e78e93ba601777)
+- [935c670](https://github.com/Cognis-Labs-HQ/Cognis/commit/935c670f7a9447e83355662c8facfbfd090255fa)
