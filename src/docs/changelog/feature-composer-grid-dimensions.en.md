@@ -12,7 +12,7 @@ Dragging a widget below the current grid expands the content, overlay and shaded
 
 ## Accurate Previews and Room for Controls
 
-Drag previews and resize handles now use the same gap-aware dimensions as rendered cards, including half-grid placements. Editor measurements account for content padding and scrollbar space. The Elements panel uses available width so its action labels remain readable on desktop, tablet and mobile screens.
+Drag previews and resize handles now use the same gap-aware dimensions as rendered cards, including half-grid placements. Editor measurements account for content padding and scrollbar space. The Elements panel uses available width so its action labels remain readable on desktop, tablet and mobile screens. Panel positioning measures width after applying the height limit, including any internal scrollbar.
 
 ## Stable Touch Layout Editing
 
@@ -24,7 +24,7 @@ Element removal now uses the shared cancel-button appearance. Resize handles che
 
 ## Resize from Every Edge and Confirm Saves
 
-Widgets can now resize from all eight edges and corners in main and nested editors. Left and top resizing retain the opposite edge, respect size and collision limits, and keep touch previews aligned with the grabbed point. Done, the layout shortcut and Reset show localized success or failure notifications through one shared save flow. Failed writes preserve pending edits for retry; repeated saves share a request and page cancellation prevents late feedback.
+Widgets can now resize from all eight edges and corners in main and nested editors. Left and top resizing retain the opposite edge, respect size and collision limits, and keep touch previews aligned with the grabbed point. Done, the layout shortcut and Reset show localized success or failure notifications through one shared save flow. Failed writes preserve pending edits for retry; repeated saves share a request and page cancellation prevents late feedback. Save failures use concise localized notices.
 
 ## Editor Helper Contracts
 
@@ -32,7 +32,7 @@ Reusable editor modules document their public exports, call examples, input/outp
 
 ## Comfortable Workspace Defaults
 
-Dashboard branding has room for its icon and full title, welcome and login cards retain readable widths, and account details use a compact default height. Composer applies current minimum and maximum widths when a saved row requires repacking, keeping visible cards within their bounds without overwriting stored profiles.
+Dashboard branding has room for its icon and full title, welcome and login cards retain readable widths, and account details use a compact default height. Composer applies current minimum and maximum widths when a saved row requires repacking, keeping visible cards within their bounds without overwriting stored profiles. Normalized placements are validated before rendering, so a widened saved card at the right edge is repacked within the declared grid.
 
 ## Commits
 
@@ -44,3 +44,4 @@ Dashboard branding has room for its icon and full title, welcome and login cards
 - [286d397](https://github.com/Cognis-Labs-HQ/Cognis/commit/286d397650ef4e285375d95201a7eee6c70b6528)
 - [f038150](https://github.com/Cognis-Labs-HQ/Cognis/commit/f03815014aee59973f68dc3f040c2bf248309f9e)
 - [fc698c8](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc698c84645f30eabbc25306ecf3eccbbb3b8828)
+- [ba219ba](https://github.com/Cognis-Labs-HQ/Cognis/commit/ba219ba88b792c7535934b4dd5e78e93ba601777)

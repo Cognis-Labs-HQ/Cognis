@@ -12,7 +12,7 @@ Menyeret widget ke bawah grid saat ini memperluas konten, lapisan grid, dan baya
 
 ## Pratinjau Akurat dan Ruang untuk Kontrol
 
-Pratinjau seret dan pegangan pengubahan ukuran kini menggunakan ukuran yang sama dengan kartu yang dirender, termasuk jarak dan penempatan setengah kisi. Pengukuran editor memperhitungkan inset konten dan bilah gulir. Panel Elemen menggunakan lebar yang tersedia agar label tindakannya tetap terbaca di desktop, tablet, dan ponsel.
+Pratinjau seret dan pegangan pengubahan ukuran kini menggunakan ukuran yang sama dengan kartu yang dirender, termasuk jarak dan penempatan setengah kisi. Pengukuran editor memperhitungkan inset konten dan bilah gulir. Panel Elemen menggunakan lebar yang tersedia agar label tindakannya tetap terbaca di desktop, tablet, dan ponsel. Posisi panel memakai lebar yang diukur setelah batas tinggi diterapkan, termasuk bilah gulir internal.
 
 ## Penyuntingan Sentuh Stabil
 
@@ -24,7 +24,7 @@ Penghapusan elemen kini menggunakan tampilan tombol batal bersama. Pegangan ukur
 
 ## Semua Tepi dan Konfirmasi Simpan
 
-Widget kini dapat diubah ukurannya dari delapan tepi dan sudut di editor utama maupun bersarang. Pengubahan dari kiri dan atas mempertahankan tepi yang berlawanan, mengikuti batas ukuran dan tabrakan, serta menjaga pratinjau sentuh pada titik pegangan. Selesai, pintasan tata letak, dan Atur Ulang menampilkan notifikasi sukses atau gagal melalui satu alur penyimpanan bersama. Kegagalan mempertahankan perubahan untuk dicoba kembali; penyimpanan bersamaan berbagi satu permintaan dan pembatalan halaman mencegah notifikasi terlambat.
+Widget kini dapat diubah ukurannya dari delapan tepi dan sudut di editor utama maupun bersarang. Pengubahan dari kiri dan atas mempertahankan tepi yang berlawanan, mengikuti batas ukuran dan tabrakan, serta menjaga pratinjau sentuh pada titik pegangan. Selesai, pintasan tata letak, dan Atur Ulang menampilkan notifikasi sukses atau gagal melalui satu alur penyimpanan bersama. Kegagalan mempertahankan perubahan untuk dicoba kembali; penyimpanan bersamaan berbagi satu permintaan dan pembatalan halaman mencegah notifikasi terlambat. Kegagalan penyimpanan ditampilkan melalui notifikasi ringkas dalam bahasa antarmuka.
 
 ## Kontrak Helper Editor
 
@@ -32,7 +32,7 @@ Modul editor yang dapat digunakan kembali mendokumentasikan ekspor publik, conto
 
 ## Ukuran Ruang Kerja yang Nyaman
 
-Merek dasbor menyediakan ruang untuk ikon dan judul lengkap, kartu sambutan dan login mempertahankan lebar yang mudah dibaca, dan detail akun memakai tinggi bawaan yang ringkas. Composer menerapkan lebar minimum dan maksimum saat baris tersimpan perlu disusun ulang, tanpa menimpa profil tersimpan.
+Merek dasbor menyediakan ruang untuk ikon dan judul lengkap, kartu sambutan dan login mempertahankan lebar yang mudah dibaca, dan detail akun memakai tinggi bawaan yang ringkas. Composer menerapkan lebar minimum dan maksimum saat baris tersimpan perlu disusun ulang, tanpa menimpa profil tersimpan. Penempatan yang dinormalisasi divalidasi sebelum ditampilkan, sehingga kartu tersimpan di tepi kanan yang melebar disusun ulang di dalam grid yang ditetapkan.
 
 ## Komit
 
@@ -44,3 +44,4 @@ Merek dasbor menyediakan ruang untuk ikon dan judul lengkap, kartu sambutan dan 
 - [286d397](https://github.com/Cognis-Labs-HQ/Cognis/commit/286d397650ef4e285375d95201a7eee6c70b6528)
 - [f038150](https://github.com/Cognis-Labs-HQ/Cognis/commit/f03815014aee59973f68dc3f040c2bf248309f9e)
 - [fc698c8](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc698c84645f30eabbc25306ecf3eccbbb3b8828)
+- [ba219ba](https://github.com/Cognis-Labs-HQ/Cognis/commit/ba219ba88b792c7535934b4dd5e78e93ba601777)

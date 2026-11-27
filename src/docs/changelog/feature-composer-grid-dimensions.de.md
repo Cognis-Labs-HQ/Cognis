@@ -12,7 +12,7 @@ Beim Ziehen eines Widgets unter das aktuelle Raster werden Inhalt, Rasterüberla
 
 ## Genaue Vorschau und Platz für Bedienelemente
 
-Ziehvorschauen und Größenänderungsgriffe verwenden dieselben Abmessungen mit berücksichtigten Abständen wie die gerenderten Karten, auch bei halben Rastereinheiten. Die Messung berücksichtigt Inhaltsabstände und Bildlaufleisten. Das Elementfenster nutzt die verfügbare Breite, damit seine Aktionsbeschriftungen auf Desktop, Tablet und Mobilgerät lesbar bleiben.
+Ziehvorschauen und Größenänderungsgriffe verwenden dieselben Abmessungen mit berücksichtigten Abständen wie die gerenderten Karten, auch bei halben Rastereinheiten. Die Messung berücksichtigt Inhaltsabstände und Bildlaufleisten. Das Elementfenster nutzt die verfügbare Breite, damit seine Aktionsbeschriftungen auf Desktop, Tablet und Mobilgerät lesbar bleiben. Die Panelposition verwendet die nach der Höhenbegrenzung gemessene Breite einschließlich interner Bildlaufleisten.
 
 ## Stabile Touch-Bearbeitung
 
@@ -24,7 +24,7 @@ Das Entfernen von Elementen verwendet jetzt die gemeinsame Darstellung der Abbre
 
 ## Alle Kanten und Speicherbestätigung
 
-Widgets lassen sich in Haupt- und verschachtelten Editoren an allen acht Kanten und Ecken skalieren. Links und oben bleibt die gegenüberliegende Kante fest; Größen- und Kollisionsgrenzen gelten weiter, und Touch-Vorschauen bleiben am Griffpunkt. Fertig, das Layout-Kürzel und Zurücksetzen melden Erfolg oder Fehler über einen gemeinsamen Speicherablauf. Fehlgeschlagene Schreibvorgänge erhalten ausstehende Änderungen; gleichzeitige Speicheraufrufe teilen eine Anfrage, und Seitenabbruch verhindert spätere Meldungen.
+Widgets lassen sich in Haupt- und verschachtelten Editoren an allen acht Kanten und Ecken skalieren. Links und oben bleibt die gegenüberliegende Kante fest; Größen- und Kollisionsgrenzen gelten weiter, und Touch-Vorschauen bleiben am Griffpunkt. Fertig, das Layout-Kürzel und Zurücksetzen melden Erfolg oder Fehler über einen gemeinsamen Speicherablauf. Fehlgeschlagene Schreibvorgänge erhalten ausstehende Änderungen; gleichzeitige Speicheraufrufe teilen eine Anfrage, und Seitenabbruch verhindert spätere Meldungen. Fehler beim Speichern werden knapp und lokalisiert gemeldet.
 
 ## Verträge der Editor-Helfer
 
@@ -32,7 +32,7 @@ Wiederverwendbare Editormodule dokumentieren öffentliche Exporte, Aufrufbeispie
 
 ## Lesbare Arbeitsbereichsvorgaben
 
-Die Dashboard-Marke bietet Platz für Symbol und vollständigen Titel; Begrüßung und Anmeldung behalten lesbare Breiten, Kontodaten eine kompakte Standardhöhe. Muss eine gespeicherte Zeile neu angeordnet werden, berücksichtigt Composer aktuelle Mindest- und Höchstbreiten, ohne gespeicherte Profile zu überschreiben.
+Die Dashboard-Marke bietet Platz für Symbol und vollständigen Titel; Begrüßung und Anmeldung behalten lesbare Breiten, Kontodaten eine kompakte Standardhöhe. Muss eine gespeicherte Zeile neu angeordnet werden, berücksichtigt Composer aktuelle Mindest- und Höchstbreiten, ohne gespeicherte Profile zu überschreiben. Normalisierte Platzierungen werden vor der Darstellung geprüft, damit eine verbreiterte gespeicherte Karte am rechten Rand innerhalb des deklarierten Rasters neu angeordnet wird.
 
 ## Commits
 
@@ -44,3 +44,4 @@ Die Dashboard-Marke bietet Platz für Symbol und vollständigen Titel; Begrüßu
 - [286d397](https://github.com/Cognis-Labs-HQ/Cognis/commit/286d397650ef4e285375d95201a7eee6c70b6528)
 - [f038150](https://github.com/Cognis-Labs-HQ/Cognis/commit/f03815014aee59973f68dc3f040c2bf248309f9e)
 - [fc698c8](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc698c84645f30eabbc25306ecf3eccbbb3b8828)
+- [ba219ba](https://github.com/Cognis-Labs-HQ/Cognis/commit/ba219ba88b792c7535934b4dd5e78e93ba601777)
