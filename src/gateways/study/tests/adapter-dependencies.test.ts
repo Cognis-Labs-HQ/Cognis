@@ -5,7 +5,7 @@ import test from "node:test";
 import {
     mkdtemp,
     writeFile,
-    rm,
+    rm as removePath,
     mkdir,
     readFile,
     copyFile,
@@ -65,7 +65,7 @@ test("dependency cycles are unavailable instead of recursing indefinitely", () =
 
 test("discovery loads manifest UUID dependencies and bootstrap runs them before consumers", async (context) => {
     const root = await mkdtemp(path.join(tmpdir(), "study-dependencies-"));
-    context.after(() => rm(root, { recursive: true, force: true }));
+    context.after(() => removePath(root, { recursive: true, force: true }));
     const definitions = [
         { id: "a-consumer", uuid: "consumer", requires: ["base"] },
         { id: "z-base", uuid: "base", requires: [] },

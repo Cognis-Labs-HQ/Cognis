@@ -10,7 +10,7 @@ import {
     readFile,
     readdir,
     rename,
-    rm,
+    rm as removePath,
     writeFile,
 } from "node:fs/promises";
 import path from "node:path";
@@ -631,7 +631,7 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
         const target = path.join(this.installRoot, module.uuid);
         const temporary = `${target}.installing`;
         await mkdir(this.installRoot, { recursive: true });
-        await rm(temporary, { recursive: true, force: true });
+        await removePath(temporary, { recursive: true, force: true });
         const cloneUrl = this.assertCloneUrl(module.cloneUrl);
         const selectedBranch = branch ?? module.defaultBranch;
         const installRefs = [
@@ -708,7 +708,7 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
                 JSON.stringify(provenance, null, 2),
                 { mode: 0o600 },
             );
-            await rm(target, { recursive: true, force: true });
+            await removePath(target, { recursive: true, force: true });
             await rename(temporary, target);
             await this.updateCachedInstallState(
                 module.uuid,
@@ -718,7 +718,7 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
             );
             return manifest;
         } catch (error) {
-            await rm(temporary, { recursive: true, force: true });
+            await removePath(temporary, { recursive: true, force: true });
             throw error;
         }
     }
@@ -738,7 +738,7 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
                 "Module uninstall path is outside the install root",
             );
         }
-        await rm(target, {
+        await removePath(target, {
             recursive: true,
             force: true,
         });

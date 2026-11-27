@@ -210,10 +210,10 @@ export class CoreAuthGateway {
           })
         | null = null;
 
-    constructor(private readonly db: DbExecutor) {}
+    constructor(private readonly database: DbExecutor) {}
 
     async ensureSchema(): Promise<void> {
-        await this.db.ensureTable({
+        await this.database.ensureTable({
             name: "auth_adapter_configs",
             columns: [
                 {
@@ -272,7 +272,7 @@ export class CoreAuthGateway {
     }
 
     async loadPersistedConfigs(): Promise<void> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "auth_adapter_configs",
             columns: ["adapter_id", "enabled", "config_json"],
@@ -283,7 +283,7 @@ export class CoreAuthGateway {
     }
 
     async restoreRegisteredAdapter(adapterId: string): Promise<void> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "auth_adapter_configs",
             columns: ["adapter_id", "enabled", "config_json"],
@@ -346,7 +346,7 @@ export class CoreAuthGateway {
         adapter.configure(adapterConfig);
         const json = JSON.stringify(adapterConfig);
         const enabled = this.enabledAdapters.has(adapterId) ? 1 : 0;
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "INSERT",
             table: "auth_adapter_configs",
             values: {
@@ -402,7 +402,7 @@ export class CoreAuthGateway {
     async getPersistedConfig(
         adapterId: string,
     ): Promise<Record<string, unknown>> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "auth_adapter_configs",
             columns: ["config_json"],
@@ -428,7 +428,7 @@ export class CoreAuthGateway {
     ): Promise<void> {
         const json = JSON.stringify(config);
         const enabledInt = enabled ? 1 : 0;
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "INSERT",
             table: "auth_adapter_configs",
             values: {
@@ -518,9 +518,9 @@ export class CoreAuthGateway {
 
     getEnabledAdapters(): AuthProviderAdapter[] {
         return Array.from(this.adapters.values()).filter(
-            (a) =>
-                this.enabledAdapters.has(a.id) &&
-                a.authenticationProvider !== false,
+            (leftEntry) =>
+                this.enabledAdapters.has(leftEntry.id) &&
+                leftEntry.authenticationProvider !== false,
         );
     }
 

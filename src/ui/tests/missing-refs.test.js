@@ -9,11 +9,11 @@ const exportCache = new Map();
 
 function walk(dir) {
     const out = [];
-    for (const e of readdirSync(dir)) {
-        const p = join(dir, e);
-        const s = statSync(p);
-        if (s.isDirectory()) out.push(...walk(p));
-        else out.push(p);
+    for (const directoryEntry of readdirSync(dir)) {
+        const entryPath = join(dir, directoryEntry);
+        const entryStat = statSync(entryPath);
+        if (entryStat.isDirectory()) out.push(...walk(entryPath));
+        else out.push(entryPath);
     }
     return out;
 }
@@ -99,8 +99,10 @@ function extractDefinedCssClasses() {
             const stripped = src
                 .replace(/\/\*[\s\S]*?\*\//g, "")
                 .replace(/@import\s+url\([^)]*\)[^;]*;/g, "");
-            for (const m of stripped.matchAll(/\.([a-zA-Z][a-zA-Z0-9_-]*)/g)) {
-                const cls = m[1];
+            for (const match of stripped.matchAll(
+                /\.([a-zA-Z][a-zA-Z0-9_-]*)/g,
+            )) {
+                const cls = match[1];
                 if (!map.has(cls)) map.set(cls, file);
             }
         }
@@ -126,30 +128,38 @@ function extractAppliedCssClasses(content) {
 
     // Stop at `$` so that template-literal interpolations (${...}) are never read
     // as part of the class attribute value — e.g. class="tab ${active}" → only "tab".
-    for (const m of content.matchAll(/\bclass="([^"$]*)/g)) addTokens(m[1]);
-    for (const m of content.matchAll(/\bclass='([^'$]*)/g)) addTokens(m[1]);
+    for (const match of content.matchAll(/\bclass="([^"$]*)/g))
+        addTokens(match[1]);
+    for (const match of content.matchAll(/\bclass='([^'$]*)/g))
+        addTokens(match[1]);
 
     const identRe = new RegExp(`['"]${CSS_IDENT_CAPTURE}['"]`, "g");
-    for (const m of content.matchAll(/classList\.(?:add|remove)\([^)]+\)/g)) {
-        for (const arg of m[0].matchAll(identRe)) classes.add(arg[1]);
+    for (const match of content.matchAll(
+        /classList\.(?:add|remove)\([^)]+\)/g,
+    )) {
+        for (const arg of match[0].matchAll(identRe)) classes.add(arg[1]);
     }
-    for (const m of content.matchAll(
+    for (const match of content.matchAll(
         new RegExp(
             `classList\\.(?:toggle|contains)\\(\\s*['"]${CSS_IDENT_CAPTURE}['"]`,
             "g",
         ),
     )) {
-        classes.add(m[1]);
+        classes.add(match[1]);
     }
 
-    for (const m of content.matchAll(/\bclassName\s*[=:]\s*['"]([^'"]+)['"]/g))
-        addTokens(m[1]);
+    for (const match of content.matchAll(
+        /\bclassName\s*[=:]\s*['"]([^'"]+)['"]/g,
+    ))
+        addTokens(match[1]);
 
-    for (const m of content.matchAll(
+    for (const match of content.matchAll(
         /querySelector(?:All)?\(\s*['"]([^'"]+)['"]\s*\)/g,
     )) {
-        for (const cm of m[1].matchAll(/\.([a-zA-Z][a-zA-Z0-9_-]*)/g))
-            classes.add(cm[1]);
+        for (const classMatch of match[1].matchAll(
+            /\.([a-zA-Z][a-zA-Z0-9_-]*)/g,
+        ))
+            classes.add(classMatch[1]);
     }
 
     return classes;
@@ -231,19 +241,19 @@ test("no missing named imports from relative modules", () => {
             const src = readFileSync(file, "utf8");
             const fileDir = dirname(file);
 
-            for (const m of src.matchAll(
+            for (const match of src.matchAll(
                 /^import\s*\{([^}]+)\}\s*from\s*['"](\.[^'"]+)['"]/gm,
             )) {
-                const names = m[1]
+                const names = match[1]
                     .split(",")
-                    .map((n) =>
-                        n
+                    .map((className) =>
+                        className
                             .trim()
                             .replace(/\s+as\s+\w+$/, "")
                             .trim(),
                     )
                     .filter(Boolean);
-                const relPath = m[2];
+                const relPath = match[2];
                 const targetPath = resolve(fileDir, relPath);
 
                 if (!existsSync(targetPath)) {

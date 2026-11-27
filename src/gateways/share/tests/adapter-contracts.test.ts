@@ -5,11 +5,14 @@ import type { CapabilityContracts } from "@cognis/core";
 import { createShareAdapterHost } from "./adapter-host.js";
 import { CoreShareGateway } from "../gateway/index.js";
 
-test("Share defines adapter contracts before initialization and rolls back invalid adapters", async (t) => {
+test("Share defines adapter contracts before initialization and rolls back invalid adapters", async (testContext) => {
     const logs: Array<Record<string, unknown> | undefined> = [];
-    const host = createShareAdapterHost(t, (_level, _message, metadata) => {
-        logs.push(metadata);
-    });
+    const host = createShareAdapterHost(
+        testContext,
+        (_level, _message, metadata) => {
+            logs.push(metadata);
+        },
+    );
     const { root, cleanup } = host;
     const gateway = new CoreShareGateway({} as never, {} as never, {} as never);
     await host.discover(

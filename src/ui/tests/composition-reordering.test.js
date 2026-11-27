@@ -11,13 +11,13 @@ test("pointer dragging reorders one placement and prevents text selection", () =
             selector === "[data-composition-kind]" ? field : null,
     });
     const from = token(2),
-        to = token(0);
-    to.closest = (selector) =>
-        selector === "[data-composition-kind]" ? field : to;
+        destination = token(0);
+    destination.closest = (selector) =>
+        selector === "[data-composition-kind]" ? field : destination;
     let moved,
         prevented = false,
         captured = false;
-    const context = { document: { elementFromPoint: () => to } };
+    const context = { document: { elementFromPoint: () => destination } };
     Object.assign(
         context,
         loadTestModule(
@@ -56,7 +56,7 @@ test("pointer dragging reorders one placement and prevents text selection", () =
         },
     });
     listeners.pointermove({ pointerId: 1, clientX: 10, clientY: 20 });
-    assert.equal(to.dataset.compositionDrop, "before");
+    assert.equal(destination.dataset.compositionDrop, "before");
     listeners.pointerup({ pointerId: 1 });
     assert.equal(prevented, true);
     assert.equal(captured, false);

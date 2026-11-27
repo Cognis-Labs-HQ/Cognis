@@ -6,8 +6,8 @@ test("smtp adapter setup sends a code and verifies it", async () => {
     const sentCodes: Array<{ to: string; code: string }> = [];
     const adapter = createAdapter({
         canSendVerificationEmail: () => true,
-        sendVerificationEmail: async (to, code) => {
-            sentCodes.push({ to, code });
+        sendVerificationEmail: async (recipient, code) => {
+            sentCodes.push({ to: recipient, code });
         },
         getPrimaryEmail: async () => "alice@example.com",
     });

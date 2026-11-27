@@ -229,11 +229,11 @@ test("user routes create/list/update lifecycle", async () => {
             },
         } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
-            end(p: string) {
-                body = p;
+            end(responseBody: string) {
+                body = responseBody;
             },
         } as any,
         new URL("http://localhost/api/v1/users/alice"),
@@ -243,11 +243,11 @@ test("user routes create/list/update lifecycle", async () => {
     await route(
         { method: "GET", headers } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
-            end(p: string) {
-                body = p;
+            end(responseBody: string) {
+                body = responseBody;
             },
         } as any,
         new URL("http://localhost/api/v1/users"),
@@ -264,11 +264,11 @@ test("user routes create/list/update lifecycle", async () => {
             },
         } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
-            end(p: string) {
-                body = p;
+            end(responseBody: string) {
+                body = responseBody;
             },
         } as any,
         new URL("http://localhost/api/v1/users/alice/role"),
@@ -278,11 +278,11 @@ test("user routes create/list/update lifecycle", async () => {
     await route(
         { method: "DELETE", headers: ownerHeaders } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
-            end(p: string) {
-                body = p;
+            end(responseBody: string) {
+                body = responseBody;
             },
         } as any,
         new URL("http://localhost/api/v1/users/alice"),
@@ -319,8 +319,8 @@ test("user routes log account disable operations", async () => {
     await route(
         { method: "POST", headers } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -360,11 +360,11 @@ test("user info endpoint allows self-access and admin access, blocks others", as
     await route(
         { method: "GET", headers: aliceHeaders } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
-            end(p: string) {
-                body = p;
+            end(responseBody: string) {
+                body = responseBody;
             },
         } as any,
         new URL("http://localhost/api/v1/users/alice/info"),
@@ -375,11 +375,11 @@ test("user info endpoint allows self-access and admin access, blocks others", as
     await route(
         { method: "GET", headers } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
-            end(p: string) {
-                body = p;
+            end(responseBody: string) {
+                body = responseBody;
             },
         } as any,
         new URL("http://localhost/api/v1/users/alice/info"),
@@ -389,11 +389,11 @@ test("user info endpoint allows self-access and admin access, blocks others", as
     await route(
         { method: "GET", headers: bobHeaders } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
-            end(p: string) {
-                body = p;
+            end(responseBody: string) {
+                body = responseBody;
             },
         } as any,
         new URL("http://localhost/api/v1/users/alice/info"),
@@ -403,11 +403,11 @@ test("user info endpoint allows self-access and admin access, blocks others", as
     await route(
         { method: "GET", headers: aliceHeaders } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
-            end(p: string) {
-                body = p;
+            end(responseBody: string) {
+                body = responseBody;
             },
         } as any,
         new URL("http://localhost/api/v1/users/nonexistent/info"),
@@ -429,11 +429,11 @@ test("getInfo endpoint returns lastLogin field", async () => {
     await route(
         { method: "GET", headers: carolHeaders } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
-            end(p: string) {
-                body = p;
+            end(responseBody: string) {
+                body = responseBody;
             },
         } as any,
         new URL("http://localhost/api/v1/users/carol/info"),
@@ -455,11 +455,11 @@ test("getInfo endpoint returns lastLogin field", async () => {
     await route(
         { method: "GET", headers: carolHeaders } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
-            end(p: string) {
-                body = p;
+            end(responseBody: string) {
+                body = responseBody;
             },
         } as any,
         new URL("http://localhost/api/v1/users/carol/info"),
@@ -489,11 +489,11 @@ test("admin can set founder flag through isfounder endpoint", async () => {
             },
         } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
-            end(p: string) {
-                body = p;
+            end(responseBody: string) {
+                body = responseBody;
             },
         } as any,
         new URL("http://localhost/api/v1/users/dana/isfounder"),
@@ -529,8 +529,8 @@ test("disabling a user invalidates existing access tokens for that user", async 
     await route(
         { method: "POST", headers } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -563,8 +563,8 @@ test("deleting a user invalidates existing access tokens for that user", async (
     await route(
         { method: "DELETE", headers } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -593,8 +593,8 @@ test("deleting a user frees the username for re-registration", async () => {
     await route(
         { method: "DELETE", headers } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -612,8 +612,8 @@ test("deleting a user frees the username for re-registration", async () => {
             },
         } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,

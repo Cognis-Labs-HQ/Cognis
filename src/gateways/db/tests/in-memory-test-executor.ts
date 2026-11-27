@@ -139,18 +139,18 @@ export class InMemoryTestExecutor implements DbExecutor {
     }
 
     private parseCreateTable(sql: string): void {
-        const m = sql.match(
+        const match = sql.match(
             /CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?(\w+)\s*\(([\s\S]+)\)/i,
         );
-        if (!m) return;
-        const table = m[1];
-        const body = m[2];
+        if (!match) return;
+        const table = match[1];
+        const body = match[2];
 
         const pkCols: string[] = [];
         const defaults = new Map<string, unknown>();
         const uniqueCols: string[][] = [];
 
-        const lines = body.split(",").map((l) => l.trim());
+        const lines = body.split(",").map((line) => line.trim());
         const reassembled: string[] = [];
         let buf = "";
         let depth = 0;
@@ -173,13 +173,19 @@ export class InMemoryTestExecutor implements DbExecutor {
                 /^PRIMARY\s+KEY\s*\(([^)]+)\)/i,
             );
             if (pkConstraint) {
-                pkCols.push(...pkConstraint[1].split(",").map((c) => c.trim()));
+                pkCols.push(
+                    ...pkConstraint[1]
+                        .split(",")
+                        .map((column) => column.trim()),
+                );
                 continue;
             }
             const uniqueConstraint = trimLine.match(/^UNIQUE\s*\(([^)]+)\)/i);
             if (uniqueConstraint) {
                 uniqueCols.push(
-                    uniqueConstraint[1].split(",").map((c) => c.trim()),
+                    uniqueConstraint[1]
+                        .split(",")
+                        .map((column) => column.trim()),
                 );
                 continue;
             }
@@ -236,8 +242,8 @@ export class InMemoryTestExecutor implements DbExecutor {
     }
 
     private findExisting(rows: Row[], row: Row, pkCols: string[]): number {
-        return rows.findIndex((r) =>
-            pkCols.every((col) => r[col] === row[col]),
+        return rows.findIndex((row2) =>
+            pkCols.every((col) => row2[col] === row[col]),
         );
     }
 
@@ -251,9 +257,9 @@ export class InMemoryTestExecutor implements DbExecutor {
         if (!schema || schema.uniqueCols.length === 0) return false;
         for (let i = 0; i < rows.length; i++) {
             if (i === excludeIndex) continue;
-            for (const uk of schema.uniqueCols) {
+            for (const uniqueKey of schema.uniqueCols) {
                 if (
-                    uk.every(
+                    uniqueKey.every(
                         (col) =>
                             rows[i][col] !== undefined &&
                             rows[i][col] === row[col],
@@ -278,30 +284,32 @@ export class InMemoryTestExecutor implements DbExecutor {
 
         const colsMatch = sql.match(/\(([^)]+)\)\s*VALUES/i);
         if (!colsMatch) return { rowCount: 0 };
-        const cols = colsMatch[1].split(",").map((c) => c.trim());
+        const cols = colsMatch[1].split(",").map((column) => column.trim());
 
         const valuesMatch = sql.match(/VALUES\s*\(([^)]+)\)/i);
         const valuePlaceholders = valuesMatch
-            ? valuesMatch[1].split(",").map((v) => v.trim())
+            ? valuesMatch[1].split(",").map((value) => value.trim())
             : [];
 
         const row: Row = {};
         let paramIdx = 0;
         for (let i = 0; i < cols.length; i++) {
-            const ph = valuePlaceholders[i] ?? "";
-            const phMatch = ph.match(/^\$(\d+)$/);
+            const valuePlaceholder = valuePlaceholders[i] ?? "";
+            const phMatch = valuePlaceholder.match(/^\$(\d+)$/);
             if (phMatch) {
                 row[cols[i]] = params[Number(phMatch[1]) - 1];
-            } else if (/^(NOW\(\)|CURRENT_TIMESTAMP)$/i.test(ph)) {
+            } else if (
+                /^(NOW\(\)|CURRENT_TIMESTAMP)$/i.test(valuePlaceholder)
+            ) {
                 row[cols[i]] = new Date().toISOString();
-            } else if (/^TRUE$/i.test(ph)) {
+            } else if (/^TRUE$/i.test(valuePlaceholder)) {
                 row[cols[i]] = true;
-            } else if (/^FALSE$/i.test(ph)) {
+            } else if (/^FALSE$/i.test(valuePlaceholder)) {
                 row[cols[i]] = false;
-            } else if (/^\?$/.test(ph)) {
+            } else if (/^\?$/.test(valuePlaceholder)) {
                 row[cols[i]] = params[paramIdx++];
-            } else if (/^\d+$/.test(ph)) {
-                row[cols[i]] = Number(ph);
+            } else if (/^\d+$/.test(valuePlaceholder)) {
+                row[cols[i]] = Number(valuePlaceholder);
             } else {
                 row[cols[i]] = params[i] ?? null;
             }
@@ -330,7 +338,7 @@ export class InMemoryTestExecutor implements DbExecutor {
                 if (updateMatch) {
                     const updates = updateMatch[1]
                         .split(",")
-                        .map((s) => s.trim());
+                        .map((statement) => statement.trim());
                     for (const upd of updates) {
                         const exclMatch = upd.match(
                             /(\w+)\s*=\s*(?:EXCLUDED|excluded|VALUES\((\w+)\))\.?(\w*)/,
@@ -419,18 +427,18 @@ export class InMemoryTestExecutor implements DbExecutor {
         aliasMap.set(mainAlias, mainTable);
         aliasMap.set(mainTable, mainTable);
 
-        for (const jm of joinMatches) {
-            const joinTable = jm[1];
-            const joinAlias = jm[2] ?? joinTable;
+        for (const joinMatch of joinMatches) {
+            const joinTable = joinMatch[1];
+            const joinAlias = joinMatch[2] ?? joinTable;
             aliasMap.set(joinAlias, joinTable);
 
-            const leftAlias = jm[3];
-            const leftCol = jm[4];
-            const rightAlias = jm[5];
-            const rightCol = jm[6];
+            const leftAlias = joinMatch[3];
+            const leftCol = joinMatch[4];
+            const rightAlias = joinMatch[5];
+            const rightCol = joinMatch[6];
 
             const joinRows = this.getTable(joinTable);
-            const isLeft = /LEFT\s+JOIN/i.test(jm[0]);
+            const isLeft = /LEFT\s+JOIN/i.test(joinMatch[0]);
 
             const leftIsMain =
                 leftAlias === mainAlias ||
@@ -456,18 +464,18 @@ export class InMemoryTestExecutor implements DbExecutor {
             rows = rows.flatMap((mainRow) => {
                 const mainVal =
                     mainRow[mainCol] ?? mainRow[`${leftAlias}.${leftCol}`];
-                const matches = joinRows.filter((jr) => {
-                    const jVal = jr[jCol];
+                const matches = joinRows.filter((joinedRow) => {
+                    const jVal = joinedRow[jCol];
                     return jVal === mainVal;
                 });
                 if (matches.length === 0 && isLeft) {
                     return [mainRow];
                 }
                 if (matches.length === 0) return [];
-                return matches.map((jr) => {
+                return matches.map((joinedRow) => {
                     const merged: Row = { ...mainRow };
-                    for (const [k, v] of Object.entries(jr)) {
-                        if (!(k in merged)) merged[k] = v;
+                    for (const [key, value] of Object.entries(joinedRow)) {
+                        if (!(key in merged)) merged[key] = value;
                     }
                     return merged;
                 });
@@ -519,7 +527,7 @@ export class InMemoryTestExecutor implements DbExecutor {
                 const col = eqMatch[2];
                 const pidx = Number(eqMatch[3]) - 1;
                 const val = params[pidx];
-                result = result.filter((r) => r[col] === val);
+                result = result.filter((row) => row[col] === val);
                 continue;
             }
             const neqMatch = cond.match(/(?:(\w+)\.)?(\w+)\s*!=\s*\$(\d+)/);
@@ -527,7 +535,7 @@ export class InMemoryTestExecutor implements DbExecutor {
                 const col = neqMatch[2];
                 const pidx = Number(neqMatch[3]) - 1;
                 const val = params[pidx];
-                result = result.filter((r) => r[col] !== val);
+                result = result.filter((row) => row[col] !== val);
                 continue;
             }
             const gtMatch = cond.match(/(?:(\w+)\.)?(\w+)\s*>\s*\$(\d+)/);
@@ -536,7 +544,7 @@ export class InMemoryTestExecutor implements DbExecutor {
                 const pidx = Number(gtMatch[3]) - 1;
                 const val = params[pidx];
                 result = result.filter(
-                    (r) => String(r[col] ?? "") > String(val ?? ""),
+                    (row) => String(row[col] ?? "") > String(val ?? ""),
                 );
                 continue;
             }
@@ -546,7 +554,7 @@ export class InMemoryTestExecutor implements DbExecutor {
                 const pidx = Number(ltMatch[3]) - 1;
                 const val = params[pidx];
                 result = result.filter(
-                    (r) => String(r[col] ?? "") < String(val ?? ""),
+                    (row) => String(row[col] ?? "") < String(val ?? ""),
                 );
                 continue;
             }
@@ -559,14 +567,16 @@ export class InMemoryTestExecutor implements DbExecutor {
                     .replace(/[.+^${}()|[\]\\]/g, "\\$&")
                     .replace(/%/g, ".*")
                     .replace(/_/g, ".");
-                const re = new RegExp(`^${regexPattern}$`, "i");
-                result = result.filter((r) => re.test(String(r[col] ?? "")));
+                const pattern2 = new RegExp(`^${regexPattern}$`, "i");
+                result = result.filter((row) =>
+                    pattern2.test(String(row[col] ?? "")),
+                );
                 continue;
             }
             const isNullMatch = cond.match(/(?:(\w+)\.)?(\w+)\s+IS\s+NULL/i);
             if (isNullMatch) {
                 const col = isNullMatch[2];
-                result = result.filter((r) => r[col] == null);
+                result = result.filter((row) => row[col] == null);
                 continue;
             }
             const isNotNullMatch = cond.match(
@@ -574,7 +584,7 @@ export class InMemoryTestExecutor implements DbExecutor {
             );
             if (isNotNullMatch) {
                 const col = isNotNullMatch[2];
-                result = result.filter((r) => r[col] != null);
+                result = result.filter((row) => row[col] != null);
                 continue;
             }
         }
@@ -601,14 +611,14 @@ export class InMemoryTestExecutor implements DbExecutor {
         const setClauses: string[] = [];
         let buf = "";
         let depth = 0;
-        for (const ch of rawSetClauses) {
-            if (ch === "(") depth++;
-            if (ch === ")") depth--;
-            if (ch === "," && depth === 0) {
+        for (const setClause of rawSetClauses) {
+            if (setClause === "(") depth++;
+            if (setClause === ")") depth--;
+            if (setClause === "," && depth === 0) {
                 setClauses.push(buf.trim());
                 buf = "";
             } else {
-                buf += ch;
+                buf += setClause;
             }
         }
         if (buf.trim()) setClauses.push(buf.trim());
@@ -656,10 +666,10 @@ export class InMemoryTestExecutor implements DbExecutor {
             const subVal = params[subParamIdx];
 
             const subRows = this.getTable(subTable);
-            const subMatch = subRows.find((r) => r[subWhereCol] === subVal);
+            const subMatch = subRows.find((row) => row[subWhereCol] === subVal);
             if (!subMatch) return [];
             const resolvedVal = subMatch[selectCol];
-            return rows.filter((r) => r[outerCol] === resolvedVal);
+            return rows.filter((row) => row[outerCol] === resolvedVal);
         }
 
         return this.applyWhere(rows, whereText, params);

@@ -1,9 +1,9 @@
 import { loadLibraryUiModule } from "../reuse/ui-module.ts";
 import assert from "node:assert/strict";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 import test from "node:test";
 
-const context = vm.createContext({
+const context = virtualMachine.createContext({
     escapeHtml: String,
     parseLanguageCode: (value) => value,
     document: { documentElement: { lang: "en" } },

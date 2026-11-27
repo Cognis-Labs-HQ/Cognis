@@ -1,21 +1,21 @@
 import assert from "node:assert/strict";
-import fs from "node:fs";
+import fileSystem from "node:fs";
 import test from "node:test";
 import { resolveReleaseChangelogStatus } from "../../layouts/release-changelog/status.js";
 
-const settingsSource = fs.readFileSync(
+const settingsSource = fileSystem.readFileSync(
     new URL("../../app/settings/index.js", import.meta.url),
     "utf8",
 );
-const editorSource = fs.readFileSync(
+const editorSource = fileSystem.readFileSync(
     new URL("../../app/settings/advanced-prefs.js", import.meta.url),
     "utf8",
 );
-const acknowledgementSource = fs.readFileSync(
+const acknowledgementSource = fileSystem.readFileSync(
     new URL("../../app/settings/editor-acknowledgement.js", import.meta.url),
     "utf8",
 );
-const releasePopupSource = fs.readFileSync(
+const releasePopupSource = fileSystem.readFileSync(
     new URL("../../layouts/release-changelog/popup.js", import.meta.url),
     "utf8",
 );

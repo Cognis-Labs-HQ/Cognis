@@ -121,7 +121,8 @@ test("no source file uses the deprecated flowCtx.on() or ctx.on() flow hook shor
         // Exclude this test file from the scan to avoid self-matching on the
         // pattern strings defined in this file.
     ].filter(
-        (f) => f !== path.resolve(import.meta.dirname, "ctx-boundary.test.ts"),
+        (file) =>
+            file !== path.resolve(import.meta.dirname, "ctx-boundary.test.ts"),
     );
 
     // Matches flowCtx.on( or ctx.on( followed by a quoted string (flow ID),
@@ -205,8 +206,8 @@ test("gateway contract types are sourced from @cognis/core, not gateway files", 
             );
             if (!importMatch) continue;
             const importStatement = importMatch[0];
-            const usesContractType = CONTRACT_TYPES.some((t) =>
-                importStatement.includes(t),
+            const usesContractType = CONTRACT_TYPES.some((contractType) =>
+                importStatement.includes(contractType),
             );
             if (usesContractType) {
                 const rel = path.relative(srcRoot, file);
@@ -311,7 +312,8 @@ test("no source file outside core uses the removed ensureCtxCapability helper", 
         ...(await findTsFiles(path.join(srcRoot, "api"))),
         ...(await findTsFiles(path.join(srcRoot, "modules"))),
     ].filter(
-        (f) => f !== path.resolve(import.meta.dirname, "ctx-boundary.test.ts"),
+        (file) =>
+            file !== path.resolve(import.meta.dirname, "ctx-boundary.test.ts"),
     );
 
     const pattern = /\bensureCtxCapability\b/;
@@ -342,7 +344,8 @@ test("no source file outside core calls addFlowStageHook directly", async () => 
         ...(await findTsFiles(path.join(srcRoot, "api"))),
         ...(await findTsFiles(path.join(srcRoot, "modules"))),
     ].filter(
-        (f) => f !== path.resolve(import.meta.dirname, "ctx-boundary.test.ts"),
+        (file) =>
+            file !== path.resolve(import.meta.dirname, "ctx-boundary.test.ts"),
     );
 
     const pattern = /\.addFlowStageHook\(/;

@@ -479,7 +479,9 @@ export class LeaderboardService implements LeaderboardCapability {
         if (!definition) throw new Error("definition_not_found");
         const now = Date.parse(query.now ?? new Date().toISOString());
         const criteria = [...definition.criteria].sort(
-            (a, b) => a.priority - b.priority || a.id.localeCompare(b.id),
+            (leftEntry, rightEntry) =>
+                leftEntry.priority - rightEntry.priority ||
+                leftEntry.id.localeCompare(rightEntry.id),
         );
         const values = new Map<string, Map<string, LeaderboardObservation[]>>();
         const classAccess = new Map<string, boolean>();
@@ -529,9 +531,12 @@ export class LeaderboardService implements LeaderboardCapability {
         const eligible = [...values].filter(
             ([participantId, grouped]) =>
                 criteria.every(
-                    (c) =>
-                        (grouped.get(c.id)?.flatMap((o) => o.evidenceEventIds)
-                            .length ?? 0) >= c.minimumEvidence,
+                    (criterion) =>
+                        (grouped
+                            .get(criterion.id)
+                            ?.flatMap(
+                                (observation) => observation.evidenceEventIds,
+                            ).length ?? 0) >= criterion.minimumEvidence,
                 ) &&
                 (definition.kind !== "event" ||
                     this.participation.get(
@@ -551,30 +556,37 @@ export class LeaderboardService implements LeaderboardCapability {
             return { rows: [], total: 0 };
         const raw = eligible.map(([participantId, grouped]) => {
             const criterionValues = Object.fromEntries(
-                criteria.map((c) => [
-                    c.id,
-                    grouped.get(c.id)!.reduce((sum, o) => sum + o.value, 0),
+                criteria.map((criterion) => [
+                    criterion.id,
+                    grouped
+                        .get(criterion.id)!
+                        .reduce(
+                            (sum, observation) => sum + observation.value,
+                            0,
+                        ),
                 ]),
             );
             const vector = criteria.map(
-                (c) =>
-                    criterionValues[c.id] *
-                    (c.direction === "descending" ? -1 : 1),
+                (criterion) =>
+                    criterionValues[criterion.id] *
+                    (criterion.direction === "descending" ? -1 : 1),
             );
             const score =
                 definition.strategy === "weighted"
                     ? criteria.reduce(
-                          (sum, c) =>
+                          (sum, criterion) =>
                               sum +
-                              criterionValues[c.id] *
-                                  c.weight! *
-                                  (c.direction === "descending" ? 1 : -1),
+                              criterionValues[criterion.id] *
+                                  criterion.weight! *
+                                  (criterion.direction === "descending"
+                                      ? 1
+                                      : -1),
                           0,
                       )
                     : vector;
             const updatedAt = [...grouped.values()]
                 .flat()
-                .map((o) => o.observedAt)
+                .map((observation) => observation.observedAt)
                 .sort()
                 .at(-1)!;
             const evidenceTimes = Object.fromEntries(
@@ -603,17 +615,19 @@ export class LeaderboardService implements LeaderboardCapability {
             };
         });
         const compareRank = (
-            a: (typeof raw)[number],
-            b: (typeof raw)[number],
+            leftEntry: (typeof raw)[number],
+            rightEntry: (typeof raw)[number],
         ) => {
             if (definition.strategy === "weighted") {
                 const scoreDifference =
-                    (b.score as number) - (a.score as number);
+                    (rightEntry.score as number) - (leftEntry.score as number);
                 if (scoreDifference) return scoreDifference;
             } else {
-                for (let index = 0; index < a.vector.length; index += 1)
-                    if (a.vector[index] !== b.vector[index])
-                        return a.vector[index] - b.vector[index];
+                for (let index = 0; index < leftEntry.vector.length; index += 1)
+                    if (leftEntry.vector[index] !== rightEntry.vector[index])
+                        return (
+                            leftEntry.vector[index] - rightEntry.vector[index]
+                        );
             }
             for (const criterion of criteria) {
                 const tieBreak = criterion.tieBreak;
@@ -621,8 +635,8 @@ export class LeaderboardService implements LeaderboardCapability {
                 const field =
                     tieBreak === "earliestEvidence" ? "earliest" : "latest";
                 const difference =
-                    a.evidenceTimes[criterion.id][field] -
-                    b.evidenceTimes[criterion.id][field];
+                    leftEntry.evidenceTimes[criterion.id][field] -
+                    rightEntry.evidenceTimes[criterion.id][field];
                 if (difference)
                     return tieBreak === "earliestEvidence"
                         ? difference
@@ -631,9 +645,9 @@ export class LeaderboardService implements LeaderboardCapability {
             return 0;
         };
         raw.sort(
-            (a, b) =>
-                compareRank(a, b) ||
-                a.participantId.localeCompare(b.participantId),
+            (leftEntry, rightEntry) =>
+                compareRank(leftEntry, rightEntry) ||
+                leftEntry.participantId.localeCompare(rightEntry.participantId),
         );
         const snapshotKey = [
             definition.id,
@@ -735,11 +749,11 @@ export class LeaderboardService implements LeaderboardCapability {
             columns: [
                 { id: "rank", label: labels.rank },
                 { id: "participant", label: labels.participant },
-                ...definition.criteria.map((c) => ({
-                    id: c.id,
+                ...definition.criteria.map((criterion) => ({
+                    id: criterion.id,
                     label:
-                        c.label[locale] ||
-                        c.label.en ||
+                        criterion.label[locale] ||
+                        criterion.label.en ||
                         (() => {
                             throw new Error("missing_translation");
                         })(),

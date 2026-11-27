@@ -71,10 +71,10 @@ function parseJson<Value>(value: unknown): Value {
 }
 
 export class DbProgressStore implements ProgressStore {
-    constructor(private readonly db: DbExecutor) {}
+    constructor(private readonly database: DbExecutor) {}
 
     async ensureSchema(): Promise<void> {
-        await this.db.ensureTable({
+        await this.database.ensureTable({
             name: "study_progress_events",
             columns: [
                 { name: "event_id", type: "text", primaryKey: true },
@@ -84,7 +84,7 @@ export class DbProgressStore implements ProgressStore {
                 { name: "event_json", type: "text", notNull: true },
             ],
         });
-        await this.db.ensureTable({
+        await this.database.ensureTable({
             name: "study_progress_projections",
             columns: [
                 { name: "projection_id", type: "text", primaryKey: true },
@@ -95,7 +95,7 @@ export class DbProgressStore implements ProgressStore {
     }
 
     async append(event: LearningEvent): Promise<"inserted" | "duplicate"> {
-        return this.db.transaction(async (databaseExecutor) => {
+        return this.database.transaction(async (databaseExecutor) => {
             const insertion = await databaseExecutor.executeCommand({
                 option: "INSERT",
                 table: "study_progress_events",
@@ -145,7 +145,7 @@ export class DbProgressStore implements ProgressStore {
     }
 
     async all(actorId?: string): Promise<LearningEvent[]> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "study_progress_events",
             ...(actorId
@@ -165,7 +165,7 @@ export class DbProgressStore implements ProgressStore {
         projections: ProgressProjection[],
         actorId?: string,
     ): Promise<void> {
-        await this.db.transaction(async (databaseExecutor) => {
+        await this.database.transaction(async (databaseExecutor) => {
             await databaseExecutor.executeCommand({
                 option: "DELETE",
                 table: "study_progress_projections",
@@ -192,7 +192,7 @@ export class DbProgressStore implements ProgressStore {
     }
 
     async projections(): Promise<ProgressProjection[]> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "study_progress_projections",
         });

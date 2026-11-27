@@ -60,7 +60,7 @@ const projects = findCompositeProjects(srcRoot).sort();
 const tsconfig = {
     extends: "./tsconfig.base.json",
     files: [],
-    references: projects.map((p) => ({ path: `./${p}` })),
+    references: projects.map((project) => ({ path: `./${project}` })),
 };
 
 const output = JSON.stringify(tsconfig, null, 4) + "\n";

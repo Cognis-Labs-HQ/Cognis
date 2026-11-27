@@ -49,11 +49,11 @@ test("social routes - follow and unfollow", async () => {
         await route(
             makeReq("POST", aliceToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL("http://localhost/api/v1/social/users/provider-bob/follow"),
@@ -83,11 +83,11 @@ test("social routes - follow and unfollow", async () => {
         await route(
             makeReq("DELETE", aliceToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL("http://localhost/api/v1/social/users/provider-bob/follow"),
@@ -158,8 +158,8 @@ test("social routes - can unfollow inactive profile", async () => {
         await route(
             makeReq("DELETE", aliceToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
                 end() {},
             } as any,
@@ -185,8 +185,8 @@ test("social routes - cannot follow hidden user", async () => {
         await route(
             makeReq("POST", aliceToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
                 end() {},
             } as any,
@@ -212,11 +212,11 @@ test("social routes - hidden requester cannot follow visible user", async () => 
         await route(
             makeReq("POST", aliceToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL("http://localhost/api/v1/social/users/bob/follow"),
@@ -241,8 +241,8 @@ test("social routes - cannot follow yourself", async () => {
         await route(
             makeReq("POST", aliceToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
                 end() {},
             } as any,
@@ -266,8 +266,8 @@ test("social routes - unauthenticated follow request returns 401", async () => {
         await route(
             makeReq("POST", null),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
                 end() {},
             } as any,
@@ -295,8 +295,8 @@ test("social routes - block removes follow and returns 404 for blocked user", as
         await route(
             makeReq("POST", aliceToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
                 end() {},
             } as any,
@@ -308,8 +308,8 @@ test("social routes - block removes follow and returns 404 for blocked user", as
         await route(
             makeReq("POST", bobToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
                 end() {},
             } as any,
@@ -336,11 +336,11 @@ test("social routes - admin blocked by a user cannot find blocker in social sear
         await route(
             makeReq("GET", adminToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL("http://localhost/api/v1/social/users/search?q=ali"),
@@ -364,8 +364,8 @@ test("social routes - cannot block yourself", async () => {
         await route(
             makeReq("POST", aliceToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
                 end() {},
             } as any,
@@ -394,11 +394,11 @@ test("social routes - unblock removes block", async () => {
         await route(
             makeReq("DELETE", aliceToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL("http://localhost/api/v1/social/users/bob/block"),
@@ -409,8 +409,8 @@ test("social routes - unblock removes block", async () => {
         await route(
             makeReq("POST", bobToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
                 end() {},
             } as any,
@@ -445,11 +445,11 @@ test("social routes - get followers and following", async () => {
         await route(
             makeReq("GET", aliceToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL("http://localhost/api/v1/social/users/alice/follow"),
@@ -461,11 +461,11 @@ test("social routes - get followers and following", async () => {
         await route(
             makeReq("GET", aliceToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL("http://localhost/api/v1/social/users/bob/following"),
@@ -500,11 +500,11 @@ test("social routes - followers list is empty for friends-visibility account whe
         await route(
             makeReq("GET", carolToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL("http://localhost/api/v1/social/users/alice/follow"),
@@ -532,11 +532,11 @@ test("social routes - admin search includes hidden users", async () => {
         await route(
             makeReq("GET", adminToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL("http://localhost/api/v1/social/users/search?q=hidden"),
@@ -567,11 +567,11 @@ test("social routes - regular search excludes hidden users", async () => {
         await route(
             makeReq("GET", aliceToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL("http://localhost/api/v1/social/users/search?q=hidden"),
@@ -601,11 +601,11 @@ test("social routes - admin relationship can message hidden users", async () => 
         await route(
             makeReq("GET", adminToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL(

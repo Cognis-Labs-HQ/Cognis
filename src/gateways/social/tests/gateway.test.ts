@@ -6,7 +6,13 @@ import {
 } from "@cognis/core";
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, writeFile, copyFile, rm } from "node:fs/promises";
+import {
+    mkdtemp,
+    mkdir,
+    writeFile,
+    copyFile,
+    rm as removePath,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { CoreSocialGateway } from "../gateway.js";
@@ -27,9 +33,9 @@ function createBaseCtx(gateway: CoreSocialGateway) {
     } as never;
 }
 
-test("social gateway discovers adapters before bootstrap lifecycle wiring", async (t) => {
+test("social gateway discovers adapters before bootstrap lifecycle wiring", async (testContext) => {
     const root = await mkdtemp(path.join(tmpdir(), "cognis-social-adapters-"));
-    t.after(() => rm(root, { recursive: true, force: true }));
+    testContext.after(() => removePath(root, { recursive: true, force: true }));
     const adapterDir = path.join(root, "messages");
     await mkdir(adapterDir);
     await writeFile(

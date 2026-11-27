@@ -170,7 +170,11 @@ export class SmtpNotificationQueue {
             .filter(
                 (entry) => entry.status === "sent" || entry.status === "failed",
             )
-            .sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt));
+            .sort(
+                (leftEntry, rightEntry) =>
+                    Date.parse(rightEntry.updatedAt) -
+                    Date.parse(leftEntry.updatedAt),
+            );
         if (completed.length <= SMTP_QUEUE_HISTORY_LIMIT) return;
         for (const entry of completed.slice(SMTP_QUEUE_HISTORY_LIMIT)) {
             this.queueById.delete(entry.notificationId);
@@ -366,7 +370,11 @@ export class SmtpNotificationQueue {
 
     listQueue(): NotificationSenderQueueEntry[] {
         return Array.from(this.queueById.values())
-            .sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt))
+            .sort(
+                (leftEntry, rightEntry) =>
+                    Date.parse(rightEntry.updatedAt) -
+                    Date.parse(leftEntry.updatedAt),
+            )
             .map((entry) => this.snapshotQueueEntry(entry));
     }
 

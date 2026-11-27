@@ -83,7 +83,10 @@ function fixture({ deferred = false, fallback = loadingFallback } = {}) {
             const end = now + duration;
             while (true) {
                 const entry = [...timers]
-                    .sort((a, b) => a[1].time - b[1].time)
+                    .sort(
+                        (leftEntry, rightEntry) =>
+                            leftEntry[1].time - rightEntry[1].time,
+                    )
                     .find(([, timer]) => timer.time <= end);
                 if (!entry) break;
                 const [id, timer] = entry;

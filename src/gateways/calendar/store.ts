@@ -50,10 +50,10 @@ function parseJsonNumberArray(value: unknown): number[] {
 }
 
 export class DbCalendarStore implements CalendarStore {
-    constructor(private readonly db: DbExecutor) {}
+    constructor(private readonly database: DbExecutor) {}
 
     async ensureSchema(): Promise<void> {
-        await this.db.ensureTable({
+        await this.database.ensureTable({
             name: "calendar_calendars",
             columns: [
                 { name: "id", type: "text", notNull: true, primaryKey: true },
@@ -83,7 +83,7 @@ export class DbCalendarStore implements CalendarStore {
                 },
             ],
         });
-        await this.db.ensureTable({
+        await this.database.ensureTable({
             name: "calendar_events",
             columns: [
                 { name: "id", type: "text", notNull: true, primaryKey: true },
@@ -124,7 +124,7 @@ export class DbCalendarStore implements CalendarStore {
                 },
             ],
         });
-        await this.db.ensureTable({
+        await this.database.ensureTable({
             name: "calendar_event_responses",
             columns: [
                 { name: "root_event_id", type: "text", notNull: true },
@@ -144,7 +144,7 @@ export class DbCalendarStore implements CalendarStore {
     }
 
     async listCalendars(): Promise<CalendarRecord[]> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "calendar_calendars",
             columns: [
@@ -184,7 +184,7 @@ export class DbCalendarStore implements CalendarStore {
     }
 
     async saveCalendar(calendar: CalendarRecord): Promise<void> {
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "INSERT",
             table: "calendar_calendars",
             values: {
@@ -220,7 +220,7 @@ export class DbCalendarStore implements CalendarStore {
     }
 
     async deleteCalendar(calendarId: string): Promise<void> {
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "DELETE",
             table: "calendar_calendars",
             where: [{ column: "id", value: calendarId }],
@@ -228,7 +228,7 @@ export class DbCalendarStore implements CalendarStore {
     }
 
     async listEvents(): Promise<CalendarEventRecord[]> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "calendar_events",
             columns: [
@@ -295,7 +295,7 @@ export class DbCalendarStore implements CalendarStore {
     }
 
     async saveEvent(event: CalendarEventRecord): Promise<void> {
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "INSERT",
             table: "calendar_events",
             values: {
@@ -347,7 +347,7 @@ export class DbCalendarStore implements CalendarStore {
     }
 
     async deleteEvent(eventId: string): Promise<void> {
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "DELETE",
             table: "calendar_events",
             where: [{ column: "id", value: eventId }],
@@ -355,7 +355,7 @@ export class DbCalendarStore implements CalendarStore {
     }
 
     async listResponses(): Promise<CalendarEventResponseRecord[]> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "calendar_event_responses",
             columns: [
@@ -385,7 +385,7 @@ export class DbCalendarStore implements CalendarStore {
     }
 
     async saveResponse(response: CalendarEventResponseRecord): Promise<void> {
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "INSERT",
             table: "calendar_event_responses",
             values: {
@@ -411,7 +411,7 @@ export class DbCalendarStore implements CalendarStore {
         rootEventId: string,
         accountId: string,
     ): Promise<void> {
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "DELETE",
             table: "calendar_event_responses",
             where: [
@@ -422,7 +422,7 @@ export class DbCalendarStore implements CalendarStore {
     }
 
     async deleteResponsesForRootEvent(rootEventId: string): Promise<void> {
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "DELETE",
             table: "calendar_event_responses",
             where: [{ column: "root_event_id", value: rootEventId }],
@@ -430,7 +430,7 @@ export class DbCalendarStore implements CalendarStore {
     }
 
     async deleteAccountActivity(accountId: string): Promise<void> {
-        await this.db.transaction(async (transactionDb) => {
+        await this.database.transaction(async (transactionDb) => {
             const calendars = await transactionDb.executeCommand({
                 option: "SELECT",
                 table: "calendar_calendars",

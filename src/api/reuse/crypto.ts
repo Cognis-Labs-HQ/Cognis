@@ -154,12 +154,12 @@ export async function encryptPayload(
  */
 export async function decryptPayload(
     key: CryptoKey,
-    iv: string,
+    initializationVector: string,
     ciphertext: string,
 ): Promise<string> {
     const subtle = globalThis.crypto.subtle;
     const decrypted = await subtle.decrypt(
-        { name: ENCRYPT_ALG, iv: Buffer.from(iv, "hex") },
+        { name: ENCRYPT_ALG, iv: Buffer.from(initializationVector, "hex") },
         key,
         Buffer.from(ciphertext, "hex"),
     );

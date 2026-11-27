@@ -22,7 +22,7 @@ export async function completeBootstrap(
     ctx.capabilities.contribute(
         "auth:sendLoginLinkEmail",
         async (
-            to: string,
+            recipient: string,
             loginUrl: string,
             options?: {
                 subject?: string;
@@ -33,7 +33,7 @@ export async function completeBootstrap(
             await ctx.capabilities.require<SendEmailAction>("notify:sendEmail")(
                 {
                     purpose,
-                    recipientEmail: to,
+                    recipientEmail: recipient,
                     variables: {
                         loginUrl,
                         subject: options?.subject ?? "",

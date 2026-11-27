@@ -18,11 +18,11 @@ test("profile routes - avatar upload succeeds and sets avatarKey", async () => {
     await route(
         makeReq("PUT", token, imageData, "image/png"),
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
-            end(p: string) {
-                body = p;
+            end(responseBody: string) {
+                body = responseBody;
             },
         } as any,
         new URL("http://localhost/api/v1/social/profile/avatar"),
@@ -158,8 +158,8 @@ test("profile routes - avatar upload rejects disallowed MIME type", async () => 
     await route(
         makeReq("PUT", token, Buffer.from("fake gif data"), "image/gif"),
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -179,8 +179,8 @@ test("profile routes - avatar upload delegates large images to quota-aware stora
     await route(
         makeReq("PUT", token, Buffer.alloc(12_000_000, "x"), "image/png"),
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end(payload: string) {
                 responseBody = payload;
@@ -203,11 +203,11 @@ test("profile routes - banner upload allows gif", async () => {
     await route(
         makeReq("PUT", token, Buffer.from("fake gif data"), "image/gif"),
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
-            end(p: string) {
-                body = p;
+            end(responseBody: string) {
+                body = responseBody;
             },
         } as any,
         new URL("http://localhost/api/v1/social/profile/banner"),
@@ -248,11 +248,11 @@ test("profile routes - banner upload falls back to direct persistence when flow 
     await route(
         makeReq("PUT", token, Buffer.from("fake png data"), "image/png"),
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
-            end(p: string) {
-                body = p;
+            end(responseBody: string) {
+                body = responseBody;
             },
         } as any,
         new URL("http://localhost/api/v1/social/profile/banner"),
@@ -271,8 +271,8 @@ test("profile routes - banner upload rejects unsupported type", async () => {
     await route(
         makeReq("PUT", token, Buffer.from("bmp data"), "image/bmp"),
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -295,11 +295,11 @@ test("profile routes - avatar DELETE clears avatarKey", async () => {
     await route(
         makeReq("DELETE", token),
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
-            end(p: string) {
-                body = p;
+            end(responseBody: string) {
+                body = responseBody;
             },
         } as any,
         new URL("http://localhost/api/v1/social/profile/avatar"),
@@ -324,11 +324,11 @@ test("profile routes - banner DELETE clears bannerKey", async () => {
     await route(
         makeReq("DELETE", token),
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
-            end(p: string) {
-                body = p;
+            end(responseBody: string) {
+                body = responseBody;
             },
         } as any,
         new URL("http://localhost/api/v1/social/profile/banner"),
@@ -371,8 +371,8 @@ test("profile routes - banner DELETE falls back when the removal flow has no per
     await route(
         makeReq("DELETE", token),
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -394,11 +394,11 @@ test("GET /api/v1/social/profile/ping returns 200 when authenticated", async () 
     await route(
         makeReq("GET", token),
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
-            end(p: string) {
-                body = p;
+            end(responseBody: string) {
+                body = responseBody;
             },
         } as any,
         new URL("http://localhost/api/v1/social/profile/ping"),
@@ -415,8 +415,8 @@ test("GET /api/v1/social/profile/ping returns 401 when unauthenticated", async (
     await route(
         makeReq("GET", null),
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -442,8 +442,8 @@ test("avatar PUT returns 503 when fileGateway is absent", async () => {
             [Symbol.asyncIterator]: async function* () {},
         } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -462,11 +462,11 @@ test("avatar DELETE returns 503 when fileGateway is absent", async () => {
     await route(
         makeReq("DELETE", token),
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
-            end(p: string) {
-                body = p;
+            end(responseBody: string) {
+                body = responseBody;
             },
         } as any,
         new URL("http://localhost/api/v1/social/profile/avatar"),
@@ -493,11 +493,11 @@ test("banner PUT returns 503 when fileGateway is absent", async () => {
             [Symbol.asyncIterator]: async function* () {},
         } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
-            end(p: string) {
-                body = p;
+            end(responseBody: string) {
+                body = responseBody;
             },
         } as any,
         new URL("http://localhost/api/v1/social/profile/banner"),
@@ -516,11 +516,11 @@ test("banner DELETE returns 503 when fileGateway is absent", async () => {
     await route(
         makeReq("DELETE", token),
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
-            end(p: string) {
-                body = p;
+            end(responseBody: string) {
+                body = responseBody;
             },
         } as any,
         new URL("http://localhost/api/v1/social/profile/banner"),

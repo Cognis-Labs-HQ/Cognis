@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { mkdtemp, rm } from "node:fs/promises";
-import os from "node:os";
+import { mkdtemp, rm as removePath } from "node:fs/promises";
+import operatingSystem from "node:os";
 import path from "node:path";
 import { Readable } from "node:stream";
 import type { IncomingMessage } from "node:http";
@@ -28,9 +28,11 @@ async function fixture(
     } = {},
 ) {
     const directory = await mkdtemp(
-        path.join(os.tmpdir(), "component-recovery-"),
+        path.join(operatingSystem.tmpdir(), "component-recovery-"),
     );
-    context.after(() => rm(directory, { recursive: true, force: true }));
+    context.after(() =>
+        removePath(directory, { recursive: true, force: true }),
+    );
     const ctx = createCtx();
     const calls: Array<{
         path: string;

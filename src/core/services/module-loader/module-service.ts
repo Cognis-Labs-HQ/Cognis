@@ -3,13 +3,13 @@ import {
     mkdir,
     readFile,
     readdir,
-    rm,
+    rm as removePath,
     symlink,
     unlink,
     writeFile,
 } from "node:fs/promises";
 import path from "node:path";
-import os from "node:os";
+import operatingSystem from "node:os";
 import type { ModuleRuntimeGateway } from "../../contracts/modules/runtime-gateway.js";
 import type { ModuleManifest } from "../../contracts/module-manifest.js";
 
@@ -33,7 +33,7 @@ export class ModuleService {
     ) {
         this.runtimeExtractPath =
             resolver?.runtimeExtractPath ??
-            path.join(os.tmpdir(), "cognis-module-runtime");
+            path.join(operatingSystem.tmpdir(), "cognis-module-runtime");
     }
 
     async list(): Promise<ModuleManifest[]> {
@@ -104,7 +104,7 @@ export class ModuleService {
         this.assertToggleAllowed(found);
         if (this.resolver) {
             await this.removePointer(moduleId);
-            await rm(path.join(this.runtimeExtractPath, moduleId), {
+            await removePath(path.join(this.runtimeExtractPath, moduleId), {
                 recursive: true,
                 force: true,
             });
@@ -202,7 +202,7 @@ export class ModuleService {
     ): Promise<string> {
         if (!resolved.archive) return resolved.path;
         const extractRoot = path.join(this.runtimeExtractPath, moduleId);
-        await rm(extractRoot, { recursive: true, force: true });
+        await removePath(extractRoot, { recursive: true, force: true });
         await mkdir(extractRoot, { recursive: true });
         const artifactName = path.basename(resolved.path);
         await writeFile(
@@ -222,7 +222,7 @@ export class ModuleService {
             this.resolver!.enabledPointersPath,
             `${moduleId}.load`,
         );
-        await rm(pointerPath, { force: true });
+        await removePath(pointerPath, { force: true });
         await symlink(activationPath, pointerPath);
     }
 

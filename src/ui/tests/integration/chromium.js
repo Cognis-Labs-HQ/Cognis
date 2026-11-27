@@ -1,5 +1,5 @@
 import { spawn, spawnSync } from "node:child_process";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, rm as removePath } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
@@ -66,7 +66,11 @@ export async function launchChromium(executable) {
                 resolve();
             else processHandle.once("exit", resolve);
         });
-        await rm(directory, { recursive: true, force: true, maxRetries: 3 });
+        await removePath(directory, {
+            recursive: true,
+            force: true,
+            maxRetries: 3,
+        });
     }
     try {
         let port;

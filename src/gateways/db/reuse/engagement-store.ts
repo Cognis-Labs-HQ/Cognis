@@ -99,12 +99,12 @@ export function createEngagementStore(
             const executor = await database();
             const chunks = textChunks(JSON.stringify(state), 60_000);
             const first = chunks.next().value!;
-            await executor.transaction(async (db) => {
+            await executor.transaction(async (database2) => {
                 const values = {
                     revision: revision + 1,
                     state_json: first,
                 };
-                const result = await db.executeCommand(
+                const result = await database2.executeCommand(
                     revision === 0
                         ? {
                               option: "INSERT",
@@ -130,14 +130,14 @@ export function createEngagementStore(
                 );
                 if (result.rowCount !== 1)
                     throw new Error("engagement_state_conflict");
-                await db.executeCommand({
+                await database2.executeCommand({
                     option: "DELETE",
                     table: "engagement_participant_parts",
                     where: [{ column: "participant_id", value: participantId }],
                 });
                 let position = 1;
                 for (const part of chunks) {
-                    await db.executeCommand({
+                    await database2.executeCommand({
                         option: "INSERT",
                         table: "engagement_participant_parts",
                         values: {

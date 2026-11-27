@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
@@ -56,7 +56,7 @@ test("profile badges render localized title and aria-label attributes", () => {
     };
     context.globalThis = context;
 
-    vm.runInNewContext(testableSource, context, {
+    virtualMachine.runInNewContext(testableSource, context, {
         filename: "profile-render.js",
     });
 

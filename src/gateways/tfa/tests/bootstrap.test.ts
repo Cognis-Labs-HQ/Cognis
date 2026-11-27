@@ -79,8 +79,8 @@ async function dispatchRoute(
 }
 
 test("tfa catalog restores adapter state and publishes authenticated lifecycle controls", async () => {
-    const db = new InMemoryTestExecutor();
-    const store = new DbTfaStore(db);
+    const database = new InMemoryTestExecutor();
+    const store = new DbTfaStore(database);
     await store.ensureSchema();
     await store.saveAdapterConfig("totp", false, {});
 
@@ -90,7 +90,7 @@ test("tfa catalog restores adapter state and publishes authenticated lifecycle c
     const uiRegistry = new UIRegistry();
     const systemCtx = createCtx();
     capabilities.contribute("system:ctx", systemCtx);
-    capabilities.contribute("db:executor", db);
+    capabilities.contribute("db:executor", database);
 
     const registeredSecuritySections: Array<{
         id: string;
@@ -225,14 +225,14 @@ test("TFA verification preserves the pending login session TTL", () => {
 });
 
 test("tfa login UI integration unhooks when gateway is disabled", async () => {
-    const db = new InMemoryTestExecutor();
+    const database = new InMemoryTestExecutor();
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
     const uiRegistry = new UIRegistry();
     const systemCtx = createCtx();
     capabilities.contribute("system:ctx", systemCtx);
-    capabilities.contribute("db:executor", db);
+    capabilities.contribute("db:executor", database);
     capabilities.contribute(CTX_CAPABILITY, systemCtx);
 
     await runBootstrapScope(

@@ -294,8 +294,8 @@ function collectPendingEvents(
             dedupedByRoot.set(key, event);
         }
     });
-    return Array.from(dedupedByRoot.values()).sort((a, b) =>
-        a.startAt.localeCompare(b.startAt),
+    return Array.from(dedupedByRoot.values()).sort((leftEntry, rightEntry) =>
+        leftEntry.startAt.localeCompare(rightEntry.startAt),
     );
 }
 

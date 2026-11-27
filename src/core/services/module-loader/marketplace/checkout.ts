@@ -1,5 +1,5 @@
 import { execFile } from "node:child_process";
-import { rm } from "node:fs/promises";
+import { rm as removePath } from "node:fs/promises";
 import { promisify } from "node:util";
 import type { ModuleMarketplaceLog } from "./index.js";
 import { commandFailureText } from "../../reuse/command-failure-text.js";
@@ -38,7 +38,7 @@ export async function checkoutModuleRepository(
         encoding: "utf8" as const,
     };
     for (let attempt = 0; ; attempt += 1) {
-        await rm(root, { recursive: true, force: true });
+        await removePath(root, { recursive: true, force: true });
         const startedAt = Date.now();
         let stage = "initialize";
         try {

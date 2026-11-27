@@ -96,7 +96,9 @@ test("InternalNotificationStore: markAllRead", () => {
     store.add(makeEnvelope("eve", "C"));
     store.markAllRead("eve");
     assert.equal(store.countUnread("eve"), 0);
-    store.list("eve").forEach((n) => assert.equal(n.read, true));
+    store
+        .list("eve")
+        .forEach((notification) => assert.equal(notification.read, true));
 });
 
 test("InternalNotificationStore: delete", () => {

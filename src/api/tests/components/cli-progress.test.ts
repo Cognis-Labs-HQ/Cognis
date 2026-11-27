@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import http from "node:http";
 import { spawn } from "node:child_process";
-import { mkdtemp, writeFile, rm } from "node:fs/promises";
-import os from "node:os";
+import { mkdtemp, writeFile, rm as removePath } from "node:fs/promises";
+import operatingSystem from "node:os";
 import path from "node:path";
 import { createComponentRoutes } from "../../routes/components/index.js";
 import { createDefaultRouteContext } from "../../reuse/route-context.js";
@@ -14,11 +14,13 @@ test(
     { timeout: 30_000 },
     async (context) => {
         const directory = await mkdtemp(
-            path.join(os.tmpdir(), "cognis-cli-progress-"),
+            path.join(operatingSystem.tmpdir(), "cognis-cli-progress-"),
         );
         const tokenPath = path.join(directory, "token");
         await writeFile(tokenPath, "fixture-token");
-        context.after(() => rm(directory, { recursive: true, force: true }));
+        context.after(() =>
+            removePath(directory, { recursive: true, force: true }),
+        );
         let release!: () => void;
         let failed = false;
         const routeContext = createDefaultRouteContext();

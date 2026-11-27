@@ -192,7 +192,7 @@ function bindGatewayToggles() {
                     });
                     const result = await openPopup({
                         title: i18n.t("ui.app.admin.enable_confirm_gateway"),
-                        body: `<p>${i18n.t("ui.app.admin.enable_deps_will_enable")}</p><ul>${depNames.map((n) => `<li><strong>${escapeHtml(n)}</strong></li>`).join("")}</ul>`,
+                        body: `<p>${i18n.t("ui.app.admin.enable_deps_will_enable")}</p><ul>${depNames.map((dependencyName) => `<li><strong>${escapeHtml(dependencyName)}</strong></li>`).join("")}</ul>`,
                         actions: [
                             {
                                 id: "confirm",
@@ -417,7 +417,7 @@ function bindAdapterToggles() {
                 if (disabledDepNames.length > 0) {
                     const result = await openPopup({
                         title: i18n.t("ui.app.admin.enable_confirm_adapter"),
-                        body: `<p>${i18n.t("ui.app.admin.enable_deps_will_enable")}</p><ul>${disabledDepNames.map((n) => `<li><strong>${escapeHtml(n)}</strong></li>`).join("")}</ul>`,
+                        body: `<p>${i18n.t("ui.app.admin.enable_deps_will_enable")}</p><ul>${disabledDepNames.map((dependencyName) => `<li><strong>${escapeHtml(dependencyName)}</strong></li>`).join("")}</ul>`,
                         actions: [
                             {
                                 id: "confirm",
@@ -528,17 +528,18 @@ function bindAdapterRows() {
             adapterCompositeKey(gatewayId, adapterId),
         ) ?? { senderId: adapterId, name: adapterId };
 
-        async function handleOpen(e) {
-            if (e.target.closest?.("[data-details-toggle]")) return;
+        async function handleOpen(event) {
+            if (event.target.closest?.("[data-details-toggle]")) return;
             const switchLabel = row.querySelector(".switch--inline");
             if (
                 switchLabel &&
-                (e.target === switchLabel || switchLabel.contains(e.target))
+                (event.target === switchLabel ||
+                    switchLabel.contains(event.target))
             ) {
                 return;
             }
-            e.preventDefault();
-            e.stopPropagation();
+            event.preventDefault();
+            event.stopPropagation();
             const openedSettings = await openAdapterConfig(
                 gatewayId,
                 adapterId,
@@ -551,8 +552,8 @@ function bindAdapterRows() {
         }
 
         row.addEventListener("click", handleOpen);
-        row.addEventListener("keydown", (e) => {
-            if (e.key === "Enter" || e.key === " ") handleOpen(e);
+        row.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") handleOpen(event);
         });
     });
 }
@@ -580,11 +581,11 @@ function bindDependencyLinks() {
         if (!(link instanceof HTMLAnchorElement)) return;
         const targetId = link.dataset.scrollTo;
         if (!targetId) return;
-        link.addEventListener("click", (e) => {
-            e.preventDefault();
+        link.addEventListener("click", (event) => {
+            event.preventDefault();
             if (link.closest(".adapter-inline-row")) {
                 // Stop propagation so the adapter row's click handler (which opens its config panel) does not fire when clicking a synced-pill link.
-                e.stopPropagation();
+                event.stopPropagation();
             }
             let targetElement = null;
             if (targetId.startsWith("gateway-")) {
@@ -922,9 +923,9 @@ export async function mount(rootEl, { signal } = {}) {
 
     window.addEventListener(
         "beforeunload",
-        (e) => {
+        (event) => {
             if (changesBar?.isAnyDirty()) {
-                e.preventDefault();
+                event.preventDefault();
             }
         },
         { signal },

@@ -3,7 +3,7 @@ import { rowToReaction } from "./row-mappers.js";
 import type { MessageReactionRow } from "./types.js";
 
 export async function setMessageReaction(
-    db: DbExecutor,
+    database: DbExecutor,
     roomId: string,
     messageId: string,
     accountId: string,
@@ -11,7 +11,7 @@ export async function setMessageReaction(
     active: boolean,
 ): Promise<void> {
     if (!active) {
-        await db.executeCommand({
+        await database.executeCommand({
             option: "DELETE",
             table: "chat_message_reactions",
             where: [
@@ -24,7 +24,7 @@ export async function setMessageReaction(
         return;
     }
 
-    await db.executeCommand({
+    await database.executeCommand({
         option: "INSERT",
         table: "chat_message_reactions",
         values: {
@@ -39,13 +39,13 @@ export async function setMessageReaction(
 }
 
 export async function hasMessageReaction(
-    db: DbExecutor,
+    database: DbExecutor,
     roomId: string,
     messageId: string,
     accountId: string,
     emoji: string,
 ): Promise<boolean> {
-    const result = await db.executeCommand({
+    const result = await database.executeCommand({
         option: "SELECT",
         table: "chat_message_reactions",
         where: [
@@ -60,10 +60,10 @@ export async function hasMessageReaction(
 }
 
 export async function listMessageReactions(
-    db: DbExecutor,
+    database: DbExecutor,
     roomId: string,
 ): Promise<MessageReactionRow[]> {
-    const result = await db.executeCommand({
+    const result = await database.executeCommand({
         option: "SELECT",
         table: "chat_message_reactions",
         where: [{ column: "chatroom_id", value: roomId }],

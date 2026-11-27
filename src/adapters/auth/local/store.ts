@@ -56,7 +56,7 @@ async function verifyPassword(
 
 export class DbLocalAccountStore implements LocalAccountStore {
     constructor(
-        private readonly db: DbExecutor,
+        private readonly database: DbExecutor,
         private readonly log?: BootstrapLog,
     ) {}
 
@@ -92,7 +92,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
             identity.role === "admin"
                 ? identity.role
                 : "user";
-        await this.db.transaction(async (txDb) => {
+        await this.database.transaction(async (txDb) => {
             const identityResult = await txDb.executeCommand({
                 option: "SELECT",
                 table: "auth_identities",
@@ -204,7 +204,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
         provider: string,
         externalUserId: string,
     ): Promise<string | null> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "auth_identities",
             columns: ["account_id"],
@@ -222,7 +222,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
         provider: string,
         externalUserId: string,
     ): Promise<boolean> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "deleted_auth_identities",
             columns: ["id"],
@@ -257,7 +257,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
                 escape: "\\",
             },
         ];
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "auth_identities",
             columns: ["account_id"],
@@ -268,7 +268,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
                 (result.rows ?? []).map((row) => String(row.account_id)),
             ),
         ];
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "DELETE",
             table: "auth_identities",
             where,
@@ -283,11 +283,11 @@ export class DbLocalAccountStore implements LocalAccountStore {
     }
 
     async getUsername(accountId: string): Promise<string | null> {
-        return readUsername(this.db, normalizeUsername(accountId));
+        return readUsername(this.database, normalizeUsername(accountId));
     }
 
     async ensureSchema() {
-        await this.db.ensureTable({
+        await this.database.ensureTable({
             name: "auth_identities",
             columns: [
                 { name: "id", type: "text", primaryKey: true },
@@ -319,7 +319,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
             uniqueKeys: [["provider", "external_user_id"]],
             indexes: [{ columns: ["account_id"] }],
         });
-        await this.db.ensureTable({
+        await this.database.ensureTable({
             name: "deleted_auth_identities",
             columns: [
                 { name: "id", type: "text", primaryKey: true },
@@ -331,7 +331,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
                 },
             ],
         });
-        await this.db.ensureTable({
+        await this.database.ensureTable({
             name: "local_auth_password_history",
             columns: [
                 { name: "account_id", type: "text", notNull: true },
@@ -340,7 +340,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
             ],
             indexes: [{ columns: ["account_id"] }],
         });
-        await prepareUsernames(this.db);
+        await prepareUsernames(this.database);
     }
 
     async register(
@@ -355,7 +355,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
         const passwordHash = await hashPassword(password);
         const accountDisplayName = displayName?.trim() || username;
         try {
-            await this.db.transaction(async (txDb) => {
+            await this.database.transaction(async (txDb) => {
                 await txDb.executeCommand({
                     option: "INSERT",
                     table: "accounts",
@@ -413,7 +413,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
         password: string,
     ): Promise<AuthContext | null> {
         const lowercaseUsername = normalizeUsername(username);
-        const credResult = await this.db.executeCommand({
+        const credResult = await this.database.executeCommand({
             option: "SELECT",
             table: "local_auth_credentials",
             columns: [
@@ -470,7 +470,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
     }
 
     async has(username: string) {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "local_auth_credentials",
             columns: ["username"],
@@ -481,7 +481,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
     }
 
     async list() {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "accounts",
             columns: [
@@ -533,7 +533,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
         role: "user" | "teacher" | "moderator" | "admin",
     ) {
         const lowercaseUsername = normalizeUsername(username);
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "UPDATE",
             table: "accounts",
             set: {
@@ -552,7 +552,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
 
     async setPassword(username: string, password: string) {
         const lowercaseUsername = normalizeUsername(username);
-        const credentialResult = await this.db.executeCommand({
+        const credentialResult = await this.database.executeCommand({
             option: "SELECT",
             table: "local_auth_credentials",
             columns: ["account_id", "password_hash"],
@@ -567,7 +567,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
             throw new Error("not_found");
         }
 
-        const passwordHistoryResult = await this.db.executeCommand({
+        const passwordHistoryResult = await this.database.executeCommand({
             option: "SELECT",
             table: "local_auth_password_history",
             columns: ["password_hash", "created_at"],
@@ -596,7 +596,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
         }
 
         const passwordHash = await hashPassword(password);
-        await this.db.transaction(async (txDb) => {
+        await this.database.transaction(async (txDb) => {
             const currentPasswordHistoryResult = await txDb.executeCommand({
                 option: "SELECT",
                 table: "local_auth_password_history",
@@ -678,7 +678,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
 
     async setFounder(username: string, isFounder: boolean) {
         const lowercaseUsername = normalizeUsername(username);
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "UPDATE",
             table: "accounts",
             set: {
@@ -696,7 +696,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
 
     async isFounder(username: string): Promise<boolean> {
         const lowercaseUsername = normalizeUsername(username);
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "accounts",
             columns: ["is_founder"],
@@ -707,7 +707,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
     }
 
     async exists(username: string): Promise<boolean> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "accounts",
             columns: ["id"],
@@ -719,7 +719,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
 
     async getDisplayName(username: string): Promise<string | null> {
         const lowercaseUsername = normalizeUsername(username);
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "accounts",
             columns: ["display_name"],
@@ -733,7 +733,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
 
     async setEnabled(username: string, enabled: boolean) {
         const lowercaseUsername = normalizeUsername(username);
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "UPDATE",
             table: "accounts",
             set: { enabled, updated_at: new Date().toISOString() },
@@ -752,7 +752,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
     ) {
         const lowercaseUsername = normalizeUsername(username);
         try {
-            await this.db.transaction(async (txDb) => {
+            await this.database.transaction(async (txDb) => {
                 const identityResult = await txDb.executeCommand({
                     option: "SELECT",
                     table: "auth_identities",
@@ -822,7 +822,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
         isFounder: boolean;
     } | null> {
         const lowercaseUsername = normalizeUsername(username);
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "accounts",
             columns: [
@@ -866,7 +866,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
 
     async updateLastLogin(username: string): Promise<void> {
         const lowercaseUsername = normalizeUsername(username);
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "UPDATE",
             table: "accounts",
             set: {

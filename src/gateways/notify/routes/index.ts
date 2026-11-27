@@ -637,7 +637,7 @@ export function createNotificationRoutes(
             if (!ctx.requireAuth(req, res, "admin")) return true;
             const senderId = decodeURIComponent(providerTestMatch[1]);
             const body = await readJson(req);
-            const to = String(body.to ?? "");
+            const recipient = String(body.to ?? "");
             const overrideConfig =
                 body.config != null &&
                 typeof body.config === "object" &&
@@ -656,7 +656,7 @@ export function createNotificationRoutes(
                 );
                 return true;
             }
-            await gateway.testSender(senderId, to, overrideConfig);
+            await gateway.testSender(senderId, recipient, overrideConfig);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { sent: true } }));
             return true;
@@ -717,7 +717,11 @@ export function createNotificationRoutes(
                         enabled: boolean;
                     }>
                 ).filter(
-                    (p) => !(gateway.isAlwaysOn(p.senderId) && !p.enabled),
+                    (preference) =>
+                        !(
+                            gateway.isAlwaysOn(preference.senderId) &&
+                            !preference.enabled
+                        ),
                 );
                 await notifStore.saveUserNotifPrefs(username, filtered);
                 res.writeHead(200, { "content-type": "application/json" });

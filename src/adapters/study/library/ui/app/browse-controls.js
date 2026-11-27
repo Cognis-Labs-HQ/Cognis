@@ -83,14 +83,16 @@ export async function bindBrowseControls(root, entries, schemas, i18n, signal) {
                     );
                     cards
                         .sort(
-                            (a, b) =>
+                            (leftEntry, rightEntry) =>
                                 (positions.get(
-                                    a.querySelector("[data-library-entry]")
-                                        .dataset.libraryEntry,
+                                    leftEntry.querySelector(
+                                        "[data-library-entry]",
+                                    ).dataset.libraryEntry,
                                 ) ?? 0) -
                                 (positions.get(
-                                    b.querySelector("[data-library-entry]")
-                                        .dataset.libraryEntry,
+                                    rightEntry.querySelector(
+                                        "[data-library-entry]",
+                                    ).dataset.libraryEntry,
                                 ) ?? 0),
                         )
                         .forEach((node) => grid.append(node));

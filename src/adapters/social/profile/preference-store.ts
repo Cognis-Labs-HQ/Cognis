@@ -6,10 +6,10 @@ function cacheKey(accountId: string, pageId: string) {
 }
 
 export class DbUserPreferenceStore {
-    constructor(private readonly db: DbExecutor) {}
+    constructor(private readonly database: DbExecutor) {}
 
     async ensureSchema() {
-        await this.db.ensureTable({
+        await this.database.ensureTable({
             name: "user_preferences",
             columns: [
                 {
@@ -27,7 +27,7 @@ export class DbUserPreferenceStore {
 
     async get(accountId: string, pageId: string) {
         const key = cacheKey(accountId, pageId);
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "user_preferences",
             columns: ["layout_json"],
@@ -39,7 +39,7 @@ export class DbUserPreferenceStore {
 
     async set(accountId: string, pageId: string, layoutJson: string) {
         const key = cacheKey(accountId, pageId);
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "INSERT",
             table: "user_preferences",
             values: {
@@ -61,7 +61,7 @@ export class DbUserPreferenceStore {
     }
 
     async clearUser(accountId: string) {
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "DELETE",
             table: "user_preferences",
             where: [{ column: "account_id", value: accountId }],

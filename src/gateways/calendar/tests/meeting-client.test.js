@@ -6,7 +6,7 @@ import { uiCtx } from "../../../ui/reuse/ui-ctx.js";
 import { createProviderLifecycle } from "../../../ui/reuse/provider-lifecycle.js";
 import { registerScopedUiActions } from "../../../ui/reuse/scoped-actions.js";
 
-test("Calendar delegates meeting creation to the installed provider through ctx", async (t) => {
+test("Calendar delegates meeting creation to the installed provider through ctx", async (testContext) => {
     const calls = [];
     let destination = "/provider-owned-meeting/id";
     const lifecycle = createProviderLifecycle({
@@ -33,7 +33,7 @@ test("Calendar delegates meeting creation to the installed provider through ctx"
             },
         }),
     });
-    t.after(() => lifecycle.reconcile([]));
+    testContext.after(() => lifecycle.reconcile([]));
     const client = loadTestModule(
         new URL("../ui/calendar-api.js", import.meta.url),
         {

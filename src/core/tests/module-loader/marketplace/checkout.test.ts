@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, rm as removePath } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { checkoutModuleRepository } from "../../../services/module-loader/marketplace/checkout.js";
@@ -9,7 +9,7 @@ const commit = "0123456789012345678901234567890123456789";
 
 async function fixture(context: test.TestContext) {
     const root = await mkdtemp(path.join(tmpdir(), "cognis-checkout-policy-"));
-    context.after(() => rm(root, { recursive: true, force: true }));
+    context.after(() => removePath(root, { recursive: true, force: true }));
     return {
         root,
         commit,

@@ -320,7 +320,8 @@ class PostgresExecutor implements RawDbExecutor {
             if (
                 col.unique &&
                 !(def.uniqueKeys ?? []).some(
-                    (uk) => uk.length === 1 && uk[0] === col.name,
+                    (uniqueKey) =>
+                        uniqueKey.length === 1 && uniqueKey[0] === col.name,
                 )
             ) {
                 parts.push("UNIQUE");

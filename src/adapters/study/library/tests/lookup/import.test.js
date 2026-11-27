@@ -2,7 +2,7 @@ import { loadLibraryUiModule } from "../reuse/ui-module.ts";
 import { LIBRARY_COMPOSER_LIMITS } from "../../ui/app/composer-limits.js";
 import assert from "node:assert/strict";
 import test from "node:test";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 import { separateLookupDefinitions } from "../../ui/app/create-entry/lookup-definitions.js";
 import { resolveLookupReferences } from "../../ui/app/create-entry/lookup-references.js";
 
@@ -566,7 +566,7 @@ test("vocabulary lookup preserves text, token order, and selected spelling while
         renderStrokePatternPreviews() {},
         showToast() {},
     };
-    vm.createContext(context);
+    virtualMachine.createContext(context);
     Object.assign(
         context,
         loadLibraryUiModule("app/create-entry/lookup-replacement.js", context),

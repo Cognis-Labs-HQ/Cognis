@@ -29,15 +29,17 @@ export async function captureRequestContext(
     return context;
 }
 
-export async function ensurePushRequestSchema(db: DbExecutor): Promise<void> {
-    await db.ensureTable({
+export async function ensurePushRequestSchema(
+    database: DbExecutor,
+): Promise<void> {
+    await database.ensureTable({
         name: "study_library_pending_requests",
         columns: [
             { name: "source_entry_id", type: "text", primaryKey: true },
             { name: "request_id", type: "text", notNull: true, unique: true },
         ],
     });
-    await db.ensureTable({
+    await database.ensureTable({
         name: "study_library_push_requests",
         indexes: [{ columns: ["status"] }],
         columns: [
@@ -80,7 +82,7 @@ export async function ensurePushRequestSchema(db: DbExecutor): Promise<void> {
 }
 
 export async function createPushRequest(
-    db: DbExecutor,
+    database: DbExecutor,
     sourceEntryId: string,
     destination: LibraryLocation,
     accountId: string,
@@ -90,12 +92,12 @@ export async function createPushRequest(
     sourceContext: LibraryEntry[] = [],
 ): Promise<LibraryPushRequest> {
     const id = randomUUID();
-    await db.executeCommand({
+    await database.executeCommand({
         option: "INSERT",
         table: "study_library_pending_requests",
         values: { source_entry_id: sourceEntryId, request_id: id },
     });
-    await db.executeCommand({
+    await database.executeCommand({
         option: "INSERT",
         table: "study_library_push_requests",
         values: {
@@ -128,10 +130,10 @@ export async function createPushRequest(
 }
 
 export async function getPushRequest(
-    db: DbExecutor,
+    database: DbExecutor,
     id: string,
 ): Promise<LibraryPushRequest | null> {
-    const result = await db.executeCommand({
+    const result = await database.executeCommand({
         option: "SELECT",
         table: "study_library_push_requests",
         where: [{ column: "id", value: id }],
@@ -175,10 +177,10 @@ function mapPushRequest(row: Record<string, unknown>): LibraryPushRequest {
 }
 
 export async function listPushRequests(
-    db: DbExecutor,
+    database: DbExecutor,
     status?: LibraryPushRequest["status"],
 ): Promise<LibraryPushRequest[]> {
-    const result = await db.executeCommand({
+    const result = await database.executeCommand({
         option: "SELECT",
         table: "study_library_push_requests",
         ...(status ? { where: [{ column: "status", value: status }] } : {}),
@@ -187,12 +189,12 @@ export async function listPushRequests(
 }
 
 export async function reviewPushRequest(
-    db: DbExecutor,
+    database: DbExecutor,
     id: string,
     status: "approved" | "rejected" | "withdrawn",
     reviewerId: string,
 ): Promise<void> {
-    const result = await db.executeCommand({
+    const result = await database.executeCommand({
         option: "UPDATE",
         table: "study_library_push_requests",
         set: {
@@ -206,7 +208,7 @@ export async function reviewPushRequest(
         ],
     });
     if (result.rowCount !== 1) throw new Error("already_reviewed");
-    await db.executeCommand({
+    await database.executeCommand({
         option: "DELETE",
         table: "study_library_pending_requests",
         where: [{ column: "request_id", value: id }],
@@ -214,12 +216,12 @@ export async function reviewPushRequest(
 }
 
 export async function stagePushRequest(
-    db: DbExecutor,
+    database: DbExecutor,
     id: string,
     entry: NonNullable<LibraryPushRequest["proposedEntry"]>,
     actorId: string,
 ): Promise<LibraryPushRequest> {
-    const current = await getPushRequest(db, id);
+    const current = await getPushRequest(database, id);
     if (!current) throw new Error("not_found");
     if (current.status !== "pending") throw new Error("already_reviewed");
     const original = current.proposedEntry ?? current.sourceSnapshot;
@@ -254,7 +256,7 @@ export async function stagePushRequest(
     )
         return current;
     const modifiedBy = [...new Set([...(current.modifiedBy ?? []), actorId])];
-    const result = await db.executeCommand({
+    const result = await database.executeCommand({
         option: "UPDATE",
         table: "study_library_push_requests",
         set: {
@@ -272,11 +274,11 @@ export async function stagePushRequest(
 }
 
 export async function addEntryOwners(
-    db: DbExecutor,
+    database: DbExecutor,
     id: string,
     owners: readonly string[],
 ): Promise<void> {
-    const result = await db.executeCommand({
+    const result = await database.executeCommand({
         option: "SELECT",
         table: "study_library_entries",
         where: [{ column: "id", value: id }],
@@ -290,7 +292,7 @@ export async function addEntryOwners(
             ...owners,
         ]),
     ];
-    await db.executeCommand({
+    await database.executeCommand({
         option: "UPDATE",
         table: "study_library_entries",
         set: { owners_json: JSON.stringify(all) },

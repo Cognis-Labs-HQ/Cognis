@@ -2,7 +2,7 @@ import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import { languageFlashcardsUrl } from "../../../../gateways/study/ui/reuse/explore.js";
 import assert from "node:assert/strict";
 import test from "node:test";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 
 test("deck save closes the protected editor before navigating to the refreshed browse page", async () => {
     let closed = false;
@@ -18,7 +18,7 @@ test("deck save closes the protected editor before navigating to the refreshed b
         appendChild() {},
         reportValidity: () => true,
     };
-    const context = vm.createContext({
+    const context = virtualMachine.createContext({
         document: {
             documentElement: { lang: "en" },
             createElement: () => ({ dataset: {} }),

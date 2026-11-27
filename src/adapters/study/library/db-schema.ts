@@ -5,8 +5,10 @@ import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import { ensureEntryStateSchema } from "./entry-state.js";
 import { ensurePushRequestSchema } from "./push-requests.js";
 
-export async function ensureLibraryStoreSchema(db: DbExecutor): Promise<void> {
-    await db.ensureTable({
+export async function ensureLibraryStoreSchema(
+    database: DbExecutor,
+): Promise<void> {
+    await database.ensureTable({
         name: "study_library_dictionary_cache",
         indexes: [{ columns: ["expires_at"] }],
         columns: [
@@ -16,7 +18,7 @@ export async function ensureLibraryStoreSchema(db: DbExecutor): Promise<void> {
             { name: "expires_at", type: "timestamp", notNull: true },
         ],
     });
-    await db.ensureTable({
+    await database.ensureTable({
         name: "study_library_schemas",
         columns: [
             { name: "schema_id", type: "text", notNull: true },
@@ -32,8 +34,8 @@ export async function ensureLibraryStoreSchema(db: DbExecutor): Promise<void> {
         ],
         primaryKey: ["schema_id", "version"],
     });
-    await ensureSchemaParts(db);
-    await db.ensureTable({
+    await ensureSchemaParts(database);
+    await database.ensureTable({
         name: "study_library_content_packs",
         columns: [
             { name: "pack_id", type: "text", notNull: true },
@@ -60,8 +62,8 @@ export async function ensureLibraryStoreSchema(db: DbExecutor): Promise<void> {
         ],
         primaryKey: ["publisher", "pack_id", "version"],
     });
-    await ensurePackAssets(db);
-    await db.ensureTable({
+    await ensurePackAssets(database);
+    await database.ensureTable({
         name: "study_library_entries",
         indexes: [
             {
@@ -149,7 +151,7 @@ export async function ensureLibraryStoreSchema(db: DbExecutor): Promise<void> {
             },
         ],
     });
-    await db.ensureTable({
+    await database.ensureTable({
         name: "study_library_content_hash_blacklist",
         columns: [
             { name: "content_hash", type: "text", primaryKey: true },
@@ -162,7 +164,7 @@ export async function ensureLibraryStoreSchema(db: DbExecutor): Promise<void> {
             },
         ],
     });
-    await ensureReferenceStorage(db);
-    await ensurePushRequestSchema(db);
-    await ensureEntryStateSchema(db);
+    await ensureReferenceStorage(database);
+    await ensurePushRequestSchema(database);
+    await ensureEntryStateSchema(database);
 }

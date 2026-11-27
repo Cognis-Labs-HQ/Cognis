@@ -6,9 +6,9 @@ import { LibraryStore } from "../../store.js";
 
 test("permanent deletion blacklists content hashes and removes relationships", async () => {
     const commands: StructuredDbCommand[] = [];
-    const db: DbExecutor = {
+    const database: DbExecutor = {
         ensureTable: async () => {},
-        transaction: async (callback) => callback(db),
+        transaction: async (callback) => callback(database),
         executeCommand: async (command) => {
             commands.push(command);
             if (
@@ -103,7 +103,7 @@ test("permanent deletion blacklists content hashes and removes relationships", a
     };
 
     let authorizedIds: string[] = [];
-    const deleted = await new LibraryStore(db).deleteEntries(
+    const deleted = await new LibraryStore(database).deleteEntries(
         ["entry-one"],
         "admin",
         true,
@@ -145,9 +145,9 @@ test("permanent deletion blacklists content hashes and removes relationships", a
 
 test("deletion traversal honors restrict and detach relationship policies", async () => {
     const policy = { value: "detach" };
-    const db: DbExecutor = {
+    const database: DbExecutor = {
         ensureTable: async () => {},
-        transaction: async (callback) => callback(db),
+        transaction: async (callback) => callback(database),
         executeCommand: async (command) => {
             if (command.table === "study_library_references") {
                 return {
@@ -191,13 +191,13 @@ test("deletion traversal honors restrict and detach relationship policies", asyn
             return { rows: [] };
         },
     };
-    const store = new LibraryStore(db);
+    const store = new LibraryStore(database);
     assert.deepEqual(await store.resolveDeletionCascade(["definition-one"]), [
         "definition-one",
     ]);
     policy.value = "restrict";
     assert.deepEqual(
-        await new LibraryStore(db).resolveDeletionCascade(
+        await new LibraryStore(database).resolveDeletionCascade(
             ["root"],
             undefined,
             true,
@@ -211,9 +211,9 @@ test("deletion traversal honors restrict and detach relationship policies", asyn
 });
 
 test("restricted dependants included by another cascade are resolved before restriction checks", async () => {
-    const db: DbExecutor = {
+    const database: DbExecutor = {
         ensureTable: async () => {},
-        transaction: async (callback) => callback(db),
+        transaction: async (callback) => callback(database),
         executeCommand: async (command) => {
             if (command.table === "study_library_references") {
                 const id = command.where?.[0]?.value;
@@ -278,7 +278,7 @@ test("restricted dependants included by another cascade are resolved before rest
         },
     };
     assert.deepEqual(
-        await new LibraryStore(db).resolveDeletionCascade(["root"]),
+        await new LibraryStore(database).resolveDeletionCascade(["root"]),
         ["root", "bridge", "child"],
     );
 });

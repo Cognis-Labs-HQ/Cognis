@@ -56,8 +56,11 @@ export function isDirectoryGroupEntry(entry: Record<string, unknown>): boolean {
     );
 }
 
-export function isDnWithinBase(dn: string, baseDn: string): boolean {
-    const normalizedDn = dn.trim().toLowerCase();
+export function isDnWithinBase(
+    distinguishedName: string,
+    baseDn: string,
+): boolean {
+    const normalizedDn = distinguishedName.trim().toLowerCase();
     const normalizedBase = baseDn.trim().toLowerCase();
     return (
         normalizedBase.length > 0 &&
@@ -68,7 +71,7 @@ export function isDnWithinBase(dn: string, baseDn: string): boolean {
 
 async function withBoundClient<T>(
     options: LdapRuntimeOptions,
-    dn: string,
+    distinguishedName: string,
     password: string,
     operation: (client: Client) => Promise<T>,
 ): Promise<T> {
@@ -79,7 +82,7 @@ async function withBoundClient<T>(
         strictDN: true,
     });
     try {
-        await client.bind(dn, password);
+        await client.bind(distinguishedName, password);
         return await operation(client);
     } finally {
         await client.unbind().catch(() => undefined);
@@ -123,7 +126,9 @@ function mapUser(entry: LdapEntry, options: LdapRuntimeOptions) {
         emails,
         displayName: first(entry, "displayName", "cn"),
         memberOf,
-        groups: memberOf.map((dn) => firstRdnValue(dn)),
+        groups: memberOf.map((distinguishedName) =>
+            firstRdnValue(distinguishedName),
+        ),
     };
 }
 
@@ -152,8 +157,8 @@ async function resolveGroups(
     const username = first(entry, options.userAttribute) ?? "";
     const groupBase = resolveDirectorySearchBases(options).groups;
     const directDns = new Set(
-        values(entry, options.memberOfAttribute).filter((dn) =>
-            isDnWithinBase(dn, groupBase),
+        values(entry, options.memberOfAttribute).filter((distinguishedName) =>
+            isDnWithinBase(distinguishedName, groupBase),
         ),
     );
     const groupEntries = result.searchEntries.filter(
@@ -201,12 +206,16 @@ async function resolveGroups(
             ];
         }),
     );
-    return [...directDns].map((dn) => namesByDn.get(dn) ?? firstRdnValue(dn));
+    return [...directDns].map(
+        (distinguishedName) =>
+            namesByDn.get(distinguishedName) ??
+            firstRdnValue(distinguishedName),
+    );
 }
 
-function firstRdnValue(dn: string): string {
-    const match = /^[^=]+=((?:\\.|[^,])*)/.exec(dn);
-    return match?.[1]?.replace(/\\([,=+<>#;\\"])/g, "$1") ?? dn;
+function firstRdnValue(distinguishedName: string): string {
+    const match = /^[^=]+=((?:\\.|[^,])*)/.exec(distinguishedName);
+    return match?.[1]?.replace(/\\([,=+<>#;\\"])/g, "$1") ?? distinguishedName;
 }
 
 /** A real, bounded LDAP client suitable for OpenLDAP and FreeIPA. */

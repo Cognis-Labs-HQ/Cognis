@@ -306,8 +306,12 @@ export class GatewayService {
                 withFileTypes: true,
             });
             entries = dirEntries
-                .filter((e) => e.isDirectory() && e.name !== "tests")
-                .map((e) => e.name);
+                .filter(
+                    (directoryEntry) =>
+                        directoryEntry.isDirectory() &&
+                        directoryEntry.name !== "tests",
+                )
+                .map((directoryEntry) => directoryEntry.name);
         } catch {
             return [];
         }
@@ -367,14 +371,17 @@ export class GatewayService {
             } catch {}
         }
         entries = entries.filter((entry) => directoryManifests.has(entry));
-        const compareBootstrapPriority = (a: string, b: string) => {
-            if (a === "files") return -1;
-            if (b === "files") return 1;
-            if (a === "logging") return -1;
-            if (b === "logging") return 1;
-            if (a === "db") return -1;
-            if (b === "db") return 1;
-            return a.localeCompare(b);
+        const compareBootstrapPriority = (
+            leftEntry: string,
+            rightEntry: string,
+        ) => {
+            if (leftEntry === "files") return -1;
+            if (rightEntry === "files") return 1;
+            if (leftEntry === "logging") return -1;
+            if (rightEntry === "logging") return 1;
+            if (leftEntry === "db") return -1;
+            if (rightEntry === "db") return 1;
+            return leftEntry.localeCompare(rightEntry);
         };
         const directoryByGatewayId = new Map<string, string>();
         for (const entry of entries) {

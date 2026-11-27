@@ -191,9 +191,9 @@ export function createPageComposer(
     const FORM_DRAFT_STORAGE_PREFIX = "cognis_form_draft";
     const LARGE_FORM_RESET_FIELD_THRESHOLD = 6;
 
-    function handleBeforeUnload(e) {
-        e.preventDefault();
-        e.returnValue = "";
+    function handleBeforeUnload(event) {
+        event.preventDefault();
+        event.returnValue = "";
     }
 
     let activeEdits = 0;
@@ -588,9 +588,15 @@ export function createPageComposer(
                 btn.dataset.composerScroll === activeSubPageId,
             );
         });
-        const prevEl = prevId ? elements.find((e) => e.id === prevId) : null;
+        const prevEl = prevId
+            ? elements.find(
+                  (candidateElement) => candidateElement.id === prevId,
+              )
+            : null;
         if (prevEl?.subComposerOptions) unmountSubComposer(prevEl);
-        const newEl = elements.find((e) => e.id === id);
+        const newEl = elements.find(
+            (candidateElement) => candidateElement.id === id,
+        );
         if (newEl?.subComposerOptions) {
             const outerDiv = contentGrid.querySelector(`#${id}`);
             const sectionDiv =
@@ -725,7 +731,9 @@ export function createPageComposer(
 
         if (subPageNavigation) {
             const hashId = window.location.hash.slice(1);
-            const validIds = elements.map((e) => e.id);
+            const validIds = elements.map(
+                (candidateElement) => candidateElement.id,
+            );
             activeSubPageId =
                 hashId && validIds.includes(hashId)
                     ? hashId
@@ -755,7 +763,7 @@ export function createPageComposer(
                         behavior: prefersReducedMotion() ? "auto" : "smooth",
                     });
                     root.querySelectorAll("[data-composer-scroll]").forEach(
-                        (b) => b.classList.remove("active"),
+                        (button) => button.classList.remove("active"),
                     );
                     btn.classList.add("active");
                     closeMobileDrawerIfNeeded();

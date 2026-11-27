@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { readFile } from "node:fs/promises";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 import { createUiRoutes } from "../../routes/ui/index.js";
 import { createCtx } from "@cognis/core";
 import type { RouteContext } from "../../reuse/route-context.js";
@@ -125,7 +125,7 @@ test("service worker installation retains install icons within its precache imag
     const route = createIconRoute();
     const handlers = new Map();
     const images = new Map<string, number>();
-    vm.runInNewContext(
+    virtualMachine.runInNewContext(
         await readFile(
             new URL("../../../ui/public/sw.js", import.meta.url),
             "utf8",

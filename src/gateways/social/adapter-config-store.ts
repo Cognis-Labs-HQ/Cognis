@@ -9,10 +9,10 @@ export interface AdapterConfigStore {
 }
 
 export class DbAdapterConfigStore implements AdapterConfigStore {
-    constructor(private readonly db: DbExecutor) {}
+    constructor(private readonly database: DbExecutor) {}
 
     async ensureSchema(): Promise<void> {
-        await this.db.ensureTable({
+        await this.database.ensureTable({
             name: "social_adapter_configs",
             columns: [
                 {
@@ -29,7 +29,7 @@ export class DbAdapterConfigStore implements AdapterConfigStore {
     async getConfig(
         adapterId: string,
     ): Promise<Record<string, unknown> | null> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "social_adapter_configs",
             columns: ["config_json"],
@@ -46,7 +46,7 @@ export class DbAdapterConfigStore implements AdapterConfigStore {
         config: Record<string, unknown>,
     ): Promise<void> {
         const json = JSON.stringify(config);
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "INSERT",
             table: "social_adapter_configs",
             values: {

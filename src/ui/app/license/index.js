@@ -121,7 +121,8 @@ export async function mount(root, { signal } = {}) {
             return;
         }
         const section =
-            sections.find((s) => s.id === activeSectionId) ?? sections[0];
+            sections.find((section2) => section2.id === activeSectionId) ??
+            sections[0];
         container.innerHTML =
             `<h2 class="license-section-title">${section.title}</h2>` +
             `<div class="license-section-body">${renderMarkdown(section.lines.join("\n"))}</div>`;
@@ -177,8 +178,8 @@ export async function mount(root, { signal } = {}) {
         activeSectionId = sections[0].id;
         const items = sections
             .map(
-                (s) =>
-                    `<li><button data-section-id="${s.id}">${s.title}</button></li>`,
+                (section) =>
+                    `<li><button data-section-id="${section.id}">${section.title}</button></li>`,
             )
             .join("");
         nav.innerHTML = `<ul>${items}</ul>`;
@@ -193,10 +194,10 @@ export async function mount(root, { signal } = {}) {
         const btn = event.target.closest("[data-section-id]");
         if (!btn) return;
         activeSectionId = btn.dataset.sectionId;
-        root.querySelectorAll("[data-section-id]").forEach((b) => {
-            b.classList.toggle(
+        root.querySelectorAll("[data-section-id]").forEach((button) => {
+            button.classList.toggle(
                 "active",
-                b.dataset.sectionId === activeSectionId,
+                button.dataset.sectionId === activeSectionId,
             );
         });
         renderSections();

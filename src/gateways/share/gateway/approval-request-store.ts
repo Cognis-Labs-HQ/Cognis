@@ -79,10 +79,10 @@ function parseRecord(
  * which point pending rows auto-resolve to "approved").
  */
 export class ShareApprovalRequestStore {
-    constructor(private readonly db: DbExecutor) {}
+    constructor(private readonly database: DbExecutor) {}
 
     async ensureSchema(): Promise<void> {
-        await this.db.ensureTable({
+        await this.database.ensureTable({
             name: "share_approval_requests",
             columns: [
                 { name: "id", type: "text", primaryKey: true },
@@ -143,7 +143,7 @@ export class ShareApprovalRequestStore {
             }),
         );
         for (const row of rows) {
-            await this.db.executeCommand({
+            await this.database.executeCommand({
                 option: "INSERT",
                 table: "share_approval_requests",
                 values: {
@@ -169,7 +169,7 @@ export class ShareApprovalRequestStore {
     async listByMintRequestId(
         mintRequestId: string,
     ): Promise<ShareApprovalRequestRecord[]> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "share_approval_requests",
             where: [
@@ -189,7 +189,7 @@ export class ShareApprovalRequestStore {
     async listPendingForTarget(
         targetAccountId: string,
     ): Promise<ShareApprovalRequestRecord[]> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "share_approval_requests",
             where: [
@@ -214,7 +214,7 @@ export class ShareApprovalRequestStore {
         targetAccountId: string;
         decision: "approved" | "declined";
     }): Promise<boolean> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "share_approval_requests",
             where: [
@@ -233,7 +233,7 @@ export class ShareApprovalRequestStore {
         if (record.status !== "pending" || isExpired(record.expiresAt)) {
             return false;
         }
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "UPDATE",
             table: "share_approval_requests",
             where: [{ column: "id", value: record.id }],
@@ -257,7 +257,7 @@ export class ShareApprovalRequestStore {
         const rows = await this.listByMintRequestId(mintRequestId);
         for (const row of rows) {
             if (row.status === "pending" && isExpired(row.expiresAt)) {
-                await this.db.executeCommand({
+                await this.database.executeCommand({
                     option: "UPDATE",
                     table: "share_approval_requests",
                     where: [{ column: "id", value: row.id }],
@@ -277,7 +277,7 @@ export class ShareApprovalRequestStore {
 
     async purgeExpired(): Promise<void> {
         const nowIso = new Date().toISOString();
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "DELETE",
             table: "share_approval_requests",
             where: [

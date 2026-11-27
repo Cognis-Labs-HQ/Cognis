@@ -25,14 +25,14 @@ export function halfGrid(dim) {
 /**
  * Snaps a pixel offset down to the nearest valid grid row/column position.
  *
- * @param {number} px
+ * @param {number} pixels
  * @param {number} dim
  * @param {number} unit
  * @returns {number}
  */
-export function snapGridFloor(px, dim, unit = PAGE_COMPOSER_GRID_UNIT) {
+export function snapGridFloor(pixels, dim, unit = PAGE_COMPOSER_GRID_UNIT) {
     const step = gridStep(dim);
-    return Math.floor(px / (unit * step)) * step;
+    return Math.floor(pixels / (unit * step)) * step;
 }
 
 /**

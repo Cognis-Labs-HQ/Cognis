@@ -19,7 +19,12 @@ test("setNamespaceDefault and listNamespaceDefaults round-trip", async () => {
     await store.setNamespaceDefault("profile", 2000);
     const defaults = await store.listNamespaceDefaults();
     assert.deepEqual(
-        defaults.map((d) => [d.namespaceId, d.quotaBytes]).sort(),
+        defaults
+            .map((quotaDefault) => [
+                quotaDefault.namespaceId,
+                quotaDefault.quotaBytes,
+            ])
+            .sort(),
         [
             ["profile", 2000],
             ["user", 1000],

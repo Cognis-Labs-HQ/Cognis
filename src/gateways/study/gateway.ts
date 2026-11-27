@@ -354,7 +354,10 @@ export class CoreStudyGateway {
                 );
             })
             .slice()
-            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+            .sort(
+                (leftEntry, rightEntry) =>
+                    (leftEntry.order ?? 0) - (rightEntry.order ?? 0),
+            );
     }
 
     listAdapters(): StudyAdapterInfo[] {

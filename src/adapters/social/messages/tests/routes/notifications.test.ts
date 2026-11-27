@@ -47,7 +47,7 @@ function makeFlow(
 ): FlowApi {
     const ctx = createCtx();
     const sendMessageFlow = MESSAGING_FLOW_CATALOG.find(
-        (f) => f.id === "send-message",
+        (flow) => flow.id === "send-message",
     );
     if (sendMessageFlow) {
         registerCanonicalFlow(ctx, sendMessageFlow);

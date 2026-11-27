@@ -6,8 +6,8 @@ import {
     resolveModuleAssurance,
 } from "../../reuse/module-assurance.js";
 import { createHash } from "node:crypto";
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
-import os from "node:os";
+import { mkdtemp, rm as removePath, writeFile } from "node:fs/promises";
+import operatingSystem from "node:os";
 import path from "node:path";
 
 const unprivileged = { requested: false, trustedSource: false };
@@ -113,7 +113,9 @@ test("module namespace integration requires an explicit host-owner grant", () =>
 });
 
 test("module assurance does not verify an incomplete runtime inventory", async () => {
-    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-assurance-"));
+    const root = await mkdtemp(
+        path.join(operatingSystem.tmpdir(), "cognis-assurance-"),
+    );
     try {
         const bootstrap = "export function bootstrapModule() {}\n";
         const manifest = {
@@ -149,6 +151,6 @@ test("module assurance does not verify an incomplete runtime inventory", async (
             "unverified",
         );
     } finally {
-        await rm(root, { recursive: true, force: true });
+        await removePath(root, { recursive: true, force: true });
     }
 });

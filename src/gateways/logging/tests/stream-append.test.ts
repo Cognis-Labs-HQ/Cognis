@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
-import { access, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { access, mkdtemp, rm as removePath, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { EventEmitter } from "node:events";
 import { GatewayRegistry, CapabilityStore } from "@cognis/core";
@@ -167,6 +167,6 @@ test("logging stream route emits appended log entries during an open stream", as
         } else {
             process.env.LOG_FILE = previousLogFile;
         }
-        await rm(tempRoot, { recursive: true, force: true });
+        await removePath(tempRoot, { recursive: true, force: true });
     }
 });

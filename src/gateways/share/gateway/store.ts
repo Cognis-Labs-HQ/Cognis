@@ -131,7 +131,7 @@ function parseRecord(
 
 export class ShareTokenStore {
     constructor(
-        private readonly db: DbExecutor,
+        private readonly database: DbExecutor,
         private readonly log?: (
             level: string,
             message: string,
@@ -140,7 +140,7 @@ export class ShareTokenStore {
     ) {}
 
     async ensureSchema(): Promise<void> {
-        await this.db.ensureTable({
+        await this.database.ensureTable({
             name: "share_resources",
             columns: [
                 { name: "resource_key", type: "text", primaryKey: true },
@@ -151,7 +151,7 @@ export class ShareTokenStore {
             ],
             uniqueKeys: [["resource_type", "resource_id", "content_url"]],
         });
-        await this.db.ensureTable({
+        await this.database.ensureTable({
             name: "share_tokens",
             columns: [
                 { name: "id", type: "text", primaryKey: true },
@@ -183,7 +183,7 @@ export class ShareTokenStore {
             ],
         });
         await this.backfillResourceKeys();
-        await this.db.ensureTable({
+        await this.database.ensureTable({
             name: "share_account_unlocks",
             columns: [
                 { name: "id", type: "text", primaryKey: true },
@@ -202,7 +202,7 @@ export class ShareTokenStore {
             ],
             uniqueKeys: [["share_id", "account_id"]],
         });
-        await this.db.ensureTable({
+        await this.database.ensureTable({
             name: "share_activity_events",
             columns: [
                 { name: "id", type: "text", primaryKey: true },
@@ -228,7 +228,7 @@ export class ShareTokenStore {
         type: ShareActivityEvent["type"],
         occurredAt: string,
     ): Promise<void> {
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "INSERT",
             table: "share_activity_events",
             values: {
@@ -241,7 +241,7 @@ export class ShareTokenStore {
     }
 
     async listActivity(shareId: string): Promise<ShareActivityEvent[]> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "share_activity_events",
             where: [{ column: "share_id", value: shareId }],
@@ -270,7 +270,7 @@ export class ShareTokenStore {
     }
 
     private async backfillActivityEvents(): Promise<void> {
-        const tokenResult = await this.db.executeCommand({
+        const tokenResult = await this.database.executeCommand({
             option: "SELECT",
             table: "share_tokens",
         });
@@ -300,7 +300,7 @@ export class ShareTokenStore {
     }
 
     private async backfillResourceKeys(): Promise<void> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "share_tokens",
         });
@@ -314,13 +314,13 @@ export class ShareTokenStore {
             const resourceKey = createHash("sha256")
                 .update(`${resourceType}\u0000${resourceId}\u0000${contentUrl}`)
                 .digest("hex");
-            const existing = await this.db.executeCommand({
+            const existing = await this.database.executeCommand({
                 option: "SELECT",
                 table: "share_resources",
                 where: [{ column: "resource_key", value: resourceKey }],
             });
             if ((existing.rows ?? []).length === 0) {
-                await this.db.executeCommand({
+                await this.database.executeCommand({
                     option: "INSERT",
                     table: "share_resources",
                     values: {
@@ -334,7 +334,7 @@ export class ShareTokenStore {
                     },
                 });
             }
-            await this.db.executeCommand({
+            await this.database.executeCommand({
                 option: "UPDATE",
                 table: "share_tokens",
                 set: { resource_key: resourceKey },
@@ -350,13 +350,13 @@ export class ShareTokenStore {
         const id = createHash("sha256")
             .update(`${shareId}\u0000${accountId}`)
             .digest("hex");
-        const existing = await this.db.executeCommand({
+        const existing = await this.database.executeCommand({
             option: "SELECT",
             table: "share_account_unlocks",
             where: [{ column: "id", value: id }],
         });
         if ((existing.rows ?? []).length > 0) return;
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "INSERT",
             table: "share_account_unlocks",
             values: {
@@ -372,7 +372,7 @@ export class ShareTokenStore {
         shareId: string,
         accountId: string,
     ): Promise<boolean> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "share_account_unlocks",
             where: [
@@ -385,7 +385,7 @@ export class ShareTokenStore {
     }
 
     async clearAccountUnlocks(shareId: string): Promise<void> {
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "DELETE",
             table: "share_account_unlocks",
             where: [{ column: "share_id", value: shareId }],
@@ -412,13 +412,13 @@ export class ShareTokenStore {
         const resourceKey = createHash("sha256")
             .update(`${resourceType}\u0000${resourceId}\u0000${contentUrl}`)
             .digest("hex");
-        const existingResource = await this.db.executeCommand({
+        const existingResource = await this.database.executeCommand({
             option: "SELECT",
             table: "share_resources",
             where: [{ column: "resource_key", value: resourceKey }],
         });
         if ((existingResource.rows ?? []).length === 0) {
-            await this.db.executeCommand({
+            await this.database.executeCommand({
                 option: "INSERT",
                 table: "share_resources",
                 values: {
@@ -456,7 +456,7 @@ export class ShareTokenStore {
             createdAt,
             updatedAt: createdAt,
         };
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "INSERT",
             table: "share_tokens",
             values: {
@@ -515,7 +515,7 @@ export class ShareTokenStore {
             resourceType: filter.resourceType,
             resourceId: filter.resourceId,
         });
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "share_tokens",
             where,
@@ -546,7 +546,7 @@ export class ShareTokenStore {
         resourceId: string;
     }): Promise<ShareTokenRecord[]> {
         await this.purgeExpired(filter);
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "share_tokens",
             where: [
@@ -579,7 +579,7 @@ export class ShareTokenStore {
         recipientAccountId: string,
     ): Promise<ShareTokenRecord[]> {
         await this.purgeExpired();
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "share_tokens",
             orderBy: [{ column: "created_at", direction: "DESC" }],
@@ -618,7 +618,7 @@ export class ShareTokenStore {
 
     async claimExpiredNotifications(): Promise<ShareTokenRecord[]> {
         const now = new Date().toISOString();
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "share_tokens",
             where: [
@@ -641,7 +641,7 @@ export class ShareTokenStore {
     }
 
     async markExpirationNotificationSent(shareId: string): Promise<void> {
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "UPDATE",
             table: "share_tokens",
             set: { expiration_notified_at: new Date().toISOString() },
@@ -677,7 +677,7 @@ export class ShareTokenStore {
         if (filter?.resourceId) {
             where.push({ column: "resource_id", value: filter.resourceId });
         }
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "DELETE",
             table: "share_tokens",
             where,
@@ -712,7 +712,7 @@ export class ShareTokenStore {
         ) {
             return false;
         }
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "DELETE",
             table: "share_tokens",
             where: [{ column: "id", value: record.id }],
@@ -721,7 +721,7 @@ export class ShareTokenStore {
     }
 
     async getById(shareId: string): Promise<ShareTokenRecord | null> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "share_tokens",
             where: [{ column: "id", value: String(shareId ?? "").trim() }],
@@ -784,7 +784,7 @@ export class ShareTokenStore {
                   record.accessControls.passwordProtected,
         });
         const updatedAt = new Date().toISOString();
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "UPDATE",
             table: "share_tokens",
             set: {
@@ -834,7 +834,7 @@ export class ShareTokenStore {
         }
         const lastAccessedAt = new Date().toISOString();
         await this.recordActivity(record.id, "accessed", lastAccessedAt);
-        const accessRecorded = await this.db
+        const accessRecorded = await this.database
             .executeCommand({
                 option: "UPDATE",
                 table: "share_tokens",

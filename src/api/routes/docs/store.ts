@@ -3,7 +3,7 @@ import {
     readFile,
     readdir,
     rename,
-    rm,
+    rm as removePath,
     writeFile,
 } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
@@ -64,7 +64,7 @@ async function publishSnapshot(
         await writeFile(temporaryPath, content);
         await rename(temporaryPath, path);
     } finally {
-        await rm(temporaryPath, { force: true });
+        await removePath(temporaryPath, { force: true });
     }
 }
 

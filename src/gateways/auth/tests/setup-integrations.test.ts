@@ -13,7 +13,7 @@ import {
 } from "./auth-gateway-test-helpers.js";
 
 test("setup status supplies owner integrations for SSO sessions after limited TFA setup", async () => {
-    const db = makeInMemoryDb();
+    const database = makeInMemoryDb();
     const capabilities = new CapabilityStore();
     capabilities.contribute(
         "auth:getAccountInstanceId",
@@ -42,8 +42,8 @@ test("setup status supplies owner integrations for SSO sessions after limited TF
         },
     );
     const route = createSessionRoutes({
-        authGateway: new CoreAuthGateway(db),
-        accountStore: await loadLocalAccountStore(db),
+        authGateway: new CoreAuthGateway(database),
+        accountStore: await loadLocalAccountStore(database),
         capabilities,
         authRouteBootstrapRuntime: createAuthRouteBootstrapRuntime(),
         readSecuritySettings: async () => ({

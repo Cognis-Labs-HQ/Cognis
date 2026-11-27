@@ -12,9 +12,9 @@ import {
 
 const RATE_LIMIT_DELAY_MS = 250;
 
-function sleepWithoutKeepingProcessAlive(ms: number): Promise<void> {
+function sleepWithoutKeepingProcessAlive(milliseconds: number): Promise<void> {
     return new Promise((resolve) => {
-        const timer = setTimeout(resolve, ms);
+        const timer = setTimeout(resolve, milliseconds);
         timer.unref();
     });
 }
@@ -136,7 +136,8 @@ test("SmtpNotificationQueue wakes during rate-limit sleep when a different recip
     const sentRecipients: string[] = [];
     const queue = new SmtpNotificationQueue(
         limiter,
-        (ms) => new Promise<void>((resolve) => setTimeout(resolve, ms)),
+        (milliseconds) =>
+            new Promise<void>((resolve) => setTimeout(resolve, milliseconds)),
         async (payload) => {
             sentRecipients.push(payload.recipientEmail);
         },

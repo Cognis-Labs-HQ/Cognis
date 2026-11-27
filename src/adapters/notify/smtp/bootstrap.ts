@@ -57,23 +57,27 @@ export async function bootstrapNotifyAdapter(
         stages: ["validate", "deliver"],
     });
     testFlow.extend("validate", { id: "smtp:validateTest" }, ({ input }) => {
-        const { to } = input as { to: string };
-        if (typeof to !== "string" || !to || /[\r\n]/.test(to))
+        const { to: recipient2 } = input as { to: string };
+        if (
+            typeof recipient2 !== "string" ||
+            !recipient2 ||
+            /[\r\n]/.test(recipient2)
+        )
             throw new Error("smtp_test_email_requires_recipient");
     });
     testFlow.extend(
         "deliver",
         { id: "smtp:deliverTest" },
         async ({ input }) => {
-            const { to, config } = input as {
+            const { to: recipient2, config } = input as {
                 to: string;
                 config?: Record<string, unknown>;
             };
-            await sender.sendTestEmail(purpose, to, config);
+            await sender.sendTestEmail(purpose, recipient2, config);
         },
     );
-    sender.test = async (to, config) => {
-        await root.flow.run("smtp:testEmail", { to, config });
+    sender.test = async (recipient2, config) => {
+        await root.flow.run("smtp:testEmail", { to: recipient2, config });
     };
     ctx.registerRoute(async (req, res, url) => {
         if (

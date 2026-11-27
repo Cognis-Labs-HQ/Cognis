@@ -45,6 +45,12 @@ Isi dokumen, judul navigasi, dan pencarian mendahulukan bahasa UI aktif, lalu ba
 
 Setiap katalog `strings.xml` yang dikirim menggunakan akar `<resources>`. Entri bahasa Inggris tidak boleh kosong; bahasa lain mempertahankan kunci dan urutan yang sama. Pemanggilan terjemahan literal dan atribut terjemahan HTML harus merujuk ke entri bahasa Inggris. Jalankan `node --import tsx --test src/ui/tests/strings-coverage.test.js src/tooling/tests/translations/*.test.js` untuk memeriksa katalog dan referensi sumber. Kunci yang dihitung tetap memerlukan pengujian perilaku komponen.
 
+### Nama Binding
+
+Pemeriksaan pohon sintaks memindai JavaScript dan TypeScript di seluruh `src`, termasuk gateway, perkakas, pengujian, dan fixture. Pemeriksaan menolak binding waktu jalan sepanjang satu atau dua karakter dalam deklarasi, impor, fungsi dan kelas bernama, destrukturisasi, parameter fungsi dan callback, metode, properti parameter konstruktor, serta klausa catch. Ekspor, deklarator tambahan, dan pergantian baris tidak dapat melewatinya. Alias tabel statis juga harus deskriptif. Kegagalan penguraian menggagalkan validasi.
+
+Pengecualian hanya mencakup koordinat dan ukuran `x`, `y`, `w`, `h`, binding yang diabaikan `_`, pengenal `id`, dan penghitung perulangan numerik yang lazim. Kunci properti, teks literal, parameter tipe, dan label tanda tangan tipe bukan binding waktu jalan. Pertahankan kunci properti publik dan muatan saat mengganti nama lokal. Jalankan `node --test src/ui/tests/ambiguous-names.test.js src/tooling/tests/naming/detector.test.js`; rangkaian pengujian lengkap menjalankan pemeriksaan yang sama.
+
 ### Validasi dan batasan
 
 `npm run check:docs` memeriksa manifes komponen dan direktori inti yang sebenarnya. Pengujian dokumentasi mengubah judul, urutan, isi, pagar kode, nama berkas, dan jalur manifes pada setiap peran dan bahasa. Pengujian juga membandingkan matriks bagian dalam setiap standar terlokalisasi dengan skema yang dibaca mesin. CI menjalankan pemeriksaan dokumentasi dan seluruh pengujian. Pemeriksaan ini menegakkan susunan dan integritas referensi konkret; penulis tetap harus memverifikasi kebenaran klaim pada implementasi pemiliknya.

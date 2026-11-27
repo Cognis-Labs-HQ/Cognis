@@ -1,6 +1,6 @@
 import test, { type TestContext } from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, writeFile, rm } from "node:fs/promises";
+import { mkdtemp, mkdir, writeFile, rm as removePath } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { ModuleMarketplaceService, type ModuleSource } from "../../../index.js";
@@ -15,7 +15,7 @@ const original: ModuleSource = {
 };
 
 async function fixture(
-    t: TestContext,
+    testContext: TestContext,
     source = original,
     cloneUrl = "https://old.example.test/example/module.git",
     token?: string,
@@ -23,7 +23,9 @@ async function fixture(
     const directory = await mkdtemp(
         path.join(tmpdir(), "cognis-install-binding-"),
     );
-    t.after(() => rm(directory, { recursive: true, force: true }));
+    testContext.after(() =>
+        removePath(directory, { recursive: true, force: true }),
+    );
     const { ctx } = createSecretContext();
     const service = new ModuleMarketplaceService(
         path.join(directory, "sources.json"),
@@ -51,10 +53,12 @@ for (const change of [
     { namespace: "replacement" },
     { provider: "gitlab" as const },
 ])
-    test(`installation rejects concurrent credential rebinding (${Object.keys(change)[0]})`, async (t) => {
-        t.mock.method(globalThis, "fetch", async () => Response.json([]));
+    test(`installation rejects concurrent credential rebinding (${Object.keys(change)[0]})`, async (testContext) => {
+        testContext.mock.method(globalThis, "fetch", async () =>
+            Response.json([]),
+        );
         const { ctx, service, module } = await fixture(
-            t,
+            testContext,
             original,
             undefined,
             "original-test-PAT",
@@ -82,9 +86,9 @@ for (const change of [
         assert.equal(replaced, true);
     });
 
-test("GitLab sources cannot use the GitHub API-to-repository host alias", async (t) => {
+test("GitLab sources cannot use the GitHub API-to-repository host alias", async (testContext) => {
     const { service, module } = await fixture(
-        t,
+        testContext,
         { ...original, provider: "gitlab", baseUrl: "https://api.github.com" },
         "https://github.com/example/module.git",
     );
@@ -92,4 +96,56 @@ test("GitLab sources cannot use the GitHub API-to-repository host alias", async 
         service.install(module, "main"),
         /module_source_repository_mismatch/,
     );
+});
+
+test("GitLab installation validates namespace within the configured deployment prefix", async (testContext) => {
+    const root = await mkdtemp(path.join(tmpdir(), "cognis-gitlab-prefix-"));
+    testContext.after(() => removePath(root, { recursive: true, force: true }));
+    const modulesRoot = path.join(root, "modules");
+    const service = new ModuleMarketplaceService(
+        path.join(root, "sources.json"),
+        modulesRoot,
+    );
+    await service.saveSource({
+        ...original,
+        provider: "gitlab",
+        baseUrl: "https://example.test/gitlab/api/v4",
+        namespace: "team/subgroup",
+    });
+    const cache = path.join(modulesRoot, ".cache");
+    await mkdir(cache, { recursive: true });
+    for (const [cloneUrl, expected] of [
+        [
+            "https://example.test/gitlab/team/subgroup/module.git",
+            /invalid_module_branch/,
+        ],
+        [
+            "https://example.test/team/subgroup/module.git",
+            /module_source_repository_mismatch/,
+        ],
+        [
+            "https://example.test/gitlab/team/other/module.git",
+            /module_source_repository_mismatch/,
+        ],
+        [
+            "https://other.test/gitlab/team/subgroup/module.git",
+            /module_source_repository_mismatch/,
+        ],
+    ] as const) {
+        const module = {
+            uuid: "71567e48-480a-45a5-a853-8c96d6ab9973",
+            sourceUuid: original.uuid,
+            cloneUrl,
+            defaultBranch: "main",
+            branches: [],
+            releases: [],
+        };
+        await writeFile(
+            path.join(cache, "catalog.json"),
+            JSON.stringify([module]),
+        );
+        const catalog = await service.listCachedModules();
+        assert.equal(catalog.length, 1);
+        await assert.rejects(service.install(catalog[0], "main"), expected);
+    }
 });

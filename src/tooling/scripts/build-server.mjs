@@ -1,4 +1,11 @@
-import { cp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import {
+    cp as copyPath,
+    mkdir,
+    readFile,
+    readdir,
+    rm as removePath,
+    writeFile,
+} from "node:fs/promises";
 import path from "node:path";
 import { build } from "esbuild";
 import { rewriteHtmlAssets } from "./ui-build/html-assets.mjs";
@@ -31,9 +38,9 @@ const compiledModuleSpecifiersPlugin = {
 };
 
 const outputRoot = path.resolve("dist/server");
-await rm(outputRoot, { recursive: true, force: true });
+await removePath(outputRoot, { recursive: true, force: true });
 await mkdir(outputRoot, { recursive: true });
-await cp("package.json", path.join(outputRoot, "package.json"));
+await copyPath("package.json", path.join(outputRoot, "package.json"));
 const sourceFiles = (await walk(path.resolve("src"))).filter(
     (filePath) =>
         filePath.endsWith(".ts") &&
@@ -73,7 +80,7 @@ await writeFile(
     path.join(outputRoot, "node_modules/@cognis/core/package.json"),
     `${JSON.stringify(corePackage, null, 2)}\n`,
 );
-await cp("src", path.join(outputRoot, "src"), {
+await copyPath("src", path.join(outputRoot, "src"), {
     recursive: true,
     filter: (source) => {
         const normalizedSource = source.split(path.sep).join("/");

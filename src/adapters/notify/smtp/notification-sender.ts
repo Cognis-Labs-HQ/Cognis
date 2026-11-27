@@ -108,7 +108,7 @@ function encodeQuotedPrintable(input: string): string {
 
 async function buildMessage(
     from: string,
-    to: string,
+    recipient: string,
     subject: string,
     body: string,
     options: {
@@ -133,7 +133,7 @@ async function buildMessage(
     const mixedBoundary = hasAttachments ? `cognis-mixed-${randomUUID()}` : "";
     const headers = [
         foldHeader("From", formatAddressHeader(from, options.senderName)),
-        foldHeader("To", formatAddressHeader(to)),
+        foldHeader("To", formatAddressHeader(recipient)),
         foldHeader("Subject", encodeHeaderPhrase(subject)),
         `Date: ${new Date().toUTCString()}`,
         `Message-ID: ${makeMessageId(from, options.messageIdDomain ?? options.externalHost)}`,
@@ -189,7 +189,7 @@ async function buildMessage(
 
 async function sendMail(
     config: SmtpConfig,
-    to: string,
+    recipient: string,
     subject: string,
     body: string,
     theme?: string,
@@ -251,7 +251,7 @@ async function sendMail(
         }
 
         const mailFromAddress = sanitizeSmtpPath(config.from);
-        const recipientAddress = sanitizeSmtpPath(to);
+        const recipientAddress = sanitizeSmtpPath(recipient);
         const mailFrom = await session.cmd(`MAIL FROM:<${mailFromAddress}>`);
         if (mailFrom.code !== 250) {
             const msg = `smtp_mail_from_failed:${mailFrom.code}`;
@@ -277,7 +277,7 @@ async function sendMail(
         }
 
         session.writeRaw(
-            await buildMessage(config.from, to, subject, body, {
+            await buildMessage(config.from, recipient, subject, body, {
                 theme,
                 presentation,
                 externalHost: config.externalHost,
@@ -326,7 +326,7 @@ async function waitForRetry(
 
 async function sendMailWithRetry(
     config: SmtpConfig,
-    to: string,
+    recipient: string,
     subject: string,
     body: string,
     sleep: (ms: number) => Promise<void>,
@@ -350,7 +350,7 @@ async function sendMailWithRetry(
         try {
             await sendMail(
                 config,
-                to,
+                recipient,
                 subject,
                 body,
                 theme,
@@ -410,9 +410,9 @@ export class SmtpNotificationSender implements NotificationSender {
         this.envSnapshot = envSnapshot ?? {};
         this.sleep =
             sleep ??
-            ((ms) =>
+            ((milliseconds) =>
                 new Promise((resolve) => {
-                    const timer = setTimeout(resolve, ms);
+                    const timer = setTimeout(resolve, milliseconds);
                     timer.unref();
                 }));
         this.createRateLimiter =
@@ -722,7 +722,11 @@ export class SmtpNotificationSender implements NotificationSender {
     listQueue(): NotificationSenderQueueEntry[] {
         return [...this.queues.values()]
             .flatMap((queue) => queue.listQueue())
-            .sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt));
+            .sort(
+                (leftEntry, rightEntry) =>
+                    Date.parse(rightEntry.updatedAt) -
+                    Date.parse(leftEntry.updatedAt),
+            );
     }
 
     getQueueItem(notificationId: string): NotificationSenderQueueEntry | null {
@@ -735,15 +739,15 @@ export class SmtpNotificationSender implements NotificationSender {
 
     async sendTestEmail(
         purpose: string,
-        to: string,
+        recipient: string,
         overrideConfig?: Record<string, unknown>,
     ): Promise<void> {
-        if (!to) throw new Error("smtp_test_email_requires_recipient");
+        if (!recipient) throw new Error("smtp_test_email_requires_recipient");
         const cfg = this.resolveDeliveryConfig(overrideConfig);
-        const theme = await this.getRecipientTheme(to);
+        const theme = await this.getRecipientTheme(recipient);
         const queued = this.requireQueue(purpose).enqueue({
             purpose,
-            recipientEmail: to,
+            recipientEmail: recipient,
             subject: "Cognis SMTP Test",
             body: "This is a test email from Cognis.",
             config: { ...cfg },

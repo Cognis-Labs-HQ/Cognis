@@ -1,7 +1,7 @@
 import { loadTestModule } from "../../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 
 test("drawing conceals matching grid placements, including newly rendered previews, and restores their state", () => {
     let listener;
@@ -29,7 +29,7 @@ test("drawing conceals matching grid placements, including newly rendered previe
     const variant = makePreview("cat", "猫たち");
     const other = makePreview("year", "年");
     let previews = [first, duplicate, variant, other];
-    const environment = vm.createContext({
+    const environment = virtualMachine.createContext({
         uiCtx: {
             capabilities: {
                 get: (name) => {

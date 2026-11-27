@@ -73,7 +73,7 @@ export class LibraryImageStore {
 }
 
 export async function hasImageReference(
-    db: DbExecutor,
+    database: DbExecutor,
     value: string,
 ): Promise<boolean> {
     const contains = (input: unknown): boolean =>
@@ -90,7 +90,7 @@ export async function hasImageReference(
             ["proposed_entry_json", "source_entry_json", "source_context_json"],
         ],
     ] as const) {
-        const result = await db.executeCommand({
+        const result = await database.executeCommand({
             option: "SELECT",
             table,
             columns: [...columns],

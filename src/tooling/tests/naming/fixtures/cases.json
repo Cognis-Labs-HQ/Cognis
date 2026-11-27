@@ -1,0 +1,172 @@
+[
+    {
+        "name": "exported constant",
+        "source": "export const a = 1;",
+        "names": ["a"]
+    },
+    {
+        "name": "additional declarators",
+        "source": "const first = 1, b = 2; let second = 3, c = 4;",
+        "names": ["b", "c"]
+    },
+    {
+        "name": "uninitialized and uppercase bindings",
+        "source": "let n; var Q; const AB = 1;",
+        "names": ["n", "Q", "AB"]
+    },
+    {
+        "name": "multiline export",
+        "source": "export\nconst\n el\n= 1;",
+        "names": ["el"]
+    },
+    {
+        "name": "destructured local alias",
+        "source": "const { key: a, nested: { b }, ...c } = source;",
+        "names": ["a", "b", "c"]
+    },
+    {
+        "name": "array rest and default",
+        "source": "const [a = 0, , ...b] = source;",
+        "names": ["a", "b"]
+    },
+    {
+        "name": "destructured short field",
+        "source": "const { iv, db } = source;",
+        "names": ["iv", "db"]
+    },
+    {
+        "name": "arrow parameters",
+        "source": "items.map((e, p) => e + p);",
+        "names": ["e", "p"]
+    },
+    {
+        "name": "ordinary and async parameters",
+        "source": "function read(a) {} const operation = async function(b) {};",
+        "names": ["a", "b"]
+    },
+    {
+        "name": "nested default parameters",
+        "source": "const operation = ({ key: a = 1 }, [b], ...c) => {};",
+        "names": ["a", "b", "c"]
+    },
+    {
+        "name": "class constructor method setter and catch",
+        "source": "class Example { constructor(a) {} method(b) {} set value(c) {} } try {} catch (e) {}",
+        "names": ["a", "b", "c", "e"]
+    },
+    {
+        "name": "object method",
+        "source": "const handlers = { run(a) {} };",
+        "names": ["a"]
+    },
+    {
+        "name": "typed declarations and parameter properties",
+        "source": "const db: Database = source; class Example { constructor(private readonly iv: string) {} }",
+        "names": ["db", "iv"]
+    },
+    {
+        "name": "typed optional async arrow in a conditional",
+        "source": "const handler = ready ? async (a?: string): Promise<void> => {} : undefined;",
+        "names": ["a"]
+    },
+    {
+        "name": "numeric counter names only in counter position",
+        "source": "for (let i = 0; i < 2; i++) { const j = i; } for (const k of values) {}",
+        "names": ["j", "k"]
+    },
+    {
+        "name": "disallowed loop counter",
+        "source": "for (let a = 0; a < 2; a++) {} for (const el in source) {}",
+        "names": ["a", "el"]
+    },
+    {
+        "name": "numeric suffix cannot bypass the rule",
+        "source": "const a1 = 1; const x1 = 2;",
+        "names": ["a1", "x1"]
+    },
+    {
+        "name": "ignored name is exact",
+        "source": "const _u = source; const __ = source;",
+        "names": ["_u", "__"]
+    },
+    {
+        "name": "SQL table aliases",
+        "source": "const query = { table: { alias: 'a' }, joins: [{ alias: 'ab' }] };",
+        "names": ["a", "ab"]
+    },
+    {
+        "name": "computed SQL alias property",
+        "source": "const query = { ['alias']: 'x' };",
+        "names": ["x"]
+    },
+    {
+        "name": "descriptive bindings and retained contract keys",
+        "source": "const { iv: initializationVector, db: database } = source; const values = { db: database, iv: initializationVector };",
+        "names": []
+    },
+    {
+        "name": "documented spatial and identifier names",
+        "source": "const { x, y, w, h, id } = rect; const _ = source;",
+        "names": []
+    },
+    {
+        "name": "documented numeric counters",
+        "source": "for (let i = 0; i < 3; i++) {} for (let j = 0; j < 3; j++) {} for (let k = 0; k < 3; k++) {} for (let r = 0; r < 2; r++) { for (let c = 0; c < 2; c++) {} }",
+        "names": []
+    },
+    {
+        "name": "type parameters and signature labels are not runtime bindings",
+        "source": "type Handler<T> = (db: T) => T; interface Reader { read(a: string): void; }",
+        "names": []
+    },
+    {
+        "name": "property and string text are not bindings",
+        "source": "const record = { a: 1, b: 2 }; const text = 'const q = 1; alias: x'; /* const z = 1; */",
+        "names": []
+    },
+    {
+        "name": "regex and template text are not declarations",
+        "source": "const pattern = /const a = 1/; const message = `const b = 2`;",
+        "names": []
+    },
+    {
+        "name": "template expressions contain real bindings",
+        "source": "const message = `${items.map(e => e.id)}`;",
+        "names": ["e"]
+    },
+    {
+        "name": "descriptive SQL alias",
+        "source": "const query = { table: { alias: 'calendar_events' } };",
+        "names": []
+    },
+    {
+        "name": "import aliases and namespaces",
+        "source": "import { readFile as f } from 'node:fs'; import fs from 'node:fs'; import * as vm from 'node:vm';",
+        "names": ["f", "fs", "vm"]
+    },
+    {
+        "name": "runtime function and class bindings",
+        "source": "function f() {} class C {} const factory = function g() {}; const type = class D {};",
+        "names": ["f", "C", "g", "D"]
+    },
+    {
+        "name": "type-only imports do not bind runtime variables",
+        "source": "import type { T } from './types.js';",
+        "names": []
+    },
+    {
+        "name": "JSX expressions contain real bindings",
+        "source": "const view = <section>{items.map(e => e.id)}</section>;",
+        "names": ["e"]
+    },
+    {
+        "name": "escaped names cannot bypass inspection",
+        "source": "const \\u0061 = 1;",
+        "names": ["a"]
+    },
+    {
+        "name": "counter exceptions do not apply to parameters",
+        "source": "items.map(i => i);",
+        "names": ["i"]
+    }
+]

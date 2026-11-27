@@ -393,8 +393,9 @@ async function runUserMenuAction(action, username) {
                 .get("notify:emailClient")
                 ?.listUserEmails({ accountId: username })) ?? [];
         const unverifiedEmail =
-            emails.find((e) => e.primary && !e.verified) ??
-            emails.find((e) => !e.verified);
+            emails.find(
+                (emailEntry) => emailEntry.primary && !emailEntry.verified,
+            ) ?? emails.find((emailEntry) => !emailEntry.verified);
         if (!unverifiedEmail) {
             showToast(i18n.t("ui.app.users.no_unverified_email"), {
                 variant: "error",
@@ -582,7 +583,9 @@ function bindUsersInteractions() {
                 (await uiCtx.capabilities
                     .get("notify:emailClient")
                     ?.listUserEmails({ accountId: username })) ?? [];
-            const hasUnverifiedEmails = emails.some((e) => !e.verified);
+            const hasUnverifiedEmails = emails.some(
+                (emailEntry) => !emailEntry.verified,
+            );
             const menuItems = [
                 {
                     id: user?.isFounder ? "unset-founder" : "set-founder",

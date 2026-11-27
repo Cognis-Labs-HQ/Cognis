@@ -13,7 +13,7 @@ function makeReq(method: string, token: string | null, body?: string) {
         method,
         headers: token ? { authorization: `Bearer ${token}` } : {},
         [Symbol.asyncIterator]: async function* () {
-            for (const c of chunks) yield c;
+            for (const chunk of chunks) yield chunk;
         },
     } as any;
 }
@@ -51,8 +51,8 @@ test("post routes - hidden user cannot post with community visibility", async ()
                 JSON.stringify({ content: "hello", visibility: "community" }),
             ),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
                 end() {},
             } as any,
@@ -83,11 +83,11 @@ test("post routes - hidden user can post with only_me visibility", async () => {
                 }),
             ),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL("http://localhost/api/v1/social/posts"),
@@ -115,8 +115,8 @@ test("post routes - unauthenticated POST /api/v1/social/posts returns 401", asyn
                 JSON.stringify({ content: "hello", visibility: "community" }),
             ),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
                 end() {},
             } as any,
@@ -139,8 +139,8 @@ test("post routes - missing content returns 400", async () => {
         await route(
             makeReq("POST", token, JSON.stringify({ visibility: "community" })),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
                 end() {},
             } as any,
@@ -167,8 +167,8 @@ test("post routes - invalid visibility returns 400", async () => {
                 JSON.stringify({ content: "hello", visibility: "public" }),
             ),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
                 end() {},
             } as any,
@@ -200,11 +200,11 @@ test("post routes - create and list own posts", async () => {
                 }),
             ),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL("http://localhost/api/v1/social/posts"),
@@ -217,11 +217,11 @@ test("post routes - create and list own posts", async () => {
         await route(
             makeReq("GET", token),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL("http://localhost/api/v1/social/posts"),
@@ -342,11 +342,11 @@ test("post routes - delete own post", async () => {
                 }),
             ),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL("http://localhost/api/v1/social/posts"),
@@ -356,11 +356,11 @@ test("post routes - delete own post", async () => {
         await route(
             makeReq("DELETE", token),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL(`http://localhost/api/v1/social/posts/${postId}`),
@@ -401,11 +401,11 @@ test("post routes - cannot delete another user post without elevated role", asyn
                 }),
             ),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL("http://localhost/api/v1/social/posts"),
@@ -415,8 +415,8 @@ test("post routes - cannot delete another user post without elevated role", asyn
         await route(
             makeReq("DELETE", bobToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
                 end() {},
             } as any,
@@ -448,11 +448,11 @@ test("post routes - moderator can delete another user post", async () => {
                 }),
             ),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL("http://localhost/api/v1/social/posts"),
@@ -462,11 +462,11 @@ test("post routes - moderator can delete another user post", async () => {
         await route(
             makeReq("DELETE", modToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL(`http://localhost/api/v1/social/posts/${postId}`),
@@ -498,11 +498,11 @@ test("post routes - admin can delete another user post", async () => {
                 }),
             ),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL("http://localhost/api/v1/social/posts"),
@@ -512,11 +512,11 @@ test("post routes - admin can delete another user post", async () => {
         await route(
             makeReq("DELETE", adminToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL(`http://localhost/api/v1/social/posts/${postId}`),
@@ -557,11 +557,11 @@ test("post routes - only_me posts not visible to others", async () => {
                 }),
             ),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL("http://localhost/api/v1/social/posts"),
@@ -570,11 +570,11 @@ test("post routes - only_me posts not visible to others", async () => {
         await route(
             makeReq("GET", bobToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL("http://localhost/api/v1/social/users/alice/posts"),
@@ -607,8 +607,8 @@ test("post routes - blocked caller gets 404 on user posts", async () => {
         await route(
             makeReq("GET", bobToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
                 end() {},
             } as any,
@@ -653,11 +653,11 @@ test("post routes - private account posts only visible to followers", async () =
                 }),
             ),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL("http://localhost/api/v1/social/posts"),
@@ -666,11 +666,11 @@ test("post routes - private account posts only visible to followers", async () =
         await route(
             makeReq("GET", bobToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL("http://localhost/api/v1/social/users/alice/posts"),
@@ -681,11 +681,11 @@ test("post routes - private account posts only visible to followers", async () =
         await route(
             makeReq("GET", carolToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL("http://localhost/api/v1/social/users/alice/posts"),

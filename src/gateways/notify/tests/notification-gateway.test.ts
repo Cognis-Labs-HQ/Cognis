@@ -98,12 +98,15 @@ test("CoreNotificationGateway.registerCategory and listCategories", () => {
     assert.equal(categories.length, 2);
     assert.ok(
         categories.some(
-            (c) => c.id === "system" && c.label === "System Alerts",
+            (category) =>
+                category.id === "system" && category.label === "System Alerts",
         ),
     );
     assert.ok(
         categories.some(
-            (c) => c.id === "account" && c.label === "Account Events",
+            (category) =>
+                category.id === "account" &&
+                category.label === "Account Events",
         ),
     );
 });
@@ -131,8 +134,10 @@ test("CoreNotificationGateway.listSenders marks sender active when it has getCon
     gateway.registerSender(configSender);
 
     const senders = gateway.listSenders();
-    const plain = senders.find((s) => s.senderId === "plain");
-    const configured = senders.find((s) => s.senderId === "configured");
+    const plain = senders.find((sender) => sender.senderId === "plain");
+    const configured = senders.find(
+        (sender) => sender.senderId === "configured",
+    );
     assert.equal(plain?.active, false);
     assert.equal(configured?.active, true);
 });
@@ -331,7 +336,9 @@ test("CoreNotificationGateway.saveProviderConfig with enabled:false disables sen
     });
     gateway.registerSender(sender);
 
-    const before = gateway.listSenders().find((s) => s.senderId === "smtp");
+    const before = gateway
+        .listSenders()
+        .find((sender2) => sender2.senderId === "smtp");
     assert.equal(before?.active, true);
 
     await gateway.saveProviderConfig("smtp", {
@@ -339,7 +346,9 @@ test("CoreNotificationGateway.saveProviderConfig with enabled:false disables sen
         enabled: false,
     });
 
-    const after = gateway.listSenders().find((s) => s.senderId === "smtp");
+    const after = gateway
+        .listSenders()
+        .find((sender2) => sender2.senderId === "smtp");
     assert.equal(after?.active, false);
 });
 
@@ -361,7 +370,9 @@ test("CoreNotificationGateway.saveProviderConfig with enabled:true re-enables a 
         enabled: true,
     });
 
-    const info = gateway.listSenders().find((s) => s.senderId === "smtp");
+    const info = gateway
+        .listSenders()
+        .find((sender2) => sender2.senderId === "smtp");
     assert.equal(info?.active, true);
 });
 
@@ -502,7 +513,9 @@ test("CoreNotificationGateway.loadPersistedConfigs restores disabled state", asy
 
     await gateway.loadPersistedConfigs();
 
-    const info = gateway.listSenders().find((s) => s.senderId === "smtp");
+    const info = gateway
+        .listSenders()
+        .find((sender2) => sender2.senderId === "smtp");
     assert.equal(info?.active, false);
 });
 

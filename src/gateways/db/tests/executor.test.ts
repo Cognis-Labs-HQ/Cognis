@@ -1,13 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
-import os from "node:os";
+import { mkdir, mkdtemp, rm as removePath, writeFile } from "node:fs/promises";
+import operatingSystem from "node:os";
 import path from "node:path";
 import { createDbExecutor } from "../executor.js";
 
 test("createDbExecutor loads the matching adapter factory on the fly", async () => {
     const tempRoot = await mkdtemp(
-        path.join(os.tmpdir(), "cognis-db-adapter-"),
+        path.join(operatingSystem.tmpdir(), "cognis-db-adapter-"),
     );
     try {
         const adapterDir = path.join(tempRoot, "db", "custom");
@@ -41,6 +41,6 @@ test("createDbExecutor loads the matching adapter factory on the fly", async () 
             { rowCount: 2 },
         );
     } finally {
-        await rm(tempRoot, { recursive: true, force: true });
+        await removePath(tempRoot, { recursive: true, force: true });
     }
 });

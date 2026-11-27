@@ -235,8 +235,8 @@ test("admins cannot manage admin or owner accounts while owner can manage others
             },
         } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -248,8 +248,8 @@ test("admins cannot manage admin or owner accounts while owner can manage others
     await route(
         { method: "POST", headers } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -261,8 +261,8 @@ test("admins cannot manage admin or owner accounts while owner can manage others
     await route(
         { method: "DELETE", headers } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -280,8 +280,8 @@ test("admins cannot manage admin or owner accounts while owner can manage others
             },
         } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -298,8 +298,8 @@ test("admins cannot manage admin or owner accounts while owner can manage others
             },
         } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -311,8 +311,8 @@ test("admins cannot manage admin or owner accounts while owner can manage others
     await route(
         { method: "POST", headers: ownerHeaders } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -325,8 +325,8 @@ test("admins cannot manage admin or owner accounts while owner can manage others
     await route(
         { method: "DELETE", headers: ownerHeaders } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -344,8 +344,8 @@ test("admins cannot manage admin or owner accounts while owner can manage others
             },
         } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -357,8 +357,8 @@ test("admins cannot manage admin or owner accounts while owner can manage others
     await route(
         { method: "POST", headers: ownerHeaders } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -370,8 +370,8 @@ test("admins cannot manage admin or owner accounts while owner can manage others
     await route(
         { method: "DELETE", headers: ownerHeaders } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -402,8 +402,8 @@ test("role changes invalidate target access tokens immediately", async () => {
             },
         } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -416,8 +416,8 @@ test("role changes invalidate target access tokens immediately", async () => {
     await route(
         { method: "GET", headers: aliceHeaders } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,

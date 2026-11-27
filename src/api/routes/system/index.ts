@@ -36,8 +36,8 @@ async function listLanguages(log?: BootstrapLog) {
                     .split(/\r?\n/)
                     .filter(Boolean)
                     .map((line) => {
-                        const [k, ...rest] = line.split(":");
-                        return [k.trim(), rest.join(":").trim()];
+                        const [key, ...rest] = line.split(":");
+                        return [key.trim(), rest.join(":").trim()];
                     }),
             );
             if (data.iso_code && data.name)

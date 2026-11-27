@@ -3,7 +3,7 @@ import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 
 /** Keep omitted provider dependencies reachable from authored or modified cards. */
 export async function retainedPackEntries(
-    db: DbExecutor,
+    database: DbExecutor,
     previous: ReadonlySet<string>,
     imported: ReadonlySet<string>,
     modified: ReadonlySet<string>,
@@ -16,7 +16,7 @@ export async function retainedPackEntries(
     const dependencies = new Map<string, string[]>();
     const roots = new Set(modified);
     for (let offset = 0; offset < omitted.length; offset += 500) {
-        const result = await executeReferences(db, {
+        const result = await executeReferences(database, {
             option: "SELECT",
             columns: ["source_entry_id", "target_entry_id"],
             where: [

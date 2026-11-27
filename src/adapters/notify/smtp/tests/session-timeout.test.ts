@@ -5,7 +5,7 @@ import { setImmediate } from "node:timers/promises";
 import { openSession, upgradeToTls, SMTP_TIMEOUT_MS } from "../smtp-session.js";
 
 for (const transport of ["tls", "starttls"] as const) {
-    test(`${transport} handshake deadlines close an unresponsive connection`, async (t) => {
+    test(`${transport} handshake deadlines close an unresponsive connection`, async (testContext) => {
         const sockets = new Set<net.Socket>();
         let accept!: () => void;
         const accepted = new Promise<void>((resolve) => {
@@ -19,12 +19,12 @@ for (const transport of ["tls", "starttls"] as const) {
         await new Promise<void>((resolve) =>
             server.listen(0, "127.0.0.1", resolve),
         );
-        t.after(async () => {
+        testContext.after(async () => {
             for (const socket of sockets) socket.destroy();
             await new Promise<void>((resolve) => server.close(() => resolve()));
         });
         const port = (server.address() as net.AddressInfo).port;
-        t.mock.timers.enable({ apis: ["setTimeout"] });
+        testContext.mock.timers.enable({ apis: ["setTimeout"] });
         const connecting =
             transport === "tls"
                 ? openSession("127.0.0.1", port, "tls", true)
@@ -35,7 +35,7 @@ for (const transport of ["tls", "starttls"] as const) {
         const failed = assert.rejects(connecting, /smtp_timeout/);
         await accepted;
         await setImmediate();
-        t.mock.timers.tick(SMTP_TIMEOUT_MS);
+        testContext.mock.timers.tick(SMTP_TIMEOUT_MS);
         await failed;
     });
 }

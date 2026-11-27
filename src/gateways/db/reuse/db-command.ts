@@ -198,11 +198,11 @@ function buildWhereClause(
         }
 
         if (operator === "LIKE") {
-            const ph = placeholder(params, clause.value);
+            const valuePlaceholder = placeholder(params, clause.value);
             const escape = clause.escapeChar
                 ? ` ESCAPE '${clause.escapeChar}'`
                 : "";
-            return `${column} LIKE ${ph}${escape}`;
+            return `${column} LIKE ${valuePlaceholder}${escape}`;
         }
 
         return `${column} ${operator} ${placeholder(params, clause.value)}`;

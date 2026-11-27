@@ -7,10 +7,10 @@ import { authorizeAccountCreation } from "../bootstrap/account-creation-gate.js"
 import { InMemoryTestExecutor } from "../../db/tests/in-memory-test-executor.js";
 
 test("native signup policy persists independently of the adapter and SSO creation flow", async () => {
-    const db = new InMemoryTestExecutor();
+    const database = new InMemoryTestExecutor();
     const registered: string[] = [];
     const deps = {
-        dbExecutor: db,
+        dbExecutor: database,
         accountStore: {
             register: async (username: string) => {
                 registered.push(username);
@@ -19,7 +19,7 @@ test("native signup policy persists independently of the adapter and SSO creatio
         },
     };
     const makeGateway = async () => {
-        const gateway = new CoreRegistrationGateway(db);
+        const gateway = new CoreRegistrationGateway(database);
         await gateway.ensureSchema();
         await gateway.discoverAdapters(
             path.resolve("src/adapters/registration"),

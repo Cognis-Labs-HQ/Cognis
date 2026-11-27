@@ -6,7 +6,7 @@ import {
 } from "../ui/reuse/classification.js";
 import assert from "node:assert/strict";
 import test from "node:test";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 import { generatedTransformationCard } from "../ui/reuse/transformations.js";
 import { uiCtx } from "../../../../ui/reuse/ui-ctx.js";
 import { escapeHtml } from "../../../../ui/reuse/escape-html.js";
@@ -23,7 +23,7 @@ test("selected verb, adverb and plural details request their transformed audio t
             observed.push(detail.entry);
         },
     );
-    const context = vm.createContext({
+    const context = virtualMachine.createContext({
         uiCtx,
         createClassificationResolver,
         learnerTagMetadata,

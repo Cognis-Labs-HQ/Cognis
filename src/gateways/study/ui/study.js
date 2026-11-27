@@ -314,8 +314,9 @@ async function mountHub(
     for (const language of registeredLanguages) {
         languageByCode.set(language.code, language);
     }
-    const languageCatalog = Array.from(languageByCode.values()).sort((a, b) =>
-        a.name.localeCompare(b.name),
+    const languageCatalog = Array.from(languageByCode.values()).sort(
+        (leftEntry, rightEntry) =>
+            leftEntry.name.localeCompare(rightEntry.name),
     );
 
     function getLanguage(languageCode) {

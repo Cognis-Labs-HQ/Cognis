@@ -76,19 +76,26 @@ export function createComposerRenderer({
     function getVisibleComposerPlacements() {
         return state.editing
             ? state.layout.placements
-                  .filter((p) => !state.layout.hidden.includes(p.id))
-                  .sort((a, b) => a.row - b.row || a.col - b.col)
+                  .filter(
+                      (candidatePlacement) =>
+                          !state.layout.hidden.includes(candidatePlacement.id),
+                  )
+                  .sort(
+                      (leftEntry, rightEntry) =>
+                          leftEntry.row - rightEntry.row ||
+                          leftEntry.col - rightEntry.col,
+                  )
             : computeViewPlacements();
     }
     function getPlacementScale(placements) {
         const hasFractional =
             !state.frameless &&
             placements.some(
-                (p) =>
-                    p.col % 1 !== 0 ||
-                    p.row % 1 !== 0 ||
-                    p.w % 1 !== 0 ||
-                    p.h % 1 !== 0,
+                (candidatePlacement) =>
+                    candidatePlacement.col % 1 !== 0 ||
+                    candidatePlacement.row % 1 !== 0 ||
+                    candidatePlacement.w % 1 !== 0 ||
+                    candidatePlacement.h % 1 !== 0,
             );
         return hasFractional ? 2 : 1;
     }
@@ -150,7 +157,9 @@ export function createComposerRenderer({
                 }
             });
         for (const placement of placements) {
-            const element = state.elements.find((e) => e.id === placement.id);
+            const element = state.elements.find(
+                (candidateElement) => candidateElement.id === placement.id,
+            );
             const isMissing = !element;
             let card = Array.from(section.children).find(
                 (child) =>
@@ -192,7 +201,9 @@ export function createComposerRenderer({
     function renderEditChrome(section, placements) {
         section.appendChild(createGridOverlay());
         for (const placement of placements) {
-            const element = state.elements.find((e) => e.id === placement.id);
+            const element = state.elements.find(
+                (candidateElement) => candidateElement.id === placement.id,
+            );
             if (!element) {
                 section.appendChild(createMissingCell(placement));
                 continue;
@@ -291,23 +302,25 @@ export function createComposerRenderer({
     }
 
     function getEffectiveLayout() {
-        const allIds = state.elements.map((e) => e.id);
+        const allIds = state.elements.map(
+            (candidateElement) => candidateElement.id,
+        );
         const pinnedIds = state.elements
-            .filter((e) => e.pinned)
-            .map((e) => e.id);
+            .filter((candidateElement) => candidateElement.pinned)
+            .map((candidateElement) => candidateElement.id);
         const storedOrder = (state.layout?.order ?? []).filter((id) =>
             allIds.includes(id),
         );
         const storedHidden = state.layout?.hidden ?? null;
         const defaultHiddenIds = state.elements
             .filter(
-                (e) =>
-                    e.defaultHidden &&
-                    !e.pinned &&
-                    !storedOrder.includes(e.id) &&
-                    !(storedHidden ?? []).includes(e.id),
+                (candidateElement) =>
+                    candidateElement.defaultHidden &&
+                    !candidateElement.pinned &&
+                    !storedOrder.includes(candidateElement.id) &&
+                    !(storedHidden ?? []).includes(candidateElement.id),
             )
-            .map((e) => e.id);
+            .map((candidateElement) => candidateElement.id);
         const missing = allIds.filter(
             (id) => !storedOrder.includes(id) && !defaultHiddenIds.includes(id),
         );
@@ -323,7 +336,9 @@ export function createComposerRenderer({
         return order
             .filter((id) => !hidden.includes(id))
             .map((id) => {
-                const element = state.elements.find((e) => e.id === id);
+                const element = state.elements.find(
+                    (candidateElement) => candidateElement.id === id,
+                );
                 if (!element) return "";
                 const dragAttrs = state.editing ? ` draggable="true"` : "";
                 const dragHandle = state.editing
@@ -356,14 +371,14 @@ export function createComposerRenderer({
             .join("");
     }
     function renderLibraryPanel(effectiveLayout) {
-        const hiddenElements = state.elements.filter((e) =>
-            effectiveLayout.hidden.includes(e.id),
+        const hiddenElements = state.elements.filter((candidateElement) =>
+            effectiveLayout.hidden.includes(candidateElement.id),
         );
         const listItems = hiddenElements
             .map(
-                (el) => `<li class="composer-library-item">
-           <span>${el.label}</span>
-           <button class="composer-add-btn" data-composer-add="${el.id}" type="button">${i18n.t("ui.reuse.add")}</button>
+                (elementDefinition) => `<li class="composer-library-item">
+           <span>${elementDefinition.label}</span>
+           <button class="composer-add-btn" data-composer-add="${elementDefinition.id}" type="button">${i18n.t("ui.reuse.add")}</button>
          </li>`,
             )
             .join("");
@@ -409,7 +424,7 @@ export function createComposerRenderer({
         }
         state.onRender?.();
         const activeEl = state.elements.find(
-            (e) => e.id === state.activeSubPageId,
+            (candidateElement) => candidateElement.id === state.activeSubPageId,
         );
         if (activeEl?.subComposerOptions) {
             const outerDiv = state.contentGrid.querySelector(
@@ -463,8 +478,8 @@ export function createComposerRenderer({
                     card.classList.remove("composer-dragging");
                     state.contentGrid
                         .querySelectorAll(".composer-drag-over")
-                        .forEach((el) => {
-                            el.classList.remove("composer-drag-over");
+                        .forEach((targetCard) => {
+                            targetCard.classList.remove("composer-drag-over");
                         });
                     state.dragSourceId = null;
                 });
@@ -475,8 +490,10 @@ export function createComposerRenderer({
                     if (card.dataset.composerElement !== state.dragSourceId) {
                         state.contentGrid
                             .querySelectorAll(".composer-drag-over")
-                            .forEach((el) => {
-                                el.classList.remove("composer-drag-over");
+                            .forEach((targetCard) => {
+                                targetCard.classList.remove(
+                                    "composer-drag-over",
+                                );
                             });
                         card.classList.add("composer-drag-over");
                     }

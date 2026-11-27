@@ -270,7 +270,9 @@ export class Logger {
                 mtimeMs: (await stat(file)).mtimeMs,
             })),
         );
-        resolved.sort((a, b) => b.mtimeMs - a.mtimeMs);
+        resolved.sort(
+            (leftEntry, rightEntry) => rightEntry.mtimeMs - leftEntry.mtimeMs,
+        );
         const removable = resolved.slice(this.rotationOptions.maxFiles);
         await Promise.all(removable.map(({ file }) => unlink(file)));
     }

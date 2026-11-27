@@ -1,7 +1,7 @@
 import { loadTestModule } from "../../../../../tooling/reuse/test-module.ts";
 import test from "node:test";
 import assert from "node:assert/strict";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 
 const registrations = [];
 const context = {
@@ -12,7 +12,7 @@ const context = {
     window: new EventTarget(),
     offline: false,
 };
-vm.createContext(context);
+virtualMachine.createContext(context);
 Object.assign(
     context,
     loadTestModule(

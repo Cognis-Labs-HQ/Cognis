@@ -69,14 +69,15 @@ export class InternalNotificationStore {
     }
 
     countUnread(username: string): number {
-        return (this.notifications.get(username) ?? []).filter((n) => !n.read)
-            .length;
+        return (this.notifications.get(username) ?? []).filter(
+            (notification) => !notification.read,
+        ).length;
     }
 
     markRead(username: string, id: string): boolean {
         const list = this.notifications.get(username);
         if (!list) return false;
-        const notif = list.find((n) => n.id === id);
+        const notif = list.find((notification) => notification.id === id);
         if (!notif) return false;
         notif.read = true;
         return true;
@@ -93,7 +94,7 @@ export class InternalNotificationStore {
     delete(username: string, id: string): boolean {
         const list = this.notifications.get(username);
         if (!list) return false;
-        const idx = list.findIndex((n) => n.id === id);
+        const idx = list.findIndex((notification) => notification.id === id);
         if (idx === -1) return false;
         list.splice(idx, 1);
         return true;

@@ -13,8 +13,8 @@ function makeInMemoryDb() {
     return {
         executeCommand: async (_command: unknown) => ({ rows: [] }),
         ensureTable: async (_def: unknown) => {},
-        transaction: async (cb: (db: unknown) => Promise<unknown>) =>
-            cb(makeInMemoryDb()),
+        transaction: async (callback: (db: unknown) => Promise<unknown>) =>
+            callback(makeInMemoryDb()),
     };
 }
 
@@ -75,11 +75,14 @@ function makeAdapterCtx(
                 uiRegistry?.registerCapabilityProvider(provider),
             registerStaticDir: (prefix: string, dir: string) =>
                 uiRegistry?.registerStaticDir(prefix, dir),
-            registerAdapterStaticDir: (gw: string, ad: string, dir: string) =>
-                uiRegistry?.registerAdapterStaticDir(gw, ad, dir),
+            registerAdapterStaticDir: (
+                gateway2: string,
+                adapter: string,
+                dir: string,
+            ) => uiRegistry?.registerAdapterStaticDir(gateway2, adapter, dir),
             registerAuthTypingMessage: (
-                m: Parameters<UIRegistry["registerAuthTypingMessage"]>[0],
-            ) => uiRegistry?.registerAuthTypingMessage(m),
+                message: Parameters<UIRegistry["registerAuthTypingMessage"]>[0],
+            ) => uiRegistry?.registerAuthTypingMessage(message),
             isGatewayEnabled: () => true,
             isAdapterEnabled: () => true,
         },

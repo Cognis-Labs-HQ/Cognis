@@ -8,11 +8,11 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
 function walk(dir) {
     const out = [];
-    for (const e of readdirSync(dir)) {
-        const p = join(dir, e);
-        const s = statSync(p);
-        if (s.isDirectory()) out.push(...walk(p));
-        else out.push(p);
+    for (const directoryEntry of readdirSync(dir)) {
+        const entryPath = join(dir, directoryEntry);
+        const entryStat = statSync(entryPath);
+        if (entryStat.isDirectory()) out.push(...walk(entryPath));
+        else out.push(entryPath);
     }
     return out;
 }
@@ -37,8 +37,10 @@ function extractDefinedCssClasses() {
                 .replace(/\/\*[\s\S]*?\*\//g, "")
                 .replace(/@import\s+url\([^)]*\)[^;]*;/g, "")
                 .replace(/url\([^)]*\)/g, "");
-            for (const m of stripped.matchAll(/\.([a-zA-Z][a-zA-Z0-9_-]*)/g)) {
-                const cls = m[1];
+            for (const match of stripped.matchAll(
+                /\.([a-zA-Z][a-zA-Z0-9_-]*)/g,
+            )) {
+                const cls = match[1];
                 if (!map.has(cls)) map.set(cls, file);
             }
         }
@@ -80,9 +82,11 @@ test("no dead CSS classes (defined but never referenced in scripts or templates)
     const cssDefinitions = extractDefinedCssClasses();
 
     const usageContent = USAGE_ROOTS.flatMap((root) =>
-        walk(root).filter((f) => f.endsWith(".js") || f.endsWith(".html")),
+        walk(root).filter(
+            (file) => file.endsWith(".js") || file.endsWith(".html"),
+        ),
     )
-        .map((f) => readFileSync(f, "utf8"))
+        .map((file) => readFileSync(file, "utf8"))
         .join("\n");
 
     const dead = [];
@@ -109,18 +113,18 @@ test("no dead exports in reuse modules (exported but never imported by any page 
     ];
 
     const consumerContent = consumerRoots
-        .flatMap((root) => walk(root).filter((f) => f.endsWith(".js")))
-        .map((f) => readFileSync(f, "utf8"))
+        .flatMap((root) => walk(root).filter((file) => file.endsWith(".js")))
+        .map((file) => readFileSync(file, "utf8"))
         .join("\n");
 
     const dead = [];
     for (const file of walk(reusePath)) {
         if (!file.endsWith(".js")) continue;
         const src = readFileSync(file, "utf8");
-        for (const m of src.matchAll(
+        for (const match of src.matchAll(
             /^export\s+(?:async\s+)?function\s+(\w+)|^export\s+const\s+(\w+)/gm,
         )) {
-            const name = m[1] ?? m[2];
+            const name = match[1] ?? match[2];
             if (PENDING_INTEGRATION_EXPORTS.has(name)) continue;
             if (!consumerContent.includes(name)) {
                 dead.push(`  ${name}  (from ${file})`);

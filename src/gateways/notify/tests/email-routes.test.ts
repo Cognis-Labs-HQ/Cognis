@@ -16,8 +16,8 @@ import { issueAccessToken } from "../../auth/access-tokens.js";
 const EMAIL_PURPOSE = "test:verification";
 
 async function makeNotifStore(): Promise<DbNotificationStore> {
-    const db = new InMemoryTestExecutor();
-    const store = new DbNotificationStore(db);
+    const database = new InMemoryTestExecutor();
+    const store = new DbNotificationStore(database);
     await store.ensureSchema();
     return store;
 }
@@ -214,10 +214,10 @@ test("email verification flow: issue code, verify, email becomes verified", asyn
         canSendVerificationEmail: () => true,
         sendVerificationEmail: async (
             _purpose: string,
-            to: string,
+            recipient: string,
             code: string,
         ) => {
-            sentEmails.push({ to, code });
+            sentEmails.push({ to: recipient, code });
         },
     } as any;
 
@@ -273,10 +273,10 @@ test("email verification codes use configured TFA SMTP code length", async () =>
         canSendVerificationEmail: () => true,
         sendVerificationEmail: async (
             _purpose: string,
-            to: string,
+            recipient: string,
             code: string,
         ) => {
-            sentEmails.push({ to, code });
+            sentEmails.push({ to: recipient, code });
         },
     } as any;
 
@@ -468,11 +468,11 @@ test("add email issues both TFA code and verify token and includes link in email
         canSendVerificationEmail: () => true,
         sendVerificationEmail: async (
             _purpose: string,
-            to: string,
+            recipient: string,
             code: string,
             verifyUrl?: string,
         ) => {
-            sentEmails.push({ to, code, verifyUrl });
+            sentEmails.push({ to: recipient, code, verifyUrl });
         },
     } as any;
 

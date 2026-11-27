@@ -1,7 +1,7 @@
 import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 
 function headingSession(pathname, choice = "open", onNavigate) {
     const listeners = new Map();
@@ -16,7 +16,7 @@ function headingSession(pathname, choice = "open", onNavigate) {
         removeAttribute: (name) => attributes.delete(name),
         setAttribute: (name, value) => attributes.set(name, value),
     };
-    const environment = vm.createContext({
+    const environment = virtualMachine.createContext({
         window: { location: { pathname } },
         entryExploreUrl: () => "/study/explore/ja/kanji/character",
         uiCtx: {

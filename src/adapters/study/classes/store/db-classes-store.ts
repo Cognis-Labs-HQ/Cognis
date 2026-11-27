@@ -39,32 +39,32 @@ import type {
 } from "./types.js";
 
 export class DbClassesStore {
-    constructor(private readonly db: DbExecutor) {}
+    constructor(private readonly database: DbExecutor) {}
 
     private static readonly DEFAULT_STUDENT_LIMIT = DEFAULT_STUDENT_LIMIT;
 
     async ensureSchema(): Promise<void> {
-        await ensureSchema(this.db);
+        await ensureSchema(this.database);
     }
 
     async ensureStudyLanguagesSchema(): Promise<void> {
-        await ensureStudyLanguagesSchema(this.db);
+        await ensureStudyLanguagesSchema(this.database);
     }
 
     async listStudyLanguages(
         onlyAvailable = false,
     ): Promise<StudyLanguageRow[]> {
-        return listStudyLanguages(this.db, onlyAvailable);
+        return listStudyLanguages(this.database, onlyAvailable);
     }
 
     async upsertStudyLanguage(
         row: Partial<StudyLanguageRow> & { code: string },
     ): Promise<StudyLanguageRow> {
-        return upsertStudyLanguage(this.db, row);
+        return upsertStudyLanguage(this.database, row);
     }
 
     async getStudyPreferences(accountId: string): Promise<StudyPreferencesRow> {
-        return getStudyPreferences(this.db, accountId);
+        return getStudyPreferences(this.database, accountId);
     }
 
     async saveStudyPreferences(
@@ -73,7 +73,7 @@ export class DbClassesStore {
         teachingLanguages: string[],
     ): Promise<StudyPreferencesRow> {
         return saveStudyPreferences(
-            this.db,
+            this.database,
             accountId,
             learningLanguages,
             teachingLanguages,
@@ -81,15 +81,15 @@ export class DbClassesStore {
     }
 
     async getClassesForTeacher(teacherAccountId: string): Promise<ClassRow[]> {
-        return getClassesForTeacher(this.db, teacherAccountId);
+        return getClassesForTeacher(this.database, teacherAccountId);
     }
 
     async getClassById(classId: string): Promise<ClassRow | null> {
-        return getClassById(this.db, classId);
+        return getClassById(this.database, classId);
     }
 
     async getClassroomState(classId: string): Promise<ClassroomStateRow> {
-        return getClassroomState(this.db, classId);
+        return getClassroomState(this.database, classId);
     }
 
     async updateClassroomStateForTeacher(
@@ -101,7 +101,7 @@ export class DbClassesStore {
         },
     ): Promise<ClassroomStateRow> {
         return updateClassroomStateForTeacher(
-            this.db,
+            this.database,
             classId,
             teacherAccountId,
             options,
@@ -109,25 +109,29 @@ export class DbClassesStore {
     }
 
     async getEnrolledClasses(studentAccountId: string): Promise<ClassRow[]> {
-        return getEnrolledClasses(this.db, studentAccountId);
+        return getEnrolledClasses(this.database, studentAccountId);
     }
 
     async getAvailableClasses(
         languageCode?: string,
         excludeAccountId?: string,
     ): Promise<ClassRow[]> {
-        return getAvailableClasses(this.db, languageCode, excludeAccountId);
+        return getAvailableClasses(
+            this.database,
+            languageCode,
+            excludeAccountId,
+        );
     }
 
     async requestJoinClass(
         classId: string,
         studentAccountId: string,
     ): Promise<ClassMembershipRow> {
-        return requestJoinClass(this.db, classId, studentAccountId);
+        return requestJoinClass(this.database, classId, studentAccountId);
     }
 
     async leaveClass(classId: string, studentAccountId: string): Promise<void> {
-        await leaveClass(this.db, classId, studentAccountId);
+        await leaveClass(this.database, classId, studentAccountId);
     }
 
     async inviteToClass(
@@ -136,7 +140,7 @@ export class DbClassesStore {
         teacherAccountId: string,
     ): Promise<ClassMembershipRow> {
         return inviteToClass(
-            this.db,
+            this.database,
             classId,
             studentAccountId,
             teacherAccountId,
@@ -148,14 +152,23 @@ export class DbClassesStore {
         teacherAccountId: string,
         search?: string,
     ): Promise<ClassMembershipRow[]> {
-        return getClassMembers(this.db, classId, teacherAccountId, search);
+        return getClassMembers(
+            this.database,
+            classId,
+            teacherAccountId,
+            search,
+        );
     }
 
     async getClassMembersForViewer(
         classId: string,
         viewerAccountId: string,
     ): Promise<ClassMembershipRow[]> {
-        return getClassMembersForViewer(this.db, classId, viewerAccountId);
+        return getClassMembersForViewer(
+            this.database,
+            classId,
+            viewerAccountId,
+        );
     }
 
     async removeClassMemberByTeacher(
@@ -164,7 +177,7 @@ export class DbClassesStore {
         studentAccountId: string,
     ): Promise<void> {
         await removeClassMemberByTeacher(
-            this.db,
+            this.database,
             classId,
             teacherAccountId,
             studentAccountId,
@@ -175,7 +188,7 @@ export class DbClassesStore {
         classId: string,
         teacherAccountId: string,
     ): Promise<ClassMembershipRow[]> {
-        return getPendingJoinRequests(this.db, classId, teacherAccountId);
+        return getPendingJoinRequests(this.database, classId, teacherAccountId);
     }
 
     async reviewJoinRequest(
@@ -185,7 +198,7 @@ export class DbClassesStore {
         approve: boolean,
     ): Promise<void> {
         await reviewJoinRequest(
-            this.db,
+            this.database,
             classId,
             studentAccountId,
             teacherAccountId,
@@ -198,7 +211,7 @@ export class DbClassesStore {
         languageCode?: string,
     ): Promise<(ClassRow & { memberCount: number })[]> {
         return getClassesForTeacherWithFilter(
-            this.db,
+            this.database,
             teacherAccountId,
             languageCode,
         );
@@ -208,11 +221,11 @@ export class DbClassesStore {
         accountId: string,
         languageCode: string,
     ): Promise<TeacherRequestRow | null> {
-        return getTeacherRequest(this.db, accountId, languageCode);
+        return getTeacherRequest(this.database, accountId, languageCode);
     }
 
     async listPendingRequests(): Promise<TeacherRequestRow[]> {
-        return listPendingRequests(this.db);
+        return listPendingRequests(this.database);
     }
 
     async submitTeacherRequest(
@@ -220,20 +233,29 @@ export class DbClassesStore {
         languageCode: string,
         reason: string | null,
     ): Promise<TeacherRequestRow> {
-        return submitTeacherRequest(this.db, accountId, languageCode, reason);
+        return submitTeacherRequest(
+            this.database,
+            accountId,
+            languageCode,
+            reason,
+        );
     }
 
     async approveTeacherRequest(
         requestId: string,
         reviewerAccountId: string,
     ): Promise<ClassRow | null> {
-        return approveTeacherRequest(this.db, requestId, reviewerAccountId);
+        return approveTeacherRequest(
+            this.database,
+            requestId,
+            reviewerAccountId,
+        );
     }
 
     async rejectTeacherRequest(
         requestId: string,
         reviewerAccountId: string,
     ): Promise<void> {
-        await rejectTeacherRequest(this.db, requestId, reviewerAccountId);
+        await rejectTeacherRequest(this.database, requestId, reviewerAccountId);
     }
 }

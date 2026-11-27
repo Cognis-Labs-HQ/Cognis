@@ -52,10 +52,10 @@ export interface NotificationBroadcastState {
 }
 
 export class DbNotificationStore implements NotificationConfigStore {
-    constructor(private readonly db: DbExecutor) {}
+    constructor(private readonly database: DbExecutor) {}
 
     async ensureSchema(): Promise<void> {
-        await this.db.ensureTable({
+        await this.database.ensureTable({
             name: "notification_provider_configs",
             columns: [
                 {
@@ -67,7 +67,7 @@ export class DbNotificationStore implements NotificationConfigStore {
                 { name: "config_json", type: "text", notNull: true },
             ],
         });
-        await this.db.ensureTable({
+        await this.database.ensureTable({
             name: "notification_broadcasts",
             columns: [
                 {
@@ -106,7 +106,7 @@ export class DbNotificationStore implements NotificationConfigStore {
                 },
             ],
         });
-        await this.db.ensureTable({
+        await this.database.ensureTable({
             name: "user_notification_broadcast_states",
             columns: [
                 { name: "account_id", type: "text", notNull: true },
@@ -122,7 +122,7 @@ export class DbNotificationStore implements NotificationConfigStore {
                 },
             ],
         });
-        await this.db.ensureTable({
+        await this.database.ensureTable({
             name: "user_notification_prefs",
             columns: [
                 { name: "account_id", type: "text", notNull: true },
@@ -131,7 +131,7 @@ export class DbNotificationStore implements NotificationConfigStore {
             ],
             primaryKey: ["account_id", "category", "sender_id"],
         });
-        await this.db.ensureTable({
+        await this.database.ensureTable({
             name: "user_emails",
             columns: [
                 { name: "account_id", type: "text", notNull: true },
@@ -192,7 +192,7 @@ export class DbNotificationStore implements NotificationConfigStore {
         const id = randomUUID();
         const now = Date.now();
         const targetRolesJson = JSON.stringify(input.targetRoles);
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "INSERT",
             table: "notification_broadcasts",
             values: {
@@ -229,7 +229,7 @@ export class DbNotificationStore implements NotificationConfigStore {
     }
 
     async listBroadcasts(): Promise<NotificationBroadcast[]> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "notification_broadcasts",
             columns: [
@@ -262,7 +262,7 @@ export class DbNotificationStore implements NotificationConfigStore {
     async listBroadcastStates(
         broadcastId: string,
     ): Promise<NotificationBroadcastState[]> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "user_notification_broadcast_states",
             columns: [
@@ -292,7 +292,7 @@ export class DbNotificationStore implements NotificationConfigStore {
     }
 
     async setBroadcastEnabled(id: string, enabled: boolean): Promise<void> {
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "UPDATE",
             table: "notification_broadcasts",
             set: {
@@ -326,7 +326,7 @@ export class DbNotificationStore implements NotificationConfigStore {
             return true;
         });
         if (visibleBroadcasts.length === 0) return [];
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "user_notification_broadcast_states",
             columns: ["broadcast_id", "dismissed_at", "acknowledged_at"],
@@ -377,7 +377,7 @@ export class DbNotificationStore implements NotificationConfigStore {
         broadcastId: string,
     ): Promise<void> {
         const dismissedAt = Date.now();
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "INSERT",
             table: "user_notification_broadcast_states",
             values: {
@@ -399,7 +399,7 @@ export class DbNotificationStore implements NotificationConfigStore {
         broadcastId: string,
     ): Promise<void> {
         const acknowledgedAt = Date.now();
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "INSERT",
             table: "user_notification_broadcast_states",
             values: {
@@ -417,7 +417,7 @@ export class DbNotificationStore implements NotificationConfigStore {
     }
 
     async getConfig(senderId: string): Promise<Record<string, unknown> | null> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "notification_provider_configs",
             columns: ["config_json"],
@@ -434,7 +434,7 @@ export class DbNotificationStore implements NotificationConfigStore {
         config: Record<string, unknown>,
     ): Promise<void> {
         const json = JSON.stringify(config);
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "INSERT",
             table: "notification_provider_configs",
             values: {
@@ -454,7 +454,7 @@ export class DbNotificationStore implements NotificationConfigStore {
     async getUserNotifPrefs(
         accountId: string,
     ): Promise<Array<{ category: string; senderId: string }>> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "user_notification_prefs",
             columns: ["category", "sender_id"],
@@ -470,14 +470,14 @@ export class DbNotificationStore implements NotificationConfigStore {
         accountId: string,
         prefs: Array<{ category: string; senderId: string; enabled: boolean }>,
     ): Promise<void> {
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "DELETE",
             table: "user_notification_prefs",
             where: [{ column: "account_id", value: accountId }],
         });
         for (const pref of prefs) {
             if (!pref.enabled) continue;
-            await this.db.executeCommand({
+            await this.database.executeCommand({
                 option: "INSERT",
                 table: "user_notification_prefs",
                 values: {
@@ -495,7 +495,7 @@ export class DbNotificationStore implements NotificationConfigStore {
     async getUserEmails(
         accountId: string,
     ): Promise<Array<{ email: string; primary: boolean; verified: boolean }>> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "user_emails",
             columns: ["email", "is_primary", "verified"],
@@ -514,7 +514,7 @@ export class DbNotificationStore implements NotificationConfigStore {
 
     async hasVerifiedEmail(accountId: string): Promise<boolean> {
         const emails = await this.getUserEmails(accountId);
-        return emails.some((e) => e.verified);
+        return emails.some((emailEntry) => emailEntry.verified);
     }
 
     async addUserEmail(
@@ -525,14 +525,14 @@ export class DbNotificationStore implements NotificationConfigStore {
         const existing = await this.getUserEmails(accountId);
         const effectiveIsPrimary = isPrimary || existing.length === 0;
         if (effectiveIsPrimary) {
-            await this.db.executeCommand({
+            await this.database.executeCommand({
                 option: "UPDATE",
                 table: "user_emails",
                 set: { is_primary: false },
                 where: [{ column: "account_id", value: accountId }],
             });
         }
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "INSERT",
             table: "user_emails",
             values: {
@@ -548,7 +548,7 @@ export class DbNotificationStore implements NotificationConfigStore {
     }
 
     async verifyUserEmail(accountId: string, email: string): Promise<void> {
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "UPDATE",
             table: "user_emails",
             set: { verified: true },
@@ -572,11 +572,13 @@ export class DbNotificationStore implements NotificationConfigStore {
         if (existing.length <= 1) {
             throw new Error("cannot_remove_last_email");
         }
-        const target = existing.find((e) => e.email === email);
+        const target = existing.find(
+            (emailEntry) => emailEntry.email === email,
+        );
         if (target?.primary) {
             throw new Error("cannot_remove_primary_email");
         }
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "DELETE",
             table: "user_emails",
             where: [
@@ -591,12 +593,14 @@ export class DbNotificationStore implements NotificationConfigStore {
         email: string,
     ): Promise<void> {
         const existing = await this.getUserEmails(accountId);
-        const target = existing.find((e) => e.email === email);
+        const target = existing.find(
+            (emailEntry) => emailEntry.email === email,
+        );
         if (!target) return;
         if (target.verified) {
             throw new Error("cannot_remove_verified_email");
         }
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "DELETE",
             table: "user_emails",
             where: [
@@ -610,7 +614,7 @@ export class DbNotificationStore implements NotificationConfigStore {
         email: string,
         excludeAccountId: string,
     ): Promise<boolean> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "user_emails",
             columns: ["account_id"],
@@ -628,7 +632,7 @@ export class DbNotificationStore implements NotificationConfigStore {
     }
 
     async isEmailRegistered(email: string): Promise<boolean> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "user_emails",
             columns: ["account_id"],
@@ -640,11 +644,15 @@ export class DbNotificationStore implements NotificationConfigStore {
 
     async getPrimaryEmail(accountId: string): Promise<string | null> {
         const emails = await this.getUserEmails(accountId);
-        return emails.find((e) => e.primary && e.verified)?.email ?? null;
+        return (
+            emails.find(
+                (emailEntry) => emailEntry.primary && emailEntry.verified,
+            )?.email ?? null
+        );
     }
 
     async getAccountIdByEmail(email: string): Promise<string | null> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "user_emails",
             columns: ["account_id"],
@@ -659,13 +667,13 @@ export class DbNotificationStore implements NotificationConfigStore {
     }
 
     async setPrimaryEmail(accountId: string, email: string): Promise<void> {
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "UPDATE",
             table: "user_emails",
             set: { is_primary: false },
             where: [{ column: "account_id", value: accountId }],
         });
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "UPDATE",
             table: "user_emails",
             set: { is_primary: true },
@@ -688,14 +696,14 @@ export class DbNotificationStore implements NotificationConfigStore {
             throw new Error("email_taken");
         }
 
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "UPDATE",
             table: "user_emails",
             set: { is_primary: false },
             where: [{ column: "account_id", value: accountId }],
         });
 
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "INSERT",
             table: "user_emails",
             values: {

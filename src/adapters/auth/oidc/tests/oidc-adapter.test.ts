@@ -11,7 +11,7 @@ test("oidc adapter returns null when no client set", async () => {
 test("oidc adapter config schema has required fields", () => {
     const adapter = createAdapter();
     const schema = adapter.getConfigSchema();
-    const keys = schema.map((f) => f.key);
+    const keys = schema.map((field) => field.key);
     assert.ok(keys.includes("clientId"));
     assert.ok(keys.includes("discoveryUrl"));
 });

@@ -1,5 +1,5 @@
 import { writeAdapterFixture } from "./reuse/adapters.js";
-import { mkdtemp, mkdir, rm } from "node:fs/promises";
+import { mkdtemp, mkdir, rm as removePath } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import test from "node:test";
 import assert from "node:assert/strict";
@@ -159,7 +159,7 @@ async function bootstrapStudyGateway(
             flow: systemCtx.flow,
         });
     } finally {
-        await rm(adaptersRoot, { recursive: true, force: true });
+        await removePath(adaptersRoot, { recursive: true, force: true });
     }
 
     return {

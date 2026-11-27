@@ -33,12 +33,12 @@ export function createSubComposerPanelHandlers({
     initializeSubPlacements,
     renderSubGrid,
 }) {
-    function bindSubPanelItemDrag(item, el, state) {
-        item.addEventListener("pointerdown", (e) => {
-            if (e.button !== 0 || e.target.closest("button")) return;
-            e.preventDefault();
+    function bindSubPanelItemDrag(item, elementDefinition, state) {
+        item.addEventListener("pointerdown", (event) => {
+            if (event.button !== 0 || event.target.closest("button")) return;
+            event.preventDefault();
 
-            const gridSize = getGridSize(el);
+            const gridSize = getGridSize(elementDefinition);
             const w = resolveInitialGridWidth(gridSize, state.gridCols);
             const h = gridSize.fillHeight
                 ? state.gridRows
@@ -51,10 +51,10 @@ export function createSubComposerPanelHandlers({
             let currentRow = -1;
             let overGrid = false;
 
-            function onMove(e) {
+            function onMove(event2) {
                 const gridRect = state.container.getBoundingClientRect();
-                const x = e.clientX - gridRect.left;
-                const y = e.clientY - gridRect.top;
+                const x = event2.clientX - gridRect.left;
+                const y = event2.clientY - gridRect.top;
                 const inGrid = x >= 0 && x <= gridRect.width && y >= 0;
 
                 if (inGrid) {
@@ -103,10 +103,10 @@ export function createSubComposerPanelHandlers({
                     canSubPlace(state, currentCol, currentRow, w, h, null)
                 ) {
                     state.layout.hidden = state.layout.hidden.filter(
-                        (id) => id !== el.id,
+                        (id) => id !== elementDefinition.id,
                     );
                     state.layout.placements.push({
-                        id: el.id,
+                        id: elementDefinition.id,
                         col: currentCol,
                         row: currentRow,
                         w,
@@ -116,14 +116,14 @@ export function createSubComposerPanelHandlers({
                 }
             }
 
-            bindComposerPointerDrag(item, e, onMove, onUp, state.container);
+            bindComposerPointerDrag(item, event, onMove, onUp, state.container);
         });
     }
 
     function createSubElementsPanel(state) {
         const panelId = getSubPanelId(state.preferenceKey);
-        const hiddenElements = state.elements.filter((e) =>
-            state.layout.hidden.includes(e.id),
+        const hiddenElements = state.elements.filter((candidateElement) =>
+            state.layout.hidden.includes(candidateElement.id),
         );
 
         const panel = document.createElement("div");
@@ -137,8 +137,8 @@ export function createSubComposerPanelHandlers({
         } else {
             listHtml = hiddenElements
                 .map(
-                    (el) =>
-                        `<li class="composer-library-item" data-composer-panel-item="${el.id}"><span>${el.label}</span><button type="button" class="composer-add-btn btn-confirm">${i18n.t("ui.reuse.add")}</button></li>`,
+                    (elementDefinition) =>
+                        `<li class="composer-library-item" data-composer-panel-item="${elementDefinition.id}"><span>${elementDefinition.label}</span><button type="button" class="composer-add-btn btn-confirm">${i18n.t("ui.reuse.add")}</button></li>`,
                 )
                 .join("");
         }
@@ -184,14 +184,14 @@ export function createSubComposerPanelHandlers({
 
         const dragHandle = panel.querySelector(`#${panelId}-drag-handle`);
         if (dragHandle) {
-            dragHandle.addEventListener("pointerdown", (e) => {
-                if (e.button !== 0) return;
-                if (e.target.closest("button")) return;
-                e.preventDefault();
-                dragHandle.setPointerCapture(e.pointerId);
-                const startX = e.clientX - panel.offsetLeft;
-                const startY = e.clientY - panel.offsetTop;
-                function onMove(e) {
+            dragHandle.addEventListener("pointerdown", (event) => {
+                if (event.button !== 0) return;
+                if (event.target.closest("button")) return;
+                event.preventDefault();
+                dragHandle.setPointerCapture(event.pointerId);
+                const startX = event.clientX - panel.offsetLeft;
+                const startY = event.clientY - panel.offsetTop;
+                function onMove(event2) {
                     const bounds = getComposerPanelHorizontalBounds(
                         panel.offsetWidth,
                     );
@@ -204,11 +204,11 @@ export function createSubComposerPanelHandlers({
                     );
                     const newLeft = Math.max(
                         minLeft,
-                        Math.min(maxLeft, e.clientX - startX),
+                        Math.min(maxLeft, event2.clientX - startX),
                     );
                     const newTop = Math.max(
                         minTop,
-                        Math.min(maxTop, e.clientY - startY),
+                        Math.min(maxTop, event2.clientY - startY),
                     );
                     panel.style.left = `${newLeft}px`;
                     panel.style.top = `${newTop}px`;
@@ -281,7 +281,9 @@ export function createSubComposerPanelHandlers({
 
         panel.querySelectorAll("[data-composer-panel-item]").forEach((item) => {
             const elId = item.dataset.composerPanelItem;
-            const element = state.elements.find((e) => e.id === elId);
+            const element = state.elements.find(
+                (candidateElement) => candidateElement.id === elId,
+            );
             if (element) bindSubPanelItemDrag(item, element, state);
             item.querySelector(".composer-add-btn")?.addEventListener(
                 "click",

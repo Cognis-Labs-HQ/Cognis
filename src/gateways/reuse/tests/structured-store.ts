@@ -25,7 +25,7 @@ export function structuredStore() {
                 return (value as unknown[]).includes(row[column]);
             return row[column] === value;
         });
-    const db: DbExecutor = {
+    const database: DbExecutor = {
         ensureTable: async (schema) => {
             if (!schemas.has(schema.name))
                 schemas.set(schema.name, structuredClone(schema));
@@ -35,7 +35,7 @@ export function structuredStore() {
             const operation = transactionQueue.then(async () => {
                 const previous = structuredClone(tables);
                 try {
-                    return await run(db);
+                    return await run(database);
                 } catch (error) {
                     tables = previous;
                     throw error;
@@ -166,7 +166,7 @@ export function structuredStore() {
         },
     };
     return {
-        db,
+        db: database,
         rows: (name: string) => structuredClone(tables.get(name) ?? []),
         fail: (predicate: typeof fail) => {
             fail = predicate;

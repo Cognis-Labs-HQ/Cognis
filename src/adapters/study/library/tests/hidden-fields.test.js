@@ -2,7 +2,7 @@ import { loadLibraryUiModule } from "./reuse/ui-module.ts";
 import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 
 test("hidden dictionary fields are absent from form markup and survive submission", () => {
     const field = {

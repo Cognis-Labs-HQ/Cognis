@@ -112,7 +112,7 @@ test("registration gateway bootstrap registers admin section, navbar plugin, and
                   }
                 : { rows: [], rowCount: 0 },
         ensureTable: async () => {},
-        transaction: async (cb) => cb(map.get("db:executor")),
+        transaction: async (callback) => callback(map.get("db:executor")),
     });
     map.set("db:type", "memory");
     map.set("auth:accountStore", {
@@ -269,8 +269,8 @@ test("registration:public:isEnabled capability returns false when gateway is dis
         execute: async () => ({ rows: [], rowCount: 0 }),
         executeCommand: async () => ({ rows: [], rowCount: 0 }),
         ensureTable: async () => {},
-        transaction: async (cb: (e: typeof dbExec) => Promise<unknown>) =>
-            cb(dbExec),
+        transaction: async (callback: (e: typeof dbExec) => Promise<unknown>) =>
+            callback(dbExec),
     };
     const map = new Map();
     map.set("db:executor", dbExec);
@@ -352,8 +352,8 @@ test("registration:public:register capability throws when gateway is disabled", 
         execute: async () => ({ rows: [], rowCount: 0 }),
         executeCommand: async () => ({ rows: [], rowCount: 0 }),
         ensureTable: async () => {},
-        transaction: async (cb: (e: typeof dbExec) => Promise<unknown>) =>
-            cb(dbExec),
+        transaction: async (callback: (e: typeof dbExec) => Promise<unknown>) =>
+            callback(dbExec),
     };
     const map = new Map();
     map.set("db:executor", dbExec);

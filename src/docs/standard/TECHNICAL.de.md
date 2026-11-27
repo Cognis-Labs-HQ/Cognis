@@ -45,6 +45,12 @@ Inhalte, Navigationstitel und Suche bevorzugen die aktive UI-Sprache, danach kon
 
 Jeder ausgelieferte Katalog `strings.xml` verwendet das Wurzelelement `<resources>`. Englische Einträge dürfen nicht leer sein; andere Sprachen behalten dieselben Schlüssel und deren Reihenfolge. Wörtliche Übersetzungsaufrufe und HTML-Übersetzungsattribute müssen einen englischen Eintrag auflösen. `node --import tsx --test src/ui/tests/strings-coverage.test.js src/tooling/tests/translations/*.test.js` prüft Kataloge und Quelltextverweise. Berechnete Schlüssel benötigen weiterhin Verhaltenstests der Komponente.
 
+### Bindungsnamen
+
+Die Syntaxbaumprüfung untersucht JavaScript und TypeScript im gesamten Verzeichnis `src`, einschließlich Gateways, Werkzeugen, Tests und Testdaten. Sie weist Laufzeitbindungen mit ein oder zwei Zeichen in Deklarationen, Importen, benannten Funktionen und Klassen, Destrukturierungen, Funktions- und Callback-Parametern, Methoden, Konstruktor-Parametereigenschaften und Catch-Klauseln zurück. Exporte, weitere Deklaratoren und Zeilenumbrüche umgehen die Prüfung nicht. Statische Tabellenaliasnamen müssen ebenfalls aussagekräftig sein. Syntaxfehler lassen die Prüfung fehlschlagen.
+
+Ausnahmen sind nur die räumlichen Namen `x`, `y`, `w`, `h`, die ignorierte Bindung `_`, der Bezeichner `id` und übliche numerische Schleifenzähler. Eigenschaftsschlüssel, Literaltext, Typparameter und Beschriftungen in Typsignaturen sind keine Laufzeitbindungen. Öffentliche Eigenschafts- und Nutzdatenschlüssel bleiben beim Umbenennen lokaler Variablen erhalten. Die Prüfung erfolgt mit `node --test src/ui/tests/ambiguous-names.test.js src/tooling/tests/naming/detector.test.js` und auch in der vollständigen Testsuite.
+
 ### Prüfung und Grenzen
 
 `npm run check:docs` prüft echte Komponentenmanifeste und Kernverzeichnisse. Dokumentationstests verändern Überschriften, Reihenfolge, Inhalte, Codeblöcke, Dateinamen und Manifestpfade für jede Rolle und Sprache. Außerdem vergleichen sie die Abschnittsmatrix aller lokalisierten Standards mit dem maschinenlesbaren Schema. CI führt die Dokumentationsprüfung und alle Tests aus. Diese Prüfungen sichern Gliederung und konkrete Verweise; sachliche Aussagen müssen weiterhin anhand der zuständigen Implementierung geprüft werden.

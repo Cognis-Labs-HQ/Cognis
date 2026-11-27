@@ -1,12 +1,12 @@
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 import { uiCtx } from "../../../ui/reuse/ui-ctx.js";
 import { createProviderLifecycle } from "../../../ui/reuse/provider-lifecycle.js";
 
 async function fixture(
-    t,
+    testContext,
     { languages = [], searchFails = false, responseOk = true } = {},
 ) {
     const links = new Map();
@@ -20,8 +20,10 @@ async function fixture(
         },
     };
     uiCtx.capabilities.contribute("ui:navbarLinks", navbar);
-    t.after(() => uiCtx.capabilities.remove("ui:navbarLinks", navbar));
-    const context = vm.createContext({
+    testContext.after(() =>
+        uiCtx.capabilities.remove("ui:navbarLinks", navbar),
+    );
+    const context = virtualMachine.createContext({
         apiFetch: async (url, { signal }) => {
             assert.equal(url, "/api/v1/study/registered-languages");
             assert.equal(signal.aborted, false);
@@ -73,7 +75,7 @@ async function fixture(
         uiCtx,
         importProvider: async () => ({ mountProvider: context.mountProvider }),
     });
-    t.after(() => lifecycle.reconcile([]));
+    testContext.after(() => lifecycle.reconcile([]));
     return {
         links,
         context,
@@ -84,8 +86,8 @@ async function fixture(
 }
 
 for (const languages of [[], [{ code: "ja" }]]) {
-    test(`Study navigation uses a localized host contribution with ${languages.length} languages and releases it on disable`, async (t) => {
-        const state = await fixture(t, { languages });
+    test(`Study navigation uses a localized host contribution with ${languages.length} languages and releases it on disable`, async (testContext) => {
+        const state = await fixture(testContext, { languages });
         const providers = [{ scriptUrl: "/study/navbar.js" }];
         await state.lifecycle.reconcile(providers);
         assert.equal(state.loads(), 1);
@@ -110,8 +112,8 @@ for (const languages of [[], [{ code: "ja" }]]) {
     });
 }
 
-test("failed Study navigation initialization rolls back its contributed link", async (t) => {
-    const state = await fixture(t, { searchFails: true });
+test("failed Study navigation initialization rolls back its contributed link", async (testContext) => {
+    const state = await fixture(testContext, { searchFails: true });
     await assert.rejects(
         state.lifecycle.reconcile([{ scriptUrl: "/study/navbar.js" }]),
         /search_registration_failed/,
@@ -120,8 +122,8 @@ test("failed Study navigation initialization rolls back its contributed link", a
     assert.equal(state.searchRegistered(), false);
 });
 
-test("a failed registered-language read refuses to publish a misleading navigation state", async (t) => {
-    const state = await fixture(t, { responseOk: false });
+test("a failed registered-language read refuses to publish a misleading navigation state", async (testContext) => {
+    const state = await fixture(testContext, { responseOk: false });
     await assert.rejects(
         state.lifecycle.reconcile([{ scriptUrl: "/study/navbar.js" }]),
         /study_navigation_languages_unavailable/,

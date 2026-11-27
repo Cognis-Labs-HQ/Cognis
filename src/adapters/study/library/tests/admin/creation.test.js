@@ -4,7 +4,7 @@ import { loadTestModule } from "../../../../../tooling/reuse/test-module.ts";
 import { findMatchingEntry } from "../../ui/app/create-entry/entry-match.js";
 import assert from "node:assert/strict";
 import test from "node:test";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 
 test("global writers create globally without publish checkboxes", async () => {
     let saved;

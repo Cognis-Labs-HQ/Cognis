@@ -39,7 +39,7 @@ function groupLabel(i18n, group) {
     if (key) return i18n.t(key);
     return group
         .split("/")
-        .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+        .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
         .join(" › ");
 }
 

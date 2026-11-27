@@ -6,10 +6,10 @@ export interface ShareAdapterConfigStoreContract {
 }
 
 export class ShareAdapterConfigStore implements ShareAdapterConfigStoreContract {
-    constructor(private readonly db: DbExecutor) {}
+    constructor(private readonly database: DbExecutor) {}
 
     async ensureSchema(): Promise<void> {
-        await this.db.ensureTable({
+        await this.database.ensureTable({
             name: "share_adapter_configs",
             columns: [
                 { name: "adapter_id", type: "text", primaryKey: true },
@@ -19,7 +19,7 @@ export class ShareAdapterConfigStore implements ShareAdapterConfigStoreContract 
     }
 
     async list(): Promise<Array<{ adapterId: string; enabled: boolean }>> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "share_adapter_configs",
             columns: ["adapter_id", "enabled"],
@@ -31,7 +31,7 @@ export class ShareAdapterConfigStore implements ShareAdapterConfigStoreContract 
     }
 
     async save(adapterId: string, enabled: boolean): Promise<void> {
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "INSERT",
             table: "share_adapter_configs",
             values: { adapter_id: adapterId, enabled: enabled ? 1 : 0 },

@@ -1,7 +1,7 @@
 import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 
 function fixture(lookup, entries = []) {
     const form = {
@@ -16,7 +16,7 @@ function fixture(lookup, entries = []) {
         addEventListener() {},
     };
     const controller = new AbortController();
-    const context = vm.createContext({
+    const context = virtualMachine.createContext({
         fetchLibraryLookupSuggestions: lookup,
         LIBRARY_COMPOSER_LIMITS: { tags: 10 },
         showToast: () => assert.fail("Unexpected classification failure"),

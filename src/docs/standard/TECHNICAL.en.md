@@ -45,6 +45,12 @@ Document bodies, navigation titles and search prioritize the active UI language,
 
 Every shipped `strings.xml` catalog uses a `<resources>` root. English entries must be nonempty; other locales keep the same keys and order. Literal translation calls and HTML translation attributes must resolve to an English entry. Run `node --import tsx --test src/ui/tests/strings-coverage.test.js src/tooling/tests/translations/*.test.js` to check catalogs and source references. Computed translation keys still require component behavioral coverage.
 
+### Binding Names
+
+The syntax-tree naming check scans JavaScript and TypeScript throughout `src`, including gateways, tooling, tests and fixtures. It rejects one- or two-character runtime bindings in declarations, imports, named functions/classes, destructuring, function and callback parameters, methods, constructor parameter properties and catch clauses. Exports, additional declarators and line breaks do not bypass it. Static table aliases must also be descriptive. Parse failures fail validation.
+
+Only spatial `x`, `y`, `w`, `h`, the ignored binding `_`, the identifier `id`, and conventional numeric loop counters are exceptions. Property keys, literal text, type parameters and type-signature labels are not runtime bindings. Preserve public property and payload keys when renaming locals. Run `node --test src/ui/tests/ambiguous-names.test.js src/tooling/tests/naming/detector.test.js`; the full suite runs the same checks.
+
 ### Validation and limits
 
 `npm run check:docs` checks real component manifests and core directories. The documentation tests mutate headings, order, content, fences, filenames and manifest pointers across every role and locale; they also compare the section matrix in every localized standard with the machine-readable schema. CI runs both the documentation command and the full test suite. These checks enforce layout and concrete reference integrity; authors must still verify factual claims against the owning implementation.

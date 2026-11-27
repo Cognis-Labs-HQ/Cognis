@@ -456,8 +456,15 @@ export function createPlacementResolver({
 
     function computeViewPlacements() {
         const visible = state.layout.placements
-            .filter((p) => !state.layout.hidden.includes(p.id))
-            .sort((a, b) => a.row - b.row || a.col - b.col);
+            .filter(
+                (candidatePlacement) =>
+                    !state.layout.hidden.includes(candidatePlacement.id),
+            )
+            .sort(
+                (leftEntry, rightEntry) =>
+                    leftEntry.row - rightEntry.row ||
+                    leftEntry.col - rightEntry.col,
+            );
         if (
             !state.frameless &&
             isCompactComposer(state.contentGrid, state.stackAt)
@@ -468,7 +475,10 @@ export function createPlacementResolver({
                 return index < 0 ? order.length : index;
             };
             return stackComposerPlacements(
-                [...visible].sort((a, b) => rank(a.id) - rank(b.id)),
+                [...visible].sort(
+                    (leftEntry, rightEntry) =>
+                        rank(leftEntry.id) - rank(rightEntry.id),
+                ),
                 state.gridCols,
             );
         }
@@ -485,8 +495,15 @@ export function createPlacementResolver({
     }
     function computeSubViewPlacements(subState) {
         const visible = subState.layout.placements
-            .filter((pl) => !subState.layout.hidden.includes(pl.id))
-            .sort((a, b) => a.row - b.row || a.col - b.col);
+            .filter(
+                (candidatePlacement) =>
+                    !subState.layout.hidden.includes(candidatePlacement.id),
+            )
+            .sort(
+                (leftEntry, rightEntry) =>
+                    leftEntry.row - rightEntry.row ||
+                    leftEntry.col - rightEntry.col,
+            );
         if (isCompactComposer(subState.container)) {
             return stackComposerPlacements(visible, subState.gridCols);
         }

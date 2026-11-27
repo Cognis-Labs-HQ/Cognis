@@ -13,9 +13,9 @@ test("registered class access uses current memberships and the class teacher wit
     let enrolled = true;
     let enabled = true;
     const commands: string[] = [];
-    const db: DbExecutor = {
+    const database: DbExecutor = {
         ensureTable: async () => {},
-        transaction: async (operation) => operation(db),
+        transaction: async (operation) => operation(database),
         executeCommand: async (command) => {
             commands.push(command.table);
             if (command.option !== "SELECT") return { rows: [] };
@@ -47,7 +47,7 @@ test("registered class access uses current memberships and the class teacher wit
         },
     };
     const capabilities = new CapabilityStore();
-    capabilities.contribute("db:executor", db);
+    capabilities.contribute("db:executor", database);
     const ctx = createCtx();
     ctx.registerFlow({
         id: "deprovision-user",

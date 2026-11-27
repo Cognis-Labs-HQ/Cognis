@@ -248,7 +248,8 @@ export function initGeneralPrefs(
                                 .then((res) => (res.ok ? res.json() : null))
                                 .then((payload) => {
                                     const entry = (payload?.data ?? []).find(
-                                        (e) => e.email === address,
+                                        (emailEntry) =>
+                                            emailEntry.email === address,
                                     );
                                     if (entry?.verified) {
                                         overlay

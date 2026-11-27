@@ -42,10 +42,10 @@ test("documentation titles arrive before content, content concurrency is bounded
                     return {
                         ok: true,
                         json: async () => ({
-                            data: Array.from({ length: 25 }, (_, i) => ({
-                                slug: `guide-${i}`,
+                            data: Array.from({ length: 25 }, (_, index) => ({
+                                slug: `guide-${index}`,
                                 version: "1.0.0",
-                                title: `ガイド ${i}`,
+                                title: `ガイド ${index}`,
                             })),
                         }),
                     };

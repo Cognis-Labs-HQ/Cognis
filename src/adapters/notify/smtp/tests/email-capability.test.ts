@@ -16,7 +16,7 @@ import { SmtpNotificationSender } from "../notification-sender.js";
 import { createMockSmtpServer, smtpSuccessHandler } from "./fixtures/server.js";
 
 async function fixture(
-    t: import("node:test").TestContext,
+    testContext: import("node:test").TestContext,
     authenticated = false,
 ) {
     const delivered: string[] = [];
@@ -29,7 +29,7 @@ async function fixture(
         });
         smtpSuccessHandler(socket);
     });
-    t.after(() => server.close());
+    testContext.after(() => server.close());
     const sender = new SmtpNotificationSender({
         host: server.host,
         port: server.port,
@@ -44,7 +44,7 @@ async function fixture(
     const capabilities = new CapabilityStore();
     capabilities.contribute("system:ctx", root);
     const cleanup: BootstrapDisposer[] = [];
-    t.after(async () => {
+    testContext.after(async () => {
         for (const dispose of cleanup.reverse()) await dispose();
     });
     const routes: Array<
@@ -53,8 +53,8 @@ async function fixture(
     capabilities.contribute("notify:isSenderEnabled", () => true);
     capabilities.contribute(
         "notify:testSender",
-        (_id: string, to: string, config: Record<string, unknown>) =>
-            sender.test!(to, config),
+        (_id: string, recipient: string, config: Record<string, unknown>) =>
+            sender.test!(recipient, config),
     );
     const ctx = {
         capabilities,
@@ -85,8 +85,8 @@ async function fixture(
     };
 }
 
-test("SMTP owns staged action registration and delivery for modules and adapters", async (t) => {
-    const host = await fixture(t);
+test("SMTP owns staged action registration and delivery for modules and adapters", async (testContext) => {
+    const host = await fixture(testContext);
     const contracts =
         host.root.requireCapability<CapabilityContracts>("system:contracts");
     for (const id of [
@@ -176,8 +176,8 @@ test("SMTP owns staged action registration and delivery for modules and adapters
     );
 });
 
-test("SMTP rejects action callbacks that finish after their owner is disabled and restores registration on activation", async (t) => {
-    const host = await fixture(t);
+test("SMTP rejects action callbacks that finish after their owner is disabled and restores registration on activation", async (testContext) => {
+    const host = await fixture(testContext);
     let release!: () => void;
     const ready = new Promise<void>((resolve) => {
         release = resolve;
@@ -212,8 +212,8 @@ test("SMTP rejects action callbacks that finish after their owner is disabled an
     assert.ok(receipt.notificationId);
 });
 
-test("SMTP adapter owns its authenticated test route", async (t) => {
-    const host = await fixture(t);
+test("SMTP adapter owns its authenticated test route", async (testContext) => {
+    const host = await fixture(testContext);
     let status = 0;
     const response = {
         writeHead: (code: number) => {
@@ -239,8 +239,8 @@ test("SMTP adapter owns its authenticated test route", async (t) => {
     assert.equal(host.sender.listQueue()[0]?.status, "sent");
 });
 
-test("queued messages use recipient preferences and module factory options", async (t) => {
-    const host = await fixture(t);
+test("queued messages use recipient preferences and module factory options", async (testContext) => {
+    const host = await fixture(testContext);
     host.capabilities.contribute(
         "notify:getAccountIdByEmail",
         async (email: string) =>
@@ -282,8 +282,8 @@ test("queued messages use recipient preferences and module factory options", asy
     assert.match(host.delivered[0], /Updates/);
 });
 
-test("SMTP diagnostic delivery works while disabled and retains concealed credentials", async (t) => {
-    const host = await fixture(t, true);
+test("SMTP diagnostic delivery works while disabled and retains concealed credentials", async (testContext) => {
+    const host = await fixture(testContext, true);
     host.sender.setDeliveryEnabled(false);
     host.capabilities.contribute("notify:isSenderEnabled", () => false);
     host.ctx.readJson = async () => ({

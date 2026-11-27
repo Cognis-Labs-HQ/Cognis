@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, rm as removePath } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { LocalFileGateway } from "../index.js";
@@ -15,7 +15,7 @@ test("local file gateway put/get/delete", async () => {
         const removed = await gateway.delete("profile", "avatars/u1.txt");
         assert.equal(removed, true);
     } finally {
-        await rm(root, { recursive: true, force: true });
+        await removePath(root, { recursive: true, force: true });
     }
 });
 
@@ -41,7 +41,7 @@ test("local file gateway store generates unique actor-scoped keys", async () => 
         );
         assert.notEqual(result.key, result2.key);
     } finally {
-        await rm(root, { recursive: true, force: true });
+        await removePath(root, { recursive: true, force: true });
     }
 });
 
@@ -62,7 +62,7 @@ test("local file gateway isolates namespaces on disk", async () => {
             "profile-ns",
         );
     } finally {
-        await rm(root, { recursive: true, force: true });
+        await removePath(root, { recursive: true, force: true });
     }
 });
 
@@ -79,6 +79,6 @@ test("local file gateway rejects path traversal outside namespace root", async (
             /invalid_file_storage_path/,
         );
     } finally {
-        await rm(root, { recursive: true, force: true });
+        await removePath(root, { recursive: true, force: true });
     }
 });

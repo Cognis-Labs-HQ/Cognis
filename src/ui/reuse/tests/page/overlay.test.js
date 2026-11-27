@@ -1,12 +1,12 @@
 import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 import { uiCtx } from "../../ui-ctx.js";
 import { createProviderLifecycle } from "../../provider-lifecycle.js";
 import { registerScopedUiActions } from "../../scoped-actions.js";
 
-async function fixture(t) {
+async function fixture(testContext) {
     const bounds = { left: 24, top: 180, width: 1200 };
     const footer = { getBoundingClientRect: () => ({ top: 850 }) };
     const header = {};
@@ -20,7 +20,7 @@ async function fixture(t) {
             throw new Error("overlay_must_escape_containing_block");
         },
     };
-    const context = vm.createContext({
+    const context = virtualMachine.createContext({
         AbortController,
         AbortSignal,
         registerScopedUiActions,
@@ -72,7 +72,7 @@ async function fixture(t) {
         importProvider: async () => ({ mountProvider: context.mountProvider }),
     });
     await lifecycle.reconcile([{ scriptUrl: "/page-overlay.js" }]);
-    t.after(() => lifecycle.reconcile([]));
+    testContext.after(() => lifecycle.reconcile([]));
     return {
         bounds,
         overlays,
@@ -84,8 +84,8 @@ async function fixture(t) {
     };
 }
 
-test("page overlays run through the registered flow and track visible shell geometry", async (t) => {
-    const state = await fixture(t);
+test("page overlays run through the registered flow and track visible shell geometry", async (testContext) => {
+    const state = await fixture(testContext);
     let executions = 0;
     uiCtx.extendFlow(
         "ui:pageOverlay:create",
@@ -116,8 +116,8 @@ test("page overlays run through the registered flow and track visible shell geom
     assert.equal(boundary.element.style.height, "584px");
 });
 
-test("closing a caller or unloading the provider releases overlays and stops geometry updates", async (t) => {
-    const state = await fixture(t);
+test("closing a caller or unloading the provider releases overlays and stops geometry updates", async (testContext) => {
+    const state = await fixture(testContext);
     const controller = new AbortController();
     const capability = uiCtx.capabilities.get("ui:pageOverlay");
     const first = await capability.create({ signal: controller.signal });
@@ -137,8 +137,8 @@ test("closing a caller or unloading the provider releases overlays and stops geo
     await assert.rejects(capability.create(), { name: "AbortError" });
 });
 
-test("page overlay creation validates insets and refuses aborted callers before mounting", async (t) => {
-    const state = await fixture(t);
+test("page overlay creation validates insets and refuses aborted callers before mounting", async (testContext) => {
+    const state = await fixture(testContext);
     const capability = uiCtx.capabilities.get("ui:pageOverlay");
     for (const bottomInset of [-1, Infinity, "16"])
         await assert.rejects(

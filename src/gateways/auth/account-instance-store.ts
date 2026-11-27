@@ -2,10 +2,10 @@ import { randomUUID } from "node:crypto";
 import type { DbExecutor } from "../shared.js";
 
 export class AccountInstanceStore {
-    constructor(private readonly db: DbExecutor) {}
+    constructor(private readonly database: DbExecutor) {}
 
     async ensureSchema(): Promise<void> {
-        await this.db.ensureTable({
+        await this.database.ensureTable({
             name: "auth_account_instances",
             columns: [
                 {
@@ -18,7 +18,7 @@ export class AccountInstanceStore {
                 { name: "created_at", type: "text", notNull: true },
             ],
         });
-        await this.db.ensureTable({
+        await this.database.ensureTable({
             name: "auth_account_data_instances",
             columns: [
                 { name: "owner_id", type: "text", notNull: true },
@@ -39,7 +39,7 @@ export class AccountInstanceStore {
         const existing = await this.get(normalizedAccountId);
         if (existing) return existing;
         const instanceId = randomUUID();
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "INSERT",
             table: "auth_account_instances",
             values: {
@@ -53,7 +53,7 @@ export class AccountInstanceStore {
     }
 
     async delete(accountId: string): Promise<void> {
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "DELETE",
             table: "auth_account_instances",
             where: [
@@ -69,7 +69,7 @@ export class AccountInstanceStore {
         purge: (accountId: string) => Promise<void>,
     ): Promise<boolean> {
         const normalizedAccountId = accountId.trim().toLowerCase();
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "auth_account_data_instances",
             columns: ["instance_id"],
@@ -84,7 +84,7 @@ export class AccountInstanceStore {
             typeof previousInstanceId === "string" &&
             previousInstanceId !== instanceId;
         if (mismatched) await purge(normalizedAccountId);
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "INSERT",
             table: "auth_account_data_instances",
             values: {
@@ -106,7 +106,7 @@ export class AccountInstanceStore {
     }
 
     private async get(accountId: string): Promise<string | null> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "auth_account_instances",
             columns: ["instance_id"],

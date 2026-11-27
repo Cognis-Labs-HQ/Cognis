@@ -16,8 +16,8 @@ function makeInMemoryDb() {
         executeCommand: async () => ({ rows: [], rowCount: 0 }),
         ensureTable: async () => {},
         transaction: async <T>(
-            cb: (db: ReturnType<typeof makeInMemoryDb>) => Promise<T>,
-        ) => cb(makeInMemoryDb()),
+            callback: (db: ReturnType<typeof makeInMemoryDb>) => Promise<T>,
+        ) => callback(makeInMemoryDb()),
     };
 }
 
@@ -28,8 +28,8 @@ function makeResponse() {
         writeHead(code: number) {
             status = code;
         },
-        end(p: string) {
-            payload = p;
+        end(responseBody: string) {
+            payload = responseBody;
         },
         get status() {
             return status;
@@ -54,15 +54,15 @@ async function makeCtx() {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-    const db = makeInMemoryDb();
+    const database = makeInMemoryDb();
     const systemCtx = createCtx();
-    capabilities.contribute("db:executor", db);
+    capabilities.contribute("db:executor", database);
     capabilities.contribute("system:ctx", systemCtx);
     return {
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db,
+        db: database,
         flow: systemCtx.flow,
         systemCtx,
     };
@@ -330,7 +330,9 @@ test("notify gateway bootstrap registers admin section scriptUrl that resolves w
     });
 
     const sections = uiRegistry.listAdminSections();
-    const notifSection = sections.find((s) => s.id === "notifications");
+    const notifSection = sections.find(
+        (section) => section.id === "notifications",
+    );
     assert.ok(
         notifSection,
         "notify gateway must register a 'notifications' admin section",

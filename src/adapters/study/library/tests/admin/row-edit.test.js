@@ -1,7 +1,7 @@
 import { loadTestModule } from "../../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 import { entryEditMode } from "../../ui/app/editability.js";
 
 test("clicking a Library row opens the editor with Save for permitted cards and preserves readonly permissions", async () => {
@@ -15,7 +15,7 @@ test("clicking a Library row opens the editor with Save for permitted cards and 
             layer: "words",
             canEdit,
         };
-        const context = vm.createContext({
+        const context = virtualMachine.createContext({
             AbortController,
             entryEditMode,
             resolveComposerContract: (_schema, layer) => ({

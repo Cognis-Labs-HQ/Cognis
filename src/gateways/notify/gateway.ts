@@ -264,13 +264,17 @@ export class CoreNotificationGateway implements NotificationGateway {
                 queueEntries.push({ senderId, ...entry });
             }
         }
-        return queueEntries.sort((a, b) => {
+        return queueEntries.sort((leftEntry, rightEntry) => {
             const updatedAtDelta =
-                Date.parse(b.updatedAt) - Date.parse(a.updatedAt);
+                Date.parse(rightEntry.updatedAt) -
+                Date.parse(leftEntry.updatedAt);
             if (updatedAtDelta !== 0) return updatedAtDelta;
             return (
-                Date.parse(b.createdAt) - Date.parse(a.createdAt) ||
-                b.notificationId.localeCompare(a.notificationId)
+                Date.parse(rightEntry.createdAt) -
+                    Date.parse(leftEntry.createdAt) ||
+                rightEntry.notificationId.localeCompare(
+                    leftEntry.notificationId,
+                )
             );
         });
     }

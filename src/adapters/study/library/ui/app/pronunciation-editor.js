@@ -343,10 +343,10 @@ export function mountEditableRelationshipCarousels(
     };
     bindCompositionReordering(form, {
         signal: controller.signal,
-        onMove({ kind, from, to }) {
+        onMove({ kind, from, to: destinationIndex }) {
             if (kind === "input") {
                 const [token] = form.compositionOrder.splice(from, 1);
-                form.compositionOrder.splice(to, 0, token);
+                form.compositionOrder.splice(destinationIndex, 0, token);
             } else {
                 const relationshipIds = relationshipIdsForKind(kind);
                 const collection = isMultiValueKind(kind)
@@ -357,7 +357,7 @@ export function mountEditableRelationshipCarousels(
                 );
                 const [placement] = placements.splice(from, 1);
                 if (!placement) return;
-                placements.splice(to, 0, placement);
+                placements.splice(destinationIndex, 0, placement);
                 for (const id of relationshipIds)
                     collection.set(
                         id,

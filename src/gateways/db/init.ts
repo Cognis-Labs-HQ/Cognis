@@ -43,9 +43,11 @@ export function resolveDbProviderDir(dbType: string) {
 function splitSqlStatements(sql: string): string[] {
     return sql
         .split(";")
-        .map((s) => s.trim())
-        .filter((s) => s.length > 0 && !s.startsWith("--"))
-        .map((s) => `${s};`);
+        .map((statement) => statement.trim())
+        .filter(
+            (statement) => statement.length > 0 && !statement.startsWith("--"),
+        )
+        .map((statement) => `${statement};`);
 }
 
 async function ensureMigrationsTable(

@@ -303,7 +303,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 []) as Array<{ navEntry?: unknown }>;
             return {
                 surface: "messages",
-                navEntries: navResults.map((r) => r.navEntry).filter(Boolean),
+                navEntries: navResults
+                    .map((result) => result.navEntry)
+                    .filter(Boolean),
             };
         },
     );
@@ -320,17 +322,24 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             const ciphertext = String(
                 (input as Record<string, unknown>).ciphertext ?? "",
             );
-            const iv = String((input as Record<string, unknown>).iv ?? "");
+            const initializationVector = String(
+                (input as Record<string, unknown>).iv ?? "",
+            );
             if (!roomId) {
                 return { valid: false, reason: "missing_room_id" };
             }
-            if (!ciphertext || !iv) {
+            if (!ciphertext || !initializationVector) {
                 return {
                     valid: false,
                     reason: "missing_ciphertext_or_iv",
                 };
             }
-            return { valid: true, roomId, ciphertext, iv };
+            return {
+                valid: true,
+                roomId,
+                ciphertext,
+                iv: initializationVector,
+            };
         },
     );
 

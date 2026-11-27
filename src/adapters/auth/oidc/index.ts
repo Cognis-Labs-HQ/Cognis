@@ -31,8 +31,8 @@ class OidcAuthAdapter implements AuthProviderAdapter {
         if (!this.client || !accessToken) return null;
         const claims = await this.client.introspect(accessToken);
         if (!claims) return null;
-        const hasAdminRole = (claims.roles ?? []).some((r) =>
-            this.adminRoles.has(r),
+        const hasAdminRole = (claims.roles ?? []).some((role) =>
+            this.adminRoles.has(role),
         );
         return {
             accountId: claims.sub,
@@ -86,7 +86,7 @@ class OidcAuthAdapter implements AuthProviderAdapter {
             this.adminRoles = new Set(
                 config.adminRoles
                     .split(",")
-                    .map((r) => r.trim())
+                    .map((role) => role.trim())
                     .filter(Boolean),
             );
         }

@@ -4,10 +4,10 @@ import { parseSeatAssignments, rowToClassRow } from "./rows.js";
 import type { ClassRow, ClassroomStateRow } from "./types.js";
 
 export async function getClassesForTeacher(
-    db: DbExecutor,
+    database: DbExecutor,
     teacherAccountId: string,
 ): Promise<ClassRow[]> {
-    const result = await db.executeCommand({
+    const result = await database.executeCommand({
         option: "SELECT",
         table: "study_classes",
         columns: ["id", "language_code", "teacher_account_id", "created_at"],
@@ -20,10 +20,10 @@ export async function getClassesForTeacher(
 }
 
 export async function getClassById(
-    db: DbExecutor,
+    database: DbExecutor,
     classId: string,
 ): Promise<ClassRow | null> {
-    const result = await db.executeCommand({
+    const result = await database.executeCommand({
         option: "SELECT",
         table: "study_classes",
         columns: ["id", "language_code", "teacher_account_id", "created_at"],
@@ -36,10 +36,10 @@ export async function getClassById(
 }
 
 export async function getClassroomState(
-    db: DbExecutor,
+    database: DbExecutor,
     classId: string,
 ): Promise<ClassroomStateRow> {
-    const result = await db.executeCommand({
+    const result = await database.executeCommand({
         option: "SELECT",
         table: "classroom_state",
         columns: [
@@ -75,7 +75,7 @@ export async function getClassroomState(
 }
 
 export async function updateClassroomStateForTeacher(
-    db: DbExecutor,
+    database: DbExecutor,
     classId: string,
     teacherAccountId: string,
     options: {
@@ -83,11 +83,11 @@ export async function updateClassroomStateForTeacher(
         seatAssignments?: Record<string, number>;
     },
 ): Promise<ClassroomStateRow> {
-    const classRow = await getClassById(db, classId);
+    const classRow = await getClassById(database, classId);
     if (!classRow || classRow.teacherAccountId !== teacherAccountId) {
         throw new Error("not_authorized");
     }
-    const currentState = await getClassroomState(db, classId);
+    const currentState = await getClassroomState(database, classId);
     const hasStudentLimit = Number.isInteger(options.studentLimit);
     const normalizedStudentLimit = hasStudentLimit
         ? Number(options.studentLimit)
@@ -100,7 +100,7 @@ export async function updateClassroomStateForTeacher(
             ? parseSeatAssignments(JSON.stringify(options.seatAssignments))
             : currentState.seatAssignments;
     const updatedAt = new Date().toISOString();
-    await db.executeCommand({
+    await database.executeCommand({
         option: "INSERT",
         table: "classroom_state",
         values: {
@@ -119,14 +119,14 @@ export async function updateClassroomStateForTeacher(
             },
         },
     });
-    return getClassroomState(db, classId);
+    return getClassroomState(database, classId);
 }
 
 export async function getEnrolledClasses(
-    db: DbExecutor,
+    database: DbExecutor,
     studentAccountId: string,
 ): Promise<ClassRow[]> {
-    const membershipsResult = await db.executeCommand({
+    const membershipsResult = await database.executeCommand({
         option: "SELECT",
         table: "class_memberships",
         columns: ["class_id"],
@@ -142,7 +142,7 @@ export async function getEnrolledClasses(
         return [];
     }
     const classRows = await Promise.allSettled(
-        classIds.map((classId) => getClassById(db, classId)),
+        classIds.map((classId) => getClassById(database, classId)),
     );
     return classRows
         .filter(
@@ -154,7 +154,7 @@ export async function getEnrolledClasses(
 }
 
 export async function getAvailableClasses(
-    db: DbExecutor,
+    database: DbExecutor,
     languageCode?: string,
     excludeAccountId?: string,
 ): Promise<ClassRow[]> {
@@ -162,7 +162,7 @@ export async function getAvailableClasses(
     if (languageCode) {
         whereClause.push({ column: "language_code", value: languageCode });
     }
-    const result = await db.executeCommand({
+    const result = await database.executeCommand({
         option: "SELECT",
         table: "study_classes",
         columns: ["id", "language_code", "teacher_account_id", "created_at"],
@@ -175,7 +175,7 @@ export async function getAvailableClasses(
     if (!excludeAccountId) {
         return allClasses;
     }
-    const membershipResult = await db.executeCommand({
+    const membershipResult = await database.executeCommand({
         option: "SELECT",
         table: "class_memberships",
         columns: ["class_id"],
@@ -190,7 +190,7 @@ export async function getAvailableClasses(
 }
 
 export async function getClassesForTeacherWithFilter(
-    db: DbExecutor,
+    database: DbExecutor,
     teacherAccountId: string,
     languageCode?: string,
 ): Promise<(ClassRow & { memberCount: number })[]> {
@@ -200,7 +200,7 @@ export async function getClassesForTeacherWithFilter(
     if (languageCode) {
         whereClause.push({ column: "language_code", value: languageCode });
     }
-    const result = await db.executeCommand({
+    const result = await database.executeCommand({
         option: "SELECT",
         table: "study_classes",
         columns: ["id", "language_code", "teacher_account_id", "created_at"],
@@ -212,7 +212,7 @@ export async function getClassesForTeacherWithFilter(
     );
     const countResults = await Promise.allSettled(
         classes.map(async (classRow) => {
-            const countResult = await db.executeCommand({
+            const countResult = await database.executeCommand({
                 option: "SELECT",
                 table: "class_memberships",
                 count: true,

@@ -183,11 +183,11 @@ function splitList(value: unknown): string[] {
     if (Array.isArray(value))
         return value
             .map(String)
-            .map((v) => v.trim())
+            .map((value2) => value2.trim())
             .filter(Boolean);
     return String(value ?? "")
         .split(",")
-        .map((v) => v.trim())
+        .map((value2) => value2.trim())
         .filter(Boolean);
 }
 
@@ -195,8 +195,8 @@ function parseRoleMappings(value: unknown): Record<string, string> {
     if (value && typeof value === "object" && !Array.isArray(value)) {
         return Object.fromEntries(
             Object.entries(value)
-                .map(([k, v]) => [k.trim(), String(v).trim()])
-                .filter(([k, v]) => k && v),
+                .map(([key, value2]) => [key.trim(), String(value2).trim()])
+                .filter(([key, value2]) => key && value2),
         );
     }
     const mappings: Record<string, string> = {};
@@ -416,7 +416,7 @@ class LdapAuthAdapter implements AuthProviderAdapter {
         }
         for (const role of ["admin", "moderator", "teacher", "user"])
             if (mappedRoles.includes(role)) return role;
-        if (groups.some((g) => this.adminGroups.has(g))) return "admin";
+        if (groups.some((group) => this.adminGroups.has(group))) return "admin";
         return Object.values(options.roleMappings).includes("user")
             ? null
             : "user";
@@ -570,7 +570,7 @@ class LdapAuthAdapter implements AuthProviderAdapter {
             ...this.options,
             ...Object.fromEntries(
                 Object.entries(config).filter(
-                    ([, v]) => typeof v !== "undefined",
+                    ([, value]) => typeof value !== "undefined",
                 ),
             ),
         } as LdapRuntimeOptions;

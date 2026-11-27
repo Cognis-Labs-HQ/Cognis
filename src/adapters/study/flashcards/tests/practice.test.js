@@ -2,7 +2,7 @@ import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import { randomIndex } from "../../../../gateways/study/ui/reuse/random.js";
 import assert from "node:assert/strict";
 import test from "node:test";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 import { readFileSync } from "node:fs";
 import { entryExploreUrl } from "../../../../gateways/study/ui/reuse/explore.js";
 import { uiCtx } from "../../../../ui/reuse/ui-ctx.js";
@@ -14,7 +14,7 @@ import {
     isCorrectReadingChoice,
 } from "../ui/reuse/reading-answer.js";
 
-const environment = vm.createContext({
+const environment = virtualMachine.createContext({
     Date,
     randomIndex,
     uiCtx,
@@ -258,7 +258,7 @@ function practiceHarness(filter, status = "due", options = {}) {
     const toasts = [];
     let decision = "cancel";
     let drawing;
-    const context = vm.createContext({
+    const context = virtualMachine.createContext({
         AbortController,
         uiCtx: {
             capabilities: {

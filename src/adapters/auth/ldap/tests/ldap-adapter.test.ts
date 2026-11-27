@@ -314,7 +314,7 @@ test("unified LDAP authentication continues after a source error", async () => {
         ],
     });
     adapter.setClient({
-        authenticate: async (_u, _p, options) => {
+        authenticate: async (_username, _password, options) => {
             if (options.identifier === "Offline")
                 throw new Error("unavailable");
             return { id: "alice" };
@@ -367,7 +367,7 @@ test("ldap adapter config schema has required fields", () => {
         "/static/adapters/auth/ldap/languages",
     );
     const schema = adapter.getConfigSchema();
-    const keys = schema.map((f) => f.key);
+    const keys = schema.map((field) => field.key);
     assert.ok(keys.includes("host"));
     assert.ok(keys.includes("bindDn"));
     assert.ok(keys.includes("baseDn"));

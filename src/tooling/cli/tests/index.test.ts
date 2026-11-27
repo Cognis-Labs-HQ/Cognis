@@ -11,7 +11,7 @@ import { captureTerminalOutput } from "./fixtures/output.ts";
  * The tests cover formatted JSON fallback and command-specific rendering for
  * representative built-in commands.
  */
-import { mkdtemp, rm, writeFile, mkdir } from "node:fs/promises";
+import { mkdtemp, rm as removePath, writeFile, mkdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 

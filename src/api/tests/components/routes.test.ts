@@ -5,7 +5,7 @@ import { createComponentRoutes } from "../../routes/components/index.js";
 import { createDefaultRouteContext } from "../../reuse/route-context.js";
 import type { ComponentService } from "../../components/service.js";
 
-test("component routes enforce role boundaries and bind channel changes to the URL target", async (t) => {
+test("component routes enforce role boundaries and bind channel changes to the URL target", async (testContext) => {
     const calls: unknown[] = [];
     const service = {
         list: async () => [],
@@ -39,7 +39,7 @@ test("component routes enforce role boundaries and bind channel changes to the U
     await new Promise<void>((resolve) =>
         server.listen(0, "127.0.0.1", resolve),
     );
-    t.after(
+    testContext.after(
         () => new Promise<void>((resolve) => server.close(() => resolve())),
     );
     const base = `http://127.0.0.1:${(server.address() as { port: number }).port}/api/v1/components`;

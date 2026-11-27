@@ -1,7 +1,7 @@
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 
 async function popupFixture(runActions, request, signal, capturedSignal) {
     const inputs = new Map();
@@ -69,7 +69,7 @@ async function popupFixture(runActions, request, signal, capturedSignal) {
             return "cancel";
         },
     };
-    vm.createContext(context);
+    virtualMachine.createContext(context);
     Object.assign(
         context,
         loadTestModule(

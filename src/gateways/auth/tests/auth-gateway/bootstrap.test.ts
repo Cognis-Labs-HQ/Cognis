@@ -117,7 +117,7 @@ test("auth gateway bootstrap registers in GatewayRegistry", async () => {
     );
 
     const gateways = gatewayRegistry.list();
-    const authGw = gateways.find((g) => g.id === "auth");
+    const authGw = gateways.find((gateway) => gateway.id === "auth");
     assert.ok(authGw, "auth gateway should be registered");
     assert.equal(authGw.required, true);
 });
@@ -707,7 +707,7 @@ test("auth gateway bootstrap registers security section without redundant authen
 
     const sections = uiRegistry.listAdminSections();
     const authenticationSection = sections.find(
-        (s) => s.id === "authentication",
+        (section) => section.id === "authentication",
     );
     assert.equal(
         authenticationSection,
@@ -735,7 +735,7 @@ test("auth gateway bootstrap registers security section without redundant authen
 test("CoreAuthGateway.getEnabledAdapter returns null for a disabled adapter", async () => {
     const { CoreAuthGateway } = await import("../../gateway.js");
 
-    const db = {
+    const database = {
         execute: async (_sql: string, _params?: unknown[]) => ({ rows: [] }),
         executeCommand: async () => ({ rows: [] }),
     } as ReturnType<typeof makeInMemoryDb> & {
@@ -746,7 +746,7 @@ test("CoreAuthGateway.getEnabledAdapter returns null for a disabled adapter", as
         executeCommand: () => Promise<{ rows?: unknown[] }>;
     };
 
-    const gw = new CoreAuthGateway(db);
+    const gateway = new CoreAuthGateway(database);
 
     const mockAdapter = {
         id: "oidc",
@@ -756,23 +756,23 @@ test("CoreAuthGateway.getEnabledAdapter returns null for a disabled adapter", as
         configure: () => undefined,
     };
 
-    gw.registerAdapter(mockAdapter);
+    gateway.registerAdapter(mockAdapter);
 
     assert.equal(
-        gw.getEnabledAdapter("oidc"),
+        gateway.getEnabledAdapter("oidc"),
         null,
         "adapter that was never enabled should not be returned",
     );
 
-    await gw.enableAdapter("oidc");
+    await gateway.enableAdapter("oidc");
     assert.ok(
-        gw.getEnabledAdapter("oidc"),
+        gateway.getEnabledAdapter("oidc"),
         "enabled adapter should be returned",
     );
 
-    await gw.disableAdapter("oidc");
+    await gateway.disableAdapter("oidc");
     assert.equal(
-        gw.getEnabledAdapter("oidc"),
+        gateway.getEnabledAdapter("oidc"),
         null,
         "disabled adapter should not be returned",
     );
@@ -861,7 +861,7 @@ test("CoreAuthGateway redacts configured passwords and preserves them on blank u
         ],
     };
     let savedConfig = "";
-    const db = {
+    const database = {
         ensureTable: async () => undefined,
         executeCommand: async (command: Record<string, unknown>) => {
             if (command.option === "SELECT") {
@@ -872,7 +872,7 @@ test("CoreAuthGateway redacts configured passwords and preserves them on blank u
             return { rows: [] };
         },
     };
-    const gateway = new CoreAuthGateway(db as never);
+    const gateway = new CoreAuthGateway(database as never);
     gateway.registerAdapter({
         id: "ldap-test",
         name: "LDAP Test",

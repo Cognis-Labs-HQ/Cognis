@@ -557,7 +557,7 @@ Tests outside `src/core` must assume any gateway, adapter, or module outside the
 
 Prefer fully qualified database table names instead of aliases. When an alias is necessary, it must preserve the complete, descriptive table name; never shorten table names to initials, abbreviations, or single-letter aliases such as `a`, `i`, or `c`.
 
-Variable and binding names must be descriptive. Single-letter names are only acceptable in the roles listed below; all other one- or two-letter identifiers are forbidden in `const`, `let`, and `var` declarations and in `for-of` / `for-in` bindings:
+Variable and binding names must be descriptive. Single-letter names are only acceptable in the roles listed below; all other one- or two-letter identifiers are forbidden in `const`, `let`, and `var` declarations, destructuring, and `for-of` / `for-in` bindings, and in runtime function parameters (including callbacks, methods, constructor parameter properties and catch clauses):
 
 **Acceptable single-letter names:**
 
@@ -573,7 +573,9 @@ Variable and binding names must be descriptive. Single-letter names are only acc
 
 Everything else must use a full descriptive name: `element` not `el`, `gridSize` not `gs`, `floatingToolbar` not `ft`, `resizeObserver` not `ro`, `gateway` not `gw`, `timestamp` not `ts`, `listItem` not `li`, `initVector` not `iv`, `timezone` not `tz`, `recipient` not `to`, etc.
 
-A test in `src/ui/tests/ambiguous-names.test.js` enforces this rule automatically for all source files in the scanned directories.
+Runtime import aliases and named function/class bindings follow the same rule. Type-only imports retain type-system names.
+
+The syntax-tree detector in `src/tooling/reuse/ambiguous-names.js` checks every binding regardless of line breaks, exports, type annotations or declaration order. `src/ui/tests/ambiguous-names.test.js` scans JavaScript and TypeScript files throughout `src`, including gateways, tooling, tests and fixtures, without a baseline or file-specific exemptions. Parse failures fail the check. Property keys, literal text, type parameters and type-signature labels are not runtime bindings; renaming a local must preserve external property and payload keys. Detector fixtures cover both rejected forms and the documented exceptions.
 
 ### Module cohesion
 

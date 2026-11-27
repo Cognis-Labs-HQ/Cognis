@@ -31,12 +31,12 @@ function groupId(values: Record<string, unknown>): string {
 
 /** Flat edges retain their established key; grouped placements have an independent identity. */
 export async function executeReferences(
-    db: DbExecutor,
+    database: DbExecutor,
     command: ReferenceCommand,
 ): Promise<StructuredDbCommandResult> {
     if (command.option === "INSERT") {
         const grouped = Number(command.values.group_index) >= 0;
-        return db.executeCommand({
+        return database.executeCommand({
             ...command,
             table: grouped ? GROUPED : FLAT,
             values: grouped
@@ -46,7 +46,7 @@ export async function executeReferences(
     }
     const results = [];
     for (const table of [FLAT, GROUPED])
-        results.push(await db.executeCommand({ ...command, table }));
+        results.push(await database.executeCommand({ ...command, table }));
     return {
         rows: results.flatMap((result) => result.rows ?? []),
         rowCount: results.reduce(
@@ -56,7 +56,9 @@ export async function executeReferences(
     };
 }
 
-export async function ensureReferenceStorage(db: DbExecutor): Promise<void> {
+export async function ensureReferenceStorage(
+    database: DbExecutor,
+): Promise<void> {
     const columns: StructuredDbColumnDef[] = [
         { name: "source_entry_id", type: "text", notNull: true },
         { name: "target_entry_id", type: "text", notNull: true },
@@ -65,7 +67,7 @@ export async function ensureReferenceStorage(db: DbExecutor): Promise<void> {
         { name: "group_index", type: "integer", notNull: true, default: -1 },
         { name: "transformation_json", type: "text" },
     ];
-    await db.ensureTable({
+    await database.ensureTable({
         name: FLAT,
         columns,
         primaryKey: [
@@ -75,7 +77,7 @@ export async function ensureReferenceStorage(db: DbExecutor): Promise<void> {
             "position",
         ],
     });
-    await db.ensureTable({
+    await database.ensureTable({
         name: GROUPED,
         columns: [
             { name: "reference_id", type: "text", primaryKey: true },
@@ -87,21 +89,21 @@ export async function ensureReferenceStorage(db: DbExecutor): Promise<void> {
         ],
     });
     // Keep grouped placements in their own keyed store before accepting graph writes.
-    await db.transaction(async (tx) => {
-        const grouped = await tx.executeCommand({
+    await database.transaction(async (transaction) => {
+        const grouped = await transaction.executeCommand({
             option: "SELECT",
             table: FLAT,
             where: [{ column: "group_index", operator: ">=", value: 0 }],
         });
         for (const row of grouped.rows ?? []) {
             if (!(Number(row.group_index) >= 0)) continue;
-            await executeReferences(tx, {
+            await executeReferences(transaction, {
                 option: "INSERT",
                 values: row,
                 conflict: { action: "ignore" },
             });
         }
-        await tx.executeCommand({
+        await transaction.executeCommand({
             option: "DELETE",
             table: FLAT,
             where: [{ column: "group_index", operator: ">=", value: 0 }],

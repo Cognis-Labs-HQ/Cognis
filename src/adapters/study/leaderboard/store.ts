@@ -21,10 +21,10 @@ export interface LeaderboardStore {
 }
 
 export class DbLeaderboardStore implements LeaderboardStore {
-    constructor(private readonly db: DbExecutor) {}
+    constructor(private readonly database: DbExecutor) {}
 
     async ensureSchema(): Promise<void> {
-        await this.db.ensureTable({
+        await this.database.ensureTable({
             name: "study_leaderboard_state",
             columns: [
                 { name: "state_id", type: "text", primaryKey: true },
@@ -38,7 +38,7 @@ export class DbLeaderboardStore implements LeaderboardStore {
     }
 
     async load(): Promise<LeaderboardState | undefined> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "study_leaderboard_state",
             where: [
@@ -57,8 +57,8 @@ export class DbLeaderboardStore implements LeaderboardStore {
     }
 
     async save(state: LeaderboardState): Promise<void> {
-        await this.db.transaction(async (db) => {
-            await db.executeCommand({
+        await this.database.transaction(async (database) => {
+            await database.executeCommand({
                 option: "DELETE",
                 table: "study_leaderboard_state",
                 where: [
@@ -67,7 +67,7 @@ export class DbLeaderboardStore implements LeaderboardStore {
             });
             let index = 0;
             for (const chunk of textChunks(JSON.stringify(state), 60_000)) {
-                await db.executeCommand({
+                await database.executeCommand({
                     option: "INSERT",
                     table: "study_leaderboard_state",
                     values: {

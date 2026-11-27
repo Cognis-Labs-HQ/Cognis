@@ -10,7 +10,7 @@ import { bindCapability } from "../../../ui/reuse/capabilities.js";
 
 const log = bindCapability("ui:log");
 
-async function fixture(t, { failHandshake = false } = {}) {
+async function fixture(testContext, { failHandshake = false } = {}) {
     let token = "test-token";
     let allowed = false;
     let status = 204;
@@ -75,7 +75,7 @@ async function fixture(t, { failHandshake = false } = {}) {
         importProvider: async () => provider,
     });
     await lifecycle.reconcile([{ scriptUrl: "/logging-provider.js" }]);
-    t.after(() => lifecycle.reconcile([]));
+    testContext.after(() => lifecycle.reconcile([]));
     return {
         originalConsole,
         requests,
@@ -98,8 +98,8 @@ async function fixture(t, { failHandshake = false } = {}) {
     };
 }
 
-test("logs run the gateway flow and only gateway permission permits console output", async (t) => {
-    const runtime = await fixture(t);
+test("logs run the gateway flow and only gateway permission permits console output", async (testContext) => {
+    const runtime = await fixture(testContext);
     assert.equal(
         await log("error", "challenge_request_failed", { component: "tfa" }),
         true,
@@ -134,8 +134,8 @@ test("logs run the gateway flow and only gateway permission permits console outp
         );
 });
 
-test("worker diagnostics accept only the current controller and detach on disposal", async (t) => {
-    const runtime = await fixture(t);
+test("worker diagnostics accept only the current controller and detach on disposal", async (testContext) => {
+    const runtime = await fixture(testContext);
     const dispatch = (source) => {
         const event = new Event("message");
         Object.assign(event, {
@@ -160,8 +160,8 @@ test("worker diagnostics accept only the current controller and detach on dispos
     assert.equal(runtime.requests.length, 1);
 });
 
-test("console calls reach the gateway with safe context before any browser output", async (t) => {
-    const runtime = await fixture(t);
+test("console calls reach the gateway with safe context before any browser output", async (testContext) => {
+    const runtime = await fixture(testContext);
     runtime.consoleTarget.error("adapter_operation_failed", {
         component: "example",
         status: 503,
@@ -191,15 +191,15 @@ test("console calls reach the gateway with safe context before any browser outpu
     assert.equal(runtime.output[0].args[0], "adapter_operation_failed");
 });
 
-test("failed provider initialization releases its flow, console capture and subscription", async (t) => {
+test("failed provider initialization releases its flow, console capture and subscription", async (testContext) => {
     await assert.rejects(
-        fixture(t, { failHandshake: true }),
+        fixture(testContext, { failHandshake: true }),
         /worker_unavailable/,
     );
     assert.equal(uiCtx.flowExists("logging:emit"), false);
     assert.equal(uiCtx.capabilities.get("logging:browser"), undefined);
     assert.equal(uiCtx.capabilities.get("logging:recentEntries"), undefined);
-    const runtime = await fixture(t);
+    const runtime = await fixture(testContext);
     assert.equal(await log("error", "provider_recovered"), true);
     assert.equal(runtime.requests.length, 1);
 });
@@ -216,8 +216,8 @@ test("diagnostic context has an overall size budget as well as per-field limits"
     assert.equal(safe["0"].detail.length, 512);
 });
 
-test("recent diagnostics remain bounded and cannot be mutated by crash-report consumers", async (t) => {
-    await fixture(t);
+test("recent diagnostics remain bounded and cannot be mutated by crash-report consumers", async (testContext) => {
+    await fixture(testContext);
     for (let index = 0; index < 35; index++)
         await log("info", `history_${index}`);
     const recent = uiCtx.capabilities.get("logging:recentEntries");
@@ -229,9 +229,9 @@ test("recent diagnostics remain bounded and cannot be mutated by crash-report co
     assert.match(recent()[0].message, /^history_5 /);
 });
 
-test("the gateway owns its public log capability and receives deferred calls across remounts", async (t) => {
+test("the gateway owns its public log capability and receives deferred calls across remounts", async (testContext) => {
     await log("error", "before_provider", { component: "startup" });
-    const host = await fixture(t);
+    const host = await fixture(testContext);
     await new Promise(setImmediate);
     assert.equal(typeof uiCtx.capabilities.get("ui:log"), "function");
     assert.equal(

@@ -2,11 +2,11 @@ import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import { pronunciationClass } from "../../../../gateways/study/ui/reuse/pronunciation.js";
 import assert from "node:assert/strict";
 import test from "node:test";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 import { escapeHtml } from "../../../../ui/reuse/escape-html.js";
 
 const context = { escapeHtml, pronunciationClass };
-vm.createContext(context);
+virtualMachine.createContext(context);
 Object.assign(
     context,
     loadTestModule(

@@ -4,11 +4,11 @@ import { rowToMessageRequest } from "./row-mappers.js";
 import type { MessageRequestRow, MessageRequestStatus } from "./types.js";
 
 export async function findPendingMessageRequest(
-    db: DbExecutor,
+    database: DbExecutor,
     fromAccountId: string,
     toAccountId: string,
 ): Promise<MessageRequestRow | null> {
-    const result = await db.executeCommand({
+    const result = await database.executeCommand({
         option: "SELECT",
         table: "chat_message_requests",
         where: [
@@ -23,7 +23,7 @@ export async function findPendingMessageRequest(
 }
 
 export async function createMessageRequest(
-    db: DbExecutor,
+    database: DbExecutor,
     input: {
         fromAccountId: string;
         toAccountId: string;
@@ -33,7 +33,7 @@ export async function createMessageRequest(
 ): Promise<MessageRequestRow> {
     const id = randomUUID();
     const nowIso = new Date().toISOString();
-    await db.executeCommand({
+    await database.executeCommand({
         option: "INSERT",
         table: "chat_message_requests",
         values: {
@@ -46,7 +46,7 @@ export async function createMessageRequest(
             created_at: nowIso,
         },
     });
-    const created = await db.executeCommand({
+    const created = await database.executeCommand({
         option: "SELECT",
         table: "chat_message_requests",
         where: [{ column: "id", value: id }],
@@ -56,10 +56,10 @@ export async function createMessageRequest(
 }
 
 export async function getMessageRequest(
-    db: DbExecutor,
+    database: DbExecutor,
     id: string,
 ): Promise<MessageRequestRow | null> {
-    const result = await db.executeCommand({
+    const result = await database.executeCommand({
         option: "SELECT",
         table: "chat_message_requests",
         where: [{ column: "id", value: id }],
@@ -69,10 +69,10 @@ export async function getMessageRequest(
 }
 
 export async function getPendingRoomMessageRequest(
-    db: DbExecutor,
+    database: DbExecutor,
     roomId: string,
 ): Promise<MessageRequestRow | null> {
-    const result = await db.executeCommand({
+    const result = await database.executeCommand({
         option: "SELECT",
         table: "chat_message_requests",
         where: [
@@ -86,11 +86,11 @@ export async function getPendingRoomMessageRequest(
 }
 
 export async function getPendingIncomingRoomMessageRequest(
-    db: DbExecutor,
+    database: DbExecutor,
     roomId: string,
     toAccountId: string,
 ): Promise<MessageRequestRow | null> {
-    const result = await db.executeCommand({
+    const result = await database.executeCommand({
         option: "SELECT",
         table: "chat_message_requests",
         where: [
@@ -105,10 +105,10 @@ export async function getPendingIncomingRoomMessageRequest(
 }
 
 export async function listIncomingMessageRequests(
-    db: DbExecutor,
+    database: DbExecutor,
     accountId: string,
 ): Promise<MessageRequestRow[]> {
-    const result = await db.executeCommand({
+    const result = await database.executeCommand({
         option: "SELECT",
         table: "chat_message_requests",
         where: [
@@ -121,12 +121,12 @@ export async function listIncomingMessageRequests(
 }
 
 export async function updateMessageRequestStatus(
-    db: DbExecutor,
+    database: DbExecutor,
     id: string,
     status: MessageRequestStatus,
     roomId: string | null = null,
 ): Promise<void> {
-    await db.executeCommand({
+    await database.executeCommand({
         option: "UPDATE",
         table: "chat_message_requests",
         set: {
@@ -139,7 +139,7 @@ export async function updateMessageRequestStatus(
 }
 
 export async function approvePendingRequestsBetween(
-    db: DbExecutor,
+    database: DbExecutor,
     accountA: string,
     accountB: string,
     roomId: string,
@@ -149,7 +149,7 @@ export async function approvePendingRequestsBetween(
         [accountA, accountB],
         [accountB, accountA],
     ]) {
-        await db.executeCommand({
+        await database.executeCommand({
             option: "UPDATE",
             table: "chat_message_requests",
             set: {
@@ -167,7 +167,7 @@ export async function approvePendingRequestsBetween(
 }
 
 export async function hasApprovedMessageRequestBetween(
-    db: DbExecutor,
+    database: DbExecutor,
     accountA: string,
     accountB: string,
 ): Promise<boolean> {
@@ -175,7 +175,7 @@ export async function hasApprovedMessageRequestBetween(
         [accountA, accountB],
         [accountB, accountA],
     ]) {
-        const result = await db.executeCommand({
+        const result = await database.executeCommand({
             option: "SELECT",
             table: "chat_message_requests",
             where: [

@@ -1,13 +1,13 @@
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 import { uiCtx } from "../ui-ctx.js";
 import { createProviderLifecycle } from "../provider-lifecycle.js";
 import { registerScopedUiActions } from "../scoped-actions.js";
 import { escapeHtml } from "../escape-html.js";
 
-async function fixture(t) {
+async function fixture(testContext) {
     let click;
     let opened;
     let resolvePopup;
@@ -35,7 +35,7 @@ async function fixture(t) {
             click = listener;
         },
     };
-    const context = vm.createContext({
+    const context = virtualMachine.createContext({
         showToast: (...values) => failures.push(values),
         escapeHtml,
         uiCtx,
@@ -107,7 +107,7 @@ async function fixture(t) {
         importProvider: async () => ({ mountProvider: context.mountProvider }),
     });
     await lifecycle.reconcile([{ scriptUrl: "/image-preview.js" }]);
-    t.after(() => lifecycle.reconcile([]));
+    testContext.after(() => lifecycle.reconcile([]));
     uiCtx.extendFlow(
         "ui:imagePreview:open",
         "execute",
@@ -142,8 +142,8 @@ async function fixture(t) {
     };
 }
 
-test("shared thumbnails safely render image data and optional removal controls", async (t) => {
-    const state = await fixture(t);
+test("shared thumbnails safely render image data and optional removal controls", async (testContext) => {
+    const state = await fixture(testContext);
     const html = state.context.renderImagePreview({
         src: 'blob:private"image',
         alt: "<Dog>",
@@ -164,8 +164,8 @@ test("shared thumbnails safely render image data and optional removal controls",
     );
 });
 
-test("image activation opens only the full image and the standard close control, then restores focus", async (t) => {
-    const state = await fixture(t);
+test("image activation opens only the full image and the standard close control, then restores focus", async (testContext) => {
+    const state = await fixture(testContext);
     const pending = state.activate();
     await new Promise(setImmediate);
     assert.equal(uiCtx.flowExists("ui:imagePreview:open"), true);
@@ -187,8 +187,8 @@ test("image activation opens only the full image and the standard close control,
     assert.equal(state.executions(), 1);
 });
 
-test("closing the owner view dismisses the image popup without reclaiming caller-owned URLs", async (t) => {
-    const state = await fixture(t);
+test("closing the owner view dismisses the image popup without reclaiming caller-owned URLs", async (testContext) => {
+    const state = await fixture(testContext);
     state.image.alt = "";
     const pending = state.activate();
     await new Promise(setImmediate);
@@ -199,8 +199,8 @@ test("closing the owner view dismisses the image popup without reclaiming caller
     assert.equal(state.focused(), 0);
 });
 
-test("unmounting the global provider dismisses its popup and removes the registered capability and flow", async (t) => {
-    const state = await fixture(t);
+test("unmounting the global provider dismisses its popup and removes the registered capability and flow", async (testContext) => {
+    const state = await fixture(testContext);
     const preview = uiCtx.capabilities.get("ui:imagePreview");
     const pending = state.activate();
     await new Promise(setImmediate);
@@ -214,12 +214,12 @@ test("unmounting the global provider dismisses its popup and removes the registe
     });
 });
 
-test("the preview provider waits for its shared stylesheet before publishing controls", async (t) => {
+test("the preview provider waits for its shared stylesheet before publishing controls", async (testContext) => {
     let finishStylesheet;
     const stylesheet = new Promise((resolve) => {
         finishStylesheet = resolve;
     });
-    const context = vm.createContext({
+    const context = virtualMachine.createContext({
         uiCtx,
         registerScopedUiActions,
         ensurePageStylesheet: (url) => {
@@ -247,7 +247,7 @@ test("the preview provider waits for its shared stylesheet before publishing con
         uiCtx,
         importProvider: async () => ({ mountProvider: context.mountProvider }),
     });
-    t.after(() => lifecycle.reconcile([]));
+    testContext.after(() => lifecycle.reconcile([]));
     const mounting = lifecycle.reconcile([{ scriptUrl: "/image-preview.js" }]);
     await new Promise(setImmediate);
     assert.equal(uiCtx.capabilities.get("ui:imagePreview"), undefined);
@@ -260,8 +260,8 @@ test("the preview provider waits for its shared stylesheet before publishing con
     assert.equal(uiCtx.flowExists("ui:imagePreview:open"), true);
 });
 
-test("a failed preview action reports a localized error toast and permits another attempt", async (t) => {
-    const state = await fixture(t);
+test("a failed preview action reports a localized error toast and permits another attempt", async (testContext) => {
+    const state = await fixture(testContext);
     uiCtx.extendFlow(
         "ui:imagePreview:open",
         "execute",

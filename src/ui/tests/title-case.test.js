@@ -7,10 +7,10 @@ const EN_STRINGS_PATH = join(process.cwd(), "src/ui/languages/en/strings.xml");
 
 function parseStrings(xml) {
     const entries = new Map();
-    const re = /<string name="([^"]+)">([^<]*)<\/string>/g;
-    let m;
-    while ((m = re.exec(xml)) !== null) {
-        entries.set(m[1], m[2]);
+    const pattern = /<string name="([^"]+)">([^<]*)<\/string>/g;
+    let match;
+    while ((match = pattern.exec(xml)) !== null) {
+        entries.set(match[1], match[2]);
     }
     return entries;
 }
@@ -37,7 +37,7 @@ test("English headings and titles use Title Case", () => {
     const violations = [];
 
     for (const [key, value] of strings) {
-        const isTitle = TITLE_CASE_PATTERNS.some((fn) => fn(key));
+        const isTitle = TITLE_CASE_PATTERNS.some((pattern) => pattern(key));
         if (!isTitle) continue;
         if (!value.trim()) continue;
         if (!/[A-Za-z]/.test(value)) continue;

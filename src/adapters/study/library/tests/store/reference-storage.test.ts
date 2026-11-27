@@ -7,8 +7,8 @@ import {
 } from "../../store/reference-storage.js";
 
 test("existing flat primary keys preserve every repeated grouped placement through repartition and restart", async () => {
-    const { db, rows } = structuredStore();
-    await db.ensureTable({
+    const { db: database, rows } = structuredStore();
+    await database.ensureTable({
         name: "study_library_references",
         columns: [],
         primaryKey: [
@@ -26,24 +26,24 @@ test("existing flat primary keys preserve every repeated grouped placement throu
         position: 0,
         transformation_json: null,
     };
-    await db.executeCommand({
+    await database.executeCommand({
         option: "INSERT",
         table: "study_library_references",
         values: edge,
     });
-    await ensureReferenceStorage(db);
-    await executeReferences(db, {
+    await ensureReferenceStorage(database);
+    await executeReferences(database, {
         option: "INSERT",
         values: { ...edge, group_index: 1 },
         conflict: { action: "ignore" },
     });
-    await executeReferences(db, {
+    await executeReferences(database, {
         option: "INSERT",
         values: { ...edge, group_index: -1 },
         conflict: { action: "ignore" },
     });
-    await ensureReferenceStorage(db);
-    const result = await executeReferences(db, {
+    await ensureReferenceStorage(database);
+    const result = await executeReferences(database, {
         option: "SELECT",
         where: [{ column: "source_entry_id", value: "word" }],
     });
@@ -53,12 +53,12 @@ test("existing flat primary keys preserve every repeated grouped placement throu
     );
     assert.equal(rows("study_library_references").length, 1);
     assert.equal(rows("study_library_reference_groups").length, 2);
-    await executeReferences(db, {
+    await executeReferences(database, {
         option: "DELETE",
         where: [{ column: "target_entry_id", value: "kana" }],
     });
     assert.equal(
-        (await executeReferences(db, { option: "SELECT" })).rows!.length,
+        (await executeReferences(database, { option: "SELECT" })).rows!.length,
         0,
     );
 });

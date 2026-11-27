@@ -3,7 +3,7 @@ import * as entryGraph from "../../ui/reuse/entry-graph.js";
 import { loadTestModule } from "../../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 
 async function drawingAction(openDrawing, signal) {
     let action;

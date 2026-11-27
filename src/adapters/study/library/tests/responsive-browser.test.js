@@ -42,11 +42,12 @@ test(
                     JSON.stringify(
                         browser.events
                             .filter(
-                                (e) => e.method === "Runtime.exceptionThrown",
+                                (event) =>
+                                    event.method === "Runtime.exceptionThrown",
                             )
                             .map(
-                                (e) =>
-                                    e.params.exceptionDetails.exception
+                                (event) =>
+                                    event.params.exceptionDetails.exception
                                         ?.description,
                             ),
                     ),

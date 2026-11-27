@@ -1,6 +1,6 @@
 import { loadLibraryUiModule } from "./reuse/ui-module.ts";
 import assert from "node:assert/strict";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 import test from "node:test";
 
 test("uploaded and recorded drafts replace saved playback, survive late reads and release preview URLs", async () => {
@@ -48,7 +48,7 @@ test("uploaded and recorded drafts replace saved playback, survive late reads an
             return [];
         },
     });
-    const context = vm.createContext({
+    const context = virtualMachine.createContext({
         URL: {
             createObjectURL: (file) => `blob:${file.name}`,
             revokeObjectURL: (url) => revoked.push(url),
@@ -88,7 +88,7 @@ test("uploaded and recorded drafts replace saved playback, survive late reads an
 });
 
 test("new cards without saved audio have a disabled speaker ready for staged playback", () => {
-    const context = vm.createContext({
+    const context = virtualMachine.createContext({
         escapeHtml: String,
         document: { documentElement: { lang: "en" } },
         parseLanguageCode: String,
@@ -133,7 +133,7 @@ test("a regeneration started before a newer upload cannot replace that draft", a
         querySelectorAll: (selector) =>
             selector === "[data-library-refresh-audio]" ? [button] : [],
     });
-    const context = vm.createContext({
+    const context = virtualMachine.createContext({
         URL: { revokeObjectURL: (url) => revoked.push(url) },
         loadLibraryAudio() {},
         fetchLibraryAudioUrl: () =>

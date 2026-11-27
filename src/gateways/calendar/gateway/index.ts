@@ -594,7 +594,7 @@ export class CoreCalendarGateway {
                 ),
             moveEventRecord: (previousCalendarId, event) =>
                 this.moveEventRecord(previousCalendarId, event),
-            scheduleStoreWrite: (cb) => this.scheduleStoreWrite(cb),
+            scheduleStoreWrite: (callback) => this.scheduleStoreWrite(callback),
             saveEvent: (event) => this.store?.saveEvent(event),
         });
     }

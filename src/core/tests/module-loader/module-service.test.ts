@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { mkdtemp, mkdir, writeFile } from "node:fs/promises";
-import os from "node:os";
+import operatingSystem from "node:os";
 import path from "node:path";
 import { ModuleService, type ModuleRuntimeGateway } from "../../index.js";
 
@@ -123,7 +123,9 @@ test("module service blocks toggling core modules", async () => {
 });
 
 test("external modules require disclaimer acknowledgement", async () => {
-    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-modules-"));
+    const root = await mkdtemp(
+        path.join(operatingSystem.tmpdir(), "cognis-modules-"),
+    );
     const externalModulesPath = path.join(root, "external");
     const enabledPointersPath = path.join(root, "enabled.d");
     await mkdir(externalModulesPath, { recursive: true });

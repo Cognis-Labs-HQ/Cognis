@@ -7,7 +7,7 @@ import {
 import { replaceMountScope } from "../../../../../ui/reuse/mount-scope.js";
 import assert from "node:assert/strict";
 import test from "node:test";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 
 const schema = {
     id: "test",
@@ -34,7 +34,7 @@ async function searchPage(lookup, selectedIndex) {
             if (type === "click") click = handler;
         },
     };
-    const context = vm.createContext({
+    const context = virtualMachine.createContext({
         URLSearchParams,
         parseLanguageCode: (value) => value,
         replaceMountScope,
@@ -195,7 +195,7 @@ test("failed searches render a retryable error state rather than successful resu
 });
 
 test("My Requests shows every submitted status read-only while Pending exposes authorized actions", () => {
-    const context = vm.createContext({
+    const context = virtualMachine.createContext({
         localStorage: { getItem: () => "me" },
         uiCtx: { capabilities: { get: () => null } },
         escapeHtml: String,
@@ -232,7 +232,7 @@ test("My Requests shows every submitted status read-only while Pending exposes a
 });
 
 test("relocation directions disable conflicts and resume when a conflicting card is deselected", () => {
-    const context = vm.createContext({});
+    const context = virtualMachine.createContext({});
     Object.assign(context, loadLibraryUiModule("app/selection.js", context));
     const personal = { id: "personal", scope: "user", canDelete: true };
     const shared = { id: "shared", scope: "global", canDelete: true };
@@ -258,7 +258,7 @@ test("relocation directions disable conflicts and resume when a conflicting card
 });
 
 test("request headers show linked identities and decision time on the status pill", () => {
-    const context = vm.createContext({
+    const context = virtualMachine.createContext({
         localStorage: { getItem: () => "me" },
         uiCtx: {
             capabilities: {

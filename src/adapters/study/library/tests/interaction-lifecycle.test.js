@@ -1,7 +1,7 @@
 import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 import { mergeEntryCollectionUpdate } from "../ui/app/entry-collection.js";
 import { replaceMountScope } from "../../../../ui/reuse/mount-scope.js";
 
@@ -15,7 +15,7 @@ function fixture({
     const toasts = [];
     const details = [];
     const page = new AbortController();
-    const context = vm.createContext({
+    const context = virtualMachine.createContext({
         replaceMountScope,
         mergeEntryCollectionUpdate,
         window: new EventTarget(),

@@ -1,11 +1,11 @@
 {
     "name": "@cognis/adapter-auth-oidc",
-    "version": "0.1.24",
+    "version": "0.1.25",
     "private": true,
     "type": "module",
     "main": "index.ts",
     "dependencies": {
-        "@cognis/core": "<=0.6.2",
-        "@cognis/gateways": "<=0.4.3"
+        "@cognis/core": "<=0.6.3",
+        "@cognis/gateways": "<=0.4.4"
     }
 }

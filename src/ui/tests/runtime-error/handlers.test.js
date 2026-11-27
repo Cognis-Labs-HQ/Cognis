@@ -5,7 +5,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
 
 test("runtime error handlers ignore benign ResizeObserver loop errors", async () => {

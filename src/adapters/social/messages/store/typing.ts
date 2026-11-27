@@ -3,14 +3,14 @@ import { rowToTyping } from "./row-mappers.js";
 import type { TypingRow } from "./types.js";
 
 export async function setTyping(
-    db: DbExecutor,
+    database: DbExecutor,
     roomId: string,
     accountId: string,
     typing: boolean,
     ttlSeconds = 8,
 ): Promise<void> {
     if (!typing) {
-        await db.executeCommand({
+        await database.executeCommand({
             option: "DELETE",
             table: "chatroom_typing",
             where: [
@@ -22,7 +22,7 @@ export async function setTyping(
     }
 
     const untilIso = new Date(Date.now() + ttlSeconds * 1000).toISOString();
-    await db.executeCommand({
+    await database.executeCommand({
         option: "INSERT",
         table: "chatroom_typing",
         values: {
@@ -38,11 +38,11 @@ export async function setTyping(
 }
 
 export async function listActiveTypers(
-    db: DbExecutor,
+    database: DbExecutor,
     roomId: string,
 ): Promise<TypingRow[]> {
     const nowIso = new Date().toISOString();
-    const result = await db.executeCommand({
+    const result = await database.executeCommand({
         option: "SELECT",
         table: "chatroom_typing",
         where: [

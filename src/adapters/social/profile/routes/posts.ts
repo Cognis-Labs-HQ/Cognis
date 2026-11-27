@@ -325,12 +325,12 @@ export function createPostRoutes(
     };
 }
 
-function postVisibilityRank(v: PostVisibility): number {
+function postVisibilityRank(visibility: PostVisibility): number {
     const ranks: Record<PostVisibility, number> = {
         only_me: 0,
         private: 1,
         friends: 2,
         community: 3,
     };
-    return ranks[v] ?? 0;
+    return ranks[visibility] ?? 0;
 }

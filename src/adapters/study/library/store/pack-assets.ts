@@ -9,8 +9,8 @@ function identity(...parts: string[]): string {
     return createHash("sha256").update(JSON.stringify(parts)).digest("hex");
 }
 
-export async function ensurePackAssets(db: DbExecutor): Promise<void> {
-    await db.ensureTable({
+export async function ensurePackAssets(database: DbExecutor): Promise<void> {
+    await database.ensureTable({
         name: TABLE,
         columns: [
             { name: "asset_id", type: "text", notNull: true },
@@ -26,7 +26,7 @@ export async function ensurePackAssets(db: DbExecutor): Promise<void> {
 
 /** The caller's pack-ingestion transaction owns replacement of metadata and bytes. */
 export async function replacePackAssets(
-    db: DbExecutor,
+    database: DbExecutor,
     { manifest, assets }: Pick<LibraryContentPackPlan, "manifest" | "assets">,
 ): Promise<void> {
     for (const asset of assets) {
@@ -36,14 +36,14 @@ export async function replacePackAssets(
             manifest.version,
             asset.path,
         );
-        await db.executeCommand({
+        await database.executeCommand({
             option: "DELETE",
             table: TABLE,
             where: [{ column: "asset_id", value: assetId }],
         });
         let position = 0;
         for (const chunk of textChunks(asset.data, 60_000)) {
-            await db.executeCommand({
+            await database.executeCommand({
                 option: "INSERT",
                 table: TABLE,
                 values: {
@@ -60,13 +60,13 @@ export async function replacePackAssets(
 }
 
 export async function readPackAsset(
-    db: DbExecutor,
+    database: DbExecutor,
     publisher: string,
     packId: string,
     version: string,
     assetPath: string,
 ): Promise<LibraryAsset | null> {
-    const result = await db.executeCommand({
+    const result = await database.executeCommand({
         option: "SELECT",
         table: TABLE,
         where: [
@@ -90,11 +90,11 @@ export async function readPackAsset(
 }
 
 export async function forgetPackAssets(
-    db: DbExecutor,
+    database: DbExecutor,
     publisher: string,
     packId: string,
 ): Promise<void> {
-    await db.executeCommand({
+    await database.executeCommand({
         option: "DELETE",
         table: TABLE,
         where: [{ column: "pack_key", value: identity(publisher, packId) }],

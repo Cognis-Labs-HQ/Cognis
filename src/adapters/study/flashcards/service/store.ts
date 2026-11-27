@@ -19,11 +19,11 @@ const DECK_COLUMNS = [
 ];
 
 export class DeckStore {
-    constructor(private readonly db: DbExecutor) {}
+    constructor(private readonly database: DbExecutor) {}
 
     async initialize(): Promise<void> {
-        await ensureDeckDocuments(this.db);
-        await this.db.ensureTable({
+        await ensureDeckDocuments(this.database);
+        await this.database.ensureTable({
             name: "study_decks",
             columns: [
                 { name: "id", type: "text", primaryKey: true },
@@ -39,7 +39,7 @@ export class DeckStore {
             ],
             indexes: [{ columns: ["account_id"] }],
         });
-        await this.db.ensureTable({
+        await this.database.ensureTable({
             name: "study_deck_reviews",
             columns: [
                 { name: "deck_id", type: "text", notNull: true },
@@ -50,7 +50,7 @@ export class DeckStore {
             ],
             primaryKey: ["deck_id", "account_id", "review_id"],
         });
-        await this.db.ensureTable({
+        await this.database.ensureTable({
             name: "study_deck_progress",
             columns: [
                 { name: "deck_id", type: "text", notNull: true },
@@ -64,7 +64,7 @@ export class DeckStore {
 
     async list(accountId: string): Promise<StudyDeck[]> {
         const rows = await readDeckDocuments(
-            this.db,
+            this.database,
             "study_decks",
             DECK_COLUMNS,
             ["id"],
@@ -95,7 +95,7 @@ export class DeckStore {
 
     async find(id: string): Promise<StudyDeck | undefined> {
         const rows = await readDeckDocuments(
-            this.db,
+            this.database,
             "study_decks",
             DECK_COLUMNS,
             ["id"],
@@ -109,7 +109,7 @@ export class DeckStore {
         id: string,
     ): Promise<Record<string, DeckProgress>> {
         const rows = await readDeckDocuments(
-            this.db,
+            this.database,
             "study_deck_progress",
             ["deck_id", "account_id", "progress_json"],
             ["deck_id", "account_id"],
@@ -123,7 +123,7 @@ export class DeckStore {
 
     /** Lock before any snapshot reads so concurrent schedules serialize under repeatable read too. */
     async lockProgress(accountId: string, id: string): Promise<void> {
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "INSERT",
             table: "study_deck_progress",
             values: { deck_id: id, account_id: accountId, progress_json: "{}" },
@@ -142,7 +142,7 @@ export class DeckStore {
         cardId: string,
         grade: string,
     ): Promise<boolean> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "INSERT",
             table: "study_deck_reviews",
             values: {
@@ -158,7 +158,7 @@ export class DeckStore {
             },
         });
         if (result.rowCount === 1) return true;
-        const existing = await this.db.executeCommand({
+        const existing = await this.database.executeCommand({
             option: "SELECT",
             table: "study_deck_reviews",
             where: [
@@ -181,12 +181,12 @@ export class DeckStore {
         progress: Record<string, DeckProgress>,
     ): Promise<void> {
         await writeDeckDocument(
-            this.db,
+            this.database,
             id,
             ["progress", id, accountId],
             { progress_json: progress },
             async (values) =>
-                this.db.executeCommand({
+                this.database.executeCommand({
                     option: "INSERT",
                     table: "study_deck_progress",
                     values: { deck_id: id, account_id: accountId, ...values },
@@ -224,12 +224,12 @@ export class DeckStore {
             schemas_json: "[]",
         };
         await writeDeckDocument(
-            this.db,
+            this.database,
             deck.id,
             ["deck", deck.id],
             { entries_json: deck.entryIds, notes_json: deck.notes },
             async (parts) =>
-                this.db.executeCommand(
+                this.database.executeCommand(
                     id
                         ? {
                               option: "UPDATE",
@@ -259,18 +259,18 @@ export class DeckStore {
     async delete(accountId: string, id: string): Promise<void> {
         if (!(await this.read(accountId, id)))
             throw new Error("deck_not_found");
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "DELETE",
             table: "study_deck_progress",
             where: [{ column: "deck_id", value: id }],
         });
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "DELETE",
             table: "study_deck_reviews",
             where: [{ column: "deck_id", value: id }],
         });
-        await deleteDeckDocuments(this.db, id);
-        await this.db.executeCommand({
+        await deleteDeckDocuments(this.database, id);
+        await this.database.executeCommand({
             option: "DELETE",
             table: "study_decks",
             where: [
@@ -281,6 +281,8 @@ export class DeckStore {
     }
 
     async transact<T>(operation: (store: DeckStore) => Promise<T>): Promise<T> {
-        return this.db.transaction((db) => operation(new DeckStore(db)));
+        return this.database.transaction((database) =>
+            operation(new DeckStore(database)),
+        );
     }
 }

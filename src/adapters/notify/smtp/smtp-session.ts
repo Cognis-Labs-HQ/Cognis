@@ -24,8 +24,8 @@ export class SmtpSession {
     private readonly listener: (d: string) => void;
 
     constructor(private readonly sock: net.Socket | tls.TLSSocket) {
-        this.listener = (d: string) => {
-            this.buf += d;
+        this.listener = (data: string) => {
+            this.buf += data;
             this.processBuffer();
         };
         sock.setEncoding("utf8");

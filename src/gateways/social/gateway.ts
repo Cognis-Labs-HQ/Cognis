@@ -341,8 +341,11 @@ export class CoreSocialGateway {
     }
 }
 
-function sortSocialAdapterEntries(a: string, b: string): number {
-    if (a === "profile") return -1;
-    if (b === "profile") return 1;
-    return a.localeCompare(b);
+function sortSocialAdapterEntries(
+    leftEntry: string,
+    rightEntry: string,
+): number {
+    if (leftEntry === "profile") return -1;
+    if (rightEntry === "profile") return 1;
+    return leftEntry.localeCompare(rightEntry);
 }

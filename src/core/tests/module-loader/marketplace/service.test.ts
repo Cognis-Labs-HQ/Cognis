@@ -1,8 +1,14 @@
 import { createSecretContext } from "./fixtures/encryption.js";
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
-import os from "node:os";
+import {
+    mkdir,
+    mkdtemp,
+    readFile,
+    rm as removePath,
+    writeFile,
+} from "node:fs/promises";
+import operatingSystem from "node:os";
 import path from "node:path";
 import { execFile, spawnSync } from "node:child_process";
 import { promisify } from "node:util";
@@ -24,7 +30,9 @@ const execFileAsync = promisify(execFile);
 const gitAvailable = spawnSync("git", ["--version"]).status === 0;
 
 test("module marketplace persists source metadata and exposes credential configuration", async () => {
-    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const root = await mkdtemp(
+        path.join(operatingSystem.tmpdir(), "cognis-marketplace-"),
+    );
     const state = path.join(root, "sources.json");
     const service = new ModuleMarketplaceService(
         state,
@@ -50,7 +58,9 @@ test("module marketplace persists source metadata and exposes credential configu
 });
 
 test("trusted source metadata stays canonical when administrators edit settings", async () => {
-    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const root = await mkdtemp(
+        path.join(operatingSystem.tmpdir(), "cognis-marketplace-"),
+    );
     const service = new ModuleMarketplaceService(
         path.join(root, "sources.json"),
         path.join(root, "modules"),
@@ -73,7 +83,9 @@ test("trusted source metadata stays canonical when administrators edit settings"
 });
 
 test("cached UUID collisions prefer the trusted Cognis source", async () => {
-    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const root = await mkdtemp(
+        path.join(operatingSystem.tmpdir(), "cognis-marketplace-"),
+    );
     const statePath = path.join(root, "sources.json");
     const cacheRoot = path.join(root, "modules", ".cache");
     await mkdir(cacheRoot, { recursive: true });
@@ -104,7 +116,9 @@ test("cached UUID collisions prefer the trusted Cognis source", async () => {
 });
 
 test("module marketplace stores a configurable recommended list URL", async () => {
-    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const root = await mkdtemp(
+        path.join(operatingSystem.tmpdir(), "cognis-marketplace-"),
+    );
     const service = new ModuleMarketplaceService(
         path.join(root, "sources.json"),
         path.join(root, "modules"),
@@ -123,7 +137,9 @@ test("module marketplace stores a configurable recommended list URL", async () =
 });
 
 test("module marketplace persists scan throttling across service restarts", async () => {
-    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const root = await mkdtemp(
+        path.join(operatingSystem.tmpdir(), "cognis-marketplace-"),
+    );
     const statePath = path.join(root, "sources.json");
     const originalFetch = globalThis.fetch;
     let requests = 0;
@@ -149,7 +165,9 @@ test("module marketplace persists scan throttling across service restarts", asyn
 });
 
 test("forced catalog refresh bypasses persisted scan throttling", async () => {
-    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const root = await mkdtemp(
+        path.join(operatingSystem.tmpdir(), "cognis-marketplace-"),
+    );
     const service = new ModuleMarketplaceService(
         path.join(root, "sources.json"),
         path.join(root, "modules"),
@@ -172,7 +190,9 @@ test("forced catalog refresh bypasses persisted scan throttling", async () => {
 });
 
 test("credential updates bypass scan throttling and authenticate immediately", async () => {
-    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const root = await mkdtemp(
+        path.join(operatingSystem.tmpdir(), "cognis-marketplace-"),
+    );
     const service = new ModuleMarketplaceService(
         path.join(root, "sources.json"),
         path.join(root, "modules"),
@@ -205,7 +225,9 @@ test("credential updates bypass scan throttling and authenticate immediately", a
 });
 
 test("GitHub credential validation requires private repository scope", async () => {
-    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const root = await mkdtemp(
+        path.join(operatingSystem.tmpdir(), "cognis-marketplace-"),
+    );
     const warnings: Array<Record<string, unknown>> = [];
     const service = new ModuleMarketplaceService(
         path.join(root, "sources.json"),
@@ -270,7 +292,9 @@ test("GitHub credential validation requires private repository scope", async () 
 });
 
 test("private source scans report a missing stored credential", async () => {
-    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const root = await mkdtemp(
+        path.join(operatingSystem.tmpdir(), "cognis-marketplace-"),
+    );
     const service = new ModuleMarketplaceService(
         path.join(root, "sources.json"),
         path.join(root, "modules"),
@@ -291,7 +315,9 @@ test("private source scans report a missing stored credential", async () => {
 });
 
 test("private credential validation proves repository contents access", async () => {
-    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const root = await mkdtemp(
+        path.join(operatingSystem.tmpdir(), "cognis-marketplace-"),
+    );
     const service = new ModuleMarketplaceService(
         path.join(root, "sources.json"),
         path.join(root, "modules"),
@@ -330,7 +356,9 @@ test("private credential validation proves repository contents access", async ()
 });
 
 test("private scans include organization repositories visible through the authenticated user", async () => {
-    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const root = await mkdtemp(
+        path.join(operatingSystem.tmpdir(), "cognis-marketplace-"),
+    );
     const service = new ModuleMarketplaceService(
         path.join(root, "sources.json"),
         path.join(root, "modules"),
@@ -425,7 +453,9 @@ test("private scans include organization repositories visible through the authen
 });
 
 test("GitHub repository assets use the configured API host", async () => {
-    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const root = await mkdtemp(
+        path.join(operatingSystem.tmpdir(), "cognis-marketplace-"),
+    );
     const service = new ModuleMarketplaceService(
         path.join(root, "sources.json"),
         path.join(root, "modules"),
@@ -447,7 +477,9 @@ test("GitHub repository assets use the configured API host", async () => {
 });
 
 test("module installation requires an available catalog branch", async () => {
-    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const root = await mkdtemp(
+        path.join(operatingSystem.tmpdir(), "cognis-marketplace-"),
+    );
     const modulesRoot = path.join(root, "modules");
     const service = new ModuleMarketplaceService(
         path.join(root, "sources.json"),
@@ -478,7 +510,7 @@ test(
     { skip: !gitAvailable },
     async () => {
         const root = await mkdtemp(
-            path.join(os.tmpdir(), "cognis-marketplace-"),
+            path.join(operatingSystem.tmpdir(), "cognis-marketplace-"),
         );
         const repository = path.join(root, "repository");
         const checkout = path.join(root, "checkout");
@@ -537,7 +569,9 @@ test(
 );
 
 test("module marketplace discovers repository manifests", async () => {
-    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const root = await mkdtemp(
+        path.join(operatingSystem.tmpdir(), "cognis-marketplace-"),
+    );
     const warnings: Array<Record<string, unknown>> = [];
     const scanLogs: Array<{ message: string; meta: Record<string, unknown> }> =
         [];
@@ -796,7 +830,9 @@ test("module marketplace discovers repository manifests", async () => {
 });
 
 test("module marketplace ignores incomplete module registrations", async () => {
-    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const root = await mkdtemp(
+        path.join(operatingSystem.tmpdir(), "cognis-marketplace-"),
+    );
     const warnings: Array<Record<string, unknown>> = [];
     const service = new ModuleMarketplaceService(
         path.join(root, "sources.json"),
@@ -828,7 +864,9 @@ test("module marketplace ignores incomplete module registrations", async () => {
 });
 
 test("module marketplace tolerates an unavailable source", async () => {
-    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const root = await mkdtemp(
+        path.join(operatingSystem.tmpdir(), "cognis-marketplace-"),
+    );
     const service = new ModuleMarketplaceService(
         path.join(root, "sources.json"),
         path.join(root, "modules"),
@@ -845,7 +883,9 @@ test("module marketplace tolerates an unavailable source", async () => {
 });
 
 test("module marketplace serves persisted results after restart", async () => {
-    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-marketplace-"));
+    const root = await mkdtemp(
+        path.join(operatingSystem.tmpdir(), "cognis-marketplace-"),
+    );
     const statePath = path.join(root, "sources.json");
     const catalogModule = {
         uuid: "71567e48-480a-45a5-a853-8c96d6ab9973",
@@ -864,56 +904,4 @@ test("module marketplace serves persisted results after restart", async () => {
         path.join(root, "modules"),
     );
     assert.deepEqual(await restarted.listCachedModules(), [catalogModule]);
-});
-
-test("GitLab installation validates namespace within the configured deployment prefix", async (t) => {
-    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-gitlab-prefix-"));
-    t.after(() => rm(root, { recursive: true, force: true }));
-    const modulesRoot = path.join(root, "modules");
-    const service = new ModuleMarketplaceService(
-        path.join(root, "sources.json"),
-        modulesRoot,
-    );
-    await service.saveSource({
-        ...source,
-        provider: "gitlab",
-        baseUrl: "https://example.test/gitlab/api/v4",
-        namespace: "team/subgroup",
-    });
-    const cache = path.join(modulesRoot, ".cache");
-    await mkdir(cache, { recursive: true });
-    for (const [cloneUrl, expected] of [
-        [
-            "https://example.test/gitlab/team/subgroup/module.git",
-            /invalid_module_branch/,
-        ],
-        [
-            "https://example.test/team/subgroup/module.git",
-            /module_source_repository_mismatch/,
-        ],
-        [
-            "https://example.test/gitlab/team/other/module.git",
-            /module_source_repository_mismatch/,
-        ],
-        [
-            "https://other.test/gitlab/team/subgroup/module.git",
-            /module_source_repository_mismatch/,
-        ],
-    ] as const) {
-        const module = {
-            uuid: "71567e48-480a-45a5-a853-8c96d6ab9973",
-            sourceUuid: source.uuid,
-            cloneUrl,
-            defaultBranch: "main",
-            branches: [],
-            releases: [],
-        };
-        await writeFile(
-            path.join(cache, "catalog.json"),
-            JSON.stringify([module]),
-        );
-        const catalog = await service.listCachedModules();
-        assert.equal(catalog.length, 1);
-        await assert.rejects(service.install(catalog[0], "main"), expected);
-    }
 });

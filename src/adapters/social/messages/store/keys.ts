@@ -8,7 +8,7 @@ import {
 } from "../../../../api/reuse/crypto.js";
 
 export async function storeWrappedRoomKey(
-    db: DbExecutor,
+    database: DbExecutor,
     roomId: string,
     plaintextKeyHex: string,
 ): Promise<void> {
@@ -17,24 +17,27 @@ export async function storeWrappedRoomKey(
         `social:messages:room:${roomId}`,
         secret,
     );
-    const { iv, ciphertext } = await encryptPayload(wrapper, plaintextKeyHex);
-    await db.executeCommand({
+    const { iv: initializationVector, ciphertext } = await encryptPayload(
+        wrapper,
+        plaintextKeyHex,
+    );
+    await database.executeCommand({
         option: "INSERT",
         table: "chatroom_keys",
         values: {
             chatroom_id: roomId,
             wrapped_key: ciphertext,
-            key_iv: iv,
+            key_iv: initializationVector,
         },
         conflict: { action: "update", target: ["chatroom_id"] },
     });
 }
 
 export async function getUnwrappedRoomKey(
-    db: DbExecutor,
+    database: DbExecutor,
     roomId: string,
 ): Promise<string | null> {
-    const result = await db.executeCommand({
+    const result = await database.executeCommand({
         option: "SELECT",
         table: "chatroom_keys",
         columns: ["wrapped_key", "key_iv"],
@@ -54,20 +57,20 @@ export async function getUnwrappedRoomKey(
 }
 
 export async function generateAndStoreRoomKey(
-    db: DbExecutor,
+    database: DbExecutor,
     roomId: string,
 ): Promise<string> {
     const plaintextHex = randomBytes(32).toString("hex");
-    await storeWrappedRoomKey(db, roomId, plaintextHex);
+    await storeWrappedRoomKey(database, roomId, plaintextHex);
     return plaintextHex;
 }
 
 export async function claimRoomKeyContribution(
-    db: DbExecutor,
+    database: DbExecutor,
     roomId: string,
     accountId: string,
 ): Promise<string | null> {
-    return db.transaction(async (executor) => {
+    return database.transaction(async (executor) => {
         const membership = await executor.executeCommand({
             option: "SELECT",
             table: "chatroom_members",
@@ -88,11 +91,11 @@ export async function claimRoomKeyContribution(
 }
 
 export async function acknowledgeRoomKeyContribution(
-    db: DbExecutor,
+    database: DbExecutor,
     roomId: string,
     accountId: string,
 ): Promise<void> {
-    await db.transaction(async (executor) => {
+    await database.transaction(async (executor) => {
         await executor.executeCommand({
             option: "UPDATE",
             table: "chatroom_members",

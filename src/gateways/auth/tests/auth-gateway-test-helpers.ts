@@ -35,8 +35,8 @@ export function makeInMemoryDb(): InMemoryDb {
         executeCommand: async () => ({ rows: [] }),
         ensureTable: async () => {},
         transaction: async <T>(
-            cb: (db: InMemoryDb) => Promise<T>,
-        ): Promise<T> => cb(makeInMemoryDb()),
+            callback: (db: InMemoryDb) => Promise<T>,
+        ): Promise<T> => callback(makeInMemoryDb()),
     };
 }
 

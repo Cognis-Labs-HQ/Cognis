@@ -1,7 +1,7 @@
 import { loadLibraryUiModule } from "../reuse/ui-module.ts";
 import { loadTestModule } from "../../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 import test from "node:test";
 
 const schema = {

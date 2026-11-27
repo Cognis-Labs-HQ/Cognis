@@ -5,7 +5,7 @@ import { captureAccountGuard } from "../../../reuse/offline-identity.js";
 import * as messageStyles from "../../../reuse/message-style-options.js";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 import { resolveSettingsSetupRedirect } from "../../../app/settings/setup-requirement.js";
 
 export async function loadSettingsMount({
@@ -25,7 +25,7 @@ export async function loadSettingsMount({
     const languageChanges = [];
     const renderBoundary = new Error("settings_render_boundary");
     let directMount;
-    const context = vm.createContext({
+    const context = virtualMachine.createContext({
         localStorage: { getItem: () => account() },
         window: {
             location: {
@@ -89,11 +89,11 @@ export async function loadSettingsMount({
             throw renderBoundary;
         },
     };
-    const module = new vm.SourceTextModule(source, { context });
+    const module = new virtualMachine.SourceTextModule(source, { context });
     await module.link((specifier) => {
         const names = contracts[specifier];
         assert.ok(names, `explicit public contract for ${specifier}`);
-        return new vm.SyntheticModule(
+        return new virtualMachine.SyntheticModule(
             names,
             function () {
                 for (const name of names)
@@ -123,9 +123,9 @@ export async function loadSettingsMount({
 export function deferred() {
     let resolve;
     let reject;
-    const promise = new Promise((yes, no) => {
+    const promise = new Promise((yes, reject2) => {
         resolve = yes;
-        reject = no;
+        reject = reject2;
     });
     return { promise, resolve, reject };
 }

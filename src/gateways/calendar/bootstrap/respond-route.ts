@@ -76,10 +76,12 @@ export async function handleCalendarResponseRoute(input: {
             : null;
     let invitedEvent = null;
     if (!ownedCalendar && !activeSharedCalendar) {
-        const ev = globallyResolvedEvents.find((candidate) =>
+        const entry = globallyResolvedEvents.find((candidate) =>
             candidate.attendees.includes(input.claims.sub),
         );
-        invitedEvent = ev?.attendees.includes(input.claims.sub) ? ev : null;
+        invitedEvent = entry?.attendees.includes(input.claims.sub)
+            ? entry
+            : null;
     }
     const effectiveEvent = event ?? invitedEvent;
     if (!effectiveEvent) {

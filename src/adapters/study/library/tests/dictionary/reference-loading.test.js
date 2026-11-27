@@ -2,11 +2,11 @@ import { loadLibraryUiModule } from "../reuse/ui-module.ts";
 import { loadTestModule } from "../../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 
 test("dictionary previews fetch selected references and pronunciation characters", async () => {
     const calls = [];
-    const context = vm.createContext({
+    const context = virtualMachine.createContext({
         fetchLibraryLocations: async () => ({
             readable: [{ scope: "global", scopeId: "global" }],
         }),
@@ -80,7 +80,7 @@ test("dictionary previews fetch selected references and pronunciation characters
 });
 
 test("visible detail fields honor hidden metadata and detail presentation", () => {
-    const context = vm.createContext({});
+    const context = virtualMachine.createContext({});
     Object.assign(context, loadLibraryUiModule("app/presentation.js", context));
     const fields = context.visibleDetailFields({
         fields: [

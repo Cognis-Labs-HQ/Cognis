@@ -5,7 +5,7 @@ import { uiCtx } from "../../../ui/reuse/ui-ctx.js";
 import { createProviderLifecycle } from "../../../ui/reuse/provider-lifecycle.js";
 import { registerScopedUiActions } from "../../../ui/reuse/scoped-actions.js";
 
-test("shared Calendar operations use cancellable owned flows and explicit guest authority", async (t) => {
+test("shared Calendar operations use cancellable owned flows and explicit guest authority", async (testContext) => {
     const requests = [];
     const clientModule = loadTestModule(
         new URL("../ui/shared-client.js", import.meta.url),
@@ -26,7 +26,7 @@ test("shared Calendar operations use cancellable owned flows and explicit guest 
             mountProvider: clientModule.registerSharedCalendarClient,
         }),
     });
-    t.after(() => lifecycle.reconcile([]));
+    testContext.after(() => lifecycle.reconcile([]));
     await lifecycle.reconcile([{ scriptUrl: "/calendar-shared-client.js" }]);
     const client = uiCtx.capabilities.get("calendar:sharedClient");
     const controller = new AbortController();

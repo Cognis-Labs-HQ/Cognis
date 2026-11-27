@@ -48,7 +48,9 @@ export async function loadFontsCatalog() {
         const family = face.family.replace(/^['"]|['"]$/g, "").trim();
         if (family) seen.add(family);
     });
-    return Array.from(seen).sort((a, b) => a.localeCompare(b));
+    return Array.from(seen).sort((leftEntry, rightEntry) =>
+        leftEntry.localeCompare(rightEntry),
+    );
 }
 
 export function buildFontSelect(container, fontList, initialValue, onChange) {
@@ -138,7 +140,7 @@ export function initFontPrefs(root, { existingPrefs, i18n, onDirtyChange }) {
         ]);
         const fonts = Array.from(
             new Set([...FALLBACK_FONTS, ...fontOptions]),
-        ).sort((a, b) => a.localeCompare(b));
+        ).sort((leftEntry, rightEntry) => leftEntry.localeCompare(rightEntry));
 
         if (!fonts.includes(savedFont)) fonts.unshift(savedFont);
 

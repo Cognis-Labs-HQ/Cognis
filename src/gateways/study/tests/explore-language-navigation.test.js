@@ -4,7 +4,7 @@ import { replaceMountScope } from "../../../ui/reuse/mount-scope.js";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 import { readFileSync } from "node:fs";
 import {
     exploreLayers,
@@ -51,7 +51,7 @@ const schemas = [
 ];
 
 test("English and Japanese resolve the same Explore roles through their provider slugs", () => {
-    for (const [from, to] of [
+    for (const [from, destinationLanguage] of [
         ["kana", "alphabet"],
         ["kanji", "letter-combinations"],
         ["vocabulary", "vocabulary"],
@@ -59,7 +59,7 @@ test("English and Japanese resolve the same Explore roles through their provider
     ]) {
         assert.equal(
             languageExploreUrl(schemas, "en", `/study/explore/ja/${from}`),
-            `/study/explore/en/${to}`,
+            `/study/explore/en/${destinationLanguage}`,
         );
     }
     assert.equal(exploreLayers(schemas, "en").length, 4);
@@ -76,7 +76,7 @@ function navigationContext({
     pending = [],
     admin = false,
 } = {}) {
-    const context = vm.createContext({
+    const context = virtualMachine.createContext({
         languageExploreUrl,
         languageFlashcardsUrl,
         replaceMountScope,

@@ -21,14 +21,14 @@ export function createEditorPanelHandlers({
     function bindPanelDrag(panel) {
         const handle = panel.querySelector("#composer-panel-drag-handle");
         if (!handle) return;
-        handle.addEventListener("pointerdown", (e) => {
-            if (e.button !== 0) return;
-            if (e.target.closest("button")) return;
-            e.preventDefault();
-            handle.setPointerCapture(e.pointerId);
-            const startX = e.clientX - panel.offsetLeft;
-            const startY = e.clientY - panel.offsetTop;
-            function onMove(e) {
+        handle.addEventListener("pointerdown", (event) => {
+            if (event.button !== 0) return;
+            if (event.target.closest("button")) return;
+            event.preventDefault();
+            handle.setPointerCapture(event.pointerId);
+            const startX = event.clientX - panel.offsetLeft;
+            const startY = event.clientY - panel.offsetTop;
+            function onMove(event2) {
                 const bounds = getComposerPanelHorizontalBounds(
                     panel.offsetWidth,
                 );
@@ -41,11 +41,11 @@ export function createEditorPanelHandlers({
                 );
                 const newLeft = Math.max(
                     minLeft,
-                    Math.min(maxLeft, e.clientX - startX),
+                    Math.min(maxLeft, event2.clientX - startX),
                 );
                 const newTop = Math.max(
                     minTop,
-                    Math.min(maxTop, e.clientY - startY),
+                    Math.min(maxTop, event2.clientY - startY),
                 );
                 panel.style.left = `${newLeft}px`;
                 panel.style.top = `${newTop}px`;
@@ -107,8 +107,8 @@ export function createEditorPanelHandlers({
     }
 
     function createElementsPanel() {
-        const hiddenElements = state.elements.filter((e) =>
-            state.layout.hidden.includes(e.id),
+        const hiddenElements = state.elements.filter((candidateElement) =>
+            state.layout.hidden.includes(candidateElement.id),
         );
 
         const panel = document.createElement("div");
@@ -122,8 +122,8 @@ export function createEditorPanelHandlers({
         } else {
             listHtml = hiddenElements
                 .map(
-                    (el) =>
-                        `<li class="composer-library-item" data-composer-panel-item="${el.id}"><span>${el.label}</span><button type="button" class="composer-add-btn btn-confirm">${i18n.t("ui.reuse.add")}</button></li>`,
+                    (elementDefinition) =>
+                        `<li class="composer-library-item" data-composer-panel-item="${elementDefinition.id}"><span>${elementDefinition.label}</span><button type="button" class="composer-add-btn btn-confirm">${i18n.t("ui.reuse.add")}</button></li>`,
                 )
                 .join("");
         }
@@ -222,7 +222,9 @@ export function createEditorPanelHandlers({
 
         panel.querySelectorAll("[data-composer-panel-item]").forEach((item) => {
             const elId = item.dataset.composerPanelItem;
-            const element = state.elements.find((e) => e.id === elId);
+            const element = state.elements.find(
+                (candidateElement) => candidateElement.id === elId,
+            );
             if (element) bindPanelItemDrag(item, element);
             item.querySelector(".composer-add-btn")?.addEventListener(
                 "click",

@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { navigateToDocument } from "../../page-entry.js";
 
-function environment(t, { allowed = true, reject = false } = {}) {
+function environment(testContext, { allowed = true, reject = false } = {}) {
     const assigned = [];
     const events = [];
     const previous = globalThis.window;
@@ -19,22 +19,22 @@ function environment(t, { allowed = true, reject = false } = {}) {
             return allowed;
         },
     };
-    t.after(() => {
+    testContext.after(() => {
         globalThis.window = previous;
     });
     return { assigned, events };
 }
 
 for (const path of ["/", "/register", "/login?reason=sso_failed"]) {
-    test(`standalone page loads server document ${path}`, (t) => {
-        const { assigned } = environment(t);
+    test(`standalone page loads server document ${path}`, (testContext) => {
+        const { assigned } = environment(testContext);
         assert.equal(navigateToDocument(path), true);
         assert.deepEqual(assigned, [`https://cognis.test${path}`]);
     });
 }
 
-test("document navigation rejects malformed, external, executable and credential URLs", (t) => {
-    const { assigned, events } = environment(t);
+test("document navigation rejects malformed, external, executable and credential URLs", (testContext) => {
+    const { assigned, events } = environment(testContext);
     for (const path of [
         "https://[invalid",
         "https://cognis.test:invalid/",
@@ -51,8 +51,8 @@ test("document navigation rejects malformed, external, executable and credential
     assert.deepEqual(events, []);
 });
 
-test("document guard can decline and resume without changing SPA state", (t) => {
-    const { assigned, events } = environment(t, { allowed: false });
+test("document guard can decline and resume without changing SPA state", (testContext) => {
+    const { assigned, events } = environment(testContext, { allowed: false });
     assert.equal(navigateToDocument("/register"), false);
     assert.deepEqual(assigned, []);
     assert.equal(events[0].type, "cognis:route-before-navigate");
@@ -61,8 +61,8 @@ test("document guard can decline and resume without changing SPA state", (t) => 
     assert.deepEqual(assigned, ["https://cognis.test/register"]);
 });
 
-test("cancelled document transitions cannot start or resume", (t) => {
-    const { assigned, events } = environment(t, { allowed: false });
+test("cancelled document transitions cannot start or resume", (testContext) => {
+    const { assigned, events } = environment(testContext, { allowed: false });
     const controller = new AbortController();
     assert.equal(
         navigateToDocument("/register", { signal: controller.signal }),
@@ -74,7 +74,7 @@ test("cancelled document transitions cannot start or resume", (t) => {
     assert.deepEqual(assigned, []);
 });
 
-test("document assignment rejection reaches the callback recovery boundary", (t) => {
-    environment(t, { reject: true });
+test("document assignment rejection reaches the callback recovery boundary", (testContext) => {
+    environment(testContext, { reject: true });
     assert.throws(() => navigateToDocument("/login"), /navigation rejected/);
 });

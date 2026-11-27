@@ -2,7 +2,7 @@ import { guides } from "../ui/app/guides.js";
 import { importTestModule } from "../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 
 test("a directly opened Explore card path opens the requested preview without history state", async () => {
     const schema = { id: "ja", language: "ja" };
@@ -15,7 +15,7 @@ test("a directly opened Explore card path opens the requested preview without hi
         render: () => "Study navigation",
     };
     const navigationModels = [];
-    const context = vm.createContext({
+    const context = virtualMachine.createContext({
         window: {
             location: {
                 pathname: "/study/explore/ja/vocabulary/requested-card",

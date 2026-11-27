@@ -48,7 +48,7 @@ test("non-vocabulary cards never inherit a navigation-source definition", () => 
 
 test("compound reading links follow canonical character groups after unlinked and duplicate readings", async () => {
     const { readFileSync } = await import("node:fs");
-    const { default: vm } = await import("node:vm");
+    const { default: virtualMachine } = await import("node:vm");
     const links = await import("../ui/app/composition-links.js");
     const context = {
         ...links,

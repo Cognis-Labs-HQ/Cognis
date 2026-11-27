@@ -51,12 +51,16 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "notify:emailAvailable",
     );
     const sendInviteEmail = invitePurpose
-        ? async (to: string, inviterDisplayName: string, inviteUrl: string) => {
+        ? async (
+              recipient: string,
+              inviterDisplayName: string,
+              inviteUrl: string,
+          ) => {
               await ctx.capabilities.require<SendEmailAction>(
                   "notify:sendEmail",
               )({
                   purpose: invitePurpose,
-                  recipientEmail: to,
+                  recipientEmail: recipient,
                   variables: { inviterDisplayName, inviteUrl },
               });
           }

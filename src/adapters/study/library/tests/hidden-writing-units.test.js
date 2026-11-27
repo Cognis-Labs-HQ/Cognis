@@ -3,10 +3,10 @@ import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
 import { escapeHtml } from "../../../../ui/reuse/escape-html.js";
 import assert from "node:assert/strict";
 import test from "node:test";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 
 function context(extra = {}) {
-    const environment = vm.createContext(extra);
+    const environment = virtualMachine.createContext(extra);
     Object.assign(
         environment,
         loadLibraryUiModule("app/presentation.js", environment),

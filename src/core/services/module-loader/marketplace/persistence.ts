@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { mkdir, rename, rm, writeFile } from "node:fs/promises";
+import { mkdir, rename, rm as removePath, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 /** Publish a complete JSON snapshot without exposing partial writes to concurrent readers. */
@@ -16,6 +16,6 @@ export async function writeMarketplaceSnapshot(
         });
         await rename(temporary, file);
     } finally {
-        await rm(temporary, { force: true });
+        await removePath(temporary, { force: true });
     }
 }

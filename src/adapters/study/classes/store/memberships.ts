@@ -8,13 +8,13 @@ import { rowToClassMembership } from "./rows.js";
 import type { ClassMembershipRow } from "./types.js";
 
 export async function requestJoinClass(
-    db: DbExecutor,
+    database: DbExecutor,
     classId: string,
     studentAccountId: string,
 ): Promise<ClassMembershipRow> {
     const nowIso = new Date().toISOString();
     const existingMembership = await getMembership(
-        db,
+        database,
         classId,
         studentAccountId,
     );
@@ -25,7 +25,7 @@ export async function requestJoinClass(
     ) {
         return existingMembership;
     }
-    await db.executeCommand({
+    await database.executeCommand({
         option: "INSERT",
         table: "class_memberships",
         values: {
@@ -50,11 +50,11 @@ export async function requestJoinClass(
 }
 
 export async function leaveClass(
-    db: DbExecutor,
+    database: DbExecutor,
     classId: string,
     studentAccountId: string,
 ): Promise<void> {
-    await db.executeCommand({
+    await database.executeCommand({
         option: "UPDATE",
         table: "class_memberships",
         set: { status: "left" },
@@ -67,17 +67,17 @@ export async function leaveClass(
 }
 
 export async function inviteToClass(
-    db: DbExecutor,
+    database: DbExecutor,
     classId: string,
     studentAccountId: string,
     teacherAccountId: string,
 ): Promise<ClassMembershipRow> {
-    const classRow = await getClassById(db, classId);
+    const classRow = await getClassById(database, classId);
     if (!classRow || classRow.teacherAccountId !== teacherAccountId) {
         throw new Error("not_authorized");
     }
     const nowIso = new Date().toISOString();
-    await db.executeCommand({
+    await database.executeCommand({
         option: "INSERT",
         table: "class_memberships",
         values: {
@@ -96,7 +96,7 @@ export async function inviteToClass(
             },
         },
     });
-    const membership = await getMembership(db, classId, studentAccountId);
+    const membership = await getMembership(database, classId, studentAccountId);
     return (
         membership ?? {
             classId,
@@ -109,16 +109,16 @@ export async function inviteToClass(
 }
 
 export async function getClassMembers(
-    db: DbExecutor,
+    database: DbExecutor,
     classId: string,
     teacherAccountId: string,
     search?: string,
 ): Promise<ClassMembershipRow[]> {
-    const classRow = await getClassById(db, classId);
+    const classRow = await getClassById(database, classId);
     if (!classRow || classRow.teacherAccountId !== teacherAccountId) {
         throw new Error("not_authorized");
     }
-    const result = await db.executeCommand({
+    const result = await database.executeCommand({
         option: "SELECT",
         table: "class_memberships",
         columns: [
@@ -147,18 +147,18 @@ export async function getClassMembers(
 }
 
 export async function getClassMembersForViewer(
-    db: DbExecutor,
+    database: DbExecutor,
     classId: string,
     viewerAccountId: string,
 ): Promise<ClassMembershipRow[]> {
-    const classRow = await getClassById(db, classId);
+    const classRow = await getClassById(database, classId);
     if (!classRow) {
         throw new Error("not_authorized");
     }
     const isTeacher = classRow.teacherAccountId === viewerAccountId;
     if (!isTeacher) {
         const viewerMembership = await getMembership(
-            db,
+            database,
             classId,
             viewerAccountId,
         );
@@ -166,7 +166,7 @@ export async function getClassMembersForViewer(
             throw new Error("not_authorized");
         }
     }
-    const result = await db.executeCommand({
+    const result = await database.executeCommand({
         option: "SELECT",
         table: "class_memberships",
         columns: [
@@ -188,16 +188,16 @@ export async function getClassMembersForViewer(
 }
 
 export async function removeClassMemberByTeacher(
-    db: DbExecutor,
+    database: DbExecutor,
     classId: string,
     teacherAccountId: string,
     studentAccountId: string,
 ): Promise<void> {
-    const classRow = await getClassById(db, classId);
+    const classRow = await getClassById(database, classId);
     if (!classRow || classRow.teacherAccountId !== teacherAccountId) {
         throw new Error("not_authorized");
     }
-    await db.executeCommand({
+    await database.executeCommand({
         option: "UPDATE",
         table: "class_memberships",
         set: { status: "left" },
@@ -207,28 +207,28 @@ export async function removeClassMemberByTeacher(
             { column: "status", value: "member" },
         ],
     });
-    const classroomState = await getClassroomState(db, classId);
+    const classroomState = await getClassroomState(database, classId);
     if (!(studentAccountId in classroomState.seatAssignments)) {
         return;
     }
     const nextSeatAssignments = { ...classroomState.seatAssignments };
     delete nextSeatAssignments[studentAccountId];
-    await updateClassroomStateForTeacher(db, classId, teacherAccountId, {
+    await updateClassroomStateForTeacher(database, classId, teacherAccountId, {
         seatAssignments: nextSeatAssignments,
         studentLimit: classroomState.studentLimit,
     });
 }
 
 export async function getPendingJoinRequests(
-    db: DbExecutor,
+    database: DbExecutor,
     classId: string,
     teacherAccountId: string,
 ): Promise<ClassMembershipRow[]> {
-    const classRow = await getClassById(db, classId);
+    const classRow = await getClassById(database, classId);
     if (!classRow || classRow.teacherAccountId !== teacherAccountId) {
         throw new Error("not_authorized");
     }
-    const result = await db.executeCommand({
+    const result = await database.executeCommand({
         option: "SELECT",
         table: "class_memberships",
         columns: [
@@ -250,17 +250,17 @@ export async function getPendingJoinRequests(
 }
 
 export async function reviewJoinRequest(
-    db: DbExecutor,
+    database: DbExecutor,
     classId: string,
     studentAccountId: string,
     teacherAccountId: string,
     approve: boolean,
 ): Promise<void> {
-    const classRow = await getClassById(db, classId);
+    const classRow = await getClassById(database, classId);
     if (!classRow || classRow.teacherAccountId !== teacherAccountId) {
         throw new Error("not_authorized");
     }
-    await db.executeCommand({
+    await database.executeCommand({
         option: "UPDATE",
         table: "class_memberships",
         set: { status: approve ? "member" : "rejected" },
@@ -273,11 +273,11 @@ export async function reviewJoinRequest(
 }
 
 async function getMembership(
-    db: DbExecutor,
+    database: DbExecutor,
     classId: string,
     studentAccountId: string,
 ): Promise<ClassMembershipRow | null> {
-    const result = await db.executeCommand({
+    const result = await database.executeCommand({
         option: "SELECT",
         table: "class_memberships",
         columns: [

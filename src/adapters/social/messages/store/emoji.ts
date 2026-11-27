@@ -3,12 +3,12 @@ import { rowToEmojiUsage } from "./row-mappers.js";
 import type { EmojiUsageRow } from "./types.js";
 
 export async function incrementEmojiUsage(
-    db: DbExecutor,
+    database: DbExecutor,
     accountId: string,
     emoji: string,
 ): Promise<void> {
-    await db.transaction(async (tx) => {
-        const existing = await tx.executeCommand({
+    await database.transaction(async (transaction) => {
+        const existing = await transaction.executeCommand({
             option: "SELECT",
             table: "chat_emoji_usage",
             where: [
@@ -19,7 +19,7 @@ export async function incrementEmojiUsage(
         });
         const currentRow = existing.rows?.[0];
         if (currentRow) {
-            await tx.executeCommand({
+            await transaction.executeCommand({
                 option: "UPDATE",
                 table: "chat_emoji_usage",
                 set: {
@@ -33,7 +33,7 @@ export async function incrementEmojiUsage(
             return;
         }
 
-        await tx.executeCommand({
+        await transaction.executeCommand({
             option: "INSERT",
             table: "chat_emoji_usage",
             values: { account_id: accountId, emoji, usage_count: 1 },
@@ -43,11 +43,11 @@ export async function incrementEmojiUsage(
 }
 
 export async function getTopEmojiUsage(
-    db: DbExecutor,
+    database: DbExecutor,
     accountId: string,
     limit: number,
 ): Promise<EmojiUsageRow[]> {
-    const result = await db.executeCommand({
+    const result = await database.executeCommand({
         option: "SELECT",
         table: "chat_emoji_usage",
         where: [{ column: "account_id", value: accountId }],

@@ -4,8 +4,8 @@ import { DbTfaStore } from "../reuse/tfa-store.js";
 import { InMemoryTestExecutor } from "../../db/tests/in-memory-test-executor.js";
 
 test("DbTfaStore.consumeRecoveryCode consumes a code only once", async () => {
-    const db = new InMemoryTestExecutor();
-    const store = new DbTfaStore(db);
+    const database = new InMemoryTestExecutor();
+    const store = new DbTfaStore(database);
     await store.ensureSchema();
     await store.replaceRecoveryCodes("alice", ["ABCD-1234"]);
 

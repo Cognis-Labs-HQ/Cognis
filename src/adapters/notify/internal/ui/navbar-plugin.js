@@ -26,6 +26,7 @@ import { showToast } from "/static/reuse/toast.js";
 import { openPopup } from "/static/reuse/popup.js";
 import { hexToBytes } from "/static/reuse/crypto-utils.js";
 import { renderNotificationItem as renderItem } from "./notification-item.js";
+import { sanitizeNotificationActionIcon } from "./action-icon.js";
 
 const log = bindCapability("ui:log");
 
@@ -91,60 +92,6 @@ function actionButtonClass(consequence) {
     return "btn-neutral";
 }
 
-function safeActionIcon(iconSvg) {
-    if (typeof iconSvg !== "string") return "";
-    const documentNode = new DOMParser().parseFromString(
-        iconSvg,
-        "image/svg+xml",
-    );
-    const svg = documentNode.documentElement;
-    if (
-        svg.nodeName.toLowerCase() !== "svg" ||
-        svg.querySelector("parsererror")
-    )
-        return "";
-    const allowedElements = new Set([
-        "svg",
-        "path",
-        "circle",
-        "line",
-        "polyline",
-    ]);
-    const allowedAttributes = new Set([
-        "aria-hidden",
-        "d",
-        "fill",
-        "focusable",
-        "viewBox",
-        "cx",
-        "cy",
-        "r",
-        "x1",
-        "x2",
-        "y1",
-        "y2",
-        "points",
-        "stroke",
-        "stroke-width",
-    ]);
-    for (const element of svg.querySelectorAll("*")) {
-        if (!allowedElements.has(element.nodeName.toLowerCase())) {
-            element.remove();
-            continue;
-        }
-        for (const attribute of [...element.attributes]) {
-            if (!allowedAttributes.has(attribute.name)) {
-                element.removeAttribute(attribute.name);
-            }
-        }
-    }
-    for (const attribute of [...svg.attributes]) {
-        if (!allowedAttributes.has(attribute.name))
-            svg.removeAttribute(attribute.name);
-    }
-    return new XMLSerializer().serializeToString(svg);
-}
-
 function renderNotificationActions(notification) {
     const actions = notification.metadata?.actions;
     if (!Array.isArray(actions)) return "";
@@ -157,7 +104,7 @@ function renderNotificationActions(notification) {
         )
         .map(
             (action) =>
-                `<button class="notification-action ${actionButtonClass(action.consequence)}" data-notification-action="${escapeHtml(action.id)}" type="button" aria-label="${escapeHtml(action.label)}">${safeActionIcon(action.iconSvg) || escapeHtml(action.label)}</button>`,
+                `<button class="notification-action ${actionButtonClass(action.consequence)}" data-notification-action="${escapeHtml(action.id)}" type="button" aria-label="${escapeHtml(action.label)}">${sanitizeNotificationActionIcon(action.iconSvg) || escapeHtml(action.label)}</button>`,
         )
         .join("");
     return buttons
@@ -202,7 +149,7 @@ function isNotificationOwnedByCurrentPage(notification) {
                 .filter(Boolean)[0];
             if (actionPage === currentPage) return true;
         } catch {
-            // Malformed actions are handled by navigateNotif (lines 63-79 above).
+            // Malformed actions are handled by navigateNotif.
         }
     }
 
@@ -416,7 +363,7 @@ function renderNotificationItem(notif, i18n) {
         reportError: (key) => showToast(i18n.t(key), { variant: "error" }),
         afterDismiss: async (id) => {
             currentNotifications = currentNotifications.filter(
-                (n) => n.id !== id,
+                (notification) => notification.id !== id,
             );
             await refreshCount();
             if (currentNotifications.length === 0 && emptyEl)
@@ -453,11 +400,15 @@ function renderPanelContents(i18n) {
     listEl.innerHTML = "";
     if (emptyEl) emptyEl.hidden = true;
 
-    currentNotifications.forEach((n) => seenIds?.add(n.id));
+    currentNotifications.forEach((notification) =>
+        seenIds?.add(notification.id),
+    );
     const panelNotifications = currentNotifications.filter(
         (notification) => notification.metadata?.continuous !== true,
     );
-    const unreadCount = panelNotifications.filter((n) => !n.read).length;
+    const unreadCount = panelNotifications.filter(
+        (notification) => !notification.read,
+    ).length;
     updateBadge(unreadCount);
 
     updateClearAllButton();
@@ -479,14 +430,18 @@ function renderPanelContents(i18n) {
 async function refreshOpenPanel(i18n) {
     if (!panelVisible) return;
     const notifs = await fetchNotifications();
-    const knownIds = new Set(currentNotifications.map((n) => n.id));
-    const arrivals = notifs.filter((n) => !knownIds.has(n.id));
+    const knownIds = new Set(
+        currentNotifications.map((notification) => notification.id),
+    );
+    const arrivals = notifs.filter(
+        (notification) => !knownIds.has(notification.id),
+    );
 
     if (
         arrivals.length === 0 &&
         notifs.length === currentNotifications.length
     ) {
-        updateBadge(notifs.filter((n) => !n.read).length);
+        updateBadge(notifs.filter((notification) => !notification.read).length);
         return;
     }
 
@@ -563,13 +518,15 @@ function buildButton(i18n) {
         try {
             await markAllRead();
             if (listEl) {
-                listEl.querySelectorAll(".notification-item").forEach((el) => {
-                    el.classList.remove("notification-item--unread");
-                    el.classList.add("notification-item--read");
-                });
+                listEl
+                    .querySelectorAll(".notification-item")
+                    .forEach((element) => {
+                        element.classList.remove("notification-item--unread");
+                        element.classList.add("notification-item--read");
+                    });
             }
-            currentNotifications.forEach((n) => {
-                n.read = true;
+            currentNotifications.forEach((notification) => {
+                notification.read = true;
             });
             updateBadge(0);
         } catch {
@@ -662,8 +619,8 @@ function buildButton(i18n) {
     mobileBackdropEl = mobileBackdrop;
     wrap.appendChild(mobileBackdrop);
 
-    btn.addEventListener("click", (e) => {
-        e.stopPropagation();
+    btn.addEventListener("click", (event) => {
+        event.stopPropagation();
         if (panelVisible) {
             closePanel();
         } else {
@@ -671,14 +628,14 @@ function buildButton(i18n) {
         }
     });
 
-    document.addEventListener("click", (e) => {
-        if (panelVisible && !wrap.contains(e.target)) {
+    document.addEventListener("click", (event) => {
+        if (panelVisible && !wrap.contains(event.target)) {
             closePanel();
         }
     });
 
-    document.addEventListener("keydown", (e) => {
-        if (e.key === "Escape" && panelVisible) closePanel();
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && panelVisible) closePanel();
     });
 
     return wrap;
@@ -697,7 +654,7 @@ function insertButton(wrap) {
 
 async function startPolling(i18n) {
     const initial = await fetchNotifications();
-    seenIds = new Set(initial.map((n) => n.id));
+    seenIds = new Set(initial.map((notification) => notification.id));
     const persistentArrivals = initial.filter(
         (notification) =>
             !notification.read && notification.metadata?.continuous === true,
@@ -739,11 +696,14 @@ async function startPolling(i18n) {
 async function checkForNew(i18n) {
     const notifs = await fetchNotifications();
     const unread = notifs.filter(
-        (n) => !n.read && n.metadata?.continuous !== true,
+        (notification) =>
+            !notification.read && notification.metadata?.continuous !== true,
     ).length;
     updateBadge(unread);
 
-    const arrivals = notifs.filter((n) => !seenIds.has(n.id));
+    const arrivals = notifs.filter(
+        (notification) => !seenIds.has(notification.id),
+    );
     for (const notif of arrivals) {
         seenIds.add(notif.id);
         window.dispatchEvent(
@@ -796,7 +756,9 @@ async function markArrivalRead(notif) {
     try {
         await markOneRead(notif.id);
         notif.read = true;
-        const cached = currentNotifications.find((n) => n.id === notif.id);
+        const cached = currentNotifications.find(
+            (notification) => notification.id === notif.id,
+        );
         if (cached) cached.read = true;
         if (panelVisible && listEl) {
             const item = listEl.querySelector(
@@ -872,8 +834,8 @@ async function showArrivalToast(notif, i18n) {
         });
     };
 
-    toast.addEventListener("click", (e) => {
-        const actionButton = e.target.closest("[data-notification-action]");
+    toast.addEventListener("click", (event) => {
+        const actionButton = event.target.closest("[data-notification-action]");
         if (actionButton instanceof HTMLElement) {
             dismiss();
             void markArrivalRead(notif);
@@ -883,7 +845,7 @@ async function showArrivalToast(notif, i18n) {
             );
             return;
         }
-        if (e.target.closest(".arrival-toast-dismiss")) {
+        if (event.target.closest(".arrival-toast-dismiss")) {
             dismiss();
             return;
         }
@@ -898,8 +860,8 @@ async function showArrivalToast(notif, i18n) {
 
     toast
         .querySelector(".arrival-toast-dismiss")
-        ?.addEventListener("click", (e) => {
-            e.stopPropagation();
+        ?.addEventListener("click", (event) => {
+            event.stopPropagation();
             dismiss();
         });
 

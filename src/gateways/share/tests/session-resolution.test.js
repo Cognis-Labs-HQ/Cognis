@@ -14,7 +14,7 @@ function deferred() {
     return { promise, resolve };
 }
 function fixture(
-    t,
+    testContext,
     {
         signedIn = false,
         pausePrompt = false,
@@ -65,7 +65,7 @@ function fixture(
             hooks.push([flow, stage, meta.id]);
         },
     };
-    t.after(() => {
+    testContext.after(() => {
         for (const args of hooks.reverse()) host.removeFlowHook(...args);
     });
     let unlocked = false;
@@ -213,8 +213,8 @@ function fixture(
     };
 }
 
-test("repeated protected share authentication preserves one guest session and the original account", async (t) => {
-    const h = fixture(t, { signedIn: true });
+test("repeated protected share authentication preserves one guest session and the original account", async (testContext) => {
+    const h = fixture(testContext, { signedIn: true });
     assert.equal((await h.run()).authenticated, true);
     assert.equal((await h.run()).authenticated, true);
     assert.equal(h.calls.prompts, 1);
@@ -225,8 +225,8 @@ test("repeated protected share authentication preserves one guest session and th
     assert.equal(h.local.get("cognis_access_token"), "account-token");
 });
 
-test("concurrent protected share authentication coalesces the password prompt and guest activation", async (t) => {
-    const h = fixture(t, { pausePrompt: true });
+test("concurrent protected share authentication coalesces the password prompt and guest activation", async (testContext) => {
+    const h = fixture(testContext, { pausePrompt: true });
     const first = h.run();
     const second = h.run();
     await new Promise(setImmediate);
@@ -238,8 +238,8 @@ test("concurrent protected share authentication coalesces the password prompt an
     assert.equal(h.calls.requests.length, 2);
 });
 
-test("guest keyring requests reuse an unlocked guest vault", async (t) => {
-    const h = fixture(t);
+test("guest keyring requests reuse an unlocked guest vault", async (testContext) => {
+    const h = fixture(testContext);
     await h.run();
     const ensure = h.ctx.capabilities.get("session:ensureGuestKeyring");
     assert.equal(await ensure(), true);
@@ -247,8 +247,8 @@ test("guest keyring requests reuse an unlocked guest vault", async (t) => {
     assert.equal(h.calls.activations, 1);
 });
 
-test("authentication begun during guest keyring activation reuses the pending session", async (t) => {
-    const h = fixture(t, { signedIn: true, pauseActivation: true });
+test("authentication begun during guest keyring activation reuses the pending session", async (testContext) => {
+    const h = fixture(testContext, { signedIn: true, pauseActivation: true });
     const first = h.run();
     await new Promise(setImmediate);
     const second = h.run();
@@ -263,8 +263,8 @@ test("authentication begun during guest keyring activation reuses the pending se
     );
 });
 
-test("navigation away invalidates pending share authentication before guest credentials are installed", async (t) => {
-    const h = fixture(t, { signedIn: true, pausePrompt: true });
+test("navigation away invalidates pending share authentication before guest credentials are installed", async (testContext) => {
+    const h = fixture(testContext, { signedIn: true, pausePrompt: true });
     const pending = h.run();
     await new Promise(setImmediate);
     await h.run("/dashboard");
@@ -274,8 +274,8 @@ test("navigation away invalidates pending share authentication before guest cred
     assert.equal(h.calls.activations, 0);
 });
 
-test("pending Share authentication does not reuse a previous account identity", async (t) => {
-    const h = fixture(t, { signedIn: true, pausePrompt: true });
+test("pending Share authentication does not reuse a previous account identity", async (testContext) => {
+    const h = fixture(testContext, { signedIn: true, pausePrompt: true });
     const prior = h.run();
     await new Promise(setImmediate);
     h.local.set("cognis_account", "another-account");
@@ -290,8 +290,8 @@ test("pending Share authentication does not reuse a previous account identity", 
     assert.equal(h.local.get("cognis_account"), "another-account");
 });
 
-test("cancellation and failed keyring activation release pending Share authentication for retry", async (t) => {
-    const h = fixture(t, { signedIn: true });
+test("cancellation and failed keyring activation release pending Share authentication for retry", async (testContext) => {
+    const h = fixture(testContext, { signedIn: true });
     h.cancelNext();
     assert.equal((await h.run()).authenticated, false);
     h.setActivationResult(false);
@@ -301,8 +301,8 @@ test("cancellation and failed keyring activation release pending Share authentic
     assert.equal((await h.run()).authenticated, true);
 });
 
-test("revocation invalidates a resolved share without repeating password prompts", async (t) => {
-    const h = fixture(t, { signedIn: true });
+test("revocation invalidates a resolved share without repeating password prompts", async (testContext) => {
+    const h = fixture(testContext, { signedIn: true });
     await h.run();
     h.revoke();
     assert.equal((await h.run()).authenticated, false);
@@ -311,8 +311,8 @@ test("revocation invalidates a resolved share without repeating password prompts
     assert.equal(h.local.get("cognis_access_token"), "account-token");
 });
 
-test("an incorrect password still permits a deliberate retry", async (t) => {
-    const h = fixture(t, { answers: ["wrong", "fixture-password"] });
+test("an incorrect password still permits a deliberate retry", async (testContext) => {
+    const h = fixture(testContext, { answers: ["wrong", "fixture-password"] });
     assert.equal((await h.run()).authenticated, true);
     assert.equal(h.calls.prompts, 2);
     assert.equal(h.calls.activations, 1);

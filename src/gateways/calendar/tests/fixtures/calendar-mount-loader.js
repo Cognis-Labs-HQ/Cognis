@@ -1,7 +1,7 @@
 import { createDiagnosticFixture } from "../../../../tooling/reuse/diagnostic-fixture.ts";
 import { guides } from "../../ui/app/guides.js";
 import { readFile } from "node:fs/promises";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 
 export async function loadCalendarMount({ hold, signal }) {
     const reached = [];
@@ -73,7 +73,7 @@ export async function loadCalendarMount({ hold, signal }) {
             },
         },
     };
-    const context = vm.createContext({
+    const context = virtualMachine.createContext({
         Date,
         Map,
         Set,
@@ -84,7 +84,7 @@ export async function loadCalendarMount({ hold, signal }) {
             clearTimeout: () => reached.push("clearTimer"),
         },
     });
-    const module = new vm.SourceTextModule(
+    const module = new virtualMachine.SourceTextModule(
         await readFile(
             new URL("../../ui/app/index.js", import.meta.url),
             "utf8",
@@ -94,7 +94,7 @@ export async function loadCalendarMount({ hold, signal }) {
     await module.link((specifier) => {
         const contract = contracts[specifier];
         if (!contract) throw new Error(`unexpected module: ${specifier}`);
-        return new vm.SyntheticModule(
+        return new virtualMachine.SyntheticModule(
             Object.keys(contract),
             function () {
                 for (const [name, value] of Object.entries(contract))

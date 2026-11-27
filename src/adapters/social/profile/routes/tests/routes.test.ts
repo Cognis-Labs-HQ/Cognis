@@ -15,11 +15,11 @@ test("profile routes - get own profile auto-creates profile when none exists", a
     await route(
         makeReq("GET", token),
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
-            end(p: string) {
-                body = p;
+            end(responseBody: string) {
+                body = responseBody;
             },
         } as any,
         new URL("http://localhost/api/v1/social/profile"),
@@ -36,8 +36,8 @@ test("profile routes - unauthenticated GET /api/v1/social/profile returns 401", 
     await route(
         makeReq("GET", null),
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -56,11 +56,11 @@ test("profile routes - get own profile returns data after creation", async () =>
     await route(
         makeReq("GET", token),
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
-            end(p: string) {
-                body = p;
+            end(responseBody: string) {
+                body = responseBody;
             },
         } as any,
         new URL("http://localhost/api/v1/social/profile"),
@@ -86,11 +86,11 @@ test("profile routes - PATCH updates bio and visibility", async () => {
             JSON.stringify({ bio: "Hello world", visibility: "community" }),
         ),
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
-            end(p: string) {
-                body = p;
+            end(responseBody: string) {
+                body = responseBody;
             },
         } as any,
         new URL("http://localhost/api/v1/social/profile"),
@@ -114,11 +114,11 @@ for (const visibility of ["hidden", "private"] as const) {
         await route(
             makeReq("PATCH", token, JSON.stringify({ visibility })),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL("http://localhost/api/v1/social/profile"),
@@ -199,11 +199,11 @@ test("profile routes - PATCH updates displayName", async () => {
             JSON.stringify({ displayName: "Diana Prince" }),
         ),
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
-            end(p: string) {
-                body = p;
+            end(responseBody: string) {
+                body = responseBody;
             },
         } as any,
         new URL("http://localhost/api/v1/social/profile"),
@@ -222,8 +222,8 @@ test("profile routes - PATCH rejects invalid visibility", async () => {
     await route(
         makeReq("PATCH", token, JSON.stringify({ visibility: "public" })),
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -241,8 +241,8 @@ test("profile routes - hidden profile not visible to other users", async () => {
     await route(
         makeReq("GET", eveToken),
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -261,11 +261,11 @@ test("profile routes - admin always sees hidden profile", async () => {
     await route(
         makeReq("GET", adminToken),
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
-            end(p: string) {
-                body = p;
+            end(responseBody: string) {
+                body = responseBody;
             },
         } as any,
         new URL("http://localhost/api/v1/social/users/hidden-user/profile"),
@@ -294,11 +294,11 @@ test("profile routes - private profile returns full details only for mutual foll
     await route(
         makeReq("GET", bobToken),
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
-            end(p: string) {
-                body = p;
+            end(responseBody: string) {
+                body = responseBody;
             },
         } as any,
         new URL("http://localhost/api/v1/social/users/alice/profile"),
@@ -312,11 +312,11 @@ test("profile routes - private profile returns full details only for mutual foll
     await route(
         makeReq("GET", carolToken),
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
-            end(p: string) {
-                body = p;
+            end(responseBody: string) {
+                body = responseBody;
             },
         } as any,
         new URL("http://localhost/api/v1/social/users/alice/profile"),
@@ -341,11 +341,11 @@ test("profile routes - friends visibility: profile visible but counts hidden for
     await route(
         makeReq("GET", bobToken),
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
-            end(p: string) {
-                body = p;
+            end(responseBody: string) {
+                body = responseBody;
             },
         } as any,
         new URL("http://localhost/api/v1/social/users/alice/profile"),
@@ -368,11 +368,11 @@ test("profile routes - community profile visible to other users", async () => {
     await route(
         makeReq("GET", graceToken),
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
-            end(p: string) {
-                body = p;
+            end(responseBody: string) {
+                body = responseBody;
             },
         } as any,
         new URL("http://localhost/api/v1/social/users/frank/profile"),
@@ -394,8 +394,8 @@ test("profile routes - blocked caller gets 404 on public profile", async () => {
     await route(
         makeReq("GET", bobToken),
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,

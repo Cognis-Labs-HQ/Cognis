@@ -7,7 +7,7 @@ import {
 } from "../ui/reuse/classification.js";
 import assert from "node:assert/strict";
 import test from "node:test";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 import { generatedTransformationCard } from "../ui/reuse/transformations.js";
 import {
     resolveLabelComposition,
@@ -333,7 +333,7 @@ test("transformed previews keep the selected heading and identify the base card 
             return ["variant", "close"][popups.length - 1];
         },
     };
-    vm.createContext(context);
+    virtualMachine.createContext(context);
     Object.assign(
         context,
         loadTestModule(

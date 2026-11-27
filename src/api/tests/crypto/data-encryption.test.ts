@@ -46,9 +46,12 @@ test("deriveScopedKey: different scopes produce different keys (encrypt/decrypt 
         "user:notifications:bob",
         "server-secret",
     );
-    const { iv, ciphertext } = await encryptPayload(keyAlice, "hello");
+    const { iv: initializationVector, ciphertext } = await encryptPayload(
+        keyAlice,
+        "hello",
+    );
     await assert.rejects(
-        () => decryptPayload(keyBob, iv, ciphertext),
+        () => decryptPayload(keyBob, initializationVector, ciphertext),
         "Decrypting with a different scope's key should fail",
     );
 });
@@ -59,9 +62,12 @@ test("deriveScopedKey: different subsystems with same identifier produce differe
         "server-secret",
     );
     const mfaKey = await deriveScopedKey("user:mfa:alice", "server-secret");
-    const { iv, ciphertext } = await encryptPayload(notifKey, "hello");
+    const { iv: initializationVector, ciphertext } = await encryptPayload(
+        notifKey,
+        "hello",
+    );
     await assert.rejects(
-        () => decryptPayload(mfaKey, iv, ciphertext),
+        () => decryptPayload(mfaKey, initializationVector, ciphertext),
         "Different subsystems with the same identifier must derive distinct keys",
     );
 });
@@ -70,17 +76,31 @@ test("deriveScopedKey: same scope + secret produces equivalent keys (round-trip)
     const key1 = await deriveScopedKey("user:notifications:alice", "s3cr3t");
     const key2 = await deriveScopedKey("user:notifications:alice", "s3cr3t");
     const plaintext = JSON.stringify({ subject: "Hello", body: "World" });
-    const { iv, ciphertext } = await encryptPayload(key1, plaintext);
-    const decrypted = await decryptPayload(key2, iv, ciphertext);
+    const { iv: initializationVector, ciphertext } = await encryptPayload(
+        key1,
+        plaintext,
+    );
+    const decrypted = await decryptPayload(
+        key2,
+        initializationVector,
+        ciphertext,
+    );
     assert.equal(decrypted, plaintext);
 });
 
 test("encryptPayload: returns hex iv and ciphertext", async () => {
     const key = await deriveScopedKey("user:notifications:user1", "secret");
-    const { iv, ciphertext } = await encryptPayload(key, "test message");
-    assert.match(iv, /^[0-9a-f]+$/);
+    const { iv: initializationVector, ciphertext } = await encryptPayload(
+        key,
+        "test message",
+    );
+    assert.match(initializationVector, /^[0-9a-f]+$/);
     assert.match(ciphertext, /^[0-9a-f]+$/);
-    assert.equal(iv.length, 24, "AES-GCM IV is 12 bytes = 24 hex chars");
+    assert.equal(
+        initializationVector.length,
+        24,
+        "AES-GCM IV is 12 bytes = 24 hex chars",
+    );
 });
 
 test("encryptPayload + decryptPayload: round-trip preserves plaintext", async () => {
@@ -93,8 +113,15 @@ test("encryptPayload + decryptPayload: round-trip preserves plaintext", async ()
         body: "Content",
         category: "system",
     });
-    const { iv, ciphertext } = await encryptPayload(key, original);
-    const decrypted = await decryptPayload(key, iv, ciphertext);
+    const { iv: initializationVector, ciphertext } = await encryptPayload(
+        key,
+        original,
+    );
+    const decrypted = await decryptPayload(
+        key,
+        initializationVector,
+        ciphertext,
+    );
     assert.equal(decrypted, original);
 });
 
@@ -110,12 +137,15 @@ test("decryptPayload: rejects tampered ciphertext", async () => {
         "user:notifications:tamper-user",
         "secret",
     );
-    const { iv, ciphertext } = await encryptPayload(key, "sensitive data");
+    const { iv: initializationVector, ciphertext } = await encryptPayload(
+        key,
+        "sensitive data",
+    );
     const firstByte = Number.parseInt(ciphertext.slice(0, 2), 16) ^ 1;
     const tampered =
         firstByte.toString(16).padStart(2, "0") + ciphertext.slice(2);
     await assert.rejects(
-        () => decryptPayload(key, iv, tampered),
+        () => decryptPayload(key, initializationVector, tampered),
         "Tampered ciphertext must not decrypt",
     );
 });

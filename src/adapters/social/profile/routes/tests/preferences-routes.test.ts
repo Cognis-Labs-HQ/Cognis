@@ -60,8 +60,8 @@ test("preferences routes allow reading another user's profile-banner layout", as
             headers: { authorization: "Bearer " + token },
         } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end(payload: string) {
                 body = payload;
@@ -91,8 +91,8 @@ test("preferences routes still deny reading another user's non-banner preference
             headers: { authorization: "Bearer " + token },
         } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,

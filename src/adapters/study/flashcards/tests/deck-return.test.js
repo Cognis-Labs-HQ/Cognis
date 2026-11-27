@@ -7,7 +7,7 @@ import {
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 import { formatTemplate } from "../../../../ui/reuse/format-template.js";
 import { escapeHtml } from "../../../../ui/reuse/escape-html.js";
 import { replaceMountScope } from "../../../../ui/reuse/mount-scope.js";
@@ -71,7 +71,7 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
         id: "study-subnav",
         render: () => "Study navigation",
     };
-    const environment = vm.createContext({
+    const environment = virtualMachine.createContext({
         AbortController,
         uiCtx,
         replaceMountScope,

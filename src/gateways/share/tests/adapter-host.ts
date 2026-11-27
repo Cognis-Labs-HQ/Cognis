@@ -9,7 +9,7 @@ import type { GatewayBootstrapContext } from "../../shared.js";
 import type { CoreShareGateway } from "../gateway/index.js";
 
 export function createShareAdapterHost(
-    t: TestContext,
+    testContext: TestContext,
     log?: GatewayBootstrapContext["log"],
 ) {
     const root = createCtx();
@@ -17,7 +17,7 @@ export function createShareAdapterHost(
     capabilities.contribute("system:ctx", root);
     const cleanup: BootstrapDisposer[] = [];
     const context = { capabilities, log } as GatewayBootstrapContext;
-    t.after(async () => {
+    testContext.after(async () => {
         for (const dispose of cleanup.reverse()) await dispose();
     });
     return {

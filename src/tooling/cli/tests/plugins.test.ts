@@ -11,7 +11,7 @@ import { captureTerminalOutput } from "./fixtures/output.ts";
  * The tests cover formatted JSON fallback and command-specific rendering for
  * representative built-in commands.
  */
-import { mkdtemp, rm, writeFile, mkdir } from "node:fs/promises";
+import { mkdtemp, rm as removePath, writeFile, mkdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -450,7 +450,7 @@ test("loadModuleCliPlugins filters commands for disabled components", async () =
         } else {
             process.env.COGNIS_ADAPTER_CLI_PATHS = previousAdapterPaths;
         }
-        await rm(tempRoot, { recursive: true, force: true });
+        await removePath(tempRoot, { recursive: true, force: true });
     }
 });
 
@@ -552,6 +552,6 @@ test("loadModuleCliPlugins discovers manifest-declared component CLI commands", 
         } else {
             process.env.COGNIS_ADAPTER_CLI_PATHS = previousAdapterPaths;
         }
-        await rm(tempRoot, { recursive: true, force: true });
+        await removePath(tempRoot, { recursive: true, force: true });
     }
 });

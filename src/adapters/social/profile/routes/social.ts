@@ -134,7 +134,9 @@ export function createSocialRoutes(
                     requesterAccountId: claims.sub,
                 },
             );
-            const filtered = results.filter((p) => p.accountId !== claims.sub);
+            const filtered = results.filter(
+                (profile) => profile.accountId !== claims.sub,
+            );
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: filtered.map(publicProfile) }));
             return true;

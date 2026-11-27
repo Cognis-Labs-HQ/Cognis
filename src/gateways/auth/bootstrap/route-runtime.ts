@@ -22,8 +22,8 @@ export const PASSWORD_RESET_MIN_RESPONSE_MS = 350;
 export const PASSWORD_RESET_RESPONSE_JITTER_MS = 120;
 export const PASSWORD_RESET_LOOKUP_JITTER_MS = 40;
 
-export function sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+export function sleep(milliseconds: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
 export async function waitForPasswordResetResponseFloor(

@@ -96,10 +96,10 @@ test("hasPending returns false for expired token", () => {
 
 test("tokens for different keys are independent", () => {
     const svc = makeService();
-    const t1 = svc.issue("alice:a@example.com");
-    const t2 = svc.issue("bob:b@example.com");
-    assert.equal(svc.verify(t1), "alice:a@example.com");
-    assert.equal(svc.verify(t2), "bob:b@example.com");
+    const firstToken = svc.issue("alice:a@example.com");
+    const secondToken = svc.issue("bob:b@example.com");
+    assert.equal(svc.verify(firstToken), "alice:a@example.com");
+    assert.equal(svc.verify(secondToken), "bob:b@example.com");
 });
 
 test("isLive returns true for a live token", () => {

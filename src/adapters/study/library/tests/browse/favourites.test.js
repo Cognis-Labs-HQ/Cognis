@@ -1,7 +1,7 @@
 import { loadTestModule } from "../../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import test from "node:test";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 
 test("favourite children render independently of unfavourited ancestors, and provider layout restores", async () => {
     const child = { dataset: { libraryEntry: "child" } };
@@ -21,9 +21,9 @@ test("favourite children render independently of unfavourited ancestors, and pro
             this.children = nodes;
             this.firstElementChild = nodes[0];
         },
-        append(n) {
-            this.children = this.children.filter((node) => node !== n);
-            this.children.push(n);
+        append(node2) {
+            this.children = this.children.filter((node) => node !== node2);
+            this.children.push(node2);
         },
     };
     node.parentElement = grid;
@@ -38,11 +38,11 @@ test("favourite children render independently of unfavourited ancestors, and pro
     let change;
     const root = {
         querySelectorAll: () => [panel],
-        addEventListener: (type, fn) => {
-            if (type === "change") change = fn;
+        addEventListener: (type, callback) => {
+            if (type === "change") change = callback;
         },
     };
-    const context = vm.createContext({
+    const context = virtualMachine.createContext({
         loadFavourites: async () => ({
             has: (_kind, id) => id === "child",
             refresh() {},
@@ -100,7 +100,7 @@ test("favourite children render independently of unfavourited ancestors, and pro
 
 test("leaving a layer while favourites load prevents stale binding and misleading errors", async () => {
     const controller = new AbortController();
-    const context = vm.createContext({
+    const context = virtualMachine.createContext({
         loadFavourites: async () => {
             controller.abort();
             throw new Error("aborted");

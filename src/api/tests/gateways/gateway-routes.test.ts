@@ -11,8 +11,8 @@ function makeResponse() {
         writeHead(code: number) {
             status = code;
         },
-        end(p: string) {
-            payload = p;
+        end(responseBody: string) {
+            payload = responseBody;
         },
         get status() {
             return status;

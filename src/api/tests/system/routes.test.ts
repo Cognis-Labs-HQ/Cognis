@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, rm as removePath, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createSystemRoutes } from "../../routes/system/index.js";
@@ -270,7 +270,7 @@ test("release changelog feed includes section details and installed module entri
         assert.equal(moduleEntry?.path, "/changelogs/weather-module/2.0.0");
         assert.equal(moduleEntry?.details[0], "Adds hourly forecasts.");
     } finally {
-        await rm(fixtureRoot, { recursive: true, force: true });
+        await removePath(fixtureRoot, { recursive: true, force: true });
     }
 });
 
@@ -525,7 +525,7 @@ test("security PUT accepts a dynamically registered validation mode", async () =
     let savedValue = "";
     const preferenceStore = {
         get: async () => null,
-        set: async (_: string, __: string, value: string) => {
+        set: async (_: string, _namespace: string, value: string) => {
             savedValue = value;
         },
     };

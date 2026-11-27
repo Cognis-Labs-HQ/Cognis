@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import path from "node:path";
-import { access, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { access, mkdtemp, rm as removePath, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { issueAccessToken } from "../../auth/access-tokens.js";
 import { bootstrap } from "../bootstrap.js";
@@ -362,7 +362,7 @@ test("logging stream route returns filtered event stream logs", async () => {
         } else {
             process.env.LOG_FILE = previousLogFile;
         }
-        await rm(tempRoot, { recursive: true, force: true });
+        await removePath(tempRoot, { recursive: true, force: true });
     }
 });
 
@@ -423,7 +423,7 @@ test("logging stream route treats severity as a threshold", async () => {
         } else {
             process.env.LOG_FILE = previousLogFile;
         }
-        await rm(tempRoot, { recursive: true, force: true });
+        await removePath(tempRoot, { recursive: true, force: true });
     }
 });
 
@@ -494,7 +494,7 @@ test("logging stream route ignores invalid multi-value severity thresholds", asy
         } else {
             process.env.LOG_FILE = previousLogFile;
         }
-        await rm(tempRoot, { recursive: true, force: true });
+        await removePath(tempRoot, { recursive: true, force: true });
     }
 });
 
@@ -556,7 +556,7 @@ test("logging stream route is not constrained by LOG_LEVEL", async () => {
         } else {
             process.env.LOG_LEVEL = previousLogLevel;
         }
-        await rm(tempRoot, { recursive: true, force: true });
+        await removePath(tempRoot, { recursive: true, force: true });
     }
 });
 
@@ -614,7 +614,7 @@ test("logging stream route applies time range filtering", async () => {
         } else {
             process.env.LOG_FILE = previousLogFile;
         }
-        await rm(tempRoot, { recursive: true, force: true });
+        await removePath(tempRoot, { recursive: true, force: true });
     }
 });
 
@@ -720,7 +720,7 @@ test("logging stream route emits snapshot_error when log file does not exist", a
         } else {
             process.env.LOG_FILE = previousLogFile;
         }
-        await rm(tempRoot, { recursive: true, force: true });
+        await removePath(tempRoot, { recursive: true, force: true });
     }
 });
 
@@ -774,7 +774,7 @@ test("logging stream route emits reset event when log file shrinks during poll",
         } else {
             process.env.LOG_FILE = previousLogFile;
         }
-        await rm(tempRoot, { recursive: true, force: true });
+        await removePath(tempRoot, { recursive: true, force: true });
     }
 });
 
@@ -836,6 +836,6 @@ test("logging stream route applies time range filtering in hours", async () => {
         } else {
             process.env.LOG_FILE = previousLogFile;
         }
-        await rm(tempRoot, { recursive: true, force: true });
+        await removePath(tempRoot, { recursive: true, force: true });
     }
 });

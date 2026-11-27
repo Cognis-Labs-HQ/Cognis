@@ -82,12 +82,12 @@ test("login refuses a configured validation policy without its provider", async 
             throw new Error("preference storage is read-only");
         },
     });
-    const db = new InMemoryTestExecutor();
+    const database = new InMemoryTestExecutor();
     await bootstrapAuthGateway({
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: db,
+        db: database,
     });
 
     const registerResult = await dispatchRoute(
@@ -129,12 +129,12 @@ test("login preserves founder recovery when a configured policy is unavailable",
             });
         },
     });
-    const db = new InMemoryTestExecutor();
+    const database = new InMemoryTestExecutor();
     await bootstrapAuthGateway({
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: db,
+        db: database,
     });
 
     const createLocalAdmin = capabilities.get<
@@ -209,12 +209,12 @@ test("login ignores standalone TFA capabilities when TFA gateway flow hook is no
             );
         },
     );
-    const db = new InMemoryTestExecutor();
+    const database = new InMemoryTestExecutor();
     await bootstrapAuthGateway({
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: db,
+        db: database,
     });
 
     const registerResult = await dispatchRoute(
@@ -290,12 +290,12 @@ test("login succeeds without TFA flow hook even when tfa:getLoginMethods is abse
             );
         },
     );
-    const db = new InMemoryTestExecutor();
+    const database = new InMemoryTestExecutor();
     await bootstrapAuthGateway({
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: db,
+        db: database,
     });
 
     const registerResult = await dispatchRoute(
@@ -338,12 +338,12 @@ test("external login cannot create an account without registration authorization
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-    const db = new InMemoryTestExecutor();
+    const database = new InMemoryTestExecutor();
     await bootstrapAuthGateway({
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db,
+        db: database,
     });
     const registerProvider = capabilities.require<
         (provider: {
@@ -405,12 +405,12 @@ test("external login retries account creation through the registration token gat
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-    const db = new InMemoryTestExecutor();
+    const database = new InMemoryTestExecutor();
     await bootstrapAuthGateway({
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db,
+        db: database,
     });
     let createdProfileHandle = "";
     let synchronizedProfileHandle = "";
@@ -571,7 +571,7 @@ test("external login retries account creation through the registration token gat
     await accountStore.delete(assignedId);
     // This contract fake does not implement ON DELETE CASCADE.
     for (const table of ["auth_identities", "auth_account_names"])
-        await db.executeCommand({
+        await database.executeCommand({
             option: "DELETE",
             table,
             where: [{ column: "account_id", value: assignedId }],

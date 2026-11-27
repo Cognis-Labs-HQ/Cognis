@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, writeFile, rm } from "node:fs/promises";
+import { mkdtemp, mkdir, writeFile, rm as removePath } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { ModuleMarketplaceService, type ModuleSource } from "../../../index.js";
@@ -22,11 +22,13 @@ const source: ModuleSource = {
 };
 
 for (const changeSource of [false, true]) {
-    test(`concurrent administrator discovery ${changeSource ? "rejects a stale source revision" : "shares the pending provider scan"}`, async (t) => {
+    test(`concurrent administrator discovery ${changeSource ? "rejects a stale source revision" : "shares the pending provider scan"}`, async (testContext) => {
         const directory = await mkdtemp(
             path.join(tmpdir(), "cognis-shared-scan-"),
         );
-        t.after(() => rm(directory, { recursive: true, force: true }));
+        testContext.after(() =>
+            removePath(directory, { recursive: true, force: true }),
+        );
         const started = deferred();
         const bothStarted = deferred();
         const release = deferred();
@@ -58,7 +60,7 @@ for (const changeSource of [false, true]) {
             path.join(directory, "modules", ".cache", "catalog.json"),
             JSON.stringify([cached]),
         );
-        t.mock.method(globalThis, "fetch", async () => {
+        testContext.mock.method(globalThis, "fetch", async () => {
             requests++;
             started.resolve();
             await release.promise;

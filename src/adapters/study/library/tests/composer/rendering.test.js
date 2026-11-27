@@ -3,11 +3,11 @@ import { loadTestModule } from "../../../../../tooling/reuse/test-module.ts";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 
 test("stroke preview hides the lookup after retrieval and restores it when cleared", () => {
     const context = { escapeHtml: String };
-    vm.createContext(context);
+    virtualMachine.createContext(context);
     Object.assign(
         context,
         loadTestModule(
@@ -61,7 +61,7 @@ test("definition editors render translations in Content and ordinary cards retai
         }),
         inputForField: () => "<fieldset>Translations</fieldset>",
     };
-    vm.createContext(context);
+    virtualMachine.createContext(context);
     Object.assign(context, loadLibraryUiModule("app/audio-editor.js", context));
     Object.assign(
         context,
@@ -115,7 +115,7 @@ test("vocabulary has one composed input and lookup precedes component carousels"
             render: () => options.trustedContentHtml,
         }),
     };
-    vm.createContext(context);
+    virtualMachine.createContext(context);
     Object.assign(context, loadLibraryUiModule("app/audio-editor.js", context));
     Object.assign(
         context,

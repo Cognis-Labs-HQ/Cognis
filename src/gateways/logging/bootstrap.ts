@@ -71,11 +71,13 @@ function normalizeLogEntry(rawLine: string): Record<string, unknown> {
     try {
         const parsed = JSON.parse(rawLine) as Record<string, unknown>;
         const level = String(parsed.level ?? "info").toLowerCase();
-        const ts = parsed.ts ? String(parsed.ts) : new Date().toISOString();
+        const timestamp = parsed.ts
+            ? String(parsed.ts)
+            : new Date().toISOString();
         const message = parsed.message ? String(parsed.message) : rawLine;
         return {
             ...parsed,
-            ts,
+            ts: timestamp,
             level: isLogLevel(level) ? level : "info",
             message,
         };

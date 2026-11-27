@@ -109,14 +109,14 @@ export function buildAnalogueClockMarkup(now, timezone) {
         const major = tickIndex % 5 === 0;
         const tickAngle = (tickIndex * 6 * Math.PI) / 180;
         const inner = major ? faceRadius - 8 : faceRadius - 4;
-        const x1 = centerX + faceRadius * Math.cos(tickAngle - Math.PI / 2);
-        const y1 = centerY + faceRadius * Math.sin(tickAngle - Math.PI / 2);
-        const x2 = centerX + inner * Math.cos(tickAngle - Math.PI / 2);
-        const y2 = centerY + inner * Math.sin(tickAngle - Math.PI / 2);
+        const startX = centerX + faceRadius * Math.cos(tickAngle - Math.PI / 2);
+        const startY = centerY + faceRadius * Math.sin(tickAngle - Math.PI / 2);
+        const endX = centerX + inner * Math.cos(tickAngle - Math.PI / 2);
+        const endY = centerY + inner * Math.sin(tickAngle - Math.PI / 2);
         const tickClass = major
             ? "clock-analogue-tick-major"
             : "clock-analogue-tick";
-        return `<line class="${tickClass}" x1="${x1.toFixed(2)}" y1="${y1.toFixed(2)}" x2="${x2.toFixed(2)}" y2="${y2.toFixed(2)}"/>`;
+        return `<line class="${tickClass}" x1="${startX.toFixed(2)}" y1="${startY.toFixed(2)}" x2="${endX.toFixed(2)}" y2="${endY.toFixed(2)}"/>`;
     }).join("");
 
     return `<svg class="clock-analogue" width="108" height="108" viewBox="0 0 108 108" aria-hidden="true">

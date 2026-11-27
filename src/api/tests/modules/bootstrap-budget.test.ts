@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { mkdtemp, mkdir, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, mkdir, rm as removePath, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import test from "node:test";
@@ -7,7 +7,7 @@ import { createModuleExtensionRoutes } from "../../reuse/module-extension-routes
 import { createDefaultRouteContext } from "../../reuse/route-context.js";
 
 for (const elapsed of [11_000, 120_001]) {
-    test(`module activation at ${elapsed}ms respects the default bounded bootstrap budget`, async (t) => {
+    test(`module activation at ${elapsed}ms respects the default bounded bootstrap budget`, async (testContext) => {
         const modulesRoot = await mkdtemp(
             path.join(tmpdir(), "cognis-bootstrap-budget-"),
         );
@@ -25,12 +25,12 @@ for (const elapsed of [11_000, 120_001]) {
         );
         const previousRoot = process.env.COGNIS_EXTERNAL_MODULES_ROOT;
         process.env.COGNIS_EXTERNAL_MODULES_ROOT = modulesRoot;
-        t.after(async () => {
-            t.mock.timers.reset();
+        testContext.after(async () => {
+            testContext.mock.timers.reset();
             if (previousRoot === undefined)
                 delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
             else process.env.COGNIS_EXTERNAL_MODULES_ROOT = previousRoot;
-            await rm(modulesRoot, { recursive: true, force: true });
+            await removePath(modulesRoot, { recursive: true, force: true });
         });
         let enter!: () => void;
         let finish!: () => void;
@@ -70,7 +70,7 @@ for (const elapsed of [11_000, 120_001]) {
                 },
             },
         );
-        t.mock.timers.enable({ apis: ["setTimeout"] });
+        testContext.mock.timers.enable({ apis: ["setTimeout"] });
         const refresh = extensions.refresh({ throwOnFailure: true });
         // Attach the rejection handler before advancing the virtual deadline.
         const settled = refresh.then(
@@ -78,7 +78,7 @@ for (const elapsed of [11_000, 120_001]) {
             (error: Error) => error,
         );
         await entered;
-        t.mock.timers.tick(elapsed);
+        testContext.mock.timers.tick(elapsed);
         finish();
         const error = await settled;
         const response = { end: (text: string) => assert.equal(text, "ready") };

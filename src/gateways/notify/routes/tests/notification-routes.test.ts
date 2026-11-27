@@ -22,7 +22,7 @@ function requestWithBody(
         method,
         headers: { authorization: `Bearer ${token}` },
         [Symbol.asyncIterator]: async function* () {
-            for (const c of chunks) yield c;
+            for (const chunk of chunks) yield chunk;
         },
     } as any;
 }
@@ -34,8 +34,8 @@ function makeResponse() {
         writeHead(code: number) {
             status = code;
         },
-        end(p: string) {
-            payload = p;
+        end(responseBody: string) {
+            payload = responseBody;
         },
         get status() {
             return status;
@@ -154,8 +154,8 @@ test("notification route returns 401 without authentication", async () => {
             [Symbol.asyncIterator]: async function* () {},
         } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -184,8 +184,8 @@ test("notification route returns 403 for non-admin users", async () => {
             userToken,
         ),
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -301,7 +301,9 @@ test("GET /api/v1/notify/categories returns categories to authenticated user", a
     assert.equal(res.status, 200);
     const data = JSON.parse(res.payload);
     assert.ok(Array.isArray(data.data));
-    assert.ok(data.data.some((c: { id: string }) => c.id === "system"));
+    assert.ok(
+        data.data.some((category: { id: string }) => category.id === "system"),
+    );
 });
 
 test("GET /api/v1/notify/categories returns 401 without auth", async () => {

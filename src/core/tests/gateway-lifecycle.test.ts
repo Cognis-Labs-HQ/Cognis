@@ -1,6 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { cp, mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import {
+    cp as copyPath,
+    mkdir,
+    mkdtemp,
+    rm as removePath,
+    writeFile,
+} from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import {
@@ -13,14 +19,16 @@ import {
     type BootstrapDisposer,
 } from "../ctx/bootstrap-scope.js";
 
-test("gateway host retains bootstrap and completion resources across disable and reactivation", async (t) => {
+test("gateway host retains bootstrap and completion resources across disable and reactivation", async (testContext) => {
     const directory = await mkdtemp(
         path.join(tmpdir(), "cognis-gateway-lifecycle-"),
     );
-    t.after(() => rm(directory, { recursive: true, force: true }));
+    testContext.after(() =>
+        removePath(directory, { recursive: true, force: true }),
+    );
     const gatewayRoot = path.join(directory, "example");
     await mkdir(gatewayRoot);
-    await cp(
+    await copyPath(
         new URL("./fixtures/gateway-lifecycle/bootstrap.ts", import.meta.url),
         path.join(gatewayRoot, "bootstrap.ts"),
     );

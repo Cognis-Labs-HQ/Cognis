@@ -83,13 +83,13 @@ test("POST /api/v1/auth/reset-password updates local account credentials", async
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-    const db = new InMemoryTestExecutor();
+    const database = new InMemoryTestExecutor();
 
     await bootstrapAuthGateway({
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: db,
+        db: database,
     });
 
     const accountStore = capabilities.get<{
@@ -135,13 +135,13 @@ test("POST /api/v1/auth/reset-password requires current password", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-    const db = new InMemoryTestExecutor();
+    const database = new InMemoryTestExecutor();
 
     await bootstrapAuthGateway({
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: db,
+        db: database,
     });
 
     const accountStore = capabilities.get<{
@@ -169,13 +169,13 @@ test("POST /api/v1/auth/reset-password rejects incorrect current password", asyn
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-    const db = new InMemoryTestExecutor();
+    const database = new InMemoryTestExecutor();
 
     await bootstrapAuthGateway({
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: db,
+        db: database,
     });
 
     const accountStore = capabilities.get<{
@@ -209,13 +209,13 @@ test("POST /api/v1/auth/reset-password rejects previously used password", async 
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-    const db = new InMemoryTestExecutor();
+    const database = new InMemoryTestExecutor();
 
     await bootstrapAuthGateway({
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: db,
+        db: database,
     });
 
     const accountStore = capabilities.get<{
@@ -261,13 +261,13 @@ test("POST /api/v1/auth/reset-password keeps surrounding whitespace in current p
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-    const db = new InMemoryTestExecutor();
+    const database = new InMemoryTestExecutor();
 
     await bootstrapAuthGateway({
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: db,
+        db: database,
     });
 
     const accountStore = capabilities.get<{
@@ -306,13 +306,13 @@ test("POST /api/v1/auth/reset-password backfills previous hash for migrated acco
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-    const db = new InMemoryTestExecutor();
+    const database = new InMemoryTestExecutor();
 
     await bootstrapAuthGateway({
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: db,
+        db: database,
     });
 
     const accountStore = capabilities.get<{
@@ -320,7 +320,7 @@ test("POST /api/v1/auth/reset-password backfills previous hash for migrated acco
     }>("auth:accountStore");
     await accountStore?.register("migrated-history-user", "before-reset");
 
-    await db.executeCommand({
+    await database.executeCommand({
         option: "DELETE",
         table: "local_auth_password_history",
         where: [{ column: "account_id", value: "migrated-history-user" }],
@@ -363,7 +363,7 @@ test("POST /api/v1/auth/reset-password dispatches security notification when not
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-    const db = new InMemoryTestExecutor();
+    const database = new InMemoryTestExecutor();
 
     const dispatched: Array<{
         category: string;
@@ -387,7 +387,7 @@ test("POST /api/v1/auth/reset-password dispatches security notification when not
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: db,
+        db: database,
     });
 
     const accountStore = capabilities.get<{

@@ -42,38 +42,38 @@ export function initLanguagePrefs(
 
         row.append(tdLabel, tdHandle);
 
-        tdHandle.addEventListener("pointerdown", (e) => {
+        tdHandle.addEventListener("pointerdown", (event) => {
             if (
-                e.pointerType === "mouse" ||
+                event.pointerType === "mouse" ||
                 (isOffline() && !languagePriority.includes(isoCode))
             )
                 return;
-            e.preventDefault();
-            tdHandle.setPointerCapture(e.pointerId);
+            event.preventDefault();
+            tdHandle.setPointerCapture(event.pointerId);
             row.classList.add("language-row-dragging");
             dragLanguage = isoCode;
 
-            function onMove(ev) {
-                ev.preventDefault();
+            function onMove(entry) {
+                entry.preventDefault();
                 clearDropMarkers();
-                const { row: targetRow, rect } = findRowAt(row, ev.clientY);
+                const { row: targetRow, rect } = findRowAt(row, entry.clientY);
                 if (!targetRow) return;
                 targetRow.classList.add(
-                    ev.clientY > rect.top + rect.height / 2
+                    entry.clientY > rect.top + rect.height / 2
                         ? "drop-target-after"
                         : "drop-target-before",
                 );
             }
 
-            function onEnd(ev) {
+            function onEnd(entry) {
                 tdHandle.removeEventListener("pointermove", onMove);
                 tdHandle.removeEventListener("pointerup", onEnd);
                 tdHandle.removeEventListener("pointercancel", onEnd);
                 row.classList.remove("language-row-dragging");
-                const { row: targetRow, rect } = findRowAt(row, ev.clientY);
-                const targetTable = findTableAt(ev.clientX, ev.clientY);
+                const { row: targetRow, rect } = findRowAt(row, entry.clientY);
+                const targetTable = findTableAt(entry.clientX, entry.clientY);
                 const targetIsAfter = Boolean(
-                    targetRow && ev.clientY > rect.top + rect.height / 2,
+                    targetRow && entry.clientY > rect.top + rect.height / 2,
                 );
                 clearDropMarkers();
                 applyDrop(isoCode, targetTable, targetRow, targetIsAfter);

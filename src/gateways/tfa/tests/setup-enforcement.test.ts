@@ -79,10 +79,10 @@ test("login issues setup-pending token when global TFA setup is required", async
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-    const db = new InMemoryTestExecutor();
+    const database = new InMemoryTestExecutor();
     const systemCtx = createCtx();
     capabilities.contribute(CTX_CAPABILITY, systemCtx);
-    capabilities.contribute("db:executor", db);
+    capabilities.contribute("db:executor", database);
     capabilities.contribute("auth:keyringVaultStore", {
         async ensureSchema() {},
         async get() {

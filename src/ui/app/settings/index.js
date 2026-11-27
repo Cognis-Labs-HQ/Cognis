@@ -107,7 +107,7 @@ async function loadAuthSetupRequirement() {
  */
 function hasLanguagePriorityChanged(prev, next) {
     if (prev.length !== next.length) return true;
-    return next.some((lang, i) => lang !== prev[i]);
+    return next.some((lang, index) => lang !== prev[index]);
 }
 
 /**

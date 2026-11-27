@@ -103,7 +103,9 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
                 );
                 return;
             }
-            for (const dirEntry of dirEntries.filter((e) => e.isDirectory())) {
+            for (const dirEntry of dirEntries.filter((directoryEntry) =>
+                directoryEntry.isDirectory(),
+            )) {
                 const manifestPath = path.join(
                     dir,
                     dirEntry.name,

@@ -58,10 +58,10 @@ export interface RecoveryCodeRecord {
 }
 
 export class DbTfaStore {
-    constructor(private readonly db: DbExecutor) {}
+    constructor(private readonly database: DbExecutor) {}
 
     async ensureSchema(): Promise<void> {
-        await this.db.ensureTable({
+        await this.database.ensureTable({
             name: "tfa_adapter_configs",
             columns: [
                 {
@@ -80,7 +80,7 @@ export class DbTfaStore {
             ],
         });
 
-        await this.db.ensureTable({
+        await this.database.ensureTable({
             name: "tfa_user_methods",
             columns: [
                 { name: "account_id", type: "text", notNull: true },
@@ -113,7 +113,7 @@ export class DbTfaStore {
             ],
         });
 
-        await this.db.ensureTable({
+        await this.database.ensureTable({
             name: "tfa_pending_setups",
             columns: [
                 {
@@ -146,7 +146,7 @@ export class DbTfaStore {
             indexes: [{ columns: ["account_id"] }, { columns: ["expires_at"] }],
         });
 
-        await this.db.ensureTable({
+        await this.database.ensureTable({
             name: "tfa_recovery_codes",
             columns: [
                 { name: "account_id", type: "text", notNull: true },
@@ -169,7 +169,7 @@ export class DbTfaStore {
             indexes: [{ columns: ["account_id"] }],
         });
 
-        await this.db.ensureTable({
+        await this.database.ensureTable({
             name: "tfa_system_settings",
             columns: [
                 {
@@ -201,7 +201,7 @@ export class DbTfaStore {
             config: Record<string, unknown>;
         }>
     > {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "tfa_adapter_configs",
             columns: ["adapter_id", "enabled", "config_json"],
@@ -218,7 +218,7 @@ export class DbTfaStore {
         enabled: boolean,
         config: Record<string, unknown>,
     ): Promise<void> {
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "INSERT",
             table: "tfa_adapter_configs",
             values: {
@@ -238,7 +238,7 @@ export class DbTfaStore {
     }
 
     async listUserMethods(accountId: string): Promise<StoredTfaMethod[]> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "tfa_user_methods",
             columns: [
@@ -273,7 +273,7 @@ export class DbTfaStore {
         configuredAt?: string | null;
     }): Promise<void> {
         const updatedAt = nowIso();
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "INSERT",
             table: "tfa_user_methods",
             values: {
@@ -330,7 +330,7 @@ export class DbTfaStore {
 
         for (let i = 0; i < merged.length; i += 1) {
             const method = merged[i];
-            await this.db.executeCommand({
+            await this.database.executeCommand({
                 option: "UPDATE",
                 table: "tfa_user_methods",
                 set: {
@@ -352,7 +352,7 @@ export class DbTfaStore {
         payload: Record<string, unknown>;
         expiresAt: string;
     }): Promise<void> {
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "INSERT",
             table: "tfa_pending_setups",
             values: {
@@ -377,7 +377,7 @@ export class DbTfaStore {
     }
 
     async getPendingSetup(setupId: string): Promise<PendingTfaSetup | null> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "tfa_pending_setups",
             columns: [
@@ -405,7 +405,7 @@ export class DbTfaStore {
     }
 
     async deletePendingSetup(setupId: string): Promise<void> {
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "DELETE",
             table: "tfa_pending_setups",
             where: [{ column: "setup_id", value: setupId }],
@@ -413,7 +413,7 @@ export class DbTfaStore {
     }
 
     async pruneExpiredPendingSetups(now = Date.now()): Promise<void> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "tfa_pending_setups",
             columns: ["setup_id", "expires_at"],
@@ -438,7 +438,7 @@ export class DbTfaStore {
         accountId: string,
         recoveryCodes: string[],
     ): Promise<void> {
-        await this.db.transaction(async (executor) => {
+        await this.database.transaction(async (executor) => {
             await executor.executeCommand({
                 option: "DELETE",
                 table: "tfa_recovery_codes",
@@ -461,7 +461,7 @@ export class DbTfaStore {
     }
 
     async hasUnusedRecoveryCodes(accountId: string): Promise<boolean> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "tfa_recovery_codes",
             columns: ["code_hash"],
@@ -475,7 +475,7 @@ export class DbTfaStore {
     }
 
     async countUnusedRecoveryCodes(accountId: string): Promise<number> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "tfa_recovery_codes",
             columns: ["code_hash"],
@@ -488,7 +488,7 @@ export class DbTfaStore {
     }
 
     async listRecoveryCodes(accountId: string): Promise<RecoveryCodeRecord[]> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "tfa_recovery_codes",
             columns: [
@@ -518,7 +518,7 @@ export class DbTfaStore {
         recoveryCode: string,
     ): Promise<boolean> {
         const codeHash = hashRecoveryCode(recoveryCode);
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "UPDATE",
             table: "tfa_recovery_codes",
             set: { used_at: nowIso() },
@@ -533,7 +533,7 @@ export class DbTfaStore {
     }
 
     async clearUserState(accountId: string): Promise<void> {
-        await this.db.transaction(async (executor) => {
+        await this.database.transaction(async (executor) => {
             await executor.executeCommand({
                 option: "DELETE",
                 table: "tfa_user_methods",
@@ -553,7 +553,7 @@ export class DbTfaStore {
     }
 
     async getEnforceAllUsers(): Promise<boolean> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "tfa_system_settings",
             columns: ["enforce_all_users"],
@@ -566,7 +566,7 @@ export class DbTfaStore {
     }
 
     async setEnforceAllUsers(required: boolean): Promise<void> {
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "INSERT",
             table: "tfa_system_settings",
             values: {

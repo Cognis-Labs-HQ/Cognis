@@ -6,7 +6,7 @@ import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import test from "node:test";
 import { isMountSignal, replaceMountScope } from "../mount-scope.js";
 import assert from "node:assert/strict";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 
 function createRouter({
     allowNavigation = true,
@@ -125,7 +125,7 @@ function createRouter({
         observePerformance() {},
         recordRouteMount() {},
     };
-    vm.createContext(sandbox);
+    virtualMachine.createContext(sandbox);
     const imports = {
         "./error-reporting.js": { reportClientError },
         "./page-redraw.js": { registerPageRedraw },

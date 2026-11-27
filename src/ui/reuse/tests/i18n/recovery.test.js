@@ -37,14 +37,14 @@ for (const component of [false, true]) {
     });
 }
 
-test("an HTML response during restart cannot poison a component translation cache", async (t) => {
+test("an HTML response during restart cannot poison a component translation cache", async (testContext) => {
     const logs = [];
     const release = subscribeDiagnostics(async (entry) => {
         logs.push(entry);
         return true;
     });
-    t.after(release);
-    t.mock.method(console, "error", () =>
+    testContext.after(release);
+    testContext.mock.method(console, "error", () =>
         assert.fail("Translations must use the logging gateway"),
     );
     let restarting = true;

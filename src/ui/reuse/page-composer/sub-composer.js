@@ -67,10 +67,15 @@ export function createSubComposerHandlers({
         state.gridCols = Math.max(1, Math.floor(width / UNIT));
         state.gridTrackSize = width / state.gridCols;
         const visiblePlacements = (state.layout?.placements ?? []).filter(
-            (p) => !(state.layout?.hidden ?? []).includes(p.id),
+            (candidatePlacement) =>
+                !(state.layout?.hidden ?? []).includes(candidatePlacement.id),
         );
         const maxBottom = visiblePlacements.reduce(
-            (m, p) => Math.max(m, p.row + p.h),
+            (maximumBottom, candidatePlacement) =>
+                Math.max(
+                    maximumBottom,
+                    candidatePlacement.row + candidatePlacement.h,
+                ),
             0,
         );
         const extra = state.editing ? 1 : 0;
@@ -102,15 +107,26 @@ export function createSubComposerHandlers({
     function initializeSubPlacements(state, { reveal = [] } = {}) {
         if (!state.layout.placements) state.layout.placements = [];
         if (!state.layout.hidden) state.layout.hidden = [];
-        state.layout.placements = state.layout.placements.filter((p) =>
-            state.elements.some((e) => e.id === p.id),
+        state.layout.placements = state.layout.placements.filter(
+            (candidatePlacement) =>
+                state.elements.some(
+                    (candidateElement) =>
+                        candidateElement.id === candidatePlacement.id,
+                ),
         );
         state.layout.hidden = state.layout.hidden.filter((id) =>
-            state.elements.some((e) => e.id === id),
+            state.elements.some(
+                (candidateElement) => candidateElement.id === id,
+            ),
         );
         for (const element of state.elements) {
             if (state.layout.hidden.includes(element.id)) continue;
-            if (state.layout.placements.some((p) => p.id === element.id))
+            if (
+                state.layout.placements.some(
+                    (candidatePlacement) =>
+                        candidatePlacement.id === element.id,
+                )
+            )
                 continue;
             if (
                 element.defaultHidden &&
@@ -163,9 +179,14 @@ export function createSubComposerHandlers({
 
     function compactSubPlacements(state) {
         const visible = state.layout.placements.filter(
-            (p) => !state.layout.hidden.includes(p.id),
+            (candidatePlacement) =>
+                !state.layout.hidden.includes(candidatePlacement.id),
         );
-        visible.sort((a, b) => a.row - b.row || a.col - b.col);
+        visible.sort(
+            (leftEntry, rightEntry) =>
+                leftEntry.row - rightEntry.row ||
+                leftEntry.col - rightEntry.col,
+        );
         const rStep = gridStep(state.gridRows);
         const settled = [];
         for (const placement of visible) {
@@ -189,7 +210,7 @@ export function createSubComposerHandlers({
         }
         for (const placement of settled) {
             const orig = state.layout.placements.find(
-                (lp) => lp.id === placement.id,
+                (candidatePlacement) => candidatePlacement.id === placement.id,
             );
             if (orig) orig.row = placement.row;
         }
@@ -231,10 +252,10 @@ export function createSubComposerHandlers({
             ?.replaceWith(createSubGridOverlay(state));
     }
 
-    function createSubCell(el, placement, state) {
+    function createSubCell(elementDefinition, placement, state) {
         const cell = document.createElement("div");
         cell.className = "composer-cell";
-        cell.dataset.composerElement = el.id;
+        cell.dataset.composerElement = elementDefinition.id;
         cell.style.left = `${placement.col * state.gridTrackSize}px`;
         cell.style.top = `${placement.row * UNIT}px`;
         cell.style.width = `${placement.w * state.gridTrackSize}px`;
@@ -246,7 +267,7 @@ export function createSubComposerHandlers({
                 cell,
                 placement,
                 state,
-                gridSize: getGridSize(el),
+                gridSize: getGridSize(elementDefinition),
                 canPlace: (...args) => canSubPlace(state, ...args),
                 findSwapCandidate: (...args) => findGridSwap(state, ...args),
                 commitSwap: (sourceId, targetId) =>
@@ -255,13 +276,13 @@ export function createSubComposerHandlers({
                 i18n,
             });
 
-            cell.addEventListener("pointerdown", (e) => {
-                if (e.button !== 0 || e.isPrimary === false) return;
-                if (e.target.closest("button")) return;
-                e.preventDefault();
+            cell.addEventListener("pointerdown", (event) => {
+                if (event.button !== 0 || event.isPrimary === false) return;
+                if (event.target.closest("button")) return;
+                event.preventDefault();
                 const cellBounds = cell.getBoundingClientRect();
-                const grabX = e.clientX - cellBounds.left;
-                const grabY = e.clientY - cellBounds.top;
+                const grabX = event.clientX - cellBounds.left;
+                const grabY = event.clientY - cellBounds.top;
 
                 const shade = document.createElement("div");
                 shade.className = "composer-shade";
@@ -278,7 +299,7 @@ export function createSubComposerHandlers({
                 let swapTarget = null;
                 let dropZoneLine = null;
 
-                function onMove(e) {
+                function onMove(event2) {
                     const panel = document.getElementById(
                         getSubPanelId(state.preferenceKey),
                     );
@@ -287,10 +308,10 @@ export function createSubComposerHandlers({
                         (() => {
                             const panelRect = panel.getBoundingClientRect();
                             return (
-                                e.clientX >= panelRect.left &&
-                                e.clientX <= panelRect.right &&
-                                e.clientY >= panelRect.top &&
-                                e.clientY <= panelRect.bottom
+                                event2.clientX >= panelRect.left &&
+                                event2.clientX <= panelRect.right &&
+                                event2.clientY >= panelRect.top &&
+                                event2.clientY <= panelRect.bottom
                             );
                         })();
 
@@ -300,7 +321,7 @@ export function createSubComposerHandlers({
                     }
                     swapTarget = null;
 
-                    if (overPanel && !el.pinned) {
+                    if (overPanel && !elementDefinition.pinned) {
                         shade.classList.add("composer-shade--invalid");
                         panel?.classList.add("composer-panel--drop-target");
                         return;
@@ -309,8 +330,8 @@ export function createSubComposerHandlers({
                     panel?.classList.remove("composer-panel--drop-target");
 
                     const gridRect = state.container.getBoundingClientRect();
-                    const x = e.clientX - gridRect.left;
-                    const y = e.clientY - gridRect.top;
+                    const x = event2.clientX - gridRect.left;
+                    const y = event2.clientY - gridRect.top;
                     const col = Math.max(
                         0,
                         Math.min(
@@ -329,7 +350,7 @@ export function createSubComposerHandlers({
                     if (row + placement.h > state.gridRows) {
                         refreshSubGridBounds(state, row + placement.h + 1);
                         // Growth can clamp an ancestor scroll offset; use its new geometry.
-                        return onMove(e);
+                        return onMove(event2);
                     }
 
                     currentCol = col;
@@ -344,7 +365,7 @@ export function createSubComposerHandlers({
                             row,
                             placement.w,
                             placement.h,
-                            el.id,
+                            elementDefinition.id,
                         )
                     ) {
                         const candidate = findGridSwap(
@@ -353,7 +374,7 @@ export function createSubComposerHandlers({
                             row,
                             placement.w,
                             placement.h,
-                            el.id,
+                            elementDefinition.id,
                         );
                         if (candidate) {
                             swapTarget = candidate;
@@ -371,7 +392,7 @@ export function createSubComposerHandlers({
                     }
                 }
 
-                async function onUp(e) {
+                async function onUp(event2) {
                     document
                         .getElementById(getSubPanelId(state.preferenceKey))
                         ?.classList.remove("composer-panel--drop-target");
@@ -382,7 +403,7 @@ export function createSubComposerHandlers({
                     shade.remove();
                     cell.classList.remove("composer-cell--dragging");
                     refreshSubGridBounds(state);
-                    if (e.type === "pointercancel") return;
+                    if (event2.type === "pointercancel") return;
 
                     const panel = document.getElementById(
                         getSubPanelId(state.preferenceKey),
@@ -392,18 +413,20 @@ export function createSubComposerHandlers({
                         (() => {
                             const panelRect = panel.getBoundingClientRect();
                             return (
-                                e.clientX >= panelRect.left &&
-                                e.clientX <= panelRect.right &&
-                                e.clientY >= panelRect.top &&
-                                e.clientY <= panelRect.bottom
+                                event2.clientX >= panelRect.left &&
+                                event2.clientX <= panelRect.right &&
+                                event2.clientY >= panelRect.top &&
+                                event2.clientY <= panelRect.bottom
                             );
                         })();
 
-                    if (overPanel && !el.pinned) {
-                        state.layout.hidden.push(el.id);
+                    if (overPanel && !elementDefinition.pinned) {
+                        state.layout.hidden.push(elementDefinition.id);
                         state.layout.placements =
                             state.layout.placements.filter(
-                                (p) => p.id !== el.id,
+                                (candidatePlacement) =>
+                                    candidatePlacement.id !==
+                                    elementDefinition.id,
                             );
                         renderSubGrid(state);
                         return;
@@ -413,7 +436,13 @@ export function createSubComposerHandlers({
                     swapTarget = null;
 
                     if (currentSwapTarget) {
-                        if (applyGridSwap(state, el.id, currentSwapTarget.id)) {
+                        if (
+                            applyGridSwap(
+                                state,
+                                elementDefinition.id,
+                                currentSwapTarget.id,
+                            )
+                        ) {
                             renderSubGrid(state);
                         }
                     } else {
@@ -428,12 +457,14 @@ export function createSubComposerHandlers({
                                 currentRow,
                                 placement.w,
                                 placement.h,
-                                el.id,
+                                elementDefinition.id,
                             )
                         ) {
                             const targetPlacement =
                                 state.layout.placements.find(
-                                    (lp) => lp.id === el.id,
+                                    (candidatePlacement) =>
+                                        candidatePlacement.id ===
+                                        elementDefinition.id,
                                 );
                             if (targetPlacement) {
                                 targetPlacement.col = currentCol;
@@ -444,22 +475,23 @@ export function createSubComposerHandlers({
                     }
                 }
 
-                bindComposerPointerDrag(cell, e, onMove, onUp);
+                bindComposerPointerDrag(cell, event, onMove, onUp);
             });
 
-            if (!el.pinned) {
+            if (!elementDefinition.pinned) {
                 const closeBtn = document.createElement("button");
                 closeBtn.className = "composer-close-btn btn-cancel";
                 closeBtn.type = "button";
                 closeBtn.textContent = "×";
                 closeBtn.setAttribute("aria-label", i18n.t("ui.reuse.remove"));
-                closeBtn.addEventListener("pointerdown", (e) =>
-                    e.stopPropagation(),
+                closeBtn.addEventListener("pointerdown", (event) =>
+                    event.stopPropagation(),
                 );
                 closeBtn.addEventListener("click", () => {
-                    state.layout.hidden.push(el.id);
+                    state.layout.hidden.push(elementDefinition.id);
                     state.layout.placements = state.layout.placements.filter(
-                        (p) => p.id !== el.id,
+                        (candidatePlacement) =>
+                            candidatePlacement.id !== elementDefinition.id,
                     );
                     renderSubGrid(state);
                 });
@@ -470,14 +502,17 @@ export function createSubComposerHandlers({
         const content = document.createElement("div");
         content.className = "widget-card composer-cell-content";
         content.inert = state.editing;
-        cell.setAttribute("aria-label", el.label ?? el.id);
+        cell.setAttribute(
+            "aria-label",
+            elementDefinition.label ?? elementDefinition.id,
+        );
         const presentation = composerPresentation(state.container);
         applyComposerPresentation(state.container, content, presentation);
-        content.innerHTML = el.render(presentation);
+        content.innerHTML = elementDefinition.render(presentation);
         cell.appendChild(content);
 
         if (state.editing) {
-            const gridSize = getGridSize(el);
+            const gridSize = getGridSize(elementDefinition);
             appendResizeControls({
                 cell,
                 placement,
@@ -575,11 +610,12 @@ export function createSubComposerHandlers({
             state.container.appendChild(createSubGridOverlay(state));
 
             const visiblePlacements = state.layout.placements.filter(
-                (p) => !state.layout.hidden.includes(p.id),
+                (candidatePlacement) =>
+                    !state.layout.hidden.includes(candidatePlacement.id),
             );
             for (const placement of visiblePlacements) {
                 const element = state.elements.find(
-                    (e) => e.id === placement.id,
+                    (candidateElement) => candidateElement.id === placement.id,
                 );
                 if (!element) continue;
                 state.container.appendChild(
@@ -602,7 +638,7 @@ export function createSubComposerHandlers({
 
             for (const placement of sorted) {
                 const element = state.elements.find(
-                    (e) => e.id === placement.id,
+                    (candidateElement) => candidateElement.id === placement.id,
                 );
                 if (!element) continue;
                 let card = retainedCards.get(element.id);
@@ -642,8 +678,8 @@ export function createSubComposerHandlers({
         if (renderedNewContent) state.onRender?.();
     }
 
-    async function mountSubComposer(el, sectionContainer) {
-        let state = subStates.get(el.id);
+    async function mountSubComposer(elementDefinition, sectionContainer) {
+        let state = subStates.get(elementDefinition.id);
         if (!state) {
             state = {
                 signal,
@@ -657,13 +693,15 @@ export function createSubComposerHandlers({
                 panelPosition: null,
                 resizeObserver: null,
                 container: null,
-                columns: el.subComposerOptions.columns ?? 1,
-                elements: el.subComposerOptions.elements,
+                columns: elementDefinition.subComposerOptions.columns ?? 1,
+                elements: elementDefinition.subComposerOptions.elements,
                 allowCustomization:
-                    el.subComposerOptions.allowCustomization ?? false,
-                preferenceKey: el.subComposerOptions.preferenceKey,
-                onRender: el.subComposerOptions.onRender,
-                onUnmount: el.subComposerOptions.onUnmount,
+                    elementDefinition.subComposerOptions.allowCustomization ??
+                    false,
+                preferenceKey:
+                    elementDefinition.subComposerOptions.preferenceKey,
+                onRender: elementDefinition.subComposerOptions.onRender,
+                onUnmount: elementDefinition.subComposerOptions.onUnmount,
             };
             const initialGridCols = Math.max(
                 1,
@@ -677,7 +715,7 @@ export function createSubComposerHandlers({
             );
             state.layout = cloneLayoutData(loaded.layout);
             state.layoutProfiles = loaded.profiles;
-            subStates.set(el.id, state);
+            subStates.set(elementDefinition.id, state);
         }
 
         state.container = sectionContainer;
@@ -740,8 +778,8 @@ export function createSubComposerHandlers({
         state.resizeObserver.observe(sectionContainer);
     }
 
-    function unmountSubComposer(el) {
-        const state = subStates.get(el.id);
+    function unmountSubComposer(elementDefinition) {
+        const state = subStates.get(elementDefinition.id);
         if (!state) return;
         state.onUnmount?.();
         document.getElementById(getSubPanelId(state.preferenceKey))?.remove();

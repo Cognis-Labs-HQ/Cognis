@@ -86,13 +86,13 @@ for (const mode of ["grid", "nested"]) {
                             right < after.length;
                             right++
                         ) {
-                            const a = after[left],
-                                b = after[right];
+                            const leftEntry = after[left],
+                                rightEntry = after[right];
                             assert.ok(
-                                a.right <= b.left + 1 ||
-                                    b.right <= a.left + 1 ||
-                                    a.bottom <= b.top + 1 ||
-                                    b.bottom <= a.top + 1,
+                                leftEntry.right <= rightEntry.left + 1 ||
+                                    rightEntry.right <= leftEntry.left + 1 ||
+                                    leftEntry.bottom <= rightEntry.top + 1 ||
+                                    rightEntry.bottom <= leftEntry.top + 1,
                                 "Committed cells do not overlap",
                             );
                         }

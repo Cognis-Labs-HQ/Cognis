@@ -116,10 +116,10 @@ export class CoreRegistrationGateway {
     private publicAdapterId: string | null = null;
     private publicRegistrationEnabled = true;
 
-    constructor(private readonly db: DbExecutor) {}
+    constructor(private readonly database: DbExecutor) {}
 
     async ensureSchema(): Promise<void> {
-        await this.db.ensureTable({
+        await this.database.ensureTable({
             name: "registration_adapter_configs",
             columns: [
                 {
@@ -131,7 +131,7 @@ export class CoreRegistrationGateway {
                 { name: "enabled", type: "integer", notNull: true, default: 0 },
             ],
         });
-        await this.db.ensureTable({
+        await this.database.ensureTable({
             name: "registration_policy",
             columns: [
                 {
@@ -163,7 +163,7 @@ export class CoreRegistrationGateway {
         founderInvitesEnabled: boolean;
         adminInvitesEnabled: boolean;
     }> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "registration_policy",
             columns: [
@@ -201,7 +201,7 @@ export class CoreRegistrationGateway {
     }): Promise<void> {
         const publicRegistrationEnabled =
             input.publicRegistrationEnabled ?? this.publicRegistrationEnabled;
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "INSERT",
             table: "registration_policy",
             values: {
@@ -294,7 +294,7 @@ export class CoreRegistrationGateway {
     }
 
     async loadPersistedConfigs(): Promise<void> {
-        const result = await this.db.executeCommand({
+        const result = await this.database.executeCommand({
             option: "SELECT",
             table: "registration_adapter_configs",
             columns: ["adapter_id", "enabled"],
@@ -464,7 +464,7 @@ export class CoreRegistrationGateway {
         adapterId: string,
         enabled: boolean,
     ): Promise<void> {
-        await this.db.executeCommand({
+        await this.database.executeCommand({
             option: "INSERT",
             table: "registration_adapter_configs",
             values: {

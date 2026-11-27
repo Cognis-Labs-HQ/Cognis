@@ -60,8 +60,11 @@ function createClassesPageRoute(
             return true;
         }
         ctx.setPageSecurityHeaders(res);
-        const html = await import("node:fs/promises").then((fs) =>
-            fs.readFile(path.join(ADAPTER_UI_ROOT, "index.html"), "utf8"),
+        const html = await import("node:fs/promises").then((fileSystem) =>
+            fileSystem.readFile(
+                path.join(ADAPTER_UI_ROOT, "index.html"),
+                "utf8",
+            ),
         );
         res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
         res.end(html);
@@ -97,8 +100,11 @@ function createMyClassesPageRoute(
             return true;
         }
         ctx.setPageSecurityHeaders(res);
-        const html = await import("node:fs/promises").then((fs) =>
-            fs.readFile(path.join(ADAPTER_UI_ROOT, "my-classes.html"), "utf8"),
+        const html = await import("node:fs/promises").then((fileSystem) =>
+            fileSystem.readFile(
+                path.join(ADAPTER_UI_ROOT, "my-classes.html"),
+                "utf8",
+            ),
         );
         res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
         res.end(html);

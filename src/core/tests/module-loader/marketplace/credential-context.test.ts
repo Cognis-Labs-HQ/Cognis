@@ -44,10 +44,10 @@ test("credential-bearing operations redact raw, escaped and basic-auth secrets i
     assert.deepEqual(entries[1], ["info", "public", { value: "unrelated" }]);
 });
 
-test("marketplace requests reject redirects and retain caller cancellation with bounded lifetime", async (t) => {
+test("marketplace requests reject redirects and retain caller cancellation with bounded lifetime", async (testContext) => {
     let captured: RequestInit | undefined;
     const controller = new AbortController();
-    t.mock.method(globalThis, "fetch", async (_url, options) => {
+    testContext.mock.method(globalThis, "fetch", async (_url, options) => {
         captured = options;
         return new Response("{}");
     });

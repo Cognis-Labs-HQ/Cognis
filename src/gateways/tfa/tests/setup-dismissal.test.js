@@ -101,7 +101,7 @@ test("successful popup dismissal retains navigation through asynchronous popup r
 });
 
 for (const decision of ["stay", "discard"])
-    test(`cancelling enrollment preserves the remaining Settings guard (${decision})`, async (t) => {
+    test(`cancelling enrollment preserves the remaining Settings guard (${decision})`, async (testContext) => {
         const { createUnsavedChangesBar } =
             await import("../../../ui/reuse/unsaved-changes.js");
         const host = fixture();
@@ -115,7 +115,7 @@ for (const decision of ["stay", "discard"])
                 return decision;
             },
         });
-        t.after(() => {
+        testContext.after(() => {
             changes.destroy();
             host.owner.abort();
             globalThis.window = previousWindow;

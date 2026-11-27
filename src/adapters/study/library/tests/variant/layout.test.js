@@ -119,16 +119,16 @@ function fixture({ width = 400, height = 200, rootX = 12, rootY = 12 } = {}) {
     globalThis.window = {
         innerWidth: width,
         innerHeight: height,
-        requestAnimationFrame: (fn) => {
-            frames.set(++nextFrame, fn);
+        requestAnimationFrame: (callback) => {
+            frames.set(++nextFrame, callback);
             return nextFrame;
         },
         cancelAnimationFrame: (id) => frames.delete(id),
     };
     const flush = () => {
-        for (const [id, fn] of frames) {
+        for (const [id, callback] of frames) {
             frames.delete(id);
-            fn();
+            callback();
         }
     };
     return { root, grid, add, flush, frames };

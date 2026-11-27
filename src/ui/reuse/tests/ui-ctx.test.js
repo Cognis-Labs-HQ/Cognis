@@ -10,7 +10,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import vm from "node:vm";
+import virtualMachine from "node:vm";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
 

@@ -4,7 +4,7 @@ import { isModuleCapabilityAvailable } from "../../../reuse/module-capability-av
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, rm as removePath, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import {
@@ -374,7 +374,7 @@ test("buildServer loads external module assets before accepting requests", async
         assert.equal(await response.text(), "export {};");
     } finally {
         await close(server);
-        await rm(externalRoot, { recursive: true, force: true });
+        await removePath(externalRoot, { recursive: true, force: true });
         if (previousExternalRoot === undefined) {
             delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
         } else {
