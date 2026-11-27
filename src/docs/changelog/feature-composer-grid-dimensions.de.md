@@ -30,6 +30,10 @@ Widgets lassen sich in Haupt- und verschachtelten Editoren an allen acht Kanten 
 
 Wiederverwendbare Editormodule dokumentieren öffentliche Exporte, Aufrufbeispiele, Ein- und Ausgabeverträge sowie Bereinigungsaufgaben. Die technische Referenz beschreibt Speicherergebnisse, Editorzustand und die tatsächliche spaltenbezogene Speicherstruktur in allen vier unterstützten Sprachen.
 
+## Lesbare Arbeitsbereichsvorgaben
+
+Die Dashboard-Marke bietet Platz für Symbol und vollständigen Titel; Begrüßung und Anmeldung behalten lesbare Breiten, Kontodaten eine kompakte Standardhöhe. Muss eine gespeicherte Zeile neu angeordnet werden, berücksichtigt Composer aktuelle Mindest- und Höchstbreiten, ohne gespeicherte Profile zu überschreiben.
+
 ## Commits
 
 - [42d72de](https://github.com/Cognis-Labs-HQ/Cognis/commit/42d72de61ab7765abe866b3fd3a0214bcfb2b006)
@@ -39,3 +43,4 @@ Wiederverwendbare Editormodule dokumentieren öffentliche Exporte, Aufrufbeispie
 - [fcc204f](https://github.com/Cognis-Labs-HQ/Cognis/commit/fcc204fe09b8fa86814d5f24b5d3839dfbc51c2b)
 - [286d397](https://github.com/Cognis-Labs-HQ/Cognis/commit/286d397650ef4e285375d95201a7eee6c70b6528)
 - [f038150](https://github.com/Cognis-Labs-HQ/Cognis/commit/f03815014aee59973f68dc3f040c2bf248309f9e)
+- [fc698c8](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc698c84645f30eabbc25306ecf3eccbbb3b8828)

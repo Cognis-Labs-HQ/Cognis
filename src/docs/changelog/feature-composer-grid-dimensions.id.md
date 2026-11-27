@@ -30,6 +30,10 @@ Widget kini dapat diubah ukurannya dari delapan tepi dan sudut di editor utama m
 
 Modul editor yang dapat digunakan kembali mendokumentasikan ekspor publik, contoh pemanggilan, kontrak masukan/keluaran, dan tanggung jawab pembersihan. Referensi teknis menjelaskan hasil penyimpanan, state editor, dan struktur persistensi per kolom yang sebenarnya dalam keempat bahasa yang didukung.
 
+## Ukuran Ruang Kerja yang Nyaman
+
+Merek dasbor menyediakan ruang untuk ikon dan judul lengkap, kartu sambutan dan login mempertahankan lebar yang mudah dibaca, dan detail akun memakai tinggi bawaan yang ringkas. Composer menerapkan lebar minimum dan maksimum saat baris tersimpan perlu disusun ulang, tanpa menimpa profil tersimpan.
+
 ## Komit
 
 - [42d72de](https://github.com/Cognis-Labs-HQ/Cognis/commit/42d72de61ab7765abe866b3fd3a0214bcfb2b006)
@@ -39,3 +43,4 @@ Modul editor yang dapat digunakan kembali mendokumentasikan ekspor publik, conto
 - [fcc204f](https://github.com/Cognis-Labs-HQ/Cognis/commit/fcc204fe09b8fa86814d5f24b5d3839dfbc51c2b)
 - [286d397](https://github.com/Cognis-Labs-HQ/Cognis/commit/286d397650ef4e285375d95201a7eee6c70b6528)
 - [f038150](https://github.com/Cognis-Labs-HQ/Cognis/commit/f03815014aee59973f68dc3f040c2bf248309f9e)
+- [fc698c8](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc698c84645f30eabbc25306ecf3eccbbb3b8828)

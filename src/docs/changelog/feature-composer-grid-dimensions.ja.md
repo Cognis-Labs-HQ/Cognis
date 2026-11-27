@@ -30,6 +30,10 @@
 
 再利用可能な編集モジュールに、公開エクスポート、呼び出し例、入出力契約、解放処理の責任を記載しました。技術リファレンスでは、保存結果、編集状態、実際の列数別の保存形式を対応する4言語で説明します。
 
+## 読みやすいワークスペースの既定サイズ
+
+ダッシュボードのブランドにアイコンと名前全体の領域を確保し、挨拶とログインのカードは読みやすい幅、アカウント情報はコンパクトな既定の高さを使います。保存済みの行を再配置するときは、プロファイルを上書きせず、現在の最小幅と最大幅に従って表示します。
+
 ## コミット
 
 - [42d72de](https://github.com/Cognis-Labs-HQ/Cognis/commit/42d72de61ab7765abe866b3fd3a0214bcfb2b006)
@@ -39,3 +43,4 @@
 - [fcc204f](https://github.com/Cognis-Labs-HQ/Cognis/commit/fcc204fe09b8fa86814d5f24b5d3839dfbc51c2b)
 - [286d397](https://github.com/Cognis-Labs-HQ/Cognis/commit/286d397650ef4e285375d95201a7eee6c70b6528)
 - [f038150](https://github.com/Cognis-Labs-HQ/Cognis/commit/f03815014aee59973f68dc3f040c2bf248309f9e)
+- [fc698c8](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc698c84645f30eabbc25306ecf3eccbbb3b8828)
