@@ -233,11 +233,14 @@ export async function discoverAdapters(
     );
 
     for (const entry of entries) {
-        const pkgPath = path.join(adaptersRoot, entry, "package.json");
+        const packagePath = path.join(adaptersRoot, entry, "package.json");
         try {
-            const raw = await readFile(pkgPath, "utf8");
-            const pkg = JSON.parse(raw) as { main?: string; version?: string };
-            if (!pkg.main) continue;
+            const raw = await readFile(packagePath, "utf8");
+            const packageManifest = JSON.parse(raw) as {
+                main?: string;
+                version?: string;
+            };
+            if (!packageManifest.main) continue;
 
             let requires: string[] | undefined;
             let publisher: string | undefined;
@@ -258,14 +261,20 @@ export async function discoverAdapters(
                 requires = undefined;
             }
 
-            const entryPath = path.resolve(adaptersRoot, entry, pkg.main);
-            const mod = await import(entryPath);
-            if (typeof mod.createCalendarAdapter === "function") {
+            const entryPath = path.resolve(
+                adaptersRoot,
+                entry,
+                packageManifest.main,
+            );
+            const moduleExports = await import(entryPath);
+            if (typeof moduleExports.createCalendarAdapter === "function") {
                 const factory =
-                    mod.createCalendarAdapter as () => CalendarAdapter | null;
+                    moduleExports.createCalendarAdapter as () => CalendarAdapter | null;
                 const adapter = factory();
-                if (adapter && pkg.version) {
-                    Object.assign(adapter, { version: pkg.version });
+                if (adapter && packageManifest.version) {
+                    Object.assign(adapter, {
+                        version: packageManifest.version,
+                    });
                 }
                 if (adapter && publisher) {
                     Object.assign(adapter, { publisher });
@@ -295,24 +304,26 @@ export async function bootstrapAdapters(
     );
 
     for (const entry of entries) {
-        const pkgPath = path.join(adaptersRoot, entry, "package.json");
+        const packagePath = path.join(adaptersRoot, entry, "package.json");
 
-        let mod: Record<string, unknown>;
+        let moduleExports: Record<string, unknown>;
         try {
-            const raw = await readFile(pkgPath, "utf8");
-            const pkg = JSON.parse(raw) as { main?: string };
-            if (!pkg.main) continue;
-            mod = await import(path.resolve(adaptersRoot, entry, pkg.main));
+            const raw = await readFile(packagePath, "utf8");
+            const packageManifest = JSON.parse(raw) as { main?: string };
+            if (!packageManifest.main) continue;
+            moduleExports = await import(
+                path.resolve(adaptersRoot, entry, packageManifest.main)
+            );
         } catch {
             continue;
         }
 
         if (
-            typeof mod.bootstrapCalendarAdapter !== "function" &&
-            mod.defineContracts === undefined
+            typeof moduleExports.bootstrapCalendarAdapter !== "function" &&
+            moduleExports.defineContracts === undefined
         )
             continue;
-        const bootstrapFn = mod.bootstrapCalendarAdapter as (
+        const bootstrapCallback = moduleExports.bootstrapCalendarAdapter as (
             ctx: CalendarAdapterBootstrapCtx,
         ) => Promise<void> | void;
 
@@ -323,9 +334,9 @@ export async function bootstrapAdapters(
             isAdapterEnabled: (adapterId = entry) =>
                 gateway.isAdapterEnabled(adapterId),
             registerRoute: (handler, gatewayId) => {
-                baseCtx.registerRoute(async (req, res, url) => {
+                baseCtx.registerRoute(async (request, response, url) => {
                     if (!gateway.isAdapterEnabled(entry)) return false;
-                    return handler(req, res, url);
+                    return handler(request, response, url);
                 }, gatewayId);
             },
         };
@@ -335,10 +346,10 @@ export async function bootstrapAdapters(
                 "calendar",
                 entry,
                 adapterCtx,
-                mod,
+                moduleExports,
                 async () => {
-                    if (typeof bootstrapFn === "function")
-                        await bootstrapFn(adapterCtx);
+                    if (typeof bootstrapCallback === "function")
+                        await bootstrapCallback(adapterCtx);
                 },
             );
         } catch (error) {

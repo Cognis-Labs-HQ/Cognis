@@ -511,7 +511,8 @@ test("external module bootstrap ingests navigation, SPA routes, and ctx capabili
             ],
         } as any,
         () => true,
-        (level, message, meta) => logEntries.push({ level, message, meta }),
+        (level, message, metadata) =>
+            logEntries.push({ level, message, meta: metadata }),
         {
             routeContext: createDefaultRouteContext({
                 getCapability: (id) =>

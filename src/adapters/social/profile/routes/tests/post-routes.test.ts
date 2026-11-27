@@ -1,13 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { rmSync } from "node:fs";
-import { DbProfileStore } from "../../store.js";
-import { DbLocalAccountStore } from "../../../../../adapters/auth/local/store.js";
+import { DbProfileStore as DatabaseProfileStore } from "../../store.js";
+import { DbLocalAccountStore as DatabaseLocalAccountStore } from "../../../../../adapters/auth/local/store.js";
 import { createPostRoutes } from "../posts.js";
 import { issueAccessToken } from "../../../../../gateways/auth/access-tokens.js";
-import { makeTempDb } from "./helpers.js";
+import { makeTempDb as makeTemporaryDatabase } from "./helpers.js";
 
-function makeReq(method: string, token: string | null, body?: string) {
+function makeRequest(method: string, token: string | null, body?: string) {
     const chunks = body ? [Buffer.from(body)] : [];
     return {
         method,
@@ -23,9 +23,9 @@ async function setupUser(
     username: string,
     visibility = "community",
 ) {
-    const accountStore = new DbLocalAccountStore(executor);
+    const accountStore = new DatabaseLocalAccountStore(executor);
     await accountStore.ensureSchema();
-    const profileStore = new DbProfileStore(executor);
+    const profileStore = new DatabaseProfileStore(executor);
     await profileStore.ensureSchema();
     await accountStore.register(username, "pw");
     await profileStore.createProfile(username, username);
@@ -37,7 +37,7 @@ async function setupUser(
 }
 
 test("post routes - hidden user cannot post with community visibility", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: directory, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUser(executor, "alice", "hidden");
         const route = createPostRoutes(profileStore);
@@ -45,7 +45,7 @@ test("post routes - hidden user cannot post with community visibility", async ()
         let status = 0;
 
         await route(
-            makeReq(
+            makeRequest(
                 "POST",
                 token,
                 JSON.stringify({ content: "hello", visibility: "community" }),
@@ -60,12 +60,12 @@ test("post routes - hidden user cannot post with community visibility", async ()
         );
         assert.equal(status, 400);
     } finally {
-        rmSync(dir, { recursive: true, force: true });
+        rmSync(directory, { recursive: true, force: true });
     }
 });
 
 test("post routes - hidden user can post with only_me visibility", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: directory, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUser(executor, "alice", "hidden");
         const route = createPostRoutes(profileStore);
@@ -74,7 +74,7 @@ test("post routes - hidden user can post with only_me visibility", async () => {
         let body = "";
 
         await route(
-            makeReq(
+            makeRequest(
                 "POST",
                 token,
                 JSON.stringify({
@@ -97,19 +97,19 @@ test("post routes - hidden user can post with only_me visibility", async () => {
         assert.equal(created.content, "private note");
         assert.equal(created.visibility, "only_me");
     } finally {
-        rmSync(dir, { recursive: true, force: true });
+        rmSync(directory, { recursive: true, force: true });
     }
 });
 
 test("post routes - unauthenticated POST /api/v1/social/posts returns 401", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: directory, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUser(executor, "alice");
         const route = createPostRoutes(profileStore);
         let status = 0;
 
         await route(
-            makeReq(
+            makeRequest(
                 "POST",
                 null,
                 JSON.stringify({ content: "hello", visibility: "community" }),
@@ -124,12 +124,12 @@ test("post routes - unauthenticated POST /api/v1/social/posts returns 401", asyn
         );
         assert.equal(status, 401);
     } finally {
-        rmSync(dir, { recursive: true, force: true });
+        rmSync(directory, { recursive: true, force: true });
     }
 });
 
 test("post routes - missing content returns 400", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: directory, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUser(executor, "alice");
         const route = createPostRoutes(profileStore);
@@ -137,7 +137,11 @@ test("post routes - missing content returns 400", async () => {
         let status = 0;
 
         await route(
-            makeReq("POST", token, JSON.stringify({ visibility: "community" })),
+            makeRequest(
+                "POST",
+                token,
+                JSON.stringify({ visibility: "community" }),
+            ),
             {
                 writeHead(statusCode: number) {
                     status = statusCode;
@@ -148,12 +152,12 @@ test("post routes - missing content returns 400", async () => {
         );
         assert.equal(status, 400);
     } finally {
-        rmSync(dir, { recursive: true, force: true });
+        rmSync(directory, { recursive: true, force: true });
     }
 });
 
 test("post routes - invalid visibility returns 400", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: directory, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUser(executor, "alice");
         const route = createPostRoutes(profileStore);
@@ -161,7 +165,7 @@ test("post routes - invalid visibility returns 400", async () => {
         let status = 0;
 
         await route(
-            makeReq(
+            makeRequest(
                 "POST",
                 token,
                 JSON.stringify({ content: "hello", visibility: "public" }),
@@ -176,12 +180,12 @@ test("post routes - invalid visibility returns 400", async () => {
         );
         assert.equal(status, 400);
     } finally {
-        rmSync(dir, { recursive: true, force: true });
+        rmSync(directory, { recursive: true, force: true });
     }
 });
 
 test("post routes - create and list own posts", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: directory, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUser(executor, "alice");
         const route = createPostRoutes(profileStore);
@@ -190,7 +194,7 @@ test("post routes - create and list own posts", async () => {
         let body = "";
 
         await route(
-            makeReq(
+            makeRequest(
                 "POST",
                 token,
                 JSON.stringify({
@@ -215,7 +219,7 @@ test("post routes - create and list own posts", async () => {
         assert.equal(created.title, "My Post");
 
         await route(
-            makeReq("GET", token),
+            makeRequest("GET", token),
             {
                 writeHead(statusCode: number) {
                     status = statusCode;
@@ -229,16 +233,16 @@ test("post routes - create and list own posts", async () => {
         assert.equal(status, 200);
         assert.equal(JSON.parse(body).data.length, 1);
     } finally {
-        rmSync(dir, { recursive: true, force: true });
+        rmSync(directory, { recursive: true, force: true });
     }
 });
 
 test("post routes - list visible posts across authors for search", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: directory, executor } = makeTemporaryDatabase();
     try {
-        const accountStore = new DbLocalAccountStore(executor);
+        const accountStore = new DatabaseLocalAccountStore(executor);
         await accountStore.ensureSchema();
-        const profileStore = new DbProfileStore(executor);
+        const profileStore = new DatabaseProfileStore(executor);
         await profileStore.ensureSchema();
         await accountStore.register("alice", "pw");
         await accountStore.register("bob", "pw");
@@ -254,7 +258,7 @@ test("post routes - list visible posts across authors for search", async () => {
         let body = "";
 
         await route(
-            makeReq(
+            makeRequest(
                 "POST",
                 bobToken,
                 JSON.stringify({
@@ -276,7 +280,7 @@ test("post routes - list visible posts across authors for search", async () => {
         assert.equal(status, 201);
 
         await route(
-            makeReq(
+            makeRequest(
                 "POST",
                 aliceToken,
                 JSON.stringify({
@@ -298,7 +302,7 @@ test("post routes - list visible posts across authors for search", async () => {
         assert.equal(status, 201);
 
         await route(
-            makeReq("GET", aliceToken),
+            makeRequest("GET", aliceToken),
             {
                 writeHead(code: number) {
                     status = code;
@@ -319,12 +323,12 @@ test("post routes - list visible posts across authors for search", async () => {
             ["alice"],
         );
     } finally {
-        rmSync(dir, { recursive: true, force: true });
+        rmSync(directory, { recursive: true, force: true });
     }
 });
 
 test("post routes - delete own post", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: directory, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUser(executor, "alice");
         const route = createPostRoutes(profileStore);
@@ -333,7 +337,7 @@ test("post routes - delete own post", async () => {
         let body = "";
 
         await route(
-            makeReq(
+            makeRequest(
                 "POST",
                 token,
                 JSON.stringify({
@@ -354,7 +358,7 @@ test("post routes - delete own post", async () => {
         const postId = JSON.parse(body).data.id;
 
         await route(
-            makeReq("DELETE", token),
+            makeRequest("DELETE", token),
             {
                 writeHead(statusCode: number) {
                     status = statusCode;
@@ -368,16 +372,16 @@ test("post routes - delete own post", async () => {
         assert.equal(status, 200);
         assert.match(body, /deleted/);
     } finally {
-        rmSync(dir, { recursive: true, force: true });
+        rmSync(directory, { recursive: true, force: true });
     }
 });
 
 test("post routes - cannot delete another user post without elevated role", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: directory, executor } = makeTemporaryDatabase();
     try {
-        const accountStore = new DbLocalAccountStore(executor);
+        const accountStore = new DatabaseLocalAccountStore(executor);
         await accountStore.ensureSchema();
-        const profileStore = new DbProfileStore(executor);
+        const profileStore = new DatabaseProfileStore(executor);
         await profileStore.ensureSchema();
         await accountStore.register("alice", "pw");
         await accountStore.register("bob", "pw");
@@ -392,7 +396,7 @@ test("post routes - cannot delete another user post without elevated role", asyn
         let body = "";
 
         await route(
-            makeReq(
+            makeRequest(
                 "POST",
                 aliceToken,
                 JSON.stringify({
@@ -413,7 +417,7 @@ test("post routes - cannot delete another user post without elevated role", asyn
         const postId = JSON.parse(body).data.id;
 
         await route(
-            makeReq("DELETE", bobToken),
+            makeRequest("DELETE", bobToken),
             {
                 writeHead(statusCode: number) {
                     status = statusCode;
@@ -424,22 +428,22 @@ test("post routes - cannot delete another user post without elevated role", asyn
         );
         assert.equal(status, 403);
     } finally {
-        rmSync(dir, { recursive: true, force: true });
+        rmSync(directory, { recursive: true, force: true });
     }
 });
 
 test("post routes - moderator can delete another user post", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: directory, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUser(executor, "alice");
         const route = createPostRoutes(profileStore);
         const aliceToken = issueAccessToken("alice", "user", 60);
-        const modToken = issueAccessToken("mod", "moderator", 60);
+        const moduleToken = issueAccessToken("mod", "moderator", 60);
         let status = 0;
         let body = "";
 
         await route(
-            makeReq(
+            makeRequest(
                 "POST",
                 aliceToken,
                 JSON.stringify({
@@ -460,7 +464,7 @@ test("post routes - moderator can delete another user post", async () => {
         const postId = JSON.parse(body).data.id;
 
         await route(
-            makeReq("DELETE", modToken),
+            makeRequest("DELETE", moduleToken),
             {
                 writeHead(statusCode: number) {
                     status = statusCode;
@@ -474,12 +478,12 @@ test("post routes - moderator can delete another user post", async () => {
         assert.equal(status, 200);
         assert.match(body, /deleted/);
     } finally {
-        rmSync(dir, { recursive: true, force: true });
+        rmSync(directory, { recursive: true, force: true });
     }
 });
 
 test("post routes - admin can delete another user post", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: directory, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUser(executor, "alice");
         const route = createPostRoutes(profileStore);
@@ -489,7 +493,7 @@ test("post routes - admin can delete another user post", async () => {
         let body = "";
 
         await route(
-            makeReq(
+            makeRequest(
                 "POST",
                 aliceToken,
                 JSON.stringify({
@@ -510,7 +514,7 @@ test("post routes - admin can delete another user post", async () => {
         const postId = JSON.parse(body).data.id;
 
         await route(
-            makeReq("DELETE", adminToken),
+            makeRequest("DELETE", adminToken),
             {
                 writeHead(statusCode: number) {
                     status = statusCode;
@@ -524,16 +528,16 @@ test("post routes - admin can delete another user post", async () => {
         assert.equal(status, 200);
         assert.match(body, /deleted/);
     } finally {
-        rmSync(dir, { recursive: true, force: true });
+        rmSync(directory, { recursive: true, force: true });
     }
 });
 
 test("post routes - only_me posts not visible to others", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: directory, executor } = makeTemporaryDatabase();
     try {
-        const accountStore = new DbLocalAccountStore(executor);
+        const accountStore = new DatabaseLocalAccountStore(executor);
         await accountStore.ensureSchema();
-        const profileStore = new DbProfileStore(executor);
+        const profileStore = new DatabaseProfileStore(executor);
         await profileStore.ensureSchema();
         await accountStore.register("alice", "pw");
         await accountStore.register("bob", "pw");
@@ -548,7 +552,7 @@ test("post routes - only_me posts not visible to others", async () => {
         let body = "";
 
         await route(
-            makeReq(
+            makeRequest(
                 "POST",
                 aliceToken,
                 JSON.stringify({
@@ -568,7 +572,7 @@ test("post routes - only_me posts not visible to others", async () => {
         );
 
         await route(
-            makeReq("GET", bobToken),
+            makeRequest("GET", bobToken),
             {
                 writeHead(statusCode: number) {
                     status = statusCode;
@@ -582,16 +586,16 @@ test("post routes - only_me posts not visible to others", async () => {
         assert.equal(status, 200);
         assert.equal(JSON.parse(body).data.length, 0);
     } finally {
-        rmSync(dir, { recursive: true, force: true });
+        rmSync(directory, { recursive: true, force: true });
     }
 });
 
 test("post routes - blocked caller gets 404 on user posts", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: directory, executor } = makeTemporaryDatabase();
     try {
-        const accountStore = new DbLocalAccountStore(executor);
+        const accountStore = new DatabaseLocalAccountStore(executor);
         await accountStore.ensureSchema();
-        const profileStore = new DbProfileStore(executor);
+        const profileStore = new DatabaseProfileStore(executor);
         await profileStore.ensureSchema();
         await accountStore.register("alice", "pw");
         await accountStore.register("bob", "pw");
@@ -605,7 +609,7 @@ test("post routes - blocked caller gets 404 on user posts", async () => {
         let status = 0;
 
         await route(
-            makeReq("GET", bobToken),
+            makeRequest("GET", bobToken),
             {
                 writeHead(statusCode: number) {
                     status = statusCode;
@@ -616,16 +620,16 @@ test("post routes - blocked caller gets 404 on user posts", async () => {
         );
         assert.equal(status, 404);
     } finally {
-        rmSync(dir, { recursive: true, force: true });
+        rmSync(directory, { recursive: true, force: true });
     }
 });
 
 test("post routes - private account posts only visible to followers", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: directory, executor } = makeTemporaryDatabase();
     try {
-        const accountStore = new DbLocalAccountStore(executor);
+        const accountStore = new DatabaseLocalAccountStore(executor);
         await accountStore.ensureSchema();
-        const profileStore = new DbProfileStore(executor);
+        const profileStore = new DatabaseProfileStore(executor);
         await profileStore.ensureSchema();
         await accountStore.register("alice", "pw");
         await accountStore.register("bob", "pw");
@@ -644,7 +648,7 @@ test("post routes - private account posts only visible to followers", async () =
         let body = "";
 
         await route(
-            makeReq(
+            makeRequest(
                 "POST",
                 aliceToken,
                 JSON.stringify({
@@ -664,7 +668,7 @@ test("post routes - private account posts only visible to followers", async () =
         );
 
         await route(
-            makeReq("GET", bobToken),
+            makeRequest("GET", bobToken),
             {
                 writeHead(statusCode: number) {
                     status = statusCode;
@@ -679,7 +683,7 @@ test("post routes - private account posts only visible to followers", async () =
         assert.equal(JSON.parse(body).data.length, 1);
 
         await route(
-            makeReq("GET", carolToken),
+            makeRequest("GET", carolToken),
             {
                 writeHead(statusCode: number) {
                     status = statusCode;
@@ -693,12 +697,12 @@ test("post routes - private account posts only visible to followers", async () =
         assert.equal(status, 200);
         assert.equal(JSON.parse(body).data.length, 0);
     } finally {
-        rmSync(dir, { recursive: true, force: true });
+        rmSync(directory, { recursive: true, force: true });
     }
 });
 
 test("post retries preserve identity and reject changed or cross-account payloads", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: directory, executor } = makeTemporaryDatabase();
     try {
         const store = await setupUser(executor, "alice", "community");
         await setupUser(executor, "bob", "community");
@@ -712,7 +716,7 @@ test("post retries preserve identity and reject changed or cross-account payload
             let status = 0;
             let payload = "";
             await route(
-                makeReq(
+                makeRequest(
                     "POST",
                     issueAccessToken(account, "user", 60),
                     JSON.stringify(body),
@@ -743,6 +747,6 @@ test("post retries preserve identity and reject changed or cross-account payload
             400,
         );
     } finally {
-        rmSync(dir, { recursive: true, force: true });
+        rmSync(directory, { recursive: true, force: true });
     }
 });

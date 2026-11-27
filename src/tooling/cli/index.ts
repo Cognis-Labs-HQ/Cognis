@@ -49,13 +49,13 @@ function parseRequiredUsageFields(usage: string): string[] {
     return Array.from(usage.matchAll(/<([^>]+)>/g)).map((match) => match[1]);
 }
 
-async function resolveCommandArgs(
+async function resolveCommandArgumentsList(
     command: string,
-    args: string[],
+    argumentsList: string[],
 ): Promise<string[]> {
-    if (args.length > 0) return args;
+    if (argumentsList.length > 0) return argumentsList;
     const spec = registry.get(command);
-    if (!spec) return args;
+    if (!spec) return argumentsList;
     const featureSections = new Set([
         "TFA",
         "Notifications",
@@ -71,9 +71,9 @@ async function resolveCommandArgs(
         "Files",
         "Social",
     ]);
-    if (featureSections.has(spec.section)) return args;
+    if (featureSections.has(spec.section)) return argumentsList;
     const fields = parseRequiredUsageFields(spec.usage);
-    if (fields.length === 0) return args;
+    if (fields.length === 0) return argumentsList;
     const values = await collectWizardFields(
         command,
         fields.map((name) => ({ name, required: true })),
@@ -83,7 +83,7 @@ async function resolveCommandArgs(
 
 export async function executeRegisteredCommand(
     command: string,
-    args: string[],
+    argumentsList: string[],
     options: CommandExecutionOptions,
 ): Promise<unknown> {
     if (!registry.has(command)) {
@@ -94,11 +94,14 @@ export async function executeRegisteredCommand(
         throw new Error(`Unknown command: ${command}`);
     }
 
-    const parsed = parseOutputOptions(args);
-    const resolvedArgs = await resolveCommandArgs(command, parsed.args);
+    const parsed = parseOutputOptions(argumentsList);
+    const resolvedArgumentsList = await resolveCommandArgumentsList(
+        command,
+        parsed.args,
+    );
 
     return spec.handler({
-        args: resolvedArgs,
+        args: resolvedArgumentsList,
         apiBaseUrl: options.apiBaseUrl,
         getApiToken: options.getApiToken,
         verbose: options.verbose || parsed.verbose,
@@ -106,17 +109,20 @@ export async function executeRegisteredCommand(
     });
 }
 
-export function parseOutputOptions(args: string[]): {
+export function parseOutputOptions(argumentsList: string[]): {
     args: string[];
     verbose: boolean;
 } {
-    const boundary = args.indexOf("--");
-    const options = boundary < 0 ? args : args.slice(0, boundary);
+    const boundary = argumentsList.indexOf("--");
+    const options =
+        boundary < 0 ? argumentsList : argumentsList.slice(0, boundary);
     return {
         verbose: options.includes("-v") || options.includes("--verbose"),
         args: [
-            ...options.filter((arg) => arg !== "-v" && arg !== "--verbose"),
-            ...(boundary < 0 ? [] : args.slice(boundary + 1)),
+            ...options.filter(
+                (argument) => argument !== "-v" && argument !== "--verbose",
+            ),
+            ...(boundary < 0 ? [] : argumentsList.slice(boundary + 1)),
         ],
     };
 }
@@ -125,8 +131,8 @@ async function main(): Promise<void> {
     const packageJson = await import("./package.json", {
         with: { type: "json" },
     });
-    const originalArgs = process.argv.slice(2);
-    const parsed = parseOutputOptions(originalArgs);
+    const originalArgumentsList = process.argv.slice(2);
+    const parsed = parseOutputOptions(originalArgumentsList);
     const argv = parsed.args;
     const apiBaseUrl = process.env.COGNIS_API_URL ?? "http://localhost:3000";
     let apiTokenPromise: Promise<string> | null = null;
@@ -152,8 +158,8 @@ async function main(): Promise<void> {
         return;
     }
 
-    const [command, ...args] = argv;
-    if (args.includes("-h") || args.includes("--help")) {
+    const [command, ...argumentsList] = argv;
+    if (argumentsList.includes("-h") || argumentsList.includes("--help")) {
         printCommandHelp(command);
         return;
     }
@@ -172,7 +178,9 @@ async function main(): Promise<void> {
     const execute = () =>
         executeRegisteredCommand(
             command,
-            originalArgs.slice(originalArgs.indexOf(command) + 1),
+            originalArgumentsList.slice(
+                originalArgumentsList.indexOf(command) + 1,
+            ),
             {
                 apiBaseUrl,
                 getApiToken,

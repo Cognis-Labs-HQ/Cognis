@@ -516,8 +516,8 @@ test("component:config:set rejects fields not exposed by adapter schema", async 
 test("component:config:get supports module configuration routes", async () => {
     const originalFetch = globalThis.fetch;
     try {
-        globalThis.fetch = async (input, init) => {
-            assert.equal(init?.method, "GET");
+        globalThis.fetch = async (input, requestOptions) => {
+            assert.equal(requestOptions?.method, "GET");
             assert.equal(
                 String(input),
                 "http://localhost:3000/api/v1/modules/jitsi-meet/config",
@@ -560,12 +560,12 @@ test("component:config:set supports module configuration routes", async () => {
     const originalFetch = globalThis.fetch;
     try {
         const requests = [];
-        globalThis.fetch = async (input, init) => {
+        globalThis.fetch = async (input, requestOptions) => {
             const requestUrl = String(input);
             requests.push({
-                method: init?.method,
+                method: requestOptions?.method,
                 requestUrl,
-                body: init?.body,
+                body: requestOptions?.body,
             });
             if (requestUrl.endsWith("/api/v1/modules/jitsi-meet/config")) {
                 return new Response(

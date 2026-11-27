@@ -57,7 +57,7 @@ export interface RecoveryCodeRecord {
     usedAt: string | null;
 }
 
-export class DbTfaStore {
+class DatabaseTfaStore {
     constructor(private readonly database: DbExecutor) {}
 
     async ensureSchema(): Promise<void> {
@@ -585,3 +585,4 @@ export class DbTfaStore {
         });
     }
 }
+export { DatabaseTfaStore as DbTfaStore };

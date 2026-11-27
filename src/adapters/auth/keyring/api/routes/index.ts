@@ -5,15 +5,15 @@ import type { KeyringVaultStore } from "../../store.js";
 
 export interface KeyringRouteContext {
     requireAuth(
-        req: IncomingMessage,
-        res: ServerResponse,
+        request: IncomingMessage,
+        response: ServerResponse,
         minRole?: "user" | "teacher" | "moderator" | "admin" | "owner",
     ): { sub: string; role: string } | null;
 }
 
 export type KeyringRouteHandler = (
-    req: IncomingMessage,
-    res: ServerResponse,
+    request: IncomingMessage,
+    response: ServerResponse,
     url: URL,
 ) => Promise<boolean>;
 
@@ -46,9 +46,13 @@ export function createKeyringRoutes(input: {
         metadata?: Record<string, unknown>,
     ) => void;
 }): KeyringRouteHandler {
-    return async (req, res, url): Promise<boolean> => {
+    return async (request, response, url): Promise<boolean> => {
         if (url.pathname !== "/api/v1/auth/keyring") return false;
-        const claims = input.routeContext.requireAuth(req, res, "user");
+        const claims = input.routeContext.requireAuth(
+            request,
+            response,
+            "user",
+        );
         if (!claims) return true;
         const accountId = claims.sub.trim().toLowerCase();
         const maxVaultBytes = boundedVaultBytes(
@@ -65,13 +69,15 @@ export function createKeyringRoutes(input: {
                     maxVaultBytes: maxBytes,
                 },
             );
-            res.writeHead(413, { "content-type": "application/json" });
-            res.end(JSON.stringify({ error: { code: "keyring_too_large" } }));
+            response.writeHead(413, { "content-type": "application/json" });
+            response.end(
+                JSON.stringify({ error: { code: "keyring_too_large" } }),
+            );
             return true;
         };
         const accountInstanceId = await input.getAccountInstanceId(accountId);
 
-        if (req.method === "GET") {
+        if (request.method === "GET") {
             const stored = await input.store.get(accountId);
             if (stored && Buffer.byteLength(stored, "utf8") > MAX_VAULT_BYTES)
                 return rejectSize(MAX_VAULT_BYTES);
@@ -98,8 +104,8 @@ export function createKeyringRoutes(input: {
                 }
                 vault = null;
             }
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     data: {
                         vault,
@@ -112,10 +118,12 @@ export function createKeyringRoutes(input: {
             return true;
         }
 
-        if (req.method === "PUT") {
+        if (request.method === "PUT") {
             let body: Record<string, unknown>;
             try {
-                body = await readJson(req, { maxBytes: maxVaultBytes + 1024 });
+                body = await readJson(request, {
+                    maxBytes: maxVaultBytes + 1024,
+                });
             } catch (error) {
                 if (
                     error instanceof Error &&
@@ -128,8 +136,8 @@ export function createKeyringRoutes(input: {
                     accountId,
                     errorName: error instanceof Error ? error.name : "Unknown",
                 });
-                res.writeHead(400, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(400, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: { code: "invalid_keyring_vault" },
                     }),
@@ -137,8 +145,8 @@ export function createKeyringRoutes(input: {
                 return true;
             }
             if (!body || !validVault(body.vault)) {
-                res.writeHead(400, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(400, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: { code: "invalid_keyring_vault" },
                     }),
@@ -146,8 +154,8 @@ export function createKeyringRoutes(input: {
                 return true;
             }
             if (body.vault.accountInstanceId !== accountInstanceId) {
-                res.writeHead(409, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(409, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: { code: "keyring_account_instance_mismatch" },
                     }),
@@ -156,28 +164,28 @@ export function createKeyringRoutes(input: {
             }
             const serialized = JSON.stringify(body.vault);
             if (Buffer.byteLength(serialized, "utf8") > maxVaultBytes) {
-                res.writeHead(413, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(413, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({ error: { code: "keyring_too_large" } }),
                 );
                 return true;
             }
             await input.store.set(accountId, serialized);
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { saved: true } }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: { saved: true } }));
             return true;
         }
 
-        if (req.method === "DELETE") {
+        if (request.method === "DELETE") {
             await input.purgeDependentAccountData?.(accountId);
             await input.store.delete(accountId);
-            res.writeHead(204);
-            res.end();
+            response.writeHead(204);
+            response.end();
             return true;
         }
 
-        res.writeHead(405, { allow: "GET, PUT, DELETE" });
-        res.end();
+        response.writeHead(405, { allow: "GET, PUT, DELETE" });
+        response.end();
         return true;
     };
 }

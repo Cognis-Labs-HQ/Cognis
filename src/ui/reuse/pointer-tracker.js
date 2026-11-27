@@ -23,7 +23,7 @@ import { uiCtx } from "./ui-ctx.js";
 
 const POINTER_STYLE_STORAGE_KEY = "cognis_page_pointer_style";
 const POINTER_STYLES = ["mouse", "laser", "crosshair"];
-const POINTER_SEND_THROTTLE_MS = 1_000;
+const POINTER_SEND_THROTTLE_MILLISECONDS = 1_000;
 
 function normalizeStyle(value) {
     return POINTER_STYLES.includes(value) ? value : "mouse";
@@ -48,13 +48,13 @@ function normalizeSelectionItems(selection) {
     const items = Array.isArray(selection?.items) ? selection.items : [];
     return items
         .map((item) => {
-            const x = Number(item?.x);
-            const y = Number(item?.y);
+            const horizontalCoordinate = Number(item?.x);
+            const verticalCoordinate = Number(item?.y);
             const width = Number(item?.width);
             const height = Number(item?.height);
             if (
-                !Number.isFinite(x) ||
-                !Number.isFinite(y) ||
+                !Number.isFinite(horizontalCoordinate) ||
+                !Number.isFinite(verticalCoordinate) ||
                 !Number.isFinite(width) ||
                 !Number.isFinite(height) ||
                 width <= 0 ||
@@ -63,8 +63,8 @@ function normalizeSelectionItems(selection) {
                 return null;
             }
             return {
-                x,
-                y,
+                x: horizontalCoordinate,
+                y: verticalCoordinate,
                 width,
                 height,
             };
@@ -142,7 +142,7 @@ export function createPointerTracker({
 
     function sendSoon() {
         const now = Date.now();
-        if (now - lastSentAt < POINTER_SEND_THROTTLE_MS) return;
+        if (now - lastSentAt < POINTER_SEND_THROTTLE_MILLISECONDS) return;
         lastSentAt = now;
         requestPresenceUpdate?.();
     }
@@ -240,13 +240,17 @@ export function createPointerTracker({
                 const updatedAt = Date.parse(entry.pointer.updatedAt || "");
                 if (!Number.isFinite(updatedAt)) return selectionMarkup;
                 const pointer = entry.pointer;
-                const x = Number(pointer.x ?? 0);
-                const y = Number(pointer.y ?? 0);
+                const horizontalCoordinate = Number(pointer.x ?? 0);
+                const verticalCoordinate = Number(pointer.y ?? 0);
                 const offset = currentPointerOffset();
                 const pointerLeft =
-                    x * rootWidth - renderRoot.scrollLeft - offset.x;
+                    horizontalCoordinate * rootWidth -
+                    renderRoot.scrollLeft -
+                    offset.x;
                 const pointerTop =
-                    y * rootHeight - renderRoot.scrollTop - offset.y;
+                    verticalCoordinate * rootHeight -
+                    renderRoot.scrollTop -
+                    offset.y;
                 const style = normalizeStyle(pointer.style);
                 return [
                     ...selectionMarkup,

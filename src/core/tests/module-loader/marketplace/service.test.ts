@@ -10,7 +10,7 @@ import {
 } from "node:fs/promises";
 import operatingSystem from "node:os";
 import path from "node:path";
-import { execFile, spawnSync } from "node:child_process";
+import { execFile as executorFile, spawnSync } from "node:child_process";
 import { promisify } from "node:util";
 import {
     DEFAULT_TRUSTED_MODULE_SOURCE,
@@ -26,7 +26,7 @@ const source = {
     namespace: "example",
     baseUrl: "https://api.github.com",
 };
-const execFileAsync = promisify(execFile);
+const executorFileAsync = promisify(executorFile);
 const gitAvailable = spawnSync("git", ["--version"]).status === 0;
 
 test("module marketplace persists source metadata and exposes credential configuration", async () => {
@@ -201,8 +201,10 @@ test("credential updates bypass scan throttling and authenticate immediately", a
     );
     const originalFetch = globalThis.fetch;
     const authorizations: Array<string | null> = [];
-    globalThis.fetch = async (_input, init) => {
-        authorizations.push(new Headers(init?.headers).get("authorization"));
+    globalThis.fetch = async (_input, requestOptions) => {
+        authorizations.push(
+            new Headers(requestOptions?.headers).get("authorization"),
+        );
         return new Response("[]", {
             headers: { "content-type": "application/json" },
         });
@@ -232,16 +234,16 @@ test("GitHub credential validation requires private repository scope", async () 
     const service = new ModuleMarketplaceService(
         path.join(root, "sources.json"),
         path.join(root, "modules"),
-        (level, _message, meta) => {
-            if (level === "warn") warnings.push(meta);
+        (level, _message, metadata) => {
+            if (level === "warn") warnings.push(metadata);
         },
     );
     const originalFetch = globalThis.fetch;
     let requests = 0;
-    globalThis.fetch = async (_input, init) => {
+    globalThis.fetch = async (_input, requestOptions) => {
         requests += 1;
         assert.equal(
-            new Headers(init?.headers).get("authorization"),
+            new Headers(requestOptions?.headers).get("authorization"),
             "Bearer limited-token",
         );
         return requests === 1
@@ -367,11 +369,11 @@ test("private scans include organization repositories visible through the authen
     );
     const originalFetch = globalThis.fetch;
     const requestedUrls: string[] = [];
-    globalThis.fetch = async (input, init) => {
+    globalThis.fetch = async (input, requestOptions) => {
         const url = String(input);
         requestedUrls.push(url);
         assert.equal(
-            new Headers(init?.headers).get("authorization"),
+            new Headers(requestOptions?.headers).get("authorization"),
             "Bearer private-token",
         );
         if (url.endsWith("/contents")) return Response.json([]);
@@ -515,32 +517,38 @@ test(
         const repository = path.join(root, "repository");
         const checkout = path.join(root, "checkout");
         await mkdir(repository);
-        await execFileAsync("git", ["init", "-b", "main"], { cwd: repository });
-        await execFileAsync(
+        await executorFileAsync("git", ["init", "-b", "main"], {
+            cwd: repository,
+        });
+        await executorFileAsync(
             "git",
             ["config", "user.email", "tests@cognis.dev"],
             {
                 cwd: repository,
             },
         );
-        await execFileAsync("git", ["config", "user.name", "Cognis Tests"], {
-            cwd: repository,
-        });
+        await executorFileAsync(
+            "git",
+            ["config", "user.name", "Cognis Tests"],
+            {
+                cwd: repository,
+            },
+        );
         const manifestPath = path.join(repository, "manifest.json");
         await writeFile(manifestPath, JSON.stringify({ version: "1.4.57" }));
-        await execFileAsync("git", ["add", "manifest.json"], {
+        await executorFileAsync("git", ["add", "manifest.json"], {
             cwd: repository,
         });
-        await execFileAsync("git", ["commit", "-m", "older release"], {
+        await executorFileAsync("git", ["commit", "-m", "older release"], {
             cwd: repository,
         });
-        const { stdout: olderCommit } = await execFileAsync(
+        const { stdout: olderCommit } = await executorFileAsync(
             "git",
             ["rev-parse", "HEAD"],
             { cwd: repository },
         );
         await writeFile(manifestPath, JSON.stringify({ version: "1.4.58" }));
-        await execFileAsync("git", ["commit", "-am", "newer release"], {
+        await executorFileAsync("git", ["commit", "-am", "newer release"], {
             cwd: repository,
         });
         await checkoutModuleRepository({
@@ -550,7 +558,7 @@ test(
             environment: { ...process.env, GIT_TERMINAL_PROMPT: "0" },
             log: () => undefined,
         });
-        const { stdout: historySize } = await execFileAsync("git", [
+        const { stdout: historySize } = await executorFileAsync("git", [
             "-C",
             checkout,
             "rev-list",
@@ -578,10 +586,10 @@ test("module marketplace discovers repository manifests", async () => {
     const service = new ModuleMarketplaceService(
         path.join(root, "sources.json"),
         path.join(root, "modules"),
-        (level, message, meta) => {
-            if (level === "info") scanLogs.push({ message, meta });
-            if (level === "warn" && "rejectedCloneUrl" in meta) {
-                warnings.push(meta);
+        (level, message, metadata) => {
+            if (level === "info") scanLogs.push({ message, meta: metadata });
+            if (level === "warn" && "rejectedCloneUrl" in metadata) {
+                warnings.push(metadata);
             }
         },
     );
@@ -610,9 +618,9 @@ test("module marketplace discovers repository manifests", async () => {
     let mainVersion = "1.0.0";
     let assetBody = "png-one";
     const branchRequestCaches: Array<RequestCache | undefined> = [];
-    globalThis.fetch = async (input, init) => {
+    globalThis.fetch = async (input, requestOptions) => {
         if (String(input).includes("/branches?")) {
-            branchRequestCaches.push(init?.cache);
+            branchRequestCaches.push(requestOptions?.cache);
         }
         return String(input).includes("/README.md?")
             ? new Response(
@@ -705,9 +713,9 @@ test("module marketplace discovers repository manifests", async () => {
     try {
         const modules = await service.discover();
         assert.deepEqual(
-            scanLogs.map(({ message, meta }) => ({
+            scanLogs.map(({ message, meta: metadata }) => ({
                 message,
-                catalogModulesFound: meta.catalogModulesFound,
+                catalogModulesFound: metadata.catalogModulesFound,
             })),
             [
                 {
@@ -837,8 +845,8 @@ test("module marketplace ignores incomplete module registrations", async () => {
     const service = new ModuleMarketplaceService(
         path.join(root, "sources.json"),
         path.join(root, "modules"),
-        (level, _message, meta) => {
-            if (level === "warn") warnings.push(meta);
+        (level, _message, metadata) => {
+            if (level === "warn") warnings.push(metadata);
         },
     );
     const originalFetch = globalThis.fetch;

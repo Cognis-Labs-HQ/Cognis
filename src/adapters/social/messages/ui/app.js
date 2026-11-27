@@ -54,9 +54,9 @@ import { renderMessagesSidebar } from "./sidebar.js";
 import { activateRoomAction, resolveRoomActions } from "./flows.js";
 import {
     LAST_OPENED_ROOM_KEY,
-    LIVE_REFRESH_INTERVAL_MS,
-    TYPING_IDLE_RESET_MS,
-    TYPING_SEND_DEBOUNCE_MS,
+    LIVE_REFRESH_INTERVAL_MS as LIVE_REFRESH_INTERVAL_MILLISECONDS,
+    TYPING_IDLE_RESET_MS as TYPING_IDLE_RESET_MILLISECONDS,
+    TYPING_SEND_DEBOUNCE_MS as TYPING_SEND_DEBOUNCE_MILLISECONDS,
     TYPING_TTL_SECONDS,
 } from "./runtime-config.js";
 import {
@@ -113,7 +113,7 @@ export async function mount(root, { signal } = {}) {
         ? decodeURIComponent(initialRoomMatch[1])
         : rememberedRoomId;
 
-    let composerInputRef = null;
+    let composerInputReference = null;
 
     let syncOpenRoomPreviews = () => {};
 
@@ -126,9 +126,9 @@ export async function mount(root, { signal } = {}) {
         resolveThreadRoomKey,
         lastOpenedRoomKey: LAST_OPENED_ROOM_KEY,
         typingTtlSeconds: TYPING_TTL_SECONDS,
-        typingIdleResetMs: TYPING_IDLE_RESET_MS,
-        typingSendDebounceMs: TYPING_SEND_DEBOUNCE_MS,
-        liveRefreshIntervalMs: LIVE_REFRESH_INTERVAL_MS,
+        typingIdleResetMs: TYPING_IDLE_RESET_MILLISECONDS,
+        typingSendDebounceMs: TYPING_SEND_DEBOUNCE_MILLISECONDS,
+        liveRefreshIntervalMs: LIVE_REFRESH_INTERVAL_MILLISECONDS,
         onRoomOpened: async (room) => {
             syncOpenRoomPreviews();
             const openedRoomId = room?.id != null ? String(room.id) : null;
@@ -144,14 +144,14 @@ export async function mount(root, { signal } = {}) {
                 // (lines 294-297 below, where composerInputRef is assigned).
                 if (
                     persistedState.size === 0 &&
-                    composerInputRef instanceof HTMLTextAreaElement
+                    composerInputReference instanceof HTMLTextAreaElement
                 ) {
-                    composerInputRef.value = "";
+                    composerInputReference.value = "";
                 }
                 // Dispatch a synthetic input event so dependent UI state
                 // (preview rendering, character counters, typing indicators)
                 // is updated after the draft value is restored programmatically.
-                composerInputRef?.dispatchEvent(new Event("input"));
+                composerInputReference?.dispatchEvent(new Event("input"));
             }
         },
         resolveRoomActions,
@@ -322,7 +322,7 @@ export async function mount(root, { signal } = {}) {
                 const composerInput = document.getElementById(
                     "messages-composer-input",
                 );
-                composerInputRef =
+                composerInputReference =
                     composerInput instanceof HTMLTextAreaElement
                         ? composerInput
                         : null;

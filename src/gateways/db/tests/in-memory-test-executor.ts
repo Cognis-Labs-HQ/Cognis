@@ -9,7 +9,7 @@
 import type { DbExecutor } from "../reuse/db-executor.js";
 import type { StructuredDbTableDef } from "../reuse/db-table.js";
 import {
-    buildStructuredDbCommandStatement,
+    buildStructuredDbCommandStatement as buildStructuredDatabaseCommandStatement,
     type StructuredDbCommand,
     type StructuredDbCommandResult,
     type StructuredDbDialect,
@@ -27,7 +27,7 @@ export class InMemoryTestExecutor implements DbExecutor {
     private tables = new Map<string, Row[]>();
     private schemas = new Map<string, TableSchema>();
 
-    private readonly structuredDbDialect: StructuredDbDialect = {
+    private readonly structuredDatabaseDialect: StructuredDbDialect = {
         createPlaceholder(parameterIndex) {
             return `$${parameterIndex}`;
         },
@@ -64,10 +64,10 @@ export class InMemoryTestExecutor implements DbExecutor {
 
     async execute(
         sql: string,
-        params: unknown[] = [],
+        parameters: unknown[] = [],
     ): Promise<{ rows?: Row[]; rowCount?: number }> {
-        let paramIndex = 1;
-        const normalizedSql = sql.replace(/\?/g, () => `$${paramIndex++}`);
+        let parameterIndex = 1;
+        const normalizedSql = sql.replace(/\?/g, () => `$${parameterIndex++}`);
         const trimmed = normalizedSql.trim();
         const upper = trimmed.toUpperCase();
 
@@ -84,22 +84,22 @@ export class InMemoryTestExecutor implements DbExecutor {
             return { rowCount: 0 };
         }
         if (upper.startsWith("INSERT"))
-            return this.handleInsert(trimmed, params);
+            return this.handleInsert(trimmed, parameters);
         if (upper.startsWith("SELECT"))
-            return this.handleSelect(trimmed, params);
+            return this.handleSelect(trimmed, parameters);
         if (upper.startsWith("UPDATE"))
-            return this.handleUpdate(trimmed, params);
+            return this.handleUpdate(trimmed, parameters);
         if (upper.startsWith("DELETE"))
-            return this.handleDelete(trimmed, params);
+            return this.handleDelete(trimmed, parameters);
         return { rowCount: 0 };
     }
 
     async executeCommand(
         command: StructuredDbCommand,
     ): Promise<StructuredDbCommandResult<Row>> {
-        const statement = buildStructuredDbCommandStatement(
+        const statement = buildStructuredDatabaseCommandStatement(
             command,
-            this.structuredDbDialect,
+            this.structuredDatabaseDialect,
         );
         return this.execute(statement.sql, statement.params);
     }
@@ -110,22 +110,31 @@ export class InMemoryTestExecutor implements DbExecutor {
         return callback(this);
     }
 
-    async ensureTable(def: StructuredDbTableDef): Promise<void> {
-        if (this.schemas.has(def.name)) return;
-        const pkCols: string[] = def.primaryKey ?? [];
+    async ensureTable(definition: StructuredDbTableDef): Promise<void> {
+        if (this.schemas.has(definition.name)) return;
+        const primaryKeyColumns: string[] = definition.primaryKey ?? [];
         const defaults = new Map<string, unknown>();
-        const uniqueCols: string[][] = [...(def.uniqueKeys ?? [])];
+        const uniqueColumns: string[][] = [...(definition.uniqueKeys ?? [])];
 
-        for (const col of def.columns) {
-            if (pkCols.length === 0 && col.primaryKey) pkCols.push(col.name);
-            if (col.unique) uniqueCols.push([col.name]);
-            if (col.default !== undefined) {
-                defaults.set(col.name, this.parseTableDefault(col.default));
+        for (const column of definition.columns) {
+            if (primaryKeyColumns.length === 0 && column.primaryKey)
+                primaryKeyColumns.push(column.name);
+            if (column.unique) uniqueColumns.push([column.name]);
+            if (column.default !== undefined) {
+                defaults.set(
+                    column.name,
+                    this.parseTableDefault(column.default),
+                );
             }
         }
 
-        this.schemas.set(def.name, { pkCols, defaults, uniqueCols });
-        if (!this.tables.has(def.name)) this.tables.set(def.name, []);
+        this.schemas.set(definition.name, {
+            pkCols: primaryKeyColumns,
+            defaults,
+            uniqueCols: uniqueColumns,
+        });
+        if (!this.tables.has(definition.name))
+            this.tables.set(definition.name, []);
     }
 
     private parseTableDefault(
@@ -146,35 +155,35 @@ export class InMemoryTestExecutor implements DbExecutor {
         const table = match[1];
         const body = match[2];
 
-        const pkCols: string[] = [];
+        const primaryKeyColumns: string[] = [];
         const defaults = new Map<string, unknown>();
-        const uniqueCols: string[][] = [];
+        const uniqueColumns: string[][] = [];
 
         const lines = body.split(",").map((line) => line.trim());
         const reassembled: string[] = [];
-        let buf = "";
+        let buffer = "";
         let depth = 0;
         for (const line of lines) {
-            buf += (buf ? ", " : "") + line;
+            buffer += (buffer ? ", " : "") + line;
             depth +=
                 (line.match(/\(/g) || []).length -
                 (line.match(/\)/g) || []).length;
             if (depth <= 0) {
-                reassembled.push(buf);
-                buf = "";
+                reassembled.push(buffer);
+                buffer = "";
                 depth = 0;
             }
         }
-        if (buf) reassembled.push(buf);
+        if (buffer) reassembled.push(buffer);
 
         for (const line of reassembled) {
             const trimLine = line.trim();
-            const pkConstraint = trimLine.match(
+            const primaryKeyConstraint = trimLine.match(
                 /^PRIMARY\s+KEY\s*\(([^)]+)\)/i,
             );
-            if (pkConstraint) {
-                pkCols.push(
-                    ...pkConstraint[1]
+            if (primaryKeyConstraint) {
+                primaryKeyColumns.push(
+                    ...primaryKeyConstraint[1]
                         .split(",")
                         .map((column) => column.trim()),
                 );
@@ -182,7 +191,7 @@ export class InMemoryTestExecutor implements DbExecutor {
             }
             const uniqueConstraint = trimLine.match(/^UNIQUE\s*\(([^)]+)\)/i);
             if (uniqueConstraint) {
-                uniqueCols.push(
+                uniqueColumns.push(
                     uniqueConstraint[1]
                         .split(",")
                         .map((column) => column.trim()),
@@ -191,25 +200,31 @@ export class InMemoryTestExecutor implements DbExecutor {
             }
             if (/^(?:FOREIGN\s+KEY|CHECK|CONSTRAINT)/i.test(trimLine)) continue;
 
-            const colMatch = trimLine.match(/^(\w+)\s+/);
-            if (!colMatch) continue;
-            const col = colMatch[1];
+            const columnMatch = trimLine.match(/^(\w+)\s+/);
+            if (!columnMatch) continue;
+            const column = columnMatch[1];
 
             if (/\bPRIMARY\s+KEY\b/i.test(trimLine)) {
-                pkCols.push(col);
+                primaryKeyColumns.push(column);
             }
             if (/\bUNIQUE\b/i.test(trimLine)) {
-                uniqueCols.push([col]);
+                uniqueColumns.push([column]);
             }
 
-            const defMatch = trimLine.match(/DEFAULT\s+(.+?)(?:\s*,|\s*$)/i);
-            if (defMatch) {
-                const raw = defMatch[1].replace(/[,)]*$/, "").trim();
-                defaults.set(col, this.parseDefault(raw));
+            const definitionMatch = trimLine.match(
+                /DEFAULT\s+(.+?)(?:\s*,|\s*$)/i,
+            );
+            if (definitionMatch) {
+                const raw = definitionMatch[1].replace(/[,)]*$/, "").trim();
+                defaults.set(column, this.parseDefault(raw));
             }
         }
 
-        this.schemas.set(table, { pkCols, defaults, uniqueCols });
+        this.schemas.set(table, {
+            pkCols: primaryKeyColumns,
+            defaults,
+            uniqueCols: uniqueColumns,
+        });
     }
 
     private parseDefault(raw: string): unknown {
@@ -220,30 +235,42 @@ export class InMemoryTestExecutor implements DbExecutor {
         if (upper === "NOW()" || upper === "CURRENT_TIMESTAMP")
             return "__NOW__";
         if (/^\d+$/.test(raw)) return Number(raw);
-        const strMatch = raw.match(/^'(.*)'$/);
-        if (strMatch) return strMatch[1];
+        const stringMatch = raw.match(/^'(.*)'$/);
+        if (stringMatch) return stringMatch[1];
         return raw;
     }
 
     private applyDefaults(table: string, row: Row): void {
         const schema = this.schemas.get(table);
         if (!schema) return;
-        for (const [col, def] of schema.defaults) {
-            if (!(col in row) || row[col] === undefined) {
-                row[col] = def === "__NOW__" ? new Date().toISOString() : def;
+        for (const [column, definition] of schema.defaults) {
+            if (!(column in row) || row[column] === undefined) {
+                row[column] =
+                    definition === "__NOW__"
+                        ? new Date().toISOString()
+                        : definition;
             }
         }
     }
 
-    private getPkCols(table: string, insertedCols: string[]): string[] {
+    private getPrimaryKeyColumns(
+        table: string,
+        insertedColumns: string[],
+    ): string[] {
         const schema = this.schemas.get(table);
         if (schema && schema.pkCols.length > 0) return schema.pkCols;
-        return [insertedCols[0]];
+        return [insertedColumns[0]];
     }
 
-    private findExisting(rows: Row[], row: Row, pkCols: string[]): number {
-        return rows.findIndex((row2) =>
-            pkCols.every((col) => row2[col] === row[col]),
+    private findExisting(
+        rows: Row[],
+        row: Row,
+        primaryKeyColumns: string[],
+    ): number {
+        return rows.findIndex((existingRow) =>
+            primaryKeyColumns.every(
+                (column) => existingRow[column] === row[column],
+            ),
         );
     }
 
@@ -260,9 +287,9 @@ export class InMemoryTestExecutor implements DbExecutor {
             for (const uniqueKey of schema.uniqueCols) {
                 if (
                     uniqueKey.every(
-                        (col) =>
-                            rows[i][col] !== undefined &&
-                            rows[i][col] === row[col],
+                        (column) =>
+                            rows[i][column] !== undefined &&
+                            rows[i][column] === row[column],
                     )
                 ) {
                     return true;
@@ -274,7 +301,7 @@ export class InMemoryTestExecutor implements DbExecutor {
 
     private handleInsert(
         sql: string,
-        params: unknown[],
+        parameters: unknown[],
     ): { rows?: Row[]; rowCount: number } {
         const tableMatch = sql.match(
             /INSERT\s+(?:OR\s+IGNORE\s+)?(?:IGNORE\s+)?INTO\s+(\w+)/i,
@@ -282,9 +309,11 @@ export class InMemoryTestExecutor implements DbExecutor {
         if (!tableMatch) return { rowCount: 0 };
         const table = tableMatch[1];
 
-        const colsMatch = sql.match(/\(([^)]+)\)\s*VALUES/i);
-        if (!colsMatch) return { rowCount: 0 };
-        const cols = colsMatch[1].split(",").map((column) => column.trim());
+        const columnsMatch = sql.match(/\(([^)]+)\)\s*VALUES/i);
+        if (!columnsMatch) return { rowCount: 0 };
+        const columns = columnsMatch[1]
+            .split(",")
+            .map((column) => column.trim());
 
         const valuesMatch = sql.match(/VALUES\s*\(([^)]+)\)/i);
         const valuePlaceholders = valuesMatch
@@ -292,26 +321,26 @@ export class InMemoryTestExecutor implements DbExecutor {
             : [];
 
         const row: Row = {};
-        let paramIdx = 0;
-        for (let i = 0; i < cols.length; i++) {
+        let parameterIndex = 0;
+        for (let i = 0; i < columns.length; i++) {
             const valuePlaceholder = valuePlaceholders[i] ?? "";
             const phMatch = valuePlaceholder.match(/^\$(\d+)$/);
             if (phMatch) {
-                row[cols[i]] = params[Number(phMatch[1]) - 1];
+                row[columns[i]] = parameters[Number(phMatch[1]) - 1];
             } else if (
                 /^(NOW\(\)|CURRENT_TIMESTAMP)$/i.test(valuePlaceholder)
             ) {
-                row[cols[i]] = new Date().toISOString();
+                row[columns[i]] = new Date().toISOString();
             } else if (/^TRUE$/i.test(valuePlaceholder)) {
-                row[cols[i]] = true;
+                row[columns[i]] = true;
             } else if (/^FALSE$/i.test(valuePlaceholder)) {
-                row[cols[i]] = false;
+                row[columns[i]] = false;
             } else if (/^\?$/.test(valuePlaceholder)) {
-                row[cols[i]] = params[paramIdx++];
+                row[columns[i]] = parameters[parameterIndex++];
             } else if (/^\d+$/.test(valuePlaceholder)) {
-                row[cols[i]] = Number(valuePlaceholder);
+                row[columns[i]] = Number(valuePlaceholder);
             } else {
-                row[cols[i]] = params[i] ?? null;
+                row[columns[i]] = parameters[i] ?? null;
             }
         }
 
@@ -326,12 +355,12 @@ export class InMemoryTestExecutor implements DbExecutor {
             /ON\s+DUPLICATE\s+KEY\s+UPDATE/i.test(sql);
 
         const rows = this.getTable(table);
-        const pkCols = this.getPkCols(table, cols);
-        const existingIdx = this.findExisting(rows, row, pkCols);
+        const primaryKeyColumns = this.getPrimaryKeyColumns(table, columns);
+        const existingIndex = this.findExisting(rows, row, primaryKeyColumns);
 
-        if (existingIdx >= 0) {
+        if (existingIndex >= 0) {
             if (onConflictUpdate) {
-                const existing = rows[existingIdx];
+                const existing = rows[existingIndex];
                 const updateMatch = sql.match(
                     /(?:DO\s+UPDATE\s+SET|DUPLICATE\s+KEY\s+UPDATE)\s+(.+)$/i,
                 );
@@ -339,27 +368,32 @@ export class InMemoryTestExecutor implements DbExecutor {
                     const updates = updateMatch[1]
                         .split(",")
                         .map((statement) => statement.trim());
-                    for (const upd of updates) {
-                        const exclMatch = upd.match(
+                    for (const update of updates) {
+                        const exclMatch = update.match(
                             /(\w+)\s*=\s*(?:EXCLUDED|excluded|VALUES\((\w+)\))\.?(\w*)/,
                         );
                         if (exclMatch) {
-                            const targetCol = exclMatch[1];
-                            const sourceCol =
-                                exclMatch[3] || exclMatch[2] || targetCol;
-                            existing[targetCol] =
-                                row[sourceCol] ?? row[targetCol];
+                            const targetColumn = exclMatch[1];
+                            const sourceColumn =
+                                exclMatch[3] || exclMatch[2] || targetColumn;
+                            existing[targetColumn] =
+                                row[sourceColumn] ?? row[targetColumn];
                         }
-                        const valParamMatch = upd.match(/(\w+)\s*=\s*\$(\d+)/);
-                        if (valParamMatch) {
-                            const col = valParamMatch[1];
-                            const pIdx = Number(valParamMatch[2]) - 1;
-                            existing[col] = params[pIdx];
+                        const valueParameterMatch =
+                            update.match(/(\w+)\s*=\s*\$(\d+)/);
+                        if (valueParameterMatch) {
+                            const column = valueParameterMatch[1];
+                            const currentParameterIndex =
+                                Number(valueParameterMatch[2]) - 1;
+                            existing[column] =
+                                parameters[currentParameterIndex];
                         }
                     }
                 } else {
-                    for (const col of cols.slice(pkCols.length)) {
-                        existing[col] = row[col];
+                    for (const column of columns.slice(
+                        primaryKeyColumns.length,
+                    )) {
+                        existing[column] = row[column];
                     }
                 }
                 return { rowCount: 1 };
@@ -367,7 +401,7 @@ export class InMemoryTestExecutor implements DbExecutor {
             if (isIgnore) return { rowCount: 0 };
         }
 
-        if (existingIdx < 0) {
+        if (existingIndex < 0) {
             if (!isIgnore && this.checkUniqueViolation(rows, row, table, -1)) {
                 throw new Error(`UNIQUE constraint failed on table ${table}`);
             }
@@ -400,7 +434,7 @@ export class InMemoryTestExecutor implements DbExecutor {
 
     private handleSelect(
         sql: string,
-        params: unknown[],
+        parameters: unknown[],
     ): { rows: Row[]; rowCount: number } {
         const fromMatch = sql.match(/FROM\s+(\w+)/i);
         if (!fromMatch) return { rows: [], rowCount: 0 };
@@ -433,9 +467,9 @@ export class InMemoryTestExecutor implements DbExecutor {
             aliasMap.set(joinAlias, joinTable);
 
             const leftAlias = joinMatch[3];
-            const leftCol = joinMatch[4];
+            const leftColumn = joinMatch[4];
             const rightAlias = joinMatch[5];
-            const rightCol = joinMatch[6];
+            const rightColumn = joinMatch[6];
 
             const joinRows = this.getTable(joinTable);
             const isLeft = /LEFT\s+JOIN/i.test(joinMatch[0]);
@@ -447,26 +481,27 @@ export class InMemoryTestExecutor implements DbExecutor {
                 aliasMap.get(leftAlias) !== joinTable;
             const joinIsRight = rightAlias === joinAlias;
 
-            let mainCol: string;
-            let jCol: string;
+            let mainColumn: string;
+            let joinedColumn: string;
 
             if (joinIsRight) {
-                mainCol = leftCol;
-                jCol = rightCol;
+                mainColumn = leftColumn;
+                joinedColumn = rightColumn;
             } else if (leftIsMain) {
-                mainCol = leftCol;
-                jCol = rightCol;
+                mainColumn = leftColumn;
+                joinedColumn = rightColumn;
             } else {
-                mainCol = rightCol;
-                jCol = leftCol;
+                mainColumn = rightColumn;
+                joinedColumn = leftColumn;
             }
 
             rows = rows.flatMap((mainRow) => {
-                const mainVal =
-                    mainRow[mainCol] ?? mainRow[`${leftAlias}.${leftCol}`];
+                const mainValue =
+                    mainRow[mainColumn] ??
+                    mainRow[`${leftAlias}.${leftColumn}`];
                 const matches = joinRows.filter((joinedRow) => {
-                    const jVal = joinedRow[jCol];
-                    return jVal === mainVal;
+                    const joinedValue = joinedRow[joinedColumn];
+                    return joinedValue === mainValue;
                 });
                 if (matches.length === 0 && isLeft) {
                     return [mainRow];
@@ -483,14 +518,14 @@ export class InMemoryTestExecutor implements DbExecutor {
         }
 
         if (whereMatch) {
-            rows = this.applyWhere(rows, whereMatch[1].trim(), params);
+            rows = this.applyWhere(rows, whereMatch[1].trim(), parameters);
         }
 
         const limitMatch = sql.match(/LIMIT\s+\$(\d+)/i);
         const literalLimitMatch = sql.match(/LIMIT\s+(\d+)(?!\s*\$)/i);
         if (limitMatch) {
-            const limitVal = Number(params[Number(limitMatch[1]) - 1]);
-            rows = rows.slice(0, limitVal);
+            const limitValue = Number(parameters[Number(limitMatch[1]) - 1]);
+            rows = rows.slice(0, limitValue);
         } else if (literalLimitMatch) {
             rows = rows.slice(0, Number(literalLimitMatch[1]));
         }
@@ -517,81 +552,99 @@ export class InMemoryTestExecutor implements DbExecutor {
     private applyWhere(
         rows: Row[],
         whereText: string,
-        params: unknown[],
+        parameters: unknown[],
     ): Row[] {
         const conditions = whereText.split(/\s+AND\s+/i);
         let result = rows;
-        for (const cond of conditions) {
-            const eqMatch = cond.match(/(?:(\w+)\.)?(\w+)\s*=\s*\$(\d+)/);
-            if (eqMatch) {
-                const col = eqMatch[2];
-                const pidx = Number(eqMatch[3]) - 1;
-                const val = params[pidx];
-                result = result.filter((row) => row[col] === val);
+        for (const condition of conditions) {
+            const equalMatch = condition.match(
+                /(?:(\w+)\.)?(\w+)\s*=\s*\$(\d+)/,
+            );
+            if (equalMatch) {
+                const column = equalMatch[2];
+                const parameterIndex = Number(equalMatch[3]) - 1;
+                const value = parameters[parameterIndex];
+                result = result.filter((row) => row[column] === value);
                 continue;
             }
-            const neqMatch = cond.match(/(?:(\w+)\.)?(\w+)\s*!=\s*\$(\d+)/);
+            const neqMatch = condition.match(
+                /(?:(\w+)\.)?(\w+)\s*!=\s*\$(\d+)/,
+            );
             if (neqMatch) {
-                const col = neqMatch[2];
-                const pidx = Number(neqMatch[3]) - 1;
-                const val = params[pidx];
-                result = result.filter((row) => row[col] !== val);
+                const column = neqMatch[2];
+                const parameterIndex = Number(neqMatch[3]) - 1;
+                const value = parameters[parameterIndex];
+                result = result.filter((row) => row[column] !== value);
                 continue;
             }
-            const gtMatch = cond.match(/(?:(\w+)\.)?(\w+)\s*>\s*\$(\d+)/);
-            if (gtMatch) {
-                const col = gtMatch[2];
-                const pidx = Number(gtMatch[3]) - 1;
-                const val = params[pidx];
+            const greaterThanMatch = condition.match(
+                /(?:(\w+)\.)?(\w+)\s*>\s*\$(\d+)/,
+            );
+            if (greaterThanMatch) {
+                const column = greaterThanMatch[2];
+                const parameterIndex = Number(greaterThanMatch[3]) - 1;
+                const value = parameters[parameterIndex];
                 result = result.filter(
-                    (row) => String(row[col] ?? "") > String(val ?? ""),
+                    (row) => String(row[column] ?? "") > String(value ?? ""),
                 );
                 continue;
             }
-            const ltMatch = cond.match(/(?:(\w+)\.)?(\w+)\s*<\s*\$(\d+)/);
-            if (ltMatch) {
-                const col = ltMatch[2];
-                const pidx = Number(ltMatch[3]) - 1;
-                const val = params[pidx];
+            const lessThanMatch = condition.match(
+                /(?:(\w+)\.)?(\w+)\s*<\s*\$(\d+)/,
+            );
+            if (lessThanMatch) {
+                const column = lessThanMatch[2];
+                const parameterIndex = Number(lessThanMatch[3]) - 1;
+                const value = parameters[parameterIndex];
                 result = result.filter(
-                    (row) => String(row[col] ?? "") < String(val ?? ""),
+                    (row) => String(row[column] ?? "") < String(value ?? ""),
                 );
                 continue;
             }
-            const likeMatch = cond.match(/(?:(\w+)\.)?(\w+)\s+LIKE\s+\$(\d+)/i);
+            const likeMatch = condition.match(
+                /(?:(\w+)\.)?(\w+)\s+LIKE\s+\$(\d+)/i,
+            );
             if (likeMatch) {
-                const col = likeMatch[2];
-                const pidx = Number(likeMatch[3]) - 1;
-                const pattern = String(params[pidx] ?? "");
-                const regexPattern = pattern
+                const column = likeMatch[2];
+                const parameterIndex = Number(likeMatch[3]) - 1;
+                const pattern = String(parameters[parameterIndex] ?? "");
+                const regularExpressionPattern = pattern
                     .replace(/[.+^${}()|[\]\\]/g, "\\$&")
                     .replace(/%/g, ".*")
                     .replace(/_/g, ".");
-                const pattern2 = new RegExp(`^${regexPattern}$`, "i");
+                const matchingExpression = new RegExp(
+                    `^${regularExpressionPattern}$`,
+                    "i",
+                );
                 result = result.filter((row) =>
-                    pattern2.test(String(row[col] ?? "")),
+                    matchingExpression.test(String(row[column] ?? "")),
                 );
                 continue;
             }
-            const isNullMatch = cond.match(/(?:(\w+)\.)?(\w+)\s+IS\s+NULL/i);
+            const isNullMatch = condition.match(
+                /(?:(\w+)\.)?(\w+)\s+IS\s+NULL/i,
+            );
             if (isNullMatch) {
-                const col = isNullMatch[2];
-                result = result.filter((row) => row[col] == null);
+                const column = isNullMatch[2];
+                result = result.filter((row) => row[column] == null);
                 continue;
             }
-            const isNotNullMatch = cond.match(
+            const isNotNullMatch = condition.match(
                 /(?:(\w+)\.)?(\w+)\s+IS\s+NOT\s+NULL/i,
             );
             if (isNotNullMatch) {
-                const col = isNotNullMatch[2];
-                result = result.filter((row) => row[col] != null);
+                const column = isNotNullMatch[2];
+                result = result.filter((row) => row[column] != null);
                 continue;
             }
         }
         return result;
     }
 
-    private handleUpdate(sql: string, params: unknown[]): { rowCount: number } {
+    private handleUpdate(
+        sql: string,
+        parameters: unknown[],
+    ): { rowCount: number } {
         const tableMatch = sql.match(/UPDATE\s+(\w+)/i);
         if (!tableMatch) return { rowCount: 0 };
         const table = tableMatch[1];
@@ -603,45 +656,51 @@ export class InMemoryTestExecutor implements DbExecutor {
 
         const whereMatch = sql.match(/WHERE\s+([\s\S]+?)$/is);
         if (whereMatch) {
-            targets = this.applyWhere(rows, whereMatch[1].trim(), params);
+            targets = this.applyWhere(rows, whereMatch[1].trim(), parameters);
         }
 
         if (!rawSetClauses) return { rowCount: 0 };
 
         const setClauses: string[] = [];
-        let buf = "";
+        let buffer = "";
         let depth = 0;
         for (const setClause of rawSetClauses) {
             if (setClause === "(") depth++;
             if (setClause === ")") depth--;
             if (setClause === "," && depth === 0) {
-                setClauses.push(buf.trim());
-                buf = "";
+                setClauses.push(buffer.trim());
+                buffer = "";
             } else {
-                buf += setClause;
+                buffer += setClause;
             }
         }
-        if (buf.trim()) setClauses.push(buf.trim());
+        if (buffer.trim()) setClauses.push(buffer.trim());
 
         const targetSet = new Set(targets);
         let count = 0;
         for (const row of rows) {
             if (!targetSet.has(row)) continue;
             for (const clause of setClauses) {
-                const paramMatch = clause.match(/(\w+)\s*=\s*\$(\d+)/);
-                if (paramMatch) {
-                    row[paramMatch[1]] = params[Number(paramMatch[2]) - 1];
+                const parameterMatch = clause.match(/(\w+)\s*=\s*\$(\d+)/);
+                if (parameterMatch) {
+                    row[parameterMatch[1]] =
+                        parameters[Number(parameterMatch[2]) - 1];
                     continue;
                 }
-                const exprMatch = clause.match(
+                const expressionMatch = clause.match(
                     /(\w+)\s*=\s*(NOW\(\)|CURRENT_TIMESTAMP|TRUE|FALSE)/i,
                 );
-                if (exprMatch) {
-                    const expr = exprMatch[2].toUpperCase();
-                    if (expr === "NOW()" || expr === "CURRENT_TIMESTAMP")
-                        row[exprMatch[1]] = new Date().toISOString();
-                    else if (expr === "TRUE") row[exprMatch[1]] = true;
-                    else if (expr === "FALSE") row[exprMatch[1]] = false;
+                if (expressionMatch) {
+                    const expression = expressionMatch[2].toUpperCase();
+                    if (
+                        expression === "NOW()" ||
+                        expression === "CURRENT_TIMESTAMP"
+                    )
+                        row[expressionMatch[1]] = new Date().toISOString();
+                    else if (expression === "TRUE")
+                        row[expressionMatch[1]] = true;
+                    else if (expression === "FALSE")
+                        row[expressionMatch[1]] = false;
                 }
             }
             count++;
@@ -652,30 +711,35 @@ export class InMemoryTestExecutor implements DbExecutor {
     private filterByWhere(
         rows: Row[],
         whereText: string,
-        params: unknown[],
+        parameters: unknown[],
     ): Row[] {
         const subqueryMatch = whereText.match(
             /(\w+)\s*=\s*\(\s*SELECT\s+(\w+)\s+FROM\s+(\w+)\s+WHERE\s+(\w+)\s*=\s*\$(\d+)\s*\)/i,
         );
         if (subqueryMatch) {
-            const outerCol = subqueryMatch[1];
-            const selectCol = subqueryMatch[2];
-            const subTable = subqueryMatch[3];
-            const subWhereCol = subqueryMatch[4];
-            const subParamIdx = Number(subqueryMatch[5]) - 1;
-            const subVal = params[subParamIdx];
+            const outerColumn = subqueryMatch[1];
+            const selectColumn = subqueryMatch[2];
+            const subqueryTable = subqueryMatch[3];
+            const subqueryWhereColumn = subqueryMatch[4];
+            const subqueryParameterIndex = Number(subqueryMatch[5]) - 1;
+            const subqueryValue = parameters[subqueryParameterIndex];
 
-            const subRows = this.getTable(subTable);
-            const subMatch = subRows.find((row) => row[subWhereCol] === subVal);
-            if (!subMatch) return [];
-            const resolvedVal = subMatch[selectCol];
-            return rows.filter((row) => row[outerCol] === resolvedVal);
+            const subqueryRows = this.getTable(subqueryTable);
+            const currentSubqueryMatch = subqueryRows.find(
+                (row) => row[subqueryWhereColumn] === subqueryValue,
+            );
+            if (!currentSubqueryMatch) return [];
+            const resolvedValue = currentSubqueryMatch[selectColumn];
+            return rows.filter((row) => row[outerColumn] === resolvedValue);
         }
 
-        return this.applyWhere(rows, whereText, params);
+        return this.applyWhere(rows, whereText, parameters);
     }
 
-    private handleDelete(sql: string, params: unknown[]): { rowCount: number } {
+    private handleDelete(
+        sql: string,
+        parameters: unknown[],
+    ): { rowCount: number } {
         const tableMatch = sql.match(/DELETE\s+FROM\s+(\w+)/i);
         if (!tableMatch) return { rowCount: 0 };
         const table = tableMatch[1];
@@ -688,7 +752,11 @@ export class InMemoryTestExecutor implements DbExecutor {
             return { rowCount: count };
         }
 
-        const matching = this.applyWhere(rows, whereMatch[1].trim(), params);
+        const matching = this.applyWhere(
+            rows,
+            whereMatch[1].trim(),
+            parameters,
+        );
         const toRemoveSet = new Set(matching);
         let removedCount = 0;
         for (let i = rows.length - 1; i >= 0; i--) {

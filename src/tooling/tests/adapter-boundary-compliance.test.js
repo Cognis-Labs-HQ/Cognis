@@ -4,9 +4,9 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 
 const ROOT = process.cwd();
-const SRC_ROOT = resolve(ROOT, "src");
-const ADAPTERS_ROOT = resolve(SRC_ROOT, "adapters");
-const GATEWAYS_ROOT = resolve(SRC_ROOT, "gateways");
+const SOURCE_ROOT = resolve(ROOT, "src");
+const ADAPTERS_ROOT = resolve(SOURCE_ROOT, "adapters");
+const GATEWAYS_ROOT = resolve(SOURCE_ROOT, "gateways");
 const SOURCE_EXTENSIONS = [".js", ".mjs", ".ts"];
 
 function walk(directoryPath) {
@@ -80,7 +80,7 @@ function sourceOwnsAdapterImport(sourceFilePath, adapterOwner) {
 test("direct adapter imports stay inside the owning gateway or adapter", () => {
     const violations = [];
 
-    for (const filePath of walk(SRC_ROOT)) {
+    for (const filePath of walk(SOURCE_ROOT)) {
         if (!hasSourceExtension(filePath)) continue;
         if (normalizePath(filePath).includes("/tests/")) continue;
 
@@ -122,7 +122,7 @@ test("raw SQL execution stays inside the database gateway boundary", () => {
     const databaseGatewayRoot = `${normalizePath(resolve(GATEWAYS_ROOT, "db"))}/`;
     const databaseAdaptersRoot = `${normalizePath(resolve(ADAPTERS_ROOT, "db"))}/`;
 
-    for (const filePath of walk(SRC_ROOT)) {
+    for (const filePath of walk(SOURCE_ROOT)) {
         if (!hasSourceExtension(filePath)) continue;
         const normalizedFilePath = normalizePath(filePath);
         if (normalizedFilePath.includes("/tests/")) continue;
@@ -165,7 +165,7 @@ const load = () => import("./contracts/api.js");`),
 
 test("browser fixtures load optional component implementations only within their owner", () => {
     const violations = [];
-    for (const filePath of walk(SRC_ROOT)) {
+    for (const filePath of walk(SOURCE_ROOT)) {
         if (!normalizePath(filePath).includes("/tests/fixtures/")) continue;
         if (
             ![".js", ".html", ".css"].some((extension) =>
@@ -178,7 +178,7 @@ test("browser fixtures load optional component implementations only within their
             /\/static\/(adapters\/[^/]+\/[^/]+|gateways\/[^/]+)\//g,
         );
         for (const [, componentPath] of componentUrls) {
-            const ownerRoot = resolve(SRC_ROOT, componentPath);
+            const ownerRoot = resolve(SOURCE_ROOT, componentPath);
             if (
                 normalizePath(filePath).startsWith(
                     `${normalizePath(ownerRoot)}/`,

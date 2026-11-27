@@ -24,7 +24,8 @@ export function createComposerRenderer({
     state,
     UNIT,
     MOBILE_LAYOUT_WIDTH_RECLAIM_BREAKPOINT,
-    COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS,
+    COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS:
+        COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLUMNS,
     i18n,
     escapeHtml,
     getGridSize,
@@ -36,11 +37,11 @@ export function createComposerRenderer({
     computeGridDimensions,
     initializePlacements,
     applyLayoutForCurrentGridColumns,
-    computeSubGridDimensions,
-    initializeSubPlacements,
+    computeSubGridDimensions: computeNestedGridDimensions,
+    initializeSubPlacements: initializeNestedPlacements,
     syncEditToggle,
-    mountSubComposer,
-    unmountSubComposer,
+    mountSubComposer: mountNestedComposer,
+    unmountSubComposer: unmountNestedComposer,
     captureFormState,
     restoreFormState,
     mergeFormStateSnapshots,
@@ -59,18 +60,19 @@ export function createComposerRenderer({
 
     const {
         computeViewPlacements,
-        computeSubViewPlacements,
+        computeSubViewPlacements: computeNestedViewPlacements,
         syncLayoutToCurrentGridColumns,
-        syncSubLayoutToCurrentGridColumns,
+        syncSubLayoutToCurrentGridColumns: syncNestedLayoutToCurrentGridColumns,
     } = createPlacementResolver({
         state,
         getGridSize,
         MOBILE_LAYOUT_WIDTH_RECLAIM_BREAKPOINT,
-        COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS,
+        COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS:
+            COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLUMNS,
         computeGridDimensions,
         initializePlacements,
-        computeSubGridDimensions,
-        initializeSubPlacements,
+        computeSubGridDimensions: computeNestedGridDimensions,
+        initializeSubPlacements: initializeNestedPlacements,
     });
 
     function getVisibleComposerPlacements() {
@@ -136,11 +138,11 @@ export function createComposerRenderer({
             card.style.gridRow = "auto";
             return;
         }
-        const scaledCol = placement.col * scale;
+        const scaledColumn = placement.col * scale;
         const scaledRow = placement.row * scale;
         const scaledWidth = placement.w * scale;
         const scaledHeight = placement.h * scale;
-        card.style.gridColumn = `${Math.round(scaledCol) + 1} / span ${Math.round(scaledWidth)}`;
+        card.style.gridColumn = `${Math.round(scaledColumn) + 1} / span ${Math.round(scaledWidth)}`;
         card.style.gridRow = `${Math.round(scaledRow) + 1} / span ${Math.round(scaledHeight)}`;
     }
     function renderPlacementCards(section, placements, scale) {
@@ -340,7 +342,7 @@ export function createComposerRenderer({
                     (candidateElement) => candidateElement.id === id,
                 );
                 if (!element) return "";
-                const dragAttrs = state.editing ? ` draggable="true"` : "";
+                const dragAttributes = state.editing ? ` draggable="true"` : "";
                 const dragHandle = state.editing
                     ? `<div class="composer-drag-handle" aria-hidden="true">
                <span class="composer-drag-icon">⠿</span>
@@ -358,15 +360,15 @@ export function createComposerRenderer({
                     state.subPageNavigation &&
                     element.id === state.activeSubPageId;
                 const activeClass = isActive ? " active" : "";
-                const hiddenAttr =
+                const hiddenAttribute =
                     state.subPageNavigation && !isActive ? " hidden" : "";
                 if (element.subComposerOptions) {
                     const headingHtml = element.subComposerOptions.heading
                         ? `<h2 class="sub-composer-heading">${escapeHtml(element.subComposerOptions.heading)}</h2>`
                         : "";
-                    return `<div class="content-section${activeClass}"${hiddenAttr} id="${element.id}">${headingHtml}<div class="sub-composer-inner"></div></div>`;
+                    return `<div class="content-section${activeClass}"${hiddenAttribute} id="${element.id}">${headingHtml}<div class="sub-composer-inner"></div></div>`;
                 }
-                return `<div class="content-section${activeClass}"${hiddenAttr} id="${element.id}"><section class="widget-card${editingClass}" data-composer-element="${element.id}"${dragAttrs}>${dragHandle}${focusButton}${element.render(composerPresentation(state.contentGrid))}</section></div>`;
+                return `<div class="content-section${activeClass}"${hiddenAttribute} id="${element.id}"><section class="widget-card${editingClass}" data-composer-element="${element.id}"${dragAttributes}>${dragHandle}${focusButton}${element.render(composerPresentation(state.contentGrid))}</section></div>`;
             })
             .join("");
     }
@@ -382,7 +384,7 @@ export function createComposerRenderer({
          </li>`,
             )
             .join("");
-        const emptyMsg = !hiddenElements.length
+        const emptyMessage = !hiddenElements.length
             ? `<li class="composer-library-empty">${i18n.t("ui.reuse.all_elements_visible")}</li>`
             : "";
         return `
@@ -390,11 +392,11 @@ export function createComposerRenderer({
         <div class="composer-library-header">
           <h3>${i18n.t("ui.reuse.elements")}</h3>
         </div>
-        <ul class="composer-library-list">${listItems}${emptyMsg}</ul>
+        <ul class="composer-library-list">${listItems}${emptyMessage}</ul>
       </aside>
     `;
     }
-    function renderSubPageComposer() {
+    function renderNestedPageComposer() {
         const effectiveLayout = getEffectiveLayout();
         let html = "";
         const cardsHtml = renderCards(effectiveLayout);
@@ -406,7 +408,7 @@ export function createComposerRenderer({
             html += renderLibraryPanel(effectiveLayout);
         }
         state.contentGrid.innerHTML = html;
-        bindSubPageComposerEvents();
+        bindNestedPageComposerEvents();
         syncEditToggle();
         for (const id of effectiveLayout.order) {
             if (effectiveLayout.hidden.includes(id)) continue;
@@ -423,10 +425,10 @@ export function createComposerRenderer({
             element?.onRender?.();
         }
         state.onRender?.();
-        const activeEl = state.elements.find(
+        const activeElement = state.elements.find(
             (candidateElement) => candidateElement.id === state.activeSubPageId,
         );
-        if (activeEl?.subComposerOptions) {
+        if (activeElement?.subComposerOptions) {
             const outerDiv = state.contentGrid.querySelector(
                 `#${state.activeSubPageId}`,
             );
@@ -434,34 +436,36 @@ export function createComposerRenderer({
                 outerDiv?.querySelector(".sub-composer-inner") ??
                 outerDiv ??
                 state.contentGrid;
-            mountSubComposer(activeEl, sectionDiv).catch(() => {});
+            mountNestedComposer(activeElement, sectionDiv).catch(() => {});
         }
     }
-    function bindSubPageComposerEvents() {
+    function bindNestedPageComposerEvents() {
         state.contentGrid
             .querySelectorAll("[data-composer-remove]")
-            .forEach((btn) => {
-                btn.addEventListener("click", () => {
-                    const id = btn.dataset.composerRemove;
+            .forEach((button) => {
+                button.addEventListener("click", () => {
+                    const id = button.dataset.composerRemove;
                     const effective = getEffectiveLayout();
                     state.layout = {
                         order: effective.order,
                         hidden: [...effective.hidden, id],
                     };
-                    renderSubPageComposer();
+                    renderNestedPageComposer();
                 });
             });
         state.contentGrid
             .querySelectorAll("[data-composer-add]")
-            .forEach((btn) => {
-                btn.addEventListener("click", () => {
-                    const id = btn.dataset.composerAdd;
+            .forEach((button) => {
+                button.addEventListener("click", () => {
+                    const id = button.dataset.composerAdd;
                     const effective = getEffectiveLayout();
                     state.layout = {
                         order: effective.order,
-                        hidden: effective.hidden.filter((h) => h !== id),
+                        hidden: effective.hidden.filter(
+                            (hiddenElementId) => hiddenElementId !== id,
+                        ),
                     };
-                    renderSubPageComposer();
+                    renderNestedPageComposer();
                 });
             });
 
@@ -510,15 +514,19 @@ export function createComposerRenderer({
                     const visibleOrder = effective.order.filter(
                         (id) => !effective.hidden.includes(id),
                     );
-                    const sourceIdx = visibleOrder.indexOf(state.dragSourceId);
-                    const targetIdx = visibleOrder.indexOf(targetId);
-                    if (sourceIdx === -1 || targetIdx === -1) return;
+                    const sourceIndex = visibleOrder.indexOf(
+                        state.dragSourceId,
+                    );
+                    const targetIndex = visibleOrder.indexOf(targetId);
+                    if (sourceIndex === -1 || targetIndex === -1) return;
 
-                    visibleOrder.splice(sourceIdx, 1);
+                    visibleOrder.splice(sourceIndex, 1);
                     // Removing source shifts all subsequent indices by -1; adjust targetIdx when source precedes target.
-                    const insertIdx =
-                        sourceIdx < targetIdx ? targetIdx - 1 : targetIdx;
-                    visibleOrder.splice(insertIdx, 0, state.dragSourceId);
+                    const insertIndex =
+                        sourceIndex < targetIndex
+                            ? targetIndex - 1
+                            : targetIndex;
+                    visibleOrder.splice(insertIndex, 0, state.dragSourceId);
 
                     const newOrder = [
                         ...visibleOrder,
@@ -530,7 +538,7 @@ export function createComposerRenderer({
                         order: newOrder,
                         hidden: effective.hidden,
                     };
-                    renderSubPageComposer();
+                    renderNestedPageComposer();
                 });
             });
     }
@@ -538,7 +546,7 @@ export function createComposerRenderer({
     function render() {
         if (!state.contentGrid) return;
         if (state.subPageNavigation) {
-            renderSubPageComposer();
+            renderNestedPageComposer();
         } else {
             renderGridComposer();
         }
@@ -548,8 +556,8 @@ export function createComposerRenderer({
         refreshElements,
         render,
         renderGridComposer,
-        computeSubViewPlacements,
+        computeSubViewPlacements: computeNestedViewPlacements,
         syncLayoutToCurrentGridColumns,
-        syncSubLayoutToCurrentGridColumns,
+        syncSubLayoutToCurrentGridColumns: syncNestedLayoutToCurrentGridColumns,
     };
 }

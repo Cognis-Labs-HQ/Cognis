@@ -18,8 +18,8 @@ class MockSchemaExecutor {
         );
     }
 
-    async ensureTable(def: StructuredDbTableDef): Promise<void> {
-        this.capturedTableDefs.push(def);
+    async ensureTable(definition: StructuredDbTableDef): Promise<void> {
+        this.capturedTableDefs.push(definition);
     }
 
     async transaction<T>(
@@ -57,7 +57,7 @@ class MockShareUpdateExecutor {
         };
     }
 
-    async ensureTable(_def: StructuredDbTableDef): Promise<void> {}
+    async ensureTable(_definition: StructuredDbTableDef): Promise<void> {}
 
     async transaction<T>(
         callback: (executor: MockShareUpdateExecutor) => Promise<T>,
@@ -70,17 +70,20 @@ test("ensureSchema declares permission and expires_at on calendar_user_shares", 
     const executor = new MockSchemaExecutor();
     const shareRegistry = new CalendarShareRegistry(executor);
     await shareRegistry.ensureSchema();
-    const sharesDef = executor.capturedTableDefs.find(
-        (def) => def.name === "calendar_user_shares",
+    const sharesDefinition = executor.capturedTableDefs.find(
+        (definition) => definition.name === "calendar_user_shares",
     );
-    assert.ok(sharesDef, "calendar_user_shares table def must be registered");
-    const colNames = sharesDef.columns.map((col) => col.name);
     assert.ok(
-        colNames.includes("permission"),
+        sharesDefinition,
+        "calendar_user_shares table def must be registered",
+    );
+    const columnNames = sharesDefinition.columns.map((column) => column.name);
+    assert.ok(
+        columnNames.includes("permission"),
         "calendar_user_shares must declare permission column",
     );
     assert.ok(
-        colNames.includes("expires_at"),
+        columnNames.includes("expires_at"),
         "calendar_user_shares must declare expires_at column",
     );
 });

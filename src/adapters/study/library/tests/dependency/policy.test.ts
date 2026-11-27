@@ -127,13 +127,13 @@ function harness(records: LibraryEntry[], requests: object[] = []) {
     };
 }
 
-const ref = (id: string) => ({ entryId: id, relation: "parts" });
+const reference = (id: string) => ({ entryId: id, relation: "parts" });
 const input = (label: string, id: string): LibraryEntryInput => ({
     schemaId: schema.id,
     layer: "units",
     label,
     fields: {},
-    references: [ref(id)],
+    references: [reference(id)],
 });
 
 test("creation and edits enforce scope visibility and ACLs for flat and grouped dependencies", async () => {
@@ -213,7 +213,7 @@ test("creation and edits enforce scope visibility and ACLs for flat and grouped 
 test("publication and update requests reject private dependencies before queuing", async () => {
     const component = entry("private", { scope: "user", scopeId: "alice" });
     const source = entry("source", { scope: "user", scopeId: "alice" }, [
-        ref(component.id),
+        reference(component.id),
     ]);
     const global = entry("global", { scope: "global", scopeId: "global" });
     const { library, mutations, prepare } = harness([
@@ -243,7 +243,7 @@ test("publication and update requests reject private dependencies before queuing
 test("approval rechecks dependencies changed after request submission", async () => {
     const component = entry("component", { scope: "user", scopeId: "alice" });
     const source = entry("source", { scope: "user", scopeId: "alice" }, [
-        ref(component.id),
+        reference(component.id),
     ]);
     const request = {
         id: "request",
@@ -272,27 +272,27 @@ test("shared dependencies stay available while a private relocation awaits revie
         scopeId: "global",
     });
     const source = entry("source", { scope: "global", scopeId: "global" }, [
-        ref(component.id),
+        reference(component.id),
     ]);
-    const h = harness([component, source]);
-    await h.prepare();
-    await h.library.moveToPersonal(admin, component.id);
-    assert.deepEqual(h.mutations, ["request"]);
+    const testHarness = harness([component, source]);
+    await testHarness.prepare();
+    await testHarness.library.moveToPersonal(admin, component.id);
+    assert.deepEqual(testHarness.mutations, ["request"]);
 });
 
 test("deletion authorizes every dependent and blocks pending cascade sources", async () => {
     const root = entry("root", { scope: "user", scopeId: "alice" });
     const foreign = entry("foreign", { scope: "user", scopeId: "bob" });
-    const h = harness([root, foreign]);
+    const testHarness = harness([root, foreign]);
     await assert.rejects(
-        h.library.deleteEntries(actor, [root.id], false),
+        testHarness.library.deleteEntries(actor, [root.id], false),
         /forbidden/,
     );
     await assert.rejects(
-        h.library.deleteEntries(admin, [root.id], false),
+        testHarness.library.deleteEntries(admin, [root.id], false),
         /forbidden/,
     );
-    assert.deepEqual(h.mutations, []);
+    assert.deepEqual(testHarness.mutations, []);
     const child = entry("child", { scope: "user", scopeId: "alice" });
     const pending = harness(
         [root, child],
@@ -315,7 +315,7 @@ test("scope validation checks every edge and rejects composition cycles during e
     const invalidGlobal = entry(
         "global",
         { scope: "global", scopeId: "global" },
-        [ref(personal.id)],
+        [reference(personal.id)],
     );
     const records = new Map(
         [personal, invalidGlobal].map((value) => [value.id, value]),
@@ -328,7 +328,7 @@ test("scope validation checks every edge and rejects composition cycles during e
         ),
         /reference_visibility_too_low/,
     );
-    personal.references = [ref(invalidGlobal.id)];
+    personal.references = [reference(invalidGlobal.id)];
     await assert.rejects(
         validateDependencyVisibility(
             input("cycle", personal.id),
@@ -346,16 +346,16 @@ test("class-scoped publication succeeds with compatible components and permissio
         scopeId: "class-a",
     });
     const source = entry("source", { scope: "user", scopeId: "alice" }, [
-        ref(component.id),
+        reference(component.id),
     ]);
-    const h = harness([source, component]);
-    await h.prepare();
-    await h.library.requestPush(actor, source.id, {
+    const testHarness = harness([source, component]);
+    await testHarness.prepare();
+    await testHarness.library.requestPush(actor, source.id, {
         scope: "class",
         scopeId: "class-a",
     });
-    assert.deepEqual(h.mutations, ["request"]);
-    const read = await h.library.read(
+    assert.deepEqual(testHarness.mutations, ["request"]);
+    const read = await testHarness.library.read(
         { accountId: "teacher", role: "teacher" },
         component.id,
     );
@@ -370,18 +370,18 @@ test("protected dependencies and self-referential edits fail without mutating ca
         ...entry("child", { scope: "user", scopeId: "alice" }),
         protected: true,
     };
-    const h = harness([root, protectedChild]);
+    const testHarness = harness([root, protectedChild]);
     await assert.rejects(
-        h.library.deleteEntries(actor, [root.id], false),
+        testHarness.library.deleteEntries(actor, [root.id], false),
         /protected_content/,
     );
-    await h.prepare();
+    await testHarness.prepare();
     await assert.rejects(
-        h.library.update(actor, root.id, input("cycle", root.id)),
+        testHarness.library.update(actor, root.id, input("cycle", root.id)),
         /reference_cycle/,
     );
-    assert.deepEqual(h.mutations, []);
-    const created = await h.library.create(
+    assert.deepEqual(testHarness.mutations, []);
+    const created = await testHarness.library.create(
         actor,
         { scope: "user" },
         { schemaId: schema.id, layer: "units", label: "new", fields: {} },
@@ -393,7 +393,7 @@ test("protected dependencies and self-referential edits fail without mutating ca
 test("editing a pending publication cannot introduce private components", async () => {
     const component = entry("private", { scope: "user", scopeId: "alice" });
     const source = entry("source", { scope: "user", scopeId: "alice" });
-    const h = harness(
+    const testHarness = harness(
         [source, component],
         [
             {
@@ -403,12 +403,16 @@ test("editing a pending publication cannot introduce private components", async 
             },
         ],
     );
-    await h.prepare();
+    await testHarness.prepare();
     await assert.rejects(
-        h.library.update(actor, source.id, input("changed", component.id)),
+        testHarness.library.update(
+            actor,
+            source.id,
+            input("changed", component.id),
+        ),
         /reference_visibility_too_low/,
     );
-    assert.deepEqual(h.mutations, []);
+    assert.deepEqual(testHarness.mutations, []);
 });
 
 test("creation authorizes its scope before invoking extension flows", async () => {

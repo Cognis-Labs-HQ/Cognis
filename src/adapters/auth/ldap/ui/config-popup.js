@@ -254,15 +254,15 @@ export async function openAdapterConfig({
         </div>`;
     }
 
-    const dbData = configPayload?.data ?? {};
+    const databaseData = configPayload?.data ?? {};
     const configuredSecretFields = Array.isArray(
         configPayload?.configuredSecretFields,
     )
         ? configPayload.configuredSecretFields
         : [];
     const configuredBindPasswordIdentifiers = new Set(
-        Array.isArray(dbData.servers)
-            ? dbData.servers
+        Array.isArray(databaseData.servers)
+            ? databaseData.servers
                   .map((server, index) =>
                       configuredSecretFields.includes(
                           `servers.${index}.bindPassword`,
@@ -273,12 +273,12 @@ export async function openAdapterConfig({
                   .filter(Boolean)
             : [],
     );
-    let servers = Array.isArray(dbData.servers)
-        ? dbData.servers.map((server) => ({ ...server }))
-        : Object.keys(dbData).length
-          ? [{ identifier: "LDAP", ...dbData }]
+    let servers = Array.isArray(databaseData.servers)
+        ? databaseData.servers.map((server) => ({ ...server }))
+        : Object.keys(databaseData).length
+          ? [{ identifier: "LDAP", ...databaseData }]
           : [];
-    let unify = dbData.unify !== false;
+    let unify = databaseData.unify !== false;
     let selectedServerIndex = null;
     let connectionValues = {};
     let sample = null;

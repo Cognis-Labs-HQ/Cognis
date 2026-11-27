@@ -1,17 +1,21 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import net from "node:net";
+import network from "node:net";
 import { setImmediate } from "node:timers/promises";
-import { openSession, upgradeToTls, SMTP_TIMEOUT_MS } from "../smtp-session.js";
+import {
+    openSession,
+    upgradeToTls,
+    SMTP_TIMEOUT_MS as SMTP_TIMEOUT_MILLISECONDS,
+} from "../smtp-session.js";
 
 for (const transport of ["tls", "starttls"] as const) {
     test(`${transport} handshake deadlines close an unresponsive connection`, async (testContext) => {
-        const sockets = new Set<net.Socket>();
+        const sockets = new Set<network.Socket>();
         let accept!: () => void;
         const accepted = new Promise<void>((resolve) => {
             accept = resolve;
         });
-        const server = net.createServer((socket) => {
+        const server = network.createServer((socket) => {
             sockets.add(socket);
             socket.once("close", () => sockets.delete(socket));
             accept();
@@ -23,19 +27,22 @@ for (const transport of ["tls", "starttls"] as const) {
             for (const socket of sockets) socket.destroy();
             await new Promise<void>((resolve) => server.close(() => resolve()));
         });
-        const port = (server.address() as net.AddressInfo).port;
+        const port = (server.address() as network.AddressInfo).port;
         testContext.mock.timers.enable({ apis: ["setTimeout"] });
         const connecting =
             transport === "tls"
                 ? openSession("127.0.0.1", port, "tls", true)
                 : openSession("127.0.0.1", port, "none").then((session) => {
-                      assert.equal(session.socket.timeout, SMTP_TIMEOUT_MS);
+                      assert.equal(
+                          session.socket.timeout,
+                          SMTP_TIMEOUT_MILLISECONDS,
+                      );
                       return upgradeToTls(session, "smtp.example.test", true);
                   });
         const failed = assert.rejects(connecting, /smtp_timeout/);
         await accepted;
         await setImmediate();
-        testContext.mock.timers.tick(SMTP_TIMEOUT_MS);
+        testContext.mock.timers.tick(SMTP_TIMEOUT_MILLISECONDS);
         await failed;
     });
 }

@@ -7,8 +7,8 @@ function fixture() {
     const { document, observers } = createDrawerDocument();
     document.defaultView.MutationObserver = document.defaultView.ResizeObserver;
     const root = document.createElement("section");
-    const navrow = document.createElement("nav");
-    navrow.className = "global-navrow";
+    const navigationRow = document.createElement("nav");
+    navigationRow.className = "global-navrow";
     const topnav = document.createElement("div");
     topnav.className = "topnav";
     topnav.scrollWidth = 600;
@@ -16,7 +16,7 @@ function fixture() {
     topnav.innerHTML = '<a href="/dashboard">Dashboard</a>';
     const trigger = document.createElement("button");
     trigger.id = "nav-compact-toggle";
-    navrow.append(trigger, topnav);
+    navigationRow.append(trigger, topnav);
     const panel = document.createElement("aside");
     panel.id = "nav-launcher";
     const closeButton = document.createElement("button");
@@ -26,7 +26,7 @@ function fixture() {
     panel.append(closeButton, navigation);
     const backdrop = document.createElement("div");
     backdrop.id = "nav-launcher-backdrop";
-    root.append(navrow, panel, backdrop);
+    root.append(navigationRow, panel, backdrop);
     document.body.append(root);
     const logs = [];
     const controller = new AbortController();
@@ -34,13 +34,13 @@ function fixture() {
     const destroy = bindCompactNavigation(root, {
         signal: controller.signal,
         prepareNavigation: () => preparations++,
-        log: (...args) => logs.push(args),
+        log: (...argumentsList) => logs.push(argumentsList),
     });
     return {
         document,
         observers,
         root,
-        navrow,
+        navrow: navigationRow,
         topnav,
         trigger,
         panel,

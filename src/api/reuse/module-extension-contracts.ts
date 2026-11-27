@@ -13,8 +13,8 @@ export interface ModuleRouteOptions {
 }
 
 export type ModuleRouteHandler = (
-    req: IncomingMessage,
-    res: ServerResponse,
+    request: IncomingMessage,
+    response: ServerResponse,
 ) => Promise<void> | void;
 
 export interface ModuleApiRouter {
@@ -104,7 +104,7 @@ export interface ModuleUiRegistrationContext {
         access?: RoleAccessPolicy;
         stringsBaseUrl?: string;
     }): void;
-    registerStaticDir(urlPrefix: string, absoluteDir: string): void;
+    registerStaticDir(urlPrefix: string, absoluteDirectory: string): void;
     registerAuthTypingMessage(message: {
         id: string;
         textKey: string;

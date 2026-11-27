@@ -1,8 +1,8 @@
 import {
-    initializeDocsStore,
+    initializeDocsStore as initializeDocumentsStore,
     readStoredMarkdown,
 } from "../../routes/docs/store.js";
-import { discoverDocSources } from "../../routes/docs/sources.js";
+import { discoverDocSources as discoverDocumentSources } from "../../routes/docs/sources.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
@@ -17,23 +17,23 @@ import {
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import {
-    createDocsRoutes,
-    resolveDocsArchiveRoot,
+    createDocsRoutes as createDocumentsRoutes,
+    resolveDocsArchiveRoot as resolveDocumentsArchiveRoot,
 } from "../../routes/docs/index.js";
 
 test("docs archive defaults to a writable user path outside containers", () => {
     assert.equal(
-        resolveDocsArchiveRoot({}, "/home/example"),
+        resolveDocumentsArchiveRoot({}, "/home/example"),
         "/home/example/.cognis/docs-archive",
     );
     assert.equal(
-        resolveDocsArchiveRoot({
+        resolveDocumentsArchiveRoot({
             COGNIS_CLI_TOKEN_PATH: "/app/config/cli-access.token",
         }),
         "/app/config/docs-archive",
     );
     assert.equal(
-        resolveDocsArchiveRoot({
+        resolveDocumentsArchiveRoot({
             COGNIS_DOCS_ARCHIVE_DIR: "/mnt/docs",
             COGNIS_CLI_TOKEN_PATH: "/app/config/cli-access.token",
         }),
@@ -42,7 +42,7 @@ test("docs archive defaults to a writable user path outside containers", () => {
 });
 
 async function request(
-    route: ReturnType<typeof createDocsRoutes>,
+    route: ReturnType<typeof createDocumentsRoutes>,
     path: string,
 ) {
     let status = 0;
@@ -74,15 +74,18 @@ function manifest(version: string, name = "Example") {
     });
 }
 
-async function writeBundle(docsRoot: string, info: string, core = false) {
-    await mkdir(docsRoot, { recursive: true });
-    await writeFile(join(docsRoot, core ? "INFO.en.md" : "README.en.md"), info);
+async function writeBundle(documentsRoot: string, info: string, core = false) {
+    await mkdir(documentsRoot, { recursive: true });
     await writeFile(
-        join(docsRoot, "USAGE.en.md"),
+        join(documentsRoot, core ? "INFO.en.md" : "README.en.md"),
+        info,
+    );
+    await writeFile(
+        join(documentsRoot, "USAGE.en.md"),
         "# Usage\n\nConcrete usage procedure.",
     );
     await writeFile(
-        join(docsRoot, "TECHNICAL.en.md"),
+        join(documentsRoot, "TECHNICAL.en.md"),
         "# Technical\n\nPublic interfaces.",
     );
 }
@@ -91,19 +94,19 @@ test("docs snapshots manifest versions across software starts", async () => {
     const fixtureRoot = await mkdtemp(join(tmpdir(), "cognis-docs-"));
     const sourceRoot = join(fixtureRoot, "src");
     const componentRoot = join(sourceRoot, "gateways", "example");
-    const docsRoot = join(componentRoot, "docs");
+    const documentsRoot = join(componentRoot, "docs");
     const archiveRoot = join(fixtureRoot, "archive");
-    await mkdir(docsRoot, { recursive: true });
+    await mkdir(documentsRoot, { recursive: true });
     await writeFile(join(componentRoot, "package.json"), manifest("1.0.0"));
-    await writeBundle(docsRoot, "# Example\n\nFirst");
+    await writeBundle(documentsRoot, "# Example\n\nFirst");
 
     await request(
-        createDocsRoutes({ sourceRoot, archiveRoot }),
+        createDocumentsRoutes({ sourceRoot, archiveRoot }),
         "/api/v1/docs/latest/gateways/example",
     );
     await writeFile(join(componentRoot, "package.json"), manifest("1.1.0"));
-    await writeBundle(docsRoot, "# Example\n\nSecond");
-    const restartedRoute = createDocsRoutes({ sourceRoot, archiveRoot });
+    await writeBundle(documentsRoot, "# Example\n\nSecond");
+    const restartedRoute = createDocumentsRoutes({ sourceRoot, archiveRoot });
 
     const index = await request(restartedRoute, "/api/v1/docs");
     assert.deepEqual(index.body.data[0].versions, ["1.1.0", "1.0.0"]);
@@ -123,7 +126,10 @@ test("docs snapshots manifest versions across software starts", async () => {
     assert.match(historical.body.data.markdown, /First/);
 
     await removePath(componentRoot, { recursive: true, force: true });
-    const routeAfterRemoval = createDocsRoutes({ sourceRoot, archiveRoot });
+    const routeAfterRemoval = createDocumentsRoutes({
+        sourceRoot,
+        archiveRoot,
+    });
     const indexAfterRemoval = await request(routeAfterRemoval, "/api/v1/docs");
     const archivedEntry = indexAfterRemoval.body.data.find(
         (entry: { slug: string }) => entry.slug === "gateways/example",
@@ -142,12 +148,12 @@ test("docs refresh archived content for the installed version", async () => {
     const fixtureRoot = await mkdtemp(join(tmpdir(), "cognis-docs-refresh-"));
     const sourceRoot = join(fixtureRoot, "src");
     const componentRoot = join(sourceRoot, "gateways", "example");
-    const docsRoot = join(componentRoot, "docs");
+    const documentsRoot = join(componentRoot, "docs");
     const archiveRoot = join(fixtureRoot, "archive");
-    await mkdir(docsRoot, { recursive: true });
+    await mkdir(documentsRoot, { recursive: true });
     await writeFile(join(componentRoot, "package.json"), manifest("1.0.0"));
-    await writeBundle(docsRoot, "# Example\n\nOld link");
-    const route = createDocsRoutes({ sourceRoot, archiveRoot });
+    await writeBundle(documentsRoot, "# Example\n\nOld link");
+    const route = createDocumentsRoutes({ sourceRoot, archiveRoot });
     await request(route, "/api/v1/docs/latest/gateways/example");
     const archivedPath = join(
         archiveRoot,
@@ -160,9 +166,9 @@ test("docs refresh archived content for the installed version", async () => {
     await request(route, "/api/v1/docs/latest/gateways/example");
     assert.equal((await stat(archivedPath)).ino, initialArchive.ino);
 
-    await writeBundle(docsRoot, "# Example\n\nCorrected link");
+    await writeBundle(documentsRoot, "# Example\n\nCorrected link");
     const refreshed = await request(
-        createDocsRoutes({ sourceRoot, archiveRoot }),
+        createDocumentsRoutes({ sourceRoot, archiveRoot }),
         "/api/v1/docs/latest/gateways/example",
     );
 
@@ -172,7 +178,7 @@ test("docs refresh archived content for the installed version", async () => {
 });
 
 test("docs route handles docs index with markdown slugs", async () => {
-    const route = createDocsRoutes();
+    const route = createDocumentsRoutes();
     let status = 0;
     let body = "";
     const handled = await route(
@@ -215,7 +221,7 @@ test("docs route discovers external module docs and changelogs", async () => {
     );
     try {
         const response = await request(
-            createDocsRoutes({
+            createDocumentsRoutes({
                 sourceRoot: [sourceRoot, externalRoot],
                 archiveRoot: join(fixtureRoot, "archive"),
             }),
@@ -237,7 +243,7 @@ test("docs route discovers external module docs and changelogs", async () => {
 });
 
 test("docs route supports slug lookup", async () => {
-    const route = createDocsRoutes();
+    const route = createDocumentsRoutes();
     let status = 0;
     let body = "";
     const handled = await route(
@@ -258,7 +264,7 @@ test("docs route supports slug lookup", async () => {
 });
 
 test("docs route returns group and title metadata", async () => {
-    const route = createDocsRoutes();
+    const route = createDocumentsRoutes();
     let status = 0;
     let body = "";
     await route(
@@ -282,7 +288,7 @@ test("docs route returns group and title metadata", async () => {
 });
 
 test("docs route falls back to English when requested lang is missing", async () => {
-    const route = createDocsRoutes();
+    const route = createDocumentsRoutes();
     let status = 0;
     let body = "";
     const handled = await route(
@@ -303,7 +309,7 @@ test("docs route falls back to English when requested lang is missing", async ()
 });
 
 test("docs route uses secondary language before falling back to English", async () => {
-    const route = createDocsRoutes();
+    const route = createDocumentsRoutes();
     let status = 0;
     let body = "";
     const handled = await route(
@@ -329,7 +335,7 @@ test("docs route uses secondary language before falling back to English", async 
 });
 
 test("docs route indexes every changelog markdown stem and serves generated changelog landing page", async () => {
-    const route = createDocsRoutes();
+    const route = createDocumentsRoutes();
     let status = 0;
     let body = "";
     await route(
@@ -377,7 +383,7 @@ test("docs route indexes every changelog markdown stem and serves generated chan
 });
 
 test("docs route renders changelog feature branch from file slug", async () => {
-    const route = createDocsRoutes();
+    const route = createDocumentsRoutes();
     let status = 0;
     let body = "";
     const handled = await route(
@@ -408,7 +414,7 @@ test("docs route renders changelog feature branch from file slug", async () => {
 });
 
 test("docs route serves changelog slugs containing registry host dots", async () => {
-    const route = createDocsRoutes();
+    const route = createDocumentsRoutes();
     let status = 0;
     const handled = await route(
         { method: "GET" } as any,
@@ -427,7 +433,7 @@ test("docs route serves changelog slugs containing registry host dots", async ()
 });
 
 test("docs route returns 404 for unknown slug", async () => {
-    const route = createDocsRoutes();
+    const route = createDocumentsRoutes();
     let status = 0;
     const handled = await route(
         { method: "GET" } as any,
@@ -450,13 +456,16 @@ test("all document views retain their component version across publication and r
     );
     const sourceRoot = join(fixtureRoot, "src");
     const componentRoot = join(sourceRoot, "gateways", "example");
-    const docsRoot = join(componentRoot, "docs");
+    const documentsRoot = join(componentRoot, "docs");
     const archiveRoot = join(fixtureRoot, "archive");
-    await writeBundle(docsRoot, "# First README");
+    await writeBundle(documentsRoot, "# First README");
     await writeFile(join(componentRoot, "manifest.json"), manifest("1.0.0"));
-    await writeFile(join(docsRoot, "USAGE.en.md"), "# First Usage");
-    await writeFile(join(docsRoot, "TECHNICAL.en.md"), "# First Technical");
-    const first = createDocsRoutes({ sourceRoot, archiveRoot });
+    await writeFile(join(documentsRoot, "USAGE.en.md"), "# First Usage");
+    await writeFile(
+        join(documentsRoot, "TECHNICAL.en.md"),
+        "# First Technical",
+    );
+    const first = createDocumentsRoutes({ sourceRoot, archiveRoot });
     for (const [view, title] of [
         ["", "README"],
         ["/usage", "Usage"],
@@ -468,10 +477,13 @@ test("all document views retain their component version across publication and r
             new RegExp(`First ${title}`),
         );
     await writeFile(join(componentRoot, "manifest.json"), manifest("2.0.0"));
-    await writeBundle(docsRoot, "# Second README");
-    await writeFile(join(docsRoot, "USAGE.en.md"), "# Second Usage");
-    await writeFile(join(docsRoot, "TECHNICAL.en.md"), "# Second Technical");
-    const restarted = createDocsRoutes({ sourceRoot, archiveRoot });
+    await writeBundle(documentsRoot, "# Second README");
+    await writeFile(join(documentsRoot, "USAGE.en.md"), "# Second Usage");
+    await writeFile(
+        join(documentsRoot, "TECHNICAL.en.md"),
+        "# Second Technical",
+    );
+    const restarted = createDocumentsRoutes({ sourceRoot, archiveRoot });
     for (const [view, title] of [
         ["", "README"],
         ["/usage", "Usage"],
@@ -508,14 +520,14 @@ test("incomplete document sources cannot publish a partial version", async (cont
     );
     const sourceRoot = join(fixtureRoot, "src");
     const componentRoot = join(sourceRoot, "gateways", "example");
-    const docsRoot = join(componentRoot, "docs");
+    const documentsRoot = join(componentRoot, "docs");
     const archiveRoot = join(fixtureRoot, "archive");
-    await writeBundle(docsRoot, "# First README");
+    await writeBundle(documentsRoot, "# First README");
     await writeFile(join(componentRoot, "manifest.json"), manifest("1.0.0"));
-    const route = createDocsRoutes({ sourceRoot, archiveRoot });
+    const route = createDocumentsRoutes({ sourceRoot, archiveRoot });
     await request(route, "/api/v1/docs");
     await writeFile(join(componentRoot, "manifest.json"), manifest("2.0.0"));
-    await removePath(join(docsRoot, "USAGE.en.md"));
+    await removePath(join(documentsRoot, "USAGE.en.md"));
     await assert.rejects(
         () => request(route, "/api/v1/docs"),
         /docs_english_source_missing/,
@@ -523,7 +535,7 @@ test("incomplete document sources cannot publish a partial version", async (cont
     assert.deepEqual(await readdir(join(archiveRoot, "gateways", "example")), [
         "1.0.0",
     ]);
-    await writeFile(join(docsRoot, "USAGE.en.md"), "# Restored Usage");
+    await writeFile(join(documentsRoot, "USAGE.en.md"), "# Restored Usage");
     const repaired = await request(
         route,
         "/api/v1/docs/2.0.0/gateways/example/usage",
@@ -537,9 +549,9 @@ test("core topic discovery reads a directory bundle and ignores unrelated filena
         removePath(fixtureRoot, { recursive: true, force: true }),
     );
     const sourceRoot = join(fixtureRoot, "src");
-    const docsRoot = join(sourceRoot, "docs", "example");
+    const documentsRoot = join(sourceRoot, "docs", "example");
     const archiveRoot = join(fixtureRoot, "archive");
-    await writeBundle(docsRoot, "# Core Info", true);
+    await writeBundle(documentsRoot, "# Core Info", true);
     await writeFile(
         join(sourceRoot, "package.json"),
         JSON.stringify({ version: "1.0.0" }),
@@ -548,7 +560,7 @@ test("core topic discovery reads a directory bundle and ignores unrelated filena
         join(sourceRoot, "docs", "unregistered.en.md"),
         "# Arbitrary filename",
     );
-    const route = createDocsRoutes({ sourceRoot, archiveRoot });
+    const route = createDocumentsRoutes({ sourceRoot, archiveRoot });
     const index = await request(route, "/api/v1/docs");
     assert.equal(index.body.data.length, 1);
     assert.equal(index.body.data[0].slug, "example");
@@ -572,7 +584,7 @@ test("published documentation links resolve to a complete declared or discovered
     context.after(() =>
         removePath(archiveRoot, { recursive: true, force: true }),
     );
-    const index = await initializeDocsStore(
+    const index = await initializeDocumentsStore(
         join(process.cwd(), "src"),
         archiveRoot,
     );
@@ -629,7 +641,7 @@ test("localized changelog branch metadata is preserved without adding a second l
             markdown,
         );
     }
-    const route = createDocsRoutes({
+    const route = createDocumentsRoutes({
         sourceRoot,
         archiveRoot: join(root, "archive"),
     });
@@ -654,7 +666,7 @@ for (const core of [false, true]) {
             sourceRoot,
             core ? "docs/example" : "gateways/example",
         );
-        const docsRoot = core ? component : join(component, "docs");
+        const documentsRoot = core ? component : join(component, "docs");
         const archiveRoot = join(root, "archive");
         const manifestPath = core
             ? join(sourceRoot, "package.json")
@@ -666,7 +678,7 @@ for (const core of [false, true]) {
             ja: "日本語ガイド",
         };
         const publish = async (version: string) => {
-            await mkdir(docsRoot, { recursive: true });
+            await mkdir(documentsRoot, { recursive: true });
             await writeFile(
                 manifestPath,
                 core ? JSON.stringify({ version }) : manifest(version),
@@ -686,14 +698,14 @@ for (const core of [false, true]) {
                           },
                 )) {
                     await writeFile(
-                        join(docsRoot, `${name}.${language}.md`),
+                        join(documentsRoot, `${name}.${language}.md`),
                         `# ${title}\n\n${view} ${version} ${language}`,
                     );
                 }
             }
         };
         await publish("1.0.0");
-        const route = createDocsRoutes({ sourceRoot, archiveRoot });
+        const route = createDocumentsRoutes({ sourceRoot, archiveRoot });
         const slug = core ? "example" : "gateways/example";
         for (const [languages, expectedLanguage] of [
             ["ja-JP,en", "ja"],
@@ -745,7 +757,7 @@ test("generated changelog navigation and heading use the localized index title",
     );
     await writeFile(join(folder, "index.en.md"), "# Changelogs\n");
     await writeFile(join(folder, "index.ja.md"), "# 変更履歴\n");
-    const route = createDocsRoutes({
+    const route = createDocumentsRoutes({
         sourceRoot,
         archiveRoot: join(root, "archive"),
     });
@@ -767,30 +779,33 @@ test("core discovery reads uppercase entry bundles without case aliases", async 
     const root = await mkdtemp(join(tmpdir(), "cognis-core-doc-case-"));
     context.after(() => removePath(root, { recursive: true, force: true }));
     const sourceRoot = join(root, "src");
-    const docsRoot = join(sourceRoot, "docs/example");
-    await writeBundle(docsRoot, "# Example\n\nPublic guidance.", true);
+    const documentsRoot = join(sourceRoot, "docs/example");
+    await writeBundle(documentsRoot, "# Example\n\nPublic guidance.", true);
     await writeFile(
         join(sourceRoot, "package.json"),
         JSON.stringify({ version: "1.0.0" }),
     );
-    assert.equal((await discoverDocSources(sourceRoot))[0].slug, "example");
+    assert.equal(
+        (await discoverDocumentSources(sourceRoot))[0].slug,
+        "example",
+    );
     for (const name of ["INFO", "USAGE", "TECHNICAL"]) {
-        const canonical = join(docsRoot, `${name}.en.md`);
+        const canonical = join(documentsRoot, `${name}.en.md`);
         for (const invalidName of [
             name.toLowerCase(),
             name[0] + name.slice(1).toLowerCase(),
         ]) {
-            const invalid = join(docsRoot, `${invalidName}.en.md`);
+            const invalid = join(documentsRoot, `${invalidName}.en.md`);
             await rename(canonical, invalid);
             if (name === "INFO")
-                assert.deepEqual(await discoverDocSources(sourceRoot), []);
+                assert.deepEqual(await discoverDocumentSources(sourceRoot), []);
             else
                 await assert.rejects(
-                    discoverDocSources(sourceRoot),
+                    discoverDocumentSources(sourceRoot),
                     /docs_english_source_missing/,
                 );
             await rename(invalid, canonical);
         }
     }
-    assert.equal((await discoverDocSources(sourceRoot)).length, 1);
+    assert.equal((await discoverDocumentSources(sourceRoot)).length, 1);
 });

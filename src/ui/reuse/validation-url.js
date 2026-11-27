@@ -43,8 +43,8 @@ export function watchToken({
     token,
     apiFetch,
     onConsumed,
-    intervalMs = 3000,
-    timeoutMs,
+    intervalMs: intervalMilliseconds = 3000,
+    timeoutMs: timeoutMilliseconds,
     onExpired,
 }) {
     let stopped = false;
@@ -52,12 +52,14 @@ export function watchToken({
 
     async function poll() {
         while (!stopped) {
-            await new Promise((resolve) => setTimeout(resolve, intervalMs));
+            await new Promise((resolve) =>
+                setTimeout(resolve, intervalMilliseconds),
+            );
             if (stopped) break;
 
             if (
-                timeoutMs !== undefined &&
-                Date.now() - startedAt >= timeoutMs
+                timeoutMilliseconds !== undefined &&
+                Date.now() - startedAt >= timeoutMilliseconds
             ) {
                 stopped = true;
                 if (onExpired) onExpired();
@@ -65,11 +67,11 @@ export function watchToken({
             }
 
             try {
-                const res = await apiFetch(
+                const response = await apiFetch(
                     `/api/v1/notify/verify-tokens/status?token=${encodeURIComponent(token)}`,
                 );
-                if (!res.ok) continue;
-                const payload = await res.json();
+                if (!response.ok) continue;
+                const payload = await response.json();
                 if (!payload.data?.pending) {
                     stopped = true;
                     onConsumed();

@@ -12,7 +12,7 @@ import type {
     SecuritySettings,
 } from "../index.js";
 import { MemoryRateLimiter } from "../rate-limiter.js";
-import { PASSWORD_RESET_RATE_LIMIT_MS } from "../route-runtime.js";
+import { PASSWORD_RESET_RATE_LIMIT_MS as PASSWORD_RESET_RATE_LIMIT_MILLISECONDS } from "../route-runtime.js";
 import { createLoginLinkRoutes } from "./login-links.js";
 import { createPasswordRoutes } from "./password.js";
 import { createRegistrationRoutes } from "./registration.js";
@@ -55,20 +55,20 @@ export function createAuthGatewayRoutes(
         return Boolean(isPublicRegistrationEnabled?.());
     }
 
-    function resolveRequestAddress(req: IncomingMessage): string {
-        const forwardedFor = req.headers["x-forwarded-for"];
+    function resolveRequestAddress(request: IncomingMessage): string {
+        const forwardedFor = request.headers["x-forwarded-for"];
         if (typeof forwardedFor === "string") {
             const firstHop = forwardedFor.split(",")[0]?.trim();
             if (firstHop) return firstHop;
         }
-        return String(req.socket?.remoteAddress ?? "unknown");
+        return String(request.socket?.remoteAddress ?? "unknown");
     }
 
     const oneTimeLoginAccountRateLimiter = new MemoryRateLimiter(
-        PASSWORD_RESET_RATE_LIMIT_MS,
+        PASSWORD_RESET_RATE_LIMIT_MILLISECONDS,
     );
     const oneTimeLoginIpRateLimiter = new MemoryRateLimiter(
-        PASSWORD_RESET_RATE_LIMIT_MS,
+        PASSWORD_RESET_RATE_LIMIT_MILLISECONDS,
     );
 
     const keyringRouteFactory = capabilities.require<
@@ -117,17 +117,17 @@ export function createAuthGatewayRoutes(
     ];
 
     return async (
-        req: import("node:http").IncomingMessage,
-        res: import("node:http").ServerResponse,
+        request: import("node:http").IncomingMessage,
+        response: import("node:http").ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        const logMeta: AuthRouteLogMeta = {
+        const logMetadata: AuthRouteLogMeta = {
             component: "auth-gateway",
-            method: req.method ?? "GET",
+            method: request.method ?? "GET",
             path: url.pathname,
         };
         for (const handler of handlers) {
-            if (await handler(req, res, url, logMeta)) {
+            if (await handler(request, response, url, logMetadata)) {
                 return true;
             }
         }

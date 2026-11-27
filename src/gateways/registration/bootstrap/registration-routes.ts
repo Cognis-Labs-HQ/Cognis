@@ -35,22 +35,26 @@ export function createRegistrationRoutes(
                   adminInvitesEnabled: true,
               });
     return async (
-        req: IncomingMessage,
-        res: ServerResponse,
+        request: IncomingMessage,
+        response: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        const claims = ctx.getAuthClaims(req);
-        const logMeta = {
+        const claims = ctx.getAuthClaims(request);
+        const logMetadata = {
             component: "registration-gateway",
-            method: req.method ?? "GET",
+            method: request.method ?? "GET",
             path: url.pathname,
             accountId: claims?.sub,
         };
         if (
             url.pathname === "/api/v1/registration/state" &&
-            req.method === "GET"
+            request.method === "GET"
         ) {
-            const authenticatedClaims = ctx.requireAuth(req, res, "user");
+            const authenticatedClaims = ctx.requireAuth(
+                request,
+                response,
+                "user",
+            );
             if (!authenticatedClaims) return true;
             const invitationPolicy = await getInvitationPolicy();
             const isFounder = await accountStore.isFounder(
@@ -65,14 +69,14 @@ export function createRegistrationRoutes(
                 authenticatedClaims.role === "admin" ||
                 authenticatedClaims.role === "owner";
             log?.("debug", "Read registration state.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: authenticatedClaims.sub,
                 gatewayEnabled: isGatewayEnabled(),
                 inviteEnabled: gateway.isInviteEnabled(),
                 publicEnabled: gateway.isPublicEnabled(),
             });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     data: {
                         gatewayEnabled: isGatewayEnabled(),
@@ -88,12 +92,16 @@ export function createRegistrationRoutes(
 
         if (
             url.pathname === "/api/v1/registration/policy" &&
-            req.method === "GET"
+            request.method === "GET"
         ) {
-            const authenticatedClaims = ctx.requireAuth(req, res, "admin");
+            const authenticatedClaims = ctx.requireAuth(
+                request,
+                response,
+                "admin",
+            );
             if (!authenticatedClaims) return true;
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     data: await getInvitationPolicy(),
                 }),
@@ -103,29 +111,33 @@ export function createRegistrationRoutes(
 
         if (
             url.pathname === "/api/v1/registration/policy" &&
-            req.method === "PUT"
+            request.method === "PUT"
         ) {
-            const authenticatedClaims = ctx.requireAuth(req, res, "owner");
+            const authenticatedClaims = ctx.requireAuth(
+                request,
+                response,
+                "owner",
+            );
             if (!authenticatedClaims) return true;
-            const body = await readJson(req);
+            const body = await readJson(request);
             await gateway.setInvitationPolicy({
                 publicRegistrationEnabled:
                     body.publicRegistrationEnabled === true,
                 founderInvitesEnabled: body.founderInvitesEnabled !== false,
                 adminInvitesEnabled: body.adminInvitesEnabled !== false,
             });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { saved: true } }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: { saved: true } }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/registration/invite" &&
-            req.method === "GET"
+            request.method === "GET"
         ) {
             if (!gateway.isInviteEnabled()) {
-                res.writeHead(409, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(409, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "invite_disabled",
@@ -140,10 +152,10 @@ export function createRegistrationRoutes(
                 log?.(
                     "warn",
                     "Invite lookup failed because token was missing.",
-                    logMeta,
+                    logMetadata,
                 );
-                res.writeHead(400, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(400, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "bad_request",
@@ -158,10 +170,10 @@ export function createRegistrationRoutes(
                 log?.(
                     "warn",
                     "Invite lookup failed because token was invalid.",
-                    logMeta,
+                    logMetadata,
                 );
-                res.writeHead(404, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(404, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "invalid_token",
@@ -172,12 +184,12 @@ export function createRegistrationRoutes(
                 return true;
             }
             log?.("debug", "Resolved registration invite.", {
-                ...logMeta,
+                ...logMetadata,
                 inviterAccountId: invite.inviterAccountId,
                 inviteeEmail: invite.inviteeEmail,
             });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     data: {
                         inviterDisplayName: invite.inviterDisplayName,
@@ -191,11 +203,11 @@ export function createRegistrationRoutes(
 
         if (
             url.pathname === "/api/v1/registration/redeem" &&
-            req.method === "POST"
+            request.method === "POST"
         ) {
             if (!gateway.isInviteEnabled()) {
-                res.writeHead(404, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(404, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -205,7 +217,7 @@ export function createRegistrationRoutes(
                 );
                 return true;
             }
-            const body = await readJson(req);
+            const body = await readJson(request);
             const token = String(body.token ?? "").trim();
             const username = String(body.username ?? "").trim();
             const password = String(body.password ?? "");
@@ -225,34 +237,40 @@ export function createRegistrationRoutes(
                     1800,
                 );
                 log?.("info", "Redeemed registration invite.", {
-                    ...logMeta,
+                    ...logMetadata,
                     createdAccountId: result.createdAccountId,
                     inviterAccountId: result.inviterAccountId,
                 });
-                res.writeHead(201, { "content-type": "application/json" });
-                res.end(JSON.stringify({ data: { ...result, verifyToken } }));
+                response.writeHead(201, { "content-type": "application/json" });
+                response.end(
+                    JSON.stringify({ data: { ...result, verifyToken } }),
+                );
             } catch (error) {
                 const code =
                     error instanceof Error ? error.message : "redeem_failed";
                 log?.("warn", "Invite redemption failed.", {
-                    ...logMeta,
+                    ...logMetadata,
                     code,
                     username,
                 });
                 const status = redeemInviteErrorStatus(code);
-                res.writeHead(status, { "content-type": "application/json" });
-                res.end(JSON.stringify({ error: { code, message: code } }));
+                response.writeHead(status, {
+                    "content-type": "application/json",
+                });
+                response.end(
+                    JSON.stringify({ error: { code, message: code } }),
+                );
             }
             return true;
         }
 
         if (
             url.pathname === "/api/v1/registration/tokens" &&
-            req.method === "GET"
+            request.method === "GET"
         ) {
             if (!gateway.isInviteEnabled()) {
-                res.writeHead(404, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(404, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -262,7 +280,11 @@ export function createRegistrationRoutes(
                 );
                 return true;
             }
-            const authenticatedClaims = ctx.requireAuth(req, res, "user");
+            const authenticatedClaims = ctx.requireAuth(
+                request,
+                response,
+                "user",
+            );
             if (!authenticatedClaims) return true;
             const isFounder = await accountStore.isFounder(
                 authenticatedClaims.sub,
@@ -274,8 +296,8 @@ export function createRegistrationRoutes(
                     invitationPolicy.adminInvitesEnabled) ||
                 (isFounder && invitationPolicy.founderInvitesEnabled);
             if (!canInvite) {
-                res.writeHead(403, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(403, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: { code: "forbidden", message: "Access denied" },
                     }),
@@ -287,26 +309,26 @@ export function createRegistrationRoutes(
                 includeClosed: url.searchParams.get("includeClosed") === "true",
             });
             log?.("debug", "Listed registration invites.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: authenticatedClaims.sub,
                 count: invites.length,
                 includeClosed: url.searchParams.get("includeClosed") === "true",
             });
-            res.writeHead(200, {
+            response.writeHead(200, {
                 "content-type": "application/json",
                 "cache-control": "no-store",
             });
-            res.end(JSON.stringify({ data: invites }));
+            response.end(JSON.stringify({ data: invites }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/registration/tokens" &&
-            req.method === "POST"
+            request.method === "POST"
         ) {
             if (!gateway.isInviteEnabled()) {
-                res.writeHead(404, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(404, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -316,7 +338,11 @@ export function createRegistrationRoutes(
                 );
                 return true;
             }
-            const authenticatedClaims = ctx.requireAuth(req, res, "user");
+            const authenticatedClaims = ctx.requireAuth(
+                request,
+                response,
+                "user",
+            );
             if (!authenticatedClaims) return true;
             const isPrivilegedRole =
                 authenticatedClaims.role === "admin" ||
@@ -331,19 +357,19 @@ export function createRegistrationRoutes(
                     invitationPolicy.adminInvitesEnabled) ||
                 (isFounder && invitationPolicy.founderInvitesEnabled);
             if (!canInvite) {
-                res.writeHead(403, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(403, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: { code: "forbidden", message: "Access denied" },
                     }),
                 );
                 return true;
             }
-            const body = await readJson(req);
+            const body = await readJson(request);
             const deliverEmail = body.delivery !== "manual";
             if (!deliverEmail && !isPrivilegedRole) {
-                res.writeHead(403, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(403, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: { code: "forbidden", message: "Access denied" },
                     }),
@@ -354,8 +380,8 @@ export function createRegistrationRoutes(
                 .trim()
                 .toLowerCase();
             if (deliverEmail && !inviteeEmail) {
-                res.writeHead(400, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(400, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "bad_request",
@@ -373,10 +399,10 @@ export function createRegistrationRoutes(
                     trustedDomains,
                 );
                 if (!allowed) {
-                    res.writeHead(422, {
+                    response.writeHead(422, {
                         "content-type": "application/json",
                     });
-                    res.end(
+                    response.end(
                         JSON.stringify({
                             error: {
                                 code: "email_domain_not_allowed",
@@ -400,25 +426,29 @@ export function createRegistrationRoutes(
                     deliverEmail,
                 });
                 log?.("info", "Issued registration invite.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: authenticatedClaims.sub,
                     inviteeEmail,
                     tokenId: created.tokenId,
                 });
-                res.writeHead(201, { "content-type": "application/json" });
-                res.end(JSON.stringify({ data: created }));
+                response.writeHead(201, { "content-type": "application/json" });
+                response.end(JSON.stringify({ data: created }));
             } catch (error) {
                 const code =
                     error instanceof Error ? error.message : "invite_failed";
                 log?.("warn", "Registration invite issuance failed.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: authenticatedClaims.sub,
                     inviteeEmail,
                     code,
                 });
                 const status = issueInviteErrorStatus(code);
-                res.writeHead(status, { "content-type": "application/json" });
-                res.end(JSON.stringify({ error: { code, message: code } }));
+                response.writeHead(status, {
+                    "content-type": "application/json",
+                });
+                response.end(
+                    JSON.stringify({ error: { code, message: code } }),
+                );
             }
             return true;
         }
@@ -426,23 +456,27 @@ export function createRegistrationRoutes(
         const founderResetMatch = url.pathname.match(
             /^\/api\/v1\/registration\/founders\/([^/]+)\/reset-invite-limit$/,
         );
-        if (founderResetMatch && req.method === "POST") {
-            const authenticatedClaims = ctx.requireAuth(req, res, "admin");
+        if (founderResetMatch && request.method === "POST") {
+            const authenticatedClaims = ctx.requireAuth(
+                request,
+                response,
+                "admin",
+            );
             if (!authenticatedClaims) return true;
             const accountId = decodeURIComponent(founderResetMatch[1]);
             await gateway.resetFounderInviteLimit(accountId);
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { reset: true } }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: { reset: true } }));
             return true;
         }
 
         const revokeMatch = url.pathname.match(
             /^\/api\/v1\/registration\/tokens\/([^/]+)\/revoke$/,
         );
-        if (revokeMatch && req.method === "POST") {
+        if (revokeMatch && request.method === "POST") {
             if (!gateway.isInviteEnabled()) {
-                res.writeHead(404, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(404, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -452,7 +486,11 @@ export function createRegistrationRoutes(
                 );
                 return true;
             }
-            const authenticatedClaims = ctx.requireAuth(req, res, "user");
+            const authenticatedClaims = ctx.requireAuth(
+                request,
+                response,
+                "user",
+            );
             if (!authenticatedClaims) return true;
             const tokenId = decodeURIComponent(revokeMatch[1]);
             const isPrivilegedRole =
@@ -462,8 +500,8 @@ export function createRegistrationRoutes(
                 authenticatedClaims.sub,
             );
             if (!isPrivilegedRole && !isFounder) {
-                res.writeHead(403, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(403, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: { code: "forbidden", message: "Access denied" },
                     }),
@@ -475,8 +513,10 @@ export function createRegistrationRoutes(
                     inviterAccountId: authenticatedClaims.sub,
                 });
                 if (!myInvites.some((invite) => invite.id === tokenId)) {
-                    res.writeHead(403, { "content-type": "application/json" });
-                    res.end(
+                    response.writeHead(403, {
+                        "content-type": "application/json",
+                    });
+                    response.end(
                         JSON.stringify({
                             error: {
                                 code: "forbidden",
@@ -496,13 +536,13 @@ export function createRegistrationRoutes(
                     "warn",
                     "Registration invite revocation failed because token was not found.",
                     {
-                        ...logMeta,
+                        ...logMetadata,
                         accountId: authenticatedClaims.sub,
                         tokenId,
                     },
                 );
-                res.writeHead(404, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(404, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -513,32 +553,32 @@ export function createRegistrationRoutes(
                 return true;
             }
             log?.("info", "Revoked registration invite.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: authenticatedClaims.sub,
                 tokenId,
             });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { revoked: true } }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: { revoked: true } }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/registration/token-manager" &&
-            req.method === "GET"
+            request.method === "GET"
         ) {
             if (!gateway.isInviteEnabled()) {
-                res.writeHead(302, { location: "/dashboard" });
-                res.end();
+                response.writeHead(302, { location: "/dashboard" });
+                response.end();
                 return true;
             }
-            const session = ctx.getCookieSession(req);
+            const session = ctx.getCookieSession(request);
             if (!session) {
-                res.writeHead(302, { location: "/login" });
-                res.end();
+                response.writeHead(302, { location: "/login" });
+                response.end();
                 return true;
             }
-            res.writeHead(302, { location: "/administration" });
-            res.end();
+            response.writeHead(302, { location: "/administration" });
+            response.end();
             return true;
         }
 

@@ -20,15 +20,16 @@
  * @param {{ existingPrefs?: object|null, onDirtyChange?: (dirty: boolean) => void }} options
  * @returns {{ refresh: () => void, getShowReleaseChangelogs: () => boolean, commit: () => void, discard: () => void }}
  */
-export function shouldShowReleaseChangelog(existingPrefs) {
-    return existingPrefs?.releaseChangelogShow !== false;
+export function shouldShowReleaseChangelog(existingPreferences) {
+    return existingPreferences?.releaseChangelogShow !== false;
 }
 
-export function initReleaseChangelogPrefs(
+function initReleaseChangelogPreferences(
     root,
-    { existingPrefs, onDirtyChange },
+    { existingPrefs: existingPreferences, onDirtyChange },
 ) {
-    let savedShowReleaseChangelogs = shouldShowReleaseChangelog(existingPrefs);
+    let savedShowReleaseChangelogs =
+        shouldShowReleaseChangelog(existingPreferences);
     let currentShowReleaseChangelogs = savedShowReleaseChangelogs;
 
     function syncCheckboxState() {
@@ -77,3 +78,4 @@ export function initReleaseChangelogPrefs(
         discard,
     };
 }
+export { initReleaseChangelogPreferences as initReleaseChangelogPrefs };

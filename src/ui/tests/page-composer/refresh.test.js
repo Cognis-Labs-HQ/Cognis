@@ -7,11 +7,11 @@ import { readdirSync, readFileSync } from "node:fs";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../..");
 
 function readPageComposerBundle() {
-    const composerDir = resolve(ROOT, "src/ui/reuse/page-composer");
-    return readdirSync(composerDir)
+    const composerDirectory = resolve(ROOT, "src/ui/reuse/page-composer");
+    return readdirSync(composerDirectory)
         .filter((entry) => entry.endsWith(".js"))
         .sort()
-        .map((entry) => readFileSync(join(composerDir, entry), "utf8"))
+        .map((entry) => readFileSync(join(composerDirectory, entry), "utf8"))
         .join("\n");
 }
 
@@ -137,7 +137,7 @@ test("page composer can delegate document scrolling to the page", () => {
         resolve(ROOT, "src/ui/app/license/index.js"),
         "utf8",
     );
-    const docsPage = readFileSync(
+    const documentsPage = readFileSync(
         resolve(ROOT, "src/ui/app/docs/index.js"),
         "utf8",
     );
@@ -160,7 +160,7 @@ test("page composer can delegate document scrolling to the page", () => {
     assert.match(layoutStyles, /\.app-page--document-scroll \.content-panel/);
     assert.match(licensePage, /toolbarScrollable: true/);
     assert.match(licensePage, /contentScrolling: false/);
-    assert.match(docsPage, /contentScrolling: false/);
+    assert.match(documentsPage, /contentScrolling: false/);
     assert.match(changelogsPage, /contentScrolling: false/);
 });
 
@@ -174,7 +174,7 @@ test("page composer keeps its mounted edit toggle across route changes", () => {
     );
     assert.match(source, /function getComposerEditToggleButton\(\)/);
     assert.match(source, /return composerEditToggleButton;/);
-    assert.match(source, /const editBtn = getComposerEditToggleButton\(\)/);
+    assert.match(source, /const editButton = getComposerEditToggleButton\(\)/);
 });
 
 test("page composer always hides layout editing from share guests", () => {
@@ -199,7 +199,7 @@ test("page composer expands compact single-pane rows to full width", () => {
         source,
         /MOBILE_LAYOUT_WIDTH_RECLAIM_BREAKPOINT:\s*COMPOSER_COMPACT_BREAKPOINT/,
     );
-    assert.match(source, /COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS\s*=/);
+    assert.match(source, /COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLUMNS\s*=/);
     assert.match(source, /function shouldUseMobileWidthReclaim\(\)/);
     assert.match(source, /window\.matchMedia\(/);
     assert.match(
@@ -208,7 +208,10 @@ test("page composer expands compact single-pane rows to full width", () => {
     );
     assert.match(source, /allowSingleRowFullWidthReclaim =/);
     assert.match(source, /shouldUseMobileWidthReclaim\(\) &&/);
-    assert.match(source, /maxCols <= COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS/);
+    assert.match(
+        source,
+        /maxColumns <= COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLUMNS/,
+    );
     assert.match(source, /boundedWidth < bounds\.max/);
     assert.match(source, /function canExpandPlacementWithoutConflicts\(/);
     assert.match(source, /const occupiedOutsideRow = buildOccupiedSet\(/);
@@ -244,13 +247,13 @@ test("page composer elements panels stay below header and use viewport top", () 
         source,
         /function clampComposerPanelLeft\(nextLeft, panelWidth\)/,
     );
-    assert.match(source, /Math\.max\(navRowBottom, topbarBottom\)/);
+    assert.match(source, /Math\.max\(navigationRowBottom, topbarBottom\)/);
     assert.match(source, /Math\.ceil\(/);
     assert.match(source, /\+ 12\),/);
-    assert.match(source, /const panelTop = gridRect\.top;/);
+    assert.match(source, /const panelTop = gridRectangle\.top;/);
     assert.match(
         source,
-        /clampComposerPanelLeft\(\s*gridRect\.right \+ 12,\s*panelWidth,?\s*\)/,
+        /clampComposerPanelLeft\(\s*gridRectangle\.right \+ 12,\s*panelWidth,?\s*\)/,
     );
     assert.match(
         source,
@@ -268,7 +271,7 @@ test("page composer persists separate layout profiles per grid size", () => {
         /normalized\.layoutsByGrid\[profileKey\] = nextLayout/,
     );
     assert.match(source, /function applyLayoutForCurrentGridColumns\(\)/);
-    assert.match(source, /const newCols = getPreferredGridColumnCount\(\)/);
+    assert.match(source, /const newColumns = getPreferredGridColumnCount\(\)/);
     assert.match(source, /applyLayoutForCurrentGridColumns\(\);/);
 });
 
@@ -305,11 +308,11 @@ test("page composer preserves form input values across grid re-renders", () => {
     );
     assert.match(
         source,
-        /const subGridFormSnapshot = mergeFormStateSnapshots\(\s*loadPersistedFormState\(state\.preferenceKey\),\s*captureFormState\(state\.container\),\s*\)/m,
+        /const nestedGridFormSnapshot = mergeFormStateSnapshots\(\s*loadPersistedFormState\(state\.preferenceKey\),\s*captureFormState\(state\.container\),\s*\)/m,
     );
     assert.match(
         source,
-        /restoreFormState\(state\.container, subGridFormSnapshot\)/,
+        /restoreFormState\(state\.container, nestedGridFormSnapshot\)/,
     );
     assert.match(
         source,

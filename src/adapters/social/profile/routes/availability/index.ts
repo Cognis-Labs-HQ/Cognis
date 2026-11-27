@@ -27,7 +27,7 @@ export const AVAILABILITY_STATUSES: readonly AvailabilityStatus[] = [
     "tentative",
 ];
 const VALID_STATUSES = new Set(AVAILABILITY_STATUSES);
-const ACTIVE_PRESENCE_TTL_MS = 45_000;
+const ACTIVE_PRESENCE_TTL_MILLISECONDS = 45_000;
 const MAX_PRESENCE_SESSIONS_PER_ACCOUNT = 8;
 
 export class AvailabilityPresenceStore {
@@ -70,7 +70,7 @@ export class AvailabilityPresenceStore {
         now: number,
     ): void {
         for (const [sessionId, session] of sessions) {
-            if (now - session.updatedAt > ACTIVE_PRESENCE_TTL_MS) {
+            if (now - session.updatedAt > ACTIVE_PRESENCE_TTL_MILLISECONDS) {
                 sessions.delete(sessionId);
             }
         }
@@ -148,28 +148,28 @@ export function createAvailabilityRoutes(
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
-        req: IncomingMessage,
-        res: ServerResponse,
+        request: IncomingMessage,
+        response: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         if (
             url.pathname === "/api/v1/social/availability/presence" &&
-            req.method === "PUT"
+            request.method === "PUT"
         ) {
-            const claims = ctx.requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(request, response, "user");
             if (!claims) return true;
-            const body = await readJson(req);
+            const body = await readJson(request);
             const sessionId = String(body.sessionId ?? "").trim();
             if (!sessionId || typeof body.active !== "boolean") {
-                res.writeHead(400, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(400, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({ error: { code: "invalid_presence" } }),
                 );
                 return true;
             }
             presenceStore.update(claims.sub, sessionId, body.active);
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { saved: true } }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: { saved: true } }));
             return true;
         }
 
@@ -177,7 +177,7 @@ export function createAvailabilityRoutes(
             /^\/api\/v1\/social\/availability(?:\/([^/]+))?$/,
         );
         if (!match) return false;
-        const claims = ctx.requireAuth(req, res, "user");
+        const claims = ctx.requireAuth(request, response, "user");
         if (!claims) return true;
 
         const requestedHandle = match[1]
@@ -186,13 +186,13 @@ export function createAvailabilityRoutes(
         const profile = requestedHandle
             ? await profileStore.getProfileByHandle(requestedHandle)
             : await profileStore.getProfile(claims.sub);
-        if (req.method === "GET") {
+        if (request.method === "GET") {
             if (
                 !profile ||
                 !(await canViewAvailability(claims.sub, profile, profileStore))
             ) {
-                res.writeHead(200, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(200, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         data: { handle: requestedHandle, status: "unknown" },
                     }),
@@ -213,8 +213,8 @@ export function createAvailabilityRoutes(
                 calendarAvailability,
             );
             const idle = presenceStore.isIdle(profile.accountId);
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     data: {
                         handle: profile.handle,
@@ -230,16 +230,16 @@ export function createAvailabilityRoutes(
         }
 
         if (!profile) {
-            res.writeHead(404, { "content-type": "application/json" });
-            res.end(JSON.stringify({ error: { code: "not_found" } }));
+            response.writeHead(404, { "content-type": "application/json" });
+            response.end(JSON.stringify({ error: { code: "not_found" } }));
             return true;
         }
 
-        if (req.method === "PUT" && profile.accountId === claims.sub) {
-            const body = await readJson(req);
+        if (request.method === "PUT" && profile.accountId === claims.sub) {
+            const body = await readJson(request);
             if (!VALID_STATUSES.has(body.status)) {
-                res.writeHead(400, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(400, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "invalid_status",
@@ -257,8 +257,8 @@ export function createAvailabilityRoutes(
                     updatedAt: new Date().toISOString(),
                 }),
             );
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { saved: true } }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: { saved: true } }));
             return true;
         }
 

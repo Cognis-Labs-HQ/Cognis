@@ -10,7 +10,7 @@ import {
 import type { FlowApi } from "@cognis/core";
 
 type MinimalMessagesStore = {
-    appendMessage(args: {
+    appendMessage(argumentsList: {
         roomId: string;
         senderId: string;
         ciphertext: string;
@@ -83,7 +83,7 @@ function makeFlow(
                 authTag?: string;
                 contentType?: string;
             };
-            const msg = await messagesStore.appendMessage({
+            const message = await messagesStore.appendMessage({
                 roomId: input.roomId ?? "",
                 senderId: input.senderId ?? "",
                 ciphertext: input.ciphertext ?? "",
@@ -96,7 +96,11 @@ function makeFlow(
                 input.senderId ?? "",
                 false,
             );
-            return { persisted: true, message: msg, messageId: msg["id"] };
+            return {
+                persisted: true,
+                message: message,
+                messageId: message["id"],
+            };
         },
     );
     ctx.flow.extend(
@@ -148,7 +152,7 @@ function makeFlow(
     return ctx.flow;
 }
 
-function makeReq(method: string, token: string | null) {
+function makeRequest(method: string, token: string | null) {
     return {
         method,
         headers: token ? { authorization: "Bearer " + token } : {},
@@ -225,13 +229,13 @@ test("POST /messages/rooms sends a message-request notification for pending DMs"
     });
     let statusCode = 0;
     let responseBody = "";
-    const req = makeReq("POST", token);
-    req[Symbol.asyncIterator] = async function* () {
+    const request = makeRequest("POST", token);
+    request[Symbol.asyncIterator] = async function* () {
         yield Buffer.from(JSON.stringify({ handles: ["bob"] }));
     };
 
     const handled = await route(
-        req,
+        request,
         {
             writeHead(status: number) {
                 statusCode = status;
@@ -311,14 +315,14 @@ test("POST /messages/rooms does not resend an existing message-request notificat
         },
         isAdapterEnabled: () => true,
     });
-    const req = makeReq("POST", token);
-    req[Symbol.asyncIterator] = async function* () {
+    const request = makeRequest("POST", token);
+    request[Symbol.asyncIterator] = async function* () {
         yield Buffer.from(JSON.stringify({ handles: ["bob"] }));
     };
     let responseBody = "";
 
     await route(
-        req,
+        request,
         {
             writeHead() {},
             end(payload: string) {
@@ -456,8 +460,8 @@ test("POST /messages/rooms/:id/messages skips notifications when recipient has p
     });
     let statusCode = 0;
     let responseBody = "";
-    const req = makeReq("POST", token);
-    req[Symbol.asyncIterator] = async function* () {
+    const request = makeRequest("POST", token);
+    request[Symbol.asyncIterator] = async function* () {
         yield Buffer.from(
             JSON.stringify({
                 ciphertext: "aa",
@@ -469,7 +473,7 @@ test("POST /messages/rooms/:id/messages skips notifications when recipient has p
     };
 
     const handled = await route(
-        req,
+        request,
         {
             writeHead(status: number) {
                 statusCode = status;

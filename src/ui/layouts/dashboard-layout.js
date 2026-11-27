@@ -205,15 +205,15 @@ async function bindThemeToggle({ usePreferenceApi = true, preferences } = {}) {
         return;
     }
 
-    const prefs = await (preferences ?? loadUiPreferences());
-    applyUiPreferences(prefs);
+    const currentPreferences = await (preferences ?? loadUiPreferences());
+    applyUiPreferences(currentPreferences);
     applyTimezoneToLocalStorage(
-        prefs?.timezone ?? null,
-        prefs?.detectedTimezone ?? null,
+        currentPreferences?.timezone ?? null,
+        currentPreferences?.detectedTimezone ?? null,
     );
-    applyTimeFormatToLocalStorage(prefs?.timeFormat ?? "auto");
+    applyTimeFormatToLocalStorage(currentPreferences?.timeFormat ?? "auto");
     const storedMode = getStoredTheme();
-    const initialMode = storedMode || prefs?.mode || "dark";
+    const initialMode = storedMode || currentPreferences?.mode || "dark";
     bindSharedThemeToggle({
         readInitialTheme: () => initialMode,
         onThemeChange: async (mode) => {
@@ -236,11 +236,11 @@ function bindTopbarActions() {
     const toggle = document.querySelector("#profile-toggle");
     const dropdown = document.querySelector("#profile-dropdown");
     const logout = document.querySelector("#profile-logout");
-    const nameEl = document.querySelector("#profile-name");
+    const nameElement = document.querySelector("#profile-name");
 
     if (dropdown) bindUserMenuIntegrity(dropdown);
 
-    if (nameEl) nameEl.textContent = getDisplayName();
+    if (nameElement) nameElement.textContent = getDisplayName();
     refreshDisplayNameFromProfile().catch(() => {});
 
     window.addEventListener("storage", (event) => {
@@ -382,7 +382,7 @@ function scheduleNavbarEnhancements() {
     setTimeout(runEnhancements, 0);
 }
 
-function applyCompactNav(root, signal) {
+function applyCompactNavigation(root, signal) {
     bindCompactNavigation(root, {
         signal,
         prepareNavigation(topnav) {
@@ -390,8 +390,10 @@ function applyCompactNav(root, signal) {
             applyActiveNavigation();
         },
         log: uiCtx.capabilities.get("ui:log"),
-        registerSurface: (...args) =>
-            uiCtx.capabilities.get("ui:transientSurfaces")?.register(...args),
+        registerSurface: (...argumentsList) =>
+            uiCtx.capabilities
+                .get("ui:transientSurfaces")
+                ?.register(...argumentsList),
     });
 }
 
@@ -401,7 +403,7 @@ function syncHeaderScrollState(root) {
     const shell = root.querySelector(".app-shell");
     if (!shell) return;
 
-    const hasSubNavigation = Boolean(shell.querySelector(".page-subnav"));
+    const hasNestedNavigation = Boolean(shell.querySelector(".page-subnav"));
     const hasPrimaryNavigation = Boolean(shell.querySelector(".global-navrow"));
     const primaryNavigation = shell.querySelector(".global-navrow");
     const currentlyPrioritized = shell.classList.contains(
@@ -414,14 +416,14 @@ function syncHeaderScrollState(root) {
         ? shell.querySelector(".global-topbar")
         : primaryNavigation;
     const shouldPrioritizeSubnav =
-        hasSubNavigation &&
+        hasNestedNavigation &&
         hasPrimaryNavigation &&
         !collapsingRegion?.contains(document.activeElement) &&
         (currentlyPrioritized
             ? window.scrollY > 12
             : window.scrollY > primaryNavigationHeight + 12);
 
-    shell.classList.toggle("app-shell--has-subnav", hasSubNavigation);
+    shell.classList.toggle("app-shell--has-subnav", hasNestedNavigation);
     shell.classList.toggle(
         "app-shell--subnav-priority",
         shouldPrioritizeSubnav,
@@ -503,7 +505,7 @@ export async function renderDashboardLayout(root, slots = {}) {
         uiCtx.capabilities.get("navigation:commitPage")?.(root, slots.signal);
     const existingShell = root.querySelector(".app-shell");
     const hasToolbar = Boolean(slots.toolbar);
-    const hasSubNavigation = Boolean(slots.subNavigation);
+    const hasNestedNavigation = Boolean(slots.subNavigation);
     const hasFloatingToolbar = Boolean(slots.floatingToolbar);
 
     if (
@@ -521,25 +523,28 @@ export async function renderDashboardLayout(root, slots = {}) {
         if (freshActionDock && existingActionDock) {
             existingActionDock.replaceWith(freshActionDock);
         }
-        const pageCtxEl = existingShell.querySelector(".page-context");
-        if (pageCtxEl) pageCtxEl.innerHTML = slots.pageContext || "";
-        const existingSubNavEl = existingShell.querySelector(".page-subnav");
-        if (hasSubNavigation) {
-            if (existingSubNavEl) {
-                existingSubNavEl.innerHTML = slots.subNavigation;
+        const pageCtxElement = existingShell.querySelector(".page-context");
+        if (pageCtxElement) pageCtxElement.innerHTML = slots.pageContext || "";
+        const existingNestedNavigationElement =
+            existingShell.querySelector(".page-subnav");
+        if (hasNestedNavigation) {
+            if (existingNestedNavigationElement) {
+                existingNestedNavigationElement.innerHTML = slots.subNavigation;
             } else {
-                const navRow = existingShell.querySelector(".global-navrow");
-                const newSubNavEl = document.createElement("section");
-                newSubNavEl.className = "page-subnav";
-                newSubNavEl.innerHTML = slots.subNavigation;
-                navRow
-                    ? navRow.after(newSubNavEl)
+                const navigationRow =
+                    existingShell.querySelector(".global-navrow");
+                const newNestedNavigationElement =
+                    document.createElement("section");
+                newNestedNavigationElement.className = "page-subnav";
+                newNestedNavigationElement.innerHTML = slots.subNavigation;
+                navigationRow
+                    ? navigationRow.after(newNestedNavigationElement)
                     : existingShell
                           .querySelector(".site-header")
-                          ?.append(newSubNavEl);
+                          ?.append(newNestedNavigationElement);
             }
-        } else if (existingSubNavEl) {
-            existingSubNavEl.remove();
+        } else if (existingNestedNavigationElement) {
+            existingNestedNavigationElement.remove();
         }
 
         const mainWindow = existingShell.querySelector(".main-window");
@@ -597,7 +602,7 @@ export async function renderDashboardLayout(root, slots = {}) {
             (showTopbar || showNavbar) &&
             uiCtx.capabilities.get("session:isGuest")?.() !== true
         ) {
-            applyCompactNav(root, slots.signal);
+            applyCompactNavigation(root, slots.signal);
             scheduleNavbarEnhancements();
             scheduleDeferredLoginSetup(i18n, slots.signal);
             initSearchBar(i18n);
@@ -630,7 +635,7 @@ export async function renderDashboardLayout(root, slots = {}) {
         .replace("{{topbar}}", slots.topbar)
         .replace(
             "{{subNavigation}}",
-            hasSubNavigation
+            hasNestedNavigation
                 ? `<section class="page-subnav">${slots.subNavigation}</section>`
                 : "",
         )
@@ -668,7 +673,7 @@ export async function renderDashboardLayout(root, slots = {}) {
         scheduleNavbarEnhancements();
         scheduleDeferredLoginSetup(i18n, slots.signal);
         applyActiveNavigation();
-        applyCompactNav(root, slots.signal);
+        applyCompactNavigation(root, slots.signal);
         initSearchBar(i18n);
         registerReleaseChangelogReadiness(uiCtx, {
             i18n,
@@ -701,9 +706,10 @@ function injectSearchBarStyles() {
 }
 
 function initSearchBar(i18n) {
-    const wrap = document.getElementById("global-search-wrap");
-    if (!wrap || wrap.dataset.searchBarBound === "true") return;
-    wrap.dataset.searchBarBound = "true";
+    const wrapperElement = document.getElementById("global-search-wrap");
+    if (!wrapperElement || wrapperElement.dataset.searchBarBound === "true")
+        return;
+    wrapperElement.dataset.searchBarBound = "true";
     injectSearchBarStyles();
 
     const navigationSearchGroup = {
@@ -818,5 +824,5 @@ function initSearchBar(i18n) {
             requestAnimationFrame(() => highlightSearchTarget(result));
         },
     });
-    wrap.appendChild(bar);
+    wrapperElement.appendChild(bar);
 }

@@ -68,7 +68,7 @@ function fixture({ getUserMedia, recorderAvailable = true } = {}) {
             uploads.push(file);
             return { value: "file:uploads/alice/recording.audio" };
         },
-        showToast: (...args) => toasts.push(args),
+        showToast: (...argumentsList) => toasts.push(argumentsList),
     };
     if (!recorderAvailable) delete context.MediaRecorder;
     virtualMachine.createContext(context);

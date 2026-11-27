@@ -1,6 +1,6 @@
 import { sourceFiles } from "../component-files.js";
 import { readFileSync, lstatSync } from "node:fs";
-import { dirname, relative, resolve, sep } from "node:path";
+import { dirname, relative, resolve, sep as separator } from "node:path";
 import structure from "./structure.json" with { type: "json" };
 import { contentIssues } from "./content.js";
 import { markdownLayout } from "./markdown-layout.js";
@@ -94,9 +94,9 @@ export function validateMarkdown(markdown, kind, language) {
     return issues;
 }
 
-export function validateComponent(manifestPath, docsDirectory = "docs") {
+export function validateComponent(manifestPath, documentsDirectory = "docs") {
     const root = dirname(manifestPath);
-    const core = docsDirectory === "src/docs";
+    const core = documentsDirectory === "src/docs";
     const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
     const issues = [];
     const pointers = manifest.documentation;
@@ -112,16 +112,16 @@ export function validateComponent(manifestPath, docsDirectory = "docs") {
         const name = core
             ? `${coreDocuments[kind]}.en.md`
             : documentName(kind, "en");
-        if (pointers[kind] !== `${docsDirectory}/${name}`) {
+        if (pointers[kind] !== `${documentsDirectory}/${name}`) {
             issues.push(
-                `Invalid documentation.${kind}: use ${docsDirectory}/${name}`,
+                `Invalid documentation.${kind}: use ${documentsDirectory}/${name}`,
             );
             continue;
         }
         for (const language of languages) {
             const path = resolve(
                 root,
-                docsDirectory,
+                documentsDirectory,
                 core
                     ? `${coreDocuments[kind]}.${language}.md`
                     : documentName(kind, language),
@@ -144,7 +144,7 @@ export function validateComponent(manifestPath, docsDirectory = "docs") {
     if (core)
         return [
             ...issues,
-            ...validateCoreDocumentation(resolve(root, docsDirectory)),
+            ...validateCoreDocumentation(resolve(root, documentsDirectory)),
         ];
     const allowed = new Set(
         Object.keys(documents).flatMap((kind) =>
@@ -152,13 +152,13 @@ export function validateComponent(manifestPath, docsDirectory = "docs") {
         ),
     );
     try {
-        for (const path of sourceFiles(resolve(root, docsDirectory), {
+        for (const path of sourceFiles(resolve(root, documentsDirectory), {
             excludeDirectories: [],
         })) {
             if (
                 /\.md$/i.test(path) &&
-                !path.includes(`${sep}changelog${sep}`) &&
-                !allowed.has(relative(resolve(root, docsDirectory), path))
+                !path.includes(`${separator}changelog${separator}`) &&
+                !allowed.has(relative(resolve(root, documentsDirectory), path))
             )
                 issues.push(
                     `Unregistered component document: ${relative(root, path)}`,
@@ -174,7 +174,8 @@ export function validateCoreDocumentation(directory) {
     const issues = [];
     const paths = sourceFiles(directory, { excludeDirectories: [] }).filter(
         (path) =>
-            /\.md$/i.test(path) && !path.includes(`${sep}changelog${sep}`),
+            /\.md$/i.test(path) &&
+            !path.includes(`${separator}changelog${separator}`),
     );
     const folders = new Set(paths.map(dirname));
     const names = coreDocuments;
@@ -184,7 +185,7 @@ export function validateCoreDocumentation(directory) {
         ),
     );
     for (const path of paths)
-        if (!allowed.has(path.split(sep).at(-1)))
+        if (!allowed.has(path.split(separator).at(-1)))
             issues.push(
                 `Core documentation must use a directory entry bundle: ${relative(directory, path)}`,
             );

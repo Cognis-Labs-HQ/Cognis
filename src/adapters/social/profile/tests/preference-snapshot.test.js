@@ -23,7 +23,7 @@ function fixture() {
     const client = loadProfileOfflineClient(host);
     client.registerProfileOfflineClient(host.ctx);
     const globals = { ...host.globals, JSON };
-    const prefs = loadTestModule(
+    const preferences = loadTestModule(
         new URL("../../../../ui/reuse/ui-preferences.js", import.meta.url),
         {
             "./ui-ctx.js": { uiCtx: host.ctx },
@@ -51,7 +51,7 @@ function fixture() {
     );
     return {
         ...host,
-        prefs,
+        prefs: preferences,
         client,
         writes,
         delayWrite: (callback) => {

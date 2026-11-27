@@ -34,15 +34,19 @@ async function loadContributionModule(scriptUrl) {
  */
 export async function loadDynamicContribution(
     descriptor,
-    { exportName, buildArgs, onError },
+    { exportName, buildArgs: buildArgumentsList, onError },
 ) {
     try {
-        const mod = await loadContributionModule(descriptor?.scriptUrl);
-        if (!mod) return null;
-        const factory = mod?.[exportName];
+        const moduleExports = await loadContributionModule(
+            descriptor?.scriptUrl,
+        );
+        if (!moduleExports) return null;
+        const factory = moduleExports?.[exportName];
         if (typeof factory !== "function") return null;
-        const args = buildArgs ? await buildArgs(descriptor) : undefined;
-        return factory(args);
+        const argumentsList = buildArgumentsList
+            ? await buildArgumentsList(descriptor)
+            : undefined;
+        return factory(argumentsList);
     } catch (error) {
         onError?.(error, descriptor);
         return null;
@@ -58,14 +62,14 @@ export async function loadDynamicContribution(
  */
 export async function loadDynamicContributions(
     descriptors,
-    { exportName, buildArgs, onError },
+    { exportName, buildArgs: buildArgumentsList, onError },
 ) {
     const normalizedDescriptors = Array.isArray(descriptors) ? descriptors : [];
     const loaded = await Promise.all(
         normalizedDescriptors.map((descriptor) =>
             loadDynamicContribution(descriptor, {
                 exportName,
-                buildArgs,
+                buildArgs: buildArgumentsList,
                 onError,
             }),
         ),

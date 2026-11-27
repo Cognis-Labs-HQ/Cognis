@@ -23,7 +23,7 @@ export type SupportedDbType = DbProviderId;
 
 interface DbExecutorFactoryModule extends AdapterContractModule {
     canHandleDbProvider?: (providerId: DbProviderId) => boolean;
-    createDbExecutor?: (args: {
+    createDbExecutor?: (argumentsList: {
         databaseUrl: string;
         log?: BootstrapLog;
         lifecycle?: {
@@ -32,7 +32,9 @@ interface DbExecutorFactoryModule extends AdapterContractModule {
     }) => Promise<RawDbExecutor> | RawDbExecutor;
 }
 
-async function listDbAdapterDirs(adaptersRoot: string): Promise<string[]> {
+async function listDatabaseAdapterDirectories(
+    adaptersRoot: string,
+): Promise<string[]> {
     try {
         const entries = await readdir(path.resolve(adaptersRoot, "db"), {
             withFileTypes: true,
@@ -45,7 +47,7 @@ async function listDbAdapterDirs(adaptersRoot: string): Promise<string[]> {
     }
 }
 
-async function loadDbExecutorFactoryModule(
+async function loadDatabaseExecutorFactoryModule(
     adaptersRoot: string,
     adapterId: string,
 ): Promise<DbExecutorFactoryModule | null> {
@@ -57,8 +59,8 @@ async function loadDbExecutorFactoryModule(
     }
 }
 
-export async function createDbExecutor(
-    dbType: DbProviderId,
+async function createDatabaseExecutor(
+    databaseType: DbProviderId,
     log?: BootstrapLog,
     adaptersRoot?: string,
     lifecycle?: { registerShutdown(handler: () => Promise<void>): void },
@@ -66,21 +68,22 @@ export async function createDbExecutor(
 ): Promise<RawDbExecutor> {
     const databaseUrl = process.env.DATABASE_URL;
     if (!databaseUrl) {
-        throw new Error(`DATABASE_URL is required for DB_TYPE=${dbType}`);
+        throw new Error(`DATABASE_URL is required for DB_TYPE=${databaseType}`);
     }
 
     const resolvedAdaptersRoot =
         adaptersRoot ?? path.resolve(process.cwd(), "src", "adapters");
-    const adapterIds = await listDbAdapterDirs(resolvedAdaptersRoot);
+    const adapterIds =
+        await listDatabaseAdapterDirectories(resolvedAdaptersRoot);
 
     for (const adapterId of adapterIds) {
-        const adapterModule = await loadDbExecutorFactoryModule(
+        const adapterModule = await loadDatabaseExecutorFactoryModule(
             resolvedAdaptersRoot,
             adapterId,
         );
         if (
             !adapterModule?.createDbExecutor ||
-            !adapterModule.canHandleDbProvider?.(dbType)
+            !adapterModule.canHandleDbProvider?.(databaseType)
         ) {
             continue;
         }
@@ -99,5 +102,6 @@ export async function createDbExecutor(
         return create();
     }
 
-    throw new Error(`db_executor_adapter_missing:${dbType}`);
+    throw new Error(`db_executor_adapter_missing:${databaseType}`);
 }
+export { createDatabaseExecutor as createDbExecutor };

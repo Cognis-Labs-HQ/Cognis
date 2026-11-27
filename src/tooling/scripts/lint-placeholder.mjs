@@ -1,7 +1,7 @@
-import { execSync } from "node:child_process";
+import { execSync as executorSync } from "node:child_process";
 
 try {
-    execSync("npx prettier --check .", { stdio: "inherit" });
+    executorSync("npx prettier --check .", { stdio: "inherit" });
 } catch {
     process.exit(1);
 }

@@ -99,14 +99,16 @@ test("entry previews initialize drawing concealment and audio with the same abor
             disconnected = true;
         }
     };
-    context.bindDrawingPreview = (...args) => calls.push(["drawing", ...args]);
-    context.placeAudioSpeaker = (...args) => calls.push(["speaker", ...args]);
-    context.loadLibraryAudio = (...args) => {
-        calls.push(["audio", ...args]);
+    context.bindDrawingPreview = (...argumentsList) =>
+        calls.push(["drawing", ...argumentsList]);
+    context.placeAudioSpeaker = (...argumentsList) =>
+        calls.push(["speaker", ...argumentsList]);
+    context.loadLibraryAudio = (...argumentsList) => {
+        calls.push(["audio", ...argumentsList]);
         return Promise.resolve();
     };
-    context.loadReferenceImages = (...args) => {
-        calls.push(["images", ...args]);
+    context.loadReferenceImages = (...argumentsList) => {
+        calls.push(["images", ...argumentsList]);
         return Promise.resolve();
     };
     let dismissed = 0;

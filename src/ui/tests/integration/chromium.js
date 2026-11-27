@@ -129,7 +129,7 @@ export async function launchChromium(executable) {
                 else request.resolve(message.result);
             } else events.push(message);
         });
-        function command(method, params = {}) {
+        function command(method, parameters = {}) {
             return new Promise((resolve, reject) => {
                 const id = ++sequence;
                 const timeout = setTimeout(() => {
@@ -137,7 +137,7 @@ export async function launchChromium(executable) {
                     reject(new Error(`Chromium command timed out: ${method}`));
                 }, 10000);
                 pending.set(id, { resolve, reject, timeout });
-                socket.send(JSON.stringify({ id, method, params }));
+                socket.send(JSON.stringify({ id, method, params: parameters }));
             });
         }
         function valueFromResult(result) {
@@ -158,7 +158,7 @@ export async function launchChromium(executable) {
                 }),
             );
         }
-        async function callFunction(functionDeclaration, args = []) {
+        async function callFunction(functionDeclaration, argumentsList = []) {
             const global = await command("Runtime.evaluate", {
                 expression: "globalThis",
             });
@@ -166,7 +166,7 @@ export async function launchChromium(executable) {
                 await command("Runtime.callFunctionOn", {
                     objectId: global.result.objectId,
                     functionDeclaration,
-                    arguments: args.map((value) => ({ value })),
+                    arguments: argumentsList.map((value) => ({ value })),
                     awaitPromise: true,
                     returnByValue: true,
                 }),
@@ -186,8 +186,11 @@ export async function launchChromium(executable) {
             });
             await delay(180);
         }
-        async function waitFor(expression, { timeoutMs = 5000 } = {}) {
-            const deadline = Date.now() + timeoutMs;
+        async function waitFor(
+            expression,
+            { timeoutMs: timeoutMilliseconds = 5000 } = {},
+        ) {
+            const deadline = Date.now() + timeoutMilliseconds;
             while (Date.now() < deadline) {
                 if (await evaluate(expression)) return;
                 await delay(50);

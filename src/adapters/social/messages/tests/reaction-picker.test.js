@@ -63,7 +63,9 @@ for (const usageFails of [false, true]) {
             },
             {
                 HTMLButtonElement: Button,
-                console: { error: (...args) => logs.push(args) },
+                console: {
+                    error: (...argumentsList) => logs.push(argumentsList),
+                },
             },
         );
         const controller = createMessageReactionsController({

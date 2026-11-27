@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-    resolveDbProviderDir,
+    resolveDbProviderDir as resolveDatabaseProviderDirectory,
     initializeDatabaseSchema,
 } from "../../bootstrap/db-init.js";
 import path from "node:path";
@@ -11,9 +11,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const fixturesRoot = path.resolve(__dirname, "fixtures");
 
 test("db init resolves supported providers", () => {
-    assert.equal(resolveDbProviderDir("postgresql"), "postgres");
-    assert.equal(resolveDbProviderDir("mariadb"), "mariadb");
-    assert.equal(resolveDbProviderDir("mysql"), "mariadb");
+    assert.equal(resolveDatabaseProviderDirectory("postgresql"), "postgres");
+    assert.equal(resolveDatabaseProviderDirectory("mariadb"), "mariadb");
+    assert.equal(resolveDatabaseProviderDirectory("mysql"), "mariadb");
 });
 
 interface Call {
@@ -29,15 +29,15 @@ function makeMockExecutor() {
         calls,
         mockSelectRows(
             sql: string,
-            params: unknown[],
+            parameters: unknown[],
             result: { id: string }[],
         ) {
-            const key = `${sql.trim()}${JSON.stringify(params)}`;
+            const key = `${sql.trim()}${JSON.stringify(parameters)}`;
             mockedRows.set(key, result);
         },
-        async execute(sql: string, params: unknown[] = []) {
-            calls.push({ sql: sql.trim(), params });
-            const key = `${sql.trim()}${JSON.stringify(params)}`;
+        async execute(sql: string, parameters: unknown[] = []) {
+            calls.push({ sql: sql.trim(), params: parameters });
+            const key = `${sql.trim()}${JSON.stringify(parameters)}`;
             if (mockedRows.has(key)) {
                 return { rows: mockedRows.get(key) };
             }

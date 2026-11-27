@@ -1,6 +1,6 @@
 import type { DatabaseGateway, QueryResult } from "@cognis/core";
 import {
-    buildStructuredDbCommandStatement,
+    buildStructuredDbCommandStatement as buildStructuredDatabaseCommandStatement,
     type StructuredDbCommand,
     type StructuredDbCommandResult,
     type StructuredDbDialect,
@@ -13,13 +13,13 @@ export interface SqliteRunResult {
 export interface SqliteClient {
     all<Row = Record<string, unknown>>(
         statement: string,
-        params?: unknown[],
+        parameters?: unknown[],
     ): Promise<Row[]>;
-    run(statement: string, params?: unknown[]): Promise<SqliteRunResult>;
+    run(statement: string, parameters?: unknown[]): Promise<SqliteRunResult>;
     exec(statement: string): Promise<void>;
 }
 
-const SQLITE_STRUCTURED_DB_DIALECT: StructuredDbDialect = {
+const SQLITE_STRUCTURED_DATABASE_DIALECT: StructuredDbDialect = {
     createPlaceholder() {
         return "?";
     },
@@ -54,15 +54,15 @@ const SQLITE_STRUCTURED_DB_DIALECT: StructuredDbDialect = {
     },
 };
 
-export class SqliteDbGateway implements DatabaseGateway {
+class SqliteDatabaseGateway implements DatabaseGateway {
     constructor(private readonly client: SqliteClient) {}
 
     async executeCommand<Row = Record<string, unknown>>(
         command: StructuredDbCommand,
     ): Promise<StructuredDbCommandResult<Row>> {
-        const statement = buildStructuredDbCommandStatement(
+        const statement = buildStructuredDatabaseCommandStatement(
             command,
-            SQLITE_STRUCTURED_DB_DIALECT,
+            SQLITE_STRUCTURED_DATABASE_DIALECT,
         );
         if (statement.returnsRows) {
             const rows = await this.client.all<Row>(
@@ -77,22 +77,22 @@ export class SqliteDbGateway implements DatabaseGateway {
 
     async query<Row = Record<string, unknown>>(
         statement: string,
-        params?: unknown[],
+        parameters?: unknown[],
     ): Promise<QueryResult<Row>> {
-        const rows = await this.client.all<Row>(statement, params);
+        const rows = await this.client.all<Row>(statement, parameters);
         return { rows, rowCount: rows.length };
     }
 
     async execute(
         statement: string,
-        params?: unknown[],
+        parameters?: unknown[],
     ): Promise<{ affectedRows: number }> {
-        const result = await this.client.run(statement, params);
+        const result = await this.client.run(statement, parameters);
         return { affectedRows: result.changes ?? 0 };
     }
 
     async transaction<T>(
-        callback: (db: DatabaseGateway) => Promise<T>,
+        callback: (database: DatabaseGateway) => Promise<T>,
     ): Promise<T> {
         await this.client.exec("BEGIN");
         try {
@@ -105,3 +105,4 @@ export class SqliteDbGateway implements DatabaseGateway {
         }
     }
 }
+export { SqliteDatabaseGateway as SqliteDbGateway };

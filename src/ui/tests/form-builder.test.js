@@ -214,7 +214,7 @@ test("adapter config form updates required title markers when requirements chang
     assert.match(source, /input\.toggleAttribute\("required", requiresInput\)/);
     assert.match(
         source,
-        /popupFormEl\.addEventListener\("input", \(\) => \{[\s\S]*updateRequiredHighlights\(\)/m,
+        /popupFormElement\.addEventListener\("input", \(\) => \{[\s\S]*updateRequiredHighlights\(\)/m,
     );
     assert.match(
         styles,
@@ -244,7 +244,10 @@ test("adapter environment warnings render beside headings in orange", () => {
 test("adapter reset stages environment values until settings are saved", () => {
     const source = read("src/ui/app/administration/adapter-config-popup.js");
 
-    assert.match(source, /loadConfigIntoForm\(popupFormEl, envData\)/);
+    assert.match(
+        source,
+        /loadConfigIntoForm\(popupFormElement, environmentData\)/,
+    );
     assert.match(source, /resetPending = true/);
     assert.match(
         source,

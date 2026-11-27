@@ -1,6 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { loadDocsIndex, loadDocsBundleMarkdown } from "../docs-client.js";
+import {
+    loadDocsIndex as loadDocumentsIndex,
+    loadDocsBundleMarkdown as loadDocumentsBundleMarkdown,
+} from "../docs-client.js";
 import { selectUiLanguage } from "../ui-language-state.js";
 
 test("index and every view prioritize the displayed UI language over account order", async (context) => {
@@ -22,7 +25,7 @@ test("index and every view prioritize the displayed UI language over account ord
         globalThis.document = previousDocument;
     });
     const paths = [];
-    const fetchDocs = async (path) => {
+    const fetchDocuments = async (path) => {
         paths.push(path);
         return {
             ok: true,
@@ -33,10 +36,10 @@ test("index and every view prioritize the displayed UI language over account ord
             }),
         };
     };
-    await loadDocsIndex({ fetchDocs });
-    const content = await loadDocsBundleMarkdown(
+    await loadDocumentsIndex({ fetchDocs: fetchDocuments });
+    const content = await loadDocumentsBundleMarkdown(
         { slug: "example", version: "1.0.0" },
-        { fetchDocs },
+        { fetchDocs: fetchDocuments },
     );
     assert.equal(content, "日本語\n\n日本語\n\n日本語");
     assert.equal(paths.length, 4);
@@ -44,23 +47,23 @@ test("index and every view prioritize the displayed UI language over account ord
 });
 
 test("docs index loader returns an empty list for unsuccessful responses", async () => {
-    const docs = await loadDocsIndex({
+    const documents = await loadDocumentsIndex({
         fetchDocs: async () => ({ ok: false }),
     });
-    assert.deepEqual(docs, []);
+    assert.deepEqual(documents, []);
 });
 
 test("docs index loader returns an empty list when the request fails", async () => {
-    const docs = await loadDocsIndex({
+    const documents = await loadDocumentsIndex({
         fetchDocs: async () => {
             throw new Error("network unavailable");
         },
     });
-    assert.deepEqual(docs, []);
+    assert.deepEqual(documents, []);
 });
 
 test("docs index loader rejects malformed index data", async () => {
-    const docs = await loadDocsIndex({
+    const documents = await loadDocumentsIndex({
         fetchDocs: async () => ({
             ok: true,
             async json() {
@@ -68,11 +71,11 @@ test("docs index loader rejects malformed index data", async () => {
             },
         }),
     });
-    assert.deepEqual(docs, []);
+    assert.deepEqual(documents, []);
 });
 
 test("docs index loader rejects malformed JSON", async () => {
-    const docs = await loadDocsIndex({
+    const documents = await loadDocumentsIndex({
         fetchDocs: async () => ({
             ok: true,
             async json() {
@@ -80,12 +83,12 @@ test("docs index loader rejects malformed JSON", async () => {
             },
         }),
     });
-    assert.deepEqual(docs, []);
+    assert.deepEqual(documents, []);
 });
 
 test("docs index loader keeps only object entries", async () => {
     const entry = { slug: "overview" };
-    const docs = await loadDocsIndex({
+    const documents = await loadDocumentsIndex({
         fetchDocs: async () => ({
             ok: true,
             async json() {
@@ -93,13 +96,13 @@ test("docs index loader keeps only object entries", async () => {
             },
         }),
     });
-    assert.deepEqual(docs, [entry]);
+    assert.deepEqual(documents, [entry]);
 });
 
 test("bundle reads pin one version, include all views, and preserve cancellation", async () => {
     const requested = [];
     const controller = new AbortController();
-    const text = await loadDocsBundleMarkdown(
+    const text = await loadDocumentsBundleMarkdown(
         { slug: "gateways/example", version: "2.0.0" },
         {
             languages: ["de", "en"],
@@ -137,7 +140,7 @@ test("bundle reads pin one version, include all views, and preserve cancellation
     );
     controller.abort();
     await assert.rejects(
-        loadDocsBundleMarkdown(
+        loadDocumentsBundleMarkdown(
             { slug: "gateways/example", version: "2.0.0" },
             {
                 signal: controller.signal,

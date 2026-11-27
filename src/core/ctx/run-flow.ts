@@ -37,7 +37,7 @@ export async function runFlow(
     }
     const data = options?.data ?? {};
     const stageResults: Record<string, unknown[]> = {};
-    const meta = Object.freeze({ ...(options?.meta ?? {}) });
+    const metadata = Object.freeze({ ...(options?.meta ?? {}) });
 
     for (const stageId of flowEntry.flow.stages) {
         const stageHookMap = flowEntry.stageHooks.get(stageId);
@@ -50,7 +50,7 @@ export async function runFlow(
             flowId,
             stageId,
             input,
-            meta,
+            meta: metadata,
             data,
             stageResults,
         };

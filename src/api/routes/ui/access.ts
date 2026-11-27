@@ -2,21 +2,21 @@ import type { IncomingMessage } from "node:http";
 import type { BootstrapLog, LocalAccountStore } from "@cognis/core";
 import type { RouteContext } from "../../reuse/route-context.js";
 
-function getCookieAccessToken(req: IncomingMessage): string | null {
-    const cookie = req.headers.cookie ?? "";
+function getCookieAccessToken(request: IncomingMessage): string | null {
+    const cookie = request.headers.cookie ?? "";
     const match = cookie.match(/(?:^|; )cognis_access_token=([^;]+)/);
     if (!match) return null;
     return decodeURIComponent(match[1]);
 }
 
 export async function resolveLoginRedirectLocation(
-    req: IncomingMessage,
+    request: IncomingMessage,
     routeContext: RouteContext,
     accountStore?: LocalAccountStore,
     log?: BootstrapLog,
 ): Promise<string> {
-    const cookieToken = getCookieAccessToken(req);
-    const session = routeContext.getCookieSession(req);
+    const cookieToken = getCookieAccessToken(request);
+    const session = routeContext.getCookieSession(request);
     if (!cookieToken) return "/login";
 
     const tokenInfo = routeContext.lookupAccessToken(cookieToken);

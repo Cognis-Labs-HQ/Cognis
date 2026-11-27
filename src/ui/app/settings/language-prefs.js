@@ -5,7 +5,7 @@ import {
     readBrowserLocales,
 } from "../../reuse/i18n.js";
 
-export function initLanguagePrefs(
+function initLanguagePreferences(
     root,
     initialPriority,
     { onDirtyChange, signal } = {},
@@ -56,10 +56,13 @@ export function initLanguagePrefs(
             function onMove(entry) {
                 entry.preventDefault();
                 clearDropMarkers();
-                const { row: targetRow, rect } = findRowAt(row, entry.clientY);
+                const { row: targetRow, rect: rectangle } = findRowAt(
+                    row,
+                    entry.clientY,
+                );
                 if (!targetRow) return;
                 targetRow.classList.add(
-                    entry.clientY > rect.top + rect.height / 2
+                    entry.clientY > rectangle.top + rectangle.height / 2
                         ? "drop-target-after"
                         : "drop-target-before",
                 );
@@ -70,10 +73,14 @@ export function initLanguagePrefs(
                 tdHandle.removeEventListener("pointerup", onEnd);
                 tdHandle.removeEventListener("pointercancel", onEnd);
                 row.classList.remove("language-row-dragging");
-                const { row: targetRow, rect } = findRowAt(row, entry.clientY);
+                const { row: targetRow, rect: rectangle } = findRowAt(
+                    row,
+                    entry.clientY,
+                );
                 const targetTable = findTableAt(entry.clientX, entry.clientY);
                 const targetIsAfter = Boolean(
-                    targetRow && entry.clientY > rect.top + rect.height / 2,
+                    targetRow &&
+                    entry.clientY > rectangle.top + rectangle.height / 2,
                 );
                 clearDropMarkers();
                 applyDrop(isoCode, targetTable, targetRow, targetIsAfter);
@@ -140,9 +147,9 @@ export function initLanguagePrefs(
                 (isOffline() && !row.closest("#preferred-languages"))
             )
                 continue;
-            const rect = row.getBoundingClientRect();
-            if (clientY >= rect.top && clientY <= rect.bottom)
-                return { row, rect };
+            const rectangle = row.getBoundingClientRect();
+            if (clientY >= rectangle.top && clientY <= rectangle.bottom)
+                return { row, rect: rectangle };
         }
         return { row: null, rect: null };
     }
@@ -152,12 +159,12 @@ export function initLanguagePrefs(
             "#available-languages, #preferred-languages",
         )) {
             if (isOffline() && table.id !== "preferred-languages") continue;
-            const rect = table.getBoundingClientRect();
+            const rectangle = table.getBoundingClientRect();
             if (
-                clientX >= rect.left &&
-                clientX <= rect.right &&
-                clientY >= rect.top &&
-                clientY <= rect.bottom
+                clientX >= rectangle.left &&
+                clientX <= rectangle.right &&
+                clientY >= rectangle.top &&
+                clientY <= rectangle.bottom
             )
                 return table;
         }
@@ -182,17 +189,19 @@ export function initLanguagePrefs(
         return { targetTable, targetRow, targetIsAfter };
     }
 
-    function applyDrop(lang, targetTable, targetRow, targetIsAfter) {
+    function applyDrop(language, targetTable, targetRow, targetIsAfter) {
         if (
-            !lang ||
+            !language ||
             (isOffline() &&
                 (targetTable?.id !== "preferred-languages" ||
-                    !languagePriority.includes(lang)))
+                    !languagePriority.includes(language)))
         )
             return;
 
         if (targetTable?.id === "preferred-languages") {
-            languagePriority = languagePriority.filter((item) => item !== lang);
+            languagePriority = languagePriority.filter(
+                (item) => item !== language,
+            );
             if (targetRow) {
                 const targetIso = targetRow.getAttribute("data-lang-row");
                 const index = languagePriority.indexOf(targetIso);
@@ -200,18 +209,18 @@ export function initLanguagePrefs(
                     languagePriority.splice(
                         targetIsAfter ? index + 1 : index,
                         0,
-                        lang,
+                        language,
                     );
-                else languagePriority.push(lang);
+                else languagePriority.push(language);
             } else {
-                languagePriority.push(lang);
+                languagePriority.push(language);
             }
         }
 
         if (targetTable?.id === "available-languages") {
-            if (lang !== "en")
+            if (language !== "en")
                 languagePriority = languagePriority.filter(
-                    (item) => item !== lang,
+                    (item) => item !== language,
                 );
         }
 
@@ -263,8 +272,9 @@ export function initLanguagePrefs(
 
             const row = zone.closest("tr[data-lang-row]");
             if (row) {
-                const rect = row.getBoundingClientRect();
-                const isAfter = event.clientY > rect.top + rect.height / 2;
+                const rectangle = row.getBoundingClientRect();
+                const isAfter =
+                    event.clientY > rectangle.top + rectangle.height / 2;
                 row.classList.add(
                     isAfter ? "drop-target-after" : "drop-target-before",
                 );
@@ -290,9 +300,9 @@ export function initLanguagePrefs(
                 event.clientY,
             );
             clearDropMarkers();
-            const lang =
+            const language =
                 dragLanguage || event.dataTransfer?.getData("text/plain");
-            applyDrop(lang, targetTable, targetRow, targetIsAfter);
+            applyDrop(language, targetTable, targetRow, targetIsAfter);
             dragLanguage = null;
         },
         { signal },
@@ -310,7 +320,7 @@ export function initLanguagePrefs(
         notifyDirty();
     }
 
-    async function init() {
+    async function initialize() {
         catalog = await loadUiLanguageCatalog().catch(() => {
             const names = new Intl.DisplayNames(
                 [document.documentElement.lang || "en"],
@@ -337,7 +347,7 @@ export function initLanguagePrefs(
         signal,
     });
     return {
-        init,
+        init: initialize,
         renderTables,
         syncFromBrowser() {
             if (isOffline()) return;
@@ -357,3 +367,4 @@ export function initLanguagePrefs(
         discard,
     };
 }
+export { initLanguagePreferences as initLanguagePrefs };

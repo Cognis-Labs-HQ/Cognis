@@ -8,7 +8,7 @@ export interface AdapterConfigStore {
     ): Promise<void>;
 }
 
-export class DbAdapterConfigStore implements AdapterConfigStore {
+class DatabaseAdapterConfigStore implements AdapterConfigStore {
     constructor(private readonly database: DbExecutor) {}
 
     async ensureSchema(): Promise<void> {
@@ -63,3 +63,4 @@ export class DbAdapterConfigStore implements AdapterConfigStore {
         });
     }
 }
+export { DatabaseAdapterConfigStore as DbAdapterConfigStore };

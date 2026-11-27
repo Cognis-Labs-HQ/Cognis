@@ -122,6 +122,6 @@ test("typing showcase keeps each full message visible for one minute before dele
 
     assert.match(
         source,
-        /for \(\s*let charIndex = 0;[\s\S]*?window\.setTimeout\(resolve,\s*85\),[\s\S]*?window\.setTimeout\(resolve,\s*60000\),[\s\S]*?for \(\s*let charIndex = sample\.length;/m,
+        /for \(\s*let characterIndex = 0;[\s\S]*?window\.setTimeout\(resolve,\s*85\),[\s\S]*?window\.setTimeout\(resolve,\s*60000\),[\s\S]*?for \(\s*let characterIndex = sample\.length;/m,
     );
 });

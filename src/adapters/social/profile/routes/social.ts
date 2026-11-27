@@ -110,20 +110,20 @@ export function createSocialRoutes(
     const ctx = resolveRouteContext(routeContext);
     const followers = createFollowersCapability(profileStore);
     return async (
-        req: IncomingMessage,
-        res: ServerResponse,
+        request: IncomingMessage,
+        response: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         const searchMatch = url.pathname === "/api/v1/social/users/search";
-        if (searchMatch && req.method === "GET") {
-            const claims = ctx.requireAuth(req, res, "user");
+        if (searchMatch && request.method === "GET") {
+            const claims = ctx.requireAuth(request, response, "user");
             if (!claims) return true;
             const query = (url.searchParams.get("q") ?? "")
                 .trim()
                 .toLowerCase();
             if (!query) {
-                res.writeHead(200, { "content-type": "application/json" });
-                res.end(JSON.stringify({ data: [] }));
+                response.writeHead(200, { "content-type": "application/json" });
+                response.end(JSON.stringify({ data: [] }));
                 return true;
             }
             const results = await profileStore.searchProfiles(
@@ -137,22 +137,22 @@ export function createSocialRoutes(
             const filtered = results.filter(
                 (profile) => profile.accountId !== claims.sub,
             );
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: filtered.map(publicProfile) }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: filtered.map(publicProfile) }));
             return true;
         }
 
         const relationshipMatch = url.pathname.match(
             /^\/api\/v1\/social\/users\/([^/]+)\/relationship$/,
         );
-        if (relationshipMatch && req.method === "GET") {
-            const claims = ctx.requireAuth(req, res, "user");
+        if (relationshipMatch && request.method === "GET") {
+            const claims = ctx.requireAuth(request, response, "user");
             if (!claims) return true;
             const handle = decodeURIComponent(relationshipMatch[1]);
             const target = await profileStore.getProfileByHandle(handle);
             if (!target) {
-                res.writeHead(404, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(404, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: { code: "not_found", message: "User not found" },
                     }),
@@ -166,8 +166,8 @@ export function createSocialRoutes(
             if (blockedBy) {
                 // Treat as not-found from the requester's perspective; the blocker
                 // must never appear to exist (mirrors follow operations below).
-                res.writeHead(404, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(404, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: { code: "not_found", message: "User not found" },
                     }),
@@ -181,8 +181,8 @@ export function createSocialRoutes(
                 target,
             );
             if (!canDiscover) {
-                res.writeHead(404, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(404, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: { code: "not_found", message: "User not found" },
                     }),
@@ -228,8 +228,8 @@ export function createSocialRoutes(
             const canMessage =
                 canSendMessageRequest &&
                 (hasBypass || (followsTarget && followedBy));
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     data: {
                         accountId: target.accountId,
@@ -252,24 +252,29 @@ export function createSocialRoutes(
         const followMatch = url.pathname.match(
             /^\/api\/v1\/social\/users\/([^/]+)\/follow$/,
         );
-        if (followMatch && (req.method === "POST" || req.method === "DELETE")) {
-            const claims = ctx.requireAuth(req, res, "user");
+        if (
+            followMatch &&
+            (request.method === "POST" || request.method === "DELETE")
+        ) {
+            const claims = ctx.requireAuth(request, response, "user");
             if (!claims) return true;
             const handle = decodeURIComponent(followMatch[1]);
             const target = await profileStore.getProfileByHandle(handle);
             if (!target) {
-                res.writeHead(404, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(404, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: { code: "not_found", message: "User not found" },
                     }),
                 );
                 return true;
             }
-            if (req.method === "POST") {
+            if (request.method === "POST") {
                 if (!isProfileInteractive(target)) {
-                    res.writeHead(409, { "content-type": "application/json" });
-                    res.end(
+                    response.writeHead(409, {
+                        "content-type": "application/json",
+                    });
+                    response.end(
                         JSON.stringify({
                             error: {
                                 code: "account_not_interactive",
@@ -283,8 +288,10 @@ export function createSocialRoutes(
                 if (
                     await profileStore.isBlocked(target.accountId, claims.sub)
                 ) {
-                    res.writeHead(404, { "content-type": "application/json" });
-                    res.end(
+                    response.writeHead(404, {
+                        "content-type": "application/json",
+                    });
+                    response.end(
                         JSON.stringify({
                             error: {
                                 code: "not_found",
@@ -295,8 +302,10 @@ export function createSocialRoutes(
                     return true;
                 }
                 if (claims.sub === target.accountId) {
-                    res.writeHead(400, { "content-type": "application/json" });
-                    res.end(
+                    response.writeHead(400, {
+                        "content-type": "application/json",
+                    });
+                    response.end(
                         JSON.stringify({
                             error: {
                                 code: "bad_request",
@@ -317,8 +326,10 @@ export function createSocialRoutes(
                     target,
                 );
                 if (!canDiscover) {
-                    res.writeHead(404, { "content-type": "application/json" });
-                    res.end(
+                    response.writeHead(404, {
+                        "content-type": "application/json",
+                    });
+                    response.end(
                         JSON.stringify({
                             error: {
                                 code: "not_found",
@@ -336,8 +347,10 @@ export function createSocialRoutes(
                     profileStore,
                 );
                 if (!canFollow) {
-                    res.writeHead(403, { "content-type": "application/json" });
-                    res.end(
+                    response.writeHead(403, {
+                        "content-type": "application/json",
+                    });
+                    response.end(
                         JSON.stringify({
                             error: {
                                 code: "forbidden",
@@ -377,17 +390,17 @@ export function createSocialRoutes(
                         },
                     });
                 }
-                res.writeHead(200, { "content-type": "application/json" });
-                res.end(JSON.stringify({ data: { following: true } }));
+                response.writeHead(200, { "content-type": "application/json" });
+                response.end(JSON.stringify({ data: { following: true } }));
                 return true;
             }
-            if (req.method === "DELETE") {
+            if (request.method === "DELETE") {
                 await followers.remove({
                     followerAccountId: claims.sub,
                     followedAccountId: target.accountId,
                 });
-                res.writeHead(200, { "content-type": "application/json" });
-                res.end(JSON.stringify({ data: { following: false } }));
+                response.writeHead(200, { "content-type": "application/json" });
+                response.end(JSON.stringify({ data: { following: false } }));
                 return true;
             }
         }
@@ -396,23 +409,25 @@ export function createSocialRoutes(
             /^\/api\/v1\/social\/users\/([^/]+)\/block$/,
         );
         if (blockMatch) {
-            const claims = ctx.requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(request, response, "user");
             if (!claims) return true;
             const handle = decodeURIComponent(blockMatch[1]);
             const target = await profileStore.getProfileByHandle(handle);
             if (!target) {
-                res.writeHead(404, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(404, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: { code: "not_found", message: "User not found" },
                     }),
                 );
                 return true;
             }
-            if (req.method === "POST") {
+            if (request.method === "POST") {
                 if (!isProfileInteractive(target)) {
-                    res.writeHead(409, { "content-type": "application/json" });
-                    res.end(
+                    response.writeHead(409, {
+                        "content-type": "application/json",
+                    });
+                    response.end(
                         JSON.stringify({
                             error: {
                                 code: "account_not_interactive",
@@ -424,8 +439,10 @@ export function createSocialRoutes(
                     return true;
                 }
                 if (claims.sub === target.accountId) {
-                    res.writeHead(400, { "content-type": "application/json" });
-                    res.end(
+                    response.writeHead(400, {
+                        "content-type": "application/json",
+                    });
+                    response.end(
                         JSON.stringify({
                             error: {
                                 code: "bad_request",
@@ -436,14 +453,14 @@ export function createSocialRoutes(
                     return true;
                 }
                 await profileStore.block(claims.sub, target.accountId);
-                res.writeHead(200, { "content-type": "application/json" });
-                res.end(JSON.stringify({ data: { blocked: true } }));
+                response.writeHead(200, { "content-type": "application/json" });
+                response.end(JSON.stringify({ data: { blocked: true } }));
                 return true;
             }
-            if (req.method === "DELETE") {
+            if (request.method === "DELETE") {
                 await profileStore.unblock(claims.sub, target.accountId);
-                res.writeHead(200, { "content-type": "application/json" });
-                res.end(JSON.stringify({ data: { blocked: false } }));
+                response.writeHead(200, { "content-type": "application/json" });
+                response.end(JSON.stringify({ data: { blocked: false } }));
                 return true;
             }
         }
@@ -451,14 +468,14 @@ export function createSocialRoutes(
         const followersMatch = url.pathname.match(
             /^\/api\/v1\/social\/users\/([^/]+)\/follow$/,
         );
-        if (followersMatch && req.method === "GET") {
-            const claims = ctx.requireAuth(req, res, "user");
+        if (followersMatch && request.method === "GET") {
+            const claims = ctx.requireAuth(request, response, "user");
             if (!claims) return true;
             const handle = decodeURIComponent(followersMatch[1]);
             const target = await profileStore.getProfileByHandle(handle);
             if (!target) {
-                res.writeHead(404, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(404, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: { code: "not_found", message: "User not found" },
                     }),
@@ -466,8 +483,8 @@ export function createSocialRoutes(
                 return true;
             }
             if (await profileStore.isBlocked(target.accountId, claims.sub)) {
-                res.writeHead(404, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(404, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: { code: "not_found", message: "User not found" },
                     }),
@@ -480,8 +497,8 @@ export function createSocialRoutes(
                 target,
             );
             if (!canView) {
-                res.writeHead(404, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(404, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: { code: "not_found", message: "User not found" },
                     }),
@@ -495,27 +512,29 @@ export function createSocialRoutes(
                     visibilityRank("community") ||
                 (await profileStore.isFollowing(claims.sub, target.accountId));
             if (!showList) {
-                res.writeHead(200, { "content-type": "application/json" });
-                res.end(JSON.stringify({ data: [] }));
+                response.writeHead(200, { "content-type": "application/json" });
+                response.end(JSON.stringify({ data: [] }));
                 return true;
             }
             const followers = await profileStore.getFollowers(target.accountId);
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: followers.map(publicProfile) }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(
+                JSON.stringify({ data: followers.map(publicProfile) }),
+            );
             return true;
         }
 
         const followingMatch = url.pathname.match(
             /^\/api\/v1\/social\/users\/([^/]+)\/following$/,
         );
-        if (followingMatch && req.method === "GET") {
-            const claims = ctx.requireAuth(req, res, "user");
+        if (followingMatch && request.method === "GET") {
+            const claims = ctx.requireAuth(request, response, "user");
             if (!claims) return true;
             const handle = decodeURIComponent(followingMatch[1]);
             const target = await profileStore.getProfileByHandle(handle);
             if (!target) {
-                res.writeHead(404, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(404, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: { code: "not_found", message: "User not found" },
                     }),
@@ -523,8 +542,8 @@ export function createSocialRoutes(
                 return true;
             }
             if (await profileStore.isBlocked(target.accountId, claims.sub)) {
-                res.writeHead(404, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(404, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: { code: "not_found", message: "User not found" },
                     }),
@@ -537,8 +556,8 @@ export function createSocialRoutes(
                 target,
             );
             if (!canView) {
-                res.writeHead(404, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(404, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: { code: "not_found", message: "User not found" },
                     }),
@@ -552,13 +571,15 @@ export function createSocialRoutes(
                     visibilityRank("community") ||
                 (await profileStore.isFollowing(claims.sub, target.accountId));
             if (!showList) {
-                res.writeHead(200, { "content-type": "application/json" });
-                res.end(JSON.stringify({ data: [] }));
+                response.writeHead(200, { "content-type": "application/json" });
+                response.end(JSON.stringify({ data: [] }));
                 return true;
             }
             const following = await profileStore.getFollowing(target.accountId);
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: following.map(publicProfile) }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(
+                JSON.stringify({ data: following.map(publicProfile) }),
+            );
             return true;
         }
 

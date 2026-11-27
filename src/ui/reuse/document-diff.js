@@ -23,7 +23,7 @@ function renderLineNumber(value) {
     return value == null ? "" : escapeHtml(String(value));
 }
 
-let diffInstance = 0;
+let differenceInstance = 0;
 
 function markerPosition(lineIndex, lineCount) {
     return lineCount <= 1 ? 0 : (lineIndex / (lineCount - 1)) * 100;
@@ -42,61 +42,62 @@ function renderRow(type, oldLine, newLine, prefix, content, id) {
     return `<div id="${id}" class="document-diff-line document-diff-line--${type}" data-document-diff-line="${type}"><span class="document-diff-line-number">${renderLineNumber(oldLine)}</span><span class="document-diff-line-number">${renderLineNumber(newLine)}</span><span class="document-diff-prefix" aria-hidden="true">${prefix}</span><pre>${escapeHtml(String(content ?? ""))}</pre></div>`;
 }
 
-export function renderDocumentDiff(diff) {
-    const instanceId = `document-diff-${++diffInstance}`;
+function renderDocumentDifference(difference) {
+    const instanceId = `document-diff-${++differenceInstance}`;
     const markers = [];
-    const rows = (Array.isArray(diff?.lines) ? diff.lines : []).flatMap(
-        (line, lineIndex, lines) => {
-            const rowId = `${instanceId}-line-${lineIndex + 1}`;
-            const position = markerPosition(lineIndex, lines.length);
-            if (line?.type === "changed") {
-                markers.push({ type: "changed", rowId, position, label: "±" });
-                return [
-                    renderRow(
-                        "changed-previous",
-                        line.oldLine,
-                        null,
-                        "−",
-                        line.oldContent,
-                        rowId,
-                    ),
-                    renderRow(
-                        "changed-next",
-                        null,
-                        line.newLine,
-                        "+",
-                        line.newContent,
-                        `${rowId}-next`,
-                    ),
-                ];
-            }
-            const prefixes = { unchanged: " ", added: "+", removed: "−" };
-            const type = ["unchanged", "added", "removed"].includes(line?.type)
-                ? line.type
-                : "unchanged";
-            if (type !== "unchanged") {
-                markers.push({
-                    type,
-                    rowId,
-                    position,
-                    label: type === "added" ? "+" : "−",
-                });
-            }
+    const rows = (
+        Array.isArray(difference?.lines) ? difference.lines : []
+    ).flatMap((line, lineIndex, lines) => {
+        const rowId = `${instanceId}-line-${lineIndex + 1}`;
+        const position = markerPosition(lineIndex, lines.length);
+        if (line?.type === "changed") {
+            markers.push({ type: "changed", rowId, position, label: "±" });
             return [
                 renderRow(
-                    type,
-                    line?.oldLine,
-                    line?.newLine,
-                    prefixes[type],
-                    line?.content,
+                    "changed-previous",
+                    line.oldLine,
+                    null,
+                    "−",
+                    line.oldContent,
                     rowId,
                 ),
+                renderRow(
+                    "changed-next",
+                    null,
+                    line.newLine,
+                    "+",
+                    line.newContent,
+                    `${rowId}-next`,
+                ),
             ];
-        },
-    );
+        }
+        const prefixes = { unchanged: " ", added: "+", removed: "−" };
+        const type = ["unchanged", "added", "removed"].includes(line?.type)
+            ? line.type
+            : "unchanged";
+        if (type !== "unchanged") {
+            markers.push({
+                type,
+                rowId,
+                position,
+                label: type === "added" ? "+" : "−",
+            });
+        }
+        return [
+            renderRow(
+                type,
+                line?.oldLine,
+                line?.newLine,
+                prefixes[type],
+                line?.content,
+                rowId,
+            ),
+        ];
+    });
     const overview = renderOverview(markers);
     return `<div class="document-diff-shell"><div class="document-diff">${rows.join("")}</div><nav class="document-diff-overview" aria-label="±">${overview}</nav></div>`;
 }
+export { renderDocumentDifference as renderDocumentDiff };
 
 function annotatedMarkdownLine(content, annotationId) {
     const source = String(content ?? "");
@@ -123,12 +124,12 @@ function applyMarkdownAnnotations(html, annotations) {
  * content retains normal Markdown presentation while changes receive semantic
  * overlays and overview-rail anchors.
  *
- * @param {{ lines?: Array<{type: 'unchanged'|'added'|'removed'|'changed', content?: string, oldContent?: string, newContent?: string}> }} diff
+ * @param {{ lines?: Array<{type: 'unchanged'|'added'|'removed'|'changed', content?: string, oldContent?: string, newContent?: string}> }} difference
  * @returns {string} Sanitized rendered Markdown with diff overlays.
  */
-export function renderMarkdownDocumentDiff(diff) {
-    const instanceId = `document-diff-markdown-${++diffInstance}`;
-    const lines = Array.isArray(diff?.lines) ? diff.lines : [];
+function renderMarkdownDocumentDifference(difference) {
+    const instanceId = `document-diff-markdown-${++differenceInstance}`;
+    const lines = Array.isArray(difference?.lines) ? difference.lines : [];
     const markers = [];
     const annotations = [];
     const markdownLines = [];
@@ -174,9 +175,11 @@ export function renderMarkdownDocumentDiff(diff) {
     );
     return `<div class="document-diff-shell document-diff-shell--markdown"><article class="document-diff-markdown">${renderedMarkdown}</article><nav class="document-diff-overview" aria-label="±">${renderOverview(markers)}</nav></div>`;
 }
+export { renderMarkdownDocumentDifference as renderMarkdownDocumentDiff };
 
-export const documentDiff = Object.freeze({
-    renderDocumentDiff,
-    renderMarkdownDocumentDiff,
+const documentDifference = Object.freeze({
+    renderDocumentDiff: renderDocumentDifference,
+    renderMarkdownDocumentDiff: renderMarkdownDocumentDifference,
 });
-uiCtx.capabilities.contribute("ui:documentDiff", documentDiff);
+export { documentDifference as documentDiff };
+uiCtx.capabilities.contribute("ui:documentDiff", documentDifference);

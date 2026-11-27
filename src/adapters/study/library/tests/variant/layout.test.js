@@ -25,7 +25,7 @@ function fixture({ width = 400, height = 200, rootX = 12, rootY = 12 } = {}) {
                 enabled ? values.add(key) : values.delete(key),
         };
     };
-    const rect = (left, top) => ({
+    const rectangle = (left, top) => ({
         left,
         top,
         right: left + 100,
@@ -58,7 +58,7 @@ function fixture({ width = 400, height = 200, rootX = 12, rootY = 12 } = {}) {
         closest: () => grid,
         querySelectorAll: () => slots,
         querySelector: () => ({
-            getBoundingClientRect: () => rect(rootX, rootY),
+            getBoundingClientRect: () => rectangle(rootX, rootY),
         }),
     };
     const offsets = {
@@ -98,10 +98,11 @@ function fixture({ width = 400, height = 200, rootX = 12, rootY = 12 } = {}) {
                             "--library-variant-card-span",
                         ),
                     ) / 100 || distance;
-                const [x, y] = offsets[direction];
-                return rect(
-                    origin.left + x * step * 112,
-                    origin.top + y * step * 82,
+                const [horizontalCoordinate, verticalCoordinate] =
+                    offsets[direction];
+                return rectangle(
+                    origin.left + horizontalCoordinate * step * 112,
+                    origin.top + verticalCoordinate * step * 82,
                 );
             },
         };

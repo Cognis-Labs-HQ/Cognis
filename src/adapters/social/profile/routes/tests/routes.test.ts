@@ -4,7 +4,11 @@ import { VolatileProfileStore } from "../../store-contract.js";
 import { createProfileRoutes } from "../index.js";
 import { issueAccessToken } from "../../../../../gateways/auth/access-tokens.js";
 import { createDefaultRouteContext } from "../../../../../api/reuse/route-context.js";
-import { fakeFileGateway, makeReq, setupUser } from "./route-fixtures.js";
+import {
+    fakeFileGateway,
+    makeReq as makeRequest,
+    setupUser,
+} from "./route-fixtures.js";
 
 test("profile routes - get own profile auto-creates profile when none exists", async () => {
     const profileStore = new VolatileProfileStore();
@@ -13,7 +17,7 @@ test("profile routes - get own profile auto-creates profile when none exists", a
     let status = 0;
     let body = "";
     await route(
-        makeReq("GET", token),
+        makeRequest("GET", token),
         {
             writeHead(statusCode: number) {
                 status = statusCode;
@@ -34,7 +38,7 @@ test("profile routes - unauthenticated GET /api/v1/social/profile returns 401", 
     const route = createProfileRoutes(profileStore, fakeFileGateway());
     let status = 0;
     await route(
-        makeReq("GET", null),
+        makeRequest("GET", null),
         {
             writeHead(statusCode: number) {
                 status = statusCode;
@@ -54,7 +58,7 @@ test("profile routes - get own profile returns data after creation", async () =>
     let status = 0;
     let body = "";
     await route(
-        makeReq("GET", token),
+        makeRequest("GET", token),
         {
             writeHead(statusCode: number) {
                 status = statusCode;
@@ -80,7 +84,7 @@ test("profile routes - PATCH updates bio and visibility", async () => {
     let status = 0;
     let body = "";
     await route(
-        makeReq(
+        makeRequest(
             "PATCH",
             token,
             JSON.stringify({ bio: "Hello world", visibility: "community" }),
@@ -112,7 +116,7 @@ for (const visibility of ["hidden", "private"] as const) {
         let body = "";
 
         await route(
-            makeReq("PATCH", token, JSON.stringify({ visibility })),
+            makeRequest("PATCH", token, JSON.stringify({ visibility })),
             {
                 writeHead(statusCode: number) {
                     status = statusCode;
@@ -152,13 +156,13 @@ test("profile routes log profile updates", async () => {
         profileStore,
         fakeFileGateway(),
         undefined,
-        (level, message, meta) => {
-            entries.push({ level, message, meta });
+        (level, message, metadata) => {
+            entries.push({ level, message, meta: metadata });
         },
     );
 
     await route(
-        makeReq(
+        makeRequest(
             "PATCH",
             token,
             JSON.stringify({ bio: "Hello world", visibility: "community" }),
@@ -193,7 +197,7 @@ test("profile routes - PATCH updates displayName", async () => {
     let status = 0;
     let body = "";
     await route(
-        makeReq(
+        makeRequest(
             "PATCH",
             token,
             JSON.stringify({ displayName: "Diana Prince" }),
@@ -220,7 +224,7 @@ test("profile routes - PATCH rejects invalid visibility", async () => {
     const route = createProfileRoutes(profileStore, fakeFileGateway());
     let status = 0;
     await route(
-        makeReq("PATCH", token, JSON.stringify({ visibility: "public" })),
+        makeRequest("PATCH", token, JSON.stringify({ visibility: "public" })),
         {
             writeHead(statusCode: number) {
                 status = statusCode;
@@ -239,7 +243,7 @@ test("profile routes - hidden profile not visible to other users", async () => {
     const route = createProfileRoutes(profileStore, fakeFileGateway());
     let status = 0;
     await route(
-        makeReq("GET", eveToken),
+        makeRequest("GET", eveToken),
         {
             writeHead(statusCode: number) {
                 status = statusCode;
@@ -259,7 +263,7 @@ test("profile routes - admin always sees hidden profile", async () => {
     let status = 0;
     let body = "";
     await route(
-        makeReq("GET", adminToken),
+        makeRequest("GET", adminToken),
         {
             writeHead(statusCode: number) {
                 status = statusCode;
@@ -292,7 +296,7 @@ test("profile routes - private profile returns full details only for mutual foll
     let status = 0;
     let body = "";
     await route(
-        makeReq("GET", bobToken),
+        makeRequest("GET", bobToken),
         {
             writeHead(statusCode: number) {
                 status = statusCode;
@@ -310,7 +314,7 @@ test("profile routes - private profile returns full details only for mutual foll
 
     const carolToken = issueAccessToken("carol", "user", 60);
     await route(
-        makeReq("GET", carolToken),
+        makeRequest("GET", carolToken),
         {
             writeHead(statusCode: number) {
                 status = statusCode;
@@ -339,7 +343,7 @@ test("profile routes - friends visibility: profile visible but counts hidden for
     let status = 0;
     let body = "";
     await route(
-        makeReq("GET", bobToken),
+        makeRequest("GET", bobToken),
         {
             writeHead(statusCode: number) {
                 status = statusCode;
@@ -366,7 +370,7 @@ test("profile routes - community profile visible to other users", async () => {
     let status = 0;
     let body = "";
     await route(
-        makeReq("GET", graceToken),
+        makeRequest("GET", graceToken),
         {
             writeHead(statusCode: number) {
                 status = statusCode;
@@ -392,7 +396,7 @@ test("profile routes - blocked caller gets 404 on public profile", async () => {
     const route = createProfileRoutes(profileStore, fakeFileGateway());
     let status = 0;
     await route(
-        makeReq("GET", bobToken),
+        makeRequest("GET", bobToken),
         {
             writeHead(statusCode: number) {
                 status = statusCode;

@@ -54,13 +54,13 @@ const USER_GLOBAL_QUOTAS_TABLE: StructuredDbTableDef = {
  * gateway is guaranteed to be ready, so schema creation is deferred to the
  * first real call.
  */
-export class DbFileQuotaStore implements FileQuotaStore {
+class DatabaseFileQuotaStore implements FileQuotaStore {
     private schemaReady: Promise<void> | undefined;
 
-    constructor(private readonly getDb: () => DbExecutor | undefined) {}
+    constructor(private readonly getDatabase: () => DbExecutor | undefined) {}
 
     private async ensureSchema(): Promise<DbExecutor> {
-        const executor = this.getDb();
+        const executor = this.getDatabase();
         if (!executor) {
             throw new Error("db_executor_unavailable");
         }
@@ -267,3 +267,4 @@ export class DbFileQuotaStore implements FileQuotaStore {
         });
     }
 }
+export { DatabaseFileQuotaStore as DbFileQuotaStore };

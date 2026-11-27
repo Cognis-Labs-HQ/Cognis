@@ -35,22 +35,22 @@ export {
     summarizeRoomRequest,
 } from "./shared.js";
 
-export function createMessagesRoutes(deps: MessagesRoutesDeps) {
-    const { messagesStore, profileStore, isAdapterEnabled } = deps;
-    const routeDeps = {
-        ...deps,
+export function createMessagesRoutes(dependencies: MessagesRoutesDeps) {
+    const { messagesStore, profileStore, isAdapterEnabled } = dependencies;
+    const routeDependencies = {
+        ...dependencies,
         membership:
-            deps.membership ??
+            dependencies.membership ??
             createChatroomMembershipCapability(messagesStore, profileStore),
     };
-    const ctx = resolveRouteContext(deps.routeContext);
-    const roomListHandler = createRoomListHandler(routeDeps);
-    const requestsHandler = createRequestsHandler(routeDeps);
-    const roomHandler = createRoomHandler(routeDeps);
+    const ctx = resolveRouteContext(dependencies.routeContext);
+    const roomListHandler = createRoomListHandler(routeDependencies);
+    const requestsHandler = createRequestsHandler(routeDependencies);
+    const roomHandler = createRoomHandler(routeDependencies);
 
     return async (
-        req: IncomingMessage,
-        res: ServerResponse,
+        request: IncomingMessage,
+        response: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         if (!url.pathname.startsWith("/api/v1/social/messages")) return false;
@@ -58,25 +58,25 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
 
         if (
             url.pathname === "/api/v1/social/messages/ping" &&
-            req.method === "GET"
+            request.method === "GET"
         ) {
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { ready: true } }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: { ready: true } }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/social/messages/users/lookup" &&
-            req.method === "GET"
+            request.method === "GET"
         ) {
-            const claims = ctx.requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(request, response, "user");
             if (!claims) return true;
             const accountId = claims.sub;
             const hasBypass = hasAdminBypass(claims.role);
             const requesterProfile = await profileStore.getProfile(accountId);
             if (!hasBypass && requesterProfile?.visibility === "hidden") {
-                res.writeHead(403, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(403, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "forbidden",
@@ -90,8 +90,8 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
             const rawQuery = (url.searchParams.get("q") ?? "").trim();
             const query = rawQuery.replace(/^@/, "").toLowerCase();
             if (!query) {
-                res.writeHead(200, { "content-type": "application/json" });
-                res.end(JSON.stringify({ data: [] }));
+                response.writeHead(200, { "content-type": "application/json" });
+                response.end(JSON.stringify({ data: [] }));
                 return true;
             }
             const candidates = await profileStore.searchProfiles(query, 10, {
@@ -134,39 +134,39 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                     requiresApproval: !canOpenDirect,
                 });
             }
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: results }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: results }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/social/messages/emoji-usage" &&
-            req.method === "GET"
+            request.method === "GET"
         ) {
-            const claims = ctx.requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(request, response, "user");
             if (!claims) return true;
             const topEmojis = await messagesStore.getTopEmojiUsage(
                 claims.sub,
                 20,
             );
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: topEmojis }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: topEmojis }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/social/messages/emoji-usage" &&
-            req.method === "POST"
+            request.method === "POST"
         ) {
-            const claims = ctx.requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(request, response, "user");
             if (!claims) return true;
-            const body = (await readJson(req)) as { emoji?: unknown };
+            const body = (await readJson(request)) as { emoji?: unknown };
             const emoji = normalizeReactionEmoji(
                 typeof body.emoji === "string" ? body.emoji : "",
             );
             if (!emoji || emoji.length > 16) {
-                res.writeHead(400, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(400, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "bad_request",
@@ -178,14 +178,14 @@ export function createMessagesRoutes(deps: MessagesRoutesDeps) {
                 return true;
             }
             await messagesStore.incrementEmojiUsage(claims.sub, emoji);
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { ok: true } }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: { ok: true } }));
             return true;
         }
 
-        if (await roomListHandler(req, res, url)) return true;
-        if (await requestsHandler(req, res, url)) return true;
-        if (await roomHandler(req, res, url)) return true;
+        if (await roomListHandler(request, response, url)) return true;
+        if (await requestsHandler(request, response, url)) return true;
+        if (await roomHandler(request, response, url)) return true;
         return false;
     };
 }

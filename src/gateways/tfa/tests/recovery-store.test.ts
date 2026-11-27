@@ -1,11 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { DbTfaStore } from "../reuse/tfa-store.js";
+import { DbTfaStore as DatabaseTfaStore } from "../reuse/tfa-store.js";
 import { InMemoryTestExecutor } from "../../db/tests/in-memory-test-executor.js";
 
 test("DbTfaStore.consumeRecoveryCode consumes a code only once", async () => {
     const database = new InMemoryTestExecutor();
-    const store = new DbTfaStore(database);
+    const store = new DatabaseTfaStore(database);
     await store.ensureSchema();
     await store.replaceRecoveryCodes("alice", ["ABCD-1234"]);
 

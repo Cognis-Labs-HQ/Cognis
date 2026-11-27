@@ -112,7 +112,7 @@ test("dictionary results directly import definitions, source fields, readings, g
         linkDefinition: (_form, _schema, _layer, entries, definition) =>
             entries.push(definition),
         renderStrokePatternPreviews() {},
-        showToast: (...args) => toasts.push(args),
+        showToast: (...argumentsList) => toasts.push(argumentsList),
     };
     Object.assign(
         context,

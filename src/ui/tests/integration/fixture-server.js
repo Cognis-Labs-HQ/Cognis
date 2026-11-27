@@ -1,6 +1,6 @@
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
-import { extname, resolve, sep } from "node:path";
+import { extname, resolve, sep as separator } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const uiDirectory = fileURLToPath(new URL("../../", import.meta.url));
@@ -117,7 +117,7 @@ export async function serveBrowserFixture(
                 }
             }
             const filename = resolve(directory, relativePath);
-            if (!filename.startsWith(resolve(directory) + sep)) {
+            if (!filename.startsWith(resolve(directory) + separator)) {
                 response.writeHead(403).end();
                 return;
             }

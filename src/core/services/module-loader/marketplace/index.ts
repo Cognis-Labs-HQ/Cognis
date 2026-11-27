@@ -19,10 +19,10 @@ import { validateModuleRepository } from "../repository-validator.js";
 import { checkoutModuleRepository } from "./checkout.js";
 import { MarketplaceServiceBase } from "./base.js";
 
-const SOURCE_SCAN_INTERVAL_MS = 60 * 60 * 1000;
-const GITHUB_PAT_PERMISSION_DOCS =
+const SOURCE_SCAN_INTERVAL_MILLISECONDS = 60 * 60 * 1000;
+const GITHUB_PAT_PERMISSION_DOCUMENTS =
     "https://docs.github.com/rest/authentication/permissions-required-for-fine-grained-personal-access-tokens";
-const GITHUB_SSO_DOCS =
+const GITHUB_SSO_DOCUMENTS =
     "https://docs.github.com/authentication/authenticating-with-single-sign-on/authorizing-a-personal-access-token-for-use-with-single-sign-on";
 
 export type ModuleSourceProvider = "github" | "gitlab";
@@ -107,7 +107,7 @@ export interface ModuleDiscoveryResult {
 export type ModuleMarketplaceLog = (
     level: "info" | "warn" | "error",
     message: string,
-    meta: Record<string, unknown>,
+    metadata: Record<string, unknown>,
 ) => void;
 
 export const DEFAULT_RECOMMENDED_MODULES_URL =
@@ -123,7 +123,7 @@ interface ModuleInstallProvenance {
 
 export class ModuleMarketplaceService extends MarketplaceServiceBase {
     private readonly readRecommendations = createRecommendationReader(
-        (...args) => this.log(...args),
+        (...argumentsList) => this.log(...argumentsList),
     );
     private readonly installationLocks = new Map<string, Promise<void>>();
     private readonly sourceScans = new Map<
@@ -302,7 +302,10 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
                           },
                 references:
                     source.provider === "github"
-                        ? [GITHUB_PAT_PERMISSION_DOCS, GITHUB_SSO_DOCS]
+                        ? [
+                              GITHUB_PAT_PERMISSION_DOCUMENTS,
+                              GITHUB_SSO_DOCUMENTS,
+                          ]
                         : [
                               "https://docs.gitlab.com/user/profile/personal_access_tokens/#personal-access-token-scopes",
                           ],
@@ -379,14 +382,16 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
             if (
                 !forceRefresh &&
                 lastAttemptAt &&
-                Date.now() - Date.parse(lastAttemptAt) < SOURCE_SCAN_INTERVAL_MS
+                Date.now() - Date.parse(lastAttemptAt) <
+                    SOURCE_SCAN_INTERVAL_MILLISECONDS
             ) {
                 this.log("info", "Module source scan served from cache.", {
                     sourceUuid: source.uuid,
                     sourceName: source.name,
                     modulesFound: cachedModules.length,
                     nextScanAt: new Date(
-                        Date.parse(lastAttemptAt) + SOURCE_SCAN_INTERVAL_MS,
+                        Date.parse(lastAttemptAt) +
+                            SOURCE_SCAN_INTERVAL_MILLISECONDS,
                     ).toISOString(),
                 });
                 modules = cachedModules;
@@ -634,14 +639,14 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
         await removePath(temporary, { recursive: true, force: true });
         const cloneUrl = this.assertCloneUrl(module.cloneUrl);
         const selectedBranch = branch ?? module.defaultBranch;
-        const installRefs = [
+        const installReferences = [
             ...(module.branches ?? []),
             ...(module.releases ?? []),
         ];
-        const selectedRef = installRefs.find(
+        const selectedReference = installReferences.find(
             (entry) => entry.name === selectedBranch,
         );
-        if (!selectedRef) {
+        if (!selectedReference) {
             throw new Error("invalid_module_branch");
         }
         const gitEnvironment: NodeJS.ProcessEnv = {
@@ -658,7 +663,7 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
         try {
             const commit = await checkoutModuleRepository({
                 cloneUrl,
-                commit: selectedRef.commit,
+                commit: selectedReference.commit,
                 root: temporary,
                 environment: gitEnvironment,
                 log: this.log,

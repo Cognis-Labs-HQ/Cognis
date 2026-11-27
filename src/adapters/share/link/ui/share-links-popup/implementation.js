@@ -36,7 +36,7 @@ import {
 
 const log = bindCapability("ui:log");
 
-const SHARE_LINKS_REFRESH_INTERVAL_MS = 10_000;
+const SHARE_LINKS_REFRESH_INTERVAL_MILLISECONDS = 10_000;
 
 export async function openShareLinksPopup({
     title,
@@ -825,7 +825,7 @@ export async function openShareLinksPopup({
                     void refreshLinks().then(() => {
                         if (popupOpen) renderLinksList(listContainer);
                     });
-                }, SHARE_LINKS_REFRESH_INTERVAL_MS);
+                }, SHARE_LINKS_REFRESH_INTERVAL_MILLISECONDS);
             }
         },
     });

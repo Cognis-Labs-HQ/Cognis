@@ -59,8 +59,8 @@ export class CalendarShareRegistry {
         private readonly database: DbExecutor | null,
         private readonly log?: (
             level: string,
-            msg: string,
-            meta?: Record<string, unknown>,
+            message: string,
+            metadata?: Record<string, unknown>,
         ) => void,
     ) {}
 
@@ -638,16 +638,22 @@ export class CalendarShareRegistry {
         shareLink: CalendarShareLinkRegistryRecord,
     ): boolean {
         if (!shareLink.expiresAt) return false;
-        const expiresAtMs = Date.parse(shareLink.expiresAt);
-        return Number.isFinite(expiresAtMs) && expiresAtMs <= Date.now();
+        const expiresAtMilliseconds = Date.parse(shareLink.expiresAt);
+        return (
+            Number.isFinite(expiresAtMilliseconds) &&
+            expiresAtMilliseconds <= Date.now()
+        );
     }
 
     private isExpiredUserShare(
         share: CalendarUserShareRegistryRecord,
     ): boolean {
         if (!share.expiresAt) return false;
-        const expiresAtMs = Date.parse(share.expiresAt);
-        return Number.isFinite(expiresAtMs) && expiresAtMs <= Date.now();
+        const expiresAtMilliseconds = Date.parse(share.expiresAt);
+        return (
+            Number.isFinite(expiresAtMilliseconds) &&
+            expiresAtMilliseconds <= Date.now()
+        );
     }
 
     private pruneExpiredShareLinks(

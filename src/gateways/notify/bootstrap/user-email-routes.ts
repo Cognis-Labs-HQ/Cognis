@@ -28,7 +28,7 @@ import type { NotificationUserEmailStore } from "./stores.js";
  *   POST   /api/v1/notify/verify-email
  */
 export function createUserEmailRoutes(
-    notifStore: NotificationUserEmailStore,
+    notificationStore: NotificationUserEmailStore,
     tfaService: TfaCodeService,
     verifyTokenService: VerifyTokenService,
     emailDelivery: {
@@ -52,30 +52,30 @@ export function createUserEmailRoutes(
             getVerificationCodeLength?.(),
         );
     return async (
-        req: IncomingMessage,
-        res: ServerResponse,
+        request: IncomingMessage,
+        response: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         if (
             url.pathname === "/api/v1/notify/verify-tokens/status" &&
-            req.method === "GET"
+            request.method === "GET"
         ) {
             const token = url.searchParams.get("token") ?? "";
             const pending = !!(token && verifyTokenService.isLive(token));
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { pending } }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: { pending } }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/notify/verify-email" &&
-            req.method === "POST"
+            request.method === "POST"
         ) {
-            const body = await readJson(req);
+            const body = await readJson(request);
             const token = String(body.token ?? "").trim();
             if (!token) {
-                res.writeHead(400, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(400, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "invalid_token",
@@ -87,8 +87,8 @@ export function createUserEmailRoutes(
             }
             const userEmailPair = verifyTokenService.verify(token);
             if (!userEmailPair) {
-                res.writeHead(400, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(400, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "invalid_token",
@@ -100,8 +100,8 @@ export function createUserEmailRoutes(
             }
             const identity = parseEmailVerificationKey(userEmailPair);
             if (!identity) {
-                res.writeHead(400, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(400, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "invalid_token",
@@ -112,9 +112,9 @@ export function createUserEmailRoutes(
                 return true;
             }
             const [username, email] = identity;
-            await notifStore.verifyUserEmail(username, email);
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { verified: true } }));
+            await notificationStore.verifyUserEmail(username, email);
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: { verified: true } }));
             return true;
         }
 
@@ -123,10 +123,10 @@ export function createUserEmailRoutes(
         );
         if (emailsMatch) {
             const username = decodeURIComponent(emailsMatch[1]);
-            const claims = ctx.getAuthClaims(req);
+            const claims = ctx.getAuthClaims(request);
             if (!claims) {
-                res.writeHead(401, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(401, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "unauthorized",
@@ -137,8 +137,8 @@ export function createUserEmailRoutes(
                 return true;
             }
             if (!ctx.canAccessUserData(claims, username)) {
-                res.writeHead(403, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(403, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: { code: "forbidden", message: "Access denied" },
                     }),
@@ -146,23 +146,23 @@ export function createUserEmailRoutes(
                 return true;
             }
 
-            if (req.method === "GET") {
-                const emails = await notifStore.getUserEmails(username);
-                res.writeHead(200, { "content-type": "application/json" });
-                res.end(JSON.stringify({ data: emails }));
+            if (request.method === "GET") {
+                const emails = await notificationStore.getUserEmails(username);
+                response.writeHead(200, { "content-type": "application/json" });
+                response.end(JSON.stringify({ data: emails }));
                 return true;
             }
 
-            if (req.method === "POST") {
-                const body = await readJson(req);
+            if (request.method === "POST") {
+                const body = await readJson(request);
                 const email = String(body.email ?? "")
                     .trim()
                     .toLowerCase();
                 if (!email) {
-                    res.writeHead(400, {
+                    response.writeHead(400, {
                         "content-type": "application/json",
                     });
-                    res.end(
+                    response.end(
                         JSON.stringify({
                             error: {
                                 code: "bad_request",
@@ -172,15 +172,16 @@ export function createUserEmailRoutes(
                     );
                     return true;
                 }
-                const existingEmails = await notifStore.getUserEmails(username);
+                const existingEmails =
+                    await notificationStore.getUserEmails(username);
                 const existingEntry = existingEmails.find(
                     (emailEntry) => emailEntry.email === email,
                 );
                 if (existingEntry?.verified) {
-                    res.writeHead(409, {
+                    response.writeHead(409, {
                         "content-type": "application/json",
                     });
-                    res.end(
+                    response.end(
                         JSON.stringify({
                             error: {
                                 code: "already_verified",
@@ -192,15 +193,15 @@ export function createUserEmailRoutes(
                     return true;
                 }
                 const takenByOther =
-                    await notifStore.isEmailRegisteredByOtherUser(
+                    await notificationStore.isEmailRegisteredByOtherUser(
                         email,
                         username,
                     );
                 if (takenByOther) {
-                    res.writeHead(409, {
+                    response.writeHead(409, {
                         "content-type": "application/json",
                     });
-                    res.end(
+                    response.end(
                         JSON.stringify({
                             error: {
                                 code: "email_taken",
@@ -212,10 +213,10 @@ export function createUserEmailRoutes(
                     return true;
                 }
                 if (!emailDelivery.canSendVerificationEmail()) {
-                    res.writeHead(503, {
+                    response.writeHead(503, {
                         "content-type": "application/json",
                     });
-                    res.end(
+                    response.end(
                         JSON.stringify({
                             error: {
                                 code: "email_delivery_unavailable",
@@ -227,7 +228,7 @@ export function createUserEmailRoutes(
                     return true;
                 }
 
-                await notifStore.addUserEmail(username, email);
+                await notificationStore.addUserEmail(username, email);
 
                 try {
                     const key = emailVerificationKey(username, email);
@@ -241,10 +242,10 @@ export function createUserEmailRoutes(
                         recipientEmail: email,
                         variables: { code, verifyUrl: verifyUrl ?? "" },
                     });
-                    res.writeHead(201, {
+                    response.writeHead(201, {
                         "content-type": "application/json",
                     });
-                    res.end(
+                    response.end(
                         JSON.stringify({
                             data: {
                                 added: true,
@@ -253,14 +254,14 @@ export function createUserEmailRoutes(
                             },
                         }),
                     );
-                } catch (err) {
-                    const msg =
-                        err instanceof Error ? err.message : String(err);
-                    if (msg === "email_rate_limited") {
-                        res.writeHead(429, {
+                } catch (error) {
+                    const message =
+                        error instanceof Error ? error.message : String(error);
+                    if (message === "email_rate_limited") {
+                        response.writeHead(429, {
                             "content-type": "application/json",
                         });
-                        res.end(
+                        response.end(
                             JSON.stringify({
                                 error: {
                                     code: "rate_limited",
@@ -270,10 +271,10 @@ export function createUserEmailRoutes(
                             }),
                         );
                     } else {
-                        res.writeHead(201, {
+                        response.writeHead(201, {
                             "content-type": "application/json",
                         });
-                        res.end(
+                        response.end(
                             JSON.stringify({
                                 data: {
                                     added: true,
@@ -300,23 +301,23 @@ export function createUserEmailRoutes(
             ).toLowerCase();
             const emailAction = emailActionsMatch[3];
 
-            if (req.method === "GET" && emailAction === "verify") {
+            if (request.method === "GET" && emailAction === "verify") {
                 const token = url.searchParams.get("token") ?? "";
                 if (token) {
-                    res.writeHead(302, {
+                    response.writeHead(302, {
                         location: `/verify-email?token=${encodeURIComponent(token)}`,
                     });
                 } else {
-                    res.writeHead(302, { location: "/verify-email" });
+                    response.writeHead(302, { location: "/verify-email" });
                 }
-                res.end();
+                response.end();
                 return true;
             }
 
-            const claims = ctx.getAuthClaims(req);
+            const claims = ctx.getAuthClaims(request);
             if (!claims) {
-                res.writeHead(401, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(401, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "unauthorized",
@@ -327,8 +328,8 @@ export function createUserEmailRoutes(
                 return true;
             }
             if (!ctx.canAccessUserData(claims, username)) {
-                res.writeHead(403, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(403, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: { code: "forbidden", message: "Access denied" },
                     }),
@@ -336,54 +337,64 @@ export function createUserEmailRoutes(
                 return true;
             }
 
-            if (req.method === "DELETE" && !emailAction) {
+            if (request.method === "DELETE" && !emailAction) {
                 const forceUnverified =
                     url.searchParams.get("force") === "true";
                 try {
                     if (forceUnverified) {
-                        await notifStore.removeUnverifiedEmail(username, email);
+                        await notificationStore.removeUnverifiedEmail(
+                            username,
+                            email,
+                        );
                     } else {
-                        await notifStore.removeUserEmail(username, email);
+                        await notificationStore.removeUserEmail(
+                            username,
+                            email,
+                        );
                     }
-                    res.writeHead(200, {
+                    response.writeHead(200, {
                         "content-type": "application/json",
                     });
-                    res.end(JSON.stringify({ data: { removed: true } }));
-                } catch (err) {
+                    response.end(JSON.stringify({ data: { removed: true } }));
+                } catch (error) {
                     const code =
-                        err instanceof Error ? err.message : "remove_failed";
+                        error instanceof Error
+                            ? error.message
+                            : "remove_failed";
                     const status =
                         code === "cannot_remove_primary_email" ||
                         code === "cannot_remove_last_email"
                             ? 409
                             : 500;
-                    res.writeHead(status, {
+                    response.writeHead(status, {
                         "content-type": "application/json",
                     });
-                    res.end(JSON.stringify({ error: { code, message: code } }));
+                    response.end(
+                        JSON.stringify({ error: { code, message: code } }),
+                    );
                 }
                 return true;
             }
 
-            if (req.method === "PUT" && emailAction === "primary") {
-                await notifStore.setPrimaryEmail(username, email);
-                res.writeHead(200, { "content-type": "application/json" });
-                res.end(JSON.stringify({ data: { updated: true } }));
+            if (request.method === "PUT" && emailAction === "primary") {
+                await notificationStore.setPrimaryEmail(username, email);
+                response.writeHead(200, { "content-type": "application/json" });
+                response.end(JSON.stringify({ data: { updated: true } }));
                 return true;
             }
 
-            if (req.method === "POST" && emailAction === "verify") {
-                const body = await readJson(req);
+            if (request.method === "POST" && emailAction === "verify") {
+                const body = await readJson(request);
                 const code = String(body.code ?? "").trim();
                 const valid = tfaService.verify(
                     emailVerificationKey(username, email),
                     code,
                 );
                 if (!valid) {
-                    res.writeHead(422, {
+                    response.writeHead(422, {
                         "content-type": "application/json",
                     });
-                    res.end(
+                    response.end(
                         JSON.stringify({
                             error: {
                                 code: "invalid_code",
@@ -393,18 +404,18 @@ export function createUserEmailRoutes(
                     );
                     return true;
                 }
-                await notifStore.verifyUserEmail(username, email);
-                res.writeHead(200, { "content-type": "application/json" });
-                res.end(JSON.stringify({ data: { verified: true } }));
+                await notificationStore.verifyUserEmail(username, email);
+                response.writeHead(200, { "content-type": "application/json" });
+                response.end(JSON.stringify({ data: { verified: true } }));
                 return true;
             }
 
-            if (req.method === "POST" && emailAction === "resend") {
+            if (request.method === "POST" && emailAction === "resend") {
                 if (!emailDelivery.canSendVerificationEmail()) {
-                    res.writeHead(503, {
+                    response.writeHead(503, {
                         "content-type": "application/json",
                     });
-                    res.end(
+                    response.end(
                         JSON.stringify({
                             error: {
                                 code: "email_delivery_unavailable",
@@ -414,15 +425,15 @@ export function createUserEmailRoutes(
                     );
                     return true;
                 }
-                const emails = await notifStore.getUserEmails(username);
+                const emails = await notificationStore.getUserEmails(username);
                 const resendTarget = emails.find(
                     (emailEntry) => emailEntry.email === email,
                 );
                 if (!resendTarget) {
-                    res.writeHead(404, {
+                    response.writeHead(404, {
                         "content-type": "application/json",
                     });
-                    res.end(
+                    response.end(
                         JSON.stringify({
                             error: {
                                 code: "not_found",
@@ -433,10 +444,10 @@ export function createUserEmailRoutes(
                     return true;
                 }
                 if (resendTarget.verified) {
-                    res.writeHead(409, {
+                    response.writeHead(409, {
                         "content-type": "application/json",
                     });
-                    res.end(
+                    response.end(
                         JSON.stringify({
                             error: {
                                 code: "already_verified",
@@ -458,10 +469,10 @@ export function createUserEmailRoutes(
                         recipientEmail: email,
                         variables: { code, verifyUrl: verifyUrl ?? "" },
                     });
-                    res.writeHead(200, {
+                    response.writeHead(200, {
                         "content-type": "application/json",
                     });
-                    res.end(
+                    response.end(
                         JSON.stringify({
                             data: {
                                 pendingVerification: true,
@@ -469,14 +480,14 @@ export function createUserEmailRoutes(
                             },
                         }),
                     );
-                } catch (err) {
-                    const msg =
-                        err instanceof Error ? err.message : String(err);
-                    if (msg === "email_rate_limited") {
-                        res.writeHead(429, {
+                } catch (error) {
+                    const message =
+                        error instanceof Error ? error.message : String(error);
+                    if (message === "email_rate_limited") {
+                        response.writeHead(429, {
                             "content-type": "application/json",
                         });
-                        res.end(
+                        response.end(
                             JSON.stringify({
                                 error: {
                                     code: "rate_limited",
@@ -486,10 +497,10 @@ export function createUserEmailRoutes(
                             }),
                         );
                     } else {
-                        res.writeHead(500, {
+                        response.writeHead(500, {
                             "content-type": "application/json",
                         });
-                        res.end(
+                        response.end(
                             JSON.stringify({
                                 error: {
                                     code: "send_failed",

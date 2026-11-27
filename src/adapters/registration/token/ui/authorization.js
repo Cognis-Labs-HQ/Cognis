@@ -64,7 +64,7 @@ export function bindAccountCreationAuthorization({
         Number.isFinite(expiresAt) &&
         typeof formatCountdownClock === "function"
     ) {
-        const expiresAtMs = Number(expiresAt);
+        const expiresAtMilliseconds = Number(expiresAt);
         let countdownTimer = null;
         let expiryHandled = false;
         async function expireAccountCreation() {
@@ -83,7 +83,7 @@ export function bindAccountCreationAuthorization({
                 clearInterval(countdownTimer);
                 return;
             }
-            const remaining = expiresAtMs - Date.now();
+            const remaining = expiresAtMilliseconds - Date.now();
             if (remaining <= 0) {
                 void expireAccountCreation();
                 return;

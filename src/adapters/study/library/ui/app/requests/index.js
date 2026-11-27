@@ -6,10 +6,10 @@ import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { createSideMenu } from "/static/reuse/side-menu.js";
 import { mountWhenDirect } from "/static/reuse/page-entry.js";
 import {
-    bindStudySubNavigation,
-    loadStudySubNavigationModel,
+    bindStudySubNavigation as bindStudyNestedNavigation,
+    loadStudySubNavigationModel as loadStudyNestedNavigationModel,
     readSelectedStudyLanguageCode,
-    createStudySubNavigationSlot,
+    createStudySubNavigationSlot as createStudyNestedNavigationSlot,
 } from "/static/gateways/study/sub-navigation.js";
 import {
     bindLibraryRequestReviews,
@@ -28,7 +28,7 @@ export async function mount(root, { signal } = {}) {
         ],
     });
     const [model, requests] = await Promise.all([
-        loadStudySubNavigationModel({
+        loadStudyNestedNavigationModel({
             fallbackLanguageCode: readSelectedStudyLanguageCode(),
         }),
         loadLibraryRequests(i18n),
@@ -112,12 +112,12 @@ export async function mount(root, { signal } = {}) {
                 render: () => filterMenu.render(),
             },
         ],
-        subNavigation: [createStudySubNavigationSlot(model, i18n)],
+        subNavigation: [createStudyNestedNavigationSlot(model, i18n)],
     });
     await composer.init();
     signal?.throwIfAborted();
     filterMenu.mount(root, { signal });
-    bindStudySubNavigation(root, { signal, i18n });
+    bindStudyNestedNavigation(root, { signal, i18n });
     bindLibraryRequestReviews(root, requests, { i18n, signal, render, reload });
     bindRequestPreviews(root, requests, { ...preview, i18n, signal, reload });
     favourites.bind(root, { signal, i18n });

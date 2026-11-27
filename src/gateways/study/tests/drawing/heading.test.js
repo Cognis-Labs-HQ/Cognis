@@ -23,8 +23,8 @@ function headingSession(pathname, choice = "open", onNavigate) {
             capabilities: {
                 get:
                     () =>
-                    async (...args) =>
-                        navigations.push(args),
+                    async (...argumentsList) =>
+                        navigations.push(argumentsList),
             },
         },
         openPopup: async (options) => {

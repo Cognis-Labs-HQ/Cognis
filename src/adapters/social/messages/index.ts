@@ -7,7 +7,7 @@ import type {
     SocialAdapter,
     SocialAdapterBootstrapCtx,
 } from "../../../gateways/social/gateway.js";
-import { DbMessagesStore } from "./store.js";
+import { DbMessagesStore as DatabaseMessagesStore } from "./store.js";
 import { createMessagesRoutes } from "./routes/index.js";
 import {
     resolveRouteContext,
@@ -50,11 +50,11 @@ function createMessagesPageRoutes(
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
-        req: IncomingMessage,
-        res: ServerResponse,
+        request: IncomingMessage,
+        response: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        if (req.method && req.method !== "GET") return false;
+        if (request.method && request.method !== "GET") return false;
         if (!isAdapterEnabled()) return false;
         if (
             url.pathname !== "/messages" &&
@@ -62,24 +62,24 @@ function createMessagesPageRoutes(
         ) {
             return false;
         }
-        if (!ctx.getCookieSession(req)) {
-            res.writeHead(302, { location: "/login" });
-            res.end();
+        if (!ctx.getCookieSession(request)) {
+            response.writeHead(302, { location: "/login" });
+            response.end();
             return true;
         }
         try {
             const file = await readFile(
                 path.join(ADAPTER_UI_ROOT, "index.html"),
             );
-            ctx.setPageSecurityHeaders(res);
-            res.writeHead(200, {
+            ctx.setPageSecurityHeaders(response);
+            response.writeHead(200, {
                 "content-type": "text/html; charset=utf-8",
                 "cache-control": "no-store",
             });
-            res.end(file);
+            response.end(file);
         } catch {
-            res.writeHead(404, { "content-type": "application/json" });
-            res.end(
+            response.writeHead(404, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     error: { code: "not_found", message: "Page not found." },
                 }),
@@ -105,8 +105,8 @@ export async function bootstrapSocialAdapter(
         );
         return;
     }
-    const dbExecutor = ctx.capabilities.get("db:executor");
-    if (!dbExecutor) {
+    const databaseExecutor = ctx.capabilities.get("db:executor");
+    if (!databaseExecutor) {
         ctx.log?.(
             "warn",
             "Messages adapter: no database executor available — messages disabled.",
@@ -115,7 +115,7 @@ export async function bootstrapSocialAdapter(
         return;
     }
 
-    const messagesStore = new DbMessagesStore(dbExecutor);
+    const messagesStore = new DatabaseMessagesStore(databaseExecutor);
     await messagesStore.ensureSchema();
     const membership = createChatroomMembershipCapability(
         messagesStore,
@@ -277,20 +277,20 @@ export async function bootstrapSocialAdapter(
                 userHandle: subjectHandle,
             });
         }
-        await dbExecutor.transaction(async (transactionDb) => {
+        await databaseExecutor.transaction(async (transactionDatabase) => {
             for (const table of [
                 "chatroom_typing",
                 "chat_message_reactions",
                 "chat_emoji_usage",
             ]) {
-                await transactionDb.executeCommand({
+                await transactionDatabase.executeCommand({
                     option: "DELETE",
                     table,
                     where: [{ column: "account_id", value: accountId }],
                 });
             }
             for (const column of ["from_account_id", "to_account_id"]) {
-                await transactionDb.executeCommand({
+                await transactionDatabase.executeCommand({
                     option: "DELETE",
                     table: "chat_message_requests",
                     where: [{ column, value: accountId }],
@@ -352,7 +352,7 @@ export async function bootstrapSocialAdapter(
 
     const dispatch =
         ctx.capabilities.get<
-            (e: {
+            (event: {
                 category: string;
                 recipientUsername: string;
                 subject: string;
@@ -454,10 +454,10 @@ export async function bootstrapSocialAdapter(
     );
 
     const sourceBinding = {
-        bind: (input: Parameters<DbMessagesStore["bindSource"]>[0]) =>
+        bind: (input: Parameters<DatabaseMessagesStore["bindSource"]>[0]) =>
             messagesStore.bindSource(input),
         release: async (
-            input: Parameters<DbMessagesStore["releaseSource"]>[0],
+            input: Parameters<DatabaseMessagesStore["releaseSource"]>[0],
         ) => {
             const role = await resolveActorRole(input.actorAccountId);
             return messagesStore.releaseSource(
@@ -491,10 +491,11 @@ export async function bootstrapSocialAdapter(
         });
     }
     const publicSourceBinding = {
-        bind: (input: Parameters<DbMessagesStore["bindSource"]>[0]) =>
+        bind: (input: Parameters<DatabaseMessagesStore["bindSource"]>[0]) =>
             ctx.flow.run("social:messages:bindSource", input),
-        release: (input: Parameters<DbMessagesStore["releaseSource"]>[0]) =>
-            ctx.flow.run("social:messages:releaseSource", input),
+        release: (
+            input: Parameters<DatabaseMessagesStore["releaseSource"]>[0],
+        ) => ctx.flow.run("social:messages:releaseSource", input),
     };
     ctx.capabilities.contribute(
         "social:messages:sourceBinding",
@@ -665,11 +666,11 @@ export async function bootstrapSocialAdapter(
         "social",
     );
 
-    const uiDir = path.resolve(
+    const uiDirectory = path.resolve(
         path.dirname(fileURLToPath(import.meta.url)),
         "ui",
     );
-    ctx.registerAdapterStaticDir?.("social", "messages", uiDir);
+    ctx.registerAdapterStaticDir?.("social", "messages", uiDirectory);
     ctx.registerSpaRoute?.({
         id: "social-messages-page",
         requiredCapabilities: ["social:messagesRequest"],

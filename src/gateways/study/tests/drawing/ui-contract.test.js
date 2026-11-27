@@ -7,6 +7,10 @@ const source = readFileSync(
     resolve("src/gateways/study/ui/reuse/drawing.js"),
     "utf8",
 );
+const geometrySource = readFileSync(
+    resolve("src/gateways/study/ui/drawing/geometry.js"),
+    "utf8",
+);
 const stylesheet = readFileSync(
     resolve("src/gateways/study/ui/reuse/drawing.css"),
     "utf8",
@@ -26,14 +30,14 @@ test("drawing practice uses the PiP capability and requires card stroke data", (
 
 test("drawing practice tracks ordered strokes and progressive guidance", () => {
     assert.match(source, /scoreStroke/);
-    assert.match(source, /resample/);
-    assert.match(source, /rootMeanSquare/);
+    assert.match(geometrySource, /resample/);
+    assert.match(geometrySource, /rootMeanSquare/);
     assert.match(source, /drawStrokeOrder/);
-    assert.match(source, /function distanceToSegment/);
-    assert.match(source, /function annotationPosition/);
+    assert.match(geometrySource, /function distanceToSegment/);
+    assert.match(geometrySource, /function annotationPosition/);
     assert.match(source, /occupiedAnnotations\.push\(label\)/);
-    assert.match(source, /distance\(candidate, position\) - 21/);
-    assert.match(source, /distanceToSegment\([\s\S]*?\)\s*-\s*12/);
+    assert.match(geometrySource, /distance\(candidate, position\) - 21/);
+    assert.match(geometrySource, /distanceToSegment\([\s\S]*?\)\s*-\s*12/);
     assert.match(
         source,
         /Math\.atan2\([\s\S]*\* viewport\.height,[\s\S]*\* viewport\.width/,

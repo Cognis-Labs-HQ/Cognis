@@ -13,7 +13,7 @@ import {
     contributeTestKeyring,
     adminToken,
     HttpIncomingMessage,
-    makeInMemoryDb,
+    makeInMemoryDb as makeInMemoryDatabase,
     makeResponse,
 } from "../auth-gateway-test-helpers.js";
 
@@ -45,34 +45,36 @@ test("GET /api/v1/auth/login-methods returns enabled providers", async () => {
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+        db: makeInMemoryDatabase() as ReturnType<
+            typeof makeInMemoryDatabase
+        > & {
             execute: (
                 sql: string,
-                params?: unknown[],
+                parameters?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
     });
 
     const handlers = routeRegistry.getHandlers();
-    const req = {
+    const request = {
         method: "GET",
         headers: {},
     } as unknown as import("node:http").IncomingMessage;
-    const res = makeResponse();
+    const response = makeResponse();
 
     let handled = false;
     for (const handler of handlers) {
         handled = await handler(
-            req,
-            res as unknown as import("node:http").ServerResponse,
+            request,
+            response as unknown as import("node:http").ServerResponse,
             new URL("/api/v1/auth/login-methods", "http://localhost"),
         );
         if (handled) break;
     }
 
     assert.ok(handled);
-    assert.equal(res.status, 200);
-    const body = JSON.parse(res.payload) as { data: unknown[] };
+    assert.equal(response.status, 200);
+    const body = JSON.parse(response.payload) as { data: unknown[] };
     assert.ok(Array.isArray(body.data));
 });
 
@@ -85,7 +87,7 @@ test("auth bootstrap exposes provider-aware password confirmation", async () => 
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: makeInMemoryDb(),
+        db: makeInMemoryDatabase(),
     });
 
     const confirmPassword = capabilities.get<
@@ -111,10 +113,12 @@ test("GET /api/v1/auth/login-ui returns flow-resolved methods and integrations",
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+        db: makeInMemoryDatabase() as ReturnType<
+            typeof makeInMemoryDatabase
+        > & {
             execute: (
                 sql: string,
-                params?: unknown[],
+                parameters?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
     });
@@ -180,25 +184,25 @@ test("GET /api/v1/auth/login-ui returns flow-resolved methods and integrations",
     );
 
     const handlers = routeRegistry.getHandlers();
-    const req = {
+    const request = {
         method: "GET",
         headers: {},
     } as unknown as import("node:http").IncomingMessage;
-    const res = makeResponse();
+    const response = makeResponse();
 
     let handled = false;
     for (const handler of handlers) {
         handled = await handler(
-            req,
-            res as unknown as import("node:http").ServerResponse,
+            request,
+            response as unknown as import("node:http").ServerResponse,
             new URL("/api/v1/auth/login-ui", "http://localhost"),
         );
         if (handled) break;
     }
 
     assert.ok(handled);
-    assert.equal(res.status, 200);
-    const body = JSON.parse(res.payload) as {
+    assert.equal(response.status, 200);
+    const body = JSON.parse(response.payload) as {
         data: {
             methods: Array<{
                 id: string;
@@ -262,34 +266,36 @@ test("GET /api/v1/auth/registration-config returns open-registration state", asy
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+        db: makeInMemoryDatabase() as ReturnType<
+            typeof makeInMemoryDatabase
+        > & {
             execute: (
                 sql: string,
-                params?: unknown[],
+                parameters?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
     });
 
     const handlers = routeRegistry.getHandlers();
-    const req = {
+    const request = {
         method: "GET",
         headers: {},
     } as unknown as import("node:http").IncomingMessage;
-    const res = makeResponse();
+    const response = makeResponse();
 
     let handled = false;
     for (const handler of handlers) {
         handled = await handler(
-            req,
-            res as unknown as import("node:http").ServerResponse,
+            request,
+            response as unknown as import("node:http").ServerResponse,
             new URL("/api/v1/auth/registration-config", "http://localhost"),
         );
         if (handled) break;
     }
 
     assert.ok(handled);
-    assert.equal(res.status, 200);
-    const body = JSON.parse(res.payload) as {
+    assert.equal(response.status, 200);
+    const body = JSON.parse(response.payload) as {
         data: { registrationsEnabled: boolean; userValidationMode: string };
     };
     assert.equal(body.data.registrationsEnabled, true);
@@ -306,7 +312,7 @@ test("GET /api/v1/auth/registration-config isolates composition failures", async
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: makeInMemoryDb(),
+        db: makeInMemoryDatabase(),
     });
     const systemCtx =
         capabilities.get<ReturnType<typeof createCtx>>(CTX_CAPABILITY)!;
@@ -319,21 +325,21 @@ test("GET /api/v1/auth/registration-config isolates composition failures", async
         },
     );
 
-    const req = { method: "GET", headers: {} } as HttpIncomingMessage;
-    const res = makeResponse();
+    const request = { method: "GET", headers: {} } as HttpIncomingMessage;
+    const response = makeResponse();
     let handled = false;
     for (const handler of routeRegistry.getHandlers()) {
         handled = await handler(
-            req,
-            res as unknown as import("node:http").ServerResponse,
+            request,
+            response as unknown as import("node:http").ServerResponse,
             new URL("/api/v1/auth/registration-config", "http://localhost"),
         );
         if (handled) break;
     }
 
     assert.equal(handled, true);
-    assert.equal(res.status, 200);
-    const body = JSON.parse(res.payload) as {
+    assert.equal(response.status, 200);
+    const body = JSON.parse(response.payload) as {
         data: { registrationsEnabled: boolean; integrations: unknown[] };
     };
     assert.equal(body.data.registrationsEnabled, true);
@@ -349,33 +355,35 @@ test("GET /api/v1/gateways/auth/adapters requires admin auth", async () => {
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+        db: makeInMemoryDatabase() as ReturnType<
+            typeof makeInMemoryDatabase
+        > & {
             execute: (
                 sql: string,
-                params?: unknown[],
+                parameters?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
     });
 
     const handlers = routeRegistry.getHandlers();
-    const req = {
+    const request = {
         method: "GET",
         headers: {},
     } as unknown as import("node:http").IncomingMessage;
-    const res = makeResponse();
+    const response = makeResponse();
 
     let handled = false;
     for (const handler of handlers) {
         handled = await handler(
-            req,
-            res as unknown as import("node:http").ServerResponse,
+            request,
+            response as unknown as import("node:http").ServerResponse,
             new URL("/api/v1/gateways/auth/adapters", "http://localhost"),
         );
         if (handled) break;
     }
 
     assert.ok(handled);
-    assert.equal(res.status, 401);
+    assert.equal(response.status, 401);
 });
 
 test("GET /api/v1/gateways/auth/adapters returns adapter list to admin", async () => {
@@ -387,34 +395,36 @@ test("GET /api/v1/gateways/auth/adapters returns adapter list to admin", async (
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+        db: makeInMemoryDatabase() as ReturnType<
+            typeof makeInMemoryDatabase
+        > & {
             execute: (
                 sql: string,
-                params?: unknown[],
+                parameters?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
     });
 
     const handlers = routeRegistry.getHandlers();
-    const req = {
+    const request = {
         method: "GET",
         headers: { authorization: `Bearer ${adminToken}` },
     } as unknown as import("node:http").IncomingMessage;
-    const res = makeResponse();
+    const response = makeResponse();
 
     let handled = false;
     for (const handler of handlers) {
         handled = await handler(
-            req,
-            res as unknown as import("node:http").ServerResponse,
+            request,
+            response as unknown as import("node:http").ServerResponse,
             new URL("/api/v1/gateways/auth/adapters", "http://localhost"),
         );
         if (handled) break;
     }
 
     assert.ok(handled);
-    assert.equal(res.status, 200);
-    const body = JSON.parse(res.payload) as {
+    assert.equal(response.status, 200);
+    const body = JSON.parse(response.payload) as {
         data: Array<{ id: string; publisher?: string }>;
     };
     assert.ok(Array.isArray(body.data));
@@ -433,10 +443,12 @@ test("login endpoint returns 503 when no auth providers are available", async ()
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+        db: makeInMemoryDatabase() as ReturnType<
+            typeof makeInMemoryDatabase
+        > & {
             execute: (
                 sql: string,
-                params?: unknown[],
+                parameters?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
     });
@@ -451,27 +463,27 @@ test("login endpoint returns 503 when no auth providers are available", async ()
             }),
         ),
     ];
-    const req = {
+    const request = {
         method: "POST",
         headers: {},
         [Symbol.asyncIterator]: async function* () {
             for (const chunk of chunks) yield chunk;
         },
     } as unknown as import("node:http").IncomingMessage;
-    const res = makeResponse();
+    const response = makeResponse();
 
     let handled = false;
     for (const entry of entries) {
         handled = await entry.handler(
-            req,
-            res as unknown as import("node:http").ServerResponse,
+            request,
+            response as unknown as import("node:http").ServerResponse,
             new URL("/api/v1/auth/login", "http://localhost"),
         );
         if (handled) break;
     }
 
     assert.ok(handled, "login endpoint should handle the request");
-    assert.equal(res.status, 401, "bad credentials should yield 401");
+    assert.equal(response.status, 401, "bad credentials should yield 401");
 });
 
 test("POST /api/v1/auth/verify returns 401 for stale unknown authenticated user", async () => {
@@ -483,10 +495,12 @@ test("POST /api/v1/auth/verify returns 401 for stale unknown authenticated user"
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+        db: makeInMemoryDatabase() as ReturnType<
+            typeof makeInMemoryDatabase
+        > & {
             execute: (
                 sql: string,
-                params?: unknown[],
+                parameters?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
     });
@@ -498,28 +512,28 @@ test("POST /api/v1/auth/verify returns 401 for stale unknown authenticated user"
     const chunks = [
         Buffer.from(JSON.stringify({ password: "test-password-123" })),
     ];
-    const req = {
+    const request = {
         method: "POST",
         headers: { authorization: `Bearer ${token}` },
         [Symbol.asyncIterator]: async function* () {
             for (const chunk of chunks) yield chunk;
         },
     } as unknown as import("node:http").IncomingMessage;
-    const res = makeResponse();
+    const response = makeResponse();
 
     let handled = false;
     for (const entry of routeRegistry.getEntries()) {
         handled = await entry.handler(
-            req,
-            res as unknown as import("node:http").ServerResponse,
+            request,
+            response as unknown as import("node:http").ServerResponse,
             new URL("/api/v1/auth/verify", "http://localhost"),
         );
         if (handled) break;
     }
 
     assert.ok(handled, "verify endpoint should handle the request");
-    assert.equal(res.status, 401);
-    assert.match(res.payload, /invalid_credentials/);
+    assert.equal(response.status, 401);
+    assert.match(response.payload, /invalid_credentials/);
 });
 
 test("POST /api/v1/auth/verify returns 200 for fresh authenticated session", async () => {
@@ -531,36 +545,38 @@ test("POST /api/v1/auth/verify returns 200 for fresh authenticated session", asy
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+        db: makeInMemoryDatabase() as ReturnType<
+            typeof makeInMemoryDatabase
+        > & {
             execute: (
                 sql: string,
-                params?: unknown[],
+                parameters?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
     });
 
     const token = issueAccessToken("verify-user-fresh", "admin", 60);
-    const req = {
+    const request = {
         method: "POST",
         headers: { authorization: `Bearer ${token}` },
         [Symbol.asyncIterator]: async function* () {
             yield Buffer.from(JSON.stringify({ password: "wrong-password" }));
         },
     } as unknown as import("node:http").IncomingMessage;
-    const res = makeResponse();
+    const response = makeResponse();
 
     let handled = false;
     for (const entry of routeRegistry.getEntries()) {
         handled = await entry.handler(
-            req,
-            res as unknown as import("node:http").ServerResponse,
+            request,
+            response as unknown as import("node:http").ServerResponse,
             new URL("/api/v1/auth/verify", "http://localhost"),
         );
         if (handled) break;
     }
 
     assert.ok(handled, "verify endpoint should handle the request");
-    assert.equal(res.status, 200);
+    assert.equal(response.status, 200);
 });
 
 test("POST /api/v1/auth/verify accepts a fresh cookie-only SSO session", async () => {
@@ -572,10 +588,12 @@ test("POST /api/v1/auth/verify accepts a fresh cookie-only SSO session", async (
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+        db: makeInMemoryDatabase() as ReturnType<
+            typeof makeInMemoryDatabase
+        > & {
             execute: (
                 sql: string,
-                params?: unknown[],
+                parameters?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
     });
@@ -583,27 +601,27 @@ test("POST /api/v1/auth/verify accepts a fresh cookie-only SSO session", async (
     const token = issueAccessToken("sso-cookie-user", "admin", 60, {
         providerId: "external-sso",
     });
-    const req = {
+    const request = {
         method: "POST",
         headers: { cookie: `cognis_access_token=${token}` },
         [Symbol.asyncIterator]: async function* () {
             yield Buffer.from("{}");
         },
     } as unknown as import("node:http").IncomingMessage;
-    const res = makeResponse();
+    const response = makeResponse();
 
     let handled = false;
     for (const entry of routeRegistry.getEntries()) {
         handled = await entry.handler(
-            req,
-            res as unknown as import("node:http").ServerResponse,
+            request,
+            response as unknown as import("node:http").ServerResponse,
             new URL("/api/v1/auth/verify", "http://localhost"),
         );
         if (handled) break;
     }
 
     assert.ok(handled, "verify endpoint should handle the request");
-    assert.equal(res.status, 200);
+    assert.equal(response.status, 200);
 });
 
 test("POST /api/v1/auth/verify returns 401 when unauthenticated", async () => {
@@ -615,33 +633,35 @@ test("POST /api/v1/auth/verify returns 401 when unauthenticated", async () => {
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+        db: makeInMemoryDatabase() as ReturnType<
+            typeof makeInMemoryDatabase
+        > & {
             execute: (
                 sql: string,
-                params?: unknown[],
+                parameters?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
     });
 
-    const req = {
+    const request = {
         method: "POST",
         headers: {},
     } as unknown as import("node:http").IncomingMessage;
-    const res = makeResponse();
+    const response = makeResponse();
 
     let handled = false;
     for (const entry of routeRegistry.getEntries()) {
         handled = await entry.handler(
-            req,
-            res as unknown as import("node:http").ServerResponse,
+            request,
+            response as unknown as import("node:http").ServerResponse,
             new URL("/api/v1/auth/verify", "http://localhost"),
         );
         if (handled) break;
     }
 
     assert.ok(handled, "verify endpoint should handle the request");
-    assert.equal(res.status, 401);
-    assert.match(res.payload, /unauthorized/);
+    assert.equal(response.status, 401);
+    assert.match(response.payload, /unauthorized/);
 });
 
 test("registration:public:register capability is looked up lazily in register handler", async () => {
@@ -655,10 +675,12 @@ test("registration:public:register capability is looked up lazily in register ha
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+        db: makeInMemoryDatabase() as ReturnType<
+            typeof makeInMemoryDatabase
+        > & {
             execute: (
                 sql: string,
-                params?: unknown[],
+                parameters?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
     });
@@ -678,26 +700,26 @@ test("registration:public:register capability is looked up lazily in register ha
             JSON.stringify({ username: "testuser", password: "testpass" }),
         ),
     ];
-    const req = {
+    const request = {
         method: "POST",
         headers: {},
         [Symbol.asyncIterator]: async function* () {
             for (const chunk of chunks) yield chunk;
         },
     } as unknown as import("node:http").IncomingMessage;
-    const res = makeResponse();
+    const response = makeResponse();
 
     for (const entry of entries) {
         const handled = await entry.handler(
-            req,
-            res as unknown as import("node:http").ServerResponse,
+            request,
+            response as unknown as import("node:http").ServerResponse,
             new URL("/api/v1/auth/register", "http://localhost"),
         );
         if (handled) break;
     }
 
     assert.equal(createdUsername, "testuser");
-    const body = JSON.parse(res.payload) as {
+    const body = JSON.parse(response.payload) as {
         data: { verifyToken?: string };
     };
     assert.equal(typeof body.data.verifyToken, "string");
@@ -714,16 +736,18 @@ test("auth register endpoint returns 403 when open registration is disabled", as
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+        db: makeInMemoryDatabase() as ReturnType<
+            typeof makeInMemoryDatabase
+        > & {
             execute: (
                 sql: string,
-                params?: unknown[],
+                parameters?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
     });
 
     const entries = routeRegistry.getEntries();
-    const req = {
+    const request = {
         method: "POST",
         headers: {},
         [Symbol.asyncIterator]: async function* () {
@@ -732,17 +756,17 @@ test("auth register endpoint returns 403 when open registration is disabled", as
             );
         },
     } as unknown as import("node:http").IncomingMessage;
-    const res = makeResponse();
+    const response = makeResponse();
 
     for (const entry of entries) {
         const handled = await entry.handler(
-            req,
-            res as unknown as import("node:http").ServerResponse,
+            request,
+            response as unknown as import("node:http").ServerResponse,
             new URL("/api/v1/auth/register", "http://localhost"),
         );
         if (handled) break;
     }
 
-    assert.equal(res.status, 403);
-    assert.match(res.payload, /registrations_disabled/);
+    assert.equal(response.status, 403);
+    assert.match(response.payload, /registrations_disabled/);
 });

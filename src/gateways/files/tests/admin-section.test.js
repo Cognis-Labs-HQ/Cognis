@@ -104,7 +104,7 @@ test("quota administration renders current defaults and saves the chosen namespa
         i18n: { t: (key) => key },
         apiFetch: recorder.apiFetch,
         escapeHtml: String,
-        showToast: (...args) => toasts.push(args),
+        showToast: (...argumentsList) => toasts.push(argumentsList),
     });
     await section.dataReady;
     const html = section.subComposerOptions.elements[0].render();

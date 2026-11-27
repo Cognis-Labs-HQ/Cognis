@@ -45,9 +45,9 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { showToast } from "/static/reuse/toast.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 import {
-    loadStudySubNavigationModel,
-    createStudySubNavigationSlot,
-    bindStudySubNavigation,
+    loadStudySubNavigationModel as loadStudyNestedNavigationModel,
+    createStudySubNavigationSlot as createStudyNestedNavigationSlot,
+    bindStudySubNavigation as bindStudyNestedNavigation,
     readSelectedStudyLanguageCode,
 } from "/static/gateways/study/sub-navigation.js";
 import {
@@ -105,7 +105,7 @@ export async function mount(root, { signal: routerSignal } = {}) {
             "load",
             () =>
                 Promise.all([
-                    loadStudySubNavigationModel({
+                    loadStudyNestedNavigationModel({
                         fallbackLanguageCode:
                             route.language ?? readSelectedStudyLanguageCode(),
                     }),
@@ -515,7 +515,7 @@ export async function mount(root, { signal: routerSignal } = {}) {
         ],
         toolbarScrollable: true,
         floatingMenu: [modePreference],
-        subNavigation: [createStudySubNavigationSlot(model, i18n)],
+        subNavigation: [createStudyNestedNavigationSlot(model, i18n)],
     });
     await composer.init();
     signal?.throwIfAborted();
@@ -528,7 +528,7 @@ export async function mount(root, { signal: routerSignal } = {}) {
             if (!selected) renderDeck();
         },
     });
-    bindStudySubNavigation(root, { signal, i18n });
+    bindStudyNestedNavigation(root, { signal, i18n });
     renderDeck();
     root.addEventListener(
         "input",

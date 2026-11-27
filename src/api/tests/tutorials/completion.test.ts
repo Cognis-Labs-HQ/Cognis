@@ -57,11 +57,11 @@ function host(executor: TutorialDatabase) {
                 : id === "db:executor"
                   ? executor
                   : undefined,
-        requireAuth(req, res) {
-            const account = req.headers.authorization;
+        requireAuth(currentRequest, response) {
+            const account = currentRequest.headers.authorization;
             if (!account) {
-                res.writeHead(401);
-                res.end();
+                response.writeHead(401);
+                response.end();
                 return null;
             }
             return { sub: account, role: "user" };

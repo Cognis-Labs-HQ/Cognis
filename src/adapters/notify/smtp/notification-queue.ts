@@ -6,10 +6,14 @@ import type { NotificationSenderQueueEntry } from "../../../gateways/notify/cont
 export class SmtpRateLimiter {
     private readonly lastSent = new Map<string, number>();
 
+    readonly intervalMs: number;
+
     constructor(
-        readonly intervalMs: number,
+        intervalMilliseconds: number,
         private readonly now: () => number = () => Date.now(),
-    ) {}
+    ) {
+        this.intervalMs = intervalMilliseconds;
+    }
 
     nextAvailableAt(recipient: string): number {
         const last = this.lastSent.get(recipient.trim().toLowerCase());
@@ -88,8 +92,8 @@ export class SmtpNotificationQueue {
 
     constructor(
         private readonly rateLimiter: SmtpRateLimiter,
-        private readonly sleep: (ms: number) => Promise<void>,
-        private readonly sendFn: (
+        private readonly sleep: (milliseconds: number) => Promise<void>,
+        private readonly sendCallback: (
             payload: SmtpNotificationQueuePayload,
         ) => Promise<void>,
         readonly purpose: string,
@@ -219,7 +223,7 @@ export class SmtpNotificationQueue {
                     error: undefined,
                 });
                 try {
-                    await this.sendFn({
+                    await this.sendCallback({
                         purpose: nextEntry.purpose,
                         recipientEmail: nextEntry.recipientEmail,
                         subject: nextEntry.subject,
@@ -323,7 +327,7 @@ export class SmtpNotificationQueue {
     }
 
     private async sleepWithWake(
-        delayMs: number,
+        delayMilliseconds: number,
         sleepingUntil: number,
     ): Promise<void> {
         const sleepId = this.nextSleepId++;
@@ -331,7 +335,7 @@ export class SmtpNotificationQueue {
         const wakePromise = new Promise<void>((resolve) => {
             this.wakeDrainSleep = { sleepId, resolve };
         });
-        await Promise.race([this.sleep(delayMs), wakePromise]);
+        await Promise.race([this.sleep(delayMilliseconds), wakePromise]);
         if (this.wakeDrainSleep?.sleepId === sleepId) {
             this.wakeDrainSleep = null;
             this.sleepingUntil = null;

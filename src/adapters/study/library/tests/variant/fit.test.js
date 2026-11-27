@@ -55,7 +55,7 @@ test("child cards can never occupy any ancestor card bounds", () => {
     );
     assert.match(
         source,
-        /if \(!isAncestorSafe\(rect, ancestorRects\)\) continue/,
+        /if \(!isAncestorSafe\(rectangle, ancestorRectangles\)\)\s*continue/,
     );
     assert.match(source, /setVariantDistance\(slot, distance\)/);
     assert.doesNotMatch(source, /slot\.hidden = true/);
@@ -75,7 +75,7 @@ test("fitted child cards keep their position while deeper branches open", () => 
 });
 
 test("diagonal child navigation uses hover intent and a continuous hit area", () => {
-    assert.match(interactionSource, /BRANCH_HOVER_INTENT_MS = 100/);
+    assert.match(interactionSource, /BRANCH_HOVER_INTENT_MILLISECONDS = 100/);
     assert.match(interactionSource, /pendingBranchShell\?\.contains/);
     assert.match(
         stylesheet,

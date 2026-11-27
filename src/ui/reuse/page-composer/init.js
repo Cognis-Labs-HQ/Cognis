@@ -47,7 +47,7 @@ import { showToast, configureToastDismissLabel } from "../toast.js";
 import { createFormDraftManager } from "./form-draft.js";
 import { createLayoutPersistence } from "./layout-persistence.js";
 import { createGridOverlayHandlers } from "./grid-overlay.js";
-import { createSubComposerHandlers } from "./sub-composer.js";
+import { createSubComposerHandlers as createNestedComposerHandlers } from "./sub-composer.js";
 import { uiCtx } from "../ui-ctx.js";
 import { mountComposerFloatingMenu } from "./floating-menu.js";
 import { mountComposerTutorials } from "../tutorials/pages.js";
@@ -90,9 +90,9 @@ export function createPageComposer(
         stackAt = "compact",
         readingOrder = [],
         enableDomParking = false,
-        subNavigation = [],
+        subNavigation: nestedNavigation = [],
         floatingMenu = [],
-        subPageNavigation = false,
+        subPageNavigation: nestedPageNavigation = false,
         columns = 1,
         showTopbar = true,
         showNavbar = true,
@@ -101,7 +101,7 @@ export function createPageComposer(
         frameless = false,
         persistLayoutPreferences = true,
         pageOverrides = {},
-        onBeforeSubPageSwitch,
+        onBeforeSubPageSwitch: onBeforeNestedPageSwitch,
         requireAccountSession = showTopbar || showNavbar,
         enableAccountEnhancements = true,
         presenceTracker = null,
@@ -141,13 +141,13 @@ export function createPageComposer(
     let viewportCleanup;
     let presentationCleanup;
     let toolbarController;
-    let activeSubPageId = null;
+    let activeNestedPageId = null;
     let panelPosition = null;
     let layoutSnapshot = null;
-    let gridCols = 1;
+    let gridColumns = 1;
     let gridRows = 6;
     let resizeObserver = null;
-    let lastObservedCols = 0;
+    let lastObservedColumns = 0;
     let lastObservedCompact = false;
     let lastObservedWidth = 0;
     let gridSection = null;
@@ -157,7 +157,7 @@ export function createPageComposer(
     let activePresenceTracker = null;
     let composerDestroyed = false;
     let focusControl = null;
-    let subComposerHandlers = null;
+    let nestedComposerHandlers = null;
     let gridOverlayHandlers = null;
     const tutorialLifetime = new AbortController();
 
@@ -175,7 +175,7 @@ export function createPageComposer(
         resizeObserver = null;
         focusControl?.destroy();
         focusControl = null;
-        subComposerHandlers?.destroy();
+        nestedComposerHandlers?.destroy();
         gridOverlayHandlers?.destroy();
         editToggleAbortController?.abort();
         window.removeEventListener("beforeunload", handleBeforeUnload);
@@ -187,7 +187,7 @@ export function createPageComposer(
     const UNIT = PAGE_COMPOSER_GRID_UNIT; // grid cell size in pixels
     // Treat narrow grids as compact so single-pane rows expand and avoid
     // visibly wasted horizontal space on small screens.
-    const COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS = 10;
+    const COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLUMNS = 10;
     const FORM_DRAFT_STORAGE_PREFIX = "cognis_form_draft";
     const LARGE_FORM_RESET_FIELD_THRESHOLD = 6;
 
@@ -239,7 +239,7 @@ export function createPageComposer(
     });
 
     async function loadLayout() {
-        const loaded = await loadLayoutByKey(preferenceKey, gridCols);
+        const loaded = await loadLayoutByKey(preferenceKey, gridColumns);
         layoutProfiles = loaded.profiles;
         return cloneLayoutData(loaded.layout);
     }
@@ -252,7 +252,7 @@ export function createPageComposer(
         const saved = await saveLayoutByKey(
             preferenceKey,
             layoutProfiles,
-            gridCols,
+            gridColumns,
             layout,
         );
         if (!saved) return false;
@@ -261,13 +261,13 @@ export function createPageComposer(
     }
 
     function applyLayoutForCurrentGridColumns() {
-        const selected = getLayoutForGrid(layoutProfiles, gridCols);
+        const selected = getLayoutForGrid(layoutProfiles, gridColumns);
         if (!selected.layout) return false;
         layout = cloneLayoutData(selected.layout);
         return true;
     }
 
-    function applySubLayoutForCurrentGridColumns(state) {
+    function applyNestedLayoutForCurrentGridColumns(state) {
         const selected = getLayoutForGrid(state.layoutProfiles, state.gridCols);
         if (!selected.layout) return false;
         state.layout = cloneLayoutData(selected.layout);
@@ -278,7 +278,7 @@ export function createPageComposer(
         resolveGridColumnCount({ contentGrid, root, unit: UNIT });
     const getGridSize = resolveElementGridSize;
 
-    function getSubPanelId(preferenceKey) {
+    function getNestedPanelId(preferenceKey) {
         return (
             "composer-elements-panel-" +
             preferenceKey.replace(/[^a-z0-9]/g, "-")
@@ -295,7 +295,7 @@ export function createPageComposer(
         readingOrder,
         preferenceKey,
         persistLayoutPreferences,
-        subPageNavigation,
+        subPageNavigation: nestedPageNavigation,
         onRender: () => {
             toolbarController?.syncTogglePlacement();
             onRender?.();
@@ -331,10 +331,10 @@ export function createPageComposer(
             contentGrid = value;
         },
         get activeSubPageId() {
-            return activeSubPageId;
+            return activeNestedPageId;
         },
         set activeSubPageId(value) {
-            activeSubPageId = value;
+            activeNestedPageId = value;
         },
         get panelPosition() {
             return panelPosition;
@@ -349,10 +349,10 @@ export function createPageComposer(
             layoutSnapshot = value;
         },
         get gridCols() {
-            return gridCols;
+            return gridColumns;
         },
         set gridCols(value) {
-            gridCols = value;
+            gridColumns = value;
         },
         get gridRows() {
             return gridRows;
@@ -382,14 +382,14 @@ export function createPageComposer(
         endEditMode,
     });
 
-    subComposerHandlers = createSubComposerHandlers({
+    nestedComposerHandlers = createNestedComposerHandlers({
         signal: tutorialLifetime.signal,
         i18n,
         UNIT,
         beginEditMode,
         endEditMode,
         getGridSize,
-        getSubPanelId,
+        getSubPanelId: getNestedPanelId,
         getComposerPanelSafeTop: gridOverlayHandlers.getComposerPanelSafeTop,
         clampComposerPanelLeft: gridOverlayHandlers.clampComposerPanelLeft,
         getComposerPanelHorizontalBounds:
@@ -403,17 +403,19 @@ export function createPageComposer(
         mergeFormStateSnapshots,
         loadPersistedFormState,
         bindFormDraftPersistence,
-        computeSubViewPlacements: (subState) =>
-            renderer.computeSubViewPlacements(subState),
-        syncSubEditToggle,
-        applySubLayoutForCurrentGridColumns,
+        computeSubViewPlacements: (nestedState) =>
+            renderer.computeSubViewPlacements(nestedState),
+        syncSubEditToggle: syncNestedEditToggle,
+        applySubLayoutForCurrentGridColumns:
+            applyNestedLayoutForCurrentGridColumns,
     });
 
     renderer = createComposerRenderer({
         state: composerState,
         UNIT,
         MOBILE_LAYOUT_WIDTH_RECLAIM_BREAKPOINT: COMPOSER_COMPACT_BREAKPOINT,
-        COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS,
+        COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS:
+            COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLUMNS,
         i18n,
         escapeHtml,
         getGridSize,
@@ -426,11 +428,12 @@ export function createPageComposer(
         computeGridDimensions: gridOverlayHandlers.computeGridDimensions,
         initializePlacements: gridOverlayHandlers.initializePlacements,
         applyLayoutForCurrentGridColumns,
-        computeSubGridDimensions: subComposerHandlers.computeSubGridDimensions,
-        initializeSubPlacements: subComposerHandlers.initializeSubPlacements,
+        computeSubGridDimensions:
+            nestedComposerHandlers.computeSubGridDimensions,
+        initializeSubPlacements: nestedComposerHandlers.initializeSubPlacements,
         syncEditToggle,
-        mountSubComposer: subComposerHandlers.mountSubComposer,
-        unmountSubComposer: subComposerHandlers.unmountSubComposer,
+        mountSubComposer: nestedComposerHandlers.mountSubComposer,
+        unmountSubComposer: nestedComposerHandlers.unmountSubComposer,
         captureFormState,
         restoreFormState,
         mergeFormStateSnapshots,
@@ -440,62 +443,62 @@ export function createPageComposer(
 
     const { compactPlacements } = gridOverlayHandlers;
     const {
-        mountSubComposer,
-        unmountSubComposer,
-        renderSubGrid,
-        compactSubPlacements,
-    } = subComposerHandlers;
+        mountSubComposer: mountNestedComposer,
+        unmountSubComposer: unmountNestedComposer,
+        renderSubGrid: renderNestedGrid,
+        compactSubPlacements: compactNestedPlacements,
+    } = nestedComposerHandlers;
     const {
         render,
         renderGridComposer,
         syncLayoutToCurrentGridColumns,
-        syncSubLayoutToCurrentGridColumns,
+        syncSubLayoutToCurrentGridColumns: syncNestedLayoutToCurrentGridColumns,
     } = renderer;
 
-    function syncSubEditToggle(state) {
-        const editBtn = getComposerEditToggleButton();
-        if (!editBtn) return;
+    function syncNestedEditToggle(state) {
+        const editButton = getComposerEditToggleButton();
+        if (!editButton) return;
         if (uiCtx.capabilities.get("session:isGuest")?.() === true) {
-            editBtn.remove();
+            editButton.remove();
             return;
         }
         if (!state.allowCustomization) {
-            editBtn.hidden = true;
+            editButton.hidden = true;
             return;
         }
-        editBtn.hidden = false;
+        editButton.hidden = false;
         state.editToggleAbortController?.abort();
         state.editToggleAbortController = new AbortController();
         const { signal } = state.editToggleAbortController;
         if (!state.editing) {
-            editBtn.innerHTML =
+            editButton.innerHTML =
                 '<span class="composer-edit-icon" aria-hidden="true"></span>';
-            editBtn.title = i18n.t("ui.reuse.edit_layout");
-            editBtn.addEventListener(
+            editButton.title = i18n.t("ui.reuse.edit_layout");
+            editButton.addEventListener(
                 "click",
                 () => {
-                    syncSubLayoutToCurrentGridColumns(state);
+                    syncNestedLayoutToCurrentGridColumns(state);
                     state.layoutSnapshot = JSON.parse(
                         JSON.stringify(state.layout),
                     );
                     state.editing = true;
                     beginEditMode();
-                    renderSubGrid(state);
+                    renderNestedGrid(state);
                 },
                 { signal },
             );
         } else {
-            editBtn.textContent = "✓";
-            editBtn.title = i18n.t("ui.reuse.done");
-            editBtn.addEventListener(
+            editButton.textContent = "✓";
+            editButton.title = i18n.t("ui.reuse.done");
+            editButton.addEventListener(
                 "click",
                 async () => {
                     await commitLayoutEdit({
                         state,
-                        prepare: () => compactSubPlacements(state),
-                        save: () => subComposerHandlers.saveSubLayout(state),
+                        prepare: () => compactNestedPlacements(state),
+                        save: () => nestedComposerHandlers.saveSubLayout(state),
                         finish: endEditMode,
-                        render: () => renderSubGrid(state),
+                        render: () => renderNestedGrid(state),
                     });
                 },
                 { signal },
@@ -504,25 +507,25 @@ export function createPageComposer(
     }
 
     function syncEditToggle() {
-        const editBtn = getComposerEditToggleButton();
-        if (!editBtn) return;
+        const editButton = getComposerEditToggleButton();
+        if (!editButton) return;
         if (uiCtx.capabilities.get("session:isGuest")?.() === true) {
-            editBtn.remove();
+            editButton.remove();
             return;
         }
         if (!allowCustomization) {
-            editBtn.hidden = true;
+            editButton.hidden = true;
             return;
         }
-        editBtn.hidden = false;
+        editButton.hidden = false;
         editToggleAbortController?.abort();
         editToggleAbortController = new AbortController();
         const { signal } = editToggleAbortController;
         if (!editing) {
-            editBtn.innerHTML =
+            editButton.innerHTML =
                 '<span class="composer-edit-icon" aria-hidden="true"></span>';
-            editBtn.title = i18n.t("ui.reuse.edit_layout");
-            editBtn.addEventListener(
+            editButton.title = i18n.t("ui.reuse.edit_layout");
+            editButton.addEventListener(
                 "click",
                 () => {
                     syncLayoutToCurrentGridColumns();
@@ -534,15 +537,15 @@ export function createPageComposer(
                 { signal },
             );
         } else {
-            editBtn.textContent = "✓";
-            editBtn.title = i18n.t("ui.reuse.done");
-            editBtn.addEventListener(
+            editButton.textContent = "✓";
+            editButton.title = i18n.t("ui.reuse.done");
+            editButton.addEventListener(
                 "click",
                 async () => {
                     await commitLayoutEdit({
                         state: composerState,
                         prepare: () => {
-                            if (!subPageNavigation) compactPlacements();
+                            if (!nestedPageNavigation) compactPlacements();
                         },
                         save: saveLayout,
                         finish: endEditMode,
@@ -564,54 +567,58 @@ export function createPageComposer(
             "showThemeToggle" in overrides
                 ? overrides.showThemeToggle
                 : showThemeToggle;
-        const toggleEl = root.querySelector("#theme-toggle");
-        if (toggleEl) toggleEl.hidden = !effectiveShowThemeToggle;
+        const toggleElement = root.querySelector("#theme-toggle");
+        if (toggleElement) toggleElement.hidden = !effectiveShowThemeToggle;
     }
 
-    async function switchSubPage(id) {
-        if (onBeforeSubPageSwitch) {
-            const allowed = await onBeforeSubPageSwitch(activeSubPageId, id);
+    async function switchNestedPage(id) {
+        if (onBeforeNestedPageSwitch) {
+            const allowed = await onBeforeNestedPageSwitch(
+                activeNestedPageId,
+                id,
+            );
             if (!allowed) return false;
         }
-        const prevId = activeSubPageId;
-        activeSubPageId = id;
+        const previousId = activeNestedPageId;
+        activeNestedPageId = id;
         const panel =
             contentGrid.querySelector(".content-panel") ?? contentGrid;
         panel.querySelectorAll(".content-section").forEach((section) => {
-            const isActive = section.id === activeSubPageId;
+            const isActive = section.id === activeNestedPageId;
             section.hidden = !isActive;
             section.classList.toggle("active", isActive);
         });
-        root.querySelectorAll("[data-composer-scroll]").forEach((btn) => {
-            btn.classList.toggle(
+        root.querySelectorAll("[data-composer-scroll]").forEach((button) => {
+            button.classList.toggle(
                 "active",
-                btn.dataset.composerScroll === activeSubPageId,
+                button.dataset.composerScroll === activeNestedPageId,
             );
         });
-        const prevEl = prevId
+        const previousElement = previousId
             ? elements.find(
-                  (candidateElement) => candidateElement.id === prevId,
+                  (candidateElement) => candidateElement.id === previousId,
               )
             : null;
-        if (prevEl?.subComposerOptions) unmountSubComposer(prevEl);
-        const newEl = elements.find(
+        if (previousElement?.subComposerOptions)
+            unmountNestedComposer(previousElement);
+        const newElement = elements.find(
             (candidateElement) => candidateElement.id === id,
         );
-        if (newEl?.subComposerOptions) {
+        if (newElement?.subComposerOptions) {
             const outerDiv = contentGrid.querySelector(`#${id}`);
             const sectionDiv =
                 outerDiv?.querySelector(".sub-composer-inner") ??
                 outerDiv ??
                 contentGrid;
-            mountSubComposer(newEl, sectionDiv).catch(() => {});
+            mountNestedComposer(newElement, sectionDiv).catch(() => {});
         }
-        history.replaceState(null, "", `#${activeSubPageId}`);
+        history.replaceState(null, "", `#${activeNestedPageId}`);
         applyPageOverrides(id);
         onRender?.();
         return true;
     }
 
-    async function init() {
+    async function initialize() {
         if (composerDestroyed) return;
         configureToastDismissLabel(i18n.t("ui.reuse.dismiss"));
         configureConnectionRecoveryPrompt(
@@ -634,9 +641,9 @@ export function createPageComposer(
                       })
                       .join("")
                 : undefined;
-        const subNavigationHtml =
-            Array.isArray(subNavigation) && subNavigation.length > 0
-                ? subNavigation.map((item) => item.render()).join("")
+        const nestedNavigationHtml =
+            Array.isArray(nestedNavigation) && nestedNavigation.length > 0
+                ? nestedNavigation.map((item) => item.render()).join("")
                 : undefined;
 
         const floatingHtml =
@@ -649,7 +656,7 @@ export function createPageComposer(
             i18n,
             pageContext: pageContextHtml,
             toolbar: toolbarHtml,
-            subNavigation: subNavigationHtml,
+            subNavigation: nestedNavigationHtml,
             floatingToolbar: floatingHtml,
             content: "",
             showTopbar,
@@ -729,75 +736,75 @@ export function createPageComposer(
                     toolbarDrawer.closeMobileDrawerIfNeeded;
         }
 
-        if (subPageNavigation) {
+        if (nestedPageNavigation) {
             const hashId = window.location.hash.slice(1);
             const validIds = elements.map(
                 (candidateElement) => candidateElement.id,
             );
-            activeSubPageId =
+            activeNestedPageId =
                 hashId && validIds.includes(hashId)
                     ? hashId
                     : (validIds[0] ?? null);
-            if (activeSubPageId) applyPageOverrides(activeSubPageId);
+            if (activeNestedPageId) applyPageOverrides(activeNestedPageId);
         }
 
-        root.querySelectorAll("[data-composer-scroll]").forEach((btn) => {
-            if (subPageNavigation) {
-                btn.classList.toggle(
+        root.querySelectorAll("[data-composer-scroll]").forEach((button) => {
+            if (nestedPageNavigation) {
+                button.classList.toggle(
                     "active",
-                    btn.dataset.composerScroll === activeSubPageId,
+                    button.dataset.composerScroll === activeNestedPageId,
                 );
-                btn.addEventListener("click", async () => {
-                    const didSwitch = await switchSubPage(
-                        btn.dataset.composerScroll,
+                button.addEventListener("click", async () => {
+                    const didSwitch = await switchNestedPage(
+                        button.dataset.composerScroll,
                     );
                     if (didSwitch) {
                         closeMobileDrawerIfNeeded();
                     }
                 });
             } else {
-                btn.addEventListener("click", () => {
+                button.addEventListener("click", () => {
                     root.querySelector(
-                        `#${btn.dataset.composerScroll}`,
+                        `#${button.dataset.composerScroll}`,
                     )?.scrollIntoView({
                         behavior: prefersReducedMotion() ? "auto" : "smooth",
                     });
                     root.querySelectorAll("[data-composer-scroll]").forEach(
                         (button) => button.classList.remove("active"),
                     );
-                    btn.classList.add("active");
+                    button.classList.add("active");
                     closeMobileDrawerIfNeeded();
                 });
             }
         });
 
-        gridCols = getPreferredGridColumnCount();
-        lastObservedCols = gridCols;
+        gridColumns = getPreferredGridColumnCount();
+        lastObservedColumns = gridColumns;
         lastObservedCompact = isCompactComposer(contentGrid, stackAt);
         lastObservedWidth = contentGrid?.getBoundingClientRect().width ?? 0;
 
         layout = null;
 
-        if (!subPageNavigation && contentGrid) {
+        if (!nestedPageNavigation && contentGrid) {
             resizeObserver = new ResizeObserver(() => {
                 if (!contentGrid || !document.contains(contentGrid)) return;
-                const newCols = getPreferredGridColumnCount();
+                const newColumns = getPreferredGridColumnCount();
                 const compact = isCompactComposer(contentGrid, stackAt);
                 const width = contentGrid.getBoundingClientRect().width;
                 const resize = resolveComposerResize(
                     {
-                        columns: lastObservedCols,
+                        columns: lastObservedColumns,
                         compact: lastObservedCompact,
                         width: lastObservedWidth,
                     },
-                    { columns: newCols, compact, width },
+                    { columns: newColumns, compact, width },
                     editing,
                 );
                 if (resize.render) {
-                    lastObservedCols = newCols;
+                    lastObservedColumns = newColumns;
                     lastObservedCompact = compact;
                     lastObservedWidth = width;
-                    gridCols = newCols;
+                    gridColumns = newColumns;
                     if (resize.reflow) {
                         renderer.syncLayoutToCurrentGridColumns();
                     } else if (!editing && persistLayoutPreferences) {
@@ -880,7 +887,7 @@ export function createPageComposer(
     }
 
     return {
-        init,
+        init: initialize,
         refresh,
         refreshElements,
         openToolbar: (trigger) => toolbarController?.open(trigger),

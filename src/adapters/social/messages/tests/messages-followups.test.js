@@ -8,18 +8,18 @@ import { createRoomKeyStore } from "../ui/room-keys.mjs";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../../../..");
 
 function readMessagesUiBundle() {
-    const uiDir = resolve(ROOT, "src/adapters/social/messages/ui");
-    return readdirSync(uiDir)
+    const uiDirectory = resolve(ROOT, "src/adapters/social/messages/ui");
+    return readdirSync(uiDirectory)
         .filter((entry) => entry.endsWith(".js") || entry.endsWith(".mjs"))
         .sort()
-        .map((entry) => readFileSync(join(uiDir, entry), "utf8"))
+        .map((entry) => readFileSync(join(uiDirectory, entry), "utf8"))
         .join("\n");
 }
 
 function readMessagesCssBundle() {
-    const uiDir = resolve(ROOT, "src/adapters/social/messages/ui");
+    const uiDirectory = resolve(ROOT, "src/adapters/social/messages/ui");
     return ["messages.css", "thread.css"]
-        .map((entry) => readFileSync(join(uiDir, entry), "utf8"))
+        .map((entry) => readFileSync(join(uiDirectory, entry), "utf8"))
         .join("\n");
 }
 
@@ -453,7 +453,7 @@ test("server room key contributions are validated and saved to the keyring", asy
             assert.equal(hex, "generated-room-key");
             return imported;
         },
-        contributeSecret: async (...args) => saved.push(args),
+        contributeSecret: async (...argumentsList) => saved.push(argumentsList),
     });
 
     assert.equal(
@@ -599,7 +599,7 @@ test("messages onRoomOpened callback restores draft for opened room", () => {
         /const persistedState = loadPersistedFormState\(\s*openedRoomId\s*\)/,
     );
     assert.match(source, /restoreFormState\(\s*root,\s*persistedState\s*\)/);
-    assert.match(source, /composerInputRef\?\.dispatchEvent/);
+    assert.match(source, /composerInputReference\?\.dispatchEvent/);
 });
 
 test("messages onRoomOpened clears composer when opened room has no saved draft", () => {
@@ -607,11 +607,11 @@ test("messages onRoomOpened clears composer when opened room has no saved draft"
 
     assert.match(
         source,
-        /persistedState\.size === 0[\s\S]*composerInputRef instanceof HTMLTextAreaElement/m,
+        /persistedState\.size === 0[\s\S]*composerInputReference instanceof HTMLTextAreaElement/m,
     );
     assert.match(
         source,
-        /persistedState\.size === 0[\s\S]*composerInputRef\.value = ""/m,
+        /persistedState\.size === 0[\s\S]*composerInputReference\.value = ""/m,
     );
 });
 

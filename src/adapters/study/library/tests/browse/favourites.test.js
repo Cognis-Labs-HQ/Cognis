@@ -21,9 +21,9 @@ test("favourite children render independently of unfavourited ancestors, and pro
             this.children = nodes;
             this.firstElementChild = nodes[0];
         },
-        append(node2) {
-            this.children = this.children.filter((node) => node !== node2);
-            this.children.push(node2);
+        append(childNode) {
+            this.children = this.children.filter((node) => node !== childNode);
+            this.children.push(childNode);
         },
     };
     node.parentElement = grid;

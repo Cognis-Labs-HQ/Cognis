@@ -1,4 +1,4 @@
-import { EMAIL_DELIVERY_RATE_LIMIT_MS } from "./rate-limit.js";
+import { EMAIL_DELIVERY_RATE_LIMIT_MS as EMAIL_DELIVERY_RATE_LIMIT_MILLISECONDS } from "./rate-limit.js";
 import { createEmailTemplates } from "./email-templates.js";
 import {
     registerBootstrapFlow,
@@ -178,7 +178,7 @@ export async function registerSmtpActions(
     ctx.capabilities.contribute("notify:sendEmail", send);
     const deliveryPolicy = () => ({
         codeLength: sender.getCodeLength(),
-        minimumIntervalMs: EMAIL_DELIVERY_RATE_LIMIT_MS,
+        minimumIntervalMs: EMAIL_DELIVERY_RATE_LIMIT_MILLISECONDS,
     });
     ctx.capabilities.contribute("notify:emailDeliveryPolicy", deliveryPolicy);
     root.contributePublicCapability(

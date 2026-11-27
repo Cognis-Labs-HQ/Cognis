@@ -182,10 +182,10 @@ test("source files stay under the 1000-line guardrail", () => {
     const hits = [];
     for (const filePath of walk(resolve(ROOT, "src"))) {
         if (!hasSourceExtension(filePath)) continue;
-        const repoPath = relative(ROOT, filePath).replace(/\\/g, "/");
+        const repositoryPath = relative(ROOT, filePath).replace(/\\/g, "/");
         const lineCount = readFileSync(filePath, "utf8").split("\n").length;
         if (lineCount <= 1000) continue;
-        hits.push(`${repoPath} (${lineCount} lines)`);
+        hits.push(`${repositoryPath} (${lineCount} lines)`);
     }
 
     assert.deepEqual(
@@ -201,13 +201,13 @@ test("anti-monolith guardrail warns above 1250 LOC and fails above 1750 LOC", ()
 
     for (const filePath of walk(resolve(ROOT, "src"))) {
         if (!hasSourceExtension(filePath)) continue;
-        const repoPath = relative(ROOT, filePath).replace(/\\/g, "/");
+        const repositoryPath = relative(ROOT, filePath).replace(/\\/g, "/");
         const lineCount = readFileSync(filePath, "utf8").split("\n").length;
         if (lineCount > 1250) {
-            warningHits.push(`${repoPath} (${lineCount} lines)`);
+            warningHits.push(`${repositoryPath} (${lineCount} lines)`);
         }
         if (lineCount > 1750) {
-            failureHits.push(`${repoPath} (${lineCount} lines)`);
+            failureHits.push(`${repositoryPath} (${lineCount} lines)`);
         }
     }
 
@@ -278,9 +278,11 @@ test("module and adapter ui app entries use ui/app/index.js structure", () => {
         for (const filePath of walk(scanRoot)) {
             const normalizedFilePath = filePath.replace(/\\/g, "/");
             if (!normalizedFilePath.endsWith("/ui/app.js")) continue;
-            const repoPath = relative(ROOT, filePath).replace(/\\/g, "/");
-            if (LEGACY_FLAT_UI_APP_ENTRIES.has(repoPath)) continue;
-            violations.push(`flat ui app entry is not allowed: ${repoPath}`);
+            const repositoryPath = relative(ROOT, filePath).replace(/\\/g, "/");
+            if (LEGACY_FLAT_UI_APP_ENTRIES.has(repositoryPath)) continue;
+            violations.push(
+                `flat ui app entry is not allowed: ${repositoryPath}`,
+            );
         }
     }
 
@@ -312,12 +314,12 @@ test("api and core avoid new direct gateway imports", () => {
                 continue;
             if (filePath.includes("/tests/")) continue;
 
-            const repoPath = relative(ROOT, filePath).replace(/\\/g, "/");
-            if (ALLOWED_CORE_GATEWAY_IMPORT_FILES.has(repoPath)) continue;
+            const repositoryPath = relative(ROOT, filePath).replace(/\\/g, "/");
+            if (ALLOWED_CORE_GATEWAY_IMPORT_FILES.has(repositoryPath)) continue;
 
             const source = readFileSync(filePath, "utf8");
             if (GATEWAY_IMPORT_RE.test(source)) {
-                violations.push(repoPath);
+                violations.push(repositoryPath);
             }
         }
     }
@@ -626,8 +628,8 @@ test("html files keep scripts in external JS/TS files", () => {
             const body = match[2] ?? "";
             if (/\bsrc\s*=/.test(attributes)) continue;
             if (!body.trim()) continue;
-            const repoPath = relative(ROOT, filePath).replace(/\\/g, "/");
-            violations.push(repoPath);
+            const repositoryPath = relative(ROOT, filePath).replace(/\\/g, "/");
+            violations.push(repositoryPath);
             break;
         }
     }

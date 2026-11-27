@@ -8,10 +8,10 @@ export interface AuthRouteLogMeta {
 }
 
 export type AuthGatewayRouteHandler = (
-    req: IncomingMessage,
-    res: ServerResponse,
+    request: IncomingMessage,
+    response: ServerResponse,
     url: URL,
-    logMeta: AuthRouteLogMeta,
+    logMetadata: AuthRouteLogMeta,
 ) => Promise<boolean>;
 
 export interface LoginFlowSessionResult {

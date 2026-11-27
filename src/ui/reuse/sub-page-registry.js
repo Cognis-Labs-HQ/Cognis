@@ -20,7 +20,7 @@
  *   invalidate: (id?: string) => void,
  * }} Grouped sub-page registry.
  */
-export function createSubPageRegistry() {
+function createNestedPageRegistry() {
     const providers = new Map();
     const groupPromises = new Map();
     const pagePromises = new Map();
@@ -145,3 +145,4 @@ export function createSubPageRegistry() {
 
     return { register, unregister, load, resolve, invalidate };
 }
+export { createNestedPageRegistry as createSubPageRegistry };

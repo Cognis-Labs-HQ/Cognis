@@ -7,14 +7,15 @@ import { GatewayRegistry, CapabilityStore } from "@cognis/core";
 import { RouteRegistry } from "../../../../api/reuse/route-registry.js";
 import { UIRegistry } from "../../../../api/reuse/ui-registry.js";
 import { bootstrapSocialAdapter } from "../index.js";
-import { makeTempDb } from "../routes/tests/helpers.js";
+import { makeTempDb as makeTemporaryDatabase } from "../routes/tests/helpers.js";
 
-function makeInMemoryDb() {
+function makeInMemoryDatabase() {
     return {
         executeCommand: async (_command: unknown) => ({ rows: [] }),
-        ensureTable: async (_def: unknown) => {},
-        transaction: async (callback: (db: unknown) => Promise<unknown>) =>
-            callback(makeInMemoryDb()),
+        ensureTable: async (_definition: unknown) => {},
+        transaction: async (
+            callback: (database: unknown) => Promise<unknown>,
+        ) => callback(makeInMemoryDatabase()),
     };
 }
 
@@ -35,7 +36,7 @@ function makeAdapterCtx(
     );
     const uiRegistry = overrides.uiRegistry;
     if (!capabilities.get("db:executor")) {
-        capabilities.contribute("db:executor", makeInMemoryDb());
+        capabilities.contribute("db:executor", makeInMemoryDatabase());
     }
     const registeredAdapters: Array<{
         adapterId: string;
@@ -55,8 +56,8 @@ function makeAdapterCtx(
             gatewayRegistry,
             registerRoute: (
                 handler: (
-                    req: import("node:http").IncomingMessage,
-                    res: import("node:http").ServerResponse,
+                    request: import("node:http").IncomingMessage,
+                    response: import("node:http").ServerResponse,
                     url: URL,
                 ) => Promise<boolean>,
                 gatewayId?: string,
@@ -73,13 +74,18 @@ function makeAdapterCtx(
                 }),
             registerCapabilityProvider: (provider) =>
                 uiRegistry?.registerCapabilityProvider(provider),
-            registerStaticDir: (prefix: string, dir: string) =>
-                uiRegistry?.registerStaticDir(prefix, dir),
+            registerStaticDir: (prefix: string, directory: string) =>
+                uiRegistry?.registerStaticDir(prefix, directory),
             registerAdapterStaticDir: (
-                gateway2: string,
+                gatewayId: string,
                 adapter: string,
-                dir: string,
-            ) => uiRegistry?.registerAdapterStaticDir(gateway2, adapter, dir),
+                directory: string,
+            ) =>
+                uiRegistry?.registerAdapterStaticDir(
+                    gatewayId,
+                    adapter,
+                    directory,
+                ),
             registerAuthTypingMessage: (
                 message: Parameters<UIRegistry["registerAuthTypingMessage"]>[0],
             ) => uiRegistry?.registerAuthTypingMessage(message),
@@ -130,7 +136,7 @@ test("profile adapter bootstrap contributes profile capabilities", async () => {
 });
 
 test("external profile synchronization applies requested profile visibility", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: directory, executor } = makeTemporaryDatabase();
     try {
         const capabilities = new CapabilityStore();
         capabilities.contribute("db:executor", executor);
@@ -171,12 +177,12 @@ test("external profile synchronization applies requested profile visibility", as
             "private",
         );
     } finally {
-        rmSync(dir, { recursive: true, force: true });
+        rmSync(directory, { recursive: true, force: true });
     }
 });
 
 test("profile lifecycle capability creates a profile row when missing", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: directory, executor } = makeTemporaryDatabase();
     try {
         const capabilities = new CapabilityStore();
         capabilities.contribute("db:executor", executor);
@@ -196,7 +202,7 @@ test("profile lifecycle capability creates a profile row when missing", async ()
             "archived",
         );
     } finally {
-        rmSync(dir, { recursive: true, force: true });
+        rmSync(directory, { recursive: true, force: true });
     }
 });
 
@@ -205,18 +211,18 @@ test("profile adapter bootstrap registers static dir and navbar.js exists on dis
     const { ctx } = makeAdapterCtx({ uiRegistry });
     await bootstrapSocialAdapter(ctx);
 
-    const staticDir = uiRegistry.getAdapterStaticDir("social", "profile");
+    const staticDirectory = uiRegistry.getAdapterStaticDir("social", "profile");
     assert.ok(
-        staticDir,
+        staticDirectory,
         "profile adapter must register a static dir under social/profile",
     );
 
     await assert.doesNotReject(
-        access(staticDir!),
-        `static dir must exist on disk: ${staticDir}`,
+        access(staticDirectory!),
+        `static dir must exist on disk: ${staticDirectory}`,
     );
 
-    const navbarPath = path.join(staticDir!, "navbar.js");
+    const navbarPath = path.join(staticDirectory!, "navbar.js");
     await assert.doesNotReject(
         access(navbarPath),
         `navbar.js must exist in the registered static dir: ${navbarPath}`,
@@ -255,8 +261,11 @@ test("profile adapter registers standalone capabilities and navbar behavior", as
         "social:profileRequest",
     ]);
 
-    const staticDir = uiRegistry.getAdapterStaticDir("social", "profile");
-    assert.ok(staticDir, "profile adapter must register an adapter static dir");
+    const staticDirectory = uiRegistry.getAdapterStaticDir("social", "profile");
+    assert.ok(
+        staticDirectory,
+        "profile adapter must register an adapter static dir",
+    );
 
     const urlPrefix = "/static/adapters/social/profile/";
     for (const plugin of plugins) {
@@ -266,21 +275,21 @@ test("profile adapter registers standalone capabilities and navbar behavior", as
         );
 
         const filePart = plugin.scriptUrl.slice(urlPrefix.length);
-        const resolvedPath = path.join(staticDir!, filePart);
+        const resolvedPath = path.join(staticDirectory!, filePart);
         await assert.doesNotReject(
             access(resolvedPath),
             `file referenced by navbar plugin scriptUrl must exist on disk: ${resolvedPath}`,
         );
     }
     const providerPath = path.join(
-        staticDir,
+        staticDirectory,
         providers[0].scriptUrl.slice(urlPrefix.length),
     );
     await assert.doesNotReject(access(providerPath));
 });
 
 test("user availability capability resolves calendar-aware status", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: directory, executor } = makeTemporaryDatabase();
     try {
         const capabilities = new CapabilityStore();
         capabilities.contribute("db:executor", executor);
@@ -318,12 +327,12 @@ test("user availability capability resolves calendar-aware status", async () => 
             "busy",
         );
     } finally {
-        rmSync(dir, { recursive: true, force: true });
+        rmSync(directory, { recursive: true, force: true });
     }
 });
 
 test("registered availability URLs reach the adapter and return status without 404s", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: directory, executor } = makeTemporaryDatabase();
     try {
         let requester = "viewer";
         const capabilities = new CapabilityStore();
@@ -370,12 +379,12 @@ test("registered availability URLs reach the adapter and return status without 4
         requester = "owner";
         assert.equal((await dispatch()).data.status, "free");
     } finally {
-        rmSync(dir, { recursive: true, force: true });
+        rmSync(directory, { recursive: true, force: true });
     }
 });
 
 test("account role synchronization resolves the profile handle from the immutable account ID", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: directory, executor } = makeTemporaryDatabase();
     try {
         const capabilities = new CapabilityStore();
         capabilities.contribute("db:executor", executor);
@@ -416,6 +425,6 @@ test("account role synchronization resolves the profile handle from the immutabl
             "teacher",
         );
     } finally {
-        rmSync(dir, { recursive: true, force: true });
+        rmSync(directory, { recursive: true, force: true });
     }
 });

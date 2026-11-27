@@ -374,13 +374,13 @@ function bindProfileHeroEvents() {
         "click",
         (event) => {
             const bannerButton = event.currentTarget;
-            const bannerRect =
+            const bannerRectangle =
                 bannerButton instanceof HTMLElement
                     ? bannerButton.getBoundingClientRect()
                     : null;
             pendingBannerAspectRatio = resolveBannerCropAspectRatio(
                 bannerHeight,
-                bannerRect,
+                bannerRectangle,
             );
             requestSelection("banner", bannerFileInput);
         },
@@ -601,7 +601,7 @@ function bindPageEvents() {
     bindSocialCardEvents();
 }
 
-export async function mount(rootEl, { signal } = {}) {
+export async function mount(rootElement, { signal } = {}) {
     // Clean up any stale document-level listener from a previous mount.
     if (bannerMenuCloseHandler) {
         document.removeEventListener("click", bannerMenuCloseHandler, true);
@@ -612,7 +612,7 @@ export async function mount(rootEl, { signal } = {}) {
         return signal?.aborted ?? false;
     }
 
-    root = rootEl;
+    root = rootElement;
     i18n = await createI18n({
         componentStringBaseUrls: ["/static/adapters/social/profile/languages"],
     });

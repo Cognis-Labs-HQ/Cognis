@@ -28,9 +28,9 @@ function rewriteRuntimeSpecifiers(contents) {
 const compiledModuleSpecifiersPlugin = {
     name: "compiled-module-specifiers",
     setup(buildContext) {
-        buildContext.onLoad({ filter: /\.ts$/ }, async (args) => ({
+        buildContext.onLoad({ filter: /\.ts$/ }, async (argumentsList) => ({
             contents: rewriteRuntimeSpecifiers(
-                await readFile(args.path, "utf8"),
+                await readFile(argumentsList.path, "utf8"),
             ),
             loader: "ts",
         }));

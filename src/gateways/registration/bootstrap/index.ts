@@ -27,7 +27,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     );
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
-    const dbExecutor = ctx.capabilities.require<DbExecutor>("db:executor");
+    const databaseExecutor =
+        ctx.capabilities.require<DbExecutor>("db:executor");
     const accountStore =
         ctx.capabilities.get<LocalAccountStore>("auth:accountStore");
     if (!accountStore) return;
@@ -94,7 +95,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const upsertVerifiedPrimaryEmail = ctx.capabilities.get<
         (accountId: string, email: string) => Promise<void>
     >("notify:upsertVerifiedPrimaryEmail");
-    const gateway = new CoreRegistrationGateway(dbExecutor);
+    const gateway = new CoreRegistrationGateway(databaseExecutor);
     await gateway.ensureSchema();
     ctx.log?.("info", "Registration gateway schema ready.", {
         component: "registration-gateway",
@@ -106,7 +107,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     await gateway.discoverAdapters(
         registrationAdaptersRoot,
         {
-            dbExecutor,
+            dbExecutor: databaseExecutor,
             accountStore,
             log: ctx.log,
             canSendInviteEmail: canSendInviteEmail ?? (() => false),
@@ -170,7 +171,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.log?.("info", "Registration gateway routes registered.", {
         component: "registration-gateway",
     });
-    const uiDir = path.resolve(
+    const uiDirectory = path.resolve(
         process.cwd(),
         "src",
         "gateways",
@@ -183,7 +184,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         scriptUrl: "/static/gateways/registration/admin-section.js",
         stringsBaseUrl: "/static/gateways/registration/languages",
     });
-    ctx.uiRegistry?.registerStaticDir("registration", uiDir);
+    ctx.uiRegistry?.registerStaticDir("registration", uiDirectory);
     const uiHooks = createGatewayUiRegistryHooks(
         ctx.uiRegistry,
         "registration",

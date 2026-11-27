@@ -10,12 +10,12 @@ test("preferences routes save and load layout preferences", async () => {
     const route = createPreferencesRoutes(new VolatileUserPreferenceStore());
     let body = "";
     const token = issueAccessToken("u1", "user", 60);
-    const reqHeaders = { authorization: `Bearer ${token}` };
+    const requestHeaders = { authorization: `Bearer ${token}` };
 
     await route(
         {
             method: "PUT",
-            headers: reqHeaders,
+            headers: requestHeaders,
             [Symbol.asyncIterator]: async function* () {
                 yield Buffer.from('{"layout":{"a":1}}');
             },
@@ -31,7 +31,7 @@ test("preferences routes save and load layout preferences", async () => {
     assert.match(body, /"saved":true/);
 
     await route(
-        { method: "GET", headers: reqHeaders } as any,
+        { method: "GET", headers: requestHeaders } as any,
         {
             writeHead() {},
             end(payload: string) {

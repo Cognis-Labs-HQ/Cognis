@@ -8,22 +8,22 @@ export class MemoryDatabaseGateway implements DatabaseGateway {
 
     async query<Row = Record<string, unknown>>(
         statement: string,
-        params?: unknown[],
+        parameters?: unknown[],
     ): Promise<QueryResult<Row>> {
-        this.queryLog.push({ statement, params });
+        this.queryLog.push({ statement, params: parameters });
         return { rows: [], rowCount: 0 };
     }
 
     async execute(
         statement: string,
-        params?: unknown[],
+        parameters?: unknown[],
     ): Promise<{ affectedRows: number }> {
-        this.queryLog.push({ statement, params });
+        this.queryLog.push({ statement, params: parameters });
         return { affectedRows: 0 };
     }
 
     async transaction<T>(
-        callback: (db: DatabaseGateway) => Promise<T>,
+        callback: (database: DatabaseGateway) => Promise<T>,
     ): Promise<T> {
         return callback(this);
     }

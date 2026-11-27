@@ -14,26 +14,26 @@ export function createPreferencesRoutes(
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
-        req: IncomingMessage,
-        res: ServerResponse,
+        request: IncomingMessage,
+        response: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         const match = url.pathname.match(
             /^\/api\/v1\/social\/users\/([^/]+)\/preferences\/([^/]+)$/,
         );
         if (!match) return false;
-        const claims = ctx.requireAuth(req, res, "user");
+        const claims = ctx.requireAuth(request, response, "user");
         if (!claims) return true;
         const accountId = decodeURIComponent(match[1]);
         const pageId = decodeURIComponent(match[2]);
         const allowPublicProfileBannerRead =
-            req.method === "GET" && pageId === "profile-banner";
+            request.method === "GET" && pageId === "profile-banner";
         if (
             !ctx.canAccessUserData(claims, accountId) &&
             !allowPublicProfileBannerRead
         ) {
-            res.writeHead(403, { "content-type": "application/json" });
-            res.end(
+            response.writeHead(403, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     error: {
                         code: "forbidden",
@@ -44,9 +44,9 @@ export function createPreferencesRoutes(
             return true;
         }
 
-        if (req.method === "GET") {
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(
+        if (request.method === "GET") {
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     data: {
                         accountId,
@@ -58,15 +58,15 @@ export function createPreferencesRoutes(
             return true;
         }
 
-        if (req.method === "PUT") {
-            const body = await readJson(req);
+        if (request.method === "PUT") {
+            const body = await readJson(request);
             await store.set(
                 accountId,
                 pageId,
                 JSON.stringify(body.layout ?? {}),
             );
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { saved: true } }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: { saved: true } }));
             return true;
         }
 

@@ -6,7 +6,7 @@ import type {
     StudyAdapterBootstrapCtx,
 } from "../../../gateways/study/gateway.js";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
-import { DbClassesStore } from "./store/index.js";
+import { DbClassesStore as DatabaseClassesStore } from "./store/index.js";
 import type { ClassesRouteOptions } from "./routes/index.js";
 import { createClassesRoutes } from "./routes/index.js";
 import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js";
@@ -41,33 +41,34 @@ function createClassesPageRoute(
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
-        req: IncomingMessage,
-        res: ServerResponse,
+        currentRequest: IncomingMessage,
+        response: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        if (req.method && req.method !== "GET") return false;
+        if (currentRequest.method && currentRequest.method !== "GET")
+            return false;
         if (!isAdapterEnabled()) return false;
         if (url.pathname !== "/classes") return false;
-        const session = ctx.getCookieSession(req);
+        const session = ctx.getCookieSession(currentRequest);
         if (!session) {
-            res.writeHead(302, { location: "/login" });
-            res.end();
+            response.writeHead(302, { location: "/login" });
+            response.end();
             return true;
         }
         if (!ctx.hasMinRole(session.role, "teacher")) {
-            res.writeHead(302, { location: "/dashboard" });
-            res.end();
+            response.writeHead(302, { location: "/dashboard" });
+            response.end();
             return true;
         }
-        ctx.setPageSecurityHeaders(res);
+        ctx.setPageSecurityHeaders(response);
         const html = await import("node:fs/promises").then((fileSystem) =>
             fileSystem.readFile(
                 path.join(ADAPTER_UI_ROOT, "index.html"),
                 "utf8",
             ),
         );
-        res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
-        res.end(html);
+        response.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+        response.end(html);
         return true;
     };
 }
@@ -81,33 +82,34 @@ function createMyClassesPageRoute(
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
-        req: IncomingMessage,
-        res: ServerResponse,
+        currentRequest: IncomingMessage,
+        response: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        if (req.method && req.method !== "GET") return false;
+        if (currentRequest.method && currentRequest.method !== "GET")
+            return false;
         if (!isAdapterEnabled()) return false;
         if (url.pathname !== "/my-classes") return false;
-        const session = ctx.getCookieSession(req);
+        const session = ctx.getCookieSession(currentRequest);
         if (!session) {
-            res.writeHead(302, { location: "/login" });
-            res.end();
+            response.writeHead(302, { location: "/login" });
+            response.end();
             return true;
         }
         if (session.role === "teacher") {
-            res.writeHead(302, { location: "/classes" });
-            res.end();
+            response.writeHead(302, { location: "/classes" });
+            response.end();
             return true;
         }
-        ctx.setPageSecurityHeaders(res);
+        ctx.setPageSecurityHeaders(response);
         const html = await import("node:fs/promises").then((fileSystem) =>
             fileSystem.readFile(
                 path.join(ADAPTER_UI_ROOT, "my-classes.html"),
                 "utf8",
             ),
         );
-        res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
-        res.end(html);
+        response.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+        response.end(html);
         return true;
     };
 }
@@ -117,8 +119,8 @@ export async function bootstrapStudyAdapter(
 ): Promise<void> {
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
-    const dbExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
-    if (!dbExecutor) {
+    const databaseExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
+    if (!databaseExecutor) {
         ctx.log?.(
             "warn",
             "Study/classes adapter: no DB executor available — skipping.",
@@ -127,17 +129,17 @@ export async function bootstrapStudyAdapter(
         return;
     }
 
-    const store = new DbClassesStore(dbExecutor);
+    const store = new DatabaseClassesStore(databaseExecutor);
 
     try {
         await store.ensureSchema();
-    } catch (err) {
+    } catch (error) {
         ctx.log?.(
             "error",
             "Study/classes adapter: schema initialisation failed.",
             {
                 component: "study-classes",
-                error: err instanceof Error ? err.message : String(err),
+                error: error instanceof Error ? error.message : String(error),
             },
         );
         return;
@@ -145,8 +147,8 @@ export async function bootstrapStudyAdapter(
 
     adapterReady = true;
     const deleteAccountActivity = async (accountId: string) => {
-        await dbExecutor.transaction(async (transactionDb) => {
-            const classResult = await transactionDb.executeCommand({
+        await databaseExecutor.transaction(async (transactionDatabase) => {
+            const classResult = await transactionDatabase.executeCommand({
                 option: "SELECT",
                 table: "study_classes",
                 columns: ["id"],
@@ -155,7 +157,7 @@ export async function bootstrapStudyAdapter(
             for (const classRow of classResult.rows ?? []) {
                 const classId = String(classRow.id);
                 for (const table of ["class_memberships", "classroom_state"]) {
-                    await transactionDb.executeCommand({
+                    await transactionDatabase.executeCommand({
                         option: "DELETE",
                         table,
                         where: [{ column: "class_id", value: classId }],
@@ -171,7 +173,7 @@ export async function bootstrapStudyAdapter(
                 ["study_classes", "teacher_account_id"],
             ] as const;
             for (const [table, column] of deletions) {
-                await transactionDb.executeCommand({
+                await transactionDatabase.executeCommand({
                     option: "DELETE",
                     table,
                     where: [{ column, value: accountId }],

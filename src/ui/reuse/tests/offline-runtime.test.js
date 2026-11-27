@@ -11,7 +11,7 @@ import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import { createOfflineOutbox } from "../offline-outbox.js";
 import { BROWSER_FLOW_CONTRACTS } from "../flow-contracts.js";
 import { createReuseResources } from "../resources.js";
-import { createSubPageRegistry } from "../sub-page-registry.js";
+import { createSubPageRegistry as createNestedPageRegistry } from "../sub-page-registry.js";
 
 function fixture({ browser = false } = {}) {
     const window = new EventTarget();
@@ -74,7 +74,9 @@ function fixture({ browser = false } = {}) {
         "./flow-contracts.js": { BROWSER_FLOW_CONTRACTS },
         "./resources.js": { createReuseResources },
         "./top-banners.js": { createTopBanners },
-        "./sub-page-registry.js": { createSubPageRegistry },
+        "./sub-page-registry.js": {
+            createSubPageRegistry: createNestedPageRegistry,
+        },
     });
     uiCtx.capabilities.contribute("session:isOfflineValid", () => true);
     uiCtx.capabilities.contribute("session:getOfflineIdentity", () => ({

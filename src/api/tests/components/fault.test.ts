@@ -75,7 +75,7 @@ test("owned request failures report their canonical owner and contain recovery f
                 throw new Error("recovery_failed");
             },
         }),
-        (...args) => logs.push(args),
+        (...argumentsList) => logs.push(argumentsList),
     );
     assert.deepEqual(reported, [owner]);
     assert.equal(status, 500);

@@ -35,7 +35,7 @@ export interface DbExecutor {
     executeCommand(
         command: StructuredDbCommand,
     ): Promise<StructuredDbCommandResult>;
-    ensureTable(def: StructuredDbTableDef): Promise<void>;
+    ensureTable(definition: StructuredDbTableDef): Promise<void>;
     transaction<T>(callback: (executor: DbExecutor) => Promise<T>): Promise<T>;
 }
 
@@ -48,6 +48,6 @@ export interface DbExecutor {
 export interface RawDbExecutor extends DbExecutor {
     execute(
         sql: string,
-        params?: unknown[],
+        parameters?: unknown[],
     ): Promise<{ rows?: any[]; rowCount?: number }>;
 }

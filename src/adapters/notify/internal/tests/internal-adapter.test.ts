@@ -50,8 +50,8 @@ test("InternalNotificationStore: countUnread", () => {
 test("InternalNotificationStore: markRead", () => {
     const store = new InternalNotificationStore();
     store.add(makeEnvelope("carol", "Msg"));
-    const [notif] = store.list("carol");
-    const found = store.markRead("carol", notif.id);
+    const [notification] = store.list("carol");
+    const found = store.markRead("carol", notification.id);
     assert.equal(found, true);
     assert.equal(store.countUnread("carol"), 0);
     assert.equal(store.list("carol")[0].read, true);

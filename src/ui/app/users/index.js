@@ -75,7 +75,7 @@ async function loadUsers() {
 }
 
 async function promptInput({ title, label, type = "text", placeholder = "" }) {
-    let inputEl = null;
+    let inputElement = null;
     const result = await openPopup({
         title,
         body: () => `
@@ -102,13 +102,13 @@ async function promptInput({ title, label, type = "text", placeholder = "" }) {
         ],
         closeProtection: true,
         onOpen: (overlay) => {
-            inputEl = overlay.querySelector("#users-input");
+            inputElement = overlay.querySelector("#users-input");
         },
     });
-    if (result !== "confirm" || !(inputEl instanceof HTMLInputElement)) {
+    if (result !== "confirm" || !(inputElement instanceof HTMLInputElement)) {
         return null;
     }
-    return inputEl.value.trim();
+    return inputElement.value.trim();
 }
 
 async function fetchUserQuotas(username) {
@@ -369,7 +369,7 @@ async function runUserMenuAction(action, username) {
             type: "password",
         });
         if (!password) return;
-        const res = await apiFetch(
+        const response = await apiFetch(
             `/api/v1/users/${encodeURIComponent(username)}/password`,
             {
                 method: "POST",
@@ -378,10 +378,10 @@ async function runUserMenuAction(action, username) {
             },
         );
         showToast(
-            res.ok
+            response.ok
                 ? i18n.t("ui.app.users.password_reset_done")
                 : i18n.t("ui.reuse.save_failed"),
-            { variant: res.ok ? "success" : "error" },
+            { variant: response.ok ? "success" : "error" },
         );
         return;
     }
@@ -402,17 +402,17 @@ async function runUserMenuAction(action, username) {
             });
             return;
         }
-        const res = await uiCtx.capabilities
+        const response = await uiCtx.capabilities
             .get("notify:emailClient")
             .resendUserEmail({
                 accountId: username,
                 email: unverifiedEmail.email,
             });
         showToast(
-            res.ok
+            response.ok
                 ? i18n.t("ui.app.users.verification_resent")
                 : i18n.t("ui.reuse.save_failed"),
-            { variant: res.ok ? "success" : "error" },
+            { variant: response.ok ? "success" : "error" },
         );
         return;
     }
@@ -482,7 +482,7 @@ async function runUserMenuAction(action, username) {
 
     if (action === "set-founder" || action === "unset-founder") {
         const isFounder = action === "set-founder";
-        const res = await apiFetch(
+        const response = await apiFetch(
             `/api/v1/users/${encodeURIComponent(username)}/isfounder`,
             {
                 method: "POST",
@@ -491,16 +491,16 @@ async function runUserMenuAction(action, username) {
             },
         );
         showToast(
-            res.ok
+            response.ok
                 ? i18n.t(
                       isFounder
                           ? "ui.app.users.founder_enabled"
                           : "ui.app.users.founder_disabled",
                   )
                 : i18n.t("ui.reuse.save_failed"),
-            { variant: res.ok ? "success" : "error" },
+            { variant: response.ok ? "success" : "error" },
         );
-        if (!res.ok) return;
+        if (!response.ok) return;
         await refreshUsersAfterMutation();
         return;
     }
@@ -542,11 +542,11 @@ function bindUsersInteractions() {
         });
     });
 
-    root.querySelectorAll(".users-toggle-btn").forEach((btn) => {
-        btn.addEventListener("click", async () => {
-            const username = btn.dataset.username;
-            const enabled = btn.dataset.enabled === "true";
-            const lifecycleState = btn.dataset.lifecycleState ?? "active";
+    root.querySelectorAll(".users-toggle-btn").forEach((button) => {
+        button.addEventListener("click", async () => {
+            const username = button.dataset.username;
+            const enabled = button.dataset.enabled === "true";
+            const lifecycleState = button.dataset.lifecycleState ?? "active";
             if (!username) return;
             const isInactiveLifecycle =
                 lifecycleState === "archived" ||
@@ -556,13 +556,13 @@ function bindUsersInteractions() {
                 : enabled
                   ? "disable"
                   : "enable";
-            const res = await apiFetch(
+            const response = await apiFetch(
                 `/api/v1/users/${encodeURIComponent(username)}/${action}`,
                 {
                     method: "POST",
                 },
             );
-            if (!res.ok) {
+            if (!response.ok) {
                 showToast(i18n.t("ui.reuse.save_failed"), {
                     variant: "error",
                 });
@@ -572,10 +572,10 @@ function bindUsersInteractions() {
         });
     });
 
-    root.querySelectorAll(".users-menu-btn").forEach((btn) => {
-        btn.addEventListener("click", async () => {
-            const username = btn.dataset.username;
-            if (!username || !(btn instanceof HTMLButtonElement)) return;
+    root.querySelectorAll(".users-menu-btn").forEach((button) => {
+        button.addEventListener("click", async () => {
+            const username = button.dataset.username;
+            if (!username || !(button instanceof HTMLButtonElement)) return;
             const isSelf = username === localStorage.getItem("cognis_account");
             const user = users.find((entry) => entry.accountId === username);
             if (!user) return;
@@ -628,15 +628,17 @@ function bindUsersInteractions() {
                       ]
                     : []),
             ];
-            const action = await openHamburgerMenu(btn, { items: menuItems });
+            const action = await openHamburgerMenu(button, {
+                items: menuItems,
+            });
             if (!action) return;
             await runUserMenuAction(action, username);
         });
     });
 
-    root.querySelectorAll(".users-delete-btn").forEach((btn) => {
-        btn.addEventListener("click", async () => {
-            const username = btn.dataset.username;
+    root.querySelectorAll(".users-delete-btn").forEach((button) => {
+        button.addEventListener("click", async () => {
+            const username = button.dataset.username;
             if (!username) return;
             await runUserMenuAction("delete", username);
         });
@@ -647,7 +649,7 @@ function bindUsersInteractions() {
             const username = select.dataset.username;
             const role = select.value;
             if (!username || !role) return;
-            const res = await apiFetch(
+            const response = await apiFetch(
                 `/api/v1/users/${encodeURIComponent(username)}/role`,
                 {
                     method: "POST",
@@ -655,13 +657,13 @@ function bindUsersInteractions() {
                     body: JSON.stringify({ role }),
                 },
             );
-            if (res.ok) {
+            if (response.ok) {
                 showToast(i18n.t("ui.app.users.role_updated"), {
                     variant: "success",
                 });
                 await refreshUsersAfterMutation();
             } else {
-                const responseBody = await res.json().catch(() => null);
+                const responseBody = await response.json().catch(() => null);
                 const responseMessage =
                     responseBody?.error?.message ??
                     i18n.t("ui.reuse.save_failed");
@@ -674,9 +676,9 @@ function bindUsersInteractions() {
     });
 }
 
-export async function mount(rootEl, { signal } = {}) {
+export async function mount(rootElement, { signal } = {}) {
     pageSignal = signal;
-    root = rootEl;
+    root = rootElement;
     await ensurePageStylesheet("/static/styles/users.css", { signal });
     i18n = await createI18n();
     readUserDetails = createUserDetailsReader({ i18n, signal });

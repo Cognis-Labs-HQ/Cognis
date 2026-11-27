@@ -73,17 +73,17 @@ test("Study providers and pages load their actual source-module graphs through p
             {
                 name: "public-source-routes",
                 setup(builder) {
-                    builder.onResolve({ filter: /.*/ }, (args) => ({
+                    builder.onResolve({ filter: /.*/ }, (argumentsList) => ({
                         path: new URL(
-                            args.path,
-                            args.importer || "http://localhost/",
+                            argumentsList.path,
+                            argumentsList.importer || "http://localhost/",
                         ).href,
                         namespace: "served-module",
                     }));
                     builder.onLoad(
                         { filter: /.*/, namespace: "served-module" },
-                        async (args) => {
-                            const url = new URL(args.path);
+                        async (argumentsList) => {
+                            const url = new URL(argumentsList.path);
                             const response = createResponseRecorder();
                             assert.equal(
                                 await route(

@@ -9,14 +9,14 @@ import {
 import { RouteRegistry } from "../../../../api/reuse/route-registry.js";
 import { bootstrapAuthTestHost as bootstrap } from "../auth-gateway-test-helpers.js";
 import {
-    makeInMemoryDb,
+    makeInMemoryDb as makeInMemoryDatabase,
     createAuthTestContext,
 } from "../auth-gateway-test-helpers.js";
 
 test("public keyring data owners release only their own registration", async () => {
     const capabilities = new CapabilityStore();
-    const dbExecutor = makeInMemoryDb();
-    const base = createAuthTestContext(capabilities, dbExecutor);
+    const databaseExecutor = makeInMemoryDatabase();
+    const base = createAuthTestContext(capabilities, databaseExecutor);
     await bootstrap({
         adaptersRoot: "/nonexistent",
         routeRegistry: new RouteRegistry(),

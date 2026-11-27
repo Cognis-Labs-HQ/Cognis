@@ -4,8 +4,8 @@ import { register } from "./registry.ts";
 export function registerGeneralCommands(): void {
     register(
         "help",
-        async ({ args }) => {
-            const [commandName] = args;
+        async ({ args: argumentsList }) => {
+            const [commandName] = argumentsList;
             if (commandName) {
                 printCommandHelp(commandName);
                 return;

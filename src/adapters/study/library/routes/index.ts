@@ -18,9 +18,11 @@ import type {
 } from "../types.js";
 import { canonicalizeLanguageTag } from "../language.js";
 
-async function readJson(req: IncomingMessage): Promise<unknown> {
+async function readJson(request: IncomingMessage): Promise<unknown> {
     try {
-        const body = await readRequestJson(req, { maxBytes: 5 * 1024 * 1024 });
+        const body = await readRequestJson(request, {
+            maxBytes: 5 * 1024 * 1024,
+        });
         if (!body || typeof body !== "object" || Array.isArray(body))
             throw new Error("invalid_request_json");
         return body;
@@ -49,17 +51,17 @@ export function createLibraryRoutes(
     log?: (
         level: string,
         message: string,
-        meta?: Record<string, unknown>,
+        metadata?: Record<string, unknown>,
     ) => void | Promise<void>,
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
-        req: IncomingMessage,
-        res: ServerResponse,
+        currentRequest: IncomingMessage,
+        response: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         if (!url.pathname.startsWith("/api/v1/study/library")) return false;
-        const claims = ctx.requireAuth(req, res);
+        const claims = ctx.requireAuth(currentRequest, response);
         if (!claims) return true;
         const actor: LibraryActor = {
             accountId: claims.sub,
@@ -68,25 +70,29 @@ export function createLibraryRoutes(
         try {
             if (
                 url.pathname === "/api/v1/study/library/images" &&
-                req.method === "PUT"
+                currentRequest.method === "PUT"
             ) {
-                const data = await readRawBody(req, {
+                const data = await readRawBody(currentRequest, {
                     maxBytes: MAX_IMAGE_UPLOAD_BYTES,
                 });
-                const mediaType = String(req.headers["content-type"] ?? "")
+                const mediaType = String(
+                    currentRequest.headers["content-type"] ?? "",
+                )
                     .split(";")[0]
                     .trim();
-                sendJson(res, 201, {
+                sendJson(response, 201, {
                     data: await library.images.upload(actor, mediaType, data),
                 });
                 return true;
             }
             if (
                 url.pathname === "/api/v1/study/library/images" &&
-                req.method === "DELETE"
+                currentRequest.method === "DELETE"
             ) {
-                const body = (await readJson(req)) as { value: string };
-                sendJson(res, 200, {
+                const body = (await readJson(currentRequest)) as {
+                    value: string;
+                };
+                sendJson(response, 200, {
                     data: await library.images.discard(actor, body.value),
                 });
                 return true;
@@ -94,7 +100,7 @@ export function createLibraryRoutes(
             const imageMatch = url.pathname.match(
                 /^\/api\/v1\/study\/library\/(entries|push-requests)\/([^/]+)\/images\/([^/]+)\/(\d+)$/,
             );
-            if (imageMatch && req.method === "GET") {
+            if (imageMatch && currentRequest.method === "GET") {
                 const image = await library.images.read(
                     actor,
                     decodeURIComponent(imageMatch[2]),
@@ -102,36 +108,38 @@ export function createLibraryRoutes(
                     Number(imageMatch[4]),
                     imageMatch[1] === "push-requests",
                 );
-                res.writeHead(200, {
+                response.writeHead(200, {
                     "content-type": image.mediaType,
                     "content-length": String(image.data.length),
                     "cache-control": "private, no-store",
                     "x-content-type-options": "nosniff",
                     "content-security-policy": "sandbox; default-src 'none'",
                 });
-                res.end(image.data);
+                response.end(image.data);
                 return true;
             }
             if (
                 url.pathname === "/api/v1/study/library/audio" &&
-                req.method === "PUT"
+                currentRequest.method === "PUT"
             ) {
-                const data = await readRawBody(req, {
+                const data = await readRawBody(currentRequest, {
                     maxBytes: MAX_AUDIO_UPLOAD_BYTES,
                 });
-                const mediaType = String(req.headers["content-type"] ?? "")
+                const mediaType = String(
+                    currentRequest.headers["content-type"] ?? "",
+                )
                     .split(";")[0]
                     .trim();
-                sendJson(res, 201, {
+                sendJson(response, 201, {
                     data: await library.uploadAudio(actor, mediaType, data),
                 });
                 return true;
             }
             if (
                 url.pathname === "/api/v1/study/library/import" &&
-                req.method === "POST"
+                currentRequest.method === "POST"
             ) {
-                const body = (await readJson(req)) as {
+                const body = (await readJson(currentRequest)) as {
                     location: LibraryLocation;
                     document: unknown;
                 };
@@ -146,13 +154,13 @@ export function createLibraryRoutes(
                     accountId: actor.accountId,
                     entryCount: data.entries.length,
                 });
-                sendJson(res, 201, { data });
+                sendJson(response, 201, { data });
                 return true;
             }
             const assetMatch = url.pathname.match(
                 /^\/api\/v1\/study\/library\/assets\/([^/]+)\/([^/]+)\/([^/]+)\/(.+)$/,
             );
-            if (assetMatch && req.method === "GET") {
+            if (assetMatch && currentRequest.method === "GET") {
                 const assetPath = assetMatch[4]
                     .split("/")
                     .map(decodeURIComponent)
@@ -164,22 +172,22 @@ export function createLibraryRoutes(
                     assetPath,
                 );
                 if (!asset) {
-                    sendJson(res, 404, { error: { code: "not_found" } });
+                    sendJson(response, 404, { error: { code: "not_found" } });
                     return true;
                 }
-                res.writeHead(200, {
+                response.writeHead(200, {
                     "content-type": asset.mediaType,
                     "content-length": String(asset.data.byteLength),
                     "cache-control": "private, no-store",
                     "x-content-type-options": "nosniff",
                     "content-security-policy": "sandbox; default-src 'none'",
                 });
-                res.end(asset.data);
+                response.end(asset.data);
                 return true;
             }
             if (
                 url.pathname === "/api/v1/study/library/schemas" &&
-                req.method === "GET"
+                currentRequest.method === "GET"
             ) {
                 const language = languageFrom(url);
                 const schemas = library
@@ -190,23 +198,23 @@ export function createLibraryRoutes(
                             canonicalizeLanguageTag(schema.language) ===
                                 language,
                     );
-                sendJson(res, 200, { data: schemas });
+                sendJson(response, 200, { data: schemas });
                 return true;
             }
             if (
                 url.pathname === "/api/v1/study/library/forms" &&
-                req.method === "GET"
+                currentRequest.method === "GET"
             ) {
-                sendJson(res, 200, {
+                sendJson(response, 200, {
                     data: library.listFormContributions(),
                 });
                 return true;
             }
             if (
                 url.pathname === "/api/v1/study/library/locations" &&
-                req.method === "GET"
+                currentRequest.method === "GET"
             ) {
-                sendJson(res, 200, {
+                sendJson(response, 200, {
                     data: await library.locations(
                         actor,
                         url.searchParams.get("language") || undefined,
@@ -216,9 +224,9 @@ export function createLibraryRoutes(
             }
             if (
                 url.pathname === "/api/v1/study/library/entries" &&
-                req.method === "GET"
+                currentRequest.method === "GET"
             ) {
-                sendJson(res, 200, {
+                sendJson(response, 200, {
                     data: await library.list(actor, locationFrom(url), {
                         schemaId: url.searchParams.get("schemaId") ?? undefined,
                         layer: url.searchParams.get("layer") ?? undefined,
@@ -237,34 +245,39 @@ export function createLibraryRoutes(
             }
             if (
                 url.pathname === "/api/v1/study/library/viewed-entries" &&
-                req.method === "GET"
+                currentRequest.method === "GET"
             ) {
-                sendJson(res, 200, {
+                sendJson(response, 200, {
                     data: await library.viewedEntryIds(actor),
                 });
                 return true;
             }
             if (
                 url.pathname === "/api/v1/study/library/viewed-entries" &&
-                req.method === "PUT"
+                currentRequest.method === "PUT"
             ) {
-                const body = (await readJson(req)) as { entryIds?: unknown };
+                const body = (await readJson(currentRequest)) as {
+                    entryIds?: unknown;
+                };
                 if (
                     !Array.isArray(body.entryIds) ||
                     !body.entryIds.every((id) => typeof id === "string")
                 )
                     throw new Error("invalid_entry_selection");
                 await library.markEntriesViewed(actor, body.entryIds);
-                sendJson(res, 200, { data: { entryIds: body.entryIds } });
+                sendJson(response, 200, { data: { entryIds: body.entryIds } });
                 return true;
             }
             const audioMatch = url.pathname.match(
                 /^\/api\/v1\/study\/library\/entries\/([^/]+)\/audio\/([^/]+)$/,
             );
-            if (audioMatch && ["GET", "POST"].includes(req.method ?? "")) {
+            if (
+                audioMatch &&
+                ["GET", "POST"].includes(currentRequest.method ?? "")
+            ) {
                 const body =
-                    req.method === "POST"
-                        ? ((await readJson(req)) as {
+                    currentRequest.method === "POST"
+                        ? ((await readJson(currentRequest)) as {
                               transformation?: LibraryReferenceInput["transformation"];
                               refresh?: boolean;
                           })
@@ -276,33 +289,33 @@ export function createLibraryRoutes(
                     body.transformation,
                     body.refresh === true,
                 );
-                res.writeHead(200, {
+                response.writeHead(200, {
                     "content-type": audio.mediaType,
                     "content-length": String(audio.data.byteLength),
                     "cache-control": "private, no-cache",
                     "x-content-type-options": "nosniff",
                 });
-                res.end(audio.data);
+                response.end(audio.data);
                 return true;
             }
             const detailMatch = url.pathname.match(
                 /^\/api\/v1\/study\/library\/entries\/([^/]+)$/,
             );
-            if (detailMatch && req.method === "GET") {
+            if (detailMatch && currentRequest.method === "GET") {
                 const entry = await library.read(
                     actor,
                     decodeURIComponent(detailMatch[1]),
                 );
                 sendJson(
-                    res,
+                    response,
                     entry ? 200 : 404,
                     entry ? { data: entry } : { error: { code: "not_found" } },
                 );
                 return true;
             }
-            if (detailMatch && req.method === "PUT") {
+            if (detailMatch && currentRequest.method === "PUT") {
                 const entryId = decodeURIComponent(detailMatch[1]);
-                const body = (await readJson(req)) as {
+                const body = (await readJson(currentRequest)) as {
                     entry: Parameters<LibraryCapability["update"]>[2];
                 };
                 const entry = await library.update(actor, entryId, body.entry);
@@ -312,14 +325,14 @@ export function createLibraryRoutes(
                     accountId: actor.accountId,
                     entryId,
                 });
-                sendJson(res, 200, { data: entry });
+                sendJson(response, 200, { data: entry });
                 return true;
             }
             if (
                 url.pathname === "/api/v1/study/library/entries" &&
-                req.method === "POST"
+                currentRequest.method === "POST"
             ) {
-                const body = (await readJson(req)) as {
+                const body = (await readJson(currentRequest)) as {
                     location: LibraryLocation;
                     entry: Parameters<LibraryCapability["create"]>[2];
                 };
@@ -334,29 +347,31 @@ export function createLibraryRoutes(
                     accountId: actor.accountId,
                     entryId: entry.id,
                 });
-                sendJson(res, 201, { data: entry });
+                sendJson(response, 201, { data: entry });
                 return true;
             }
             if (
                 url.pathname ===
                     "/api/v1/study/library/entries/deletion-plan" &&
-                req.method === "POST"
+                currentRequest.method === "POST"
             ) {
-                const body = (await readJson(req)) as { entryIds?: unknown };
+                const body = (await readJson(currentRequest)) as {
+                    entryIds?: unknown;
+                };
                 if (
                     !Array.isArray(body.entryIds) ||
                     !body.entryIds.every((id) => typeof id === "string")
                 )
                     throw new Error("invalid_delete_request");
                 const plan = await library.planDeletion(actor, body.entryIds);
-                sendJson(res, 200, { data: plan });
+                sendJson(response, 200, { data: plan });
                 return true;
             }
             if (
                 url.pathname === "/api/v1/study/library/entries" &&
-                req.method === "DELETE"
+                currentRequest.method === "DELETE"
             ) {
-                const body = (await readJson(req)) as {
+                const body = (await readJson(currentRequest)) as {
                     entryIds?: unknown;
                     blacklistContentHashes?: unknown;
                 };
@@ -381,7 +396,7 @@ export function createLibraryRoutes(
                     entryCount: body.entryIds.length,
                     blacklistContentHashes: body.blacklistContentHashes,
                 });
-                sendJson(res, 200, {
+                sendJson(response, 200, {
                     data: {
                         deleted: deletedEntryIds.length,
                         entryIds: deletedEntryIds,
@@ -392,8 +407,8 @@ export function createLibraryRoutes(
             const traceMatch = url.pathname.match(
                 /^\/api\/v1\/study\/library\/entries\/([^/]+)\/trace$/,
             );
-            if (traceMatch && req.method === "GET") {
-                sendJson(res, 200, {
+            if (traceMatch && currentRequest.method === "GET") {
+                sendJson(response, 200, {
                     data: await library.trace(
                         actor,
                         decodeURIComponent(traceMatch[1]),
@@ -403,9 +418,9 @@ export function createLibraryRoutes(
             }
             if (
                 url.pathname === "/api/v1/study/library/resolve" &&
-                req.method === "POST"
+                currentRequest.method === "POST"
             ) {
-                const body = (await readJson(req)) as {
+                const body = (await readJson(currentRequest)) as {
                     location: LibraryLocation;
                     entry: Parameters<LibraryCapability["resolve"]>[2];
                 };
@@ -419,14 +434,14 @@ export function createLibraryRoutes(
                     operation: "resolve",
                     accountId: actor.accountId,
                 });
-                sendJson(res, 200, { data: proposals });
+                sendJson(response, 200, { data: proposals });
                 return true;
             }
             if (
                 url.pathname === "/api/v1/study/library/lookup/providers" &&
-                req.method === "GET"
+                currentRequest.method === "GET"
             ) {
-                sendJson(res, 200, {
+                sendJson(response, 200, {
                     data: library.listLookupProviders({
                         schemaId: url.searchParams.get("schemaId") ?? "",
                         schemaVersion: url.searchParams.has("schemaVersion")
@@ -439,18 +454,18 @@ export function createLibraryRoutes(
             }
             if (
                 url.pathname === "/api/v1/study/library/dictionary/providers" &&
-                req.method === "GET"
+                currentRequest.method === "GET"
             ) {
-                sendJson(res, 200, {
+                sendJson(response, 200, {
                     data: library.searchableProviders(languageFrom(url)),
                 });
                 return true;
             }
             if (
                 url.pathname === "/api/v1/study/library/dictionary/search" &&
-                req.method === "POST"
+                currentRequest.method === "POST"
             ) {
-                const input = (await readJson(req)) as Parameters<
+                const input = (await readJson(currentRequest)) as Parameters<
                     LibraryCapability["searchDictionary"]
                 >[0];
                 if (
@@ -468,26 +483,26 @@ export function createLibraryRoutes(
                     cacheHit: result.cached,
                     resultCount: result.results.length,
                 });
-                sendJson(res, 200, { data: result });
+                sendJson(response, 200, { data: result });
                 return true;
             }
             if (
                 url.pathname === "/api/v1/study/library/definitions/localize" &&
-                req.method === "POST"
+                currentRequest.method === "POST"
             ) {
-                const request = (await readJson(req)) as Parameters<
+                const request = (await readJson(currentRequest)) as Parameters<
                     LibraryCapability["localizeDefinition"]
                 >[0];
-                sendJson(res, 200, {
+                sendJson(response, 200, {
                     data: await library.localizeDefinition(request),
                 });
                 return true;
             }
             if (
                 url.pathname === "/api/v1/study/library/lookup" &&
-                req.method === "POST"
+                currentRequest.method === "POST"
             ) {
-                const body = (await readJson(req)) as {
+                const body = (await readJson(currentRequest)) as {
                     providerId: string;
                     entry: Parameters<LibraryCapability["lookup"]>[1];
                 };
@@ -501,7 +516,7 @@ export function createLibraryRoutes(
                     typeof body.entry.label !== "string"
                 )
                     throw new Error("invalid_lookup_request");
-                sendJson(res, 200, {
+                sendJson(response, 200, {
                     data: await library.lookup(body.providerId, body.entry),
                 });
                 await log?.("info", "Looked up Library composer input.", {
@@ -516,9 +531,9 @@ export function createLibraryRoutes(
             }
             if (
                 url.pathname === "/api/v1/study/library/push-requests" &&
-                req.method === "GET"
+                currentRequest.method === "GET"
             ) {
-                sendJson(res, 200, {
+                sendJson(response, 200, {
                     data: await library.listPushRequests(
                         actor,
                         (url.searchParams.get("status") ?? undefined) as
@@ -529,9 +544,9 @@ export function createLibraryRoutes(
             }
             if (
                 url.pathname === "/api/v1/study/library/push-requests" &&
-                req.method === "POST"
+                currentRequest.method === "POST"
             ) {
-                const body = (await readJson(req)) as {
+                const body = (await readJson(currentRequest)) as {
                     entryId: string;
                     destination: LibraryLocation;
                     proposedEntry?: LibraryEntryInput;
@@ -553,14 +568,16 @@ export function createLibraryRoutes(
                     accountId: actor.accountId,
                     requestId: request.id,
                 });
-                sendJson(res, 201, { data: request });
+                sendJson(response, 201, { data: request });
                 return true;
             }
             const mergeMatch = url.pathname.match(
                 /^\/api\/v1\/study\/library\/entries\/([^/]+)\/merge$/,
             );
-            if (mergeMatch && req.method === "POST") {
-                const proposed = (await readJson(req)) as LibraryEntryInput;
+            if (mergeMatch && currentRequest.method === "POST") {
+                const proposed = (await readJson(
+                    currentRequest,
+                )) as LibraryEntryInput;
                 const result = await library.merge(
                     actor,
                     decodeURIComponent(mergeMatch[1]),
@@ -577,14 +594,16 @@ export function createLibraryRoutes(
                         requestId: result.request?.id,
                     },
                 );
-                sendJson(res, result.request ? 201 : 200, { data: result });
+                sendJson(response, result.request ? 201 : 200, {
+                    data: result,
+                });
                 return true;
             }
             const relocateMatch = url.pathname.match(
                 /^\/api\/v1\/study\/library\/entries\/([^/]+)\/relocate$/,
             );
-            if (relocateMatch && req.method === "POST") {
-                const body = (await readJson(req)) as {
+            if (relocateMatch && currentRequest.method === "POST") {
+                const body = (await readJson(currentRequest)) as {
                     destination: LibraryLocation;
                 };
                 const result = await library.relocate(
@@ -605,7 +624,7 @@ export function createLibraryRoutes(
                             "request" in result ? result.request.id : undefined,
                     },
                 );
-                sendJson(res, "request" in result ? 201 : 200, {
+                sendJson(response, "request" in result ? 201 : 200, {
                     data: result,
                 });
                 return true;
@@ -613,7 +632,7 @@ export function createLibraryRoutes(
             const downgradeMatch = url.pathname.match(
                 /^\/api\/v1\/study\/library\/entries\/([^/]+)\/move-to-personal$/,
             );
-            if (downgradeMatch && req.method === "POST") {
+            if (downgradeMatch && currentRequest.method === "POST") {
                 const request = await library.moveToPersonal(
                     actor,
                     decodeURIComponent(downgradeMatch[1]),
@@ -629,14 +648,16 @@ export function createLibraryRoutes(
                         requestId: request.id,
                     },
                 );
-                sendJson(res, 201, { data: request });
+                sendJson(response, 201, { data: request });
                 return true;
             }
             const reviewMatch = url.pathname.match(
                 /^\/api\/v1\/study\/library\/push-requests\/([^/]+)$/,
             );
-            if (reviewMatch && req.method === "PATCH") {
-                const proposed = (await readJson(req)) as LibraryEntryInput;
+            if (reviewMatch && currentRequest.method === "PATCH") {
+                const proposed = (await readJson(
+                    currentRequest,
+                )) as LibraryEntryInput;
                 const request = await library.stagePush(
                     actor,
                     decodeURIComponent(reviewMatch[1]),
@@ -648,10 +669,10 @@ export function createLibraryRoutes(
                     accountId: actor.accountId,
                     requestId: request.id,
                 });
-                sendJson(res, 200, { data: request });
+                sendJson(response, 200, { data: request });
                 return true;
             }
-            if (reviewMatch && req.method === "DELETE") {
+            if (reviewMatch && currentRequest.method === "DELETE") {
                 const request = await library.withdrawPush(
                     actor,
                     decodeURIComponent(reviewMatch[1]),
@@ -662,11 +683,11 @@ export function createLibraryRoutes(
                     accountId: actor.accountId,
                     requestId: request.id,
                 });
-                sendJson(res, 200, { data: request });
+                sendJson(response, 200, { data: request });
                 return true;
             }
-            if (reviewMatch && req.method === "PUT") {
-                const body = (await readJson(req)) as {
+            if (reviewMatch && currentRequest.method === "PUT") {
+                const body = (await readJson(currentRequest)) as {
                     decision: "approved" | "rejected";
                 };
                 if (
@@ -686,7 +707,7 @@ export function createLibraryRoutes(
                     requestId: request.id,
                     decision: body.decision,
                 });
-                sendJson(res, 200, { data: request });
+                sendJson(response, 200, { data: request });
                 return true;
             }
             return false;
@@ -694,13 +715,13 @@ export function createLibraryRoutes(
             const failure = libraryFailure(error);
             await log?.("error", "Library request failed.", {
                 component: "study-library",
-                operation: req.method ?? "unknown",
+                operation: currentRequest.method ?? "unknown",
                 path: url.pathname,
                 accountId: actor.accountId,
                 code: failure.code,
                 errorName: error instanceof Error ? error.name : "Error",
             });
-            sendJson(res, failure.status, {
+            sendJson(response, failure.status, {
                 error: {
                     code: failure.code,
                     message: "Library request could not be completed",

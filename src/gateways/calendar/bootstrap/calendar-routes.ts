@@ -19,7 +19,7 @@ import {
     requireOrganizerOwnedSourceEvent,
     requireWritableSharedSourceEvent,
     resolveCreatedSeries,
-    resolveEventMeta,
+    resolveEventMeta as resolveEventMetadata,
     resolveAvailabilityStatus,
     sendCalendarError,
     sendJson,
@@ -72,7 +72,11 @@ export function createCalendarCoreRoutes({
         accountId: string;
         limit?: number;
     }) => Promise<unknown[]>;
-}): (req: IncomingMessage, res: ServerResponse, url: URL) => Promise<boolean> {
+}): (
+    request: IncomingMessage,
+    response: ServerResponse,
+    url: URL,
+) => Promise<boolean> {
     const ctx = resolveRouteContext(routeContext);
     const externalHost =
         process.env.EXTERNAL_HOST ??
@@ -96,16 +100,16 @@ export function createCalendarCoreRoutes({
         log,
     });
     return async (
-        req: IncomingMessage,
-        res: ServerResponse,
+        request: IncomingMessage,
+        response: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         const dispatchNotification = getDispatchNotification();
         if (
             url.pathname === "/api/v1/calendar/upcoming-events" &&
-            req.method === "GET"
+            request.method === "GET"
         ) {
-            const claims = ctx.requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(request, response, "user");
             if (!claims) return true;
             const limitParameter = url.searchParams.get("limit");
             const limit =
@@ -115,7 +119,7 @@ export function createCalendarCoreRoutes({
                 (!Number.isSafeInteger(limit) || limit < 1)
             ) {
                 sendCalendarError(
-                    res,
+                    response,
                     "bad_request",
                     "The limit parameter must be a positive integer.",
                     400,
@@ -126,7 +130,7 @@ export function createCalendarCoreRoutes({
                 accountId: claims.sub,
                 limit,
             });
-            sendJson(res, 200, { data: results[0] ?? [] });
+            sendJson(response, 200, { data: results[0] ?? [] });
             return true;
         }
         const sharedEventsMatch = url.pathname.match(
@@ -134,12 +138,12 @@ export function createCalendarCoreRoutes({
         );
         if (
             sharedEventsMatch &&
-            (req.method === "GET" ||
-                req.method === "POST" ||
-                req.method === "PATCH" ||
-                req.method === "DELETE")
+            (request.method === "GET" ||
+                request.method === "POST" ||
+                request.method === "PATCH" ||
+                request.method === "DELETE")
         ) {
-            const claims = ctx.requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(request, response, "user");
             if (!claims) return true;
             const calendarId = decodeURIComponent(sharedEventsMatch[1]);
             const resolveGuestAccess = ctx.getCapability?.<
@@ -151,7 +155,7 @@ export function createCalendarCoreRoutes({
                 }) => Promise<{ shareGuest: boolean; authorized: boolean }>
             >("share:resolveGuestAccess");
             const requiredCapability =
-                req.method === "GET" ? "calendar:read" : "calendar:write";
+                request.method === "GET" ? "calendar:read" : "calendar:write";
             const guestAccess = resolveGuestAccess
                 ? await resolveGuestAccess({
                       claims,
@@ -162,20 +166,22 @@ export function createCalendarCoreRoutes({
                 : { shareGuest: false, authorized: false };
             if (!guestAccess.authorized) {
                 sendCalendarError(
-                    res,
+                    response,
                     "forbidden",
                     "Share access denied.",
                     403,
                 );
                 return true;
             }
-            if (req.method === "GET") {
-                sendJson(res, 200, { data: gateway.listEvents(calendarId) });
+            if (request.method === "GET") {
+                sendJson(response, 200, {
+                    data: gateway.listEvents(calendarId),
+                });
                 return true;
             }
-            const body = (await readJson(req)) as Record<string, unknown>;
+            const body = (await readJson(request)) as Record<string, unknown>;
             try {
-                if (req.method === "PATCH") {
+                if (request.method === "PATCH") {
                     const eventId = String(body.eventId ?? "").trim();
                     const event = gateway.updateSharedEvent({
                         calendarId,
@@ -204,10 +210,10 @@ export function createCalendarCoreRoutes({
                         calendarId,
                         eventId: event.id,
                     });
-                    sendJson(res, 200, { data: event });
+                    sendJson(response, 200, { data: event });
                     return true;
                 }
-                if (req.method === "DELETE") {
+                if (request.method === "DELETE") {
                     const eventId = String(body.eventId ?? "").trim();
                     const deletedEvents = gateway.deleteSharedEvent({
                         calendarId,
@@ -220,7 +226,7 @@ export function createCalendarCoreRoutes({
                         calendarId,
                         eventId,
                     });
-                    sendJson(res, 200, { data: deletedEvents });
+                    sendJson(response, 200, { data: deletedEvents });
                     return true;
                 }
                 const event = gateway.addEventToCalendar({
@@ -244,24 +250,29 @@ export function createCalendarCoreRoutes({
                     calendarId,
                     eventId: event.id,
                 });
-                sendJson(res, 201, { data: event });
+                sendJson(response, 201, { data: event });
             } catch (error) {
-                sendCalendarError(res, "bad_request", errorMessage(error), 400);
+                sendCalendarError(
+                    response,
+                    "bad_request",
+                    errorMessage(error),
+                    400,
+                );
             }
             return true;
         }
         if (
             url.pathname === "/api/v1/calendar/calendars" &&
-            req.method === "GET"
+            request.method === "GET"
         ) {
-            const claims = ctx.requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(request, response, "user");
             if (!claims) return true;
             const requestedAccountId = String(
                 url.searchParams.get("accountId") ?? "",
             ).trim();
             if (requestedAccountId && !hasMinRole(claims.role, "admin")) {
                 sendCalendarError(
-                    res,
+                    response,
                     "forbidden",
                     "Only administrators can list another account's calendars.",
                     403,
@@ -310,7 +321,7 @@ export function createCalendarCoreRoutes({
                     };
                 }),
             );
-            sendJson(res, 200, {
+            sendJson(response, 200, {
                 data: calendarsWithShareAccess,
                 meta: {
                     canInviteExternal: hasMinRole(claims.role, "admin"),
@@ -323,16 +334,16 @@ export function createCalendarCoreRoutes({
         }
         if (
             url.pathname === "/api/v1/calendar/invitations" &&
-            req.method === "GET"
+            request.method === "GET"
         ) {
-            const claims = ctx.requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(request, response, "user");
             if (!claims) return true;
             const requestedAccountId = String(
                 url.searchParams.get("accountId") ?? "",
             ).trim();
             if (requestedAccountId && !hasMinRole(claims.role, "admin")) {
                 sendCalendarError(
-                    res,
+                    response,
                     "forbidden",
                     "Only administrators can list another account's invitations.",
                     403,
@@ -340,18 +351,18 @@ export function createCalendarCoreRoutes({
                 return true;
             }
             const targetAccountId = requestedAccountId || claims.sub;
-            sendJson(res, 200, {
+            sendJson(response, 200, {
                 data: gateway.listInvitedPendingEvents(targetAccountId),
             });
             return true;
         }
         if (
             url.pathname === "/api/v1/calendar/calendars" &&
-            req.method === "POST"
+            request.method === "POST"
         ) {
-            const claims = ctx.requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(request, response, "user");
             if (!claims) return true;
-            const body = (await readJson(req)) as {
+            const body = (await readJson(request)) as {
                 name?: unknown;
                 visibility?: unknown;
                 color?: unknown;
@@ -360,7 +371,7 @@ export function createCalendarCoreRoutes({
             const name = String(body?.name ?? "").trim();
             if (!name) {
                 sendCalendarError(
-                    res,
+                    response,
                     "bad_request",
                     "Calendar name is required.",
                     400,
@@ -369,7 +380,7 @@ export function createCalendarCoreRoutes({
             }
             if (name.length > 30) {
                 sendCalendarError(
-                    res,
+                    response,
                     "validation_error",
                     "Calendar names are limited to 30 characters.",
                     400,
@@ -381,7 +392,7 @@ export function createCalendarCoreRoutes({
             ).trim();
             if (requestedAccountId && !hasMinRole(claims.role, "admin")) {
                 sendCalendarError(
-                    res,
+                    response,
                     "forbidden",
                     "Only administrators can create calendars for another account.",
                     403,
@@ -403,7 +414,7 @@ export function createCalendarCoreRoutes({
                     ),
                 });
                 await gateway.flushStore();
-                sendJson(res, 201, { data: created });
+                sendJson(response, 201, { data: created });
             } catch (error) {
                 log?.("error", "Failed to create calendar.", {
                     component: "calendar-gateway",
@@ -412,7 +423,7 @@ export function createCalendarCoreRoutes({
                         error instanceof Error ? error.message : String(error),
                 });
                 sendCalendarError(
-                    res,
+                    response,
                     "internal_error",
                     "Failed to create calendar.",
                     500,
@@ -422,8 +433,8 @@ export function createCalendarCoreRoutes({
         }
         if (
             await handleCalendarMutationRoutes({
-                req,
-                res,
+                req: request,
+                res: response,
                 url,
                 ctx,
                 gateway,
@@ -442,11 +453,11 @@ export function createCalendarCoreRoutes({
         if (
             url.pathname.match(/^\/api\/v1\/calendar\/calendars\/[^/]+\/share/)
         ) {
-            const shareClaims = ctx.requireAuth(req, res, "user");
+            const shareClaims = ctx.requireAuth(request, response, "user");
             if (!shareClaims) return true;
             const handledShareRoute = await handleCalendarShareRoutes({
-                req,
-                res,
+                req: request,
+                res: response,
                 url,
                 claims: { sub: shareClaims.sub },
                 gateway,
@@ -461,8 +472,8 @@ export function createCalendarCoreRoutes({
         const eventsMatch = url.pathname.match(
             /^\/api\/v1\/calendar\/calendars\/([^/]+)\/events$/,
         );
-        if (eventsMatch && req.method === "GET") {
-            const claims = ctx.requireAuth(req, res, "user");
+        if (eventsMatch && request.method === "GET") {
+            const claims = ctx.requireAuth(request, response, "user");
             if (!claims) return true;
             const calendarId = decodeURIComponent(eventsMatch[1]);
             const ownedCalendar = gateway.getOwnedCalendar(
@@ -478,8 +489,8 @@ export function createCalendarCoreRoutes({
             if (
                 activeSharedCalendar &&
                 !(await requireSharedCalendarAccess({
-                    req,
-                    res,
+                    req: request,
+                    res: response,
                     shareTokenId: activeSharedCalendar.shareTokenId,
                     accountId: claims.sub,
                     ownerCalendarId: activeSharedCalendar.ownerCalendarId,
@@ -494,18 +505,23 @@ export function createCalendarCoreRoutes({
                     accountId: claims.sub,
                     calendarId,
                     activeShare: activeSharedCalendar,
-                    res,
+                    res: response,
                 })
             ) {
                 return true;
             }
             if (!ownedCalendar && !activeSharedCalendar) {
-                sendCalendarError(res, "not_found", "Calendar not found.", 404);
+                sendCalendarError(
+                    response,
+                    "not_found",
+                    "Calendar not found.",
+                    404,
+                );
                 return true;
             }
             const sourceCalendarId =
                 activeSharedCalendar?.ownerCalendarId ?? calendarId;
-            sendJson(res, 200, {
+            sendJson(response, 200, {
                 data: {
                     calendar: gateway.getCalendar(calendarId),
                     events: activeSharedCalendar
@@ -519,11 +535,11 @@ export function createCalendarCoreRoutes({
             return true;
         }
 
-        if (eventsMatch && req.method === "POST") {
-            const claims = ctx.requireAuth(req, res, "user");
+        if (eventsMatch && request.method === "POST") {
+            const claims = ctx.requireAuth(request, response, "user");
             if (!claims) return true;
             const calendarId = decodeURIComponent(eventsMatch[1]);
-            const body = (await readJson(req)) as Record<string, unknown>;
+            const body = (await readJson(request)) as Record<string, unknown>;
             const title = String(body?.title ?? "").trim();
             const startAt = String(body?.startAt ?? "").trim();
             const endAt = String(body?.endAt ?? "").trim();
@@ -535,7 +551,7 @@ export function createCalendarCoreRoutes({
             const canInviteByEmail = hasMinRole(claims.role, "admin");
             if (!title || !startAt || !endAt) {
                 sendCalendarError(
-                    res,
+                    response,
                     "bad_request",
                     "title, startAt, and endAt are required.",
                     400,
@@ -544,7 +560,7 @@ export function createCalendarCoreRoutes({
             }
             if (inviteEmails.length > 0 && !canInviteByEmail) {
                 sendCalendarError(
-                    res,
+                    response,
                     "forbidden",
                     "Only founder or admin users can send email invites.",
                     403,
@@ -561,8 +577,8 @@ export function createCalendarCoreRoutes({
                 if (
                     activeSharedCalendar &&
                     !(await requireSharedCalendarAccess({
-                        req,
-                        res,
+                        req: request,
+                        res: response,
                         shareTokenId: activeSharedCalendar.shareTokenId,
                         accountId: claims.sub,
                         ownerCalendarId: activeSharedCalendar.ownerCalendarId,
@@ -578,7 +594,7 @@ export function createCalendarCoreRoutes({
                         accountId: claims.sub,
                         calendarId,
                         activeShare: activeSharedCalendar,
-                        res,
+                        res: response,
                     })
                 ) {
                     return true;
@@ -670,7 +686,10 @@ export function createCalendarCoreRoutes({
                       });
                 if (replayed) {
                     await gateway.flushStore();
-                    sendJson(res, 201, { data: createdEvent, replayed: true });
+                    sendJson(response, 201, {
+                        data: createdEvent,
+                        replayed: true,
+                    });
                     return true;
                 }
                 const createdSeries = resolveCreatedSeries(
@@ -695,7 +714,7 @@ export function createCalendarCoreRoutes({
                 createdSeries.forEach((event) => {
                     scheduleReminderNotificationsForEvent(event);
                 });
-                sendJson(res, 201, { data: createdEvent });
+                sendJson(response, 201, { data: createdEvent });
             } catch (error) {
                 const message = errorMessage(error);
                 if (
@@ -703,7 +722,7 @@ export function createCalendarCoreRoutes({
                     message === "calendar_operation_conflict"
                 ) {
                     sendCalendarError(
-                        res,
+                        response,
                         message,
                         message,
                         message === "invalid_operation_id" ? 400 : 409,
@@ -712,7 +731,7 @@ export function createCalendarCoreRoutes({
                 }
                 if (message === "calendar_not_found") {
                     sendCalendarError(
-                        res,
+                        response,
                         "not_found",
                         "Calendar not found.",
                         404,
@@ -721,7 +740,7 @@ export function createCalendarCoreRoutes({
                 }
                 if (message === "calendar_forbidden") {
                     sendCalendarError(
-                        res,
+                        response,
                         "forbidden",
                         "Calendar is read-only.",
                         403,
@@ -730,7 +749,7 @@ export function createCalendarCoreRoutes({
                 }
                 if (message === "calendar_invalid_range") {
                     sendCalendarError(
-                        res,
+                        response,
                         "bad_request",
                         "Event end time must be after start time.",
                         400,
@@ -739,7 +758,7 @@ export function createCalendarCoreRoutes({
                 }
                 if (message === "calendar_event_title_required") {
                     sendCalendarError(
-                        res,
+                        response,
                         "bad_request",
                         "Event title is required.",
                         400,
@@ -753,7 +772,7 @@ export function createCalendarCoreRoutes({
                     error: message,
                 });
                 sendCalendarError(
-                    res,
+                    response,
                     "internal_error",
                     "Failed to create event.",
                     500,
@@ -764,8 +783,8 @@ export function createCalendarCoreRoutes({
 
         if (
             await handleCalendarEventRoutes({
-                req,
-                res,
+                req: request,
+                res: response,
                 url,
                 ctx,
                 gateway,
@@ -785,8 +804,8 @@ export function createCalendarCoreRoutes({
         const respondMatch = url.pathname.match(
             /^\/api\/v1\/calendar\/calendars\/([^/]+)\/events\/([^/]+)\/respond$/,
         );
-        if (respondMatch && req.method === "POST") {
-            const claims = ctx.requireAuth(req, res, "user");
+        if (respondMatch && request.method === "POST") {
+            const claims = ctx.requireAuth(request, response, "user");
             if (!claims) return true;
             const responseCalendarId = decodeURIComponent(respondMatch[1]);
             const responseSharedCalendar =
@@ -796,8 +815,8 @@ export function createCalendarCoreRoutes({
             if (
                 responseSharedCalendar?.recipientAccountId === claims.sub &&
                 !(await requireSharedCalendarAccess({
-                    req,
-                    res,
+                    req: request,
+                    res: response,
                     shareTokenId: responseSharedCalendar.shareTokenId,
                     accountId: claims.sub,
                     ownerCalendarId: responseSharedCalendar.ownerCalendarId,
@@ -807,8 +826,8 @@ export function createCalendarCoreRoutes({
                 return true;
             }
             await handleCalendarResponseRoute({
-                req,
-                res,
+                req: request,
+                res: response,
                 url,
                 claims,
                 calendarId: responseCalendarId,
@@ -827,20 +846,20 @@ export function createCalendarCoreRoutes({
         const meetingAccessMatch = url.pathname.match(
             /^\/api\/v1\/calendar\/meeting-access\/([^/]+)$/,
         );
-        if (meetingAccessMatch && req.method === "GET") {
+        if (meetingAccessMatch && request.method === "GET") {
             const token = decodeURIComponent(meetingAccessMatch[1]);
             const scopedToken = gateway.consumeScopedMeetingAccessToken(token);
             if (!scopedToken) {
                 sendCalendarError(
-                    res,
+                    response,
                     "not_found",
                     "Meeting access link is invalid or expired.",
                     404,
                 );
                 return true;
             }
-            res.writeHead(302, { location: scopedToken.targetUrl });
-            res.end();
+            response.writeHead(302, { location: scopedToken.targetUrl });
+            response.end();
             return true;
         }
 

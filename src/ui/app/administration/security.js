@@ -79,7 +79,8 @@ export function initSecuritySection(root, { i18n, onDirtyChange, signal }) {
     let loading = null;
     let bindings = null;
     signal?.addEventListener("abort", () => bindings?.abort(), { once: true });
-    const log = (...args) => uiCtx.capabilities.get("ui:log")?.(...args);
+    const log = (...argumentsList) =>
+        uiCtx.capabilities.get("ui:log")?.(...argumentsList);
 
     async function loadData(url) {
         const response = await apiFetch(url);

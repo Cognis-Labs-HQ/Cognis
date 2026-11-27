@@ -59,7 +59,7 @@ const JOINED_PROFILE_COLUMNS: Array<{ col: string; as: string }> = [
     { col: "account_profiles.updated_at", as: "updated_at" },
 ];
 
-const SCHEMA_TABLE_DEFS: StructuredDbTableDef[] = [
+const SCHEMA_TABLE_DEFINITIONS: StructuredDbTableDef[] = [
     {
         name: "account_profiles",
         columns: [
@@ -155,12 +155,12 @@ const SCHEMA_TABLE_DEFS: StructuredDbTableDef[] = [
     },
 ];
 
-export class DbProfileStore implements ProfileCreateStore {
+class DatabaseProfileStore implements ProfileCreateStore {
     constructor(private readonly database: DbExecutor) {}
 
     async ensureSchema(): Promise<void> {
-        for (const def of SCHEMA_TABLE_DEFS) {
-            await this.database.ensureTable(def);
+        for (const definition of SCHEMA_TABLE_DEFINITIONS) {
+            await this.database.ensureTable(definition);
         }
     }
 
@@ -392,9 +392,9 @@ export class DbProfileStore implements ProfileCreateStore {
 
         const setRecord: Record<string, unknown> = {};
 
-        for (const [key, col] of Object.entries(fieldMap)) {
+        for (const [key, column] of Object.entries(fieldMap)) {
             if (key in updates) {
-                setRecord[col] = (updates as any)[key] ?? null;
+                setRecord[column] = (updates as any)[key] ?? null;
             }
         }
 
@@ -663,3 +663,4 @@ export class DbProfileStore implements ProfileCreateStore {
         return (result.rowCount ?? 0) > 0;
     }
 }
+export { DatabaseProfileStore as DbProfileStore };

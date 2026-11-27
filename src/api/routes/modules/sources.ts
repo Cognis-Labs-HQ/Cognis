@@ -30,8 +30,8 @@ export function createModuleSourceRoutes(
     log?: BootstrapLog,
 ) {
     return async (
-        req: IncomingMessage,
-        res: ServerResponse,
+        request: IncomingMessage,
+        response: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         if (
@@ -39,9 +39,9 @@ export function createModuleSourceRoutes(
             url.pathname !== "/api/v1/modules/settings"
         )
             return false;
-        const logMeta = {
+        const logMetadata = {
             component: "api-modules",
-            method: req.method ?? "GET",
+            method: request.method ?? "GET",
             path: url.pathname,
         };
         try {
@@ -49,33 +49,35 @@ export function createModuleSourceRoutes(
                 marketplace &&
                 url.pathname ===
                     "/api/v1/modules/sources/validate-credential" &&
-                req.method === "POST"
+                request.method === "POST"
             ) {
-                const claims = ctx.requireAuth(req, res, "admin");
+                const claims = ctx.requireAuth(request, response, "admin");
                 if (!claims) return true;
-                const body = await readJson(req);
+                const body = await readJson(request);
                 const data = await marketplace.validateSourceCredential(
                     body.source as never,
                     typeof body.token === "string" ? body.token : undefined,
                 );
-                res.writeHead(200, { "content-type": "application/json" });
-                res.end(JSON.stringify({ data }));
+                response.writeHead(200, { "content-type": "application/json" });
+                response.end(JSON.stringify({ data }));
                 return true;
             }
             if (marketplace && url.pathname === "/api/v1/modules/sources") {
-                const claims = ctx.requireAuth(req, res, "admin");
+                const claims = ctx.requireAuth(request, response, "admin");
                 if (!claims) return true;
-                if (req.method === "GET") {
-                    res.writeHead(200, { "content-type": "application/json" });
-                    res.end(
+                if (request.method === "GET") {
+                    response.writeHead(200, {
+                        "content-type": "application/json",
+                    });
+                    response.end(
                         JSON.stringify({
                             data: await marketplace.listSources(),
                         }),
                     );
                     return true;
                 }
-                if (req.method === "POST") {
-                    const body = await readJson(req);
+                if (request.method === "POST") {
+                    const body = await readJson(request);
                     if (
                         body.clearCredential !== undefined &&
                         typeof body.clearCredential !== "boolean"
@@ -94,49 +96,57 @@ export function createModuleSourceRoutes(
                             ? "Module source updated."
                             : "Module source added.",
                         {
-                            ...logMeta,
+                            ...logMetadata,
                             accountId: claims.sub,
                             sourceUuid: source.uuid,
                         },
                     );
-                    res.writeHead(200, { "content-type": "application/json" });
-                    res.end(JSON.stringify({ data: source }));
+                    response.writeHead(200, {
+                        "content-type": "application/json",
+                    });
+                    response.end(JSON.stringify({ data: source }));
                     return true;
                 }
             }
             if (marketplace && url.pathname === "/api/v1/modules/settings") {
-                const claims = ctx.requireAuth(req, res, "admin");
+                const claims = ctx.requireAuth(request, response, "admin");
                 if (!claims) return true;
                 const data =
-                    req.method === "PUT"
+                    request.method === "PUT"
                         ? await marketplace.saveSettings(
-                              (await readJson(req)) as never,
+                              (await readJson(request)) as never,
                           )
-                        : req.method === "GET"
+                        : request.method === "GET"
                           ? await marketplace.getSettings()
                           : null;
                 if (data) {
-                    res.writeHead(200, { "content-type": "application/json" });
-                    res.end(JSON.stringify({ data }));
+                    response.writeHead(200, {
+                        "content-type": "application/json",
+                    });
+                    response.end(JSON.stringify({ data }));
                     return true;
                 }
             }
             const sourceDeleteMatch = url.pathname.match(
                 /^\/api\/v1\/modules\/sources\/([^/]+)$/,
             );
-            if (marketplace && sourceDeleteMatch && req.method === "DELETE") {
-                const claims = ctx.requireAuth(req, res, "admin");
+            if (
+                marketplace &&
+                sourceDeleteMatch &&
+                request.method === "DELETE"
+            ) {
+                const claims = ctx.requireAuth(request, response, "admin");
                 if (!claims) return true;
                 await marketplace.removeSource(
                     decodeURIComponent(sourceDeleteMatch[1]),
                 );
                 log?.("warn", "Module source deleted.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: claims.sub,
                     sourceUuid: sourceDeleteMatch[1],
                 });
-                res.writeHead(204);
-                res.end();
+                response.writeHead(204);
+                response.end();
                 return true;
             }
             return false;
@@ -148,14 +158,14 @@ export function createModuleSourceRoutes(
                     ? error.message
                     : "module_source_operation_failed";
             log?.("error", "Module source operation failed.", {
-                ...logMeta,
+                ...logMetadata,
                 code,
                 errorName: error instanceof Error ? error.name : "Error",
             });
-            res.writeHead(INPUT_ERRORS.has(code) ? 400 : 503, {
+            response.writeHead(INPUT_ERRORS.has(code) ? 400 : 503, {
                 "content-type": "application/json",
             });
-            res.end(
+            response.end(
                 JSON.stringify({
                     error: { code, message: "Module source operation failed." },
                 }),

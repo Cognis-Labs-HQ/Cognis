@@ -17,8 +17,8 @@ import { formatApprovalMessage } from "./approval-message.js";
  * approval popups are ever shown.
  */
 
-const POLL_INTERVAL_MS = 5_000;
-const APPROVAL_TIMEOUT_MS = 60_000;
+const POLL_INTERVAL_MILLISECONDS = 5_000;
+const APPROVAL_TIMEOUT_MILLISECONDS = 60_000;
 
 const shownApprovalIds = new Set();
 let isPopupOpen = false;
@@ -86,7 +86,7 @@ async function showApprovalPopup(approval, i18n) {
                     variant: "confirm",
                 },
             ],
-            timeoutMs: APPROVAL_TIMEOUT_MS,
+            timeoutMs: APPROVAL_TIMEOUT_MILLISECONDS,
             timeoutActionId: "approved",
         });
         const decision = result === "declined" ? "declined" : "approved";
@@ -118,10 +118,10 @@ async function startPolling(i18n) {
             return;
         }
         await refreshApprovals(i18n);
-        pollTimer = setTimeout(runTick, POLL_INTERVAL_MS);
+        pollTimer = setTimeout(runTick, POLL_INTERVAL_MILLISECONDS);
     };
 
-    pollTimer = setTimeout(runTick, POLL_INTERVAL_MS);
+    pollTimer = setTimeout(runTick, POLL_INTERVAL_MILLISECONDS);
 }
 
 (async function initApprovalPoller() {

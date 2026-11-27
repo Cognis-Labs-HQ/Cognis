@@ -69,8 +69,8 @@ export interface AuthProviderAdapter {
 }
 
 export type AuthProviderRouteHandler = (
-    req: IncomingMessage,
-    res: ServerResponse,
+    request: IncomingMessage,
+    response: ServerResponse,
     url: URL,
 ) => Promise<void> | void;
 
@@ -654,14 +654,18 @@ export class CoreAuthGateway {
         }
 
         for (const entry of entries) {
-            const pkgPath = path.join(authAdaptersRoot, entry, "package.json");
+            const packagePath = path.join(
+                authAdaptersRoot,
+                entry,
+                "package.json",
+            );
             try {
-                const raw = await readFile(pkgPath, "utf8");
-                const pkg = JSON.parse(raw) as {
+                const raw = await readFile(packagePath, "utf8");
+                const packageManifest = JSON.parse(raw) as {
                     main?: string;
                     version?: string;
                 };
-                if (!pkg.main) continue;
+                if (!packageManifest.main) continue;
 
                 let requires: string[] | undefined;
                 let publisher: string | undefined;
@@ -688,24 +692,28 @@ export class CoreAuthGateway {
                 const entryPath = path.resolve(
                     authAdaptersRoot,
                     entry,
-                    pkg.main,
+                    packageManifest.main,
                 );
-                const mod = await import(`${entryPath}?t=${Date.now()}`);
+                const moduleExports = await import(
+                    `${entryPath}?t=${Date.now()}`
+                );
                 const initialize = async () => {
                     if (
                         bootstrapContext &&
-                        typeof mod.bootstrapAuthAdapter === "function"
+                        typeof moduleExports.bootstrapAuthAdapter === "function"
                     ) {
-                        await mod.bootstrapAuthAdapter({
+                        await moduleExports.bootstrapAuthAdapter({
                             ...bootstrapContext,
                             adapterRoot: path.join(authAdaptersRoot, entry),
                         });
                     }
-                    if (typeof mod.createAdapter === "function") {
+                    if (typeof moduleExports.createAdapter === "function") {
                         const adapter =
-                            mod.createAdapter() as AuthProviderAdapter;
-                        if (pkg.version) {
-                            Object.assign(adapter, { version: pkg.version });
+                            moduleExports.createAdapter() as AuthProviderAdapter;
+                        if (packageManifest.version) {
+                            Object.assign(adapter, {
+                                version: packageManifest.version,
+                            });
                         }
                         if (publisher) Object.assign(adapter, { publisher });
                         if (locked) Object.assign(adapter, { locked: true });
@@ -722,7 +730,7 @@ export class CoreAuthGateway {
                             ...bootstrapContext,
                             adapterRoot: path.join(authAdaptersRoot, entry),
                         },
-                        mod,
+                        moduleExports,
                         initialize,
                     );
                 else await initialize();

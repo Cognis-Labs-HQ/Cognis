@@ -56,23 +56,23 @@ function makeResponse() {
 
 async function dispatchRoute(
     routeRegistry: RouteRegistry,
-    req: import("node:http").IncomingMessage,
+    request: import("node:http").IncomingMessage,
     pathname: string,
 ) {
-    const res = makeResponse();
+    const response = makeResponse();
     let handled = false;
-    Object.assign(req as object, { url: pathname });
+    Object.assign(request as object, { url: pathname });
     for (const entry of routeRegistry.getEntries()) {
         handled = await entry.handler(
-            req,
-            res as unknown as import("node:http").ServerResponse,
+            request,
+            response as unknown as import("node:http").ServerResponse,
             new URL(pathname, "http://localhost"),
         );
         if (handled) {
             break;
         }
     }
-    return { handled, res };
+    return { handled, res: response };
 }
 
 test("login issues setup-pending token when global TFA setup is required", async () => {

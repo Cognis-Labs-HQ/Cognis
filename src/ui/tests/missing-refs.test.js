@@ -7,15 +7,15 @@ import { fileURLToPath } from "node:url";
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const exportCache = new Map();
 
-function walk(dir) {
-    const out = [];
-    for (const directoryEntry of readdirSync(dir)) {
-        const entryPath = join(dir, directoryEntry);
+function walk(directory) {
+    const discoveredFiles = [];
+    for (const directoryEntry of readdirSync(directory)) {
+        const entryPath = join(directory, directoryEntry);
         const entryStat = statSync(entryPath);
-        if (entryStat.isDirectory()) out.push(...walk(entryPath));
-        else out.push(entryPath);
+        if (entryStat.isDirectory()) discoveredFiles.push(...walk(entryPath));
+        else discoveredFiles.push(entryPath);
     }
-    return out;
+    return discoveredFiles;
 }
 
 function parseNamedSpecifiers(specifierList) {
@@ -95,15 +95,15 @@ function extractDefinedCssClasses() {
     for (const root of CSS_ROOTS) {
         for (const file of walk(root)) {
             if (!file.endsWith(".css")) continue;
-            const src = readFileSync(file, "utf8");
-            const stripped = src
+            const sourceText = readFileSync(file, "utf8");
+            const stripped = sourceText
                 .replace(/\/\*[\s\S]*?\*\//g, "")
                 .replace(/@import\s+url\([^)]*\)[^;]*;/g, "");
             for (const match of stripped.matchAll(
                 /\.([a-zA-Z][a-zA-Z0-9_-]*)/g,
             )) {
-                const cls = match[1];
-                if (!map.has(cls)) map.set(cls, file);
+                const className = match[1];
+                if (!map.has(className)) map.set(className, file);
             }
         }
     }
@@ -120,9 +120,9 @@ const CSS_IDENT_CAPTURE = "([a-zA-Z][a-zA-Z0-9_-]*[a-zA-Z0-9_]|[a-zA-Z])";
 function extractAppliedCssClasses(content) {
     const classes = new Set();
 
-    const addTokens = (str) => {
-        for (const tok of str.trim().split(/\s+/)) {
-            if (CSS_IDENT.test(tok)) classes.add(tok);
+    const addTokens = (text) => {
+        for (const token of text.trim().split(/\s+/)) {
+            if (CSS_IDENT.test(token)) classes.add(token);
         }
     };
 
@@ -137,7 +137,8 @@ function extractAppliedCssClasses(content) {
     for (const match of content.matchAll(
         /classList\.(?:add|remove)\([^)]+\)/g,
     )) {
-        for (const arg of match[0].matchAll(identRe)) classes.add(arg[1]);
+        for (const argument of match[0].matchAll(identRe))
+            classes.add(argument[1]);
     }
     for (const match of content.matchAll(
         new RegExp(
@@ -204,18 +205,18 @@ test("no missing CSS definitions (class applied in scripts or templates but not 
         for (const file of walk(root)) {
             if (!file.endsWith(".js") && !file.endsWith(".html")) continue;
             const content = readFileSync(file, "utf8");
-            for (const cls of extractAppliedCssClasses(content))
-                appliedClasses.add(cls);
+            for (const className of extractAppliedCssClasses(content))
+                appliedClasses.add(className);
         }
     }
 
     const missing = [];
-    for (const cls of appliedClasses) {
-        if (DYNAMIC_CLASS_NAMES.has(cls)) continue;
-        if (SELECTOR_HOOK_CLASSES.has(cls)) continue;
-        if (!cssDefinitions.has(cls)) {
+    for (const className of appliedClasses) {
+        if (DYNAMIC_CLASS_NAMES.has(className)) continue;
+        if (SELECTOR_HOOK_CLASSES.has(className)) continue;
+        if (!cssDefinitions.has(className)) {
             missing.push(
-                `  .${cls}  (applied in scripts/templates but not defined in any stylesheet)`,
+                `  .${className}  (applied in scripts/templates but not defined in any stylesheet)`,
             );
         }
     }
@@ -238,10 +239,10 @@ test("no missing named imports from relative modules", () => {
     for (const root of consumerRoots) {
         for (const file of walk(root)) {
             if (!file.endsWith(".js")) continue;
-            const src = readFileSync(file, "utf8");
-            const fileDir = dirname(file);
+            const sourceText = readFileSync(file, "utf8");
+            const fileDirectory = dirname(file);
 
-            for (const match of src.matchAll(
+            for (const match of sourceText.matchAll(
                 /^import\s*\{([^}]+)\}\s*from\s*['"](\.[^'"]+)['"]/gm,
             )) {
                 const names = match[1]
@@ -253,12 +254,12 @@ test("no missing named imports from relative modules", () => {
                             .trim(),
                     )
                     .filter(Boolean);
-                const relPath = match[2];
-                const targetPath = resolve(fileDir, relPath);
+                const relativePathPath = match[2];
+                const targetPath = resolve(fileDirectory, relativePathPath);
 
                 if (!existsSync(targetPath)) {
                     missing.push(
-                        `  Module not found: ${relPath}  (imported from ${file})`,
+                        `  Module not found: ${relativePathPath}  (imported from ${file})`,
                     );
                     continue;
                 }
@@ -268,7 +269,7 @@ test("no missing named imports from relative modules", () => {
                 for (const name of names) {
                     if (!exported.has(name)) {
                         missing.push(
-                            `  '${name}' is not exported by ${relPath}  (imported in ${file})`,
+                            `  '${name}' is not exported by ${relativePathPath}  (imported in ${file})`,
                         );
                     }
                 }

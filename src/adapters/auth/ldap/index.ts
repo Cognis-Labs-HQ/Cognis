@@ -183,11 +183,11 @@ function splitList(value: unknown): string[] {
     if (Array.isArray(value))
         return value
             .map(String)
-            .map((value2) => value2.trim())
+            .map((mappingValue) => mappingValue.trim())
             .filter(Boolean);
     return String(value ?? "")
         .split(",")
-        .map((value2) => value2.trim())
+        .map((mappingValue) => mappingValue.trim())
         .filter(Boolean);
 }
 
@@ -195,8 +195,11 @@ function parseRoleMappings(value: unknown): Record<string, string> {
     if (value && typeof value === "object" && !Array.isArray(value)) {
         return Object.fromEntries(
             Object.entries(value)
-                .map(([key, value2]) => [key.trim(), String(value2).trim()])
-                .filter(([key, value2]) => key && value2),
+                .map(([key, mappingValue]) => [
+                    key.trim(),
+                    String(mappingValue).trim(),
+                ])
+                .filter(([key, mappingValue]) => key && mappingValue),
         );
     }
     const mappings: Record<string, string> = {};

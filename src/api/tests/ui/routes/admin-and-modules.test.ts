@@ -56,25 +56,25 @@ test("administration page is visible to admins only", async () => {
     assert.equal(anonymous.headers.location, "/login");
 
     const userToken = issueAccessToken("u1", "user", 60);
-    const userRes = createResponseRecorder();
+    const userResponse = createResponseRecorder();
     await route(
         { headers: { cookie: `cognis_access_token=${userToken}` } } as any,
-        userRes.res as any,
+        userResponse.res as any,
         new URL("http://localhost/administration"),
     );
-    assert.equal(userRes.status, 302);
-    assert.equal(userRes.headers.location, "/dashboard");
+    assert.equal(userResponse.status, 302);
+    assert.equal(userResponse.headers.location, "/dashboard");
 
     const adminToken = issueAccessToken("u1", "admin", 60);
-    const adminRes = createResponseRecorder();
+    const adminResponse = createResponseRecorder();
     await route(
         { headers: { cookie: `cognis_access_token=${adminToken}` } } as any,
-        adminRes.res as any,
+        adminResponse.res as any,
         new URL("http://localhost/administration"),
     );
-    assert.equal(adminRes.status, 200);
-    assert.match(adminRes.body, /static\/app\/administration\/index\.js/);
-    assert.match(adminRes.body, /id="app"/);
+    assert.equal(adminResponse.status, 200);
+    assert.match(adminResponse.body, /static\/app\/administration\/index\.js/);
+    assert.match(adminResponse.body, /id="app"/);
 });
 
 test("module detail deep links serve the modules SPA entry", async () => {
@@ -108,22 +108,22 @@ test("users page is visible to admins only", async () => {
     assert.equal(anonymous.headers.location, "/login");
 
     const userToken = issueAccessToken("u1", "user", 60);
-    const userRes = createResponseRecorder();
+    const userResponse = createResponseRecorder();
     await route(
         { headers: { cookie: `cognis_access_token=${userToken}` } } as any,
-        userRes.res as any,
+        userResponse.res as any,
         new URL("http://localhost/users"),
     );
-    assert.equal(userRes.status, 302);
-    assert.equal(userRes.headers.location, "/dashboard");
+    assert.equal(userResponse.status, 302);
+    assert.equal(userResponse.headers.location, "/dashboard");
 
     const adminToken = issueAccessToken("u1", "admin", 60);
-    const adminRes = createResponseRecorder();
+    const adminResponse = createResponseRecorder();
     await route(
         { headers: { cookie: `cognis_access_token=${adminToken}` } } as any,
-        adminRes.res as any,
+        adminResponse.res as any,
         new URL("http://localhost/users"),
     );
-    assert.equal(adminRes.status, 200);
-    assert.match(adminRes.body, /static\/app\/users\/index\.js/);
+    assert.equal(adminResponse.status, 200);
+    assert.match(adminResponse.body, /static\/app\/users\/index\.js/);
 });

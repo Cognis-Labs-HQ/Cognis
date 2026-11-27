@@ -11,8 +11,8 @@ const defaultLog = bindCapability("ui:log");
 const availabilityCache = new Map();
 const availabilitySubscribers = new Set();
 export const STATUS_OPTIONS = Object.freeze(["free", "busy", "tentative"]);
-const AVAILABILITY_REFRESH_INTERVAL_MS = 10_000;
-const PRESENCE_HEARTBEAT_INTERVAL_MS = 15_000;
+const AVAILABILITY_REFRESH_INTERVAL_MILLISECONDS = 10_000;
+const PRESENCE_HEARTBEAT_INTERVAL_MILLISECONDS = 15_000;
 const PRESENCE_SESSION_KEY = "cognis_availability_presence_session";
 let locallyIdle = false;
 let locallyActive = true;
@@ -301,14 +301,14 @@ export function mountAvailability(scope) {
         heartbeat = window.setInterval(() => {
             if (document.hidden || !locallyActive) return;
             run("heartbeat", () => reportPresenceActivity(locallyActive));
-        }, PRESENCE_HEARTBEAT_INTERVAL_MS);
+        }, PRESENCE_HEARTBEAT_INTERVAL_MILLISECONDS);
         refresh = window.setInterval(() => {
             if (document.hidden || !locallyActive) return;
             if (document.querySelector("[data-availability-handle]"))
                 run("refreshAvailability", () =>
                     refreshAvailabilityIndicators(),
                 );
-        }, AVAILABILITY_REFRESH_INTERVAL_MS);
+        }, AVAILABILITY_REFRESH_INTERVAL_MILLISECONDS);
     };
     window.addEventListener("cognis:connectivity-changed", startPolling, {
         signal: scope.signal,

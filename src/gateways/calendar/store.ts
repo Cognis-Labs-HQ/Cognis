@@ -49,7 +49,7 @@ function parseJsonNumberArray(value: unknown): number[] {
     }
 }
 
-export class DbCalendarStore implements CalendarStore {
+class DatabaseCalendarStore implements CalendarStore {
     constructor(private readonly database: DbExecutor) {}
 
     async ensureSchema(): Promise<void> {
@@ -430,8 +430,8 @@ export class DbCalendarStore implements CalendarStore {
     }
 
     async deleteAccountActivity(accountId: string): Promise<void> {
-        await this.database.transaction(async (transactionDb) => {
-            const calendars = await transactionDb.executeCommand({
+        await this.database.transaction(async (transactionDatabase) => {
+            const calendars = await transactionDatabase.executeCommand({
                 option: "SELECT",
                 table: "calendar_calendars",
                 columns: ["id"],
@@ -442,7 +442,7 @@ export class DbCalendarStore implements CalendarStore {
             );
             const eventIds = new Set<string>();
             for (const calendarId of ownedCalendarIds) {
-                const events = await transactionDb.executeCommand({
+                const events = await transactionDatabase.executeCommand({
                     option: "SELECT",
                     table: "calendar_events",
                     columns: ["id"],
@@ -451,7 +451,7 @@ export class DbCalendarStore implements CalendarStore {
                 for (const row of events.rows ?? [])
                     eventIds.add(String(row.id));
             }
-            const createdEvents = await transactionDb.executeCommand({
+            const createdEvents = await transactionDatabase.executeCommand({
                 option: "SELECT",
                 table: "calendar_events",
                 columns: ["id"],
@@ -460,7 +460,7 @@ export class DbCalendarStore implements CalendarStore {
             for (const row of createdEvents.rows ?? [])
                 eventIds.add(String(row.id));
 
-            const retainedEvents = await transactionDb.executeCommand({
+            const retainedEvents = await transactionDatabase.executeCommand({
                 option: "SELECT",
                 table: "calendar_events",
                 columns: ["id", "attendees_json"],
@@ -473,7 +473,7 @@ export class DbCalendarStore implements CalendarStore {
                     (attendee) => attendee !== accountId,
                 );
                 if (filteredAttendees.length === attendees.length) continue;
-                await transactionDb.executeCommand({
+                await transactionDatabase.executeCommand({
                     option: "UPDATE",
                     table: "calendar_events",
                     set: {
@@ -484,25 +484,25 @@ export class DbCalendarStore implements CalendarStore {
                 });
             }
 
-            await transactionDb.executeCommand({
+            await transactionDatabase.executeCommand({
                 option: "DELETE",
                 table: "calendar_event_responses",
                 where: [{ column: "account_id", value: accountId }],
             });
             for (const eventId of eventIds) {
-                await transactionDb.executeCommand({
+                await transactionDatabase.executeCommand({
                     option: "DELETE",
                     table: "calendar_event_responses",
                     where: [{ column: "root_event_id", value: eventId }],
                 });
-                await transactionDb.executeCommand({
+                await transactionDatabase.executeCommand({
                     option: "DELETE",
                     table: "calendar_events",
                     where: [{ column: "id", value: eventId }],
                 });
             }
             for (const calendarId of ownedCalendarIds) {
-                await transactionDb.executeCommand({
+                await transactionDatabase.executeCommand({
                     option: "DELETE",
                     table: "calendar_calendars",
                     where: [{ column: "id", value: calendarId }],
@@ -511,3 +511,4 @@ export class DbCalendarStore implements CalendarStore {
         });
     }
 }
+export { DatabaseCalendarStore as DbCalendarStore };

@@ -77,12 +77,26 @@ test("compacted patterns retain character proportions and pointer mapping on res
         closeTo(viewport.width / viewport.height, compact.aspectRatio);
         for (const stroke of compact.strokes) {
             for (const point of stroke.points) {
-                const x = viewport.x + point.x * viewport.width;
-                const y = viewport.y + point.y * viewport.height;
-                closeTo((x - viewport.x) / viewport.width, point.x);
-                closeTo((y - viewport.y) / viewport.height, point.y);
-                assert.ok(x >= 0 && x <= canvas.width);
-                assert.ok(y >= 0 && y <= canvas.height);
+                const horizontalCoordinate =
+                    viewport.x + point.x * viewport.width;
+                const verticalCoordinate =
+                    viewport.y + point.y * viewport.height;
+                closeTo(
+                    (horizontalCoordinate - viewport.x) / viewport.width,
+                    point.x,
+                );
+                closeTo(
+                    (verticalCoordinate - viewport.y) / viewport.height,
+                    point.y,
+                );
+                assert.ok(
+                    horizontalCoordinate >= 0 &&
+                        horizontalCoordinate <= canvas.width,
+                );
+                assert.ok(
+                    verticalCoordinate >= 0 &&
+                        verticalCoordinate <= canvas.height,
+                );
             }
         }
     }

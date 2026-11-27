@@ -13,7 +13,9 @@ function fixture() {
     });
     const logs: unknown[][] = [];
     return {
-        audio: new StudyAudio(ctx.flow, (...args) => logs.push(args)),
+        audio: new StudyAudio(ctx.flow, (...argumentsList) =>
+            logs.push(argumentsList),
+        ),
         logs,
     };
 }

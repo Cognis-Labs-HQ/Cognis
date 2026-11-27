@@ -120,13 +120,17 @@ export interface CalendarAdapterBootstrapCtx {
     gatewayRegistry: GatewayRegistry;
     registerRoute(
         handler: (
-            req: IncomingMessage,
-            res: ServerResponse,
+            request: IncomingMessage,
+            response: ServerResponse,
             url: URL,
         ) => Promise<boolean>,
         gatewayId?: string,
     ): void;
-    log?: (level: string, msg: string, meta?: Record<string, unknown>) => void;
+    log?: (
+        level: string,
+        message: string,
+        metadata?: Record<string, unknown>,
+    ) => void;
     isGatewayEnabled(): boolean;
     isAdapterEnabled(adapterId?: string): boolean;
 }
@@ -173,7 +177,7 @@ export function formatIcsDateOnly(dateInput: string): string {
 export function isAllDayEventRange(startAt: string, endAt: string): boolean {
     const start = new Date(startAt);
     const end = new Date(endAt);
-    const dayMs = 24 * 60 * 60 * 1000;
+    const dayMilliseconds = 24 * 60 * 60 * 1000;
     if (
         Number.isNaN(start.getTime()) ||
         Number.isNaN(end.getTime()) ||
@@ -191,8 +195,8 @@ export function isAllDayEventRange(startAt: string, endAt: string): boolean {
         end.getUTCMinutes() === 0 &&
         end.getUTCSeconds() === 0 &&
         end.getUTCMilliseconds() === 0;
-    const durationMs = end.getTime() - start.getTime();
-    if (durationMs % dayMs !== 0) return false;
+    const durationMilliseconds = end.getTime() - start.getTime();
+    if (durationMilliseconds % dayMilliseconds !== 0) return false;
     const preservesLocalMidnightOffset =
         start.getUTCHours() === end.getUTCHours() &&
         start.getUTCMinutes() === end.getUTCMinutes() &&

@@ -83,7 +83,7 @@ test("a failed refresh retains the shared result and retries after its failure b
         now = 0;
     const logs: unknown[][] = [];
     const read = createRecommendationReader(
-        (...args) => logs.push(args),
+        (...argumentsList) => logs.push(argumentsList),
         async () => {
             requests++;
             return healthy

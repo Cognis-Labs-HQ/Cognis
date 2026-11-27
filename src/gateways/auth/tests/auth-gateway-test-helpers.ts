@@ -12,10 +12,15 @@ import { issueAccessToken } from "../access-tokens.js";
 export type HttpIncomingMessage = import("node:http").IncomingMessage;
 
 export type InMemoryDb = {
-    execute: (sql: string, params?: unknown[]) => Promise<{ rows: unknown[] }>;
+    execute: (
+        sql: string,
+        parameters?: unknown[],
+    ) => Promise<{ rows: unknown[] }>;
     executeCommand: () => Promise<{ rows: unknown[] }>;
     ensureTable: () => Promise<void>;
-    transaction: <T>(cb: (db: InMemoryDb) => Promise<T>) => Promise<T>;
+    transaction: <T>(
+        callback: (database: InMemoryDb) => Promise<T>,
+    ) => Promise<T>;
 };
 
 export type TestResponse = {
@@ -29,16 +34,19 @@ export type TestResponse = {
     readonly writableEnded: boolean;
 };
 
-export function makeInMemoryDb(): InMemoryDb {
+function makeInMemoryDatabase(): InMemoryDb {
     return {
-        execute: async (_sql: string, _params?: unknown[]) => ({ rows: [] }),
+        execute: async (_sql: string, _parameters?: unknown[]) => ({
+            rows: [],
+        }),
         executeCommand: async () => ({ rows: [] }),
         ensureTable: async () => {},
         transaction: async <T>(
-            callback: (db: InMemoryDb) => Promise<T>,
-        ): Promise<T> => callback(makeInMemoryDb()),
+            callback: (database: InMemoryDb) => Promise<T>,
+        ): Promise<T> => callback(makeInMemoryDatabase()),
     };
 }
+export { makeInMemoryDatabase as makeInMemoryDb };
 
 export function makeJsonRequest(
     method: string,
@@ -57,20 +65,20 @@ export function makeJsonRequest(
 
 export async function dispatchRoute(
     routeRegistry: RouteRegistry,
-    req: HttpIncomingMessage,
+    request: HttpIncomingMessage,
     pathname: string,
 ): Promise<{ handled: boolean; res: TestResponse }> {
-    const res = makeResponse();
+    const response = makeResponse();
     let handled = false;
     for (const entry of routeRegistry.getEntries()) {
         handled = await entry.handler(
-            req,
-            res as unknown as import("node:http").ServerResponse,
+            request,
+            response as unknown as import("node:http").ServerResponse,
             new URL(pathname, "http://localhost"),
         );
         if (handled) break;
     }
-    return { handled, res };
+    return { handled, res: response };
 }
 
 export function makeResponse(): TestResponse {

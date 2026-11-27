@@ -124,7 +124,7 @@ test("Calendar period navigation validates indicators and ends with its page lif
     mountCalendarViewControls(root, {
         views: ["month", "day"],
         getActiveDate: () => new Date(2032, 5, 1),
-        onViewChange: (...args) => changes.push(args),
+        onViewChange: (...argumentsList) => changes.push(argumentsList),
         signal: lifetime.signal,
     });
     for (const [attribute, values] of [

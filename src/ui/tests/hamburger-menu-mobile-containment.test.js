@@ -15,7 +15,7 @@ test("hamburger menu constrains mobile width to parent bounds", () => {
     assert.match(source, /matchMedia\("\(max-width: 640px\)"\)/);
     assert.match(
         source,
-        /Math\.min\(\s*parentRect\.width,\s*window\.innerWidth - viewportPadding \* 2,/m,
+        /Math\.min\(\s*parentRectangle\.width,\s*window\.innerWidth - viewportPadding \* 2,/m,
     );
     assert.match(source, /menu\.style\.width = `\$\{maxMobileWidth\}px`;/);
     assert.match(source, /Math\.max\(parentLeft, rightEdge - maxMobileWidth\)/);

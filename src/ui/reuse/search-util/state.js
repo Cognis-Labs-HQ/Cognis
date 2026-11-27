@@ -4,7 +4,8 @@
  * @module reuse/search-util/state
  */
 
-export const DEBOUNCE_MS = 280;
+const DEBOUNCE_MILLISECONDS = 280;
+export { DEBOUNCE_MILLISECONDS as DEBOUNCE_MS };
 export const REGISTERED_SEARCH_CATEGORY_HOOKS = new Set();
 export const MIN_SEARCH_QUERY_LENGTH = 2;
 

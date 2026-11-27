@@ -185,7 +185,7 @@ export class GatewayRegistry {
 export type BootstrapLog = (
     level: "debug" | "info" | "warn" | "error",
     message: string,
-    meta?: Record<string, unknown>,
+    metadata?: Record<string, unknown>,
 ) => void;
 
 export class CapabilityStore {
@@ -302,10 +302,10 @@ export class GatewayService {
     ): Promise<readonly string[]> {
         let entries: string[];
         try {
-            const dirEntries = await readdir(gatewaysRoot, {
+            const directoryEntries = await readdir(gatewaysRoot, {
                 withFileTypes: true,
             });
-            entries = dirEntries
+            entries = directoryEntries
                 .filter(
                     (directoryEntry) =>
                         directoryEntry.isDirectory() &&
@@ -419,7 +419,7 @@ export class GatewayService {
         const completionHooks: Array<{ id: string; run: () => Promise<void> }> =
             [];
         for (const entry of orderedEntries) {
-            const gatewayDir = path.join(gatewaysRoot, entry);
+            const gatewayDirectory = path.join(gatewaysRoot, entry);
             const manifest = directoryManifests.get(entry) ?? {};
 
             const gatewayId = manifest.id ?? entry;
@@ -435,20 +435,20 @@ export class GatewayService {
             });
 
             const bootstrapUrl = pathToFileURL(
-                path.join(gatewayDir, "bootstrap.ts"),
+                path.join(gatewayDirectory, "bootstrap.ts"),
             ).href;
 
             try {
-                const mod = (await import(bootstrapUrl)) as {
+                const moduleExports = (await import(bootstrapUrl)) as {
                     bootstrap?: (ctx: unknown) => Promise<void>;
                     completeBootstrap?: (ctx: unknown) => Promise<void>;
                 };
-                if (typeof mod.bootstrap === "function") {
+                if (typeof moduleExports.bootstrap === "function") {
                     await runBootstrapScope(
                         ctx.capabilities.get<object>("system:ctx") ??
                             ctx.capabilities,
                         `gateway:${gatewayId}`,
-                        () => mod.bootstrap!(ctx),
+                        () => moduleExports.bootstrap!(ctx),
                         (dispose) =>
                             ctx.gatewayRegistry.retainBootstrapDisposer(
                                 gatewayId,
@@ -456,10 +456,10 @@ export class GatewayService {
                             ),
                     );
                 }
-                if (mod.completeBootstrap)
+                if (moduleExports.completeBootstrap)
                     completionHooks.push({
                         id: gatewayId,
-                        run: () => mod.completeBootstrap!(ctx),
+                        run: () => moduleExports.completeBootstrap!(ctx),
                     });
             } catch (error) {
                 const message =
@@ -517,20 +517,23 @@ export class GatewayService {
 
         // Validate cross-gateway dependencies now that all gateways have
         // bootstrapped and registered themselves.
-        for (const [gatewayId, meta] of gatewayManifests) {
-            for (const dependencyReference of meta.requires) {
+        for (const [gatewayId, metadata] of gatewayManifests) {
+            for (const dependencyReference of metadata.requires) {
                 const dependencyDirectory =
                     directoryByGatewayId.get(dependencyReference);
-                const depId = dependencyDirectory
+                const dependencyId = dependencyDirectory
                     ? (directoryManifests.get(dependencyDirectory)?.id ??
                       dependencyDirectory)
                     : dependencyReference;
-                if (!ctx.gatewayRegistry.get(depId)) {
-                    const message = `Gateway "${gatewayId}" requires gateway "${depId}" but it is not registered.`;
-                    if (meta.required) {
+                if (!ctx.gatewayRegistry.get(dependencyId)) {
+                    const message = `Gateway "${gatewayId}" requires gateway "${dependencyId}" but it is not registered.`;
+                    if (metadata.required) {
                         throw new Error(message);
                     }
-                    void ctx.log?.("warn", message, { gatewayId, depId });
+                    void ctx.log?.("warn", message, {
+                        gatewayId,
+                        depId: dependencyId,
+                    });
                 }
             }
         }

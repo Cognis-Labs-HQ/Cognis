@@ -38,7 +38,10 @@ test("share popup keeps the active adapter page and history rendering separate",
     assert.match(source, /state\.visibleLinks/);
     assert.match(source, /methodModule\.renderPage/);
     assert.match(source, /window\.setInterval\(/);
-    assert.match(source, /const SHARE_LINKS_REFRESH_INTERVAL_MS = 10_000;/);
+    assert.match(
+        source,
+        /const SHARE_LINKS_REFRESH_INTERVAL_MILLISECONDS = 10_000;/,
+    );
     assert.match(renderingSource, /bindSecretVisibilityToggles,/);
     assert.doesNotMatch(source, /captureFocusableTarget/);
     assert.doesNotMatch(source, /restoreFocusableTarget/);

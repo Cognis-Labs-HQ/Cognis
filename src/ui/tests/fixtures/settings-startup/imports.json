@@ -67,5 +67,9 @@
     "../../reuse/ui-language-state.js": ["uiLanguageMembershipChanged"],
     "../../reuse/app-router.js": ["navigateTo"],
     "./guides.js": ["guides"],
-    "../../reuse/capabilities.js": ["bindCapability"]
+    "../../reuse/capabilities.js": ["bindCapability"],
+    "./language-priority.js": [
+        "hasLanguagePriorityChanged",
+        "resolveLanguagePriorityMode"
+    ]
 }

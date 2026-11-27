@@ -79,10 +79,15 @@ test("GitHub file references follow the default branch while commit provenance s
             sourceReferenceIssues(`${prefix}HEAD/src/service.ts#L10`, "/"),
             [],
         );
-        for (const ref of ["a".repeat(40), "v1.0.0", "feature-example", "main"])
+        for (const reference of [
+            "a".repeat(40),
+            "v1.0.0",
+            "feature-example",
+            "main",
+        ])
             assert.ok(
                 sourceReferenceIssues(
-                    `${prefix}${ref}/src/service.ts`,
+                    `${prefix}${reference}/src/service.ts`,
                     "/",
                 ).some((issue) => issue.includes("default branch")),
             );

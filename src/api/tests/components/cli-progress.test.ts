@@ -86,7 +86,7 @@ test(
             () => new Promise<void>((resolve) => server.close(() => resolve())),
         );
         const base = `http://127.0.0.1:${(server.address() as { port: number }).port}`;
-        for (const args of [
+        for (const argumentsList of [
             ["component:upgrade", "module", "example"],
             ["-v", "component:upgrade", "module", "example"],
             ["component:upgrade", "module", "example", "-v"],
@@ -96,7 +96,12 @@ test(
             const progress = Promise.withResolvers<void>();
             const child = spawn(
                 process.execPath,
-                ["--import", "tsx", "src/tooling/cli/index.ts", ...args],
+                [
+                    "--import",
+                    "tsx",
+                    "src/tooling/cli/index.ts",
+                    ...argumentsList,
+                ],
                 {
                     env: {
                         ...process.env,
@@ -135,7 +140,7 @@ test(
                 stderr,
                 /Module example: installing selected release \(main\)/,
             );
-            if (args.includes("-v")) {
+            if (argumentsList.includes("-v")) {
                 assert.equal(
                     JSON.parse(stdout).data.results[0].status,
                     failed ? "failed" : "succeeded",
@@ -147,7 +152,7 @@ test(
                 );
                 assert.doesNotMatch(stdout, /internal-manifest-detail/);
             }
-            failed = args[0] === "-v";
+            failed = argumentsList[0] === "-v";
         }
     },
 );

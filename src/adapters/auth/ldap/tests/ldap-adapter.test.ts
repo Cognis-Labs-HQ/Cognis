@@ -300,8 +300,8 @@ test("unified LDAP authentication continues after a source error", async () => {
     const adapter = createAdapter() as ReturnType<typeof createAdapter> & {
         setClient(client: {
             authenticate: (
-                _u: string,
-                _p: string,
+                _username: string,
+                _password: string,
                 options: LdapRuntimeOptions,
             ) => Promise<{ id: string } | null>;
         }): void;

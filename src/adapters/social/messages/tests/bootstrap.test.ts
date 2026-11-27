@@ -6,11 +6,11 @@ import { join, resolve } from "node:path";
 const ROOT = process.cwd();
 
 function readMessagesUiBundle() {
-    const uiDir = resolve(ROOT, "src/adapters/social/messages/ui");
-    return readdirSync(uiDir)
+    const uiDirectory = resolve(ROOT, "src/adapters/social/messages/ui");
+    return readdirSync(uiDirectory)
         .filter((entry) => entry.endsWith(".js") || entry.endsWith(".mjs"))
         .sort()
-        .map((entry) => readFileSync(join(uiDir, entry), "utf8"))
+        .map((entry) => readFileSync(join(uiDirectory, entry), "utf8"))
         .join("\n");
 }
 

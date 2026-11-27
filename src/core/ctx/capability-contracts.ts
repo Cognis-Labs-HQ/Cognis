@@ -20,7 +20,7 @@ export interface CapabilityContracts {
         id: string,
     ): Readonly<CapabilityContract & { owner: string }> | undefined;
     list(): Array<Readonly<CapabilityContract & { id: string; owner: string }>>;
-    resolve<T = Record<string, (...args: any[]) => any>>(
+    resolve<T = Record<string, (...argumentsList: any[]) => any>>(
         id: string,
         version: number,
     ): T;
@@ -142,9 +142,13 @@ export function createCapabilityContracts(ctx: Ctx): CapabilityContracts {
                 )
                     throw new Error("capability_contract_unavailable");
             };
-            const call = (callback: Function, args: unknown[]) => {
+            const call = (callback: Function, argumentsList: unknown[]) => {
                 assertActive();
-                const result = Reflect.apply(callback, implementation, args);
+                const result = Reflect.apply(
+                    callback,
+                    implementation,
+                    argumentsList,
+                );
                 if (result && typeof result.then === "function")
                     return Promise.resolve(result).then((value) => {
                         assertActive();
@@ -154,8 +158,8 @@ export function createCapabilityContracts(ctx: Ctx): CapabilityContracts {
             };
             const target =
                 contract.kind === "function"
-                    ? (...args: unknown[]) =>
-                          call(implementation as Function, args)
+                    ? (...argumentsList: unknown[]) =>
+                          call(implementation as Function, argumentsList)
                     : Object.create(null);
             return new Proxy(target, {
                 get(_target, property) {
@@ -169,11 +173,12 @@ export function createCapabilityContracts(ctx: Ctx): CapabilityContracts {
                         return undefined;
                     const value = Reflect.get(implementation, property);
                     return typeof value === "function"
-                        ? (...args: unknown[]) => call(value, args)
+                        ? (...argumentsList: unknown[]) =>
+                              call(value, argumentsList)
                         : value;
                 },
-                apply(_target, _receiver, args) {
-                    return call(implementation as Function, args);
+                apply(_target, _receiver, argumentsList) {
+                    return call(implementation as Function, argumentsList);
                 },
                 set() {
                     throw new Error("capability_contract_readonly");

@@ -5,8 +5,8 @@ import { componentFaultOwner } from "./fault.js";
 
 /** Isolates a failed request and reports only faults attributed by an owner boundary. */
 export async function recoverComponentRequest(
-    req: IncomingMessage,
-    res: ServerResponse,
+    request: IncomingMessage,
+    response: ServerResponse,
     error: unknown,
     management:
         | Promise<{
@@ -21,7 +21,7 @@ export async function recoverComponentRequest(
     const owner = componentFaultOwner(error);
     if (owner) {
         try {
-            await (await management)?.reportServerFailure(req, owner);
+            await (await management)?.reportServerFailure(request, owner);
         } catch (recoveryError) {
             log("error", "Component failure recovery failed.", {
                 component: "api",
@@ -33,11 +33,11 @@ export async function recoverComponentRequest(
             });
         }
     }
-    if (!res.headersSent) {
-        res.writeHead(owner ? 500 : 400, {
+    if (!response.headersSent) {
+        response.writeHead(owner ? 500 : 400, {
             "content-type": "application/json",
         });
-        res.end(
+        response.end(
             JSON.stringify({
                 error: {
                     code: "bad_request",
@@ -45,5 +45,5 @@ export async function recoverComponentRequest(
                 },
             }),
         );
-    } else if (!res.writableEnded) res.end();
+    } else if (!response.writableEnded) response.end();
 }

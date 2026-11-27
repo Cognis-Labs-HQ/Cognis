@@ -12,13 +12,13 @@ let avatarRefreshSequence = 0;
 
 export async function updateNavbarAvatar() {
     const refreshSequence = ++avatarRefreshSequence;
-    const avatarBtn = document.querySelector(".avatar-button");
+    const avatarButton = document.querySelector(".avatar-button");
     const profileLink = document.querySelector("[data-profile-link]");
-    if (!avatarBtn) return;
+    if (!avatarButton) return;
     const handle = localStorage.getItem("cognis_account") ?? "";
     const accessToken = localStorage.getItem("cognis_access_token");
 
-    const availabilityIndicator = avatarBtn.querySelector(
+    const availabilityIndicator = avatarButton.querySelector(
         ".availability-indicator",
     );
 
@@ -45,7 +45,7 @@ export async function updateNavbarAvatar() {
 
     if (
         refreshSequence !== avatarRefreshSequence ||
-        !avatarBtn.isConnected ||
+        !avatarButton.isConnected ||
         handle !== (localStorage.getItem("cognis_account") ?? "") ||
         accessToken !== localStorage.getItem("cognis_access_token") ||
         avatarProvider !== uiCtx.capabilities.get("ui:navbarAvatarProvider")
@@ -58,28 +58,28 @@ export async function updateNavbarAvatar() {
 
     if (avatarBlobUrl) {
         if (
-            avatarBtn.querySelector(".avatar-image")?.getAttribute("src") ===
+            avatarButton.querySelector(".avatar-image")?.getAttribute("src") ===
             avatarBlobUrl
         )
             return;
-        const img = document.createElement("img");
-        img.className = "avatar-image";
-        img.alt = "";
-        img.src = avatarBlobUrl;
-        avatarBtn.replaceChildren(img);
-        if (availabilityIndicator) avatarBtn.append(availabilityIndicator);
+        const image = document.createElement("img");
+        image.className = "avatar-image";
+        image.alt = "";
+        image.src = avatarBlobUrl;
+        avatarButton.replaceChildren(image);
+        if (availabilityIndicator) avatarButton.append(availabilityIndicator);
         return;
     }
 
-    const existingInitials = avatarBtn.querySelector(".avatar-initials");
+    const existingInitials = avatarButton.querySelector(".avatar-initials");
     if (existingInitials?.textContent === avatarInitials) {
         existingInitials.style.background = avatarColor ?? "";
         return;
     }
-    const initialsEl = document.createElement("span");
-    initialsEl.className = "avatar-initials";
-    initialsEl.textContent = avatarInitials;
-    if (avatarColor) initialsEl.style.background = avatarColor;
-    avatarBtn.replaceChildren(initialsEl);
-    if (availabilityIndicator) avatarBtn.append(availabilityIndicator);
+    const initialsElement = document.createElement("span");
+    initialsElement.className = "avatar-initials";
+    initialsElement.textContent = avatarInitials;
+    if (avatarColor) initialsElement.style.background = avatarColor;
+    avatarButton.replaceChildren(initialsElement);
+    if (availabilityIndicator) avatarButton.append(availabilityIndicator);
 }

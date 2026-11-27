@@ -132,7 +132,7 @@ export async function loadGatewaySection(
     section,
     { i18n, extendI18n, escapeHtml, openPopup, showToast, onDirtyChange },
 ) {
-    const sectionDef = await loadDynamicContribution(section, {
+    const sectionDefinition = await loadDynamicContribution(section, {
         exportName: "createAdminSection",
         buildArgs: async (descriptor) => ({
             i18n: await extendI18n(i18n, descriptor.stringsBaseUrl),
@@ -144,9 +144,9 @@ export async function loadGatewaySection(
         }),
         onError: () => {},
     });
-    if (!sectionDef) return null;
-    if (sectionDef.dataReady) {
-        await sectionDef.dataReady;
+    if (!sectionDefinition) return null;
+    if (sectionDefinition.dataReady) {
+        await sectionDefinition.dataReady;
     }
-    return normalizeStructuredAdminSection(sectionDef);
+    return normalizeStructuredAdminSection(sectionDefinition);
 }

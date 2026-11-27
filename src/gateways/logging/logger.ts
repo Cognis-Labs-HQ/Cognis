@@ -78,10 +78,10 @@ function formatPrettyValue(value: unknown, indent = "    "): string {
 export function createLogEntry(
     level: LogLevel,
     message: string,
-    meta?: Record<string, unknown>,
+    metadata?: Record<string, unknown>,
 ): LogEntry {
-    const definedEntries = meta
-        ? Object.entries(meta).filter(([, value]) => value !== undefined)
+    const definedEntries = metadata
+        ? Object.entries(metadata).filter(([, value]) => value !== undefined)
         : [];
     return {
         ts: new Date().toISOString(),
@@ -107,19 +107,19 @@ export function formatConsoleLog(
         return baseLine;
     }
 
-    const metaLines = Object.entries(entry.meta).map(
+    const metadataLines = Object.entries(entry.meta).map(
         ([key, value]) => `  ${key}: ${formatPrettyValue(value)}`,
     );
-    return `${baseLine}\n${metaLines.join("\n")}`;
+    return `${baseLine}\n${metadataLines.join("\n")}`;
 }
 
 export function writeConsoleLog(
     level: LogLevel,
     message: string,
-    meta?: Record<string, unknown>,
+    metadata?: Record<string, unknown>,
     format: ConsoleLogFormat = "pretty",
 ): void {
-    const entry = createLogEntry(level, message, meta);
+    const entry = createLogEntry(level, message, metadata);
     const line = formatConsoleLog(entry, format);
     if (level === "error") {
         process.stderr.write(`${line}\n`);
@@ -178,12 +178,12 @@ export class Logger {
     async log(
         level: LogLevel,
         message: string,
-        meta?: Record<string, unknown>,
+        metadata?: Record<string, unknown>,
     ): Promise<void> {
-        const entry = createLogEntry(level, message, meta);
+        const entry = createLogEntry(level, message, metadata);
         const line = `${serializeLogEntry(entry)}\n`;
         if (LEVEL_PRIORITY[level] >= LEVEL_PRIORITY[this.consoleLevel]) {
-            writeConsoleLog(level, message, meta, this.consoleFormat);
+            writeConsoleLog(level, message, metadata, this.consoleFormat);
         }
         if (LEVEL_PRIORITY[level] < LEVEL_PRIORITY[this.fileLevel]) {
             return;
@@ -252,9 +252,9 @@ export class Logger {
         if (this.rotationOptions.maxFiles < 0) {
             return;
         }
-        const dirPath = path.dirname(this.filePath);
+        const directoryPath = path.dirname(this.filePath);
         const baseName = path.basename(this.filePath);
-        const entries = await readdir(dirPath);
+        const entries = await readdir(directoryPath);
         const rotatedCandidates = entries
             .filter(
                 (entry) =>
@@ -263,7 +263,7 @@ export class Logger {
                         entry.slice(baseName.length + 1),
                     ),
             )
-            .map((entry) => path.join(dirPath, entry));
+            .map((entry) => path.join(directoryPath, entry));
         const resolved = await Promise.all(
             rotatedCandidates.map(async (file) => ({
                 file,
@@ -277,19 +277,19 @@ export class Logger {
         await Promise.all(removable.map(({ file }) => unlink(file)));
     }
 
-    debug(message: string, meta?: Record<string, unknown>): Promise<void> {
-        return this.log("debug", message, meta);
+    debug(message: string, metadata?: Record<string, unknown>): Promise<void> {
+        return this.log("debug", message, metadata);
     }
 
-    info(message: string, meta?: Record<string, unknown>): Promise<void> {
-        return this.log("info", message, meta);
+    info(message: string, metadata?: Record<string, unknown>): Promise<void> {
+        return this.log("info", message, metadata);
     }
 
-    warn(message: string, meta?: Record<string, unknown>): Promise<void> {
-        return this.log("warn", message, meta);
+    warn(message: string, metadata?: Record<string, unknown>): Promise<void> {
+        return this.log("warn", message, metadata);
     }
 
-    error(message: string, meta?: Record<string, unknown>): Promise<void> {
-        return this.log("error", message, meta);
+    error(message: string, metadata?: Record<string, unknown>): Promise<void> {
+        return this.log("error", message, metadata);
     }
 }

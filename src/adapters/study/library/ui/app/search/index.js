@@ -6,9 +6,9 @@ import { escapeHtml } from "/static/reuse/escape-html.js";
 import { showToast } from "/static/reuse/toast.js";
 import { formatDateTime } from "/static/reuse/timestamp.js";
 import {
-    bindStudySubNavigation,
-    loadStudySubNavigationModel,
-    createStudySubNavigationSlot,
+    bindStudySubNavigation as bindStudyNestedNavigation,
+    loadStudySubNavigationModel as loadStudyNestedNavigationModel,
+    createStudySubNavigationSlot as createStudyNestedNavigationSlot,
 } from "/static/gateways/study/sub-navigation.js";
 import {
     dictionarySearchContext,
@@ -53,7 +53,7 @@ export async function mount(root, { signal: routerSignal } = {}) {
         history.replaceState(history.state, "", location.pathname);
     const input = await dictionarySearchContext();
     signal.throwIfAborted();
-    const model = await loadStudySubNavigationModel({
+    const model = await loadStudyNestedNavigationModel({
         fallbackLanguageCode: input?.language,
     });
     const schemas = await fetchLibrarySchemas(model.selectedLanguageCode);
@@ -269,11 +269,11 @@ export async function mount(root, { signal: routerSignal } = {}) {
                 render,
             },
         ],
-        subNavigation: [createStudySubNavigationSlot(model, i18n)],
+        subNavigation: [createStudyNestedNavigationSlot(model, i18n)],
     });
     await composer.init();
     signal?.throwIfAborted();
-    bindStudySubNavigation(root, { signal, i18n });
+    bindStudyNestedNavigation(root, { signal, i18n });
     root.addEventListener(
         "click",
         async (event) => {

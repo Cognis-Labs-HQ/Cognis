@@ -8,8 +8,8 @@ import { VolatileLocalAccountStore } from "../reuse/account-store.js";
 import { registerAuthBootstrapHook } from "../bootstrap/flow-registrations.js";
 import {
     createAuthRouteBootstrapRuntime,
-    ACCOUNT_CREATION_ATTEMPT_TTL_MS,
-    TFA_LOGIN_ATTEMPT_TTL_MS,
+    ACCOUNT_CREATION_ATTEMPT_TTL_MS as ACCOUNT_CREATION_ATTEMPT_TTL_MILLISECONDS,
+    TFA_LOGIN_ATTEMPT_TTL_MS as TFA_LOGIN_ATTEMPT_TTL_MILLISECONDS,
 } from "../bootstrap/route-runtime.js";
 import { createSessionRoutes } from "../bootstrap/routes/session.js";
 import type { AuthAccountStore } from "../bootstrap/index.js";
@@ -18,7 +18,7 @@ import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import {
     dispatchRoute,
     makeJsonRequest,
-    makeInMemoryDb,
+    makeInMemoryDb as makeInMemoryDatabase,
 } from "./auth-gateway-test-helpers.js";
 
 async function registrationFixture() {
@@ -38,7 +38,7 @@ async function registrationFixture() {
             profiles.push(accountId);
         },
     );
-    const authGateway = new CoreAuthGateway(makeInMemoryDb());
+    const authGateway = new CoreAuthGateway(makeInMemoryDatabase());
     authGateway.registerAdapter({
         id: "external-sso",
         name: "External SSO",
@@ -117,7 +117,8 @@ for (const outcome of ["cancelled", "expired"] as const) {
                 "/api/v1/auth/account-creation-attempt",
             );
             assert.equal(cancelled.res.status, 204);
-        } else context.mock.timers.tick(ACCOUNT_CREATION_ATTEMPT_TTL_MS);
+        } else
+            context.mock.timers.tick(ACCOUNT_CREATION_ATTEMPT_TTL_MILLISECONDS);
         const late = await dispatchRoute(
             host.routes,
             makeJsonRequest(
@@ -161,6 +162,6 @@ test("TFA attempts expire exactly at their deadline", (context) => {
         ttlSeconds: 720,
     });
     assert.equal(runtime.getPendingTfaLoginAttempt(attempt.id)?.id, attempt.id);
-    context.mock.timers.tick(TFA_LOGIN_ATTEMPT_TTL_MS);
+    context.mock.timers.tick(TFA_LOGIN_ATTEMPT_TTL_MILLISECONDS);
     assert.equal(runtime.getPendingTfaLoginAttempt(attempt.id), null);
 });

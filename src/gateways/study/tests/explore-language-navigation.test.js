@@ -321,8 +321,8 @@ test("disabled Study language links cannot bypass the router through their state
     const navigated = [];
     context.uiCtx.capabilities.get =
         () =>
-        (...args) =>
-            navigated.push(args);
+        (...argumentsList) =>
+            navigated.push(argumentsList);
     const scope = new AbortController();
     context.bindStudySubNavigation(root, { signal: scope.signal });
     let disabled = true;

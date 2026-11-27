@@ -59,17 +59,17 @@ export async function openHamburgerMenu(button, { items }) {
         const menu = document.createElement("div");
         menu.className = "hamburger-menu";
         menu.setAttribute("role", "menu");
-        const rect = button.getBoundingClientRect();
-        const parentRect =
+        const rectangle = button.getBoundingClientRect();
+        const parentRectangle =
             button.parentElement?.getBoundingClientRect() ?? null;
         const viewportPadding = 14;
         const isMobile = window.matchMedia("(max-width: 640px)").matches;
-        const maxMobileWidth = parentRect
+        const maxMobileWidth = parentRectangle
             ? Math.max(
                   0,
                   Math.floor(
                       Math.min(
-                          parentRect.width,
+                          parentRectangle.width,
                           window.innerWidth - viewportPadding * 2,
                       ),
                   ),
@@ -80,15 +80,15 @@ export async function openHamburgerMenu(button, { items }) {
             menu.style.width = `${maxMobileWidth}px`;
             menu.style.maxWidth = `${maxMobileWidth}px`;
         }
-        menu.style.top = `${rect.bottom + window.scrollY + 4}px`;
-        const parentLeft = parentRect
-            ? parentRect.left + window.scrollX
+        menu.style.top = `${rectangle.bottom + window.scrollY + 4}px`;
+        const parentLeft = parentRectangle
+            ? parentRectangle.left + window.scrollX
             : viewportPadding + window.scrollX;
-        const parentRight = parentRect
-            ? parentRect.right + window.scrollX
-            : rect.right + window.scrollX;
+        const parentRight = parentRectangle
+            ? parentRectangle.right + window.scrollX
+            : rectangle.right + window.scrollX;
         const rightEdge = Math.min(
-            rect.right + window.scrollX,
+            rectangle.right + window.scrollX,
             parentRight,
             window.scrollX + window.innerWidth - viewportPadding,
         );

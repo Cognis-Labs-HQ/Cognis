@@ -20,7 +20,7 @@ export interface LeaderboardStore {
     save(state: LeaderboardState): Promise<void>;
 }
 
-export class DbLeaderboardStore implements LeaderboardStore {
+class DatabaseLeaderboardStore implements LeaderboardStore {
     constructor(private readonly database: DbExecutor) {}
 
     async ensureSchema(): Promise<void> {
@@ -83,3 +83,4 @@ export class DbLeaderboardStore implements LeaderboardStore {
         });
     }
 }
+export { DatabaseLeaderboardStore as DbLeaderboardStore };

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { createChatroomDeletionCapability } from "../chatroom-deletion.js";
-import { DbMessagesStore } from "../store.js";
+import { DbMessagesStore as DatabaseMessagesStore } from "../store.js";
 
 function createHarness() {
     const calls: unknown[] = [];
@@ -83,11 +83,13 @@ test("chatroom deletion removes dependent records transactionally", async () => 
             commands.push(command);
             return { rows: [] };
         },
-        async transaction(callback: (db: typeof executor) => Promise<void>) {
+        async transaction(
+            callback: (database: typeof executor) => Promise<void>,
+        ) {
             await callback(executor);
         },
     };
-    const store = new DbMessagesStore(executor as never);
+    const store = new DatabaseMessagesStore(executor as never);
 
     await store.deleteRoom("room-1");
 
@@ -150,14 +152,16 @@ test("chatroom deletion authorizes and deletes in the same transaction", async (
             }
             return { rows: [] };
         },
-        async transaction<T>(callback: (db: typeof executor) => Promise<T>) {
+        async transaction<T>(
+            callback: (database: typeof executor) => Promise<T>,
+        ) {
             transactionActive = true;
             const result = await callback(executor);
             transactionActive = false;
             return result;
         },
     };
-    const store = new DbMessagesStore(executor as never);
+    const store = new DatabaseMessagesStore(executor as never);
 
     const result = await store.deleteRoomForActor("room-1", "participant");
 

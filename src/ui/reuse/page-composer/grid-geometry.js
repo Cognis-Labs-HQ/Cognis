@@ -14,25 +14,25 @@ export function createGridGeometry(state, unit) {
             ? state.gridSection
             : null;
         if (!section) return state.gridCols * unit;
-        const rect = section.getBoundingClientRect();
+        const rectangle = section.getBoundingClientRect();
         const styles = window.getComputedStyle(section);
         const padding =
             Number.parseFloat(styles.paddingLeft || "0") +
             Number.parseFloat(styles.paddingRight || "0");
-        return Math.max(1, rect.width - padding);
+        return Math.max(1, rectangle.width - padding);
     };
     const gridPointerPosition = (event) => {
         const section = state.gridSection;
-        const rect = section.getBoundingClientRect();
+        const rectangle = section.getBoundingClientRect();
         const styles = window.getComputedStyle(section);
         return {
             x:
                 event.clientX -
-                rect.left -
+                rectangle.left -
                 (Number.parseFloat(styles.paddingLeft) || 0),
             y:
                 event.clientY -
-                rect.top -
+                rectangle.top -
                 (Number.parseFloat(styles.paddingTop) || 0),
         };
     };
@@ -58,10 +58,12 @@ export function createGridGeometry(state, unit) {
         pixel / (columnSize() + PAGE_COMPOSER_GRID_GAP);
     const pixelToGridRow = (pixel) =>
         pixel / (rowSize() + PAGE_COMPOSER_GRID_GAP);
-    const snapPixelColumnFloor = (pixel, dim) =>
-        Math.floor(pixelToGridColumn(pixel) / gridStep(dim)) * gridStep(dim);
-    const snapPixelRowFloor = (pixel, dim) =>
-        Math.floor(pixelToGridRow(pixel) / gridStep(dim)) * gridStep(dim);
+    const snapPixelColumnFloor = (pixel, dimension) =>
+        Math.floor(pixelToGridColumn(pixel) / gridStep(dimension)) *
+        gridStep(dimension);
+    const snapPixelRowFloor = (pixel, dimension) =>
+        Math.floor(pixelToGridRow(pixel) / gridStep(dimension)) *
+        gridStep(dimension);
     function computeGridDimensions({ minimumRows = 0 } = {}) {
         if (!state.contentGrid) return;
         state.contentGrid.style.width = "";

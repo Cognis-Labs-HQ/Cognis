@@ -24,9 +24,9 @@ function fixture({
         bindViewedEntries: () => () => {},
         closeUnrelatedVariantViews: () => false,
         loadDrawing: async () => false,
-        openEntryPopup: (...args) => {
+        openEntryPopup: (...argumentsList) => {
             const deferred = Promise.withResolvers();
-            details.push({ ...deferred, signal: args[6] });
+            details.push({ ...deferred, signal: argumentsList[6] });
             return deferred.promise;
         },
         bindVariantInteractions() {},
@@ -38,8 +38,9 @@ function fixture({
         setSelectionMode() {},
         fetchLibraryLocations: () =>
             new Promise((resolve, reject) => pending.push({ resolve, reject })),
-        updateSelectionActions: (...args) => updates.push(args),
-        showToast: (...args) => toasts.push(args),
+        updateSelectionActions: (...argumentsList) =>
+            updates.push(argumentsList),
+        showToast: (...argumentsList) => toasts.push(argumentsList),
     });
     Object.assign(
         context,

@@ -64,7 +64,7 @@ export async function resolveCompositeAudio(
         current: LibraryEntry,
         currentLayer: LibraryLayerSchema,
         visited: Set<string>,
-        gapAfterMs = wordGap,
+        gapAfterMilliseconds = wordGap,
         transformed = false,
     ): Promise<void> {
         if (
@@ -107,7 +107,7 @@ export async function resolveCompositeAudio(
                 identities.push(
                     createHash("sha256").update(recording.data).digest("hex"),
                 );
-                segments.push({ recording, pauseMs: gapAfterMs });
+                segments.push({ recording, pauseMs: gapAfterMilliseconds });
                 return;
             } catch (error) {
                 if (
@@ -148,7 +148,7 @@ export async function resolveCompositeAudio(
         if (segments.length)
             segments.at(-1)!.pauseMs = Math.max(
                 segments.at(-1)!.pauseMs,
-                gapAfterMs,
+                gapAfterMilliseconds,
             );
     }
     for (const reference of audioReferences(entry, layer)) {

@@ -82,16 +82,16 @@ export function mountProvider(ctx) {
     ctx.capabilities.contribute("logging:recentEntries", () =>
         recentEntries.map((entry) => ({ ...entry })),
     );
-    consoleOutput = captureConsole((level, message, meta) =>
-        log({ level, message, meta }),
+    consoleOutput = captureConsole((level, message, metadata) =>
+        log({ level, message, meta: metadata }),
     );
     ctx.capabilities.contribute(
         "ui:log",
-        (level, message, meta = {}, ...details) =>
+        (level, message, metadata = {}, ...details) =>
             log({
                 level,
                 message,
-                meta,
+                meta: metadata,
                 ...(details.length ? { details } : {}),
             }),
     );

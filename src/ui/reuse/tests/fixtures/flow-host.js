@@ -20,9 +20,10 @@ export function flowHost(signal) {
             core.registerFlow({ id, stages });
             return () => core.unregisterFlow(id);
         },
-        removeFlowHook: (...args) => core.removeFlowStageHook(...args),
+        removeFlowHook: (...argumentsList) =>
+            core.removeFlowStageHook(...argumentsList),
         flowExists: (id) => core.hasFlow(id),
-        extendFlow: (...args) => core.flow.extend(...args),
+        extendFlow: (...argumentsList) => core.flow.extend(...argumentsList),
         runFlow: (id, input) => {
             events.push(id);
             return core.flow.run(id, input);

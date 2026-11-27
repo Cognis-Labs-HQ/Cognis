@@ -53,8 +53,8 @@ export async function importTestModule<
     const module = new virtualMachine.SourceTextModule(source, {
         context,
         identifier: url.href,
-        initializeImportMeta(meta) {
-            meta.url = url.href;
+        initializeImportMeta(metadata) {
+            metadata.url = url.href;
         },
     });
     await module.link((id) => {

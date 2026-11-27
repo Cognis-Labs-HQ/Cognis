@@ -1,5 +1,5 @@
-const MARKETPLACE_POLL_INTERVAL_MS = 15_000;
-const MARKETPLACE_SCAN_INTERVAL_MS = 60 * 60 * 1000;
+const MARKETPLACE_POLL_INTERVAL_MILLISECONDS = 15_000;
+const MARKETPLACE_SCAN_INTERVAL_MILLISECONDS = 60 * 60 * 1000;
 
 export function startMarketplacePolling({
     signal,
@@ -23,7 +23,10 @@ export function startMarketplacePolling({
             })
             .finally(() => setPending(false));
     };
-    const interval = window.setInterval(run, MARKETPLACE_POLL_INTERVAL_MS);
+    const interval = window.setInterval(
+        run,
+        MARKETPLACE_POLL_INTERVAL_MILLISECONDS,
+    );
     signal.addEventListener("abort", () => window.clearInterval(interval), {
         once: true,
     });
@@ -78,7 +81,8 @@ export function createModulesPagePolling({
                         state.sourceRevision !== lastSourceRevision) ||
                     Date.now() >= nextScanAt
                 ) {
-                    nextScanAt = Date.now() + MARKETPLACE_SCAN_INTERVAL_MS;
+                    nextScanAt =
+                        Date.now() + MARKETPLACE_SCAN_INTERVAL_MILLISECONDS;
                     lastSourceRevision = state?.sourceRevision;
                     try {
                         await discoverSources(signal);

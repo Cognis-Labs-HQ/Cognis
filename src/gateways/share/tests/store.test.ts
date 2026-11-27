@@ -15,8 +15,8 @@ class MemoryExecutor {
         Map<string, Record<string, unknown>>
     >();
 
-    async ensureTable(def: StructuredDbTableDef): Promise<void> {
-        this.tableDefs.push(def);
+    async ensureTable(definition: StructuredDbTableDef): Promise<void> {
+        this.tableDefs.push(definition);
     }
 
     async executeCommand(
@@ -91,26 +91,26 @@ test("share token schema declares resource and token columns", async () => {
     const executor = new MemoryExecutor();
     const store = new ShareTokenStore(executor as never);
     await store.ensureSchema();
-    const tableDef = executor.tableDefs.find(
-        (def) => def.name === "share_tokens",
+    const tableDefinition = executor.tableDefs.find(
+        (definition) => definition.name === "share_tokens",
     );
-    assert.ok(tableDef);
-    const resourceTableDef = executor.tableDefs.find(
-        (def) => def.name === "share_resources",
+    assert.ok(tableDefinition);
+    const resourceTableDefinition = executor.tableDefs.find(
+        (definition) => definition.name === "share_resources",
     );
-    assert.ok(resourceTableDef);
+    assert.ok(resourceTableDefinition);
     assert.ok(
         executor.tableDefs.some(
             (definition) => definition.name === "share_activity_events",
         ),
     );
-    const columnNames = tableDef.columns.map((column) => column.name);
+    const columnNames = tableDefinition.columns.map((column) => column.name);
     assert.ok(columnNames.includes("resource_type"));
     assert.ok(columnNames.includes("resource_key"));
     assert.ok(columnNames.includes("expiration_notified_at"));
     assert.ok(columnNames.includes("last_accessed_at"));
     assert.deepEqual(
-        tableDef.columns.find((column) => column.name === "resource_key")
+        tableDefinition.columns.find((column) => column.name === "resource_key")
             ?.references,
         {
             table: "share_resources",

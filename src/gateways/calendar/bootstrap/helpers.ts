@@ -52,8 +52,8 @@ export type ResolveAccountDisplayName = (
 ) => Promise<string> | string;
 export type CalendarLogger = (
     level: string,
-    msg: string,
-    meta?: Record<string, unknown>,
+    message: string,
+    metadata?: Record<string, unknown>,
 ) => void;
 
 export type EventLocationRef = {
@@ -213,21 +213,21 @@ export function buildIcsAttachmentFilename(eventTitle: string): string {
 }
 
 export function sendJson(
-    res: ServerResponse,
+    response: ServerResponse,
     statusCode: number,
     payload: unknown,
 ): void {
-    res.writeHead(statusCode, { "content-type": "application/json" });
-    res.end(JSON.stringify(payload));
+    response.writeHead(statusCode, { "content-type": "application/json" });
+    response.end(JSON.stringify(payload));
 }
 
 export function sendCalendarError(
-    res: ServerResponse,
+    response: ServerResponse,
     code: string,
     message: string,
     statusCode: number,
 ): void {
-    sendJson(res, statusCode, {
+    sendJson(response, statusCode, {
         error: {
             code,
             message,
@@ -655,10 +655,11 @@ export async function dispatchReminderNotifications({
                 );
             await Promise.all(
                 reminders.map(async (reminderOffsetMinutes) => {
-                    const startAtMs = Date.parse(event.startAt);
-                    const reminderAt = Number.isFinite(startAtMs)
+                    const startAtMilliseconds = Date.parse(event.startAt);
+                    const reminderAt = Number.isFinite(startAtMilliseconds)
                         ? new Date(
-                              startAtMs - reminderOffsetMinutes * 60_000,
+                              startAtMilliseconds -
+                                  reminderOffsetMinutes * 60_000,
                           ).toISOString()
                         : null;
                     try {
@@ -717,7 +718,7 @@ export function resolveCreatedSeries(
         .filter((entry) => entry.recurrenceId === event.recurrenceId);
 }
 
-export function resolveEventMeta(
+function resolveEventMetadata(
     event: CalendarEventRecord,
     accountId: string,
     response: CalendarEventResponse | null,
@@ -739,6 +740,7 @@ export function resolveEventMeta(
         responseOptions: ["accepted", "tentative", "declined"],
     };
 }
+export { resolveEventMetadata as resolveEventMeta };
 
 export function errorMessage(error: unknown): string {
     return error instanceof Error ? error.message : "calendar_error";

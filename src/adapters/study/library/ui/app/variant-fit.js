@@ -108,43 +108,43 @@ function ancestorCardBounds(slot) {
     return bounds;
 }
 
-function overflowScore(rect, boundary) {
+function overflowScore(rectangle, boundary) {
     return (
-        Math.max(0, boundary.left - rect.left) +
-        Math.max(0, rect.right - boundary.right) +
-        Math.max(0, boundary.top - rect.top) +
-        Math.max(0, rect.bottom - boundary.bottom)
+        Math.max(0, boundary.left - rectangle.left) +
+        Math.max(0, rectangle.right - boundary.right) +
+        Math.max(0, boundary.top - rectangle.top) +
+        Math.max(0, rectangle.bottom - boundary.bottom)
     );
 }
 
-function collisionBounds(rect) {
+function collisionBounds(rectangle) {
     const clearance = 2;
     return {
-        top: rect.top - clearance,
-        right: rect.right + clearance,
-        bottom: rect.bottom + clearance,
-        left: rect.left - clearance,
+        top: rectangle.top - clearance,
+        right: rectangle.right + clearance,
+        bottom: rectangle.bottom + clearance,
+        left: rectangle.left - clearance,
     };
 }
 
-export function overlapArea(rect, occupiedRect) {
+export function overlapArea(rectangle, occupiedRectangle) {
     const width = Math.max(
         0,
-        Math.min(rect.right, occupiedRect.right) -
-            Math.max(rect.left, occupiedRect.left),
+        Math.min(rectangle.right, occupiedRectangle.right) -
+            Math.max(rectangle.left, occupiedRectangle.left),
     );
     const height = Math.max(
         0,
-        Math.min(rect.bottom, occupiedRect.bottom) -
-            Math.max(rect.top, occupiedRect.top),
+        Math.min(rectangle.bottom, occupiedRectangle.bottom) -
+            Math.max(rectangle.top, occupiedRectangle.top),
     );
     return width * height;
 }
 
-export function isAncestorSafe(rect, ancestorRects) {
-    const bounds = collisionBounds(rect);
-    return ancestorRects.every(
-        (ancestorRect) => overlapArea(bounds, ancestorRect) === 0,
+export function isAncestorSafe(rectangle, ancestorRectangles) {
+    const bounds = collisionBounds(rectangle);
+    return ancestorRectangles.every(
+        (ancestorRectangle) => overlapArea(bounds, ancestorRectangle) === 0,
     );
 }
 
@@ -158,8 +158,8 @@ export function hasReachableVariantPath(parent, child, obstacles) {
         y: (child.top + child.bottom) / 2,
     };
     return obstacles
-        .filter((rect) => overlapArea(rect, parent) === 0)
-        .every((rect) => {
+        .filter((rectangle) => overlapArea(rectangle, parent) === 0)
+        .every((rectangle) => {
             let enter = 0;
             let leave = 1;
             for (const [axis, lower, upper] of [
@@ -168,11 +168,14 @@ export function hasReachableVariantPath(parent, child, obstacles) {
             ]) {
                 const delta = end[axis] - start[axis];
                 if (delta === 0) {
-                    if (start[axis] < rect[lower] || start[axis] > rect[upper])
+                    if (
+                        start[axis] < rectangle[lower] ||
+                        start[axis] > rectangle[upper]
+                    )
                         return true;
                 } else {
-                    const first = (rect[lower] - start[axis]) / delta;
-                    const second = (rect[upper] - start[axis]) / delta;
+                    const first = (rectangle[lower] - start[axis]) / delta;
+                    const second = (rectangle[upper] - start[axis]) / delta;
                     enter = Math.max(enter, Math.min(first, second));
                     leave = Math.min(leave, Math.max(first, second));
                 }
@@ -181,11 +184,11 @@ export function hasReachableVariantPath(parent, child, obstacles) {
         });
 }
 
-function collisionScore(rect, occupiedRects) {
-    const candidateBounds = collisionBounds(rect);
-    return occupiedRects.reduce(
-        (score, occupiedRect) =>
-            score + overlapArea(candidateBounds, occupiedRect),
+function collisionScore(rectangle, occupiedRectangles) {
+    const candidateBounds = collisionBounds(rectangle);
+    return occupiedRectangles.reduce(
+        (score, occupiedRectangle) =>
+            score + overlapArea(candidateBounds, occupiedRectangle),
         0,
     );
 }
@@ -265,29 +268,29 @@ export function fitVariantBranchWithinGrid(rootShell) {
             return;
         const grid = rootShell.closest(".library-entry-grid");
         if (!grid) return;
-        const gridRect = grid.getBoundingClientRect();
+        const gridRectangle = grid.getBoundingClientRect();
         const reserved =
             Number.parseFloat(
                 grid.style.getPropertyValue("--library-branch-space"),
             ) || 0;
-        const naturalBottom = gridRect.bottom - reserved;
+        const naturalBottom = gridRectangle.bottom - reserved;
         const boundary = {
-            top: Math.max(gridRect.top + 14, 14),
-            right: Math.min(gridRect.right - 6, window.innerWidth - 6),
+            top: Math.max(gridRectangle.top + 14, 14),
+            right: Math.min(gridRectangle.right - 6, window.innerWidth - 6),
             bottom: Math.min(naturalBottom - 6, window.innerHeight - 6),
-            left: Math.max(gridRect.left + 6, 6),
+            left: Math.max(gridRectangle.left + 6, 6),
         };
         const slots = visibleVariantSlots(rootShell);
         // Background cards are dimmed, not part of the active branch's layout.
         const rootCard = rootShell.querySelector(
             ":scope > .library-entry-card",
         );
-        const occupiedRects = [
+        const occupiedRectangles = [
             collisionBounds(rootCard.getBoundingClientRect()),
         ];
         for (const slot of slots) {
             if (slot.dataset.libraryFittedDirection) {
-                occupiedRects.push(collisionBounds(cardBounds(slot)));
+                occupiedRectangles.push(collisionBounds(cardBounds(slot)));
             }
         }
         for (const slot of slots) {
@@ -295,37 +298,40 @@ export function fitVariantBranchWithinGrid(rootShell) {
             const candidates = variantDirectionCandidates(
                 slot.dataset.libraryPreferredDirection,
             );
-            const ancestorRects = ancestorCardBounds(slot);
-            const parentRect = slot.parentElement
+            const ancestorRectangles = ancestorCardBounds(slot);
+            const parentRectangle = slot.parentElement
                 .querySelector(":scope > .library-entry-card")
                 .getBoundingClientRect();
             let best = null;
             // Always start next to the parent, regardless of the static grid plan.
             // Additional rows are available when the active branch cannot fit.
-            const maximumDistance = slots.length + ancestorRects.length + 1;
+            const maximumDistance =
+                slots.length + ancestorRectangles.length + 1;
             for (let distance = 1; distance <= maximumDistance; distance += 1) {
                 for (const direction of candidates) {
                     setVariantDirection(slot, direction);
                     setVariantDistance(slot, distance);
-                    const rect = cardBounds(slot);
-                    if (!isAncestorSafe(rect, ancestorRects)) continue;
-                    if (collisionScore(rect, occupiedRects) > 0) continue;
+                    const rectangle = cardBounds(slot);
+                    if (!isAncestorSafe(rectangle, ancestorRectangles))
+                        continue;
+                    if (collisionScore(rectangle, occupiedRectangles) > 0)
+                        continue;
                     if (
                         !hasReachableVariantPath(
-                            parentRect,
-                            rect,
-                            occupiedRects,
+                            parentRectangle,
+                            rectangle,
+                            occupiedRectangles,
                         )
                     )
                         continue;
                     // Never accept horizontal clipping or children above the grid.
                     if (
-                        rect.left < boundary.left ||
-                        rect.right > boundary.right ||
-                        rect.top < boundary.top
+                        rectangle.left < boundary.left ||
+                        rectangle.right > boundary.right ||
+                        rectangle.top < boundary.top
                     )
                         continue;
-                    const overflow = overflowScore(rect, boundary);
+                    const overflow = overflowScore(rectangle, boundary);
                     const candidate = {
                         direction,
                         distance,
@@ -343,11 +349,11 @@ export function fitVariantBranchWithinGrid(rootShell) {
             setVariantDistance(slot, best.distance);
             slot.dataset.libraryFittedDirection = best.direction;
             slot.dataset.libraryFittedDistance = String(best.distance);
-            occupiedRects.push(collisionBounds(cardBounds(slot)));
+            occupiedRectangles.push(collisionBounds(cardBounds(slot)));
         }
         const bottom = Math.max(
             naturalBottom,
-            ...occupiedRects.map((rect) => rect.bottom + 12),
+            ...occupiedRectangles.map((rectangle) => rectangle.bottom + 12),
         );
         grid.style.setProperty(
             "--library-branch-space",

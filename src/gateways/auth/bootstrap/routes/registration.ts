@@ -28,12 +28,15 @@ export function createRegistrationRoutes({
     log,
 }: RegistrationRouteDependencies): AuthGatewayRouteHandler {
     return async (
-        req,
-        res,
+        request,
+        response,
         url,
-        logMeta: AuthRouteLogMeta,
+        logMetadata: AuthRouteLogMeta,
     ): Promise<boolean> => {
-        if (url.pathname !== "/api/v1/auth/register" || req.method !== "POST") {
+        if (
+            url.pathname !== "/api/v1/auth/register" ||
+            request.method !== "POST"
+        ) {
             return false;
         }
 
@@ -41,10 +44,10 @@ export function createRegistrationRoutes({
             log?.(
                 "warn",
                 "Blocked public registration because registrations are disabled.",
-                logMeta,
+                logMetadata,
             );
-            res.writeHead(403, { "content-type": "application/json" });
-            res.end(
+            response.writeHead(403, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     error: {
                         code: "registrations_disabled",
@@ -55,7 +58,7 @@ export function createRegistrationRoutes({
             return true;
         }
 
-        const body = await readJson(req);
+        const body = await readJson(request);
         const username = String(body.username ?? "");
         const password = String(body.password ?? "");
         const email = String(body.email ?? "");
@@ -65,12 +68,12 @@ export function createRegistrationRoutes({
                 "warn",
                 "Rejected public registration with missing credentials.",
                 {
-                    ...logMeta,
+                    ...logMetadata,
                     username,
                 },
             );
-            res.writeHead(400, { "content-type": "application/json" });
-            res.end(
+            response.writeHead(400, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     error: {
                         code: "bad_request",
@@ -87,13 +90,13 @@ export function createRegistrationRoutes({
                 "warn",
                 "Rejected public registration with invalid username.",
                 {
-                    ...logMeta,
+                    ...logMetadata,
                     username,
                     usernameError,
                 },
             );
-            res.writeHead(400, { "content-type": "application/json" });
-            res.end(
+            response.writeHead(400, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     error: {
                         code: usernameError,
@@ -120,10 +123,10 @@ export function createRegistrationRoutes({
             log?.(
                 "warn",
                 "Blocked public registration because registration capability is unavailable.",
-                logMeta,
+                logMetadata,
             );
-            res.writeHead(403, { "content-type": "application/json" });
-            res.end(
+            response.writeHead(403, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     error: {
                         code: "registration_unavailable",
@@ -152,7 +155,7 @@ export function createRegistrationRoutes({
             (accountId: string) => Promise<boolean>
         >("notify:hasVerifiedEmail");
         if (hasVerifiedEmail && registrationValidationMode === "email") {
-            const fiveMinutesMs = 5 * 60 * 1000;
+            const fiveMinutesMilliseconds = 5 * 60 * 1000;
             const timer = setTimeout(async () => {
                 try {
                     const verified = await hasVerifiedEmail(result.username);
@@ -181,18 +184,18 @@ export function createRegistrationRoutes({
                         },
                     );
                 }
-            }, fiveMinutesMs);
+            }, fiveMinutesMilliseconds);
             timer.unref();
         }
 
         log?.("info", "Registered public account.", {
-            ...logMeta,
+            ...logMetadata,
             accountId: result.username,
             hasEmail: Boolean(email),
             hasDisplayName: Boolean(displayName),
         });
-        res.writeHead(201, { "content-type": "application/json" });
-        res.end(JSON.stringify({ data: { ...result, verifyToken } }));
+        response.writeHead(201, { "content-type": "application/json" });
+        response.end(JSON.stringify({ data: { ...result, verifyToken } }));
         return true;
     };
 }

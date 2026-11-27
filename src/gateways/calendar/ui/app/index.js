@@ -48,7 +48,7 @@ export async function mount(root, { signal, shareContext = null } = {}) {
     let activeDate = new Date();
     let composer = null;
     let availabilityBoundaryTimer = null;
-    const MAX_TIMEOUT_MS = 2_147_000_000;
+    const MAX_TIMEOUT_MILLISECONDS = 2_147_000_000;
 
     signal?.addEventListener(
         "abort",
@@ -266,7 +266,7 @@ export async function mount(root, { signal, shareContext = null } = {}) {
                 await calendarUi.refreshUserAvailability();
                 scheduleAvailabilityBoundaryRefresh();
             },
-            Math.min(MAX_TIMEOUT_MS, nextBoundary - now + 50),
+            Math.min(MAX_TIMEOUT_MILLISECONDS, nextBoundary - now + 50),
         );
     }
 

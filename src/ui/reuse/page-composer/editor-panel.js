@@ -28,7 +28,7 @@ export function createEditorPanelHandlers({
             handle.setPointerCapture(event.pointerId);
             const startX = event.clientX - panel.offsetLeft;
             const startY = event.clientY - panel.offsetTop;
-            function onMove(event2) {
+            function onMove(moveEvent) {
                 const bounds = getComposerPanelHorizontalBounds(
                     panel.offsetWidth,
                 );
@@ -41,11 +41,11 @@ export function createEditorPanelHandlers({
                 );
                 const newLeft = Math.max(
                     minLeft,
-                    Math.min(maxLeft, event2.clientX - startX),
+                    Math.min(maxLeft, moveEvent.clientX - startX),
                 );
                 const newTop = Math.max(
                     minTop,
-                    Math.min(maxTop, event2.clientY - startY),
+                    Math.min(maxTop, moveEvent.clientY - startY),
                 );
                 panel.style.left = `${newLeft}px`;
                 panel.style.top = `${newTop}px`;
@@ -63,7 +63,7 @@ export function createEditorPanelHandlers({
         });
     }
     function getComposerPanelSafeTop() {
-        const navRowBottom =
+        const navigationRowBottom =
             state.root.querySelector(".global-navrow")?.getBoundingClientRect()
                 ?.bottom ?? 0;
         const topbarBottom =
@@ -71,7 +71,7 @@ export function createEditorPanelHandlers({
                 ?.bottom ?? 0;
         return Math.max(
             12,
-            Math.ceil(Math.max(navRowBottom, topbarBottom) + 12),
+            Math.ceil(Math.max(navigationRowBottom, topbarBottom) + 12),
         );
     }
     /**
@@ -83,14 +83,14 @@ export function createEditorPanelHandlers({
      * @returns {{ minLeft: number, maxLeft: number }}
      */
     function getComposerPanelHorizontalBounds(panelWidth) {
-        const workspaceRect = state.root
+        const workspaceRectangle = state.root
             .querySelector(".workspace")
             ?.getBoundingClientRect();
         const inset = 12;
-        if (workspaceRect) {
-            const minLeft = Math.ceil(workspaceRect.left + inset);
+        if (workspaceRectangle) {
+            const minLeft = Math.ceil(workspaceRectangle.left + inset);
             const maxLeft = Math.floor(
-                workspaceRect.right - panelWidth - inset,
+                workspaceRectangle.right - panelWidth - inset,
             );
             if (maxLeft >= minLeft) {
                 return { minLeft, maxLeft };
@@ -153,12 +153,12 @@ export function createEditorPanelHandlers({
             panel.style.left = `${clampComposerPanelLeft(state.panelPosition.left, panelWidth)}px`;
             panel.style.right = "auto";
         } else {
-            const gridRect = state.contentGrid.getBoundingClientRect();
+            const gridRectangle = state.contentGrid.getBoundingClientRect();
             const panelLeft = clampComposerPanelLeft(
-                gridRect.right + 12,
+                gridRectangle.right + 12,
                 panelWidth,
             );
-            const panelTop = gridRect.top;
+            const panelTop = gridRectangle.top;
             panel.style.top = `${Math.max(safeTop, panelTop)}px`;
             panel.style.left = `${panelLeft}px`;
             panel.style.right = "auto";
@@ -221,18 +221,18 @@ export function createEditorPanelHandlers({
             });
 
         panel.querySelectorAll("[data-composer-panel-item]").forEach((item) => {
-            const elId = item.dataset.composerPanelItem;
+            const elementId = item.dataset.composerPanelItem;
             const element = state.elements.find(
-                (candidateElement) => candidateElement.id === elId,
+                (candidateElement) => candidateElement.id === elementId,
             );
             if (element) bindPanelItemDrag(item, element);
             item.querySelector(".composer-add-btn")?.addEventListener(
                 "click",
                 () => {
                     state.layout.hidden = state.layout.hidden.filter(
-                        (id) => id !== elId,
+                        (id) => id !== elementId,
                     );
-                    initializePlacements({ reveal: [elId] });
+                    initializePlacements({ reveal: [elementId] });
                     renderGridComposer();
                 },
             );

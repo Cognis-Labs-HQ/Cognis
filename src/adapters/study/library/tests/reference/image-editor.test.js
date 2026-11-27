@@ -54,8 +54,8 @@ function fixture(entry = { label: "dog", fields: {} }) {
             deleted.push(value);
             return { discarded: true };
         },
-        fetchLibraryImageUrl: async (...args) => {
-            fetched.push(args);
+        fetchLibraryImageUrl: async (...argumentsList) => {
+            fetched.push(argumentsList);
             return "blob:bundled";
         },
     };

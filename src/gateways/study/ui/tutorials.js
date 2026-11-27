@@ -50,11 +50,12 @@ export async function mountProvider(ctx) {
         if (!registerActions) throw new Error("scoped_actions_unavailable");
         const actions = registerActions(ctx, "study:tutorialNavigation", {
             attachDrawing: ({ signal }) => {
-                const pad = document.querySelector(
+                const drawingPad = document.querySelector(
                     ".study-drawing-host .study-drawing-pad",
                 );
                 return Boolean(
-                    pad && transientSurfaces.attachLifetime(pad, signal),
+                    drawingPad &&
+                    transientSurfaces.attachLifetime(drawingPad, signal),
                 );
             },
             route: async ({ language, area }) => {

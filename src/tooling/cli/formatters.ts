@@ -100,7 +100,7 @@ function formatValue(value: unknown): string {
     return String(value);
 }
 
-function formatDurationMs(value: unknown): string {
+function formatDurationMilliseconds(value: unknown): string {
     if (typeof value !== "number" || !Number.isFinite(value)) {
         return value == null ? FIELD_EMPTY_PLACEHOLDER : conciseText(value);
     }
@@ -310,7 +310,7 @@ export function renderSystemHealth(payload: unknown): string {
         formatField("Status", formatStatus(data.status ?? "unknown")),
         formatField("Checked", data.timestamp),
         formatField("Started", data.startedAt),
-        formatField("Uptime", formatDurationMs(data.uptimeMs)),
+        formatField("Uptime", formatDurationMilliseconds(data.uptimeMs)),
         ...(contributions.length
             ? [
                   "",

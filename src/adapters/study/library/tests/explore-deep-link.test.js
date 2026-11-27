@@ -50,7 +50,7 @@ test("a directly opened Explore card path opens the requested preview without hi
             fetched.push(id);
             return { entry };
         },
-        openEntryPopup: async (...args) => opened.push(args),
+        openEntryPopup: async (...argumentsList) => opened.push(argumentsList),
         mountWhenDirect: async () => {},
     });
     const workspace = await importTestModule(

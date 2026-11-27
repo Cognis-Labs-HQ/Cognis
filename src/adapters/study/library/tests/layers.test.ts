@@ -296,16 +296,16 @@ test("grouped relationships preserve separate pronunciation sequences", () => {
         },
     ];
     const letterA = entry("letter:a", "a");
-    const y = entry("letter:y", "y");
+    const letterY = entry("letter:y", "y");
     const targets = new Map([
         [letterA.id, letterA],
-        [y.id, y],
+        [letterY.id, letterY],
     ]);
     const groups = {
         letters: [
             [
                 { entryId: letterA.id, relation: "letters", position: 0 },
-                { entryId: y.id, relation: "letters", position: 1 },
+                { entryId: letterY.id, relation: "letters", position: 1 },
             ],
             [{ entryId: letterA.id, relation: "letters", position: 0 }],
         ],
@@ -351,10 +351,10 @@ test("one pronunciation group may span multiple linked relationships", () => {
         },
     ];
     const letterA = entry("letter:a", "a");
-    const y = entry("letter:y", "y");
+    const letterY = entry("letter:y", "y");
     const targets = new Map([
         [letterA.id, letterA],
-        [y.id, y],
+        [letterY.id, letterY],
     ]);
 
     assert.doesNotThrow(() =>
@@ -374,7 +374,13 @@ test("one pronunciation group may span multiple linked relationships", () => {
                     ],
                 ],
                 suffixes: [
-                    [{ entryId: y.id, relation: "suffixes", position: 0 }],
+                    [
+                        {
+                            entryId: letterY.id,
+                            relation: "suffixes",
+                            position: 0,
+                        },
+                    ],
                 ],
             },
             { pronunciation: ["ay"] },

@@ -151,11 +151,11 @@ test("failed audio retrieval logs safely, shows a localized toast, and permits r
         capabilities: {
             get:
                 () =>
-                (...args) =>
-                    logs.push(args),
+                (...argumentsList) =>
+                    logs.push(argumentsList),
         },
     };
-    context.showToast = (...args) => toasts.push(args);
+    context.showToast = (...argumentsList) => toasts.push(argumentsList);
     context.fetchLibraryAudioUrl = async () => {
         throw new Error("network_failed");
     };

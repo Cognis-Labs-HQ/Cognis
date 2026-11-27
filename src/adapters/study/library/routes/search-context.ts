@@ -12,22 +12,22 @@ export function createDictionarySearchContextRoutes(
     log?: (
         level: string,
         message: string,
-        meta?: Record<string, unknown>,
+        metadata?: Record<string, unknown>,
     ) => void | Promise<void>,
 ) {
     return async (
-        req: IncomingMessage,
-        res: ServerResponse,
+        request: IncomingMessage,
+        response: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         if (url.pathname !== "/api/v1/study/library/dictionary/context")
             return false;
-        const claims = auth.requireAuth(req, res);
+        const claims = auth.requireAuth(request, response);
         if (!claims) return true;
-        res.setHeader("cache-control", "no-store");
+        response.setHeader("cache-control", "no-store");
         try {
-            if (!["GET", "PUT"].includes(req.method ?? "")) return false;
-            const reading = req.method === "GET";
+            if (!["GET", "PUT"].includes(request.method ?? "")) return false;
+            const reading = request.method === "GET";
             const data: Record<string, unknown> = {};
             await flow.run(
                 reading
@@ -49,7 +49,7 @@ export function createDictionarySearchContextRoutes(
                               }
                             : {
                                   validate: async () => {
-                                      data.input = await readJson(req, {
+                                      data.input = await readJson(request, {
                                           maxBytes: 16 * 1024,
                                       });
                                   },
@@ -63,7 +63,7 @@ export function createDictionarySearchContextRoutes(
                     },
                 },
             );
-            sendJson(res, 200, { data: data.result });
+            sendJson(response, 200, { data: data.result });
         } catch (error) {
             const code =
                 error instanceof SyntaxError
@@ -78,7 +78,7 @@ export function createDictionarySearchContextRoutes(
                 errorName: error instanceof Error ? error.name : "Unknown",
             });
             sendJson(
-                res,
+                response,
                 code === "request_body_too_large"
                     ? 413
                     : code === "invalid_query"

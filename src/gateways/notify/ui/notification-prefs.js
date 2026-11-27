@@ -24,51 +24,53 @@ import { showToast } from "/static/reuse/toast.js";
  * @param {{ i18n: object, username: string, onDirtyChange?: (dirty: boolean) => void }} options
  * @returns {{ init: () => Promise<void>, commit: () => void, discard: () => void, isDirty: () => boolean, getPendingPrefs: () => Array<{senderId: string, category: string, enabled: boolean}> }}
  */
-export function initNotificationPrefs(root, { i18n, username, onDirtyChange }) {
+function initNotificationPreferences(root, { i18n, username, onDirtyChange }) {
     let providers = [];
     let categories = [];
-    let savedPrefs = {};
-    let pendingPrefs = {};
+    let savedPreferences = {};
+    let pendingPreferences = {};
     let userEmails = [];
 
-    function makePrefKey(senderId, category) {
+    function makePreferenceKey(senderId, category) {
         return JSON.stringify([senderId, category]);
     }
 
     async function loadProviders() {
-        const res = await apiFetch("/api/v1/notify/providers");
-        if (!res.ok) return;
-        const payload = await res.json();
+        const response = await apiFetch("/api/v1/notify/providers");
+        if (!response.ok) return;
+        const payload = await response.json();
         providers = payload.data ?? [];
     }
 
     async function loadCategories() {
-        const res = await apiFetch("/api/v1/notify/categories");
-        if (!res.ok) return;
-        const payload = await res.json();
+        const response = await apiFetch("/api/v1/notify/categories");
+        if (!response.ok) return;
+        const payload = await response.json();
         categories = payload.data ?? [];
     }
 
-    async function loadPrefs() {
-        const res = await apiFetch(
+    async function loadPreferences() {
+        const response = await apiFetch(
             `/api/v1/notify/users/${encodeURIComponent(username)}/notification-prefs`,
         );
-        if (!res.ok) return;
-        const payload = await res.json();
+        if (!response.ok) return;
+        const payload = await response.json();
         const raw = payload.data ?? [];
-        savedPrefs = {};
+        savedPreferences = {};
         for (const entry of raw) {
-            savedPrefs[makePrefKey(entry.senderId, entry.category)] = true;
+            savedPreferences[
+                makePreferenceKey(entry.senderId, entry.category)
+            ] = true;
         }
-        pendingPrefs = { ...savedPrefs };
+        pendingPreferences = { ...savedPreferences };
     }
 
     async function loadUserEmails() {
-        const res = await apiFetch(
+        const response = await apiFetch(
             `/api/v1/notify/users/${encodeURIComponent(username)}/emails`,
         );
-        if (!res.ok) return;
-        const payload = await res.json();
+        if (!response.ok) return;
+        const payload = await response.json();
         userEmails = payload.data ?? [];
     }
 
@@ -93,20 +95,24 @@ export function initNotificationPrefs(root, { i18n, username, onDirtyChange }) {
             .map((provider) => `<th>${escapeHtml(provider.name)}</th>`)
             .join("");
         const rows = categories
-            .map((cat) => {
+            .map((category) => {
                 const cells = providers
                     .map((provider) => {
-                        const prefKey = makePrefKey(provider.senderId, cat.id);
+                        const preferenceKey = makePreferenceKey(
+                            provider.senderId,
+                            category.id,
+                        );
                         const isAlwaysOn = provider.alwaysOn === true;
                         const checked =
-                            isAlwaysOn || pendingPrefs[prefKey] === true
+                            isAlwaysOn ||
+                            pendingPreferences[preferenceKey] === true
                                 ? " checked"
                                 : "";
                         const disabled = isAlwaysOn ? " disabled" : "";
-                        return `<td><input type="checkbox" data-pref-key="${escapeHtml(prefKey)}" data-sender-id="${escapeHtml(provider.senderId)}"${checked}${disabled} /></td>`;
+                        return `<td><input type="checkbox" data-pref-key="${escapeHtml(preferenceKey)}" data-sender-id="${escapeHtml(provider.senderId)}"${checked}${disabled} /></td>`;
                     })
                     .join("");
-                return `<tr><td>${escapeHtml(cat.label)}</td>${cells}</tr>`;
+                return `<tr><td>${escapeHtml(category.label)}</td>${cells}</tr>`;
             })
             .join("");
 
@@ -126,7 +132,7 @@ export function initNotificationPrefs(root, { i18n, username, onDirtyChange }) {
             .querySelectorAll("input[data-pref-key]")
             .forEach((checkbox) => {
                 checkbox.addEventListener("change", () => {
-                    const prefKey = checkbox.dataset.prefKey;
+                    const preferenceKey = checkbox.dataset.prefKey;
                     const senderId = checkbox.dataset.senderId;
 
                     if (
@@ -144,8 +150,8 @@ export function initNotificationPrefs(root, { i18n, username, onDirtyChange }) {
                         return;
                     }
 
-                    if (prefKey) {
-                        pendingPrefs[prefKey] = checkbox.checked;
+                    if (preferenceKey) {
+                        pendingPreferences[preferenceKey] = checkbox.checked;
                     }
                     onDirtyChange?.(isDirty());
                 });
@@ -154,33 +160,33 @@ export function initNotificationPrefs(root, { i18n, username, onDirtyChange }) {
 
     function isDirty() {
         const allKeys = new Set([
-            ...Object.keys(savedPrefs),
-            ...Object.keys(pendingPrefs),
+            ...Object.keys(savedPreferences),
+            ...Object.keys(pendingPreferences),
         ]);
         for (const key of allKeys) {
-            const saved = savedPrefs[key] === true;
-            const pending = pendingPrefs[key] === true;
+            const saved = savedPreferences[key] === true;
+            const pending = pendingPreferences[key] === true;
             if (saved !== pending) return true;
         }
         return false;
     }
 
     function commit() {
-        savedPrefs = { ...pendingPrefs };
+        savedPreferences = { ...pendingPreferences };
     }
 
     function discard() {
-        pendingPrefs = { ...savedPrefs };
+        pendingPreferences = { ...savedPreferences };
         renderMatrix();
         bindMatrixToggles();
         onDirtyChange?.(false);
     }
 
-    function getPendingPrefs() {
+    function getPendingPreferences() {
         const result = [];
         const allKeys = new Set([
-            ...Object.keys(savedPrefs),
-            ...Object.keys(pendingPrefs),
+            ...Object.keys(savedPreferences),
+            ...Object.keys(pendingPreferences),
         ]);
         for (const key of allKeys) {
             let parsed;
@@ -194,7 +200,7 @@ export function initNotificationPrefs(root, { i18n, username, onDirtyChange }) {
             result.push({
                 senderId,
                 category,
-                enabled: pendingPrefs[key] === true,
+                enabled: pendingPreferences[key] === true,
             });
         }
         return result;
@@ -205,7 +211,7 @@ export function initNotificationPrefs(root, { i18n, username, onDirtyChange }) {
             await Promise.all([
                 loadProviders(),
                 loadCategories(),
-                loadPrefs(),
+                loadPreferences(),
                 loadUserEmails(),
             ]);
             renderMatrix();
@@ -214,12 +220,13 @@ export function initNotificationPrefs(root, { i18n, username, onDirtyChange }) {
         commit,
         discard,
         isDirty,
-        getPendingPrefs,
+        getPendingPrefs: getPendingPreferences,
     };
 }
+export { initNotificationPreferences as initNotificationPrefs };
 
 export function createSettingsSection({ i18n, root, markDirty }) {
-    let notifPrefs = null;
+    let notificationPreferences = null;
 
     return {
         id: "notifications",
@@ -229,27 +236,29 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         renderContent: () => `<div id="notif-matrix-container"></div>`,
         onRender: () => {
             const account = localStorage.getItem("cognis_account") ?? "";
-            notifPrefs = initNotificationPrefs(root, {
+            notificationPreferences = initNotificationPreferences(root, {
                 i18n,
                 username: account,
                 onDirtyChange: (dirty) => markDirty("notifications", dirty),
             });
-            notifPrefs.init();
+            notificationPreferences.init();
         },
-        isDirty: () => notifPrefs?.isDirty() ?? false,
+        isDirty: () => notificationPreferences?.isDirty() ?? false,
         async save() {
-            if (!notifPrefs?.isDirty()) return;
+            if (!notificationPreferences?.isDirty()) return;
             const account = localStorage.getItem("cognis_account") ?? "";
             await apiFetch(
                 `/api/v1/notify/users/${encodeURIComponent(account)}/notification-prefs`,
                 {
                     method: "PUT",
                     headers: { "content-type": "application/json" },
-                    body: JSON.stringify(notifPrefs.getPendingPrefs()),
+                    body: JSON.stringify(
+                        notificationPreferences.getPendingPrefs(),
+                    ),
                 },
             );
         },
-        commit: () => notifPrefs?.commit(),
-        discard: () => notifPrefs?.discard(),
+        commit: () => notificationPreferences?.commit(),
+        discard: () => notificationPreferences?.discard(),
     };
 }

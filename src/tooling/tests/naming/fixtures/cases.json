@@ -105,19 +105,19 @@
         "names": []
     },
     {
-        "name": "documented spatial and identifier names",
+        "name": "coordinate and dimension locals require descriptive names",
         "source": "const { x, y, w, h, id } = rect; const _ = source;",
-        "names": []
+        "names": ["x", "y", "w", "h"]
     },
     {
         "name": "documented numeric counters",
-        "source": "for (let i = 0; i < 3; i++) {} for (let j = 0; j < 3; j++) {} for (let k = 0; k < 3; k++) {} for (let r = 0; r < 2; r++) { for (let c = 0; c < 2; c++) {} }",
+        "source": "for (let i = 0; i < 3; i++) {} for (let j = 0; j < 3; j++) {} for (let k = 0; k < 3; k++) {} for (let rowIndex = 0; rowIndex < 2; rowIndex++) { for (let columnIndex = 0; columnIndex < 2; columnIndex++) {} }",
         "names": []
     },
     {
-        "name": "type parameters and signature labels are not runtime bindings",
+        "name": "signature parameter labels require descriptive names",
         "source": "type Handler<T> = (db: T) => T; interface Reader { read(a: string): void; }",
-        "names": []
+        "names": ["db", "a"]
     },
     {
         "name": "property and string text are not bindings",
@@ -168,5 +168,115 @@
         "name": "counter exceptions do not apply to parameters",
         "source": "items.map(i => i);",
         "names": ["i"]
+    },
+    {
+        "name": "abbreviated words in locals and parameters",
+        "source": "const req = input; function read(res, msg, prefs) {}",
+        "names": ["req", "res", "msg", "prefs"]
+    },
+    {
+        "name": "camel case and constant words",
+        "source": "const dbExec = source; const DEFAULT_PREFS = source; let errorMsg;",
+        "names": ["dbExec", "DEFAULT_PREFS", "errorMsg"]
+    },
+    {
+        "name": "ignored prefix does not hide abbreviations",
+        "source": "function read(_req, _res, _args) {}",
+        "names": ["_req", "_res", "_args"]
+    },
+    {
+        "name": "numbered placeholders are not descriptive roles",
+        "source": "const event3 = source; const value42 = source;",
+        "names": ["event3", "value42"]
+    },
+    {
+        "name": "private storage fields",
+        "source": "class Example { private prefs: unknown; #msg; private readonly db: unknown; }",
+        "names": ["prefs", "msg", "db"]
+    },
+    {
+        "name": "private accessor and method names",
+        "source": "class Example { private get db() { return source; } private readMsg() {} }",
+        "names": ["db", "readMsg"]
+    },
+    {
+        "name": "quoted private field",
+        "source": "class Example { private 'prefs': unknown; }",
+        "names": ["prefs"]
+    },
+    {
+        "name": "public data keys stay stable",
+        "source": "const { w: width, h: height, prefs: preferences } = input; const output = { w: width, h: height, prefs: preferences };",
+        "names": []
+    },
+    {
+        "name": "descriptive typed signatures and generic names",
+        "source": "type Handler<T> = (database: T) => T; interface Reader { read(value: string): void; }",
+        "names": []
+    },
+    {
+        "name": "established protocol and contract vocabulary",
+        "source": "function read(ctx, log, i18n, url, html, sql, api, uuid) {}",
+        "names": []
+    },
+    {
+        "name": "whole word matching avoids substrings",
+        "source": "const pressure = source; const request = input; const dependency = input; const rectangle = input; const metadata = input;",
+        "names": []
+    },
+    {
+        "name": "product names retain their meaning",
+        "source": "const mariaDbPool = source; const indexedDbStorage = source;",
+        "names": []
+    },
+    {
+        "name": "product names cannot exempt neighboring abbreviations",
+        "source": "const mariaDbConn = source; const indexedDbReq = source;",
+        "names": ["mariaDbConn", "indexedDbReq"]
+    },
+    {
+        "name": "numeric counter update is required",
+        "source": "for (let i = 0; ready; record()) {}",
+        "names": ["i"]
+    },
+    {
+        "name": "text iteration is not a numeric counter",
+        "source": "for (let i = 'value'; ready; i += 'next') {}",
+        "names": ["i"]
+    },
+    {
+        "name": "numeric counter collection does not apply to row shorthand",
+        "source": "for (let r = 0; r < 2; r++) { for (let c = 0; c < 2; c++) {} }",
+        "names": ["r", "c"]
+    },
+    {
+        "name": "ignored names cannot be consumed",
+        "source": "const _ = input; read(_);",
+        "names": ["_"]
+    },
+    {
+        "name": "ignored names cannot be exported",
+        "source": "export const _ = input;",
+        "names": ["_"]
+    },
+    {
+        "name": "parameter properties store a value and cannot be ignored",
+        "source": "class Example { constructor(private readonly _: string) {} }",
+        "names": ["_"]
+    },
+    {
+        "name": "unused ignored arguments remain valid",
+        "source": "items.map((_, index) => index);",
+        "names": []
+    },
+    {
+        "name": "underscore property labels are not ignored-variable reads",
+        "source": "const record = { _: value }; const result = record._;",
+        "names": []
+    },
+    {
+        "name": "plural abbreviation words and constants",
+        "source": "const ancestorRects = []; const settingsExts = []; const MSGS_LIMIT = 10;",
+        "names": ["ancestorRects", "settingsExts", "MSGS_LIMIT"]
     }
 ]

@@ -8,7 +8,8 @@ import {
 import { canLoadOwnProfile } from "./session-policy.js";
 
 export function createNavbarAvatarProvider(ctx) {
-    const log = (...args) => ctx.capabilities.get("ui:log")?.(...args);
+    const log = (...argumentsList) =>
+        ctx.capabilities.get("ui:log")?.(...argumentsList);
     return async () => {
         const handle = localStorage.getItem("cognis_account") ?? "";
         const storedDisplayName =
@@ -21,10 +22,11 @@ export function createNavbarAvatarProvider(ctx) {
         if (!canLoadOwnProfile(ctx))
             return { ...fallback, profileAvailable: false };
         try {
-            const pingRes = isOffline()
+            const pingResponse = isOffline()
                 ? { ok: true }
                 : await apiFetch("/api/v1/social/profile/ping");
-            if (!pingRes.ok) return { ...fallback, profileAvailable: false };
+            if (!pingResponse.ok)
+                return { ...fallback, profileAvailable: false };
         } catch (error) {
             log("error", "profile_avatar_load_failed", {
                 component: "social-profile",
@@ -37,9 +39,9 @@ export function createNavbarAvatarProvider(ctx) {
         if (!canLoadOwnProfile(ctx))
             return { ...fallback, profileAvailable: false };
         try {
-            const res = await apiFetch("/api/v1/social/profile");
-            if (!res.ok) return { ...fallback, profileAvailable: true };
-            const payload = await res.json();
+            const response = await apiFetch("/api/v1/social/profile");
+            if (!response.ok) return { ...fallback, profileAvailable: true };
+            const payload = await response.json();
             const profileLabel =
                 payload?.data?.displayName ||
                 payload?.data?.handle ||

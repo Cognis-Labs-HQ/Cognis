@@ -39,11 +39,11 @@ const MAX_PER_USER = 50;
 
 type StoreLog = (
     level: string,
-    msg: string,
-    meta?: Record<string, unknown>,
+    message: string,
+    metadata?: Record<string, unknown>,
 ) => void;
 
-export class DbInternalNotificationStore implements IInternalNotificationStore {
+class DatabaseInternalNotificationStore implements IInternalNotificationStore {
     constructor(
         private readonly database: DbExecutor,
         private readonly serverSecret: string,
@@ -189,14 +189,17 @@ export class DbInternalNotificationStore implements IInternalNotificationStore {
                     read: Boolean(row.is_read),
                     createdAt: Number(row.created_at),
                 });
-            } catch (err) {
+            } catch (error) {
                 this.log?.(
                     "warn",
                     "Failed to decrypt notification; row skipped. Verify DATA_ENCRYPTION_KEY matches the value used when this notification was encrypted (the key cannot be rotated without re-encrypting existing rows). If the key is unchanged, check the database row for corruption.",
                     {
                         component: "notify-internal",
                         notifId: row.id,
-                        error: err instanceof Error ? err.message : String(err),
+                        error:
+                            error instanceof Error
+                                ? error.message
+                                : String(error),
                     },
                 );
             }
@@ -294,3 +297,4 @@ export class DbInternalNotificationStore implements IInternalNotificationStore {
         return total;
     }
 }
+export { DatabaseInternalNotificationStore as DbInternalNotificationStore };

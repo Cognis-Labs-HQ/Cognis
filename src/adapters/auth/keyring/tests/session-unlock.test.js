@@ -147,11 +147,15 @@ test("expiry is authenticated and a lock cancels an in-progress cache write", as
         release = resolve;
     });
     const exportKey = crypto.subtle.exportKey.bind(crypto.subtle);
-    context.mock.method(crypto.subtle, "exportKey", async (...args) => {
-        entered();
-        await pending;
-        return exportKey(...args);
-    });
+    context.mock.method(
+        crypto.subtle,
+        "exportKey",
+        async (...argumentsList) => {
+            entered();
+            await pending;
+            return exportKey(...argumentsList);
+        },
+    );
     const remembering = state.cache.remember(state.binding, state.key, 0);
     await started;
     state.cache.remove(state.binding);

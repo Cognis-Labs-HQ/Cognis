@@ -30,7 +30,7 @@ async function loadLearningLanguages() {
         : [];
 }
 
-const SUB_NAV_CACHE = {
+const SUBJECT_NAVIGATION_CACHE = {
     learningLanguages: null,
 };
 
@@ -50,7 +50,7 @@ const managementDisabledAttributes = () =>
 
 const navigationScopes = new WeakMap();
 
-export function bindStudySubNavigation(
+function bindStudyNestedNavigation(
     root,
     { signal: externalSignal, i18n } = {},
 ) {
@@ -145,6 +145,7 @@ export function bindStudySubNavigation(
         { signal },
     );
 }
+export { bindStudyNestedNavigation as bindStudySubNavigation };
 
 /**
  * Clears the in-memory sub-navigation cache. Call this after any operation
@@ -153,13 +154,14 @@ export function bindStudySubNavigation(
  *
  * @returns {void}
  */
-export function clearStudySubNavCache() {
-    SUB_NAV_CACHE.learningLanguages = null;
+function clearStudyNestedNavigationCache() {
+    SUBJECT_NAVIGATION_CACHE.learningLanguages = null;
     uiCtx.capabilities.get("ui:subPages")?.invalidate("study");
     globalThis.window?.dispatchEvent?.(
         new CustomEvent("cognis:study-enrollment-changed"),
     );
 }
+export { clearStudyNestedNavigationCache as clearStudySubNavCache };
 
 function resolveDefaultChildPageUrl(modules) {
     const firstModulePageUrl = (modules ?? [])
@@ -210,16 +212,15 @@ function resolveRememberedStudyPageUrl(currentPath) {
  *   languagePageUrlsByCode: Map<string, string>
  * }>} Model data for shared Study child-page sub-navigation rendering.
  */
-export async function loadStudySubNavigationModel({
-    fallbackLanguageCode,
-} = {}) {
+async function loadStudyNestedNavigationModel({ fallbackLanguageCode } = {}) {
     const requestedLanguageCode = parseLanguageCode(fallbackLanguageCode);
-    const subPages = uiCtx.capabilities.get("study:subPages");
-    if (!subPages) throw new Error("Study sub-page provider unavailable.");
+    const nestedPages = uiCtx.capabilities.get("study:subPages");
+    if (!nestedPages) throw new Error("Study sub-page provider unavailable.");
     const learningLanguagesRaw = await loadLearningLanguages();
-    SUB_NAV_CACHE.learningLanguages = Promise.resolve(learningLanguagesRaw);
+    SUBJECT_NAVIGATION_CACHE.learningLanguages =
+        Promise.resolve(learningLanguagesRaw);
 
-    const requestedModel = await subPages.load("study", {
+    const requestedModel = await nestedPages.load("study", {
         selectedGroupId: requestedLanguageCode,
         groupIds: learningLanguagesRaw,
     });
@@ -369,20 +370,22 @@ export async function loadStudySubNavigationModel({
         languagePageUrlsByCode,
     };
 }
+export { loadStudyNestedNavigationModel as loadStudySubNavigationModel };
 
 /** A composer slot shared by Study pages; route selection remains render-time state. */
-export function createStudySubNavigationSlot(model, i18n) {
+function createStudyNestedNavigationSlot(model, i18n) {
     return {
         id: "study-subnav",
         label: i18n.t("ui.reuse.study"),
         render: () =>
-            renderStudySubNavigation({
+            renderStudyNestedNavigation({
                 model,
                 currentPath: window.location.pathname,
                 i18n,
             }),
     };
 }
+export { createStudyNestedNavigationSlot as createStudySubNavigationSlot };
 
 /**
  * Renders the shared Study child-page sub-navigation HTML.
@@ -407,7 +410,7 @@ export function createStudySubNavigationSlot(model, i18n) {
  * }} options - Render context for the shared Study child-page sub-navigation.
  * @returns {string} HTML string for the Study child-page sub-navigation.
  */
-export function renderStudySubNavigation({ model, currentPath, i18n }) {
+function renderStudyNestedNavigation({ model, currentPath, i18n }) {
     const libraryUrl = buildLibraryUrl();
     const hasLibraryModule = (model.modules ?? []).some(
         (component) => String(component?.id ?? "").trim() === "library",
@@ -522,3 +525,4 @@ export function renderStudySubNavigation({ model, currentPath, i18n }) {
         </div>
     `;
 }
+export { renderStudyNestedNavigation as renderStudySubNavigation };

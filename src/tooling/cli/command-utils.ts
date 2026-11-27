@@ -5,21 +5,23 @@ import {
     toRecordOrNull,
 } from "./payload.ts";
 
-export function failMissingArgs(missing: string[], usage: string): never {
+function failMissingArgumentsList(missing: string[], usage: string): never {
     const names = missing.map((name) => `"${name}"`).join(", ");
     throw new Error(
         `Not enough arguments (missing: ${names})\n\nUsage:\n  ${usage}`,
     );
 }
+export { failMissingArgumentsList as failMissingArgs };
 
-export function requireArgs(
-    args: string[],
+function requireArgumentsList(
+    argumentsList: string[],
     names: string[],
     usage: string,
 ): void {
-    const missing = names.filter((_, index) => !args[index]);
-    if (missing.length > 0) failMissingArgs(missing, usage);
+    const missing = names.filter((_, index) => !argumentsList[index]);
+    if (missing.length > 0) failMissingArgumentsList(missing, usage);
 }
+export { requireArgumentsList as requireArgs };
 
 export function mergePayloadFields(
     payload: unknown,

@@ -191,12 +191,12 @@ test("a delayed encrypted write cannot be committed into another account's cache
     const entered = new Promise((resolve) => {
         started = resolve;
     });
-    crypto.subtle.encrypt = async (...args) => {
+    crypto.subtle.encrypt = async (...argumentsList) => {
         started();
         await new Promise((resolve) => {
             release = resolve;
         });
-        return encrypt(...args);
+        return encrypt(...argumentsList);
     };
     try {
         const pending = keyring.setKeyringValue("token", "stale-alice-secret");

@@ -41,27 +41,27 @@ const adminToken = issueAccessToken("test-session", "admin", 60);
 const userToken = issueAccessToken("test-session", "user", 60);
 
 test("UIRegistry registers and lists admin sections", () => {
-    const reg = new UIRegistry();
-    reg.registerAdminSection({
+    const uiRegistry = new UIRegistry();
+    uiRegistry.registerAdminSection({
         id: "s1",
         label: "Section One",
         scriptUrl: "/static/gateways/gw/s1.js",
     });
-    reg.registerAdminSection({
+    uiRegistry.registerAdminSection({
         id: "s2",
         label: "Section Two",
         scriptUrl: "/static/gateways/gw/s2.js",
     });
 
-    const sections = reg.listAdminSections();
+    const sections = uiRegistry.listAdminSections();
     assert.equal(sections.length, 2);
     assert.equal(sections[0].id, "s1");
     assert.equal(sections[1].id, "s2");
 });
 
 test("UIRegistry prevents modules from replacing another owner's UI", () => {
-    const reg = new UIRegistry();
-    reg.registerAdminSection({
+    const uiRegistry = new UIRegistry();
+    uiRegistry.registerAdminSection({
         id: "shared-admin",
         label: "Owner One",
         scriptUrl: "/static/modules/one/admin.js",
@@ -69,7 +69,7 @@ test("UIRegistry prevents modules from replacing another owner's UI", () => {
     });
     assert.throws(
         () =>
-            reg.registerAdminSection({
+            uiRegistry.registerAdminSection({
                 id: "shared-admin",
                 label: "Owner Two",
                 scriptUrl: "/static/modules/two/admin.js",
@@ -77,7 +77,7 @@ test("UIRegistry prevents modules from replacing another owner's UI", () => {
             }),
         /ui_registration_conflict/,
     );
-    reg.registerSpaRoute({
+    uiRegistry.registerSpaRoute({
         id: "owner-one-page",
         pattern: "^/shared$",
         base: "/shared",
@@ -86,7 +86,7 @@ test("UIRegistry prevents modules from replacing another owner's UI", () => {
     });
     assert.throws(
         () =>
-            reg.registerSpaRoute({
+            uiRegistry.registerSpaRoute({
                 id: "owner-two-page",
                 pattern: "^/shared$",
                 base: "/shared",
@@ -98,94 +98,102 @@ test("UIRegistry prevents modules from replacing another owner's UI", () => {
 });
 
 test("UIRegistry removes every contribution owned by a module", () => {
-    const reg = new UIRegistry();
-    reg.registerAdminSection({
+    const uiRegistry = new UIRegistry();
+    uiRegistry.registerAdminSection({
         id: "example-admin",
         label: "Example",
         scriptUrl: "/static/modules/example/admin.js",
         ownerId: "example",
     });
-    reg.registerPageExtension("dashboard", {
+    uiRegistry.registerPageExtension("dashboard", {
         id: "example-widget",
         label: "Example",
         scriptUrl: "/static/modules/example/widget.js",
         ownerId: "example",
     });
-    reg.registerSpaRoute({
+    uiRegistry.registerSpaRoute({
         id: "example-page",
         pattern: "^/example$",
         base: "/example",
         scriptUrl: "/static/modules/example/page.js",
         ownerId: "example",
     });
-    reg.registerAuthTypingMessage({
+    uiRegistry.registerAuthTypingMessage({
         id: "example-ready",
         textKey: "module.example.ready",
         ownerType: "module",
         ownerId: "example",
     });
-    reg.registerModuleStaticDir("example", "/srv/example/ui");
+    uiRegistry.registerModuleStaticDir("example", "/srv/example/ui");
 
-    reg.unregisterModuleContributions("example");
+    uiRegistry.unregisterModuleContributions("example");
 
-    assert.deepEqual(reg.listAdminSections(), []);
-    assert.deepEqual(reg.listPageExtensions("dashboard"), []);
-    assert.deepEqual(reg.listSpaRoutes(), []);
-    assert.deepEqual(reg.listAuthTypingMessages(), []);
-    assert.equal(reg.resolveModulePath("example/page.js"), undefined);
+    assert.deepEqual(uiRegistry.listAdminSections(), []);
+    assert.deepEqual(uiRegistry.listPageExtensions("dashboard"), []);
+    assert.deepEqual(uiRegistry.listSpaRoutes(), []);
+    assert.deepEqual(uiRegistry.listAuthTypingMessages(), []);
+    assert.equal(uiRegistry.resolveModulePath("example/page.js"), undefined);
 });
 
 test("UIRegistry registers and looks up static dirs", () => {
-    const reg = new UIRegistry();
-    reg.registerStaticDir("notify", "/srv/notify/ui");
+    const uiRegistry = new UIRegistry();
+    uiRegistry.registerStaticDir("notify", "/srv/notify/ui");
 
-    assert.equal(reg.getStaticDir("notify"), "/srv/notify/ui");
-    assert.equal(reg.getStaticDir("missing"), undefined);
+    assert.equal(uiRegistry.getStaticDir("notify"), "/srv/notify/ui");
+    assert.equal(uiRegistry.getStaticDir("missing"), undefined);
 });
 
 test("UIRegistry overwrites section when registered twice with same id", () => {
-    const reg = new UIRegistry();
-    reg.registerAdminSection({ id: "x", label: "Old", scriptUrl: "/old.js" });
-    reg.registerAdminSection({ id: "x", label: "New", scriptUrl: "/new.js" });
+    const uiRegistry = new UIRegistry();
+    uiRegistry.registerAdminSection({
+        id: "x",
+        label: "Old",
+        scriptUrl: "/old.js",
+    });
+    uiRegistry.registerAdminSection({
+        id: "x",
+        label: "New",
+        scriptUrl: "/new.js",
+    });
 
-    const sections = reg.listAdminSections();
+    const sections = uiRegistry.listAdminSections();
     assert.equal(sections.length, 1);
     assert.equal(sections[0].label, "New");
 });
 
 test("UIRegistry registers and lists page extensions", () => {
-    const reg = new UIRegistry();
-    reg.registerPageExtension("dashboard", {
+    const uiRegistry = new UIRegistry();
+    uiRegistry.registerPageExtension("dashboard", {
         id: "profile-widget",
         label: "Profile",
         scriptUrl: "/static/gateways/profile/dashboard-widget.js",
     });
-    reg.registerPageExtension("dashboard", {
+    uiRegistry.registerPageExtension("dashboard", {
         id: "notif-widget",
         label: "Notifications",
         scriptUrl: "/static/gateways/notify/dashboard-widget.js",
     });
-    reg.registerPageExtension("settings", {
+    uiRegistry.registerPageExtension("settings", {
         id: "profile-settings",
         label: "Profile Settings",
         scriptUrl: "/static/gateways/profile/settings-section.js",
     });
 
-    const dashExts = reg.listPageExtensions("dashboard");
-    assert.equal(dashExts.length, 2);
-    assert.equal(dashExts[0].id, "profile-widget");
-    assert.equal(dashExts[1].id, "notif-widget");
+    const dashExtensions = uiRegistry.listPageExtensions("dashboard");
+    assert.equal(dashExtensions.length, 2);
+    assert.equal(dashExtensions[0].id, "profile-widget");
+    assert.equal(dashExtensions[1].id, "notif-widget");
 
-    const settingsExts = reg.listPageExtensions("settings");
-    assert.equal(settingsExts.length, 1);
-    assert.equal(settingsExts[0].id, "profile-settings");
+    const settingsExtensions = uiRegistry.listPageExtensions("settings");
+    assert.equal(settingsExtensions.length, 1);
+    assert.equal(settingsExtensions[0].id, "profile-settings");
 
-    assert.deepEqual(reg.listPageExtensions("unknown"), []);
+    assert.deepEqual(uiRegistry.listPageExtensions("unknown"), []);
 });
 
 test("UIRegistry registers and lists SPA routes", () => {
-    const reg = new UIRegistry();
-    reg.registerSpaRoute({
+    const uiRegistry = new UIRegistry();
+    uiRegistry.registerSpaRoute({
         id: "messages-page",
         pattern: "^/messages(?:/[^/]+)?$",
         base: "/messages",
@@ -193,7 +201,7 @@ test("UIRegistry registers and lists SPA routes", () => {
         stylesheets: ["/static/adapters/social/messages/messages.css"],
     });
 
-    const routes = reg.listSpaRoutes();
+    const routes = uiRegistry.listSpaRoutes();
     assert.equal(routes.length, 1);
     assert.equal(routes[0].id, "messages-page");
     assert.equal(routes[0].base, "/messages");
@@ -202,29 +210,29 @@ test("UIRegistry registers and lists SPA routes", () => {
         "/static/adapters/social/messages/app.js",
     );
     assert.equal(
-        reg.resolveSpaRoute("/messages/thread-1")?.id,
+        uiRegistry.resolveSpaRoute("/messages/thread-1")?.id,
         "messages-page",
     );
-    assert.equal(reg.resolveSpaRoute("/settings"), undefined);
+    assert.equal(uiRegistry.resolveSpaRoute("/settings"), undefined);
 });
 
 test("UIRegistry registers enabled authentication footer plugins", () => {
-    const reg = new UIRegistry();
-    reg.registerAuthFooterPlugin({ scriptUrl: "/legal-footer.js" });
-    reg.registerAuthFooterPlugin({
+    const uiRegistry = new UIRegistry();
+    uiRegistry.registerAuthFooterPlugin({ scriptUrl: "/legal-footer.js" });
+    uiRegistry.registerAuthFooterPlugin({
         scriptUrl: "/disabled-footer.js",
         isEnabled: () => false,
     });
-    assert.deepEqual(reg.listAuthFooterPlugins(), [
+    assert.deepEqual(uiRegistry.listAuthFooterPlugins(), [
         { scriptUrl: "/legal-footer.js" },
     ]);
 });
 
 test("UIRegistry rejects role restrictions on public SPA routes", () => {
-    const reg = new UIRegistry();
+    const uiRegistry = new UIRegistry();
     assert.throws(
         () =>
-            reg.registerSpaRoute({
+            uiRegistry.registerSpaRoute({
                 id: "invalid-public-page",
                 pattern: "^/public$",
                 base: "/public",
@@ -237,16 +245,16 @@ test("UIRegistry rejects role restrictions on public SPA routes", () => {
 });
 
 test("UIRegistry selects only declared UI capability provider scripts", () => {
-    const reg = new UIRegistry();
-    reg.registerNavbarPlugin({
+    const uiRegistry = new UIRegistry();
+    uiRegistry.registerNavbarPlugin({
         scriptUrl: "/profile.js",
         providesCapabilities: ["ui:profileAvatarRenderer"],
     });
-    reg.registerNavbarPlugin({
+    uiRegistry.registerNavbarPlugin({
         scriptUrl: "/unrelated.js",
         providesCapabilities: ["ui:unrelated"],
     });
-    reg.registerSpaRoute({
+    uiRegistry.registerSpaRoute({
         id: "meetings",
         pattern: "^/meetings$",
         base: "/meetings",
@@ -254,22 +262,24 @@ test("UIRegistry selects only declared UI capability provider scripts", () => {
         requiredCapabilities: ["ui:profileAvatarRenderer"],
     });
 
-    assert.deepEqual(reg.listSpaRoutes()[0].capabilityScripts, ["/profile.js"]);
+    assert.deepEqual(uiRegistry.listSpaRoutes()[0].capabilityScripts, [
+        "/profile.js",
+    ]);
     assert.equal(
-        reg.hasActiveCapabilityProvider("ui:profileAvatarRenderer"),
+        uiRegistry.hasActiveCapabilityProvider("ui:profileAvatarRenderer"),
         true,
     );
-    assert.equal(reg.hasActiveCapabilityProvider("ui:missing"), false);
+    assert.equal(uiRegistry.hasActiveCapabilityProvider("ui:missing"), false);
 });
 
 test("UIRegistry omits routes whose UI capability provider is inactive", () => {
-    const reg = new UIRegistry();
-    reg.registerNavbarPlugin({
+    const uiRegistry = new UIRegistry();
+    uiRegistry.registerNavbarPlugin({
         scriptUrl: "/profile.js",
         providesCapabilities: ["ui:profileAvatarRenderer"],
         isEnabled: () => false,
     });
-    reg.registerSpaRoute({
+    uiRegistry.registerSpaRoute({
         id: "meetings",
         pattern: "^/meetings$",
         base: "/meetings",
@@ -277,24 +287,24 @@ test("UIRegistry omits routes whose UI capability provider is inactive", () => {
         requiredCapabilities: ["ui:profileAvatarRenderer"],
     });
 
-    assert.deepEqual(reg.listSpaRoutes(), []);
+    assert.deepEqual(uiRegistry.listSpaRoutes(), []);
     assert.equal(
-        reg.hasActiveCapabilityProvider("ui:profileAvatarRenderer"),
+        uiRegistry.hasActiveCapabilityProvider("ui:profileAvatarRenderer"),
         false,
     );
-    assert.equal(reg.resolveSpaRoute("/meetings"), undefined);
+    assert.equal(uiRegistry.resolveSpaRoute("/meetings"), undefined);
 });
 
 test("UIRegistry registers and lists auth typing messages", () => {
-    const reg = new UIRegistry();
-    reg.registerAuthTypingMessage({
+    const uiRegistry = new UIRegistry();
+    uiRegistry.registerAuthTypingMessage({
         id: "profile-social-space",
         textKey: "ui.app.login.typing.sample.5",
         ownerType: "gateway",
         ownerId: "profile",
     });
 
-    assert.deepEqual(reg.listAuthTypingMessages(), [
+    assert.deepEqual(uiRegistry.listAuthTypingMessages(), [
         {
             id: "profile-social-space",
             textKey: "ui.app.login.typing.sample.5",
@@ -305,86 +315,86 @@ test("UIRegistry registers and lists auth typing messages", () => {
 });
 
 test("GET /api/v1/ui/page-extensions/:pageId returns extensions for authenticated user", async () => {
-    const uiReg = new UIRegistry();
-    uiReg.registerPageExtension("dashboard", {
+    const uiRegistry = new UIRegistry();
+    uiRegistry.registerPageExtension("dashboard", {
         id: "profile-widget",
         label: "Profile",
         scriptUrl: "/static/gateways/profile/dashboard-widget.js",
     });
-    const handler = createUiRoutes(undefined, uiReg);
+    const handler = createUiRoutes(undefined, uiRegistry);
 
-    const req = makeRequest("GET", userToken);
-    const res = makeResponse();
+    const request = makeRequest("GET", userToken);
+    const response = makeResponse();
     const handled = await handler(
-        req,
-        res,
+        request,
+        response,
         new URL("http://localhost/api/v1/ui/page-extensions/dashboard"),
     );
 
     assert.ok(handled);
-    assert.equal(res.status, 200);
-    const body = JSON.parse(res.payload);
+    assert.equal(response.status, 200);
+    const body = JSON.parse(response.payload);
     assert.equal(body.data.length, 1);
     assert.equal(body.data[0].id, "profile-widget");
 });
 
 test("GET /api/v1/ui/page-extensions/:pageId returns 401 for unauthenticated request", async () => {
-    const uiReg = new UIRegistry();
-    const handler = createUiRoutes(undefined, uiReg);
+    const uiRegistry = new UIRegistry();
+    const handler = createUiRoutes(undefined, uiRegistry);
 
-    const req = makeRequest("GET");
-    const res = makeResponse();
+    const request = makeRequest("GET");
+    const response = makeResponse();
     await handler(
-        req,
-        res,
+        request,
+        response,
         new URL("http://localhost/api/v1/ui/page-extensions/dashboard"),
     );
 
-    assert.equal(res.status, 401);
+    assert.equal(response.status, 401);
 });
 
 test("GET /api/v1/ui/page-extensions/:pageId returns empty array when no extensions registered", async () => {
-    const uiReg = new UIRegistry();
-    const handler = createUiRoutes(undefined, uiReg);
+    const uiRegistry = new UIRegistry();
+    const handler = createUiRoutes(undefined, uiRegistry);
 
-    const req = makeRequest("GET", userToken);
-    const res = makeResponse();
+    const request = makeRequest("GET", userToken);
+    const response = makeResponse();
     const handled = await handler(
-        req,
-        res,
+        request,
+        response,
         new URL("http://localhost/api/v1/ui/page-extensions/dashboard"),
     );
 
     assert.ok(handled);
-    assert.equal(res.status, 200);
-    assert.deepEqual(JSON.parse(res.payload).data, []);
+    assert.equal(response.status, 200);
+    assert.deepEqual(JSON.parse(response.payload).data, []);
 });
 
 test("GET /api/v1/ui/page-extensions/:pageId returns empty array without uiRegistry", async () => {
     const handler = createUiRoutes();
 
-    const req = makeRequest("GET", userToken);
-    const res = makeResponse();
+    const request = makeRequest("GET", userToken);
+    const response = makeResponse();
     const handled = await handler(
-        req,
-        res,
+        request,
+        response,
         new URL("http://localhost/api/v1/ui/page-extensions/dashboard"),
     );
 
     assert.ok(handled);
-    assert.equal(res.status, 200);
-    assert.deepEqual(JSON.parse(res.payload).data, []);
+    assert.equal(response.status, 200);
+    assert.deepEqual(JSON.parse(response.payload).data, []);
 });
 
 test("GET /api/v1/ui/auth-typing-messages returns public messages and filters disabled gateways", async () => {
-    const uiReg = new UIRegistry();
-    uiReg.registerAuthTypingMessage({
+    const uiRegistry = new UIRegistry();
+    uiRegistry.registerAuthTypingMessage({
         id: "profile-social-space",
         textKey: "ui.app.login.typing.sample.5",
         ownerType: "gateway",
         ownerId: "profile",
     });
-    uiReg.registerAuthTypingMessage({
+    uiRegistry.registerAuthTypingMessage({
         id: "registration-register-today",
         textKey: "ui.app.login.typing.sample.7",
         ownerType: "gateway",
@@ -404,22 +414,22 @@ test("GET /api/v1/ui/auth-typing-messages returns public messages and filters di
     await gatewayRegistry.disable("registration");
     const handler = createUiRoutes(
         undefined,
-        uiReg,
+        uiRegistry,
         undefined,
         gatewayRegistry,
     );
 
-    const req = makeRequest("GET");
-    const res = makeResponse();
+    const request = makeRequest("GET");
+    const response = makeResponse();
     const handled = await handler(
-        req,
-        res,
+        request,
+        response,
         new URL("http://localhost/api/v1/ui/auth-typing-messages"),
     );
 
     assert.ok(handled);
-    assert.equal(res.status, 200);
-    assert.deepEqual(JSON.parse(res.payload).data, [
+    assert.equal(response.status, 200);
+    assert.deepEqual(JSON.parse(response.payload).data, [
         {
             id: "profile-social-space",
             textKey: "ui.app.login.typing.sample.5",
@@ -455,17 +465,17 @@ test("GET /api/v1/ui/auth-typing-messages includes enabled module manifest messa
         (moduleId) => moduleId === "calendar",
     );
 
-    const req = makeRequest("GET");
-    const res = makeResponse();
+    const request = makeRequest("GET");
+    const response = makeResponse();
     const handled = await route(
-        req,
-        res,
+        request,
+        response,
         new URL("http://localhost/api/v1/ui/auth-typing-messages"),
     );
 
     assert.ok(handled);
-    assert.equal(res.status, 200);
-    assert.deepEqual(JSON.parse(res.payload).data, [
+    assert.equal(response.status, 200);
+    assert.deepEqual(JSON.parse(response.payload).data, [
         {
             id: "calendar:0",
             textKey: "module.calendar.auth_typing.welcome",

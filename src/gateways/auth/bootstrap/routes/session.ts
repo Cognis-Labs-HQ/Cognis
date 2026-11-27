@@ -231,10 +231,10 @@ export function createSessionRoutes({
     }
 
     function dispatchLoginFlowResult(
-        req: import("node:http").IncomingMessage,
-        res: import("node:http").ServerResponse,
+        request: import("node:http").IncomingMessage,
+        response: import("node:http").ServerResponse,
         sessionResult: LoginFlowSessionResult,
-        logMeta: AuthRouteLogMeta,
+        logMetadata: AuthRouteLogMeta,
         responseCookies: string[] = [],
     ): true {
         const appendResponseCookie = (cookie: string): string | string[] =>
@@ -242,10 +242,10 @@ export function createSessionRoutes({
         const outcome = sessionResult.outcome;
         if (outcome === "provider_unavailable") {
             log?.("warn", "Login failed: provider unavailable (flow).", {
-                ...logMeta,
+                ...logMetadata,
             });
-            res.writeHead(503, { "content-type": "application/json" });
-            res.end(
+            response.writeHead(503, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     error: {
                         code: "provider_unavailable",
@@ -257,10 +257,10 @@ export function createSessionRoutes({
         }
         if (outcome === "invalid_credentials") {
             log?.("warn", "Login failed due to invalid credentials (flow).", {
-                ...logMeta,
+                ...logMetadata,
             });
-            res.writeHead(401, { "content-type": "application/json" });
-            res.end(
+            response.writeHead(401, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     error: {
                         code: "invalid_credentials",
@@ -284,22 +284,22 @@ export function createSessionRoutes({
                   )
                 : null;
             log?.("info", "Held external login for account authorization.", {
-                ...logMeta,
+                ...logMetadata,
                 emailRequired: sessionResult.emailRequired === true,
             });
-            res.writeHead(403, {
+            response.writeHead(403, {
                 "content-type": "application/json",
                 ...(attempt
                     ? {
                           "set-cookie":
                               authRouteBootstrapRuntime.buildPendingAccountCreationCookie(
-                                  req,
+                                  request,
                                   attempt.id,
                               ),
                       }
                     : {}),
             });
-            res.end(
+            response.end(
                 JSON.stringify({
                     error: {
                         code:
@@ -326,10 +326,10 @@ export function createSessionRoutes({
             log?.(
                 "warn",
                 "Login denied because configured TFA challenges are unavailable (flow).",
-                { ...logMeta },
+                { ...logMetadata },
             );
-            res.writeHead(503, { "content-type": "application/json" });
-            res.end(
+            response.writeHead(503, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     error: {
                         code: "tfa_unavailable",
@@ -342,13 +342,13 @@ export function createSessionRoutes({
         }
         if (outcome === "tfa_required") {
             log?.("info", "Login entered TFA challenge flow (flow).", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: sessionResult.accountId,
                 provider: sessionResult.provider,
                 role: sessionResult.role,
             });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     data: {
                         tfaRequired: true,
@@ -378,23 +378,23 @@ export function createSessionRoutes({
                 "info",
                 "Login succeeded with pending TFA setup gate (flow).",
                 {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: sessionResult.accountId,
                     provider: sessionResult.provider,
                     role: sessionResult.role,
                 },
             );
-            res.writeHead(200, {
+            response.writeHead(200, {
                 "content-type": "application/json",
                 "set-cookie": appendResponseCookie(
                     authRouteBootstrapRuntime.buildAccessTokenCookie(
-                        req,
+                        request,
                         token,
                         ttlSeconds,
                     ),
                 ),
             });
-            res.end(
+            response.end(
                 JSON.stringify({
                     data: {
                         accountId: sessionResult.accountId,
@@ -420,12 +420,12 @@ export function createSessionRoutes({
                 "warn",
                 "Login denied for inactive account lifecycle state.",
                 {
-                    ...logMeta,
+                    ...logMetadata,
                     outcome,
                 },
             );
-            res.writeHead(403, { "content-type": "application/json" });
-            res.end(
+            response.writeHead(403, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     error: {
                         code,
@@ -443,23 +443,23 @@ export function createSessionRoutes({
                     ? 0
                     : sessionResult.ttlSeconds;
             log?.("info", "Login succeeded (flow).", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: sessionResult.accountId,
                 provider: sessionResult.provider,
                 role: sessionResult.role,
                 requiresUserValidation: sessionResult.requiredUserValidation,
             });
-            res.writeHead(200, {
+            response.writeHead(200, {
                 "content-type": "application/json",
                 "set-cookie": appendResponseCookie(
                     authRouteBootstrapRuntime.buildAccessTokenCookie(
-                        req,
+                        request,
                         token,
                         ttlSeconds,
                     ),
                 ),
             });
-            res.end(
+            response.end(
                 JSON.stringify({
                     data: {
                         accountId: sessionResult.accountId,
@@ -479,11 +479,11 @@ export function createSessionRoutes({
             return true;
         }
         log?.("warn", "Login flow returned unknown outcome.", {
-            ...logMeta,
+            ...logMetadata,
             outcome,
         });
-        res.writeHead(500, { "content-type": "application/json" });
-        res.end(
+        response.writeHead(500, { "content-type": "application/json" });
+        response.end(
             JSON.stringify({
                 error: {
                     code: "internal_error",
@@ -495,14 +495,14 @@ export function createSessionRoutes({
     }
 
     return async (
-        req,
-        res,
+        request,
+        response,
         url,
-        logMeta: AuthRouteLogMeta,
+        logMetadata: AuthRouteLogMeta,
     ): Promise<boolean> => {
         if (
             url.pathname === "/api/v1/auth/login-methods" &&
-            req.method === "GET"
+            request.method === "GET"
         ) {
             const systemCtx = capabilities.get<Ctx>(CTX_CAPABILITY);
             const methods = systemCtx
@@ -512,15 +512,18 @@ export function createSessionRoutes({
                       name: adapter.name,
                   }));
             log?.("debug", "Listed login methods.", {
-                ...logMeta,
+                ...logMetadata,
                 count: methods.length,
             });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: methods }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: methods }));
             return true;
         }
 
-        if (url.pathname === "/api/v1/auth/login-ui" && req.method === "GET") {
+        if (
+            url.pathname === "/api/v1/auth/login-ui" &&
+            request.method === "GET"
+        ) {
             const systemCtx = capabilities.get<Ctx>(CTX_CAPABILITY);
             const data = systemCtx
                 ? await resolveLoginUiConfig(systemCtx)
@@ -542,20 +545,20 @@ export function createSessionRoutes({
                       integrations: [],
                   };
             log?.("debug", "Resolved login UI flow configuration.", {
-                ...logMeta,
+                ...logMetadata,
                 methodCount: data.methods.length,
                 integrationCount: data.integrations.length,
             });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/auth/sso/start" &&
-            req.method === "POST"
+            request.method === "POST"
         ) {
-            const body = await readJson(req);
+            const body = await readJson(request);
             const providerId = String(body.providerId ?? "").trim();
             const systemCtx = capabilities.get<Ctx>(CTX_CAPABILITY);
             const method = systemCtx
@@ -568,11 +571,11 @@ export function createSessionRoutes({
                 !method?.loginButton
             ) {
                 log?.("warn", "Rejected unavailable SSO login provider.", {
-                    ...logMeta,
+                    ...logMetadata,
                     providerId,
                 });
-                res.writeHead(422, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(422, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "sso_provider_unavailable",
@@ -589,13 +592,13 @@ export function createSessionRoutes({
                 });
             } catch (error) {
                 log?.("error", "SSO authorization flow failed.", {
-                    ...logMeta,
+                    ...logMetadata,
                     providerId,
                     error:
                         error instanceof Error ? error.message : String(error),
                 });
-                res.writeHead(502, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(502, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "sso_authorization_unavailable",
@@ -611,11 +614,11 @@ export function createSessionRoutes({
             );
             if (!redirectUrl) {
                 log?.("error", "SSO authorization did not return a redirect.", {
-                    ...logMeta,
+                    ...logMetadata,
                     providerId,
                 });
-                res.writeHead(502, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(502, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "sso_authorization_unavailable",
@@ -626,21 +629,21 @@ export function createSessionRoutes({
                 return true;
             }
             log?.("info", "Started SSO authorization.", {
-                ...logMeta,
+                ...logMetadata,
                 providerId,
             });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { redirectUrl } }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: { redirectUrl } }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/auth/account-creation-attempt" &&
-            req.method === "GET"
+            request.method === "GET"
         ) {
             const attemptId =
                 authRouteBootstrapRuntime.extractPendingAccountCreationAttemptId(
-                    req,
+                    request,
                 );
             const attempt = attemptId
                 ? authRouteBootstrapRuntime.getPendingAccountCreationAttempt(
@@ -648,22 +651,22 @@ export function createSessionRoutes({
                   )
                 : null;
             if (!attempt) {
-                res.writeHead(200, {
+                response.writeHead(200, {
                     "content-type": "application/json",
                     ...(attemptId
                         ? {
                               "set-cookie":
                                   authRouteBootstrapRuntime.clearPendingAccountCreationCookie(
-                                      req,
+                                      request,
                                   ),
                           }
                         : {}),
                 });
-                res.end(JSON.stringify({ data: null }));
+                response.end(JSON.stringify({ data: null }));
                 return true;
             }
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     data: {
                         emailRequired: attempt.emailRequired,
@@ -676,33 +679,36 @@ export function createSessionRoutes({
 
         if (
             url.pathname === "/api/v1/auth/account-creation-attempt" &&
-            req.method === "DELETE"
+            request.method === "DELETE"
         ) {
             const attemptId =
                 authRouteBootstrapRuntime.extractPendingAccountCreationAttemptId(
-                    req,
+                    request,
                 );
             if (attemptId) {
                 authRouteBootstrapRuntime.clearPendingAccountCreationAttempt(
                     attemptId,
                 );
             }
-            res.writeHead(204, {
+            response.writeHead(204, {
                 "set-cookie":
                     authRouteBootstrapRuntime.clearPendingAccountCreationCookie(
-                        req,
+                        request,
                     ),
             });
-            res.end();
+            response.end();
             return true;
         }
 
-        if (url.pathname === "/api/v1/auth/login" && req.method === "POST") {
-            const body = await readJson(req);
+        if (
+            url.pathname === "/api/v1/auth/login" &&
+            request.method === "POST"
+        ) {
+            const body = await readJson(request);
             const provider = String(body.provider ?? "local");
             const accountCreationAttemptId = body.registrationToken
                 ? (authRouteBootstrapRuntime.extractPendingAccountCreationAttemptId(
-                      req,
+                      request,
                   ) ?? "")
                 : "";
             const pendingAccountCreation = accountCreationAttemptId
@@ -711,8 +717,8 @@ export function createSessionRoutes({
                   )
                 : null;
             if (accountCreationAttemptId && !pendingAccountCreation) {
-                res.writeHead(410, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(410, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "account_creation_attempt_expired",
@@ -751,24 +757,24 @@ export function createSessionRoutes({
                         );
                         responseCookies.push(
                             authRouteBootstrapRuntime.clearPendingAccountCreationCookie(
-                                req,
+                                request,
                             ),
                         );
                     }
                     return dispatchLoginFlowResult(
-                        req,
-                        res,
+                        request,
+                        response,
                         sessionResult,
-                        logMeta,
+                        logMetadata,
                         responseCookies,
                     );
                 }
                 log?.("warn", "Login flow did not produce a session outcome.", {
-                    ...logMeta,
+                    ...logMetadata,
                     provider,
                 });
-                res.writeHead(500, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(500, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "internal_error",
@@ -783,10 +789,10 @@ export function createSessionRoutes({
             log?.(
                 "error",
                 "Login flow is unavailable because canonical flow registration is missing.",
-                { ...logMeta, provider },
+                { ...logMetadata, provider },
             );
-            res.writeHead(503, { "content-type": "application/json" });
-            res.end(
+            response.writeHead(503, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     error: {
                         code: "login_unavailable",
@@ -799,16 +805,16 @@ export function createSessionRoutes({
 
         if (
             url.pathname === "/api/v1/auth/setup-status" &&
-            req.method === "GET"
+            request.method === "GET"
         ) {
-            const claims = requireAuth(req, res, "user");
+            const claims = requireAuth(request, response, "user");
             if (!claims) return true;
             const guest = capabilities.get<
                 (claims: { sub: string }) => string | null
             >("share:resolveGuestId")?.(claims);
             if (guest) {
-                res.writeHead(200, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(200, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         data: { integrations: [], requiresSetup: false },
                     }),
@@ -839,8 +845,8 @@ export function createSessionRoutes({
             if (!getAccountInstanceId)
                 throw new Error("account_instance_unavailable");
             const accountInstanceId = await getAccountInstanceId(claims.sub);
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     data: {
                         accountInstanceId,
@@ -854,9 +860,9 @@ export function createSessionRoutes({
 
         if (
             url.pathname === "/api/v1/auth/emergency-token" &&
-            req.method === "POST"
+            request.method === "POST"
         ) {
-            const claims = requireAuth(req, res, "admin");
+            const claims = requireAuth(request, response, "admin");
             if (!claims) return true;
             const ttlSeconds = 60 * 60;
             const token = issueAccessToken(claims.sub, claims.role, ttlSeconds);
@@ -864,14 +870,14 @@ export function createSessionRoutes({
                 Date.now() + ttlSeconds * 1000,
             ).toISOString();
             log?.("warn", "Issued emergency API token.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
                 role: claims.role,
                 ttlSeconds,
                 expiresAt,
             });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     data: {
                         token,
@@ -884,29 +890,32 @@ export function createSessionRoutes({
             return true;
         }
 
-        if (url.pathname === "/api/v1/auth/logout" && req.method === "POST") {
-            const cookieToken = extractCookieToken(req);
+        if (
+            url.pathname === "/api/v1/auth/logout" &&
+            request.method === "POST"
+        ) {
+            const cookieToken = extractCookieToken(request);
             if (cookieToken) {
                 revokeAccessToken(cookieToken);
             }
-            const bearerToken = extractBearerToken(req);
+            const bearerToken = extractBearerToken(request);
             if (bearerToken && bearerToken !== cookieToken) {
                 revokeAccessToken(bearerToken);
             }
             log?.("info", "User logged out.", {
-                ...logMeta,
+                ...logMetadata,
                 hadCookieToken: Boolean(cookieToken),
                 hadBearerToken: Boolean(bearerToken),
             });
-            res.writeHead(200, {
+            response.writeHead(200, {
                 "content-type": "application/json",
                 "set-cookie": buildAccessTokenCookie(
                     "",
                     0,
-                    shouldSetSecureCookie(req),
+                    shouldSetSecureCookie(request),
                 ),
             });
-            res.end(JSON.stringify({ data: { success: true } }));
+            response.end(JSON.stringify({ data: { success: true } }));
             return true;
         }
 

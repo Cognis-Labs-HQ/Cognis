@@ -38,12 +38,13 @@ if (
     process.argv[1] &&
     import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href
 ) {
-    const args = process.argv.slice(2);
+    const argumentsList = process.argv.slice(2);
     assert.ok(
-        args.length === 0 || (args.length === 2 && args[0] === "--origin"),
+        argumentsList.length === 0 ||
+            (argumentsList.length === 2 && argumentsList[0] === "--origin"),
         "Usage: npm run check:ui-host -- [--origin https://host.example]",
     );
-    const origin = args.length ? new URL(args[1]) : null;
+    const origin = argumentsList.length ? new URL(argumentsList[1]) : null;
     if (origin) {
         assert.ok(
             ["http:", "https:"].includes(origin.protocol) &&

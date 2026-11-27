@@ -8,13 +8,13 @@
 
 | コンポーネント | パス        | バージョン |
 | -------------- | ----------- | ---------- |
-| Core Package   | `src/core/` | `0.6.3`    |
+| Core Package   | `src/core/` | `0.6.4`    |
 
 ### API
 
 | コンポーネント | パス       | バージョン |
 | -------------- | ---------- | ---------- |
-| API Server     | `src/api/` | `0.13.38`  |
+| API Server     | `src/api/` | `0.13.39`  |
 
 ## 設定
 
@@ -52,34 +52,34 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント             | パス                                | バージョン |
 | -------------------------- | ----------------------------------- | ---------- |
-| SMTP Notification          | `src/adapters/notify/smtp/`         | `0.5.3`    |
-| Internal Notification      | `src/adapters/notify/internal/`     | `0.5.37`   |
-| Local File Storage         | `src/adapters/file/local/`          | `0.1.27`   |
-| File Quota                 | `src/adapters/file/quota/`          | `1.0.25`   |
-| Local Auth                 | `src/adapters/auth/local/`          | `0.4.2`    |
-| User Keyring               | `src/adapters/auth/keyring/`        | `2.1.6`    |
-| LDAP Auth                  | `src/adapters/auth/ldap/`           | `0.5.38`   |
+| SMTP Notification          | `src/adapters/notify/smtp/`         | `0.5.4`    |
+| Internal Notification      | `src/adapters/notify/internal/`     | `0.5.38`   |
+| Local File Storage         | `src/adapters/file/local/`          | `0.1.28`   |
+| File Quota                 | `src/adapters/file/quota/`          | `1.0.26`   |
+| Local Auth                 | `src/adapters/auth/local/`          | `0.4.3`    |
+| User Keyring               | `src/adapters/auth/keyring/`        | `2.1.7`    |
+| LDAP Auth                  | `src/adapters/auth/ldap/`           | `0.5.39`   |
 | OIDC Auth                  | `src/adapters/auth/oidc/`           | `0.1.25`   |
 | SAML Auth                  | `src/adapters/auth/saml/`           | `0.1.25`   |
-| SMTP TFA                   | `src/adapters/tfa/smtp/`            | `1.1.2`    |
-| TOTP TFA                   | `src/adapters/tfa/totp/`            | `1.0.28`   |
-| PostgreSQL Database        | `src/adapters/db/postgres/`         | `0.5.27`   |
-| MariaDB Database           | `src/adapters/db/mariadb/`          | `0.5.32`   |
-| SQLite Database            | `src/adapters/db/sqlite/`           | `0.3.27`   |
-| Memory Database            | `src/adapters/db/memory/`           | `0.1.24`   |
-| Registration Token         | `src/adapters/registration/token/`  | `0.1.40`   |
-| Public Registration        | `src/adapters/registration/public/` | `0.1.23`   |
-| Profile (Social)           | `src/adapters/social/profile/`      | `3.0.20`   |
-| Messages (Social)          | `src/adapters/social/messages/`     | `2.7.49`   |
-| Calls (Social)             | `src/adapters/social/call/`         | `0.5.37`   |
-| Link Share                 | `src/adapters/share/link/`          | `1.1.41`   |
+| SMTP TFA                   | `src/adapters/tfa/smtp/`            | `1.1.3`    |
+| TOTP TFA                   | `src/adapters/tfa/totp/`            | `1.0.29`   |
+| PostgreSQL Database        | `src/adapters/db/postgres/`         | `0.5.28`   |
+| MariaDB Database           | `src/adapters/db/mariadb/`          | `0.5.33`   |
+| SQLite Database            | `src/adapters/db/sqlite/`           | `0.3.28`   |
+| Memory Database            | `src/adapters/db/memory/`           | `0.1.25`   |
+| Registration Token         | `src/adapters/registration/token/`  | `0.1.41`   |
+| Public Registration        | `src/adapters/registration/public/` | `0.1.24`   |
+| Profile (Social)           | `src/adapters/social/profile/`      | `3.0.21`   |
+| Messages (Social)          | `src/adapters/social/messages/`     | `2.7.50`   |
+| Calls (Social)             | `src/adapters/social/call/`         | `0.5.38`   |
+| Link Share                 | `src/adapters/share/link/`          | `1.1.42`   |
 | User Share                 | `src/adapters/share/user/`          | `1.1.20`   |
-| Classes (Study)            | `src/adapters/study/classes/`       | `1.4.13`   |
-| Library (Study)            | `src/adapters/study/library/`       | `4.1.30`   |
+| Classes (Study)            | `src/adapters/study/classes/`       | `1.4.14`   |
+| Library (Study)            | `src/adapters/study/library/`       | `4.1.31`   |
 | Drawing (Study)            | `src/adapters/study/drawing/`       | `1.1.3`    |
-| フラッシュカードアダプター | `src/adapters/study/flashcards/`    | `1.5.34`   |
-| Progress (Study)           | `src/adapters/study/progress/`      | `1.3.2`    |
-| Leaderboard (Study)        | `src/adapters/study/leaderboard/`   | `1.2.12`   |
+| フラッシュカードアダプター | `src/adapters/study/flashcards/`    | `1.5.35`   |
+| Progress (Study)           | `src/adapters/study/progress/`      | `1.3.3`    |
+| Leaderboard (Study)        | `src/adapters/study/leaderboard/`   | `1.2.13`   |
 | Console Logging            | `src/adapters/logging/console/`     | `1.1.4`    |
 | File Logging               | `src/adapters/logging/file/`        | `1.1.5`    |
 
@@ -87,24 +87,24 @@ Cognis 内部コンポーネントの依存関係は `<=<tested-version>` の範
 
 | コンポーネント        | パス                          | バージョン |
 | --------------------- | ----------------------------- | ---------- |
-| Database (db)         | `src/gateways/db/`            | `1.4.1`    |
-| Authentication (auth) | `src/gateways/auth/`          | `2.2.9`    |
-| Share                 | `src/gateways/share/`         | `1.9.12`   |
-| Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.3.9`    |
-| Notification (notify) | `src/gateways/notify/`        | `2.2.12`   |
-| Social                | `src/gateways/social/`        | `1.4.6`    |
-| File Storage (files)  | `src/gateways/files/`         | `2.3.7`    |
-| Registration          | `src/gateways/registration/`  | `1.2.8`    |
-| Logging               | `src/gateways/logging/`       | `1.5.22`   |
-| Observability         | `src/gateways/observability/` | `1.0.7`    |
-| Study                 | `src/gateways/study/`         | `2.6.15`   |
-| Calendar              | `src/gateways/calendar/`      | `1.7.27`   |
+| Database (db)         | `src/gateways/db/`            | `1.4.2`    |
+| Authentication (auth) | `src/gateways/auth/`          | `2.2.10`   |
+| Share                 | `src/gateways/share/`         | `1.9.13`   |
+| Two-Factor (tfa)      | `src/gateways/tfa/`           | `1.3.10`   |
+| Notification (notify) | `src/gateways/notify/`        | `2.2.13`   |
+| Social                | `src/gateways/social/`        | `1.4.7`    |
+| File Storage (files)  | `src/gateways/files/`         | `2.3.8`    |
+| Registration          | `src/gateways/registration/`  | `1.2.9`    |
+| Logging               | `src/gateways/logging/`       | `1.5.23`   |
+| Observability         | `src/gateways/observability/` | `1.0.8`    |
+| Study                 | `src/gateways/study/`         | `2.6.16`   |
+| Calendar              | `src/gateways/calendar/`      | `1.7.28`   |
 
 ### ツール
 
 | コンポーネント | パス               | バージョン |
 | -------------- | ------------------ | ---------- |
-| Cognis CLI     | `src/tooling/cli/` | `0.4.3`    |
+| Cognis CLI     | `src/tooling/cli/` | `0.4.4`    |
 
 [c]: https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/core/package.json
 [a]: https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/api/package.json

@@ -218,7 +218,7 @@ export function createLibraryVisibilityActions({
     return Object.fromEntries(
         Object.entries(actions).map(([name, action]) => [
             name,
-            async (...args) => {
+            async (...argumentsList) => {
                 if (busy) return;
                 busy = true;
                 const buttons = root.querySelectorAll(
@@ -228,7 +228,7 @@ export function createLibraryVisibilityActions({
                     button.disabled = true;
                 });
                 try {
-                    return await action(...args);
+                    return await action(...argumentsList);
                 } catch (error) {
                     const key =
                         error.message === "reference_visibility_too_low"

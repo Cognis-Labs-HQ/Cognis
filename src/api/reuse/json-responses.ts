@@ -1,16 +1,16 @@
 import type { ServerResponse } from "node:http";
 
-export function jsonOk(res: ServerResponse, data: unknown): void {
-    res.writeHead(200, { "content-type": "application/json" });
-    res.end(JSON.stringify({ data }));
+export function jsonOk(response: ServerResponse, data: unknown): void {
+    response.writeHead(200, { "content-type": "application/json" });
+    response.end(JSON.stringify({ data }));
 }
 
 export function jsonError(
-    res: ServerResponse,
+    response: ServerResponse,
     status: number,
     code: string,
     message: string,
 ): void {
-    res.writeHead(status, { "content-type": "application/json" });
-    res.end(JSON.stringify({ error: { code, message } }));
+    response.writeHead(status, { "content-type": "application/json" });
+    response.end(JSON.stringify({ error: { code, message } }));
 }

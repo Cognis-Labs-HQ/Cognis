@@ -78,28 +78,28 @@ export function createSecurityRoutes({
     }
 
     return async (
-        req,
-        res,
+        request,
+        response,
         url,
-        logMeta: AuthRouteLogMeta,
+        logMetadata: AuthRouteLogMeta,
     ): Promise<boolean> => {
         if (
             url.pathname === "/api/v1/auth/security-sections" &&
-            req.method === "GET"
+            request.method === "GET"
         ) {
-            if (!requireAuth(req, res, "user")) return true;
+            if (!requireAuth(request, response, "user")) return true;
             log?.("debug", "Listed auth security sections.", {
-                ...logMeta,
+                ...logMetadata,
                 count: securitySubsections.length,
             });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: securitySubsections }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: securitySubsections }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/auth/registration-config" &&
-            req.method === "GET"
+            request.method === "GET"
         ) {
             const enabled = await registrationsEnabled();
             const { userValidationMode } = await readSecuritySettings();
@@ -125,7 +125,7 @@ export function createSecurityRoutes({
                               "warn",
                               "Registration UI composition failed; serving the base registration configuration.",
                               {
-                                  ...logMeta,
+                                  ...logMetadata,
                                   error:
                                       error instanceof Error
                                           ? error.message
@@ -145,12 +145,12 @@ export function createSecurityRoutes({
                     : [];
             });
             log?.("debug", "Read registration config.", {
-                ...logMeta,
+                ...logMetadata,
                 registrationsEnabled: enabled,
                 userValidationMode,
             });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     data: {
                         registrationsEnabled: enabled,
@@ -165,7 +165,7 @@ export function createSecurityRoutes({
 
         if (
             url.pathname === "/api/v1/auth/password-policy" &&
-            req.method === "GET"
+            request.method === "GET"
         ) {
             const preferenceStore =
                 capabilities.get<UserPreferenceStore>("preferences:store");
@@ -182,17 +182,17 @@ export function createSecurityRoutes({
                     }
                 }
             }
-            log?.("debug", "Served password policy.", logMeta);
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: policy }));
+            log?.("debug", "Served password policy.", logMetadata);
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: policy }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/auth/login-session-timeout" &&
-            req.method === "GET"
+            request.method === "GET"
         ) {
-            const claims = requireAuth(req, res, "user");
+            const claims = requireAuth(request, response, "user");
             if (!claims) return true;
             const { loginSessionTimeoutMinutes: maximumMinutes } =
                 await readSecuritySettings();
@@ -212,8 +212,8 @@ export function createSecurityRoutes({
                     )
                     .catch(() => undefined);
             }
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     data: {
                         timeoutMinutes,
@@ -227,18 +227,18 @@ export function createSecurityRoutes({
 
         if (
             url.pathname === "/api/v1/auth/login-session-timeout" &&
-            req.method === "PUT"
+            request.method === "PUT"
         ) {
-            const claims = requireAuth(req, res, "user");
+            const claims = requireAuth(request, response, "user");
             if (!claims) return true;
             const { loginSessionTimeoutMinutes: maximumMinutes } =
                 await readSecuritySettings();
-            const body = await readJson(req);
+            const body = await readJson(request);
             const preferenceStore =
                 capabilities.get<UserPreferenceStore>("preferences:store");
             if (!preferenceStore) {
-                res.writeHead(503, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(503, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "preferences_unavailable",
@@ -266,12 +266,12 @@ export function createSecurityRoutes({
                         maximumMinutes,
                     );
                 log?.("info", "Reset login session timeout preference.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: claims.sub,
                     revokedSessionCount,
                 });
-                res.writeHead(200, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(200, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         data: {
                             timeoutMinutes: maximumMinutes,
@@ -289,8 +289,8 @@ export function createSecurityRoutes({
                 Number(timeoutMinutes) < 1 ||
                 Number(timeoutMinutes) > maximumMinutes
             ) {
-                res.writeHead(400, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(400, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "invalid_session_timeout",
@@ -317,13 +317,13 @@ export function createSecurityRoutes({
                     timeoutMinutes,
                 );
             log?.("info", "Updated login session timeout preference.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
                 timeoutMinutes,
                 revokedSessionCount,
             });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     data: { timeoutMinutes, appliesOnNextLogin },
                 }),
@@ -333,11 +333,11 @@ export function createSecurityRoutes({
 
         if (
             url.pathname === "/api/v1/auth/password-policy" &&
-            req.method === "PUT"
+            request.method === "PUT"
         ) {
-            const claims = requireAuth(req, res, "admin");
+            const claims = requireAuth(request, response, "admin");
             if (!claims) return true;
-            const body = await readJson(req);
+            const body = await readJson(request);
             const policy = parsePasswordPolicy(body);
             const preferenceStore =
                 capabilities.get<UserPreferenceStore>("preferences:store");
@@ -349,11 +349,11 @@ export function createSecurityRoutes({
                 );
             }
             log?.("info", "Updated password policy.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
             });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { saved: true } }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: { saved: true } }));
             return true;
         }
 

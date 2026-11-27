@@ -22,9 +22,9 @@ export function bindDetailLayout(root, signal) {
     for (const group of groups) update(group);
     const observer = new ResizeObserver((entries) => {
         if (signal?.aborted) return;
-        for (const { target, contentRect } of entries) {
-            if (widths.get(target) === contentRect.width) continue;
-            widths.set(target, contentRect.width);
+        for (const { target, contentRect: contentRectangle } of entries) {
+            if (widths.get(target) === contentRectangle.width) continue;
+            widths.set(target, contentRectangle.width);
             update(target);
         }
     });

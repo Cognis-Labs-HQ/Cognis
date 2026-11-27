@@ -70,7 +70,7 @@ function parseJson<Value>(value: unknown): Value {
     return JSON.parse(String(value)) as Value;
 }
 
-export class DbProgressStore implements ProgressStore {
+class DatabaseProgressStore implements ProgressStore {
     constructor(private readonly database: DbExecutor) {}
 
     async ensureSchema(): Promise<void> {
@@ -201,3 +201,4 @@ export class DbProgressStore implements ProgressStore {
         );
     }
 }
+export { DatabaseProgressStore as DbProgressStore };

@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { createGridGeometry } from "../../reuse/page-composer/grid-geometry.js";
 import { createGridOverlayHandlers } from "../../reuse/page-composer/grid-overlay.js";
-import { createSubComposerHandlers } from "../../reuse/page-composer/sub-composer.js";
+import { createSubComposerHandlers as createNestedComposerHandlers } from "../../reuse/page-composer/sub-composer.js";
 import { resolveElementGridSize } from "../../reuse/page-composer/grid-sizing.js";
 
 class GridElement extends EventTarget {
@@ -95,7 +95,7 @@ for (const columns of [2, 3, 8]) {
                 layout: { placements: [], hidden: [] },
             };
             if (nested) {
-                createSubComposerHandlers({
+                createNestedComposerHandlers({
                     UNIT: 90,
                     getGridSize: resolveElementGridSize,
                 }).initializeSubPlacements(state);
@@ -327,18 +327,19 @@ test("nested grid growth applies its provisional height without a temporary shri
             hidden: [],
         },
     };
-    const { computeSubGridDimensions } = createSubComposerHandlers({
-        UNIT: 90,
-    });
-    computeSubGridDimensions(state, { minimumRows: 20 });
-    computeSubGridDimensions(state, { minimumRows: 22 });
+    const { computeSubGridDimensions: computeNestedGridDimensions } =
+        createNestedComposerHandlers({
+            UNIT: 90,
+        });
+    computeNestedGridDimensions(state, { minimumRows: 20 });
+    computeNestedGridDimensions(state, { minimumRows: 22 });
     assert.deepEqual(
         heights,
         ["1800px", "1980px"],
         "Each growth writes only the final minimum height",
     );
     assert.equal(state.gridRows, 22);
-    computeSubGridDimensions(state);
+    computeNestedGridDimensions(state);
     assert.equal(
         heights.at(-1),
         "540px",

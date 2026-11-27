@@ -4,7 +4,7 @@ import { createMessagesRoutes } from "../../routes/index.js";
 import { issueAccessToken } from "../../../../../gateways/auth/access-tokens.js";
 import { createDefaultRouteContext } from "../../../../../api/reuse/route-context.js";
 
-function makeReq(method: string, token: string) {
+function makeRequest(method: string, token: string) {
     return {
         method,
         headers: { authorization: `Bearer ${token}` },
@@ -74,7 +74,7 @@ test("POST /messages/rooms/:id/key-contribution explicitly contributes a room ke
     let responseBody = "";
 
     await route(
-        makeReq("POST", token),
+        makeRequest("POST", token),
         {
             writeHead() {},
             end(payload: string) {
@@ -93,7 +93,7 @@ test("POST /messages/rooms/:id/key-contribution explicitly contributes a room ke
     });
 
     await route(
-        makeReq("POST", token),
+        makeRequest("POST", token),
         {
             writeHead(statusCode: number) {
                 assert.equal(statusCode, 204);
@@ -107,7 +107,7 @@ test("POST /messages/rooms/:id/key-contribution explicitly contributes a room ke
 
     responseBody = "";
     await route(
-        makeReq("POST", token),
+        makeRequest("POST", token),
         {
             writeHead(statusCode: number) {
                 assert.equal(statusCode, 409);
@@ -177,7 +177,7 @@ test("meeting share guests receive a room key without consuming member delivery 
     });
     let responseBody = "";
     await route(
-        makeReq("POST", token),
+        makeRequest("POST", token),
         {
             writeHead(statusCode: number) {
                 assert.equal(statusCode, 200);
@@ -196,7 +196,7 @@ test("meeting share guests receive a room key without consuming member delivery 
         metadata: { label: "Chat room-1" },
     });
     await route(
-        makeReq("POST", token),
+        makeRequest("POST", token),
         {
             writeHead(statusCode: number) {
                 assert.equal(statusCode, 204);

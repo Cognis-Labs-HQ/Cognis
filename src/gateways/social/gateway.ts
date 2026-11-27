@@ -45,8 +45,8 @@ export interface SocialAdapterBootstrapCtx {
     flow: FlowApi;
     registerRoute(
         handler: (
-            req: IncomingMessage,
-            res: ServerResponse,
+            request: IncomingMessage,
+            response: ServerResponse,
             url: URL,
         ) => Promise<boolean>,
         gatewayId?: string,
@@ -54,7 +54,7 @@ export interface SocialAdapterBootstrapCtx {
     registerAdapterStaticDir?(
         gatewayId: string,
         adapterId: string,
-        absoluteDir: string,
+        absoluteDirectory: string,
     ): void;
     registerNavbarPlugin(
         scriptUrl: string,
@@ -74,14 +74,18 @@ export interface SocialAdapterBootstrapCtx {
         stylesheets?: string[];
         isEnabled?: () => boolean;
     }): void;
-    registerStaticDir(urlPrefix: string, absoluteDir: string): void;
+    registerStaticDir(urlPrefix: string, absoluteDirectory: string): void;
     registerAuthTypingMessage?(message: {
         id: string;
         textKey: string;
         ownerType: "gateway" | "adapter";
         ownerId: string;
     }): void;
-    log?: (level: string, msg: string, meta?: Record<string, unknown>) => void;
+    log?: (
+        level: string,
+        message: string,
+        metadata?: Record<string, unknown>,
+    ) => void;
     isGatewayEnabled(): boolean;
     isAdapterEnabled(adapterId?: string): boolean;
 }
@@ -211,14 +215,14 @@ export class CoreSocialGateway {
         entries.sort(sortSocialAdapterEntries);
 
         for (const entry of entries) {
-            const pkgPath = path.join(adaptersRoot, entry, "package.json");
+            const packagePath = path.join(adaptersRoot, entry, "package.json");
             try {
-                const raw = await readFile(pkgPath, "utf8");
-                const pkg = JSON.parse(raw) as {
+                const raw = await readFile(packagePath, "utf8");
+                const packageManifest = JSON.parse(raw) as {
                     main?: string;
                     version?: string;
                 };
-                if (!pkg.main) continue;
+                if (!packageManifest.main) continue;
 
                 let requires: string[] | undefined;
                 let publisher: string | undefined;
@@ -239,14 +243,20 @@ export class CoreSocialGateway {
                     // No manifest — adapter has no declared dependencies.
                 }
 
-                const entryPath = path.resolve(adaptersRoot, entry, pkg.main);
-                const mod = await import(entryPath);
-                if (typeof mod.createSocialAdapter === "function") {
+                const entryPath = path.resolve(
+                    adaptersRoot,
+                    entry,
+                    packageManifest.main,
+                );
+                const moduleExports = await import(entryPath);
+                if (typeof moduleExports.createSocialAdapter === "function") {
                     const factory =
-                        mod.createSocialAdapter as () => SocialAdapter | null;
+                        moduleExports.createSocialAdapter as () => SocialAdapter | null;
                     const adapter = factory();
-                    if (adapter && pkg.version) {
-                        Object.assign(adapter, { version: pkg.version });
+                    if (adapter && packageManifest.version) {
+                        Object.assign(adapter, {
+                            version: packageManifest.version,
+                        });
                     }
                     if (adapter && publisher) {
                         Object.assign(adapter, { publisher });
@@ -278,26 +288,30 @@ export class CoreSocialGateway {
         entries.sort(sortSocialAdapterEntries);
 
         for (const entry of entries) {
-            const pkgPath = path.join(adaptersRoot, entry, "package.json");
+            const packagePath = path.join(adaptersRoot, entry, "package.json");
 
-            let mod: Record<string, unknown>;
+            let moduleExports: Record<string, unknown>;
             try {
-                const raw = await readFile(pkgPath, "utf8");
-                const pkg = JSON.parse(raw) as { main?: string };
-                if (!pkg.main) continue;
-                const entryPath = path.resolve(adaptersRoot, entry, pkg.main);
-                mod = await import(entryPath);
+                const raw = await readFile(packagePath, "utf8");
+                const packageManifest = JSON.parse(raw) as { main?: string };
+                if (!packageManifest.main) continue;
+                const entryPath = path.resolve(
+                    adaptersRoot,
+                    entry,
+                    packageManifest.main,
+                );
+                moduleExports = await import(entryPath);
             } catch {
                 continue;
             }
 
             if (
-                typeof mod.bootstrapSocialAdapter !== "function" &&
-                mod.defineContracts === undefined
+                typeof moduleExports.bootstrapSocialAdapter !== "function" &&
+                moduleExports.defineContracts === undefined
             )
                 continue;
 
-            const bootstrapFn = mod.bootstrapSocialAdapter as (
+            const bootstrapCallback = moduleExports.bootstrapSocialAdapter as (
                 ctx: SocialAdapterBootstrapCtx,
             ) => Promise<void> | void;
 
@@ -308,9 +322,9 @@ export class CoreSocialGateway {
                 isAdapterEnabled: (adapterId = entry) =>
                     this.isAdapterEnabled(adapterId),
                 registerRoute: (handler, gatewayId) => {
-                    baseCtx.registerRoute(async (req, res, url) => {
+                    baseCtx.registerRoute(async (request, response, url) => {
                         if (!this.isAdapterEnabled(entry)) return false;
-                        return handler(req, res, url);
+                        return handler(request, response, url);
                     }, gatewayId);
                 },
             };
@@ -320,20 +334,23 @@ export class CoreSocialGateway {
                     "social",
                     entry,
                     adapterCtx,
-                    mod,
+                    moduleExports,
                     async () => {
-                        if (typeof bootstrapFn === "function")
-                            await bootstrapFn(adapterCtx);
+                        if (typeof bootstrapCallback === "function")
+                            await bootstrapCallback(adapterCtx);
                     },
                 );
-            } catch (err) {
+            } catch (error) {
                 baseCtx.log?.(
                     "error",
                     `Social gateway: adapter "${entry}" bootstrap failed — skipping.`,
                     {
                         component: "social-gateway",
                         adapter: entry,
-                        error: err instanceof Error ? err.message : String(err),
+                        error:
+                            error instanceof Error
+                                ? error.message
+                                : String(error),
                     },
                 );
             }

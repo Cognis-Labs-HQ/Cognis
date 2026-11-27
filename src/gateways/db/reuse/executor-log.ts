@@ -13,22 +13,24 @@ export function getErrorCode(error: unknown): string | undefined {
     return undefined;
 }
 
-export function buildDbErrorMeta(error: unknown): Record<string, unknown> {
-    const meta: Record<string, unknown> = {
+function buildDatabaseErrorMetadata(error: unknown): Record<string, unknown> {
+    const metadata: Record<string, unknown> = {
         errorName: error instanceof Error ? error.name : typeof error,
     };
     const errorCode = getErrorCode(error);
     if (errorCode) {
-        meta.errorCode = errorCode;
+        metadata.errorCode = errorCode;
     }
-    return meta;
+    return metadata;
 }
+export { buildDatabaseErrorMetadata as buildDbErrorMeta };
 
-export function writeDbLog(
+function writeDatabaseLog(
     log: BootstrapLog | undefined,
     level: "debug" | "info" | "warn" | "error",
     message: string,
-    meta?: Record<string, unknown>,
+    metadata?: Record<string, unknown>,
 ): void {
-    log?.(level, message, meta);
+    log?.(level, message, metadata);
 }
+export { writeDatabaseLog as writeDbLog };

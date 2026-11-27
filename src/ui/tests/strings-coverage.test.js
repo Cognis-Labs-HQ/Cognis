@@ -24,11 +24,12 @@ function discoverClusters() {
     for (const filePath of sourceFiles(ROOT)) {
         if (!filePath.endsWith("/strings.xml")) continue;
         if (filePath.includes("node_modules")) continue;
-        const langDir = dirname(filePath);
-        const lang = langDir.split("/").at(-1);
-        const clusterDir = dirname(langDir);
-        if (!clusters.has(clusterDir)) clusters.set(clusterDir, new Map());
-        clusters.get(clusterDir).set(lang, filePath);
+        const languageDirectory = dirname(filePath);
+        const language = languageDirectory.split("/").at(-1);
+        const clusterDirectory = dirname(languageDirectory);
+        if (!clusters.has(clusterDirectory))
+            clusters.set(clusterDirectory, new Map());
+        clusters.get(clusterDirectory).set(language, filePath);
     }
     return clusters;
 }
@@ -37,8 +38,8 @@ const clusters = discoverClusters();
 
 test("every strings.xml cluster has an English baseline", () => {
     const missing = [];
-    for (const [clusterDir, langs] of clusters) {
-        if (!langs.has("en")) missing.push(clusterDir);
+    for (const [clusterDirectory, languages] of clusters) {
+        if (!languages.has("en")) missing.push(clusterDirectory);
     }
     assert.equal(
         missing.length,
@@ -49,19 +50,21 @@ test("every strings.xml cluster has an English baseline", () => {
 
 test("no keys missing from translated strings.xml files relative to English", () => {
     const hits = [];
-    for (const [clusterDir, langs] of clusters) {
-        if (!langs.has("en")) continue;
-        const baselineKeys = parseKeys(readFileSync(langs.get("en"), "utf8"));
+    for (const [clusterDirectory, languages] of clusters) {
+        if (!languages.has("en")) continue;
+        const baselineKeys = parseKeys(
+            readFileSync(languages.get("en"), "utf8"),
+        );
         const baselineSet = new Set(baselineKeys);
-        for (const [lang, filePath] of langs) {
-            if (lang === "en") continue;
+        for (const [language, filePath] of languages) {
+            if (language === "en") continue;
             const translatedKeys = new Set(
                 parseKeys(readFileSync(filePath, "utf8")),
             );
             for (const key of baselineSet) {
                 if (!translatedKeys.has(key)) {
                     hits.push(
-                        `  [${clusterDir}] ${lang}: missing key "${key}"`,
+                        `  [${clusterDirectory}] ${language}: missing key "${key}"`,
                     );
                 }
             }
@@ -76,18 +79,18 @@ test("no keys missing from translated strings.xml files relative to English", ()
 
 test("no extra keys in translated strings.xml files beyond the English baseline", () => {
     const hits = [];
-    for (const [clusterDir, langs] of clusters) {
-        if (!langs.has("en")) continue;
+    for (const [clusterDirectory, languages] of clusters) {
+        if (!languages.has("en")) continue;
         const baselineSet = new Set(
-            parseKeys(readFileSync(langs.get("en"), "utf8")),
+            parseKeys(readFileSync(languages.get("en"), "utf8")),
         );
-        for (const [lang, filePath] of langs) {
-            if (lang === "en") continue;
+        for (const [language, filePath] of languages) {
+            if (language === "en") continue;
             const translatedKeys = parseKeys(readFileSync(filePath, "utf8"));
             for (const key of translatedKeys) {
                 if (!baselineSet.has(key)) {
                     hits.push(
-                        `  [${clusterDir}] ${lang}: extra key "${key}" not in English baseline`,
+                        `  [${clusterDirectory}] ${language}: extra key "${key}" not in English baseline`,
                     );
                 }
             }
@@ -102,11 +105,13 @@ test("no extra keys in translated strings.xml files beyond the English baseline"
 
 test("key order in translated strings.xml files matches the English baseline", () => {
     const hits = [];
-    for (const [clusterDir, langs] of clusters) {
-        if (!langs.has("en")) continue;
-        const baselineKeys = parseKeys(readFileSync(langs.get("en"), "utf8"));
-        for (const [lang, filePath] of langs) {
-            if (lang === "en") continue;
+    for (const [clusterDirectory, languages] of clusters) {
+        if (!languages.has("en")) continue;
+        const baselineKeys = parseKeys(
+            readFileSync(languages.get("en"), "utf8"),
+        );
+        for (const [language, filePath] of languages) {
+            if (language === "en") continue;
             const translatedKeys = parseKeys(readFileSync(filePath, "utf8"));
             const translatedSet = new Set(translatedKeys);
             const baselineSet = new Set(baselineKeys);
@@ -116,11 +121,17 @@ test("key order in translated strings.xml files matches the English baseline", (
             const baselineFiltered = baselineKeys.filter((key) =>
                 translatedSet.has(key),
             );
-            for (let pos = 0; pos < baselineFiltered.length; pos++) {
-                if (baselineFiltered[pos] !== translatedFiltered[pos]) {
+            for (
+                let position = 0;
+                position < baselineFiltered.length;
+                position++
+            ) {
+                if (
+                    baselineFiltered[position] !== translatedFiltered[position]
+                ) {
                     hits.push(
-                        `  [${clusterDir}] ${lang}: key order mismatch at position ${pos + 1}` +
-                            ` — expected "${baselineFiltered[pos]}", found "${translatedKeys[pos]}"`,
+                        `  [${clusterDirectory}] ${language}: key order mismatch at position ${position + 1}` +
+                            ` — expected "${baselineFiltered[position]}", found "${translatedKeys[position]}"`,
                     );
                     break;
                 }

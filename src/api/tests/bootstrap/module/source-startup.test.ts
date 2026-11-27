@@ -12,12 +12,13 @@ test("startup refreshes module sources once and reports discovered modules", asy
                 { uuid: "public-source", scanPrivateRepos: false },
                 { uuid: "private-source", scanPrivateRepos: true },
             ],
-            discover: async (...args: unknown[]) => {
-                calls.push(args);
+            discover: async (...argumentsList: unknown[]) => {
+                calls.push(argumentsList);
                 return [{ uuid: "module-uuid" }] as never;
             },
         },
-        (level, message, meta) => logs.push({ level, message, ...meta }),
+        (level, message, metadata) =>
+            logs.push({ level, message, ...metadata }),
     );
 
     assert.deepEqual(calls, [[["public-source", "private-source"], true]]);
@@ -42,7 +43,8 @@ test("startup reports module source refresh failures", async () => {
                 throw new Error("source unavailable");
             },
         },
-        (level, message, meta) => logs.push({ level, message, ...meta }),
+        (level, message, metadata) =>
+            logs.push({ level, message, ...metadata }),
     );
 
     assert.deepEqual(logs, [

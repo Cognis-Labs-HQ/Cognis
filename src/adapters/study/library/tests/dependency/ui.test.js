@@ -78,7 +78,7 @@ test("deletion confirmation includes restricted and grouped dependants but leave
             entries: records.slice(0, 3),
         }),
         escapeHtml: (value) => value,
-        showToast: (...args) => errors.push(args),
+        showToast: (...argumentsList) => errors.push(argumentsList),
         openPopup: async (options) => {
             popup = options;
             options.onAction("delete", {

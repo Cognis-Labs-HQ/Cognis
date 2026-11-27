@@ -1,3 +1,4 @@
+import * as drawingGeometry from "../../ui/drawing/geometry.js";
 import { transientSurfaces } from "../../../../ui/reuse/transient-surfaces.js";
 import * as offlineState from "../../../../ui/reuse/offline-state.js";
 import {
@@ -42,8 +43,8 @@ async function drawingSession({
             moves.length = 0;
             annotations.length = 0;
         },
-        moveTo(x, y) {
-            moves.push({ x, y });
+        moveTo(horizontalCoordinate, verticalCoordinate) {
+            moves.push({ x: horizontalCoordinate, y: verticalCoordinate });
         },
         beginPath() {},
         lineTo() {},
@@ -96,7 +97,7 @@ async function drawingSession({
         getContext: () => context,
     };
     elements.set("canvas", canvas);
-    const pad = {
+    const drawingPad = {
         ...element(),
         querySelector(selector) {
             if (!elements.has(selector)) elements.set(selector, element());
@@ -193,7 +194,8 @@ async function drawingSession({
         document: {
             querySelector: (selector) =>
                 selector === ".app-page__main" ? host : null,
-            createElement: (tag) => (tag === "section" ? pad : element()),
+            createElement: (tag) =>
+                tag === "section" ? drawingPad : element(),
             head: { append() {} },
             body: { append() {} },
         },
@@ -246,6 +248,7 @@ async function drawingSession({
         await importTestModule(
             new URL("../../ui/reuse/drawing.js", import.meta.url),
             {
+                "../drawing/geometry.js": drawingGeometry,
                 "/static/reuse/transient-surfaces.js": { transientSurfaces },
                 "/static/reuse/offline-state.js": offlineState,
                 "../library-client.js": {
@@ -316,7 +319,7 @@ async function drawingSession({
         handlers,
         canvas,
         host,
-        pad,
+        pad: drawingPad,
         floatingOptions: () => floatingOptions,
         paints: () => paints,
         flushFrames: () => {
@@ -325,10 +328,10 @@ async function drawingSession({
     };
 }
 
-function pointer(x, y) {
+function pointer(horizontalCoordinate, verticalCoordinate) {
     return {
-        clientX: 16 + x * 400,
-        clientY: 16 + y * 400,
+        clientX: 16 + horizontalCoordinate * 400,
+        clientY: 16 + verticalCoordinate * 400,
         pointerId: 1,
         pressure: 0.5,
         preventDefault() {},
@@ -420,21 +423,23 @@ test("the whole pattern is previewed before input and only the next stroke after
     const session = await drawingSession();
     const input = card(1);
     input.strokePattern.groups = [2, 2];
-    input.strokePattern.strokes = [0.1, 0.3, 0.5, 0.7].map((x) => ({
-        points: [
-            { x, y: 0.2 },
-            { x, y: 0.8 },
-        ],
-    }));
+    input.strokePattern.strokes = [0.1, 0.3, 0.5, 0.7].map(
+        (horizontalCoordinate) => ({
+            points: [
+                { x: horizontalCoordinate, y: 0.2 },
+                { x: horizontalCoordinate, y: 0.8 },
+            ],
+        }),
+    );
     await session.open(input);
     session.flushFrames();
     assert.deepEqual(session.annotations, ["1", "2", "3", "4"]);
     session.canvas.setPointerCapture = () => {};
-    for (const [index, x] of [0.1, 0.3, 0.5].entries()) {
-        session.handlers.get("pointerdown")(pointer(x, 0.2));
+    for (const [index, horizontalCoordinate] of [0.1, 0.3, 0.5].entries()) {
+        session.handlers.get("pointerdown")(pointer(horizontalCoordinate, 0.2));
         session.flushFrames();
         assert.deepEqual(session.annotations, [String(index + 1)]);
-        session.handlers.get("pointerup")(pointer(x, 0.8));
+        session.handlers.get("pointerup")(pointer(horizontalCoordinate, 0.8));
         await new Promise((resolve) => setImmediate(resolve));
         session.flushFrames();
         assert.deepEqual(session.annotations, [String(index + 2)]);
@@ -447,9 +452,9 @@ test("the whole pattern is previewed before input and only the next stroke after
     session.flushFrames();
     assert.deepEqual(session.annotations, ["1", "2", "3", "4"]);
 
-    for (const x of [0.1, 0.3, 0.5, 0.7]) {
-        session.handlers.get("pointerdown")(pointer(x, 0.2));
-        session.handlers.get("pointerup")(pointer(x, 0.8));
+    for (const horizontalCoordinate of [0.1, 0.3, 0.5, 0.7]) {
+        session.handlers.get("pointerdown")(pointer(horizontalCoordinate, 0.2));
+        session.handlers.get("pointerup")(pointer(horizontalCoordinate, 0.8));
         await new Promise((resolve) => setImmediate(resolve));
         session.flushFrames();
     }
@@ -621,7 +626,7 @@ test("drawing masks its heading, reports the active character, and clears it on 
     const unsubscribe = observeDrawingCard((value) => changes.push(value));
     const session = await drawingSession();
     const results = [];
-    const pad = await session.open({
+    const drawingPad = await session.open({
         ...card(1),
         onResult: (result) => results.push(result),
     });
@@ -637,7 +642,7 @@ test("drawing masks its heading, reports the active character, and clears it on 
     await session.load(card(2));
     assert.equal(heading.textContent, "漢".repeat("Character 1".length));
     assert.equal(changes.at(-1).id, "card-2");
-    await pad.close();
+    await drawingPad.close();
     assert.equal(changes.at(-1), null);
     unsubscribe();
 });

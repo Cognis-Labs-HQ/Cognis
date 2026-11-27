@@ -19,13 +19,13 @@ export function createCalendarAdapterRoutes(
     const base = `/api/v1/gateways/${gatewayId}/adapters`;
 
     return async (
-        req: IncomingMessage,
-        res: ServerResponse,
+        request: IncomingMessage,
+        response: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        if (url.pathname === base && req.method === "GET") {
-            if (!ctx.requireAuth(req, res, "admin")) return true;
-            sendJson(res, 200, {
+        if (url.pathname === base && request.method === "GET") {
+            if (!ctx.requireAuth(request, response, "admin")) return true;
+            sendJson(response, 200, {
                 data: gateway.listAdapters().map((adapter) => ({
                     ...adapter,
                     controls: buildGatewayAdapterAdminControls(
@@ -41,21 +41,21 @@ export function createCalendarAdapterRoutes(
             new RegExp(`^${base}/([^/]+)/config$`),
         );
         if (configMatch) {
-            if (!ctx.requireAuth(req, res, "admin")) return true;
+            if (!ctx.requireAuth(request, response, "admin")) return true;
             const adapterId = decodeURIComponent(configMatch[1]);
 
-            if (req.method === "GET") {
+            if (request.method === "GET") {
                 const config = gateway.getAdapterConfig(adapterId);
                 if (config === null) {
                     sendCalendarError(
-                        res,
+                        response,
                         "not_found",
                         "Adapter not found.",
                         404,
                     );
                     return true;
                 }
-                sendJson(res, 200, {
+                sendJson(response, 200, {
                     data: config,
                     envValues: {},
                     requiredFields: [],
@@ -64,22 +64,22 @@ export function createCalendarAdapterRoutes(
                 return true;
             }
 
-            if (req.method === "PUT") {
+            if (request.method === "PUT") {
                 if (!gateway.getAdapter(adapterId)) {
                     sendCalendarError(
-                        res,
+                        response,
                         "not_found",
                         "Adapter not found.",
                         404,
                     );
                     return true;
                 }
-                const body = await readJson(req);
+                const body = await readJson(request);
                 await gateway.saveAdapterConfig(
                     adapterId,
                     body as Record<string, unknown>,
                 );
-                sendJson(res, 200, { data: { saved: true } });
+                sendJson(response, 200, { data: { saved: true } });
                 return true;
             }
 
@@ -89,19 +89,24 @@ export function createCalendarAdapterRoutes(
         const toggleMatch = url.pathname.match(
             new RegExp(`^${base}/([^/]+)/(enable|disable)$`),
         );
-        if (toggleMatch && req.method === "POST") {
-            if (!ctx.requireAuth(req, res, "admin")) return true;
+        if (toggleMatch && request.method === "POST") {
+            if (!ctx.requireAuth(request, response, "admin")) return true;
             const adapterId = decodeURIComponent(toggleMatch[1]);
             const action = toggleMatch[2] as "enable" | "disable";
             if (!gateway.getAdapter(adapterId)) {
-                sendCalendarError(res, "not_found", "Adapter not found.", 404);
+                sendCalendarError(
+                    response,
+                    "not_found",
+                    "Adapter not found.",
+                    404,
+                );
                 return true;
             }
             if (action === "enable") {
                 const gatewayEntry = gatewayRegistry.get(gatewayId);
                 if (gatewayEntry?.status === "disabled") {
                     sendCalendarError(
-                        res,
+                        response,
                         "gateway_disabled",
                         "Cannot enable an adapter while its gateway is disabled",
                         409,
@@ -112,7 +117,7 @@ export function createCalendarAdapterRoutes(
             } else {
                 await gateway.disableAdapter(adapterId);
             }
-            sendJson(res, 200, { data: { enabled: action === "enable" } });
+            sendJson(response, 200, { data: { enabled: action === "enable" } });
             return true;
         }
 

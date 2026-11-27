@@ -10,11 +10,11 @@ const BASIC_HTML_ENTITY_MAP: Record<string, string> = {
 };
 
 export function encodeBasicHtmlEntities(value: string): string {
-    return value.replace(/[&<>"']/g, (char) => {
-        if (char === "&") return "&amp;";
-        if (char === "<") return "&lt;";
-        if (char === ">") return "&gt;";
-        if (char === '"') return "&quot;";
+    return value.replace(/[&<>"']/g, (character) => {
+        if (character === "&") return "&amp;";
+        if (character === "<") return "&lt;";
+        if (character === ">") return "&gt;";
+        if (character === '"') return "&quot;";
         return "&#x27;";
     });
 }

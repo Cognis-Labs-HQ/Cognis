@@ -18,7 +18,7 @@ import { fileURLToPath } from "node:url";
 import type { RouteContext } from "../../../api/reuse/route-context.js";
 import { createLeaderboardRoutes } from "./routes/index.js";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
-import { DbLeaderboardStore } from "./store.js";
+import { DbLeaderboardStore as DatabaseLeaderboardStore } from "./store.js";
 
 let ready = false;
 const UI_ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "ui");
@@ -68,7 +68,7 @@ export async function bootstrapStudyAdapter(
             systemCtx.registerFlow({ id, description, stages: [...stages] });
     const databaseExecutor =
         ctx.capabilities.require<DbExecutor>("db:executor");
-    const store = new DbLeaderboardStore(databaseExecutor);
+    const store = new DatabaseLeaderboardStore(databaseExecutor);
     await store.ensureSchema();
     const service = new LeaderboardService(
         () =>
@@ -76,10 +76,10 @@ export async function bootstrapStudyAdapter(
         () => ctx.isAdapterEnabled(),
         scoring,
         {
-            canRead: (...args) =>
+            canRead: (...argumentsList) =>
                 ctx.capabilities
                     .get<StudyClassAccessCapability>("study:classes:access")
-                    ?.canRead(...args) ?? Promise.resolve(false),
+                    ?.canRead(...argumentsList) ?? Promise.resolve(false),
         },
         ctx.log,
         (state) => store.save(state),
@@ -137,10 +137,10 @@ export async function bootstrapStudyAdapter(
     const capability = new Proxy(service, {
         get(target, property, receiver) {
             if (metadataMethods.some((method) => method === property))
-                return async (...args: unknown[]) => {
+                return async (...argumentsList: unknown[]) => {
                     await systemCtx.flow.run(
                         `study:leaderboard:${String(property)}`,
-                        args,
+                        argumentsList,
                     );
                 };
             if (property === "submitObservation")

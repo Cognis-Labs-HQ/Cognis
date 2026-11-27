@@ -6,15 +6,15 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 
-function walk(dir) {
-    const out = [];
-    for (const directoryEntry of readdirSync(dir)) {
-        const entryPath = join(dir, directoryEntry);
+function walk(directory) {
+    const discoveredFiles = [];
+    for (const directoryEntry of readdirSync(directory)) {
+        const entryPath = join(directory, directoryEntry);
         const entryStat = statSync(entryPath);
-        if (entryStat.isDirectory()) out.push(...walk(entryPath));
-        else out.push(entryPath);
+        if (entryStat.isDirectory()) discoveredFiles.push(...walk(entryPath));
+        else discoveredFiles.push(entryPath);
     }
-    return out;
+    return discoveredFiles;
 }
 
 const CSS_ROOTS = [join(ROOT, "src/ui/styles")];
@@ -32,16 +32,16 @@ function extractDefinedCssClasses() {
     for (const root of CSS_ROOTS) {
         for (const file of walk(root)) {
             if (!file.endsWith(".css")) continue;
-            const src = readFileSync(file, "utf8");
-            const stripped = src
+            const sourceText = readFileSync(file, "utf8");
+            const stripped = sourceText
                 .replace(/\/\*[\s\S]*?\*\//g, "")
                 .replace(/@import\s+url\([^)]*\)[^;]*;/g, "")
                 .replace(/url\([^)]*\)/g, "");
             for (const match of stripped.matchAll(
                 /\.([a-zA-Z][a-zA-Z0-9_-]*)/g,
             )) {
-                const cls = match[1];
-                if (!map.has(cls)) map.set(cls, file);
+                const className = match[1];
+                if (!map.has(className)) map.set(className, file);
             }
         }
     }
@@ -90,10 +90,10 @@ test("no dead CSS classes (defined but never referenced in scripts or templates)
         .join("\n");
 
     const dead = [];
-    for (const [cls, defFile] of cssDefinitions) {
-        if (DYNAMIC_CLASS_NAMES.has(cls)) continue;
-        if (!usageContent.includes(cls)) {
-            dead.push(`  .${cls}  (defined in ${defFile})`);
+    for (const [className, definitionFile] of cssDefinitions) {
+        if (DYNAMIC_CLASS_NAMES.has(className)) continue;
+        if (!usageContent.includes(className)) {
+            dead.push(`  .${className}  (defined in ${definitionFile})`);
         }
     }
 
@@ -120,8 +120,8 @@ test("no dead exports in reuse modules (exported but never imported by any page 
     const dead = [];
     for (const file of walk(reusePath)) {
         if (!file.endsWith(".js")) continue;
-        const src = readFileSync(file, "utf8");
-        for (const match of src.matchAll(
+        const sourceText = readFileSync(file, "utf8");
+        for (const match of sourceText.matchAll(
             /^export\s+(?:async\s+)?function\s+(\w+)|^export\s+const\s+(\w+)/gm,
         )) {
             const name = match[1] ?? match[2];

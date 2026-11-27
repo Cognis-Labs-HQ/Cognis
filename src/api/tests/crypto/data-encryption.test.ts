@@ -57,13 +57,13 @@ test("deriveScopedKey: different scopes produce different keys (encrypt/decrypt 
 });
 
 test("deriveScopedKey: different subsystems with same identifier produce different keys", async () => {
-    const notifKey = await deriveScopedKey(
+    const notificationKey = await deriveScopedKey(
         "user:notifications:alice",
         "server-secret",
     );
     const mfaKey = await deriveScopedKey("user:mfa:alice", "server-secret");
     const { iv: initializationVector, ciphertext } = await encryptPayload(
-        notifKey,
+        notificationKey,
         "hello",
     );
     await assert.rejects(
@@ -127,9 +127,19 @@ test("encryptPayload + decryptPayload: round-trip preserves plaintext", async ()
 
 test("encryptPayload: each call produces a unique IV", async () => {
     const key = await deriveScopedKey("user:notifications:user2", "secret");
-    const { iv: iv1 } = await encryptPayload(key, "same plaintext");
-    const { iv: iv2 } = await encryptPayload(key, "same plaintext");
-    assert.notEqual(iv1, iv2, "IVs must be unique across encryptions");
+    const { iv: initializationVector1 } = await encryptPayload(
+        key,
+        "same plaintext",
+    );
+    const { iv: initializationVector2 } = await encryptPayload(
+        key,
+        "same plaintext",
+    );
+    assert.notEqual(
+        initializationVector1,
+        initializationVector2,
+        "IVs must be unique across encryptions",
+    );
 });
 
 test("decryptPayload: rejects tampered ciphertext", async () => {

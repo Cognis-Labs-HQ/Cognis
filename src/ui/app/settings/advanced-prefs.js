@@ -18,10 +18,10 @@ import { createFormDirtyTracker } from "../../reuse/unsaved-changes.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { showToast } from "../../reuse/toast.js";
 
-export function initAdvancedPrefs(
+function initAdvancedPreferences(
     root,
     {
-        existingPrefs,
+        existingPrefs: existingPreferences,
         acknowledgementAccepted = false,
         saveAcknowledgement,
         i18n,
@@ -32,7 +32,7 @@ export function initAdvancedPrefs(
     if (!(editor instanceof HTMLTextAreaElement)) {
         return {
             requestEditingConsent: async () => undefined,
-            getPreferences: () => existingPrefs ?? {},
+            getPreferences: () => existingPreferences ?? {},
             isDirty: () => false,
             commit: () => undefined,
             discard: () => undefined,
@@ -40,7 +40,7 @@ export function initAdvancedPrefs(
         };
     }
 
-    let committedPreferences = existingPrefs ?? {};
+    let committedPreferences = existingPreferences ?? {};
     let dirtyTracker;
     let warningOpen = false;
     editor.readOnly = !acknowledgementAccepted;
@@ -129,3 +129,4 @@ export function initAdvancedPrefs(
         destroy: () => dirtyTracker?.destroy(),
     };
 }
+export { initAdvancedPreferences as initAdvancedPrefs };

@@ -19,9 +19,9 @@ import { bootstrap } from "../bootstrap.js";
 
 const credentials = new Map<string, { sub: string; role: AccessRole }>();
 
-function issueCredential(sub: string, role: AccessRole): string {
+function issueCredential(subject: string, role: AccessRole): string {
     const token = `test-session-${credentials.size}`;
-    credentials.set(token, { sub, role });
+    credentials.set(token, { sub: subject, role });
     return token;
 }
 
@@ -131,14 +131,14 @@ async function bootstrapStudyGateway(
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
     const systemCtx = createCtx();
-    const dbExecutor = {
+    const databaseExecutor = {
         executeCommand: async () => ({ rows: [], rowCount: 0 }),
         ensureTable: async () => {},
         transaction: async (
             callback: (executor: unknown) => Promise<unknown>,
-        ) => callback(dbExecutor),
+        ) => callback(databaseExecutor),
     };
-    capabilities.contribute("db:executor", dbExecutor);
+    capabilities.contribute("db:executor", databaseExecutor);
     capabilities.contribute("system:ctx", systemCtx);
     capabilities.contribute("auth:routeContext", routeContext);
     configure?.(capabilities);

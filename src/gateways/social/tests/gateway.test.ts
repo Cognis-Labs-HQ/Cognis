@@ -36,22 +36,22 @@ function createBaseCtx(gateway: CoreSocialGateway) {
 test("social gateway discovers adapters before bootstrap lifecycle wiring", async (testContext) => {
     const root = await mkdtemp(path.join(tmpdir(), "cognis-social-adapters-"));
     testContext.after(() => removePath(root, { recursive: true, force: true }));
-    const adapterDir = path.join(root, "messages");
-    await mkdir(adapterDir);
+    const adapterDirectory = path.join(root, "messages");
+    await mkdir(adapterDirectory);
     await writeFile(
-        path.join(adapterDir, "manifest.json"),
+        path.join(adapterDirectory, "manifest.json"),
         JSON.stringify({
             publisher: "Cognis Labs HQ",
             requires: ["social:profile"],
         }),
     );
     await writeFile(
-        path.join(adapterDir, "package.json"),
+        path.join(adapterDirectory, "package.json"),
         JSON.stringify({ main: "index.mjs", type: "module" }),
     );
     await copyFile(
         new URL("./fixtures/lifecycle-adapter/index.mjs", import.meta.url),
-        path.join(adapterDir, "index.mjs"),
+        path.join(adapterDirectory, "index.mjs"),
     );
 
     const gateway = new CoreSocialGateway();

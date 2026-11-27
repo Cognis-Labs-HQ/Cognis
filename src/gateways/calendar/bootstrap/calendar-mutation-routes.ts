@@ -23,8 +23,8 @@ import type { CalendarShareRegistry } from "./share-registry.js";
 import { rejectInactiveSharedCalendar } from "./shared-calendar-guards.js";
 
 export async function handleCalendarMutationRoutes({
-    req,
-    res,
+    req: request,
+    res: response,
     url,
     ctx,
     gateway,
@@ -54,8 +54,8 @@ export async function handleCalendarMutationRoutes({
     const patchCalendarMatch = url.pathname.match(
         /^\/api\/v1\/calendar\/calendars\/([^/]+)$/,
     );
-    if (patchCalendarMatch && req.method === "PATCH") {
-        const claims = ctx.requireAuth(req, res, "user");
+    if (patchCalendarMatch && request.method === "PATCH") {
+        const claims = ctx.requireAuth(request, response, "user");
         if (!claims) return true;
         const calendarId = decodeURIComponent(patchCalendarMatch[1]);
         const sharedCalendar =
@@ -69,12 +69,12 @@ export async function handleCalendarMutationRoutes({
                     sharedCalendar?.recipientAccountId === claims.sub
                         ? sharedCalendar
                         : null,
-                res,
+                res: response,
             })
         ) {
             return true;
         }
-        const body = await readJson(req);
+        const body = await readJson(request);
         if (sharedCalendar?.recipientAccountId === claims.sub) {
             const requestedFields = Object.keys(body ?? {});
             if (
@@ -83,7 +83,7 @@ export async function handleCalendarMutationRoutes({
                 )
             ) {
                 sendCalendarError(
-                    res,
+                    response,
                     "forbidden",
                     "Only the local name and color of a shared calendar can be changed.",
                     403,
@@ -104,7 +104,7 @@ export async function handleCalendarMutationRoutes({
                 (!requestedName || requestedName.length > 30)
             ) {
                 sendCalendarError(
-                    res,
+                    response,
                     "validation_error",
                     "Calendar names must contain 1 to 30 characters.",
                     400,
@@ -121,7 +121,7 @@ export async function handleCalendarMutationRoutes({
                 color: normalizeCalendarColor(body.color),
             });
             await gateway.flushStore();
-            sendJson(res, 200, {
+            sendJson(response, 200, {
                 data: {
                     ...updated,
                     sharedPermission: sharedCalendar.permission,
@@ -135,7 +135,7 @@ export async function handleCalendarMutationRoutes({
                 String(body.name).trim().length > 30
             ) {
                 sendCalendarError(
-                    res,
+                    response,
                     "validation_error",
                     "Calendar names are limited to 30 characters.",
                     400,
@@ -162,16 +162,21 @@ export async function handleCalendarMutationRoutes({
                         : undefined,
             });
             await gateway.flushStore();
-            sendJson(res, 200, { data: updated });
+            sendJson(response, 200, { data: updated });
         } catch (error) {
             const message = errorMessage(error);
             if (message === "calendar_not_found") {
-                sendCalendarError(res, "not_found", "Calendar not found.", 404);
+                sendCalendarError(
+                    response,
+                    "not_found",
+                    "Calendar not found.",
+                    404,
+                );
                 return true;
             }
             if (message === "calendar_default_name_locked") {
                 sendCalendarError(
-                    res,
+                    response,
                     "conflict",
                     "Default calendar name cannot be changed.",
                     409,
@@ -180,7 +185,7 @@ export async function handleCalendarMutationRoutes({
             }
             if (message === "calendar_name_required") {
                 sendCalendarError(
-                    res,
+                    response,
                     "validation_error",
                     "Calendar name is required.",
                     400,
@@ -194,7 +199,7 @@ export async function handleCalendarMutationRoutes({
                 error: message,
             });
             sendCalendarError(
-                res,
+                response,
                 "internal_error",
                 "Failed to update calendar.",
                 500,
@@ -205,8 +210,8 @@ export async function handleCalendarMutationRoutes({
     const deleteCalendarMatch = url.pathname.match(
         /^\/api\/v1\/calendar\/calendars\/([^/]+)$/,
     );
-    if (deleteCalendarMatch && req.method === "DELETE") {
-        const claims = ctx.requireAuth(req, res, "user");
+    if (deleteCalendarMatch && request.method === "DELETE") {
+        const claims = ctx.requireAuth(request, response, "user");
         if (!claims) return true;
         const calendarId = decodeURIComponent(deleteCalendarMatch[1]);
         const sharedCalendar =
@@ -220,7 +225,7 @@ export async function handleCalendarMutationRoutes({
                     sharedCalendar?.recipientAccountId === claims.sub
                         ? sharedCalendar
                         : null,
-                res,
+                res: response,
             })
         ) {
             return true;
@@ -234,7 +239,7 @@ export async function handleCalendarMutationRoutes({
             >("share:removeUserRecipient");
             if (!removeUserShareRecipient) {
                 sendCalendarError(
-                    res,
+                    response,
                     "service_unavailable",
                     "Share recipient removal is unavailable.",
                     503,
@@ -243,7 +248,7 @@ export async function handleCalendarMutationRoutes({
             }
             if (!sharedCalendar.shareTokenId) {
                 sendCalendarError(
-                    res,
+                    response,
                     "not_found",
                     "Share token not found.",
                     404,
@@ -255,7 +260,12 @@ export async function handleCalendarMutationRoutes({
                 recipientAccountId: claims.sub,
             });
             if (removalResult === "not_found") {
-                sendCalendarError(res, "not_found", "Share not found.", 404);
+                sendCalendarError(
+                    response,
+                    "not_found",
+                    "Share not found.",
+                    404,
+                );
                 return true;
             }
             await shareRegistry.deleteCalendarUserShare({
@@ -276,7 +286,7 @@ export async function handleCalendarMutationRoutes({
                 shareId: sharedCalendar.shareTokenId,
                 shareDeleted: removalResult === "deleted",
             });
-            sendJson(res, 200, { data: { deleted: true } });
+            sendJson(response, 200, { data: { deleted: true } });
             return true;
         }
         try {
@@ -285,12 +295,17 @@ export async function handleCalendarMutationRoutes({
                 calendarId,
             );
             if (!ownedCalendar) {
-                sendCalendarError(res, "not_found", "Calendar not found.", 404);
+                sendCalendarError(
+                    response,
+                    "not_found",
+                    "Calendar not found.",
+                    404,
+                );
                 return true;
             }
             if (ownedCalendar.isDefault) {
                 sendCalendarError(
-                    res,
+                    response,
                     "conflict",
                     "Default calendar cannot be deleted.",
                     409,
@@ -354,16 +369,21 @@ export async function handleCalendarMutationRoutes({
                 calendarId,
             });
             await gateway.flushStore();
-            sendJson(res, 200, { data: { deleted: true } });
+            sendJson(response, 200, { data: { deleted: true } });
         } catch (error) {
             const message = errorMessage(error);
             if (message === "calendar_not_found") {
-                sendCalendarError(res, "not_found", "Calendar not found.", 404);
+                sendCalendarError(
+                    response,
+                    "not_found",
+                    "Calendar not found.",
+                    404,
+                );
                 return true;
             }
             if (message === "calendar_default_locked") {
                 sendCalendarError(
-                    res,
+                    response,
                     "conflict",
                     "Default calendar cannot be deleted.",
                     409,
@@ -377,7 +397,7 @@ export async function handleCalendarMutationRoutes({
                 error: message,
             });
             sendCalendarError(
-                res,
+                response,
                 "internal_error",
                 "Failed to delete calendar.",
                 500,

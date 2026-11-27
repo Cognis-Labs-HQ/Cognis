@@ -171,33 +171,33 @@ export async function mount(root, { signal } = {}) {
                     });
                 };
                 credentialProviders.forEach((method) => {
-                    const btn = document.createElement("button");
-                    btn.type = "button";
-                    btn.dataset.loginProviderId = method.id;
+                    const button = document.createElement("button");
+                    button.type = "button";
+                    button.dataset.loginProviderId = method.id;
                     if (method.id === "local" || method.id === "ldap") {
                         const methodLabelKey = `ui.app.login.provider.${method.id}`;
                         const translatedMethodName = i18n.t(methodLabelKey);
-                        btn.textContent =
+                        button.textContent =
                             translatedMethodName &&
                             translatedMethodName !== methodLabelKey
                                 ? translatedMethodName
                                 : method.name;
                     } else {
-                        btn.textContent = method.name;
+                        button.textContent = method.name;
                     }
-                    btn.className = "auth-provider-btn";
-                    btn.setAttribute(
+                    button.className = "auth-provider-btn";
+                    button.setAttribute(
                         "aria-pressed",
                         String(method.id === "local"),
                     );
-                    btn.addEventListener("click", () => {
+                    button.addEventListener("click", () => {
                         selectCredentialProvider(method);
                     });
                     if (method.id === "local") {
-                        btn.classList.add("auth-provider-btn--active");
+                        button.classList.add("auth-provider-btn--active");
                     }
-                    methodButtons.set(method.id, btn);
-                    toggleContainer.appendChild(btn);
+                    methodButtons.set(method.id, button);
+                    toggleContainer.appendChild(button);
                 });
                 const overflowButton = document.createElement("button");
                 overflowButton.type = "button";
@@ -495,8 +495,8 @@ export async function mount(root, { signal } = {}) {
     }
 
     async function handleRequestLinkClick() {
-        const res = await fetch("/api/v1/auth/login-link-status");
-        const body = await res.json().catch(() => null);
+        const response = await fetch("/api/v1/auth/login-link-status");
+        const body = await response.json().catch(() => null);
         if (body?.data?.available === true) {
             switchToLoginLinkEmailForm();
         } else {
@@ -505,15 +505,15 @@ export async function mount(root, { signal } = {}) {
     }
 
     async function requestPasswordResetLink() {
-        const emailEl = document.querySelector("#login-link-email");
-        const email = String(emailEl?.value ?? "")
+        const emailElement = document.querySelector("#login-link-email");
+        const email = String(emailElement?.value ?? "")
             .trim()
             .toLowerCase();
         if (!email) {
             showToast(i18n.t("ui.app.login.login_link.email_required"), {
                 variant: "warning",
             });
-            emailEl?.focus();
+            emailElement?.focus();
             return;
         }
         const response = await fetch("/api/v1/auth/request-login-link", {
@@ -660,17 +660,17 @@ export async function mount(root, { signal } = {}) {
 
     async function consumePasswordResetToken() {
         if (passwordResetTokenHandled) return;
-        const params = new URL(window.location.href).searchParams;
+        const parameters = new URL(window.location.href).searchParams;
         const loginToken = String(
-            params.get("passwordResetToken") ?? "",
+            parameters.get("passwordResetToken") ?? "",
         ).trim();
         if (!loginToken) return;
         try {
             passwordResetTokenHandled = true;
-            const checkRes = await fetch(
+            const checkResponse = await fetch(
                 `/api/v1/auth/check-login-link?token=${encodeURIComponent(loginToken)}`,
             );
-            if (!checkRes.ok) {
+            if (!checkResponse.ok) {
                 passwordResetTokenHandled = false;
                 showPasswordResetLinkInvalid();
                 return;

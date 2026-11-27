@@ -5,7 +5,7 @@ export interface BrowserCapabilities {
     get<T = unknown>(id: string): T | undefined;
     bind<Args extends unknown[], Result>(
         id: string,
-    ): (...args: Args) => Result | Promise<boolean>;
+    ): (...argumentsList: Args) => Result | Promise<boolean>;
 }
 export declare function createCapabilityRegistry(): BrowserCapabilities;
 export declare const uiCapabilities: BrowserCapabilities;

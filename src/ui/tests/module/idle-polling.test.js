@@ -39,7 +39,7 @@ function fixture(context, { read, scan } = {}) {
             calls.scans++;
             return scan?.(signal);
         },
-        log: (...args) => calls.errors.push(args),
+        log: (...argumentsList) => calls.errors.push(argumentsList),
         translate: (key) => key,
     });
     start(controller.signal);
@@ -134,8 +134,8 @@ test("marketplace state requests preserve validators, cancellation and failures"
         {
             "../../reuse/ui-ctx.js": { uiCtx: {} },
             "../../reuse/api-client.js": {
-                apiFetch: async (...args) => {
-                    calls.push(args);
+                apiFetch: async (...argumentsList) => {
+                    calls.push(argumentsList);
                     return response;
                 },
             },

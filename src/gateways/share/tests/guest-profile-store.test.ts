@@ -12,8 +12,8 @@ class MemoryExecutor {
     public readonly tableDefs: StructuredDbTableDef[] = [];
     public readonly rows = new Map<string, Record<string, unknown>>();
 
-    async ensureTable(def: StructuredDbTableDef): Promise<void> {
-        this.tableDefs.push(def);
+    async ensureTable(definition: StructuredDbTableDef): Promise<void> {
+        this.tableDefs.push(definition);
     }
 
     async executeCommand(

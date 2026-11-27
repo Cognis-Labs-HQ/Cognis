@@ -93,12 +93,12 @@ async function collectSearchRoomMessages(room) {
     const records = [];
     let before = "";
     while (true) {
-        const params = new URLSearchParams({
+        const parameters = new URLSearchParams({
             limit: String(MESSAGE_SEARCH_PAGE_SIZE),
         });
-        if (before) params.set("before", before);
+        if (before) parameters.set("before", before);
         const response = await apiFetch(
-            `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}/messages?${params}`,
+            `/api/v1/social/messages/rooms/${encodeURIComponent(roomId)}/messages?${parameters}`,
         );
         if (!response.ok) return [];
         const payload = await response.json().catch(() => null);

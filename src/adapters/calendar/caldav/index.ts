@@ -14,10 +14,10 @@ import { buildCalendarExportHeaders } from "../../../gateways/calendar/reuse/exp
 import { parseIcsDate } from "../../../gateways/calendar/gateway/utils.js";
 
 async function readRequestText(
-    req: AsyncIterable<Uint8Array>,
+    request: AsyncIterable<Uint8Array>,
 ): Promise<string> {
     const chunks: Buffer[] = [];
-    for await (const chunk of req) chunks.push(Buffer.from(chunk));
+    for await (const chunk of request) chunks.push(Buffer.from(chunk));
     return Buffer.concat(chunks).toString("utf8");
 }
 
@@ -90,8 +90,8 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
             "ACL",
         ].includes(String(method ?? ""));
     const respondCalendarPayload = (
-        reqMethod: string | undefined,
-        res: {
+        requestMethod: string | undefined,
+        response: {
             writeHead: (
                 statusCode: number,
                 headers?: Record<string, string>,
@@ -111,56 +111,56 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 accessMode === "read" ? "true" : "false",
             dav: "1, calendar-access",
         };
-        if (reqMethod === "OPTIONS") {
-            res.writeHead(204, {
+        if (requestMethod === "OPTIONS") {
+            response.writeHead(204, {
                 ...headers,
                 allow:
                     accessMode === "write"
                         ? "GET,HEAD,OPTIONS,PROPFIND,REPORT,PUT,DELETE"
                         : "GET,HEAD,OPTIONS,PROPFIND,REPORT",
             });
-            res.end();
+            response.end();
             return;
         }
-        if (reqMethod === "REPORT") {
-            res.writeHead(207, {
+        if (requestMethod === "REPORT") {
+            response.writeHead(207, {
                 ...headers,
                 "content-type": "application/xml; charset=utf-8",
             });
-            res.end(
+            response.end(
                 `<?xml version="1.0" encoding="utf-8"?><d:multistatus xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav"><d:response><d:href>${escapeXml(resourcePath)}</d:href><d:propstat><d:prop><d:getetag>"${escapeXml(calendarId)}"</d:getetag><c:calendar-data>${escapeXml(payload)}</c:calendar-data></d:prop><d:status>HTTP/1.1 200 OK</d:status></d:propstat></d:response></d:multistatus>`,
             );
             return;
         }
-        if (reqMethod === "PROPFIND") {
+        if (requestMethod === "PROPFIND") {
             const writePrivileges =
                 accessMode === "write"
                     ? "<d:privilege><d:write/></d:privilege><d:privilege><d:write-content/></d:privilege>"
                     : "";
-            res.writeHead(207, {
+            response.writeHead(207, {
                 ...headers,
                 "content-type": "application/xml; charset=utf-8",
             });
-            res.end(
+            response.end(
                 `<?xml version="1.0" encoding="utf-8"?><d:multistatus xmlns:d="DAV:" xmlns:c="urn:ietf:params:xml:ns:caldav"><d:response><d:href>${escapeXml(resourcePath)}</d:href><d:propstat><d:prop><d:displayname>${escapeXml(calendarName)}</d:displayname><c:calendar-description>${escapeXml(calendarName)}</c:calendar-description><d:resourcetype><d:collection/><c:calendar/></d:resourcetype><d:getcontenttype>text/calendar; component=vevent</d:getcontenttype><c:supported-calendar-component-set><c:comp name="VEVENT"/></c:supported-calendar-component-set><d:current-user-privilege-set><d:privilege><d:read/></d:privilege>${writePrivileges}</d:current-user-privilege-set></d:prop><d:status>HTTP/1.1 200 OK</d:status></d:propstat></d:response></d:multistatus>`,
             );
             return;
         }
-        if (reqMethod === "HEAD") {
-            res.writeHead(200, headers);
-            res.end();
+        if (requestMethod === "HEAD") {
+            response.writeHead(200, headers);
+            response.end();
             return;
         }
-        res.writeHead(200, headers);
-        res.end(payload);
+        response.writeHead(200, headers);
+        response.end(payload);
     };
 
-    return async (req, res, url): Promise<boolean> => {
+    return async (request, response, url): Promise<boolean> => {
         const exportMatch = url.pathname.match(
             /^\/api\/v1\/calendar\/caldav\/calendars\/([^/]+)\/export$/,
         );
-        if (exportMatch && req.method === "GET") {
-            const claims = routeContext.requireAuth(req, res, "user");
+        if (exportMatch && request.method === "GET") {
+            const claims = routeContext.requireAuth(request, response, "user");
             if (!claims) return true;
             const calendarId = decodeURIComponent(exportMatch[1]);
             const calendar = ctx.gateway.getOwnedCalendar(
@@ -168,8 +168,8 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 calendarId,
             );
             if (!calendar) {
-                res.writeHead(404, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(404, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -180,8 +180,8 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 return true;
             }
             if (calendar.visibility === "public") {
-                res.writeHead(200, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(200, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         data: {
                             access: "public",
@@ -195,8 +195,8 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 ownerAccountId: claims.sub,
                 calendarId: calendar.id,
             });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     data: {
                         access: "private",
@@ -213,7 +213,7 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
         );
         if (
             publicMatch &&
-            (req.method === "GET" || isMetadataProbeMethod(req.method))
+            (request.method === "GET" || isMetadataProbeMethod(request.method))
         ) {
             const encodedName = decodeURIComponent(publicMatch[1]);
             const calendarIdFromQuery = String(
@@ -224,8 +224,8 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
                     ? ctx.gateway.getCalendar(calendarIdFromQuery)
                     : null) ?? ctx.gateway.getCalendar(encodedName);
             if (!calendar || calendar.visibility !== "public") {
-                res.writeHead(404, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(404, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -237,8 +237,8 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
             }
             const ics = ctx.gateway.exportCalendarAsIcs(calendar.id, "read");
             respondCalendarPayload(
-                req.method,
-                res,
+                request.method,
+                response,
                 ics,
                 calendar.name,
                 calendar.id,
@@ -252,25 +252,25 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
         );
         if (
             shareMatch &&
-            (req.method === "GET" ||
-                isMutationMethod(req.method) ||
-                isMetadataProbeMethod(req.method))
+            (request.method === "GET" ||
+                isMutationMethod(request.method) ||
+                isMetadataProbeMethod(request.method))
         ) {
             const token = decodeURIComponent(shareMatch[1]);
             const collectionPathName = encodeURIComponent(
                 decodeURIComponent(shareMatch[2]),
             );
-            const receivedPassphrase = readSharePassphrase(req, url);
+            const receivedPassphrase = readSharePassphrase(request, url);
             const shareLink = await resolveGatewayCalendarShare(
                 ctx.capabilities,
                 token,
                 receivedPassphrase,
                 resolveCalendarLink,
-                routeContext.getAuthClaims(req)?.sub,
+                routeContext.getAuthClaims(request)?.sub,
             );
             if (!shareLink?.calendarId) {
                 const unauthorized = shareLink?.unauthorized === true;
-                res.writeHead(unauthorized ? 401 : 404, {
+                response.writeHead(unauthorized ? 401 : 404, {
                     "content-type": "application/json",
                     ...(unauthorized
                         ? {
@@ -279,7 +279,7 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
                           }
                         : {}),
                 });
-                res.end(
+                response.end(
                     JSON.stringify({
                         error: {
                             code: unauthorized ? "unauthorized" : "not_found",
@@ -293,8 +293,8 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
             }
             const calendar = ctx.gateway.getCalendar(shareLink.calendarId);
             if (!calendar) {
-                res.writeHead(404, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(404, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -304,28 +304,28 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 );
                 return true;
             }
-            if (isMutationMethod(req.method)) {
+            if (isMutationMethod(request.method)) {
                 if (!shareLink.writable) {
-                    res.writeHead(403, {
+                    response.writeHead(403, {
                         "content-type": "application/xml; charset=utf-8",
                         allow: "GET,HEAD,OPTIONS,PROPFIND,REPORT",
                     });
-                    res.end(
+                    response.end(
                         `<?xml version="1.0" encoding="utf-8"?><d:error xmlns:d="DAV:"><d:need-privileges><d:resource><d:href>${escapeXml(`${url.pathname}${url.search}`)}</d:href><d:privilege><d:write/></d:privilege></d:resource></d:need-privileges></d:error>`,
                     );
                     return true;
                 }
-                if (req.method !== "PUT" && req.method !== "DELETE") {
-                    res.writeHead(405, {
+                if (request.method !== "PUT" && request.method !== "DELETE") {
+                    response.writeHead(405, {
                         allow: "GET,HEAD,OPTIONS,PROPFIND,REPORT,PUT,DELETE",
                     });
-                    res.end();
+                    response.end();
                     return true;
                 }
                 const pathEventId = decodeURIComponent(
                     shareMatch[3] ?? "",
                 ).replace(/\.ics$/i, "");
-                if (req.method === "DELETE") {
+                if (request.method === "DELETE") {
                     ctx.gateway.deleteSharedEvent({
                         calendarId: calendar.id,
                         eventId: pathEventId,
@@ -337,16 +337,18 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
                         calendarId: calendar.id,
                         eventId: pathEventId,
                     });
-                    res.writeHead(204);
-                    res.end();
+                    response.writeHead(204);
+                    response.end();
                     return true;
                 }
                 const eventPayload = parseEventPayload(
-                    await readRequestText(req),
+                    await readRequestText(request),
                 );
                 if (!eventPayload) {
-                    res.writeHead(400, { "content-type": "application/json" });
-                    res.end(
+                    response.writeHead(400, {
+                        "content-type": "application/json",
+                    });
+                    response.end(
                         JSON.stringify({
                             error: {
                                 code: "invalid_ics",
@@ -392,10 +394,10 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
                     calendarId: calendar.id,
                     eventId: savedEvent.id,
                 });
-                res.writeHead(existingEvent ? 204 : 201, {
+                response.writeHead(existingEvent ? 204 : 201, {
                     location: `/api/v1/calendar/caldav/share/${encodeURIComponent(token)}/${collectionPathName ? `${collectionPathName}/` : ""}${encodeURIComponent(savedEvent.id)}.ics`,
                 });
-                res.end();
+                response.end();
                 return true;
             }
             const ics = ctx.gateway.exportCalendarAsIcs(
@@ -403,8 +405,8 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 shareLink.writable ? "write" : "read",
             );
             respondCalendarPayload(
-                req.method,
-                res,
+                request.method,
+                response,
                 ics,
                 calendar.name,
                 calendar.id,
@@ -419,15 +421,15 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
         );
         if (
             privateMatch &&
-            (req.method === "GET" || isMetadataProbeMethod(req.method))
+            (request.method === "GET" || isMetadataProbeMethod(request.method))
         ) {
-            const claims = routeContext.requireAuth(req, res, "user");
+            const claims = routeContext.requireAuth(request, response, "user");
             if (!claims) return true;
             const token = decodeURIComponent(privateMatch[1]);
             const tokenRecord = ctx.gateway.resolvePrivateExportToken(token);
             if (!tokenRecord) {
-                res.writeHead(404, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(404, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -439,8 +441,8 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
             }
             const calendar = ctx.gateway.getCalendar(tokenRecord.calendarId);
             if (!calendar) {
-                res.writeHead(404, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(404, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -452,8 +454,8 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
             }
             const ics = ctx.gateway.exportCalendarAsIcs(tokenRecord.calendarId);
             respondCalendarPayload(
-                req.method,
-                res,
+                request.method,
+                response,
                 ics,
                 calendar.name,
                 calendar.id,

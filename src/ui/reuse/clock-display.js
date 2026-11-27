@@ -90,11 +90,11 @@ export function buildAnalogueClockMarkup(now, timezone) {
     const centerY = 54;
     const faceRadius = 48;
 
-    function handCoords(angleDeg, len) {
-        const rad = ((angleDeg - 90) * Math.PI) / 180;
+    function handCoords(angleDegrees, length) {
+        const radians = ((angleDegrees - 90) * Math.PI) / 180;
         return {
-            x: centerX + len * Math.cos(rad),
-            y: centerY + len * Math.sin(rad),
+            x: centerX + length * Math.cos(radians),
+            y: centerY + length * Math.sin(radians),
         };
     }
 
@@ -139,11 +139,11 @@ export function buildAnalogueClockMarkup(now, timezone) {
  */
 export function buildDigitalClockMarkup(now, timezone) {
     const nowIso = now.toISOString();
-    const timeStr = formatTime(nowIso, "", {
+    const timeString = formatTime(nowIso, "", {
         includeSeconds: true,
         timeZone: timezone,
     });
-    const dateStr = now.toLocaleDateString(undefined, {
+    const dateString = now.toLocaleDateString(undefined, {
         weekday: "long",
         year: "numeric",
         month: "long",
@@ -153,8 +153,8 @@ export function buildDigitalClockMarkup(now, timezone) {
 
     return `
       <div class="clock-digital-stack">
-        <span class="clock-digital-time">${timeStr}</span>
-        <span class="clock-digital-date">${dateStr}</span>
+        <span class="clock-digital-time">${timeString}</span>
+        <span class="clock-digital-date">${dateString}</span>
       </div>
     `;
 }
@@ -163,16 +163,18 @@ export function buildDigitalClockMarkup(now, timezone) {
  * @param {{ displayId: string, tzId?: string, renderClock: (now: Date, timezone: string) => string }} options
  * @returns {void}
  */
-export function mountLiveClock({ displayId, tzId, renderClock }) {
-    const displayEl = document.querySelector(`#${displayId}`);
-    const tzEl = tzId ? document.querySelector(`#${tzId}`) : null;
-    if (!displayEl) return;
+export function mountLiveClock({ displayId, tzId: timezoneId, renderClock }) {
+    const displayElement = document.querySelector(`#${displayId}`);
+    const timezoneElement = timezoneId
+        ? document.querySelector(`#${timezoneId}`)
+        : null;
+    if (!displayElement) return;
 
     function tick() {
         const timezone = getEffectiveTimezone();
         const now = new Date();
-        if (tzEl) tzEl.textContent = timezone;
-        displayEl.innerHTML = renderClock(now, timezone);
+        if (timezoneElement) timezoneElement.textContent = timezone;
+        displayElement.innerHTML = renderClock(now, timezone);
     }
 
     tick();

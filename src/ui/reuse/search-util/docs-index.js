@@ -1,9 +1,9 @@
 import { bindCapability } from "../capabilities.js";
 
 import {
-    loadDocsIndex,
-    loadDocsBundleMarkdown,
-    readDocsLanguages,
+    loadDocsIndex as loadDocumentsIndex,
+    loadDocsBundleMarkdown as loadDocumentsBundleMarkdown,
+    readDocsLanguages as readDocumentsLanguages,
 } from "../docs-client.js";
 import { createI18n } from "../i18n.js";
 
@@ -28,12 +28,9 @@ function textFromHtml(html) {
 }
 
 /** Returns partial groups promptly and uses four cancellable workers for content. */
-export async function collectGlobalDocsSearchGroups({
-    signal,
-    onResults,
-} = {}) {
+async function collectGlobalDocumentsSearchGroups({ signal, onResults } = {}) {
     const token = localStorage.getItem("cognis_access_token");
-    const languages = readDocsLanguages();
+    const languages = readDocumentsLanguages();
     const i18n = await createI18n({
         preferredLanguages: languages,
         persistLocale: false,
@@ -53,12 +50,12 @@ export async function collectGlobalDocsSearchGroups({
         signal,
         headers: token ? { authorization: `Bearer ${token}` } : {},
     };
-    const docs = await loadDocsIndex({
+    const documents = await loadDocumentsIndex({
         fetchDocs: (path) => fetch(path, request),
         languages,
         signal,
     });
-    const entries = docs
+    const entries = documents
         .filter((item) => String(item?.slug ?? "").trim())
         .map((item) => {
             const slug = String(item.slug).trim();
@@ -117,7 +114,7 @@ export async function collectGlobalDocsSearchGroups({
             const entry = entries[next++];
             if (cachedContent.has(entry.key)) continue;
             try {
-                const markdown = await loadDocsBundleMarkdown(entry, {
+                const markdown = await loadDocumentsBundleMarkdown(entry, {
                     fetchDocs: (path) => fetch(path, request),
                     signal,
                     languages,
@@ -144,3 +141,4 @@ export async function collectGlobalDocsSearchGroups({
     );
     return groups();
 }
+export { collectGlobalDocumentsSearchGroups as collectGlobalDocsSearchGroups };

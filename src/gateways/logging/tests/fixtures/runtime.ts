@@ -6,7 +6,7 @@ import { UIRegistry } from "../../../../api/reuse/ui-registry.js";
 import type { DbExecutor } from "../../../db/reuse/db-executor.js";
 import type { StructuredDbCommand } from "../../../db/reuse/db-command.js";
 
-export class PreferenceDb implements DbExecutor {
+class PreferenceDatabase implements DbExecutor {
     readonly preferences = new Map<string, string>();
 
     async ensureTable() {}
@@ -40,6 +40,7 @@ export class PreferenceDb implements DbExecutor {
         return callback(this);
     }
 }
+export { PreferenceDatabase as PreferenceDb };
 
 export class ResponseRecorder extends EventEmitter {
     statusCode = 0;
@@ -83,9 +84,11 @@ export class RequestRecorder extends EventEmitter {
     }
 }
 
-export async function makeContext(dbExecutor: DbExecutor = new PreferenceDb()) {
+export async function makeContext(
+    databaseExecutor: DbExecutor = new PreferenceDatabase(),
+) {
     const capabilities = new CapabilityStore();
-    capabilities.contribute("db:executor", dbExecutor);
+    capabilities.contribute("db:executor", databaseExecutor);
     capabilities.contribute("file:append", async () => undefined);
     return {
         gatewayRegistry: new GatewayRegistry(),

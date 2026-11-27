@@ -60,17 +60,17 @@ export function createUserRoutes(
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
-        req: IncomingMessage,
-        res: ServerResponse,
+        request: IncomingMessage,
+        response: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        const logMeta = {
+        const logMetadata = {
             component: "api-users",
-            method: req.method ?? "GET",
+            method: request.method ?? "GET",
             path: url.pathname,
         };
-        if (url.pathname === "/api/v1/users" && req.method === "GET") {
-            const claims = ctx.requireAuth(req, res, "admin");
+        if (url.pathname === "/api/v1/users" && request.method === "GET") {
+            const claims = ctx.requireAuth(request, response, "admin");
             if (!claims) return true;
             const isSecondFactorEnabled = ctx.getCapability<
                 (accountId: string) => Promise<boolean>
@@ -103,23 +103,23 @@ export function createUserRoutes(
                 })),
             );
             log?.("debug", "Listed users.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
                 count: users.length,
             });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: users }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: users }));
             return true;
         }
 
         const infoMatch = url.pathname.match(
             /^\/api\/v1\/users\/([^/]+)\/info$/,
         );
-        if (infoMatch && req.method === "GET") {
-            const claims = ctx.getAuthClaims(req);
+        if (infoMatch && request.method === "GET") {
+            const claims = ctx.getAuthClaims(request);
             if (!claims) {
-                res.writeHead(401, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(401, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "unauthorized",
@@ -132,12 +132,12 @@ export function createUserRoutes(
             const target = decodeURIComponent(infoMatch[1]);
             if (!ctx.canAccessUserData(claims, target)) {
                 log?.("warn", "Blocked unauthorized user info lookup.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: claims.sub,
                     targetAccountId: target,
                 });
-                res.writeHead(403, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(403, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: { code: "forbidden", message: "Access denied" },
                     }),
@@ -150,13 +150,13 @@ export function createUserRoutes(
                     "warn",
                     "User info lookup failed because user was not found.",
                     {
-                        ...logMeta,
+                        ...logMetadata,
                         accountId: claims.sub,
                         targetAccountId: target,
                     },
                 );
-                res.writeHead(404, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(404, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: { code: "not_found", message: "User not found" },
                     }),
@@ -164,7 +164,7 @@ export function createUserRoutes(
                 return true;
             }
             log?.("debug", "Read user info.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
                 targetAccountId: target,
             });
@@ -172,8 +172,8 @@ export function createUserRoutes(
                 ...info,
                 role: resolveEffectiveRole(info.role, Boolean(info.isFounder)),
             };
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: normalizedInfo }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: normalizedInfo }));
             return true;
         }
 
@@ -181,12 +181,12 @@ export function createUserRoutes(
             /^\/api\/v1\/users\/([^/]+)(?:\/(role|password|enable|disable|dearchive|isfounder|preferences\/clear))?$/,
         );
         if (!match) return false;
-        const adminClaims = ctx.requireAuth(req, res, "admin");
+        const adminClaims = ctx.requireAuth(request, response, "admin");
         if (!adminClaims) return true;
 
         const username = decodeURIComponent(match[1]);
         const action = match[2];
-        const callerClaims = ctx.getAuthClaims(req);
+        const callerClaims = ctx.getAuthClaims(request);
         const callerIsOwner = callerClaims?.role === "owner";
         const callerIsAdmin = callerClaims?.role === "admin";
         let targetInfoCache:
@@ -208,10 +208,10 @@ export function createUserRoutes(
             "preferences/clear",
         ]);
         const isProtectedManagementAction =
-            (req.method === "POST" &&
+            (request.method === "POST" &&
                 action !== undefined &&
                 ADMIN_PROTECTED_ACTIONS.has(action)) ||
-            (req.method === "DELETE" && !action);
+            (request.method === "DELETE" && !action);
 
         if (isProtectedManagementAction && callerClaims) {
             const targetInfo = await getTargetInfo();
@@ -221,16 +221,16 @@ export function createUserRoutes(
             );
             if (callerClaims.sub === username) {
                 log?.("warn", "Blocked self-management attempt.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: callerClaims.sub,
                     targetAccountId: username,
                     action,
                     targetRole,
                 });
-                res.writeHead(403, {
+                response.writeHead(403, {
                     "content-type": "application/json",
                 });
-                res.end(
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "protected_self_account",
@@ -248,17 +248,17 @@ export function createUserRoutes(
                     "warn",
                     "Blocked admin attempt to modify privileged account.",
                     {
-                        ...logMeta,
+                        ...logMetadata,
                         accountId: callerClaims.sub,
                         targetAccountId: username,
                         action,
                         targetRole,
                     },
                 );
-                res.writeHead(403, {
+                response.writeHead(403, {
                     "content-type": "application/json",
                 });
-                res.end(
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "protected_admin_account",
@@ -279,10 +279,10 @@ export function createUserRoutes(
             "isfounder",
         ]);
         const isFounderProtectedRequest =
-            (req.method === "POST" &&
+            (request.method === "POST" &&
                 action !== undefined &&
                 FOUNDER_PROTECTED_ACTIONS.has(action)) ||
-            (req.method === "DELETE" && !action);
+            (request.method === "DELETE" && !action);
         if (isFounderProtectedRequest) {
             if (
                 callerClaims &&
@@ -299,16 +299,16 @@ export function createUserRoutes(
                         "warn",
                         "Blocked modification of protected founder account.",
                         {
-                            ...logMeta,
+                            ...logMetadata,
                             accountId: callerClaims.sub,
                             targetAccountId: username,
                             action,
                         },
                     );
-                    res.writeHead(403, {
+                    response.writeHead(403, {
                         "content-type": "application/json",
                     });
-                    res.end(
+                    response.end(
                         JSON.stringify({
                             error: {
                                 code: "protected_account",
@@ -322,18 +322,18 @@ export function createUserRoutes(
             }
         }
 
-        if (req.method === "POST" && !action) {
-            const body = await readJson(req);
+        if (request.method === "POST" && !action) {
+            const body = await readJson(request);
             const role = String(body.role ?? "user");
             if (!VALID_ROLES.has(role)) {
                 log?.("warn", "Rejected user creation with invalid role.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: adminClaims.sub,
                     targetAccountId: username,
                     role,
                 });
-                res.writeHead(400, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(400, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "bad_request",
@@ -344,8 +344,8 @@ export function createUserRoutes(
                 return true;
             }
             if (!ctx.flow.exists("provision-user")) {
-                res.writeHead(503, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(503, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "flow_unavailable",
@@ -372,10 +372,10 @@ export function createUserRoutes(
                   }
                 | undefined;
             if (!persistResult?.persisted) {
-                res.writeHead(500, {
+                response.writeHead(500, {
                     "content-type": "application/json",
                 });
-                res.end(
+                response.end(
                     JSON.stringify({
                         error: {
                             code: persistResult?.reason ?? "create_failed",
@@ -386,23 +386,23 @@ export function createUserRoutes(
                 return true;
             }
             log?.("info", "Created user account.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: adminClaims.sub,
                 targetAccountId:
                     emitResult?.accountId ?? persistResult.created?.username,
                 role,
             });
-            res.writeHead(201, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: persistResult.created }));
+            response.writeHead(201, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: persistResult.created }));
             return true;
         }
 
-        if (req.method === "POST" && action === "role") {
-            const body = await readJson(req);
+        if (request.method === "POST" && action === "role") {
+            const body = await readJson(request);
             const role = String(body.role ?? "user");
             if (role === "owner") {
-                res.writeHead(403, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(403, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "forbidden",
@@ -414,13 +414,13 @@ export function createUserRoutes(
             }
             if (!VALID_ROLES.has(role)) {
                 log?.("warn", "Rejected role change with invalid role.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: adminClaims.sub,
                     targetAccountId: username,
                     role,
                 });
-                res.writeHead(400, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(400, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "bad_request",
@@ -436,29 +436,29 @@ export function createUserRoutes(
             if (role === "teacher" || role === "admin" || role === "owner") {
                 await setProfileVisibility?.(username, "friends");
                 log?.("warn", "Updated privileged role visibility default.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: adminClaims.sub,
                     targetAccountId: username,
                     visibility: "friends",
                 });
             }
             log?.("warn", "Updated user role.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: adminClaims.sub,
                 targetAccountId: username,
                 role,
                 revokedTokenCount: revokedCount,
             });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { updated: true } }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: { updated: true } }));
             return true;
         }
 
-        if (req.method === "POST" && action === "password") {
+        if (request.method === "POST" && action === "password") {
             const targetInfo = await getTargetInfo();
             if (targetInfo?.provider && targetInfo.provider !== "local") {
-                res.writeHead(403, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(403, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "external_password_managed",
@@ -469,41 +469,41 @@ export function createUserRoutes(
                 );
                 return true;
             }
-            const body = await readJson(req);
+            const body = await readJson(request);
             await accountStore.setPassword(
                 username,
                 String(body.password ?? "changeme"),
             );
             log?.("warn", "Updated user password.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: adminClaims.sub,
                 targetAccountId: username,
             });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { updated: true } }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: { updated: true } }));
             return true;
         }
 
-        if (req.method === "POST" && action === "enable") {
+        if (request.method === "POST" && action === "enable") {
             await accountStore.setEnabled(username, true);
             log?.("warn", "Enabled user account.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: adminClaims.sub,
                 targetAccountId: username,
             });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { updated: true } }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: { updated: true } }));
             return true;
         }
 
-        if (req.method === "POST" && action === "disable") {
+        if (request.method === "POST" && action === "disable") {
             if (callerClaims?.sub === username) {
                 log?.("warn", "Blocked self-disable attempt.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: callerClaims.sub,
                 });
-                res.writeHead(409, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(409, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "cannot_disable_self",
@@ -514,8 +514,8 @@ export function createUserRoutes(
                 return true;
             }
             if (!setProfileLifecycleState) {
-                res.writeHead(503, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(503, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "profile_lifecycle_unavailable",
@@ -526,8 +526,8 @@ export function createUserRoutes(
                 return true;
             }
             if (!ctx.flow.exists("deprovision-user")) {
-                res.writeHead(503, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(503, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "flow_unavailable",
@@ -554,8 +554,8 @@ export function createUserRoutes(
             ] ?? [])[0] as
                 { authorized?: boolean; reason?: string } | undefined;
             if (authorizeResult?.authorized === false) {
-                res.writeHead(403, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(403, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: authorizeResult.reason ?? "forbidden",
@@ -570,20 +570,20 @@ export function createUserRoutes(
                 "cleanup-dependencies"
             ] ?? [])[0] as { revokedTokenCount?: number } | undefined;
             log?.("warn", "Archived user account from admin disable control.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: adminClaims.sub,
                 targetAccountId: username,
                 revokedTokenCount: cleanupResult?.revokedTokenCount ?? 0,
             });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { updated: true } }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: { updated: true } }));
             return true;
         }
 
-        if (req.method === "POST" && action === "dearchive") {
+        if (request.method === "POST" && action === "dearchive") {
             if (!setProfileLifecycleState) {
-                res.writeHead(503, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(503, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "profile_lifecycle_unavailable",
@@ -595,26 +595,26 @@ export function createUserRoutes(
             }
             await setProfileLifecycleState(username, "active");
             log?.("warn", "De-archived user profile.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: adminClaims.sub,
                 targetAccountId: username,
             });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { updated: true } }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: { updated: true } }));
             return true;
         }
 
-        if (req.method === "POST" && action === "isfounder") {
-            const body = await readJson(req);
+        if (request.method === "POST" && action === "isfounder") {
+            const body = await readJson(request);
             await accountStore.setFounder(username, Boolean(body.isFounder));
             log?.("warn", "Updated founder status.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: adminClaims.sub,
                 targetAccountId: username,
                 isFounder: Boolean(body.isFounder),
             });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     data: { updated: true, isFounder: Boolean(body.isFounder) },
                 }),
@@ -622,24 +622,24 @@ export function createUserRoutes(
             return true;
         }
 
-        if (req.method === "POST" && action === "preferences/clear") {
+        if (request.method === "POST" && action === "preferences/clear") {
             if (preferenceStore) {
                 await preferenceStore.clearUser(username);
             }
             log?.("warn", "Cleared user preferences.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: adminClaims.sub,
                 targetAccountId: username,
             });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { cleared: true } }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: { cleared: true } }));
             return true;
         }
 
-        if (req.method === "DELETE" && !action) {
+        if (request.method === "DELETE" && !action) {
             if (!ctx.flow.exists("deprovision-user")) {
-                res.writeHead(503, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(503, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "flow_unavailable",
@@ -666,8 +666,8 @@ export function createUserRoutes(
             ] ?? [])[0] as
                 { authorized?: boolean; reason?: string } | undefined;
             if (authorizeDeleteResult?.authorized === false) {
-                res.writeHead(403, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(403, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: authorizeDeleteResult.reason ?? "forbidden",
@@ -681,13 +681,13 @@ export function createUserRoutes(
                 "cleanup-dependencies"
             ] ?? [])[0] as { revokedTokenCount?: number } | undefined;
             log?.("warn", "Deleted user account.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: adminClaims.sub,
                 targetAccountId: username,
                 revokedTokenCount: deleteCleanupResult?.revokedTokenCount ?? 0,
             });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { deleted: true } }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: { deleted: true } }));
             return true;
         }
 

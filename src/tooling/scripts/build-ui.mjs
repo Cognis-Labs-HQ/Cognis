@@ -153,10 +153,17 @@ const result = await build({
         {
             name: "cognis-static-assets",
             setup(buildContext) {
-                buildContext.onResolve({ filter: /^\/static\// }, (args) => {
-                    const resolvedPath = logicalSourcePaths.get(args.path);
-                    return resolvedPath ? { path: resolvedPath } : undefined;
-                });
+                buildContext.onResolve(
+                    { filter: /^\/static\// },
+                    (argumentsList) => {
+                        const resolvedPath = logicalSourcePaths.get(
+                            argumentsList.path,
+                        );
+                        return resolvedPath
+                            ? { path: resolvedPath }
+                            : undefined;
+                    },
+                );
             },
         },
     ],

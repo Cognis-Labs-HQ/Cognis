@@ -84,17 +84,19 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
             process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
             path.resolve(process.cwd(), "external-modules");
 
-        async function scanManifestDir(dir: string): Promise<void> {
-            let dirEntries: Awaited<ReturnType<typeof readdir>>;
+        async function scanManifestDirectory(directory: string): Promise<void> {
+            let directoryEntries: Awaited<ReturnType<typeof readdir>>;
             try {
-                dirEntries = await readdir(dir, { withFileTypes: true });
+                directoryEntries = await readdir(directory, {
+                    withFileTypes: true,
+                });
             } catch (error) {
                 writeConsoleLog(
                     "error",
                     "Failed to scan modules directory during bootstrap.",
                     {
                         component: "api-bootstrap",
-                        dir,
+                        dir: directory,
                         error:
                             error instanceof Error
                                 ? error.message
@@ -103,12 +105,12 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
                 );
                 return;
             }
-            for (const dirEntry of dirEntries.filter((directoryEntry) =>
-                directoryEntry.isDirectory(),
+            for (const directoryEntry of directoryEntries.filter(
+                (directoryEntry) => directoryEntry.isDirectory(),
             )) {
                 const manifestPath = path.join(
-                    dir,
-                    dirEntry.name,
+                    directory,
+                    directoryEntry.name,
                     "manifest.json",
                 );
                 try {
@@ -138,7 +140,7 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
                         "Failed to load module manifest during bootstrap.",
                         {
                             component: "api-bootstrap",
-                            moduleId: dirEntry.name,
+                            moduleId: directoryEntry.name,
                             manifestPath,
                             error:
                                 error instanceof Error
@@ -150,7 +152,7 @@ class InMemoryModuleRuntimeGateway implements ModuleRuntimeGateway {
             }
         }
 
-        await scanManifestDir(externalModulesRoot);
+        await scanManifestDirectory(externalModulesRoot);
 
         return new InMemoryModuleRuntimeGateway(manifests);
     }
@@ -469,11 +471,11 @@ await log("info", "Gateway bootstrap complete.", {
 
 try {
     gatewayService.assertRequiredInitialized(requiredGatewayIds);
-} catch (err) {
+} catch (error) {
     await log(
         "error",
         "A required gateway failed to initialize. Refusing to start.",
-        { error: err instanceof Error ? err.message : String(err) },
+        { error: error instanceof Error ? error.message : String(error) },
     );
     process.exit(1);
 }
@@ -484,19 +486,19 @@ if (flowCtx.flow.exists("bootstrap-platform")) {
     await log("info", "bootstrap-platform flow complete.");
 }
 
-const dbExecutor = capabilities.get<DbExecutor>("db:executor")!;
+const databaseExecutor = capabilities.get<DbExecutor>("db:executor")!;
 const documentVersionStore = createDocumentVersionStoreCapability();
 capabilities.contribute("docs:versionStore", documentVersionStore);
 systemCtx.contributeCapability("docs:versionStore", documentVersionStore);
-const dbDialect = capabilities.get<DbDialectHelper>("db:dialect")!;
-await dbExecutor.ensureTable({
+const databaseDialect = capabilities.get<DbDialectHelper>("db:dialect")!;
+await databaseExecutor.ensureTable({
     name: "gateways",
     columns: [
         { name: "gateway_id", type: "text", primaryKey: true },
         { name: "enabled", type: "boolean", notNull: true, default: "true" },
     ],
 });
-const adminStateResult = await dbDialect.executeCommand({
+const adminStateResult = await databaseDialect.executeCommand({
     option: "SELECT",
     table: "bootstrap_state",
     columns: ["state_value"],
@@ -514,7 +516,7 @@ if (!adminInitialized && createLocalAdmin) {
     const { randomBytes } = await import("node:crypto");
     const adminPassword = randomBytes(12).toString("base64url");
     await createLocalAdmin("admin", adminPassword);
-    await dbDialect.upsert(
+    await databaseDialect.upsert(
         "bootstrap_state",
         "state_key",
         "default_admin_initialized",
@@ -594,7 +596,7 @@ const moduleMarketplaceService = new ModuleMarketplaceService(
         path.resolve(process.cwd(), "config", "module-sources.json"),
     process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
         path.resolve(process.cwd(), "external-modules"),
-    (level, message, meta) => log(level, message, meta),
+    (level, message, metadata) => log(level, message, metadata),
     systemCtx,
 );
 void discoverModuleSourcesOnStartup(moduleMarketplaceService, log);
@@ -657,7 +659,7 @@ const server = buildServer({
     >("modules:onStateChanged"),
     routeContext,
     loadModuleStates: async () => {
-        const result = await dbExecutor.executeCommand({
+        const result = await databaseExecutor.executeCommand({
             option: "SELECT",
             table: "modules",
             columns: ["module_id", "enabled"],
@@ -668,10 +670,12 @@ const server = buildServer({
         }));
     },
     persistModuleState: async (moduleId, enabled) => {
-        await dbDialect.upsert("modules", "module_id", moduleId, { enabled });
+        await databaseDialect.upsert("modules", "module_id", moduleId, {
+            enabled,
+        });
     },
     loadGatewayStates: async () => {
-        const result = await dbExecutor.executeCommand({
+        const result = await databaseExecutor.executeCommand({
             option: "SELECT",
             table: "gateways",
             columns: ["gateway_id", "enabled"],
@@ -682,7 +686,7 @@ const server = buildServer({
         }));
     },
     persistGatewayState: async (gatewayId, enabled) => {
-        await dbDialect.upsert("gateways", "gateway_id", gatewayId, {
+        await databaseDialect.upsert("gateways", "gateway_id", gatewayId, {
             enabled,
         });
     },

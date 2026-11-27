@@ -98,13 +98,13 @@ export class CoreShareGateway {
         for (const entry of entries.sort()) {
             try {
                 const packageRoot = path.join(adaptersRoot, entry);
-                const pkg = JSON.parse(
+                const packageManifest = JSON.parse(
                     await readFile(
                         path.join(packageRoot, "package.json"),
                         "utf8",
                     ),
                 ) as { main?: string; version?: string };
-                if (!pkg.main) continue;
+                if (!packageManifest.main) continue;
                 const manifest = JSON.parse(
                     await readFile(
                         path.join(packageRoot, "manifest.json"),
@@ -112,7 +112,7 @@ export class CoreShareGateway {
                     ),
                 ) as { locked?: boolean; publisher?: string };
                 const module = await import(
-                    path.resolve(packageRoot, pkg.main)
+                    path.resolve(packageRoot, packageManifest.main)
                 );
                 if (typeof module.createShareAdapter !== "function") continue;
                 const adapterContext = { ...context, adapterRoot: packageRoot };
@@ -123,7 +123,7 @@ export class CoreShareGateway {
                         throw new Error("invalid_share_adapter");
                     this.adapters.set(adapter.id, {
                         ...adapter,
-                        version: pkg.version,
+                        version: packageManifest.version,
                         publisher: manifest.publisher,
                         locked: manifest.locked === true,
                     });

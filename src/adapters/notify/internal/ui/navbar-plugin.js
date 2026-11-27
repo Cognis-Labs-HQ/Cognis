@@ -30,11 +30,11 @@ import { sanitizeNotificationActionIcon } from "./action-icon.js";
 
 const log = bindCapability("ui:log");
 
-const POLL_INTERVAL_VISIBLE_MS = 10_000;
-const POLL_INTERVAL_HIDDEN_MS = 30_000;
+const POLL_INTERVAL_VISIBLE_MILLISECONDS = 10_000;
+const POLL_INTERVAL_HIDDEN_MILLISECONDS = 30_000;
 const TOAST_BODY_PREVIEW_LENGTH = 90;
-const TOAST_AUTO_DISMISS_MS = 6_000;
-const RELATIVE_TIME_TICK_MS = 1000;
+const TOAST_AUTO_DISMISS_MILLISECONDS = 6_000;
+const RELATIVE_TIME_TICK_MILLISECONDS = 1000;
 const CSS_HREF = "/static/gateways/notify-internal/notifications.css";
 const notificationTextDecoder = new TextDecoder();
 
@@ -68,7 +68,7 @@ function loadNotificationStyles() {
     return stylesReady;
 }
 
-function navigateNotif(actionUrl) {
+function navigateNotification(actionUrl) {
     try {
         const url = new URL(actionUrl, window.location.origin);
         const actionEvent = new CustomEvent("cognis:notification-action", {
@@ -193,9 +193,9 @@ async function decryptRoomMessage(roomId) {
 
 async function fetchNotifications() {
     try {
-        const res = await apiFetch("/api/v1/notify/inbox");
-        if (!res.ok) return [];
-        const payload = await res.json();
+        const response = await apiFetch("/api/v1/notify/inbox");
+        if (!response.ok) return [];
+        const payload = await response.json();
         return (payload.data ?? []).map(localizeNotification);
     } catch {
         return [];
@@ -265,11 +265,11 @@ async function resolveCorrelatedNotifications(correlationId) {
 }
 
 async function deleteAllNotifications() {
-    const res = await apiFetch("/api/v1/notify/inbox", {
+    const response = await apiFetch("/api/v1/notify/inbox", {
         method: "DELETE",
     });
-    if (!res.ok) {
-        throw new Error(`clear-all failed: ${res.status}`);
+    if (!response.ok) {
+        throw new Error(`clear-all failed: ${response.status}`);
     }
 }
 
@@ -277,13 +277,13 @@ let panelVisible = false;
 let panelController;
 let pollTimer = null;
 let relativeTimeTimer = null;
-let badgeEl = null;
-let panelEl = null;
-let listEl = null;
-let emptyEl = null;
-let markAllBtn = null;
-let clearAllBtn = null;
-let mobileBackdropEl = null;
+let badgeElement = null;
+let panelElement = null;
+let listElement = null;
+let emptyElement = null;
+let markAllButton = null;
+let clearAllButton = null;
+let mobileBackdropElement = null;
 let currentNotifications = [];
 let seenIds = null;
 let relativeTimeNodes = [];
@@ -324,11 +324,14 @@ function tickRelativeTimes() {
 }
 
 function startRelativeTimeTicker() {
-    if (relativeTimeTimer !== null || !listEl) return;
+    if (relativeTimeTimer !== null || !listElement) return;
     relativeTimeNodes = Array.from(
-        listEl.querySelectorAll("[data-relative-time]"),
+        listElement.querySelectorAll("[data-relative-time]"),
     );
-    relativeTimeTimer = setInterval(tickRelativeTimes, RELATIVE_TIME_TICK_MS);
+    relativeTimeTimer = setInterval(
+        tickRelativeTimes,
+        RELATIVE_TIME_TICK_MILLISECONDS,
+    );
 }
 
 function stopRelativeTimeTicker() {
@@ -339,18 +342,18 @@ function stopRelativeTimeTicker() {
 }
 
 function updateBadge(count) {
-    if (!badgeEl) return;
-    badgeEl.textContent = String(count > 99 ? "99+" : count);
-    badgeEl.hidden = count === 0;
+    if (!badgeElement) return;
+    badgeElement.textContent = String(count > 99 ? "99+" : count);
+    badgeElement.hidden = count === 0;
 }
 
 function updateClearAllButton() {
-    if (!clearAllBtn) return;
-    clearAllBtn.disabled = currentNotifications.length === 0;
+    if (!clearAllButton) return;
+    clearAllButton.disabled = currentNotifications.length === 0;
 }
 
-function renderNotificationItem(notif, i18n) {
-    return renderItem(notif, i18n, {
+function renderNotificationItem(notification, i18n) {
+    return renderItem(notification, i18n, {
         renderActions: renderNotificationActions,
         dispatchAction: dispatchNotificationAction,
         markRead: markOneRead,
@@ -358,7 +361,7 @@ function renderNotificationItem(notif, i18n) {
         dismiss: deleteNotification,
         navigate: (url) => {
             closePanel();
-            navigateNotif(url);
+            navigateNotification(url);
         },
         reportError: (key) => showToast(i18n.t(key), { variant: "error" }),
         afterDismiss: async (id) => {
@@ -366,8 +369,8 @@ function renderNotificationItem(notif, i18n) {
                 (notification) => notification.id !== id,
             );
             await refreshCount();
-            if (currentNotifications.length === 0 && emptyEl)
-                emptyEl.hidden = false;
+            if (currentNotifications.length === 0 && emptyElement)
+                emptyElement.hidden = false;
             updateClearAllButton();
         },
     });
@@ -383,22 +386,26 @@ async function refreshCount() {
 }
 
 async function openPanel(i18n) {
-    if (!panelEl || !listEl) return;
+    if (!panelElement || !listElement) return;
     closeProfileMenu();
     panelController?.abort();
     panelController = new AbortController();
-    transientSurfaces.register(panelEl, closePanel, panelController.signal);
-    panelEl.hidden = false;
-    if (mobileBackdropEl) mobileBackdropEl.hidden = false;
+    transientSurfaces.register(
+        panelElement,
+        closePanel,
+        panelController.signal,
+    );
+    panelElement.hidden = false;
+    if (mobileBackdropElement) mobileBackdropElement.hidden = false;
     panelVisible = true;
     currentNotifications = await fetchNotifications();
     renderPanelContents(i18n);
 }
 
 function renderPanelContents(i18n) {
-    if (!listEl) return;
-    listEl.innerHTML = "";
-    if (emptyEl) emptyEl.hidden = true;
+    if (!listElement) return;
+    listElement.innerHTML = "";
+    if (emptyElement) emptyElement.hidden = true;
 
     currentNotifications.forEach((notification) =>
         seenIds?.add(notification.id),
@@ -414,13 +421,13 @@ function renderPanelContents(i18n) {
     updateClearAllButton();
 
     if (panelNotifications.length === 0) {
-        if (emptyEl) emptyEl.hidden = false;
+        if (emptyElement) emptyElement.hidden = false;
         stopRelativeTimeTicker();
         return;
     }
 
-    for (const notif of panelNotifications) {
-        listEl.appendChild(renderNotificationItem(notif, i18n));
+    for (const notification of panelNotifications) {
+        listElement.appendChild(renderNotificationItem(notification, i18n));
     }
 
     stopRelativeTimeTicker();
@@ -429,31 +436,33 @@ function renderPanelContents(i18n) {
 
 async function refreshOpenPanel(i18n) {
     if (!panelVisible) return;
-    const notifs = await fetchNotifications();
+    const notifications = await fetchNotifications();
     const knownIds = new Set(
         currentNotifications.map((notification) => notification.id),
     );
-    const arrivals = notifs.filter(
+    const arrivals = notifications.filter(
         (notification) => !knownIds.has(notification.id),
     );
 
     if (
         arrivals.length === 0 &&
-        notifs.length === currentNotifications.length
+        notifications.length === currentNotifications.length
     ) {
-        updateBadge(notifs.filter((notification) => !notification.read).length);
+        updateBadge(
+            notifications.filter((notification) => !notification.read).length,
+        );
         return;
     }
 
-    currentNotifications = notifs;
+    currentNotifications = notifications;
     renderPanelContents(i18n);
 }
 
 function closePanel() {
     panelController?.abort();
-    if (!panelEl) return;
-    panelEl.hidden = true;
-    if (mobileBackdropEl) mobileBackdropEl.hidden = true;
+    if (!panelElement) return;
+    panelElement.hidden = true;
+    if (mobileBackdropElement) mobileBackdropElement.hidden = true;
     panelVisible = false;
     stopRelativeTimeTicker();
 }
@@ -480,21 +489,21 @@ function watchProfileMenu() {
 }
 
 function buildButton(i18n) {
-    const wrap = document.createElement("div");
-    wrap.className = "notification-panel-wrap";
+    const wrapperElement = document.createElement("div");
+    wrapperElement.className = "notification-panel-wrap";
 
-    const btn = document.createElement("button");
-    btn.id = "notification-toggle";
-    btn.className = "notification-button";
-    btn.setAttribute("aria-label", i18n.t("ui.reuse.notifications"));
-    btn.setAttribute("type", "button");
-    btn.innerHTML =
+    const button = document.createElement("button");
+    button.id = "notification-toggle";
+    button.className = "notification-button";
+    button.setAttribute("aria-label", i18n.t("ui.reuse.notifications"));
+    button.setAttribute("type", "button");
+    button.innerHTML =
         '<span class="notification-badge-wrap">' +
         '<span class="notification-icon" aria-hidden="true"><img src="/static/gateways/notify-internal/assets/bell.svg" alt="" class="notification-icon-img" /></span>' +
         '<span id="notification-count" class="notification-count" hidden>0</span>' +
         "</span>";
 
-    badgeEl = btn.querySelector("#notification-count");
+    badgeElement = button.querySelector("#notification-count");
 
     const panel = document.createElement("div");
     panel.className = "notification-panel";
@@ -510,15 +519,15 @@ function buildButton(i18n) {
     title.textContent = i18n.t("ui.reuse.notifications");
     header.appendChild(title);
 
-    markAllBtn = document.createElement("button");
-    markAllBtn.className = "notification-mark-all-read";
-    markAllBtn.type = "button";
-    markAllBtn.textContent = i18n.t("adapter.notify.internal.mark_all_read");
-    markAllBtn.addEventListener("click", async () => {
+    markAllButton = document.createElement("button");
+    markAllButton.className = "notification-mark-all-read";
+    markAllButton.type = "button";
+    markAllButton.textContent = i18n.t("adapter.notify.internal.mark_all_read");
+    markAllButton.addEventListener("click", async () => {
         try {
             await markAllRead();
-            if (listEl) {
-                listEl
+            if (listElement) {
+                listElement
                     .querySelectorAll(".notification-item")
                     .forEach((element) => {
                         element.classList.remove("notification-item--unread");
@@ -535,19 +544,19 @@ function buildButton(i18n) {
             });
         }
     });
-    header.appendChild(markAllBtn);
+    header.appendChild(markAllButton);
 
-    clearAllBtn = document.createElement("button");
-    clearAllBtn.className = "notification-clear-all";
-    clearAllBtn.type = "button";
-    clearAllBtn.setAttribute(
+    clearAllButton = document.createElement("button");
+    clearAllButton.className = "notification-clear-all";
+    clearAllButton.type = "button";
+    clearAllButton.setAttribute(
         "aria-label",
         i18n.t("adapter.notify.internal.clear_all"),
     );
-    clearAllBtn.title = i18n.t("adapter.notify.internal.clear_all");
-    clearAllBtn.disabled = true;
-    clearAllBtn.innerHTML = "&#x1F5D1;";
-    clearAllBtn.addEventListener("click", async () => {
+    clearAllButton.title = i18n.t("adapter.notify.internal.clear_all");
+    clearAllButton.disabled = true;
+    clearAllButton.innerHTML = "&#x1F5D1;";
+    clearAllButton.addEventListener("click", async () => {
         if (currentNotifications.length === 0) return;
 
         const result = await openPopup({
@@ -582,7 +591,7 @@ function buildButton(i18n) {
             });
         }
     });
-    header.appendChild(clearAllBtn);
+    header.appendChild(clearAllButton);
 
     panel.appendChild(header);
 
@@ -590,18 +599,18 @@ function buildButton(i18n) {
     list.className = "notification-list";
     list.setAttribute("aria-live", "polite");
     panel.appendChild(list);
-    listEl = list;
+    listElement = list;
 
     const empty = document.createElement("p");
     empty.className = "notification-empty";
     empty.textContent = i18n.t("adapter.notify.internal.empty");
     empty.hidden = true;
     panel.appendChild(empty);
-    emptyEl = empty;
+    emptyElement = empty;
 
-    panelEl = panel;
-    wrap.appendChild(btn);
-    wrap.appendChild(panel);
+    panelElement = panel;
+    wrapperElement.appendChild(button);
+    wrapperElement.appendChild(panel);
 
     const mobileBackdrop = document.createElement("div");
     mobileBackdrop.className = "notification-mobile-backdrop";
@@ -616,10 +625,10 @@ function buildButton(i18n) {
             closePanel();
         }
     });
-    mobileBackdropEl = mobileBackdrop;
-    wrap.appendChild(mobileBackdrop);
+    mobileBackdropElement = mobileBackdrop;
+    wrapperElement.appendChild(mobileBackdrop);
 
-    btn.addEventListener("click", (event) => {
+    button.addEventListener("click", (event) => {
         event.stopPropagation();
         if (panelVisible) {
             closePanel();
@@ -629,7 +638,7 @@ function buildButton(i18n) {
     });
 
     document.addEventListener("click", (event) => {
-        if (panelVisible && !wrap.contains(event.target)) {
+        if (panelVisible && !wrapperElement.contains(event.target)) {
             closePanel();
         }
     });
@@ -638,17 +647,17 @@ function buildButton(i18n) {
         if (event.key === "Escape" && panelVisible) closePanel();
     });
 
-    return wrap;
+    return wrapperElement;
 }
 
-function insertButton(wrap) {
+function insertButton(wrapperElement) {
     const accountCluster = document.querySelector(".account-cluster");
     if (!accountCluster) return;
     const profileMenu = accountCluster.querySelector(".profile-menu");
     if (profileMenu) {
-        accountCluster.insertBefore(wrap, profileMenu);
+        accountCluster.insertBefore(wrapperElement, profileMenu);
     } else {
-        accountCluster.appendChild(wrap);
+        accountCluster.appendChild(wrapperElement);
     }
 }
 
@@ -676,8 +685,8 @@ async function startPolling(i18n) {
     function scheduleNext() {
         const delay =
             document.visibilityState === "visible"
-                ? POLL_INTERVAL_VISIBLE_MS
-                : POLL_INTERVAL_HIDDEN_MS;
+                ? POLL_INTERVAL_VISIBLE_MILLISECONDS
+                : POLL_INTERVAL_HIDDEN_MILLISECONDS;
         pollTimer = setTimeout(tick, delay);
     }
 
@@ -694,40 +703,40 @@ async function startPolling(i18n) {
 }
 
 async function checkForNew(i18n) {
-    const notifs = await fetchNotifications();
-    const unread = notifs.filter(
+    const notifications = await fetchNotifications();
+    const unread = notifications.filter(
         (notification) =>
             !notification.read && notification.metadata?.continuous !== true,
     ).length;
     updateBadge(unread);
 
-    const arrivals = notifs.filter(
+    const arrivals = notifications.filter(
         (notification) => !seenIds.has(notification.id),
     );
-    for (const notif of arrivals) {
-        seenIds.add(notif.id);
+    for (const notification of arrivals) {
+        seenIds.add(notification.id);
         window.dispatchEvent(
             new CustomEvent("cognis:notification-arrival", {
-                detail: { notification: notif },
+                detail: { notification: notification },
             }),
         );
         if (
-            !notif.read &&
-            (notif.metadata?.continuous === true ||
-                !isNotificationOwnedByCurrentPage(notif))
+            !notification.read &&
+            (notification.metadata?.continuous === true ||
+                !isNotificationOwnedByCurrentPage(notification))
         ) {
-            void showArrivalToast(notif, i18n);
+            void showArrivalToast(notification, i18n);
         }
     }
 }
 
 let arrivalToastContainer = null;
-let cachedNavBottom = 0;
+let cachedNavigationBottom = 0;
 
-function updateNavBottom() {
-    const navrow = document.querySelector(".global-navrow");
-    if (navrow) {
-        cachedNavBottom = navrow.getBoundingClientRect().bottom;
+function updateNavigationBottom() {
+    const navigationRow = document.querySelector(".global-navrow");
+    if (navigationRow) {
+        cachedNavigationBottom = navigationRow.getBoundingClientRect().bottom;
     }
 }
 
@@ -740,29 +749,31 @@ function getArrivalToastContainer() {
         container.className = "arrival-toast-container";
         document.body.appendChild(container);
         arrivalToastContainer = container;
-        updateNavBottom();
-        window.addEventListener("resize", updateNavBottom, { passive: true });
+        updateNavigationBottom();
+        window.addEventListener("resize", updateNavigationBottom, {
+            passive: true,
+        });
     }
 
-    if (cachedNavBottom > 0) {
-        arrivalToastContainer.style.top = `${Math.round(cachedNavBottom) + 8}px`;
+    if (cachedNavigationBottom > 0) {
+        arrivalToastContainer.style.top = `${Math.round(cachedNavigationBottom) + 8}px`;
     }
 
     return arrivalToastContainer;
 }
 
-async function markArrivalRead(notif) {
-    if (notif.read) return;
+async function markArrivalRead(currentNotification) {
+    if (currentNotification.read) return;
     try {
-        await markOneRead(notif.id);
-        notif.read = true;
+        await markOneRead(currentNotification.id);
+        currentNotification.read = true;
         const cached = currentNotifications.find(
-            (notification) => notification.id === notif.id,
+            (notification) => notification.id === currentNotification.id,
         );
         if (cached) cached.read = true;
-        if (panelVisible && listEl) {
-            const item = listEl.querySelector(
-                `[data-id="${CSS.escape(notif.id)}"]`,
+        if (panelVisible && listElement) {
+            const item = listElement.querySelector(
+                `[data-id="${CSS.escape(currentNotification.id)}"]`,
             );
             if (item) {
                 item.classList.remove("notification-item--unread");
@@ -770,35 +781,35 @@ async function markArrivalRead(notif) {
             }
         }
         await refreshCount();
-    } catch (err) {
+    } catch (error) {
         // Non-fatal: arrival toast was clicked but read-marking failed.
         // The next inbox poll will still reflect server state when the user
         // opens the panel; do not interrupt navigation/openPanel for this.
         void log(
             "warn",
             "[notify-internal] Failed to mark arrival as read:",
-            err,
+            error,
         );
     }
 }
 
-async function showArrivalToast(notif, i18n) {
+async function showArrivalToast(notification, i18n) {
     const container = getArrivalToastContainer();
     const toast = document.createElement("div");
     toast.className = "arrival-toast";
     toast.setAttribute("role", "alert");
-    const correlationId = String(notif.metadata?.correlationId ?? "");
+    const correlationId = String(notification.metadata?.correlationId ?? "");
     if (correlationId) {
         toast.dataset.notificationCorrelation = correlationId;
     }
 
-    let toastSubject = notif.subject;
-    let toastPreview = notif.body;
-    if (notif.category === "messages") {
+    let toastSubject = notification.subject;
+    let toastPreview = notification.body;
+    if (notification.category === "messages") {
         const genericMessage = i18n.t("adapter.notify.internal.new_message");
         toastSubject = genericMessage;
         toastPreview = genericMessage;
-        const roomId = parseRoomId(notif.actionUrl);
+        const roomId = parseRoomId(notification.actionUrl);
         if (roomId) {
             const decryptedPreview = await decryptRoomMessage(roomId);
             if (decryptedPreview) {
@@ -812,9 +823,9 @@ async function showArrivalToast(notif, i18n) {
             ? toastPreview.slice(0, TOAST_BODY_PREVIEW_LENGTH) + "\u2026"
             : toastPreview;
 
-    const sender = notif.senderName ?? i18n.t("ui.reuse.system");
+    const sender = notification.senderName ?? i18n.t("ui.reuse.system");
 
-    const isPersistent = notif.metadata?.continuous === true;
+    const isPersistent = notification.metadata?.continuous === true;
     toast.classList.toggle("arrival-toast--persistent", isPersistent);
     toast.innerHTML =
         '<span class="arrival-toast-icon" aria-hidden="true">\uD83D\uDD14</span>' +
@@ -824,7 +835,7 @@ async function showArrivalToast(notif, i18n) {
         `<span class="arrival-toast-preview">${escapeHtml(preview)}</span>` +
         "</div>" +
         (isPersistent
-            ? renderNotificationActions(notif)
+            ? renderNotificationActions(notification)
             : `<button class="arrival-toast-dismiss" type="button" aria-label="${i18n.t("ui.reuse.dismiss")}">&#215;</button>`);
 
     const dismiss = () => {
@@ -838,9 +849,9 @@ async function showArrivalToast(notif, i18n) {
         const actionButton = event.target.closest("[data-notification-action]");
         if (actionButton instanceof HTMLElement) {
             dismiss();
-            void markArrivalRead(notif);
+            void markArrivalRead(notification);
             dispatchNotificationAction(
-                notif,
+                notification,
                 actionButton.dataset.notificationAction,
             );
             return;
@@ -850,9 +861,9 @@ async function showArrivalToast(notif, i18n) {
             return;
         }
         dismiss();
-        markArrivalRead(notif);
-        if (notif.actionUrl) {
-            navigateNotif(notif.actionUrl);
+        markArrivalRead(notification);
+        if (notification.actionUrl) {
+            navigateNotification(notification.actionUrl);
         } else {
             openPanel(i18n);
         }
@@ -867,7 +878,7 @@ async function showArrivalToast(notif, i18n) {
 
     container.appendChild(toast);
     if (isPersistent) {
-        const metadata = notif.metadata ?? {};
+        const metadata = notification.metadata ?? {};
         const remaining = Number(metadata.expiresAt) - Date.now();
         setTimeout(
             () => {
@@ -876,7 +887,7 @@ async function showArrivalToast(notif, i18n) {
             Math.max(0, Number.isFinite(remaining) ? remaining : 0),
         );
     } else {
-        setTimeout(dismiss, TOAST_AUTO_DISMISS_MS);
+        setTimeout(dismiss, TOAST_AUTO_DISMISS_MILLISECONDS);
     }
 }
 
@@ -886,7 +897,7 @@ window.addEventListener("cognis:notification-resolved", (event) => {
     );
 });
 
-(async function init() {
+(async function initialize() {
     if (!localStorage.getItem("cognis_access_token")) return;
 
     try {
@@ -898,14 +909,18 @@ window.addEventListener("cognis:notification-resolved", (event) => {
             ],
         });
 
-        const wrap = buildButton(i18n);
-        insertButton(wrap);
+        const wrapperElement = buildButton(i18n);
+        insertButton(wrapperElement);
         watchProfileMenu();
 
         await startPolling(i18n);
-    } catch (err) {
+    } catch (error) {
         // Initialization failed — navbar plugin degrades gracefully without the
         // notification bell.
-        void log("error", "[notify-internal] navbar plugin init failed:", err);
+        void log(
+            "error",
+            "[notify-internal] navbar plugin init failed:",
+            error,
+        );
     }
 })();

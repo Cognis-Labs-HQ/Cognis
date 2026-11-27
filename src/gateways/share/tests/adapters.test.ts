@@ -79,10 +79,10 @@ test("share gateway discovers Link and User method adapters", async (testContext
 test("share gateway tolerates an absent adapter directory", async (testContext) => {
     const host = createShareAdapterHost(testContext);
     const gateway = createGateway();
-    const temp = await mkdtemp(
+    const temporary = await mkdtemp(
         path.join(operatingSystem.tmpdir(), "share-adapters-"),
     );
-    await host.discover(gateway, path.join(temp, "missing"));
+    await host.discover(gateway, path.join(temporary, "missing"));
     assert.deepEqual(gateway.listAdapters(), []);
 });
 

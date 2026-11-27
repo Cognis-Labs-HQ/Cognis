@@ -93,23 +93,23 @@ test("discovery loads manifest UUID dependencies and bootstrap runs them before 
             capabilities,
             gatewayRegistry: new GatewayRegistry(),
             flow: systemCtx.flow,
-            registerRoute: (...args) => {
-                registered.push(args);
+            registerRoute: (...argumentsList) => {
+                registered.push(argumentsList);
             },
-            registerStaticDir: (...args) => {
-                registered.push(args);
+            registerStaticDir: (...argumentsList) => {
+                registered.push(argumentsList);
             },
-            registerCapabilityProvider: (...args) => {
-                registered.push(args);
+            registerCapabilityProvider: (...argumentsList) => {
+                registered.push(argumentsList);
             },
-            registerNavbarPlugin: (...args) => {
-                registered.push(args);
+            registerNavbarPlugin: (...argumentsList) => {
+                registered.push(argumentsList);
             },
-            registerPageExtension: (...args) => {
-                registered.push(args);
+            registerPageExtension: (...argumentsList) => {
+                registered.push(argumentsList);
             },
-            log: (...args) => {
-                registered.push(args);
+            log: (...argumentsList) => {
+                registered.push(argumentsList);
             },
         }),
     );

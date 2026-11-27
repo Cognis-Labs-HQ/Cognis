@@ -3,17 +3,17 @@ import assert from "node:assert/strict";
 import { mkdir, mkdtemp, rm as removePath, writeFile } from "node:fs/promises";
 import operatingSystem from "node:os";
 import path from "node:path";
-import { createDbExecutor } from "../executor.js";
+import { createDbExecutor as createDatabaseExecutor } from "../executor.js";
 
 test("createDbExecutor loads the matching adapter factory on the fly", async () => {
-    const tempRoot = await mkdtemp(
+    const temporaryRoot = await mkdtemp(
         path.join(operatingSystem.tmpdir(), "cognis-db-adapter-"),
     );
     try {
-        const adapterDir = path.join(tempRoot, "db", "custom");
-        await mkdir(adapterDir, { recursive: true });
+        const adapterDirectory = path.join(temporaryRoot, "db", "custom");
+        await mkdir(adapterDirectory, { recursive: true });
         await writeFile(
-            path.join(adapterDir, "index.ts"),
+            path.join(adapterDirectory, "index.ts"),
             `export function canHandleDbProvider(providerId) {
                 return providerId === 'custom';
             }
@@ -30,7 +30,11 @@ test("createDbExecutor loads the matching adapter factory on the fly", async () 
         );
 
         process.env.DATABASE_URL = "custom://example";
-        const executor = await createDbExecutor("custom", undefined, tempRoot);
+        const executor = await createDatabaseExecutor(
+            "custom",
+            undefined,
+            temporaryRoot,
+        );
 
         assert.deepEqual(await executor.execute("SELECT 1"), { rowCount: 1 });
         assert.deepEqual(
@@ -41,6 +45,6 @@ test("createDbExecutor loads the matching adapter factory on the fly", async () 
             { rowCount: 2 },
         );
     } finally {
-        await removePath(tempRoot, { recursive: true, force: true });
+        await removePath(temporaryRoot, { recursive: true, force: true });
     }
 });

@@ -1,3 +1,7 @@
+import {
+    hasLanguagePriorityChanged,
+    resolveLanguagePriorityMode,
+} from "./language-priority.js";
 import { bindCapability } from "../../reuse/capabilities.js";
 
 import { guides } from "./guides.js";
@@ -7,8 +11,8 @@ import { uiLanguageMembershipChanged } from "../../reuse/ui-language-state.js";
 import { bindOnlineSettingsControls } from "./online-controls.js";
 import {
     applyUiPreferences,
-    loadUiPreferences as loadPrefs,
-    saveUiPreferences as savePrefs,
+    loadUiPreferences as loadPreferences,
+    saveUiPreferences as savePreferences,
 } from "../../reuse/ui-preferences.js";
 import { isOffline } from "../../reuse/offline-state.js";
 import { apiFetch } from "../../reuse/api-client.js";
@@ -27,15 +31,15 @@ import {
 } from "../../reuse/theme-toggle.js";
 import {
     toFontFamilyValue,
-    initFontPrefs,
+    initFontPrefs as initFontPreferences,
     DEFAULT_FONT_SIZE,
 } from "../../reuse/font-prefs.js";
-import { initLanguagePrefs } from "./language-prefs.js";
-import { initCheckboxPrefs } from "./checkbox-prefs.js";
-import { initGeneralPrefs } from "./general-prefs.js";
-import { initDateTimePrefs } from "./datetime-prefs.js";
+import { initLanguagePrefs as initLanguagePreferences } from "./language-prefs.js";
+import { initCheckboxPrefs as initCheckboxPreferences } from "./checkbox-prefs.js";
+import { initGeneralPrefs as initGeneralPreferences } from "./general-prefs.js";
+import { initDateTimePrefs as initDateTimePreferences } from "./datetime-prefs.js";
 import {
-    initReleaseChangelogPrefs,
+    initReleaseChangelogPrefs as initReleaseChangelogPreferences,
     shouldShowReleaseChangelog,
 } from "./release-changelog-prefs.js";
 import {
@@ -43,7 +47,7 @@ import {
     applyTimezoneToLocalStorage,
 } from "../../reuse/timestamp.js";
 import { createUnsavedChangesBar } from "../../reuse/unsaved-changes.js";
-import { initAdvancedPrefs } from "./advanced-prefs.js";
+import { initAdvancedPrefs as initAdvancedPreferences } from "./advanced-prefs.js";
 import {
     loadEditorAcknowledgement,
     saveEditorAcknowledgement,
@@ -74,9 +78,9 @@ const log = bindCapability("ui:log");
 async function loadSettingsSections() {
     if (isOffline()) return [];
     try {
-        const res = await apiFetch("/api/v1/ui/settings-sections");
-        if (!res.ok) return [];
-        const payload = await res.json();
+        const response = await apiFetch("/api/v1/ui/settings-sections");
+        if (!response.ok) return [];
+        const payload = await response.json();
         return payload.data ?? [];
     } catch {
         return [];
@@ -97,67 +101,31 @@ async function loadAuthSetupRequirement() {
     }
 }
 
-/**
- * Returns true when the language priority order has changed between
- * two saves, indicating a page reload is required to apply new strings.
- *
- * @param {string[]} prev - Previously committed language priority list.
- * @param {string[]} next - Newly saved language priority list.
- * @returns {boolean}
- */
-function hasLanguagePriorityChanged(prev, next) {
-    if (prev.length !== next.length) return true;
-    return next.some((lang, index) => lang !== prev[index]);
-}
-
-/**
- * Resolves the language priority mode to persist when the user saves settings.
- * If the language prefs have pending unsaved changes, the pending mode is used
- * (so "sync from browser" correctly resets to "auto"). Otherwise the previously
- * stored/loaded mode is preserved.
- *
- * @param {ReturnType<import('./language-prefs.js').initLanguagePrefs> | undefined} languagePrefsController
- * @param {{ languagePriorityMode?: string } | null} existingPrefs
- * @param {string} storedMode
- * @returns {string}
- */
-function resolveLanguagePriorityMode(
-    languagePrefsController,
-    existingPrefs,
-    storedMode,
-) {
-    if (languagePrefsController?.isDirty()) {
-        return languagePrefsController.getPendingMode() ?? "manual";
-    }
-    if (existingPrefs?.languagePriorityMode === "manual") return "manual";
-    return storedMode;
-}
-
 const DIRTY_KEY_MESSAGE_STYLE = "message-style";
 
 export async function mount(root, { signal } = {}) {
-    let [loadedPrefs, editorAcknowledgementAccepted, authSetupRequired] =
+    let [loadedPreferences, editorAcknowledgementAccepted, authSetupRequired] =
         await Promise.all([
-            loadPrefs().catch(() => null),
+            loadPreferences().catch(() => null),
             loadEditorAcknowledgement().catch(() => false),
             loadAuthSetupRequirement(),
         ]);
     if (signal?.aborted) return;
     const storedLanguagePriorityMode = readLanguagePriorityMode();
     const initialLanguagePriorityMode =
-        loadedPrefs?.languagePriorityMode === "manual"
+        loadedPreferences?.languagePriorityMode === "manual"
             ? "manual"
             : storedLanguagePriorityMode;
     if (
         initialLanguagePriorityMode === "manual" &&
-        Array.isArray(loadedPrefs?.languagePriority)
+        Array.isArray(loadedPreferences?.languagePriority)
     ) {
-        setPreferredLanguages(loadedPrefs.languagePriority, {
+        setPreferredLanguages(loadedPreferences.languagePriority, {
             mode: initialLanguagePriorityMode,
         });
     }
-    let languagePriority = Array.isArray(loadedPrefs?.languagePriority)
-        ? loadedPrefs.languagePriority
+    let languagePriority = Array.isArray(loadedPreferences?.languagePriority)
+        ? loadedPreferences.languagePriority
         : readPreferredLanguages();
     const setupRedirect = resolveSettingsSetupRedirect(
         window.location.pathname,
@@ -188,25 +156,25 @@ export async function mount(root, { signal } = {}) {
     };
 
     applyTimezoneToLocalStorage(
-        loadedPrefs?.timezone ?? null,
-        loadedPrefs?.detectedTimezone ?? null,
+        loadedPreferences?.timezone ?? null,
+        loadedPreferences?.detectedTimezone ?? null,
     );
-    applyTimeFormatToLocalStorage(loadedPrefs?.timeFormat ?? "auto");
+    applyTimeFormatToLocalStorage(loadedPreferences?.timeFormat ?? "auto");
     let settingsSearchSections = [];
 
     let savedMode = getStoredTheme();
 
-    let fontPrefs;
-    let languagePrefs;
-    let languageSwitcherPrefs;
-    let themePrefs;
-    let messageStylePrefs;
-    let releaseNotesPrefs;
-    let offlinePrefs;
+    let fontPreferences;
+    let languagePreferences;
+    let languageSwitcherPreferences;
+    let themePreferences;
+    let messageStylePreferences;
+    let releaseNotesPreferences;
+    let offlinePreferences;
     let changesBar;
-    let generalPrefs;
-    let datetimePrefs;
-    let advancedPrefs;
+    let generalPreferences;
+    let datetimePreferences;
+    let advancedPreferences;
     const pendingDirtyStates = new Map();
 
     function markDirty(key, dirty) {
@@ -265,27 +233,29 @@ export async function mount(root, { signal } = {}) {
             .join("");
     }
 
-    function initThemePrefs({ onDirtyChange }) {
+    function initThemePreferences({ onDirtyChange }) {
         let currentMode = savedMode;
 
         function updateSelector() {
             root.querySelectorAll(".theme-btn[data-theme-value]").forEach(
-                (btn) => {
-                    btn.classList.toggle(
+                (button) => {
+                    button.classList.toggle(
                         "active",
-                        btn.dataset.themeValue === currentMode,
+                        button.dataset.themeValue === currentMode,
                     );
                 },
             );
         }
 
-        root.querySelectorAll(".theme-btn[data-theme-value]").forEach((btn) => {
-            btn.addEventListener("click", () => {
-                currentMode = btn.dataset.themeValue;
-                updateSelector();
-                onDirtyChange?.(currentMode !== savedMode);
-            });
-        });
+        root.querySelectorAll(".theme-btn[data-theme-value]").forEach(
+            (button) => {
+                button.addEventListener("click", () => {
+                    currentMode = button.dataset.themeValue;
+                    updateSelector();
+                    onDirtyChange?.(currentMode !== savedMode);
+                });
+            },
+        );
 
         updateSelector();
 
@@ -303,9 +273,9 @@ export async function mount(root, { signal } = {}) {
         };
     }
 
-    function initMessageStylePrefs({ onDirtyChange }) {
+    function initMessageStylePreferences({ onDirtyChange }) {
         let savedMessageStyle = normalizeMessageStyle(
-            loadedPrefs?.messageStyle,
+            loadedPreferences?.messageStyle,
         );
         let currentMessageStyle = savedMessageStyle;
 
@@ -413,36 +383,41 @@ export async function mount(root, { signal } = {}) {
                     const account =
                         localStorage.getItem("cognis_account") ?? "";
                     refreshOnlineControls();
-                    if (!generalPrefs) {
-                        generalPrefs = initGeneralPrefs(root, {
+                    if (!generalPreferences) {
+                        generalPreferences = initGeneralPreferences(root, {
                             i18n,
                             username: account,
                             onRender: refreshOnlineControls,
                             signal,
                         });
-                        void generalPrefs.init().catch(reportGeneralFailure);
+                        void generalPreferences
+                            .init()
+                            .catch(reportGeneralFailure);
                     } else {
-                        void generalPrefs.refresh().catch(reportGeneralFailure);
+                        void generalPreferences
+                            .refresh()
+                            .catch(reportGeneralFailure);
                     }
-                    if (!releaseNotesPrefs) {
-                        releaseNotesPrefs = initReleaseChangelogPrefs(root, {
-                            existingPrefs: loadedPrefs,
-                            onDirtyChange: (dirty) =>
-                                markDirty("release-notes", dirty),
-                        });
+                    if (!releaseNotesPreferences) {
+                        releaseNotesPreferences =
+                            initReleaseChangelogPreferences(root, {
+                                existingPrefs: loadedPreferences,
+                                onDirtyChange: (dirty) =>
+                                    markDirty("release-notes", dirty),
+                            });
                     } else {
-                        releaseNotesPrefs.refresh();
+                        releaseNotesPreferences.refresh();
                     }
-                    if (!offlinePrefs) {
-                        offlinePrefs = initCheckboxPrefs(root, {
-                            existingPrefs: loadedPrefs,
+                    if (!offlinePreferences) {
+                        offlinePreferences = initCheckboxPreferences(root, {
+                            existingPrefs: loadedPreferences,
                             preference: "offlineEnabled",
                             selector: "#pref-offline-enabled",
                             onDirtyChange: (dirty) =>
                                 markDirty("offline", dirty),
                         });
                     }
-                    offlinePrefs.bind();
+                    offlinePreferences.bind();
                     for (const section of generalContributions) {
                         section.onRender();
                     }
@@ -503,16 +478,16 @@ export async function mount(root, { signal } = {}) {
                     },
                 ],
                 onRender: () => {
-                    fontPrefs = initFontPrefs(root, {
-                        existingPrefs: loadedPrefs,
+                    fontPreferences = initFontPreferences(root, {
+                        existingPrefs: loadedPreferences,
                         i18n,
                         onDirtyChange: (dirty) => markDirty("font", dirty),
                     });
-                    fontPrefs.init();
-                    themePrefs = initThemePrefs({
+                    fontPreferences.init();
+                    themePreferences = initThemePreferences({
                         onDirtyChange: (dirty) => markDirty("theme", dirty),
                     });
-                    messageStylePrefs = initMessageStylePrefs({
+                    messageStylePreferences = initMessageStylePreferences({
                         onDirtyChange: (dirty) =>
                             markDirty(DIRTY_KEY_MESSAGE_STYLE, dirty),
                     });
@@ -559,24 +534,27 @@ export async function mount(root, { signal } = {}) {
                     },
                 ],
                 onRender: () => {
-                    if (!languageSwitcherPrefs) {
-                        languageSwitcherPrefs = initCheckboxPrefs(root, {
-                            existingPrefs: loadedPrefs,
-                            onDirtyChange: (dirty) =>
-                                markDirty("language-switcher", dirty),
-                            onCommit: (visible) =>
-                                window.dispatchEvent(
-                                    new CustomEvent(
-                                        "cognis:language-switcher-visibility",
-                                        { detail: { visible } },
+                    if (!languageSwitcherPreferences) {
+                        languageSwitcherPreferences = initCheckboxPreferences(
+                            root,
+                            {
+                                existingPrefs: loadedPreferences,
+                                onDirtyChange: (dirty) =>
+                                    markDirty("language-switcher", dirty),
+                                onCommit: (visible) =>
+                                    window.dispatchEvent(
+                                        new CustomEvent(
+                                            "cognis:language-switcher-visibility",
+                                            { detail: { visible } },
+                                        ),
                                     ),
-                                ),
-                        });
+                            },
+                        );
                     }
-                    languageSwitcherPrefs.bind();
+                    languageSwitcherPreferences.bind();
                     refreshOnlineControls();
-                    if (!languagePrefs) {
-                        languagePrefs = initLanguagePrefs(
+                    if (!languagePreferences) {
+                        languagePreferences = initLanguagePreferences(
                             root,
                             languagePriority,
                             {
@@ -585,16 +563,16 @@ export async function mount(root, { signal } = {}) {
                                     markDirty("language", dirty),
                             },
                         );
-                        languagePrefs.init();
+                        languagePreferences.init();
                     } else {
-                        languagePrefs.renderTables();
+                        languagePreferences.renderTables();
                     }
                     const syncButton = root.querySelector(
                         "#pref-language-sync-from-browser",
                     );
                     if (syncButton) {
                         syncButton.onclick = () =>
-                            languagePrefs?.syncFromBrowser();
+                            languagePreferences?.syncFromBrowser();
                     }
                 },
             },
@@ -650,12 +628,12 @@ export async function mount(root, { signal } = {}) {
                     },
                 ],
                 onRender: () => {
-                    datetimePrefs = initDateTimePrefs(root, {
-                        existingPrefs: loadedPrefs,
+                    datetimePreferences = initDateTimePreferences(root, {
+                        existingPrefs: loadedPreferences,
                         i18n,
                         onDirtyChange: (dirty) => markDirty("datetime", dirty),
                     });
-                    datetimePrefs.init();
+                    datetimePreferences.init();
                 },
             },
         },
@@ -678,15 +656,16 @@ export async function mount(root, { signal } = {}) {
                     },
                 ],
                 onRender: () => {
-                    const prefsDumpEl = root.querySelector("#prefs-dump");
-                    if (prefsDumpEl) {
-                        prefsDumpEl.value = JSON.stringify(
-                            loadedPrefs ?? {},
+                    const preferencesDumpElement =
+                        root.querySelector("#prefs-dump");
+                    if (preferencesDumpElement) {
+                        preferencesDumpElement.value = JSON.stringify(
+                            loadedPreferences ?? {},
                             null,
                             2,
                         );
-                        advancedPrefs = initAdvancedPrefs(root, {
-                            existingPrefs: loadedPrefs ?? {},
+                        advancedPreferences = initAdvancedPreferences(root, {
+                            existingPrefs: loadedPreferences ?? {},
                             acknowledgementAccepted:
                                 editorAcknowledgementAccepted,
                             saveAcknowledgement: saveEditorAcknowledgement,
@@ -705,7 +684,11 @@ export async function mount(root, { signal } = {}) {
     settingsSearchSections = elements;
     registerSearchIndex(
         "settings-index",
-        () => collectSettingsSearchGroups(settingsSearchSections, loadedPrefs),
+        () =>
+            collectSettingsSearchGroups(
+                settingsSearchSections,
+                loadedPreferences,
+            ),
         { stageId: "settings-index" },
     );
 
@@ -765,7 +748,7 @@ export async function mount(root, { signal } = {}) {
     root.querySelector('[data-composer-scroll="advanced"]')?.addEventListener(
         "click",
         () => {
-            setTimeout(() => advancedPrefs?.requestEditingConsent(), 0);
+            setTimeout(() => advancedPreferences?.requestEditingConsent(), 0);
         },
     );
 
@@ -773,98 +756,101 @@ export async function mount(root, { signal } = {}) {
 
     changesBar = createUnsavedChangesBar(floatingSlot, {
         onSave: async () => {
-            const mode = themePrefs?.getMode() ?? savedMode;
+            const mode = themePreferences?.getMode() ?? savedMode;
             for (const section of contributedSections) {
                 if (section.isDirty()) {
                     await section.save();
                 }
             }
-            let prefs;
+            let preferences;
             try {
-                prefs = advancedPrefs?.isDirty()
-                    ? advancedPrefs.getPreferences()
-                    : { ...(loadedPrefs ?? {}) };
+                preferences = advancedPreferences?.isDirty()
+                    ? advancedPreferences.getPreferences()
+                    : { ...(loadedPreferences ?? {}) };
             } catch {
                 showToast(i18n.t("ui.app.settings.preferences_invalid_json"), {
                     variant: "error",
                 });
                 throw new Error("invalid_preferences_json");
             }
-            const selectedPrefs = {
-                appFont: fontPrefs
-                    ? toFontFamilyValue(fontPrefs.getFont())
-                    : loadedPrefs?.appFont,
+            const selectedPreferences = {
+                appFont: fontPreferences
+                    ? toFontFamilyValue(fontPreferences.getFont())
+                    : loadedPreferences?.appFont,
                 appFontSize:
-                    fontPrefs?.getFontSize() ?? loadedPrefs?.appFontSize,
+                    fontPreferences?.getFontSize() ??
+                    loadedPreferences?.appFontSize,
                 languagePriority:
-                    languagePrefs?.getPriority() ?? languagePriority,
+                    languagePreferences?.getPriority() ?? languagePriority,
                 languagePriorityMode: resolveLanguagePriorityMode(
-                    languagePrefs,
-                    loadedPrefs,
+                    languagePreferences,
+                    loadedPreferences,
                     storedLanguagePriorityMode,
                 ),
                 mode,
                 timezone:
-                    datetimePrefs?.getTimezone() ??
-                    loadedPrefs?.timezone ??
+                    datetimePreferences?.getTimezone() ??
+                    loadedPreferences?.timezone ??
                     "auto",
                 timeFormat:
-                    datetimePrefs?.getTimeFormat() ??
-                    loadedPrefs?.timeFormat ??
+                    datetimePreferences?.getTimeFormat() ??
+                    loadedPreferences?.timeFormat ??
                     "auto",
                 messageStyle:
-                    messageStylePrefs?.getMessageStyle() ??
-                    normalizeMessageStyle(loadedPrefs?.messageStyle),
+                    messageStylePreferences?.getMessageStyle() ??
+                    normalizeMessageStyle(loadedPreferences?.messageStyle),
                 offlineEnabled:
-                    offlinePrefs?.getValue() ??
-                    loadedPrefs?.offlineEnabled ??
+                    offlinePreferences?.getValue() ??
+                    loadedPreferences?.offlineEnabled ??
                     true,
                 releaseChangelogShow:
-                    releaseNotesPrefs?.getShowReleaseChangelogs() ??
-                    shouldShowReleaseChangelog(loadedPrefs),
+                    releaseNotesPreferences?.getShowReleaseChangelogs() ??
+                    shouldShowReleaseChangelog(loadedPreferences),
                 alwaysShowLanguageSwitcher:
-                    languageSwitcherPrefs?.getValue() ??
-                    loadedPrefs?.alwaysShowLanguageSwitcher ??
+                    languageSwitcherPreferences?.getValue() ??
+                    loadedPreferences?.alwaysShowLanguageSwitcher ??
                     true,
             };
-            if (!advancedPrefs?.isDirty()) {
-                prefs = { ...prefs, ...selectedPrefs };
+            if (!advancedPreferences?.isDirty()) {
+                preferences = { ...preferences, ...selectedPreferences };
             } else {
-                if (fontPrefs?.isDirty()) {
-                    prefs.appFont = selectedPrefs.appFont;
-                    prefs.appFontSize = selectedPrefs.appFontSize;
+                if (fontPreferences?.isDirty()) {
+                    preferences.appFont = selectedPreferences.appFont;
+                    preferences.appFontSize = selectedPreferences.appFontSize;
                 }
-                if (languagePrefs?.isDirty()) {
-                    prefs.languagePriority = selectedPrefs.languagePriority;
-                    prefs.languagePriorityMode =
-                        selectedPrefs.languagePriorityMode;
+                if (languagePreferences?.isDirty()) {
+                    preferences.languagePriority =
+                        selectedPreferences.languagePriority;
+                    preferences.languagePriorityMode =
+                        selectedPreferences.languagePriorityMode;
                 }
-                if (themePrefs?.isDirty()) {
-                    prefs.mode = selectedPrefs.mode;
+                if (themePreferences?.isDirty()) {
+                    preferences.mode = selectedPreferences.mode;
                 }
-                if (datetimePrefs?.isDirty()) {
-                    prefs.timezone = selectedPrefs.timezone;
-                    prefs.timeFormat = selectedPrefs.timeFormat;
+                if (datetimePreferences?.isDirty()) {
+                    preferences.timezone = selectedPreferences.timezone;
+                    preferences.timeFormat = selectedPreferences.timeFormat;
                 }
-                if (messageStylePrefs?.isDirty()) {
-                    prefs.messageStyle = selectedPrefs.messageStyle;
+                if (messageStylePreferences?.isDirty()) {
+                    preferences.messageStyle = selectedPreferences.messageStyle;
                 }
-                if (offlinePrefs?.isDirty())
-                    prefs.offlineEnabled = selectedPrefs.offlineEnabled;
-                if (releaseNotesPrefs?.isDirty()) {
-                    prefs.releaseChangelogShow =
-                        selectedPrefs.releaseChangelogShow;
+                if (offlinePreferences?.isDirty())
+                    preferences.offlineEnabled =
+                        selectedPreferences.offlineEnabled;
+                if (releaseNotesPreferences?.isDirty()) {
+                    preferences.releaseChangelogShow =
+                        selectedPreferences.releaseChangelogShow;
                 }
-                if (languageSwitcherPrefs?.isDirty()) {
-                    prefs.alwaysShowLanguageSwitcher =
-                        selectedPrefs.alwaysShowLanguageSwitcher;
+                if (languageSwitcherPreferences?.isDirty()) {
+                    preferences.alwaysShowLanguageSwitcher =
+                        selectedPreferences.alwaysShowLanguageSwitcher;
                 }
             }
             if (
                 isOffline() &&
                 uiLanguageMembershipChanged(
-                    { ...loadedPrefs, languagePriority },
-                    prefs,
+                    { ...loadedPreferences, languagePriority },
+                    preferences,
                 )
             ) {
                 showToast(i18n.t("ui.app.settings.language_offline_locked"), {
@@ -872,61 +858,61 @@ export async function mount(root, { signal } = {}) {
                 });
                 throw new Error("offline_language_settings_readonly");
             }
-            await savePrefs(prefs);
-            loadedPrefs = prefs;
-            const appliedMode = prefs.mode ?? mode;
+            await savePreferences(preferences);
+            loadedPreferences = preferences;
+            const appliedMode = preferences.mode ?? mode;
             persistTheme(appliedMode);
             applyTheme(appliedMode);
-            setPreferredLanguages(prefs.languagePriority, {
-                mode: prefs.languagePriorityMode,
+            setPreferredLanguages(preferences.languagePriority, {
+                mode: preferences.languagePriorityMode,
             });
-            applyTimezoneToLocalStorage(prefs.timezone ?? null, null);
-            applyTimeFormatToLocalStorage(prefs.timeFormat ?? "auto");
+            applyTimezoneToLocalStorage(preferences.timezone ?? null, null);
+            applyTimeFormatToLocalStorage(preferences.timeFormat ?? "auto");
             localStorage.setItem(
                 "cognis_ui_preferences",
-                JSON.stringify(prefs),
+                JSON.stringify(preferences),
             );
-            applyUiPreferences(prefs);
+            applyUiPreferences(preferences);
             if (
                 hasLanguagePriorityChanged(
                     languagePriority,
-                    prefs.languagePriority ?? [],
+                    preferences.languagePriority ?? [],
                 )
             )
                 window.dispatchEvent(
                     new CustomEvent("cognis:ui-language-settings-changed"),
                 );
-            fontPrefs?.commit();
-            themePrefs?.commit();
-            messageStylePrefs?.commit();
-            offlinePrefs?.commit();
-            releaseNotesPrefs?.commit();
-            datetimePrefs?.commit();
-            languagePrefs?.commit();
-            languageSwitcherPrefs?.commit();
-            advancedPrefs?.commit(prefs);
+            fontPreferences?.commit();
+            themePreferences?.commit();
+            messageStylePreferences?.commit();
+            offlinePreferences?.commit();
+            releaseNotesPreferences?.commit();
+            datetimePreferences?.commit();
+            languagePreferences?.commit();
+            languageSwitcherPreferences?.commit();
+            advancedPreferences?.commit(preferences);
             for (const section of contributedSections) {
                 section.commit();
             }
             showToast(i18n.t("ui.app.settings.saved_alert"), {
                 variant: "success",
             });
-            const next = prefs.languagePriority ?? [];
-            const prev = languagePriority ?? [];
+            const next = preferences.languagePriority ?? [];
+            const previous = languagePriority ?? [];
             languagePriority = [...next];
-            if (hasLanguagePriorityChanged(prev, next))
+            if (hasLanguagePriorityChanged(previous, next))
                 scheduleLanguageRedraw(next[0]);
         },
         onDiscard: () => {
-            fontPrefs?.discard();
-            languagePrefs?.discard();
-            languageSwitcherPrefs?.discard();
-            themePrefs?.discard();
-            messageStylePrefs?.discard();
-            offlinePrefs?.discard();
-            releaseNotesPrefs?.discard();
-            datetimePrefs?.discard();
-            advancedPrefs?.discard();
+            fontPreferences?.discard();
+            languagePreferences?.discard();
+            languageSwitcherPreferences?.discard();
+            themePreferences?.discard();
+            messageStylePreferences?.discard();
+            offlinePreferences?.discard();
+            releaseNotesPreferences?.discard();
+            datetimePreferences?.discard();
+            advancedPreferences?.discard();
             for (const section of contributedSections) {
                 section.discard();
             }

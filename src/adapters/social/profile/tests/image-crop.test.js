@@ -3,18 +3,18 @@ import assert from "node:assert/strict";
 import {
     clampCropSelection,
     clampCropOffset,
-    composeCropSourceRect,
+    composeCropSourceRect as composeCropSourceRectangle,
     computeContainImageBounds,
-    computeMaxAspectSourceRect,
-    computeCropSourceRectFromSelection,
-    computeCropSourceRect,
+    computeMaxAspectSourceRect as computeMaxAspectSourceRectangle,
+    computeCropSourceRectFromSelection as computeCropSourceRectangleFromSelection,
+    computeCropSourceRect as computeCropSourceRectangle,
     computeCropViewport,
     computeMovedCropSelection,
-    panCropSourceRect,
+    panCropSourceRect as panCropSourceRectangle,
     computeResizedCropSelection,
     createInitialCropSelection,
     getCropOutputDimensions,
-    sourceRectToCoverObjectPositionPercent,
+    sourceRectToCoverObjectPositionPercent as sourceRectangleToCoverObjectPositionPercent,
 } from "../ui/image-crop.js";
 
 test("clampCropOffset limits offsets to range", () => {
@@ -59,8 +59,8 @@ test("computeCropSourceRect moves source window opposite drag direction", () => 
         offsetX: 80,
         offsetY: 30,
     });
-    const centeredSource = computeCropSourceRect(centeredViewport);
-    const movedSource = computeCropSourceRect(movedViewport);
+    const centeredSource = computeCropSourceRectangle(centeredViewport);
+    const movedSource = computeCropSourceRectangle(movedViewport);
 
     assert.ok(movedSource.sourceX < centeredSource.sourceX);
     assert.ok(movedSource.sourceY < centeredSource.sourceY);
@@ -78,7 +78,7 @@ test("computeCropSourceRect stays within image bounds for landscape offsets", ()
         offsetX: -9999,
         offsetY: 9999,
     });
-    const source = computeCropSourceRect(viewport);
+    const source = computeCropSourceRectangle(viewport);
 
     assert.ok(source.sourceX >= 0);
     assert.ok(source.sourceY >= 0);
@@ -108,33 +108,33 @@ test("computeContainImageBounds centers contained image inside frame", () => {
 });
 
 test("computeMaxAspectSourceRect keeps full width for tall source images", () => {
-    const sourceRect = computeMaxAspectSourceRect({
+    const sourceRectangle = computeMaxAspectSourceRectangle({
         imageWidth: 900,
         imageHeight: 1200,
         aspectRatio: 3,
     });
 
-    assert.equal(sourceRect.sourceX, 0);
-    assert.equal(sourceRect.sourceWidth, 900);
-    assert.equal(sourceRect.sourceHeight, 300);
-    assert.equal(sourceRect.sourceY, 450);
+    assert.equal(sourceRectangle.sourceX, 0);
+    assert.equal(sourceRectangle.sourceWidth, 900);
+    assert.equal(sourceRectangle.sourceHeight, 300);
+    assert.equal(sourceRectangle.sourceY, 450);
 });
 
 test("computeMaxAspectSourceRect keeps full height for wide source images", () => {
-    const sourceRect = computeMaxAspectSourceRect({
+    const sourceRectangle = computeMaxAspectSourceRectangle({
         imageWidth: 2400,
         imageHeight: 900,
         aspectRatio: 1,
     });
 
-    assert.equal(sourceRect.sourceY, 0);
-    assert.equal(sourceRect.sourceHeight, 900);
-    assert.equal(sourceRect.sourceWidth, 900);
-    assert.equal(sourceRect.sourceX, 750);
+    assert.equal(sourceRectangle.sourceY, 0);
+    assert.equal(sourceRectangle.sourceHeight, 900);
+    assert.equal(sourceRectangle.sourceWidth, 900);
+    assert.equal(sourceRectangle.sourceX, 750);
 });
 
 test("sourceRectToCoverObjectPositionPercent uses overflow distance for pan", () => {
-    const pan = sourceRectToCoverObjectPositionPercent(
+    const pan = sourceRectangleToCoverObjectPositionPercent(
         {
             sourceX: 0,
             sourceY: 300,
@@ -150,7 +150,7 @@ test("sourceRectToCoverObjectPositionPercent uses overflow distance for pan", ()
 });
 
 test("sourceRectToCoverObjectPositionPercent keeps centered crop at 50/50", () => {
-    const pan = sourceRectToCoverObjectPositionPercent(
+    const pan = sourceRectangleToCoverObjectPositionPercent(
         {
             sourceX: 300,
             sourceY: 300,
@@ -221,37 +221,37 @@ test("computeResizedCropSelection resizes from east edge and preserves ratio", (
 });
 
 test("computeCropSourceRectFromSelection maps selection to source image pixels", () => {
-    const sourceRect = computeCropSourceRectFromSelection({
+    const sourceRectangle = computeCropSourceRectangleFromSelection({
         selection: { left: 100, top: 150, width: 200, height: 100 },
         imageBounds: { left: 50, top: 100, width: 400, height: 200 },
         imageWidth: 1600,
         imageHeight: 800,
     });
 
-    assert.equal(sourceRect.sourceX, 200);
-    assert.equal(sourceRect.sourceY, 200);
-    assert.equal(sourceRect.sourceWidth, 800);
-    assert.equal(sourceRect.sourceHeight, 400);
+    assert.equal(sourceRectangle.sourceX, 200);
+    assert.equal(sourceRectangle.sourceY, 200);
+    assert.equal(sourceRectangle.sourceWidth, 800);
+    assert.equal(sourceRectangle.sourceHeight, 400);
 });
 
 test("computeCropSourceRectFromSelection clamps overextended selection safely", () => {
-    const sourceRect = computeCropSourceRectFromSelection({
+    const sourceRectangle = computeCropSourceRectangleFromSelection({
         selection: { left: -100, top: 50, width: 700, height: 300 },
         imageBounds: { left: 0, top: 0, width: 600, height: 250 },
         imageWidth: 1800,
         imageHeight: 750,
     });
 
-    assert.equal(sourceRect.sourceX, 0);
-    assert.ok(sourceRect.sourceY >= 0);
-    assert.ok(sourceRect.sourceWidth <= 1800);
-    assert.ok(sourceRect.sourceHeight <= 750);
-    assert.ok(sourceRect.sourceX + sourceRect.sourceWidth <= 1800);
-    assert.ok(sourceRect.sourceY + sourceRect.sourceHeight <= 750);
+    assert.equal(sourceRectangle.sourceX, 0);
+    assert.ok(sourceRectangle.sourceY >= 0);
+    assert.ok(sourceRectangle.sourceWidth <= 1800);
+    assert.ok(sourceRectangle.sourceHeight <= 750);
+    assert.ok(sourceRectangle.sourceX + sourceRectangle.sourceWidth <= 1800);
+    assert.ok(sourceRectangle.sourceY + sourceRectangle.sourceHeight <= 750);
 });
 
 test("composeCropSourceRect maps nested crop selection into original image", () => {
-    const sourceRect = composeCropSourceRect({
+    const sourceRectangle = composeCropSourceRectangle({
         baseSourceRect: {
             sourceX: 200,
             sourceY: 100,
@@ -262,14 +262,14 @@ test("composeCropSourceRect maps nested crop selection into original image", () 
         imageBounds: { left: 0, top: 0, width: 400, height: 200 },
     });
 
-    assert.equal(sourceRect.sourceX, 500);
-    assert.equal(sourceRect.sourceY, 250);
-    assert.equal(sourceRect.sourceWidth, 600);
-    assert.equal(sourceRect.sourceHeight, 300);
+    assert.equal(sourceRectangle.sourceX, 500);
+    assert.equal(sourceRectangle.sourceY, 250);
+    assert.equal(sourceRectangle.sourceWidth, 600);
+    assert.equal(sourceRectangle.sourceHeight, 300);
 });
 
 test("panCropSourceRect pans without changing zoom dimensions", () => {
-    const pannedRect = panCropSourceRect({
+    const pannedRectangle = panCropSourceRectangle({
         startSourceRect: {
             sourceX: 100,
             sourceY: 80,
@@ -282,14 +282,14 @@ test("panCropSourceRect pans without changing zoom dimensions", () => {
         imageHeight: 900,
     });
 
-    assert.equal(pannedRect.sourceX, 250);
-    assert.equal(pannedRect.sourceY, 0);
-    assert.equal(pannedRect.sourceWidth, 600);
-    assert.equal(pannedRect.sourceHeight, 300);
+    assert.equal(pannedRectangle.sourceX, 250);
+    assert.equal(pannedRectangle.sourceY, 0);
+    assert.equal(pannedRectangle.sourceWidth, 600);
+    assert.equal(pannedRectangle.sourceHeight, 300);
 });
 
 test("panCropSourceRect clamps pan to image bounds", () => {
-    const pannedRect = panCropSourceRect({
+    const pannedRectangle = panCropSourceRectangle({
         startSourceRect: {
             sourceX: 900,
             sourceY: 500,
@@ -302,8 +302,8 @@ test("panCropSourceRect clamps pan to image bounds", () => {
         imageHeight: 900,
     });
 
-    assert.equal(pannedRect.sourceX, 900);
-    assert.equal(pannedRect.sourceY, 500);
-    assert.equal(pannedRect.sourceWidth, 700);
-    assert.equal(pannedRect.sourceHeight, 400);
+    assert.equal(pannedRectangle.sourceX, 900);
+    assert.equal(pannedRectangle.sourceY, 500);
+    assert.equal(pannedRectangle.sourceWidth, 700);
+    assert.equal(pannedRectangle.sourceHeight, 400);
 });

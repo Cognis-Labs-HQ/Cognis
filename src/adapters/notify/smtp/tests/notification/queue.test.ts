@@ -10,7 +10,7 @@ import {
     SmtpNotificationQueue,
 } from "../../notification-queue.js";
 
-const RATE_LIMIT_DELAY_MS = 250;
+const RATE_LIMIT_DELAY_MILLISECONDS = 250;
 
 function sleepWithoutKeepingProcessAlive(milliseconds: number): Promise<void> {
     return new Promise((resolve) => {
@@ -43,9 +43,9 @@ test("SMTP queue carries test configuration through rate-limited delivery", asyn
 
 async function waitFor(
     predicate: () => boolean,
-    timeoutMs = 2_000,
+    timeoutMilliseconds = 2_000,
 ): Promise<void> {
-    const deadline = Date.now() + timeoutMs;
+    const deadline = Date.now() + timeoutMilliseconds;
     while (Date.now() < deadline) {
         if (predicate()) return;
         await new Promise((resolve) => setTimeout(resolve, 10));
@@ -54,8 +54,8 @@ async function waitFor(
 }
 
 test("SmtpNotificationSender.sendTracked returns IDs and exposes queue status", async () => {
-    const server = await createMockSmtpServer((conn) =>
-        smtpSuccessHandler(conn),
+    const server = await createMockSmtpServer((connection) =>
+        smtpSuccessHandler(connection),
     );
     try {
         const sender = await createTestSender({
@@ -88,8 +88,8 @@ test("SmtpNotificationSender.sendTracked returns IDs and exposes queue status", 
 });
 
 test("SmtpNotificationSender queue applies recipient rate-limit spacing", async () => {
-    const server = await createMockSmtpServer((conn) =>
-        smtpSuccessHandler(conn),
+    const server = await createMockSmtpServer((connection) =>
+        smtpSuccessHandler(connection),
     );
     const limiter = new SmtpRateLimiter(250);
     try {
@@ -131,7 +131,7 @@ test("SmtpNotificationSender queue applies recipient rate-limit spacing", async 
 });
 
 test("SmtpNotificationQueue wakes during rate-limit sleep when a different recipient is ready", async () => {
-    const limiter = new SmtpRateLimiter(RATE_LIMIT_DELAY_MS);
+    const limiter = new SmtpRateLimiter(RATE_LIMIT_DELAY_MILLISECONDS);
     limiter.record("delayed@example.com", Date.now());
     const sentRecipients: string[] = [];
     const queue = new SmtpNotificationQueue(

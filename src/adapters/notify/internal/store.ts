@@ -77,26 +77,28 @@ export class InternalNotificationStore {
     markRead(username: string, id: string): boolean {
         const list = this.notifications.get(username);
         if (!list) return false;
-        const notif = list.find((notification) => notification.id === id);
-        if (!notif) return false;
-        notif.read = true;
+        const notification = list.find(
+            (notification) => notification.id === id,
+        );
+        if (!notification) return false;
+        notification.read = true;
         return true;
     }
 
     markAllRead(username: string): void {
         const list = this.notifications.get(username);
         if (!list) return;
-        for (const notif of list) {
-            notif.read = true;
+        for (const notification of list) {
+            notification.read = true;
         }
     }
 
     delete(username: string, id: string): boolean {
         const list = this.notifications.get(username);
         if (!list) return false;
-        const idx = list.findIndex((notification) => notification.id === id);
-        if (idx === -1) return false;
-        list.splice(idx, 1);
+        const index = list.findIndex((notification) => notification.id === id);
+        if (index === -1) return false;
+        list.splice(index, 1);
         return true;
     }
 

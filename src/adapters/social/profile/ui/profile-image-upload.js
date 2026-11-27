@@ -3,7 +3,7 @@ import { profileFetch as apiFetch } from "./offline-client.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { showToast } from "/static/reuse/toast.js";
 import { openImageCropPopup } from "./crop-popup.js";
-import { sourceRectToCoverObjectPositionPercent } from "./image-crop.js";
+import { sourceRectToCoverObjectPositionPercent as sourceRectangleToCoverObjectPositionPercent } from "./image-crop.js";
 
 const log = bindCapability("ui:log");
 
@@ -11,9 +11,9 @@ function clampBannerPanPercent(value) {
     return Math.min(100, Math.max(0, Number(value) || 0));
 }
 
-function sourceRectToPanPercent(sourceRect, imageWidth, imageHeight) {
-    const panPosition = sourceRectToCoverObjectPositionPercent(
-        sourceRect,
+function sourceRectangleToPanPercent(sourceRectangle, imageWidth, imageHeight) {
+    const panPosition = sourceRectangleToCoverObjectPositionPercent(
+        sourceRectangle,
         imageWidth,
         imageHeight,
     );
@@ -33,20 +33,21 @@ export function shouldPreserveOriginalGif(kind, file) {
     return kind === "banner" && isGifFile(file);
 }
 
-export function isCropResultWithSourceRect(cropResult) {
+function isCropResultWithSourceRectangle(cropResult) {
     if (!cropResult || typeof cropResult !== "object") return false;
     if (!("sourceRect" in cropResult)) return false;
-    const sourceRect = cropResult.sourceRect;
-    if (!sourceRect || typeof sourceRect !== "object") return false;
+    const sourceRectangle = cropResult.sourceRect;
+    if (!sourceRectangle || typeof sourceRectangle !== "object") return false;
     return (
         Number.isFinite(Number(cropResult.imageWidth)) &&
         Number.isFinite(Number(cropResult.imageHeight)) &&
-        Number.isFinite(Number(sourceRect.sourceX)) &&
-        Number.isFinite(Number(sourceRect.sourceY)) &&
-        Number.isFinite(Number(sourceRect.sourceWidth)) &&
-        Number.isFinite(Number(sourceRect.sourceHeight))
+        Number.isFinite(Number(sourceRectangle.sourceX)) &&
+        Number.isFinite(Number(sourceRectangle.sourceY)) &&
+        Number.isFinite(Number(sourceRectangle.sourceWidth)) &&
+        Number.isFinite(Number(sourceRectangle.sourceHeight))
     );
 }
+export { isCropResultWithSourceRectangle as isCropResultWithSourceRect };
 
 export function createProfileImageUploadActions({
     getState,
@@ -166,9 +167,9 @@ export function createProfileImageUploadActions({
                 }
                 if (
                     preserveOriginalGif &&
-                    isCropResultWithSourceRect(cropResult)
+                    isCropResultWithSourceRectangle(cropResult)
                 ) {
-                    const panPosition = sourceRectToPanPercent(
+                    const panPosition = sourceRectangleToPanPercent(
                         cropResult.sourceRect,
                         cropResult.imageWidth,
                         cropResult.imageHeight,

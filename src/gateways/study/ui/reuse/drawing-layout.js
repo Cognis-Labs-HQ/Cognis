@@ -12,7 +12,9 @@ export function compactDrawingPattern(pattern) {
         );
         strokeOffset += length;
         const coordinates = strokes.flatMap(({ points }) =>
-            points.map(({ x }) => x * columns),
+            points.map(
+                ({ x: horizontalCoordinate }) => horizontalCoordinate * columns,
+            ),
         );
         const left = Math.min(...coordinates);
         const right = Math.max(...coordinates);

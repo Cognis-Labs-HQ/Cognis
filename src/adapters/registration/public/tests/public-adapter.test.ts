@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { createAdapter } from "../index.js";
 
 test("public registration persists display name through the account store", async () => {
-    let registerArgs:
+    let registerArgumentsList:
         | {
               username: string;
               password: string;
@@ -11,7 +11,7 @@ test("public registration persists display name through the account store", asyn
               displayName: string | undefined;
           }
         | undefined;
-    let profileArgs:
+    let profileArgumentsList:
         | {
               accountId: string;
               handle: string;
@@ -23,12 +23,17 @@ test("public registration persists display name through the account store", asyn
     const adapter = createAdapter({
         accountStore: {
             async register(username, password, role, displayName) {
-                registerArgs = { username, password, role, displayName };
+                registerArgumentsList = {
+                    username,
+                    password,
+                    role,
+                    displayName,
+                };
                 return { username, role: role ?? "user", enabled: true };
             },
         } as never,
         async createProfile(accountId, handle, role, displayName) {
-            profileArgs = { accountId, handle, role, displayName };
+            profileArgumentsList = { accountId, handle, role, displayName };
         },
     });
 
@@ -43,13 +48,13 @@ test("public registration persists display name through the account store", asyn
         role: "user",
         enabled: true,
     });
-    assert.deepEqual(registerArgs, {
+    assert.deepEqual(registerArgumentsList, {
         username: "alice",
         password: "secret",
         role: "user",
         displayName: "Alice Liddell",
     });
-    assert.deepEqual(profileArgs, {
+    assert.deepEqual(profileArgumentsList, {
         accountId: "alice",
         handle: "alice",
         role: "user",

@@ -10,7 +10,7 @@ import type {
 import type { TfaAdapterBootstrapContext } from "../../../gateways/tfa/gateway.js";
 import type { TfaMethodAdapter } from "../../../gateways/tfa/gateway.js";
 
-const CODE_EXPIRY_MS = 15 * 60 * 1000;
+const CODE_EXPIRY_MILLISECONDS = 15 * 60 * 1000;
 const MAX_CODE_GENERATION_ATTEMPTS = 10;
 
 interface SmtpTfaAdapterContext {
@@ -20,13 +20,13 @@ interface SmtpTfaAdapterContext {
         codeLength: number;
     };
     sendVerificationEmail?: (
-        to: string,
+        recipient: string,
         code: string,
         verifyUrl?: string,
         theme?: string,
     ) => Promise<void>;
     queueVerificationEmail?: (
-        to: string,
+        recipient: string,
         code: string,
         verifyUrl?: string,
         theme?: string,
@@ -75,7 +75,7 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         );
     }
 
-    private get deliveryIntervalMs() {
+    private get deliveryIntervalMilliseconds() {
         return Math.max(
             0,
             this.context.getEmailDeliveryPolicy?.().minimumIntervalMs ?? 0,
@@ -112,8 +112,8 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
                 ctx.capabilities.get<() => boolean>(
                     "notify:emailAvailable",
                 )?.() === true;
-            this.context.sendVerificationEmail = async (...args) => {
-                await send(...args);
+            this.context.sendVerificationEmail = async (...argumentsList) => {
+                await send(...argumentsList);
             };
             this.context.queueVerificationEmail = send;
         }
@@ -176,7 +176,7 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         }
         this.challenges.set(key, {
             code,
-            expiresAt: Date.now() + CODE_EXPIRY_MS,
+            expiresAt: Date.now() + CODE_EXPIRY_MILLISECONDS,
         });
         return code;
     }
@@ -247,14 +247,16 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         };
     }
 
-    private buildCooldownMetadata(sentAtMs = Date.now()): {
+    private buildCooldownMetadata(sentAtMilliseconds = Date.now()): {
         retryAfterSeconds: number;
         resendAvailableAt: string;
     } {
         return {
-            retryAfterSeconds: Math.ceil(this.deliveryIntervalMs / 1000),
+            retryAfterSeconds: Math.ceil(
+                this.deliveryIntervalMilliseconds / 1000,
+            ),
             resendAvailableAt: new Date(
-                sentAtMs + this.deliveryIntervalMs,
+                sentAtMilliseconds + this.deliveryIntervalMilliseconds,
             ).toISOString(),
         };
     }
@@ -444,15 +446,17 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
                 const now = Date.now();
                 const lastSentAt =
                     this.loginChallengeLastSentAt.get(input.accountId) ?? now;
-                const retryMs = Math.max(
-                    this.deliveryIntervalMs - (now - lastSentAt),
+                const retryMilliseconds = Math.max(
+                    this.deliveryIntervalMilliseconds - (now - lastSentAt),
                     0,
                 );
                 return {
                     ready: true,
                     message: "email_rate_limited",
-                    retryAfterSeconds: Math.ceil(retryMs / 1000),
-                    resendAvailableAt: new Date(now + retryMs).toISOString(),
+                    retryAfterSeconds: Math.ceil(retryMilliseconds / 1000),
+                    resendAvailableAt: new Date(
+                        now + retryMilliseconds,
+                    ).toISOString(),
                 };
             }
             this.context.log?.(

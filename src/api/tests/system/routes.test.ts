@@ -423,8 +423,8 @@ test("system security settings log malformed persisted data", async () => {
     const route = createSystemRoutes(
         healthService as any,
         { get: async () => "not-json" } as any,
-        (level, message, meta) => {
-            entries.push({ level, message, meta });
+        (level, message, metadata) => {
+            entries.push({ level, message, meta: metadata });
         },
     );
 
@@ -478,8 +478,8 @@ test("security PUT rejects unavailable validation modes", async () => {
         preferenceStore as any,
         undefined,
         createDefaultRouteContext({
-            getCapability: (cap) =>
-                (cap === "auth:userValidationModes"
+            getCapability: (capability) =>
+                (capability === "auth:userValidationModes"
                     ? {
                           assertSelectable: async () => {
                               throw new Error("user_validation_unavailable");
@@ -534,8 +534,8 @@ test("security PUT accepts a dynamically registered validation mode", async () =
         preferenceStore as any,
         undefined,
         createDefaultRouteContext({
-            getCapability: (cap) =>
-                (cap === "auth:userValidationModes"
+            getCapability: (capability) =>
+                (capability === "auth:userValidationModes"
                     ? {
                           assertSelectable: async (id: string) => {
                               assert.equal(id, "proof:approved");

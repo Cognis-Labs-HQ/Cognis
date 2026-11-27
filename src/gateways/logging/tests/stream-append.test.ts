@@ -13,7 +13,7 @@ import type { Logger } from "../logger.js";
 import type { DbExecutor } from "../../db/reuse/db-executor.js";
 import type { StructuredDbCommand } from "../../db/reuse/db-command.js";
 
-class PreferenceDb implements DbExecutor {
+class PreferenceDatabase implements DbExecutor {
     readonly preferences = new Map<string, string>();
 
     async ensureTable() {}
@@ -90,9 +90,11 @@ class RequestRecorder extends EventEmitter {
     }
 }
 
-async function makeContext(dbExecutor: DbExecutor = new PreferenceDb()) {
+async function makeContext(
+    databaseExecutor: DbExecutor = new PreferenceDatabase(),
+) {
     const capabilities = new CapabilityStore();
-    capabilities.contribute("db:executor", dbExecutor);
+    capabilities.contribute("db:executor", databaseExecutor);
     capabilities.contribute("file:append", async () => undefined);
     return {
         gatewayRegistry: new GatewayRegistry(),
@@ -104,8 +106,10 @@ async function makeContext(dbExecutor: DbExecutor = new PreferenceDb()) {
 }
 
 test("logging stream route emits appended log entries during an open stream", async () => {
-    const tempRoot = await mkdtemp(path.join(tmpdir(), "cognis-logging-test-"));
-    const logPath = path.join(tempRoot, "app.log");
+    const temporaryRoot = await mkdtemp(
+        path.join(tmpdir(), "cognis-logging-test-"),
+    );
+    const logPath = path.join(temporaryRoot, "app.log");
     const previousLogFile = process.env.LOG_FILE;
     process.env.LOG_FILE = logPath;
 
@@ -126,17 +130,17 @@ test("logging stream route emits appended log entries during an open stream", as
         const handlers = ctx.routeRegistry.getHandlers();
         const streamHandler = handlers[0];
         const token = issueAccessToken("admin-test", "admin", 300);
-        const req = new RequestRecorder("GET", token);
-        const res = new ResponseRecorder();
+        const request = new RequestRecorder("GET", token);
+        const response = new ResponseRecorder();
 
         const handled = await streamHandler(
-            req as any,
-            res as any,
+            request as any,
+            response as any,
             new URL("/api/v1/logging/stream", "http://localhost"),
         );
 
         assert.equal(handled, true);
-        assert.match(res.payload, /Initial snapshot entry/);
+        assert.match(response.payload, /Initial snapshot entry/);
 
         await writeFile(
             logPath,
@@ -157,16 +161,16 @@ test("logging stream route emits appended log entries during an open stream", as
 
         await new Promise((resolve) => setTimeout(resolve, 1700));
 
-        assert.match(res.payload, /Polled incremental entry/);
+        assert.match(response.payload, /Polled incremental entry/);
 
-        req.emit("close");
-        res.emit("close");
+        request.emit("close");
+        response.emit("close");
     } finally {
         if (previousLogFile === undefined) {
             delete process.env.LOG_FILE;
         } else {
             process.env.LOG_FILE = previousLogFile;
         }
-        await removePath(tempRoot, { recursive: true, force: true });
+        await removePath(temporaryRoot, { recursive: true, force: true });
     }
 });

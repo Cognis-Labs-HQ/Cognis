@@ -4,7 +4,7 @@ import { createAdapter } from "../index.js";
 
 test("redeemInvite deletes created account when token cannot be marked redeemed", async () => {
     let deletedAccountId = "";
-    const dbExecutor = {
+    const databaseExecutor = {
         async ensureTable() {},
         async executeCommand(command: { option: string; table?: string }) {
             if (
@@ -35,9 +35,9 @@ test("redeemInvite deletes created account when token cannot be marked redeemed"
             return { rows: [], rowCount: 1 };
         },
         async transaction<T>(
-            callback: (executor: typeof dbExecutor) => Promise<T>,
+            callback: (executor: typeof databaseExecutor) => Promise<T>,
         ) {
-            return callback(dbExecutor);
+            return callback(databaseExecutor);
         },
     };
     const accountStore = {
@@ -52,7 +52,7 @@ test("redeemInvite deletes created account when token cannot be marked redeemed"
         },
     };
     const adapter = createAdapter({
-        dbExecutor: dbExecutor as any,
+        dbExecutor: databaseExecutor as any,
         accountStore: accountStore as any,
         canSendInviteEmail: () => true,
         sendInviteEmail: async () => {},
@@ -85,7 +85,7 @@ test("issueInvite revokes prior pending tokens for the same invitee email", asyn
     let insertedTokenCount = 0;
     let sentEmailCount = 0;
 
-    const dbExecutor = {
+    const databaseExecutor = {
         async executeCommand(command: {
             option: string;
             table?: string;
@@ -114,14 +114,14 @@ test("issueInvite revokes prior pending tokens for the same invitee email", asyn
         },
         async ensureTable() {},
         async transaction<T>(
-            callback: (executor: typeof dbExecutor) => Promise<T>,
+            callback: (executor: typeof databaseExecutor) => Promise<T>,
         ) {
-            return callback(dbExecutor);
+            return callback(databaseExecutor);
         },
     };
 
     const adapter = createAdapter({
-        dbExecutor: dbExecutor as any,
+        dbExecutor: databaseExecutor as any,
         accountStore: {} as any,
         canSendInviteEmail: () => true,
         sendInviteEmail: async () => {

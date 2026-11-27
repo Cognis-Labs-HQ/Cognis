@@ -15,12 +15,12 @@ function createProvider(): AuthProviderAdapter {
         configure() {},
         getConfigSchema: () => [],
         registerRoutes(router) {
-            router.get("/callback", (_req, res, url) => {
+            router.get("/callback", (_request, response, url) => {
                 if (url.searchParams.has("fail")) {
                     throw new Error("provider_callback_failed");
                 }
-                res.writeHead(302, { location: "/dashboard" });
-                res.end();
+                response.writeHead(302, { location: "/dashboard" });
+                response.end();
             });
         },
     };

@@ -9,7 +9,7 @@ import {
     resolveRouteContext,
     type RouteContext,
 } from "../../api/reuse/route-context.js";
-import { DbAdapterConfigStore } from "./adapter-config-store.js";
+import { DbAdapterConfigStore as DatabaseAdapterConfigStore } from "./adapter-config-store.js";
 import { CoreSocialGateway } from "./gateway.js";
 import { createGatewayUiRegistryHooks } from "../reuse/ui-registry-hooks.js";
 import {
@@ -41,14 +41,14 @@ function createSocialAdapterRoutes(
     const base = `/api/v1/gateways/${gatewayId}/adapters`;
 
     return async (
-        req: IncomingMessage,
-        res: ServerResponse,
+        request: IncomingMessage,
+        response: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        if (url.pathname === base && req.method === "GET") {
-            if (!ctx.requireAuth(req, res, "admin")) return true;
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(
+        if (url.pathname === base && request.method === "GET") {
+            if (!ctx.requireAuth(request, response, "admin")) return true;
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     data: gateway.listAdapters().map((adapter) => ({
                         ...adapter,
@@ -66,14 +66,16 @@ function createSocialAdapterRoutes(
             new RegExp(`^${base}/([^/]+)/config$`),
         );
         if (configMatch) {
-            if (!ctx.requireAuth(req, res, "admin")) return true;
+            if (!ctx.requireAuth(request, response, "admin")) return true;
             const adapterId = decodeURIComponent(configMatch[1]);
 
-            if (req.method === "GET") {
+            if (request.method === "GET") {
                 const config = gateway.getAdapterConfig(adapterId);
                 if (config === null) {
-                    res.writeHead(404, { "content-type": "application/json" });
-                    res.end(
+                    response.writeHead(404, {
+                        "content-type": "application/json",
+                    });
+                    response.end(
                         JSON.stringify({
                             error: {
                                 code: "not_found",
@@ -83,8 +85,8 @@ function createSocialAdapterRoutes(
                     );
                     return true;
                 }
-                res.writeHead(200, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(200, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         data: config,
                         envValues: {},
@@ -95,10 +97,12 @@ function createSocialAdapterRoutes(
                 return true;
             }
 
-            if (req.method === "PUT") {
+            if (request.method === "PUT") {
                 if (!gateway.getAdapter(adapterId)) {
-                    res.writeHead(404, { "content-type": "application/json" });
-                    res.end(
+                    response.writeHead(404, {
+                        "content-type": "application/json",
+                    });
+                    response.end(
                         JSON.stringify({
                             error: {
                                 code: "not_found",
@@ -108,13 +112,13 @@ function createSocialAdapterRoutes(
                     );
                     return true;
                 }
-                const body = await readJson(req);
+                const body = await readJson(request);
                 await gateway.saveAdapterConfig(
                     adapterId,
                     body as Record<string, unknown>,
                 );
-                res.writeHead(200, { "content-type": "application/json" });
-                res.end(JSON.stringify({ data: { saved: true } }));
+                response.writeHead(200, { "content-type": "application/json" });
+                response.end(JSON.stringify({ data: { saved: true } }));
                 return true;
             }
 
@@ -124,14 +128,14 @@ function createSocialAdapterRoutes(
         const toggleMatch = url.pathname.match(
             new RegExp(`^${base}/([^/]+)/(enable|disable)$`),
         );
-        if (toggleMatch && req.method === "POST") {
-            if (!ctx.requireAuth(req, res, "admin")) return true;
+        if (toggleMatch && request.method === "POST") {
+            if (!ctx.requireAuth(request, response, "admin")) return true;
             const adapterId = decodeURIComponent(toggleMatch[1]);
             const action = toggleMatch[2] as "enable" | "disable";
             const adapter = gateway.getAdapter(adapterId);
             if (!adapter) {
-                res.writeHead(404, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(404, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -142,10 +146,12 @@ function createSocialAdapterRoutes(
                 return true;
             }
             if (action === "enable") {
-                const gwEntry = gatewayRegistry.get(gatewayId);
-                if (gwEntry?.status === "disabled") {
-                    res.writeHead(409, { "content-type": "application/json" });
-                    res.end(
+                const gatewayEntry = gatewayRegistry.get(gatewayId);
+                if (gatewayEntry?.status === "disabled") {
+                    response.writeHead(409, {
+                        "content-type": "application/json",
+                    });
+                    response.end(
                         JSON.stringify({
                             error: {
                                 code: "gateway_disabled",
@@ -162,8 +168,10 @@ function createSocialAdapterRoutes(
             } else {
                 await gateway.disableAdapter(adapterId);
             }
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { enabled: action === "enable" } }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(
+                JSON.stringify({ data: { enabled: action === "enable" } }),
+            );
             return true;
         }
 
@@ -181,8 +189,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     );
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
-    const dbExecutor = ctx.capabilities.require<DbExecutor>("db:executor");
-    const configStore = new DbAdapterConfigStore(dbExecutor);
+    const databaseExecutor =
+        ctx.capabilities.require<DbExecutor>("db:executor");
+    const configStore = new DatabaseAdapterConfigStore(databaseExecutor);
     await configStore.ensureSchema();
 
     const gateway = new CoreSocialGateway(configStore);
@@ -204,11 +213,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         flow: ctx.flow,
         registerRoute: (handler, gatewayId) =>
             ctx.routeRegistry.register(handler, gatewayId ?? "social"),
-        registerAdapterStaticDir: (gatewayId, adapterId, absoluteDir) =>
+        registerAdapterStaticDir: (gatewayId, adapterId, absoluteDirectory) =>
             ctx.uiRegistry?.registerAdapterStaticDir(
                 gatewayId,
                 adapterId,
-                absoluteDir,
+                absoluteDirectory,
             ),
         registerCapabilityProvider: (provider) =>
             ctx.uiRegistry?.registerCapabilityProvider(provider),
@@ -250,14 +259,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         hasAdapters: true,
     });
 
-    const uiDir = path.resolve(
+    const uiDirectory = path.resolve(
         process.cwd(),
         "src",
         "gateways",
         "social",
         "ui",
     );
-    ctx.uiRegistry?.registerStaticDir("social", uiDir);
+    ctx.uiRegistry?.registerStaticDir("social", uiDirectory);
 
     ctx.log?.("info", "Social gateway: initialized.", {
         component: "social-gateway",
@@ -299,11 +308,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "compose-surface",
         { id: "social-gateway:compose-surface" },
         (stageCtx) => {
-            const navResults = (stageCtx.stageResults["resolve-navigation"] ??
-                []) as Array<{ navEntry?: unknown }>;
+            const navigationResults = (stageCtx.stageResults[
+                "resolve-navigation"
+            ] ?? []) as Array<{ navEntry?: unknown }>;
             return {
                 surface: "messages",
-                navEntries: navResults
+                navEntries: navigationResults
                     .map((result) => result.navEntry)
                     .filter(Boolean),
             };

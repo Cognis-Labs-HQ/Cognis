@@ -57,11 +57,11 @@ export async function bootstrapNotifyAdapter(
         stages: ["validate", "deliver"],
     });
     testFlow.extend("validate", { id: "smtp:validateTest" }, ({ input }) => {
-        const { to: recipient2 } = input as { to: string };
+        const { to: emailAddress } = input as { to: string };
         if (
-            typeof recipient2 !== "string" ||
-            !recipient2 ||
-            /[\r\n]/.test(recipient2)
+            typeof emailAddress !== "string" ||
+            !emailAddress ||
+            /[\r\n]/.test(emailAddress)
         )
             throw new Error("smtp_test_email_requires_recipient");
     });
@@ -69,24 +69,24 @@ export async function bootstrapNotifyAdapter(
         "deliver",
         { id: "smtp:deliverTest" },
         async ({ input }) => {
-            const { to: recipient2, config } = input as {
+            const { to: emailAddress, config } = input as {
                 to: string;
                 config?: Record<string, unknown>;
             };
-            await sender.sendTestEmail(purpose, recipient2, config);
+            await sender.sendTestEmail(purpose, emailAddress, config);
         },
     );
-    sender.test = async (recipient2, config) => {
-        await root.flow.run("smtp:testEmail", { to: recipient2, config });
+    sender.test = async (emailAddress, config) => {
+        await root.flow.run("smtp:testEmail", { to: emailAddress, config });
     };
-    ctx.registerRoute(async (req, res, url) => {
+    ctx.registerRoute(async (request, response, url) => {
         if (
             url.pathname !== "/api/v1/gateways/notify/adapters/smtp/test" ||
-            req.method !== "POST"
+            request.method !== "POST"
         )
             return false;
-        if (!ctx.requireAuth(req, res, "admin")) return true;
-        const body = await ctx.readJson(req);
+        if (!ctx.requireAuth(request, response, "admin")) return true;
+        const body = await ctx.readJson(request);
         const config =
             body.config &&
             typeof body.config === "object" &&
@@ -112,8 +112,8 @@ export async function bootstrapNotifyAdapter(
                 errorName: error instanceof Error ? error.name : "UnknownError",
                 ...describeSmtpFailure(error),
             });
-            res.writeHead(400, { "content-type": "application/json" });
-            res.end(
+            response.writeHead(400, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     error: {
                         code: "smtp_test_failed",
@@ -123,8 +123,8 @@ export async function bootstrapNotifyAdapter(
             );
             return true;
         }
-        res.writeHead(200, { "content-type": "application/json" });
-        res.end(JSON.stringify({ data: { sent: true } }));
+        response.writeHead(200, { "content-type": "application/json" });
+        response.end(JSON.stringify({ data: { sent: true } }));
         return true;
     }, "notify");
 }

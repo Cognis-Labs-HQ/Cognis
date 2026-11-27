@@ -41,13 +41,13 @@ export function subscribeDiagnostics(handler: (entry: object) => unknown) {
     const log = (
         level: unknown,
         message: unknown,
-        meta = {},
+        metadata = {},
         ...details: unknown[]
     ) =>
         handler({
             level,
             message,
-            meta,
+            meta: metadata,
             ...(details.length ? { details } : {}),
         });
     if (!uiCapabilities.contribute("ui:log", log))

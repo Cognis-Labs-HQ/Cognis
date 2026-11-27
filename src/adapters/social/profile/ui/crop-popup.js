@@ -1,18 +1,18 @@
 import {
     clampCropSelection,
-    composeCropSourceRect,
+    composeCropSourceRect as composeCropSourceRectangle,
     computeContainImageBounds,
-    computeMaxAspectSourceRect,
+    computeMaxAspectSourceRect as computeMaxAspectSourceRectangle,
     computeMovedCropSelection,
     computeResizedCropSelection,
     createInitialCropSelection,
     getCropOutputDimensions,
-    panCropSourceRect,
+    panCropSourceRect as panCropSourceRectangle,
 } from "./image-crop.js";
 
 const POPUP_VIEWPORT_MAX_WIDTH = "95vw";
-const POPUP_MAX_WIDTH_PX = 1400;
-const POPUP_HORIZONTAL_CHROME_PX = 40;
+const POPUP_MAX_WIDTH_PIXELS = 1400;
+const POPUP_HORIZONTAL_CHROME_PIXELS = 40;
 
 function buildCropPopupBody({
     imageUrl,
@@ -121,26 +121,28 @@ export async function openImageCropPopup({
 }) {
     const cropImage = await loadCropImage(file);
     const cropAspectRatio = Math.max(0.5, Number(aspectRatio) || 1);
-    const defaultSourceRect = computeMaxAspectSourceRect({
+    const defaultSourceRectangle = computeMaxAspectSourceRectangle({
         imageWidth: cropImage.imageWidth,
         imageHeight: cropImage.imageHeight,
         aspectRatio: cropAspectRatio,
     });
-    const avatarPopupGeometricMeanPx = Math.sqrt(
+    const avatarPopupGeometricMeanPixels = Math.sqrt(
         cropImage.imageWidth * cropImage.imageHeight,
     );
-    const popupContentWidthPx =
+    const popupContentWidthPixels =
         kind === "avatar"
             ? Math.min(
-                  avatarPopupGeometricMeanPx,
-                  defaultSourceRect.sourceWidth,
+                  avatarPopupGeometricMeanPixels,
+                  defaultSourceRectangle.sourceWidth,
               )
-            : defaultSourceRect.sourceWidth;
-    const popupMaxWidthPx = Math.min(
-        POPUP_MAX_WIDTH_PX,
+            : defaultSourceRectangle.sourceWidth;
+    const popupMaxWidthPixels = Math.min(
+        POPUP_MAX_WIDTH_PIXELS,
         Math.max(
             1,
-            Math.round(popupContentWidthPx + POPUP_HORIZONTAL_CHROME_PX),
+            Math.round(
+                popupContentWidthPixels + POPUP_HORIZONTAL_CHROME_PIXELS,
+            ),
         ),
     );
     const cropInteractionController = new AbortController();
@@ -148,7 +150,7 @@ export async function openImageCropPopup({
     const initialSelectionFillRatio = 1;
     const AUTO_ZOOM_MIN_DRAG_DISTANCE = 2;
     const MAX_AUTO_ZOOM_DEPTH = 12;
-    const SOURCE_RECT_EPSILON = 0.001;
+    const SOURCE_RECTANGLE_EPSILON = 0.001;
     const state = {
         dragging: false,
         dragPointerId: null,
@@ -161,7 +163,7 @@ export async function openImageCropPopup({
         dragAnchorTop: null,
         displayBounds: null,
         selection: null,
-        sourceRect: { ...defaultSourceRect },
+        sourceRect: { ...defaultSourceRectangle },
         zoomDepth: 0,
         shouldAutoZoomOnRelease: false,
     };
@@ -179,10 +181,10 @@ export async function openImageCropPopup({
         if (!(frameElement instanceof HTMLElement)) {
             return null;
         }
-        const frameRect = frameElement.getBoundingClientRect();
+        const frameRectangle = frameElement.getBoundingClientRect();
         return {
-            left: event.clientX - frameRect.left,
-            top: event.clientY - frameRect.top,
+            left: event.clientX - frameRectangle.left,
+            top: event.clientY - frameRectangle.top,
         };
     }
 
@@ -248,14 +250,18 @@ export async function openImageCropPopup({
         });
     }
 
-    function isFullImageSourceRect(sourceRect, imageWidth, imageHeight) {
+    function isFullImageSourceRectangle(
+        sourceRectangle,
+        imageWidth,
+        imageHeight,
+    ) {
         return (
-            sourceRect.sourceX <= SOURCE_RECT_EPSILON &&
-            sourceRect.sourceY <= SOURCE_RECT_EPSILON &&
-            Math.abs(sourceRect.sourceWidth - imageWidth) <=
-                SOURCE_RECT_EPSILON &&
-            Math.abs(sourceRect.sourceHeight - imageHeight) <=
-                SOURCE_RECT_EPSILON
+            sourceRectangle.sourceX <= SOURCE_RECTANGLE_EPSILON &&
+            sourceRectangle.sourceY <= SOURCE_RECTANGLE_EPSILON &&
+            Math.abs(sourceRectangle.sourceWidth - imageWidth) <=
+                SOURCE_RECTANGLE_EPSILON &&
+            Math.abs(sourceRectangle.sourceHeight - imageHeight) <=
+                SOURCE_RECTANGLE_EPSILON
         );
     }
 
@@ -263,19 +269,19 @@ export async function openImageCropPopup({
         if (!(frameElement instanceof HTMLElement)) return;
         if (!(imageElement instanceof HTMLImageElement)) return;
         if (!(selectionElement instanceof HTMLElement)) return;
-        const frameRect = frameElement.getBoundingClientRect();
+        const frameRectangle = frameElement.getBoundingClientRect();
         if (!state.sourceRect) {
-            state.sourceRect = { ...defaultSourceRect };
+            state.sourceRect = { ...defaultSourceRectangle };
         }
         const containBounds = computeContainImageBounds({
             imageWidth: cropImage.imageWidth,
             imageHeight: cropImage.imageHeight,
-            frameWidth: frameRect.width,
-            frameHeight: frameRect.height,
+            frameWidth: frameRectangle.width,
+            frameHeight: frameRectangle.height,
         });
         const shouldExpandToFrame =
             state.zoomDepth > 0 ||
-            !isFullImageSourceRect(
+            !isFullImageSourceRectangle(
                 state.sourceRect,
                 cropImage.imageWidth,
                 cropImage.imageHeight,
@@ -284,8 +290,8 @@ export async function openImageCropPopup({
             ? {
                   left: 0,
                   top: 0,
-                  width: frameRect.width,
-                  height: frameRect.height,
+                  width: frameRectangle.width,
+                  height: frameRectangle.height,
               }
             : containBounds;
         if (displayBounds.width <= 0 || displayBounds.height <= 0) return;
@@ -342,16 +348,16 @@ export async function openImageCropPopup({
 
     function resetCrop() {
         state.zoomDepth = 0;
-        state.sourceRect = { ...defaultSourceRect };
+        state.sourceRect = { ...defaultSourceRectangle };
         state.selection = null;
         state.shouldAutoZoomOnRelease = false;
     }
 
-    function getSelectedSourceRect() {
+    function getSelectedSourceRectangle() {
         if (!state.selection || !state.displayBounds || !state.sourceRect) {
             return null;
         }
-        return composeCropSourceRect({
+        return composeCropSourceRectangle({
             baseSourceRect: state.sourceRect,
             selection: state.selection,
             imageBounds: state.displayBounds,
@@ -411,15 +417,15 @@ export async function openImageCropPopup({
         }
         if (state.dragMode === "move") {
             if (shouldPanZoomedViewport && state.dragStartSourceRect) {
-                const startSourceRect = state.dragStartSourceRect;
+                const startSourceRectangle = state.dragStartSourceRect;
                 const sourceRegionDeltaX =
                     (deltaX / state.displayBounds.width) *
-                    startSourceRect.sourceWidth;
+                    startSourceRectangle.sourceWidth;
                 const sourceRegionDeltaY =
                     (deltaY / state.displayBounds.height) *
-                    startSourceRect.sourceHeight;
-                state.sourceRect = panCropSourceRect({
-                    startSourceRect,
+                    startSourceRectangle.sourceHeight;
+                state.sourceRect = panCropSourceRectangle({
+                    startSourceRect: startSourceRectangle,
                     sourceDeltaX: sourceRegionDeltaX,
                     sourceDeltaY: sourceRegionDeltaY,
                     imageWidth: cropImage.imageWidth,
@@ -485,18 +491,18 @@ export async function openImageCropPopup({
             state.shouldAutoZoomOnRelease &&
             state.zoomDepth < MAX_AUTO_ZOOM_DEPTH
         ) {
-            const selectedSourceRect = getSelectedSourceRect();
-            if (selectedSourceRect) {
-                state.sourceRect = selectedSourceRect;
+            const selectedSourceRectangle = getSelectedSourceRectangle();
+            if (selectedSourceRectangle) {
+                state.sourceRect = selectedSourceRectangle;
                 state.zoomDepth += 1;
                 if (frameElement instanceof HTMLElement) {
-                    const frameRect = frameElement.getBoundingClientRect();
+                    const frameRectangle = frameElement.getBoundingClientRect();
                     state.selection = createInitialCropSelection({
                         bounds: {
                             left: 0,
                             top: 0,
-                            width: frameRect.width,
-                            height: frameRect.height,
+                            width: frameRectangle.width,
+                            height: frameRectangle.height,
                         },
                         aspectRatio: cropAspectRatio,
                         minSize: minimumSelectionSize,
@@ -525,7 +531,7 @@ export async function openImageCropPopup({
                 aspectRatio: cropAspectRatio,
                 escapeHtmlText,
             }),
-        maxWidth: `min(${POPUP_VIEWPORT_MAX_WIDTH}, ${popupMaxWidthPx}px)`,
+        maxWidth: `min(${POPUP_VIEWPORT_MAX_WIDTH}, ${popupMaxWidthPixels}px)`,
         actions: [
             {
                 id: "reset",
@@ -592,7 +598,7 @@ export async function openImageCropPopup({
         return null;
     }
 
-    const sourceRect = composeCropSourceRect({
+    const sourceRectangle = composeCropSourceRectangle({
         baseSourceRect: saveCropState.sourceRect ?? {
             sourceX: 0,
             sourceY: 0,
@@ -605,7 +611,7 @@ export async function openImageCropPopup({
     if (outputMode === "sourceRect") {
         URL.revokeObjectURL(cropImage.imageUrl);
         return {
-            sourceRect,
+            sourceRect: sourceRectangle,
             imageWidth: cropImage.imageWidth,
             imageHeight: cropImage.imageHeight,
         };
@@ -624,10 +630,10 @@ export async function openImageCropPopup({
     }
     context.drawImage(
         imageElement,
-        sourceRect.sourceX,
-        sourceRect.sourceY,
-        sourceRect.sourceWidth,
-        sourceRect.sourceHeight,
+        sourceRectangle.sourceX,
+        sourceRectangle.sourceY,
+        sourceRectangle.sourceWidth,
+        sourceRectangle.sourceHeight,
         0,
         0,
         outputDimensions.width,

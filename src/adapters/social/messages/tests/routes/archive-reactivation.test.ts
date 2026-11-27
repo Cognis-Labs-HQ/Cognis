@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { createMessagesRoutes } from "../../routes/index.js";
 import { issueAccessToken } from "../../../../../gateways/auth/access-tokens.js";
 
-function makeReq(method: string, token: string | null) {
+function makeRequest(method: string, token: string | null) {
     const headers = token ? { authorization: "Bearer " + token } : {};
     return {
         method,
@@ -76,7 +76,7 @@ test("POST /messages/requests/:id/approve reactivates archived DM members", asyn
     let responseBody = "";
 
     const handled = await route(
-        makeReq("POST", token),
+        makeRequest("POST", token),
         {
             writeHead(status: number) {
                 statusCode = status;
@@ -154,13 +154,13 @@ test("POST /messages/rooms reactivates archived members for existing DMs", async
     });
     let statusCode = 0;
     let responseBody = "";
-    const req = makeReq("POST", token);
-    req[Symbol.asyncIterator] = async function* () {
+    const request = makeRequest("POST", token);
+    request[Symbol.asyncIterator] = async function* () {
         yield Buffer.from(JSON.stringify({ handles: ["bob"] }));
     };
 
     const handled = await route(
-        req,
+        request,
         {
             writeHead(status: number) {
                 statusCode = status;
@@ -235,7 +235,7 @@ test("concurrent direct-room requests create only one room", async () => {
         isAdapterEnabled: () => true,
     });
     const invoke = async () => {
-        const request = makeReq("POST", token);
+        const request = makeRequest("POST", token);
         request[Symbol.asyncIterator] = async function* () {
             yield Buffer.from(JSON.stringify({ handles: ["bob"] }));
         };

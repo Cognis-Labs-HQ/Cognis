@@ -1,11 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { DbFileQuotaStore } from "../index.js";
+import { DbFileQuotaStore as DatabaseFileQuotaStore } from "../index.js";
 import { InMemoryTestExecutor } from "../../../../gateways/db/tests/in-memory-test-executor.js";
 
-function buildStore(): DbFileQuotaStore {
+function buildStore(): DatabaseFileQuotaStore {
     const executor = new InMemoryTestExecutor();
-    return new DbFileQuotaStore(() => executor);
+    return new DatabaseFileQuotaStore(() => executor);
 }
 
 test("getGlobalDefault falls back to the built-in default when unset", async () => {

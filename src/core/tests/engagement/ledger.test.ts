@@ -99,9 +99,9 @@ test("failed persistence leaves boosters and achievements available for a succes
     let fail = true;
     const state = fixture({
         read: (id) => backing.read(id),
-        commit: async (...args) => {
+        commit: async (...argumentsList) => {
             if (fail) throw new Error("storage_unavailable");
-            await backing.commit(...args);
+            await backing.commit(...argumentsList);
         },
     });
     booster(state);

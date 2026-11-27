@@ -6,14 +6,18 @@ import {
     type KeyringRouteContext,
 } from "./api/routes/index.js";
 import {
-    DbKeyringVaultStore,
+    DbKeyringVaultStore as DatabaseKeyringVaultStore,
     type KeyringDbExecutor,
     type KeyringVaultStore,
 } from "./store.js";
 import type { AuthProviderAdapter } from "../../../gateways/auth/gateway.js";
 import type { FlowApi } from "@cognis/core";
 
-export { createKeyringRoutes, DbKeyringVaultStore, type KeyringVaultStore };
+export {
+    createKeyringRoutes,
+    DatabaseKeyringVaultStore as DbKeyringVaultStore,
+    type KeyringVaultStore,
+};
 
 const DEFAULT_MAX_VAULT_MIB = DEFAULT_MAX_VAULT_BYTES / (1024 * 1024);
 const DEFAULT_DERIVATION_ITERATIONS = 310_000;
@@ -95,7 +99,7 @@ export async function bootstrapAuthAdapter(input: {
         metadata?: Record<string, unknown>,
     ) => void;
 }): Promise<void> {
-    const store = new DbKeyringVaultStore(
+    const store = new DatabaseKeyringVaultStore(
         input.capabilities.require<KeyringDbExecutor>("db:executor"),
     );
     await store.ensureSchema();

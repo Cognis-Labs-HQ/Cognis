@@ -49,8 +49,8 @@ interface RouteHandler {
     invalidAccessPolicy: boolean;
     allowWhenDisabled?: boolean;
     handler: (
-        req: IncomingMessage,
-        res: ServerResponse,
+        request: IncomingMessage,
+        response: ServerResponse,
     ) => Promise<void> | void;
 }
 
@@ -71,8 +71,8 @@ export interface ModuleExtensionOptions {
 
 export interface ModuleExtensionRoutes {
     handle(
-        req: IncomingMessage,
-        res: ServerResponse,
+        request: IncomingMessage,
+        response: ServerResponse,
         url: URL,
     ): Promise<boolean>;
     refresh(options?: { throwOnFailure?: boolean }): Promise<void>;
@@ -88,7 +88,7 @@ export function createModuleExtensionRoutes(
     log?: BootstrapLog,
     options?: ModuleExtensionOptions,
 ): ModuleExtensionRoutes {
-    const bootstrapTimeoutMs = options?.bootstrapTimeoutMs ?? 120_000;
+    const bootstrapTimeoutMilliseconds = options?.bootstrapTimeoutMs ?? 120_000;
     let refreshQueue = Promise.resolve();
     const activeRequests = new Set<Promise<boolean>>();
     let handlers: RouteHandler[] = [];
@@ -179,7 +179,7 @@ export function createModuleExtensionRoutes(
             }
             return ((
                 provider: { registerRoutes?: unknown },
-                ...args: unknown[]
+                ...argumentsList: unknown[]
             ) => {
                 if (
                     typeof provider?.registerRoutes === "function" &&
@@ -189,7 +189,7 @@ export function createModuleExtensionRoutes(
                 }
                 return (capability as (...input: unknown[]) => unknown)(
                     provider,
-                    ...args,
+                    ...argumentsList,
                 );
             }) as T;
         }
@@ -309,9 +309,9 @@ export function createModuleExtensionRoutes(
         };
 
         const systemCtx = options.routeContext.getCapability<Ctx>("system:ctx");
-        const moduleLog: BootstrapLog = (level, message, meta) => {
+        const moduleLog: BootstrapLog = (level, message, metadata) => {
             log?.(level, message, {
-                ...meta,
+                ...metadata,
                 component: `module:${moduleId}`,
                 moduleId,
             });
@@ -475,13 +475,13 @@ export function createModuleExtensionRoutes(
                 registerApiRoute("DELETE", routePath, handler, routeOptions);
             },
             router,
-            registerNavbarPlugin(pluginDef) {
+            registerNavbarPlugin(pluginDefinition) {
                 requireActiveBootstrap();
                 if (!moduleEnabled) return;
                 const pluginConfig =
-                    typeof pluginDef === "string"
-                        ? { scriptUrl: pluginDef }
-                        : pluginDef;
+                    typeof pluginDefinition === "string"
+                        ? { scriptUrl: pluginDefinition }
+                        : pluginDefinition;
                 options?.uiRegistry?.registerNavbarPlugin({
                     scriptUrl: versionModuleUiAssets(
                         pluginConfig.scriptUrl,
@@ -576,7 +576,7 @@ export function createModuleExtensionRoutes(
                     isEnabled: () => isModuleEnabled(moduleId),
                 });
             },
-            registerStaticDir(urlPrefix, absoluteDir) {
+            registerStaticDir(urlPrefix, absoluteDirectory) {
                 requireActiveBootstrap();
                 if (!moduleEnabled) return;
                 const normalizedPrefix = String(urlPrefix ?? "")
@@ -587,7 +587,7 @@ export function createModuleExtensionRoutes(
                     : moduleId;
                 options?.uiRegistry?.registerModuleStaticDir(
                     fullPrefix,
-                    absoluteDir,
+                    absoluteDirectory,
                 );
             },
             registerAuthTypingMessage(message) {
@@ -628,10 +628,10 @@ export function createModuleExtensionRoutes(
                                 () =>
                                     reject(
                                         new Error(
-                                            `Module bootstrap timed out after ${bootstrapTimeoutMs}ms`,
+                                            `Module bootstrap timed out after ${bootstrapTimeoutMilliseconds}ms`,
                                         ),
                                     ),
-                                bootstrapTimeoutMs,
+                                bootstrapTimeoutMilliseconds,
                             );
                         }),
                     ]),
@@ -864,19 +864,19 @@ export function createModuleExtensionRoutes(
     }
 
     async function handle(
-        req: IncomingMessage,
-        res: ServerResponse,
+        request: IncomingMessage,
+        response: ServerResponse,
         url: URL,
     ): Promise<boolean> {
-        const method = (req.method || "GET").toUpperCase();
+        const method = (request.method || "GET").toUpperCase();
         const match = handlers.find(
             (entry) =>
                 entry.method === method && entry.routePath === url.pathname,
         );
         if (!match) return false;
         if (!isModuleEnabled(match.moduleId) && !match.allowWhenDisabled) {
-            res.writeHead(503, { "content-type": "application/json" });
-            res.end(
+            response.writeHead(503, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     error: {
                         code: "module_disabled",
@@ -887,8 +887,8 @@ export function createModuleExtensionRoutes(
             return true;
         }
         if (match.invalidAccessPolicy) {
-            res.writeHead(403, { "content-type": "application/json" });
-            res.end(
+            response.writeHead(403, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     error: {
                         code: "forbidden",
@@ -900,11 +900,11 @@ export function createModuleExtensionRoutes(
             return true;
         }
         if (match.access) {
-            const claims = requireRoleAccess(req, res, match.access);
+            const claims = requireRoleAccess(request, response, match.access);
             if (!claims) return true;
         }
         try {
-            await match.handler(req, res);
+            await match.handler(request, response);
         } catch (error) {
             throw attributeComponentFault(error, {
                 type: "module",
@@ -916,9 +916,9 @@ export function createModuleExtensionRoutes(
 
     return {
         uninstall,
-        handle(req, res, url) {
+        handle(request, response, url) {
             return refreshQueue.then(() => {
-                const pending = handle(req, res, url);
+                const pending = handle(request, response, url);
                 activeRequests.add(pending);
                 const remove = () => activeRequests.delete(pending);
                 void pending.then(remove, remove);

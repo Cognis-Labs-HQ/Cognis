@@ -79,15 +79,18 @@ export function buildFontSelect(container, fontList, initialValue, onChange) {
     };
 }
 
-export function initFontPrefs(root, { existingPrefs, i18n, onDirtyChange }) {
+function initFontPreferences(
+    root,
+    { existingPrefs: existingPreferences, i18n, onDirtyChange },
+) {
     const fontPreview = root.querySelector("#pref-font-preview");
     const fontPickerContainer = root.querySelector("#pref-font-picker");
     const fontSizeValue = root.querySelector("#pref-font-size-value");
-    const resetBtn = root.querySelector("#pref-font-reset");
+    const resetButton = root.querySelector("#pref-font-reset");
 
     const rawStoredSize = Number(
-        existingPrefs?.appFontSize ??
-            existingPrefs?.greetingFontSize ??
+        existingPreferences?.appFontSize ??
+            existingPreferences?.greetingFontSize ??
             DEFAULT_FONT_SIZE,
     );
     // Values below 8 are legacy rem values; convert to pt (1rem ≈ 12pt at default browser zoom).
@@ -96,7 +99,7 @@ export function initFontPrefs(root, { existingPrefs, i18n, onDirtyChange }) {
     let fontSize = Math.max(8, Math.min(24, Math.round(normalizedSize)));
 
     let savedFont = parseSavedFont(
-        existingPrefs?.appFont || existingPrefs?.greetingFont,
+        existingPreferences?.appFont || existingPreferences?.greetingFont,
     );
     let savedSize = fontSize;
 
@@ -106,11 +109,11 @@ export function initFontPrefs(root, { existingPrefs, i18n, onDirtyChange }) {
     }
 
     function updateResetButton() {
-        if (!resetBtn) return;
+        if (!resetButton) return;
         const atDefault = isAtDefault();
-        resetBtn.disabled = atDefault;
-        resetBtn.classList.toggle("btn-cancel", !atDefault);
-        resetBtn.classList.toggle("btn-animated", !atDefault);
+        resetButton.disabled = atDefault;
+        resetButton.classList.toggle("btn-cancel", !atDefault);
+        resetButton.classList.toggle("btn-animated", !atDefault);
     }
 
     function notifyDirty() {
@@ -134,7 +137,7 @@ export function initFontPrefs(root, { existingPrefs, i18n, onDirtyChange }) {
 
     let pickerControl = null;
 
-    async function init() {
+    async function initialize() {
         const fontOptions = await loadFontsCatalog().catch(() => [
             ...FALLBACK_FONTS,
         ]);
@@ -170,7 +173,7 @@ export function initFontPrefs(root, { existingPrefs, i18n, onDirtyChange }) {
             () => setFontSize(fontSize + 1),
         );
 
-        resetBtn?.addEventListener("click", () => {
+        resetButton?.addEventListener("click", () => {
             if (isAtDefault()) return;
             pickerControl?.setValue(DEFAULT_FONT);
             updatePreview(DEFAULT_FONT);
@@ -192,7 +195,7 @@ export function initFontPrefs(root, { existingPrefs, i18n, onDirtyChange }) {
     }
 
     return {
-        init,
+        init: initialize,
         getFont: () => pickerControl?.getValue() || DEFAULT_FONT,
         getFontSize: () => fontSize,
         isDirty: () => {
@@ -203,3 +206,4 @@ export function initFontPrefs(root, { existingPrefs, i18n, onDirtyChange }) {
         discard,
     };
 }
+export { initFontPreferences as initFontPrefs };

@@ -431,10 +431,10 @@ test("buildServer returns gateway_disabled for disabled gateway prefixes", async
 
 test("buildServer serves static UI assets before registered catch-all routes", async () => {
     const routeRegistry = new RouteRegistry();
-    routeRegistry.register(async (_req, res, url) => {
+    routeRegistry.register(async (_request, response, url) => {
         if (url.pathname.startsWith("/static/")) {
-            res.writeHead(401, { "content-type": "application/json" });
-            res.end(
+            response.writeHead(401, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     error: { code: "unauthorized", message: "Login required" },
                 }),

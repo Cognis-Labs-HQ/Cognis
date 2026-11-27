@@ -557,25 +557,21 @@ Tests outside `src/core` must assume any gateway, adapter, or module outside the
 
 Prefer fully qualified database table names instead of aliases. When an alias is necessary, it must preserve the complete, descriptive table name; never shorten table names to initials, abbreviations, or single-letter aliases such as `a`, `i`, or `c`.
 
-Variable and binding names must be descriptive. Single-letter names are only acceptable in the roles listed below; all other one- or two-letter identifiers are forbidden in `const`, `let`, and `var` declarations, destructuring, and `for-of` / `for-in` bindings, and in runtime function parameters (including callbacks, methods, constructor parameter properties and catch clauses):
+Variable names, import bindings, function/class bindings, signature parameter labels and private members must use descriptive words. Do not use clipped forms such as `req`, `res`, `msg`, `prefs`, `dbExec`, `orig` or `tgtRow`, including inside camel-case names or constants. The shared glossary is `src/tooling/reuse/ambiguous-name-words.json`.
 
-**Acceptable single-letter names:**
+The only short binding exceptions are:
 
-- `x`, `y` — 2-D spatial coordinates.
-- `w`, `h` — layout width / height (in grid units or pixels).
-- `_` — explicitly ignored binding.
-- `i`, `j`, `k` — numeric for-loop counters (e.g. `for (let i = 0; ...)`).
-- `r`, `c` — row / column counters in nested grid-cell loops.
+- `_` — an unused, unexported binding. Consuming its value or storing it as a parameter property is forbidden.
+- `id` — a unique identifier.
+- `i`, `j`, `k` — numeric `for` counters with a matching increment, decrement or arithmetic update. Collection bindings and unrelated updates do not qualify.
 
-**Acceptable two-letter names:**
+Use descriptive coordinate and dimension locals such as `horizontalCoordinate`, `verticalCoordinate`, `width`, `height`, `rowIndex` and `columnIndex`. A broad `x`/`y`/`w`/`h` exception must not hide harnesses, headings, list entries or other non-spatial values. Replace numbered placeholders such as `event2` with their actual role, such as `moveEvent` or `releaseEvent`.
 
-- `id` — a unique identifier; universally understood and unambiguous in any context.
+Established contract vocabulary (`ctx`, `log`, `i18n`), protocol terms and product names retain their meaning. Do not expand MariaDB or IndexedDB into a different product name. Match complete identifier words rather than substrings.
 
-Everything else must use a full descriptive name: `element` not `el`, `gridSize` not `gs`, `floatingToolbar` not `ft`, `resizeObserver` not `ro`, `gateway` not `gw`, `timestamp` not `ts`, `listItem` not `li`, `initVector` not `iv`, `timezone` not `tz`, `recipient` not `to`, etc.
+The syntax-tree detector in `src/tooling/reuse/ambiguous-names.js` checks bindings independently of line breaks, exports, declaration order and type annotations. `src/ui/tests/ambiguous-names.test.js` scans all JavaScript and TypeScript under `src`, including gateways, tooling, tests and fixtures, without baselines or file-specific exceptions. Parse failures fail validation. The detector cases cover rejected forms, legitimate vocabulary, counter roles and ignored bindings.
 
-Runtime import aliases and named function/class bindings follow the same rule. Type-only imports retain type-system names.
-
-The syntax-tree detector in `src/tooling/reuse/ambiguous-names.js` checks every binding regardless of line breaks, exports, type annotations or declaration order. `src/ui/tests/ambiguous-names.test.js` scans JavaScript and TypeScript files throughout `src`, including gateways, tooling, tests and fixtures, without a baseline or file-specific exemptions. Parse failures fail the check. Property keys, literal text, type parameters and type-signature labels are not runtime bindings; renaming a local must preserve external property and payload keys. Detector fixtures cover both rejected forms and the documented exceptions.
+Preserve existing public property/payload keys, import targets and exported API labels when renaming implementation bindings. Use explicit destructuring/import/export aliases at those boundaries; do not add compatibility wrappers or duplicate API names. Public data keys, literal text, generic type parameters and type-only import identities are not local variable bindings. Signature parameter labels and private members still require descriptive names.
 
 ### Module cohesion
 

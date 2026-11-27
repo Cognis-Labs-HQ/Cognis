@@ -21,9 +21,9 @@ function availability({
         columns,
         rows,
         gridSize: resolveElementGridSize({ gridSize: size }),
-        canPlace: (col, row, width, height) =>
-            col + width <= columns &&
-            checkPlacement(occupied, col, row, width, height),
+        canPlace: (column, row, width, height) =>
+            column + width <= columns &&
+            checkPlacement(occupied, column, row, width, height),
     });
     return {
         east: result.east,

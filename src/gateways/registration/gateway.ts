@@ -234,7 +234,7 @@ export class CoreRegistrationGateway {
 
     async discoverAdapters(
         adaptersRoot: string,
-        deps: RegistrationAdapterDeps,
+        dependencies: RegistrationAdapterDeps,
         context?: GatewayBootstrapContext,
     ): Promise<void> {
         let entries: string[];
@@ -245,25 +245,33 @@ export class CoreRegistrationGateway {
         }
 
         for (const entry of entries) {
-            const pkgPath = path.join(adaptersRoot, entry, "package.json");
+            const packagePath = path.join(adaptersRoot, entry, "package.json");
             try {
-                const raw = await readFile(pkgPath, "utf8");
-                const pkg = JSON.parse(raw) as {
+                const raw = await readFile(packagePath, "utf8");
+                const packageManifest = JSON.parse(raw) as {
                     main?: string;
                     version?: string;
                 };
-                if (!pkg.main) continue;
-                const entryPath = path.resolve(adaptersRoot, entry, pkg.main);
-                const mod = await import(`${entryPath}?t=${Date.now()}`);
-                if (typeof mod.createAdapter !== "function") continue;
+                if (!packageManifest.main) continue;
+                const entryPath = path.resolve(
+                    adaptersRoot,
+                    entry,
+                    packageManifest.main,
+                );
+                const moduleExports = await import(
+                    `${entryPath}?t=${Date.now()}`
+                );
+                if (typeof moduleExports.createAdapter !== "function") continue;
                 const initialize = async () => {
-                    const adapter = mod.createAdapter(
-                        deps,
+                    const adapter = moduleExports.createAdapter(
+                        dependencies,
                     ) as RegistrationGatewayAdapter | null;
                     if (!adapter || !adapter.id || !adapter.name)
                         throw new Error("invalid_registration_adapter");
-                    if (pkg.version)
-                        Object.assign(adapter, { version: pkg.version });
+                    if (packageManifest.version)
+                        Object.assign(adapter, {
+                            version: packageManifest.version,
+                        });
                     const manifest = JSON.parse(
                         await readFile(
                             path.join(adaptersRoot, entry, "manifest.json"),
@@ -276,14 +284,14 @@ export class CoreRegistrationGateway {
                         });
                     this.registerAdapter(adapter);
                 };
-                if (mod.defineContracts !== undefined) {
+                if (moduleExports.defineContracts !== undefined) {
                     if (!context)
                         throw new Error("adapter_contract_context_required");
                     await bootstrapAdapter(
                         "registration",
                         entry,
                         context,
-                        mod,
+                        moduleExports,
                         initialize,
                     );
                 } else await initialize();

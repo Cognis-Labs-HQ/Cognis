@@ -1,9 +1,9 @@
 import { writeTerminalReport } from "../reuse/terminal-output.ts";
 import { declarationSpacingIssues } from "./declaration-spacing.mjs";
 import { readFileSync } from "node:fs";
-import { execSync } from "node:child_process";
+import { execSync as executorSync } from "node:child_process";
 
-const files = execSync(
+const files = executorSync(
     "rg --files src/api src/core src/ui src/adapters/study src/gateways/study -g '*.ts' -g '*.js' -g '*.html' -g '*.css'",
 )
     .toString()

@@ -14,7 +14,7 @@ import {
     requireOrganizerOwnedSourceEvent,
     requireWritableSharedSourceEvent,
     resolveCreatedSeries,
-    resolveEventMeta,
+    resolveEventMeta as resolveEventMetadata,
     resolveAvailabilityStatus,
     sendCalendarError,
     sendJson,
@@ -29,8 +29,8 @@ import { requireSharedCalendarAccess } from "./shared-access.js";
 import { rejectInactiveSharedCalendar } from "./shared-calendar-guards.js";
 
 export async function handleCalendarEventRoutes({
-    req,
-    res,
+    req: request,
+    res: response,
     url,
     ctx,
     gateway,
@@ -60,8 +60,8 @@ export async function handleCalendarEventRoutes({
     const eventMatch = url.pathname.match(
         /^\/api\/v1\/calendar\/calendars\/([^/]+)\/events\/([^/]+)$/,
     );
-    if (eventMatch && req.method === "GET") {
-        const claims = ctx.requireAuth(req, res, "user");
+    if (eventMatch && request.method === "GET") {
+        const claims = ctx.requireAuth(request, response, "user");
         if (!claims) return true;
         const calendarId = decodeURIComponent(eventMatch[1]);
         const eventId = decodeURIComponent(eventMatch[2]);
@@ -74,8 +74,8 @@ export async function handleCalendarEventRoutes({
         if (
             activeSharedCalendar &&
             !(await requireSharedCalendarAccess({
-                req,
-                res,
+                req: request,
+                res: response,
                 shareTokenId: activeSharedCalendar.shareTokenId,
                 accountId: claims.sub,
                 ownerCalendarId: activeSharedCalendar.ownerCalendarId,
@@ -90,7 +90,7 @@ export async function handleCalendarEventRoutes({
                 accountId: claims.sub,
                 calendarId,
                 activeShare: activeSharedCalendar,
-                res,
+                res: response,
             })
         ) {
             return true;
@@ -114,14 +114,14 @@ export async function handleCalendarEventRoutes({
             ownedCalendar ?? gateway.getCalendar(calendarId);
         const effectiveEvent = ownedEvent ?? invitedEvent;
         if (!effectiveCalendar || !effectiveEvent) {
-            sendCalendarError(res, "not_found", "Event not found.", 404);
+            sendCalendarError(response, "not_found", "Event not found.", 404);
             return true;
         }
-        sendJson(res, 200, {
+        sendJson(response, 200, {
             data: {
                 calendar: effectiveCalendar,
                 event: effectiveEvent,
-                meta: resolveEventMeta(
+                meta: resolveEventMetadata(
                     effectiveEvent,
                     claims.sub,
                     gateway.getEventResponse(effectiveEvent.id, claims.sub),
@@ -132,8 +132,8 @@ export async function handleCalendarEventRoutes({
         return true;
     }
 
-    if (eventMatch && req.method === "PATCH") {
-        const claims = ctx.requireAuth(req, res, "user");
+    if (eventMatch && request.method === "PATCH") {
+        const claims = ctx.requireAuth(request, response, "user");
         if (!claims) return true;
         const calendarId = decodeURIComponent(eventMatch[1]);
         const eventId = decodeURIComponent(eventMatch[2]);
@@ -146,8 +146,8 @@ export async function handleCalendarEventRoutes({
         if (
             activeSharedCalendar &&
             !(await requireSharedCalendarAccess({
-                req,
-                res,
+                req: request,
+                res: response,
                 shareTokenId: activeSharedCalendar.shareTokenId,
                 accountId: claims.sub,
                 ownerCalendarId: activeSharedCalendar.ownerCalendarId,
@@ -163,7 +163,7 @@ export async function handleCalendarEventRoutes({
                 accountId: claims.sub,
                 calendarId,
                 activeShare: activeSharedCalendar,
-                res,
+                res: response,
             })
         ) {
             return true;
@@ -173,13 +173,13 @@ export async function handleCalendarEventRoutes({
         const sourceCalendarId =
             activeSharedCalendar?.ownerCalendarId ?? calendarId;
         const existingEvent = gateway.getEvent(sourceCalendarId, eventId);
-        const body = (await readJson(req)) as Record<string, unknown>;
+        const body = (await readJson(request)) as Record<string, unknown>;
         if (
             activeSharedCalendar &&
             (body.attendees !== undefined || body.inviteEmails !== undefined)
         ) {
             sendCalendarError(
-                res,
+                response,
                 "forbidden",
                 "Shared calendar recipients cannot change event participants or responses.",
                 403,
@@ -190,7 +190,7 @@ export async function handleCalendarEventRoutes({
         const canInviteByEmail = hasMinRole(claims.role, "admin");
         if (inviteEmails.length > 0 && !canInviteByEmail) {
             sendCalendarError(
-                res,
+                response,
                 "forbidden",
                 "Only founder or admin users can send email invites.",
                 403,
@@ -203,7 +203,7 @@ export async function handleCalendarEventRoutes({
                 gateway,
                 sharedCalendar: activeSharedCalendar,
                 eventId,
-                res,
+                res: response,
             })
         ) {
             return true;
@@ -215,7 +215,7 @@ export async function handleCalendarEventRoutes({
                 ownerAccountId: claims.sub,
                 calendarId,
                 eventId,
-                res,
+                res: response,
                 actionVerb: "edit",
             })
         ) {
@@ -293,20 +293,30 @@ export async function handleCalendarEventRoutes({
             updatedSeries.forEach((event) => {
                 scheduleReminderNotificationsForEvent(event);
             });
-            sendJson(res, 200, { data: updatedEvent });
+            sendJson(response, 200, { data: updatedEvent });
         } catch (error) {
             const message = errorMessage(error);
             if (message === "calendar_not_found") {
-                sendCalendarError(res, "not_found", "Calendar not found.", 404);
+                sendCalendarError(
+                    response,
+                    "not_found",
+                    "Calendar not found.",
+                    404,
+                );
                 return true;
             }
             if (message === "calendar_event_not_found") {
-                sendCalendarError(res, "not_found", "Event not found.", 404);
+                sendCalendarError(
+                    response,
+                    "not_found",
+                    "Event not found.",
+                    404,
+                );
                 return true;
             }
             if (message === "calendar_invalid_range") {
                 sendCalendarError(
-                    res,
+                    response,
                     "bad_request",
                     "Event end time must be after start time.",
                     400,
@@ -321,7 +331,7 @@ export async function handleCalendarEventRoutes({
                 error: message,
             });
             sendCalendarError(
-                res,
+                response,
                 "internal_error",
                 "Failed to update event.",
                 500,
@@ -330,8 +340,8 @@ export async function handleCalendarEventRoutes({
         return true;
     }
 
-    if (eventMatch && req.method === "DELETE") {
-        const claims = ctx.requireAuth(req, res, "user");
+    if (eventMatch && request.method === "DELETE") {
+        const claims = ctx.requireAuth(request, response, "user");
         if (!claims) return true;
         const calendarId = decodeURIComponent(eventMatch[1]);
         const eventId = decodeURIComponent(eventMatch[2]);
@@ -344,8 +354,8 @@ export async function handleCalendarEventRoutes({
         if (
             activeSharedCalendar &&
             !(await requireSharedCalendarAccess({
-                req,
-                res,
+                req: request,
+                res: response,
                 shareTokenId: activeSharedCalendar.shareTokenId,
                 accountId: claims.sub,
                 ownerCalendarId: activeSharedCalendar.ownerCalendarId,
@@ -361,7 +371,7 @@ export async function handleCalendarEventRoutes({
                 accountId: claims.sub,
                 calendarId,
                 activeShare: activeSharedCalendar,
-                res,
+                res: response,
             })
         ) {
             return true;
@@ -377,7 +387,7 @@ export async function handleCalendarEventRoutes({
                     gateway,
                     sharedCalendar: activeSharedCalendar,
                     eventId,
-                    res,
+                    res: response,
                 })
             ) {
                 return true;
@@ -389,7 +399,7 @@ export async function handleCalendarEventRoutes({
                     ownerAccountId: claims.sub,
                     calendarId,
                     eventId,
-                    res,
+                    res: response,
                     actionVerb: "delete",
                 })
             ) {
@@ -416,11 +426,16 @@ export async function handleCalendarEventRoutes({
                     }),
                 ),
             );
-            sendJson(res, 200, { data: { deleted: true } });
+            sendJson(response, 200, { data: { deleted: true } });
         } catch (error) {
             const message = errorMessage(error);
             if (message === "calendar_event_not_found") {
-                sendCalendarError(res, "not_found", "Event not found.", 404);
+                sendCalendarError(
+                    response,
+                    "not_found",
+                    "Event not found.",
+                    404,
+                );
                 return true;
             }
             log?.("error", "Failed to delete event.", {
@@ -431,7 +446,7 @@ export async function handleCalendarEventRoutes({
                 error: message,
             });
             sendCalendarError(
-                res,
+                response,
                 "internal_error",
                 "Failed to delete event.",
                 500,

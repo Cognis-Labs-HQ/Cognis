@@ -8,15 +8,15 @@ export function bindCompactNavigation(
     { signal, prepareNavigation, log, registerSurface } = {},
 ) {
     signal?.throwIfAborted();
-    const navrow = root.querySelector(".global-navrow");
-    const topnav = navrow?.querySelector(".topnav");
-    const trigger = navrow?.querySelector("#nav-compact-toggle");
+    const navigationRow = root.querySelector(".global-navrow");
+    const topnav = navigationRow?.querySelector(".topnav");
+    const trigger = navigationRow?.querySelector("#nav-compact-toggle");
     const panel = root.querySelector("#nav-launcher");
     const closeButton = root.querySelector("#nav-launcher-close");
     const navigation = panel?.querySelector(".nav-launcher-nav");
     const backdrop = root.querySelector("#nav-launcher-backdrop");
-    if (!navrow || !topnav || !trigger || !panel || !backdrop) return;
-    bindings.get(navrow)?.();
+    if (!navigationRow || !topnav || !trigger || !panel || !backdrop) return;
+    bindings.get(navigationRow)?.();
 
     const controller = new AbortController();
     const scoped = signal
@@ -46,7 +46,7 @@ export function bindCompactNavigation(
 
     function syncCompactState() {
         const compact = topnav.scrollWidth > topnav.clientWidth + 2;
-        navrow.classList.toggle("global-navrow--compact", compact);
+        navigationRow.classList.toggle("global-navrow--compact", compact);
         trigger.hidden = !compact;
         if (!compact) close({ restoreFocus: false });
         topnav.inert = compact;
@@ -108,7 +108,7 @@ export function bindCompactNavigation(
 
     const resizeObserver = new window.ResizeObserver(syncCompactState);
     resizeObserver.observe(topnav);
-    resizeObserver.observe(navrow);
+    resizeObserver.observe(navigationRow);
     const navigationObserver = new window.MutationObserver(redrawNavigation);
     navigationObserver.observe(topnav, {
         childList: true,
@@ -119,7 +119,7 @@ export function bindCompactNavigation(
     });
     const removalObserver = !signal
         ? new window.MutationObserver(() => {
-              if (!navrow.isConnected) controller.abort();
+              if (!navigationRow.isConnected) controller.abort();
           })
         : null;
     removalObserver?.observe(document.body, {
@@ -134,12 +134,12 @@ export function bindCompactNavigation(
             navigationObserver.disconnect();
             removalObserver?.disconnect();
             topnav.inert = false;
-            bindings.delete(navrow);
+            bindings.delete(navigationRow);
         },
         { once: true },
     );
     const destroy = () => controller.abort();
-    bindings.set(navrow, destroy);
+    bindings.set(navigationRow, destroy);
     close({ restoreFocus: false });
     redrawNavigation();
     return destroy;

@@ -1,14 +1,17 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-    buildStructuredDbCommandStatement,
+    buildStructuredDbCommandStatement as buildStructuredDatabaseCommandStatement,
     type StructuredDbCommand,
     type StructuredDbDialect,
 } from "../reuse/db-command.js";
-import { createDbDialectHelper, type DbDialectHelper } from "../bootstrap.js";
+import {
+    createDbDialectHelper as createDatabaseDialectHelper,
+    type DbDialectHelper,
+} from "../bootstrap.js";
 import type { DbExecutor } from "../reuse/db-executor.js";
 
-const POSTGRESQL_STRUCTURED_DB_DIALECT: StructuredDbDialect = {
+const POSTGRESQL_STRUCTURED_DATABASE_DIALECT: StructuredDbDialect = {
     createPlaceholder(parameterIndex) {
         return `$${parameterIndex}`;
     },
@@ -38,7 +41,7 @@ const POSTGRESQL_STRUCTURED_DB_DIALECT: StructuredDbDialect = {
     },
 };
 
-const MARIADB_STRUCTURED_DB_DIALECT: StructuredDbDialect = {
+const MARIADB_STRUCTURED_DATABASE_DIALECT: StructuredDbDialect = {
     createPlaceholder() {
         return "?";
     },
@@ -66,7 +69,7 @@ const MARIADB_STRUCTURED_DB_DIALECT: StructuredDbDialect = {
     },
 };
 
-const SQLITE_STRUCTURED_DB_DIALECT: StructuredDbDialect = {
+const SQLITE_STRUCTURED_DATABASE_DIALECT: StructuredDbDialect = {
     createPlaceholder() {
         return "?";
     },
@@ -91,7 +94,7 @@ const SQLITE_STRUCTURED_DB_DIALECT: StructuredDbDialect = {
 };
 
 test("gateway command builder emits postgres delete placeholders", () => {
-    const statement = buildStructuredDbCommandStatement(
+    const statement = buildStructuredDatabaseCommandStatement(
         {
             option: "DELETE",
             table: "mytable",
@@ -100,7 +103,7 @@ test("gateway command builder emits postgres delete placeholders", () => {
                 { column: "owner_id", value: "abc" },
             ],
         },
-        POSTGRESQL_STRUCTURED_DB_DIALECT,
+        POSTGRESQL_STRUCTURED_DATABASE_DIALECT,
     );
 
     assert.equal(
@@ -112,7 +115,7 @@ test("gateway command builder emits postgres delete placeholders", () => {
 });
 
 test("gateway command builder emits mariadb upserts", () => {
-    const statement = buildStructuredDbCommandStatement(
+    const statement = buildStructuredDatabaseCommandStatement(
         {
             option: "INSERT",
             table: "modules",
@@ -125,7 +128,7 @@ test("gateway command builder emits mariadb upserts", () => {
                 target: ["module_id"],
             },
         },
-        MARIADB_STRUCTURED_DB_DIALECT,
+        MARIADB_STRUCTURED_DATABASE_DIALECT,
     );
 
     assert.equal(
@@ -136,7 +139,7 @@ test("gateway command builder emits mariadb upserts", () => {
 });
 
 test("gateway command builder emits sqlite ignore syntax", () => {
-    const statement = buildStructuredDbCommandStatement(
+    const statement = buildStructuredDatabaseCommandStatement(
         {
             option: "INSERT",
             table: "modules",
@@ -148,7 +151,7 @@ test("gateway command builder emits sqlite ignore syntax", () => {
                 action: "ignore",
             },
         },
-        SQLITE_STRUCTURED_DB_DIALECT,
+        SQLITE_STRUCTURED_DATABASE_DIALECT,
     );
 
     assert.equal(
@@ -175,7 +178,7 @@ test("gateway dialect helper delegates structured commands to the executor", asy
         },
     };
 
-    const dialect: DbDialectHelper = createDbDialectHelper(executor);
+    const dialect: DbDialectHelper = createDatabaseDialectHelper(executor);
     const result = await dialect.executeCommand({
         option: "SELECT",
         table: "profiles",
@@ -211,7 +214,7 @@ test("gateway dialect helper insertIgnore delegates a structured command", async
         },
     };
 
-    const dialect = createDbDialectHelper(executor);
+    const dialect = createDatabaseDialectHelper(executor);
     await dialect.insertIgnore("modules", {
         module_id: "cognis-core",
         enabled: true,

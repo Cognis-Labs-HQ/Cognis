@@ -21,10 +21,13 @@ export function createOfflineReadCache({
     maxBytes = 4_000_000,
     maxEntries = 100,
     preferCached = false,
-    refreshIntervalMs = 30_000,
-    onlineMaxAgeMs = 0,
+    refreshIntervalMs: refreshIntervalMilliseconds = 30_000,
+    onlineMaxAgeMs: onlineMaxAgeMilliseconds = 0,
 } = {}) {
-    if (!Number.isFinite(onlineMaxAgeMs) || onlineMaxAgeMs < 0)
+    if (
+        !Number.isFinite(onlineMaxAgeMilliseconds) ||
+        onlineMaxAgeMilliseconds < 0
+    )
         throw new TypeError("invalid_online_cache_age");
     const snapshots = new Map();
     let identity;
@@ -101,7 +104,7 @@ export function createOfflineReadCache({
         if (expiry && !(Date.parse(expiry) > Date.now())) clear();
         if (
             identity !== currentIdentity ||
-            (!offlineEnabled() && !onlineMaxAgeMs)
+            (!offlineEnabled() && !onlineMaxAgeMilliseconds)
         )
             clear();
         identity = currentIdentity;
@@ -119,8 +122,8 @@ export function createOfflineReadCache({
         if (
             !refresh &&
             snapshots.has(key) &&
-            onlineMaxAgeMs > 0 &&
-            Date.now() - checkedAt.get(key) < onlineMaxAgeMs
+            onlineMaxAgeMilliseconds > 0 &&
+            Date.now() - checkedAt.get(key) < onlineMaxAgeMilliseconds
         )
             return restore();
         if (
@@ -131,7 +134,8 @@ export function createOfflineReadCache({
         ) {
             if (
                 !pending.has(key) &&
-                Date.now() - (checkedAt.get(key) ?? 0) >= refreshIntervalMs
+                Date.now() - (checkedAt.get(key) ?? 0) >=
+                    refreshIntervalMilliseconds
             ) {
                 checkedAt.set(key, Date.now());
                 void execute(key, load, canCache, true).catch((error) => {
@@ -186,7 +190,7 @@ export function createOfflineReadCache({
             return snapshots.has(key) ? restore() : result;
         if (
             loadGeneration !== generation ||
-            (!offlineEnabled() && !onlineMaxAgeMs) ||
+            (!offlineEnabled() && !onlineMaxAgeMilliseconds) ||
             readIdentity() !== currentIdentity ||
             !canCache(result)
         )
@@ -203,7 +207,7 @@ export function createOfflineReadCache({
             "cognis_session_expires_at",
         );
         if (
-            (!offlineEnabled() && !onlineMaxAgeMs) ||
+            (!offlineEnabled() && !onlineMaxAgeMilliseconds) ||
             (expiry && !(Date.parse(expiry) > Date.now())) ||
             (isOffline() && !offlinePolicy.allows())
         )

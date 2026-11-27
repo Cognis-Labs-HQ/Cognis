@@ -28,9 +28,9 @@ test("admin-only menu items carry the hidden attribute in the template", () => {
         resolve(ROOT, "src/ui/public/templates/dashboard-layout.html"),
         "utf8",
     );
-    const adminLiPattern =
+    const adminListItemPattern =
         /<li[^>]*class="admin-only"[^>]*hidden[^>]*>|<li[^>]*hidden[^>]*class="admin-only"[^>]*>/g;
-    const matches = [...template.matchAll(adminLiPattern)];
+    const matches = [...template.matchAll(adminListItemPattern)];
     assert.ok(
         matches.length >= 2,
         "expected at least two hidden admin-only <li> items",

@@ -156,8 +156,8 @@ test("service worker installation retains install icons within its precache imag
                 }),
             },
             console: {
-                warn: (...args: unknown[]) =>
-                    assert.fail(`precache failed: ${args}`),
+                warn: (...argumentsList: unknown[]) =>
+                    assert.fail(`precache failed: ${argumentsList}`),
             },
         },
     );

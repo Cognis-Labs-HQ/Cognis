@@ -17,7 +17,7 @@ import {
     createAuthTestContext,
     dispatchRoute,
     makeJsonRequest,
-    makeInMemoryDb,
+    makeInMemoryDb as makeInMemoryDatabase,
     type InMemoryDb,
 } from "../auth-gateway-test-helpers.js";
 
@@ -93,22 +93,22 @@ test("keyring adapter purges a vault after every persisted user deletion", async
     }
 });
 
-function createDbExecutor(): InMemoryDb {
-    return makeInMemoryDb();
+function createDatabaseExecutor(): InMemoryDb {
+    return makeInMemoryDatabase();
 }
 
 test("auth gateway bootstrap registers in GatewayRegistry", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-    const dbExecutor = createDbExecutor();
+    const databaseExecutor = createDatabaseExecutor();
 
     await bootstrap({
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
         capabilities,
-        ...createAuthTestContext(capabilities, dbExecutor),
+        ...createAuthTestContext(capabilities, databaseExecutor),
     });
 
     assert.equal(
@@ -117,22 +117,22 @@ test("auth gateway bootstrap registers in GatewayRegistry", async () => {
     );
 
     const gateways = gatewayRegistry.list();
-    const authGw = gateways.find((gateway) => gateway.id === "auth");
-    assert.ok(authGw, "auth gateway should be registered");
-    assert.equal(authGw.required, true);
+    const authGateway = gateways.find((gateway) => gateway.id === "auth");
+    assert.ok(authGateway, "auth gateway should be registered");
+    assert.equal(authGateway.required, true);
 });
 
 test("keyring cleanup preserves account identity and unrelated account owners", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-    const dbExecutor = createDbExecutor();
+    const databaseExecutor = createDatabaseExecutor();
     await bootstrap({
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
         capabilities,
-        ...createAuthTestContext(capabilities, dbExecutor),
+        ...createAuthTestContext(capabilities, databaseExecutor),
     });
     let profilePurges = 0;
     let messagePurges = 0;
@@ -173,14 +173,14 @@ test("auth gateway contributes account and token lifecycle capabilities", async 
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-    const dbExecutor = createDbExecutor();
+    const databaseExecutor = createDatabaseExecutor();
 
     await bootstrap({
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
         capabilities,
-        ...createAuthTestContext(capabilities, dbExecutor),
+        ...createAuthTestContext(capabilities, databaseExecutor),
     });
 
     assert.ok(
@@ -202,14 +202,14 @@ test("auth gateway exposes provider registration to modules", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-    const dbExecutor = createDbExecutor();
+    const databaseExecutor = createDatabaseExecutor();
 
     await bootstrap({
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
         capabilities,
-        ...createAuthTestContext(capabilities, dbExecutor),
+        ...createAuthTestContext(capabilities, databaseExecutor),
     });
 
     const registerProvider = capabilities.require<
@@ -328,9 +328,10 @@ test("runtime auth providers restore persisted activation before login UI regist
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-    const dbExecutor = createDbExecutor();
-    const executeCommand = dbExecutor.executeCommand.bind(dbExecutor);
-    dbExecutor.executeCommand = async (command) => {
+    const databaseExecutor = createDatabaseExecutor();
+    const executeCommand =
+        databaseExecutor.executeCommand.bind(databaseExecutor);
+    databaseExecutor.executeCommand = async (command) => {
         if (
             command.option === "SELECT" &&
             command.table === "auth_adapter_configs"
@@ -355,7 +356,7 @@ test("runtime auth providers restore persisted activation before login UI regist
         routeRegistry,
         gatewayRegistry,
         capabilities,
-        ...createAuthTestContext(capabilities, dbExecutor),
+        ...createAuthTestContext(capabilities, databaseExecutor),
     });
     let configuredClientId = "";
     const unregisterProvider = await capabilities.require<
@@ -401,7 +402,7 @@ test("registered auth providers own removable callback routes", async () => {
         routeRegistry,
         gatewayRegistry,
         capabilities,
-        ...createAuthTestContext(capabilities, createDbExecutor()),
+        ...createAuthTestContext(capabilities, createDatabaseExecutor()),
     });
     const registerProvider = capabilities.require<
         (provider: AuthProviderAdapter) => Promise<() => void>
@@ -415,9 +416,9 @@ test("registered auth providers own removable callback routes", async () => {
         configure() {},
         getConfigSchema: () => [],
         registerRoutes(router) {
-            router.get("/callback", (_req, res) => {
-                res.writeHead(302, { location: "/login" });
-                res.end("");
+            router.get("/callback", (_request, response) => {
+                response.writeHead(302, { location: "/login" });
+                response.end("");
             });
         },
     });
@@ -451,7 +452,9 @@ test("registered auth providers own removable callback routes", async () => {
                 configure() {},
                 getConfigSchema: () => [],
                 registerRoutes(router) {
-                    router.get("/callback", (_req, res) => res.end(""));
+                    router.get("/callback", (_request, response) =>
+                        response.end(""),
+                    );
                 },
             }),
         /auth_provider_route_duplicate/,
@@ -472,7 +475,9 @@ test("registered auth providers own removable callback routes", async () => {
         configure() {},
         getConfigSchema: () => [],
         registerRoutes(router) {
-            router.get("/callback", (_req, res) => res.end("unexpected"));
+            router.get("/callback", (_request, response) =>
+                response.end("unexpected"),
+            );
         },
     });
     const disabled = await dispatchRoute(
@@ -507,14 +512,14 @@ test("auth bootstrap registers canonical ctx flow skeletons", async () => {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-    const dbExecutor = createDbExecutor();
+    const databaseExecutor = createDatabaseExecutor();
 
     await bootstrap({
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
         capabilities,
-        ...createAuthTestContext(capabilities, dbExecutor),
+        ...createAuthTestContext(capabilities, databaseExecutor),
     });
 
     const flowCtx = capabilities.get<Ctx>(CTX_CAPABILITY);
@@ -589,14 +594,14 @@ test("auth bootstrap hook directory contributes route-level TFA login capabiliti
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-    const dbExecutor = createDbExecutor();
+    const databaseExecutor = createDatabaseExecutor();
 
     await bootstrap({
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
         capabilities,
-        ...createAuthTestContext(capabilities, dbExecutor),
+        ...createAuthTestContext(capabilities, databaseExecutor),
     });
 
     assert.equal(
@@ -626,7 +631,7 @@ test("auth gateway bootstrap registers correct static dir", async () => {
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
     const uiRegistry = new UIRegistry();
-    const dbExecutor = createDbExecutor();
+    const databaseExecutor = createDatabaseExecutor();
 
     await bootstrap({
         adaptersRoot: "/nonexistent",
@@ -634,18 +639,18 @@ test("auth gateway bootstrap registers correct static dir", async () => {
         gatewayRegistry,
         capabilities,
         uiRegistry,
-        ...createAuthTestContext(capabilities, dbExecutor),
+        ...createAuthTestContext(capabilities, databaseExecutor),
     });
 
-    const staticDir = uiRegistry.getStaticDir("auth");
+    const staticDirectory = uiRegistry.getStaticDir("auth");
     assert.ok(
-        staticDir,
+        staticDirectory,
         "auth gateway must register a static dir with UIRegistry",
     );
 
     await assert.doesNotReject(
-        access(staticDir),
-        `static dir must exist on disk: ${staticDir}`,
+        access(staticDirectory),
+        `static dir must exist on disk: ${staticDirectory}`,
     );
 });
 
@@ -654,7 +659,7 @@ test("auth gateway registers adapter-owned UI directories", async () => {
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
     const uiRegistry = new UIRegistry();
-    const dbExecutor = createDbExecutor();
+    const databaseExecutor = createDatabaseExecutor();
 
     await bootstrap({
         adaptersRoot: new URL("../../../../adapters", import.meta.url).pathname,
@@ -662,7 +667,7 @@ test("auth gateway registers adapter-owned UI directories", async () => {
         gatewayRegistry,
         capabilities,
         uiRegistry,
-        ...createAuthTestContext(capabilities, dbExecutor),
+        ...createAuthTestContext(capabilities, databaseExecutor),
     });
 
     const ldapUiDirectory = uiRegistry.getAdapterStaticDir("auth", "ldap");
@@ -694,7 +699,7 @@ test("auth gateway bootstrap registers security section without redundant authen
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
     const uiRegistry = new UIRegistry();
-    const dbExecutor = createDbExecutor();
+    const databaseExecutor = createDatabaseExecutor();
 
     await bootstrap({
         adaptersRoot: "/nonexistent",
@@ -702,7 +707,7 @@ test("auth gateway bootstrap registers security section without redundant authen
         gatewayRegistry,
         capabilities,
         uiRegistry,
-        ...createAuthTestContext(capabilities, dbExecutor),
+        ...createAuthTestContext(capabilities, databaseExecutor),
     });
 
     const sections = uiRegistry.listAdminSections();
@@ -728,20 +733,22 @@ test("auth gateway bootstrap registers security section without redundant authen
         "/static/gateways/auth/security-prefs/index.js",
     );
 
-    const staticDir = uiRegistry.getStaticDir("auth");
-    assert.ok(staticDir, "auth gateway must register a static dir");
+    const staticDirectory = uiRegistry.getStaticDir("auth");
+    assert.ok(staticDirectory, "auth gateway must register a static dir");
 });
 
 test("CoreAuthGateway.getEnabledAdapter returns null for a disabled adapter", async () => {
     const { CoreAuthGateway } = await import("../../gateway.js");
 
     const database = {
-        execute: async (_sql: string, _params?: unknown[]) => ({ rows: [] }),
+        execute: async (_sql: string, _parameters?: unknown[]) => ({
+            rows: [],
+        }),
         executeCommand: async () => ({ rows: [] }),
-    } as ReturnType<typeof makeInMemoryDb> & {
+    } as ReturnType<typeof makeInMemoryDatabase> & {
         execute: (
             sql: string,
-            params?: unknown[],
+            parameters?: unknown[],
         ) => Promise<{ rows?: unknown[] }>;
         executeCommand: () => Promise<{ rows?: unknown[] }>;
     };
@@ -810,7 +817,7 @@ test("CoreAuthGateway restores locked adapters despite persisted disablement", a
 
 test("CoreAuthGateway lists adapter publisher metadata", async () => {
     const { CoreAuthGateway } = await import("../../gateway.js");
-    const gateway = new CoreAuthGateway(makeInMemoryDb());
+    const gateway = new CoreAuthGateway(makeInMemoryDatabase());
 
     gateway.registerAdapter({
         id: "oidc",
@@ -833,7 +840,7 @@ test("CoreAuthGateway lists a locked keyring without treating it as a login prov
     const { CoreAuthGateway } = await import("../../gateway.js");
     const { createAdapter } =
         await import("../../../../adapters/auth/keyring/index.js");
-    const gateway = new CoreAuthGateway(makeInMemoryDb());
+    const gateway = new CoreAuthGateway(makeInMemoryDatabase());
 
     gateway.registerAdapter(createAdapter(), ["db"]);
 

@@ -110,12 +110,12 @@ test("plugin commands use structured summaries by default", async () => {
 test("search:query maps wizard-friendly query fields to search API", async () => {
     const originalFetch = globalThis.fetch;
     try {
-        globalThis.fetch = async (input, init) => {
+        globalThis.fetch = async (input, requestOptions) => {
             assert.equal(
                 String(input),
                 "http://localhost:3000/api/v1/search?q=alice&type=users",
             );
-            assert.equal(init?.method, "GET");
+            assert.equal(requestOptions?.method, "GET");
             return new Response(JSON.stringify({ data: [] }), {
                 status: 200,
                 headers: { "content-type": "application/json" },
@@ -163,12 +163,12 @@ test("renderStructuredSummary turns JSON arrays and metadata into readable outpu
 test("calendar:events maps calendar IDs to inspection routes", async () => {
     const originalFetch = globalThis.fetch;
     try {
-        globalThis.fetch = async (input, init) => {
+        globalThis.fetch = async (input, requestOptions) => {
             assert.equal(
                 String(input),
                 "http://localhost:3000/api/v1/calendar/calendars/cal-1/events",
             );
-            assert.equal(init?.method, "GET");
+            assert.equal(requestOptions?.method, "GET");
             return new Response(JSON.stringify({ data: [] }), {
                 status: 200,
                 headers: { "content-type": "application/json" },
@@ -193,12 +193,12 @@ test("calendar:events maps calendar IDs to inspection routes", async () => {
 test("tfa CLI commands require a target username", async () => {
     const originalFetch = globalThis.fetch;
     try {
-        globalThis.fetch = async (input, init) => {
+        globalThis.fetch = async (input, requestOptions) => {
             assert.equal(
                 String(input),
                 "http://localhost:3000/api/v1/tfa/methods?accountId=alice",
             );
-            assert.equal(init?.method, "GET");
+            assert.equal(requestOptions?.method, "GET");
             return new Response(
                 JSON.stringify({ data: { enabledMethods: [] } }),
                 {
@@ -226,12 +226,12 @@ test("tfa CLI commands require a target username", async () => {
 test("calendar:list requires a target username and forwards account ID", async () => {
     const originalFetch = globalThis.fetch;
     try {
-        globalThis.fetch = async (input, init) => {
+        globalThis.fetch = async (input, requestOptions) => {
             assert.equal(
                 String(input),
                 "http://localhost:3000/api/v1/calendar/calendars?accountId=alice",
             );
-            assert.equal(init?.method, "GET");
+            assert.equal(requestOptions?.method, "GET");
             return new Response(
                 JSON.stringify({
                     data: [{ id: "cal-1", ownerAccountId: "alice" }],
@@ -265,12 +265,12 @@ test("calendar:list requires a target username and forwards account ID", async (
 test("feature CLI command maps optional query JSON to API route", async () => {
     const originalFetch = globalThis.fetch;
     try {
-        globalThis.fetch = async (input, init) => {
+        globalThis.fetch = async (input, requestOptions) => {
             assert.equal(
                 String(input),
                 "http://localhost:3000/api/v1/share/tokens?resourceType=meeting&resourceId=meeting-1",
             );
-            assert.equal(init?.method, "GET");
+            assert.equal(requestOptions?.method, "GET");
             return new Response(JSON.stringify({ data: [] }), {
                 status: 200,
                 headers: { "content-type": "application/json" },
@@ -300,14 +300,14 @@ test("feature CLI command maps optional query JSON to API route", async () => {
 test("notify:send accepts structured JSON payloads for direct execution", async () => {
     const originalFetch = globalThis.fetch;
     try {
-        globalThis.fetch = async (input, init) => {
+        globalThis.fetch = async (input, requestOptions) => {
             assert.equal(
                 String(input),
                 "http://localhost:3000/api/v1/notify/send",
             );
-            assert.equal(init?.method, "POST");
+            assert.equal(requestOptions?.method, "POST");
             assert.equal(
-                init?.body,
+                requestOptions?.body,
                 JSON.stringify({
                     category: "system",
                     recipientUsername: "alice",
@@ -359,9 +359,11 @@ test("global help includes component commands under the Components section", () 
 });
 
 test("loadModuleCliPlugins filters commands for disabled components", async () => {
-    const tempRoot = await mkdtemp(path.join(tmpdir(), "cognis-cli-filter-"));
-    const enabledRoot = path.join(tempRoot, "enabled-module");
-    const disabledRoot = path.join(tempRoot, "disabled-module");
+    const temporaryRoot = await mkdtemp(
+        path.join(tmpdir(), "cognis-cli-filter-"),
+    );
+    const enabledRoot = path.join(temporaryRoot, "enabled-module");
+    const disabledRoot = path.join(temporaryRoot, "disabled-module");
     const previousModulePaths = process.env.COGNIS_MODULE_CLI_PATHS;
     const previousGatewayPaths = process.env.COGNIS_GATEWAY_CLI_PATHS;
     const previousAdapterPaths = process.env.COGNIS_ADAPTER_CLI_PATHS;
@@ -394,9 +396,15 @@ test("loadModuleCliPlugins filters commands for disabled components", async () =
             }`,
         );
 
-        process.env.COGNIS_MODULE_CLI_PATHS = tempRoot;
-        process.env.COGNIS_GATEWAY_CLI_PATHS = path.join(tempRoot, "gateways");
-        process.env.COGNIS_ADAPTER_CLI_PATHS = path.join(tempRoot, "adapters");
+        process.env.COGNIS_MODULE_CLI_PATHS = temporaryRoot;
+        process.env.COGNIS_GATEWAY_CLI_PATHS = path.join(
+            temporaryRoot,
+            "gateways",
+        );
+        process.env.COGNIS_ADAPTER_CLI_PATHS = path.join(
+            temporaryRoot,
+            "adapters",
+        );
         globalThis.fetch = async (input) => {
             const requestUrl = String(input);
             if (requestUrl.endsWith("/api/v1/modules")) {
@@ -450,16 +458,18 @@ test("loadModuleCliPlugins filters commands for disabled components", async () =
         } else {
             process.env.COGNIS_ADAPTER_CLI_PATHS = previousAdapterPaths;
         }
-        await removePath(tempRoot, { recursive: true, force: true });
+        await removePath(temporaryRoot, { recursive: true, force: true });
     }
 });
 
 test("loadModuleCliPlugins discovers manifest-declared component CLI commands", async () => {
-    const tempRoot = await mkdtemp(path.join(tmpdir(), "cognis-cli-modules-"));
-    const moduleRoot = path.join(tempRoot, "demo-component");
-    const gatewayRoot = path.join(tempRoot, "demo-gateway");
+    const temporaryRoot = await mkdtemp(
+        path.join(tmpdir(), "cognis-cli-modules-"),
+    );
+    const moduleRoot = path.join(temporaryRoot, "demo-component");
+    const gatewayRoot = path.join(temporaryRoot, "demo-gateway");
     const adapterRoot = path.join(
-        tempRoot,
+        temporaryRoot,
         "demo-gateway-adapters",
         "demo-adapter",
     );
@@ -506,9 +516,9 @@ test("loadModuleCliPlugins discovers manifest-declared component CLI commands", 
             }`,
         );
 
-        process.env.COGNIS_MODULE_CLI_PATHS = tempRoot;
-        process.env.COGNIS_GATEWAY_CLI_PATHS = tempRoot;
-        process.env.COGNIS_ADAPTER_CLI_PATHS = tempRoot;
+        process.env.COGNIS_MODULE_CLI_PATHS = temporaryRoot;
+        process.env.COGNIS_GATEWAY_CLI_PATHS = temporaryRoot;
+        process.env.COGNIS_ADAPTER_CLI_PATHS = temporaryRoot;
         await loadModuleCliPlugins({ refresh: true });
 
         assert.ok(registry.has("demo-component:inspect"));
@@ -552,6 +562,6 @@ test("loadModuleCliPlugins discovers manifest-declared component CLI commands", 
         } else {
             process.env.COGNIS_ADAPTER_CLI_PATHS = previousAdapterPaths;
         }
-        await removePath(tempRoot, { recursive: true, force: true });
+        await removePath(temporaryRoot, { recursive: true, force: true });
     }
 });

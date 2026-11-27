@@ -25,12 +25,14 @@ test("checkout fetches the pinned commit with a bounded transfer and idle policy
     assert.equal(
         await checkoutModuleRepository(
             options,
-            async (file, args, commandOptions) => {
+            async (file, argumentsList, commandOptions) => {
                 assert.equal(file, "git");
                 assert.equal(commandOptions.env, options.environment);
                 assert.equal(commandOptions.timeout, 15 * 60 * 1000);
-                commands.push(args);
-                return { stdout: args.includes("rev-parse") ? commit : "" };
+                commands.push(argumentsList);
+                return {
+                    stdout: argumentsList.includes("rev-parse") ? commit : "",
+                };
             },
         ),
         commit,
@@ -87,8 +89,8 @@ for (const scenario of [
                         logs.push(metadata ?? {});
                     },
                 },
-                async (_file, args) => {
-                    if (args.includes("fetch")) {
+                async (_file, argumentsList) => {
+                    if (argumentsList.includes("fetch")) {
                         transfers += 1;
                         throw failure;
                     }
@@ -111,8 +113,8 @@ test("checkout fails promptly on authorization errors and rejects an unexpected 
     const options = await fixture(context);
     let transfers = 0;
     await assert.rejects(
-        checkoutModuleRepository(options, async (_file, args) => {
-            if (args.includes("fetch")) {
+        checkoutModuleRepository(options, async (_file, argumentsList) => {
+            if (argumentsList.includes("fetch")) {
                 transfers += 1;
                 throw new Error("Authentication failed");
             }

@@ -49,11 +49,11 @@ export async function mount(root, { signal } = {}) {
 
     async function loadAvailable() {
         try {
-            const languageParam = selectedLanguageFilter
+            const languageParameter = selectedLanguageFilter
                 ? `?language=${encodeURIComponent(selectedLanguageFilter)}`
                 : "";
             const response = await apiFetch(
-                `/api/v1/study/available-classes${languageParam}`,
+                `/api/v1/study/available-classes${languageParameter}`,
             );
             if (response.ok) {
                 const payload = await response.json();
@@ -70,7 +70,9 @@ export async function mount(root, { signal } = {}) {
 
     function buildLanguageOptions() {
         const languages = [
-            ...new Set(availableClasses.map((cls) => cls.languageCode)),
+            ...new Set(
+                availableClasses.map((studyClass) => studyClass.languageCode),
+            ),
         ].sort();
         return languages;
     }
@@ -81,17 +83,17 @@ export async function mount(root, { signal } = {}) {
         }
         const items = enrolledClasses
             .map(
-                (cls) => `
+                (studyClass) => `
           <li class="classes-item">
-            <span class="classes-language">${escapeHtml(cls.languageCode)}</span>
+            <span class="classes-language">${escapeHtml(studyClass.languageCode)}</span>
             <span class="classes-member-count">
-              ${escapeHtml(i18n.t("module.study.classes.teacher"))}: ${escapeHtml(cls.teacherAccountId)}
+              ${escapeHtml(i18n.t("module.study.classes.teacher"))}: ${escapeHtml(studyClass.teacherAccountId)}
             </span>
             <div class="classes-actions">
               <button
                 type="button"
                 class="btn-cancel btn-animated classes-leave-btn"
-                data-class-id="${escapeHtml(cls.id)}"
+                data-class-id="${escapeHtml(studyClass.id)}"
               >${escapeHtml(i18n.t("module.study.classes.leave_class"))}</button>
             </div>
           </li>
@@ -133,17 +135,17 @@ export async function mount(root, { signal } = {}) {
         }
         const items = availableClasses
             .map(
-                (cls) => `
+                (studyClass) => `
           <li class="classes-item">
-            <span class="classes-language">${escapeHtml(cls.languageCode)}</span>
+            <span class="classes-language">${escapeHtml(studyClass.languageCode)}</span>
             <span class="classes-member-count">
-              ${escapeHtml(i18n.t("module.study.classes.teacher"))}: ${escapeHtml(cls.teacherAccountId)}
+              ${escapeHtml(i18n.t("module.study.classes.teacher"))}: ${escapeHtml(studyClass.teacherAccountId)}
             </span>
             <div class="classes-actions">
               <button
                 type="button"
                 class="btn-confirm btn-animated classes-join-btn"
-                data-class-id="${escapeHtml(cls.id)}"
+                data-class-id="${escapeHtml(studyClass.id)}"
               >${escapeHtml(i18n.t("module.study.classes.join_request"))}</button>
             </div>
           </li>

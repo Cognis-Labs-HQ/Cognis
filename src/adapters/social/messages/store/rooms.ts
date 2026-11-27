@@ -31,7 +31,7 @@ export async function createRoom(
     return rowToRoom(result.rows![0]);
 }
 
-export async function createDm(
+async function createDirectMessage(
     database: DbExecutor,
     accountA: string,
     accountB: string,
@@ -39,6 +39,7 @@ export async function createDm(
     if (accountA === accountB) throw new Error("dm_participants_must_differ");
     return createRoom(database, "dm", null, accountA);
 }
+export { createDirectMessage as createDm };
 
 export async function getRoom(
     database: DbExecutor,
@@ -133,8 +134,8 @@ export async function deleteRoom(
     database: DbExecutor,
     roomId: string,
 ): Promise<void> {
-    await database.transaction(async (transactionDb) => {
-        await deleteRoomRecords(transactionDb, roomId);
+    await database.transaction(async (transactionDatabase) => {
+        await deleteRoomRecords(transactionDatabase, roomId);
     });
 }
 
@@ -169,15 +170,15 @@ export async function deleteRoomForActor(
     roomId: string,
     actorAccountId: string,
 ): Promise<"deleted" | "forbidden" | "not_found"> {
-    return database.transaction(async (transactionDb) => {
-        const room = await getRoom(transactionDb, roomId);
+    return database.transaction(async (transactionDatabase) => {
+        const room = await getRoom(transactionDatabase, roomId);
         if (!room) return "not_found";
-        const members = await listMembers(transactionDb, roomId);
+        const members = await listMembers(transactionDatabase, roomId);
         const isOwner = room.createdBy === actorAccountId;
         const isSoleParticipant =
             members.length === 1 && members[0]?.accountId === actorAccountId;
         if (!isOwner && !isSoleParticipant) return "forbidden";
-        await deleteRoomRecords(transactionDb, roomId);
+        await deleteRoomRecords(transactionDatabase, roomId);
         return "deleted";
     });
 }
@@ -236,7 +237,7 @@ export async function listRoomsForAccount(
     return (result.rows ?? []).map((row) => rowToRoom(row));
 }
 
-export async function findDmBetween(
+async function findDirectMessageBetween(
     database: DbExecutor,
     accountA: string,
     accountB: string,
@@ -294,6 +295,7 @@ export async function findDmBetween(
     }
     return null;
 }
+export { findDirectMessageBetween as findDmBetween };
 
 export async function updateRoomTitle(
     database: DbExecutor,

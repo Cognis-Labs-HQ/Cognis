@@ -1,9 +1,9 @@
-import { execFile } from "node:child_process";
+import { execFile as executorFile } from "node:child_process";
 import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
 
-const execFileAsync = promisify(execFile);
+const executorFileAsync = promisify(executorFile);
 const TEST_FILE_PATTERN = /\.test\.(?:[cm]?[jt]s)$/;
 const TSX_IMPORT_URL = import.meta.resolve("tsx");
 
@@ -46,7 +46,7 @@ export class ModuleTestService {
         const testFiles = await discoverTestFiles(moduleRoot);
         if (testFiles.length === 0) return;
         try {
-            await execFileAsync(
+            await executorFileAsync(
                 process.execPath,
                 ["--import", TSX_IMPORT_URL, "--test", ...testFiles],
                 {

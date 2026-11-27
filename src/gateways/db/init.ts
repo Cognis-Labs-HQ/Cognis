@@ -32,13 +32,18 @@ import { sha256Of } from "../../api/reuse/crypto.js";
 
 /** Minimal logging interface required by the database initializer. */
 export interface DbInitLogger {
-    info(message: string, meta?: Record<string, unknown>): void | Promise<void>;
+    info(
+        message: string,
+        metadata?: Record<string, unknown>,
+    ): void | Promise<void>;
 }
 
-export function resolveDbProviderDir(dbType: string) {
-    if (dbType === "mariadb" || dbType === "mysql") return "mariadb";
+function resolveDatabaseProviderDirectory(databaseType: string) {
+    if (databaseType === "mariadb" || databaseType === "mysql")
+        return "mariadb";
     return "postgres";
 }
+export { resolveDatabaseProviderDirectory as resolveDbProviderDir };
 
 function splitSqlStatements(sql: string): string[] {
     return sql
@@ -51,10 +56,10 @@ function splitSqlStatements(sql: string): string[] {
 }
 
 async function ensureMigrationsTable(
-    dir: string,
+    directory: string,
     executor: DbExecutor,
 ): Promise<void> {
-    if (dir === "mariadb") {
+    if (directory === "mariadb") {
         await executor.execute(
             `CREATE TABLE IF NOT EXISTS db_migrations (
   id VARCHAR(191) PRIMARY KEY,
@@ -73,16 +78,16 @@ async function ensureMigrationsTable(
     }
 }
 
-function migrationPlaceholder(dir: string, index: number): string {
-    return dir === "postgres" ? `$${index}` : "?";
+function migrationPlaceholder(directory: string, index: number): string {
+    return directory === "postgres" ? `$${index}` : "?";
 }
 
 async function isMigrationApplied(
     id: string,
-    dir: string,
+    directory: string,
     executor: DbExecutor,
 ): Promise<boolean> {
-    const placeholder = migrationPlaceholder(dir, 1);
+    const placeholder = migrationPlaceholder(directory, 1);
     const result = await executor.execute(
         `SELECT id FROM db_migrations WHERE id = ${placeholder}`,
         [id],
@@ -93,11 +98,11 @@ async function isMigrationApplied(
 async function recordMigration(
     id: string,
     checksum: string,
-    dir: string,
+    directory: string,
     executor: DbExecutor,
 ): Promise<void> {
     const now = new Date().toISOString();
-    if (dir === "postgres") {
+    if (directory === "postgres") {
         await executor.execute(
             "INSERT INTO db_migrations (id, sha256, applied_at) VALUES ($1, $2, $3) ON CONFLICT (id) DO NOTHING",
             [id, checksum, now],
@@ -115,11 +120,15 @@ const INIT_SENTINEL_CHECKSUM = "phase-sentinel";
 
 async function runInitPhase(
     initRoot: string,
-    dir: string,
+    directory: string,
     logger: DbInitLogger,
     executor: DbExecutor,
 ): Promise<{ files: string[]; sqlCount: number }> {
-    const already = await isMigrationApplied(INIT_SENTINEL_ID, dir, executor);
+    const already = await isMigrationApplied(
+        INIT_SENTINEL_ID,
+        directory,
+        executor,
+    );
     if (already) {
         await logger.info("Database init phase already applied, skipping.", {
             dir: initRoot,
@@ -136,7 +145,7 @@ async function runInitPhase(
         await recordMigration(
             INIT_SENTINEL_ID,
             INIT_SENTINEL_CHECKSUM,
-            dir,
+            directory,
             executor,
         );
         return { files: [], sqlCount: 0 };
@@ -164,7 +173,7 @@ async function runInitPhase(
     await recordMigration(
         INIT_SENTINEL_ID,
         INIT_SENTINEL_CHECKSUM,
-        dir,
+        directory,
         executor,
     );
     return { files, sqlCount: files.length };
@@ -172,7 +181,7 @@ async function runInitPhase(
 
 async function runMigratePhase(
     migrateRoot: string,
-    dir: string,
+    directory: string,
     logger: DbInitLogger,
     executor: DbExecutor,
 ): Promise<{ files: string[]; sqlCount: number }> {
@@ -193,7 +202,11 @@ async function runMigratePhase(
     for (let i = 0; i < files.length; i++) {
         const migrationId = `migrate:${files[i]}`;
         const checksum = sha256Of(contents[i]);
-        const already = await isMigrationApplied(migrationId, dir, executor);
+        const already = await isMigrationApplied(
+            migrationId,
+            directory,
+            executor,
+        );
         if (already) {
             await logger.info(
                 "Database migration script already applied, skipping.",
@@ -205,7 +218,7 @@ async function runMigratePhase(
         for (const statement of statements) {
             await executor.execute(statement);
         }
-        await recordMigration(migrationId, checksum, dir, executor);
+        await recordMigration(migrationId, checksum, directory, executor);
         await logger.info("Database migration script applied.", {
             file: files[i],
         });
@@ -216,28 +229,34 @@ async function runMigratePhase(
 }
 
 export async function initializeDatabaseSchema(
-    dbType: string,
+    databaseType: string,
     logger: DbInitLogger,
     executor: DbExecutor,
     adaptersRoot: string = path.resolve(process.cwd(), "src", "adapters"),
 ) {
-    const dir = resolveDbProviderDir(dbType);
-    const initRoot = path.join(adaptersRoot, "db", dir, "sql", "init");
-    const migrateRoot = path.join(adaptersRoot, "db", dir, "sql", "migrate");
+    const directory = resolveDatabaseProviderDirectory(databaseType);
+    const initRoot = path.join(adaptersRoot, "db", directory, "sql", "init");
+    const migrateRoot = path.join(
+        adaptersRoot,
+        "db",
+        directory,
+        "sql",
+        "migrate",
+    );
 
-    await ensureMigrationsTable(dir, executor);
+    await ensureMigrationsTable(directory, executor);
 
     const { files: initFiles, sqlCount: initCount } = await runInitPhase(
         initRoot,
-        dir,
+        directory,
         logger,
         executor,
     );
     const { files: migrateFiles, sqlCount: migrateCount } =
-        await runMigratePhase(migrateRoot, dir, logger, executor);
+        await runMigratePhase(migrateRoot, directory, logger, executor);
 
     return {
-        dbType: dir,
+        dbType: directory,
         files: [...initFiles, ...migrateFiles],
         sqlCount: initCount + migrateCount,
     };

@@ -10,18 +10,18 @@ import type {
     RoomRow,
     TypingRow,
 } from "./types.js";
-import { readDbTimestampValue } from "../../../../gateways/db/reuse/timestamp.js";
+import { readDbTimestampValue as readDatabaseTimestampValue } from "../../../../gateways/db/reuse/timestamp.js";
 
 function readString(value: unknown, fallback = ""): string {
     if (value instanceof Date) {
-        return readDbTimestampValue(value) ?? fallback;
+        return readDatabaseTimestampValue(value) ?? fallback;
     }
     return value == null ? fallback : String(value);
 }
 
 function readNullableString(value: unknown): string | null {
     if (value instanceof Date) {
-        return readDbTimestampValue(value);
+        return readDatabaseTimestampValue(value);
     }
     return value == null ? null : String(value);
 }

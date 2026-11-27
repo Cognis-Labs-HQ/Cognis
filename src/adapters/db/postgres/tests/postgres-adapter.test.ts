@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-    PostgresDbGateway,
-    createDbExecutor,
+    PostgresDbGateway as PostgresDatabaseGateway,
+    createDbExecutor as createDatabaseExecutor,
     readPostgresPoolSettings,
     type PostgresClient,
     type PostgresPool,
@@ -55,7 +55,7 @@ test("postgres adapter executes concurrent ordinary queries through the pool", a
             return { rows: [{ statement }], rowCount: 1 };
         }) as PostgresPool["query"],
     });
-    const gateway = new PostgresDbGateway(pool);
+    const gateway = new PostgresDatabaseGateway(pool);
 
     const results = await Promise.all([
         gateway.query("SELECT 1"),
@@ -90,7 +90,7 @@ test("postgres transaction keeps every statement on its acquired client", async 
         connect: async () => client,
     });
 
-    await new PostgresDbGateway(pool).transaction(async (transaction) => {
+    await new PostgresDatabaseGateway(pool).transaction(async (transaction) => {
         await transaction.query("SELECT transaction_value");
         await transaction.execute("UPDATE transaction_value");
     });
@@ -114,7 +114,7 @@ test("postgres pool recovers after an ordinary query connection failure", async 
             return { rows: [{ recovered: true }], rowCount: 1 };
         },
     });
-    const gateway = new PostgresDbGateway(pool);
+    const gateway = new PostgresDatabaseGateway(pool);
 
     await assert.rejects(gateway.query("SELECT 1"), /connection unavailable/);
     const result = await gateway.query<{ recovered: boolean }>("SELECT 1");
@@ -140,7 +140,7 @@ test("postgres transaction rolls back and releases its client after failure", as
     });
 
     await assert.rejects(
-        new PostgresDbGateway(pool).transaction(async () => {
+        new PostgresDatabaseGateway(pool).transaction(async () => {
             throw new Error("transaction failed");
         }),
         /transaction failed/,
@@ -159,7 +159,7 @@ test("postgres adapter registers pool shutdown with the lifecycle capability", a
         },
     });
 
-    await createDbExecutor({
+    await createDatabaseExecutor({
         databaseUrl: "postgresql://unused",
         pool,
         lifecycle: {
@@ -177,13 +177,13 @@ test("postgres adapter registers pool shutdown with the lifecycle capability", a
 test("postgres adapter executes structured commands", async () => {
     const calls: Array<{ sql: string; params?: unknown[] }> = [];
     const pool = createPool({
-        query: async (sql: string, params?: unknown[]) => {
-            calls.push({ sql, params });
+        query: async (sql: string, parameters?: unknown[]) => {
+            calls.push({ sql, params: parameters });
             return { rows: [{ id: 3 }], rowCount: 1 };
         },
     });
 
-    const result = await new PostgresDbGateway(pool).executeCommand({
+    const result = await new PostgresDatabaseGateway(pool).executeCommand({
         option: "DELETE",
         table: "profiles",
         where: [{ column: "id", value: 3 }],
@@ -208,7 +208,7 @@ test("postgres queries have a finite default statement timeout", () => {
 
 test("postgres preserves foreign keys while healing missing columns", async () => {
     const statements: string[] = [];
-    const executor = await createDbExecutor({
+    const executor = await createDatabaseExecutor({
         databaseUrl: "postgresql://unused",
         pool: createPool({
             query: async (sql: string) => {
@@ -250,7 +250,7 @@ test("postgres preserves foreign keys while healing missing columns", async () =
 
 test("postgres renames legacy columns without losing their values", async () => {
     const statements: string[] = [];
-    const executor = await createDbExecutor({
+    const executor = await createDatabaseExecutor({
         databaseUrl: "postgresql://unused",
         pool: createPool({
             query: async (sql: string) => {

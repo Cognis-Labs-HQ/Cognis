@@ -2,18 +2,18 @@ import type { DocView } from "./sources.js";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { resolveLangs } from "../../reuse/preferred-languages.js";
+import { resolveLangs as resolveLanguages } from "../../reuse/preferred-languages.js";
 import {
-    initializeDocsStore,
+    initializeDocsStore as initializeDocumentsStore,
     readStoredMarkdown,
     type StoredDoc,
 } from "./store.js";
 
-const SRC_ROOT = join(process.cwd(), "src");
+const SOURCE_ROOT = join(process.cwd(), "src");
 const EXTERNAL_MODULES_ROOT =
     process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
     join(process.cwd(), "external-modules");
-export function resolveDocsArchiveRoot(
+function resolveDocumentsArchiveRoot(
     environment: NodeJS.ProcessEnv = process.env,
     userHome = homedir(),
 ): string {
@@ -25,6 +25,7 @@ export function resolveDocsArchiveRoot(
     }
     return join(userHome, ".cognis", "docs-archive");
 }
+export { resolveDocumentsArchiveRoot as resolveDocsArchiveRoot };
 
 interface DocEntry extends StoredDoc {
     slug: string;
@@ -87,16 +88,16 @@ function buildChangelogIndexMarkdown(
     return [`# ${title}`, "", ...sections].join("\n");
 }
 
-async function collectDocIndex(
-    storedDocsPromise: Promise<Map<string, StoredDoc>>,
+async function collectDocumentIndex(
+    storedDocumentsPromise: Promise<Map<string, StoredDoc>>,
 ): Promise<Map<string, DocEntry>> {
-    const storedDocs = await storedDocsPromise;
+    const storedDocuments = await storedDocumentsPromise;
     const bySlug = new Map<string, DocEntry>();
-    for (const [slug, doc] of storedDocs) {
+    for (const [slug, document] of storedDocuments) {
         bySlug.set(slug, {
-            ...doc,
+            ...document,
             path: `/api/v1/docs/latest/${slug}`,
-            sourceName: doc.sourceName,
+            sourceName: document.sourceName,
         });
     }
 
@@ -128,29 +129,31 @@ const NOT_FOUND_BODY = JSON.stringify({
     error: { code: "not_found", message: "Documentation not found" },
 });
 
-export function createDocsRoutes(
+function createDocumentsRoutes(
     options: {
         sourceRoot?: string | string[];
         archiveRoot?: string;
     } = {},
 ) {
-    const archiveRoot = options.archiveRoot ?? resolveDocsArchiveRoot();
-    const loadStoredDocs = (languages: string[]) =>
-        initializeDocsStore(
-            options.sourceRoot ?? [SRC_ROOT, EXTERNAL_MODULES_ROOT],
+    const archiveRoot = options.archiveRoot ?? resolveDocumentsArchiveRoot();
+    const loadStoredDocuments = (languages: string[]) =>
+        initializeDocumentsStore(
+            options.sourceRoot ?? [SOURCE_ROOT, EXTERNAL_MODULES_ROOT],
             archiveRoot,
             languages,
         );
     return async (
-        req: IncomingMessage,
-        res: ServerResponse,
+        request: IncomingMessage,
+        response: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        if (req.method !== "GET") return false;
-        const langs = resolveLangs(url);
+        if (request.method !== "GET") return false;
+        const languages = resolveLanguages(url);
 
         if (url.pathname === "/api/v1/docs") {
-            const index = await collectDocIndex(loadStoredDocs(langs));
+            const index = await collectDocumentIndex(
+                loadStoredDocuments(languages),
+            );
             const data = [...index.values()].map(
                 ({
                     slug,
@@ -172,8 +175,8 @@ export function createDocsRoutes(
                     views,
                 }),
             );
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data }));
             return true;
         }
 
@@ -189,7 +192,9 @@ export function createDocsRoutes(
         const rawSlug = (match?.[2] ?? legacyMatch?.[1] ?? "")
             .replace(/\.\./g, "")
             .replace(/\/+/g, "/");
-        const index = await collectDocIndex(loadStoredDocs(langs));
+        const index = await collectDocumentIndex(
+            loadStoredDocuments(languages),
+        );
         let slug = rawSlug;
         let view: DocView = "info";
         if (!index.has(slug)) {
@@ -207,8 +212,8 @@ export function createDocsRoutes(
         const entry = index.get(slug);
 
         if (!entry || !entry.views.includes(view)) {
-            res.writeHead(404, { "content-type": "application/json" });
-            res.end(NOT_FOUND_BODY);
+            response.writeHead(404, { "content-type": "application/json" });
+            response.end(NOT_FOUND_BODY);
             return true;
         }
 
@@ -218,20 +223,20 @@ export function createDocsRoutes(
                 archiveRoot,
                 entry,
                 requestedVersion,
-                langs,
+                languages,
                 view,
             ));
 
         if (content === undefined) {
-            res.writeHead(404, { "content-type": "application/json" });
-            res.end(NOT_FOUND_BODY);
+            response.writeHead(404, { "content-type": "application/json" });
+            response.end(NOT_FOUND_BODY);
             return true;
         }
 
         const markdown = withChangelogBranch(content, rawSlug);
 
-        res.writeHead(200, { "content-type": "application/json" });
-        res.end(
+        response.writeHead(200, { "content-type": "application/json" });
+        response.end(
             JSON.stringify({
                 data: {
                     slug,
@@ -247,3 +252,4 @@ export function createDocsRoutes(
         return true;
     };
 }
+export { createDocumentsRoutes as createDocsRoutes };

@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from "node:fs";
-import { dirname, relative, resolve, sep } from "node:path";
+import { dirname, relative, resolve, sep as separator } from "node:path";
 import { componentManifestFiles, sourceFiles } from "../component-files.js";
 
 export function assetOwnershipIssues(assets) {
@@ -64,7 +64,7 @@ export function inspectCoreAssetOwnership(root) {
         .filter((path) => /\.(?:js|ts|css|html|json)$/.test(path))
         .map((path) => {
             const owner = components.find((directory) =>
-                path.startsWith(directory + sep),
+                path.startsWith(directory + separator),
             );
             const content = readFileSync(path, "utf8");
             return {

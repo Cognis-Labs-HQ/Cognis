@@ -22,26 +22,31 @@ export function createDrawingRoutes(
         input: DrawingCompletion,
     ) => Promise<void>,
     available: () => boolean = () => true,
-): (req: IncomingMessage, res: ServerResponse, url: URL) => Promise<boolean> {
-    return async (req, res, url) => {
+): (
+    request: IncomingMessage,
+    response: ServerResponse,
+    url: URL,
+) => Promise<boolean> {
+    return async (request, response, url) => {
         const match = /^\/api\/v1\/study\/drawing\/([^/]+)$/.exec(url.pathname);
-        if (!match || !["GET", "POST"].includes(req.method ?? "")) return false;
-        const claims = auth.requireAuth(req, res);
+        if (!match || !["GET", "POST"].includes(request.method ?? ""))
+            return false;
+        const claims = auth.requireAuth(request, response);
         if (!claims) return true;
         const send = (status: number, body: unknown) => {
-            res.writeHead(status, { "content-type": "application/json" });
-            res.end(JSON.stringify(body));
+            response.writeHead(status, { "content-type": "application/json" });
+            response.end(JSON.stringify(body));
         };
         try {
             if (!available()) throw new Error("adapter_disabled");
             const cardId = decodeURIComponent(match[1]);
             const input =
-                req.method === "POST"
-                    ? await readJson(req, { maxBytes: 16 * 1024 })
+                request.method === "POST"
+                    ? await readJson(request, { maxBytes: 16 * 1024 })
                     : undefined;
             let result: DrawingProgress | undefined;
             await flow.run(
-                req.method === "GET"
+                request.method === "GET"
                     ? "study:drawing:readProgress"
                     : "study:drawing:complete",
                 { accountId: claims.sub, cardId, input },
@@ -53,12 +58,12 @@ export function createDrawingRoutes(
                         },
                         validate: () => {
                             validateDrawingCardId(cardId);
-                            if (req.method === "POST")
+                            if (request.method === "POST")
                                 validateDrawingCompletion(input);
                         },
-                        [req.method === "GET" ? "read" : "persist"]:
+                        [request.method === "GET" ? "read" : "persist"]:
                             async () => {
-                                if (req.method === "GET") {
+                                if (request.method === "GET") {
                                     result = await service.get(
                                         claims.sub,
                                         cardId,

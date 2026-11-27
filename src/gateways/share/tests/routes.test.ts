@@ -31,7 +31,7 @@ import type { StructuredDbTableDef } from "../../db/reuse/db-table.js";
 
 class MemoryExecutor {
     public readonly rows = new Map<string, Record<string, unknown>>();
-    async ensureTable(_def: StructuredDbTableDef): Promise<void> {}
+    async ensureTable(_definition: StructuredDbTableDef): Promise<void> {}
     async executeCommand(
         command: StructuredDbCommand,
     ): Promise<StructuredDbCommandResult> {
@@ -86,10 +86,10 @@ test("share bootstrap registers gateway routes and serves share html", async () 
     const capabilities = new CapabilityStore();
     capabilities.contribute("auth:issueAccessToken", issueAccessToken);
     const uiRegistry = new UIRegistry();
-    const dbExecutor = new MemoryExecutor();
+    const databaseExecutor = new MemoryExecutor();
     const adminToken = issueAccessToken("alice", "admin", 60);
     const bobToken = issueAccessToken("bob", "user", 60);
-    capabilities.contribute("db:executor", dbExecutor as never);
+    capabilities.contribute("db:executor", databaseExecutor as never);
     capabilities.contribute("notify:listSenders", () => [
         {
             senderId: "smtp",

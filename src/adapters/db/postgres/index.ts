@@ -6,12 +6,12 @@ import type { DbProviderId } from "../../../gateways/db/reuse/provider-id.js";
 import type { StructuredDbTableDef } from "../../../gateways/db/reuse/db-table.js";
 import { readBoundedEnvironmentInteger } from "./settings.js";
 import {
-    buildDbErrorMeta,
+    buildDbErrorMeta as buildDatabaseErrorMetadata,
     summarizeStatement,
-    writeDbLog,
+    writeDbLog as writeDatabaseLog,
 } from "../../../gateways/db/reuse/executor-log.js";
 import {
-    buildStructuredDbCommandStatement,
+    buildStructuredDbCommandStatement as buildStructuredDatabaseCommandStatement,
     type StructuredDbCommand,
     type StructuredDbCommandResult,
     type StructuredDbDialect,
@@ -25,7 +25,7 @@ export interface PostgresQueryResult<Row = Record<string, unknown>> {
 export interface PostgresClient {
     query<Row = Record<string, unknown>>(
         sql: string,
-        params?: unknown[],
+        parameters?: unknown[],
     ): Promise<PostgresQueryResult<Row>>;
     release(): void;
 }
@@ -33,7 +33,7 @@ export interface PostgresClient {
 export interface PostgresPool {
     query<Row = Record<string, unknown>>(
         sql: string,
-        params?: unknown[],
+        parameters?: unknown[],
     ): Promise<PostgresQueryResult<Row>>;
     connect(): Promise<PostgresClient>;
     end(): Promise<void>;
@@ -73,7 +73,7 @@ export function readPostgresPoolSettings(): PostgresPoolSettings {
     };
 }
 
-const POSTGRESQL_STRUCTURED_DB_DIALECT: StructuredDbDialect = {
+const POSTGRESQL_STRUCTURED_DATABASE_DIALECT: StructuredDbDialect = {
     createPlaceholder(parameterIndex) {
         return `$${parameterIndex}`;
     },
@@ -103,7 +103,7 @@ const POSTGRESQL_STRUCTURED_DB_DIALECT: StructuredDbDialect = {
     },
 };
 
-export class PostgresDbGateway implements DatabaseGateway {
+class PostgresDatabaseGateway implements DatabaseGateway {
     constructor(
         private readonly pool: PostgresPool,
         private readonly log?: BootstrapLog,
@@ -112,9 +112,9 @@ export class PostgresDbGateway implements DatabaseGateway {
     async executeCommand<Row = Record<string, unknown>>(
         command: StructuredDbCommand,
     ): Promise<StructuredDbCommandResult<Row>> {
-        const statement = buildStructuredDbCommandStatement(
+        const statement = buildStructuredDatabaseCommandStatement(
             command,
-            POSTGRESQL_STRUCTURED_DB_DIALECT,
+            POSTGRESQL_STRUCTURED_DATABASE_DIALECT,
         );
         const result = await this.pool.query<Row>(
             statement.sql,
@@ -125,25 +125,25 @@ export class PostgresDbGateway implements DatabaseGateway {
 
     async query<Row = Record<string, unknown>>(
         statement: string,
-        params?: unknown[],
+        parameters?: unknown[],
     ): Promise<QueryResult<Row>> {
-        const result = await this.pool.query<Row>(statement, params);
+        const result = await this.pool.query<Row>(statement, parameters);
         return { rows: result.rows, rowCount: result.rowCount };
     }
 
     async execute(
         statement: string,
-        params?: unknown[],
+        parameters?: unknown[],
     ): Promise<{ affectedRows: number }> {
-        const result = await this.pool.query(statement, params);
+        const result = await this.pool.query(statement, parameters);
         return { affectedRows: result.rowCount ?? 0 };
     }
 
     async transaction<T>(
-        callback: (db: DatabaseGateway) => Promise<T>,
+        callback: (database: DatabaseGateway) => Promise<T>,
     ): Promise<T> {
         const client = await this.pool.connect();
-        const transactionGateway = new PostgresDbGateway(
+        const transactionGateway = new PostgresDatabaseGateway(
             {
                 query: client.query.bind(client),
                 connect: async () => client,
@@ -157,19 +157,29 @@ export class PostgresDbGateway implements DatabaseGateway {
             await client.query("COMMIT");
             return result;
         } catch (error) {
-            writeDbLog(this.log, "error", "PostgreSQL transaction failed.", {
-                component: "db",
-                provider: "postgresql",
-                ...buildDbErrorMeta(error),
-            });
+            writeDatabaseLog(
+                this.log,
+                "error",
+                "PostgreSQL transaction failed.",
+                {
+                    component: "db",
+                    provider: "postgresql",
+                    ...buildDatabaseErrorMetadata(error),
+                },
+            );
             try {
                 await client.query("ROLLBACK");
             } catch (rollbackError) {
-                writeDbLog(this.log, "error", "PostgreSQL rollback failed.", {
-                    component: "db",
-                    provider: "postgresql",
-                    ...buildDbErrorMeta(rollbackError),
-                });
+                writeDatabaseLog(
+                    this.log,
+                    "error",
+                    "PostgreSQL rollback failed.",
+                    {
+                        component: "db",
+                        provider: "postgresql",
+                        ...buildDatabaseErrorMetadata(rollbackError),
+                    },
+                );
             }
             throw error;
         } finally {
@@ -177,6 +187,7 @@ export class PostgresDbGateway implements DatabaseGateway {
         }
     }
 }
+export { PostgresDatabaseGateway as PostgresDbGateway };
 
 class PostgresExecutor implements RawDbExecutor {
     constructor(
@@ -185,25 +196,25 @@ class PostgresExecutor implements RawDbExecutor {
         private readonly inTransaction = false,
     ) {}
 
-    async execute(sql: string, params: unknown[] = []) {
+    async execute(sql: string, parameters: unknown[] = []) {
         let parameterIndex = 1;
         const normalizedSql = sql.replace(/\?/g, () => `$${parameterIndex++}`);
-        writeDbLog(this.log, "debug", "Executing SQL statement.", {
+        writeDatabaseLog(this.log, "debug", "Executing SQL statement.", {
             component: "db",
             provider: "postgresql",
             statement: summarizeStatement(normalizedSql),
-            parameterCount: params.length,
+            parameterCount: parameters.length,
         });
         try {
-            const result = await this.pool.query(normalizedSql, params);
+            const result = await this.pool.query(normalizedSql, parameters);
             return { rows: result.rows, rowCount: result.rowCount };
         } catch (error) {
-            writeDbLog(this.log, "warn", "SQL execution failed.", {
+            writeDatabaseLog(this.log, "warn", "SQL execution failed.", {
                 component: "db",
                 provider: "postgresql",
                 statement: summarizeStatement(normalizedSql),
-                parameterCount: params.length,
-                ...buildDbErrorMeta(error),
+                parameterCount: parameters.length,
+                ...buildDatabaseErrorMetadata(error),
             });
             throw error;
         }
@@ -212,7 +223,7 @@ class PostgresExecutor implements RawDbExecutor {
     async executeCommand(
         command: StructuredDbCommand,
     ): Promise<StructuredDbCommandResult> {
-        return new PostgresDbGateway(this.pool).executeCommand(command);
+        return new PostgresDatabaseGateway(this.pool).executeCommand(command);
     }
 
     async transaction<T>(
@@ -234,19 +245,29 @@ class PostgresExecutor implements RawDbExecutor {
             await client.query("COMMIT");
             return result;
         } catch (error) {
-            writeDbLog(this.log, "error", "PostgreSQL transaction failed.", {
-                component: "db",
-                provider: "postgresql",
-                ...buildDbErrorMeta(error),
-            });
+            writeDatabaseLog(
+                this.log,
+                "error",
+                "PostgreSQL transaction failed.",
+                {
+                    component: "db",
+                    provider: "postgresql",
+                    ...buildDatabaseErrorMetadata(error),
+                },
+            );
             try {
                 await client.query("ROLLBACK");
             } catch (rollbackError) {
-                writeDbLog(this.log, "error", "PostgreSQL rollback failed.", {
-                    component: "db",
-                    provider: "postgresql",
-                    ...buildDbErrorMeta(rollbackError),
-                });
+                writeDatabaseLog(
+                    this.log,
+                    "error",
+                    "PostgreSQL rollback failed.",
+                    {
+                        component: "db",
+                        provider: "postgresql",
+                        ...buildDatabaseErrorMetadata(rollbackError),
+                    },
+                );
             }
             throw error;
         } finally {
@@ -254,24 +275,28 @@ class PostgresExecutor implements RawDbExecutor {
         }
     }
 
-    async ensureTable(def: StructuredDbTableDef): Promise<void> {
+    async ensureTable(definition: StructuredDbTableDef): Promise<void> {
         if (!this.inTransaction) {
-            await this.transaction((executor) => executor.ensureTable(def));
+            await this.transaction((executor) =>
+                executor.ensureTable(definition),
+            );
             return;
         }
         // Serialize schema initialization even before the table exists.
         await this.execute(
             "SELECT pg_advisory_xact_lock(hashtext(current_database() || ':' || current_schema()), hashtext($1))",
-            [def.name],
+            [definition.name],
         );
-        await this.reconcileTable(def);
+        await this.reconcileTable(definition);
     }
 
-    private async reconcileTable(def: StructuredDbTableDef): Promise<void> {
+    private async reconcileTable(
+        definition: StructuredDbTableDef,
+    ): Promise<void> {
         const pgType = (
-            col: StructuredDbTableDef["columns"][number],
+            column: StructuredDbTableDef["columns"][number],
         ): string => {
-            switch (col.type) {
+            switch (column.type) {
                 case "text":
                     return "TEXT";
                 case "integer":
@@ -297,9 +322,9 @@ class PostgresExecutor implements RawDbExecutor {
             return `'${String(value).replace(/'/g, "''")}'`;
         };
         const notNullFallback = (
-            col: StructuredDbTableDef["columns"][number],
+            column: StructuredDbTableDef["columns"][number],
         ): string => {
-            switch (col.type) {
+            switch (column.type) {
                 case "integer":
                 case "bigint":
                     return "0";
@@ -311,91 +336,96 @@ class PostgresExecutor implements RawDbExecutor {
                     return "''";
             }
         };
-        const compositePk = def.primaryKey ?? [];
-        const columnDefs = def.columns.map((col) => {
-            const parts: string[] = [`${col.name} ${pgType(col)}`];
-            if (col.notNull || col.primaryKey) parts.push("NOT NULL");
-            if (col.primaryKey && compositePk.length === 0)
+        const compositePrimaryKey = definition.primaryKey ?? [];
+        const columnDefinitions = definition.columns.map((column) => {
+            const parts: string[] = [`${column.name} ${pgType(column)}`];
+            if (column.notNull || column.primaryKey) parts.push("NOT NULL");
+            if (column.primaryKey && compositePrimaryKey.length === 0)
                 parts.push("PRIMARY KEY");
             if (
-                col.unique &&
-                !(def.uniqueKeys ?? []).some(
+                column.unique &&
+                !(definition.uniqueKeys ?? []).some(
                     (uniqueKey) =>
-                        uniqueKey.length === 1 && uniqueKey[0] === col.name,
+                        uniqueKey.length === 1 && uniqueKey[0] === column.name,
                 )
             ) {
                 parts.push("UNIQUE");
             }
-            if (col.default !== undefined)
-                parts.push(`DEFAULT ${pgDefault(col.default)}`);
-            if (col.references) {
+            if (column.default !== undefined)
+                parts.push(`DEFAULT ${pgDefault(column.default)}`);
+            if (column.references) {
                 parts.push(
-                    `REFERENCES ${col.references.table}(${col.references.column})`,
+                    `REFERENCES ${column.references.table}(${column.references.column})`,
                 );
-                if (col.references.onDelete)
-                    parts.push(`ON DELETE ${col.references.onDelete}`);
+                if (column.references.onDelete)
+                    parts.push(`ON DELETE ${column.references.onDelete}`);
             }
             return parts.join(" ");
         });
         const tableConstraints: string[] = [];
-        if (compositePk.length > 0)
-            tableConstraints.push(`PRIMARY KEY (${compositePk.join(", ")})`);
-        for (const uniqueKey of def.uniqueKeys ?? []) {
+        if (compositePrimaryKey.length > 0)
+            tableConstraints.push(
+                `PRIMARY KEY (${compositePrimaryKey.join(", ")})`,
+            );
+        for (const uniqueKey of definition.uniqueKeys ?? []) {
             tableConstraints.push(`UNIQUE (${uniqueKey.join(", ")})`);
         }
-        const allDefs = [...columnDefs, ...tableConstraints];
+        const allDefinitions = [...columnDefinitions, ...tableConstraints];
         await this.execute(
-            `CREATE TABLE IF NOT EXISTS ${def.name} (${allDefs.join(", ")})`,
+            `CREATE TABLE IF NOT EXISTS ${definition.name} (${allDefinitions.join(", ")})`,
         );
-        const existingColsResult = await this.execute(
+        const existingColumnsResult = await this.execute(
             `SELECT column_name FROM information_schema.columns WHERE table_name = $1 AND table_schema = current_schema()`,
-            [def.name],
+            [definition.name],
         );
-        const existingCols = new Set(
-            (existingColsResult.rows ?? []).map((row) =>
+        const existingColumns = new Set(
+            (existingColumnsResult.rows ?? []).map((row) =>
                 String((row as Record<string, unknown>).column_name ?? ""),
             ),
         );
-        for (const col of def.columns) {
-            if (existingCols.has(col.name)) continue;
-            const renamedFrom = readRenamedColumn(col);
-            if (renamedFrom && existingCols.has(renamedFrom)) {
+        for (const column of definition.columns) {
+            if (existingColumns.has(column.name)) continue;
+            const renamedFrom = readRenamedColumn(column);
+            if (renamedFrom && existingColumns.has(renamedFrom)) {
                 await this.execute(
-                    `ALTER TABLE ${def.name} RENAME COLUMN ${renamedFrom} TO ${col.name}`,
+                    `ALTER TABLE ${definition.name} RENAME COLUMN ${renamedFrom} TO ${column.name}`,
                 );
-                existingCols.add(col.name);
+                existingColumns.add(column.name);
                 continue;
             }
             const defaultClause =
-                col.default !== undefined
-                    ? `DEFAULT ${pgDefault(col.default)}`
-                    : col.notNull
-                      ? `DEFAULT ${notNullFallback(col)}`
+                column.default !== undefined
+                    ? `DEFAULT ${pgDefault(column.default)}`
+                    : column.notNull
+                      ? `DEFAULT ${notNullFallback(column)}`
                       : "";
-            const notNullClause = col.notNull ? " NOT NULL" : "";
-            const referenceClause = col.references
-                ? ` REFERENCES ${col.references.table}(${col.references.column})${col.references.onDelete ? ` ON DELETE ${col.references.onDelete}` : ""}`
+            const notNullClause = column.notNull ? " NOT NULL" : "";
+            const referenceClause = column.references
+                ? ` REFERENCES ${column.references.table}(${column.references.column})${column.references.onDelete ? ` ON DELETE ${column.references.onDelete}` : ""}`
                 : "";
             await this.execute(
-                `ALTER TABLE ${def.name} ADD COLUMN IF NOT EXISTS ${col.name} ${pgType(col)}${notNullClause}${defaultClause ? ` ${defaultClause}` : ""}${referenceClause}`,
+                `ALTER TABLE ${definition.name} ADD COLUMN IF NOT EXISTS ${column.name} ${pgType(column)}${notNullClause}${defaultClause ? ` ${defaultClause}` : ""}${referenceClause}`,
             );
         }
-        await this.ensureUniqueKeys(def);
-        for (const index of def.indexes ?? []) {
+        await this.ensureUniqueKeys(definition);
+        for (const index of definition.indexes ?? []) {
             const indexName =
-                index.name ?? `idx_${def.name}_${index.columns.join("_")}`;
+                index.name ??
+                `idx_${definition.name}_${index.columns.join("_")}`;
             await this.execute(
-                `CREATE INDEX IF NOT EXISTS ${indexName} ON ${def.name} (${index.columns.join(", ")})`,
+                `CREATE INDEX IF NOT EXISTS ${indexName} ON ${definition.name} (${index.columns.join(", ")})`,
             );
         }
     }
 
-    private async ensureUniqueKeys(def: StructuredDbTableDef): Promise<void> {
+    private async ensureUniqueKeys(
+        definition: StructuredDbTableDef,
+    ): Promise<void> {
         const declaredKeys = [
-            ...def.columns
+            ...definition.columns
                 .filter((column) => column.unique)
                 .map((column) => [column.name]),
-            ...(def.uniqueKeys ?? []),
+            ...(definition.uniqueKeys ?? []),
         ];
         if (!declaredKeys.length) return;
         const result = await this.execute(
@@ -412,7 +442,7 @@ class PostgresExecutor implements RawDbExecutor {
                 AND pg_index.indisunique AND pg_index.indisvalid
                 AND pg_index.indisready AND pg_index.indimmediate
                 AND pg_index.indpred IS NULL AND pg_index.indexprs IS NULL`,
-            [def.name],
+            [definition.name],
         );
         const existingKeys = new Set(
             (result.rows ?? []).map((row) =>
@@ -423,20 +453,25 @@ class PostgresExecutor implements RawDbExecutor {
             const key = JSON.stringify([...new Set(columns)].sort());
             if (existingKeys.has(key)) continue;
             const digest = createHash("sha256")
-                .update(JSON.stringify([def.name, key]))
+                .update(JSON.stringify([definition.name, key]))
                 .digest("hex")
                 .slice(0, 40);
             // Do not ignore a colliding name: only a verified index satisfies the contract.
             await this.execute(
-                `CREATE UNIQUE INDEX cognis_unique_${digest} ON ${def.name} (${columns.join(", ")})`,
+                `CREATE UNIQUE INDEX cognis_unique_${digest} ON ${definition.name} (${columns.join(", ")})`,
             );
             existingKeys.add(key);
-            writeDbLog(this.log, "info", "PostgreSQL unique key reconciled.", {
-                component: "db",
-                provider: "postgresql",
-                table: def.name,
-                columns,
-            });
+            writeDatabaseLog(
+                this.log,
+                "info",
+                "PostgreSQL unique key reconciled.",
+                {
+                    component: "db",
+                    provider: "postgresql",
+                    table: definition.name,
+                    columns,
+                },
+            );
         }
     }
 }
@@ -450,27 +485,38 @@ function readRenamedColumn(
         : undefined;
 }
 
-export function canHandleDbProvider(providerId: DbProviderId): boolean {
+function canHandleDatabaseProvider(providerId: DbProviderId): boolean {
     return providerId === "postgresql";
 }
+export { canHandleDatabaseProvider as canHandleDbProvider };
 
-export async function createDbExecutor(args: {
+async function createDatabaseExecutor(argumentsList: {
     databaseUrl: string;
     log?: BootstrapLog;
     lifecycle?: { registerShutdown(handler: () => Promise<void>): void };
     pool?: PostgresPool;
 }): Promise<RawDbExecutor> {
     const pool =
-        args.pool ?? (await createPostgresPool(args.databaseUrl, args.log));
-    args.lifecycle?.registerShutdown(async () => {
+        argumentsList.pool ??
+        (await createPostgresPool(
+            argumentsList.databaseUrl,
+            argumentsList.log,
+        ));
+    argumentsList.lifecycle?.registerShutdown(async () => {
         await pool.end();
-        writeDbLog(args.log, "info", "PostgreSQL connection pool drained.", {
-            component: "db",
-            provider: "postgresql",
-        });
+        writeDatabaseLog(
+            argumentsList.log,
+            "info",
+            "PostgreSQL connection pool drained.",
+            {
+                component: "db",
+                provider: "postgresql",
+            },
+        );
     });
-    return new PostgresExecutor(pool, args.log);
+    return new PostgresExecutor(pool, argumentsList.log);
 }
+export { createDatabaseExecutor as createDbExecutor };
 
 async function createPostgresPool(
     databaseUrl: string,
@@ -482,10 +528,10 @@ async function createPostgresPool(
         ...readPostgresPoolSettings(),
     });
     pool.on("error", (error: Error) => {
-        writeDbLog(log, "error", "Idle PostgreSQL pool client failed.", {
+        writeDatabaseLog(log, "error", "Idle PostgreSQL pool client failed.", {
             component: "db",
             provider: "postgresql",
-            ...buildDbErrorMeta(error),
+            ...buildDatabaseErrorMetadata(error),
         });
     });
     return pool as PostgresPool;

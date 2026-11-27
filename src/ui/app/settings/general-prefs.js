@@ -32,7 +32,7 @@ const log = bindCapability("ui:log");
  * @param {{ i18n: object, username: string }} options
  * @returns {{ init: () => Promise<void> }}
  */
-export function initGeneralPrefs(
+function initGeneralPreferences(
     root,
     { i18n, username, signal, onRender = () => {} },
 ) {
@@ -49,11 +49,11 @@ export function initGeneralPrefs(
     }
 
     async function loadEmails() {
-        const res = await emailClient().request(
+        const response = await emailClient().request(
             `/api/v1/notify/users/${encodeURIComponent(username)}/emails`,
         );
-        if (!res.ok) return;
-        const payload = await res.json();
+        if (!response.ok) return;
+        const payload = await response.json();
         signal?.throwIfAborted();
         emails = payload.data ?? [];
     }
@@ -67,7 +67,7 @@ export function initGeneralPrefs(
     }
 
     async function addEmail(address) {
-        const res = await emailClient().request(
+        const response = await emailClient().request(
             `/api/v1/notify/users/${encodeURIComponent(username)}/emails`,
             {
                 method: "POST",
@@ -75,28 +75,29 @@ export function initGeneralPrefs(
                 body: JSON.stringify({ email: address }),
             },
         );
-        if (res.status === 409) {
-            const payload = await res.json().catch(() => ({}));
+        if (response.status === 409) {
+            const payload = await response.json().catch(() => ({}));
             throw new Error(payload?.error?.code ?? "already_verified");
         }
-        if (res.status === 429) throw new Error("rate_limited");
-        if (res.status === 503) throw new Error("email_delivery_unavailable");
-        if (!res.ok) throw new Error("add_failed");
-        const payload = await res.json();
+        if (response.status === 429) throw new Error("rate_limited");
+        if (response.status === 503)
+            throw new Error("email_delivery_unavailable");
+        if (!response.ok) throw new Error("add_failed");
+        const payload = await response.json();
         return { ...payload.data, queued: payload.queued === true };
     }
 
     async function removeEmail(address) {
-        const res = await emailClient().request(
+        const response = await emailClient().request(
             `/api/v1/notify/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(address)}`,
             { method: "DELETE" },
         );
-        if (res.status === 409) {
-            const payload = await res.json();
+        if (response.status === 409) {
+            const payload = await response.json();
             const code = payload?.error?.code ?? "remove_failed";
             throw new Error(code);
         }
-        if (!res.ok) throw new Error("remove_failed");
+        if (!response.ok) throw new Error("remove_failed");
     }
 
     async function forceRemoveUnverifiedEmail(address) {
@@ -107,14 +108,15 @@ export function initGeneralPrefs(
     }
 
     async function resendVerification(address) {
-        const res = await emailClient().request(
+        const response = await emailClient().request(
             `/api/v1/notify/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(address)}/resend`,
             { method: "POST" },
         );
-        if (res.status === 429) throw new Error("rate_limited");
-        if (res.status === 503) throw new Error("email_delivery_unavailable");
-        if (!res.ok) throw new Error("resend_failed");
-        const payload = await res.json();
+        if (response.status === 429) throw new Error("rate_limited");
+        if (response.status === 503)
+            throw new Error("email_delivery_unavailable");
+        if (!response.ok) throw new Error("resend_failed");
+        const payload = await response.json();
         return { ...payload.data, queued: payload.queued === true };
     }
 
@@ -137,7 +139,7 @@ export function initGeneralPrefs(
     }
 
     async function submitVerificationCode(address, code) {
-        const res = await emailClient().request(
+        const response = await emailClient().request(
             `/api/v1/notify/users/${encodeURIComponent(username)}/emails/${encodeURIComponent(address)}/verify`,
             {
                 method: "POST",
@@ -145,19 +147,19 @@ export function initGeneralPrefs(
                 body: JSON.stringify({ code }),
             },
         );
-        if (res.status === 422) throw new Error("invalid_code");
-        if (!res.ok) throw new Error("verify_failed");
+        if (response.status === 422) throw new Error("invalid_code");
+        if (!response.ok) throw new Error("verify_failed");
     }
 
     function renderEmailList() {
-        const listEl = root.querySelector("#email-list");
-        if (!listEl) return;
+        const listElement = root.querySelector("#email-list");
+        if (!listElement) return;
         if (!emails.length) {
-            listEl.innerHTML = `<li class="email-list-item"><span class="email-address">${i18n.t("ui.app.settings.emails_none")}</span></li>`;
+            listElement.innerHTML = `<li class="email-list-item"><span class="email-address">${i18n.t("ui.app.settings.emails_none")}</span></li>`;
             onRender();
             return;
         }
-        listEl.innerHTML = emails
+        listElement.innerHTML = emails
             .map((entry) => {
                 const escaped = escapeHtml(entry.email);
                 const verifiedBadge = entry.verified
@@ -166,10 +168,10 @@ export function initGeneralPrefs(
                 const primaryBadge = entry.primary
                     ? `<span class="email-badge-primary">${i18n.t("ui.app.settings.emails_primary")}</span>`
                     : `<button class="btn-animated" type="button" data-set-primary="${escaped}">${i18n.t("ui.app.settings.emails_set_primary")}</button>`;
-                const removeBtn = entry.primary
+                const removeButton = entry.primary
                     ? ""
                     : `<button class="btn-animated" type="button" data-remove-email="${escaped}">${i18n.t("ui.reuse.remove")}</button>`;
-                return `<li class="email-list-item"><span class="email-address">${escaped}</span>${verifiedBadge}${primaryBadge}${removeBtn}</li>`;
+                return `<li class="email-list-item"><span class="email-address">${escaped}</span>${verifiedBadge}${primaryBadge}${removeButton}</li>`;
             })
             .join("");
         onRender();
@@ -218,13 +220,13 @@ export function initGeneralPrefs(
                             overlay
                                 .querySelector('[data-popup-action="verified"]')
                                 .click();
-                        } catch (err) {
-                            const errCode =
-                                err instanceof Error
-                                    ? err.message
+                        } catch (error) {
+                            const errorCode =
+                                error instanceof Error
+                                    ? error.message
                                     : "verify_failed";
                             showToast(
-                                errCode === "invalid_code"
+                                errorCode === "invalid_code"
                                     ? i18n.t(
                                           "ui.app.settings.emails_verify_invalid",
                                       )
@@ -245,7 +247,9 @@ export function initGeneralPrefs(
                                 .request(
                                     `/api/v1/notify/users/${encodeURIComponent(username)}/emails`,
                                 )
-                                .then((res) => (res.ok ? res.json() : null))
+                                .then((response) =>
+                                    response.ok ? response.json() : null,
+                                )
                                 .then((payload) => {
                                     const entry = (payload?.data ?? []).find(
                                         (emailEntry) =>
@@ -299,13 +303,13 @@ export function initGeneralPrefs(
     function bindEmailAddShortcut() {
         root.addEventListener(
             "keydown",
-            (evt) => {
-                const target = evt.target;
+            (event) => {
+                const target = event.target;
                 if (!(target instanceof HTMLInputElement)) return;
                 if (target.id !== "email-add-input") return;
-                if (evt.key !== "Enter") return;
+                if (event.key !== "Enter") return;
 
-                evt.preventDefault();
+                event.preventDefault();
                 root.querySelector("#email-add-btn")?.click();
             },
             { signal },
@@ -366,8 +370,9 @@ export function initGeneralPrefs(
                         variant: "success",
                     });
                     window.location.replace("/login");
-                } catch (err) {
-                    const code = err instanceof Error ? err.message : "failed";
+                } catch (error) {
+                    const code =
+                        error instanceof Error ? error.message : "failed";
                     showToast(
                         code === "invalid_credentials"
                             ? i18n.t("ui.app.settings.danger_invalid_password")
@@ -383,20 +388,20 @@ export function initGeneralPrefs(
     function bindEmailActions() {
         root.addEventListener(
             "click",
-            async (evt) => {
-                const target = evt.target;
+            async (event) => {
+                const target = event.target;
                 if (!(target instanceof HTMLElement)) return;
 
-                const removeAttr = target.dataset.removeEmail;
-                if (removeAttr) {
+                const removeAttribute = target.dataset.removeEmail;
+                if (removeAttribute) {
                     try {
-                        await removeEmail(removeAttr);
+                        await removeEmail(removeAttribute);
                         await loadEmails();
                         renderEmailList();
-                    } catch (err) {
+                    } catch (error) {
                         const code =
-                            err instanceof Error
-                                ? err.message
+                            error instanceof Error
+                                ? error.message
                                 : "remove_failed";
                         if (code === "cannot_remove_primary_email") {
                             showToast(
@@ -416,10 +421,10 @@ export function initGeneralPrefs(
                     return;
                 }
 
-                const setPrimaryAttr = target.dataset.setPrimary;
-                if (setPrimaryAttr) {
+                const setPrimaryAttribute = target.dataset.setPrimary;
+                if (setPrimaryAttribute) {
                     try {
-                        await setPrimaryEmail(setPrimaryAttr);
+                        await setPrimaryEmail(setPrimaryAttribute);
                         await loadEmails();
                         renderEmailList();
                     } catch (error) {
@@ -428,21 +433,28 @@ export function initGeneralPrefs(
                     return;
                 }
 
-                const resendAttr = target.dataset.resendVerification;
-                if (isOffline() && (resendAttr || target.dataset.accountAction))
+                const resendAttribute = target.dataset.resendVerification;
+                if (
+                    isOffline() &&
+                    (resendAttribute || target.dataset.accountAction)
+                )
                     return;
-                if (resendAttr) {
-                    const allowed = await checkDomainAndNotify(resendAttr);
+                if (resendAttribute) {
+                    const allowed = await checkDomainAndNotify(resendAttribute);
                     if (!allowed) return;
                     try {
-                        const result = await resendVerification(resendAttr);
-                        await openVerifyPopup(resendAttr, result.watchToken);
+                        const result =
+                            await resendVerification(resendAttribute);
+                        await openVerifyPopup(
+                            resendAttribute,
+                            result.watchToken,
+                        );
                         await loadEmails();
                         renderEmailList();
-                    } catch (err) {
+                    } catch (error) {
                         const code =
-                            err instanceof Error
-                                ? err.message
+                            error instanceof Error
+                                ? error.message
                                 : "resend_failed";
                         if (code === "rate_limited") {
                             showStatus(
@@ -503,9 +515,11 @@ export function initGeneralPrefs(
                             await loadEmails();
                             renderEmailList();
                         }
-                    } catch (err) {
+                    } catch (error) {
                         const code =
-                            err instanceof Error ? err.message : "add_failed";
+                            error instanceof Error
+                                ? error.message
+                                : "add_failed";
                         if (code === "already_verified") {
                             showStatus(
                                 i18n.t(
@@ -556,3 +570,4 @@ export function initGeneralPrefs(
         },
     };
 }
+export { initGeneralPreferences as initGeneralPrefs };

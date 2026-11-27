@@ -11,22 +11,26 @@ export function createFavouriteRoutes(
     auth: RouteContext,
     flow: FlowApi,
     log?: BootstrapLog,
-): (req: IncomingMessage, res: ServerResponse, url: URL) => Promise<boolean> {
-    return async (req, res, url) => {
+): (
+    request: IncomingMessage,
+    response: ServerResponse,
+    url: URL,
+) => Promise<boolean> {
+    return async (request, response, url) => {
         if (url.pathname !== "/api/v1/study/favourites") return false;
-        const claims = auth.requireAuth(req, res);
+        const claims = auth.requireAuth(request, response);
         if (!claims) return true;
         const send = (status: number, data: unknown) => {
-            res.writeHead(status, { "content-type": "application/json" });
-            res.end(JSON.stringify(data));
+            response.writeHead(status, { "content-type": "application/json" });
+            response.end(JSON.stringify(data));
         };
         try {
-            if (req.method === "GET") {
+            if (request.method === "GET") {
                 send(200, { data: await service.list(claims.sub) });
                 return true;
             }
-            if (req.method !== "PUT") return false;
-            const input = await readJson(req, { maxBytes: 16 * 1024 });
+            if (request.method !== "PUT") return false;
+            const input = await readJson(request, { maxBytes: 16 * 1024 });
             let result: StudyFavourite[] = [];
             await flow.run(
                 "study:favourites:save",

@@ -1,18 +1,18 @@
-import { execFile } from "node:child_process";
+import { execFile as executorFile } from "node:child_process";
 import { rm as removePath } from "node:fs/promises";
 import { promisify } from "node:util";
 import type { ModuleMarketplaceLog } from "./index.js";
 import { commandFailureText } from "../../reuse/command-failure-text.js";
 
-const execFileAsync = promisify(execFile);
-const TRANSFER_TIMEOUT_MS = 15 * 60 * 1000;
-const RETRY_DELAYS_MS = [250, 1_000];
+const executorFileAsync = promisify(executorFile);
+const TRANSFER_TIMEOUT_MILLISECONDS = 15 * 60 * 1000;
+const RETRY_DELAYS_MILLISECONDS = [250, 1_000];
 const TRANSIENT_FAILURE =
     /connection reset|recv failure|could not resolve host|failed to connect|connection timed out|operation timed out|operation too slow|ssl connection timeout|tls connection|tls handshake|gnutls|http\/2 stream|remote end hung up|unexpected disconnect/i;
 
 type GitRunner = (
     file: string,
-    args: string[],
+    argumentsList: string[],
     options: { env: NodeJS.ProcessEnv; timeout: number; encoding: "utf8" },
 ) => Promise<{ stdout: string }>;
 
@@ -26,7 +26,7 @@ interface CheckoutOptions {
 
 export async function checkoutModuleRepository(
     options: CheckoutOptions,
-    execute: GitRunner = execFileAsync,
+    execute: GitRunner = executorFileAsync,
 ): Promise<string> {
     const { cloneUrl, commit, root, environment, log } = options;
     if (!/^[a-f0-9]{7,64}$/i.test(commit)) {
@@ -34,7 +34,7 @@ export async function checkoutModuleRepository(
     }
     const commandOptions = {
         env: environment,
-        timeout: TRANSFER_TIMEOUT_MS,
+        timeout: TRANSFER_TIMEOUT_MILLISECONDS,
         encoding: "utf8" as const,
     };
     for (let attempt = 0; ; attempt += 1) {
@@ -103,7 +103,7 @@ export async function checkoutModuleRepository(
         } catch (error) {
             const output = commandFailureText(error);
             const retry =
-                attempt < RETRY_DELAYS_MS.length &&
+                attempt < RETRY_DELAYS_MILLISECONDS.length &&
                 TRANSIENT_FAILURE.test(output);
             const timedOut = /timed out|operation too slow/i.test(output);
             const connectionTimeout =
@@ -133,7 +133,7 @@ export async function checkoutModuleRepository(
             );
             if (!retry) throw error;
             await new Promise((resolve) =>
-                setTimeout(resolve, RETRY_DELAYS_MS[attempt]),
+                setTimeout(resolve, RETRY_DELAYS_MILLISECONDS[attempt]),
             );
         }
     }

@@ -511,9 +511,11 @@ export async function registerShareBootstrapHooks(input: {
             }
             const now = Date.now();
             const expiresAt = String(tokenResult.tokenRecord.expiresAt ?? "");
-            const expiresAtMs = expiresAt ? Date.parse(expiresAt) : Number.NaN;
-            const ttlSeconds = Number.isFinite(expiresAtMs)
-                ? Math.floor((expiresAtMs - now) / 1000)
+            const expiresAtMilliseconds = expiresAt
+                ? Date.parse(expiresAt)
+                : Number.NaN;
+            const ttlSeconds = Number.isFinite(expiresAtMilliseconds)
+                ? Math.floor((expiresAtMilliseconds - now) / 1000)
                 : MAX_GUEST_TOKEN_TTL_SECONDS;
             if (!Number.isFinite(ttlSeconds) || ttlSeconds <= 0) {
                 return { issued: false, reason: "expired" };

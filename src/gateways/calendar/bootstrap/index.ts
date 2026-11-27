@@ -12,7 +12,7 @@ import {
 import type { DbExecutor } from "../db/reuse/db-executor.js";
 import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js";
 import type { GatewayBootstrapContext } from "../shared.js";
-import { DbCalendarStore } from "../store.js";
+import { DbCalendarStore as DatabaseCalendarStore } from "../store.js";
 import { normalizeCalendarColor } from "../color.js";
 import {
     CoreCalendarGateway,
@@ -33,7 +33,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const getDispatchNotification = () =>
         ctx.capabilities.get<NotificationDispatcher>("notify:dispatch") ?? null;
     const adaptersRoot = path.join(ctx.adaptersRoot, "calendar");
-    const dbExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
+    const databaseExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
     const getPreferenceStore = () =>
         ctx.capabilities.get<UserPreferenceStore>("preferences:store");
     const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");
@@ -71,9 +71,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const { resolveAccountDisplayName, resolveShareableUsers } =
         profileResolvers;
 
-    if (dbExecutor) {
+    if (databaseExecutor) {
         try {
-            const store = new DbCalendarStore(dbExecutor);
+            const store = new DatabaseCalendarStore(databaseExecutor);
             await store.ensureSchema();
             await gateway.attachStore(store);
             const deleteAccountActivity = async (accountId: string) => {
@@ -125,7 +125,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         }
     }
     const shareRegistry = new CalendarShareRegistry(
-        dbExecutor ?? null,
+        databaseExecutor ?? null,
         ctx.log,
     );
     await shareRegistry.ensureSchema();
@@ -216,12 +216,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         const existingTimer = shareExpiryTimers.get(shareId);
         if (existingTimer) clearTimeout(existingTimer);
         shareExpiryTimers.delete(shareId);
-        const expiryMs = Date.parse(expiresAt);
-        if (!Number.isFinite(expiryMs)) return;
-        const delay = Math.max(0, expiryMs - Date.now());
+        const expiryMilliseconds = Date.parse(expiresAt);
+        if (!Number.isFinite(expiryMilliseconds)) return;
+        const delay = Math.max(0, expiryMilliseconds - Date.now());
         const timer = setTimeout(
             () => {
-                if (expiryMs > Date.now()) {
+                if (expiryMilliseconds > Date.now()) {
                     scheduleCalendarShareExpiry(shareId, expiresAt);
                     return;
                 }

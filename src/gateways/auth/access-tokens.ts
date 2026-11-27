@@ -55,9 +55,12 @@ function persistTokenStore() {
             null,
             2,
         );
-        const tempPath = `${tokenStorePath}.${process.pid}.tmp`;
-        writeFileSync(tempPath, payload, { encoding: "utf8", mode: 0o600 });
-        renameSync(tempPath, tokenStorePath);
+        const temporaryPath = `${tokenStorePath}.${process.pid}.tmp`;
+        writeFileSync(temporaryPath, payload, {
+            encoding: "utf8",
+            mode: 0o600,
+        });
+        renameSync(temporaryPath, tokenStorePath);
         hasWarnedPersistFailure = false;
     } catch (error) {
         if (!hasWarnedPersistFailure) {
@@ -430,16 +433,19 @@ export function issueAccessToken(
  */
 export function isTokenVerificationFresh(
     rawToken: string,
-    windowMs: number,
+    windowMilliseconds: number,
 ): boolean {
     const tokenHash = hashToken(rawToken);
     const record = tokenStore.get(tokenHash);
     if (!record) return false;
     if (invalidatedVerificationTokens.has(tokenHash)) return false;
     const now = Date.now();
-    if (record.issuedAt && now - record.issuedAt <= windowMs) return true;
+    if (record.issuedAt && now - record.issuedAt <= windowMilliseconds)
+        return true;
     const lastVerified = verifiedAtByToken.get(tokenHash);
-    return lastVerified !== undefined && now - lastVerified <= windowMs;
+    return (
+        lastVerified !== undefined && now - lastVerified <= windowMilliseconds
+    );
 }
 
 export function invalidateTokenVerification(rawToken: string): void {

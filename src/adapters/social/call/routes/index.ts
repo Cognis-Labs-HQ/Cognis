@@ -22,21 +22,21 @@ interface NotificationActionIcons {
 }
 
 async function readBody(
-    req: IncomingMessage,
+    request: IncomingMessage,
 ): Promise<Record<string, unknown>> {
     const chunks: Buffer[] = [];
-    for await (const chunk of req) chunks.push(Buffer.from(chunk));
+    for await (const chunk of request) chunks.push(Buffer.from(chunk));
     if (chunks.length === 0) return {};
     return JSON.parse(Buffer.concat(chunks).toString("utf8"));
 }
 
 function sendJson(
-    res: ServerResponse,
+    response: ServerResponse,
     status: number,
     payload: Record<string, unknown>,
 ): void {
-    res.writeHead(status, { "content-type": "application/json" });
-    res.end(JSON.stringify(payload));
+    response.writeHead(status, { "content-type": "application/json" });
+    response.end(JSON.stringify(payload));
 }
 
 function publicCall(call: CallRecord): Record<string, unknown> {
@@ -115,12 +115,12 @@ export function createCallRoutes(
         recordedEvents.add(key);
     };
     return async (
-        req: IncomingMessage,
-        res: ServerResponse,
+        request: IncomingMessage,
+        response: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         if (!url.pathname.startsWith("/api/v1/social/call")) return false;
-        const claims = routeContext.requireAuth(req, res, "user");
+        const claims = routeContext.requireAuth(request, response, "user");
         if (!claims) return true;
         const callMatch = url.pathname.match(
             /^\/api\/v1\/social\/call\/([0-9a-f-]+)(?:\/(answer|hangup|leave|ringing))?$/,
@@ -128,28 +128,31 @@ export function createCallRoutes(
         const roomCallMatch = url.pathname.match(
             /^\/api\/v1\/social\/call\/room\/([^/]+)$/,
         );
-        if (roomCallMatch && req.method === "GET") {
+        if (roomCallMatch && request.method === "GET") {
             const roomId = decodeURIComponent(roomCallMatch[1]);
             const room = await resolveRoom({
                 roomId,
                 accountId: claims.sub,
             });
             if (!room) {
-                sendJson(res, 404, {
+                sendJson(response, 404, {
                     error: { code: "not_found", message: "Room not found." },
                 });
                 return true;
             }
             const call = store.getCurrentRoomCall(roomId);
-            sendJson(res, 200, { data: call ? publicCall(call) : null });
+            sendJson(response, 200, { data: call ? publicCall(call) : null });
             return true;
         }
-        if (url.pathname === "/api/v1/social/call" && req.method === "POST") {
+        if (
+            url.pathname === "/api/v1/social/call" &&
+            request.method === "POST"
+        ) {
             let body: Record<string, unknown>;
             try {
-                body = await readBody(req);
+                body = await readBody(request);
             } catch {
-                sendJson(res, 400, {
+                sendJson(response, 400, {
                     error: { code: "invalid_json", message: "Invalid JSON." },
                 });
                 return true;
@@ -159,7 +162,7 @@ export function createCallRoutes(
                 ? await resolveRoom({ roomId, accountId: claims.sub })
                 : null;
             if (!room || !["dm", "group"].includes(room.room.kind)) {
-                sendJson(res, 403, {
+                sendJson(response, 403, {
                     error: {
                         code: "call_not_allowed",
                         message: "Calling is unavailable for this room.",
@@ -169,7 +172,7 @@ export function createCallRoutes(
             }
             const existingCall = store.getCurrentRoomCall(roomId);
             if (existingCall) {
-                sendJson(res, 200, { data: publicCall(existingCall) });
+                sendJson(response, 200, { data: publicCall(existingCall) });
                 return true;
             }
             const call = store.create({
@@ -238,19 +241,22 @@ export function createCallRoutes(
                         });
                     }),
             );
-            sendJson(res, 201, { data: publicCall(call) });
+            sendJson(response, 201, { data: publicCall(call) });
             return true;
         }
-        if (!callMatch || (req.method !== "GET" && req.method !== "POST")) {
+        if (
+            !callMatch ||
+            (request.method !== "GET" && request.method !== "POST")
+        ) {
             return false;
         }
         const operation = callMatch[2];
-        if (req.method === "POST" && operation === "ringing") {
+        if (request.method === "POST" && operation === "ringing") {
             let body: Record<string, unknown>;
             try {
-                body = await readBody(req);
+                body = await readBody(request);
             } catch {
-                sendJson(res, 400, {
+                sendJson(response, 400, {
                     error: { code: "invalid_json", message: "Invalid JSON." },
                 });
                 return true;
@@ -265,10 +271,10 @@ export function createCallRoutes(
                 : null;
             if (body.active === false) {
                 store.releaseRinging(callMatch[1], claims.sub, ringerId);
-                sendJson(res, 200, { data: { ringing: false } });
+                sendJson(response, 200, { data: { ringing: false } });
                 return true;
             }
-            sendJson(res, 200, {
+            sendJson(response, 200, {
                 data: {
                     ringing:
                         Boolean(authorizedRoom) &&
@@ -282,15 +288,15 @@ export function createCallRoutes(
             ? await resolveRoom({ roomId: call.roomId, accountId: claims.sub })
             : null;
         if (!call || !room || !store.hasParticipant(call, claims.sub)) {
-            sendJson(res, 404, {
+            sendJson(response, 404, {
                 error: { code: "not_found", message: "Call not found." },
             });
             return true;
         }
-        if (req.method === "POST" && operation === "answer") {
+        if (request.method === "POST" && operation === "answer") {
             const answered = store.answer(call.id, claims.sub);
             if (!answered) {
-                sendJson(res, 409, {
+                sendJson(response, 409, {
                     error: {
                         code: "call_unavailable",
                         message: "Call is no longer ringing.",
@@ -299,13 +305,13 @@ export function createCallRoutes(
                 return true;
             }
             await recordEvent(answered, "call_answered", claims.sub);
-            sendJson(res, 200, { data: publicCall(answered) });
+            sendJson(response, 200, { data: publicCall(answered) });
             return true;
         }
-        if (req.method === "POST" && operation === "join") {
+        if (request.method === "POST" && operation === "join") {
             const joined = store.join(call.id, claims.sub);
             if (!joined) {
-                sendJson(res, 409, {
+                sendJson(response, 409, {
                     error: {
                         code: "call_unavailable",
                         message: "Call is no longer active.",
@@ -313,13 +319,13 @@ export function createCallRoutes(
                 });
                 return true;
             }
-            sendJson(res, 200, { data: publicCall(joined) });
+            sendJson(response, 200, { data: publicCall(joined) });
             return true;
         }
-        if (req.method === "POST" && operation === "hangup") {
+        if (request.method === "POST" && operation === "hangup") {
             const ended = store.hangup(call.id, claims.sub);
             if (!ended) {
-                sendJson(res, 403, {
+                sendJson(response, 403, {
                     error: {
                         code: "call_not_joined",
                         message:
@@ -335,25 +341,25 @@ export function createCallRoutes(
                     : "call_declined",
                 claims.sub,
             );
-            sendJson(res, 200, {
+            sendJson(response, 200, {
                 data: publicCall(ended),
             });
             return true;
         }
-        if (req.method === "POST" && operation === "leave") {
+        if (request.method === "POST" && operation === "leave") {
             const left = store.leave(call.id, claims.sub);
             if (!left) {
-                sendJson(res, 200, { data: publicCall(call) });
+                sendJson(response, 200, { data: publicCall(call) });
                 return true;
             }
-            sendJson(res, 200, { data: publicCall(left) });
+            sendJson(response, 200, { data: publicCall(left) });
             return true;
         }
-        if (req.method === "GET" && !operation) {
+        if (request.method === "GET" && !operation) {
             if (call.status === "expired") {
                 await recordEvent(call, "call_missed", call.callerAccountId);
             }
-            sendJson(res, 200, { data: publicCall(call) });
+            sendJson(response, 200, { data: publicCall(call) });
             return true;
         }
         return false;

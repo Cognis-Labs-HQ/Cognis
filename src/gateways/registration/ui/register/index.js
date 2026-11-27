@@ -81,14 +81,14 @@ export async function mount(root, { signal } = {}) {
         });
     }
 
-    const params = new URLSearchParams(window.location.search);
-    const tokenParam = params.get("token");
-    const token = String(tokenParam ?? "").trim();
-    const hasTokenParam = tokenParam !== null;
+    const parameters = new URLSearchParams(window.location.search);
+    const tokenParameter = parameters.get("token");
+    const token = String(tokenParameter ?? "").trim();
+    const hasTokenParameter = tokenParameter !== null;
     const accountCreationAuthorization = readAccountCreationAuthorization(
         await getPendingAccountCreation().catch(() => null),
     );
-    const prefilledEmail = String(params.get("email") ?? "")
+    const prefilledEmail = String(parameters.get("email") ?? "")
         .trim()
         .toLowerCase();
     const knownErrorCodes = REGISTRATION_ERROR_CODES;
@@ -124,13 +124,13 @@ export async function mount(root, { signal } = {}) {
             inviteData = null;
             tokenInvalid = true;
         }
-    } else if (hasTokenParam) {
+    } else if (hasTokenParameter) {
         tokenInvalid = true;
     }
 
     try {
         const registrationConfig = await loadRegistrationConfig();
-        if (!token && !hasTokenParam) {
+        if (!token && !hasTokenParameter) {
             openRegistrationsEnabled = registrationConfig.registrationsEnabled;
         }
         requiredFields = registrationConfig.requiredFields;
@@ -163,13 +163,13 @@ export async function mount(root, { signal } = {}) {
         }
         registrationIntegrationsReady = true;
     } catch {
-        if (!token && !hasTokenParam) openRegistrationsEnabled = false;
+        if (!token && !hasTokenParameter) openRegistrationsEnabled = false;
     }
 
     try {
-        const policyRes = await fetch("/api/v1/auth/password-policy");
-        if (policyRes.ok) {
-            const policyPayload = await policyRes.json();
+        const policyResponse = await fetch("/api/v1/auth/password-policy");
+        if (policyResponse.ok) {
+            const policyPayload = await policyResponse.json();
             passwordPolicy = normalizePasswordPolicy(
                 policyPayload?.data,
                 passwordPolicy,
@@ -180,10 +180,10 @@ export async function mount(root, { signal } = {}) {
     }
 
     try {
-        const langRes = await fetch("/api/v1/system/languages");
-        if (langRes.ok) {
-            const langPayload = await langRes.json();
-            availableLanguages = langPayload.data ?? [];
+        const languageResponse = await fetch("/api/v1/system/languages");
+        if (languageResponse.ok) {
+            const languagePayload = await languageResponse.json();
+            availableLanguages = languagePayload.data ?? [];
         }
     } catch {
         availableLanguages = [];
@@ -439,7 +439,7 @@ export async function mount(root, { signal } = {}) {
     }
 
     async function promptVerificationCodeForRegister(emailAddress) {
-        let inputEl = null;
+        let inputElement = null;
         const action = await openPopup({
             title: i18n.t("ui.app.settings.emails_verify_title"),
             body: () => `
@@ -457,13 +457,16 @@ export async function mount(root, { signal } = {}) {
                 },
             ],
             onOpen: (overlay) => {
-                inputEl = overlay.querySelector("#reg-verify-code-input");
+                inputElement = overlay.querySelector("#reg-verify-code-input");
             },
         });
-        if (action !== "confirm" || !(inputEl instanceof HTMLInputElement)) {
+        if (
+            action !== "confirm" ||
+            !(inputElement instanceof HTMLInputElement)
+        ) {
             return null;
         }
-        return inputEl.value.trim();
+        return inputElement.value.trim();
     }
 
     async function runEmailVerificationAfterRegister(
@@ -559,7 +562,7 @@ export async function mount(root, { signal } = {}) {
                     }
 
                     if (inviteData?.expiresAt) {
-                        const expiresAtMs = new Date(
+                        const expiresAtMilliseconds = new Date(
                             inviteData.expiresAt,
                         ).getTime();
                         let countdownTimer = null;
@@ -571,7 +574,8 @@ export async function mount(root, { signal } = {}) {
                                 clearInterval(countdownTimer);
                                 return;
                             }
-                            const remaining = expiresAtMs - Date.now();
+                            const remaining =
+                                expiresAtMilliseconds - Date.now();
                             if (remaining <= 0) {
                                 countdown.textContent = i18n.t(
                                     "ui.app.register.token_expired",
@@ -814,16 +818,18 @@ export async function mount(root, { signal } = {}) {
                                         });
                                         return;
                                     }
-                                    const regPayload = await response
+                                    const registryPayload = await response
                                         .json()
                                         .catch(() => null);
                                     const verifyToken = String(
-                                        regPayload?.data?.verifyToken ?? "",
+                                        registryPayload?.data?.verifyToken ??
+                                            "",
                                     );
                                     authenticatedToken = verifyToken;
                                     accountCreated = true;
                                     const registeredUsername = String(
-                                        regPayload?.data?.username ?? username,
+                                        registryPayload?.data?.username ??
+                                            username,
                                     );
                                     if (email && verifyToken) {
                                         await runEmailVerificationAfterRegister(

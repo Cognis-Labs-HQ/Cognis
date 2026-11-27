@@ -13,23 +13,28 @@ test("documentation titles arrive before content, content concurrency is bounded
         activeUiLanguage: () => "ja",
         enabledUiLanguages: () => ["en", "ja"],
     };
-    const { loadDocsBundleMarkdown, loadDocsIndex, readDocsLanguages } =
-        loadTestModule(new URL("../../docs-client.js", import.meta.url), {
-            "./ui-language-state.js": languageState,
-            "./api-client.js": {
-                apiFetch: () => {
-                    throw new Error("Use the injected public request contract");
-                },
+    const {
+        loadDocsBundleMarkdown: loadDocumentsBundleMarkdown,
+        loadDocsIndex: loadDocumentsIndex,
+        readDocsLanguages: readDocumentsLanguages,
+    } = loadTestModule(new URL("../../docs-client.js", import.meta.url), {
+        "./ui-language-state.js": languageState,
+        "./api-client.js": {
+            apiFetch: () => {
+                throw new Error("Use the injected public request contract");
             },
-        });
-    const { collectGlobalDocsSearchGroups } = loadTestModule(
+        },
+    });
+    const {
+        collectGlobalDocsSearchGroups: collectGlobalDocumentsSearchGroups,
+    } = loadTestModule(
         new URL("../docs-index.js", import.meta.url),
         {
             "../capabilities.js": createDiagnosticFixture(),
             "../docs-client.js": {
-                loadDocsBundleMarkdown,
-                loadDocsIndex,
-                readDocsLanguages,
+                loadDocsBundleMarkdown: loadDocumentsBundleMarkdown,
+                loadDocsIndex: loadDocumentsIndex,
+                readDocsLanguages: readDocumentsLanguages,
             },
             "../i18n.js": { createI18n: async () => ({ t: (key) => key }) },
         },
@@ -66,7 +71,7 @@ test("documentation titles arrive before content, content concurrency is bounded
             },
         },
     );
-    const indexing = collectGlobalDocsSearchGroups({
+    const indexing = collectGlobalDocumentsSearchGroups({
         signal: controller.signal,
         onResults: (groups) => emitted.push(groups),
     });

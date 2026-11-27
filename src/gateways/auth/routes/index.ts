@@ -12,11 +12,11 @@ import { validateUsername } from "../reuse/account-store.js";
 import { readJson } from "../../../api/reuse/read-json.js";
 import { getAuthClaims } from "../guard.js";
 
-function shouldSetSecureCookie(req: IncomingMessage): boolean {
+function shouldSetSecureCookie(request: IncomingMessage): boolean {
     const forced = process.env.COGNIS_SECURE_COOKIES;
     if (forced === "1" || forced === "true") return true;
     if (forced === "0" || forced === "false") return false;
-    const forwardedProto = req.headers["x-forwarded-proto"];
+    const forwardedProto = request.headers["x-forwarded-proto"];
     if (typeof forwardedProto !== "string") return false;
     return forwardedProto
         .split(",")
@@ -62,19 +62,22 @@ export function createAuthRoutes(
     ) => Promise<void>,
 ) {
     return async (
-        req: IncomingMessage,
-        res: ServerResponse,
+        request: IncomingMessage,
+        response: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        if (url.pathname === "/api/v1/auth/register" && req.method === "POST") {
-            const body = await readJson(req);
+        if (
+            url.pathname === "/api/v1/auth/register" &&
+            request.method === "POST"
+        ) {
+            const body = await readJson(request);
             const username = String(body.username ?? "");
             const password = String(body.password ?? "");
             const displayName =
                 String(body.displayName ?? "").trim() || undefined;
             if (!username || !password) {
-                res.writeHead(400, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(400, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "bad_request",
@@ -86,8 +89,8 @@ export function createAuthRoutes(
             }
             const usernameError = validateUsername(username);
             if (usernameError) {
-                res.writeHead(400, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(400, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: usernameError,
@@ -114,13 +117,16 @@ export function createAuthRoutes(
                 result.role ?? "user",
                 1800,
             );
-            res.writeHead(201, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { ...result, verifyToken } }));
+            response.writeHead(201, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: { ...result, verifyToken } }));
             return true;
         }
 
-        if (url.pathname === "/api/v1/auth/login" && req.method === "POST") {
-            const body = await readJson(req);
+        if (
+            url.pathname === "/api/v1/auth/login" &&
+            request.method === "POST"
+        ) {
+            const body = await readJson(request);
             const session = await authGateway.authenticate(
                 JSON.stringify({
                     username: body.username,
@@ -128,8 +134,8 @@ export function createAuthRoutes(
                 }),
             );
             if (!session) {
-                res.writeHead(401, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(401, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "invalid_credentials",
@@ -162,7 +168,7 @@ export function createAuthRoutes(
             const cookie = buildAccessTokenCookie(
                 apiToken,
                 accessTokenTtlSeconds,
-                shouldSetSecureCookie(req),
+                shouldSetSecureCookie(request),
             );
             await accountStore.updateLastLogin(session.accountId);
             const accountDisplayName =
@@ -175,11 +181,11 @@ export function createAuthRoutes(
                 role,
                 accountDisplayName,
             );
-            res.writeHead(200, {
+            response.writeHead(200, {
                 "content-type": "application/json",
                 "set-cookie": cookie,
             });
-            res.end(
+            response.end(
                 JSON.stringify({
                     data: {
                         accountId: session.accountId,
@@ -193,11 +199,14 @@ export function createAuthRoutes(
             return true;
         }
 
-        if (url.pathname === "/api/v1/auth/verify" && req.method === "POST") {
-            const claims = getAuthClaims(req);
+        if (
+            url.pathname === "/api/v1/auth/verify" &&
+            request.method === "POST"
+        ) {
+            const claims = getAuthClaims(request);
             if (!claims) {
-                res.writeHead(401, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(401, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "unauthorized",
@@ -207,19 +216,22 @@ export function createAuthRoutes(
                 );
                 return true;
             }
-            const rawAuthHeader = req.headers.authorization ?? "";
+            const rawAuthHeader = request.headers.authorization ?? "";
             const rawToken = rawAuthHeader.startsWith("Bearer ")
                 ? rawAuthHeader.slice("Bearer ".length)
                 : "";
 
-            const ONE_HOUR_MS = 60 * 60 * 1000;
-            if (rawToken && isTokenVerificationFresh(rawToken, ONE_HOUR_MS)) {
-                res.writeHead(200, { "content-type": "application/json" });
-                res.end(JSON.stringify({ data: { verified: true } }));
+            const ONE_HOUR_MILLISECONDS = 60 * 60 * 1000;
+            if (
+                rawToken &&
+                isTokenVerificationFresh(rawToken, ONE_HOUR_MILLISECONDS)
+            ) {
+                response.writeHead(200, { "content-type": "application/json" });
+                response.end(JSON.stringify({ data: { verified: true } }));
                 return true;
             }
 
-            const body = await readJson(req);
+            const body = await readJson(request);
             const password = String(body.password ?? "");
             const verified = await authGateway.confirmPassword(
                 claims.sub,
@@ -227,8 +239,8 @@ export function createAuthRoutes(
                 claims.providerId,
             );
             if (!verified) {
-                res.writeHead(401, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(401, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "invalid_credentials",
@@ -241,13 +253,16 @@ export function createAuthRoutes(
             if (rawToken) {
                 recordTokenVerification(rawToken);
             }
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { verified: true } }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: { verified: true } }));
             return true;
         }
 
-        if (url.pathname === "/api/v1/auth/logout" && req.method === "POST") {
-            const cookieHeader = req.headers.cookie ?? "";
+        if (
+            url.pathname === "/api/v1/auth/logout" &&
+            request.method === "POST"
+        ) {
+            const cookieHeader = request.headers.cookie ?? "";
             const cookieMatch = cookieHeader.match(
                 /(?:^|; )cognis_access_token=([^;]+)/,
             );
@@ -257,13 +272,13 @@ export function createAuthRoutes(
             if (cookieToken) {
                 revokeAccessToken(cookieToken);
             }
-            const useSecure = shouldSetSecureCookie(req);
+            const useSecure = shouldSetSecureCookie(request);
             const securePart = useSecure ? "; Secure" : "";
-            res.writeHead(200, {
+            response.writeHead(200, {
                 "content-type": "application/json",
                 "set-cookie": `cognis_access_token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${securePart}`,
             });
-            res.end(JSON.stringify({ data: { success: true } }));
+            response.end(JSON.stringify({ data: { success: true } }));
             return true;
         }
 

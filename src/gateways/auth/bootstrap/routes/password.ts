@@ -45,41 +45,54 @@ export function createPasswordRoutes({
     log,
 }: PasswordRouteDependencies): AuthGatewayRouteHandler {
     return async (
-        req,
-        res,
+        request,
+        response,
         url,
-        logMeta: AuthRouteLogMeta,
+        logMetadata: AuthRouteLogMeta,
     ): Promise<boolean> => {
-        if (url.pathname === "/api/v1/auth/verify" && req.method === "DELETE") {
-            const claims = requireAuth(req, res, "user");
+        if (
+            url.pathname === "/api/v1/auth/verify" &&
+            request.method === "DELETE"
+        ) {
+            const claims = requireAuth(request, response, "user");
             if (!claims) return true;
             const rawToken =
-                extractBearerToken(req) ?? extractCookieToken(req) ?? "";
+                extractBearerToken(request) ??
+                extractCookieToken(request) ??
+                "";
             if (rawToken) invalidateTokenVerification(rawToken);
-            res.writeHead(204);
-            res.end();
+            response.writeHead(204);
+            response.end();
             return true;
         }
-        if (url.pathname === "/api/v1/auth/verify" && req.method === "POST") {
-            const claims = requireAuth(req, res, "user");
+        if (
+            url.pathname === "/api/v1/auth/verify" &&
+            request.method === "POST"
+        ) {
+            const claims = requireAuth(request, response, "user");
             if (!claims) return true;
             const rawToken =
-                extractBearerToken(req) ?? extractCookieToken(req) ?? "";
-            const oneHourMs = 60 * 60 * 1000;
-            if (rawToken && isTokenVerificationFresh(rawToken, oneHourMs)) {
+                extractBearerToken(request) ??
+                extractCookieToken(request) ??
+                "";
+            const oneHourMilliseconds = 60 * 60 * 1000;
+            if (
+                rawToken &&
+                isTokenVerificationFresh(rawToken, oneHourMilliseconds)
+            ) {
                 log?.(
                     "debug",
                     "Password verification reused freshness window.",
                     {
-                        ...logMeta,
+                        ...logMetadata,
                         accountId: claims.sub,
                     },
                 );
-                res.writeHead(200, { "content-type": "application/json" });
-                res.end(JSON.stringify({ data: { verified: true } }));
+                response.writeHead(200, { "content-type": "application/json" });
+                response.end(JSON.stringify({ data: { verified: true } }));
                 return true;
             }
-            const body = await readJson(req);
+            const body = await readJson(request);
             const password = String(body.password ?? "");
             const confirmPassword = capabilities.get<ConfirmPassword>(
                 "auth:confirmPassword",
@@ -89,11 +102,11 @@ export function createPasswordRoutes({
                 : false;
             if (!verified) {
                 log?.("warn", "Password verification failed.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: claims.sub,
                 });
-                res.writeHead(401, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(401, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "invalid_credentials",
@@ -107,26 +120,26 @@ export function createPasswordRoutes({
                 recordTokenVerification(rawToken);
             }
             log?.("info", "Password verification succeeded.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
             });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { verified: true } }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: { verified: true } }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/auth/account-lifecycle" &&
-            req.method === "POST"
+            request.method === "POST"
         ) {
-            const claims = requireAuth(req, res, "user");
+            const claims = requireAuth(request, response, "user");
             if (!claims) return true;
-            const body = await readJson(req);
+            const body = await readJson(request);
             const action = String(body.action ?? "");
             const password = String(body.password ?? "");
             if (!["archive", "deactivate", "delete"].includes(action)) {
-                res.writeHead(400, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(400, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "bad_request",
@@ -147,13 +160,13 @@ export function createPasswordRoutes({
                     "warn",
                     "Account lifecycle password confirmation failed.",
                     {
-                        ...logMeta,
+                        ...logMetadata,
                         accountId: claims.sub,
                         action,
                     },
                 );
-                res.writeHead(401, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(401, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "invalid_credentials",
@@ -173,8 +186,10 @@ export function createPasswordRoutes({
                     ): Promise<unknown>;
                 }>("social:profileLifecycle");
                 if (!profileLifecycle) {
-                    res.writeHead(503, { "content-type": "application/json" });
-                    res.end(
+                    response.writeHead(503, {
+                        "content-type": "application/json",
+                    });
+                    response.end(
                         JSON.stringify({
                             error: {
                                 code: "account_lifecycle_unavailable",
@@ -191,52 +206,52 @@ export function createPasswordRoutes({
             }
             const revokedTokenCount = revokeAccessTokensForSubject(claims.sub);
             log?.("warn", "Applied account lifecycle action.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
                 action,
                 revokedTokenCount,
             });
-            res.writeHead(200, {
+            response.writeHead(200, {
                 "content-type": "application/json",
                 "set-cookie":
                     "cognis_access_token=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0",
             });
-            res.end(JSON.stringify({ data: { action, completed: true } }));
+            response.end(JSON.stringify({ data: { action, completed: true } }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/auth/password-change-capability" &&
-            req.method === "GET"
+            request.method === "GET"
         ) {
-            const claims = requireAuth(req, res, "user");
+            const claims = requireAuth(request, response, "user");
             if (!claims) return true;
             const support = authGateway.getPasswordResetSupport(
                 claims.providerId,
             );
             log?.("debug", "Read password change support.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
                 providerId: claims.providerId,
                 supported: support.supported,
             });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: support }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: support }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/auth/reset-password" &&
-            req.method === "POST"
+            request.method === "POST"
         ) {
-            const claims = requireAuth(req, res, "user");
+            const claims = requireAuth(request, response, "user");
             if (!claims) return true;
-            const body = await readJson(req);
+            const body = await readJson(request);
             const currentPassword = String(body.currentPassword ?? "");
             const nextPassword = String(body.password ?? "").trim();
             if (currentPassword.length === 0) {
-                res.writeHead(400, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(400, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "bad_request",
@@ -247,8 +262,8 @@ export function createPasswordRoutes({
                 return true;
             }
             if (!nextPassword) {
-                res.writeHead(400, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(400, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "bad_request",
@@ -259,8 +274,8 @@ export function createPasswordRoutes({
                 return true;
             }
             if (nextPassword.length < 8) {
-                res.writeHead(400, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(400, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "password_too_short",
@@ -278,14 +293,14 @@ export function createPasswordRoutes({
                     "warn",
                     "Blocked password reset for unsupported provider.",
                     {
-                        ...logMeta,
+                        ...logMetadata,
                         accountId: claims.sub,
                         providerId: claims.providerId,
                         reason: support.reason,
                     },
                 );
-                res.writeHead(400, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(400, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "provider_unsupported",
@@ -308,13 +323,13 @@ export function createPasswordRoutes({
                 const message =
                     error instanceof Error ? error.message : String(error);
                 log?.("error", "Password reset failed.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: claims.sub,
                     providerId: claims.providerId,
                     error: message,
                 });
-                res.writeHead(400, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(400, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "password_reset_failed",
@@ -326,7 +341,7 @@ export function createPasswordRoutes({
             }
             revokeAccessTokensForSubject(claims.sub);
             log?.("info", "Password reset succeeded.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
                 providerId: claims.providerId,
             });
@@ -341,7 +356,7 @@ export function createPasswordRoutes({
                         "error",
                         "Failed to dispatch password change notification.",
                         {
-                            ...logMeta,
+                            ...logMetadata,
                             accountId: claims.sub,
                             error:
                                 error instanceof Error
@@ -351,8 +366,8 @@ export function createPasswordRoutes({
                     );
                 });
             }
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { updated: true } }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: { updated: true } }));
             return true;
         }
 

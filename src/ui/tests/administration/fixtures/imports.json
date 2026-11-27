@@ -60,5 +60,6 @@
     "./save.js": [
         "createAdministrationSave",
         "confirmAdministrationSectionSwitch"
-    ]
+    ],
+    "./dependency-links.js": ["bindDependencyLinks"]
 }

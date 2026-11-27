@@ -49,7 +49,7 @@ export interface DocumentVersionDiff {
 
 type PrimitiveDiffLine = Exclude<DocumentDiffLine, { type: "changed" }>;
 
-export function createDocumentLineDiff(
+function createDocumentLineDifference(
     previousMarkdown: string,
     nextMarkdown: string,
 ): DocumentDiffLine[] {
@@ -161,6 +161,7 @@ export function createDocumentLineDiff(
     }
     return lines;
 }
+export { createDocumentLineDifference as createDocumentLineDiff };
 
 function publicationTime(value: unknown): number {
     const milliseconds =
@@ -309,7 +310,7 @@ export function createDocumentVersionStoreCapability(): DocumentVersionStoreCapa
                         slug: previous.slug,
                         fromVersion: previous.version,
                         toVersion: next.version,
-                        lines: createDocumentLineDiff(
+                        lines: createDocumentLineDifference(
                             previous.markdown,
                             next.markdown,
                         ),

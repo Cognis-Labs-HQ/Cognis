@@ -5,7 +5,7 @@ function cacheKey(accountId: string, pageId: string) {
     return createHash("sha256").update(`${accountId}:${pageId}`).digest("hex");
 }
 
-export class DbUserPreferenceStore {
+class DatabaseUserPreferenceStore {
     constructor(private readonly database: DbExecutor) {}
 
     async ensureSchema() {
@@ -68,3 +68,4 @@ export class DbUserPreferenceStore {
         });
     }
 }
+export { DatabaseUserPreferenceStore as DbUserPreferenceStore };

@@ -38,7 +38,7 @@ import type {
     TeacherRequestRow,
 } from "./types.js";
 
-export class DbClassesStore {
+class DatabaseClassesStore {
     constructor(private readonly database: DbExecutor) {}
 
     private static readonly DEFAULT_STUDENT_LIMIT = DEFAULT_STUDENT_LIMIT;
@@ -259,3 +259,4 @@ export class DbClassesStore {
         await rejectTeacherRequest(this.database, requestId, reviewerAccountId);
     }
 }
+export { DatabaseClassesStore as DbClassesStore };

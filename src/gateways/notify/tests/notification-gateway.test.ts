@@ -41,8 +41,8 @@ class ConfigurableSender extends CapturingSender {
         return { ...this.config };
     }
 
-    setConfig(cfg: Record<string, unknown>): void {
-        this.config = { ...this.config, ...cfg };
+    setConfig(configuration: Record<string, unknown>): void {
+        this.config = { ...this.config, ...configuration };
     }
 }
 
@@ -88,8 +88,8 @@ class TrackedQueueSender extends CapturingSender {
 }
 
 test("CoreNotificationGateway.registerCategory and listCategories", () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
 
     gateway.registerCategory("system", "System Alerts");
     gateway.registerCategory("account", "Account Events");
@@ -112,8 +112,8 @@ test("CoreNotificationGateway.registerCategory and listCategories", () => {
 });
 
 test("CoreNotificationGateway.listSenders reflects registered senders", () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
 
     const sender = new CapturingSender("email", "Email Sender");
     gateway.registerSender(sender);
@@ -125,8 +125,8 @@ test("CoreNotificationGateway.listSenders reflects registered senders", () => {
 });
 
 test("CoreNotificationGateway.listSenders marks sender active when it has getConfig", () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
 
     const plainSender = new CapturingSender("plain", "Plain");
     const configSender = new ConfigurableSender("configured", "Configured");
@@ -143,8 +143,8 @@ test("CoreNotificationGateway.listSenders marks sender active when it has getCon
 });
 
 test("CoreNotificationGateway.listSenders exposes supportsTest from sender capability", () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
 
     class TestableSender extends ConfigurableSender {
         async test(): Promise<void> {}
@@ -161,8 +161,8 @@ test("CoreNotificationGateway.listSenders exposes supportsTest from sender capab
 });
 
 test("CoreNotificationGateway.getProviderConfig returns null for sender without getConfig", () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
 
     gateway.registerSender(new CapturingSender("plain", "Plain"));
 
@@ -171,8 +171,8 @@ test("CoreNotificationGateway.getProviderConfig returns null for sender without 
 });
 
 test("CoreNotificationGateway.getProviderConfig returns config for configurable sender", () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
 
     const sender = new ConfigurableSender("smtp", "SMTP", {
         host: "mail.example.com",
@@ -187,8 +187,8 @@ test("CoreNotificationGateway.getProviderConfig returns config for configurable 
 });
 
 test("CoreNotificationGateway.saveProviderConfig updates sender config", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
 
     const sender = new ConfigurableSender("smtp", "SMTP", {
         host: "old.example.com",
@@ -216,8 +216,8 @@ test("CoreNotificationGateway.saveProviderConfig persists to configStore", async
             stored.set(id, config);
         },
     };
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore, configStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore, configStore);
 
     const sender = new ConfigurableSender("smtp", "SMTP");
     gateway.registerSender(sender);
@@ -238,8 +238,8 @@ test("CoreNotificationGateway.loadPersistedConfigs applies stored config to send
             stored.set(id, config);
         },
     };
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore, configStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore, configStore);
 
     const sender = new ConfigurableSender("smtp", "SMTP", {
         host: "initial.example.com",
@@ -254,14 +254,14 @@ test("CoreNotificationGateway.loadPersistedConfigs applies stored config to send
 });
 
 test("CoreNotificationGateway.dispatch routes envelope to correct senders", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    prefStore.set("alice", "account_alert", ["smtp", "webhook"]);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    preferenceStore.set("alice", "account_alert", ["smtp", "webhook"]);
 
     const smtpSender = new CapturingSender("smtp", "SMTP");
     const webhookSender = new CapturingSender("webhook", "Webhook");
     const otherSender = new CapturingSender("other", "Other");
 
-    const gateway = new CoreNotificationGateway(prefStore);
+    const gateway = new CoreNotificationGateway(preferenceStore);
     gateway.registerSender(smtpSender);
     gateway.registerSender(webhookSender);
     gateway.registerSender(otherSender);
@@ -281,8 +281,8 @@ test("CoreNotificationGateway.dispatch routes envelope to correct senders", asyn
 });
 
 test("CoreNotificationGateway.dispatch returns empty array when no preferences set", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     gateway.registerSender(new CapturingSender("smtp", "SMTP"));
 
     const result = await gateway.dispatch({
@@ -296,8 +296,8 @@ test("CoreNotificationGateway.dispatch returns empty array when no preferences s
 });
 
 test("CoreNotificationGateway.getProviderRequiredFields returns fields from sender", () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
 
     class RequiredFieldsSender extends CapturingSender {
         getRequiredFields(): string[] {
@@ -311,8 +311,8 @@ test("CoreNotificationGateway.getProviderRequiredFields returns fields from send
 });
 
 test("CoreNotificationGateway.getProviderRequiredFields returns null for sender without getRequiredFields", () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     gateway.registerSender(new CapturingSender("smtp", "SMTP"));
 
     const required = gateway.getProviderRequiredFields("smtp");
@@ -320,16 +320,16 @@ test("CoreNotificationGateway.getProviderRequiredFields returns null for sender 
 });
 
 test("CoreNotificationGateway.getProviderRequiredFields returns null for unknown sender", () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
 
     const required = gateway.getProviderRequiredFields("unknown");
     assert.equal(required, null);
 });
 
 test("CoreNotificationGateway.saveProviderConfig with enabled:false disables sender in listSenders", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
 
     const sender = new ConfigurableSender("smtp", "SMTP", {
         host: "mail.example.com",
@@ -338,7 +338,7 @@ test("CoreNotificationGateway.saveProviderConfig with enabled:false disables sen
 
     const before = gateway
         .listSenders()
-        .find((sender2) => sender2.senderId === "smtp");
+        .find((senderEntry) => senderEntry.senderId === "smtp");
     assert.equal(before?.active, true);
 
     await gateway.saveProviderConfig("smtp", {
@@ -348,13 +348,13 @@ test("CoreNotificationGateway.saveProviderConfig with enabled:false disables sen
 
     const after = gateway
         .listSenders()
-        .find((sender2) => sender2.senderId === "smtp");
+        .find((senderEntry) => senderEntry.senderId === "smtp");
     assert.equal(after?.active, false);
 });
 
 test("CoreNotificationGateway.saveProviderConfig with enabled:true re-enables a disabled sender", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
 
     const sender = new ConfigurableSender("smtp", "SMTP", {
         host: "mail.example.com",
@@ -372,13 +372,13 @@ test("CoreNotificationGateway.saveProviderConfig with enabled:true re-enables a 
 
     const info = gateway
         .listSenders()
-        .find((sender2) => sender2.senderId === "smtp");
+        .find((senderEntry) => senderEntry.senderId === "smtp");
     assert.equal(info?.active, true);
 });
 
 test("CoreNotificationGateway.getProviderConfig includes enabled field", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
 
     const sender = new ConfigurableSender("smtp", "SMTP", {
         host: "mail.example.com",
@@ -398,11 +398,11 @@ test("CoreNotificationGateway.getProviderConfig includes enabled field", async (
 });
 
 test("CoreNotificationGateway.dispatch skips disabled senders", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    prefStore.set("alice", "system", ["smtp"]);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    preferenceStore.set("alice", "system", ["smtp"]);
 
     const smtpSender = new CapturingSender("smtp", "SMTP");
-    const gateway = new CoreNotificationGateway(prefStore);
+    const gateway = new CoreNotificationGateway(preferenceStore);
     gateway.registerSender(smtpSender);
 
     await gateway.saveProviderConfig("smtp", { enabled: false });
@@ -420,8 +420,8 @@ test("CoreNotificationGateway.dispatch skips disabled senders", async () => {
 });
 
 test("CoreNotificationGateway.dispatch captures per-sender errors without throwing", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    prefStore.set("alice", "system", ["smtp"]);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    preferenceStore.set("alice", "system", ["smtp"]);
 
     class FailingSender extends CapturingSender {
         async send(): Promise<void> {
@@ -429,7 +429,7 @@ test("CoreNotificationGateway.dispatch captures per-sender errors without throwi
         }
     }
 
-    const gateway = new CoreNotificationGateway(prefStore);
+    const gateway = new CoreNotificationGateway(preferenceStore);
     gateway.registerSender(new FailingSender("smtp", "SMTP"));
 
     const result = await gateway.dispatch({
@@ -449,9 +449,9 @@ test("CoreNotificationGateway.dispatch captures per-sender errors without throwi
 });
 
 test("CoreNotificationGateway.dispatch includes receipts for tracked senders", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    prefStore.set("alice", "system", ["tracked"]);
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    preferenceStore.set("alice", "system", ["tracked"]);
+    const gateway = new CoreNotificationGateway(preferenceStore);
     gateway.registerSender(new TrackedQueueSender("tracked", "Tracked"));
 
     const result = await gateway.dispatch({
@@ -468,9 +468,9 @@ test("CoreNotificationGateway.dispatch includes receipts for tracked senders", a
 });
 
 test("CoreNotificationGateway exposes sender queue state", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    prefStore.set("alice", "system", ["tracked"]);
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    preferenceStore.set("alice", "system", ["tracked"]);
+    const gateway = new CoreNotificationGateway(preferenceStore);
     gateway.registerSender(new TrackedQueueSender("tracked", "Tracked"));
 
     await gateway.dispatch({
@@ -503,8 +503,8 @@ test("CoreNotificationGateway.loadPersistedConfigs restores disabled state", asy
             stored.set(id, config);
         },
     };
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore, configStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore, configStore);
 
     const sender = new ConfigurableSender("smtp", "SMTP", {
         host: "initial.example.com",
@@ -515,7 +515,7 @@ test("CoreNotificationGateway.loadPersistedConfigs restores disabled state", asy
 
     const info = gateway
         .listSenders()
-        .find((sender2) => sender2.senderId === "smtp");
+        .find((senderEntry) => senderEntry.senderId === "smtp");
     assert.equal(info?.active, false);
 });
 
@@ -543,8 +543,8 @@ test("CoreNotificationGateway keeps always-on senders enabled after reload", asy
 });
 
 test("CoreNotificationGateway notifies sender enabled state listeners", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     gateway.registerSender(new CapturingSender("smtp", "SMTP"));
     const changes: Array<{ senderId: string; enabled: boolean }> = [];
     gateway.onSenderEnabledChange("test", (senderId, enabled) => {
@@ -562,8 +562,8 @@ test("CoreNotificationGateway notifies sender enabled state listeners", async ()
 });
 
 test("CoreNotificationGateway updateProviderConfig merges patches and emits config listeners", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     const sender = new ConfigurableSender("smtp", "SMTP", {
         host: "mail.example.com",
         codeLength: 6,

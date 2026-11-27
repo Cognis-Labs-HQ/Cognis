@@ -4,7 +4,7 @@ import { CTX_CAPABILITY, type Ctx } from "@cognis/core";
 
 const APPROVAL_FLOW_ID = "request-share-approval";
 const APPROVAL_TIMEOUT_SECONDS = 60;
-const APPROVAL_POLL_INTERVAL_MS = 1_000;
+const APPROVAL_POLL_INTERVAL_MILLISECONDS = 1_000;
 
 export interface ShareApprovalInput {
     resourceType: string;
@@ -140,7 +140,7 @@ export function registerShareApprovalFlow(input: {
             );
             while (!summary.allResponded && Date.now() < deadline) {
                 await new Promise((resolve) =>
-                    setTimeout(resolve, APPROVAL_POLL_INTERVAL_MS),
+                    setTimeout(resolve, APPROVAL_POLL_INTERVAL_MILLISECONDS),
                 );
                 summary = await input.gateway.resolveApprovalStatus(
                     created.mintRequestId,

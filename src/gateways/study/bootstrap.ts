@@ -49,14 +49,14 @@ function createStudyAdapterRoutes(
     );
 
     return async (
-        req: IncomingMessage,
-        res: ServerResponse,
+        request: IncomingMessage,
+        response: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        if (url.pathname === base && req.method === "GET") {
-            if (!ctx.requireAuth(req, res, "admin")) return true;
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(
+        if (url.pathname === base && request.method === "GET") {
+            if (!ctx.requireAuth(request, response, "admin")) return true;
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     data: gateway.listAdapters().map((adapter) => ({
                         ...adapter,
@@ -73,22 +73,22 @@ function createStudyAdapterRoutes(
         const modulesMatch = url.pathname.match(
             /^\/api\/v1\/study\/languages\/([^/]+)\/modules$/,
         );
-        if (modulesMatch && req.method === "GET") {
-            const claims = ctx.requireAuth(req, res);
+        if (modulesMatch && request.method === "GET") {
+            const claims = ctx.requireAuth(request, response);
             if (!claims) return true;
             const languageCode = decodeURIComponent(modulesMatch[1]);
             const languageIsEnabled = await isLanguageEnabled(languageCode);
             if (!languageIsEnabled) {
-                res.writeHead(200, { "content-type": "application/json" });
-                res.end(JSON.stringify({ data: [] }));
+                response.writeHead(200, { "content-type": "application/json" });
+                response.end(JSON.stringify({ data: [] }));
                 return true;
             }
             const components = gateway.listChildComponents(
                 languageCode,
                 claims.role,
             );
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: components }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: components }));
             return true;
         }
 
@@ -96,14 +96,16 @@ function createStudyAdapterRoutes(
             new RegExp(`^${base}/([^/]+)/config$`),
         );
         if (configMatch) {
-            if (!ctx.requireAuth(req, res, "admin")) return true;
+            if (!ctx.requireAuth(request, response, "admin")) return true;
             const adapterId = decodeURIComponent(configMatch[1]);
 
-            if (req.method === "GET") {
+            if (request.method === "GET") {
                 const config = gateway.getAdapterConfig(adapterId);
                 if (config === null) {
-                    res.writeHead(404, { "content-type": "application/json" });
-                    res.end(
+                    response.writeHead(404, {
+                        "content-type": "application/json",
+                    });
+                    response.end(
                         JSON.stringify({
                             error: {
                                 code: "not_found",
@@ -113,8 +115,8 @@ function createStudyAdapterRoutes(
                     );
                     return true;
                 }
-                res.writeHead(200, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(200, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         data: {
                             ...config,
@@ -128,10 +130,12 @@ function createStudyAdapterRoutes(
                 return true;
             }
 
-            if (req.method === "PUT") {
+            if (request.method === "PUT") {
                 if (!gateway.getAdapter(adapterId)) {
-                    res.writeHead(404, { "content-type": "application/json" });
-                    res.end(
+                    response.writeHead(404, {
+                        "content-type": "application/json",
+                    });
+                    response.end(
                         JSON.stringify({
                             error: {
                                 code: "not_found",
@@ -141,13 +145,13 @@ function createStudyAdapterRoutes(
                     );
                     return true;
                 }
-                const body = await readJson(req);
+                const body = await readJson(request);
                 await gateway.saveAdapterConfig(
                     adapterId,
                     body as Record<string, unknown>,
                 );
-                res.writeHead(200, { "content-type": "application/json" });
-                res.end(JSON.stringify({ data: { saved: true } }));
+                response.writeHead(200, { "content-type": "application/json" });
+                response.end(JSON.stringify({ data: { saved: true } }));
                 return true;
             }
 
@@ -155,14 +159,14 @@ function createStudyAdapterRoutes(
         }
 
         const toggleMatch = url.pathname.match(toggleAdapterRoutePattern);
-        if (toggleMatch && req.method === "POST") {
-            if (!ctx.requireAuth(req, res, "admin")) return true;
+        if (toggleMatch && request.method === "POST") {
+            if (!ctx.requireAuth(request, response, "admin")) return true;
             const adapterId = decodeURIComponent(toggleMatch[1]);
             const action = toggleMatch[2] as "enable" | "disable";
             const adapter = gateway.getAdapter(adapterId);
             if (!adapter) {
-                res.writeHead(404, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(404, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -175,8 +179,10 @@ function createStudyAdapterRoutes(
             if (action === "enable") {
                 const gatewayEntry = gatewayRegistry.get(gatewayId);
                 if (gatewayEntry?.status === "disabled") {
-                    res.writeHead(409, { "content-type": "application/json" });
-                    res.end(
+                    response.writeHead(409, {
+                        "content-type": "application/json",
+                    });
+                    response.end(
                         JSON.stringify({
                             error: {
                                 code: "gateway_disabled",
@@ -191,8 +197,10 @@ function createStudyAdapterRoutes(
             } else {
                 await gateway.disableAdapter(adapterId);
             }
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { enabled: action === "enable" } }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(
+                JSON.stringify({ data: { enabled: action === "enable" } }),
+            );
             return true;
         }
 
@@ -504,7 +512,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         flow: ctx.flow,
         registerRoute: (handler, gatewayId) =>
             ctx.routeRegistry.register(handler, gatewayId ?? "study"),
-        registerAdapterStaticDir: (gatewayId, adapterId, dir) => {
+        registerAdapterStaticDir: (gatewayId, adapterId, directory) => {
             if (!ctx.uiRegistry?.registerAdapterStaticDir) {
                 ctx.log?.(
                     "warn",
@@ -513,12 +521,16 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                         component: "study-gateway",
                         gatewayId,
                         adapterId,
-                        dir,
+                        dir: directory,
                     },
                 );
                 return;
             }
-            ctx.uiRegistry.registerAdapterStaticDir(gatewayId, adapterId, dir);
+            ctx.uiRegistry.registerAdapterStaticDir(
+                gatewayId,
+                adapterId,
+                directory,
+            );
         },
         log: ctx.log,
     });
@@ -563,21 +575,21 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     });
 
     const serveStudyHtml = async (
-        req: IncomingMessage,
-        res: ServerResponse,
+        request: IncomingMessage,
+        response: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        if (req.method !== "GET") return false;
+        if (request.method !== "GET") return false;
         if (url.pathname !== "/study" && !url.pathname.startsWith("/study/"))
             return false;
-        if (!routeContext.getCookieSession(req)) {
-            res.writeHead(302, { location: "/login" });
-            res.end();
+        if (!routeContext.getCookieSession(request)) {
+            response.writeHead(302, { location: "/login" });
+            response.end();
             return true;
         }
         if (!isStudyAvailable()) {
-            res.writeHead(302, { location: "/error?code=503" });
-            res.end();
+            response.writeHead(302, { location: "/error?code=503" });
+            response.end();
             return true;
         }
         if (
@@ -586,28 +598,28 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             url.pathname !== "/study/settings"
         )
             return false;
-        routeContext.setPageSecurityHeaders(res);
+        routeContext.setPageSecurityHeaders(response);
         const html = await readFile(
             path.join(GATEWAY_ROOT, "ui", "study.html"),
             "utf8",
         );
-        res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
-        res.end(html);
+        response.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+        response.end(html);
         return true;
     };
     ctx.routeRegistry.register(serveStudyHtml, "study");
 
     const registeredLanguagesRoute = async (
-        req: IncomingMessage,
-        res: ServerResponse,
+        request: IncomingMessage,
+        response: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         if (
             url.pathname !== "/api/v1/study/registered-languages" ||
-            req.method !== "GET"
+            request.method !== "GET"
         )
             return false;
-        const claims = routeContext.requireAuth(req, res);
+        const claims = routeContext.requireAuth(request, response);
         if (!claims) return true;
         syncLanguageCapabilities();
         const languages = gateway
@@ -618,8 +630,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 name: language.name,
                 flag: language.flag,
             }));
-        res.writeHead(200, { "content-type": "application/json" });
-        res.end(JSON.stringify({ data: languages }));
+        response.writeHead(200, { "content-type": "application/json" });
+        response.end(JSON.stringify({ data: languages }));
         return true;
     };
     ctx.routeRegistry.register(registeredLanguagesRoute, "study");

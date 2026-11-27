@@ -1,3 +1,4 @@
+import { createCalendarEventUpdate } from "./popup-manager-event-update.js";
 import { bindCapability } from "/static/reuse/capabilities.js";
 import { createSubmitEvent } from "./submit-event.js";
 import { bindViewInteractions as bindCalendarViewInteractions } from "./bind-view-interactions.js";
@@ -66,59 +67,14 @@ export function createCalendarPopupManager({
         setSelectedCalendarId,
         syncRouteSelection,
     });
-    async function updateExistingEvent({
-        sourceCalendarId,
-        sourceEventId,
-        calendarId,
-        title,
-        description,
-        startAt,
-        endAt,
-        attendees,
-        inviteEmails,
-        reminderOffsetsMinutes,
-        status,
-        recurrence,
-        meetingUrl,
-        updateAll,
-    }) {
-        const targetCalendarId = String(calendarId ?? "").trim();
-        const overlaps = findOverlappingEvents(getEventsByCalendar(), {
-            calendarId: targetCalendarId,
-            startAt: new Date(startAt).toISOString(),
-            endAt: new Date(endAt).toISOString(),
-            excludedEventId: sourceEventId,
-        });
-        if (overlaps.length > 0) {
-            showToast(i18n.t("gateway.calendar.overlap_warning"), "warning");
-        }
-        const response = await calendarUi.updateEvent(
-            sourceCalendarId,
-            sourceEventId,
-            {
-                title,
-                description,
-                startAt: new Date(startAt).toISOString(),
-                endAt: new Date(endAt).toISOString(),
-                attendees,
-                inviteEmails,
-                reminderOffsetsMinutes,
-                meetingUrl,
-                status,
-                recurrence,
-                calendarId: targetCalendarId,
-                updateAll,
-            },
-        );
-        if (!response.ok) {
-            showToast(i18n.t("gateway.calendar.update_event_failed"), "error");
-            return false;
-        }
-        await reloadState();
-        setSelectedCalendarId(targetCalendarId);
-        showToast(i18n.t("gateway.calendar.update_event_success"), "success");
-        return true;
-    }
+    const updateExistingEvent = createCalendarEventUpdate({
+        getEventsByCalendar,
+        calendarUi,
+        showToast,
+        i18n,
+        reloadState,
+        setSelectedCalendarId,
+    });
     async function openDeleteEventPopup(eventData) {
         const isRecurring = eventData.event.recurrence !== "none";
         await openPopup({
@@ -204,7 +160,8 @@ export function createCalendarPopupManager({
             reloadState,
             syncRouteSelection,
             refreshComposer,
-            openEventPopup: (calId, evId) => openEventPopup(calId, evId),
+            openEventPopup: (calendarId, eventId) =>
+                openEventPopup(calendarId, eventId),
         });
     async function openEventPopup(calendarId, eventId) {
         try {

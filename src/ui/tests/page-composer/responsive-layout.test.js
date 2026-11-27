@@ -6,7 +6,7 @@ import {
     resolveGridWidthBounds,
 } from "../../reuse/page-composer/grid-sizing.js";
 import { createGridOverlayHandlers } from "../../reuse/page-composer/grid-overlay.js";
-import { createSubComposerHandlers } from "../../reuse/page-composer/sub-composer.js";
+import { createSubComposerHandlers as createNestedComposerHandlers } from "../../reuse/page-composer/sub-composer.js";
 import { createComposerRenderer } from "../../reuse/page-composer/composer-render.js";
 import {
     fitComposerPanel,
@@ -38,7 +38,7 @@ for (const maximum of ["half", "fill", "full", ["half", 8], [8, 8]]) {
                 layout: { placements: [], hidden: [] },
             };
             if (nested) {
-                createSubComposerHandlers({
+                createNestedComposerHandlers({
                     UNIT: 90,
                     getGridSize: resolveElementGridSize,
                 }).initializeSubPlacements(state);
@@ -104,7 +104,12 @@ test("nested responsive presentation filters hidden cards and restores wide layo
     assert.deepEqual(
         renderer
             .computeSubViewPlacements(state)
-            .map(({ id, col, row, w }) => ({ id, col, row, w })),
+            .map(({ id, col: column, row, w: width }) => ({
+                id,
+                col: column,
+                row,
+                w: width,
+            })),
         [
             { id: "first", col: 0, row: 0, w: 3 },
             { id: "second", col: 0, row: 2, w: 3 },
@@ -125,7 +130,7 @@ test("nested editor uses every available pixel rather than truncating its width"
         editing: true,
         layout: { placements: [], hidden: [] },
     };
-    createSubComposerHandlers({ UNIT: 90 }).computeSubGridDimensions(state);
+    createNestedComposerHandlers({ UNIT: 90 }).computeSubGridDimensions(state);
     assert.equal(state.gridCols, 3);
     assert.equal(state.gridTrackSize * state.gridCols, 347);
     assert.equal(state.container.style.width, "");
@@ -141,7 +146,7 @@ for (const nested of [false, true]) {
         };
         const initialize = nested
             ? (options) =>
-                  createSubComposerHandlers({
+                  createNestedComposerHandlers({
                       UNIT: 90,
                       getGridSize: resolveElementGridSize,
                   }).initializeSubPlacements(state, options)
@@ -186,7 +191,7 @@ test("nested geometry remeasures same-column pixel widths in edit mode", () => {
         editing: true,
         layout: { placements: [], hidden: [] },
     };
-    const handlers = createSubComposerHandlers({ UNIT: 90 });
+    const handlers = createNestedComposerHandlers({ UNIT: 90 });
     handlers.computeSubGridDimensions(state);
     assert.equal(state.gridCols, 3);
     state.container = containerAt(300);

@@ -113,7 +113,7 @@ test("Study Library owners can select and delete multiple entries", () => {
     assert.match(source, /!deletion\.entryIds\.includes\(entry\.id\)/);
 
     assert.match(stylesheet, /\.library-entry-selection/);
-    assert.match(source, /LONG_PRESS_DURATION_MS/);
+    assert.match(source, /LONG_PRESS_DURATION_MILLISECONDS/);
     assert.match(source, /selectedEntryIds\(root\)\.length === 0/);
     assert.match(
         stylesheet,

@@ -21,13 +21,13 @@ import { getBrowserDetectedTimezone } from "../../reuse/timestamp.js";
  * @param {{ existingPrefs: object|null, i18n: object, onDirtyChange?: (dirty: boolean) => void }} options
  * @returns {{ init: () => void, getTimezone: () => string, getTimeFormat: () => string, isDirty: () => boolean, commit: () => void, discard: () => void }}
  */
-export function initDateTimePrefs(
+function initDateTimePreferences(
     root,
-    { existingPrefs, i18n, onDirtyChange },
+    { existingPrefs: existingPreferences, i18n, onDirtyChange },
 ) {
-    let savedTimezone = existingPrefs?.timezone ?? "auto";
+    let savedTimezone = existingPreferences?.timezone ?? "auto";
     let currentTimezone = savedTimezone;
-    let savedTimeFormat = existingPrefs?.timeFormat ?? "auto";
+    let savedTimeFormat = existingPreferences?.timeFormat ?? "auto";
     let currentTimeFormat = savedTimeFormat;
 
     function notifyDirty() {
@@ -75,15 +75,15 @@ export function initDateTimePrefs(
         return [...new Set([...zones, "UTC"])];
     }
 
-    function init() {
+    function initialize() {
         const timezoneSelect = root.querySelector("#pref-timezone-select");
         const timeFormatSelect = root.querySelector("#pref-time-format-select");
         if (!timezoneSelect || !timeFormatSelect) return;
 
-        const effectiveTz = getBrowserDetectedTimezone();
+        const effectiveTimezone = getBrowserDetectedTimezone();
         const autoLabel = i18n
             .t("ui.app.settings.datetime_tz_auto")
-            .replace("{tz}", effectiveTz);
+            .replace("{tz}", effectiveTimezone);
 
         const autoOption = document.createElement("option");
         autoOption.value = "auto";
@@ -91,14 +91,14 @@ export function initDateTimePrefs(
         timezoneSelect.append(autoOption);
 
         const zones = buildTimezoneOptions({
-            detectedTimezone: effectiveTz,
+            detectedTimezone: effectiveTimezone,
             selectedTimezone: currentTimezone,
         });
         zones.forEach((timeZone) => {
-            const opt = document.createElement("option");
-            opt.value = timeZone;
-            opt.textContent = timeZone;
-            timezoneSelect.append(opt);
+            const option = document.createElement("option");
+            option.value = timeZone;
+            option.textContent = timeZone;
+            timezoneSelect.append(option);
         });
 
         timezoneSelect.value = currentTimezone;
@@ -140,7 +140,7 @@ export function initDateTimePrefs(
     }
 
     return {
-        init,
+        init: initialize,
         getTimezone: () => currentTimezone,
         getTimeFormat: () => currentTimeFormat,
         isDirty: () =>
@@ -150,3 +150,4 @@ export function initDateTimePrefs(
         discard,
     };
 }
+export { initDateTimePreferences as initDateTimePrefs };

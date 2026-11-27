@@ -14,7 +14,7 @@ import { UIRegistry } from "../../../api/reuse/ui-registry.js";
 import { issueAccessToken } from "../../auth/access-tokens.js";
 import { bootstrap } from "../bootstrap.js";
 import { bootstrap as bootstrapAuth } from "../../auth/bootstrap/index.js";
-import { DbTfaStore } from "../reuse/tfa-store.js";
+import { DbTfaStore as DatabaseTfaStore } from "../reuse/tfa-store.js";
 import { InMemoryTestExecutor } from "../../db/tests/in-memory-test-executor.js";
 
 const tfaRoutesSource = readFileSync(
@@ -59,28 +59,28 @@ async function dispatchRoute(
     pathname: string,
     method = "GET",
 ) {
-    const res = makeResponse();
+    const response = makeResponse();
     let handled = false;
-    const req = {
+    const request = {
         method,
         headers,
     } as unknown as import("node:http").IncomingMessage;
     for (const entry of routeRegistry.getEntries()) {
         handled = await entry.handler(
-            req,
-            res as unknown as import("node:http").ServerResponse,
+            request,
+            response as unknown as import("node:http").ServerResponse,
             new URL(pathname, "http://localhost"),
         );
         if (handled) {
             break;
         }
     }
-    return { handled, res };
+    return { handled, res: response };
 }
 
 test("tfa catalog restores adapter state and publishes authenticated lifecycle controls", async () => {
     const database = new InMemoryTestExecutor();
-    const store = new DbTfaStore(database);
+    const store = new DatabaseTfaStore(database);
     await store.ensureSchema();
     await store.saveAdapterConfig("totp", false, {});
 

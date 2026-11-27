@@ -10,10 +10,10 @@ import {
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { execFile } from "node:child_process";
+import { execFile as executorFile } from "node:child_process";
 import { promisify } from "node:util";
 
-const run = promisify(execFile);
+const run = promisify(executorFile);
 
 test("a directly registered provider remains a built entry when another entry imports it", async () => {
     const directory = await mkdtemp(path.join(tmpdir(), "cognis-build-entry-"));
@@ -78,7 +78,10 @@ test("a directly registered provider remains a built entry when another entry im
         assert.equal(app.helperValue, "bundled dependency");
         const contributions = [];
         provider.mountProvider({
-            capabilities: { contribute: (...args) => contributions.push(args) },
+            capabilities: {
+                contribute: (...argumentsList) =>
+                    contributions.push(argumentsList),
+            },
         });
         assert.deepEqual(contributions, [["example:value", "ready"]]);
     } finally {

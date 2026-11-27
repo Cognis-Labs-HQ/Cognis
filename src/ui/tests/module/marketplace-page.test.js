@@ -63,8 +63,11 @@ const releaseChannelSource = readFileSync(
     "utf8",
 );
 test("module marketplace polls Cognis for current recommendations", () => {
-    assert.match(marketplaceSource, /MARKETPLACE_POLL_INTERVAL_MS = 15_000/);
-    assert.match(marketplaceSource, /window\.setInterval\((?:poll|run)/);
+    assert.match(
+        marketplaceSource,
+        /MARKETPLACE_POLL_INTERVAL_MILLISECONDS = 15_000/,
+    );
+    assert.match(marketplaceSource, /window\.setInterval\(\s*(?:poll|run)/);
     assert.match(
         marketplaceSource,
         /loadKnownModules\(false, signal\)[\s\S]*discoverConfiguredSources\(false, signal\)/,

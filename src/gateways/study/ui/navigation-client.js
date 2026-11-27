@@ -68,17 +68,17 @@ export function registerStudyNavigation(ctx) {
         preferences: async ({ signal } = {}) => {
             const revision = enrollmentRevision;
             const assertAccount = captureAccountGuard();
-            const prefs = await load(
+            const preferences = await load(
                 "/api/v1/study/preferences",
                 signal ?? ctx.signal,
             );
             assertAccount();
             if (revision === enrollmentRevision) {
-                enrolled = new Set(prefs?.learningLanguages ?? []);
+                enrolled = new Set(preferences?.learningLanguages ?? []);
                 enrollmentOwner =
                     globalThis.localStorage?.getItem("cognis_account");
             }
-            return prefs;
+            return preferences;
         },
         modules: ({ languageCode, signal }) =>
             load(
@@ -97,11 +97,11 @@ export function registerStudyNavigation(ctx) {
     bindOfflineSnapshotRefresh(ctx, {
         id: "study:prepareOfflineSnapshot",
         refresh: async () => {
-            const [, prefs] = await Promise.all([
+            const [, preferences] = await Promise.all([
                 actions.languages(),
                 actions.preferences(),
             ]);
-            const codes = prefs?.learningLanguages ?? [];
+            const codes = preferences?.learningLanguages ?? [];
             let index = 0;
             await Promise.all(
                 Array.from({ length: Math.min(2, codes.length) }, async () => {

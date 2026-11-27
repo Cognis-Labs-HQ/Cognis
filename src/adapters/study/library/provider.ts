@@ -13,12 +13,12 @@ export function registerLibraryCapabilities(
     const system = ctx.capabilities.require<Ctx>("system:ctx");
     const guard =
         <Arguments extends unknown[], Result>(
-            operation: (...args: Arguments) => Result,
+            operation: (...argumentsList: Arguments) => Result,
         ) =>
-        (...args: Arguments): Result => {
+        (...argumentsList: Arguments): Result => {
             if (!ctx.isAdapterEnabled())
                 throw new Error("study_library_unavailable");
-            return operation(...args);
+            return operation(...argumentsList);
         };
     const registerConstructor = guard(
         service.registerFormContribution.bind(service),

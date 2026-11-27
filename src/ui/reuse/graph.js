@@ -63,9 +63,9 @@ export function mountGraph(
         return { ...point, count };
     });
     const maximumCount = Math.max(1, ...plotted.map((point) => point.count));
-    const x = (time) =>
+    const horizontalScale = (time) =>
         margin.left + ((time - minimumTime) / timeSpan) * plotWidth;
-    const y = (count) =>
+    const verticalScale = (count) =>
         margin.top + plotHeight - (count / maximumCount) * plotHeight;
     const svgNamespace = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(svgNamespace, "svg");
@@ -86,7 +86,10 @@ export function mountGraph(
         line.setAttribute(
             "points",
             plotted
-                .map((point) => `${x(point.time)},${y(point.count)}`)
+                .map(
+                    (point) =>
+                        `${horizontalScale(point.time)},${verticalScale(point.count)}`,
+                )
                 .join(" "),
         );
         svg.appendChild(line);
@@ -172,8 +175,8 @@ export function mountGraph(
         const circle = document.createElementNS(svgNamespace, "circle");
         circle.classList.add("graph-point");
         if (point.category) circle.dataset.category = point.category;
-        circle.setAttribute("cx", String(x(point.time)));
-        circle.setAttribute("cy", String(y(point.count)));
+        circle.setAttribute("cx", String(horizontalScale(point.time)));
+        circle.setAttribute("cy", String(verticalScale(point.count)));
         circle.setAttribute("r", "6");
         circle.setAttribute("tabindex", "0");
         circle.setAttribute(

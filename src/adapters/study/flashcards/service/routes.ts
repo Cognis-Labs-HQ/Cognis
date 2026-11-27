@@ -9,38 +9,44 @@ export function createDeckRoutes(
     service: DeckService,
     ctx: RouteContext,
     log?: BootstrapLog,
-): (req: IncomingMessage, res: ServerResponse, url: URL) => Promise<boolean> {
+): (
+    request: IncomingMessage,
+    response: ServerResponse,
+    url: URL,
+) => Promise<boolean> {
     return async (
-        req: IncomingMessage,
-        res: ServerResponse,
+        request: IncomingMessage,
+        response: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         const match = url.pathname.match(
             /^\/api\/v1\/study\/decks(?:\/([^/]+))?(?:\/(review))?$/,
         );
         if (!match) return false;
-        const claims = ctx.requireAuth(req, res);
+        const claims = ctx.requireAuth(request, response);
         if (!claims) return true;
         const actor = { accountId: claims.sub, role: claims.role, claims };
         const id = match[1];
         try {
-            if (req.method === "GET" && !match[2]) {
-                sendJson(res, 200, {
+            if (request.method === "GET" && !match[2]) {
+                sendJson(response, 200, {
                     data: id
                         ? await service.details(actor, id)
                         : await service.list(actor),
                 });
                 return true;
             }
-            if (req.method === "POST" && id && match[2]) {
-                const body = (await readJson(req, { maxBytes: 16 * 1024 })) as {
+            if (request.method === "POST" && id && match[2]) {
+                const body = (await readJson(request, {
+                    maxBytes: 16 * 1024,
+                })) as {
                     cardId: unknown;
                     grade: unknown;
                     attempt?: unknown;
                 };
                 if (!body || typeof body !== "object")
                     throw new Error("invalid_deck_card");
-                sendJson(res, 200, {
+                sendJson(response, 200, {
                     data: await service.review(
                         actor,
                         id,
@@ -52,21 +58,21 @@ export function createDeckRoutes(
                 return true;
             }
             if (
-                (req.method === "POST" && !id) ||
-                (req.method === "PUT" && id && !match[2])
+                (request.method === "POST" && !id) ||
+                (request.method === "PUT" && id && !match[2])
             ) {
-                sendJson(res, id ? 200 : 201, {
+                sendJson(response, id ? 200 : 201, {
                     data: await service.save(
                         actor,
-                        await readJson(req, { maxBytes: 5 * 1024 * 1024 }),
+                        await readJson(request, { maxBytes: 5 * 1024 * 1024 }),
                         id,
                     ),
                 });
                 return true;
             }
-            if (req.method === "DELETE" && id && !match[2]) {
+            if (request.method === "DELETE" && id && !match[2]) {
                 await service.delete(actor, id);
-                sendJson(res, 200, { data: { deleted: true } });
+                sendJson(response, 200, { data: { deleted: true } });
                 return true;
             }
             return false;
@@ -96,7 +102,7 @@ export function createDeckRoutes(
                 "request_body_too_large",
             ].includes(reason);
             sendJson(
-                res,
+                response,
                 reason === "request_body_too_large"
                     ? 413
                     : reason === "deck_not_found"

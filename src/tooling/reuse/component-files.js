@@ -1,5 +1,5 @@
 import { readdirSync } from "node:fs";
-import { dirname, resolve, sep } from "node:path";
+import { dirname, resolve, sep as separator } from "node:path";
 
 export function sourceFiles(
     directory,
@@ -26,14 +26,14 @@ export function sourceFiles(
 export function componentManifestFiles(root) {
     const files = sourceFiles(root);
     const manifests = files.filter((path) =>
-        path.endsWith(`${sep}manifest.json`),
+        path.endsWith(`${separator}manifest.json`),
     );
     const owned = new Set(manifests.map(dirname));
     return [
         ...manifests,
         ...files.filter(
             (path) =>
-                path.endsWith(`${sep}package.json`) &&
+                path.endsWith(`${separator}package.json`) &&
                 !owned.has(dirname(path)),
         ),
     ];

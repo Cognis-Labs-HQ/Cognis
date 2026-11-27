@@ -37,24 +37,26 @@ const GATEWAY_ROOT = path.resolve(
 );
 const SHARE_ADAPTERS_ROOT = path.resolve(GATEWAY_ROOT, "../../adapters/share");
 
-const GUEST_PROFILE_CLEANUP_INTERVAL_MS = 15 * 60 * 1000;
+const GUEST_PROFILE_CLEANUP_INTERVAL_MILLISECONDS = 15 * 60 * 1000;
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const manifestVersion = await readGatewayManifestVersion(
         import.meta.url,
         "../manifest.json",
     );
-    const dbExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
-    if (!dbExecutor) {
+    const databaseExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
+    if (!databaseExecutor) {
         return;
     }
     const routeContext = resolveRouteContext(
         ctx.capabilities.get<RouteContext>("auth:routeContext"),
     );
-    const store = new ShareTokenStore(dbExecutor, ctx.log);
-    const guestProfileStore = new GuestProfileStore(dbExecutor);
-    const approvalRequestStore = new ShareApprovalRequestStore(dbExecutor);
-    const adapterConfigStore = new ShareAdapterConfigStore(dbExecutor);
+    const store = new ShareTokenStore(databaseExecutor, ctx.log);
+    const guestProfileStore = new GuestProfileStore(databaseExecutor);
+    const approvalRequestStore = new ShareApprovalRequestStore(
+        databaseExecutor,
+    );
+    const adapterConfigStore = new ShareAdapterConfigStore(databaseExecutor);
     const gateway = new CoreShareGateway(
         store,
         guestProfileStore,
@@ -357,7 +359,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             },
         ],
         ctx.log,
-        GUEST_PROFILE_CLEANUP_INTERVAL_MS,
+        GUEST_PROFILE_CLEANUP_INTERVAL_MILLISECONDS,
     );
     requireBootstrapScope().registerDisposer(maintenance);
     void maintenance.run();

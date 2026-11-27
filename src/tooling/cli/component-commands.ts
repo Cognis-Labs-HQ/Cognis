@@ -1,5 +1,5 @@
 import { registerComponentOperations } from "./components/commands.ts";
-import { requireArgs } from "./command-utils.ts";
+import { requireArgs as requireArgumentsList } from "./command-utils.ts";
 import { renderStructuredSummary, renderComponentsList } from "./formatters.ts";
 import { apiGet, apiPost, apiPut } from "./http.ts";
 import { register } from "./registry.ts";
@@ -94,17 +94,17 @@ function gatewayRoute(gatewayId: string, suffix: string): string {
 }
 
 function resolveConfigTarget(
-    args: string[],
+    argumentsList: string[],
     expectsConfigJson: boolean,
 ): ConfigTarget {
-    const [componentType, firstId, secondId, adapterConfigJson] = args;
+    const [componentType, firstId, secondId, adapterConfigJson] = argumentsList;
     const usage = expectsConfigJson
         ? "cognisctl component:config:set <module|gateway|adapter> <componentId> [adapterId] <config-json>"
         : "cognisctl component:config:get <module|gateway|adapter> <componentId> [adapterId]";
 
     if (componentType === "module") {
-        requireArgs(
-            args,
+        requireArgumentsList(
+            argumentsList,
             expectsConfigJson
                 ? ["componentType", "moduleId", "configJson"]
                 : ["componentType", "moduleId"],
@@ -119,8 +119,8 @@ function resolveConfigTarget(
     }
 
     if (componentType === "gateway") {
-        requireArgs(
-            args,
+        requireArgumentsList(
+            argumentsList,
             expectsConfigJson
                 ? ["componentType", "gatewayId", "configJson"]
                 : ["componentType", "gatewayId"],
@@ -135,8 +135,8 @@ function resolveConfigTarget(
     }
 
     if (componentType === "adapter") {
-        requireArgs(
-            args,
+        requireArgumentsList(
+            argumentsList,
             expectsConfigJson
                 ? ["componentType", "gatewayId", "adapterId", "configJson"]
                 : ["componentType", "gatewayId", "adapterId"],
@@ -175,10 +175,10 @@ export function registerComponentCommands(): void {
 
     register(
         "component:import",
-        async ({ args, apiBaseUrl, getApiToken }) => {
-            const [repositoryUrl, versionTag] = args;
-            requireArgs(
-                args,
+        async ({ args: argumentsList, apiBaseUrl, getApiToken }) => {
+            const [repositoryUrl, versionTag] = argumentsList;
+            requireArgumentsList(
+                argumentsList,
                 ["repositoryUrl", "versionTag"],
                 "cognisctl component:import <repositoryUrl> <versionTag>",
             );
@@ -201,8 +201,8 @@ export function registerComponentCommands(): void {
 
     register(
         "component:config:get",
-        async ({ args, apiBaseUrl, getApiToken }) => {
-            const target = resolveConfigTarget(args, false);
+        async ({ args: argumentsList, apiBaseUrl, getApiToken }) => {
+            const target = resolveConfigTarget(argumentsList, false);
             const token = await getApiToken();
             return filterUserConfigPayload(
                 (await apiGet(
@@ -223,8 +223,8 @@ export function registerComponentCommands(): void {
 
     register(
         "component:config:set",
-        async ({ args, apiBaseUrl, getApiToken }) => {
-            const target = resolveConfigTarget(args, true);
+        async ({ args: argumentsList, apiBaseUrl, getApiToken }) => {
+            const target = resolveConfigTarget(argumentsList, true);
             const token = await getApiToken();
             const currentConfig = (await apiGet(
                 apiBaseUrl,

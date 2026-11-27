@@ -6,10 +6,10 @@ export interface Selection {
 }
 
 export function selectComponents(
-    args: string[],
+    argumentsList: string[],
     options: { allowForce?: boolean } = {},
 ): Selection {
-    const flags = args.filter((value) => value.startsWith("--"));
+    const flags = argumentsList.filter((value) => value.startsWith("--"));
     if (
         flags.some(
             (flag) =>
@@ -22,7 +22,7 @@ export function selectComponents(
         new Set(flags).size !== flags.length
     )
         throw new Error("Invalid component option.");
-    const values = args.filter((value) => !value.startsWith("--"));
+    const values = argumentsList.filter((value) => !value.startsWith("--"));
     if (flags.includes("--all")) {
         const [type, gatewayId] = values;
         if (

@@ -513,8 +513,9 @@ export function createSettingsSection({ i18n, root, markDirty, signal }) {
             clearTfaDropMarkers();
             const row = zone.closest("[data-tfa-method-row]");
             if (row) {
-                const rect = row.getBoundingClientRect();
-                const isAfter = event.clientY > rect.top + rect.height / 2;
+                const rectangle = row.getBoundingClientRect();
+                const isAfter =
+                    event.clientY > rectangle.top + rectangle.height / 2;
                 row.classList.add(
                     isAfter ? "drop-target-after" : "drop-target-before",
                 );

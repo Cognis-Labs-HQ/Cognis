@@ -733,19 +733,19 @@ test("runtime error popup copy action adds and removes copied class on success",
     const addedClasses = [];
     const removedClasses = [];
     const timeouts = [];
-    const copyBtn = {
+    const copyButton = {
         classList: {
-            add(...cls) {
-                addedClasses.push(...cls);
+            add(...classNames) {
+                addedClasses.push(...classNames);
             },
-            remove(...cls) {
-                removedClasses.push(...cls);
+            remove(...classNames) {
+                removedClasses.push(...classNames);
             },
         },
     };
     const overlay = {
         querySelector(selector) {
-            if (selector === '[data-popup-action="copy"]') return copyBtn;
+            if (selector === '[data-popup-action="copy"]') return copyButton;
             return null;
         },
     };

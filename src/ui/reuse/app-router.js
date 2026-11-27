@@ -392,7 +392,7 @@ async function loadRouteContent(
     // Load the destination entry before authentication so its gateway-owned
     // flow hooks participate in this navigation's authenticate-session run.
     // The router flag prevents the entry's direct-load mount from running.
-    let mod;
+    let moduleExports;
     try {
         if (!isOffline()) {
             await ensureHostUiProviders();
@@ -405,7 +405,7 @@ async function loadRouteContent(
             );
         }
         if (!(await allowOfflineRoute(route, path, signal))) return false;
-        mod = await loadWithSpaImportGuard(() => route.load(path));
+        moduleExports = await loadWithSpaImportGuard(() => route.load(path));
     } catch (error) {
         if (
             signal.aborted ||
@@ -526,7 +526,7 @@ async function loadRouteContent(
             signal.addEventListener("abort", () => observer?.disconnect(), {
                 once: true,
             });
-            await mod.mount(routeRoot, {
+            await moduleExports.mount(routeRoot, {
                 signal,
                 shareContext: session?.shareContext ?? null,
             });

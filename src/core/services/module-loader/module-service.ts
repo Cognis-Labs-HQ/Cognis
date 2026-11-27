@@ -280,9 +280,9 @@ export class ModuleService {
         }
     }
 
-    private async safeReaddir(dirPath: string): Promise<string[]> {
+    private async safeReaddir(directoryPath: string): Promise<string[]> {
         try {
-            return await readdir(dirPath);
+            return await readdir(directoryPath);
         } catch {
             return [];
         }
@@ -320,13 +320,13 @@ export class ModuleService {
         }
 
         const owner = parts[0];
-        const repo = parts[1].replace(/\.git$/i, "");
-        if (!owner || !repo) {
+        const repository = parts[1].replace(/\.git$/i, "");
+        if (!owner || !repository) {
             throw new Error(
                 "repositoryUrl must include both owner and repository name",
             );
         }
 
-        return { owner, repo };
+        return { owner, repo: repository };
     }
 }

@@ -61,7 +61,7 @@ test("Library contracts withdraw on disable, reject retained handles and return 
         provider.registerLookupProvider,
     ])
         assert.throws(
-            () => (operation as (...args: unknown[]) => unknown)(),
+            () => (operation as (...argumentsList: unknown[]) => unknown)(),
             /study_library_unavailable/,
         );
     assert.equal(calls, 1);

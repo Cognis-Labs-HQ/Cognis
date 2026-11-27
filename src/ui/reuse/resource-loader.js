@@ -39,7 +39,11 @@ function readGlobal(globalName) {
  * @param {{ id: string, src: string, globalName?: string }} options
  * @returns {Promise<{value: unknown, global: unknown, dispose: () => void}>}
  */
-export async function loadScript({ id, src, globalName = "" } = {}) {
+export async function loadScript({
+    id,
+    src: scriptSource,
+    globalName = "",
+} = {}) {
     const normalizedId = String(id ?? "").trim();
     const normalizedGlobalName = String(globalName ?? "").trim();
     if (!RESOURCE_ID_PATTERN.test(normalizedId)) {
@@ -51,7 +55,7 @@ export async function loadScript({ id, src, globalName = "" } = {}) {
     ) {
         throw new Error("invalid_resource_global_name");
     }
-    const url = new URL(String(src ?? ""), window.location.origin);
+    const url = new URL(String(scriptSource ?? ""), window.location.origin);
     if (
         !["http:", "https:"].includes(url.protocol) ||
         url.username ||

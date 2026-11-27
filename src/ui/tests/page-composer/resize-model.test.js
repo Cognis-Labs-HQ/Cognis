@@ -15,14 +15,14 @@ const placement = { id: "card", col: 3, row: 3, w: 4, h: 4 };
 const gridSize = resolveElementGridSize({
     gridSize: { default: [4, 4], min: [2, 2], max: [8, 8] },
 });
-function resize(direction, col, row, options = {}) {
+function resize(direction, column, row, options = {}) {
     return resizePlacement({
         placement,
         gridSize,
         columns: 12,
         rows: 12,
         edge: RESIZE_EDGES.find((edge) => edge.direction === direction),
-        delta: { col, row },
+        delta: { col: column, row },
         ...options,
     });
 }
@@ -108,8 +108,8 @@ test("top/left collision checks preserve valid shrinking and directional cursors
         gridSize,
         columns: 12,
         rows: 12,
-        canPlace: (col, row, width, height) =>
-            checkPlacement(occupied, col, row, width, height),
+        canPlace: (column, row, width, height) =>
+            checkPlacement(occupied, column, row, width, height),
     };
     let controls = resolveResizeAvailability(options);
     assert.equal(controls.west, "e-resize");

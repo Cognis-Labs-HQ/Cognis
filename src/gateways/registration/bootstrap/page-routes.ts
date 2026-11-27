@@ -22,28 +22,30 @@ export function createRegistrationPageRoutes(
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
-        req: IncomingMessage,
-        res: ServerResponse,
+        request: IncomingMessage,
+        response: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        if (req.method !== "GET") return false;
+        if (request.method !== "GET") return false;
         if (url.pathname === "/register") {
             const file = await readFile(
                 path.join(REGISTRATION_UI_ROOT, "pages", "register.html"),
             );
-            ctx.setPageSecurityHeaders(res);
-            res.writeHead(200, {
+            ctx.setPageSecurityHeaders(response);
+            response.writeHead(200, {
                 "content-type": "text/html; charset=utf-8",
                 "cache-control": "no-store",
             });
-            res.end(file);
+            response.end(file);
             return true;
         }
         if (url.pathname !== "/invite") return false;
-        const session = ctx.getCookieSession(req);
+        const session = ctx.getCookieSession(request);
         if (!session) {
-            res.writeHead(302, { location: "/login?reason=session_expired" });
-            res.end();
+            response.writeHead(302, {
+                location: "/login?reason=session_expired",
+            });
+            response.end();
             return true;
         }
         const privileged = session.role === "admin" || session.role === "owner";
@@ -52,23 +54,23 @@ export function createRegistrationPageRoutes(
             (!privileged &&
                 (!accountStore || !(await accountStore.isFounder(session.sub))))
         ) {
-            res.writeHead(302, { location: "/dashboard" });
-            res.end();
+            response.writeHead(302, { location: "/dashboard" });
+            response.end();
             return true;
         }
         try {
             const file = await readFile(
                 path.join(REGISTRATION_UI_ROOT, "pages", "invite.html"),
             );
-            ctx.setPageSecurityHeaders(res);
-            res.writeHead(200, {
+            ctx.setPageSecurityHeaders(response);
+            response.writeHead(200, {
                 "content-type": "text/html; charset=utf-8",
                 "cache-control": "no-store",
             });
-            res.end(file);
+            response.end(file);
         } catch {
-            res.writeHead(404, { "content-type": "application/json" });
-            res.end(
+            response.writeHead(404, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     error: { code: "not_found", message: "Asset not found." },
                 }),

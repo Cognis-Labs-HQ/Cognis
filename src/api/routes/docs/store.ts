@@ -8,7 +8,11 @@ import {
 } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 import { dirname, join } from "node:path";
-import { discoverDocSources, optionalText, type DocView } from "./sources.js";
+import {
+    discoverDocSources as discoverDocumentSources,
+    optionalText,
+    type DocView,
+} from "./sources.js";
 
 export interface StoredDoc {
     slug: string;
@@ -96,14 +100,14 @@ async function archivedSnapshots(directory: string): Promise<Snapshot[]> {
     return snapshots.flat();
 }
 
-export async function initializeDocsStore(
+async function initializeDocumentsStore(
     sourceRoot: string | string[],
     archiveRoot: string,
     languages: string[] = ["en"],
 ): Promise<Map<string, StoredDoc>> {
     const live = new Map<string, Snapshot>();
     for (const root of Array.isArray(sourceRoot) ? sourceRoot : [sourceRoot]) {
-        for (const source of await discoverDocSources(root)) {
+        for (const source of await discoverDocumentSources(root)) {
             if (live.has(source.slug))
                 throw new Error(`docs_duplicate_slug:${source.slug}`);
             const documents: Snapshot["documents"] = {};
@@ -158,19 +162,20 @@ export async function initializeDocsStore(
     }
     return stored;
 }
+export { initializeDocumentsStore as initializeDocsStore };
 
 export async function readStoredMarkdown(
     archiveRoot: string,
-    doc: StoredDoc,
+    document: StoredDoc,
     requestedVersion: string,
     languages: string[],
     view: DocView = "info",
 ): Promise<string | undefined> {
     const version =
-        requestedVersion === "latest" ? doc.version : requestedVersion;
-    if (!doc.versions.includes(version)) return undefined;
+        requestedVersion === "latest" ? document.version : requestedVersion;
+    if (!document.versions.includes(version)) return undefined;
     const snapshot = await readSnapshot(
-        join(archiveRoot, doc.slug, version, "bundle.json"),
+        join(archiveRoot, document.slug, version, "bundle.json"),
     );
     const translations = snapshot?.documents[view];
     if (!translations) return undefined;

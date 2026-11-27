@@ -23,11 +23,11 @@ import {
 } from "./keys.js";
 import {
     addMember,
-    createDm,
+    createDm as createDirectMessage,
     createRoom,
     deleteRoom,
     deleteRoomForActor,
-    findDmBetween,
+    findDmBetween as findDirectMessageBetween,
     findGroupByExactMembers,
     getMember,
     getRoom,
@@ -70,7 +70,7 @@ import type {
     TypingRow,
 } from "./types.js";
 
-export class DbMessagesStore {
+class DatabaseMessagesStore {
     constructor(private readonly database: DbExecutor) {}
 
     async ensureSchema(): Promise<void> {
@@ -97,7 +97,7 @@ export class DbMessagesStore {
     }
 
     async createDm(accountA: string, accountB: string): Promise<RoomRow> {
-        return createDm(this.database, accountA, accountB);
+        return createDirectMessage(this.database, accountA, accountB);
     }
 
     async getRoom(id: string): Promise<RoomRow | null> {
@@ -231,7 +231,7 @@ export class DbMessagesStore {
         accountA: string,
         accountB: string,
     ): Promise<RoomRow | null> {
-        return findDmBetween(this.database, accountA, accountB);
+        return findDirectMessageBetween(this.database, accountA, accountB);
     }
 
     async updateRoomTitle(
@@ -479,3 +479,4 @@ export class DbMessagesStore {
         return getTopEmojiUsage(this.database, accountId, limit);
     }
 }
+export { DatabaseMessagesStore as DbMessagesStore };

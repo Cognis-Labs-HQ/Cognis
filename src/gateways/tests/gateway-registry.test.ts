@@ -117,7 +117,7 @@ test("GatewayRegistry.assertRequiredInitialized throws for missing required gate
 
     assert.throws(
         () => registry.assertRequiredInitialized(["db", "logging"]),
-        (err: Error) => err.message.includes("logging"),
+        (error: Error) => error.message.includes("logging"),
     );
 });
 

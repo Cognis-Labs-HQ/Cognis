@@ -1,7 +1,7 @@
 import { decodeBasicHtmlEntities } from "./html-entities.js";
 
 export function stripHtmlTags(html: string): string {
-    let out = "";
+    let encodedText = "";
     for (let cursor = 0; cursor < html.length; cursor++) {
         if (html[cursor] === "<") {
             const tagEnd = html.indexOf(">", cursor + 1);
@@ -12,14 +12,14 @@ export function stripHtmlTags(html: string): string {
                 .replace(/^\/+/, "")
                 .toLowerCase();
             if (tagContent.startsWith("br")) {
-                out += "\n";
+                encodedText += "\n";
             }
             cursor = tagEnd;
             continue;
         }
-        out += html[cursor];
+        encodedText += html[cursor];
     }
-    return decodeBasicHtmlEntities(out);
+    return decodeBasicHtmlEntities(encodedText);
 }
 
 export function dotStuff(message: string): string {

@@ -204,11 +204,11 @@ function createProfileLifecycleTracker() {
 test("user routes create/list/update lifecycle", async () => {
     const accounts = new VolatileLocalAccountStore();
     await accounts.register("admin", "x", "admin");
-    const prefs = new VolatileUserPreferenceStore();
+    const preferences = new VolatileUserPreferenceStore();
     const lifecycle = createProfileLifecycleTracker();
     const route = createUserRoutes(
         accounts,
-        prefs,
+        preferences,
         undefined,
         undefined,
         undefined,
@@ -294,7 +294,7 @@ test("user routes log account disable operations", async () => {
     const accounts = new VolatileLocalAccountStore();
     await accounts.register("admin", "x", "admin");
     await accounts.register("alice", "pw", "user");
-    const prefs = new VolatileUserPreferenceStore();
+    const preferences = new VolatileUserPreferenceStore();
     const entries: Array<{
         level: string;
         message: string;
@@ -303,10 +303,10 @@ test("user routes log account disable operations", async () => {
     const lifecycle = createProfileLifecycleTracker();
     const route = createUserRoutes(
         accounts,
-        prefs,
+        preferences,
         undefined,
-        (level, message, meta) => {
-            entries.push({ level, message, meta });
+        (level, message, metadata) => {
+            entries.push({ level, message, meta: metadata });
         },
         undefined,
         undefined,
@@ -347,8 +347,8 @@ test("user routes log account disable operations", async () => {
 test("user info endpoint allows self-access and admin access, blocks others", async () => {
     const accounts = new VolatileLocalAccountStore();
     await accounts.register("alice", "pw", "user");
-    const prefs = new VolatileUserPreferenceStore();
-    const route = createUserRoutes(accounts, prefs);
+    const preferences = new VolatileUserPreferenceStore();
+    const route = createUserRoutes(accounts, preferences);
     let body = "";
     let status = 0;
 
@@ -418,8 +418,8 @@ test("user info endpoint allows self-access and admin access, blocks others", as
 test("getInfo endpoint returns lastLogin field", async () => {
     const accounts = new VolatileLocalAccountStore();
     await accounts.register("carol", "pw", "user");
-    const prefs = new VolatileUserPreferenceStore();
-    const route = createUserRoutes(accounts, prefs);
+    const preferences = new VolatileUserPreferenceStore();
+    const route = createUserRoutes(accounts, preferences);
     let body = "";
     let status = 0;
 
@@ -475,8 +475,8 @@ test("getInfo endpoint returns lastLogin field", async () => {
 test("admin can set founder flag through isfounder endpoint", async () => {
     const accounts = new VolatileLocalAccountStore();
     await accounts.register("dana", "pw", "user");
-    const prefs = new VolatileUserPreferenceStore();
-    const route = createUserRoutes(accounts, prefs);
+    const preferences = new VolatileUserPreferenceStore();
+    const route = createUserRoutes(accounts, preferences);
     let status = 0;
     let body = "";
 
@@ -508,11 +508,11 @@ test("disabling a user invalidates existing access tokens for that user", async 
     const accounts = new VolatileLocalAccountStore();
     await accounts.register("admin", "pw", "admin");
     await accounts.register("erin", "pw", "user");
-    const prefs = new VolatileUserPreferenceStore();
+    const preferences = new VolatileUserPreferenceStore();
     const lifecycle = createProfileLifecycleTracker();
     const route = createUserRoutes(
         accounts,
-        prefs,
+        preferences,
         undefined,
         undefined,
         undefined,
@@ -545,10 +545,10 @@ test("disabling a user invalidates existing access tokens for that user", async 
 test("deleting a user invalidates existing access tokens for that user", async () => {
     const accounts = new VolatileLocalAccountStore();
     await accounts.register("frank", "pw", "user");
-    const prefs = new VolatileUserPreferenceStore();
+    const preferences = new VolatileUserPreferenceStore();
     const route = createUserRoutes(
         accounts,
-        prefs,
+        preferences,
         undefined,
         undefined,
         undefined,
@@ -578,10 +578,10 @@ test("deleting a user invalidates existing access tokens for that user", async (
 test("deleting a user frees the username for re-registration", async () => {
     const accounts = new VolatileLocalAccountStore();
     await accounts.register("grace", "pw", "user");
-    const prefs = new VolatileUserPreferenceStore();
+    const preferences = new VolatileUserPreferenceStore();
     const route = createUserRoutes(
         accounts,
-        prefs,
+        preferences,
         undefined,
         undefined,
         undefined,

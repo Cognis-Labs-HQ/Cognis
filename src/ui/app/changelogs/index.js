@@ -1,11 +1,14 @@
 import { guides } from "./guides.js";
-import { loadDocsIndex, readDocsLanguages } from "../../reuse/docs-client.js";
+import {
+    loadDocsIndex as loadDocumentsIndex,
+    readDocsLanguages as readDocumentsLanguages,
+} from "../../reuse/docs-client.js";
 import { applyDocumentTitle, createI18n } from "../../reuse/i18n.js";
 import { loadMarkdownDocumentHtml } from "../../reuse/markdown-document.js";
 import { createPageComposer } from "../../reuse/page-composer/index.js";
 import { mountWhenDirect } from "../../reuse/page-entry.js";
 import { navigateTo } from "../../reuse/app-router.js";
-import { linkShortCommitRefs } from "../../reuse/commit-links.js";
+import { linkShortCommitRefs as linkShortCommitReferences } from "../../reuse/commit-links.js";
 import { createSideMenu } from "../../reuse/side-menu.js";
 
 const CHANGELOG_GROUP_KEY = "changelog";
@@ -23,7 +26,7 @@ function groupLabel(i18n, group) {
         .join(" › ");
 }
 
-function docTitle(item) {
+function documentTitle(item) {
     return (
         item.title ||
         item.slug
@@ -35,7 +38,7 @@ function docTitle(item) {
     );
 }
 
-function normalizeDocSlug(href) {
+function normalizeDocumentSlug(href) {
     return href
         .replace(/[?#].*$/, "")
         .replace(/^\.\//, "")
@@ -47,7 +50,7 @@ function normalizeDocSlug(href) {
         .replace(/\.md$/i, "");
 }
 
-function isChangelogDoc(item) {
+function isChangelogDocument(item) {
     return item.slug === "changelog" || item.slug.startsWith("changelog/");
 }
 
@@ -80,7 +83,7 @@ function createNavigationGroups(i18n, items) {
         label: group === CHANGELOG_GROUP_KEY ? groupLabel(i18n, group) : group,
         items: groupItems.map((item) => ({
             id: item.slug,
-            label: docTitle(item),
+            label: documentTitle(item),
         })),
     }));
 }
@@ -91,24 +94,24 @@ export async function mount(root, { signal } = {}) {
 
     let activeHtml = null;
 
-    function renderActiveDoc() {
-        const docEl = root.querySelector("#doc");
-        if (!docEl || activeHtml === null) return;
-        docEl.innerHTML = activeHtml;
+    function renderActiveDocument() {
+        const documentElement = root.querySelector("#doc");
+        if (!documentElement || activeHtml === null) return;
+        documentElement.innerHTML = activeHtml;
     }
 
-    async function showDoc(slug, { pushHistory = true, signal } = {}) {
-        const langs = readDocsLanguages().join(",");
+    async function showDocument(slug, { pushHistory = true, signal } = {}) {
+        const languages = readDocumentsLanguages().join(",");
         try {
             activeHtml = await loadMarkdownDocumentHtml(
-                `/api/v1/docs/${slug}?langs=${encodeURIComponent(langs)}`,
-                { transformMarkdown: linkShortCommitRefs },
+                `/api/v1/docs/${slug}?langs=${encodeURIComponent(languages)}`,
+                { transformMarkdown: linkShortCommitReferences },
             );
         } catch {
             return;
         }
         if (signal?.aborted) return;
-        renderActiveDoc();
+        renderActiveDocument();
 
         const historyPath = changelogSlugToRoutePath(slug);
         if (pushHistory) {
@@ -120,28 +123,33 @@ export async function mount(root, { signal } = {}) {
         navigationMenu.setActive(slug);
     }
 
-    function resolveDefaultSlug(subpath, selectableDocs) {
+    function resolveDefaultSlug(subpath, selectableDocuments) {
         const mappedSlug = changelogRouteSubpathToSlug(subpath);
         if (
             mappedSlug &&
-            selectableDocs.find((doc) => doc.slug === mappedSlug)
+            selectableDocuments.find((document) => document.slug === mappedSlug)
         ) {
             return mappedSlug;
         }
         return (
-            selectableDocs.find((doc) => doc.slug === "changelog")?.slug ??
-            selectableDocs.find((doc) => doc.slug === "changelog/index")
-                ?.slug ??
-            selectableDocs[0]?.slug
+            selectableDocuments.find(
+                (document) => document.slug === "changelog",
+            )?.slug ??
+            selectableDocuments.find(
+                (document) => document.slug === "changelog/index",
+            )?.slug ??
+            selectableDocuments[0]?.slug
         );
     }
 
-    const docs = await loadDocsIndex();
-    const changelogDocs = docs.filter((doc) => isChangelogDoc(doc));
+    const documents = await loadDocumentsIndex();
+    const changelogDocuments = documents.filter((document) =>
+        isChangelogDocument(document),
+    );
     const navigationMenu = createSideMenu({
-        groups: createNavigationGroups(i18n, changelogDocs),
+        groups: createNavigationGroups(i18n, changelogDocuments),
         storageKeyPrefix: "changelogs-group-open",
-        onSelect: (slug) => showDoc(slug, { signal }),
+        onSelect: (slug) => showDocument(slug, { signal }),
     });
 
     const elements = [
@@ -160,7 +168,7 @@ export async function mount(root, { signal } = {}) {
         elements,
         preferenceKey: "changelogs-layout",
         i18n,
-        onRender: renderActiveDoc,
+        onRender: renderActiveDocument,
         pageContext: {
             title: i18n.t("ui.app.changelogs.page_title"),
             subtitle: i18n.t("ui.app.changelogs.page_subtitle"),
@@ -195,17 +203,19 @@ export async function mount(root, { signal } = {}) {
                 return;
             }
 
-            const normalizedSlug = normalizeDocSlug(href);
+            const normalizedSlug = normalizeDocumentSlug(href);
             if (!normalizedSlug) return;
             const slug = changelogRouteSubpathToSlug(normalizedSlug);
-            if (!changelogDocs.find((doc) => doc.slug === slug)) {
+            if (
+                !changelogDocuments.find((document) => document.slug === slug)
+            ) {
                 event.preventDefault();
                 await navigateTo(`/docs/${normalizedSlug}`);
                 return;
             }
 
             event.preventDefault();
-            await showDoc(slug, { pushHistory: true, signal });
+            await showDocument(slug, { pushHistory: true, signal });
         },
         { signal },
     );
@@ -214,28 +224,35 @@ export async function mount(root, { signal } = {}) {
         "popstate",
         (event) => {
             const slug = event.state?.slug;
-            if (slug && changelogDocs.find((doc) => doc.slug === slug)) {
-                showDoc(slug, { pushHistory: false });
+            if (
+                slug &&
+                changelogDocuments.find((document) => document.slug === slug)
+            ) {
+                showDocument(slug, { pushHistory: false });
             } else {
                 const subpath = window.location.pathname.replace(
                     /^\/changelogs\/?/,
                     "",
                 );
-                const fallback = resolveDefaultSlug(subpath, changelogDocs);
-                if (fallback) showDoc(fallback, { pushHistory: false });
+                const fallback = resolveDefaultSlug(
+                    subpath,
+                    changelogDocuments,
+                );
+                if (fallback) showDocument(fallback, { pushHistory: false });
             }
         },
         { signal },
     );
 
-    const defaultDoc = (() => {
+    const defaultDocument = (() => {
         const subpath = window.location.pathname.replace(
             /^\/changelogs\/?/,
             "",
         );
-        return resolveDefaultSlug(subpath, changelogDocs);
+        return resolveDefaultSlug(subpath, changelogDocuments);
     })();
-    if (defaultDoc) await showDoc(defaultDoc, { pushHistory: false });
+    if (defaultDocument)
+        await showDocument(defaultDocument, { pushHistory: false });
 }
 
 await mountWhenDirect(mount);

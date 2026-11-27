@@ -28,7 +28,7 @@ test("notification bell waits for its stylesheet before rendering", () => {
     assert.match(source, /function loadNotificationStyles\(\)/);
     assert.ok(
         source.indexOf("await loadNotificationStyles()") <
-            source.indexOf("const wrap = buildButton(i18n)"),
+            source.indexOf("const wrapperElement = buildButton(i18n)"),
     );
 });
 
@@ -37,10 +37,10 @@ test("clear-all notifications button is disabled for empty inboxes", () => {
         resolve(ROOT, "src/adapters/notify/internal/ui/navbar-plugin.js"),
         "utf8",
     );
-    assert.match(source, /clearAllBtn\.disabled = true;/);
+    assert.match(source, /clearAllButton\.disabled = true;/);
     assert.match(
         source,
-        /clearAllBtn\.disabled = currentNotifications\.length === 0;/,
+        /clearAllButton\.disabled = currentNotifications\.length === 0;/,
     );
     assert.match(source, /if \(currentNotifications\.length === 0\) return;/);
 });
@@ -54,7 +54,10 @@ test("notification arrivals publish a component-neutral browser event", () => {
         notificationSource,
         /new CustomEvent\("cognis:notification-arrival"/,
     );
-    assert.match(notificationSource, /detail: \{ notification: notif \}/);
+    assert.match(
+        notificationSource,
+        /detail: \{ notification: notification \}/,
+    );
 });
 
 test("notification actions can be handled without leaving the dashboard", () => {
@@ -78,7 +81,7 @@ test("continuous arrivals remain visible while page-owned arrivals are suppresse
     assert.match(source, /actionPage === currentPage/);
     assert.match(
         source,
-        /notif\.metadata\?\.continuous === true \|\|\s*!isNotificationOwnedByCurrentPage\(notif\)/,
+        /notification\.metadata\?\.continuous === true \|\|\s*!isNotificationOwnedByCurrentPage\(notification\)/,
     );
 });
 
@@ -289,7 +292,7 @@ test("clear-all click does not open popup when empty inbox is rendered", async (
         "  buildButton,\n" +
         "  renderPanelContents,\n" +
         "  setCurrentNotifications(items) { currentNotifications = items; },\n" +
-        "  getClearAllButton() { return clearAllBtn; },\n" +
+        "  getClearAllButton() { return clearAllButton; },\n" +
         "};\n";
 
     const document = new FakeDocument();

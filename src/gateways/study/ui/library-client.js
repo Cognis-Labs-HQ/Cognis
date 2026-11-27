@@ -672,10 +672,10 @@ export const {
 } = Object.fromEntries(
     Object.keys(operations).map((name) => [
         name,
-        async (...args) => {
+        async (...argumentsList) => {
             const actions = uiCtx.capabilities.get("study:library:client");
             if (!actions) throw new Error("library_client_unavailable");
-            return actions[name]({ args });
+            return actions[name]({ args: argumentsList });
         },
     ]),
 );

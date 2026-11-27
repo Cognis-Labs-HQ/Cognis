@@ -10,7 +10,7 @@ import {
     calloutViewport,
     shadeRegions,
     tutorialViewport,
-    visibleTargetRect,
+    visibleTargetRect as visibleTargetRectangle,
 } from "./geometry.js";
 
 const focusable =
@@ -18,7 +18,7 @@ const focusable =
 
 /** Place a bounded callout beside the target, clamping it to the visual viewport. */
 /**
- * @param {DOMRect} rect Target bounds.
+ * @param {DOMRect} rectangle Target bounds.
  * @param {object} box Callout dimensions.
  * @param {object} viewport Visual viewport dimensions and offsets.
  * @param {string} placement Preferred side.
@@ -27,7 +27,7 @@ const focusable =
  * @returns {{side: string, left: number, top: number}} Clamped placement.
  */
 export function placeCallout(
-    rect,
+    rectangle,
     box,
     viewport,
     placement = "auto",
@@ -39,13 +39,13 @@ export function placeCallout(
     const topEdge = (viewport.offsetTop ?? 0) + 8;
     const rightEdge = (viewport.offsetLeft ?? 0) + viewport.width - 8;
     const bottomEdge = (viewport.offsetTop ?? 0) + viewport.height - 8;
-    const horizontal = rect.left + rect.width / 2 - box.width / 2;
-    const vertical = rect.top + rect.height / 2 - box.height / 2;
+    const horizontal = rectangle.left + rectangle.width / 2 - box.width / 2;
+    const vertical = rectangle.top + rectangle.height / 2 - box.height / 2;
     const candidates = {
-        bottom: { left: horizontal, top: rect.bottom + gap },
-        top: { left: horizontal, top: rect.top - box.height - gap },
-        right: { left: rect.right + gap, top: vertical },
-        left: { left: rect.left - box.width - gap, top: vertical },
+        bottom: { left: horizontal, top: rectangle.bottom + gap },
+        top: { left: horizontal, top: rectangle.top - box.height - gap },
+        right: { left: rectangle.right + gap, top: vertical },
+        left: { left: rectangle.left - box.width - gap, top: vertical },
     };
     const sides = [
         ...new Set([
@@ -76,10 +76,10 @@ export function placeCallout(
                 top = Math.max(topEdge, reserved.top - box.height - 8);
         }
         const fitsSide = {
-            bottom: top >= rect.bottom + gap,
-            top: top + box.height <= rect.top - gap,
-            right: left >= rect.right + gap,
-            left: left + box.width <= rect.left - gap,
+            bottom: top >= rectangle.bottom + gap,
+            top: top + box.height <= rectangle.top - gap,
+            right: left >= rectangle.right + gap,
+            left: left + box.width <= rectangle.left - gap,
         }[side];
         const overlaps = exclusions.some(
             (reserved) =>
@@ -376,7 +376,7 @@ export function createTutorialView({ document, hostI18n, loadStyles, ctx }) {
             panel.style.maxWidth = `${Math.max(48, viewport.width - 16)}px`;
             const visible =
                 target &&
-                visibleTargetRect(target, pageViewport, step.padding ?? 8);
+                visibleTargetRectangle(target, pageViewport, step.padding ?? 8);
             spotlight.hidden = !visible || !step.effects.spotlight;
             shade.hidden = spotlight.hidden;
             if (!shade.hidden) {
@@ -439,45 +439,52 @@ export function createTutorialView({ document, hostI18n, loadStyles, ctx }) {
                 !step.effects.arrow ||
                 position.side === "inside";
             if (!arrow.hidden) {
-                const x =
+                const horizontalCoordinate =
                     position.side === "left"
                         ? anchor.left - 8
                         : position.side === "right"
                           ? anchor.right + 8
                           : anchor.left + anchor.width / 2;
-                const y =
+                const verticalCoordinate =
                     position.side === "top"
                         ? anchor.top - 8
                         : position.side === "bottom"
                           ? anchor.bottom + 8
                           : anchor.top + anchor.height / 2;
                 arrow.dataset.side = position.side;
-                Object.assign(arrow.style, { left: `${x}px`, top: `${y}px` });
+                Object.assign(arrow.style, {
+                    left: `${horizontalCoordinate}px`,
+                    top: `${verticalCoordinate}px`,
+                });
             }
             frame = window.requestAnimationFrame(update);
         }
         if (target && !waiting) {
-            const rect = target.getBoundingClientRect();
+            const rectangle = target.getBoundingClientRect();
             const viewport = tutorialViewport(
                 window,
                 document,
                 target,
                 step.layer,
             );
-            const visible = visibleTargetRect(target, viewport);
+            const visible = visibleTargetRectangle(target, viewport);
             const fits =
-                rect.width <= viewport.width && rect.height <= viewport.height;
+                rectangle.width <= viewport.width &&
+                rectangle.height <= viewport.height;
             if (
                 !visible ||
                 (fits &&
-                    (rect.top < viewport.offsetTop ||
-                        rect.bottom > viewport.offsetTop + viewport.height ||
-                        rect.left < viewport.offsetLeft ||
-                        rect.right > viewport.offsetLeft + viewport.width))
+                    (rectangle.top < viewport.offsetTop ||
+                        rectangle.bottom >
+                            viewport.offsetTop + viewport.height ||
+                        rectangle.left < viewport.offsetLeft ||
+                        rectangle.right > viewport.offsetLeft + viewport.width))
             )
                 target.scrollIntoView({
                     block:
-                        rect.height <= viewport.height ? "center" : "nearest",
+                        rectangle.height <= viewport.height
+                            ? "center"
+                            : "nearest",
                     inline: "nearest",
                     behavior: "instant",
                 });

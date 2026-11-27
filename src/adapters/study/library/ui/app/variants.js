@@ -3,9 +3,9 @@ import {
     restorePreferredVariantDirections,
 } from "./variant-fit.js";
 
-const LONG_PRESS_DURATION_MS = 550;
-const LONG_PRESS_MOVE_TOLERANCE_PX = 8;
-const BRANCH_HOVER_INTENT_MS = 100;
+const LONG_PRESS_DURATION_MILLISECONDS = 550;
+const LONG_PRESS_MOVE_TOLERANCE_PIXELS = 8;
+const BRANCH_HOVER_INTENT_MILLISECONDS = 100;
 
 export function closeUnrelatedVariantViews(root, control) {
     let closed = false;
@@ -84,8 +84,8 @@ export function bindVariantInteractions(root, { signal, suppressNextClick }) {
     const dimensions = new WeakMap();
     const observer = new ResizeObserver((records) => {
         let changed = false;
-        for (const { target, contentRect } of records) {
-            const size = `${contentRect.width}:${contentRect.height}`;
+        for (const { target, contentRect: contentRectangle } of records) {
+            const size = `${contentRectangle.width}:${contentRectangle.height}`;
             const previous = dimensions.get(target);
             dimensions.set(target, size);
             if (previous !== undefined && previous !== size) changed = true;
@@ -150,7 +150,7 @@ export function bindVariantInteractions(root, { signal, suppressNextClick }) {
                 card.focus();
                 suppressNextClick();
                 longPressTimer = null;
-            }, LONG_PRESS_DURATION_MS);
+            }, LONG_PRESS_DURATION_MILLISECONDS);
         },
         { signal },
     );
@@ -162,7 +162,7 @@ export function bindVariantInteractions(root, { signal, suppressNextClick }) {
                 event.clientX - longPressOrigin.x,
                 event.clientY - longPressOrigin.y,
             );
-            if (distance > LONG_PRESS_MOVE_TOLERANCE_PX) cancelLongPress();
+            if (distance > LONG_PRESS_MOVE_TOLERANCE_PIXELS) cancelLongPress();
         },
         { signal },
     );
@@ -181,7 +181,7 @@ export function bindVariantInteractions(root, { signal, suppressNextClick }) {
                 activateVariantBranch(root, card);
                 branchHoverTimer = null;
                 pendingBranchShell = null;
-            }, BRANCH_HOVER_INTENT_MS);
+            }, BRANCH_HOVER_INTENT_MILLISECONDS);
         },
         { signal },
     );

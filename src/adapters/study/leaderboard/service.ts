@@ -48,7 +48,7 @@ export class LeaderboardService implements LeaderboardCapability {
         private readonly log?: (
             level: string,
             message: string,
-            meta?: Record<string, unknown>,
+            metadata?: Record<string, unknown>,
         ) => void | Promise<void>,
         private readonly persistState?: (
             state: LeaderboardState,

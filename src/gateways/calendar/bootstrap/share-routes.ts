@@ -41,7 +41,7 @@ export async function handleCalendarShareRoutes(input: {
     shareRegistry: CalendarShareRegistry;
     buildAbsoluteUrl: (relativePath: string) => string;
     resolveShareableUsers:
-        | ((params: { ownerAccountId: string; query: string }) => Promise<
+        | ((parameters: { ownerAccountId: string; query: string }) => Promise<
               Array<{
                   accountId: string;
                   handle?: string | null;

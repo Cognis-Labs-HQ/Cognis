@@ -103,7 +103,10 @@ test("visible statuses, including the signed-in user, are polled", () => {
         "utf8",
     );
 
-    assert.match(availability, /AVAILABILITY_REFRESH_INTERVAL_MS = 10_000/);
+    assert.match(
+        availability,
+        /AVAILABILITY_REFRESH_INTERVAL_MILLISECONDS = 10_000/,
+    );
     assert.match(
         availability,
         /querySelector\([\s\S]+data-availability-handle[\s\S]+refreshAvailabilityIndicators/,

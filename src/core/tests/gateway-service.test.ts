@@ -131,8 +131,8 @@ test("gateway bootstrap reports the root error when a required gateway fails", a
                 gatewayRegistry: registry,
                 capabilities: new CapabilityStore(),
                 flow: {} as never,
-                log: (level, message, meta) => {
-                    logMessages.push({ level, message, meta });
+                log: (level, message, metadata) => {
+                    logMessages.push({ level, message, meta: metadata });
                 },
             }),
         /Required gateway "db" failed during bootstrap: password authentication failed for user cognis/,

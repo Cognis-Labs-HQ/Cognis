@@ -92,14 +92,17 @@ export function runTypingShowcase(
         while (runId === activeShowcaseRun) {
             for (const sample of orderedSamples) {
                 for (
-                    let charIndex = 0;
-                    charIndex <= sample.length;
-                    charIndex += 1
+                    let characterIndex = 0;
+                    characterIndex <= sample.length;
+                    characterIndex += 1
                 ) {
                     const displayElement =
                         document.querySelector(targetSelector);
                     if (!displayElement || runId !== activeShowcaseRun) return;
-                    displayElement.textContent = sample.slice(0, charIndex);
+                    displayElement.textContent = sample.slice(
+                        0,
+                        characterIndex,
+                    );
                     await new Promise((resolve) =>
                         window.setTimeout(resolve, 85),
                     );
@@ -110,14 +113,17 @@ export function runTypingShowcase(
                 );
 
                 for (
-                    let charIndex = sample.length;
-                    charIndex >= 0;
-                    charIndex -= 1
+                    let characterIndex = sample.length;
+                    characterIndex >= 0;
+                    characterIndex -= 1
                 ) {
                     const displayElement =
                         document.querySelector(targetSelector);
                     if (!displayElement || runId !== activeShowcaseRun) return;
-                    displayElement.textContent = sample.slice(0, charIndex);
+                    displayElement.textContent = sample.slice(
+                        0,
+                        characterIndex,
+                    );
                     await new Promise((resolve) =>
                         window.setTimeout(resolve, 40),
                     );

@@ -32,8 +32,8 @@ const DEFAULT_ROTATE_MAX_BYTES = 10 * 1024 * 1024;
 const DEFAULT_ROTATE_MAX_FILES = 10;
 const MAX_KEYWORD_LENGTH = 120;
 const MAX_SNAPSHOT_ENTRIES = 300;
-const STREAM_POLL_INTERVAL_MS = 1500;
-const STREAM_HEARTBEAT_INTERVAL_MS = 15000;
+const STREAM_POLL_INTERVAL_MILLISECONDS = 1500;
+const STREAM_HEARTBEAT_INTERVAL_MILLISECONDS = 15000;
 
 function parseSeverityThreshold(value: string | null): LogLevel | null {
     if (!value || value === "all") return null;
@@ -61,7 +61,9 @@ function parseTimeRangeFilter(value: string | null): number | null {
     return null;
 }
 
-function parseTimestampMs(entry: Record<string, unknown>): number | null {
+function parseTimestampMilliseconds(
+    entry: Record<string, unknown>,
+): number | null {
     const parsed = Date.parse(String(entry.ts ?? ""));
     if (Number.isNaN(parsed)) return null;
     return parsed;
@@ -95,7 +97,7 @@ function matchesFilters(
     entry: Record<string, unknown>,
     severityThreshold: LogLevel | null,
     keyword: string,
-    timeRangeMs: number | null,
+    timeRangeMilliseconds: number | null,
 ): boolean {
     const level = String(entry.level ?? "").toLowerCase() as LogLevel;
     if (!isLogLevel(level)) {
@@ -107,10 +109,10 @@ function matchesFilters(
     ) {
         return false;
     }
-    if (timeRangeMs !== null) {
-        const tsMs = parseTimestampMs(entry);
-        if (tsMs === null) return false;
-        if (Date.now() - tsMs > timeRangeMs) {
+    if (timeRangeMilliseconds !== null) {
+        const timestampMilliseconds = parseTimestampMilliseconds(entry);
+        if (timestampMilliseconds === null) return false;
+        if (Date.now() - timestampMilliseconds > timeRangeMilliseconds) {
             return false;
         }
     }
@@ -119,12 +121,12 @@ function matchesFilters(
 }
 
 function writeSseEvent(
-    res: ServerResponse,
+    response: ServerResponse,
     event: string,
     payload: Record<string, unknown>,
 ): void {
-    res.write(`event: ${event}\n`);
-    res.write(`data: ${JSON.stringify(payload)}\n\n`);
+    response.write(`event: ${event}\n`);
+    response.write(`data: ${JSON.stringify(payload)}\n\n`);
 }
 
 async function readFileChunk(
@@ -152,22 +154,22 @@ function createLoggingRoutes(
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
-        req: IncomingMessage,
-        res: ServerResponse,
+        request: IncomingMessage,
+        response: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         if (
             url.pathname === "/api/v1/logging/entries" &&
-            req.method === "POST"
+            request.method === "POST"
         ) {
-            const claims = ctx.requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(request, response, "user");
             if (!claims) return true;
-            const body = (await readJson(req)) as Record<string, unknown>;
+            const body = (await readJson(request)) as Record<string, unknown>;
             const level = String(body.level ?? "info") as LogLevel;
             const message = String(body.message ?? "").trim();
             if (!isLogLevel(level) || !message || message.length > 2000) {
-                res.writeHead(400, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(400, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "invalid_log_entry",
@@ -177,32 +179,35 @@ function createLoggingRoutes(
                 );
                 return true;
             }
-            const submittedMeta =
+            const submittedMetadata =
                 body.meta &&
                 typeof body.meta === "object" &&
                 !Array.isArray(body.meta)
                     ? (body.meta as Record<string, unknown>)
                     : {};
             log?.(level, message, {
-                ...submittedMeta,
+                ...submittedMetadata,
                 source: "browser",
                 accountId: claims.sub,
             });
-            res.writeHead(204, {
+            response.writeHead(204, {
                 "x-cognis-log-console": String(
                     ctx.hasMinRole(claims.role, "admin") &&
                         browserConsoleAllowed(level),
                 ),
                 "cache-control": "no-store",
             });
-            res.end();
+            response.end();
             return true;
         }
-        if (url.pathname !== "/api/v1/logging/stream" || req.method !== "GET") {
+        if (
+            url.pathname !== "/api/v1/logging/stream" ||
+            request.method !== "GET"
+        ) {
             return false;
         }
 
-        const claims = ctx.requireAuth(req, res, "admin");
+        const claims = ctx.requireAuth(request, response, "admin");
         if (!claims) return true;
         const filePath = getFilePath();
 
@@ -210,18 +215,25 @@ function createLoggingRoutes(
             url.searchParams.get("severity"),
         );
         const keyword = parseKeywordFilter(url.searchParams.get("keyword"));
-        const timeRangeMs = parseTimeRangeFilter(
+        const timeRangeMilliseconds = parseTimeRangeFilter(
             url.searchParams.get("timeRange"),
         );
-        let seq = 0;
+        let sequence = 0;
         let contentLength = 0;
         let pendingLine = "";
         let closed = false;
 
         const pushEntry = (entry: Record<string, unknown>) => {
-            if (!matchesFilters(entry, severityThreshold, keyword, timeRangeMs))
+            if (
+                !matchesFilters(
+                    entry,
+                    severityThreshold,
+                    keyword,
+                    timeRangeMilliseconds,
+                )
+            )
                 return;
-            writeSseEvent(res, "log", { id: seq++, ...entry });
+            writeSseEvent(response, "log", { id: sequence++, ...entry });
         };
 
         const processLines = (lines: string[]) => {
@@ -247,11 +259,14 @@ function createLoggingRoutes(
                             entry,
                             severityThreshold,
                             keyword,
-                            timeRangeMs,
+                            timeRangeMilliseconds,
                         ),
                     );
                 for (const entry of entries.slice(-MAX_SNAPSHOT_ENTRIES)) {
-                    writeSseEvent(res, "log", { id: seq++, ...entry });
+                    writeSseEvent(response, "log", {
+                        id: sequence++,
+                        ...entry,
+                    });
                 }
             } catch (error) {
                 log?.(
@@ -268,7 +283,7 @@ function createLoggingRoutes(
                                 : String(error),
                     },
                 );
-                writeSseEvent(res, "snapshot_error", {
+                writeSseEvent(response, "snapshot_error", {
                     code: "snapshot_unavailable",
                 });
             }
@@ -281,7 +296,7 @@ function createLoggingRoutes(
                 if (fileStats.size < contentLength) {
                     contentLength = 0;
                     pendingLine = "";
-                    writeSseEvent(res, "reset", { reason: "log_rotated" });
+                    writeSseEvent(response, "reset", { reason: "log_rotated" });
                 }
                 if (fileStats.size === contentLength) {
                     return;
@@ -314,24 +329,24 @@ function createLoggingRoutes(
             }
         };
 
-        res.writeHead(200, {
+        response.writeHead(200, {
             "content-type": "text/event-stream; charset=utf-8",
             "cache-control": "no-cache",
             connection: "keep-alive",
         });
-        res.flushHeaders?.();
-        res.write("retry: 1500\n\n");
+        response.flushHeaders?.();
+        response.write("retry: 1500\n\n");
 
         await sendSnapshot();
 
         const pollTimer = setInterval(() => {
             void pollUpdates();
-        }, STREAM_POLL_INTERVAL_MS);
+        }, STREAM_POLL_INTERVAL_MILLISECONDS);
         pollTimer.unref?.();
         const heartbeatTimer = setInterval(() => {
             if (closed) return;
-            res.write(": keepalive\n\n");
-        }, STREAM_HEARTBEAT_INTERVAL_MS);
+            response.write(": keepalive\n\n");
+        }, STREAM_HEARTBEAT_INTERVAL_MILLISECONDS);
         heartbeatTimer.unref?.();
 
         const closeStream = () => {
@@ -346,8 +361,8 @@ function createLoggingRoutes(
             });
         };
 
-        req.on("close", closeStream);
-        res.on("close", closeStream);
+        request.on("close", closeStream);
+        response.on("close", closeStream);
 
         log?.("info", "Opened admin log stream.", {
             component: "logging-gateway",
@@ -355,7 +370,7 @@ function createLoggingRoutes(
             accountId: claims.sub,
             severityThreshold: severityThreshold ?? "all",
             keyword: keyword || undefined,
-            timeRangeMs: timeRangeMs ?? "all",
+            timeRangeMs: timeRangeMilliseconds ?? "all",
         });
         return true;
     };
@@ -441,13 +456,17 @@ function createLoggingAdapterRoutes(
     };
     applyConfiguration();
 
-    return async (req: IncomingMessage, res: ServerResponse, url: URL) => {
+    return async (
+        request: IncomingMessage,
+        response: ServerResponse,
+        url: URL,
+    ) => {
         if (!url.pathname.startsWith(base)) return false;
-        const claims = ctx.requireAuth(req, res, "admin");
+        const claims = ctx.requireAuth(request, response, "admin");
         if (!claims) return true;
-        if (url.pathname === base && req.method === "GET") {
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(
+        if (url.pathname === base && request.method === "GET") {
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     data: adapters.map((adapter) => ({
                         ...adapter,
@@ -470,11 +489,11 @@ function createLoggingAdapterRoutes(
         );
         if (
             toggleMatch &&
-            req.method === "POST" &&
+            request.method === "POST" &&
             adapters.some(({ id }) => id === toggleMatch[1])
         ) {
-            res.writeHead(409, { "content-type": "application/json" });
-            res.end(
+            response.writeHead(409, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     error: {
                         code: "adapter_locked",
@@ -489,9 +508,9 @@ function createLoggingAdapterRoutes(
         );
         const adapter = adapters.find(({ id }) => id === match?.[1]);
         if (!adapter) return false;
-        if (req.method === "GET") {
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(
+        if (request.method === "GET") {
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     data: overrides.get(adapter.id) ?? {},
                     envValues: environmentConfig[adapter.id],
@@ -502,7 +521,7 @@ function createLoggingAdapterRoutes(
             );
             return true;
         }
-        if (req.method === "DELETE") {
+        if (request.method === "DELETE") {
             await preferenceStore.delete(adapter.id);
             overrides.delete(adapter.id);
             applyConfiguration();
@@ -512,20 +531,20 @@ function createLoggingAdapterRoutes(
                 accountId: claims.sub,
                 adapterId: adapter.id,
             });
-            res.writeHead(204);
-            res.end();
+            response.writeHead(204);
+            response.end();
             return true;
         }
-        if (req.method === "PUT") {
-            const body = (await readJson(req)) as Record<string, unknown>;
+        if (request.method === "PUT") {
+            const body = (await readJson(request)) as Record<string, unknown>;
             const allowedKeys = new Set(adapter.schema.map(({ key }) => key));
             const config = Object.fromEntries(
                 Object.entries(body).filter(([key]) => allowedKeys.has(key)),
             ) as Record<string, ConfigValue>;
             const validationError = adapter.validateConfig(config);
             if (validationError) {
-                res.writeHead(400, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(400, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "invalid_config",
@@ -546,8 +565,8 @@ function createLoggingAdapterRoutes(
                 adapterId: adapter.id,
                 changedFields: Object.keys(config).sort(),
             });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { saved: true } }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: { saved: true } }));
             return true;
         }
         return false;
@@ -581,8 +600,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const log = ctx.log;
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
-    const dbExecutor = ctx.capabilities.require<DbExecutor>("db:executor");
-    const preferenceStore = new LoggingPreferenceStore(dbExecutor);
+    const databaseExecutor =
+        ctx.capabilities.require<DbExecutor>("db:executor");
+    const preferenceStore = new LoggingPreferenceStore(databaseExecutor);
     await preferenceStore.ensureSchema();
     const level = isLogLevel(process.env.LOG_LEVEL)
         ? (process.env.LOG_LEVEL as LogLevel)
@@ -613,9 +633,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         process.env.LOG_ROTATE_COMPRESS !== "false";
 
     const fileAppend =
-        ctx.capabilities.get<(fp: string, content: string) => Promise<void>>(
-            "file:append",
-        );
+        ctx.capabilities.get<
+            (filePath: string, content: string) => Promise<void>
+        >("file:append");
 
     const logger = new Logger(
         level,
@@ -629,8 +649,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         },
         fileLevel,
     );
-    const runtimeLog: BootstrapLog = (logLevel, message, meta) => {
-        void logger.log(logLevel, message, meta);
+    const runtimeLog: BootstrapLog = (logLevel, message, metadata) => {
+        void logger.log(logLevel, message, metadata);
     };
 
     ctx.capabilities.contribute("logging:logger", logger);
@@ -685,7 +705,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "logging",
     );
 
-    const uiDir = path.resolve(
+    const uiDirectory = path.resolve(
         process.cwd(),
         "src",
         "gateways",
@@ -697,7 +717,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         label: "Logs",
         scriptUrl: "/static/gateways/logging/admin-section.js",
     });
-    ctx.uiRegistry?.registerStaticDir("logging", uiDir);
+    ctx.uiRegistry?.registerStaticDir("logging", uiDirectory);
 
     ctx.routeRegistry.registerPrefix("/api/v1/logging", "logging");
     ctx.uiRegistry?.registerCapabilityProvider({

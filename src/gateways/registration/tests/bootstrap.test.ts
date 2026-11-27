@@ -140,8 +140,8 @@ test("registration gateway bootstrap registers admin section, navbar plugin, and
     const registeredSections = [];
     const registeredPlugins = [];
     const registeredTutorials = [];
-    const registeredStaticDirs = [];
-    const registeredAdapterStaticDirs = [];
+    const registeredStaticDirectories = [];
+    const registeredAdapterStaticDirectories = [];
     const registeredTypingMessages = [];
 
     await bootstrap({
@@ -157,14 +157,14 @@ test("registration gateway bootstrap registers admin section, navbar plugin, and
             registerNavbarPlugin(plugin) {
                 registeredPlugins.push(plugin);
             },
-            registerStaticDir(id, dir) {
-                registeredStaticDirs.push({ id, dir });
+            registerStaticDir(id, directory) {
+                registeredStaticDirectories.push({ id, dir: directory });
             },
-            registerAdapterStaticDir(gatewayId, adapterId, dir) {
-                registeredAdapterStaticDirs.push({
+            registerAdapterStaticDir(gatewayId, adapterId, directory) {
+                registeredAdapterStaticDirectories.push({
                     gatewayId,
                     adapterId,
-                    dir,
+                    dir: directory,
                 });
             },
             resolveAssetUrl(assetUrl) {
@@ -209,32 +209,38 @@ test("registration gateway bootstrap registers admin section, navbar plugin, and
                 ) && provider.access.minRole === "admin",
         ),
     );
-    const staticDir = registeredStaticDirs.find(
+    const staticDirectory = registeredStaticDirectories.find(
         (entry) => entry.id === "registration",
     );
-    assert.ok(staticDir);
+    assert.ok(staticDirectory);
     assert.equal(
-        existsSync(path.resolve(staticDir.dir, "admin-section.js")),
+        existsSync(path.resolve(staticDirectory.dir, "admin-section.js")),
         true,
     );
-    assert.equal(existsSync(path.resolve(staticDir.dir, "navbar.js")), true);
-    assert.equal(existsSync(path.resolve(staticDir.dir, "client.js")), true);
-    const tokenStaticDir = registeredAdapterStaticDirs.find(
+    assert.equal(
+        existsSync(path.resolve(staticDirectory.dir, "navbar.js")),
+        true,
+    );
+    assert.equal(
+        existsSync(path.resolve(staticDirectory.dir, "client.js")),
+        true,
+    );
+    const tokenStaticDirectory = registeredAdapterStaticDirectories.find(
         (entry) =>
             entry.gatewayId === "registration" && entry.adapterId === "token",
     );
-    assert.ok(tokenStaticDir);
+    assert.ok(tokenStaticDirectory);
     assert.equal(
-        existsSync(path.resolve(tokenStaticDir.dir, "authorization.js")),
+        existsSync(path.resolve(tokenStaticDirectory.dir, "authorization.js")),
         true,
     );
     assert.equal(registeredTypingMessages.length, 1);
-    const msg = registeredTypingMessages[0];
-    assert.equal(msg.id, "registration-register-today");
-    assert.equal(msg.textKey, "ui.app.login.typing.sample.7");
-    assert.equal(msg.ownerType, "adapter");
-    assert.equal(msg.ownerId, "public");
-    assert.equal(typeof msg.isEnabled, "function");
+    const message = registeredTypingMessages[0];
+    assert.equal(message.id, "registration-register-today");
+    assert.equal(message.textKey, "ui.app.login.typing.sample.7");
+    assert.equal(message.ownerType, "adapter");
+    assert.equal(message.ownerId, "public");
+    assert.equal(typeof message.isEnabled, "function");
     const gateResult = await systemCtx.flow.run("gateAccountCreation", {
         accountId: "sso-user",
         providerId: "external-sso",
@@ -265,15 +271,16 @@ test("registration gateway bootstrap registers admin section, navbar plugin, and
 });
 
 test("registration:public:isEnabled capability returns false when gateway is disabled", async () => {
-    const dbExec = {
+    const databaseExecutor = {
         execute: async () => ({ rows: [], rowCount: 0 }),
         executeCommand: async () => ({ rows: [], rowCount: 0 }),
         ensureTable: async () => {},
-        transaction: async (callback: (e: typeof dbExec) => Promise<unknown>) =>
-            callback(dbExec),
+        transaction: async (
+            callback: (executor: typeof databaseExecutor) => Promise<unknown>,
+        ) => callback(databaseExecutor),
     };
     const map = new Map();
-    map.set("db:executor", dbExec);
+    map.set("db:executor", databaseExecutor);
     map.set("db:type", "memory");
     map.set("auth:accountStore", {
         async isFounder() {
@@ -348,15 +355,16 @@ test("registration:public:isEnabled capability returns false when gateway is dis
 });
 
 test("registration:public:register capability throws when gateway is disabled", async () => {
-    const dbExec = {
+    const databaseExecutor = {
         execute: async () => ({ rows: [], rowCount: 0 }),
         executeCommand: async () => ({ rows: [], rowCount: 0 }),
         ensureTable: async () => {},
-        transaction: async (callback: (e: typeof dbExec) => Promise<unknown>) =>
-            callback(dbExec),
+        transaction: async (
+            callback: (executor: typeof databaseExecutor) => Promise<unknown>,
+        ) => callback(databaseExecutor),
     };
     const map = new Map();
-    map.set("db:executor", dbExec);
+    map.set("db:executor", databaseExecutor);
     map.set("db:type", "memory");
     map.set("auth:accountStore", {
         async isFounder() {
@@ -416,13 +424,13 @@ test("registration:public:register capability throws when gateway is disabled", 
         flow: createCtx().flow,
     } as any);
 
-    const registerFn = map.get("registration:public:register") as (
+    const registerCallback = map.get("registration:public:register") as (
         input: unknown,
     ) => Promise<unknown>;
-    assert.equal(typeof registerFn, "function");
+    assert.equal(typeof registerCallback, "function");
 
     await assert.rejects(
-        () => registerFn({ username: "u", password: "p" }),
+        () => registerCallback({ username: "u", password: "p" }),
         /gateway_disabled/,
         "should throw gateway_disabled when gateway is disabled",
     );
@@ -431,7 +439,7 @@ test("registration:public:register capability throws when gateway is disabled", 
 test("registration adapter routes announce controls and accept empty config saves", async () => {
     const routeRegistry = new RouteRegistry();
     const capabilityStore = new CapabilityStore();
-    const dbExecutor = {
+    const databaseExecutor = {
         execute: async () => ({ rows: [], rowCount: 0 }),
         executeCommand: async ({
             option,
@@ -453,11 +461,11 @@ test("registration adapter routes announce controls and accept empty config save
         },
         ensureTable: async () => {},
         transaction: async (
-            callback: (executor: typeof dbExecutor) => Promise<unknown>,
-        ) => callback(dbExecutor),
+            callback: (executor: typeof databaseExecutor) => Promise<unknown>,
+        ) => callback(databaseExecutor),
     };
 
-    capabilityStore.contribute("db:executor", dbExecutor);
+    capabilityStore.contribute("db:executor", databaseExecutor);
     capabilityStore.contribute("db:type", "memory");
     capabilityStore.contribute("auth:accountStore", {
         async isFounder() {

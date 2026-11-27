@@ -15,14 +15,14 @@ import {
     registerOccupiedPlacement,
 } from "./grid-math.js";
 
-function fitsGrid({ col, row, w, h }, columns) {
+function fitsGrid({ col: column, row, w: width, h: height }, columns) {
     return (
-        [col, row, w, h].every(Number.isFinite) &&
-        w > 0 &&
-        h > 0 &&
-        col >= 0 &&
+        [column, row, width, height].every(Number.isFinite) &&
+        width > 0 &&
+        height > 0 &&
+        column >= 0 &&
         row >= 0 &&
-        col + w <= columns
+        column + width <= columns
     );
 }
 
@@ -68,23 +68,24 @@ function resolveSwap(state, sourceId, targetId) {
  * Preview lookup does not mutate placements. The snapped target origin is checked
  * independently of the pointer's hovered rectangle, including all other visible tiles.
  * @param {{gridCols:number, layout:{placements:object[],hidden:string[]}}} state Current editor geometry.
- * @param {number} col Proposed pointer-aligned column.
+ * @param {number} column Proposed pointer-aligned column.
  * @param {number} row Proposed pointer-aligned row.
- * @param {number} w Dragged width in grid units.
- * @param {number} h Dragged height in grid units.
+ * @param {number} width Dragged width in grid units.
+ * @param {number} height Dragged height in grid units.
  * @param {string} sourceId Dragged element identity.
  * @returns {object|null} Current target placement when both destinations fit, otherwise null.
  */
-export function findGridSwap(state, col, row, w, h, sourceId) {
-    if (!fitsGrid({ col, row, w, h }, state.gridCols)) return null;
+export function findGridSwap(state, column, row, width, height, sourceId) {
+    if (!fitsGrid({ col: column, row, w: width, h: height }, state.gridCols))
+        return null;
     const displaced = state.layout.placements.filter(
         (entry) =>
             entry.id !== sourceId &&
             !state.layout.hidden.includes(entry.id) &&
-            col < entry.col + entry.w &&
-            col + w > entry.col &&
+            column < entry.col + entry.w &&
+            column + width > entry.col &&
             row < entry.row + entry.h &&
-            row + h > entry.row,
+            row + height > entry.row,
     );
     if (displaced.length !== 1) return null;
     return resolveSwap(state, sourceId, displaced[0].id)?.target ?? null;

@@ -28,11 +28,11 @@ function catalogRoute(
                   },
     } as unknown as ModuleMarketplaceService;
     const context = {
-        requireAuth(req, res, minRole) {
+        requireAuth(request, response, minRole) {
             assert.equal(minRole, "admin");
-            if (req.headers.authorization !== "Bearer administrator") {
-                res.writeHead(403);
-                res.end(JSON.stringify({ error: { code: "forbidden" } }));
+            if (request.headers.authorization !== "Bearer administrator") {
+                response.writeHead(403);
+                response.end(JSON.stringify({ error: { code: "forbidden" } }));
                 return null;
             }
             return { sub: "administrator", role: "admin" };

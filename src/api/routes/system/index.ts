@@ -5,7 +5,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import type { BootstrapLog, HealthService } from "@cognis/core";
 import { readJson } from "../../reuse/read-json.js";
 import type { UserPreferenceStore } from "../../reuse/preference-store.js";
-import { resolveLangs } from "../../reuse/preferred-languages.js";
+import { resolveLangs as resolveLanguages } from "../../reuse/preferred-languages.js";
 import {
     resolveRouteContext,
     type RouteContext,
@@ -53,7 +53,7 @@ async function listLanguages(log?: BootstrapLog) {
     return languages;
 }
 
-function parseDemoModeFromEnv() {
+function parseDemoModeFromEnvironment() {
     const raw = process.env.COGNIS_UI_DEMO_MODE;
     return raw === "1" || raw === "true";
 }
@@ -118,25 +118,25 @@ export function createSystemRoutes(
         "license.en.md",
     );
     return async (
-        req: IncomingMessage,
-        res: ServerResponse,
+        request: IncomingMessage,
+        response: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        if (await tutorialCompletionRoutes(req, res, url)) return true;
-        const logMeta = {
+        if (await tutorialCompletionRoutes(request, response, url)) return true;
+        const logMetadata = {
             component: "api-system",
-            method: req.method ?? "GET",
+            method: request.method ?? "GET",
             path: url.pathname,
         };
         const isHealthRoute =
             (url.pathname === "/api/v1/system/health" ||
                 url.pathname === "/api/v1/system/healthcheck") &&
-            req.method === "GET";
+            request.method === "GET";
 
         if (isHealthRoute) {
-            log?.("debug", "Served health status.", logMeta);
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(
+            log?.("debug", "Served health status.", logMetadata);
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     data: url.pathname.endsWith("/healthcheck")
                         ? { status: "ok" }
@@ -148,78 +148,80 @@ export function createSystemRoutes(
 
         if (
             url.pathname === "/api/v1/system/capabilities" &&
-            req.method === "GET"
+            request.method === "GET"
         ) {
-            const claims = ctx.requireAuth(req, res, "owner");
+            const claims = ctx.requireAuth(request, response, "owner");
             if (!claims) return true;
             const data = listCapabilities?.() ?? [];
             log?.("debug", "Listed registered capabilities.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
                 count: data.length,
             });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/system/languages" &&
-            req.method === "GET"
+            request.method === "GET"
         ) {
             const languages = await listLanguages(log);
             log?.("debug", "Listed UI languages.", {
-                ...logMeta,
+                ...logMetadata,
                 count: languages.length,
             });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: languages }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: languages }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/system/ui-config" &&
-            req.method === "GET"
+            request.method === "GET"
         ) {
             log?.("debug", "Served UI config.", {
-                ...logMeta,
-                demoMode: parseDemoModeFromEnv(),
+                ...logMetadata,
+                demoMode: parseDemoModeFromEnvironment(),
             });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(
-                JSON.stringify({ data: { demoMode: parseDemoModeFromEnv() } }),
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(
+                JSON.stringify({
+                    data: { demoMode: parseDemoModeFromEnvironment() },
+                }),
             );
             return true;
         }
 
         if (
             url.pathname === "/api/v1/system/release-changelog" &&
-            req.method === "GET"
+            request.method === "GET"
         ) {
-            const claims = ctx.requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(request, response, "user");
             if (!claims) return true;
-            const langs = resolveLangs(url);
+            const languages = resolveLanguages(url);
             const [releaseVersion, entries] = await Promise.all([
                 readReleaseVersion(),
-                loadReleaseChangelogEntries(langs),
+                loadReleaseChangelogEntries(languages),
             ]);
             log?.("debug", "Served release changelog feed.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
                 releaseVersion,
                 entryCount: entries.length,
-                langs,
+                langs: languages,
             });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { releaseVersion, entries } }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: { releaseVersion, entries } }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/system/security" &&
-            req.method === "GET"
+            request.method === "GET"
         ) {
-            const claims = ctx.requireAuth(req, res, "user");
+            const claims = ctx.requireAuth(request, response, "user");
             if (!claims) return true;
             const raw = preferenceStore
                 ? await preferenceStore.get("__system__", SECURITY_SETTINGS_KEY)
@@ -230,16 +232,16 @@ export function createSystemRoutes(
                 : data?.enforceTfaForAllUsers === true;
             if (!data && raw) {
                 log?.("warn", "Failed to parse persisted security settings.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: claims.sub,
                 });
             }
             log?.("debug", "Read security settings.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
             });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(
                 JSON.stringify({
                     data: {
                         ...(data ?? defaultSecuritySettings()),
@@ -254,11 +256,11 @@ export function createSystemRoutes(
 
         if (
             url.pathname === "/api/v1/system/security" &&
-            req.method === "PUT"
+            request.method === "PUT"
         ) {
-            const claims = ctx.requireAuth(req, res, "admin");
+            const claims = ctx.requireAuth(request, response, "admin");
             if (!claims) return true;
-            const body = await readJson(req);
+            const body = await readJson(request);
             const trustedDomains = normalizeTrustedDomains(body.trustedDomains);
             const previous =
                 parseSecuritySettings(
@@ -289,8 +291,10 @@ export function createSystemRoutes(
                         error.message !== "user_validation_unavailable"
                     )
                         throw error;
-                    res.writeHead(400, { "content-type": "application/json" });
-                    res.end(
+                    response.writeHead(400, {
+                        "content-type": "application/json",
+                    });
+                    response.end(
                         JSON.stringify({
                             error: {
                                 code: "user_validation_unavailable",
@@ -311,8 +315,8 @@ export function createSystemRoutes(
                 (!Number.isInteger(body.loginSessionTimeoutMinutes) ||
                     Number(body.loginSessionTimeoutMinutes) < 0)
             ) {
-                res.writeHead(400, { "content-type": "application/json" });
-                res.end(
+                response.writeHead(400, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "invalid_session_timeout",
@@ -351,7 +355,7 @@ export function createSystemRoutes(
                         "warn",
                         "Failed to apply mandatory TFA enforcement policy.",
                         {
-                            ...logMeta,
+                            ...logMetadata,
                             accountId: claims.sub,
                             error:
                                 error instanceof Error
@@ -370,7 +374,7 @@ export function createSystemRoutes(
                         "info",
                         "Revoked setup-pending access tokens after disabling mandatory TFA.",
                         {
-                            ...logMeta,
+                            ...logMetadata,
                             accountId: claims.sub,
                             revokedSetupPendingCount:
                                 enforcementResult.revokedSetupPendingCount,
@@ -379,26 +383,29 @@ export function createSystemRoutes(
                 }
             }
             log?.("info", "Updated security settings.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
                 trustedDomainCount: trustedDomains.length,
                 userValidationMode,
                 requireTeacherManualApproval,
                 enforceTfaForAllUsers,
             });
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { saved: true } }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: { saved: true } }));
             return true;
         }
 
-        if (url.pathname === "/api/v1/system/license" && req.method === "GET") {
+        if (
+            url.pathname === "/api/v1/system/license" &&
+            request.method === "GET"
+        ) {
             let markdown = "";
             try {
                 markdown = await readFile(licenseMarkdownFile, "utf8");
             } catch {
-                log?.("warn", "License file was not found.", logMeta);
-                res.writeHead(404, { "content-type": "application/json" });
-                res.end(
+                log?.("warn", "License file was not found.", logMetadata);
+                response.writeHead(404, { "content-type": "application/json" });
+                response.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -408,9 +415,9 @@ export function createSystemRoutes(
                 );
                 return true;
             }
-            log?.("debug", "Served license markdown.", logMeta);
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: { markdown } }));
+            log?.("debug", "Served license markdown.", logMetadata);
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: { markdown } }));
             return true;
         }
 

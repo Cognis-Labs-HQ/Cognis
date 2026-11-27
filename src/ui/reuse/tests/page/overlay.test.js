@@ -27,7 +27,8 @@ async function fixture(testContext) {
         ensurePageStylesheet: async (url) => stylesLoaded.push(url),
         window: {
             innerHeight: 900,
-            addEventListener: (...args) => events.addEventListener(...args),
+            addEventListener: (...argumentsList) =>
+                events.addEventListener(...argumentsList),
         },
         document: {
             body: { append: (element) => overlays.add(element) },

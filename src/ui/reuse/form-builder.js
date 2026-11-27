@@ -113,10 +113,10 @@ export function createFormBuilder(ctx, options) {
         return ` ${escapeHtml(name)}="${escapeHtml(String(value))}"`;
     }
 
-    function resolveMessage(messageKey, messageParams = {}) {
+    function resolveMessage(messageKey, messageParameters = {}) {
         let translatedMessage = i18n.t(messageKey);
         for (const [parameterKey, parameterValue] of Object.entries(
-            messageParams,
+            messageParameters,
         )) {
             translatedMessage = translatedMessage.replace(
                 `{${parameterKey}}`,

@@ -34,7 +34,7 @@ function fixture() {
         {},
         globals,
     );
-    const prefs = loadTestModule(
+    const preferences = loadTestModule(
         new URL("../ui-preferences.js", import.meta.url),
         {
             "./offline-state.js": {
@@ -78,7 +78,7 @@ function fixture() {
         globals,
     );
     return {
-        prefs,
+        prefs: preferences,
         values,
         writes,
         events,

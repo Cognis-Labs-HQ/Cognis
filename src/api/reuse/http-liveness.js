@@ -1,8 +1,11 @@
-export async function checkHttpLiveness(url, { timeoutMs = 5000 } = {}) {
+export async function checkHttpLiveness(
+    url,
+    { timeoutMs: timeoutMilliseconds = 5000 } = {},
+) {
     const abortController = new AbortController();
     const timer = setTimeout(() => {
         abortController.abort();
-    }, timeoutMs);
+    }, timeoutMilliseconds);
     try {
         const response = await fetch(url, {
             method: "GET",

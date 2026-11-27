@@ -11,13 +11,15 @@ import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import { bootstrap as bootstrapImplementation } from "../bootstrap.js";
 import { issueAccessToken } from "../../auth/access-tokens.js";
 
-function makeInMemoryDb() {
+function makeInMemoryDatabase() {
     return {
         executeCommand: async () => ({ rows: [], rowCount: 0 }),
         ensureTable: async () => {},
         transaction: async <T>(
-            callback: (db: ReturnType<typeof makeInMemoryDb>) => Promise<T>,
-        ) => callback(makeInMemoryDb()),
+            callback: (
+                database: ReturnType<typeof makeInMemoryDatabase>,
+            ) => Promise<T>,
+        ) => callback(makeInMemoryDatabase()),
     };
 }
 
@@ -54,7 +56,7 @@ async function makeCtx() {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-    const database = makeInMemoryDb();
+    const database = makeInMemoryDatabase();
     const systemCtx = createCtx();
     capabilities.contribute("db:executor", database);
     capabilities.contribute("system:ctx", systemCtx);
@@ -235,21 +237,21 @@ test("GET /api/v1/gateways/notify/adapters returns empty list when no senders", 
 
     const handlers = routeRegistry.getHandlers();
     const adapterHandler = handlers[handlers.length - 1];
-    const req = {
+    const request = {
         method: "GET",
         headers: { authorization: `Bearer ${adminToken}` },
     } as any;
-    const res = makeResponse();
+    const response = makeResponse();
 
     const handled = await adapterHandler(
-        req,
-        res,
+        request,
+        response,
         new URL("/api/v1/gateways/notify/adapters", "http://localhost"),
     );
 
     assert.ok(handled);
-    assert.equal(res.status, 200);
-    const body = JSON.parse(res.payload);
+    assert.equal(response.status, 200);
+    const body = JSON.parse(response.payload);
     assert.ok(Array.isArray(body.data));
 });
 
@@ -267,16 +269,16 @@ test("gateway adapter route requires admin auth", async () => {
 
     const handlers = routeRegistry.getHandlers();
     const adapterHandler = handlers[handlers.length - 1];
-    const req = { method: "GET", headers: {} } as any;
-    const res = makeResponse();
+    const request = { method: "GET", headers: {} } as any;
+    const response = makeResponse();
 
     await adapterHandler(
-        req,
-        res,
+        request,
+        response,
         new URL("/api/v1/gateways/notify/adapters", "http://localhost"),
     );
 
-    assert.equal(res.status, 401);
+    assert.equal(response.status, 401);
 });
 
 import { access } from "node:fs/promises";
@@ -297,18 +299,18 @@ test("notify gateway bootstrap registers correct static dir and admin-section.js
         uiRegistry,
     });
 
-    const staticDir = uiRegistry.getStaticDir("notify");
+    const staticDirectory = uiRegistry.getStaticDir("notify");
     assert.ok(
-        staticDir,
+        staticDirectory,
         "notify gateway must register a static dir with UIRegistry",
     );
 
     await assert.doesNotReject(
-        access(staticDir),
-        `static dir must exist on disk: ${staticDir}`,
+        access(staticDirectory),
+        `static dir must exist on disk: ${staticDirectory}`,
     );
 
-    const adminSectionPath = path.join(staticDir, "admin-section.js");
+    const adminSectionPath = path.join(staticDirectory, "admin-section.js");
     await assert.doesNotReject(
         access(adminSectionPath),
         `admin-section.js must exist in the registered static dir: ${adminSectionPath}`,
@@ -330,25 +332,25 @@ test("notify gateway bootstrap registers admin section scriptUrl that resolves w
     });
 
     const sections = uiRegistry.listAdminSections();
-    const notifSection = sections.find(
+    const notificationSection = sections.find(
         (section) => section.id === "notifications",
     );
     assert.ok(
-        notifSection,
+        notificationSection,
         "notify gateway must register a 'notifications' admin section",
     );
 
-    const staticDir = uiRegistry.getStaticDir("notify");
-    assert.ok(staticDir, "notify gateway must register a static dir");
+    const staticDirectory = uiRegistry.getStaticDir("notify");
+    assert.ok(staticDirectory, "notify gateway must register a static dir");
 
     const urlPrefix = "/static/gateways/notify/";
     assert.ok(
-        notifSection.scriptUrl.startsWith(urlPrefix),
-        `scriptUrl must start with ${urlPrefix}, got: ${notifSection.scriptUrl}`,
+        notificationSection.scriptUrl.startsWith(urlPrefix),
+        `scriptUrl must start with ${urlPrefix}, got: ${notificationSection.scriptUrl}`,
     );
 
-    const filePart = notifSection.scriptUrl.slice(urlPrefix.length);
-    const resolvedPath = path.join(staticDir, filePart);
+    const filePart = notificationSection.scriptUrl.slice(urlPrefix.length);
+    const resolvedPath = path.join(staticDirectory, filePart);
     await assert.doesNotReject(
         access(resolvedPath),
         `file referenced by scriptUrl must exist on disk: ${resolvedPath}`,
@@ -378,8 +380,8 @@ test("notify gateway bootstrap registers broadcasts admin section scriptUrl that
         "notify gateway must register a 'broadcasts' admin section",
     );
 
-    const staticDir = uiRegistry.getStaticDir("notify");
-    assert.ok(staticDir, "notify gateway must register a static dir");
+    const staticDirectory = uiRegistry.getStaticDir("notify");
+    assert.ok(staticDirectory, "notify gateway must register a static dir");
 
     const urlPrefix = "/static/gateways/notify/";
     assert.ok(
@@ -388,7 +390,7 @@ test("notify gateway bootstrap registers broadcasts admin section scriptUrl that
     );
 
     const filePart = broadcastsSection.scriptUrl.slice(urlPrefix.length);
-    const resolvedPath = path.join(staticDir, filePart);
+    const resolvedPath = path.join(staticDirectory, filePart);
     await assert.doesNotReject(
         access(resolvedPath),
         `file referenced by scriptUrl must exist on disk: ${resolvedPath}`,

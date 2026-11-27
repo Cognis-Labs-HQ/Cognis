@@ -65,11 +65,11 @@ export async function mount(root, { signal } = {}) {
     async function loadClasses() {
         if (!isTeacher) return;
         try {
-            const languageParam = selectedLanguageFilter
+            const languageParameter = selectedLanguageFilter
                 ? `?language=${encodeURIComponent(selectedLanguageFilter)}`
                 : "";
             const response = await apiFetch(
-                `/api/v1/study/classes${languageParam}`,
+                `/api/v1/study/classes${languageParameter}`,
             );
             if (response.ok) {
                 const payload = await response.json();
@@ -118,7 +118,9 @@ export async function mount(root, { signal } = {}) {
     await Promise.all([loadClasses(), loadPendingRequests()]);
 
     function buildFilterLanguages() {
-        return [...new Set(classes.map((cls) => cls.languageCode))].sort();
+        return [
+            ...new Set(classes.map((studyClass) => studyClass.languageCode)),
+        ].sort();
     }
 
     function renderFilterRow(allLanguages) {
@@ -227,30 +229,30 @@ export async function mount(root, { signal } = {}) {
         }
         const items = classes
             .map(
-                (cls) => `
+                (studyClass) => `
           <li class="classes-item">
-            <span class="classes-language">${escapeHtml(cls.languageCode)}</span>
-            <span class="classes-member-count">(${escapeHtml(String(cls.memberCount ?? 0))} ${escapeHtml(i18n.t("module.study.classes.members_section"))})</span>
+            <span class="classes-language">${escapeHtml(studyClass.languageCode)}</span>
+            <span class="classes-member-count">(${escapeHtml(String(studyClass.memberCount ?? 0))} ${escapeHtml(i18n.t("module.study.classes.members_section"))})</span>
             <div class="classes-actions">
               <button
                 type="button"
                 class="btn-confirm btn-animated classes-chat-btn"
-                data-class-id="${escapeHtml(cls.id)}"
+                data-class-id="${escapeHtml(studyClass.id)}"
               >${escapeHtml(i18n.t("module.study.classes.open_chat"))}</button>
               <button
                 type="button"
                 class="classes-meeting-btn"
-                data-class-id="${escapeHtml(cls.id)}"
+                data-class-id="${escapeHtml(studyClass.id)}"
                 disabled
                 title="${escapeHtml(i18n.t("ui.reuse.coming_soon"))}"
               >${escapeHtml(i18n.t("module.study.classes.open_meeting"))}</button>
               <button
                 type="button"
                 class="btn-confirm btn-animated classes-manage-btn"
-                data-class-id="${escapeHtml(cls.id)}"
+                data-class-id="${escapeHtml(studyClass.id)}"
               >${escapeHtml(i18n.t("module.study.classes.manage_students"))}</button>
             </div>
-            ${renderManagePanel(cls.id)}
+            ${renderManagePanel(studyClass.id)}
           </li>
         `,
             )
@@ -618,11 +620,11 @@ export async function mount(root, { signal } = {}) {
                     const classId = event.target.dataset.classId ?? "";
                     const searchQuery = event.target.value.trim();
                     try {
-                        const searchParam = searchQuery
+                        const searchParameter = searchQuery
                             ? `?search=${encodeURIComponent(searchQuery)}`
                             : "";
                         const response = await apiFetch(
-                            `/api/v1/study/classes/${encodeURIComponent(classId)}/members${searchParam}`,
+                            `/api/v1/study/classes/${encodeURIComponent(classId)}/members${searchParameter}`,
                         );
                         if (response.ok) {
                             managePanelMembers =

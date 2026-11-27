@@ -5,7 +5,7 @@ import type { AccessRole } from "../access-tokens.js";
 import type { AuthAccountStore } from "./index.js";
 
 export async function loadLocalAccountStore(
-    dbExecutor: DbExecutor,
+    databaseExecutor: DbExecutor,
     log?: GatewayBootstrapContext["log"],
 ): Promise<AuthAccountStore> {
     const localStorePath = path.resolve(
@@ -19,14 +19,14 @@ export async function loadLocalAccountStore(
     const localStoreModule = await import(`${localStorePath}?t=${Date.now()}`);
     const LocalAccountStoreClass = localStoreModule.DbLocalAccountStore as
         | (new (
-              dbExecutor: DbExecutor,
+              databaseExecutor: DbExecutor,
               log?: GatewayBootstrapContext["log"],
           ) => AuthAccountStore)
         | undefined;
     if (!LocalAccountStoreClass) {
         throw new Error("local_account_store_missing");
     }
-    return new LocalAccountStoreClass(dbExecutor, log);
+    return new LocalAccountStoreClass(databaseExecutor, log);
 }
 
 export function resolveRole(sessionRole: string | undefined): AccessRole {

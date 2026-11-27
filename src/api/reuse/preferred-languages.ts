@@ -1,5 +1,5 @@
-const DEFAULT_LANG = "en";
-const SAFE_LANG_PATTERN = /^[a-z]{2}(?:-[a-z]{2})?$/;
+const DEFAULT_LANGUAGE = "en";
+const SAFE_LANGUAGE_PATTERN = /^[a-z]{2}(?:-[a-z]{2})?$/;
 
 /**
  * Parses the `langs` (or legacy `lang`) query parameter into an ordered list of
@@ -9,7 +9,7 @@ const SAFE_LANG_PATTERN = /^[a-z]{2}(?:-[a-z]{2})?$/;
  * @param url - The request URL to read query params from.
  * @returns An ordered array of validated language codes ending with "en".
  */
-export function resolveLangs(url: URL): string[] {
+function resolveLanguages(url: URL): string[] {
     const raw = (
         url.searchParams.get("langs") ||
         url.searchParams.get("lang") ||
@@ -18,12 +18,13 @@ export function resolveLangs(url: URL): string[] {
     const seen = new Set<string>();
     const result: string[] = [];
     for (const candidate of raw.split(",")) {
-        const lang = candidate.trim();
-        if (SAFE_LANG_PATTERN.test(lang) && !seen.has(lang)) {
-            seen.add(lang);
-            result.push(lang);
+        const language = candidate.trim();
+        if (SAFE_LANGUAGE_PATTERN.test(language) && !seen.has(language)) {
+            seen.add(language);
+            result.push(language);
         }
     }
-    if (!seen.has(DEFAULT_LANG)) result.push(DEFAULT_LANG);
+    if (!seen.has(DEFAULT_LANGUAGE)) result.push(DEFAULT_LANGUAGE);
     return result;
 }
+export { resolveLanguages as resolveLangs };

@@ -11,11 +11,11 @@ import type { IncomingMessage } from "node:http";
  *    This means direct HTTP connections (where the header is absent) default to
  *    non-Secure, while HTTPS-terminated proxies automatically enable it.
  */
-export function shouldSetSecureCookie(req: IncomingMessage): boolean {
+export function shouldSetSecureCookie(request: IncomingMessage): boolean {
     const forced = process.env.COGNIS_SECURE_COOKIES;
     if (forced === "1" || forced === "true") return true;
     if (forced === "0" || forced === "false") return false;
-    const forwardedProto = req.headers["x-forwarded-proto"];
+    const forwardedProto = request.headers["x-forwarded-proto"];
     if (typeof forwardedProto !== "string") return false;
     return forwardedProto
         .split(",")
@@ -32,8 +32,8 @@ export function buildAccessTokenCookie(
     return `cognis_access_token=${token}; Path=/; HttpOnly; SameSite=Lax${maxAgePart}${securePart}`;
 }
 
-export function extractCookieToken(req: IncomingMessage): string | null {
-    const cookieHeader = req.headers.cookie ?? "";
+export function extractCookieToken(request: IncomingMessage): string | null {
+    const cookieHeader = request.headers.cookie ?? "";
     const cookiePairs = cookieHeader.split(";");
     for (const cookiePair of cookiePairs) {
         const trimmedCookiePair = cookiePair.trim();
@@ -48,8 +48,8 @@ export function extractCookieToken(req: IncomingMessage): string | null {
     return null;
 }
 
-export function extractBearerToken(req: IncomingMessage): string | null {
-    const authHeader = req.headers.authorization;
+export function extractBearerToken(request: IncomingMessage): string | null {
+    const authHeader = request.headers.authorization;
     if (typeof authHeader !== "string" || !authHeader.startsWith("Bearer ")) {
         return null;
     }

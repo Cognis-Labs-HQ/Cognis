@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { DbMessagesStore } from "../store.js";
+import { DbMessagesStore as DatabaseMessagesStore } from "../store.js";
 import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import type { StructuredDbCommand } from "../../../../gateways/db/reuse/db-command.js";
 import type { StructuredDbSelectCommand } from "../../../../gateways/db/reuse/db-command.js";
@@ -8,11 +8,11 @@ import type { StructuredDbUpdateCommand } from "../../../../gateways/db/reuse/db
 import type { StructuredDbTableDef } from "../../../../gateways/db/reuse/db-table.js";
 
 function createRecordingExecutor() {
-    const tableDefs: Array<StructuredDbTableDef> = [];
+    const tableDefinitions: Array<StructuredDbTableDef> = [];
     const commandCalls: Array<StructuredDbCommand> = [];
     const database: DbExecutor = {
-        async ensureTable(def: StructuredDbTableDef) {
-            tableDefs.push(def);
+        async ensureTable(definition: StructuredDbTableDef) {
+            tableDefinitions.push(definition);
         },
         async executeCommand(command: StructuredDbCommand) {
             commandCalls.push(command);
@@ -22,69 +22,78 @@ function createRecordingExecutor() {
             return callback(database);
         },
     };
-    return { db: database, tableDefs, commandCalls };
+    return { db: database, tableDefs: tableDefinitions, commandCalls };
 }
 
 test("messages schema uses portable integer default for muted flag", async () => {
-    const { db: database, tableDefs } = createRecordingExecutor();
-    const store = new DbMessagesStore(database);
+    const { db: database, tableDefs: tableDefinitions } =
+        createRecordingExecutor();
+    const store = new DatabaseMessagesStore(database);
 
     await store.ensureSchema();
 
-    const membersTableDef = tableDefs.find(
-        (def) => def.name === "chatroom_members",
+    const membersTableDefinition = tableDefinitions.find(
+        (definition) => definition.name === "chatroom_members",
     );
-    assert.ok(membersTableDef, "chatroom_members table should be ensured");
+    assert.ok(
+        membersTableDefinition,
+        "chatroom_members table should be ensured",
+    );
 
-    const mutedCol = membersTableDef.columns.find(
-        (col) => col.name === "muted",
+    const mutedColumn = membersTableDefinition.columns.find(
+        (column) => column.name === "muted",
     );
-    assert.ok(mutedCol, "muted column should exist");
+    assert.ok(mutedColumn, "muted column should exist");
     assert.equal(
-        mutedCol.type,
+        mutedColumn.type,
         "integer",
         "muted column should use integer type",
     );
-    assert.equal(mutedCol.default, 0, "muted column should default to 0");
-    assert.equal(mutedCol.notNull, true, "muted column should be NOT NULL");
+    assert.equal(mutedColumn.default, 0, "muted column should default to 0");
+    assert.equal(mutedColumn.notNull, true, "muted column should be NOT NULL");
     assert.notEqual(
-        mutedCol.type,
+        mutedColumn.type,
         "boolean",
         "muted column must not use boolean type",
     );
 });
 
 test("messages schema includes portable integer archived member flag", async () => {
-    const { db: database, tableDefs } = createRecordingExecutor();
-    const store = new DbMessagesStore(database);
+    const { db: database, tableDefs: tableDefinitions } =
+        createRecordingExecutor();
+    const store = new DatabaseMessagesStore(database);
 
     await store.ensureSchema();
 
-    const membersTableDef = tableDefs.find(
-        (def) => def.name === "chatroom_members",
+    const membersTableDefinition = tableDefinitions.find(
+        (definition) => definition.name === "chatroom_members",
     );
-    assert.ok(membersTableDef, "chatroom_members table should be ensured");
+    assert.ok(
+        membersTableDefinition,
+        "chatroom_members table should be ensured",
+    );
 
-    const archivedCol = membersTableDef.columns.find(
-        (col) => col.name === "archived",
+    const archivedColumn = membersTableDefinition.columns.find(
+        (column) => column.name === "archived",
     );
-    assert.ok(archivedCol, "archived column should exist");
-    assert.equal(archivedCol.type, "integer");
-    assert.equal(archivedCol.default, 0);
-    assert.equal(archivedCol.notNull, true);
+    assert.ok(archivedColumn, "archived column should exist");
+    assert.equal(archivedColumn.type, "integer");
+    assert.equal(archivedColumn.default, 0);
+    assert.equal(archivedColumn.notNull, true);
 });
 
 test("messages schema records one-time room-key delivery per member", async () => {
-    const { db: database, tableDefs } = createRecordingExecutor();
-    const store = new DbMessagesStore(database);
+    const { db: database, tableDefs: tableDefinitions } =
+        createRecordingExecutor();
+    const store = new DatabaseMessagesStore(database);
 
     await store.ensureSchema();
 
-    const membersTableDef = tableDefs.find(
+    const membersTableDefinition = tableDefinitions.find(
         (definition) => definition.name === "chatroom_members",
     );
-    assert.ok(membersTableDef);
-    const deliveryColumn = membersTableDef.columns.find(
+    assert.ok(membersTableDefinition);
+    const deliveryColumn = membersTableDefinition.columns.find(
         (column) => column.name === "key_delivered_at",
     );
     assert.deepEqual(deliveryColumn, {
@@ -94,43 +103,60 @@ test("messages schema records one-time room-key delivery per member", async () =
 });
 
 test("messages schema includes request typing and reaction tables", async () => {
-    const { db: database, tableDefs } = createRecordingExecutor();
-    const store = new DbMessagesStore(database);
+    const { db: database, tableDefs: tableDefinitions } =
+        createRecordingExecutor();
+    const store = new DatabaseMessagesStore(database);
 
     await store.ensureSchema();
 
-    assert.ok(tableDefs.find((def) => def.name === "chat_message_requests"));
-    assert.ok(tableDefs.find((def) => def.name === "chatroom_typing"));
-    assert.ok(tableDefs.find((def) => def.name === "chat_message_reactions"));
-    assert.ok(tableDefs.find((def) => def.name === "chat_emoji_usage"));
+    assert.ok(
+        tableDefinitions.find(
+            (definition) => definition.name === "chat_message_requests",
+        ),
+    );
+    assert.ok(
+        tableDefinitions.find(
+            (definition) => definition.name === "chatroom_typing",
+        ),
+    );
+    assert.ok(
+        tableDefinitions.find(
+            (definition) => definition.name === "chat_message_reactions",
+        ),
+    );
+    assert.ok(
+        tableDefinitions.find(
+            (definition) => definition.name === "chat_emoji_usage",
+        ),
+    );
 });
 
 test("messages setMuted uses executeCommand with integer muted value", async () => {
     const { db: database, commandCalls } = createRecordingExecutor();
-    const store = new DbMessagesStore(database);
+    const store = new DatabaseMessagesStore(database);
 
     await store.setMuted("room-1", "account-1", true);
 
-    const updateCmd = commandCalls.find(
-        (cmd): cmd is StructuredDbUpdateCommand =>
-            cmd.option === "UPDATE" && cmd.table === "chatroom_members",
+    const updateCommand = commandCalls.find(
+        (command): command is StructuredDbUpdateCommand =>
+            command.option === "UPDATE" && command.table === "chatroom_members",
     );
-    assert.ok(updateCmd);
-    assert.equal(updateCmd.set.muted, 1);
+    assert.ok(updateCommand);
+    assert.equal(updateCommand.set.muted, 1);
 });
 
 test("messages setArchived uses executeCommand with integer archived value", async () => {
     const { db: database, commandCalls } = createRecordingExecutor();
-    const store = new DbMessagesStore(database);
+    const store = new DatabaseMessagesStore(database);
 
     await store.setArchived("room-1", "account-1", true);
 
-    const updateCmd = commandCalls.find(
-        (cmd): cmd is StructuredDbUpdateCommand =>
-            cmd.option === "UPDATE" && cmd.table === "chatroom_members",
+    const updateCommand = commandCalls.find(
+        (command): command is StructuredDbUpdateCommand =>
+            command.option === "UPDATE" && command.table === "chatroom_members",
     );
-    assert.ok(updateCmd);
-    assert.equal(updateCmd.set.archived, 1);
+    assert.ok(updateCommand);
+    assert.equal(updateCommand.set.archived, 1);
 });
 
 test("removing a member archives a chat for its sole remaining member", async () => {
@@ -162,7 +188,7 @@ test("removing a member archives a chat for its sole remaining member", async ()
             return callback(database);
         },
     };
-    const store = new DbMessagesStore(database);
+    const store = new DatabaseMessagesStore(database);
 
     const lifecycle = await store.removeMemberAndApplyLifecycle(
         "room-1",
@@ -179,7 +205,7 @@ test("removing a member archives a chat for its sole remaining member", async ()
 
 test("removing the last member permanently deletes the chat", async () => {
     const { db: database, commandCalls } = createRecordingExecutor();
-    const store = new DbMessagesStore(database);
+    const store = new DatabaseMessagesStore(database);
 
     const lifecycle = await store.removeMemberAndApplyLifecycle(
         "room-empty",
@@ -234,7 +260,7 @@ test("DM lookup does not expose an orphaned chat to a recreated account", async 
             return callback(database);
         },
     };
-    const store = new DbMessagesStore(database);
+    const store = new DatabaseMessagesStore(database);
 
     const room = await store.findDmBetween("alice", "bob");
 
@@ -272,7 +298,7 @@ test("new DMs use distinct room ids across account incarnations", async () => {
             return callback(database);
         },
     };
-    const store = new DbMessagesStore(database);
+    const store = new DatabaseMessagesStore(database);
 
     await store.createDm("alice", "bob");
     await store.createDm("bob", "alice");
@@ -314,7 +340,7 @@ test("membership changes persist their room event in the same transaction", asyn
             return callback(database);
         },
     };
-    const store = new DbMessagesStore(database);
+    const store = new DatabaseMessagesStore(database);
 
     const added = await store.addMemberWithEvent({
         roomId: "room-1",
@@ -346,7 +372,7 @@ test("membership changes persist their room event in the same transaction", asyn
 
 test("createMessageRequest persists room id when provided", async () => {
     const { db: database, commandCalls } = createRecordingExecutor();
-    const store = new DbMessagesStore(database);
+    const store = new DatabaseMessagesStore(database);
 
     await assert.rejects(async () => {
         await store.createMessageRequest({
@@ -356,12 +382,13 @@ test("createMessageRequest persists room id when provided", async () => {
         });
     });
 
-    const insertCmd = commandCalls.find(
-        (cmd) =>
-            cmd.option === "INSERT" && cmd.table === "chat_message_requests",
+    const insertCommand = commandCalls.find(
+        (command) =>
+            command.option === "INSERT" &&
+            command.table === "chat_message_requests",
     );
-    assert.ok(insertCmd);
-    assert.equal(insertCmd.values.room_id, "room-123");
+    assert.ok(insertCommand);
+    assert.equal(insertCommand.values.room_id, "room-123");
 });
 
 test("hasApprovedMessageRequestBetween checks both request directions", async () => {
@@ -382,7 +409,7 @@ test("hasApprovedMessageRequestBetween checks both request directions", async ()
             return callback(database);
         },
     };
-    const store = new DbMessagesStore(database);
+    const store = new DatabaseMessagesStore(database);
 
     const approved = await store.hasApprovedMessageRequestBetween(
         "account-a",
@@ -390,23 +417,26 @@ test("hasApprovedMessageRequestBetween checks both request directions", async ()
     );
 
     assert.equal(approved, true);
-    const selectCalls = commandCalls.filter((cmd) => cmd.option === "SELECT");
+    const selectCalls = commandCalls.filter(
+        (command) => command.option === "SELECT",
+    );
     assert.equal(selectCalls.length, 2);
 });
 
 test("incrementEmojiUsage inserts a new row when none exists", async () => {
     const { db: database, commandCalls } = createRecordingExecutor();
-    const store = new DbMessagesStore(database);
+    const store = new DatabaseMessagesStore(database);
 
     await store.incrementEmojiUsage("account-1", "👍");
 
-    const insertCmd = commandCalls.find(
-        (cmd) => cmd.option === "INSERT" && cmd.table === "chat_emoji_usage",
+    const insertCommand = commandCalls.find(
+        (command) =>
+            command.option === "INSERT" && command.table === "chat_emoji_usage",
     );
-    assert.ok(insertCmd);
-    assert.equal(insertCmd.values.account_id, "account-1");
-    assert.equal(insertCmd.values.emoji, "👍");
-    assert.equal(insertCmd.values.usage_count, 1);
+    assert.ok(insertCommand);
+    assert.equal(insertCommand.values.account_id, "account-1");
+    assert.equal(insertCommand.values.emoji, "👍");
+    assert.equal(insertCommand.values.usage_count, 1);
 });
 
 test("incrementEmojiUsage updates the count for an existing row", async () => {
@@ -435,35 +465,36 @@ test("incrementEmojiUsage updates the count for an existing row", async () => {
             return callback(database);
         },
     };
-    const store = new DbMessagesStore(database);
+    const store = new DatabaseMessagesStore(database);
 
     await store.incrementEmojiUsage("account-1", "👍");
 
-    const updateCmd = commandCalls.find(
-        (cmd): cmd is StructuredDbUpdateCommand =>
-            cmd.option === "UPDATE" && cmd.table === "chat_emoji_usage",
+    const updateCommand = commandCalls.find(
+        (command): command is StructuredDbUpdateCommand =>
+            command.option === "UPDATE" && command.table === "chat_emoji_usage",
     );
-    assert.ok(updateCmd);
-    assert.equal(updateCmd.set.usage_count, 4);
+    assert.ok(updateCommand);
+    assert.equal(updateCommand.set.usage_count, 4);
 });
 
 test("getTopEmojiUsage queries chat_emoji_usage by account", async () => {
     const { db: database, commandCalls } = createRecordingExecutor();
-    const store = new DbMessagesStore(database);
+    const store = new DatabaseMessagesStore(database);
 
     await store.getTopEmojiUsage("account-1", 5);
 
-    const selectCmd = commandCalls.find(
-        (cmd) => cmd.option === "SELECT" && cmd.table === "chat_emoji_usage",
+    const selectCommand = commandCalls.find(
+        (command) =>
+            command.option === "SELECT" && command.table === "chat_emoji_usage",
     );
-    assert.ok(selectCmd);
+    assert.ok(selectCommand);
     assert.ok(
-        selectCmd.where?.some(
+        selectCommand.where?.some(
             (clause) =>
                 clause.column === "account_id" && clause.value === "account-1",
         ),
     );
-    assert.equal(selectCmd.limit, 5);
+    assert.equal(selectCommand.limit, 5);
 });
 
 test("unreadCount normalizes Date last_read_at to ISO before filtering", async () => {
@@ -502,14 +533,14 @@ test("unreadCount normalizes Date last_read_at to ISO before filtering", async (
             return callback(database);
         },
     };
-    const store = new DbMessagesStore(database);
+    const store = new DatabaseMessagesStore(database);
 
     const unread = await store.unreadCount("room-1", "account-1");
 
     assert.equal(unread, 3);
     const unreadSelect = commandCalls.find(
-        (cmd): cmd is StructuredDbSelectCommand =>
-            cmd.option === "SELECT" && cmd.table === "chat_messages",
+        (command): command is StructuredDbSelectCommand =>
+            command.option === "SELECT" && command.table === "chat_messages",
     );
     assert.ok(unreadSelect);
     const createdAfterClause = unreadSelect.where?.find(
@@ -522,7 +553,7 @@ test("unreadCount normalizes Date last_read_at to ISO before filtering", async (
 test("delayed read receipts preserve their original time and never regress newer receipts", async () => {
     const { InMemoryTestExecutor } =
         await import("../../../../gateways/db/tests/in-memory-test-executor.js");
-    const store = new DbMessagesStore(new InMemoryTestExecutor());
+    const store = new DatabaseMessagesStore(new InMemoryTestExecutor());
     await store.ensureSchema();
     const room = await store.createRoom("group", "Test", "reader");
     await store.addMember(room.id, "reader", "owner");

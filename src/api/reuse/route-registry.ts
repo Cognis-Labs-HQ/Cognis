@@ -3,8 +3,8 @@ import { attributeComponentFault } from "../components/fault.js";
 import type { IncomingMessage, ServerResponse } from "node:http";
 
 export type RouteHandler = (
-    req: IncomingMessage,
-    res: ServerResponse,
+    request: IncomingMessage,
+    response: ServerResponse,
     url: URL,
 ) => Promise<boolean>;
 

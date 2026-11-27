@@ -16,21 +16,21 @@ import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const repoRoot = path.resolve(
+const repositoryRoot = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
     "../../..",
 );
-const srcRoot = path.join(repoRoot, "src");
+const sourceRoot = path.join(repositoryRoot, "src");
 
-function findCompositeProjects(dir) {
+function findCompositeProjects(directory) {
     const results = [];
     let entries;
     try {
-        entries = readdirSync(dir);
+        entries = readdirSync(directory);
     } catch {
         return results;
     }
-    const tsconfigPath = path.join(dir, "tsconfig.json");
+    const tsconfigPath = path.join(directory, "tsconfig.json");
     let isComposite = false;
     try {
         const parsed = JSON.parse(readFileSync(tsconfigPath, "utf8"));
@@ -39,11 +39,11 @@ function findCompositeProjects(dir) {
         isComposite = false;
     }
     if (isComposite) {
-        results.push(path.relative(repoRoot, dir));
+        results.push(path.relative(repositoryRoot, directory));
         return results;
     }
     for (const entry of entries) {
-        const full = path.join(dir, entry);
+        const full = path.join(directory, entry);
         try {
             if (statSync(full).isDirectory() && entry !== "node_modules") {
                 results.push(...findCompositeProjects(full));
@@ -55,7 +55,7 @@ function findCompositeProjects(dir) {
     return results;
 }
 
-const projects = findCompositeProjects(srcRoot).sort();
+const projects = findCompositeProjects(sourceRoot).sort();
 
 const tsconfig = {
     extends: "./tsconfig.base.json",
@@ -64,7 +64,7 @@ const tsconfig = {
 };
 
 const output = JSON.stringify(tsconfig, null, 4) + "\n";
-writeFileSync(path.join(repoRoot, "tsconfig.json"), output, "utf8");
+writeFileSync(path.join(repositoryRoot, "tsconfig.json"), output, "utf8");
 
 writeTerminalReport(
     "stdout",

@@ -4,12 +4,12 @@ import { resolve } from "node:path";
 import test from "node:test";
 
 import {
-    renderDocumentDiff,
-    renderMarkdownDocumentDiff,
+    renderDocumentDiff as renderDocumentDifference,
+    renderMarkdownDocumentDiff as renderMarkdownDocumentDifference,
 } from "../../document-diff.js";
 
 test("document diff renders additions changes and removals safely", () => {
-    const html = renderDocumentDiff({
+    const html = renderDocumentDifference({
         lines: [
             {
                 type: "removed",
@@ -46,7 +46,7 @@ test("document diff renders additions changes and removals safely", () => {
 });
 
 test("document diff renders full Markdown with semantic overlays", () => {
-    const html = renderMarkdownDocumentDiff({
+    const html = renderMarkdownDocumentDifference({
         lines: [
             { type: "unchanged", content: "# Terms" },
             { type: "removed", content: "Old **clause**" },
@@ -71,7 +71,7 @@ test("document diff renders full Markdown with semantic overlays", () => {
 });
 
 test("Markdown diff preserves fenced code context across changed lines", () => {
-    const html = renderMarkdownDocumentDiff({
+    const html = renderMarkdownDocumentDifference({
         lines: [
             { type: "unchanged", content: "```js" },
             { type: "unchanged", content: "const before = true;" },

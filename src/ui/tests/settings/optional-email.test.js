@@ -42,7 +42,7 @@ for (const notifyState of ["absent", "failed", "available"]) {
                           return Response.json({ data: [] });
                       },
                   };
-        const { initGeneralPrefs } = loadTestModule(
+        const { initGeneralPrefs: initGeneralPreferences } = loadTestModule(
             new URL("../../app/settings/general-prefs.js", import.meta.url),
             {
                 "../../reuse/capabilities.js": createDiagnosticFixture(),
@@ -66,7 +66,7 @@ for (const notifyState of ["absent", "failed", "available"]) {
                     watchToken: () => assert.fail("no verification requested"),
                 },
                 "../../reuse/toast.js": {
-                    showToast: (...args) => toasts.push(args),
+                    showToast: (...argumentsList) => toasts.push(argumentsList),
                 },
                 "../../reuse/trusted-domains.js": {
                     matchesTrustedDomain: () => true,
@@ -78,13 +78,16 @@ for (const notifyState of ["absent", "failed", "available"]) {
                 window: { location: { replace() {} } },
             },
         );
-        const prefs = initGeneralPrefs(root, {
+        const preferences = initGeneralPreferences(root, {
             i18n: { t: (key) => key },
             username: "learner",
         });
         if (notifyState === "failed")
-            await assert.rejects(prefs.init(), /email_transport_unavailable/);
-        else await prefs.init();
+            await assert.rejects(
+                preferences.init(),
+                /email_transport_unavailable/,
+            );
+        else await preferences.init();
         assert.equal(section.hidden, notifyState === "absent");
         for (const action of ["archive", "deactivate", "delete"]) {
             await listeners.get("click")({

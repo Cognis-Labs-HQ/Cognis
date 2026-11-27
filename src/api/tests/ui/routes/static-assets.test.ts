@@ -158,14 +158,14 @@ test("source assets reject requests that exclude every available encoding", asyn
 
 test("GET /static/gateways/:id/:file serves file from registered static dir", async () => {
     const uiRegistry = new UIRegistry();
-    const authUiDir = path.resolve(
+    const authUiDirectory = path.resolve(
         process.cwd(),
         "src",
         "gateways",
         "auth",
         "ui",
     );
-    uiRegistry.registerStaticDir("auth", authUiDir);
+    uiRegistry.registerStaticDir("auth", authUiDirectory);
     const route = createUiRoutes(undefined, uiRegistry);
 
     const recorder = createResponseRecorder();
@@ -205,14 +205,14 @@ test("GET /static/gateways/:id/:file returns 404 when static dir not registered"
 
 test("GET /static/gateways/notify/admin-section.js serves notify gateway admin UI", async () => {
     const uiRegistry = new UIRegistry();
-    const notifyUiDir = path.resolve(
+    const notifyUiDirectory = path.resolve(
         process.cwd(),
         "src",
         "gateways",
         "notify",
         "ui",
     );
-    uiRegistry.registerStaticDir("notify", notifyUiDir);
+    uiRegistry.registerStaticDir("notify", notifyUiDirectory);
     const route = createUiRoutes(undefined, uiRegistry);
 
     const recorder = createResponseRecorder();
@@ -233,7 +233,7 @@ test("GET /static/gateways/notify/admin-section.js serves notify gateway admin U
 
 test("GET /static/adapters/social/profile/navbar.js serves profile adapter navbar plugin", async () => {
     const uiRegistry = new UIRegistry();
-    const profileUiDir = path.resolve(
+    const profileUiDirectory = path.resolve(
         process.cwd(),
         "src",
         "adapters",
@@ -241,7 +241,11 @@ test("GET /static/adapters/social/profile/navbar.js serves profile adapter navba
         "profile",
         "ui",
     );
-    uiRegistry.registerAdapterStaticDir("social", "profile", profileUiDir);
+    uiRegistry.registerAdapterStaticDir(
+        "social",
+        "profile",
+        profileUiDirectory,
+    );
     const route = createUiRoutes(undefined, uiRegistry);
 
     const recorder = createResponseRecorder();

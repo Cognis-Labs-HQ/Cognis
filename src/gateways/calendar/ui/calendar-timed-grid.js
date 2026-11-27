@@ -1,7 +1,7 @@
 import { formatTime, getEffectiveTimezone } from "/static/reuse/timestamp.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 
-const HALF_HOUR_MS = 30 * 60 * 1000;
+const HALF_HOUR_MILLISECONDS = 30 * 60 * 1000;
 
 /**
  * Clamps an event's rendered span to a visible range.
@@ -110,10 +110,11 @@ export function renderTimedEventLayer(
     return `<div class="calendar-timed-event-layer">${laidOutEvents
         .map((entry) => {
             const offsetSlots =
-                (entry.startTime - rangeStart.getTime()) / HALF_HOUR_MS;
+                (entry.startTime - rangeStart.getTime()) /
+                HALF_HOUR_MILLISECONDS;
             const spanSlots = Math.max(
                 1,
-                (entry.endTime - entry.startTime) / HALF_HOUR_MS,
+                (entry.endTime - entry.startTime) / HALF_HOUR_MILLISECONDS,
             );
             const topPercent = (offsetSlots / slotCount) * 100;
             const heightPercent = (spanSlots / slotCount) * 100;
@@ -153,8 +154,10 @@ export function renderTimeAxisRows(
     });
     const todayInTimezone = dateFormatter.format(now);
     return Array.from({ length: 48 }, (_, slotIndex) => {
-        const start = new Date(rangeStart.getTime() + slotIndex * HALF_HOUR_MS);
-        const end = new Date(start.getTime() + HALF_HOUR_MS);
+        const start = new Date(
+            rangeStart.getTime() + slotIndex * HALF_HOUR_MILLISECONDS,
+        );
+        const end = new Date(start.getTime() + HALF_HOUR_MILLISECONDS);
         const timeLabel = formatTime(start.toISOString(), "", {
             hour: "2-digit",
             minute: "2-digit",

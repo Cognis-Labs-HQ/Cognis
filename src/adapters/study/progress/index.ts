@@ -17,7 +17,7 @@ import {
     rebuildProgressProjections,
     type ProgressRecordFlowData,
 } from "./service.js";
-import { DbProgressStore } from "./store.js";
+import { DbProgressStore as DatabaseProgressStore } from "./store.js";
 import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import type { LearningEvent } from "../../../gateways/study/reuse/progress.js";
 
@@ -84,7 +84,7 @@ export async function bootstrapStudyAdapter(
             stages: ["authorize", "validate", "observe", "persist", "project"],
         });
     }
-    const store = new DbProgressStore(databaseExecutor);
+    const store = new DatabaseProgressStore(databaseExecutor);
     try {
         await store.ensureSchema();
     } catch (error) {
@@ -129,14 +129,14 @@ export async function bootstrapStudyAdapter(
     const service = new ProgressService(
         store,
         {
-            canRead: (...args) =>
+            canRead: (...argumentsList) =>
                 ctx.capabilities
                     .get<StudyClassAccessCapability>("study:classes:access")
-                    ?.canRead(...args) ?? Promise.resolve(false),
-            canWrite: (...args) =>
+                    ?.canRead(...argumentsList) ?? Promise.resolve(false),
+            canWrite: (...argumentsList) =>
                 ctx.capabilities
                     .get<StudyClassAccessCapability>("study:classes:access")
-                    ?.canWrite(...args) ?? Promise.resolve(false),
+                    ?.canWrite(...argumentsList) ?? Promise.resolve(false),
         },
         ctx.flow,
         ctx.log,

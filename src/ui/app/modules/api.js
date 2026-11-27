@@ -1,7 +1,7 @@
 import { uiCtx } from "../../reuse/ui-ctx.js";
 import { apiFetch } from "../../reuse/api-client.js";
 
-const MODULE_INSTALL_POLL_MS = 500;
+const MODULE_INSTALL_POLL_MILLISECONDS = 500;
 
 async function data(response) {
     if (!response.ok) {
@@ -172,7 +172,7 @@ export async function installModule(module, branch, wasEnabled) {
     );
     while (true) {
         await new Promise((resolve) =>
-            setTimeout(resolve, MODULE_INSTALL_POLL_MS),
+            setTimeout(resolve, MODULE_INSTALL_POLL_MILLISECONDS),
         );
         const response = await apiFetch(
             `/api/v1/modules/install/${encodeURIComponent(job.jobId)}`,

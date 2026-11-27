@@ -1,8 +1,8 @@
 /* Public assets only. API requests and authenticated documents stay network-only. */
 const CACHE_VERSION = "v15";
 const pendingLogs = [];
-async function log(level, message, meta = {}) {
-    if (level) pendingLogs.push({ level, message, meta });
+async function log(level, message, metadata = {}) {
+    if (level) pendingLogs.push({ level, message, meta: metadata });
     if (pendingLogs.length > 64) pendingLogs.shift();
     const clients = await self.clients.matchAll({ type: "window" });
     const client = clients.find((entry) => entry.focused) ?? clients[0];

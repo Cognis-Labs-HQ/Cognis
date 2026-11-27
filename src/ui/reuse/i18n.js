@@ -71,7 +71,7 @@ globalThis.window?.addEventListener?.("cognis:module-lifecycle-changed", () => {
     publicBundleCache.clear();
     privateBundleCache.clear();
 });
-const STRING_REQUEST_TIMEOUT_MS = 15_000;
+const STRING_REQUEST_TIMEOUT_MILLISECONDS = 15_000;
 
 async function fetchStrings(path, revision) {
     const key = JSON.stringify([
@@ -94,7 +94,7 @@ async function fetchStrings(path, revision) {
                     ? "reload"
                     : "default",
             signal: globalThis.AbortSignal?.timeout?.(
-                STRING_REQUEST_TIMEOUT_MS,
+                STRING_REQUEST_TIMEOUT_MILLISECONDS,
             ),
         }).finally(() => stringRequestCache.delete(key));
         stringRequestCache.set(key, request);

@@ -37,9 +37,9 @@ export async function markEntriesViewed(
     accountId: string,
     entryIds: readonly string[],
 ): Promise<void> {
-    await database.transaction(async (transactionDb) => {
+    await database.transaction(async (transactionDatabase) => {
         for (const entryId of entryIds) {
-            await transactionDb.executeCommand({
+            await transactionDatabase.executeCommand({
                 option: "INSERT",
                 table: "study_library_viewed_entries",
                 values: {

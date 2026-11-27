@@ -51,7 +51,7 @@ export interface NotificationBroadcastState {
     acknowledgedAt: number | null;
 }
 
-export class DbNotificationStore implements NotificationConfigStore {
+class DatabaseNotificationStore implements NotificationConfigStore {
     constructor(private readonly database: DbExecutor) {}
 
     async ensureSchema(): Promise<void> {
@@ -468,22 +468,26 @@ export class DbNotificationStore implements NotificationConfigStore {
 
     async saveUserNotifPrefs(
         accountId: string,
-        prefs: Array<{ category: string; senderId: string; enabled: boolean }>,
+        preferences: Array<{
+            category: string;
+            senderId: string;
+            enabled: boolean;
+        }>,
     ): Promise<void> {
         await this.database.executeCommand({
             option: "DELETE",
             table: "user_notification_prefs",
             where: [{ column: "account_id", value: accountId }],
         });
-        for (const pref of prefs) {
-            if (!pref.enabled) continue;
+        for (const preference of preferences) {
+            if (!preference.enabled) continue;
             await this.database.executeCommand({
                 option: "INSERT",
                 table: "user_notification_prefs",
                 values: {
                     account_id: accountId,
-                    category: pref.category,
-                    sender_id: pref.senderId,
+                    category: preference.category,
+                    sender_id: preference.senderId,
                 },
                 conflict: {
                     action: "ignore",
@@ -723,17 +727,20 @@ export class DbNotificationStore implements NotificationConfigStore {
         });
     }
 }
+export { DatabaseNotificationStore as DbNotificationStore };
 
-export class DbNotificationPreferenceStore implements NotificationPreferenceStore {
-    constructor(private readonly store: DbNotificationStore) {}
+class DatabaseNotificationPreferenceStore implements NotificationPreferenceStore {
+    constructor(private readonly store: DatabaseNotificationStore) {}
 
     async getSenderIds(
         recipientUsername: string,
         category: string,
     ): Promise<string[]> {
-        const prefs = await this.store.getUserNotifPrefs(recipientUsername);
-        return prefs
-            .filter((pref) => pref.category === category)
-            .map((pref) => pref.senderId);
+        const preferences =
+            await this.store.getUserNotifPrefs(recipientUsername);
+        return preferences
+            .filter((preference) => preference.category === category)
+            .map((preference) => preference.senderId);
     }
 }
+export { DatabaseNotificationPreferenceStore as DbNotificationPreferenceStore };

@@ -10,15 +10,17 @@ test("adapter commands generate tokens and send invitation emails through the au
     });
     const bodies = [];
     let deny = false;
-    const server = http.createServer(async (req, res) => {
-        assert.equal(req.url, "/api/v1/registration/tokens");
-        assert.equal(req.method, "POST");
-        assert.equal(req.headers.authorization, "Bearer fixture-admin");
+    const server = http.createServer(async (request, response) => {
+        assert.equal(request.url, "/api/v1/registration/tokens");
+        assert.equal(request.method, "POST");
+        assert.equal(request.headers.authorization, "Bearer fixture-admin");
         let body = "";
-        for await (const chunk of req) body += chunk;
+        for await (const chunk of request) body += chunk;
         bodies.push(JSON.parse(body));
-        res.writeHead(deny ? 403 : 201, { "content-type": "application/json" });
-        res.end(
+        response.writeHead(deny ? 403 : 201, {
+            "content-type": "application/json",
+        });
+        response.end(
             JSON.stringify(
                 deny
                     ? { error: { code: "forbidden" } }

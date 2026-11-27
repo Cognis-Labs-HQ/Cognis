@@ -50,13 +50,13 @@ export function createLayoutPersistence({ apiFetch }) {
         }
 
         const availableKeys = Object.keys(normalized.layoutsByGrid);
-        const targetCols = Math.max(1, Number(gridColumnCount) || 1);
+        const targetColumns = Math.max(1, Number(gridColumnCount) || 1);
         let nearestKey = null;
         let nearestDistance = Number.POSITIVE_INFINITY;
         for (const key of availableKeys) {
-            const keyCols = parseLayoutProfileColumns(key);
-            if (!Number.isFinite(keyCols)) continue;
-            const distance = Math.abs(keyCols - targetCols);
+            const keyColumns = parseLayoutProfileColumns(key);
+            if (!Number.isFinite(keyColumns)) continue;
+            const distance = Math.abs(keyColumns - targetColumns);
             if (distance < nearestDistance) {
                 nearestDistance = distance;
                 nearestKey = key;

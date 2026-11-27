@@ -45,18 +45,22 @@ type ProfileSearchFn = (
 export function createSearchRoutes(
     searchProfiles?: ProfileSearchFn,
     routeContext?: RouteContext,
-): (req: IncomingMessage, res: ServerResponse, url: URL) => Promise<boolean> {
+): (
+    request: IncomingMessage,
+    response: ServerResponse,
+    url: URL,
+) => Promise<boolean> {
     const ctx = resolveRouteContext(routeContext);
     return async (
-        req: IncomingMessage,
-        res: ServerResponse,
+        request: IncomingMessage,
+        response: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        if (url.pathname !== "/api/v1/search" || req.method !== "GET") {
+        if (url.pathname !== "/api/v1/search" || request.method !== "GET") {
             return false;
         }
 
-        const claims = ctx.requireAuth(req, res, "user");
+        const claims = ctx.requireAuth(request, response, "user");
         if (!claims) return true;
 
         const query = (url.searchParams.get("q") ?? "").trim();
@@ -64,8 +68,8 @@ export function createSearchRoutes(
         const includeHiddenProfiles = ctx.hasMinRole(claims.role, "admin");
 
         if (!query) {
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: [] }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: [] }));
             return true;
         }
 
@@ -108,8 +112,8 @@ export function createSearchRoutes(
                     // search failure is silent
                 }
             }
-            res.writeHead(200, { "content-type": "application/json" });
-            res.end(JSON.stringify({ data: userItems }));
+            response.writeHead(200, { "content-type": "application/json" });
+            response.end(JSON.stringify({ data: userItems }));
             return true;
         }
 
@@ -143,8 +147,8 @@ export function createSearchRoutes(
             }
         }
 
-        res.writeHead(200, { "content-type": "application/json" });
-        res.end(JSON.stringify({ data: groups }));
+        response.writeHead(200, { "content-type": "application/json" });
+        response.end(JSON.stringify({ data: groups }));
         return true;
     };
 }

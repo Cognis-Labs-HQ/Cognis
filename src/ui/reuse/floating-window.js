@@ -258,14 +258,14 @@ export function makeFloatingWindow(
             };
         }
         const stage = element.closest?.(".component-page-stage");
-        const stageRect = stage?.getBoundingClientRect?.();
-        if (stageRect?.width > 0 && stageRect?.height > 0) {
+        const stageRectangle = stage?.getBoundingClientRect?.();
+        if (stageRectangle?.width > 0 && stageRectangle?.height > 0) {
             return {
                 element: stage,
-                left: stageRect.left,
-                top: stageRect.top,
-                width: stageRect.width,
-                height: stageRect.height,
+                left: stageRectangle.left,
+                top: stageRectangle.top,
+                width: stageRectangle.width,
+                height: stageRectangle.height,
             };
         }
         return {
@@ -277,31 +277,31 @@ export function makeFloatingWindow(
         };
     };
     const constrain = () => {
-        const rect = element.getBoundingClientRect();
+        const rectangle = element.getBoundingClientRect();
         const boundary = getBoundary();
         element.style.minWidth = `${Math.min(minWidth, boundary.width)}px`;
         element.style.minHeight = `${Math.min(minHeight, boundary.height)}px`;
         const convertAnchors =
             element.style.right !== "auto" || element.style.bottom !== "auto";
-        const width = Math.min(rect.width, boundary.width);
-        const height = Math.min(rect.height, boundary.height);
+        const width = Math.min(rectangle.width, boundary.width);
+        const height = Math.min(rectangle.height, boundary.height);
         const viewportLeft = Math.max(
             boundary.left,
-            Math.min(rect.left, boundary.left + boundary.width - width),
+            Math.min(rectangle.left, boundary.left + boundary.width - width),
         );
         const viewportTop = Math.max(
             boundary.top,
-            Math.min(rect.top, boundary.top + boundary.height - height),
+            Math.min(rectangle.top, boundary.top + boundary.height - height),
         );
         const left = viewportLeft - boundary.left;
         const top = viewportTop - boundary.top;
-        if (Math.abs(rect.width - width) > 0.5)
+        if (Math.abs(rectangle.width - width) > 0.5)
             element.style.width = `${width}px`;
-        if (Math.abs(rect.height - height) > 0.5)
+        if (Math.abs(rectangle.height - height) > 0.5)
             element.style.height = `${height}px`;
-        if (convertAnchors || Math.abs(rect.left - left) > 0.5)
+        if (convertAnchors || Math.abs(rectangle.left - left) > 0.5)
             element.style.left = `${left}px`;
-        if (convertAnchors || Math.abs(rect.top - top) > 0.5)
+        if (convertAnchors || Math.abs(rectangle.top - top) > 0.5)
             element.style.top = `${top}px`;
         element.style.right = "auto";
         element.style.bottom = "auto";
@@ -315,26 +315,30 @@ export function makeFloatingWindow(
             nextHeight <= 0
         )
             return false;
-        const rect = element.getBoundingClientRect();
+        const rectangle = element.getBoundingClientRect();
         minWidth = nextWidth;
         minHeight = nextHeight;
         minimumOrientation = "horizontal";
         element.style.minWidth = `${minWidth}px`;
         element.style.minHeight = `${minHeight}px`;
-        if (rect.width >= minWidth && rect.height >= minHeight) return true;
+        if (rectangle.width >= minWidth && rectangle.height >= minHeight)
+            return true;
         const boundary = getBoundary();
-        const width = Math.min(Math.max(rect.width, minWidth), boundary.width);
+        const width = Math.min(
+            Math.max(rectangle.width, minWidth),
+            boundary.width,
+        );
         const height = Math.min(
-            Math.max(rect.height, minHeight),
+            Math.max(rectangle.height, minHeight),
             boundary.height,
         );
         const viewportLeft = Math.max(
             boundary.left,
-            Math.min(rect.left, boundary.left + boundary.width - width),
+            Math.min(rectangle.left, boundary.left + boundary.width - width),
         );
         const viewportTop = Math.max(
             boundary.top,
-            Math.min(rect.top, boundary.top + boundary.height - height),
+            Math.min(rectangle.top, boundary.top + boundary.height - height),
         );
         element.style.width = `${width}px`;
         element.style.height = `${height}px`;
@@ -379,15 +383,15 @@ export function makeFloatingWindow(
         if (event.target?.closest?.(".floating-window-resize-handle")) return;
         if (event.target?.closest?.("button, a, input, select, textarea"))
             return;
-        const rect = element.getBoundingClientRect();
+        const rectangle = element.getBoundingClientRect();
         drag = {
             pointerId: event.pointerId,
             x: event.clientX,
             y: event.clientY,
-            left: rect.left,
-            top: rect.top,
-            width: rect.width,
-            height: rect.height,
+            left: rectangle.left,
+            top: rectangle.top,
+            width: rectangle.width,
+            height: rectangle.height,
         };
         event.currentTarget?.setPointerCapture?.(event.pointerId);
         event.preventDefault?.();
@@ -457,16 +461,16 @@ export function makeFloatingWindow(
             (event) => {
                 if (event.button !== undefined && event.button !== 0) return;
                 drag = null;
-                const rect = element.getBoundingClientRect();
+                const rectangle = element.getBoundingClientRect();
                 resizeDrag = {
                     edge: resizeHandle.dataset.resizeEdge,
                     pointerId: event.pointerId,
                     x: event.clientX,
                     y: event.clientY,
-                    left: rect.left,
-                    top: rect.top,
-                    width: rect.width,
-                    height: rect.height,
+                    left: rectangle.left,
+                    top: rectangle.top,
+                    width: rectangle.width,
+                    height: rectangle.height,
                 };
                 resizeHandle.setPointerCapture?.(event.pointerId);
                 event.stopPropagation?.();

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createDbExecutor } from "../../../../gateways/db/executor.js";
-import { DbLocalAccountStore } from "../store.js";
+import { createDbExecutor as createDatabaseExecutor } from "../../../../gateways/db/executor.js";
+import { DbLocalAccountStore as DatabaseLocalAccountStore } from "../store.js";
 
 const databaseUrl = process.env.COGNIS_TEST_IDENTITY_POSTGRES_URL;
 test(
@@ -10,7 +10,7 @@ test(
     async (context) => {
         process.env.DATABASE_URL = databaseUrl;
         let shutdown: (() => Promise<void>) | undefined;
-        const executor = await createDbExecutor(
+        const executor = await createDatabaseExecutor(
             "postgresql",
             undefined,
             undefined,
@@ -38,7 +38,7 @@ test(
                 option: "DELETE",
                 table: "accounts",
             });
-            const store = new DbLocalAccountStore(executor);
+            const store = new DatabaseLocalAccountStore(executor);
             await store.ensureSchema();
             const identity = {
                 accountId: "provider:alice",

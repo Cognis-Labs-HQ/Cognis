@@ -8,7 +8,7 @@ import type {
 } from "@cognis/core";
 import { NamespaceRegistry } from "./namespace-registry.js";
 import { assertWithinCeiling, canAccess } from "./acl.js";
-import { DbFileObjectStore } from "./file-object-store.js";
+import { DbFileObjectStore as DatabaseFileObjectStore } from "./file-object-store.js";
 import type { FileQuotaStore } from "./quota-store-contract.js";
 
 export class QuotaExceededError extends Error {
@@ -46,7 +46,7 @@ export class NamespaceFileService {
     constructor(
         private readonly registry: NamespaceRegistry,
         private readonly rawGateway: FileStorageGateway,
-        private readonly objects: DbFileObjectStore,
+        private readonly objects: DatabaseFileObjectStore,
         private readonly getQuotaStore: () => FileQuotaStore | undefined,
     ) {}
 

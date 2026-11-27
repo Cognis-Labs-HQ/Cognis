@@ -111,7 +111,7 @@ export class LibraryService implements LibraryCapability {
         private readonly log?: (
             level: string,
             message: string,
-            meta?: Record<string, unknown>,
+            metadata?: Record<string, unknown>,
         ) => void | Promise<void>,
         private readonly stringLocalization?: StringLocalizationCapability,
         private readonly audioCache?: LibraryAudioCache,
@@ -174,7 +174,8 @@ export class LibraryService implements LibraryCapability {
                     this.notifyDeletion,
                     this.log,
                 ),
-            validateImages: (...args) => this.images.validate(...args),
+            validateImages: (...argumentsList) =>
+                this.images.validate(...argumentsList),
             notifyRequest,
             isAvailable: (entry) =>
                 this.availability.allows(this.registeredSchema(entry.schemaId)),

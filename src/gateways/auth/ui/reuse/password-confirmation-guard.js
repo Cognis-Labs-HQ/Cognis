@@ -29,8 +29,8 @@ export function createPasswordConfirmationGuard({
         const title = config.title ?? i18n.t("ui.reuse.reconfirm_action");
         const message =
             config.message ?? i18n.t("ui.reuse.sensitive_action_prompt");
-        let inputEl = null;
-        let warningEl = null;
+        let inputElement = null;
+        let warningElement = null;
         let isVerifying = false;
 
         if (config.alwaysPrompt !== true) {
@@ -74,8 +74,8 @@ export function createPasswordConfirmationGuard({
                 },
             ],
             onOpen: (overlay) => {
-                inputEl = overlay.querySelector("#reprompt-password");
-                warningEl = overlay.querySelector("#reprompt-warning");
+                inputElement = overlay.querySelector("#reprompt-password");
+                warningElement = overlay.querySelector("#reprompt-warning");
                 overlay
                     .querySelector("#reprompt-form")
                     ?.addEventListener("submit", (event) => {
@@ -84,27 +84,27 @@ export function createPasswordConfirmationGuard({
             },
             onAction: async (actionId) => {
                 if (actionId !== "confirm") return true;
-                if (!(inputEl instanceof HTMLInputElement)) return false;
-                if (isVerifying || !inputEl.value) return false;
+                if (!(inputElement instanceof HTMLInputElement)) return false;
+                if (isVerifying || !inputElement.value) return false;
 
                 const warnAndRefocus = () => {
-                    if (warningEl instanceof HTMLElement) {
-                        warningEl.textContent = i18n.t(
+                    if (warningElement instanceof HTMLElement) {
+                        warningElement.textContent = i18n.t(
                             "ui.reuse.incorrect_password",
                         );
-                        warningEl.hidden = false;
+                        warningElement.hidden = false;
                     }
-                    inputEl.focus();
-                    inputEl.select();
+                    inputElement.focus();
+                    inputElement.select();
                 };
 
                 isVerifying = true;
                 try {
-                    if (!(await confirmPasswordImpl(inputEl.value))) {
+                    if (!(await confirmPasswordImpl(inputElement.value))) {
                         warnAndRefocus();
                         return false;
                     }
-                    confirmedPassword = inputEl.value;
+                    confirmedPassword = inputElement.value;
                 } catch {
                     warnAndRefocus();
                     return false;
@@ -112,9 +112,9 @@ export function createPasswordConfirmationGuard({
                     isVerifying = false;
                 }
 
-                if (warningEl instanceof HTMLElement) {
-                    warningEl.textContent = "";
-                    warningEl.hidden = true;
+                if (warningElement instanceof HTMLElement) {
+                    warningElement.textContent = "";
+                    warningElement.hidden = true;
                 }
                 return true;
             },

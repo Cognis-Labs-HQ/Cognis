@@ -6,7 +6,7 @@ import type {
     StoredObject,
 } from "@cognis/core";
 import { NamespaceRegistry } from "../../reuse/namespace-registry.js";
-import { DbFileObjectStore } from "../../reuse/file-object-store.js";
+import { DbFileObjectStore as DatabaseFileObjectStore } from "../../reuse/file-object-store.js";
 import {
     AccessDeniedError,
     NamespaceFileService,
@@ -87,7 +87,7 @@ function buildService(
     const registry = new NamespaceRegistry();
     for (const definition of definitions) registry.register(definition);
     const executor = new InMemoryTestExecutor();
-    const objects = new DbFileObjectStore(() => executor);
+    const objects = new DatabaseFileObjectStore(() => executor);
     return new NamespaceFileService(
         registry,
         fakeRawGateway(),

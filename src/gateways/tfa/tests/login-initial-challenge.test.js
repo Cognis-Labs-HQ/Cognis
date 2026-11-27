@@ -68,8 +68,8 @@ function clientFixture({
             "/static/reuse/capabilities.js": {
                 bindCapability:
                     () =>
-                    (...args) =>
-                        logs.push(structuredClone(args)),
+                    (...argumentsList) =>
+                        logs.push(structuredClone(argumentsList)),
             },
             "/static/reuse/auth-setup-route.js": {
                 redirectToRequiredTfaSetup() {},
