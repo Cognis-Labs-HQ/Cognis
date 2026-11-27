@@ -50,10 +50,11 @@ export async function startEditorFixture(
     viewport,
     touch = true,
     serverOptions = {},
+    query = "",
 ) {
     const { browser } = await startFixture(
         context,
-        `?mode=${mode}`,
+        `?mode=${mode}${query}`,
         viewport,
         serverOptions,
     );

@@ -16,6 +16,7 @@ Helper editor milik Composer menyediakan kontrak berikut. Header sumbernya memua
 | [`RESIZE_EDGES / resizePlacement`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/resize-model.js)   | Mendeskripsikan delapan tepi/sudut dan menghitung geometri terbatas yang mengikuti grid tanpa memeriksa tabrakan.           |
 | [`resolveResizeAvailability`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/resize-availability.js) | Menghasilkan kursor CSS arah yang tersedia atau `null` untuk setiap tepi/sudut.                                             |
 | [`appendResizeControls`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/resize-controls.js)          | Menghubungkan geometri dan pemeriksaan tabrakan dari pemilik ke pratinjau ukuran dan perubahan penempatan; tidak menyimpan. |
+| [`findGridSwap / applyGridSwap`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/swap-model.js)       | Menemukan target pertukaran yang diizinkan dan menerapkan kedua posisi secara atomik setelah validasi state saat ini.       |
 
 ## Konfigurasi
 
@@ -57,6 +58,10 @@ Sebuah elemen adalah blok konten bernama:
 | `pinned`   | Tidak      | Jika `true`, elemen tidak dapat dihapus oleh pengguna  |
 
 ### Layout Grid
+
+Pertukaran dengan mouse, sentuhan, dan papan ketik berbagi `findGridSwap` dan `applyGridSwap` dari `swap-model.js`. Pertukaran hanya diizinkan jika elemen yang diseret muat tepat pada titik awal target dan elemen yang dipindahkan muat pada titik awal sumber. Kedua persegi panjang utuh harus berada dalam grid tanpa menabrak elemen terlihat lainnya maupun satu sama lain. Sebelum penerapan, posisi, visibilitas, dan batas grid saat ini diperiksa kembali; pratinjau tidak mengubah tata letak.
+
+Kedua helper menerima state saat ini melalui `gridCols`, `layout.placements`, dan `layout.hidden`. `findGridSwap(state, col, row, w, h, sourceId)` menghasilkan penempatan target saat ini atau `null`; `applyGridSwap(state, sourceId, targetId)` menghasilkan boolean dan tidak mengubah posisi mana pun jika ditolak. Pengikat papan ketik menerima `findSwapCandidate` dan `commitSwap`; Composer menyediakan operasi ini dari model pertukaran bersama.
 
 Ukuran bawaan dan lebar minimum elemen harus menyediakan ruang untuk padding kartu dan kontennya. Merek dasbor menggunakan minimal tiga kolom grid; detail akun memakai dua baris secara bawaan, sedangkan kartu sambutan/login terakhir mempertahankan minimal tiga kolom. Jika batas lebar saat ini tidak lagi muat dalam baris tersimpan, Composer menyusun ulang dengan mengikuti batas tersebut tanpa menimpa profil tersimpan. Tampilan utama dan bersarang memakai aturan yang sama. Baris yang dinormalisasi harus menempatkan setiap kartu di dalam kolom grid yang ditetapkan; baris yang gagal divalidasi akan disusun ulang.
 
@@ -158,7 +163,7 @@ Composer mengatur jarak dalam bagian konten: 28px pada layar lebar dan 14px pada
 
 Teks bersama membungkus sesuai lebar yang tersedia sebelum dan sesudah font dimuat, tanpa memperkecil ukuran font pilihan.
 
-Deklarasi array mendukung `['full', 'fill']` untuk lebar penuh dan pengisian tinggi yang tersedia, atau `['full', n]` untuk lebar penuh dengan batas tinggi numerik. Composer utama maupun bersarang mengikuti ukuran ini pada grid sempit dan lebar. Saat widget diseret ke bawah grid, editor memperluas batas konten dan grid yang terlihat secara bersamaan sebelum widget dilepas.
+Deklarasi array mendukung `['full', 'fill']` untuk lebar penuh dan pengisian tinggi yang tersedia, atau `['full', n]` untuk lebar penuh dengan batas tinggi numerik. Composer utama maupun bersarang mengikuti ukuran ini pada grid sempit dan lebar. Saat pengguliran tepi, jumlah baris minimum sementara diterapkan sebelum tinggi grid ditetapkan; grid dan pratinjau tumbuh bersama tanpa penyusutan sementara. Setelah perluasan, pratinjau seret bertingkat mengukur ulang wadahnya karena elemen induk mungkin kehilangan posisi gulir sebelumnya.
 
 ## Keamanan
 

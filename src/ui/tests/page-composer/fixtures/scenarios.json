@@ -103,5 +103,69 @@
                 "min": [3, 2]
             }
         }
+    ],
+    "swap-conflict": [
+        {
+            "id": "source",
+            "template": "form-content",
+            "pinned": true,
+            "gridSize": {
+                "default": [4, 3],
+                "min": [4, 3],
+                "max": [4, 3]
+            }
+        },
+        {
+            "id": "target",
+            "template": "form-content",
+            "pinned": true,
+            "gridSize": {
+                "default": [2, 2],
+                "min": [2, 2],
+                "max": [2, 2]
+            }
+        },
+        {
+            "id": "blocker",
+            "template": "form-content",
+            "pinned": true,
+            "gridSize": {
+                "default": [2, 2],
+                "min": [2, 2],
+                "max": [2, 2]
+            }
+        }
+    ],
+    "swap-valid": [
+        {
+            "id": "source",
+            "template": "form-content",
+            "pinned": true,
+            "gridSize": {
+                "default": [2, 2],
+                "min": [2, 2],
+                "max": [2, 2]
+            }
+        },
+        {
+            "id": "target",
+            "template": "form-content",
+            "pinned": true,
+            "gridSize": {
+                "default": [2, 2],
+                "min": [2, 2],
+                "max": [2, 2]
+            }
+        },
+        {
+            "id": "blocker",
+            "template": "form-content",
+            "pinned": true,
+            "gridSize": {
+                "default": [2, 2],
+                "min": [2, 2],
+                "max": [2, 2]
+            }
+        }
     ]
 }

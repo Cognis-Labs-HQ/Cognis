@@ -8,6 +8,8 @@ Halaman menyediakan konten; composer bersama mengatur tata letak dan bilah sampi
 
 ## Contoh
 
+Tukar widget hanya jika ukuran keduanya muat pada posisi yang dipertukarkan. Pertukaran yang terhalang menampilkan pratinjau tidak valid dan mempertahankan tata letak.
+
 Kursor ukuran menunjukkan apakah tepi dapat diperbesar, diperkecil, atau digerakkan ke kedua arah. Pegangan tetap tersedia untuk mengecilkan saat elemen lain menghalangi pembesaran; pegangan hilang jika tidak ada perubahan ukuran yang diizinkan.
 
 Buka Edit Tata Letak pada halaman yang dapat disesuaikan. Seret bagian dalam widget untuk memindahkannya; tahan di dekat tepi atas atau bawah layar untuk menggulir ke baris di luar layar. Seret tepi atau sudut yang disorot untuk mengubah ukuran, termasuk sisi kiri dan atas. Tepi yang berlawanan tetap di tempatnya. Perkecil Elemen bila menghalangi area kerja, lalu perluas untuk memilih Selesai atau Batalkan. Tambah menempatkan elemen tersembunyi tanpa menyeret.

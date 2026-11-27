@@ -309,3 +309,39 @@ test("grid width is measured after height growth reserves scrollbar space", (con
     assert.equal(state.gridPixelWidth, 705);
     assert.equal(geometry.gridColumnSpanSize(4), 705);
 });
+
+test("nested grid growth applies its provisional height without a temporary shrink", () => {
+    const heights = [];
+    const container = new GridElement(270);
+    container.style = {
+        width: "",
+        set minHeight(value) {
+            heights.push(value);
+        },
+    };
+    const state = {
+        container,
+        editing: true,
+        layout: {
+            placements: [{ id: "card", col: 0, row: 0, w: 3, h: 4 }],
+            hidden: [],
+        },
+    };
+    const { computeSubGridDimensions } = createSubComposerHandlers({
+        UNIT: 90,
+    });
+    computeSubGridDimensions(state, { minimumRows: 20 });
+    computeSubGridDimensions(state, { minimumRows: 22 });
+    assert.deepEqual(
+        heights,
+        ["1800px", "1980px"],
+        "Each growth writes only the final minimum height",
+    );
+    assert.equal(state.gridRows, 22);
+    computeSubGridDimensions(state);
+    assert.equal(
+        heights.at(-1),
+        "540px",
+        "Normal bounds are restored when the gesture ends",
+    );
+});

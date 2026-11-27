@@ -16,6 +16,7 @@ Die editoreigenen Composer-Helfer stellen folgende Verträge bereit. Ihre Quellt
 | [`RESIZE_EDGES / resizePlacement`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/resize-model.js)   | Beschreibt acht Kanten/Ecken und berechnet eingerastete, begrenzte Geometrie ohne Kollisionsprüfung.                |
 | [`resolveResizeAvailability`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/resize-availability.js) | Liefert je Kante/Ecke einen CSS-Zeiger für zulässige Richtungen oder `null`.                                        |
 | [`appendResizeControls`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/resize-controls.js)          | Bindet Geometrie und Kollisionsprüfung des Besitzers an Größenvorschau und Platzierungsänderungen; speichert nicht. |
+| [`findGridSwap / applyGridSwap`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/swap-model.js)       | Ermittelt ein zulässiges Tauschziel und übernimmt beide Positionen nach Prüfung des aktuellen Zustands atomar.      |
 
 ## Konfiguration
 
@@ -57,6 +58,10 @@ Ein Element ist ein benannter Inhaltsblock:
 | `pinned`   | Nein         | Wenn `true`, kann das Element nicht vom Benutzer entfernt werden |
 
 ### Raster-Layout
+
+Maus-, Touch- und Tastaturtausch verwenden gemeinsam `findGridSwap` und `applyGridSwap` aus `swap-model.js`. Ein Tausch ist nur zulässig, wenn das gezogene Element am genauen Ursprung des Ziels und das verdrängte Element am Ursprung der Quelle Platz haben. Beide vollständigen Rechtecke müssen innerhalb des Rasters bleiben und alle anderen sichtbaren Elemente sowie einander freihalten. Vor der Übernahme werden aktuelle Platzierung, Sichtbarkeit und Rastergrenzen erneut geprüft; Vorschauen verändern das Layout nicht.
+
+Beide Helfer erhalten den aktuellen Zustand über `gridCols`, `layout.placements` und `layout.hidden`. `findGridSwap(state, col, row, w, h, sourceId)` liefert die aktuelle Zielplatzierung oder `null`; `applyGridSwap(state, sourceId, targetId)` liefert einen booleschen Wert und verändert bei Ablehnung keine Position. Tastaturbindungen erhalten sowohl `findSwapCandidate` als auch `commitSwap`; Composer liefert diese Operationen aus dem gemeinsamen Tauschmodell.
 
 Standardmaße und Mindestbreiten der Elemente müssen Kartenabstände und Inhalt berücksichtigen. Die Dashboard-Marke nutzt mindestens drei Rasterspalten; Kontodaten verwenden standardmäßig zwei Zeilen, Begrüßung und letzte Anmeldung mindestens drei Spalten. Passen aktuelle Breitengrenzen nicht mehr in eine gespeicherte Zeile, ordnet Composer sie innerhalb dieser Grenzen neu an, ohne das gespeicherte Profil zu überschreiben. Haupt- und verschachtelte Ansichten verwenden dieselbe Regel. Normalisierte Zeilen müssen jede Karte innerhalb der deklarierten Rasterspalten halten; bei einer Grenzverletzung wird die Zeile neu angeordnet.
 
@@ -174,7 +179,7 @@ Composer verwaltet den Innenabstand der Inhaltssektion: 28px auf breiteren Bilds
 
 Gemeinsame Texte umbrechen vor und nach dem Laden einer Schriftart innerhalb der verfügbaren Breite, ohne die gewählte Schriftgröße zu verringern.
 
-Array-Angaben unterstützen `['full', 'fill']` für die gesamte Breite und das Ausfüllen der verfügbaren Höhe sowie `['full', n]` für die gesamte Breite mit einer numerischen Höhenbegrenzung. Haupt- und verschachtelte Composer berücksichtigen diese Maße in schmalen und breiten Rastern. Beim Ziehen unter das Raster erweitert der Editor die Inhaltsgrenzen und das sichtbare Raster gemeinsam, bevor das Widget abgelegt wird.
+Array-Angaben unterstützen `['full', 'fill']` für die gesamte Breite und das Ausfüllen der verfügbaren Höhe sowie `['full', n]` für die gesamte Breite mit einer numerischen Höhenbegrenzung. Haupt- und verschachtelte Composer berücksichtigen diese Maße in schmalen und breiten Rastern. Beim Scrollen am Rand wird die vorläufige Mindestzeilenzahl vor der Höhenzuweisung angewendet; Raster und Vorschau wachsen ohne zwischenzeitliche Verkleinerung zusammen. Nach der Erweiterung messen verschachtelte Ziehvorschauen ihren Container erneut, da ein übergeordnetes Element seinen bisherigen Scrollversatz verloren haben kann.
 
 ## Sicherheit
 

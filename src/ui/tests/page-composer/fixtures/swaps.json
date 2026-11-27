@@ -1,0 +1,320 @@
+[
+    {
+        "name": "wider source hits a tile beyond the target",
+        "columns": 12,
+        "placements": [
+            {
+                "id": "source",
+                "col": 0,
+                "row": 0,
+                "w": 4,
+                "h": 2
+            },
+            {
+                "id": "target",
+                "col": 6,
+                "row": 0,
+                "w": 2,
+                "h": 2
+            },
+            {
+                "id": "blocker",
+                "col": 8,
+                "row": 0,
+                "w": 2,
+                "h": 2
+            }
+        ],
+        "hidden": [],
+        "drop": [4, 0, 4, 2],
+        "valid": false
+    },
+    {
+        "name": "taller source hits a tile below the target",
+        "columns": 12,
+        "placements": [
+            {
+                "id": "source",
+                "col": 0,
+                "row": 0,
+                "w": 2,
+                "h": 4
+            },
+            {
+                "id": "target",
+                "col": 0,
+                "row": 6,
+                "w": 2,
+                "h": 2
+            },
+            {
+                "id": "blocker",
+                "col": 0,
+                "row": 8,
+                "w": 2,
+                "h": 2
+            }
+        ],
+        "hidden": [],
+        "drop": [0, 4, 2, 4],
+        "valid": false
+    },
+    {
+        "name": "snapping to target origin hits a tile missed by the pointer rectangle",
+        "columns": 12,
+        "placements": [
+            {
+                "id": "source",
+                "col": 8,
+                "row": 0,
+                "w": 4,
+                "h": 3
+            },
+            {
+                "id": "target",
+                "col": 3,
+                "row": 0,
+                "w": 3,
+                "h": 2
+            },
+            {
+                "id": "blocker",
+                "col": 0,
+                "row": 2,
+                "w": 4,
+                "h": 2
+            }
+        ],
+        "hidden": [],
+        "drop": [4, 0, 4, 3],
+        "valid": false
+    },
+    {
+        "name": "source would cross the right boundary",
+        "columns": 12,
+        "placements": [
+            {
+                "id": "source",
+                "col": 0,
+                "row": 0,
+                "w": 4,
+                "h": 2
+            },
+            {
+                "id": "target",
+                "col": 10,
+                "row": 0,
+                "w": 2,
+                "h": 2
+            }
+        ],
+        "hidden": [],
+        "drop": [8, 0, 4, 2],
+        "valid": false
+    },
+    {
+        "name": "displaced target would cross the right boundary",
+        "columns": 8,
+        "placements": [
+            {
+                "id": "source",
+                "col": 6,
+                "row": 0,
+                "w": 2,
+                "h": 2
+            },
+            {
+                "id": "target",
+                "col": 0,
+                "row": 0,
+                "w": 4,
+                "h": 2
+            }
+        ],
+        "hidden": [],
+        "drop": [1, 0, 2, 2],
+        "valid": false
+    },
+    {
+        "name": "displaced target would hit another tile",
+        "columns": 12,
+        "placements": [
+            {
+                "id": "source",
+                "col": 0,
+                "row": 0,
+                "w": 2,
+                "h": 2
+            },
+            {
+                "id": "target",
+                "col": 4,
+                "row": 0,
+                "w": 4,
+                "h": 2
+            },
+            {
+                "id": "blocker",
+                "col": 2,
+                "row": 0,
+                "w": 2,
+                "h": 2
+            }
+        ],
+        "hidden": [],
+        "drop": [4, 0, 2, 2],
+        "valid": false
+    },
+    {
+        "name": "the exchanged rectangles would overlap each other",
+        "columns": 12,
+        "placements": [
+            {
+                "id": "source",
+                "col": 0,
+                "row": 0,
+                "w": 2,
+                "h": 2
+            },
+            {
+                "id": "target",
+                "col": 2,
+                "row": 0,
+                "w": 4,
+                "h": 2
+            }
+        ],
+        "hidden": [],
+        "drop": [1, 0, 2, 2],
+        "valid": false
+    },
+    {
+        "name": "pointer intersects multiple tiles",
+        "columns": 12,
+        "placements": [
+            {
+                "id": "source",
+                "col": 0,
+                "row": 0,
+                "w": 4,
+                "h": 2
+            },
+            {
+                "id": "target",
+                "col": 6,
+                "row": 0,
+                "w": 2,
+                "h": 2
+            },
+            {
+                "id": "blocker",
+                "col": 8,
+                "row": 0,
+                "w": 2,
+                "h": 2
+            }
+        ],
+        "hidden": [],
+        "drop": [5, 0, 4, 2],
+        "valid": false
+    },
+    {
+        "name": "different-sized tiles swap into clear space",
+        "columns": 12,
+        "placements": [
+            {
+                "id": "source",
+                "col": 0,
+                "row": 0,
+                "w": 4,
+                "h": 2
+            },
+            {
+                "id": "target",
+                "col": 6,
+                "row": 0,
+                "w": 2,
+                "h": 2
+            }
+        ],
+        "hidden": [],
+        "drop": [4, 0, 4, 2],
+        "valid": true
+    },
+    {
+        "name": "equal-sized tiles retain leap-frogging",
+        "columns": 12,
+        "placements": [
+            {
+                "id": "source",
+                "col": 0,
+                "row": 0,
+                "w": 2,
+                "h": 2
+            },
+            {
+                "id": "target",
+                "col": 2,
+                "row": 0,
+                "w": 2,
+                "h": 2
+            }
+        ],
+        "hidden": [],
+        "drop": [1, 0, 2, 2],
+        "valid": true
+    },
+    {
+        "name": "hidden tiles do not block an exchange",
+        "columns": 12,
+        "placements": [
+            {
+                "id": "source",
+                "col": 0,
+                "row": 0,
+                "w": 4,
+                "h": 2
+            },
+            {
+                "id": "target",
+                "col": 6,
+                "row": 0,
+                "w": 2,
+                "h": 2
+            },
+            {
+                "id": "blocker",
+                "col": 8,
+                "row": 0,
+                "w": 2,
+                "h": 2
+            }
+        ],
+        "hidden": ["blocker"],
+        "drop": [4, 0, 4, 2],
+        "valid": true
+    },
+    {
+        "name": "fractional placements retain exact dimensions",
+        "columns": 8,
+        "placements": [
+            {
+                "id": "source",
+                "col": 0,
+                "row": 0,
+                "w": 2.5,
+                "h": 1.5
+            },
+            {
+                "id": "target",
+                "col": 4,
+                "row": 0,
+                "w": 2,
+                "h": 1.5
+            }
+        ],
+        "hidden": [],
+        "drop": [2.5, 0, 2.5, 1.5],
+        "valid": true
+    }
+]

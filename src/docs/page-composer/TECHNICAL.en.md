@@ -16,6 +16,7 @@ Composer-owned editor helpers expose the following contracts. Their source heade
 | [`RESIZE_EDGES / resizePlacement`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/resize-model.js)   | Describes eight edges/corners and computes snapped, bounded geometry without collision checks.              |
 | [`resolveResizeAvailability`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/resize-availability.js) | Returns a legal-direction CSS cursor or `null` for each edge/corner.                                        |
 | [`appendResizeControls`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/resize-controls.js)          | Binds owner-supplied geometry and collision checks to resize previews and placement updates; does not save. |
+| [`findGridSwap / applyGridSwap`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/swap-model.js)       | Finds an admissible exchange target and atomically commits both positions after live validation.            |
 
 ## Configuration
 
@@ -69,15 +70,19 @@ An element is a named content block declared as a plain object:
 
 ### Grid layout
 
+Mouse, touch and keyboard exchanges share `findGridSwap` and `applyGridSwap` from `swap-model.js`. A swap is allowed only when the dragged element fits at the target’s exact origin and the displaced element fits at the source’s origin. Both full rectangles must remain inside the grid and clear every other visible element and each other. Commit rechecks current placement, visibility and grid bounds before changing either position; preview lookups never mutate layout.
+
+Both helpers receive current state through `gridCols`, `layout.placements` and `layout.hidden`. `findGridSwap(state, col, row, w, h, sourceId)` returns the current target placement or `null`; `applyGridSwap(state, sourceId, targetId)` returns a boolean and changes neither position when rejected. Keyboard binders inject both `findSwapCandidate` and `commitSwap`; Composer supplies these operations from the shared swap model.
+
 Element defaults and minimum widths must include room for card padding and their content. Dashboard branding uses at least three grid columns; account details use a two-row default, and welcome/last-login cards retain at least three columns. When current width bounds cannot fit a saved row, Composer repacks it within those bounds without overwriting the stored profile. Main and nested views use the same rule. Normalized rows must keep every card within the declared grid columns; rows that fail this validation are repacked.
 
 Main and nested editors share eight-direction resizing through `resize-model.js` and `resize-controls.js`. Left and top handles adjust the origin while preserving the opposite edge. Pointer deltas snap to grid increments; size limits, grid boundaries and collision checks apply to every direction. Touch targets remain 44px, with removal controls inset to leave corner handles accessible.
 
 Editable grid rows have a 90 px base height; columns share the available content width, with 8 px gaps between tracks. `gridSize.max: 'full'` spans the element across all available columns. `gridSize.max: 'half'` spans the element across half the available columns. Mixed forms like `['half', n]` (half-width, numeric max height) are also supported.
 
-Array declarations support `['full', 'fill']` for full width and filling the available height, or `['full', n]` for full width with a numeric height limit. Both main and nested composers honor these dimensions on narrow and wide grids. While dragging below the grid, the editor grows its content bounds and visible grid together before the widget is dropped.
+Array declarations support `['full', 'fill']` for full width and filling the available height, or `['full', n]` for full width with a numeric height limit. Both main and nested composers honor these dimensions on narrow and wide grids. During edge scrolling, provisional row minimums are applied before grid height is written; the grid and preview grow together without an intermediate smaller extent. After growth, nested drag previews remeasure their container because an ancestor may have lost its previous scroll offset.
 
-In edit mode, hover effects, overflow scrolling, and animations inside each element are suppressed so the cell interior can be dragged without activating embedded controls. Resize handles and removal controls retain their own interactions. Dragging an element onto an occupied cell swaps the two elements when geometrically feasible; a coloured axis line highlights where the swap will occur before the pointer is released.
+In edit mode, hover effects, overflow scrolling, and animations inside each element are suppressed so the cell interior can be dragged without activating embedded controls. Resize handles and removal controls retain their own interactions. A coloured axis line highlights a valid exchange before the pointer is released.
 
 Edit mode uses fixed row tracks and the same gap-aware pixel geometry for cards, drag previews and resize handles, including half-grid placements. The scrolling content reserves its scrollbar gutter before measurement; pointer coordinates exclude the shared content inset. Elements panels size to their contents within the viewport, and their measured width controls initial placement and subsequent clamping. The height limit is applied before measuring width so internal scrollbars are included in horizontal positioning.
 

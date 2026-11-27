@@ -8,6 +8,8 @@ Each page supplies its content; the shared composer controls layout and sidebar 
 
 ## Examples
 
+Swap a widget with another only when both sizes fit their exchanged positions. A blocked exchange shows an invalid preview and leaves the layout unchanged.
+
 Resize cursors indicate whether an edge can grow, shrink or move in both directions. A handle remains available for shrinking when another element blocks expansion; handles disappear when no legal resize remains.
 
 Open Edit Layout on a customizable page. Drag inside a widget to move it; holding near the top or bottom of the screen scrolls to off-screen rows. Drag a highlighted edge or corner to resize, including the left and top edges. The opposite edge stays in place. Minimize Elements when it covers your work, then expand it to choose Done or Discard. Add places a hidden element without dragging.

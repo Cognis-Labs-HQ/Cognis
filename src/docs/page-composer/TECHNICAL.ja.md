@@ -16,6 +16,7 @@ Composer 内部の編集用ヘルパーは次の契約を提供します。ソ�
 | [`RESIZE_EDGES / resizePlacement`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/resize-model.js)   | 8方向の辺・角を定義し、グリッドに合わせて制限した配置を計算します。重なりは検査しません。        |
 | [`resolveResizeAvailability`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/resize-availability.js) | 各辺・角について可能な方向の CSS カーソル、または `null` を返します。                            |
 | [`appendResizeControls`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/resize-controls.js)          | 所有側の座標変換と重なり検査をサイズ変更プレビュー・配置更新に結び付けます。保存はしません。     |
+| [`findGridSwap / applyGridSwap`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/swap-model.js)       | 入れ替え可能な相手を検索し、現在の状態を検証してから両方の位置を一括で確定します。               |
 
 ## 設定
 
@@ -57,6 +58,10 @@ createPageComposer に elements、pageManifest、i18n、signal と配置設定�
 | `pinned`   | いいえ | `true` の場合、ユーザーが要素を削除できない           |
 
 ### グリッドレイアウト
+
+マウス、タッチ、キーボードでの入れ替えは、`swap-model.js` の `findGridSwap` と `applyGridSwap` を共有します。ドラッグした要素が相手の正確な開始位置に収まり、相手も元の開始位置に収まる場合のみ入れ替えます。両方の矩形全体がグリッド内にあり、他の表示要素とも互いにも重ならないことが必要です。確定直前に現在の配置、表示状態、グリッド境界を再検証し、プレビューでは配置を変更しません。
+
+両ヘルパーは `gridCols`、`layout.placements`、`layout.hidden` で現在の状態を受け取ります。`findGridSwap(state, col, row, w, h, sourceId)` は現在の相手の配置または `null` を返し、`applyGridSwap(state, sourceId, targetId)` は真偽値を返して、拒否時はどちらの位置も変更しません。キーボードのバインドには `findSwapCandidate` と `commitSwap` の両方を渡し、Composer は共通の入れ替えモデルからこれらを提供します。
 
 要素の既定サイズと最小幅には、カードの余白と内容のための領域が必要です。ダッシュボードのブランドは最低3列、アカウント情報は既定で2行、挨拶と前回ログインのカードは最低3列を使います。現在の幅制限が保存済みの行に収まらない場合、Composer は保存されたプロファイルを上書きせず、その制限内に再配置します。メインと入れ子の表示で同じ規則を使います。正規化された行では各カードが指定されたグリッド列内に収まることを検証し、収まらない場合は再配置します。
 
@@ -158,7 +163,7 @@ Composerはコンテンツセクションの内側余白を管理します。広
 
 共通テキストは、選択した文字サイズを縮小せず、フォントの読み込み前後とも利用可能な幅に合わせて折り返します。
 
-配列では、幅全体と利用可能な高さを使う `['full', 'fill']`、または幅全体と数値による高さの上限を指定する `['full', n]` を使用できます。メインと入れ子の Composer は、狭いグリッドでも広いグリッドでもこれらの寸法を適用します。グリッドの下へウィジェットをドラッグすると、ドロップする前にコンテンツの領域と表示中のグリッドが一緒に拡張されます。
+配列では、幅全体と利用可能な高さを使う `['full', 'fill']`、または幅全体と数値による高さの上限を指定する `['full', n]` を使用できます。メインと入れ子の Composer は、狭いグリッドでも広いグリッドでもこれらの寸法を適用します。端でのスクロール中は、一時的な最小行数を高さの設定前に適用し、グリッドとプレビューが途中で縮まることなく一緒に拡張されます。 拡張後は親要素のスクロール位置が変わる場合があるため、入れ子のドラッグプレビューはコンテナを再計測します。
 
 ## セキュリティ
 

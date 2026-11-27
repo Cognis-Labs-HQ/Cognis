@@ -13,6 +13,7 @@
  * @param {object} deps Page lifetime, edit-mode callbacks, persistence, form-state and grid dependencies.
  * @returns {object} Nested mount/unmount, rendering, dimension, placement, save and destroy operations.
  */
+import { findGridSwap, applyGridSwap } from "./swap-model.js";
 import { appendResizeControls } from "./resize-controls.js";
 import { bindComposerPointerDrag } from "./pointer-drag.js";
 import {
@@ -59,7 +60,7 @@ export function createSubComposerHandlers({
     applySubLayoutForCurrentGridColumns,
 }) {
     const subStates = new Map();
-    function computeSubGridDimensions(state) {
+    function computeSubGridDimensions(state, { minimumRows = 0 } = {}) {
         if (!state.container) return;
         state.container.style.width = "";
         const width = state.container.getBoundingClientRect().width;
@@ -74,6 +75,7 @@ export function createSubComposerHandlers({
         );
         const extra = state.editing ? 1 : 0;
         state.gridRows = Math.max(
+            minimumRows,
             state.editing ? Math.max(3, maxBottom + 2) : 1,
             maxBottom + extra,
         );
@@ -95,49 +97,6 @@ export function createSubComposerHandlers({
         if (col < 0 || row < 0 || col + w > state.gridCols) return false;
         const cells = buildOccupiedSet(set, [], null);
         return checkPlacement(cells, col, row, w, h);
-    }
-
-    function findSubSwapCandidate(state, col, row, w, h, excludeId) {
-        const displaced = [];
-        for (const placement of state.layout?.placements ?? []) {
-            if (placement.id === excludeId) continue;
-            if ((state.layout?.hidden ?? []).includes(placement.id)) continue;
-            const overlapsH =
-                col < placement.col + placement.w && col + w > placement.col;
-            const overlapsV =
-                row < placement.row + placement.h && row + h > placement.row;
-            if (overlapsH && overlapsV) displaced.push(placement);
-        }
-        if (displaced.length !== 1) return null;
-        const candidate = displaced[0];
-        const source = state.layout.placements.find((p) => p.id === excludeId);
-        if (!source) return null;
-        if (source.col + candidate.w > state.gridCols) return null;
-        const others = (state.layout?.placements ?? []).filter(
-            (p) =>
-                p.id !== excludeId &&
-                p.id !== candidate.id &&
-                !(state.layout?.hidden ?? []).includes(p.id),
-        );
-        const occupied = buildOccupiedSet(others, [], null);
-        if (
-            !checkPlacement(
-                occupied,
-                source.col,
-                source.row,
-                candidate.w,
-                candidate.h,
-            )
-        )
-            return null;
-        const postSwapColsOverlap =
-            candidate.col < source.col + candidate.w &&
-            candidate.col + w > source.col;
-        const postSwapRowsOverlap =
-            candidate.row < source.row + candidate.h &&
-            candidate.row + h > source.row;
-        if (postSwapColsOverlap && postSwapRowsOverlap) return null;
-        return candidate;
     }
 
     function initializeSubPlacements(state, { reveal = [] } = {}) {
@@ -266,9 +225,7 @@ export function createSubComposerHandlers({
 
     function refreshSubGridBounds(state, minimumRows = 0) {
         if (!state.container?.isConnected) return;
-        computeSubGridDimensions(state);
-        state.gridRows = Math.max(state.gridRows, minimumRows);
-        state.container.style.minHeight = `${state.gridRows * UNIT}px`;
+        computeSubGridDimensions(state, { minimumRows });
         state.container
             .querySelector(".composer-grid-overlay")
             ?.replaceWith(createSubGridOverlay(state));
@@ -291,8 +248,9 @@ export function createSubComposerHandlers({
                 state,
                 gridSize: getGridSize(el),
                 canPlace: (...args) => canSubPlace(state, ...args),
-                findSwapCandidate: (...args) =>
-                    findSubSwapCandidate(state, ...args),
+                findSwapCandidate: (...args) => findGridSwap(state, ...args),
+                commitSwap: (sourceId, targetId) =>
+                    applyGridSwap(state, sourceId, targetId),
                 render: () => renderSubGrid(state),
                 i18n,
             });
@@ -370,6 +328,8 @@ export function createSubComposerHandlers({
 
                     if (row + placement.h > state.gridRows) {
                         refreshSubGridBounds(state, row + placement.h + 1);
+                        // Growth can clamp an ancestor scroll offset; use its new geometry.
+                        return onMove(e);
                     }
 
                     currentCol = col;
@@ -387,7 +347,7 @@ export function createSubComposerHandlers({
                             el.id,
                         )
                     ) {
-                        const candidate = findSubSwapCandidate(
+                        const candidate = findGridSwap(
                             state,
                             col,
                             row,
@@ -453,19 +413,7 @@ export function createSubComposerHandlers({
                     swapTarget = null;
 
                     if (currentSwapTarget) {
-                        const targetPlacement = state.layout.placements.find(
-                            (lp) => lp.id === el.id,
-                        );
-                        const swapPlacement = state.layout.placements.find(
-                            (lp) => lp.id === currentSwapTarget.id,
-                        );
-                        if (targetPlacement && swapPlacement) {
-                            const oldCol = targetPlacement.col;
-                            const oldRow = targetPlacement.row;
-                            targetPlacement.col = currentSwapTarget.col;
-                            targetPlacement.row = currentSwapTarget.row;
-                            swapPlacement.col = oldCol;
-                            swapPlacement.row = oldRow;
+                        if (applyGridSwap(state, el.id, currentSwapTarget.id)) {
                             renderSubGrid(state);
                         }
                     } else {

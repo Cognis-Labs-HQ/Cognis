@@ -14,6 +14,7 @@
  * @param {object} deps Live composer state and injected sizing, rendering, save and edit-mode callbacks.
  * @returns {object} Grid measurement, placement, cell/panel creation and destroy operations.
  */
+import { findGridSwap, applyGridSwap } from "./swap-model.js";
 import { appendResizeControls } from "./resize-controls.js";
 import { bindComposerPointerDrag } from "./pointer-drag.js";
 
@@ -70,48 +71,6 @@ export function createGridOverlayHandlers({
             if (canPlace(col, r, w, h, excludeId)) return r;
         }
         return row;
-    }
-    function findSwapCandidate(col, row, w, h, excludeId) {
-        const displaced = [];
-        for (const placement of state.layout?.placements ?? []) {
-            if (placement.id === excludeId) continue;
-            if ((state.layout?.hidden ?? []).includes(placement.id)) continue;
-            const overlapsH =
-                col < placement.col + placement.w && col + w > placement.col;
-            const overlapsV =
-                row < placement.row + placement.h && row + h > placement.row;
-            if (overlapsH && overlapsV) displaced.push(placement);
-        }
-        if (displaced.length !== 1) return null;
-        const candidate = displaced[0];
-        const source = state.layout.placements.find((p) => p.id === excludeId);
-        if (!source) return null;
-        if (source.col + candidate.w > state.gridCols) return null;
-        const others = (state.layout?.placements ?? []).filter(
-            (p) =>
-                p.id !== excludeId &&
-                p.id !== candidate.id &&
-                !(state.layout?.hidden ?? []).includes(p.id),
-        );
-        const occupied = buildOccupiedSet(others, [], null);
-        if (
-            !checkPlacement(
-                occupied,
-                source.col,
-                source.row,
-                candidate.w,
-                candidate.h,
-            )
-        )
-            return null;
-        const postSwapColsOverlap =
-            candidate.col < source.col + candidate.w &&
-            candidate.col + w > source.col;
-        const postSwapRowsOverlap =
-            candidate.row < source.row + candidate.h &&
-            candidate.row + h > source.row;
-        if (postSwapColsOverlap && postSwapRowsOverlap) return null;
-        return candidate;
     }
     function buildDropZoneLine(srcCol, srcRow, candidate, tgtCol, tgtRow) {
         const line = document.createElement("div");
@@ -296,7 +255,9 @@ export function createGridOverlayHandlers({
                 state,
                 gridSize: getGridSize(el),
                 canPlace,
-                findSwapCandidate,
+                findSwapCandidate: (...args) => findGridSwap(state, ...args),
+                commitSwap: (sourceId, targetId) =>
+                    applyGridSwap(state, sourceId, targetId),
                 render: renderGridComposer,
                 i18n,
             });
@@ -376,7 +337,8 @@ export function createGridOverlayHandlers({
                     if (
                         !canPlace(col, rawRow, placement.w, placement.h, el.id)
                     ) {
-                        const candidate = findSwapCandidate(
+                        const candidate = findGridSwap(
+                            state,
                             col,
                             rawRow,
                             placement.w,
@@ -436,19 +398,7 @@ export function createGridOverlayHandlers({
                     const currentSwapTarget = swapTarget;
                     swapTarget = null;
                     if (currentSwapTarget) {
-                        const targetPlacement = state.layout.placements.find(
-                            (lp) => lp.id === el.id,
-                        );
-                        const swapPlacement = state.layout.placements.find(
-                            (lp) => lp.id === currentSwapTarget.id,
-                        );
-                        if (targetPlacement && swapPlacement) {
-                            const oldCol = targetPlacement.col;
-                            const oldRow = targetPlacement.row;
-                            targetPlacement.col = currentSwapTarget.col;
-                            targetPlacement.row = currentSwapTarget.row;
-                            swapPlacement.col = oldCol;
-                            swapPlacement.row = oldRow;
+                        if (applyGridSwap(state, el.id, currentSwapTarget.id)) {
                             renderGridComposer();
                         }
                     } else {
