@@ -40,7 +40,7 @@ Editor utama dan bertingkat memvalidasi kedua area tujuan widget secara penuh se
 
 ## Binding Waktu Jalan Deskriptif
 
-Validasi nama kini mengurai JavaScript dan TypeScript di semua direktori sumber inti, termasuk gateway, perkakas, pengujian, dan fixture. Pemeriksaan mencakup ekspor, setiap deklarator, destrukturisasi, parameter callback dan metode, properti parameter konstruktor, binding catch, alias impor, serta fungsi dan kelas bernama tanpa bergantung pada format. Binding inti memakai nama lokal deskriptif sementara kunci properti publik dan muatan tetap sama. Pengecualian nama spasial, pengenal, dan penghitung numerik yang didokumentasikan tetap tersedia; kasus detektor khusus mencegah binding terlewat dan laporan keliru. Versi komponen, batas dependensi yang teruji, dan indeks versi terlokalisasi diselaraskan.
+Validasi nama mengurai JavaScript dan TypeScript di seluruh inti, termasuk gateway, perkakas, pengujian, dan fixture. Pemeriksaan mencakup deklarasi, ekspor, destrukturisasi, parameter runtime dan tanda tangan tipe, properti parameter konstruktor, binding catch, alias impor, fungsi/kelas bernama, dan anggota privat tanpa bergantung pada format. Pembersihan menyeluruh mengganti binding pendek, kata terpotong, singkatan jamak, dan placeholder bernomor dengan nama peran deskriptif sambil mempertahankan kunci properti publik, muatan, target impor, dan label API ekspor. Katalog singkatan bersama dan fixture detektor menerapkan aturan yang sama di semua komponen. Koordinat, dimensi, serta penghitung baris/kolom memakai nama lokal deskriptif; hanya `_` yang tidak digunakan dan tidak diekspor, `id`, serta penghitung numerik konvensional `i`/`j`/`k` yang menjadi pengecualian nama pendek. Istilah protokol dan nama produk yang mapan tetap bermakna. Helper yang kohesif mempertahankan batas ukuran berkas dalam komponen pemiliknya; versi komponen, batas dependensi, dan indeks versi terlokalisasi diselaraskan.
 
 ## Komit
 
@@ -55,3 +55,4 @@ Validasi nama kini mengurai JavaScript dan TypeScript di semua direktori sumber 
 - [ba219ba](https://github.com/Cognis-Labs-HQ/Cognis/commit/ba219ba88b792c7535934b4dd5e78e93ba601777)
 - [935c670](https://github.com/Cognis-Labs-HQ/Cognis/commit/935c670f7a9447e83355662c8facfbfd090255fa)
 - [244aff5](https://github.com/Cognis-Labs-HQ/Cognis/commit/244aff5f4fca07e76c4c484cec5df292116f7293)
+- [edb18fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/edb18fe66f9a1862b646b5139448c6b2808b5414)

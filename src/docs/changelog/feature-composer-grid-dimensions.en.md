@@ -40,7 +40,7 @@ Main and nested editors validate both full destination rectangles before exchang
 
 ## Descriptive Runtime Bindings
 
-Naming validation now parses JavaScript and TypeScript across all core source directories, including gateways, tooling, tests and fixtures. It checks exports, every declarator, destructuring, callback and method parameters, constructor parameter properties, catch bindings, import aliases and named functions/classes independently of formatting. Core bindings use descriptive local names while public property and payload keys remain unchanged. Documented spatial names, identifiers and numeric counter exceptions remain available; focused detector cases prevent missed bindings and false positives. Component versions, dependency ceilings and localized version indexes are synchronized.
+Naming validation parses JavaScript and TypeScript throughout core, including gateways, tooling, tests and fixtures. It checks declarations, exports, destructuring, runtime and type-signature parameters, constructor parameter properties, catch bindings, import aliases, named functions/classes and private members independently of formatting. The core-wide cleanup replaces short bindings, clipped words, abbreviated plurals and numbered placeholders with descriptive role names while preserving public property keys, payloads, import targets and exported API labels. A shared abbreviation catalog and detector fixtures enforce the same rules across components. Coordinates, dimensions and row/column counters use descriptive locals; only unused, unexported `_`, `id` and conventional numeric `i`/`j`/`k` counters retain short-name exceptions. Established protocol vocabulary and product names remain meaningful. Cohesive helpers preserve file-size limits within their owning components, and component versions, dependency ceilings and localized version indexes are synchronized.
 
 ## Commits
 
@@ -55,3 +55,4 @@ Naming validation now parses JavaScript and TypeScript across all core source di
 - [ba219ba](https://github.com/Cognis-Labs-HQ/Cognis/commit/ba219ba88b792c7535934b4dd5e78e93ba601777)
 - [935c670](https://github.com/Cognis-Labs-HQ/Cognis/commit/935c670f7a9447e83355662c8facfbfd090255fa)
 - [244aff5](https://github.com/Cognis-Labs-HQ/Cognis/commit/244aff5f4fca07e76c4c484cec5df292116f7293)
+- [edb18fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/edb18fe66f9a1862b646b5139448c6b2808b5414)

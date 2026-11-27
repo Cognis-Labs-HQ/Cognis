@@ -40,7 +40,7 @@ Haupt- und verschachtelte Editoren prüfen vor dem Widget-Tausch beide vollstän
 
 ## Aussagekräftige Laufzeitbindungen
 
-Die Namensprüfung analysiert nun die Syntax von JavaScript und TypeScript in allen Kernquellverzeichnissen einschließlich Gateways, Werkzeugen, Tests und Testdaten. Sie prüft Exporte, sämtliche Deklaratoren, Destrukturierungen, Callback- und Methodenparameter, Konstruktor-Parametereigenschaften, Catch-Bindungen, Importaliasnamen sowie benannte Funktionen und Klassen unabhängig von der Formatierung. Lokale Bindungen im Kern verwenden aussagekräftige Namen; öffentliche Eigenschafts- und Nutzdatenschlüssel bleiben erhalten. Dokumentierte räumliche Namen, Bezeichner und numerische Schleifenzähler bleiben zulässig; gezielte Prüffälle verhindern übersehene Bindungen und Fehlmeldungen. Komponentenversionen, Abhängigkeitsobergrenzen und lokalisierte Versionsindizes sind synchronisiert.
+Die Namensprüfung analysiert JavaScript und TypeScript im gesamten Kern einschließlich Gateways, Werkzeugen, Tests und Testdaten. Sie prüft Deklarationen, Exporte, Destrukturierungen, Laufzeit- und Typsignaturparameter, Konstruktor-Parametereigenschaften, Catch-Bindungen, Importaliasnamen, benannte Funktionen/Klassen und private Member unabhängig von der Formatierung. Die kernweite Bereinigung ersetzt kurze Bindungen, verkürzte Wörter, abgekürzte Pluralformen und nummerierte Platzhalter durch aussagekräftige Rollennamen; öffentliche Eigenschaftsschlüssel, Nutzdaten, Importziele und exportierte API-Bezeichnungen bleiben erhalten. Ein gemeinsamer Abkürzungskatalog und gezielte Prüffälle setzen dieselben Regeln in allen Komponenten durch. Koordinaten, Abmessungen sowie Zeilen- und Spaltenzähler erhalten beschreibende lokale Namen; nur ungenutzte, nicht exportierte `_`, `id` und übliche numerische `i`/`j`/`k`-Zähler bleiben Ausnahmen für kurze Namen. Etablierte Protokollbegriffe und Produktnamen bleiben aussagekräftig. Zusammengehörige Hilfsfunktionen halten die Dateigrößenlimits innerhalb ihrer zuständigen Komponenten ein; Komponentenversionen, Abhängigkeitsobergrenzen und lokalisierte Versionsindizes sind synchronisiert.
 
 ## Commits
 
@@ -55,3 +55,4 @@ Die Namensprüfung analysiert nun die Syntax von JavaScript und TypeScript in al
 - [ba219ba](https://github.com/Cognis-Labs-HQ/Cognis/commit/ba219ba88b792c7535934b4dd5e78e93ba601777)
 - [935c670](https://github.com/Cognis-Labs-HQ/Cognis/commit/935c670f7a9447e83355662c8facfbfd090255fa)
 - [244aff5](https://github.com/Cognis-Labs-HQ/Cognis/commit/244aff5f4fca07e76c4c484cec5df292116f7293)
+- [edb18fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/edb18fe66f9a1862b646b5139448c6b2808b5414)
