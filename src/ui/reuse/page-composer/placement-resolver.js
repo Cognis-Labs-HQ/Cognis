@@ -349,7 +349,8 @@ export function createPlacementResolver({
                 column += descriptor.assignedWidth;
             }
         }
-        return changed ? normalized : sortedVisible;
+        const result = changed ? normalized : sortedVisible;
+        return hasWidthViolation(result, maxCols, elems) ? null : result;
     }
     /**
      * Determines whether compact single-row width reclaim should run for the

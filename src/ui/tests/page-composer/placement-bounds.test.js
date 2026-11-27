@@ -7,6 +7,24 @@ import {
     checkPlacement,
 } from "../../reuse/page-composer/grid-math.js";
 
+function resolvePlacements({ layout, elements, columns, width, nested }) {
+    const container = { getBoundingClientRect: () => ({ width }) };
+    const state = {
+        layout,
+        elements,
+        gridCols: columns,
+        contentGrid: container,
+        container,
+    };
+    const resolver = createPlacementResolver({
+        state,
+        getGridSize: resolveElementGridSize,
+    });
+    return nested
+        ? resolver.computeSubViewPlacements(state)
+        : resolver.computeViewPlacements();
+}
+
 for (const nested of [false, true]) {
     test(`${nested ? "nested" : "main"} repacking honors current size bounds when a saved row cannot expand in place`, () => {
         const layout = {
@@ -25,21 +43,13 @@ for (const nested of [false, true]) {
             { id: "next", gridSize: { min: [3, 2] } },
             { id: "lower", gridSize: { min: [3, 2] } },
         ];
-        const container = { getBoundingClientRect: () => ({ width: 1000 }) };
-        const state = {
+        const resolved = resolvePlacements({
             layout,
             elements,
-            gridCols: 10,
-            contentGrid: container,
-            container,
-        };
-        const resolver = createPlacementResolver({
-            state,
-            getGridSize: resolveElementGridSize,
+            columns: 10,
+            width: 1000,
+            nested,
         });
-        const resolved = nested
-            ? resolver.computeSubViewPlacements(state)
-            : resolver.computeViewPlacements();
         assert.ok(
             resolved.find((entry) => entry.id === "title").w >= 4,
             "Raised minimum is applied",
@@ -72,4 +82,38 @@ for (const nested of [false, true]) {
             "Viewing does not overwrite saved preferences",
         );
     });
+}
+
+for (const nested of [false, true]) {
+    for (const [label, sizing, width] of [
+        ["minimum", { min: [3, 2] }, 3],
+        ["full", { min: [2, 2], max: "full" }, 8],
+        ["half", { min: [2, 2], max: "half" }, 4],
+        ["fill", { min: [2, 2], max: "fill" }, 8],
+    ]) {
+        test(`${nested ? "nested" : "main"} normalization keeps a right-edge ${label} card within its grid`, () => {
+            const layout = {
+                placements: [{ id: "panel", col: 6, row: 0, w: 2, h: 2 }],
+                hidden: [],
+            };
+            const original = structuredClone(layout);
+            const placements = resolvePlacements({
+                layout,
+                elements: [{ id: "panel", gridSize: sizing }],
+                columns: 8,
+                width: 780,
+                nested,
+            });
+            assert.deepEqual(
+                placements,
+                [{ id: "panel", col: 0, row: 0, w: width, h: 2 }],
+                "A widened card is repacked without an implicit grid column",
+            );
+            assert.deepEqual(
+                layout,
+                original,
+                "Viewing retains the stored layout",
+            );
+        });
+    }
 }

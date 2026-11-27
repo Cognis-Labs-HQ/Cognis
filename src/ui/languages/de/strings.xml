@@ -78,7 +78,7 @@
   <string name="ui.reuse.error">Fehler</string>
   <string name="ui.reuse.coming_soon">Demnächst verfügbar</string>
   <string name="ui.reuse.layout_saved">Seitenlayout aktualisiert.</string>
-  <string name="ui.reuse.layout_save_failed">Das Seitenlayout konnte nicht aktualisiert werden. Deine Änderungen bleiben für einen erneuten Versuch erhalten.</string>
+  <string name="ui.reuse.layout_save_failed">Das Seitenlayout konnte nicht aktualisiert werden.</string>
   <string name="ui.reuse.save_failed">Speichern fehlgeschlagen</string>
   <string name="ui.reuse.more_information">Weitere Informationen</string>
   <string name="ui.reuse.system">System</string>
@@ -754,7 +754,7 @@
   <string name="ui.tutorial.workspace.dock.language.body">Wechseln Sie hier die Sprache der Oberfläche. Die Reihenfolge bevorzugter Sprachen verwalten Sie in den Einstellungen.</string>
   <string name="ui.tutorial.workspace.dock.theme.body">Die Darstellungsschaltfläche wechselt zwischen hellem und dunklem Thema. Ein Rechtsklick öffnet weitere Darstellungsoptionen in den Einstellungen.</string>
   <string name="ui.tutorial.workspace.dock.layout.title">Seitenelemente anordnen</string>
-  <string name="ui.tutorial.workspace.dock.layout.body">Ziehen Sie im Inneren der Widgets und halten Sie den Zeiger zum Scrollen nahe am oberen oder unteren Bildschirmrand. Skalieren Sie an hervorgehobenen Kanten oder Ecken. Minimieren Sie Elemente für mehr Platz oder nutzen Sie Hinzufügen ohne Ziehen. Zeiger zeigen verfügbare Richtungen; Touch-Regler bleiben sichtbar. Pfeiltasten verschieben, Umschalt plus Pfeiltasten skaliert. Fertig speichert, Verwerfen macht Änderungen rückgängig. Eine Meldung bestätigt das Speichern; bei Fehlern bleiben Änderungen für einen erneuten Versuch erhalten.</string>
+  <string name="ui.tutorial.workspace.dock.layout.body">Ziehen Sie im Inneren der Widgets und halten Sie den Zeiger zum Scrollen nahe am oberen oder unteren Bildschirmrand. Skalieren Sie an hervorgehobenen Kanten oder Ecken. Minimieren Sie Elemente für mehr Platz oder nutzen Sie Hinzufügen ohne Ziehen. Zeiger zeigen verfügbare Richtungen; Touch-Regler bleiben sichtbar. Pfeiltasten verschieben, Umschalt plus Pfeiltasten skaliert. Fertig speichert, Verwerfen macht Änderungen rückgängig. Eine Meldung zeigt, ob das Speichern erfolgreich war.</string>
   <string name="ui.tutorial.restart">Tutorial neu starten</string>
   <string name="ui.tutorial.docs.read.browse.documents.title">Dokumente durchsuchen</string>
   <string name="ui.tutorial.docs.read.browse.documents.body">Wähle im Seitenmenü ein Thema oder eine Komponente. Öffne eine Gruppe, um ihre Seiten zu finden; das gewählte Dokument erscheint daneben.</string>

@@ -93,5 +93,15 @@
                 "max": [7, 4]
             }
         }
+    ],
+    "right-edge": [
+        {
+            "id": "form",
+            "template": "form-content",
+            "gridSize": {
+                "default": [3, 4],
+                "min": [3, 2]
+            }
+        }
     ]
 }

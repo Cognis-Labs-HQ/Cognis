@@ -214,3 +214,26 @@ test("same-column editing resizes redraw pixel geometry without reflowing unsave
         { render: true, reflow: true },
     );
 });
+
+test("panel placement includes width added by its vertical scrollbar", () => {
+    const properties = new Map();
+    const panel = {
+        ownerDocument: { defaultView: { innerWidth: 568, innerHeight: 320 } },
+        style: {
+            left: "500px",
+            top: "180px",
+            setProperty: (key, value) => properties.set(key, value),
+        },
+        getBoundingClientRect: () => ({
+            width: properties.has("--composer-panel-top") ? 230 : 200,
+            height: 280,
+        }),
+    };
+    fitComposerPanel(panel);
+    assert.equal(
+        panel.style.left,
+        "326px",
+        "The constrained width fits with its viewport inset",
+    );
+    assert.equal(panel.style.top, "28px");
+});

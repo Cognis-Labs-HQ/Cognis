@@ -69,7 +69,7 @@ An element is a named content block declared as a plain object:
 
 ### Grid layout
 
-Element defaults and minimum widths must include room for card padding and their content. Dashboard branding uses at least three grid columns; account details use a two-row default, and welcome/last-login cards retain at least three columns. When current width bounds cannot fit a saved row, Composer repacks it within those bounds without overwriting the stored profile. Main and nested views use the same rule.
+Element defaults and minimum widths must include room for card padding and their content. Dashboard branding uses at least three grid columns; account details use a two-row default, and welcome/last-login cards retain at least three columns. When current width bounds cannot fit a saved row, Composer repacks it within those bounds without overwriting the stored profile. Main and nested views use the same rule. Normalized rows must keep every card within the declared grid columns; rows that fail this validation are repacked.
 
 Main and nested editors share eight-direction resizing through `resize-model.js` and `resize-controls.js`. Left and top handles adjust the origin while preserving the opposite edge. Pointer deltas snap to grid increments; size limits, grid boundaries and collision checks apply to every direction. Touch targets remain 44px, with removal controls inset to leave corner handles accessible.
 
@@ -79,7 +79,7 @@ Array declarations support `['full', 'fill']` for full width and filling the ava
 
 In edit mode, hover effects, overflow scrolling, and animations inside each element are suppressed so the cell interior can be dragged without activating embedded controls. Resize handles and removal controls retain their own interactions. Dragging an element onto an occupied cell swaps the two elements when geometrically feasible; a coloured axis line highlights where the swap will occur before the pointer is released.
 
-Edit mode uses fixed row tracks and the same gap-aware pixel geometry for cards, drag previews and resize handles, including half-grid placements. The scrolling content reserves its scrollbar gutter before measurement; pointer coordinates exclude the shared content inset. Elements panels size to their contents within the viewport, and their measured width controls initial placement and subsequent clamping.
+Edit mode uses fixed row tracks and the same gap-aware pixel geometry for cards, drag previews and resize handles, including half-grid placements. The scrolling content reserves its scrollbar gutter before measurement; pointer coordinates exclude the shared content inset. Elements panels size to their contents within the viewport, and their measured width controls initial placement and subsequent clamping. The height limit is applied before measuring width so internal scrollbars are included in horizontal positioning.
 
 Pointer capture preserves the grabbed point through scrolling rather than centering a card under the pointer. Main and nested editors share pointer identity checks, edge scrolling, cancellation and capture cleanup. Pointer cancellation or unmounting discards provisional movement and grid growth. Touch resize and remove controls provide 44px targets; minimizing Elements hides its body and actions until expanded. Edit mode remains active until saving succeeds, so responsive redraws cannot restore an older layout during a pending write.
 
