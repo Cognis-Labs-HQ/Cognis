@@ -38,6 +38,10 @@ Dashboard branding has room for its icon and full title, welcome and login cards
 
 Main and nested editors validate both full destination rectangles before exchanging widgets, including unequal sizes, other visible elements and grid boundaries. Mouse, touch and keyboard moves share the same checks; release revalidates the live layout before changing either position. Nested edge scrolling retains provisional grid height and remeasures previews after growth changes ancestor scrolling.
 
+## Descriptive Runtime Bindings
+
+Naming validation now parses JavaScript and TypeScript across all core source directories, including gateways, tooling, tests and fixtures. It checks exports, every declarator, destructuring, callback and method parameters, constructor parameter properties, catch bindings, import aliases and named functions/classes independently of formatting. Core bindings use descriptive local names while public property and payload keys remain unchanged. Documented spatial names, identifiers and numeric counter exceptions remain available; focused detector cases prevent missed bindings and false positives. Component versions, dependency ceilings and localized version indexes are synchronized.
+
 ## Commits
 
 - [42d72de](https://github.com/Cognis-Labs-HQ/Cognis/commit/42d72de61ab7765abe866b3fd3a0214bcfb2b006)
@@ -50,3 +54,4 @@ Main and nested editors validate both full destination rectangles before exchang
 - [fc698c8](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc698c84645f30eabbc25306ecf3eccbbb3b8828)
 - [ba219ba](https://github.com/Cognis-Labs-HQ/Cognis/commit/ba219ba88b792c7535934b4dd5e78e93ba601777)
 - [935c670](https://github.com/Cognis-Labs-HQ/Cognis/commit/935c670f7a9447e83355662c8facfbfd090255fa)
+- [244aff5](https://github.com/Cognis-Labs-HQ/Cognis/commit/244aff5f4fca07e76c4c484cec5df292116f7293)

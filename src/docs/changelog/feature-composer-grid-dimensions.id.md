@@ -38,6 +38,10 @@ Merek dasbor menyediakan ruang untuk ikon dan judul lengkap, kartu sambutan dan 
 
 Editor utama dan bertingkat memvalidasi kedua area tujuan widget secara penuh sebelum pertukaran, termasuk ukuran berbeda, elemen terlihat lainnya, dan batas kisi. Gerakan tetikus, sentuh, dan papan ketik memakai pemeriksaan yang sama; saat dilepas, tata letak terkini divalidasi ulang sebelum posisi mana pun diubah. Pengguliran tepi bertingkat mempertahankan tinggi kisi sementara dan mengukur ulang pratinjau setelah perluasan mengubah posisi gulir elemen induk.
 
+## Binding Waktu Jalan Deskriptif
+
+Validasi nama kini mengurai JavaScript dan TypeScript di semua direktori sumber inti, termasuk gateway, perkakas, pengujian, dan fixture. Pemeriksaan mencakup ekspor, setiap deklarator, destrukturisasi, parameter callback dan metode, properti parameter konstruktor, binding catch, alias impor, serta fungsi dan kelas bernama tanpa bergantung pada format. Binding inti memakai nama lokal deskriptif sementara kunci properti publik dan muatan tetap sama. Pengecualian nama spasial, pengenal, dan penghitung numerik yang didokumentasikan tetap tersedia; kasus detektor khusus mencegah binding terlewat dan laporan keliru. Versi komponen, batas dependensi yang teruji, dan indeks versi terlokalisasi diselaraskan.
+
 ## Komit
 
 - [42d72de](https://github.com/Cognis-Labs-HQ/Cognis/commit/42d72de61ab7765abe866b3fd3a0214bcfb2b006)
@@ -50,3 +54,4 @@ Editor utama dan bertingkat memvalidasi kedua area tujuan widget secara penuh se
 - [fc698c8](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc698c84645f30eabbc25306ecf3eccbbb3b8828)
 - [ba219ba](https://github.com/Cognis-Labs-HQ/Cognis/commit/ba219ba88b792c7535934b4dd5e78e93ba601777)
 - [935c670](https://github.com/Cognis-Labs-HQ/Cognis/commit/935c670f7a9447e83355662c8facfbfd090255fa)
+- [244aff5](https://github.com/Cognis-Labs-HQ/Cognis/commit/244aff5f4fca07e76c4c484cec5df292116f7293)

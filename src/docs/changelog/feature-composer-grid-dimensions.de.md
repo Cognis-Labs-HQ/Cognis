@@ -38,6 +38,10 @@ Die Dashboard-Marke bietet Platz für Symbol und vollständigen Titel; Begrüßu
 
 Haupt- und verschachtelte Editoren prüfen vor dem Widget-Tausch beide vollständigen Zielflächen einschließlich unterschiedlicher Größen, anderer sichtbarer Elemente und Rastergrenzen. Maus, Touch und Tastatur verwenden dieselben Prüfungen; beim Ablegen wird das aktuelle Layout erneut geprüft, bevor eine Position geändert wird. Beim Scrollen am Rand bleibt die vorläufige Rasterhöhe erhalten; verändert die Erweiterung den Scrollversatz übergeordneter Elemente, wird die Vorschau neu vermessen.
 
+## Aussagekräftige Laufzeitbindungen
+
+Die Namensprüfung analysiert nun die Syntax von JavaScript und TypeScript in allen Kernquellverzeichnissen einschließlich Gateways, Werkzeugen, Tests und Testdaten. Sie prüft Exporte, sämtliche Deklaratoren, Destrukturierungen, Callback- und Methodenparameter, Konstruktor-Parametereigenschaften, Catch-Bindungen, Importaliasnamen sowie benannte Funktionen und Klassen unabhängig von der Formatierung. Lokale Bindungen im Kern verwenden aussagekräftige Namen; öffentliche Eigenschafts- und Nutzdatenschlüssel bleiben erhalten. Dokumentierte räumliche Namen, Bezeichner und numerische Schleifenzähler bleiben zulässig; gezielte Prüffälle verhindern übersehene Bindungen und Fehlmeldungen. Komponentenversionen, Abhängigkeitsobergrenzen und lokalisierte Versionsindizes sind synchronisiert.
+
 ## Commits
 
 - [42d72de](https://github.com/Cognis-Labs-HQ/Cognis/commit/42d72de61ab7765abe866b3fd3a0214bcfb2b006)
@@ -50,3 +54,4 @@ Haupt- und verschachtelte Editoren prüfen vor dem Widget-Tausch beide vollstän
 - [fc698c8](https://github.com/Cognis-Labs-HQ/Cognis/commit/fc698c84645f30eabbc25306ecf3eccbbb3b8828)
 - [ba219ba](https://github.com/Cognis-Labs-HQ/Cognis/commit/ba219ba88b792c7535934b4dd5e78e93ba601777)
 - [935c670](https://github.com/Cognis-Labs-HQ/Cognis/commit/935c670f7a9447e83355662c8facfbfd090255fa)
+- [244aff5](https://github.com/Cognis-Labs-HQ/Cognis/commit/244aff5f4fca07e76c4c484cec5df292116f7293)
