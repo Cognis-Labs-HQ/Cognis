@@ -12,7 +12,7 @@ Dragging a widget below the current grid expands the content, overlay and shaded
 
 ## Accurate Previews and Room for Controls
 
-Drag previews and resize handles now use the same gap-aware dimensions as rendered cards, including half-grid placements. Editor measurements account for content padding and scrollbar space. The Elements panel uses available width so its action labels remain readable on desktop, tablet and mobile screens. Panel positioning measures width after applying the height limit, including any internal scrollbar.
+Drag previews and resize handles now use the same gap-aware dimensions as rendered cards, including half-grid placements. Editor measurements account for content padding and scrollbar space. The Elements panel uses available width so its action labels remain readable on desktop, tablet and mobile screens. Panel positioning measures width after applying the height limit, including any internal scrollbar. Yellow previews show the legal upward snap destination before release. Dropping applies that destination immediately while editing remains open, and snapping never crosses another occupied card.
 
 ## Stable Touch Layout Editing
 
@@ -20,7 +20,7 @@ Widgets retain the point where they were grabbed instead of jumping under the po
 
 ## Accurate Resize Controls
 
-Element removal now uses the shared cancel-button appearance. Resize handles check size limits, grid boundaries and neighbouring tiles. They remain available for legal shrinking when expansion is blocked, with directional cursors showing the available moves. Attempts to expand into another tile show an unavailable cursor.
+Element removal now uses the shared cancel-button appearance. Resize handles check size limits, grid boundaries and neighbouring tiles. They remain available for legal shrinking when expansion is blocked, with directional cursors showing the available moves. Attempts to expand into another tile show an unavailable cursor. Attempting to pass a minimum, maximum or grid-origin limit turns the preview orange. Horizontal, vertical and corner gestures report limit crossings independently while candidate dimensions remain bounded.
 
 ## Resize from Every Edge and Confirm Saves
 
@@ -32,7 +32,7 @@ Reusable editor modules document their public exports, call examples, input/outp
 
 ## Comfortable Workspace Defaults
 
-Dashboard branding has room for its icon and full title, welcome and login cards retain readable widths, and account details use a compact default height. Composer applies current minimum and maximum widths when a saved row requires repacking, keeping visible cards within their bounds without overwriting stored profiles. Normalized placements are validated before rendering, so a widened saved card at the right edge is repacked within the declared grid.
+Dashboard branding has room for its icon and full title, welcome and login cards retain readable widths, and account details use a compact default height. Composer applies current minimum and maximum widths when a saved row requires repacking, keeping visible cards within their bounds without overwriting stored profiles. Normalized placements are validated before rendering, so a widened saved card at the right edge is repacked within the declared grid. Explicit saved widths, heights and gaps are retained in main and nested grids for their column profile. Done persists the displayed geometry without a final packing or width-redistribution pass. Stable scrollbar gutters keep edit and view column selection consistent.
 
 ## Collision-Safe Widget Exchanges
 
@@ -57,3 +57,4 @@ Naming validation parses JavaScript and TypeScript throughout core, including ga
 - [244aff5](https://github.com/Cognis-Labs-HQ/Cognis/commit/244aff5f4fca07e76c4c484cec5df292116f7293)
 - [edb18fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/edb18fe66f9a1862b646b5139448c6b2808b5414)
 - [6769fc7](https://github.com/Cognis-Labs-HQ/Cognis/commit/6769fc72c6ee94e2aa5d7972e755499abde402ed)
+- [62bba8d](https://github.com/Cognis-Labs-HQ/Cognis/commit/62bba8d9866310444eca76beb41585951f44e34a)

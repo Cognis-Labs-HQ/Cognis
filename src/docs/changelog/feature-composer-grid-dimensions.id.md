@@ -12,7 +12,7 @@ Menyeret widget ke bawah grid saat ini memperluas konten, lapisan grid, dan baya
 
 ## Pratinjau Akurat dan Ruang untuk Kontrol
 
-Pratinjau seret dan pegangan pengubahan ukuran kini menggunakan ukuran yang sama dengan kartu yang dirender, termasuk jarak dan penempatan setengah kisi. Pengukuran editor memperhitungkan inset konten dan bilah gulir. Panel Elemen menggunakan lebar yang tersedia agar label tindakannya tetap terbaca di desktop, tablet, dan ponsel. Posisi panel memakai lebar yang diukur setelah batas tinggi diterapkan, termasuk bilah gulir internal.
+Pratinjau seret dan pegangan pengubahan ukuran kini menggunakan ukuran yang sama dengan kartu yang dirender, termasuk jarak dan penempatan setengah kisi. Pengukuran editor memperhitungkan inset konten dan bilah gulir. Panel Elemen menggunakan lebar yang tersedia agar label tindakannya tetap terbaca di desktop, tablet, dan ponsel. Posisi panel memakai lebar yang diukur setelah batas tinggi diterapkan, termasuk bilah gulir internal. Pratinjau kuning menunjukkan tujuan penempatan ke atas yang sah sebelum penunjuk dilepas. Pelepasan langsung menerapkan tujuan tersebut selagi editor tetap terbuka, dan penempatan tidak melompati kartu lain yang terisi.
 
 ## Penyuntingan Sentuh Stabil
 
@@ -20,7 +20,7 @@ Widget mempertahankan titik pegangan alih-alih melompat ke bawah penunjuk. Edito
 
 ## Kontrol Ukuran yang Akurat
 
-Penghapusan elemen kini menggunakan tampilan tombol batal bersama. Pegangan ukuran memeriksa batas ukuran, batas kisi, dan elemen tetangga. Pegangan tetap tersedia untuk pengecilan yang diizinkan saat pembesaran terhalang, dengan kursor arah yang menunjukkan gerakan yang tersedia. Percobaan memperbesar ke elemen lain menampilkan kursor tidak tersedia.
+Penghapusan elemen kini menggunakan tampilan tombol batal bersama. Pegangan ukuran memeriksa batas ukuran, batas kisi, dan elemen tetangga. Pegangan tetap tersedia untuk pengecilan yang diizinkan saat pembesaran terhalang, dengan kursor arah yang menunjukkan gerakan yang tersedia. Percobaan memperbesar ke elemen lain menampilkan kursor tidak tersedia. Percobaan melewati batas minimum, maksimum, atau titik awal kisi mengubah pratinjau menjadi oranye. Gerakan horizontal, vertikal, dan sudut melaporkan pelampauan batas secara independen sementara ukuran kandidat tetap dibatasi.
 
 ## Semua Tepi dan Konfirmasi Simpan
 
@@ -32,7 +32,7 @@ Modul editor yang dapat digunakan kembali mendokumentasikan ekspor publik, conto
 
 ## Ukuran Ruang Kerja yang Nyaman
 
-Merek dasbor menyediakan ruang untuk ikon dan judul lengkap, kartu sambutan dan login mempertahankan lebar yang mudah dibaca, dan detail akun memakai tinggi bawaan yang ringkas. Composer menerapkan lebar minimum dan maksimum saat baris tersimpan perlu disusun ulang, tanpa menimpa profil tersimpan. Penempatan yang dinormalisasi divalidasi sebelum ditampilkan, sehingga kartu tersimpan di tepi kanan yang melebar disusun ulang di dalam grid yang ditetapkan.
+Merek dasbor menyediakan ruang untuk ikon dan judul lengkap, kartu sambutan dan login mempertahankan lebar yang mudah dibaca, dan detail akun memakai tinggi bawaan yang ringkas. Composer menerapkan lebar minimum dan maksimum saat baris tersimpan perlu disusun ulang, tanpa menimpa profil tersimpan. Penempatan yang dinormalisasi divalidasi sebelum ditampilkan, sehingga kartu tersimpan di tepi kanan yang melebar disusun ulang di dalam grid yang ditetapkan. Lebar, tinggi, dan celah eksplisit yang disimpan dipertahankan pada kisi utama dan bersarang untuk profil kolomnya. Selesai menyimpan geometri yang ditampilkan tanpa pemadatan atau pembagian ulang lebar di akhir. Ruang bilah gulir yang stabil menjaga pemilihan kolom tetap konsisten antara penyuntingan dan tampilan.
 
 ## Pertukaran Widget Tanpa Tabrakan
 
@@ -57,3 +57,4 @@ Validasi nama mengurai JavaScript dan TypeScript di seluruh inti, termasuk gatew
 - [244aff5](https://github.com/Cognis-Labs-HQ/Cognis/commit/244aff5f4fca07e76c4c484cec5df292116f7293)
 - [edb18fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/edb18fe66f9a1862b646b5139448c6b2808b5414)
 - [6769fc7](https://github.com/Cognis-Labs-HQ/Cognis/commit/6769fc72c6ee94e2aa5d7972e755499abde402ed)
+- [62bba8d](https://github.com/Cognis-Labs-HQ/Cognis/commit/62bba8d9866310444eca76beb41585951f44e34a)

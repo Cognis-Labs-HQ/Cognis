@@ -12,7 +12,7 @@ Beim Ziehen eines Widgets unter das aktuelle Raster werden Inhalt, Rasterüberla
 
 ## Genaue Vorschau und Platz für Bedienelemente
 
-Ziehvorschauen und Größenänderungsgriffe verwenden dieselben Abmessungen mit berücksichtigten Abständen wie die gerenderten Karten, auch bei halben Rastereinheiten. Die Messung berücksichtigt Inhaltsabstände und Bildlaufleisten. Das Elementfenster nutzt die verfügbare Breite, damit seine Aktionsbeschriftungen auf Desktop, Tablet und Mobilgerät lesbar bleiben. Die Panelposition verwendet die nach der Höhenbegrenzung gemessene Breite einschließlich interner Bildlaufleisten.
+Ziehvorschauen und Größenänderungsgriffe verwenden dieselben Abmessungen mit berücksichtigten Abständen wie die gerenderten Karten, auch bei halben Rastereinheiten. Die Messung berücksichtigt Inhaltsabstände und Bildlaufleisten. Das Elementfenster nutzt die verfügbare Breite, damit seine Aktionsbeschriftungen auf Desktop, Tablet und Mobilgerät lesbar bleiben. Die Panelposition verwendet die nach der Höhenbegrenzung gemessene Breite einschließlich interner Bildlaufleisten. Gelbe Vorschauen zeigen das zulässige Einrastziel oberhalb der Ablageposition. Beim Loslassen wird es sofort im geöffneten Editor übernommen; das Einrasten überspringt keine andere belegte Karte.
 
 ## Stabile Touch-Bearbeitung
 
@@ -20,7 +20,7 @@ Widgets behalten den angefassten Punkt bei, statt unter den Zeiger zu springen. 
 
 ## Passende Größenregler
 
-Das Entfernen von Elementen verwendet jetzt die gemeinsame Darstellung der Abbrechen-Schaltflächen. Größenregler prüfen Größenlimits, Rastergrenzen und benachbarte Elemente. Ist Vergrößern blockiert, bleiben sie zum zulässigen Verkleinern verfügbar. Richtungszeiger zeigen die möglichen Bewegungen; Vergrößerungsversuche in belegte Felder erhalten einen Sperrzeiger.
+Das Entfernen von Elementen verwendet jetzt die gemeinsame Darstellung der Abbrechen-Schaltflächen. Größenregler prüfen Größenlimits, Rastergrenzen und benachbarte Elemente. Ist Vergrößern blockiert, bleiben sie zum zulässigen Verkleinern verfügbar. Richtungszeiger zeigen die möglichen Bewegungen; Vergrößerungsversuche in belegte Felder erhalten einen Sperrzeiger. Versuche, Mindest-, Höchst- oder Rasterursprungsgrenzen zu überschreiten, färben die Vorschau orange. Horizontale, vertikale und Eckbewegungen melden Grenzüberschreitungen unabhängig, während die Abmessungen begrenzt bleiben.
 
 ## Alle Kanten und Speicherbestätigung
 
@@ -32,7 +32,7 @@ Wiederverwendbare Editormodule dokumentieren öffentliche Exporte, Aufrufbeispie
 
 ## Lesbare Arbeitsbereichsvorgaben
 
-Die Dashboard-Marke bietet Platz für Symbol und vollständigen Titel; Begrüßung und Anmeldung behalten lesbare Breiten, Kontodaten eine kompakte Standardhöhe. Muss eine gespeicherte Zeile neu angeordnet werden, berücksichtigt Composer aktuelle Mindest- und Höchstbreiten, ohne gespeicherte Profile zu überschreiben. Normalisierte Platzierungen werden vor der Darstellung geprüft, damit eine verbreiterte gespeicherte Karte am rechten Rand innerhalb des deklarierten Rasters neu angeordnet wird.
+Die Dashboard-Marke bietet Platz für Symbol und vollständigen Titel; Begrüßung und Anmeldung behalten lesbare Breiten, Kontodaten eine kompakte Standardhöhe. Muss eine gespeicherte Zeile neu angeordnet werden, berücksichtigt Composer aktuelle Mindest- und Höchstbreiten, ohne gespeicherte Profile zu überschreiben. Normalisierte Platzierungen werden vor der Darstellung geprüft, damit eine verbreiterte gespeicherte Karte am rechten Rand innerhalb des deklarierten Rasters neu angeordnet wird. Gespeicherte Breiten, Höhen und Abstände bleiben im Haupt- und verschachtelten Raster für das jeweilige Spaltenprofil erhalten. Fertig speichert die sichtbare Geometrie ohne abschließendes Zusammenpacken oder Neuverteilen der Breiten. Stabile Scrollbarbereiche halten die Spaltenauswahl in Bearbeitung und Ansicht konsistent.
 
 ## Kollisionsfreier Widget-Tausch
 
@@ -57,3 +57,4 @@ Die Namensprüfung analysiert JavaScript und TypeScript im gesamten Kern einschl
 - [244aff5](https://github.com/Cognis-Labs-HQ/Cognis/commit/244aff5f4fca07e76c4c484cec5df292116f7293)
 - [edb18fe](https://github.com/Cognis-Labs-HQ/Cognis/commit/edb18fe66f9a1862b646b5139448c6b2808b5414)
 - [6769fc7](https://github.com/Cognis-Labs-HQ/Cognis/commit/6769fc72c6ee94e2aa5d7972e755499abde402ed)
+- [62bba8d](https://github.com/Cognis-Labs-HQ/Cognis/commit/62bba8d9866310444eca76beb41585951f44e34a)
