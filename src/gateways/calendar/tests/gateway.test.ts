@@ -548,7 +548,7 @@ test("calendar gateway removeDeclinedAttendee removes attendee from event", () =
     });
     const updated = gateway
         .listEvents(calendar.id)
-        .find((e) => e.id === event.id);
+        .find((candidateEvent) => candidateEvent.id === event.id);
     assert.ok(!updated?.attendees.includes("bob"));
 });
 
@@ -575,7 +575,7 @@ test("calendar gateway removeDeclinedAttendee does not remove event creator", ()
     });
     const updated = gateway
         .listEvents(calendar.id)
-        .find((e) => e.id === event.id);
+        .find((candidateEvent) => candidateEvent.id === event.id);
     assert.ok(updated?.attendees.includes("alice"));
 });
 
@@ -598,7 +598,7 @@ test("calendar gateway removeDeclinedAttendee with removeAll removes attendee fr
     });
     const seriesEvents = gateway
         .listEvents(calendar.id)
-        .filter((e) => e.recurrence === "weekly");
+        .filter((candidateEvent) => candidateEvent.recurrence === "weekly");
     assert.ok(seriesEvents.length > 1);
     gateway.removeDeclinedAttendee({
         eventId: seriesEvents[0].id,
@@ -607,10 +607,10 @@ test("calendar gateway removeDeclinedAttendee with removeAll removes attendee fr
     });
     assert.ok(
         seriesEvents.every(
-            (e) =>
+            (candidateEvent) =>
                 !gateway
                     .listEvents(calendar.id)
-                    .find((ev) => ev.id === e.id)
+                    .find((entry) => entry.id === candidateEvent.id)
                     ?.attendees.includes("bob"),
         ),
     );

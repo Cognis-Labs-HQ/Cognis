@@ -7,7 +7,7 @@
     display: grid;
     grid-template-columns: repeat(var(--grid-cols, 1), minmax(0, 1fr));
     grid-auto-rows: var(--composer-grid-row-size, 90px);
-    gap: 8px;
+    gap: var(--composer-grid-gap, 8px);
 }
 
 .composer-view-grid .widget-card {
@@ -423,4 +423,8 @@
 .composer-view-grid--compact > .widget-card {
     max-width: 100%;
     overflow-wrap: anywhere;
+}
+
+.sub-composer-inner.composer-view-grid {
+    display: grid;
 }

@@ -89,10 +89,20 @@ export function renderStrokePatternPreviews(form) {
                 if (!points.length) continue;
                 context.beginPath();
                 points.forEach((point, index) => {
-                    const x = 6 + Number(point.x) * (canvas.width - 12);
-                    const y = 6 + Number(point.y) * (canvas.height - 12);
-                    if (index === 0) context.moveTo(x, y);
-                    else context.lineTo(x, y);
+                    const horizontalCoordinate =
+                        6 + Number(point.x) * (canvas.width - 12);
+                    const verticalCoordinate =
+                        6 + Number(point.y) * (canvas.height - 12);
+                    if (index === 0)
+                        context.moveTo(
+                            horizontalCoordinate,
+                            verticalCoordinate,
+                        );
+                    else
+                        context.lineTo(
+                            horizontalCoordinate,
+                            verticalCoordinate,
+                        );
                 });
                 context.stroke();
             }

@@ -18,7 +18,7 @@ import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import {
     dispatchRoute,
     makeJsonRequest,
-    makeInMemoryDb,
+    makeInMemoryDatabase,
 } from "./auth-gateway-test-helpers.js";
 
 async function registrationFixture() {
@@ -38,7 +38,7 @@ async function registrationFixture() {
             profiles.push(accountId);
         },
     );
-    const authGateway = new CoreAuthGateway(makeInMemoryDb());
+    const authGateway = new CoreAuthGateway(makeInMemoryDatabase());
     authGateway.registerAdapter({
         id: "external-sso",
         name: "External SSO",

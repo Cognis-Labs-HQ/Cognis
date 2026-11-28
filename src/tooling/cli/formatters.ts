@@ -70,8 +70,12 @@ export function formatField(label: string, value: unknown): string {
     return `${colorize(`${label}:`, "gray")} ${value === undefined || value === null ? FIELD_EMPTY_PLACEHOLDER : String(value)}`;
 }
 
-export function formatBoolean(value: boolean, yes = "Yes", no = "No"): string {
-    return colorize(value ? yes : no, value ? "green" : "yellow");
+export function formatBoolean(
+    value: boolean,
+    yes = "Yes",
+    negativeLabel = "No",
+): string {
+    return colorize(value ? yes : negativeLabel, value ? "green" : "yellow");
 }
 
 function isPlainRecord(value: unknown): value is Record<string, unknown> {

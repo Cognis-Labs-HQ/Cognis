@@ -32,7 +32,7 @@ import {
     resolveRouteContext,
     type RouteContext,
 } from "../../../../api/reuse/route-context.js";
-import type { DbClassesStore, StudyLanguageRow } from "../store/index.js";
+import type { DatabaseClassesStore, StudyLanguageRow } from "../store/index.js";
 
 type SetRole = (username: string, role: "teacher") => Promise<void>;
 type DispatchToRole = (
@@ -75,7 +75,7 @@ function normalizeLanguageList(input: unknown): string[] {
 }
 
 export function createClassesRoutes(
-    store: DbClassesStore,
+    store: DatabaseClassesStore,
     options: ClassesRouteOptions = {},
 ): (req: IncomingMessage, res: ServerResponse, url: URL) => Promise<boolean> {
     const ctx = resolveRouteContext(options.routeContext);
@@ -84,7 +84,7 @@ export function createClassesRoutes(
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        const logMeta = {
+        const logMetadata = {
             component: "study-classes-routes",
             method: req.method ?? "GET",
             path: url.pathname,
@@ -112,11 +112,12 @@ export function createClassesRoutes(
             try {
                 const classes = await store.getEnrolledClasses(claims.sub);
                 jsonOk(res, classes);
-            } catch (err) {
+            } catch (error) {
                 options.log?.("error", "Failed to load enrolled classes.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: claims.sub,
-                    error: err instanceof Error ? err.message : String(err),
+                    error:
+                        error instanceof Error ? error.message : String(error),
                 });
                 jsonError(
                     res,
@@ -142,11 +143,12 @@ export function createClassesRoutes(
                     claims.sub,
                 );
                 jsonOk(res, classes);
-            } catch (err) {
+            } catch (error) {
                 options.log?.("error", "Failed to load available classes.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: claims.sub,
-                    error: err instanceof Error ? err.message : String(err),
+                    error:
+                        error instanceof Error ? error.message : String(error),
                 });
                 jsonError(
                     res,
@@ -164,8 +166,8 @@ export function createClassesRoutes(
         ) {
             const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
-            const prefs = await store.getStudyPreferences(claims.sub);
-            jsonOk(res, prefs);
+            const preferences = await store.getStudyPreferences(claims.sub);
+            jsonOk(res, preferences);
             return true;
         }
 
@@ -185,18 +187,18 @@ export function createClassesRoutes(
             const teachingLanguages = normalizeLanguageList(
                 body.teachingLanguages,
             );
-            const prefs = await store.saveStudyPreferences(
+            const preferences = await store.saveStudyPreferences(
                 claims.sub,
                 learningLanguages,
                 teachingLanguages,
             );
             options.log?.("info", "Saved study preferences.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
                 learningLanguageCount: learningLanguages.length,
                 teachingLanguageCount: teachingLanguages.length,
             });
-            jsonOk(res, prefs);
+            jsonOk(res, preferences);
             return true;
         }
 
@@ -248,11 +250,15 @@ export function createClassesRoutes(
                 await options.setRole?.(claims.sub, "teacher");
                 await options.setProfileRole?.(claims.sub, "teacher");
                 options.log?.("info", "Auto-approved teacher request.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: claims.sub,
                     languageCode,
                 });
-                jsonOk(res, { request, class: classRow, autoApproved: true });
+                jsonOk(res, {
+                    request,
+                    class: classRow,
+                    autoApproved: true,
+                });
                 return true;
             }
 
@@ -279,7 +285,7 @@ export function createClassesRoutes(
                 },
             });
             options.log?.("info", "Submitted teacher request.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
                 languageCode,
                 requestId: request.id,
@@ -329,7 +335,7 @@ export function createClassesRoutes(
                     "teacher",
                 );
                 options.log?.("info", "Approved teacher request.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: claims.sub,
                     teacherAccountId: classRow.teacherAccountId,
                     languageCode: classRow.languageCode,
@@ -339,7 +345,7 @@ export function createClassesRoutes(
             } else {
                 await store.rejectTeacherRequest(requestId, claims.sub);
                 options.log?.("info", "Rejected teacher request.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: claims.sub,
                     requestId,
                 });
@@ -376,7 +382,7 @@ export function createClassesRoutes(
                 body as Partial<StudyLanguageRow> & { code: string },
             );
             options.log?.("info", "Upserted study language.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
                 code: language.code,
             });
@@ -426,11 +432,12 @@ export function createClassesRoutes(
                     }),
                 );
                 jsonOk(res, snapshots);
-            } catch (err) {
+            } catch (error) {
                 options.log?.("error", "Failed to load classroom snapshots.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: claims.sub,
-                    error: err instanceof Error ? err.message : String(err),
+                    error:
+                        error instanceof Error ? error.message : String(error),
                 });
                 jsonError(
                     res,
@@ -506,8 +513,11 @@ export function createClassesRoutes(
                         },
                     );
                 jsonOk(res, classroomState);
-            } catch (err) {
-                if (err instanceof Error && err.message === "not_authorized") {
+            } catch (error) {
+                if (
+                    error instanceof Error &&
+                    error.message === "not_authorized"
+                ) {
                     jsonError(
                         res,
                         403,
@@ -517,8 +527,8 @@ export function createClassesRoutes(
                     return true;
                 }
                 if (
-                    err instanceof Error &&
-                    err.message === "invalid_student_limit"
+                    error instanceof Error &&
+                    error.message === "invalid_student_limit"
                 ) {
                     jsonError(
                         res,
@@ -529,10 +539,11 @@ export function createClassesRoutes(
                     return true;
                 }
                 options.log?.("error", "Failed to update classroom layout.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: claims.sub,
                     classId,
-                    error: err instanceof Error ? err.message : String(err),
+                    error:
+                        error instanceof Error ? error.message : String(error),
                 });
                 jsonError(
                     res,
@@ -561,8 +572,11 @@ export function createClassesRoutes(
                     studentAccountId,
                 );
                 jsonOk(res, { removed: true });
-            } catch (err) {
-                if (err instanceof Error && err.message === "not_authorized") {
+            } catch (error) {
+                if (
+                    error instanceof Error &&
+                    error.message === "not_authorized"
+                ) {
                     jsonError(
                         res,
                         403,
@@ -572,11 +586,12 @@ export function createClassesRoutes(
                     return true;
                 }
                 options.log?.("error", "Failed to remove class member.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: claims.sub,
                     classId,
                     studentAccountId,
-                    error: err instanceof Error ? err.message : String(err),
+                    error:
+                        error instanceof Error ? error.message : String(error),
                 });
                 jsonError(
                     res,
@@ -601,19 +616,20 @@ export function createClassesRoutes(
                     claims.sub,
                 );
                 options.log?.("info", "Student requested to join class.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: claims.sub,
                     classId,
                     status: membership.status,
                 });
                 res.writeHead(201, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: membership }));
-            } catch (err) {
+            } catch (error) {
                 options.log?.("error", "Failed to process join request.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: claims.sub,
                     classId,
-                    error: err instanceof Error ? err.message : String(err),
+                    error:
+                        error instanceof Error ? error.message : String(error),
                 });
                 jsonError(res, 500, "internal_error", "Failed to join class.");
             }
@@ -630,17 +646,18 @@ export function createClassesRoutes(
             try {
                 await store.leaveClass(classId, claims.sub);
                 options.log?.("info", "Student left class.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: claims.sub,
                     classId,
                 });
                 jsonOk(res, { left: true });
-            } catch (err) {
+            } catch (error) {
                 options.log?.("error", "Failed to leave class.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: claims.sub,
                     classId,
-                    error: err instanceof Error ? err.message : String(err),
+                    error:
+                        error instanceof Error ? error.message : String(error),
                 });
                 jsonError(res, 500, "internal_error", "Failed to leave class.");
             }
@@ -662,8 +679,11 @@ export function createClassesRoutes(
                     searchQuery || undefined,
                 );
                 jsonOk(res, members);
-            } catch (err) {
-                if (err instanceof Error && err.message === "not_authorized") {
+            } catch (error) {
+                if (
+                    error instanceof Error &&
+                    error.message === "not_authorized"
+                ) {
                     jsonError(
                         res,
                         403,
@@ -673,10 +693,11 @@ export function createClassesRoutes(
                     return true;
                 }
                 options.log?.("error", "Failed to load class members.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: claims.sub,
                     classId,
-                    error: err instanceof Error ? err.message : String(err),
+                    error:
+                        error instanceof Error ? error.message : String(error),
                 });
                 jsonError(
                     res,
@@ -701,8 +722,11 @@ export function createClassesRoutes(
                     claims.sub,
                 );
                 jsonOk(res, requests);
-            } catch (err) {
-                if (err instanceof Error && err.message === "not_authorized") {
+            } catch (error) {
+                if (
+                    error instanceof Error &&
+                    error.message === "not_authorized"
+                ) {
                     jsonError(
                         res,
                         403,
@@ -712,10 +736,11 @@ export function createClassesRoutes(
                     return true;
                 }
                 options.log?.("error", "Failed to load join requests.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: claims.sub,
                     classId,
-                    error: err instanceof Error ? err.message : String(err),
+                    error:
+                        error instanceof Error ? error.message : String(error),
                 });
                 jsonError(
                     res,
@@ -757,14 +782,17 @@ export function createClassesRoutes(
                     claims.sub,
                 );
                 options.log?.("info", "Teacher invited student to class.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: claims.sub,
                     classId,
                     studentAccountId: accountId,
                 });
                 jsonOk(res, membership);
-            } catch (err) {
-                if (err instanceof Error && err.message === "not_authorized") {
+            } catch (error) {
+                if (
+                    error instanceof Error &&
+                    error.message === "not_authorized"
+                ) {
                     jsonError(
                         res,
                         403,
@@ -774,10 +802,11 @@ export function createClassesRoutes(
                     return true;
                 }
                 options.log?.("error", "Failed to invite student.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: claims.sub,
                     classId,
-                    error: err instanceof Error ? err.message : String(err),
+                    error:
+                        error instanceof Error ? error.message : String(error),
                 });
                 jsonError(
                     res,
@@ -806,14 +835,17 @@ export function createClassesRoutes(
                     action === "approve",
                 );
                 options.log?.("info", `Teacher ${action}d join request.`, {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: claims.sub,
                     classId,
                     studentAccountId,
                 });
                 jsonOk(res, { reviewed: true, action });
-            } catch (err) {
-                if (err instanceof Error && err.message === "not_authorized") {
+            } catch (error) {
+                if (
+                    error instanceof Error &&
+                    error.message === "not_authorized"
+                ) {
                     jsonError(
                         res,
                         403,
@@ -823,11 +855,12 @@ export function createClassesRoutes(
                     return true;
                 }
                 options.log?.("error", "Failed to review join request.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: claims.sub,
                     classId,
                     studentAccountId,
-                    error: err instanceof Error ? err.message : String(err),
+                    error:
+                        error instanceof Error ? error.message : String(error),
                 });
                 jsonError(
                     res,

@@ -28,7 +28,7 @@ export function createTfaRoutes(
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        const logMeta = {
+        const logMetadata = {
             component: "tfa-gateway",
             method: req.method ?? "GET",
             path: url.pathname,
@@ -243,7 +243,7 @@ export function createTfaRoutes(
                 },
             );
             log?.("info", "Login succeeded after TFA verification.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: pendingAttempt.accountId,
                 provider: pendingAttempt.provider,
                 role: pendingAttempt.role,
@@ -290,7 +290,7 @@ export function createTfaRoutes(
             }
             const status = await gateway.getUserStatus(targetAccountId);
             log?.("debug", "Read TFA status.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
                 targetAccountId,
             });
@@ -646,7 +646,7 @@ export function createTfaRoutes(
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { reset: true } }));
             log?.("warn", "Admin reset user TFA state.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
                 targetAccountId: accountId,
             });

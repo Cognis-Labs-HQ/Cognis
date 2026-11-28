@@ -53,7 +53,7 @@ async function openDefaultNavigationConfirmation(confirmMessage) {
 }
 
 export function createUnsavedChangesBar(
-    floatingEl,
+    floatingElement,
     { onSave, onDiscard, quiet = false, confirmMessage, openConfirmation } = {},
 ) {
     const dirtyMap = new Map();
@@ -104,12 +104,12 @@ export function createUnsavedChangesBar(
     }
 
     function sync() {
-        if (!floatingEl) return;
+        if (!floatingElement) return;
         if (quiet) {
-            floatingEl.hidden = true;
+            floatingElement.hidden = true;
             return;
         }
-        floatingEl.hidden = !isAnyDirty();
+        floatingElement.hidden = !isAnyDirty();
     }
 
     function markDirty(id, dirty) {
@@ -117,7 +117,7 @@ export function createUnsavedChangesBar(
         sync();
     }
 
-    floatingEl
+    floatingElement
         ?.querySelector('[data-action="save"]')
         ?.addEventListener("click", async () => {
             try {
@@ -129,7 +129,7 @@ export function createUnsavedChangesBar(
             }
         });
 
-    floatingEl
+    floatingElement
         ?.querySelector('[data-action="discard"]')
         ?.addEventListener("click", () => {
             onDiscard?.();
@@ -229,9 +229,9 @@ function readTrackedFieldState(field) {
  */
 export function createFormDirtyTracker(
     rootElement,
-    { floatingEl = null, quiet = false } = {},
+    { floatingEl: floatingElement = null, quiet = false } = {},
 ) {
-    const changesBar = createUnsavedChangesBar(floatingEl, { quiet });
+    const changesBar = createUnsavedChangesBar(floatingElement, { quiet });
     if (!(rootElement?.querySelectorAll instanceof Function)) {
         return {
             isAnyDirty: changesBar.isAnyDirty,

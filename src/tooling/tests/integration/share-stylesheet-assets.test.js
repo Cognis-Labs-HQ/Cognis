@@ -6,15 +6,17 @@ import { bootstrap } from "../../../gateways/share/bootstrap.js";
 import { sourceFiles } from "../../reuse/component-files.js";
 import { createGatewayHost } from "../../reuse/gateway-host.js";
 
-test("registered Share method stylesheets resolve their component assets through their published mount", async (t) => {
-    const { context } = await createGatewayHost(t, [["share", bootstrap]]);
+test("registered Share method stylesheets resolve their component assets through their published mount", async (testContext) => {
+    const { context } = await createGatewayHost(testContext, [
+        ["share", bootstrap],
+    ]);
     const mounts = readdirSync(resolve("src/adapters/share"), {
         withFileTypes: true,
     })
         .filter((entry) => entry.isDirectory())
         .map((entry) => ({
             prefix: `/static/adapters/share/${entry.name}/`,
-            directory: context.uiRegistry.getAdapterStaticDir(
+            directory: context.uiRegistry.getAdapterStaticDirectory(
                 "share",
                 entry.name,
             ),

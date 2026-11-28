@@ -383,7 +383,7 @@ test("share resolution uses the authenticated API client without treating passwo
     );
     assert.match(
         sessionFlowSource,
-        /isViewingAsGuest\(\)[\s\S]*PREV_ACCESS_TOKEN_KEY[\s\S]*restoreGuestToken\(\)/,
+        /isViewingAsGuest\(\)[\s\S]*PREVIOUS_ACCESS_TOKEN_KEY[\s\S]*restoreGuestToken\(\)/,
     );
     assert.match(sessionFlowSource, /listenForShareRevocation/);
     assert.match(sessionFlowSource, /shareId: String\(shareData\.shareId/);

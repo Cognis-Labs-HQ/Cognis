@@ -14,7 +14,7 @@ import {
     type RouteContext,
 } from "../../api/reuse/route-context.js";
 import { loadAdapterAdminCatalog } from "../reuse/adapter-admin-catalog.js";
-import type { DbExecutor } from "../db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../db/reuse/db-executor.js";
 import {
     LoggingPreferenceStore,
     type LoggingPreferenceValue,
@@ -71,11 +71,13 @@ function normalizeLogEntry(rawLine: string): Record<string, unknown> {
     try {
         const parsed = JSON.parse(rawLine) as Record<string, unknown>;
         const level = String(parsed.level ?? "info").toLowerCase();
-        const ts = parsed.ts ? String(parsed.ts) : new Date().toISOString();
+        const timestamp = parsed.ts
+            ? String(parsed.ts)
+            : new Date().toISOString();
         const message = parsed.message ? String(parsed.message) : rawLine;
         return {
             ...parsed,
-            ts,
+            ts: timestamp,
             level: isLogLevel(level) ? level : "info",
             message,
         };
@@ -106,9 +108,9 @@ function matchesFilters(
         return false;
     }
     if (timeRangeMs !== null) {
-        const tsMs = parseTimestampMs(entry);
-        if (tsMs === null) return false;
-        if (Date.now() - tsMs > timeRangeMs) {
+        const timestampMs = parseTimestampMs(entry);
+        if (timestampMs === null) return false;
+        if (Date.now() - timestampMs > timeRangeMs) {
             return false;
         }
     }
@@ -175,14 +177,14 @@ function createLoggingRoutes(
                 );
                 return true;
             }
-            const submittedMeta =
+            const submittedMetadata =
                 body.meta &&
                 typeof body.meta === "object" &&
                 !Array.isArray(body.meta)
                     ? (body.meta as Record<string, unknown>)
                     : {};
             log?.(level, message, {
-                ...submittedMeta,
+                ...submittedMetadata,
                 source: "browser",
                 accountId: claims.sub,
             });
@@ -211,7 +213,7 @@ function createLoggingRoutes(
         const timeRangeMs = parseTimeRangeFilter(
             url.searchParams.get("timeRange"),
         );
-        let seq = 0;
+        let sequence = 0;
         let contentLength = 0;
         let pendingLine = "";
         let closed = false;
@@ -219,7 +221,7 @@ function createLoggingRoutes(
         const pushEntry = (entry: Record<string, unknown>) => {
             if (!matchesFilters(entry, severityThreshold, keyword, timeRangeMs))
                 return;
-            writeSseEvent(res, "log", { id: seq++, ...entry });
+            writeSseEvent(res, "log", { id: sequence++, ...entry });
         };
 
         const processLines = (lines: string[]) => {
@@ -249,7 +251,10 @@ function createLoggingRoutes(
                         ),
                     );
                 for (const entry of entries.slice(-MAX_SNAPSHOT_ENTRIES)) {
-                    writeSseEvent(res, "log", { id: seq++, ...entry });
+                    writeSseEvent(res, "log", {
+                        id: sequence++,
+                        ...entry,
+                    });
                 }
             } catch (error) {
                 log?.(
@@ -579,8 +584,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const log = ctx.log;
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
-    const dbExecutor = ctx.capabilities.require<DbExecutor>("db:executor");
-    const preferenceStore = new LoggingPreferenceStore(dbExecutor);
+    const databaseExecutor =
+        ctx.capabilities.require<DatabaseExecutor>("db:executor");
+    const preferenceStore = new LoggingPreferenceStore(databaseExecutor);
     await preferenceStore.ensureSchema();
     const level = isLogLevel(process.env.LOG_LEVEL)
         ? (process.env.LOG_LEVEL as LogLevel)
@@ -611,9 +617,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         process.env.LOG_ROTATE_COMPRESS !== "false";
 
     const fileAppend =
-        ctx.capabilities.get<(fp: string, content: string) => Promise<void>>(
-            "file:append",
-        );
+        ctx.capabilities.get<
+            (filePath: string, content: string) => Promise<void>
+        >("file:append");
 
     const logger = new Logger(
         level,
@@ -656,7 +662,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         }
     }
     for (const adapter of adapterCatalog) {
-        ctx.uiRegistry?.registerAdapterStaticDir(
+        ctx.uiRegistry?.registerAdapterStaticDirectory(
             "logging",
             adapter.id,
             path.join(adaptersRoot, "logging", adapter.id),
@@ -683,7 +689,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "logging",
     );
 
-    const uiDir = path.resolve(
+    const uiDirectory = path.resolve(
         process.cwd(),
         "src",
         "gateways",
@@ -695,7 +701,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         label: "Logs",
         scriptUrl: "/static/gateways/logging/admin-section.js",
     });
-    ctx.uiRegistry?.registerStaticDir("logging", uiDir);
+    ctx.uiRegistry?.registerStaticDirectory("logging", uiDirectory);
 
     ctx.routeRegistry.registerPrefix("/api/v1/logging", "logging");
     ctx.uiRegistry?.registerCapabilityProvider({

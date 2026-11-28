@@ -19,8 +19,8 @@ test("GatewayRegistry.register and list", () => {
 
     const list = registry.list();
     assert.equal(list.length, 2);
-    assert.ok(list.some((g) => g.id === "notify"));
-    assert.ok(list.some((g) => g.id === "auth"));
+    assert.ok(list.some((gateway) => gateway.id === "notify"));
+    assert.ok(list.some((gateway) => gateway.id === "auth"));
 });
 
 test("GatewayRegistry.get returns correct manifest", () => {
@@ -117,7 +117,7 @@ test("GatewayRegistry.assertRequiredInitialized throws for missing required gate
 
     assert.throws(
         () => registry.assertRequiredInitialized(["db", "logging"]),
-        (err: Error) => err.message.includes("logging"),
+        (error: Error) => error.message.includes("logging"),
     );
 });
 

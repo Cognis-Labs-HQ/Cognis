@@ -1,4 +1,4 @@
-import type { DbExecutor } from "../../db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../db/reuse/db-executor.js";
 
 export interface ShareAdapterConfigStoreContract {
     list(): Promise<Array<{ adapterId: string; enabled: boolean }>>;
@@ -6,7 +6,7 @@ export interface ShareAdapterConfigStoreContract {
 }
 
 export class ShareAdapterConfigStore implements ShareAdapterConfigStoreContract {
-    constructor(private readonly db: DbExecutor) {}
+    constructor(private readonly db: DatabaseExecutor) {}
 
     async ensureSchema(): Promise<void> {
         await this.db.ensureTable({

@@ -19,20 +19,22 @@
  */
 export function createAdaptivePoller({
     task,
-    minIntervalMs = 500,
-    maxIntervalMs = 30_000,
-    initialIntervalMs = maxIntervalMs,
+    minIntervalMs: minIntervalMs = 500,
+    maxIntervalMs: maxIntervalMs = 30_000,
+    initialIntervalMs: initialIntervalMs = maxIntervalMs,
     windDownFactor = 1.6,
     onError = null,
-    setTimeoutFn = globalThis.setTimeout?.bind(globalThis),
-    clearTimeoutFn = globalThis.clearTimeout?.bind(globalThis),
+    setTimeoutFn: setTimeoutCallback = globalThis.setTimeout?.bind(globalThis),
+    clearTimeoutFn: clearTimeoutCallback = globalThis.clearTimeout?.bind(
+        globalThis,
+    ),
 } = {}) {
     if (typeof task !== "function") {
         throw new TypeError("createAdaptivePoller requires a task function");
     }
     if (
-        typeof setTimeoutFn !== "function" ||
-        typeof clearTimeoutFn !== "function"
+        typeof setTimeoutCallback !== "function" ||
+        typeof clearTimeoutCallback !== "function"
     ) {
         throw new TypeError("createAdaptivePoller requires timer functions");
     }
@@ -50,7 +52,7 @@ export function createAdaptivePoller({
 
     function clearTimer() {
         if (timer !== null) {
-            clearTimeoutFn(timer);
+            clearTimeoutCallback(timer);
             timer = null;
         }
     }
@@ -58,7 +60,7 @@ export function createAdaptivePoller({
     function schedule(delay = currentInterval) {
         if (!running) return;
         clearTimer();
-        timer = setTimeoutFn(
+        timer = setTimeoutCallback(
             () => {
                 timer = null;
                 void run();

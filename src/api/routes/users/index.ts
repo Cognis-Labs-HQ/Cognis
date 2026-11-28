@@ -64,7 +64,7 @@ export function createUserRoutes(
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        const logMeta = {
+        const logMetadata = {
             component: "api-users",
             method: req.method ?? "GET",
             path: url.pathname,
@@ -103,7 +103,7 @@ export function createUserRoutes(
                 })),
             );
             log?.("debug", "Listed users.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
                 count: users.length,
             });
@@ -132,7 +132,7 @@ export function createUserRoutes(
             const target = decodeURIComponent(infoMatch[1]);
             if (!ctx.canAccessUserData(claims, target)) {
                 log?.("warn", "Blocked unauthorized user info lookup.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: claims.sub,
                     targetAccountId: target,
                 });
@@ -150,7 +150,7 @@ export function createUserRoutes(
                     "warn",
                     "User info lookup failed because user was not found.",
                     {
-                        ...logMeta,
+                        ...logMetadata,
                         accountId: claims.sub,
                         targetAccountId: target,
                     },
@@ -164,7 +164,7 @@ export function createUserRoutes(
                 return true;
             }
             log?.("debug", "Read user info.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
                 targetAccountId: target,
             });
@@ -221,7 +221,7 @@ export function createUserRoutes(
             );
             if (callerClaims.sub === username) {
                 log?.("warn", "Blocked self-management attempt.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: callerClaims.sub,
                     targetAccountId: username,
                     action,
@@ -248,7 +248,7 @@ export function createUserRoutes(
                     "warn",
                     "Blocked admin attempt to modify privileged account.",
                     {
-                        ...logMeta,
+                        ...logMetadata,
                         accountId: callerClaims.sub,
                         targetAccountId: username,
                         action,
@@ -299,7 +299,7 @@ export function createUserRoutes(
                         "warn",
                         "Blocked modification of protected founder account.",
                         {
-                            ...logMeta,
+                            ...logMetadata,
                             accountId: callerClaims.sub,
                             targetAccountId: username,
                             action,
@@ -327,7 +327,7 @@ export function createUserRoutes(
             const role = String(body.role ?? "user");
             if (!VALID_ROLES.has(role)) {
                 log?.("warn", "Rejected user creation with invalid role.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: adminClaims.sub,
                     targetAccountId: username,
                     role,
@@ -386,7 +386,7 @@ export function createUserRoutes(
                 return true;
             }
             log?.("info", "Created user account.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: adminClaims.sub,
                 targetAccountId:
                     emitResult?.accountId ?? persistResult.created?.username,
@@ -414,7 +414,7 @@ export function createUserRoutes(
             }
             if (!VALID_ROLES.has(role)) {
                 log?.("warn", "Rejected role change with invalid role.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: adminClaims.sub,
                     targetAccountId: username,
                     role,
@@ -436,14 +436,14 @@ export function createUserRoutes(
             if (role === "teacher" || role === "admin" || role === "owner") {
                 await setProfileVisibility?.(username, "friends");
                 log?.("warn", "Updated privileged role visibility default.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: adminClaims.sub,
                     targetAccountId: username,
                     visibility: "friends",
                 });
             }
             log?.("warn", "Updated user role.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: adminClaims.sub,
                 targetAccountId: username,
                 role,
@@ -475,7 +475,7 @@ export function createUserRoutes(
                 String(body.password ?? "changeme"),
             );
             log?.("warn", "Updated user password.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: adminClaims.sub,
                 targetAccountId: username,
             });
@@ -487,7 +487,7 @@ export function createUserRoutes(
         if (req.method === "POST" && action === "enable") {
             await accountStore.setEnabled(username, true);
             log?.("warn", "Enabled user account.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: adminClaims.sub,
                 targetAccountId: username,
             });
@@ -499,7 +499,7 @@ export function createUserRoutes(
         if (req.method === "POST" && action === "disable") {
             if (callerClaims?.sub === username) {
                 log?.("warn", "Blocked self-disable attempt.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: callerClaims.sub,
                 });
                 res.writeHead(409, { "content-type": "application/json" });
@@ -570,7 +570,7 @@ export function createUserRoutes(
                 "cleanup-dependencies"
             ] ?? [])[0] as { revokedTokenCount?: number } | undefined;
             log?.("warn", "Archived user account from admin disable control.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: adminClaims.sub,
                 targetAccountId: username,
                 revokedTokenCount: cleanupResult?.revokedTokenCount ?? 0,
@@ -595,7 +595,7 @@ export function createUserRoutes(
             }
             await setProfileLifecycleState(username, "active");
             log?.("warn", "De-archived user profile.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: adminClaims.sub,
                 targetAccountId: username,
             });
@@ -608,7 +608,7 @@ export function createUserRoutes(
             const body = await readJson(req);
             await accountStore.setFounder(username, Boolean(body.isFounder));
             log?.("warn", "Updated founder status.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: adminClaims.sub,
                 targetAccountId: username,
                 isFounder: Boolean(body.isFounder),
@@ -627,7 +627,7 @@ export function createUserRoutes(
                 await preferenceStore.clearUser(username);
             }
             log?.("warn", "Cleared user preferences.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: adminClaims.sub,
                 targetAccountId: username,
             });
@@ -681,7 +681,7 @@ export function createUserRoutes(
                 "cleanup-dependencies"
             ] ?? [])[0] as { revokedTokenCount?: number } | undefined;
             log?.("warn", "Deleted user account.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: adminClaims.sub,
                 targetAccountId: username,
                 revokedTokenCount: deleteCleanupResult?.revokedTokenCount ?? 0,

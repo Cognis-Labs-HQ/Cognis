@@ -131,10 +131,10 @@ test("auth session-flow-hooks.js imports flow-registry.js before extending flows
         /import ["']\/static\/reuse\/flow-registry\.js["']/,
         "auth session-flow-hooks.js must import flow-registry.js so flows are registered before extendFlow is called, regardless of load order",
     );
-    const registryImportIdx = src.indexOf("flow-registry.js");
-    const firstExtendIdx = src.indexOf("extendFlow(");
+    const registryImportIndex = src.indexOf("flow-registry.js");
+    const firstExtendIndex = src.indexOf("extendFlow(");
     assert.ok(
-        registryImportIdx < firstExtendIdx,
+        registryImportIndex < firstExtendIndex,
         "flow-registry.js import must appear before the first extendFlow() call in auth session-flow-hooks.js",
     );
 });

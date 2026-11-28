@@ -27,5 +27,7 @@ export function listInvitedPendingEvents(
             results.push(event);
         }
     }
-    return results.sort((a, b) => a.startAt.localeCompare(b.startAt));
+    return results.sort((leftEntry, rightEntry) =>
+        leftEntry.startAt.localeCompare(rightEntry.startAt),
+    );
 }

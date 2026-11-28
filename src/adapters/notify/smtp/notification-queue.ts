@@ -6,10 +6,14 @@ import type { NotificationSenderQueueEntry } from "../../../gateways/notify/cont
 export class SmtpRateLimiter {
     private readonly lastSent = new Map<string, number>();
 
+    readonly intervalMs: number;
+
     constructor(
-        readonly intervalMs: number,
+        intervalMs: number,
         private readonly now: () => number = () => Date.now(),
-    ) {}
+    ) {
+        this.intervalMs = intervalMs;
+    }
 
     nextAvailableAt(recipient: string): number {
         const last = this.lastSent.get(recipient.trim().toLowerCase());
@@ -89,7 +93,7 @@ export class SmtpNotificationQueue {
     constructor(
         private readonly rateLimiter: SmtpRateLimiter,
         private readonly sleep: (ms: number) => Promise<void>,
-        private readonly sendFn: (
+        private readonly sendCallback: (
             payload: SmtpNotificationQueuePayload,
         ) => Promise<void>,
         readonly purpose: string,
@@ -170,7 +174,11 @@ export class SmtpNotificationQueue {
             .filter(
                 (entry) => entry.status === "sent" || entry.status === "failed",
             )
-            .sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt));
+            .sort(
+                (leftEntry, rightEntry) =>
+                    Date.parse(rightEntry.updatedAt) -
+                    Date.parse(leftEntry.updatedAt),
+            );
         if (completed.length <= SMTP_QUEUE_HISTORY_LIMIT) return;
         for (const entry of completed.slice(SMTP_QUEUE_HISTORY_LIMIT)) {
             this.queueById.delete(entry.notificationId);
@@ -215,7 +223,7 @@ export class SmtpNotificationQueue {
                     error: undefined,
                 });
                 try {
-                    await this.sendFn({
+                    await this.sendCallback({
                         purpose: nextEntry.purpose,
                         recipientEmail: nextEntry.recipientEmail,
                         subject: nextEntry.subject,
@@ -366,7 +374,11 @@ export class SmtpNotificationQueue {
 
     listQueue(): NotificationSenderQueueEntry[] {
         return Array.from(this.queueById.values())
-            .sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt))
+            .sort(
+                (leftEntry, rightEntry) =>
+                    Date.parse(rightEntry.updatedAt) -
+                    Date.parse(leftEntry.updatedAt),
+            )
             .map((entry) => this.snapshotQueueEntry(entry));
     }
 

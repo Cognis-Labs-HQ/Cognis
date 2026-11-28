@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { DbExecutor } from "../../db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../db/reuse/db-executor.js";
 
 export type ShareApprovalDecision = "pending" | "approved" | "declined";
 
@@ -79,7 +79,7 @@ function parseRecord(
  * which point pending rows auto-resolve to "approved").
  */
 export class ShareApprovalRequestStore {
-    constructor(private readonly db: DbExecutor) {}
+    constructor(private readonly db: DatabaseExecutor) {}
 
     async ensureSchema(): Promise<void> {
         await this.db.ensureTable({

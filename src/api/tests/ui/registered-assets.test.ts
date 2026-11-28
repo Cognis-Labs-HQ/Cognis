@@ -16,8 +16,8 @@ function createRegistry(): UIRegistry {
 test("registered gateway and adapter paths resolve to the same built source identity", () => {
     const registry = createRegistry();
     const directory = path.resolve("src/adapters/example/sample/ui");
-    registry.registerStaticDir("alias", directory);
-    registry.registerAdapterStaticDir("example", "sample", directory);
+    registry.registerStaticDirectory("alias", directory);
+    registry.registerAdapterStaticDirectory("example", "sample", directory);
     for (const prefix of [
         "/static/gateways/alias",
         "/static/adapters/example/sample",
@@ -46,8 +46,12 @@ test("repository-root production launches resolve compiled component aliases", (
     const directory = path.resolve(
         "dist/server/src/adapters/example/sample/ui",
     );
-    registry.registerStaticDir("compiled-alias", directory);
-    registry.registerAdapterStaticDir("example", "compiled-sample", directory);
+    registry.registerStaticDirectory("compiled-alias", directory);
+    registry.registerAdapterStaticDirectory(
+        "example",
+        "compiled-sample",
+        directory,
+    );
     for (const prefix of [
         "/static/gateways/compiled-alias",
         "/static/adapters/example/compiled-sample",
@@ -65,7 +69,7 @@ test("repository-root production launches resolve compiled component aliases", (
             `${prefix}/fresh.xml`,
         );
     }
-    registry.registerStaticDir(
+    registry.registerStaticDirectory(
         "outside",
         path.resolve("dist/server/src-other/adapters/example/sample/ui"),
     );
@@ -77,15 +81,15 @@ test("repository-root production launches resolve compiled component aliases", (
 
 test("unbuilt, external and revision-qualified resources retain their authoritative URLs", () => {
     const registry = createRegistry();
-    registry.registerStaticDir(
+    registry.registerStaticDirectory(
         "external",
         path.resolve("external-modules/example/ui"),
     );
-    registry.registerStaticDir(
+    registry.registerStaticDirectory(
         "alias",
         path.resolve("src/adapters/example/sample/ui"),
     );
-    registry.registerModuleStaticDir(
+    registry.registerModuleStaticDirectory(
         "example",
         path.resolve("src/adapters/example/sample/ui"),
     );
@@ -101,7 +105,7 @@ test("unbuilt, external and revision-qualified resources retain their authoritat
     ])
         assert.equal(registry.resolveAssetUrl(url), url);
     const sourceRegistry = new UIRegistry("");
-    sourceRegistry.registerStaticDir(
+    sourceRegistry.registerStaticDirectory(
         "alias",
         path.resolve("src/adapters/example/sample/ui"),
     );
@@ -113,7 +117,7 @@ test("unbuilt, external and revision-qualified resources retain their authoritat
 
 test("provider discovery retains injected authorization and live owner lifecycle filtering", async () => {
     const registry = createRegistry();
-    registry.registerStaticDir(
+    registry.registerStaticDirectory(
         "alias",
         path.resolve("src/adapters/example/sample/ui"),
     );

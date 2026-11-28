@@ -338,7 +338,7 @@ test("buildServer loads external module assets before accepting requests", async
     await writeFile(
         path.join(moduleRoot, "bootstrap.js"),
         `export function bootstrapModule(ctx) {
-            ctx.registerStaticDir("", ctx.moduleRoot + "/ui");
+            ctx.registerStaticDirectory("", ctx.moduleRoot + "/ui");
         }`,
     );
     await writeFile(path.join(moduleRoot, "ui", "app.js"), "export {};");
@@ -431,7 +431,7 @@ test("buildServer returns gateway_disabled for disabled gateway prefixes", async
 
 test("buildServer serves static UI assets before registered catch-all routes", async () => {
     const routeRegistry = new RouteRegistry();
-    routeRegistry.register(async (_req, res, url) => {
+    routeRegistry.register(async (_request, res, url) => {
         if (url.pathname.startsWith("/static/")) {
             res.writeHead(401, { "content-type": "application/json" });
             res.end(

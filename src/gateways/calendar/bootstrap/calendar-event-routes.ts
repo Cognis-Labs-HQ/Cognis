@@ -14,7 +14,7 @@ import {
     requireOrganizerOwnedSourceEvent,
     requireWritableSharedSourceEvent,
     resolveCreatedSeries,
-    resolveEventMeta,
+    resolveEventMetadata,
     resolveAvailabilityStatus,
     sendCalendarError,
     sendJson,
@@ -29,8 +29,8 @@ import { requireSharedCalendarAccess } from "./shared-access.js";
 import { rejectInactiveSharedCalendar } from "./shared-calendar-guards.js";
 
 export async function handleCalendarEventRoutes({
-    req,
-    res,
+    req: req,
+    res: res,
     url,
     ctx,
     gateway,
@@ -74,8 +74,8 @@ export async function handleCalendarEventRoutes({
         if (
             activeSharedCalendar &&
             !(await requireSharedCalendarAccess({
-                req,
-                res,
+                req: req,
+                res: res,
                 shareTokenId: activeSharedCalendar.shareTokenId,
                 accountId: claims.sub,
                 ownerCalendarId: activeSharedCalendar.ownerCalendarId,
@@ -90,7 +90,7 @@ export async function handleCalendarEventRoutes({
                 accountId: claims.sub,
                 calendarId,
                 activeShare: activeSharedCalendar,
-                res,
+                res: res,
             })
         ) {
             return true;
@@ -121,7 +121,7 @@ export async function handleCalendarEventRoutes({
             data: {
                 calendar: effectiveCalendar,
                 event: effectiveEvent,
-                meta: resolveEventMeta(
+                meta: resolveEventMetadata(
                     effectiveEvent,
                     claims.sub,
                     gateway.getEventResponse(effectiveEvent.id, claims.sub),
@@ -146,8 +146,8 @@ export async function handleCalendarEventRoutes({
         if (
             activeSharedCalendar &&
             !(await requireSharedCalendarAccess({
-                req,
-                res,
+                req: req,
+                res: res,
                 shareTokenId: activeSharedCalendar.shareTokenId,
                 accountId: claims.sub,
                 ownerCalendarId: activeSharedCalendar.ownerCalendarId,
@@ -163,7 +163,7 @@ export async function handleCalendarEventRoutes({
                 accountId: claims.sub,
                 calendarId,
                 activeShare: activeSharedCalendar,
-                res,
+                res: res,
             })
         ) {
             return true;
@@ -203,7 +203,7 @@ export async function handleCalendarEventRoutes({
                 gateway,
                 sharedCalendar: activeSharedCalendar,
                 eventId,
-                res,
+                res: res,
             })
         ) {
             return true;
@@ -215,7 +215,7 @@ export async function handleCalendarEventRoutes({
                 ownerAccountId: claims.sub,
                 calendarId,
                 eventId,
-                res,
+                res: res,
                 actionVerb: "edit",
             })
         ) {
@@ -344,8 +344,8 @@ export async function handleCalendarEventRoutes({
         if (
             activeSharedCalendar &&
             !(await requireSharedCalendarAccess({
-                req,
-                res,
+                req: req,
+                res: res,
                 shareTokenId: activeSharedCalendar.shareTokenId,
                 accountId: claims.sub,
                 ownerCalendarId: activeSharedCalendar.ownerCalendarId,
@@ -361,7 +361,7 @@ export async function handleCalendarEventRoutes({
                 accountId: claims.sub,
                 calendarId,
                 activeShare: activeSharedCalendar,
-                res,
+                res: res,
             })
         ) {
             return true;
@@ -377,7 +377,7 @@ export async function handleCalendarEventRoutes({
                     gateway,
                     sharedCalendar: activeSharedCalendar,
                     eventId,
-                    res,
+                    res: res,
                 })
             ) {
                 return true;
@@ -389,7 +389,7 @@ export async function handleCalendarEventRoutes({
                     ownerAccountId: claims.sub,
                     calendarId,
                     eventId,
-                    res,
+                    res: res,
                     actionVerb: "delete",
                 })
             ) {

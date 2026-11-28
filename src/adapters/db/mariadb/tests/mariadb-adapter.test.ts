@@ -2,7 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
     MariaDbGateway,
-    createDbExecutor,
+    createDatabaseExecutor,
     readMariaDbPoolSettings,
     waitForMariaDb,
     type MariaDbClient,
@@ -159,7 +159,7 @@ test("mariadb transaction rolls back and releases after failure", async () => {
 test("mariadb adapter registers pool shutdown with the lifecycle capability", async () => {
     let shutdown: (() => Promise<void>) | undefined;
     let endCalls = 0;
-    await createDbExecutor({
+    await createDatabaseExecutor({
         databaseUrl: "mariadb://unused",
         pool: createPool({
             end: async () => {
@@ -183,7 +183,7 @@ test("mariadb adapter executes structured commands", async () => {
     const gateway = new MariaDbGateway(
         createPool({
             query: async (sql: string, params?: unknown[]) => {
-                calls.push({ sql, params });
+                calls.push({ sql, params: params });
                 return [{ affectedRows: 4 }, {}];
             },
         }),
@@ -266,7 +266,7 @@ test("mariadb startup does not hide configuration failures", async () => {
 
 test("mariadb uses indexable types for foreign keys and heals constraints", async () => {
     const statements: string[] = [];
-    const executor = await createDbExecutor({
+    const executor = await createDatabaseExecutor({
         databaseUrl: "mariadb://unused",
         pool: createPool({
             query: async (sql: string) => {
@@ -308,7 +308,7 @@ test("mariadb uses indexable types for foreign keys and heals constraints", asyn
 
 test("mariadb repairs text index columns before creating their indexes", async () => {
     const statements: string[] = [];
-    const executor = await createDbExecutor({
+    const executor = await createDatabaseExecutor({
         databaseUrl: "mariadb://unused",
         pool: createPool({
             query: async (sql: string) => {
@@ -350,7 +350,7 @@ test("mariadb repairs text index columns before creating their indexes", async (
 
 test("mariadb renames legacy columns without losing their values", async () => {
     const statements: string[] = [];
-    const executor = await createDbExecutor({
+    const executor = await createDatabaseExecutor({
         databaseUrl: "mariadb://unused",
         pool: createPool({
             query: async (sql: string) => {
@@ -385,11 +385,11 @@ test("mariadb renames legacy columns without losing their values", async () => {
 
 test("mariadb formats ISO values for declared timestamp columns", async () => {
     const calls: Array<{ sql: string; params?: unknown[] }> = [];
-    const executor = await createDbExecutor({
+    const executor = await createDatabaseExecutor({
         databaseUrl: "mariadb://unused",
         pool: createPool({
             query: async (sql: string, params?: unknown[]) => {
-                calls.push({ sql, params });
+                calls.push({ sql, params: params });
                 return [[], {}];
             },
         }),
@@ -426,7 +426,7 @@ test("mariadb safely parses repeated datetime error text", async () => {
     const transactionCalls: string[] = [];
     const client = createClient(
         async (sql: string, params?: unknown[]) => {
-            calls.push({ sql, params });
+            calls.push({ sql, params: params });
             if (
                 sql.startsWith("INSERT INTO") &&
                 params?.[1] === "2026-08-29T13:07:49.408Z"
@@ -443,7 +443,7 @@ test("mariadb safely parses repeated datetime error text", async () => {
         transactionCalls,
         () => undefined,
     );
-    const executor = await createDbExecutor({
+    const executor = await createDatabaseExecutor({
         databaseUrl: "mariadb://unused",
         pool: createPool({ getConnection: async () => client }),
     });

@@ -56,7 +56,7 @@ async function searchPage(lookup, selectedIndex) {
         document: { documentElement: { lang: "en" } },
         createI18n: async () => ({ t: (key) => key }),
         applyDocumentTitle() {},
-        loadStudySubNavigationModel: async () => ({
+        loadStudyNestedNavigationModel: async () => ({
             selectedLanguageCode: "ja",
             dictionaryProviders: [{ id: "dictionary", schemaId: "test" }],
         }),
@@ -83,10 +83,10 @@ async function searchPage(lookup, selectedIndex) {
                 target.outerHTML = config.elements[0].render();
             },
         }),
-        bindStudySubNavigation() {},
+        bindStudyNestedNavigation() {},
         mountWhenDirect: async () => {},
     });
-    context.createStudySubNavigationSlot = () => ({ render: () => "" });
+    context.createStudyNestedNavigationSlot = () => ({ render: () => "" });
     const search = await importTestModule(
         new URL("../../ui/app/search/index.js", import.meta.url),
         {
@@ -110,11 +110,11 @@ async function searchPage(lookup, selectedIndex) {
                 formatDateTime: context.formatDateTime,
             },
             "/static/gateways/study/sub-navigation.js": {
-                bindStudySubNavigation: context.bindStudySubNavigation,
-                loadStudySubNavigationModel:
-                    context.loadStudySubNavigationModel,
-                createStudySubNavigationSlot:
-                    context.createStudySubNavigationSlot,
+                bindStudyNestedNavigation: context.bindStudyNestedNavigation,
+                loadStudyNestedNavigationModel:
+                    context.loadStudyNestedNavigationModel,
+                createStudyNestedNavigationSlot:
+                    context.createStudyNestedNavigationSlot,
             },
             "/static/gateways/study/library-client.js": {
                 dictionarySearchContext: context.dictionarySearchContext,

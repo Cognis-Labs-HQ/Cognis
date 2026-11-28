@@ -129,7 +129,7 @@ export function createModuleRoutes(
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        const logMeta = {
+        const logMetadata = {
             component: "api-modules",
             method: req.method ?? "GET",
             path: url.pathname,
@@ -304,7 +304,7 @@ export function createModuleRoutes(
                     ? "Module source scan completed."
                     : "Listed cached module discoveries.",
                 {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: claims.sub,
                     sourceUuids,
                     catalogModulesFound: modules.length,
@@ -364,7 +364,7 @@ export function createModuleRoutes(
                     "error",
                     "Module installation rejected due to an ID conflict.",
                     {
-                        ...logMeta,
+                        ...logMetadata,
                         operation: "install_module",
                         accountId: claims.sub,
                         ...conflict,
@@ -421,7 +421,7 @@ export function createModuleRoutes(
                         data: { ...manifest, restartRequired },
                     });
                     hooks?.log?.("info", "External module installed.", {
-                        ...logMeta,
+                        ...logMetadata,
                         accountId: claims.sub,
                         moduleId: manifest.id,
                         moduleUuid: manifest.uuid,
@@ -441,7 +441,7 @@ export function createModuleRoutes(
                         "error",
                         "External module installation failed.",
                         {
-                            ...logMeta,
+                            ...logMetadata,
                             accountId: claims.sub,
                             moduleUuid: requestedModule.uuid,
                             ...(code ? { code } : {}),
@@ -490,7 +490,9 @@ export function createModuleRoutes(
                     },
                 );
                 if (deleteContent && cleanupSupported === false) {
-                    res.writeHead(409, { "content-type": "application/json" });
+                    res.writeHead(409, {
+                        "content-type": "application/json",
+                    });
                     res.end(
                         JSON.stringify({
                             error: {
@@ -506,7 +508,7 @@ export function createModuleRoutes(
             await marketplace.uninstall(moduleUuid);
             if (manifest) await hooks?.onUninstalled?.(manifest.id);
             hooks?.log?.("warn", "External module deleted.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
                 moduleId: manifest?.id,
                 moduleUuid,
@@ -528,7 +530,7 @@ export function createModuleRoutes(
                 status: hooks?.getStatus?.(manifest.id) ?? "available",
             }));
             hooks?.log?.("debug", "Listed modules.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
                 count: data.length,
             });
@@ -544,7 +546,7 @@ export function createModuleRoutes(
             if (!claims) return true;
             const data = (await hooks?.getIntegrityReport?.()) ?? [];
             hooks?.log?.("debug", "Generated module integrity report.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
                 count: data.length,
             });
@@ -578,7 +580,7 @@ export function createModuleRoutes(
             });
             await hooks?.onImported?.(manifest.id);
             hooks?.log?.("info", "Module imported from GitHub.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
                 moduleId: manifest.id,
                 repositoryUrl,
@@ -649,7 +651,7 @@ export function createModuleRoutes(
                     "warn",
                     "Module integrity risk acknowledged before enablement.",
                     {
-                        ...logMeta,
+                        ...logMetadata,
                         accountId: claims.sub,
                         moduleId,
                         integrityFailures,
@@ -678,7 +680,7 @@ export function createModuleRoutes(
                 await hooks?.beforeEnable?.(moduleId);
             } catch (error) {
                 hooks?.log?.("error", "Module enable validation failed.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: claims.sub,
                     moduleId,
                     error:
@@ -716,7 +718,7 @@ export function createModuleRoutes(
                     : await moduleService.disable(moduleId);
         } catch (error) {
             hooks?.log?.("error", `Module ${action} failed.`, {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
                 moduleId,
                 error: error instanceof Error ? error.message : String(error),
@@ -736,7 +738,7 @@ export function createModuleRoutes(
             action === "disable" ? "warn" : "info",
             `Module ${action}d.`,
             {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
                 moduleId,
                 acknowledgedExternalDisclaimer: acknowledged,

@@ -35,7 +35,7 @@ Document diffs let a module explain the differences between two immutable docume
 
 ### Markdown comparison views
 
-Use `renderMarkdownDocumentDiff(diff)` from the browser `ui:documentDiff` capability to render the complete destination document through the host Markdown renderer. Unchanged content keeps its normal document presentation, while additions, replacements, and removals receive green, orange, and red overlays with overview-rail navigation. The renderer processes the composed comparison in one Markdown pass, preserving fenced code blocks, lists, quotations, and other structures that cross changed lines.
+Use `renderMarkdownDocumentDifference(diff)` from the browser `ui:documentDiff` capability to render the complete destination document through the host Markdown renderer. Unchanged content keeps its normal document presentation, while additions, replacements, and removals receive green, orange, and red overlays with overview-rail navigation. The renderer processes the composed comparison in one Markdown pass, preserving fenced code blocks, lists, quotations, and other structures that cross changed lines.
 
 ### Documentation Reader
 

@@ -557,7 +557,7 @@ export async function mount(root, { signal, shareContext = null } = {}) {
                                 button.getAttribute("data-calendar-edit") ?? "",
                             ).trim();
                             const calendar = calendars.find(
-                                (c) => c.id === calendarId,
+                                (category) => category.id === calendarId,
                             );
                             if (!calendar) return;
                             if (calendar.secretsUnavailable) {

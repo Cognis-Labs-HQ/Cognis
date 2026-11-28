@@ -142,9 +142,9 @@ export function createCapabilityContracts(ctx: Ctx): CapabilityContracts {
                 )
                     throw new Error("capability_contract_unavailable");
             };
-            const call = (fn: Function, args: unknown[]) => {
+            const call = (callback: Function, args: unknown[]) => {
                 assertActive();
-                const result = Reflect.apply(fn, implementation, args);
+                const result = Reflect.apply(callback, implementation, args);
                 if (result && typeof result.then === "function")
                     return Promise.resolve(result).then((value) => {
                         assertActive();

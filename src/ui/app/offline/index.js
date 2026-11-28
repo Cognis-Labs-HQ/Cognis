@@ -3,7 +3,7 @@ import { bindCapability } from "../../reuse/capabilities.js";
 import { offlinePolicy } from "../../reuse/offline-policy.js";
 import { offlineWorkerRequest } from "../../reuse/offline-state.js";
 import { setOffline } from "../../reuse/offline-state.js";
-import { initRouter, navigateTo } from "../../reuse/app-router.js";
+import { initializeRouter, navigateTo } from "../../reuse/app-router.js";
 import { loadWithSpaImportGuard } from "../../reuse/page-entry.js";
 
 const log = bindCapability("ui:log");
@@ -18,7 +18,7 @@ offlinePolicy.configure(
 setOffline(true);
 globalThis.__cognisPublicSpaRoute = true;
 const root = document.querySelector("#app");
-initRouter(root);
+initializeRouter(root);
 const mounted = await navigateTo(
     `${location.pathname}${location.search}${location.hash}`,
     { replace: true },

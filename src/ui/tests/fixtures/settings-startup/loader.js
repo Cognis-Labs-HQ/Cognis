@@ -1,3 +1,4 @@
+import * as languagePriority from "../../../app/settings/language-priority.js";
 import { createDiagnosticFixture } from "../../../../tooling/reuse/diagnostic-fixture.ts";
 import { guides } from "../../../app/settings/guides.js";
 import { loadTestModule } from "../../../../tooling/reuse/test-module.ts";
@@ -64,6 +65,7 @@ export async function loadSettingsMount({
         },
     );
     const overrides = {
+        ...languagePriority,
         bindCapability: createDiagnosticFixture().bindCapability,
         guides,
         navigateTo: async (path, options) => {
@@ -123,9 +125,9 @@ export async function loadSettingsMount({
 export function deferred() {
     let resolve;
     let reject;
-    const promise = new Promise((yes, no) => {
+    const promise = new Promise((yes, rejectImport) => {
         resolve = yes;
-        reject = no;
+        reject = rejectImport;
     });
     return { promise, resolve, reject };
 }

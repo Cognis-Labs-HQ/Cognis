@@ -6,11 +6,11 @@
  * Public exports:
  *   shouldShowReleaseChangelog(existingPrefs) — resolves the default-on
  *     release changelog visibility state from persisted preferences.
- *   initReleaseChangelogPrefs(root, options) — initialises and manages the
+ *   initializeReleaseChangelogPreferences(root, options) — initialises and manages the
  *     release-changelog settings control state within root.
  *
  * Usage:
- *   const releasePrefs = initReleaseChangelogPrefs(root, {
+ *   const releasePrefs = initializeReleaseChangelogPreferences(root, {
  *     existingPrefs,
  *     onDirtyChange: (dirty) => markDirty('release-notes', dirty),
  *   });
@@ -20,15 +20,16 @@
  * @param {{ existingPrefs?: object|null, onDirtyChange?: (dirty: boolean) => void }} options
  * @returns {{ refresh: () => void, getShowReleaseChangelogs: () => boolean, commit: () => void, discard: () => void }}
  */
-export function shouldShowReleaseChangelog(existingPrefs) {
-    return existingPrefs?.releaseChangelogShow !== false;
+export function shouldShowReleaseChangelog(existingPreferences) {
+    return existingPreferences?.releaseChangelogShow !== false;
 }
 
-export function initReleaseChangelogPrefs(
+function initializeReleaseChangelogPreferences(
     root,
-    { existingPrefs, onDirtyChange },
+    { existingPrefs: existingPreferences, onDirtyChange },
 ) {
-    let savedShowReleaseChangelogs = shouldShowReleaseChangelog(existingPrefs);
+    let savedShowReleaseChangelogs =
+        shouldShowReleaseChangelog(existingPreferences);
     let currentShowReleaseChangelogs = savedShowReleaseChangelogs;
 
     function syncCheckboxState() {
@@ -77,3 +78,4 @@ export function initReleaseChangelogPrefs(
         discard,
     };
 }
+export { initializeReleaseChangelogPreferences };

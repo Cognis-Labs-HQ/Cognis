@@ -77,6 +77,8 @@
   <string name="ui.reuse.confirm">確認</string>
   <string name="ui.reuse.error">エラー</string>
   <string name="ui.reuse.coming_soon">近日公開</string>
+  <string name="ui.reuse.layout_saved">ページのレイアウトを更新しました。</string>
+  <string name="ui.reuse.layout_save_failed">ページのレイアウトを更新できませんでした。</string>
   <string name="ui.reuse.save_failed">保存失敗</string>
   <string name="ui.reuse.more_information">詳細情報</string>
   <string name="ui.reuse.system">システム</string>
@@ -752,7 +754,7 @@
   <string name="ui.tutorial.workspace.dock.language.body">言語切り替えで表示言語を変更できます。優先する言語の順番は設定で管理します。</string>
   <string name="ui.tutorial.workspace.dock.theme.body">表示ボタンでライトテーマとダークテーマを切り替えます。右クリックすると表示設定を開けます。</string>
   <string name="ui.tutorial.workspace.dock.layout.title">ページのウィジェットを配置する</string>
-  <string name="ui.tutorial.workspace.dock.layout.body">追加ボタンでドラッグせずに項目を配置できます。タッチ画面では表示中のサイズ変更ハンドルと削除ボタンを使用します。キーボードではウィジェットにフォーカスして矢印キーで移動し、Shift と矢印キーでサイズを変更します。最後に配置を保存または破棄してください。</string>
+  <string name="ui.tutorial.workspace.dock.layout.body">両方が収まる場所でウィジェットを交換できます。緑のラインは有効な交換を示し、赤はどちらかの新しい位置が妨げられていることを示します。ドラッグで移動し、黄色は離したときの吸着先を示します。画面端付近で保持するとスクロールします。強調された辺や角でサイズを変更し、オレンジ色はサイズの制限を示します。カーソルは操作可能な方向を示します。「要素」を最小化するか「追加」を使えます。矢印で移動し、Shift と矢印でサイズを変更します。「レイアウトをリセット」は既定値を下書きに反映します。「完了」は表示中の配置を保存し、「元に戻す」は編集前の配置に戻します。保存結果は通知されます。</string>
   <string name="ui.tutorial.restart">チュートリアルを最初からやり直す</string>
   <string name="ui.tutorial.docs.read.browse.documents.title">文書を探す</string>
   <string name="ui.tutorial.docs.read.browse.documents.body">サイドメニューでトピックやコンポーネントを選びます。グループを展開すると各ページが表示され、選んだ文書がメニューの横に開きます。</string>

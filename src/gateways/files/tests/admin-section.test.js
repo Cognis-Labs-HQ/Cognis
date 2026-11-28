@@ -88,7 +88,10 @@ test("quota administration renders current defaults and saves the chosen namespa
         ],
     });
     const toasts = [];
-    const context = vm.createContext({ ...client, CSS: { escape: String } });
+    const context = vm.createContext({
+        ...client,
+        CSS: { escape: String },
+    });
     Object.assign(
         context,
         loadTestModule(

@@ -113,7 +113,7 @@ export async function mount(root, { signal } = {}) {
         ? decodeURIComponent(initialRoomMatch[1])
         : rememberedRoomId;
 
-    let composerInputRef = null;
+    let composerInputReference = null;
 
     let syncOpenRoomPreviews = () => {};
 
@@ -144,14 +144,14 @@ export async function mount(root, { signal } = {}) {
                 // (lines 294-297 below, where composerInputRef is assigned).
                 if (
                     persistedState.size === 0 &&
-                    composerInputRef instanceof HTMLTextAreaElement
+                    composerInputReference instanceof HTMLTextAreaElement
                 ) {
-                    composerInputRef.value = "";
+                    composerInputReference.value = "";
                 }
                 // Dispatch a synthetic input event so dependent UI state
                 // (preview rendering, character counters, typing indicators)
                 // is updated after the draft value is restored programmatically.
-                composerInputRef?.dispatchEvent(new Event("input"));
+                composerInputReference?.dispatchEvent(new Event("input"));
             }
         },
         resolveRoomActions,
@@ -322,7 +322,7 @@ export async function mount(root, { signal } = {}) {
                 const composerInput = document.getElementById(
                     "messages-composer-input",
                 );
-                composerInputRef =
+                composerInputReference =
                     composerInput instanceof HTMLTextAreaElement
                         ? composerInput
                         : null;

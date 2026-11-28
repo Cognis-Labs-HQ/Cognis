@@ -77,7 +77,9 @@ export function registerAuthProviderRoutes(
                     return false;
                 }
                 if (!isProviderEnabled()) {
-                    res.writeHead(503, { "content-type": "application/json" });
+                    res.writeHead(503, {
+                        "content-type": "application/json",
+                    });
                     res.end(
                         JSON.stringify({
                             error: {

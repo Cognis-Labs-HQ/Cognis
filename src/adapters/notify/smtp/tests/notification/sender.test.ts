@@ -1,7 +1,7 @@
 import { createTestSender } from "../fixtures/sender.js";
 import test from "node:test";
 import assert from "node:assert/strict";
-import net from "node:net";
+import network from "node:net";
 import {
     SmtpNotificationSender,
     SmtpTemporaryError,
@@ -146,7 +146,7 @@ test("SmtpNotificationSender.enqueueEmail returns a waiting rate-limit entry imm
     assert.equal(typeof queued.availableAt, "string");
 });
 
-test("createNotificationSender.getEnvValues returns env snapshot fields", () => {
+test("createNotificationSender.getEnvironmentValues returns env snapshot fields", () => {
     const env = {
         COGNIS_SMTP_HOST: "smtp.example.com",
         COGNIS_SMTP_PORT: "465",
@@ -155,21 +155,21 @@ test("createNotificationSender.getEnvValues returns env snapshot fields", () => 
         COGNIS_SMTP_SECURE: "tls",
     };
     const sender = createNotificationSender(env);
-    const envValues = sender.getEnvValues();
-    assert.equal(envValues["host"], "smtp.example.com");
-    assert.equal(envValues["port"], "465");
-    assert.equal(envValues["from"], "no-reply@example.com");
-    assert.equal(envValues["user"], "user@example.com");
-    assert.equal(envValues["secure"], "tls");
+    const environmentValues = sender.getEnvironmentValues();
+    assert.equal(environmentValues["host"], "smtp.example.com");
+    assert.equal(environmentValues["port"], "465");
+    assert.equal(environmentValues["from"], "no-reply@example.com");
+    assert.equal(environmentValues["user"], "user@example.com");
+    assert.equal(environmentValues["secure"], "tls");
 });
-test("createNotificationSender.getEnvValues returns undefined fields when env is empty", () => {
+test("createNotificationSender.getEnvironmentValues returns undefined fields when env is empty", () => {
     const sender = createNotificationSender({});
-    const envValues = sender.getEnvValues();
-    assert.equal(envValues["host"], undefined);
-    assert.equal(envValues["port"], undefined);
-    assert.equal(envValues["from"], undefined);
-    assert.equal(envValues["user"], undefined);
-    assert.equal(envValues["secure"], undefined);
+    const environmentValues = sender.getEnvironmentValues();
+    assert.equal(environmentValues["host"], undefined);
+    assert.equal(environmentValues["port"], undefined);
+    assert.equal(environmentValues["from"], undefined);
+    assert.equal(environmentValues["user"], undefined);
+    assert.equal(environmentValues["secure"], undefined);
 });
 
 test("SmtpNotificationSender.getRequiredFields requires auth fields by default", () => {
@@ -233,68 +233,73 @@ type MockSmtpServer = {
 };
 
 function createMockSmtpServer(
-    handleConnection: (conn: net.Socket, attemptNumber: number) => void,
+    handleConnection: (
+        connection: network.Socket,
+        attemptNumber: number,
+    ) => void,
 ): Promise<MockSmtpServer> {
     let attempts = 0;
     return new Promise((resolve) => {
-        const server = net.createServer((conn) => {
+        const server = network.createServer((connection) => {
             attempts++;
-            handleConnection(conn, attempts);
+            handleConnection(connection, attempts);
         });
         server.listen(0, "127.0.0.1", () => {
-            const addr = server.address() as net.AddressInfo;
+            const address = server.address() as network.AddressInfo;
             resolve({
                 host: "127.0.0.1",
-                port: addr.port,
+                port: address.port,
                 close: () =>
-                    new Promise<void>((res, rej) =>
-                        server.close((err) => (err ? rej(err) : res())),
+                    new Promise<void>((res, reject) =>
+                        server.close((error) =>
+                            error ? reject(error) : res(),
+                        ),
                     ),
             });
         });
     });
 }
 
-function smtpSuccessHandler(conn: net.Socket): void {
-    let buf = "";
+function smtpSuccessHandler(connection: network.Socket): void {
+    let buffer = "";
     let dataMode = false;
 
-    conn.setEncoding("utf8");
-    conn.write("220 mock.example.com SMTP\r\n");
+    connection.setEncoding("utf8");
+    connection.write("220 mock.example.com SMTP\r\n");
 
-    conn.on("data", (chunk: string) => {
-        buf += chunk;
-        const lines = buf.split("\r\n");
-        buf = lines.pop() ?? "";
+    connection.on("data", (chunk: string) => {
+        buffer += chunk;
+        const lines = buffer.split("\r\n");
+        buffer = lines.pop() ?? "";
 
         for (const line of lines) {
             if (dataMode) {
                 if (line === ".") {
                     dataMode = false;
-                    conn.write("250 OK\r\n");
+                    connection.write("250 OK\r\n");
                 }
                 continue;
             }
             if (!line) continue;
             const upper = line.toUpperCase();
             if (upper.startsWith("EHLO") || upper.startsWith("HELO")) {
-                conn.write("250 OK\r\n");
+                connection.write("250 OK\r\n");
             } else if (upper.startsWith("MAIL FROM")) {
-                conn.write("250 OK\r\n");
+                connection.write("250 OK\r\n");
             } else if (upper.startsWith("RCPT TO")) {
-                conn.write("250 OK\r\n");
+                connection.write("250 OK\r\n");
             } else if (upper === "DATA") {
                 dataMode = true;
-                conn.write("354 Start mail input\r\n");
+                connection.write("354 Start mail input\r\n");
             } else if (upper.startsWith("QUIT")) {
-                conn.write("221 Bye\r\n");
-                conn.end();
+                connection.write("221 Bye\r\n");
+                connection.end();
             }
         }
     });
 }
 
-const noopSleep = () => Promise.resolve();
+const noOperationSleep = () => Promise.resolve();
 
 function decodeQuotedPrintableForAssertion(value: string): string {
     return value
@@ -315,36 +320,38 @@ test("SmtpNotificationSender retries after greylisting (4xx on MAIL FROM) and su
         return Promise.resolve();
     };
 
-    const server = await createMockSmtpServer((conn, attempt) => {
-        let buf = "";
-        conn.setEncoding("utf8");
-        conn.write("220 mock.example.com SMTP\r\n");
+    const server = await createMockSmtpServer((connection, attempt) => {
+        let buffer = "";
+        connection.setEncoding("utf8");
+        connection.write("220 mock.example.com SMTP\r\n");
 
-        conn.on("data", (chunk: string) => {
-            buf += chunk;
-            const lines = buf.split("\r\n");
-            buf = lines.pop() ?? "";
+        connection.on("data", (chunk: string) => {
+            buffer += chunk;
+            const lines = buffer.split("\r\n");
+            buffer = lines.pop() ?? "";
 
             for (const line of lines) {
                 if (!line) continue;
                 const upper = line.toUpperCase();
                 if (upper.startsWith("EHLO") || upper.startsWith("HELO")) {
-                    conn.write("250 OK\r\n");
+                    connection.write("250 OK\r\n");
                 } else if (upper.startsWith("MAIL FROM")) {
                     if (attempt === 1) {
-                        conn.write("451 Greylisted, please retry later\r\n");
+                        connection.write(
+                            "451 Greylisted, please retry later\r\n",
+                        );
                     } else {
-                        conn.write("250 OK\r\n");
+                        connection.write("250 OK\r\n");
                     }
                 } else if (upper.startsWith("RCPT TO")) {
-                    conn.write("250 OK\r\n");
+                    connection.write("250 OK\r\n");
                 } else if (upper === "DATA") {
-                    conn.write("354 Start mail input\r\n");
+                    connection.write("354 Start mail input\r\n");
                 } else if (line === ".") {
-                    conn.write("250 OK\r\n");
+                    connection.write("250 OK\r\n");
                 } else if (upper.startsWith("QUIT")) {
-                    conn.write("221 Bye\r\n");
-                    conn.end();
+                    connection.write("221 Bye\r\n");
+                    connection.end();
                 }
             }
         });
@@ -379,24 +386,24 @@ test("SmtpNotificationSender retries after greylisting (4xx on MAIL FROM) and su
 test("SmtpNotificationSender does not retry on permanent SMTP errors (5xx)", async () => {
     let connectionCount = 0;
 
-    const server = await createMockSmtpServer((conn) => {
+    const server = await createMockSmtpServer((connection) => {
         connectionCount++;
-        let buf = "";
-        conn.setEncoding("utf8");
-        conn.write("220 mock.example.com SMTP\r\n");
+        let buffer = "";
+        connection.setEncoding("utf8");
+        connection.write("220 mock.example.com SMTP\r\n");
 
-        conn.on("data", (chunk: string) => {
-            buf += chunk;
-            const lines = buf.split("\r\n");
-            buf = lines.pop() ?? "";
+        connection.on("data", (chunk: string) => {
+            buffer += chunk;
+            const lines = buffer.split("\r\n");
+            buffer = lines.pop() ?? "";
 
             for (const line of lines) {
                 if (!line) continue;
                 const upper = line.toUpperCase();
                 if (upper.startsWith("EHLO") || upper.startsWith("HELO")) {
-                    conn.write("250 OK\r\n");
+                    connection.write("250 OK\r\n");
                 } else if (upper.startsWith("MAIL FROM")) {
-                    conn.write("550 User unknown\r\n");
+                    connection.write("550 User unknown\r\n");
                 }
             }
         });
@@ -412,7 +419,7 @@ test("SmtpNotificationSender does not retry on permanent SMTP errors (5xx)", asy
                 greylistRetries: 2,
             },
             undefined,
-            noopSleep,
+            noOperationSleep,
         );
         await assert.rejects(
             () =>
@@ -433,23 +440,23 @@ test("SmtpNotificationSender does not retry on permanent SMTP errors (5xx)", asy
 });
 
 test("SmtpNotificationSender exhausts retries and throws SmtpTemporaryError", async () => {
-    const server = await createMockSmtpServer((conn) => {
-        let buf = "";
-        conn.setEncoding("utf8");
-        conn.write("220 mock.example.com SMTP\r\n");
+    const server = await createMockSmtpServer((connection) => {
+        let buffer = "";
+        connection.setEncoding("utf8");
+        connection.write("220 mock.example.com SMTP\r\n");
 
-        conn.on("data", (chunk: string) => {
-            buf += chunk;
-            const lines = buf.split("\r\n");
-            buf = lines.pop() ?? "";
+        connection.on("data", (chunk: string) => {
+            buffer += chunk;
+            const lines = buffer.split("\r\n");
+            buffer = lines.pop() ?? "";
 
             for (const line of lines) {
                 if (!line) continue;
                 const upper = line.toUpperCase();
                 if (upper.startsWith("EHLO") || upper.startsWith("HELO")) {
-                    conn.write("250 OK\r\n");
+                    connection.write("250 OK\r\n");
                 } else if (upper.startsWith("MAIL FROM")) {
-                    conn.write("451 Greylisted\r\n");
+                    connection.write("451 Greylisted\r\n");
                 }
             }
         });
@@ -465,7 +472,7 @@ test("SmtpNotificationSender exhausts retries and throws SmtpTemporaryError", as
                 greylistRetries: 1,
             },
             undefined,
-            noopSleep,
+            noOperationSleep,
         );
         await assert.rejects(
             () =>
@@ -487,24 +494,24 @@ test("SmtpNotificationSender exhausts retries and throws SmtpTemporaryError", as
 test("SmtpNotificationSender with greylistRetries:0 does not retry on 4xx", async () => {
     let connectionCount = 0;
 
-    const server = await createMockSmtpServer((conn) => {
+    const server = await createMockSmtpServer((connection) => {
         connectionCount++;
-        let buf = "";
-        conn.setEncoding("utf8");
-        conn.write("220 mock.example.com SMTP\r\n");
+        let buffer = "";
+        connection.setEncoding("utf8");
+        connection.write("220 mock.example.com SMTP\r\n");
 
-        conn.on("data", (chunk: string) => {
-            buf += chunk;
-            const lines = buf.split("\r\n");
-            buf = lines.pop() ?? "";
+        connection.on("data", (chunk: string) => {
+            buffer += chunk;
+            const lines = buffer.split("\r\n");
+            buffer = lines.pop() ?? "";
 
             for (const line of lines) {
                 if (!line) continue;
                 const upper = line.toUpperCase();
                 if (upper.startsWith("EHLO") || upper.startsWith("HELO")) {
-                    conn.write("250 OK\r\n");
+                    connection.write("250 OK\r\n");
                 } else if (upper.startsWith("MAIL FROM")) {
-                    conn.write("451 Greylisted\r\n");
+                    connection.write("451 Greylisted\r\n");
                 }
             }
         });
@@ -520,7 +527,7 @@ test("SmtpNotificationSender with greylistRetries:0 does not retry on 4xx", asyn
                 greylistRetries: 0,
             },
             undefined,
-            noopSleep,
+            noOperationSleep,
         );
         await assert.rejects(
             () =>
@@ -586,23 +593,23 @@ test("createNotificationSender derives EXTERNAL_HOST from HOST when EXTERNAL_HOS
 test("SmtpNotificationSender email includes light theme colors and subject when theme is light", async () => {
     let capturedData = "";
 
-    const server = await createMockSmtpServer((conn) => {
-        conn.setEncoding("utf8");
-        conn.write("220 mock.example.com SMTP\r\n");
+    const server = await createMockSmtpServer((connection) => {
+        connection.setEncoding("utf8");
+        connection.write("220 mock.example.com SMTP\r\n");
 
-        conn.on("data", (chunk: string) => {
+        connection.on("data", (chunk: string) => {
             capturedData += chunk;
             const upper = chunk.toUpperCase();
             if (upper.includes("EHLO") || upper.includes("HELO"))
-                conn.write("250 OK\r\n");
-            if (upper.includes("MAIL FROM")) conn.write("250 OK\r\n");
-            if (upper.includes("RCPT TO")) conn.write("250 OK\r\n");
+                connection.write("250 OK\r\n");
+            if (upper.includes("MAIL FROM")) connection.write("250 OK\r\n");
+            if (upper.includes("RCPT TO")) connection.write("250 OK\r\n");
             if (upper.includes("\r\nDATA\r\n") || chunk.trim() === "DATA")
-                conn.write("354 Start mail input\r\n");
-            if (chunk.includes("\r\n.\r\n")) conn.write("250 OK\r\n");
+                connection.write("354 Start mail input\r\n");
+            if (chunk.includes("\r\n.\r\n")) connection.write("250 OK\r\n");
             if (upper.includes("QUIT")) {
-                conn.write("221 Bye\r\n");
-                conn.end();
+                connection.write("221 Bye\r\n");
+                connection.end();
             }
         });
     });
@@ -618,7 +625,7 @@ test("SmtpNotificationSender email includes light theme colors and subject when 
                 externalHost: "https://cognis.example.com",
             },
             undefined,
-            noopSleep,
+            noOperationSleep,
         );
         await sender.send({
             purpose: "test",
@@ -657,23 +664,23 @@ test("SmtpNotificationSender email includes light theme colors and subject when 
 test("SmtpNotificationSender email uses its recipient theme rather than caller metadata", async () => {
     let capturedData = "";
 
-    const server = await createMockSmtpServer((conn) => {
-        conn.setEncoding("utf8");
-        conn.write("220 mock.example.com SMTP\r\n");
+    const server = await createMockSmtpServer((connection) => {
+        connection.setEncoding("utf8");
+        connection.write("220 mock.example.com SMTP\r\n");
 
-        conn.on("data", (chunk: string) => {
+        connection.on("data", (chunk: string) => {
             capturedData += chunk;
             const upper = chunk.toUpperCase();
             if (upper.includes("EHLO") || upper.includes("HELO"))
-                conn.write("250 OK\r\n");
-            if (upper.includes("MAIL FROM")) conn.write("250 OK\r\n");
-            if (upper.includes("RCPT TO")) conn.write("250 OK\r\n");
+                connection.write("250 OK\r\n");
+            if (upper.includes("MAIL FROM")) connection.write("250 OK\r\n");
+            if (upper.includes("RCPT TO")) connection.write("250 OK\r\n");
             if (upper.includes("\r\nDATA\r\n") || chunk.trim() === "DATA")
-                conn.write("354 Start mail input\r\n");
-            if (chunk.includes("\r\n.\r\n")) conn.write("250 OK\r\n");
+                connection.write("354 Start mail input\r\n");
+            if (chunk.includes("\r\n.\r\n")) connection.write("250 OK\r\n");
             if (upper.includes("QUIT")) {
-                conn.write("221 Bye\r\n");
-                conn.end();
+                connection.write("221 Bye\r\n");
+                connection.end();
             }
         });
     });
@@ -688,7 +695,7 @@ test("SmtpNotificationSender email uses its recipient theme rather than caller m
                 greylistRetries: 0,
             },
             undefined,
-            noopSleep,
+            noOperationSleep,
         );
         sender.setRecipientThemeResolver(async () => "dark");
         await sender.send({
@@ -712,23 +719,23 @@ test("SmtpNotificationSender email uses its recipient theme rather than caller m
 test("SmtpNotificationSender email defaults to light theme when metadata.theme is absent", async () => {
     let capturedData = "";
 
-    const server = await createMockSmtpServer((conn) => {
-        conn.setEncoding("utf8");
-        conn.write("220 mock.example.com SMTP\r\n");
+    const server = await createMockSmtpServer((connection) => {
+        connection.setEncoding("utf8");
+        connection.write("220 mock.example.com SMTP\r\n");
 
-        conn.on("data", (chunk: string) => {
+        connection.on("data", (chunk: string) => {
             capturedData += chunk;
             const upper = chunk.toUpperCase();
             if (upper.includes("EHLO") || upper.includes("HELO"))
-                conn.write("250 OK\r\n");
-            if (upper.includes("MAIL FROM")) conn.write("250 OK\r\n");
-            if (upper.includes("RCPT TO")) conn.write("250 OK\r\n");
+                connection.write("250 OK\r\n");
+            if (upper.includes("MAIL FROM")) connection.write("250 OK\r\n");
+            if (upper.includes("RCPT TO")) connection.write("250 OK\r\n");
             if (upper.includes("\r\nDATA\r\n") || chunk.trim() === "DATA")
-                conn.write("354 Start mail input\r\n");
-            if (chunk.includes("\r\n.\r\n")) conn.write("250 OK\r\n");
+                connection.write("354 Start mail input\r\n");
+            if (chunk.includes("\r\n.\r\n")) connection.write("250 OK\r\n");
             if (upper.includes("QUIT")) {
-                conn.write("221 Bye\r\n");
-                conn.end();
+                connection.write("221 Bye\r\n");
+                connection.end();
             }
         });
     });
@@ -743,7 +750,7 @@ test("SmtpNotificationSender email defaults to light theme when metadata.theme i
                 greylistRetries: 0,
             },
             undefined,
-            noopSleep,
+            noOperationSleep,
         );
         await sender.send({
             purpose: "test",
@@ -765,23 +772,23 @@ test("SmtpNotificationSender email defaults to light theme when metadata.theme i
 test("SmtpNotificationSender registration invites use Sign Up CTA and clickable invite URL in body", async () => {
     let capturedData = "";
 
-    const server = await createMockSmtpServer((conn) => {
-        conn.setEncoding("utf8");
-        conn.write("220 mock.example.com SMTP\r\n");
+    const server = await createMockSmtpServer((connection) => {
+        connection.setEncoding("utf8");
+        connection.write("220 mock.example.com SMTP\r\n");
 
-        conn.on("data", (chunk: string) => {
+        connection.on("data", (chunk: string) => {
             capturedData += chunk;
             const upper = chunk.toUpperCase();
             if (upper.includes("EHLO") || upper.includes("HELO"))
-                conn.write("250 OK\r\n");
-            if (upper.includes("MAIL FROM")) conn.write("250 OK\r\n");
-            if (upper.includes("RCPT TO")) conn.write("250 OK\r\n");
+                connection.write("250 OK\r\n");
+            if (upper.includes("MAIL FROM")) connection.write("250 OK\r\n");
+            if (upper.includes("RCPT TO")) connection.write("250 OK\r\n");
             if (upper.includes("\r\nDATA\r\n") || chunk.trim() === "DATA")
-                conn.write("354 Start mail input\r\n");
-            if (chunk.includes("\r\n.\r\n")) conn.write("250 OK\r\n");
+                connection.write("354 Start mail input\r\n");
+            if (chunk.includes("\r\n.\r\n")) connection.write("250 OK\r\n");
             if (upper.includes("QUIT")) {
-                conn.write("221 Bye\r\n");
-                conn.end();
+                connection.write("221 Bye\r\n");
+                connection.end();
             }
         });
     });
@@ -796,7 +803,7 @@ test("SmtpNotificationSender registration invites use Sign Up CTA and clickable 
                 greylistRetries: 0,
             },
             undefined,
-            noopSleep,
+            noOperationSleep,
         );
         const inviteUrl =
             "https://cognis.example.com/register?token=test-token-value";
@@ -831,23 +838,23 @@ test("SmtpNotificationSender registration invites use Sign Up CTA and clickable 
 test("SmtpNotificationSender emits provider-required message headers and MIME parts", async () => {
     let capturedData = "";
 
-    const server = await createMockSmtpServer((conn) => {
-        conn.setEncoding("utf8");
-        conn.write("220 mock.example.com SMTP\r\n");
+    const server = await createMockSmtpServer((connection) => {
+        connection.setEncoding("utf8");
+        connection.write("220 mock.example.com SMTP\r\n");
 
-        conn.on("data", (chunk: string) => {
+        connection.on("data", (chunk: string) => {
             capturedData += chunk;
             const upper = chunk.toUpperCase();
             if (upper.includes("EHLO") || upper.includes("HELO"))
-                conn.write("250 OK\r\n");
-            if (upper.includes("MAIL FROM")) conn.write("250 OK\r\n");
-            if (upper.includes("RCPT TO")) conn.write("250 OK\r\n");
+                connection.write("250 OK\r\n");
+            if (upper.includes("MAIL FROM")) connection.write("250 OK\r\n");
+            if (upper.includes("RCPT TO")) connection.write("250 OK\r\n");
             if (upper.includes("\r\nDATA\r\n") || chunk.trim() === "DATA")
-                conn.write("354 Start mail input\r\n");
-            if (chunk.includes("\r\n.\r\n")) conn.write("250 OK\r\n");
+                connection.write("354 Start mail input\r\n");
+            if (chunk.includes("\r\n.\r\n")) connection.write("250 OK\r\n");
             if (upper.includes("QUIT")) {
-                conn.write("221 Bye\r\n");
-                conn.end();
+                connection.write("221 Bye\r\n");
+                connection.end();
             }
         });
     });
@@ -864,7 +871,7 @@ test("SmtpNotificationSender emits provider-required message headers and MIME pa
                 externalHost: "https://cognis.example.com",
             },
             undefined,
-            noopSleep,
+            noOperationSleep,
         );
         await sender.send({
             purpose: "test",

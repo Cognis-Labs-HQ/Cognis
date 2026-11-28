@@ -54,7 +54,7 @@ export async function serveStaticAsset(
     filePath: string,
     contentType: string,
     log?: BootstrapLog,
-    logMeta?: Record<string, unknown>,
+    logMetadata?: Record<string, unknown>,
     cacheControl = "no-store",
 ): Promise<void> {
     try {
@@ -129,7 +129,7 @@ export async function serveStaticAsset(
         log?.("error", "Failed to serve UI asset.", {
             component: "api-ui",
             filePath,
-            ...(logMeta ?? {}),
+            ...(logMetadata ?? {}),
             error: error instanceof Error ? error.message : String(error),
         });
         res.writeHead(404, {

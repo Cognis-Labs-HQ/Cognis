@@ -17,24 +17,32 @@ try {
     applyDocumentTitle(i18n, "ui.page.title.verify_email");
     applyStaticTranslations(i18n);
 
-    const iconEl = document.querySelector("#verify-icon");
-    const titleEl = document.querySelector("#verify-title");
-    const bodyEl = document.querySelector("#verify-body");
-    const linkEl = document.querySelector("#verify-link");
+    const iconElement = document.querySelector("#verify-icon");
+    const titleElement = document.querySelector("#verify-title");
+    const bodyElement = document.querySelector("#verify-body");
+    const linkElement = document.querySelector("#verify-link");
 
     function showResult(success) {
         if (success) {
-            iconEl.textContent = "✓\uFE0E";
-            iconEl.classList.add("verify-icon-success");
-            titleEl.textContent = i18n.t("ui.app.verify_email.success_title");
-            bodyEl.textContent = i18n.t("ui.app.verify_email.success_body");
+            iconElement.textContent = "✓\uFE0E";
+            iconElement.classList.add("verify-icon-success");
+            titleElement.textContent = i18n.t(
+                "ui.app.verify_email.success_title",
+            );
+            bodyElement.textContent = i18n.t(
+                "ui.app.verify_email.success_body",
+            );
         } else {
-            iconEl.textContent = "✗\uFE0E";
-            iconEl.classList.add("verify-icon-invalid");
-            titleEl.textContent = i18n.t("ui.app.verify_email.invalid_title");
-            bodyEl.textContent = i18n.t("ui.app.verify_email.invalid_body");
+            iconElement.textContent = "✗\uFE0E";
+            iconElement.classList.add("verify-icon-invalid");
+            titleElement.textContent = i18n.t(
+                "ui.app.verify_email.invalid_title",
+            );
+            bodyElement.textContent = i18n.t(
+                "ui.app.verify_email.invalid_body",
+            );
         }
-        linkEl.style.display = "";
+        linkElement.style.display = "";
     }
 
     const token =

@@ -1,3 +1,4 @@
+import { buildScrollTargetId } from "../../../app/administration/render-components.js";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import {
@@ -131,7 +132,7 @@ export async function environment() {
         capabilities: {
             get: (name) =>
                 name === "ui:log"
-                    ? (...args) => events.push({ kind: "log", args })
+                    ? (...args) => events.push({ kind: "log", args: args })
                     : undefined,
         },
     };
@@ -183,6 +184,14 @@ export async function environment() {
         globals,
     );
     const overrides = {
+        bindDependencyLinks: loadTestModule(
+            new URL(
+                "../../../app/administration/dependency-links.js",
+                import.meta.url,
+            ),
+            { "./render-components.js": { buildScrollTargetId } },
+            globals,
+        ).bindDependencyLinks,
         uiCtx,
         guides: [],
         apiFetch,
@@ -191,8 +200,8 @@ export async function environment() {
         createAdministrationReloaders,
         createAdministrationSave,
         confirmAdministrationSectionSwitch,
-        initSecuritySection: (...args) =>
-            (section = security.initSecuritySection(...args)),
+        initializeSecuritySection: (...args) =>
+            (section = security.initializeSecuritySection(...args)),
         createUnsavedChangesBar: unsaved.createUnsavedChangesBar,
         mountWhenDirect: async () => {},
         loadModules: async () => [],

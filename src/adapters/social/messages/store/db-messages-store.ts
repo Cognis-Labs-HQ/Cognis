@@ -2,7 +2,7 @@ import {
     changeChatroomSource,
     type ChatroomSourceInput,
 } from "./source-binding.js";
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import {
     appendMessage,
     appendRoomEvent,
@@ -23,11 +23,11 @@ import {
 } from "./keys.js";
 import {
     addMember,
-    createDm,
+    createDirectMessage,
     createRoom,
     deleteRoom,
     deleteRoomForActor,
-    findDmBetween,
+    findDirectMessageBetween,
     findGroupByExactMembers,
     getMember,
     getRoom,
@@ -70,8 +70,8 @@ import type {
     TypingRow,
 } from "./types.js";
 
-export class DbMessagesStore {
-    constructor(private readonly db: DbExecutor) {}
+class DatabaseMessagesStore {
+    constructor(private readonly db: DatabaseExecutor) {}
 
     async ensureSchema(): Promise<void> {
         await ensureSchema(this.db);
@@ -96,8 +96,11 @@ export class DbMessagesStore {
         return createRoom(this.db, kind, title, createdBy);
     }
 
-    async createDm(accountA: string, accountB: string): Promise<RoomRow> {
-        return createDm(this.db, accountA, accountB);
+    async createDirectMessage(
+        accountA: string,
+        accountB: string,
+    ): Promise<RoomRow> {
+        return createDirectMessage(this.db, accountA, accountB);
     }
 
     async getRoom(id: string): Promise<RoomRow | null> {
@@ -227,11 +230,11 @@ export class DbMessagesStore {
         return listRoomsForAccount(this.db, accountId);
     }
 
-    async findDmBetween(
+    async findDirectMessageBetween(
         accountA: string,
         accountB: string,
     ): Promise<RoomRow | null> {
-        return findDmBetween(this.db, accountA, accountB);
+        return findDirectMessageBetween(this.db, accountA, accountB);
     }
 
     async updateRoomTitle(
@@ -465,3 +468,4 @@ export class DbMessagesStore {
         return getTopEmojiUsage(this.db, accountId, limit);
     }
 }
+export { DatabaseMessagesStore };

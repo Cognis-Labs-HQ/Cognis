@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { structuredStore } from "../../../../gateways/reuse/tests/structured-store.js";
-import { DbKeyringVaultStore } from "../store.js";
+import { DatabaseKeyringVaultStore } from "../store.js";
 import {
     boundedVaultBytes,
     DEFAULT_MAX_VAULT_BYTES,
@@ -71,11 +71,11 @@ test("vault recovery reads above the write policy while replacement stays bounde
 
 test("vault storage uses bounded Unicode rows and atomic replacement without losing existing envelopes", async () => {
     const fixture = structuredStore();
-    const store = new DbKeyringVaultStore(fixture.db);
+    const store = new DatabaseKeyringVaultStore(fixture.db);
     await store.ensureSchema();
     const original = JSON.stringify({ cipher: "猫𠮷".repeat(20000) });
     await store.set("alice", original);
-    const restarted = new DbKeyringVaultStore(fixture.db);
+    const restarted = new DatabaseKeyringVaultStore(fixture.db);
     assert.equal(await restarted.get("alice"), original);
     assert.ok(fixture.rows("auth_keyring_vault_parts").length > 1);
     fixture.fail(

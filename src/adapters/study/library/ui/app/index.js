@@ -6,10 +6,10 @@ import { createSideMenu } from "/static/reuse/side-menu.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { loadLibrary } from "./data.js";
 import {
-    bindStudySubNavigation,
-    loadStudySubNavigationModel,
+    bindStudyNestedNavigation,
+    loadStudyNestedNavigationModel,
     readSelectedStudyLanguageCode,
-    createStudySubNavigationSlot,
+    createStudyNestedNavigationSlot,
 } from "/static/gateways/study/sub-navigation.js";
 import { isAdminScope } from "/static/gateways/study/language.js";
 import { adminLayerGroups, renderAdminBrowser } from "./admin-browser.js";
@@ -31,7 +31,7 @@ export async function mount(root, { signal } = {}) {
         await navigateTo("/study");
         return;
     }
-    const model = await loadStudySubNavigationModel({
+    const model = await loadStudyNestedNavigationModel({
         fallbackLanguageCode: readSelectedStudyLanguageCode(),
     });
     const languageCode = model.selectedLanguageCode;
@@ -118,7 +118,7 @@ export async function mount(root, { signal } = {}) {
         ],
         toolbarScrollable: true,
         floatingMenu: librarySelectionFloatingMenu(entries, i18n),
-        subNavigation: [createStudySubNavigationSlot(model, i18n)],
+        subNavigation: [createStudyNestedNavigationSlot(model, i18n)],
     });
     await composer.init();
     signal?.throwIfAborted();
@@ -159,7 +159,7 @@ export async function mount(root, { signal } = {}) {
             refreshLibraryFilterResults(panel);
         }
     });
-    bindStudySubNavigation(root, { signal, i18n });
+    bindStudyNestedNavigation(root, { signal, i18n });
     bindLibraryInteractions(root, {
         entries,
         i18n,

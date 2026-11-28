@@ -6,7 +6,7 @@ export function registerCalendarUi(
     gatewayRoot: string,
 ): void {
     const uiHooks = createGatewayUiRegistryHooks(ctx.uiRegistry, "calendar");
-    uiHooks.registerStaticDir("calendar", gatewayRoot);
+    uiHooks.registerStaticDirectory("calendar", gatewayRoot);
     uiHooks.registerNavbarPlugin(
         "/static/gateways/calendar/ui/navbar.js",
         () => ctx.gatewayRegistry.get("calendar")?.status !== "disabled",

@@ -1,24 +1,26 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import type {
-    StructuredDbCommand,
-    StructuredDbCommandResult,
+    StructuredDatabaseCommand,
+    StructuredDatabaseCommandResult,
 } from "../../db/reuse/db-command.js";
-import type { StructuredDbTableDef } from "../../db/reuse/db-table.js";
+import type { StructuredDatabaseTableDefinition } from "../../db/reuse/db-table.js";
 import { GuestProfileStore } from "../gateway/guest-profile-store.js";
 import { CoreShareGateway } from "../gateway/index.js";
 
 class MemoryExecutor {
-    public readonly tableDefs: StructuredDbTableDef[] = [];
+    public readonly tableDefs: StructuredDatabaseTableDefinition[] = [];
     public readonly rows = new Map<string, Record<string, unknown>>();
 
-    async ensureTable(def: StructuredDbTableDef): Promise<void> {
-        this.tableDefs.push(def);
+    async ensureTable(
+        definition: StructuredDatabaseTableDefinition,
+    ): Promise<void> {
+        this.tableDefs.push(definition);
     }
 
     async executeCommand(
-        command: StructuredDbCommand,
-    ): Promise<StructuredDbCommandResult> {
+        command: StructuredDatabaseCommand,
+    ): Promise<StructuredDatabaseCommandResult> {
         if (command.table !== "share_guest_profiles") {
             return { rows: [] };
         }

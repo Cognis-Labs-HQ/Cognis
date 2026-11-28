@@ -41,17 +41,18 @@ export function createLoginSubmitHandler({
             const isTfaMode =
                 tfaFields instanceof HTMLElement && !tfaFields.hidden;
             if (isTfaMode) {
-                const tfaMethodEl = form.querySelector("#login-tfa-method");
-                const tfaCodeEl = form.querySelector("#login-tfa-code");
+                const tfaMethodElement =
+                    form.querySelector("#login-tfa-method");
+                const tfaCodeElement = form.querySelector("#login-tfa-code");
                 const payload = {
                     loginAttemptId: currentTfaLoginAttemptId,
                     methodId:
-                        tfaMethodEl instanceof HTMLInputElement
-                            ? tfaMethodEl.value
+                        tfaMethodElement instanceof HTMLInputElement
+                            ? tfaMethodElement.value
                             : "",
                     code:
-                        tfaCodeEl instanceof HTMLInputElement
-                            ? tfaCodeEl.value.trim()
+                        tfaCodeElement instanceof HTMLInputElement
+                            ? tfaCodeElement.value.trim()
                             : "",
                 };
                 const tfaLoginClient = await loadTfaLoginClient();
@@ -79,13 +80,13 @@ export function createLoginSubmitHandler({
                 );
                 return;
             }
-            const usernameEl = form.querySelector("#login-username");
-            const passwordEl = form.querySelector("#login-password");
-            const providerEl = form.querySelector("#login-provider");
+            const usernameElement = form.querySelector("#login-username");
+            const passwordElement = form.querySelector("#login-password");
+            const providerElement = form.querySelector("#login-provider");
             const payload = {
-                username: usernameEl?.value ?? "",
-                password: passwordEl?.value ?? "",
-                provider: providerEl?.value ?? "local",
+                username: usernameElement?.value ?? "",
+                password: passwordElement?.value ?? "",
+                provider: providerElement?.value ?? "local",
             };
             const response = await fetch("/api/v1/auth/login", {
                 method: "POST",
@@ -103,10 +104,10 @@ export function createLoginSubmitHandler({
                 account_deactivated: "ui.app.login.reason.account_deactivated",
             };
             const errorKey = errorKeyByCode[body?.error?.code];
-            const errorMsg = errorKey
+            const errorMessage = errorKey
                 ? i18n.t(errorKey)
                 : body?.error?.message || i18n.t("ui.app.login.error.generic");
-            showToast(errorMsg, { variant: "error" });
+            showToast(errorMessage, { variant: "error" });
         } catch (error) {
             void log("error", "[auth] login submission failed", {
                 component: "auth",

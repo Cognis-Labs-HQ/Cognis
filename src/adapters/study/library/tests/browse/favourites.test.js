@@ -21,9 +21,9 @@ test("favourite children render independently of unfavourited ancestors, and pro
             this.children = nodes;
             this.firstElementChild = nodes[0];
         },
-        append(n) {
-            this.children = this.children.filter((node) => node !== n);
-            this.children.push(n);
+        append(childNode) {
+            this.children = this.children.filter((node) => node !== childNode);
+            this.children.push(childNode);
         },
     };
     node.parentElement = grid;
@@ -38,8 +38,8 @@ test("favourite children render independently of unfavourited ancestors, and pro
     let change;
     const root = {
         querySelectorAll: () => [panel],
-        addEventListener: (type, fn) => {
-            if (type === "change") change = fn;
+        addEventListener: (type, callback) => {
+            if (type === "change") change = callback;
         },
     };
     const context = vm.createContext({

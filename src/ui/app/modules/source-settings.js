@@ -51,7 +51,7 @@ function renderSourceManager(i18n) {
 function renderSourceForm(i18n, source) {
     const configured = source?.credentialConfigured === true;
     const locked = source?.trusted === true;
-    const scanPrivateRepos = source?.scanPrivateRepos === true;
+    const scanPrivateRepositories = source?.scanPrivateRepos === true;
     sourceFormBuilder = createFormBuilder(
         { i18n, escapeHtml, renderInfoTooltip },
         {
@@ -102,7 +102,7 @@ function renderSourceForm(i18n, source) {
                     name: "scanPrivateRepos",
                     labelKey: "ui.app.modules.scan_private_repos",
                     type: "checkbox",
-                    value: String(scanPrivateRepos),
+                    value: String(scanPrivateRepositories),
                     slider: true,
                     infoTooltip: {
                         text: i18n.t("ui.app.modules.scan_private_repos_hint"),
@@ -117,7 +117,7 @@ function renderSourceForm(i18n, source) {
                     placeholder: configured
                         ? i18n.t("ui.app.modules.credential_stored")
                         : "",
-                    required: scanPrivateRepos && !configured,
+                    required: scanPrivateRepositories && !configured,
                     secret: true,
                     attributes: { autocomplete: "new-password" },
                     infoTooltip: {

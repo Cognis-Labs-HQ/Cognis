@@ -17,11 +17,13 @@ test("application diagnostics use the logging gateway instead of native console 
     );
 });
 
-test("new components and external modules cannot acquire a logging-owner exception", (t) => {
+test("new components and external modules cannot acquire a logging-owner exception", (testContext) => {
     const directory = mkdtempSync(
         resolve(tmpdir(), "cognis-console-boundary-"),
     );
-    t.after(() => rmSync(directory, { recursive: true, force: true }));
+    testContext.after(() =>
+        rmSync(directory, { recursive: true, force: true }),
+    );
     const paths = [
         "src/gateways/example/ui/index.js",
         "src/adapters/example/console/ui/console.js",
@@ -45,9 +47,11 @@ test("new components and external modules cannot acquire a logging-owner excepti
     );
 });
 
-test("the initialization exception cannot authorize route handlers or inline browser logging", (t) => {
+test("the initialization exception cannot authorize route handlers or inline browser logging", (testContext) => {
     const directory = mkdtempSync(resolve(tmpdir(), "cognis-console-init-"));
-    t.after(() => rmSync(directory, { recursive: true, force: true }));
+    testContext.after(() =>
+        rmSync(directory, { recursive: true, force: true }),
+    );
     for (const [name, fixture] of [
         ["src/gateways/logging/bootstrap.ts", "init.js"],
         ["src/ui/public/pages/example.html", "inline.html.txt"],
@@ -66,9 +70,11 @@ test("the initialization exception cannot authorize route handlers or inline bro
     ]);
 });
 
-test("browser-accepted script end tags cannot bypass source inspection", (t) => {
+test("browser-accepted script end tags cannot bypass source inspection", (testContext) => {
     const directory = mkdtempSync(resolve(tmpdir(), "cognis-console-script-"));
-    t.after(() => rmSync(directory, { recursive: true, force: true }));
+    testContext.after(() =>
+        rmSync(directory, { recursive: true, force: true }),
+    );
     const destination = resolve(directory, "src/ui/public/pages/example.html");
     mkdirSync(dirname(destination), { recursive: true });
     copyFileSync(

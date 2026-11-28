@@ -1,10 +1,10 @@
 import { executeReferences } from "./reference-storage.js";
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import type { LibraryEntryInput } from "../types.js";
 import { insertEntryReferences } from "./reference-rows.js";
 
 export async function replaceEntryContent(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     id: string,
     input: LibraryEntryInput,
     providerModified: boolean,

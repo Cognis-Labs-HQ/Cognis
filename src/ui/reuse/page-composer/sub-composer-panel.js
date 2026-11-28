@@ -1,77 +1,114 @@
-/** Sub-composer panel helpers for nested composer edit mode.
- * Export: createSubComposerPanelHandlers(deps). @param {object} deps @returns {object}
+/**
+ * Builds the nested composer's element library and save/discard/reset panel.
+ *
+ * Public exports:
+ *   createNestedComposerPanelHandlers(deps) — creates the panel renderer for nested editor states.
+ *
+ * Usage:
+ *   const panels = createNestedComposerPanelHandlers(dependencies);
+ *   panels.createSubElementsPanel(state); // state identifies the active nested grid.
+ *
+ * @param {object} deps Injected sizing, placement, panel bounds, rendering and editing callbacks.
+ * @returns {{createSubElementsPanel: function(object): void}} Panel creation for a nested state; the owner removes the panel on unmount.
  */
+import { snapDragPlacement } from "./drag-placement.js";
+import { commitLayoutEdit, stageLayoutReset } from "./layout-save.js";
+import { bindComposerPointerDrag } from "./pointer-drag.js";
+
 import { halfGrid, snapGridFloor } from "./grid-math.js";
 
 import { resolveInitialGridWidth } from "./grid-sizing.js";
 import { fitComposerPanel } from "./responsive-layout.js";
-export function createSubComposerPanelHandlers({
+function createNestedComposerPanelHandlers({
     i18n,
     UNIT,
     getGridSize,
-    getSubPanelId,
+    getSubPanelId: getNestedPanelId,
     getComposerPanelSafeTop,
     clampComposerPanelLeft,
     getComposerPanelHorizontalBounds,
-    canSubPlace,
-    compactSubPlacements,
+    canSubPlace: canNestedPlace,
     endEditMode,
-    saveLayoutFor,
-    initializeSubPlacements,
-    renderSubGrid,
+    saveLayout,
+    initializeSubPlacements: initializeNestedPlacements,
+    renderSubGrid: renderNestedGrid,
 }) {
-    function bindSubPanelItemDrag(item, el, state) {
-        item.addEventListener("pointerdown", (e) => {
-            if (e.button !== 0 || e.target.closest("button")) return;
-            e.preventDefault();
-            item.setPointerCapture(e.pointerId);
+    function bindNestedPanelItemDrag(item, elementDefinition, state) {
+        item.addEventListener("pointerdown", (event) => {
+            if (event.button !== 0 || event.target.closest("button")) return;
+            event.preventDefault();
 
-            const gridSize = getGridSize(el);
-            const w = resolveInitialGridWidth(gridSize, state.gridCols);
-            const h = gridSize.fillHeight
+            const gridSize = getGridSize(elementDefinition);
+            const width = resolveInitialGridWidth(gridSize, state.gridColumns);
+            const height = gridSize.fillHeight
                 ? state.gridRows
                 : gridSize.halfHeight
                   ? Math.max(gridSize.min[1], halfGrid(state.gridRows))
                   : gridSize.default[1];
 
             let shade = null;
-            let currentCol = -1;
+            let currentColumn = -1;
             let currentRow = -1;
             let overGrid = false;
 
-            function onMove(e) {
-                const gridRect = state.container.getBoundingClientRect();
-                const x = e.clientX - gridRect.left;
-                const y = e.clientY - gridRect.top;
-                const inGrid = x >= 0 && x <= gridRect.width && y >= 0;
+            function onMove(moveEvent) {
+                const gridRectangle = state.container.getBoundingClientRect();
+                const horizontalCoordinate =
+                    moveEvent.clientX - gridRectangle.left;
+                const verticalCoordinate =
+                    moveEvent.clientY - gridRectangle.top;
+                const inGrid =
+                    horizontalCoordinate >= 0 &&
+                    horizontalCoordinate <= gridRectangle.width &&
+                    verticalCoordinate >= 0;
 
                 if (inGrid) {
                     if (!shade) {
                         shade = document.createElement("div");
                         shade.className = "composer-shade";
-                        shade.style.width = `${w * state.gridTrackSize}px`;
-                        shade.style.height = `${h * UNIT}px`;
+                        shade.style.width = `${width * state.gridTrackSize}px`;
+                        shade.style.height = `${height * UNIT}px`;
                         state.container.appendChild(shade);
                     }
-                    const col = Math.max(
+                    const column = Math.max(
                         0,
                         Math.min(
-                            state.gridCols - w,
+                            state.gridColumns - width,
                             snapGridFloor(
-                                x,
-                                state.gridCols,
+                                horizontalCoordinate,
+                                state.gridColumns,
                                 state.gridTrackSize,
                             ),
                         ),
                     );
-                    const row = Math.max(0, snapGridFloor(y, state.gridRows));
-                    currentCol = col;
-                    currentRow = row;
-                    shade.style.left = `${col * state.gridTrackSize}px`;
-                    shade.style.top = `${row * UNIT}px`;
+                    const row = Math.max(
+                        0,
+                        snapGridFloor(verticalCoordinate, state.gridRows),
+                    );
+                    const target = snapDragPlacement(
+                        { id: null, col: column, row, w: width, h: height },
+                        state.gridRows,
+                        (...argumentsList) =>
+                            canNestedPlace(state, ...argumentsList),
+                    );
+                    currentColumn = column;
+                    currentRow = target.row;
+                    shade.classList.toggle(
+                        "composer-shade--snapped",
+                        target.row !== row,
+                    );
+                    shade.style.left = `${column * state.gridTrackSize}px`;
+                    shade.style.top = `${currentRow * UNIT}px`;
                     shade.classList.toggle(
                         "composer-shade--invalid",
-                        !canSubPlace(state, col, row, w, h, null),
+                        !canNestedPlace(
+                            state,
+                            column,
+                            currentRow,
+                            width,
+                            height,
+                            null,
+                        ),
                     );
                     overGrid = true;
                 } else {
@@ -84,44 +121,47 @@ export function createSubComposerPanelHandlers({
             }
 
             function onUp(event) {
-                item.removeEventListener("pointermove", onMove);
-                item.removeEventListener("pointerup", onUp);
-                item.removeEventListener("pointercancel", onUp);
                 if (shade) shade.remove();
                 if (event.type === "pointercancel") return;
                 if (
                     overGrid &&
-                    canSubPlace(state, currentCol, currentRow, w, h, null)
+                    canNestedPlace(
+                        state,
+                        currentColumn,
+                        currentRow,
+                        width,
+                        height,
+                        null,
+                    )
                 ) {
                     state.layout.hidden = state.layout.hidden.filter(
-                        (id) => id !== el.id,
+                        (id) => id !== elementDefinition.id,
                     );
                     state.layout.placements.push({
-                        id: el.id,
-                        col: currentCol,
+                        id: elementDefinition.id,
+                        col: currentColumn,
                         row: currentRow,
-                        w,
-                        h,
+                        w: width,
+                        h: height,
                     });
-                    renderSubGrid(state);
+                    renderNestedGrid(state);
                 }
             }
 
-            item.addEventListener("pointermove", onMove);
-            item.addEventListener("pointerup", onUp);
-            item.addEventListener("pointercancel", onUp);
+            bindComposerPointerDrag(item, event, onMove, onUp, state.container);
         });
     }
 
-    function createSubElementsPanel(state) {
-        const panelId = getSubPanelId(state.preferenceKey);
-        const hiddenElements = state.elements.filter((e) =>
-            state.layout.hidden.includes(e.id),
+    function createNestedElementsPanel(state) {
+        const panelId = getNestedPanelId(state.preferenceKey);
+        const hiddenElements = state.elements.filter((candidateElement) =>
+            state.layout.hidden.includes(candidateElement.id),
         );
 
         const panel = document.createElement("div");
         panel.id = panelId;
         panel.className = "composer-panel";
+        panel.inert = state.saving === true;
 
         let listHtml;
         if (hiddenElements.length === 0) {
@@ -129,8 +169,8 @@ export function createSubComposerPanelHandlers({
         } else {
             listHtml = hiddenElements
                 .map(
-                    (el) =>
-                        `<li class="composer-library-item" data-composer-panel-item="${el.id}"><span>${el.label}</span><button type="button" class="composer-add-btn btn-confirm">${i18n.t("ui.reuse.add")}</button></li>`,
+                    (elementDefinition) =>
+                        `<li class="composer-library-item" data-composer-panel-item="${elementDefinition.id}"><span>${elementDefinition.label}</span><button type="button" class="composer-add-btn btn-confirm">${i18n.t("ui.reuse.add")}</button></li>`,
                 )
                 .join("");
         }
@@ -138,45 +178,52 @@ export function createSubComposerPanelHandlers({
         panel.innerHTML = `
       <div id="${panelId}-drag-handle" class="composer-panel-header">
         <span class="composer-panel-title">${i18n.t("ui.reuse.elements")}</span>
-        <button class="composer-panel-minimize-btn" type="button">−</button>
+        <button aria-label="${i18n.t("ui.reuse.elements")}" aria-expanded="true" class="composer-panel-minimize-btn" type="button">−</button>
       </div>
       <div class="composer-panel-body">
         <ul class="composer-library-list">${listHtml}</ul>
       </div>
       <div class="composer-panel-actions">
-        <a href="#" class="composer-discard-btn btn-cancel btn-animated" role="button">${i18n.t("ui.reuse.discard")}</a>
-        <a href="#" class="composer-done-btn btn-confirm btn-animated" role="button">${i18n.t("ui.reuse.done")}</a>
+        <div class="composer-panel-decisions">
+          <a href="#" class="composer-discard-btn btn-cancel btn-animated" role="button">${i18n.t("ui.reuse.discard")}</a>
+          <a href="#" class="composer-done-btn btn-confirm btn-animated" role="button">${i18n.t("ui.reuse.done")}</a>
+        </div>
         <a href="#" class="composer-reset-btn btn-neutral btn-animated" role="button">↺ ${i18n.t("ui.reuse.reset_layout")}</a>
       </div>
     `;
 
+        state.elementsPanel = panel;
+        document.body.appendChild(panel);
+        const panelWidth = panel.getBoundingClientRect().width;
         const safeTop = getComposerPanelSafeTop();
         if (state.panelPosition !== null) {
             panel.style.top = `${Math.max(safeTop, state.panelPosition.top)}px`;
-            panel.style.left = `${clampComposerPanelLeft(state.panelPosition.left, 240)}px`;
+            panel.style.left = `${clampComposerPanelLeft(state.panelPosition.left, panelWidth)}px`;
             panel.style.right = "auto";
         } else {
-            const gridRect = state.container.getBoundingClientRect();
-            const panelLeft = clampComposerPanelLeft(gridRect.right + 12, 240);
-            const panelTop = gridRect.top;
+            const gridRectangle = state.container.getBoundingClientRect();
+            const panelLeft = clampComposerPanelLeft(
+                gridRectangle.right + 12,
+                panelWidth,
+            );
+            const panelTop = gridRectangle.top;
             panel.style.top = `${Math.max(safeTop, panelTop)}px`;
             panel.style.left = `${panelLeft}px`;
             panel.style.right = "auto";
         }
 
-        document.body.appendChild(panel);
         fitComposerPanel(panel);
 
         const dragHandle = panel.querySelector(`#${panelId}-drag-handle`);
         if (dragHandle) {
-            dragHandle.addEventListener("pointerdown", (e) => {
-                if (e.button !== 0) return;
-                if (e.target.closest("button")) return;
-                e.preventDefault();
-                dragHandle.setPointerCapture(e.pointerId);
-                const startX = e.clientX - panel.offsetLeft;
-                const startY = e.clientY - panel.offsetTop;
-                function onMove(e) {
+            dragHandle.addEventListener("pointerdown", (event) => {
+                if (event.button !== 0) return;
+                if (event.target.closest("button")) return;
+                event.preventDefault();
+                dragHandle.setPointerCapture(event.pointerId);
+                const startX = event.clientX - panel.offsetLeft;
+                const startY = event.clientY - panel.offsetTop;
+                function onMove(moveEvent) {
                     const bounds = getComposerPanelHorizontalBounds(
                         panel.offsetWidth,
                     );
@@ -189,11 +236,11 @@ export function createSubComposerPanelHandlers({
                     );
                     const newLeft = Math.max(
                         minLeft,
-                        Math.min(maxLeft, e.clientX - startX),
+                        Math.min(maxLeft, moveEvent.clientX - startX),
                     );
                     const newTop = Math.max(
                         minTop,
-                        Math.min(maxTop, e.clientY - startY),
+                        Math.min(maxTop, moveEvent.clientY - startY),
                     );
                     panel.style.left = `${newLeft}px`;
                     panel.style.top = `${newTop}px`;
@@ -220,22 +267,22 @@ export function createSubComposerPanelHandlers({
                 panel.querySelector(
                     ".composer-panel-minimize-btn",
                 ).textContent = minimized ? "+" : "−";
+                panel
+                    .querySelector(".composer-panel-minimize-btn")
+                    .setAttribute("aria-expanded", String(!minimized));
+                fitComposerPanel(panel);
             });
 
         panel
             .querySelector(".composer-done-btn")
             .addEventListener("click", async (event) => {
                 event.preventDefault();
-                compactSubPlacements(state);
-                state.editing = false;
-                endEditMode();
-                state.layoutProfiles = await saveLayoutFor(
-                    state.preferenceKey,
-                    state.layoutProfiles,
-                    state.gridCols,
-                    state.layout,
-                );
-                renderSubGrid(state);
+                await commitLayoutEdit({
+                    state,
+                    save: () => saveLayout(state),
+                    finish: endEditMode,
+                    render: () => renderNestedGrid(state),
+                });
             });
 
         panel
@@ -245,41 +292,39 @@ export function createSubComposerPanelHandlers({
                 state.layout = state.layoutSnapshot;
                 state.editing = false;
                 endEditMode();
-                renderSubGrid(state);
+                renderNestedGrid(state);
             });
 
         panel
             .querySelector(".composer-reset-btn")
-            .addEventListener("click", async (event) => {
+            .addEventListener("click", (event) => {
                 event.preventDefault();
-                state.layout = { placements: [], hidden: [] };
-                initializeSubPlacements(state);
-                state.layoutSnapshot = JSON.parse(JSON.stringify(state.layout));
-                state.layoutProfiles = await saveLayoutFor(
-                    state.preferenceKey,
-                    state.layoutProfiles,
-                    state.gridCols,
-                    state.layout,
-                );
-                renderSubGrid(state);
+                stageLayoutReset({
+                    state,
+                    initialize: () => initializeNestedPlacements(state),
+                    render: () => renderNestedGrid(state),
+                });
             });
 
         panel.querySelectorAll("[data-composer-panel-item]").forEach((item) => {
-            const elId = item.dataset.composerPanelItem;
-            const element = state.elements.find((e) => e.id === elId);
-            if (element) bindSubPanelItemDrag(item, element, state);
+            const elementId = item.dataset.composerPanelItem;
+            const element = state.elements.find(
+                (candidateElement) => candidateElement.id === elementId,
+            );
+            if (element) bindNestedPanelItemDrag(item, element, state);
             item.querySelector(".composer-add-btn")?.addEventListener(
                 "click",
                 () => {
                     state.layout.hidden = state.layout.hidden.filter(
-                        (id) => id !== elId,
+                        (id) => id !== elementId,
                     );
-                    initializeSubPlacements(state, { reveal: [elId] });
-                    renderSubGrid(state);
+                    initializeNestedPlacements(state, { reveal: [elementId] });
+                    renderNestedGrid(state);
                 },
             );
         });
     }
 
-    return { createSubElementsPanel };
+    return { createSubElementsPanel: createNestedElementsPanel };
 }
+export { createNestedComposerPanelHandlers };

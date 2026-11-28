@@ -41,17 +41,17 @@ export interface DatabaseGateway {
 
 ### 責務
 
-- ブートストラップ時に `DB_TYPE` を読み取り、正しい `DbExecutor` インスタンスを作成する。
+- ブートストラップ時に `DB_TYPE` を読み取り、正しい `DatabaseExecutor` インスタンスを作成する。
 - アクティブなアダプターの `sql/` ディレクトリからSQLスクリプトを実行してデータベーススキーマを初期化する。
 - `db:executor`、`db:type`、`db:dialect` をケイパビリティストアに提供する。
 - `modules` テーブルに `cognis-core` モジュールレコードをシードする。
 
-### DbDialectHelper
+### DatabaseDialectHelper
 
-`db:dialect` として提供される `DbDialectHelper` は2つのメソッドを提供します:
+`db:dialect` として提供される `DatabaseDialectHelper` は2つのメソッドを提供します:
 
 ```ts
-export interface DbDialectHelper {
+export interface DatabaseDialectHelper {
     upsert(
         table: string,
         keyCol: string,
@@ -62,12 +62,12 @@ export interface DbDialectHelper {
 }
 ```
 
-| パス                           | 目的                                                |
-| ------------------------------ | --------------------------------------------------- |
-| `src/gateways/db/gateway.ts`   | `DatabaseGateway` インターフェース                  |
-| `src/gateways/db/executor.ts`  | `createDbExecutor`                                  |
-| `src/gateways/db/init.ts`      | `initializeDatabaseSchema`                          |
-| `src/gateways/db/bootstrap.ts` | ブートストラップエントリポイント; `DbDialectHelper` |
+| パス                           | 目的                                                      |
+| ------------------------------ | --------------------------------------------------------- |
+| `src/gateways/db/gateway.ts`   | `DatabaseGateway` インターフェース                        |
+| `src/gateways/db/executor.ts`  | `createDatabaseExecutor`                                  |
+| `src/gateways/db/init.ts`      | `initializeDatabaseSchema`                                |
+| `src/gateways/db/bootstrap.ts` | ブートストラップエントリポイント; `DatabaseDialectHelper` |
 
 ### 管理
 

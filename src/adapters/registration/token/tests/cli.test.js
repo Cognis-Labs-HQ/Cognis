@@ -17,7 +17,9 @@ test("adapter commands generate tokens and send invitation emails through the au
         let body = "";
         for await (const chunk of req) body += chunk;
         bodies.push(JSON.parse(body));
-        res.writeHead(deny ? 403 : 201, { "content-type": "application/json" });
+        res.writeHead(deny ? 403 : 201, {
+            "content-type": "application/json",
+        });
         res.end(
             JSON.stringify(
                 deny

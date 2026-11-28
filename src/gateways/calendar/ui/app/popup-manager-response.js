@@ -174,9 +174,13 @@ export function createCalendarResponseHandler({
         try {
             const payload = await response.json();
             movedTo = payload?.data?.movedTo ?? null;
-        } catch (err) {
+        } catch (error) {
             // response body may be absent in some test stubs
-            void log("warn", "Failed to parse response body for movedTo:", err);
+            void log(
+                "warn",
+                "Failed to parse response body for movedTo:",
+                error,
+            );
         }
         if (targetCalendarId) {
             setSelectedCalendarId(movedTo?.calendarId ?? targetCalendarId);
@@ -209,8 +213,12 @@ export function createCalendarResponseHandler({
                 return false;
             }
             return await handleEventResponse(eventData, responseOption);
-        } catch (err) {
-            void log("warn", "Failed to load event for response handler:", err);
+        } catch (error) {
+            void log(
+                "warn",
+                "Failed to load event for response handler:",
+                error,
+            );
             showToast(i18n.t("gateway.calendar.load_event_failed"), "error");
             return false;
         }

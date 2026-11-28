@@ -20,7 +20,7 @@ import { showToast } from "./toast.js";
 const log = bindCapability("ui:log");
 
 const RETRYABLE_SERVER_STATUS_CODES = new Set([502, 503, 504]);
-const RETRYABLE_SERVER_STATUS_MESSAGE_REGEX = new RegExp(
+const RETRYABLE_SERVER_STATUS_MESSAGE_REGULAR_EXPRESSION = new RegExp(
     `\\b(${[...RETRYABLE_SERVER_STATUS_CODES].join("|")})\\b`,
 );
 const CONNECTION_RECOVERY_POPUP_SUPPRESSION_WINDOW_MS = 5_000;
@@ -170,7 +170,7 @@ function parseRetryableStatusCodeFromMessage(message) {
     const normalizedMessage = message.trim();
     if (!normalizedMessage) return null;
     const statusMatch = normalizedMessage.match(
-        RETRYABLE_SERVER_STATUS_MESSAGE_REGEX,
+        RETRYABLE_SERVER_STATUS_MESSAGE_REGULAR_EXPRESSION,
     );
     if (!statusMatch) return null;
     return Number(statusMatch[1]);
@@ -234,7 +234,7 @@ export async function apiFetch(path, options = {}) {
         accessToken,
         suppressAccessDeniedEvent = false,
         suppressConnectionRecoveryToast = false,
-        timeoutMs = API_REQUEST_TIMEOUT_MS,
+        timeoutMs: timeoutMs = API_REQUEST_TIMEOUT_MS,
         ...requestOptions
     } = options ?? {};
     const token = String(

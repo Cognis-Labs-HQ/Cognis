@@ -40,7 +40,7 @@ test("Study submenu links use the user-dropdown button class", () => {
     );
     assert.doesNotMatch(stylesheet, /\.dropdown-item/);
     assert.match(source, /<ul class="page-subnav-list study-subnav-settings">/);
-    assert.match(studyPage, /renderStudySubNavigation/);
+    assert.match(studyPage, /renderStudyNestedNavigation/);
 });
 
 test("Study language controls suppress hover translation overflow", () => {
@@ -81,7 +81,7 @@ test("Study navigation stores language selection on buttons instead of URLs", ()
 
     assert.match(navigationSource, /data-language-code=/);
     assert.match(navigationSource, /readSelectedStudyLanguageCode/);
-    assert.match(navigationSource, /bindStudySubNavigation/);
+    assert.match(navigationSource, /bindStudyNestedNavigation/);
     assert.match(navigationSource, /resolveRememberedStudyPageUrl/);
     assert.match(
         navigationSource,

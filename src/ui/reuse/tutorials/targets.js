@@ -34,8 +34,8 @@ export function usableTarget(element, document) {
     )
         return false;
     if (!element.getClientRects().length) return false;
-    const rect = element.getBoundingClientRect();
-    if (rect.width <= 0 || rect.height <= 0) return false;
+    const rectangle = element.getBoundingClientRect();
+    if (rectangle.width <= 0 || rectangle.height <= 0) return false;
     let host = element.getRootNode?.()?.host;
     if (host && element.getRootNode().mode !== "open") return false;
     while (host) {
@@ -91,7 +91,10 @@ export function resolveTarget(targets, id, owner, document, context) {
  * @param {object} options Lifetime, timeout and observer document.
  * @returns {Promise<Element|null>} The target or null after the deadline.
  */
-export function waitForTarget(resolve, { signal, timeoutMs, document }) {
+export function waitForTarget(
+    resolve,
+    { signal, timeoutMs: timeoutMs, document },
+) {
     signal.throwIfAborted();
     return new Promise((accept, reject) => {
         let timer,

@@ -33,7 +33,9 @@ export function createDeckRoutes(
                 return true;
             }
             if (req.method === "POST" && id && match[2]) {
-                const body = (await readJson(req, { maxBytes: 16 * 1024 })) as {
+                const body = (await readJson(req, {
+                    maxBytes: 16 * 1024,
+                })) as {
                     cardId: unknown;
                     grade: unknown;
                     attempt?: unknown;

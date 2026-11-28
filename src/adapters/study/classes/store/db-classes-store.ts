@@ -1,4 +1,4 @@
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import { DEFAULT_STUDENT_LIMIT } from "./constants.js";
 import {
     getAvailableClasses,
@@ -38,8 +38,8 @@ import type {
     TeacherRequestRow,
 } from "./types.js";
 
-export class DbClassesStore {
-    constructor(private readonly db: DbExecutor) {}
+class DatabaseClassesStore {
+    constructor(private readonly db: DatabaseExecutor) {}
 
     private static readonly DEFAULT_STUDENT_LIMIT = DEFAULT_STUDENT_LIMIT;
 
@@ -237,3 +237,4 @@ export class DbClassesStore {
         await rejectTeacherRequest(this.db, requestId, reviewerAccountId);
     }
 }
+export { DatabaseClassesStore };

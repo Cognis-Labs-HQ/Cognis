@@ -9,7 +9,7 @@ import {
 } from "../routes/index.js";
 import { issueAccessToken } from "../../../../gateways/auth/access-tokens.js";
 
-function makeReq(method: string, token: string | null) {
+function makeRequest(method: string, token: string | null) {
     return {
         method,
         headers: token ? { authorization: `Bearer ${token}` } : {},
@@ -163,7 +163,7 @@ test("POST /messages/requests/:id/reject cleans up a legacy pending room", async
     let responseBody = "";
 
     const handled = await route(
-        makeReq("POST", token),
+        makeRequest("POST", token),
         {
             writeHead(status: number) {
                 statusCode = status;
@@ -189,13 +189,13 @@ test("admin can create DM with hidden recipient without a message request", asyn
     const createdRequests: unknown[] = [];
     const addedMembers: Array<Record<string, unknown>> = [];
     const messagesStore = {
-        async findDmBetween() {
+        async findDirectMessageBetween() {
             return null;
         },
         async hasApprovedMessageRequestBetween() {
             return false;
         },
-        async createDm() {
+        async createDirectMessage() {
             return { id: "room-admin-hidden", kind: "dm" };
         },
         async addMemberWithEvent(input: Record<string, unknown>) {
@@ -363,7 +363,7 @@ test("GET /messages/rooms includes member avatar keys from profiles", async () =
     let responseBody = "";
 
     const handled = await route(
-        makeReq("GET", token),
+        makeRequest("GET", token),
         {
             writeHead(status: number) {
                 statusCode = status;
@@ -432,7 +432,7 @@ test("GET /messages/rooms tolerates pending-request lookup failures", async () =
     let statusCode = 0;
     let responseBody = "";
     const handled = await route(
-        makeReq("GET", token),
+        makeRequest("GET", token),
         {
             writeHead(status: number) {
                 statusCode = status;
@@ -497,7 +497,7 @@ test("GET /messages/rooms tolerates pending-request missing status column failur
     let statusCode = 0;
     let responseBody = "";
     const handled = await route(
-        makeReq("GET", token),
+        makeRequest("GET", token),
         {
             writeHead(status: number) {
                 statusCode = status;
@@ -598,7 +598,7 @@ test("GET /messages/rooms/:id/messages hides messages when room fallback detects
     let responseBody = "";
 
     const handled = await route(
-        makeReq("GET", token),
+        makeRequest("GET", token),
         {
             writeHead(status: number) {
                 statusCode = status;
@@ -676,7 +676,7 @@ test("GET /messages/rooms/:id/messages hides messages when incoming pending look
     let responseBody = "";
 
     const handled = await route(
-        makeReq("GET", token),
+        makeRequest("GET", token),
         {
             writeHead(status: number) {
                 statusCode = status;
@@ -780,7 +780,7 @@ test("GET /messages/rooms/:id/messages returns messages when no pending request 
     let responseBody = "";
 
     const handled = await route(
-        makeReq("GET", token),
+        makeRequest("GET", token),
         {
             writeHead(status: number) {
                 statusCode = status;
@@ -883,7 +883,7 @@ test("POST /messages/rooms/:id/messages/:messageId/reactions dispatches reaction
     });
     let statusCode = 0;
     let responseBody = "";
-    const req = makeReq("POST", token);
+    const req = makeRequest("POST", token);
     req[Symbol.asyncIterator] = async function* () {
         yield Buffer.from(JSON.stringify({ emoji: "🔥" }));
     };

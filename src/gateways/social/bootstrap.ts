@@ -2,14 +2,14 @@ import { readGatewayManifestVersion } from "../reuse/manifest-version.js";
 import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { GatewayBootstrapContext } from "../shared.js";
-import type { DbExecutor } from "../db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../db/reuse/db-executor.js";
 import { readJson } from "../../api/reuse/read-json.js";
 import { buildGatewayAdapterAdminControls } from "../../api/reuse/adapter-admin-controls.js";
 import {
     resolveRouteContext,
     type RouteContext,
 } from "../../api/reuse/route-context.js";
-import { DbAdapterConfigStore } from "./adapter-config-store.js";
+import { DatabaseAdapterConfigStore } from "./adapter-config-store.js";
 import { CoreSocialGateway } from "./gateway.js";
 import { createGatewayUiRegistryHooks } from "../reuse/ui-registry-hooks.js";
 import {
@@ -72,7 +72,9 @@ function createSocialAdapterRoutes(
             if (req.method === "GET") {
                 const config = gateway.getAdapterConfig(adapterId);
                 if (config === null) {
-                    res.writeHead(404, { "content-type": "application/json" });
+                    res.writeHead(404, {
+                        "content-type": "application/json",
+                    });
                     res.end(
                         JSON.stringify({
                             error: {
@@ -97,7 +99,9 @@ function createSocialAdapterRoutes(
 
             if (req.method === "PUT") {
                 if (!gateway.getAdapter(adapterId)) {
-                    res.writeHead(404, { "content-type": "application/json" });
+                    res.writeHead(404, {
+                        "content-type": "application/json",
+                    });
                     res.end(
                         JSON.stringify({
                             error: {
@@ -142,9 +146,11 @@ function createSocialAdapterRoutes(
                 return true;
             }
             if (action === "enable") {
-                const gwEntry = gatewayRegistry.get(gatewayId);
-                if (gwEntry?.status === "disabled") {
-                    res.writeHead(409, { "content-type": "application/json" });
+                const gatewayEntry = gatewayRegistry.get(gatewayId);
+                if (gatewayEntry?.status === "disabled") {
+                    res.writeHead(409, {
+                        "content-type": "application/json",
+                    });
                     res.end(
                         JSON.stringify({
                             error: {
@@ -181,8 +187,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     );
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
-    const dbExecutor = ctx.capabilities.require<DbExecutor>("db:executor");
-    const configStore = new DbAdapterConfigStore(dbExecutor);
+    const databaseExecutor =
+        ctx.capabilities.require<DatabaseExecutor>("db:executor");
+    const configStore = new DatabaseAdapterConfigStore(databaseExecutor);
     await configStore.ensureSchema();
 
     const gateway = new CoreSocialGateway(configStore);
@@ -204,11 +211,15 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         flow: ctx.flow,
         registerRoute: (handler, gatewayId) =>
             ctx.routeRegistry.register(handler, gatewayId ?? "social"),
-        registerAdapterStaticDir: (gatewayId, adapterId, absoluteDir) =>
-            ctx.uiRegistry?.registerAdapterStaticDir(
+        registerAdapterStaticDirectory: (
+            gatewayId,
+            adapterId,
+            absoluteDirectory,
+        ) =>
+            ctx.uiRegistry?.registerAdapterStaticDirectory(
                 gatewayId,
                 adapterId,
-                absoluteDir,
+                absoluteDirectory,
             ),
         registerCapabilityProvider: (provider) =>
             ctx.uiRegistry?.registerCapabilityProvider(provider),
@@ -250,14 +261,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         hasAdapters: true,
     });
 
-    const uiDir = path.resolve(
+    const uiDirectory = path.resolve(
         process.cwd(),
         "src",
         "gateways",
         "social",
         "ui",
     );
-    ctx.uiRegistry?.registerStaticDir("social", uiDir);
+    ctx.uiRegistry?.registerStaticDirectory("social", uiDirectory);
 
     ctx.log?.("info", "Social gateway: initialized.", {
         component: "social-gateway",
@@ -299,11 +310,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "compose-surface",
         { id: "social-gateway:compose-surface" },
         (stageCtx) => {
-            const navResults = (stageCtx.stageResults["resolve-navigation"] ??
-                []) as Array<{ navEntry?: unknown }>;
+            const navigationResults = (stageCtx.stageResults[
+                "resolve-navigation"
+            ] ?? []) as Array<{ navEntry?: unknown }>;
             return {
                 surface: "messages",
-                navEntries: navResults.map((r) => r.navEntry).filter(Boolean),
+                navEntries: navigationResults
+                    .map((result) => result.navEntry)
+                    .filter(Boolean),
             };
         },
     );
@@ -330,7 +344,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                     reason: "missing_ciphertext_or_iv",
                 };
             }
-            return { valid: true, roomId, ciphertext, iv };
+            return {
+                valid: true,
+                roomId,
+                ciphertext,
+                iv: iv,
+            };
         },
     );
 

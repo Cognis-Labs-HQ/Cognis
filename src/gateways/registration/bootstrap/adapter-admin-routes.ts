@@ -63,7 +63,9 @@ export function createGatewayAdapterRoutes(
             if (action === "enable") {
                 const gatewayEntry = gatewayRegistry.get(gatewayId);
                 if (gatewayEntry?.status === "disabled") {
-                    res.writeHead(409, { "content-type": "application/json" });
+                    res.writeHead(409, {
+                        "content-type": "application/json",
+                    });
                     res.end(
                         JSON.stringify({
                             error: {
@@ -150,7 +152,9 @@ export function createGatewayAdapterRoutes(
             if (enabledValue === true || enabledValue === "true") {
                 const gatewayEntry = gatewayRegistry.get(gatewayId);
                 if (gatewayEntry?.status === "disabled") {
-                    res.writeHead(409, { "content-type": "application/json" });
+                    res.writeHead(409, {
+                        "content-type": "application/json",
+                    });
                     res.end(
                         JSON.stringify({
                             error: {

@@ -7,14 +7,14 @@ import { GatewayRegistry, CapabilityStore } from "@cognis/core";
 import { RouteRegistry } from "../../../../api/reuse/route-registry.js";
 import { UIRegistry } from "../../../../api/reuse/ui-registry.js";
 import { bootstrapSocialAdapter } from "../index.js";
-import { makeTempDb } from "../routes/tests/helpers.js";
+import { makeTemporaryDatabase } from "../routes/tests/helpers.js";
 
-function makeInMemoryDb() {
+function makeInMemoryDatabase() {
     return {
         executeCommand: async (_command: unknown) => ({ rows: [] }),
-        ensureTable: async (_def: unknown) => {},
-        transaction: async (cb: (db: unknown) => Promise<unknown>) =>
-            cb(makeInMemoryDb()),
+        ensureTable: async (_definition: unknown) => {},
+        transaction: async (callback: (db: unknown) => Promise<unknown>) =>
+            callback(makeInMemoryDatabase()),
     };
 }
 
@@ -35,7 +35,7 @@ function makeAdapterCtx(
     );
     const uiRegistry = overrides.uiRegistry;
     if (!capabilities.get("db:executor")) {
-        capabilities.contribute("db:executor", makeInMemoryDb());
+        capabilities.contribute("db:executor", makeInMemoryDatabase());
     }
     const registeredAdapters: Array<{
         adapterId: string;
@@ -73,13 +73,21 @@ function makeAdapterCtx(
                 }),
             registerCapabilityProvider: (provider) =>
                 uiRegistry?.registerCapabilityProvider(provider),
-            registerStaticDir: (prefix: string, dir: string) =>
-                uiRegistry?.registerStaticDir(prefix, dir),
-            registerAdapterStaticDir: (gw: string, ad: string, dir: string) =>
-                uiRegistry?.registerAdapterStaticDir(gw, ad, dir),
+            registerStaticDirectory: (prefix: string, dir: string) =>
+                uiRegistry?.registerStaticDirectory(prefix, dir),
+            registerAdapterStaticDirectory: (
+                gatewayId: string,
+                adapter: string,
+                dir: string,
+            ) =>
+                uiRegistry?.registerAdapterStaticDirectory(
+                    gatewayId,
+                    adapter,
+                    dir,
+                ),
             registerAuthTypingMessage: (
-                m: Parameters<UIRegistry["registerAuthTypingMessage"]>[0],
-            ) => uiRegistry?.registerAuthTypingMessage(m),
+                message: Parameters<UIRegistry["registerAuthTypingMessage"]>[0],
+            ) => uiRegistry?.registerAuthTypingMessage(message),
             isGatewayEnabled: () => true,
             isAdapterEnabled: () => true,
         },
@@ -127,7 +135,7 @@ test("profile adapter bootstrap contributes profile capabilities", async () => {
 });
 
 test("external profile synchronization applies requested profile visibility", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const capabilities = new CapabilityStore();
         capabilities.contribute("db:executor", executor);
@@ -173,7 +181,7 @@ test("external profile synchronization applies requested profile visibility", as
 });
 
 test("profile lifecycle capability creates a profile row when missing", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const capabilities = new CapabilityStore();
         capabilities.contribute("db:executor", executor);
@@ -202,18 +210,21 @@ test("profile adapter bootstrap registers static dir and navbar.js exists on dis
     const { ctx } = makeAdapterCtx({ uiRegistry });
     await bootstrapSocialAdapter(ctx);
 
-    const staticDir = uiRegistry.getAdapterStaticDir("social", "profile");
+    const staticDirectory = uiRegistry.getAdapterStaticDirectory(
+        "social",
+        "profile",
+    );
     assert.ok(
-        staticDir,
+        staticDirectory,
         "profile adapter must register a static dir under social/profile",
     );
 
     await assert.doesNotReject(
-        access(staticDir!),
-        `static dir must exist on disk: ${staticDir}`,
+        access(staticDirectory!),
+        `static dir must exist on disk: ${staticDirectory}`,
     );
 
-    const navbarPath = path.join(staticDir!, "navbar.js");
+    const navbarPath = path.join(staticDirectory!, "navbar.js");
     await assert.doesNotReject(
         access(navbarPath),
         `navbar.js must exist in the registered static dir: ${navbarPath}`,
@@ -252,8 +263,14 @@ test("profile adapter registers standalone capabilities and navbar behavior", as
         "social:profileRequest",
     ]);
 
-    const staticDir = uiRegistry.getAdapterStaticDir("social", "profile");
-    assert.ok(staticDir, "profile adapter must register an adapter static dir");
+    const staticDirectory = uiRegistry.getAdapterStaticDirectory(
+        "social",
+        "profile",
+    );
+    assert.ok(
+        staticDirectory,
+        "profile adapter must register an adapter static dir",
+    );
 
     const urlPrefix = "/static/adapters/social/profile/";
     for (const plugin of plugins) {
@@ -263,21 +280,21 @@ test("profile adapter registers standalone capabilities and navbar behavior", as
         );
 
         const filePart = plugin.scriptUrl.slice(urlPrefix.length);
-        const resolvedPath = path.join(staticDir!, filePart);
+        const resolvedPath = path.join(staticDirectory!, filePart);
         await assert.doesNotReject(
             access(resolvedPath),
             `file referenced by navbar plugin scriptUrl must exist on disk: ${resolvedPath}`,
         );
     }
     const providerPath = path.join(
-        staticDir,
+        staticDirectory,
         providers[0].scriptUrl.slice(urlPrefix.length),
     );
     await assert.doesNotReject(access(providerPath));
 });
 
 test("user availability capability resolves calendar-aware status", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const capabilities = new CapabilityStore();
         capabilities.contribute("db:executor", executor);
@@ -320,7 +337,7 @@ test("user availability capability resolves calendar-aware status", async () => 
 });
 
 test("registered availability URLs reach the adapter and return status without 404s", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         let requester = "viewer";
         const capabilities = new CapabilityStore();
@@ -372,7 +389,7 @@ test("registered availability URLs reach the adapter and return status without 4
 });
 
 test("account role synchronization resolves the profile handle from the immutable account ID", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const capabilities = new CapabilityStore();
         capabilities.contribute("db:executor", executor);

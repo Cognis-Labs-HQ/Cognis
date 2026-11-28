@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { DbExecutor } from "../../db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../db/reuse/db-executor.js";
 
 type RawRow = Record<string, unknown>;
 
@@ -57,8 +57,8 @@ export interface RecoveryCodeRecord {
     usedAt: string | null;
 }
 
-export class DbTfaStore {
-    constructor(private readonly db: DbExecutor) {}
+class DatabaseTfaStore {
+    constructor(private readonly db: DatabaseExecutor) {}
 
     async ensureSchema(): Promise<void> {
         await this.db.ensureTable({
@@ -585,3 +585,4 @@ export class DbTfaStore {
         });
     }
 }
+export { DatabaseTfaStore };

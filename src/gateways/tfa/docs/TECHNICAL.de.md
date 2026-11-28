@@ -10,7 +10,7 @@
 
 Bootstrap in `src/gateways/tfa/bootstrap.ts`:
 
-1. `DbTfaStore` erzeugen und Schema sicherstellen.
+1. `DatabaseTfaStore` erzeugen und Schema sicherstellen.
 2. Adapter unter `src/adapters/tfa/` entdecken.
 3. Persistierte Adapterkonfiguration laden.
 4. API- und Adapter-Adminrouten registrieren.

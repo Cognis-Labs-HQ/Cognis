@@ -118,17 +118,17 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
                     const provenance = await this.readInstallProvenance(
                         manifest.uuid,
                     );
-                    let catalogRef = provenance?.branch || defaultBranch;
-                    if (catalogRef !== defaultBranch) {
+                    let catalogReference = provenance?.branch || defaultBranch;
+                    if (catalogReference !== defaultBranch) {
                         const channelManifestResponse =
                             await fetchMarketplaceResource(
                                 source.provider === "github"
                                     ? this.resolveGithubManifestUrl(
                                           source,
                                           projectPath,
-                                          catalogRef,
+                                          catalogReference,
                                       )
-                                    : `${source.baseUrl}/projects/${encodeURIComponent(projectPath)}/repository/files/manifest.json/raw?ref=${encodeURIComponent(catalogRef)}`,
+                                    : `${source.baseUrl}/projects/${encodeURIComponent(projectPath)}/repository/files/manifest.json/raw?ref=${encodeURIComponent(catalogReference)}`,
                                 { headers },
                             );
                         if (channelManifestResponse.ok) {
@@ -142,14 +142,14 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
                                 if (channelManifest.uuid === manifest.uuid) {
                                     manifest = channelManifest;
                                 } else {
-                                    catalogRef = defaultBranch;
+                                    catalogReference = defaultBranch;
                                 }
                             } catch {
                                 // Fall back to the default-manifest block above.
-                                catalogRef = defaultBranch;
+                                catalogReference = defaultBranch;
                             }
                         } else {
-                            catalogRef = defaultBranch;
+                            catalogReference = defaultBranch;
                         }
                     }
                     const [discoveredBranches, discoveredReleases] =
@@ -175,7 +175,7 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
                         this.resolveRepositoryAssetUrl(
                             source,
                             projectPath,
-                            catalogRef,
+                            catalogReference,
                             "README.md",
                         ),
                         { headers },
@@ -183,13 +183,13 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
                     const hasLicenseFile = await this.hasRootLicenseFile(
                         source,
                         projectPath,
-                        catalogRef,
+                        catalogReference,
                         headers,
                     );
                     const media = await this.discoverRepositoryMedia(
                         source,
                         projectPath,
-                        catalogRef,
+                        catalogReference,
                         headers,
                     );
                     const assetIds =
@@ -201,7 +201,7 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
                                       ? await this.cacheRepositoryImageAsset(
                                             source,
                                             projectPath,
-                                            catalogRef,
+                                            catalogReference,
                                             manifest.assets?.icon,
                                             headers,
                                         )
@@ -210,7 +210,7 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
                                       ? await this.cacheRepositoryImageAsset(
                                             source,
                                             projectPath,
-                                            catalogRef,
+                                            catalogReference,
                                             manifest.assets?.banner,
                                             headers,
                                         )
@@ -223,7 +223,7 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
                                               this.cacheRepositoryAsset(
                                                   source,
                                                   projectPath,
-                                                  catalogRef,
+                                                  catalogReference,
                                                   assetPath,
                                                   headers,
                                               ),
@@ -244,7 +244,7 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
                                                                 await this.cacheRepositoryAsset(
                                                                     source,
                                                                     projectPath,
-                                                                    catalogRef,
+                                                                    catalogReference,
                                                                     `ui/languages/${locale}/strings.xml`,
                                                                     headers,
                                                                 );
@@ -264,7 +264,7 @@ export class MarketplaceServiceBase extends MarketplaceRepository {
                         manifest.uuid,
                     );
                     const channelVersion = [...branches, ...releases].find(
-                        (channel) => channel.name === catalogRef,
+                        (channel) => channel.name === catalogReference,
                     )?.version;
                     return {
                         cloneUrl,

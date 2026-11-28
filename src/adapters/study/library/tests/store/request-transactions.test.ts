@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { LibraryStore } from "../../store.js";
-import type { DbExecutor } from "../../../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../../../gateways/db/reuse/db-executor.js";
 
 test("request decisions and card moves share one transaction and roll back together", async () => {
     let state = { status: "pending", scope: "user" };
     let transactions = 0;
-    const database: DbExecutor = {
+    const database: DatabaseExecutor = {
         ensureTable: async () => {},
         executeCommand: async (command) => {
             if (

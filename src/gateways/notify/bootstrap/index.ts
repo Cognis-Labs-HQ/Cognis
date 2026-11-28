@@ -39,17 +39,20 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     );
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
-    const { dbExecutor, notifStore, notificationPrefStore } =
-        await loadNotificationStores(ctx);
-    await notifStore.ensureSchema();
+    const {
+        dbExecutor: databaseExecutor,
+        notifStore: notificationStore,
+        notificationPrefStore: notificationPreferenceStore,
+    } = await loadNotificationStores(ctx);
+    await notificationStore.ensureSchema();
     ctx.log?.("info", "Notification store schema ready.", {
         component: "notify-gateway",
     });
 
     const gateway = new CoreNotificationGateway(
-        notificationPrefStore,
-        notifStore,
-        notifStore,
+        notificationPreferenceStore,
+        notificationStore,
+        notificationStore,
     );
 
     const notifyAdaptersRoot = path.join(ctx.adaptersRoot, "notify");
@@ -86,13 +89,13 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             ctx.routeRegistry.register(handler, gatewayId ?? "notify"),
         registerNavbarPlugin: (scriptUrl) =>
             ctx.uiRegistry?.registerNavbarPlugin({ scriptUrl }),
-        registerStaticDir: (prefix, dir) =>
-            ctx.uiRegistry?.registerStaticDir(prefix, dir),
+        registerStaticDirectory: (prefix, dir) =>
+            ctx.uiRegistry?.registerStaticDirectory(prefix, dir),
         requireAuth: (req, res, minimumRole) =>
             routeContext?.requireAuth(req, res, minimumRole) ?? false,
         readJson: (req) => readJson(req) as Promise<Record<string, unknown>>,
         log: ctx.log,
-        dbExecutor,
+        dbExecutor: databaseExecutor,
     });
     const registerEmailAction =
         ctx.capabilities.get<RegisterNotificationAction>(
@@ -139,7 +142,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         return parseSecuritySettings(raw)?.trustedDomains ?? [];
     };
 
-    const uiDir = path.resolve(
+    const uiDirectory = path.resolve(
         process.cwd(),
         "src",
         "gateways",
@@ -148,7 +151,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     );
 
     ctx.routeRegistry.register(
-        createNotificationRoutes(gateway, notifStore, {
+        createNotificationRoutes(gateway, notificationStore, {
             getTrustedDomains,
             routeContext,
             emailAvailable,
@@ -157,7 +160,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     );
     ctx.routeRegistry.register(
         createUserEmailRoutes(
-            notifStore,
+            notificationStore,
             tfaService,
             verifyTokenService,
             {
@@ -179,7 +182,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         ): Promise<boolean> => {
             if (url.pathname !== "/verify-email" || req.method !== "GET")
                 return false;
-            await serveHtmlPage(res, path.join(uiDir, "verify-email.html"));
+            await serveHtmlPage(
+                res,
+                path.join(uiDirectory, "verify-email.html"),
+            );
             return true;
         },
         "notify",
@@ -228,7 +234,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.uiRegistry?.registerNavbarPlugin({
         scriptUrl: "/static/gateways/notify/broadcast-navbar-plugin.js",
     });
-    ctx.uiRegistry?.registerStaticDir("notify", uiDir);
+    ctx.uiRegistry?.registerStaticDirectory("notify", uiDirectory);
     ctx.uiRegistry?.registerCapabilityProvider({
         scriptUrl: "/static/gateways/notify/email-client.js",
         providesCapabilities: ["notify:emailClient"],
@@ -262,7 +268,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             requiredFields: ["email"],
             available: () => isGatewayEnabled() && emailAvailable(),
             validate: async ({ accountId }: { accountId: string }) =>
-                (await notifStore.getUserEmails(accountId)).some(
+                (await notificationStore.getUserEmails(accountId)).some(
                     (email) => email.primary && email.verified,
                 ),
             integration: {
@@ -388,7 +394,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
      */
     ctx.capabilities.contribute(
         "notify:isEmailRegistered",
-        async (email: string) => notifStore.isEmailRegistered(email),
+        async (email: string) => notificationStore.isEmailRegistered(email),
     );
     /**
      * notify:upsertVerifiedPrimaryEmail — stores a verified primary email for
@@ -397,7 +403,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.capabilities.contribute(
         "notify:upsertVerifiedPrimaryEmail",
         async (accountId: string, email: string) =>
-            notifStore.upsertVerifiedPrimaryEmail(accountId, email),
+            notificationStore.upsertVerifiedPrimaryEmail(accountId, email),
     );
     ctx.capabilities.contribute(
         "notify:provisionUserEmails",
@@ -416,20 +422,21 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             const acceptedEmails: string[] = [];
             for (const email of emails) {
                 if (
-                    await notifStore.isEmailRegisteredByOtherUser(
+                    await notificationStore.isEmailRegisteredByOtherUser(
                         email,
                         accountId,
                     )
                 ) {
                     continue;
                 }
-                await notifStore.addUserEmail(accountId, email);
+                await notificationStore.addUserEmail(accountId, email);
                 acceptedEmails.push(email);
             }
             const primaryEmail = acceptedEmails[0];
             if (!primaryEmail) return;
-            await notifStore.setPrimaryEmail(accountId, primaryEmail);
-            const provisionedEmails = await notifStore.getUserEmails(accountId);
+            await notificationStore.setPrimaryEmail(accountId, primaryEmail);
+            const provisionedEmails =
+                await notificationStore.getUserEmails(accountId);
             const primaryIsVerified = provisionedEmails.some(
                 (entry) =>
                     entry.email === primaryEmail && entry.verified === true,
@@ -463,15 +470,17 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
      */
     ctx.capabilities.contribute(
         "notify:hasVerifiedEmail",
-        async (accountId: string) => notifStore.hasVerifiedEmail(accountId),
+        async (accountId: string) =>
+            notificationStore.hasVerifiedEmail(accountId),
     );
     ctx.capabilities.contribute(
         "notify:getPrimaryEmail",
-        async (accountId: string) => notifStore.getPrimaryEmail(accountId),
+        async (accountId: string) =>
+            notificationStore.getPrimaryEmail(accountId),
     );
     ctx.capabilities.contribute(
         "notify:getAccountIdByEmail",
-        async (email: string) => notifStore.getAccountIdByEmail(email),
+        async (email: string) => notificationStore.getAccountIdByEmail(email),
     );
     if (ctx.flow.exists("bootstrap-platform")) {
         ctx.flow.extend(

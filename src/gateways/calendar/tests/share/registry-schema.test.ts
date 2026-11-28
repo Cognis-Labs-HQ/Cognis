@@ -1,25 +1,27 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import type {
-    StructuredDbCommand,
-    StructuredDbCommandResult,
+    StructuredDatabaseCommand,
+    StructuredDatabaseCommandResult,
 } from "../../../db/reuse/db-command.js";
-import type { StructuredDbTableDef } from "../../../db/reuse/db-table.js";
+import type { StructuredDatabaseTableDefinition } from "../../../db/reuse/db-table.js";
 import { CalendarShareRegistry } from "../../bootstrap/share-registry.js";
 
 class MockSchemaExecutor {
-    public readonly capturedTableDefs: StructuredDbTableDef[] = [];
+    public readonly capturedTableDefs: StructuredDatabaseTableDefinition[] = [];
 
     async executeCommand(
-        command: StructuredDbCommand,
-    ): Promise<StructuredDbCommandResult> {
+        command: StructuredDatabaseCommand,
+    ): Promise<StructuredDatabaseCommandResult> {
         throw new Error(
             `executeCommand should not run during schema test: ${command.option}`,
         );
     }
 
-    async ensureTable(def: StructuredDbTableDef): Promise<void> {
-        this.capturedTableDefs.push(def);
+    async ensureTable(
+        definition: StructuredDatabaseTableDefinition,
+    ): Promise<void> {
+        this.capturedTableDefs.push(definition);
     }
 
     async transaction<T>(
@@ -30,11 +32,11 @@ class MockSchemaExecutor {
 }
 
 class MockShareUpdateExecutor {
-    public readonly executedCommands: StructuredDbCommand[] = [];
+    public readonly executedCommands: StructuredDatabaseCommand[] = [];
 
     async executeCommand(
-        command: StructuredDbCommand,
-    ): Promise<StructuredDbCommandResult> {
+        command: StructuredDatabaseCommand,
+    ): Promise<StructuredDatabaseCommandResult> {
         this.executedCommands.push(command);
         if (command.option !== "SELECT") return { rowCount: 1 };
         return {
@@ -57,7 +59,9 @@ class MockShareUpdateExecutor {
         };
     }
 
-    async ensureTable(_def: StructuredDbTableDef): Promise<void> {}
+    async ensureTable(
+        _definition: StructuredDatabaseTableDefinition,
+    ): Promise<void> {}
 
     async transaction<T>(
         callback: (executor: MockShareUpdateExecutor) => Promise<T>,
@@ -70,17 +74,20 @@ test("ensureSchema declares permission and expires_at on calendar_user_shares", 
     const executor = new MockSchemaExecutor();
     const shareRegistry = new CalendarShareRegistry(executor);
     await shareRegistry.ensureSchema();
-    const sharesDef = executor.capturedTableDefs.find(
-        (def) => def.name === "calendar_user_shares",
+    const sharesDefinition = executor.capturedTableDefs.find(
+        (definition) => definition.name === "calendar_user_shares",
     );
-    assert.ok(sharesDef, "calendar_user_shares table def must be registered");
-    const colNames = sharesDef.columns.map((col) => col.name);
     assert.ok(
-        colNames.includes("permission"),
+        sharesDefinition,
+        "calendar_user_shares table def must be registered",
+    );
+    const columnNames = sharesDefinition.columns.map((column) => column.name);
+    assert.ok(
+        columnNames.includes("permission"),
         "calendar_user_shares must declare permission column",
     );
     assert.ok(
-        colNames.includes("expires_at"),
+        columnNames.includes("expires_at"),
         "calendar_user_shares must declare expires_at column",
     );
 });

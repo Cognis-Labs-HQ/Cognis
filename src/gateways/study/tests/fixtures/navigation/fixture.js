@@ -3,8 +3,8 @@ import { createI18n } from "/static/reuse/i18n.js";
 import { createPageComposer } from "/static/reuse/page-composer/index.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 import {
-    createStudySubNavigationSlot,
-    bindStudySubNavigation,
+    createStudyNestedNavigationSlot,
+    bindStudyNestedNavigation,
 } from "/static/gateways/study/sub-navigation.js";
 
 const finish = beginPageLoading();
@@ -54,7 +54,7 @@ const composer = createPageComposer(root, {
     allowCustomization: false,
     requireAccountSession: false,
     enableAccountEnhancements: false,
-    subNavigation: [createStudySubNavigationSlot(model, i18n)],
+    subNavigation: [createStudyNestedNavigationSlot(model, i18n)],
     pageContext: {
         title: i18n.t("ui.reuse.study"),
         subtitle: i18n.t("gateway.study.page_subtitle"),
@@ -67,7 +67,7 @@ const composer = createPageComposer(root, {
         },
     ],
     onRender: () =>
-        bindStudySubNavigation(root, { signal: lifetime.signal, i18n }),
+        bindStudyNestedNavigation(root, { signal: lifetime.signal, i18n }),
 });
 await composer.init();
 finish();

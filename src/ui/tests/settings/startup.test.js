@@ -17,7 +17,7 @@ const preferences = (languages) =>
     });
 
 test("settings overlaps independent reads and waits for saved locale before localization", async () => {
-    const prefs = deferred();
+    const currentPreferences = deferred();
     const acknowledgement = deferred();
     const setup = deferred();
     const sections = deferred();
@@ -27,7 +27,8 @@ test("settings overlaps independent reads and waits for saved locale before loca
         account: () => "account-a",
         apiFetch: (url) => {
             started.push(url);
-            if (url.endsWith("/ui-preferences")) return prefs.promise;
+            if (url.endsWith("/ui-preferences"))
+                return currentPreferences.promise;
             if (url.endsWith("/setup-status")) return setup.promise;
             if (url.endsWith("/settings-sections")) return sections.promise;
             assert.fail(`unexpected read ${url}`);
@@ -50,7 +51,7 @@ test("settings overlaps independent reads and waits for saved locale before loca
         "acknowledgement",
         "/api/v1/auth/setup-status",
     ]);
-    prefs.resolve(preferences(["de", "en"]));
+    currentPreferences.resolve(preferences(["de", "en"]));
     acknowledgement.resolve(true);
     setup.resolve(Response.json({ data: { requiresSetup: false } }));
     await tick();
@@ -128,12 +129,13 @@ test("each settings mount reads the current account and locale without reusing p
 });
 
 test("cancelled settings startup cannot apply a late locale or setup redirect", async () => {
-    const prefs = deferred();
+    const currentPreferences = deferred();
     const controller = new AbortController();
     const fixture = await loadSettingsMount({
         account: () => "account-a",
         apiFetch: async (url) => {
-            if (url.endsWith("/ui-preferences")) return prefs.promise;
+            if (url.endsWith("/ui-preferences"))
+                return currentPreferences.promise;
             if (url.endsWith("/setup-status"))
                 return Response.json({ data: { requiresSetup: true } });
             assert.fail(`unexpected cancelled read ${url}`);
@@ -143,7 +145,7 @@ test("cancelled settings startup cannot apply a late locale or setup redirect", 
     });
     const mounting = fixture.mount({}, { signal: controller.signal });
     controller.abort();
-    prefs.resolve(preferences(["de"]));
+    currentPreferences.resolve(preferences(["de"]));
     await mounting;
     assert.deepEqual(fixture.redirects, []);
     assert.deepEqual(fixture.languageChanges, []);

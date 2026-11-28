@@ -373,13 +373,13 @@ export async function openRuntimeErrorPopup({
                     overlay != null &&
                     typeof overlay.querySelector === "function"
                 ) {
-                    const copyBtn = overlay.querySelector(
+                    const copyButton = overlay.querySelector(
                         '[data-popup-action="copy"]',
                     );
-                    if (copyBtn != null && copyBtn.classList != null) {
-                        copyBtn.classList.add("popup-action-btn--copied");
+                    if (copyButton != null && copyButton.classList != null) {
+                        copyButton.classList.add("popup-action-btn--copied");
                         setTimeout(() => {
-                            copyBtn.classList.remove(
+                            copyButton.classList.remove(
                                 "popup-action-btn--copied",
                             );
                         }, 1500);

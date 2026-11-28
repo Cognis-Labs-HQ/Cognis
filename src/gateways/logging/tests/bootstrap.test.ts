@@ -7,7 +7,7 @@ import { issueAccessToken } from "../../auth/access-tokens.js";
 import { bootstrap } from "../bootstrap.js";
 import {
     makeContext,
-    PreferenceDb,
+    PreferenceDatabase,
     RequestRecorder,
     ResponseRecorder,
 } from "./fixtures/runtime.js";
@@ -28,17 +28,17 @@ test("logging gateway bootstrap registers admin logs section and static UI scrip
         "/static/gateways/logging/admin-section.js",
     );
 
-    const staticDir = ctx.uiRegistry.getStaticDir("logging");
-    assert.ok(staticDir);
+    const staticDirectory = ctx.uiRegistry.getStaticDirectory("logging");
+    assert.ok(staticDirectory);
     await assert.doesNotReject(
-        access(path.join(staticDir!, "admin-section.js")),
+        access(path.join(staticDirectory!, "admin-section.js")),
     );
     assert.equal(
-        ctx.uiRegistry.getAdapterStaticDir("logging", "console"),
+        ctx.uiRegistry.getAdapterStaticDirectory("logging", "console"),
         path.resolve(process.cwd(), "src", "adapters", "logging", "console"),
     );
     assert.equal(
-        ctx.uiRegistry.getAdapterStaticDir("logging", "file"),
+        ctx.uiRegistry.getAdapterStaticDirectory("logging", "file"),
         path.resolve(process.cwd(), "src", "adapters", "logging", "file"),
     );
 });
@@ -227,8 +227,8 @@ test("logging adapter level overrides reconfigure the running logger immediately
 });
 
 test("logging adapter overrides survive a gateway restart", async () => {
-    const dbExecutor = new PreferenceDb();
-    const firstContext = await makeContext(dbExecutor);
+    const databaseExecutor = new PreferenceDatabase();
+    const firstContext = await makeContext(databaseExecutor);
     await bootstrap(firstContext as any);
     const adapterHandler = firstContext.routeRegistry.getHandlers()[1];
     const token = issueAccessToken("admin-test", "admin", 300);
@@ -248,7 +248,7 @@ test("logging adapter overrides survive a gateway restart", async () => {
     );
     assert.equal(updateResponse.statusCode, 200);
 
-    const restartedContext = await makeContext(dbExecutor);
+    const restartedContext = await makeContext(databaseExecutor);
     await bootstrap(restartedContext as any);
     const restartedLogger =
         restartedContext.capabilities.get<Logger>("logging:logger");
@@ -266,9 +266,9 @@ test("logging adapter overrides survive a gateway restart", async () => {
         ),
     );
     assert.equal(resetResponse.statusCode, 204);
-    assert.equal(dbExecutor.preferences.has("console"), false);
+    assert.equal(databaseExecutor.preferences.has("console"), false);
 
-    const resetContext = await makeContext(dbExecutor);
+    const resetContext = await makeContext(databaseExecutor);
     await bootstrap(resetContext as any);
     const resetLogger = resetContext.capabilities.get<Logger>("logging:logger");
     const expectedLevel = isLogLevel(process.env.LOG_LEVEL)
@@ -300,8 +300,10 @@ test("logging stream route requires admin auth", async () => {
 });
 
 test("logging stream route returns filtered event stream logs", async () => {
-    const tempRoot = await mkdtemp(path.join(tmpdir(), "cognis-logging-test-"));
-    const logPath = path.join(tempRoot, "app.log");
+    const temporaryRoot = await mkdtemp(
+        path.join(tmpdir(), "cognis-logging-test-"),
+    );
+    const logPath = path.join(temporaryRoot, "app.log");
     const previousLogFile = process.env.LOG_FILE;
     process.env.LOG_FILE = logPath;
 
@@ -362,13 +364,15 @@ test("logging stream route returns filtered event stream logs", async () => {
         } else {
             process.env.LOG_FILE = previousLogFile;
         }
-        await rm(tempRoot, { recursive: true, force: true });
+        await rm(temporaryRoot, { recursive: true, force: true });
     }
 });
 
 test("logging stream route treats severity as a threshold", async () => {
-    const tempRoot = await mkdtemp(path.join(tmpdir(), "cognis-logging-test-"));
-    const logPath = path.join(tempRoot, "app.log");
+    const temporaryRoot = await mkdtemp(
+        path.join(tmpdir(), "cognis-logging-test-"),
+    );
+    const logPath = path.join(temporaryRoot, "app.log");
     const previousLogFile = process.env.LOG_FILE;
     process.env.LOG_FILE = logPath;
 
@@ -423,13 +427,15 @@ test("logging stream route treats severity as a threshold", async () => {
         } else {
             process.env.LOG_FILE = previousLogFile;
         }
-        await rm(tempRoot, { recursive: true, force: true });
+        await rm(temporaryRoot, { recursive: true, force: true });
     }
 });
 
 test("logging stream route ignores invalid multi-value severity thresholds", async () => {
-    const tempRoot = await mkdtemp(path.join(tmpdir(), "cognis-logging-test-"));
-    const logPath = path.join(tempRoot, "app.log");
+    const temporaryRoot = await mkdtemp(
+        path.join(tmpdir(), "cognis-logging-test-"),
+    );
+    const logPath = path.join(temporaryRoot, "app.log");
     const previousLogFile = process.env.LOG_FILE;
     process.env.LOG_FILE = logPath;
 
@@ -494,13 +500,15 @@ test("logging stream route ignores invalid multi-value severity thresholds", asy
         } else {
             process.env.LOG_FILE = previousLogFile;
         }
-        await rm(tempRoot, { recursive: true, force: true });
+        await rm(temporaryRoot, { recursive: true, force: true });
     }
 });
 
 test("logging stream route is not constrained by LOG_LEVEL", async () => {
-    const tempRoot = await mkdtemp(path.join(tmpdir(), "cognis-logging-test-"));
-    const logPath = path.join(tempRoot, "app.log");
+    const temporaryRoot = await mkdtemp(
+        path.join(tmpdir(), "cognis-logging-test-"),
+    );
+    const logPath = path.join(temporaryRoot, "app.log");
     const previousLogFile = process.env.LOG_FILE;
     const previousLogLevel = process.env.LOG_LEVEL;
     process.env.LOG_FILE = logPath;
@@ -556,13 +564,15 @@ test("logging stream route is not constrained by LOG_LEVEL", async () => {
         } else {
             process.env.LOG_LEVEL = previousLogLevel;
         }
-        await rm(tempRoot, { recursive: true, force: true });
+        await rm(temporaryRoot, { recursive: true, force: true });
     }
 });
 
 test("logging stream route applies time range filtering", async () => {
-    const tempRoot = await mkdtemp(path.join(tmpdir(), "cognis-logging-test-"));
-    const logPath = path.join(tempRoot, "app.log");
+    const temporaryRoot = await mkdtemp(
+        path.join(tmpdir(), "cognis-logging-test-"),
+    );
+    const logPath = path.join(temporaryRoot, "app.log");
     const previousLogFile = process.env.LOG_FILE;
     process.env.LOG_FILE = logPath;
 
@@ -614,7 +624,7 @@ test("logging stream route applies time range filtering", async () => {
         } else {
             process.env.LOG_FILE = previousLogFile;
         }
-        await rm(tempRoot, { recursive: true, force: true });
+        await rm(temporaryRoot, { recursive: true, force: true });
     }
 });
 
@@ -686,8 +696,10 @@ test("logging stream route returns false for non-GET method", async () => {
 });
 
 test("logging stream route emits snapshot_error when log file does not exist", async () => {
-    const tempRoot = await mkdtemp(path.join(tmpdir(), "cognis-logging-test-"));
-    const logPath = path.join(tempRoot, "nonexistent.log");
+    const temporaryRoot = await mkdtemp(
+        path.join(tmpdir(), "cognis-logging-test-"),
+    );
+    const logPath = path.join(temporaryRoot, "nonexistent.log");
     const previousLogFile = process.env.LOG_FILE;
     process.env.LOG_FILE = logPath;
 
@@ -720,13 +732,15 @@ test("logging stream route emits snapshot_error when log file does not exist", a
         } else {
             process.env.LOG_FILE = previousLogFile;
         }
-        await rm(tempRoot, { recursive: true, force: true });
+        await rm(temporaryRoot, { recursive: true, force: true });
     }
 });
 
 test("logging stream route emits reset event when log file shrinks during poll", async () => {
-    const tempRoot = await mkdtemp(path.join(tmpdir(), "cognis-logging-test-"));
-    const logPath = path.join(tempRoot, "app.log");
+    const temporaryRoot = await mkdtemp(
+        path.join(tmpdir(), "cognis-logging-test-"),
+    );
+    const logPath = path.join(temporaryRoot, "app.log");
     const previousLogFile = process.env.LOG_FILE;
     process.env.LOG_FILE = logPath;
 
@@ -774,13 +788,15 @@ test("logging stream route emits reset event when log file shrinks during poll",
         } else {
             process.env.LOG_FILE = previousLogFile;
         }
-        await rm(tempRoot, { recursive: true, force: true });
+        await rm(temporaryRoot, { recursive: true, force: true });
     }
 });
 
 test("logging stream route applies time range filtering in hours", async () => {
-    const tempRoot = await mkdtemp(path.join(tmpdir(), "cognis-logging-test-"));
-    const logPath = path.join(tempRoot, "app.log");
+    const temporaryRoot = await mkdtemp(
+        path.join(tmpdir(), "cognis-logging-test-"),
+    );
+    const logPath = path.join(temporaryRoot, "app.log");
     const previousLogFile = process.env.LOG_FILE;
     process.env.LOG_FILE = logPath;
 
@@ -836,6 +852,6 @@ test("logging stream route applies time range filtering in hours", async () => {
         } else {
             process.env.LOG_FILE = previousLogFile;
         }
-        await rm(tempRoot, { recursive: true, force: true });
+        await rm(temporaryRoot, { recursive: true, force: true });
     }
 });

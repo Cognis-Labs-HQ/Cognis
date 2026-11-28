@@ -6,6 +6,8 @@ Cognis-Seiten ordnen Inhalte passend zum Bildschirm und halten Navigation und Be
 
 Nutze einheitliche Layouts auf Telefon, Tablet und Desktop.
 
+Auf anpassbaren Seiten kannst du Widgets verschieben und an jeder verfügbaren Kante oder Ecke skalieren. Eine Meldung bestätigt, ob das Layout gespeichert wurde.
+
 ## Vor dem Start
 
 Seiten liefern Inhalte; der gemeinsame Composer steuert Layout und Seitenleisten.

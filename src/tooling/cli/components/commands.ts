@@ -14,8 +14,10 @@ export function registerComponentOperations(): void {
     for (const action of ["enable", "disable", "upgrade"])
         register(
             `component:${action}`,
-            async ({ args, apiBaseUrl, getApiToken, reportProgress }) => {
-                const selection = selectComponents(args, { allowForce: true });
+            async ({ args: args, apiBaseUrl, getApiToken, reportProgress }) => {
+                const selection = selectComponents(args, {
+                    allowForce: true,
+                });
                 const payload = await apiRequest(
                     apiBaseUrl,
                     "/api/v1/components/actions",
@@ -74,7 +76,7 @@ export function registerComponentOperations(): void {
         );
     register(
         "component:info",
-        async ({ args, apiBaseUrl, getApiToken }) => {
+        async ({ args: args, apiBaseUrl, getApiToken }) => {
             const selection = selectComponents(args);
             const token = await getApiToken();
             if (selection.target)
@@ -107,7 +109,7 @@ export function registerComponentOperations(): void {
     );
     register(
         "component:release-channel",
-        async ({ args, apiBaseUrl, getApiToken }) => {
+        async ({ args: args, apiBaseUrl, getApiToken }) => {
             const [action, ...rest] = args;
             if (!["get", "set", "list"].includes(action))
                 throw new Error("Expected release-channel get, set or list.");

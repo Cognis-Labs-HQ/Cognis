@@ -15,7 +15,7 @@ import {
     adminToken,
     dispatchRoute,
     HttpIncomingMessage,
-    makeInMemoryDb,
+    makeInMemoryDatabase,
     makeJsonRequest,
 } from "../auth-gateway-test-helpers.js";
 
@@ -47,7 +47,9 @@ test("GET /api/v1/auth/password-change-capability reports support for local acco
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+        db: makeInMemoryDatabase() as ReturnType<
+            typeof makeInMemoryDatabase
+        > & {
             execute: (
                 sql: string,
                 params?: unknown[],
@@ -56,7 +58,7 @@ test("GET /api/v1/auth/password-change-capability reports support for local acco
     });
 
     const token = issueAccessToken("settings-user", "user", 60);
-    const { handled, res } = await dispatchRoute(
+    const { handled, res: res } = await dispatchRoute(
         routeRegistry,
         {
             method: "GET",
@@ -103,7 +105,7 @@ test("POST /api/v1/auth/reset-password updates local account credentials", async
     await accountStore?.register("password-user", "before-reset");
 
     const resetToken = issueAccessToken("password-user", "user", 60);
-    const { handled, res } = await dispatchRoute(
+    const { handled, res: res } = await dispatchRoute(
         routeRegistry,
         makeJsonRequest(
             "POST",
@@ -150,7 +152,7 @@ test("POST /api/v1/auth/reset-password requires current password", async () => {
     await accountStore?.register("missing-current-pass", "before-reset");
 
     const resetToken = issueAccessToken("missing-current-pass", "user", 60);
-    const { handled, res } = await dispatchRoute(
+    const { handled, res: res } = await dispatchRoute(
         routeRegistry,
         makeJsonRequest(
             "POST",
@@ -184,7 +186,7 @@ test("POST /api/v1/auth/reset-password rejects incorrect current password", asyn
     await accountStore?.register("wrong-current-pass", "before-reset");
 
     const resetToken = issueAccessToken("wrong-current-pass", "user", 60);
-    const { handled, res } = await dispatchRoute(
+    const { handled, res: res } = await dispatchRoute(
         routeRegistry,
         makeJsonRequest(
             "POST",
@@ -280,7 +282,7 @@ test("POST /api/v1/auth/reset-password keeps surrounding whitespace in current p
     await accountStore?.register("spacey-user", "  before-reset  ");
 
     const resetToken = issueAccessToken("spacey-user", "user", 60);
-    const { handled, res } = await dispatchRoute(
+    const { handled, res: res } = await dispatchRoute(
         routeRegistry,
         makeJsonRequest(
             "POST",
@@ -396,7 +398,7 @@ test("POST /api/v1/auth/reset-password dispatches security notification when not
     await accountStore?.register("notify-reset-user", "old-pass");
 
     const resetToken = issueAccessToken("notify-reset-user", "user", 60);
-    const { handled, res } = await dispatchRoute(
+    const { handled, res: res } = await dispatchRoute(
         routeRegistry,
         makeJsonRequest(
             "POST",
@@ -428,7 +430,9 @@ test("POST /api/v1/auth/emergency-token requires admin auth", async () => {
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+        db: makeInMemoryDatabase() as ReturnType<
+            typeof makeInMemoryDatabase
+        > & {
             execute: (
                 sql: string,
                 params?: unknown[],
@@ -441,7 +445,7 @@ test("POST /api/v1/auth/emergency-token requires admin auth", async () => {
         method: "POST",
         headers: { authorization: `Bearer ${userToken}` },
     } as unknown as HttpIncomingMessage;
-    const { handled, res } = await dispatchRoute(
+    const { handled, res: res } = await dispatchRoute(
         routeRegistry,
         req,
         "/api/v1/auth/emergency-token",
@@ -461,7 +465,9 @@ test("POST /api/v1/auth/emergency-token returns a 1h admin token", async () => {
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+        db: makeInMemoryDatabase() as ReturnType<
+            typeof makeInMemoryDatabase
+        > & {
             execute: (
                 sql: string,
                 params?: unknown[],
@@ -473,7 +479,7 @@ test("POST /api/v1/auth/emergency-token returns a 1h admin token", async () => {
         method: "POST",
         headers: { authorization: `Bearer ${adminToken}` },
     } as unknown as HttpIncomingMessage;
-    const { handled, res } = await dispatchRoute(
+    const { handled, res: res } = await dispatchRoute(
         routeRegistry,
         req,
         "/api/v1/auth/emergency-token",

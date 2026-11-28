@@ -38,10 +38,10 @@ export function createAdapterConfigPopup({
                 schemaLabel: label,
                 effectiveValue: value,
             } = descriptor;
-            const attrs = `id="${escapeHtml(name)}" name="${escapeHtml(name)}"${test ? " data-provider-test-field" : ""}`;
+            const attributes = `id="${escapeHtml(name)}" name="${escapeHtml(name)}"${test ? " data-provider-test-field" : ""}`;
             let input;
             if (type === "select") {
-                input = `<select ${attrs} class="theme-select">${(
+                input = `<select ${attributes} class="theme-select">${(
                     descriptor.schemaOptions ?? []
                 )
                     .map((option) => {
@@ -55,7 +55,7 @@ export function createAdapterConfigPopup({
                     })
                     .join("")}</select>`;
             } else if (type === "boolean") {
-                input = `<label class="switch"><input ${attrs} type="checkbox"${value === true || value === "true" ? " checked" : ""}/><span class="slider"></span></label>`;
+                input = `<label class="switch"><input ${attributes} type="checkbox"${value === true || value === "true" ? " checked" : ""}/><span class="slider"></span></label>`;
             } else {
                 if (
                     !["text", "password", "number", "email", "url"].includes(
@@ -65,7 +65,7 @@ export function createAdapterConfigPopup({
                     throw new Error("invalid_provider_field_type");
                 const inputValue =
                     type === "password" ? "" : escapeHtml(value ?? "");
-                input = `<input ${attrs} class="${test ? "provider-test-input" : "provider-config-input"}" type="${type}" value="${inputValue}" />`;
+                input = `<input ${attributes} class="${test ? "provider-test-input" : "provider-config-input"}" type="${type}" value="${inputValue}" />`;
             }
             const wrapper = type === "boolean" ? "div" : "label";
             return `<${wrapper} class="provider-popup-field" data-provider-field="${escapeHtml(name)}"><span class="provider-field-title">${escapeHtml(label)}<span class="provider-required-flag" data-provider-required="${escapeHtml(name)}" aria-hidden="true" hidden>*</span>${descriptor.envConflict ? `<span class="provider-field-env-warning" title="${escapeHtml(i18n.t("ui.app.admin.notif.field_env_conflict"))}">⚠</span>` : ""}</span>${input}</${wrapper}>`;
@@ -81,11 +81,11 @@ export function createAdapterConfigPopup({
     }
 
     function buildConfigPayload(
-        popupFormEl,
+        popupFormElement,
         { omitBlankPasswords = false } = {},
     ) {
         const config = {};
-        popupFormEl
+        popupFormElement
             .querySelectorAll("[name]:not([data-provider-test-field])")
             .forEach((field) => {
                 if (field instanceof HTMLInputElement) {
@@ -113,9 +113,9 @@ export function createAdapterConfigPopup({
         return config;
     }
 
-    function loadConfigIntoForm(popupFormEl, config) {
+    function loadConfigIntoForm(popupFormElement, config) {
         for (const [fieldName, value] of Object.entries(config)) {
-            const field = popupFormEl.querySelector(
+            const field = popupFormElement.querySelector(
                 `[name="${CSS.escape(fieldName)}"]`,
             );
             if (field instanceof HTMLInputElement) {
@@ -128,7 +128,7 @@ export function createAdapterConfigPopup({
                 field.value = value == null ? "" : String(value);
             }
         }
-        popupFormEl.dispatchEvent(new Event("input", { bubbles: true }));
+        popupFormElement.dispatchEvent(new Event("input", { bubbles: true }));
     }
 
     return {
@@ -199,8 +199,8 @@ export function createAdapterConfigPopup({
                 return true;
             }
             if (!adapterConfigHasFields(payload)) return false;
-            const dbData = payload.data ?? {};
-            const envData = payload.envValues ?? {};
+            const databaseData = payload.data ?? {};
+            const environmentData = payload.envValues ?? {};
             const requiredFields = Array.isArray(payload.requiredFields)
                 ? payload.requiredFields
                 : [];
@@ -213,21 +213,23 @@ export function createAdapterConfigPopup({
             const fieldNames = new Set(schemaFields.map((field) => field.key));
             const descriptors = {};
             for (const field of fieldNames) {
-                const rawDb = dbData[field];
-                const rawEnv = envData[field];
-                const dbValue =
-                    rawDb != null && rawDb !== "" ? String(rawDb) : undefined;
-                const envValue =
-                    rawEnv != null && rawEnv !== ""
-                        ? String(rawEnv)
+                const rawDatabase = databaseData[field];
+                const rawEnvironment = environmentData[field];
+                const databaseValue =
+                    rawDatabase != null && rawDatabase !== ""
+                        ? String(rawDatabase)
+                        : undefined;
+                const environmentValue =
+                    rawEnvironment != null && rawEnvironment !== ""
+                        ? String(rawEnvironment)
                         : undefined;
                 let effectiveValue;
                 let source;
-                if (dbValue !== undefined) {
-                    effectiveValue = dbValue;
+                if (databaseValue !== undefined) {
+                    effectiveValue = databaseValue;
                     source = "db";
-                } else if (envValue !== undefined) {
-                    effectiveValue = envValue;
+                } else if (environmentValue !== undefined) {
+                    effectiveValue = environmentValue;
                     source = "env";
                 } else {
                     effectiveValue = undefined;
@@ -237,14 +239,14 @@ export function createAdapterConfigPopup({
                     (entry) => entry.key === field,
                 );
                 descriptors[field] = {
-                    dbValue,
-                    envValue,
+                    dbValue: databaseValue,
+                    envValue: environmentValue,
                     effectiveValue,
                     source,
                     envConflict:
-                        dbValue !== undefined &&
-                        envValue !== undefined &&
-                        dbValue !== envValue,
+                        databaseValue !== undefined &&
+                        environmentValue !== undefined &&
+                        databaseValue !== environmentValue,
                     required: requiredFields.includes(field),
                     schemaType: schemaEntry?.type ?? null,
                     schemaLabel: i18n.t(schemaEntry.label),
@@ -257,7 +259,7 @@ export function createAdapterConfigPopup({
                 };
             }
 
-            let popupFormEl = null;
+            let popupFormElement = null;
             let resetPending = false;
 
             function conditionMatches(condition) {
@@ -295,7 +297,7 @@ export function createAdapterConfigPopup({
             }
 
             function getRequiredInput(field) {
-                const input = popupFormEl?.querySelector(
+                const input = popupFormElement?.querySelector(
                     `[name="${CSS.escape(field)}"]`,
                 );
                 return input instanceof HTMLInputElement ||
@@ -388,13 +390,15 @@ export function createAdapterConfigPopup({
                 ],
                 onAction: async (action, overlay) => {
                     if (action === "reset") {
-                        if (!(popupFormEl instanceof HTMLElement)) return false;
-                        loadConfigIntoForm(popupFormEl, envData);
+                        if (!(popupFormElement instanceof HTMLElement))
+                            return false;
+                        loadConfigIntoForm(popupFormElement, environmentData);
                         resetPending = true;
                         return false;
                     }
                     if (action !== "save") return true;
-                    if (!(popupFormEl instanceof HTMLElement)) return false;
+                    if (!(popupFormElement instanceof HTMLElement))
+                        return false;
                     updateRequiredHighlights();
                     const missingRequiredField = currentRequiredFields().find(
                         (field) => {
@@ -410,7 +414,7 @@ export function createAdapterConfigPopup({
                         );
                         return false;
                     }
-                    const config = buildConfigPayload(popupFormEl, {
+                    const config = buildConfigPayload(popupFormElement, {
                         omitBlankPasswords: true,
                     });
                     const saveResponse = await apiFetch(
@@ -458,10 +462,12 @@ export function createAdapterConfigPopup({
                 },
                 closeProtection: true,
                 onOpen: (overlay) => {
-                    popupFormEl = overlay.querySelector(".provider-popup-form");
-                    if (!popupFormEl) return;
+                    popupFormElement = overlay.querySelector(
+                        ".provider-popup-form",
+                    );
+                    if (!popupFormElement) return;
 
-                    const toggle = popupFormEl.querySelector(
+                    const toggle = popupFormElement.querySelector(
                         ".provider-enable-toggle",
                     );
                     if (!toggle) return;
@@ -483,18 +489,18 @@ export function createAdapterConfigPopup({
                     updateRequiredHighlights();
                     syncToggle();
 
-                    popupFormEl.addEventListener("input", () => {
+                    popupFormElement.addEventListener("input", () => {
                         resetPending = false;
                         updateRequiredHighlights();
                         syncToggle();
                     });
 
                     const testButton =
-                        popupFormEl.querySelector(".provider-test-btn");
+                        popupFormElement.querySelector(".provider-test-btn");
                     if (testButton && testUrl) {
                         testButton.addEventListener("click", async () => {
                             const testFields = [
-                                ...popupFormEl.querySelectorAll(
+                                ...popupFormElement.querySelectorAll(
                                     "[data-provider-test-field]",
                                 ),
                             ];
@@ -512,9 +518,12 @@ export function createAdapterConfigPopup({
                                     field.value.trim(),
                                 ]),
                             );
-                            const config = buildConfigPayload(popupFormEl, {
-                                omitBlankPasswords: true,
-                            });
+                            const config = buildConfigPayload(
+                                popupFormElement,
+                                {
+                                    omitBlankPasswords: true,
+                                },
+                            );
                             const testResponse = await apiFetch(testUrl, {
                                 method: "POST",
                                 headers: {

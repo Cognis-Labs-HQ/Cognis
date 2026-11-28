@@ -259,7 +259,7 @@ test("an invalid resend control reports one structured gateway diagnostic", asyn
 });
 
 for (const alternative of ["totp", "recovery_code"]) {
-    test(`a stalled initial email does not block ${alternative} verification`, async (t) => {
+    test(`a stalled initial email does not block ${alternative} verification`, async (testContext) => {
         const verified = [];
         const host = clientFixture({
             respond: async (path, options) => {
@@ -276,7 +276,7 @@ for (const alternative of ["totp", "recovery_code"]) {
         const delivery = new Promise((resolve) => {
             finishDelivery = resolve;
         });
-        t.after(() =>
+        testContext.after(() =>
             finishDelivery({
                 response: { ok: true },
                 body: { data: { challenge: {} } },
@@ -350,8 +350,8 @@ for (const alternative of ["totp", "recovery_code"]) {
     });
 }
 
-test("initial challenge delivery times out without retaining the resend lock", async (t) => {
-    t.mock.timers.enable({ apis: ["setTimeout"] });
+test("initial challenge delivery times out without retaining the resend lock", async (testContext) => {
+    testContext.mock.timers.enable({ apis: ["setTimeout"] });
     const deadlines = [];
     const host = clientFixture({
         abortSignal: {
@@ -393,7 +393,7 @@ test("initial challenge delivery times out without retaining the resend lock", a
         "attempt",
     );
     assert.deepEqual(deadlines, [15_000]);
-    t.mock.timers.tick(15_000);
+    testContext.mock.timers.tick(15_000);
     await new Promise(setImmediate);
     assert.equal(
         host.root

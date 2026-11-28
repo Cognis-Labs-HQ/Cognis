@@ -475,13 +475,13 @@ export function createModuleExtensionRoutes(
                 registerApiRoute("DELETE", routePath, handler, routeOptions);
             },
             router,
-            registerNavbarPlugin(pluginDef) {
+            registerNavbarPlugin(pluginDefinition) {
                 requireActiveBootstrap();
                 if (!moduleEnabled) return;
                 const pluginConfig =
-                    typeof pluginDef === "string"
-                        ? { scriptUrl: pluginDef }
-                        : pluginDef;
+                    typeof pluginDefinition === "string"
+                        ? { scriptUrl: pluginDefinition }
+                        : pluginDefinition;
                 options?.uiRegistry?.registerNavbarPlugin({
                     scriptUrl: versionModuleUiAssets(
                         pluginConfig.scriptUrl,
@@ -576,7 +576,7 @@ export function createModuleExtensionRoutes(
                     isEnabled: () => isModuleEnabled(moduleId),
                 });
             },
-            registerStaticDir(urlPrefix, absoluteDir) {
+            registerStaticDirectory(urlPrefix, absoluteDirectory) {
                 requireActiveBootstrap();
                 if (!moduleEnabled) return;
                 const normalizedPrefix = String(urlPrefix ?? "")
@@ -585,9 +585,9 @@ export function createModuleExtensionRoutes(
                 const fullPrefix = normalizedPrefix
                     ? `${moduleId}/${normalizedPrefix}`
                     : moduleId;
-                options?.uiRegistry?.registerModuleStaticDir(
+                options?.uiRegistry?.registerModuleStaticDirectory(
                     fullPrefix,
-                    absoluteDir,
+                    absoluteDirectory,
                 );
             },
             registerAuthTypingMessage(message) {
@@ -723,7 +723,7 @@ export function createModuleExtensionRoutes(
                     },
                 );
             }
-            options?.uiRegistry?.registerModuleStaticDir(
+            options?.uiRegistry?.registerModuleStaticDirectory(
                 manifest.id,
                 path.join(moduleRoot, "ui"),
             );

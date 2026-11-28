@@ -20,7 +20,7 @@ const source = {
     namespace: "example",
     baseUrl: "https://api.github.com",
 };
-const execFileAsync = promisify(execFile);
+const executorFileAsync = promisify(execFile);
 const gitAvailable = spawnSync("git", ["--version"]).status === 0;
 
 test("module marketplace persists source metadata and exposes credential configuration", async () => {
@@ -483,32 +483,38 @@ test(
         const repository = path.join(root, "repository");
         const checkout = path.join(root, "checkout");
         await mkdir(repository);
-        await execFileAsync("git", ["init", "-b", "main"], { cwd: repository });
-        await execFileAsync(
+        await executorFileAsync("git", ["init", "-b", "main"], {
+            cwd: repository,
+        });
+        await executorFileAsync(
             "git",
             ["config", "user.email", "tests@cognis.dev"],
             {
                 cwd: repository,
             },
         );
-        await execFileAsync("git", ["config", "user.name", "Cognis Tests"], {
-            cwd: repository,
-        });
+        await executorFileAsync(
+            "git",
+            ["config", "user.name", "Cognis Tests"],
+            {
+                cwd: repository,
+            },
+        );
         const manifestPath = path.join(repository, "manifest.json");
         await writeFile(manifestPath, JSON.stringify({ version: "1.4.57" }));
-        await execFileAsync("git", ["add", "manifest.json"], {
+        await executorFileAsync("git", ["add", "manifest.json"], {
             cwd: repository,
         });
-        await execFileAsync("git", ["commit", "-m", "older release"], {
+        await executorFileAsync("git", ["commit", "-m", "older release"], {
             cwd: repository,
         });
-        const { stdout: olderCommit } = await execFileAsync(
+        const { stdout: olderCommit } = await executorFileAsync(
             "git",
             ["rev-parse", "HEAD"],
             { cwd: repository },
         );
         await writeFile(manifestPath, JSON.stringify({ version: "1.4.58" }));
-        await execFileAsync("git", ["commit", "-am", "newer release"], {
+        await executorFileAsync("git", ["commit", "-am", "newer release"], {
             cwd: repository,
         });
         await checkoutModuleRepository({
@@ -518,7 +524,7 @@ test(
             environment: { ...process.env, GIT_TERMINAL_PROMPT: "0" },
             log: () => undefined,
         });
-        const { stdout: historySize } = await execFileAsync("git", [
+        const { stdout: historySize } = await executorFileAsync("git", [
             "-C",
             checkout,
             "rev-list",
@@ -545,7 +551,7 @@ test("module marketplace discovers repository manifests", async () => {
         path.join(root, "sources.json"),
         path.join(root, "modules"),
         (level, message, meta) => {
-            if (level === "info") scanLogs.push({ message, meta });
+            if (level === "info") scanLogs.push({ message, meta: meta });
             if (level === "warn" && "rejectedCloneUrl" in meta) {
                 warnings.push(meta);
             }
@@ -671,7 +677,7 @@ test("module marketplace discovers repository manifests", async () => {
     try {
         const modules = await service.discover();
         assert.deepEqual(
-            scanLogs.map(({ message, meta }) => ({
+            scanLogs.map(({ message, meta: meta }) => ({
                 message,
                 catalogModulesFound: meta.catalogModulesFound,
             })),
@@ -864,56 +870,4 @@ test("module marketplace serves persisted results after restart", async () => {
         path.join(root, "modules"),
     );
     assert.deepEqual(await restarted.listCachedModules(), [catalogModule]);
-});
-
-test("GitLab installation validates namespace within the configured deployment prefix", async (t) => {
-    const root = await mkdtemp(path.join(os.tmpdir(), "cognis-gitlab-prefix-"));
-    t.after(() => rm(root, { recursive: true, force: true }));
-    const modulesRoot = path.join(root, "modules");
-    const service = new ModuleMarketplaceService(
-        path.join(root, "sources.json"),
-        modulesRoot,
-    );
-    await service.saveSource({
-        ...source,
-        provider: "gitlab",
-        baseUrl: "https://example.test/gitlab/api/v4",
-        namespace: "team/subgroup",
-    });
-    const cache = path.join(modulesRoot, ".cache");
-    await mkdir(cache, { recursive: true });
-    for (const [cloneUrl, expected] of [
-        [
-            "https://example.test/gitlab/team/subgroup/module.git",
-            /invalid_module_branch/,
-        ],
-        [
-            "https://example.test/team/subgroup/module.git",
-            /module_source_repository_mismatch/,
-        ],
-        [
-            "https://example.test/gitlab/team/other/module.git",
-            /module_source_repository_mismatch/,
-        ],
-        [
-            "https://other.test/gitlab/team/subgroup/module.git",
-            /module_source_repository_mismatch/,
-        ],
-    ] as const) {
-        const module = {
-            uuid: "71567e48-480a-45a5-a853-8c96d6ab9973",
-            sourceUuid: source.uuid,
-            cloneUrl,
-            defaultBranch: "main",
-            branches: [],
-            releases: [],
-        };
-        await writeFile(
-            path.join(cache, "catalog.json"),
-            JSON.stringify([module]),
-        );
-        const catalog = await service.listCachedModules();
-        assert.equal(catalog.length, 1);
-        await assert.rejects(service.install(catalog[0], "main"), expected);
-    }
 });

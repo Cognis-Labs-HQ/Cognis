@@ -43,8 +43,8 @@ export function watchToken({
     token,
     apiFetch,
     onConsumed,
-    intervalMs = 3000,
-    timeoutMs,
+    intervalMs: intervalMs = 3000,
+    timeoutMs: timeoutMs,
     onExpired,
 }) {
     let stopped = false;

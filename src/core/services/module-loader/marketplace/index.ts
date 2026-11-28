@@ -20,9 +20,9 @@ import { checkoutModuleRepository } from "./checkout.js";
 import { MarketplaceServiceBase } from "./base.js";
 
 const SOURCE_SCAN_INTERVAL_MS = 60 * 60 * 1000;
-const GITHUB_PAT_PERMISSION_DOCS =
+const GITHUB_PAT_PERMISSION_DOCUMENTS =
     "https://docs.github.com/rest/authentication/permissions-required-for-fine-grained-personal-access-tokens";
-const GITHUB_SSO_DOCS =
+const GITHUB_SSO_DOCUMENTS =
     "https://docs.github.com/authentication/authenticating-with-single-sign-on/authorizing-a-personal-access-token-for-use-with-single-sign-on";
 
 export type ModuleSourceProvider = "github" | "gitlab";
@@ -302,7 +302,10 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
                           },
                 references:
                     source.provider === "github"
-                        ? [GITHUB_PAT_PERMISSION_DOCS, GITHUB_SSO_DOCS]
+                        ? [
+                              GITHUB_PAT_PERMISSION_DOCUMENTS,
+                              GITHUB_SSO_DOCUMENTS,
+                          ]
                         : [
                               "https://docs.gitlab.com/user/profile/personal_access_tokens/#personal-access-token-scopes",
                           ],
@@ -634,14 +637,14 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
         await rm(temporary, { recursive: true, force: true });
         const cloneUrl = this.assertCloneUrl(module.cloneUrl);
         const selectedBranch = branch ?? module.defaultBranch;
-        const installRefs = [
+        const installReferences = [
             ...(module.branches ?? []),
             ...(module.releases ?? []),
         ];
-        const selectedRef = installRefs.find(
+        const selectedReference = installReferences.find(
             (entry) => entry.name === selectedBranch,
         );
-        if (!selectedRef) {
+        if (!selectedReference) {
             throw new Error("invalid_module_branch");
         }
         const gitEnvironment: NodeJS.ProcessEnv = {
@@ -658,7 +661,7 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
         try {
             const commit = await checkoutModuleRepository({
                 cloneUrl,
-                commit: selectedRef.commit,
+                commit: selectedReference.commit,
                 root: temporary,
                 environment: gitEnvironment,
                 log: this.log,

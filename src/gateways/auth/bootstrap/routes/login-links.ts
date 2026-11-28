@@ -18,7 +18,10 @@ import {
     sleep,
     waitForPasswordResetResponseFloor,
 } from "../route-runtime.js";
-import type { AuthGatewayRouteHandler, AuthRouteLogMeta } from "./shared.js";
+import type {
+    AuthGatewayRouteHandler,
+    AuthRouteLogMetadata,
+} from "./shared.js";
 
 interface LoginLinkRouteDependencies {
     authGateway: CoreAuthGateway;
@@ -43,7 +46,7 @@ export function createLoginLinkRoutes({
         req,
         res,
         url,
-        logMeta: AuthRouteLogMeta,
+        logMetadata: AuthRouteLogMetadata,
     ): Promise<boolean> => {
         if (
             url.pathname === "/api/v1/auth/login-link-status" &&
@@ -116,7 +119,7 @@ export function createLoginLinkRoutes({
             );
             const sendOneTimeLoginEmail = capabilities.get<
                 (
-                    to: string,
+                    recipient: string,
                     loginUrl: string,
                     options?: {
                         subject?: string;
@@ -189,7 +192,7 @@ This link expires in 15 minutes and can only be used once.`,
                     });
                 }
                 log?.("warn", "Failed to send password reset email.", {
-                    ...logMeta,
+                    ...logMetadata,
                     error: message,
                 });
                 return respondWithPasswordResetEnvelope(200, {
@@ -200,7 +203,7 @@ This link expires in 15 minutes and can only be used once.`,
                 });
             }
             log?.("info", "Sent password reset email.", {
-                ...logMeta,
+                ...logMetadata,
             });
             return respondWithPasswordResetEnvelope(200, {
                 data: { outcome: "email_sent" },
@@ -356,7 +359,7 @@ This link expires in 15 minutes and can only be used once.`,
                     "warn",
                     "No additional active subject tokens were revoked after password reset.",
                     {
-                        ...logMeta,
+                        ...logMetadata,
                         accountId: claims.sub,
                     },
                 );

@@ -4,14 +4,14 @@ import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 
 function walk(dir) {
-    const out = [];
-    for (const e of readdirSync(dir)) {
-        const p = join(dir, e);
-        const s = statSync(p);
-        if (s.isDirectory()) out.push(...walk(p));
-        else out.push(p);
+    const discoveredFiles = [];
+    for (const directoryEntry of readdirSync(dir)) {
+        const entryPath = join(dir, directoryEntry);
+        const entryStat = statSync(entryPath);
+        if (entryStat.isDirectory()) discoveredFiles.push(...walk(entryPath));
+        else discoveredFiles.push(entryPath);
     }
-    return out;
+    return discoveredFiles;
 }
 
 const JS_ROOTS = ["src/ui/app", "src/ui/layouts"];
@@ -20,24 +20,26 @@ const JS_ROOTS = ["src/ui/app", "src/ui/layouts"];
 // Strings must have both letters AND whitespace to be considered user-facing by
 // this check, so single-word labels are handled by the template-literal check below.
 function isAllowed(value) {
-    const v = value.trim();
-    if (v.startsWith("<") && v.endsWith(">")) return true;
-    if (!v) return true;
-    if (v.startsWith("ui.")) return true;
-    if (/^cognis_|^application\/|^content-type$/.test(v)) return true;
-    if (/^\/?[a-z0-9_./:-]+$/i.test(v)) return true;
-    if (/^Inter, Arial, sans-serif$/.test(v)) return true;
+    const trimmedValue = value.trim();
+    if (trimmedValue.startsWith("<") && trimmedValue.endsWith(">")) return true;
+    if (!trimmedValue) return true;
+    if (trimmedValue.startsWith("ui.")) return true;
+    if (/^cognis_|^application\/|^content-type$/.test(trimmedValue))
+        return true;
+    if (/^\/?[a-z0-9_./:-]+$/i.test(trimmedValue)) return true;
+    if (/^Inter, Arial, sans-serif$/.test(trimmedValue)) return true;
     // Space-separated CSS class name tokens are not user-facing strings.
-    if (/^[a-z][a-z0-9-]*( [a-z][a-z0-9-]*)+$/.test(v)) return true;
+    if (/^[a-z][a-z0-9-]*( [a-z][a-z0-9-]*)+$/.test(trimmedValue)) return true;
     // Comma-separated element names are CSS selectors, not visible labels.
-    if (/^[a-z][a-z0-9-]*(,\s*[a-z][a-z0-9-]*)+$/.test(v)) return true;
-    if (v.includes("${")) return true;
-    if (v.startsWith(".")) return true;
-    if (/^aria-[a-z-]+="[a-z-]+"$/.test(v)) return true;
-    if (v.includes("#") && v.includes(",")) return true;
+    if (/^[a-z][a-z0-9-]*(,\s*[a-z][a-z0-9-]*)+$/.test(trimmedValue))
+        return true;
+    if (trimmedValue.includes("${")) return true;
+    if (trimmedValue.startsWith(".")) return true;
+    if (/^aria-[a-z-]+="[a-z-]+"$/.test(trimmedValue)) return true;
+    if (trimmedValue.includes("#") && trimmedValue.includes(",")) return true;
     if (
         /^(none|fade|float|dark|admin|user|enabled|disabled|available|ok|core|page|active)$/.test(
-            v,
+            trimmedValue,
         )
     )
         return true;
@@ -46,7 +48,7 @@ function isAllowed(value) {
     // regex character class like /^['"]|['"]$/g. The pattern has letters (flag
     // chars) and trailing whitespace so it passes the basic letter+space gate,
     // but it is not user-facing text.
-    if (/\$\/[gimsuy]*,?$/.test(v)) return true;
+    if (/\$\/[gimsuy]*,?$/.test(trimmedValue)) return true;
     return false;
 }
 
@@ -54,11 +56,11 @@ function isAllowed(value) {
 // These are the characters that appear directly between > and < with no
 // interpolation, so the bar is intentionally strict.
 function isAllowedTemplateTextNode(value) {
-    const v = value.trim();
-    if (!v) return true;
-    if (!/[A-Za-z]/.test(v)) return true; // symbols, emoji, numbers only
+    const trimmedValue = value.trim();
+    if (!trimmedValue) return true;
+    if (!/[A-Za-z]/.test(trimmedValue)) return true; // symbols, emoji, numbers only
     // Animation/motion values that double as <option> display text in settings
-    if (/^(none|fade|float)$/.test(v)) return true;
+    if (/^(none|fade|float)$/.test(trimmedValue)) return true;
     return false;
 }
 
@@ -68,11 +70,11 @@ test("no hardcoded user-facing string literals in ui js", () => {
         for (const file of walk(root)) {
             if (!file.endsWith(".js")) continue;
             const src = readFileSync(file, "utf8");
-            for (const m of src.matchAll(/(['"])((?:\\.|(?!\1).)*)\1/g)) {
-                const val = m[2];
-                if (!/[A-Za-z]/.test(val) || !/\s/.test(val)) continue;
-                if (isAllowed(val)) continue;
-                hits.push(`${file}: ${val.trim()}`);
+            for (const match of src.matchAll(/(['"])((?:\\.|(?!\1).)*)\1/g)) {
+                const value = match[2];
+                if (!/[A-Za-z]/.test(value) || !/\s/.test(value)) continue;
+                if (isAllowed(value)) continue;
+                hits.push(`${file}: ${value.trim()}`);
             }
         }
     }
@@ -104,11 +106,11 @@ test("no hardcoded text nodes inside HTML template literals in ui js", () => {
                 for (const [, text] of content.matchAll(
                     />([^<>`${}]+)(?=<)/g,
                 )) {
-                    const val = text.trim();
-                    if (!val) continue;
-                    if (!/[A-Za-z]/.test(val)) continue;
-                    if (isAllowedTemplateTextNode(val)) continue;
-                    hits.push(`${file}: "${val}"`);
+                    const value = text.trim();
+                    if (!value) continue;
+                    if (!/[A-Za-z]/.test(value)) continue;
+                    if (isAllowedTemplateTextNode(value)) continue;
+                    hits.push(`${file}: "${value}"`);
                 }
             }
         }

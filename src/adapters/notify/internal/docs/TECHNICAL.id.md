@@ -4,7 +4,7 @@ Antarmuka publik dan aturan operasional Notifikasi Dalam Aplikasi.
 
 ## Antarmuka
 
-createNotificationSender memakai penyimpanan aktif secara malas. bootstrapNotifyAdapter mendaftarkan pengirim selalu aktif, rute inbox, dan lonceng. Dengan db:executor, DbInternalNotificationStore diinisialisasi; tanpa itu penyimpanan volatil diperingatkan.
+createNotificationSender memakai penyimpanan aktif secara malas. bootstrapNotifyAdapter mendaftarkan pengirim selalu aktif, rute inbox, dan lonceng. Dengan db:executor, DatabaseInternalNotificationStore diinisialisasi; tanpa itu penyimpanan volatil diperingatkan.
 
 | Metode   | Path                            | Deskripsi                           | Auth     |
 | -------- | ------------------------------- | ----------------------------------- | -------- |

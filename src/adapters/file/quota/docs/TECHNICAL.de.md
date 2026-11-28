@@ -6,7 +6,7 @@
 
 ### Architektur
 
-`DbFileQuotaStore` in `src/adapters/file/quota/index.ts` implementiert den `FileQuotaStore`-Vertrag (`src/gateways/files/reuse/quota-store-contract.ts`) anhand von vier Tabellen:
+`DatabaseFileQuotaStore` in `src/adapters/file/quota/index.ts` implementiert den `FileQuotaStore`-Vertrag (`src/gateways/files/reuse/quota-store-contract.ts`) anhand von vier Tabellen:
 
 | Tabelle                         | Zweck                                                                  |
 | ------------------------------- | ---------------------------------------------------------------------- |
@@ -36,7 +36,7 @@ Der Kontingent-Adapter für Dateien ist ein datenbankgestützter Richtlinienspei
 - Schnappschuss der aktuellen Standardwerte in Pro-Benutzer-Override-Zeilen zum Zeitpunkt der Kontoerstellung (`provisionUser`), sodass das Kontingent eines Benutzers widerspiegelt, was bei der Registrierung galt, anstatt sich mit späteren Administratoränderungen zu verschieben.
 - Administratoren erlauben, das Namensraum- oder globale Kontingent eines Benutzers nach der Bereitstellung zu bearbeiten.
 
-Nicht zuständig für: Nutzungsabrechnung (das erledigt `DbFileObjectStore` des Datei-Gateways) oder die Durchsetzung des Kontingents (die `NamespaceFileService` des Datei-Gateways vergleicht die Nutzung vor jedem Schreibvorgang mit diesen Werten).
+Nicht zuständig für: Nutzungsabrechnung (das erledigt `DatabaseFileObjectStore` des Datei-Gateways) oder die Durchsetzung des Kontingents (die `NamespaceFileService` des Datei-Gateways vergleicht die Nutzung vor jedem Schreibvorgang mit diesen Werten).
 
 ### Träge Schemainitialisierung
 

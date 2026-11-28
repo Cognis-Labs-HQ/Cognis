@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { DbExecutor } from "../db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../db/reuse/db-executor.js";
 import { isAccessRole } from "@cognis/core";
 import type { NotificationPreferenceStore } from "./gateway.js";
 
@@ -51,8 +51,8 @@ export interface NotificationBroadcastState {
     acknowledgedAt: number | null;
 }
 
-export class DbNotificationStore implements NotificationConfigStore {
-    constructor(private readonly db: DbExecutor) {}
+class DatabaseNotificationStore implements NotificationConfigStore {
+    constructor(private readonly db: DatabaseExecutor) {}
 
     async ensureSchema(): Promise<void> {
         await this.db.ensureTable({
@@ -451,7 +451,7 @@ export class DbNotificationStore implements NotificationConfigStore {
         });
     }
 
-    async getUserNotifPrefs(
+    async getUserNotificationPreferences(
         accountId: string,
     ): Promise<Array<{ category: string; senderId: string }>> {
         const result = await this.db.executeCommand({
@@ -466,24 +466,28 @@ export class DbNotificationStore implements NotificationConfigStore {
         }));
     }
 
-    async saveUserNotifPrefs(
+    async saveUserNotificationPreferences(
         accountId: string,
-        prefs: Array<{ category: string; senderId: string; enabled: boolean }>,
+        preferences: Array<{
+            category: string;
+            senderId: string;
+            enabled: boolean;
+        }>,
     ): Promise<void> {
         await this.db.executeCommand({
             option: "DELETE",
             table: "user_notification_prefs",
             where: [{ column: "account_id", value: accountId }],
         });
-        for (const pref of prefs) {
-            if (!pref.enabled) continue;
+        for (const preference of preferences) {
+            if (!preference.enabled) continue;
             await this.db.executeCommand({
                 option: "INSERT",
                 table: "user_notification_prefs",
                 values: {
                     account_id: accountId,
-                    category: pref.category,
-                    sender_id: pref.senderId,
+                    category: preference.category,
+                    sender_id: preference.senderId,
                 },
                 conflict: {
                     action: "ignore",
@@ -514,7 +518,7 @@ export class DbNotificationStore implements NotificationConfigStore {
 
     async hasVerifiedEmail(accountId: string): Promise<boolean> {
         const emails = await this.getUserEmails(accountId);
-        return emails.some((e) => e.verified);
+        return emails.some((emailEntry) => emailEntry.verified);
     }
 
     async addUserEmail(
@@ -572,7 +576,9 @@ export class DbNotificationStore implements NotificationConfigStore {
         if (existing.length <= 1) {
             throw new Error("cannot_remove_last_email");
         }
-        const target = existing.find((e) => e.email === email);
+        const target = existing.find(
+            (emailEntry) => emailEntry.email === email,
+        );
         if (target?.primary) {
             throw new Error("cannot_remove_primary_email");
         }
@@ -591,7 +597,9 @@ export class DbNotificationStore implements NotificationConfigStore {
         email: string,
     ): Promise<void> {
         const existing = await this.getUserEmails(accountId);
-        const target = existing.find((e) => e.email === email);
+        const target = existing.find(
+            (emailEntry) => emailEntry.email === email,
+        );
         if (!target) return;
         if (target.verified) {
             throw new Error("cannot_remove_verified_email");
@@ -640,7 +648,11 @@ export class DbNotificationStore implements NotificationConfigStore {
 
     async getPrimaryEmail(accountId: string): Promise<string | null> {
         const emails = await this.getUserEmails(accountId);
-        return emails.find((e) => e.primary && e.verified)?.email ?? null;
+        return (
+            emails.find(
+                (emailEntry) => emailEntry.primary && emailEntry.verified,
+            )?.email ?? null
+        );
     }
 
     async getAccountIdByEmail(email: string): Promise<string | null> {
@@ -715,17 +727,20 @@ export class DbNotificationStore implements NotificationConfigStore {
         });
     }
 }
+export { DatabaseNotificationStore };
 
-export class DbNotificationPreferenceStore implements NotificationPreferenceStore {
-    constructor(private readonly store: DbNotificationStore) {}
+class DatabaseNotificationPreferenceStore implements NotificationPreferenceStore {
+    constructor(private readonly store: DatabaseNotificationStore) {}
 
     async getSenderIds(
         recipientUsername: string,
         category: string,
     ): Promise<string[]> {
-        const prefs = await this.store.getUserNotifPrefs(recipientUsername);
-        return prefs
-            .filter((pref) => pref.category === category)
-            .map((pref) => pref.senderId);
+        const preferences =
+            await this.store.getUserNotificationPreferences(recipientUsername);
+        return preferences
+            .filter((preference) => preference.category === category)
+            .map((preference) => preference.senderId);
     }
 }
+export { DatabaseNotificationPreferenceStore };

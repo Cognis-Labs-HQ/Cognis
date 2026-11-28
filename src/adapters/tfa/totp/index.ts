@@ -38,8 +38,8 @@ function base32Decode(input: string): Buffer {
     let value = 0;
     const bytes: number[] = [];
 
-    for (const char of clean) {
-        const index = alphabet.indexOf(char);
+    for (const character of clean) {
+        const index = alphabet.indexOf(character);
         if (index < 0) continue;
         value = (value << 5) | index;
         bits += 5;

@@ -29,7 +29,7 @@ import {
 import {
     buildSearchUrl,
     collectBrowserPreferenceSearchGroups,
-    collectGlobalDocsSearchGroups,
+    collectGlobalDocumentsSearchGroups,
     collectGlobalSettingsSearchGroups,
     collectVisibleNavigationSearchGroups,
     collectVisiblePageSearchGroups,
@@ -297,7 +297,7 @@ registerSearchCategory(
         stageId: "visible-indexes",
     },
 );
-registerSearchIndex("global-docs", collectGlobalDocsSearchGroups, {
+registerSearchIndex("global-docs", collectGlobalDocumentsSearchGroups, {
     stageId: "component-indexes",
 });
 registerSearchIndex("global-settings", collectGlobalSettingsSearchGroups, {
@@ -464,17 +464,17 @@ export function openSearchPopup({
         confirmFooter.className = "search-popup-confirm-footer";
         confirmFooter.hidden = true;
 
-        const confirmBtn = document.createElement("button");
-        confirmBtn.type = "button";
-        confirmBtn.className = "search-popup-confirm-btn btn-animated";
-        confirmBtn.textContent = confirmLabel;
-        confirmFooter.appendChild(confirmBtn);
+        const confirmButton = document.createElement("button");
+        confirmButton.type = "button";
+        confirmButton.className = "search-popup-confirm-btn btn-animated";
+        confirmButton.textContent = confirmLabel;
+        confirmFooter.appendChild(confirmButton);
         popup.appendChild(confirmFooter);
 
         const updateFooter = () => {
             const count = multiSelectState.selected.size;
             confirmFooter.hidden = count === 0;
-            confirmBtn.textContent = `${confirmLabel} (${count})`;
+            confirmButton.textContent = `${confirmLabel} (${count})`;
 
             const allItems = resultsContainer.querySelectorAll(
                 ".search-popup-result--selectable",
@@ -498,7 +498,7 @@ export function openSearchPopup({
             onSelectionChange: updateFooter,
         };
 
-        confirmBtn.addEventListener("mousedown", (event) => {
+        confirmButton.addEventListener("mousedown", (event) => {
             event.preventDefault();
             const selectedItems = Array.from(multiSelectState.itemMap.values());
             closeOverlay();
@@ -671,21 +671,21 @@ export function createSearchBar({
     const wrapper = document.createElement("div");
     wrapper.className = "search-bar-wrap";
 
-    const toggleBtn = document.createElement("button");
-    toggleBtn.type = "button";
-    toggleBtn.className = "search-bar-toggle";
-    toggleBtn.setAttribute("aria-label", ariaLabel);
+    const toggleButton = document.createElement("button");
+    toggleButton.type = "button";
+    toggleButton.className = "search-bar-toggle";
+    toggleButton.setAttribute("aria-label", ariaLabel);
     const toggleIcon = document.createElement("span");
     toggleIcon.className = "search-bar-toggle-icon";
     toggleIcon.setAttribute("aria-hidden", "true");
-    toggleBtn.appendChild(toggleIcon);
-    wrapper.appendChild(toggleBtn);
-    setActiveSearchToggleButton(toggleBtn);
+    toggleButton.appendChild(toggleIcon);
+    wrapper.appendChild(toggleButton);
+    setActiveSearchToggleButton(toggleButton);
     bindSearchShortcut();
 
     let closePopup = null;
 
-    toggleBtn.addEventListener("click", (event) => {
+    toggleButton.addEventListener("click", (event) => {
         event.stopPropagation();
         if (typeof closePopup === "function") {
             closePopup();

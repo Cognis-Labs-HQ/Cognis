@@ -2,8 +2,8 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { DbProfileStore } from "./store.js";
-import { DbUserPreferenceStore } from "./preference-store.js";
+import { DatabaseProfileStore } from "./store.js";
+import { DatabaseUserPreferenceStore } from "./preference-store.js";
 import { createProfileRoutes } from "./routes/index.js";
 import { registerProfileMediaFlowHooks } from "./routes/media-flow-hooks.js";
 import { createSocialRoutes } from "./routes/social.js";
@@ -33,7 +33,7 @@ import {
     resolveRouteContext,
     type RouteContext,
 } from "../../../api/reuse/route-context.js";
-import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import { CTX_CAPABILITY, type Ctx } from "@cognis/core";
 
 const ADAPTER_UI_ROOT = path.resolve(
@@ -136,8 +136,8 @@ export function createProfilePageRoutes(
  *   profile:setRoleByHandle — (handle, role) => void
  *                              Called by user:role route when this adapter is
  *                              present so profile rows stay in sync.
- *   preferences:store       — DbUserPreferenceStore for per-user settings.
- *   social:profileStore     — DbProfileStore for cross-adapter lookup
+ *   preferences:store       — DatabaseUserPreferenceStore for per-user settings.
+ *   social:profileStore     — DatabaseProfileStore for cross-adapter lookup
  *                              (e.g. messages adapter handle resolution).
  *
  * Profile API routes are always registered. Avatar/banner routes return
@@ -150,9 +150,10 @@ export async function bootstrapSocialAdapter(
 ): Promise<void> {
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
-    const dbExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
+    const databaseExecutor =
+        ctx.capabilities.get<DatabaseExecutor>("db:executor");
 
-    if (!dbExecutor) {
+    if (!databaseExecutor) {
         ctx.log?.(
             "warn",
             "Profile adapter: no database executor available — profile features disabled.",
@@ -161,32 +162,32 @@ export async function bootstrapSocialAdapter(
         return;
     }
 
-    const profileStore = new DbProfileStore(dbExecutor);
+    const profileStore = new DatabaseProfileStore(databaseExecutor);
     await profileStore.ensureSchema();
     const deleteAccountActivity = async (accountId: string) => {
-        await dbExecutor.transaction(async (transactionDb) => {
+        await databaseExecutor.transaction(async (transactionDatabase) => {
             for (const column of ["follower_id", "following_id"]) {
-                await transactionDb.executeCommand({
+                await transactionDatabase.executeCommand({
                     option: "DELETE",
                     table: "account_follows",
                     where: [{ column, value: accountId }],
                 });
             }
             for (const column of ["blocker_id", "blocked_id"]) {
-                await transactionDb.executeCommand({
+                await transactionDatabase.executeCommand({
                     option: "DELETE",
                     table: "account_blocks",
                     where: [{ column, value: accountId }],
                 });
             }
             for (const table of ["posts", "account_profiles"]) {
-                await transactionDb.executeCommand({
+                await transactionDatabase.executeCommand({
                     option: "DELETE",
                     table,
                     where: [{ column: "account_id", value: accountId }],
                 });
             }
-            await transactionDb.executeCommand({
+            await transactionDatabase.executeCommand({
                 option: "DELETE",
                 table: "user_preferences",
                 where: [{ column: "account_id", value: accountId }],
@@ -228,14 +229,14 @@ export async function bootstrapSocialAdapter(
         component: "social-profile-adapter",
     });
 
-    const prefStore = new DbUserPreferenceStore(dbExecutor);
-    await prefStore.ensureSchema();
+    const preferenceStore = new DatabaseUserPreferenceStore(databaseExecutor);
+    await preferenceStore.ensureSchema();
     const availabilityPresenceStore = new AvailabilityPresenceStore();
     /**
      * preferences:store — per-user settings persistence consumed by shared UI
      * and gateways.
      */
-    ctx.capabilities.contribute("preferences:store", prefStore);
+    ctx.capabilities.contribute("preferences:store", preferenceStore);
     /**
      * social:profileStore — profile/search/social-graph storage exported to
      * peer adapters and modules.
@@ -270,7 +271,7 @@ export async function bootstrapSocialAdapter(
                 ? await calendarResolver(accountId)
                 : null;
             const manualAvailability = readStoredManualAvailability(
-                await prefStore.get(accountId, "availability"),
+                await preferenceStore.get(accountId, "availability"),
             );
             const effectiveAvailability = resolveEffectiveAvailability(
                 manualAvailability,
@@ -554,13 +555,13 @@ export async function bootstrapSocialAdapter(
     );
     ctx.registerRoute(createPostRoutes(profileStore, routeContext), "social");
     ctx.registerRoute(
-        createPreferencesRoutes(prefStore, routeContext),
+        createPreferencesRoutes(preferenceStore, routeContext),
         "social",
     );
     ctx.registerRoute(
         createAvailabilityRoutes(
             profileStore,
-            prefStore,
+            preferenceStore,
             async (accountId) => {
                 const resolver = ctx.capabilities.get<
                     (
@@ -579,11 +580,11 @@ export async function bootstrapSocialAdapter(
         hasFileGateway: Boolean(fileGateway),
     });
 
-    const uiDir = path.resolve(
+    const uiDirectory = path.resolve(
         path.dirname(fileURLToPath(import.meta.url)),
         "ui",
     );
-    ctx.registerAdapterStaticDir?.("social", "profile", uiDir);
+    ctx.registerAdapterStaticDirectory?.("social", "profile", uiDirectory);
     ctx.registerSpaRoute?.({
         id: "social-profile-page",
         requiredCapabilities: ["social:profileRequest"],

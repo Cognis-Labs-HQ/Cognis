@@ -1,5 +1,5 @@
 import { textChunks } from "../../../gateways/reuse/text-chunks.js";
-import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import type {
     LeaderboardDefinition,
     LeaderboardObservation,
@@ -20,8 +20,8 @@ export interface LeaderboardStore {
     save(state: LeaderboardState): Promise<void>;
 }
 
-export class DbLeaderboardStore implements LeaderboardStore {
-    constructor(private readonly db: DbExecutor) {}
+class DatabaseLeaderboardStore implements LeaderboardStore {
+    constructor(private readonly db: DatabaseExecutor) {}
 
     async ensureSchema(): Promise<void> {
         await this.db.ensureTable({
@@ -83,3 +83,4 @@ export class DbLeaderboardStore implements LeaderboardStore {
         });
     }
 }
+export { DatabaseLeaderboardStore };

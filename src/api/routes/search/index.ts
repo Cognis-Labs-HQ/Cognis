@@ -29,7 +29,7 @@ interface SearchResultGroup {
     items: SearchResultItem[];
 }
 
-type ProfileSearchFn = (
+type ProfileSearchCallback = (
     query: string,
     limit: number,
     options?: { includeHidden?: boolean; requesterAccountId?: string },
@@ -43,7 +43,7 @@ type ProfileSearchFn = (
 >;
 
 export function createSearchRoutes(
-    searchProfiles?: ProfileSearchFn,
+    searchProfiles?: ProfileSearchCallback,
     routeContext?: RouteContext,
 ): (req: IncomingMessage, res: ServerResponse, url: URL) => Promise<boolean> {
     const ctx = resolveRouteContext(routeContext);

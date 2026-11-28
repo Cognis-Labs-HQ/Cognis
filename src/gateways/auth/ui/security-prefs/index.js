@@ -354,14 +354,14 @@ export function createSettingsSection({ i18n, root, markDirty, signal }) {
     }
 
     async function renderSubsections() {
-        const subs = await loadSubsections();
+        const subscriptions = await loadSubsections();
         const container = settingsRoot.querySelector(
             "#auth-security-subsections",
         );
         if (!container) {
             return;
         }
-        container.innerHTML = subs
+        container.innerHTML = subscriptions
             .map(
                 (section) =>
                     `<section class="components-section" data-security-subsection="${escapeHtml(section.id)}">
@@ -370,7 +370,7 @@ export function createSettingsSection({ i18n, root, markDirty, signal }) {
                     </section>`,
             )
             .join("");
-        for (const section of subs) {
+        for (const section of subscriptions) {
             await section.onRender?.();
         }
     }

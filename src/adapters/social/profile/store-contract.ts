@@ -103,8 +103,8 @@ const VISIBILITY_RANK: Record<AccountVisibility, number> = {
     community: 3,
 };
 
-export function visibilityRank(v: AccountVisibility): number {
-    return VISIBILITY_RANK[v] ?? 0;
+export function visibilityRank(visibility: AccountVisibility): number {
+    return VISIBILITY_RANK[visibility] ?? 0;
 }
 
 /**

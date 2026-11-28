@@ -211,11 +211,11 @@ test("admins cannot manage admin or owner accounts while owner can manage others
     await accounts.register("carol", "pw", "admin");
     await accounts.register("founder", "pw", "admin");
     await accounts.setFounder("founder", true);
-    const prefs = new VolatileUserPreferenceStore();
+    const preferences = new VolatileUserPreferenceStore();
     const lifecycle = createProfileLifecycleTracker();
     const route = createUserRoutes(
         accounts,
-        prefs,
+        preferences,
         undefined,
         undefined,
         undefined,
@@ -235,8 +235,8 @@ test("admins cannot manage admin or owner accounts while owner can manage others
             },
         } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -248,8 +248,8 @@ test("admins cannot manage admin or owner accounts while owner can manage others
     await route(
         { method: "POST", headers } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -261,8 +261,8 @@ test("admins cannot manage admin or owner accounts while owner can manage others
     await route(
         { method: "DELETE", headers } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -280,8 +280,8 @@ test("admins cannot manage admin or owner accounts while owner can manage others
             },
         } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -298,8 +298,8 @@ test("admins cannot manage admin or owner accounts while owner can manage others
             },
         } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -311,8 +311,8 @@ test("admins cannot manage admin or owner accounts while owner can manage others
     await route(
         { method: "POST", headers: ownerHeaders } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -325,8 +325,8 @@ test("admins cannot manage admin or owner accounts while owner can manage others
     await route(
         { method: "DELETE", headers: ownerHeaders } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -344,8 +344,8 @@ test("admins cannot manage admin or owner accounts while owner can manage others
             },
         } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -357,8 +357,8 @@ test("admins cannot manage admin or owner accounts while owner can manage others
     await route(
         { method: "POST", headers: ownerHeaders } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -370,8 +370,8 @@ test("admins cannot manage admin or owner accounts while owner can manage others
     await route(
         { method: "DELETE", headers: ownerHeaders } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -385,8 +385,8 @@ test("role changes invalidate target access tokens immediately", async () => {
     const accounts = new VolatileLocalAccountStore();
     await accounts.register("admin", "pw", "admin");
     await accounts.register("alice", "pw", "admin");
-    const prefs = new VolatileUserPreferenceStore();
-    const route = createUserRoutes(accounts, prefs);
+    const preferences = new VolatileUserPreferenceStore();
+    const route = createUserRoutes(accounts, preferences);
     let status = 0;
     const aliceToken = issueAccessToken("alice", "admin", 60);
     const aliceHeaders = { authorization: `Bearer ${aliceToken}` };
@@ -402,8 +402,8 @@ test("role changes invalidate target access tokens immediately", async () => {
             },
         } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -416,8 +416,8 @@ test("role changes invalidate target access tokens immediately", async () => {
     await route(
         { method: "GET", headers: aliceHeaders } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -430,8 +430,8 @@ test("users list reports founder admins as owner role", async () => {
     const accounts = new VolatileLocalAccountStore();
     await accounts.register("admin", "pw", "admin");
     await accounts.setFounder("admin", true);
-    const prefs = new VolatileUserPreferenceStore();
-    const route = createUserRoutes(accounts, prefs);
+    const preferences = new VolatileUserPreferenceStore();
+    const route = createUserRoutes(accounts, preferences);
     let status = 0;
     let body = "";
 
@@ -458,12 +458,12 @@ test("teacher role change normalizes hidden/private visibility to friends", asyn
     const accounts = new VolatileLocalAccountStore();
     await accounts.register("admin", "pw", "admin");
     await accounts.register("alice", "pw", "user");
-    const prefs = new VolatileUserPreferenceStore();
+    const preferences = new VolatileUserPreferenceStore();
     let status = 0;
     const appliedVisibilityUpdates: string[] = [];
     const route = createUserRoutes(
         accounts,
-        prefs,
+        preferences,
         undefined,
         undefined,
         async () => "hidden",
@@ -497,12 +497,12 @@ test("teacher role change sets profile visibility to friends", async () => {
     const accounts = new VolatileLocalAccountStore();
     await accounts.register("admin", "pw", "admin");
     await accounts.register("alice", "pw", "user");
-    const prefs = new VolatileUserPreferenceStore();
+    const preferences = new VolatileUserPreferenceStore();
     let status = 0;
     const appliedVisibilityUpdates: string[] = [];
     const route = createUserRoutes(
         accounts,
-        prefs,
+        preferences,
         undefined,
         undefined,
         async () => "community",
@@ -536,12 +536,12 @@ test("admin role change sets profile visibility to friends", async () => {
     const accounts = new VolatileLocalAccountStore();
     await accounts.register("admin", "pw", "admin");
     await accounts.register("alice", "pw", "user");
-    const prefs = new VolatileUserPreferenceStore();
+    const preferences = new VolatileUserPreferenceStore();
     let status = 0;
     const appliedVisibilityUpdates: string[] = [];
     const route = createUserRoutes(
         accounts,
-        prefs,
+        preferences,
         undefined,
         undefined,
         async () => "hidden",
@@ -576,12 +576,12 @@ test("users list includes hasTfaConfigured when tfa capability is present", asyn
     await accounts.register("admin", "pw", "admin");
     await accounts.register("alice", "pw", "user");
     await accounts.register("bob", "pw", "user");
-    const prefs = new VolatileUserPreferenceStore();
+    const preferences = new VolatileUserPreferenceStore();
     let status = 0;
     let body = "";
     const route = createUserRoutes(
         accounts,
-        prefs,
+        preferences,
         undefined,
         undefined,
         undefined,

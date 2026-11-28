@@ -13,23 +13,28 @@ test("documentation titles arrive before content, content concurrency is bounded
         activeUiLanguage: () => "ja",
         enabledUiLanguages: () => ["en", "ja"],
     };
-    const { loadDocsBundleMarkdown, loadDocsIndex, readDocsLanguages } =
-        loadTestModule(new URL("../../docs-client.js", import.meta.url), {
-            "./ui-language-state.js": languageState,
-            "./api-client.js": {
-                apiFetch: () => {
-                    throw new Error("Use the injected public request contract");
-                },
+    const {
+        loadDocumentsBundleMarkdown: loadDocumentsBundleMarkdown,
+        loadDocumentsIndex: loadDocumentsIndex,
+        readDocumentsLanguages: readDocumentsLanguages,
+    } = loadTestModule(new URL("../../docs-client.js", import.meta.url), {
+        "./ui-language-state.js": languageState,
+        "./api-client.js": {
+            apiFetch: () => {
+                throw new Error("Use the injected public request contract");
             },
-        });
-    const { collectGlobalDocsSearchGroups } = loadTestModule(
+        },
+    });
+    const {
+        collectGlobalDocumentsSearchGroups: collectGlobalDocumentsSearchGroups,
+    } = loadTestModule(
         new URL("../docs-index.js", import.meta.url),
         {
             "../capabilities.js": createDiagnosticFixture(),
             "../docs-client.js": {
-                loadDocsBundleMarkdown,
-                loadDocsIndex,
-                readDocsLanguages,
+                loadDocumentsBundleMarkdown: loadDocumentsBundleMarkdown,
+                loadDocumentsIndex: loadDocumentsIndex,
+                readDocumentsLanguages: readDocumentsLanguages,
             },
             "../i18n.js": { createI18n: async () => ({ t: (key) => key }) },
         },
@@ -42,10 +47,10 @@ test("documentation titles arrive before content, content concurrency is bounded
                     return {
                         ok: true,
                         json: async () => ({
-                            data: Array.from({ length: 25 }, (_, i) => ({
-                                slug: `guide-${i}`,
+                            data: Array.from({ length: 25 }, (_, index) => ({
+                                slug: `guide-${index}`,
                                 version: "1.0.0",
-                                title: `ガイド ${i}`,
+                                title: `ガイド ${index}`,
                             })),
                         }),
                     };
@@ -66,7 +71,7 @@ test("documentation titles arrive before content, content concurrency is bounded
             },
         },
     );
-    const indexing = collectGlobalDocsSearchGroups({
+    const indexing = collectGlobalDocumentsSearchGroups({
         signal: controller.signal,
         onResults: (groups) => emitted.push(groups),
     });

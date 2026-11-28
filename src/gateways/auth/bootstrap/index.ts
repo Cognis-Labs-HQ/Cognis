@@ -19,7 +19,7 @@ import {
 } from "../../shared.js";
 import { type AccessRole } from "../access-tokens.js";
 import { CoreAuthGateway } from "../gateway.js";
-import type { DbExecutor } from "../../db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../db/reuse/db-executor.js";
 import { createAdapterAdminRoutes } from "./adapter-admin-routes.js";
 import {
     createAuthGatewayRoutes,
@@ -217,9 +217,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             "auth:verificationCodes",
             verificationCodes,
         );
-    const dbExecutor = ctx.capabilities.require<DbExecutor>("db:executor");
+    const databaseExecutor =
+        ctx.capabilities.require<DatabaseExecutor>("db:executor");
 
-    const accountStore = await loadLocalAccountStore(dbExecutor, ctx.log);
+    const accountStore = await loadLocalAccountStore(databaseExecutor, ctx.log);
     await accountStore.ensureSchema();
     ctx.capabilities.contribute("auth:getUsername", (accountId: string) =>
         accountStore.getUsername(accountId),
@@ -227,7 +228,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.log?.("info", "Auth gateway account schema ready.", {
         component: "auth-gateway",
     });
-    const accountInstanceStore = new AccountInstanceStore(dbExecutor);
+    const accountInstanceStore = new AccountInstanceStore(databaseExecutor);
     await accountInstanceStore.ensureSchema();
     const accountDataOwners = new Map<
         string,
@@ -327,7 +328,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         },
     );
 
-    const authGateway = new CoreAuthGateway(dbExecutor);
+    const authGateway = new CoreAuthGateway(databaseExecutor);
     await authGateway.ensureSchema();
     ctx.log?.("info", "Auth gateway adapter schema ready.", {
         component: "auth-gateway",
@@ -342,9 +343,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "index.ts",
     );
     try {
-        const mod = await import(`${localAdapterPath}?t=${Date.now()}`);
-        if (typeof mod.createAdapter === "function") {
-            const localAdapter = mod.createAdapter(accountStore);
+        const moduleExports = await import(
+            `${localAdapterPath}?t=${Date.now()}`
+        );
+        if (typeof moduleExports.createAdapter === "function") {
+            const localAdapter = moduleExports.createAdapter(accountStore);
             const packageRaw = await readFile(
                 path.resolve(localAdapterPath, "..", "package.json"),
                 "utf8",
@@ -380,8 +383,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const authAdaptersRoot = path.join(ctx.adaptersRoot, "auth");
     await authGateway.discoverAdapters(authAdaptersRoot, {
         capabilities: ctx.capabilities,
-        registerStaticDir: (adapterId, absolutePath) =>
-            ctx.uiRegistry?.registerAdapterStaticDir(
+        registerStaticDirectory: (adapterId, absolutePath) =>
+            ctx.uiRegistry?.registerAdapterStaticDirectory(
                 "auth",
                 adapterId,
                 absolutePath,
@@ -401,7 +404,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             "ui",
         );
         if (existsSync(adapterUiDirectory)) {
-            ctx.uiRegistry?.registerAdapterStaticDir(
+            ctx.uiRegistry?.registerAdapterStaticDirectory(
                 "auth",
                 adapter.id,
                 adapterUiDirectory,
@@ -503,8 +506,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         required: true,
     });
 
-    const uiDir = path.resolve(process.cwd(), "src", "gateways", "auth", "ui");
-    ctx.uiRegistry?.registerStaticDir("auth", uiDir);
+    const uiDirectory = path.resolve(
+        process.cwd(),
+        "src",
+        "gateways",
+        "auth",
+        "ui",
+    );
+    ctx.uiRegistry?.registerStaticDirectory("auth", uiDirectory);
     ctx.uiRegistry?.registerSettingsSection({
         id: "security",
         label: "Security",

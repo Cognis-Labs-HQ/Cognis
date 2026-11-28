@@ -1,7 +1,7 @@
 import { InMemoryTestExecutor } from "../../../../gateways/db/tests/in-memory-test-executor.js";
 import test from "node:test";
 import assert from "node:assert/strict";
-import { DbLocalAccountStore } from "../store.js";
+import { DatabaseLocalAccountStore } from "../store.js";
 import { externalIdentityFingerprint } from "../../../../gateways/auth/reuse/account-store.js";
 
 test("external account persistence creates the account before its identity", async () => {
@@ -12,7 +12,7 @@ test("external account persistence creates the account before its identity", asy
         commands.push(command as unknown as Record<string, unknown>);
         return execute(command);
     };
-    const store = new DbLocalAccountStore(executor);
+    const store = new DatabaseLocalAccountStore(executor);
     await store.ensureSchema();
     commands.length = 0;
 
@@ -94,7 +94,7 @@ test("external identity removal returns every account tied to a source", async (
                 : { rows: [] };
         },
     };
-    const store = new DbLocalAccountStore(executor as never);
+    const store = new DatabaseLocalAccountStore(executor as never);
 
     const accountIds = await store.removeExternalIdentitiesByPrefix(
         "ldap",
@@ -124,7 +124,7 @@ test("local auth schema provisions external identities", async () => {
             tables.push(table);
         },
     };
-    const store = new DbLocalAccountStore(executor as never);
+    const store = new DatabaseLocalAccountStore(executor as never);
 
     await store.ensureSchema();
 
@@ -161,7 +161,7 @@ test("external account info qualifies account columns when joining identities", 
             };
         },
     };
-    const store = new DbLocalAccountStore(executor as never);
+    const store = new DatabaseLocalAccountStore(executor as never);
 
     const info = await store.getInfo("firehawk");
 
@@ -205,7 +205,7 @@ test("external accounts support administrative actions other than password reset
             await operation(this);
         },
     };
-    const store = new DbLocalAccountStore(executor as never);
+    const store = new DatabaseLocalAccountStore(executor as never);
 
     await store.setRole("firehawk", "teacher");
     await store.setEnabled("firehawk", false);
@@ -253,7 +253,7 @@ test("external account rollback deletes without recording a tombstone", async ()
             await operation(this);
         },
     };
-    const store = new DbLocalAccountStore(executor as never);
+    const store = new DatabaseLocalAccountStore(executor as never);
 
     await store.delete("external-provider:subject", {
         recordExternalIdentityDeletion: false,
@@ -290,7 +290,7 @@ test("external identities cannot attach to a colliding persisted account", async
             await operation(this);
         },
     };
-    const store = new DbLocalAccountStore(executor as never);
+    const store = new DatabaseLocalAccountStore(executor as never);
 
     await assert.rejects(
         () =>
@@ -324,7 +324,7 @@ test("legacy SSO provisioning is refused individually without account mutations"
             return operation(this);
         },
     };
-    const store = new DbLocalAccountStore(executor as never);
+    const store = new DatabaseLocalAccountStore(executor as never);
     await assert.rejects(
         store.ensureExternalAccount({
             accountId: "alice",

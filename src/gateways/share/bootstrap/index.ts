@@ -5,7 +5,7 @@ import { readGatewayManifestVersion } from "../../reuse/manifest-version.js";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { GatewayBootstrapContext } from "../../shared.js";
-import type { DbExecutor } from "../../db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../db/reuse/db-executor.js";
 import { createGatewayUiRegistryHooks } from "../../reuse/ui-registry-hooks.js";
 import {
     resolveRouteContext,
@@ -44,17 +44,20 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         import.meta.url,
         "../manifest.json",
     );
-    const dbExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
-    if (!dbExecutor) {
+    const databaseExecutor =
+        ctx.capabilities.get<DatabaseExecutor>("db:executor");
+    if (!databaseExecutor) {
         return;
     }
     const routeContext = resolveRouteContext(
         ctx.capabilities.get<RouteContext>("auth:routeContext"),
     );
-    const store = new ShareTokenStore(dbExecutor, ctx.log);
-    const guestProfileStore = new GuestProfileStore(dbExecutor);
-    const approvalRequestStore = new ShareApprovalRequestStore(dbExecutor);
-    const adapterConfigStore = new ShareAdapterConfigStore(dbExecutor);
+    const store = new ShareTokenStore(databaseExecutor, ctx.log);
+    const guestProfileStore = new GuestProfileStore(databaseExecutor);
+    const approvalRequestStore = new ShareApprovalRequestStore(
+        databaseExecutor,
+    );
+    const adapterConfigStore = new ShareAdapterConfigStore(databaseExecutor);
     const gateway = new CoreShareGateway(
         store,
         guestProfileStore,
@@ -268,7 +271,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     );
 
     const uiHooks = createGatewayUiRegistryHooks(ctx.uiRegistry, "share");
-    uiHooks.registerStaticDir("share", GATEWAY_ROOT);
+    uiHooks.registerStaticDirectory("share", GATEWAY_ROOT);
     const shareViewStylesheets = [
         "/static/styles/page-builder.css",
         "/static/styles/reuse/layout.css",
@@ -302,7 +305,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         access: { minRole: "user" },
     });
     for (const adapter of gateway.listAdapters()) {
-        uiHooks.registerAdapterStaticDir(
+        uiHooks.registerAdapterStaticDirectory(
             adapter.id,
             path.join(SHARE_ADAPTERS_ROOT, adapter.id),
         );

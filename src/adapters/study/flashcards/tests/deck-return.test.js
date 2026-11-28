@@ -84,7 +84,7 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
             assert.equal(language, "ja");
             return `/study/ja/flashcards${deckSlug ? `/${deckSlug}` : ""}`;
         },
-        createStudySubNavigationSlot: (model) => {
+        createStudyNestedNavigationSlot: (model) => {
             assert.equal(model.selectedLanguageCode, "ja");
             return navigationSlot;
         },
@@ -116,7 +116,7 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
         document: { documentElement: { lang: "en" } },
         createI18n: async () => ({ t: (key) => key }),
         applyDocumentTitle() {},
-        loadStudySubNavigationModel: async () => ({
+        loadStudyNestedNavigationModel: async () => ({
             selectedLanguageCode: "ja",
         }),
         fetchStudyDecks: async () => [deck],
@@ -152,7 +152,7 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
                     "<section data-study-session></section>";
             },
         }),
-        bindStudySubNavigation() {},
+        bindStudyNestedNavigation() {},
         renderDeckDetail: () => "<section data-study-session></section>",
         createPracticeModePreference: async ({ mode }) => {
             choices++;
@@ -288,11 +288,12 @@ test("Back from Explore remounts the complete locked-mode deck at the saved card
                     navigateTo: environment.navigateTo,
                 },
                 "/static/gateways/study/sub-navigation.js": {
-                    loadStudySubNavigationModel:
-                        environment.loadStudySubNavigationModel,
-                    createStudySubNavigationSlot:
-                        environment.createStudySubNavigationSlot,
-                    bindStudySubNavigation: environment.bindStudySubNavigation,
+                    loadStudyNestedNavigationModel:
+                        environment.loadStudyNestedNavigationModel,
+                    createStudyNestedNavigationSlot:
+                        environment.createStudyNestedNavigationSlot,
+                    bindStudyNestedNavigation:
+                        environment.bindStudyNestedNavigation,
                     readSelectedStudyLanguageCode:
                         environment.readSelectedStudyLanguageCode,
                 },

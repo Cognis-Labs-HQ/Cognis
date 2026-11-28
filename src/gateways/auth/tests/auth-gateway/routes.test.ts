@@ -13,7 +13,7 @@ import {
     contributeTestKeyring,
     adminToken,
     HttpIncomingMessage,
-    makeInMemoryDb,
+    makeInMemoryDatabase,
     makeResponse,
 } from "../auth-gateway-test-helpers.js";
 
@@ -45,7 +45,9 @@ test("GET /api/v1/auth/login-methods returns enabled providers", async () => {
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+        db: makeInMemoryDatabase() as ReturnType<
+            typeof makeInMemoryDatabase
+        > & {
             execute: (
                 sql: string,
                 params?: unknown[],
@@ -85,7 +87,7 @@ test("auth bootstrap exposes provider-aware password confirmation", async () => 
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: makeInMemoryDb(),
+        db: makeInMemoryDatabase(),
     });
 
     const confirmPassword = capabilities.get<
@@ -111,7 +113,9 @@ test("GET /api/v1/auth/login-ui returns flow-resolved methods and integrations",
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+        db: makeInMemoryDatabase() as ReturnType<
+            typeof makeInMemoryDatabase
+        > & {
             execute: (
                 sql: string,
                 params?: unknown[],
@@ -262,7 +266,9 @@ test("GET /api/v1/auth/registration-config returns open-registration state", asy
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+        db: makeInMemoryDatabase() as ReturnType<
+            typeof makeInMemoryDatabase
+        > & {
             execute: (
                 sql: string,
                 params?: unknown[],
@@ -306,7 +312,7 @@ test("GET /api/v1/auth/registration-config isolates composition failures", async
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: makeInMemoryDb(),
+        db: makeInMemoryDatabase(),
     });
     const systemCtx =
         capabilities.get<ReturnType<typeof createCtx>>(CTX_CAPABILITY)!;
@@ -349,7 +355,9 @@ test("GET /api/v1/gateways/auth/adapters requires admin auth", async () => {
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+        db: makeInMemoryDatabase() as ReturnType<
+            typeof makeInMemoryDatabase
+        > & {
             execute: (
                 sql: string,
                 params?: unknown[],
@@ -387,7 +395,9 @@ test("GET /api/v1/gateways/auth/adapters returns adapter list to admin", async (
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+        db: makeInMemoryDatabase() as ReturnType<
+            typeof makeInMemoryDatabase
+        > & {
             execute: (
                 sql: string,
                 params?: unknown[],
@@ -433,7 +443,9 @@ test("login endpoint returns 503 when no auth providers are available", async ()
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+        db: makeInMemoryDatabase() as ReturnType<
+            typeof makeInMemoryDatabase
+        > & {
             execute: (
                 sql: string,
                 params?: unknown[],
@@ -483,7 +495,9 @@ test("POST /api/v1/auth/verify returns 401 for stale unknown authenticated user"
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+        db: makeInMemoryDatabase() as ReturnType<
+            typeof makeInMemoryDatabase
+        > & {
             execute: (
                 sql: string,
                 params?: unknown[],
@@ -531,7 +545,9 @@ test("POST /api/v1/auth/verify returns 200 for fresh authenticated session", asy
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+        db: makeInMemoryDatabase() as ReturnType<
+            typeof makeInMemoryDatabase
+        > & {
             execute: (
                 sql: string,
                 params?: unknown[],
@@ -572,7 +588,9 @@ test("POST /api/v1/auth/verify accepts a fresh cookie-only SSO session", async (
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+        db: makeInMemoryDatabase() as ReturnType<
+            typeof makeInMemoryDatabase
+        > & {
             execute: (
                 sql: string,
                 params?: unknown[],
@@ -615,7 +633,9 @@ test("POST /api/v1/auth/verify returns 401 when unauthenticated", async () => {
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+        db: makeInMemoryDatabase() as ReturnType<
+            typeof makeInMemoryDatabase
+        > & {
             execute: (
                 sql: string,
                 params?: unknown[],
@@ -655,7 +675,9 @@ test("registration:public:register capability is looked up lazily in register ha
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+        db: makeInMemoryDatabase() as ReturnType<
+            typeof makeInMemoryDatabase
+        > & {
             execute: (
                 sql: string,
                 params?: unknown[],
@@ -714,7 +736,9 @@ test("auth register endpoint returns 403 when open registration is disabled", as
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db: makeInMemoryDb() as ReturnType<typeof makeInMemoryDb> & {
+        db: makeInMemoryDatabase() as ReturnType<
+            typeof makeInMemoryDatabase
+        > & {
             execute: (
                 sql: string,
                 params?: unknown[],

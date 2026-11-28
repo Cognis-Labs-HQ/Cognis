@@ -80,16 +80,18 @@ class FakeRootElement {
 }
 
 test("quiet unsaved changes bar keeps floating controls hidden", () => {
-    const floatingEl = new FakeFloatingElement();
-    const changesBar = createUnsavedChangesBar(floatingEl, { quiet: true });
+    const floatingElement = new FakeFloatingElement();
+    const changesBar = createUnsavedChangesBar(floatingElement, {
+        quiet: true,
+    });
 
     changesBar.markDirty("profile", true);
     assert.equal(changesBar.isAnyDirty(), true);
-    assert.equal(floatingEl.hidden, true);
+    assert.equal(floatingElement.hidden, true);
 
     changesBar.markDirty("profile", false);
     assert.equal(changesBar.isAnyDirty(), false);
-    assert.equal(floatingEl.hidden, true);
+    assert.equal(floatingElement.hidden, true);
 });
 
 test("form dirty tracker detects field value changes and reverts", () => {

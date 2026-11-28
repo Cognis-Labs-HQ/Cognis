@@ -8,7 +8,7 @@ import {
     enrichMembersWithProfiles,
     hasAdminBypass,
     summarizeRoomRequest,
-    type MessagesRoutesDeps,
+    type MessagesRoutesDependencies,
 } from "../shared.js";
 import type { SocialMessagesProfile } from "../../profile-store-contract.js";
 
@@ -53,9 +53,11 @@ function isPendingRequestLookupSchemaError(error: unknown): boolean {
     );
 }
 
-export function createRoomListHandler(deps: MessagesRoutesDeps) {
-    const { messagesStore, profileStore, dispatch } = deps;
-    const ctx = resolveRouteContext(deps.routeContext);
+export function createRoomListHandler(
+    dependencies: MessagesRoutesDependencies,
+) {
+    const { messagesStore, profileStore, dispatch } = dependencies;
+    const ctx = resolveRouteContext(dependencies.routeContext);
 
     return async (
         req: IncomingMessage,
@@ -207,10 +209,10 @@ export function createRoomListHandler(deps: MessagesRoutesDeps) {
             return true;
         }
 
-        const isDm = targets.length === 1 && body.kind !== "group";
+        const isDirectMessage = targets.length === 1 && body.kind !== "group";
         const primaryTarget = targets[0] ?? null;
-        if (isDm && primaryTarget) {
-            const existing = await messagesStore.findDmBetween(
+        if (isDirectMessage && primaryTarget) {
+            const existing = await messagesStore.findDirectMessageBetween(
                 accountId,
                 primaryTarget.accountId,
             );
@@ -277,8 +279,8 @@ export function createRoomListHandler(deps: MessagesRoutesDeps) {
 
         const createRoomWithMembers = async () => {
             const existingRoom =
-                isDm && primaryTarget
-                    ? await messagesStore.findDmBetween(
+                isDirectMessage && primaryTarget
+                    ? await messagesStore.findDirectMessageBetween(
                           accountId,
                           primaryTarget.accountId,
                       )
@@ -286,8 +288,8 @@ export function createRoomListHandler(deps: MessagesRoutesDeps) {
             if (existingRoom) return { room: existingRoom, created: false };
 
             const room =
-                isDm && primaryTarget
-                    ? await messagesStore.createDm(
+                isDirectMessage && primaryTarget
+                    ? await messagesStore.createDirectMessage(
                           accountId,
                           primaryTarget.accountId,
                       )
@@ -296,14 +298,14 @@ export function createRoomListHandler(deps: MessagesRoutesDeps) {
                           typeof body.title === "string" ? body.title : null,
                           accountId,
                       );
-            await deps.membership!.add({
+            await dependencies.membership!.add({
                 roomId: room.id,
                 actorAccountId: accountId,
                 userAccountId: accountId,
                 role: "owner",
             });
             for (const target of targets) {
-                await deps.membership!.add({
+                await dependencies.membership!.add({
                     roomId: room.id,
                     actorAccountId: accountId,
                     userAccountId: target.accountId,
@@ -314,7 +316,7 @@ export function createRoomListHandler(deps: MessagesRoutesDeps) {
             return { room, created: true };
         };
         const result =
-            isDm && primaryTarget
+            isDirectMessage && primaryTarget
                 ? await serializeDirectRoomCreation(
                       accountId,
                       primaryTarget.accountId,
@@ -322,7 +324,7 @@ export function createRoomListHandler(deps: MessagesRoutesDeps) {
                   )
                 : await createRoomWithMembers();
         const { room } = result;
-        if (isDm && primaryTarget) {
+        if (isDirectMessage && primaryTarget) {
             await messagesStore.approvePendingRequestsBetween(
                 accountId,
                 primaryTarget.accountId,

@@ -5,8 +5,8 @@ import {
     registerLimitedAuthPathAllowance,
     type GatewayBootstrapContext,
 } from "../../shared.js";
-import type { DbExecutor } from "../../db/reuse/db-executor.js";
-import { DbTfaStore } from "../reuse/tfa-store.js";
+import type { DatabaseExecutor } from "../../db/reuse/db-executor.js";
+import { DatabaseTfaStore } from "../reuse/tfa-store.js";
 import { CoreTfaGateway } from "../gateway.js";
 import { createTfaRoutes } from "./tfa-routes.js";
 import { createTfaAdapterAdminRoutes } from "./adapter-admin-routes.js";
@@ -28,9 +28,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         import.meta.url,
         "../manifest.json",
     );
-    const dbExecutor = ctx.capabilities.require<DbExecutor>("db:executor");
+    const databaseExecutor =
+        ctx.capabilities.require<DatabaseExecutor>("db:executor");
 
-    const store = new DbTfaStore(dbExecutor);
+    const store = new DatabaseTfaStore(databaseExecutor);
     await store.ensureSchema();
 
     const dispatchNotification =
@@ -86,14 +87,14 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         required: false,
         hasAdapters: true,
     });
-    const gatewayUiDir = path.resolve(
+    const gatewayUiDirectory = path.resolve(
         process.cwd(),
         "src",
         "gateways",
         "tfa",
         "ui",
     );
-    ctx.uiRegistry?.registerStaticDir("tfa", gatewayUiDir);
+    ctx.uiRegistry?.registerStaticDirectory("tfa", gatewayUiDirectory);
     const adapterLanguageResources = gateway
         .listAdapters()
         .map((adapter) => adapter.stringsBaseUrl)
@@ -128,15 +129,15 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         }
         return false;
     });
-    const adapterDirs = await readdir(tfaAdaptersRoot, {
+    const adapterDirectories = await readdir(tfaAdaptersRoot, {
         withFileTypes: true,
     }).catch(() => []);
-    for (const adapterDir of adapterDirs) {
-        if (!adapterDir.isDirectory()) continue;
-        ctx.uiRegistry?.registerAdapterStaticDir(
+    for (const adapterDirectory of adapterDirectories) {
+        if (!adapterDirectory.isDirectory()) continue;
+        ctx.uiRegistry?.registerAdapterStaticDirectory(
             "tfa",
-            adapterDir.name,
-            path.join(tfaAdaptersRoot, adapterDir.name),
+            adapterDirectory.name,
+            path.join(tfaAdaptersRoot, adapterDirectory.name),
         );
     }
     const isGatewayEnabled = () =>
@@ -308,7 +309,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                     return { sessionResult: tfaRequiredResult };
                 }
                 if (userStatus.requiresSetup) {
-                    const issueAccessTokenFn = ctx.capabilities.get<
+                    const issueAccessTokenCallback = ctx.capabilities.get<
                         (
                             subject: string,
                             role:
@@ -321,7 +322,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                             options?: Record<string, unknown>,
                         ) => string
                     >("auth:issueAccessToken");
-                    if (!issueAccessTokenFn) {
+                    if (!issueAccessTokenCallback) {
                         const unavailableResult = {
                             outcome: "tfa_unavailable",
                         };
@@ -332,7 +333,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                         typeof currentSessionResult.ttlSeconds === "number"
                             ? currentSessionResult.ttlSeconds
                             : null;
-                    const setupToken = issueAccessTokenFn(
+                    const setupToken = issueAccessTokenCallback(
                         accountId,
                         (currentSessionResult.role as
                             | "user"

@@ -425,40 +425,40 @@ test("register rejects non-lowercase usernames and login is case-insensitive", a
     const accountStore = new VolatileLocalAccountStore();
     const gateway = makeGateway(accountStore);
     const route = createAuthRoutes(gateway, accountStore);
-    let regStatus = 0;
-    let regPayload = "";
+    let registryStatus = 0;
+    let registryPayload = "";
 
     await route(
         requestWithBody("POST", { username: "Alice", password: "pw123" }),
         {
             writeHead(code: number) {
-                regStatus = code;
+                registryStatus = code;
             },
             end(text: string) {
-                regPayload = text;
+                registryPayload = text;
             },
         } as any,
         new URL("http://localhost/api/v1/auth/register"),
     );
 
-    assert.equal(regStatus, 400);
-    assert.match(regPayload, /"username_not_lowercase"/);
+    assert.equal(registryStatus, 400);
+    assert.match(registryPayload, /"username_not_lowercase"/);
 
     await route(
         requestWithBody("POST", { username: "alice", password: "pw123" }),
         {
             writeHead(code: number) {
-                regStatus = code;
+                registryStatus = code;
             },
             end(text: string) {
-                regPayload = text;
+                registryPayload = text;
             },
         } as any,
         new URL("http://localhost/api/v1/auth/register"),
     );
 
-    assert.equal(regStatus, 201);
-    assert.match(regPayload, /"username":"alice"/);
+    assert.equal(registryStatus, 201);
+    assert.match(registryPayload, /"username":"alice"/);
 
     let loginStatus = 0;
     await route(

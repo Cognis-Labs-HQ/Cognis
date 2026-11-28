@@ -11,11 +11,13 @@ import { issueAccessToken } from "../access-tokens.js";
 
 export type HttpIncomingMessage = import("node:http").IncomingMessage;
 
-export type InMemoryDb = {
+export type InMemoryDatabase = {
     execute: (sql: string, params?: unknown[]) => Promise<{ rows: unknown[] }>;
     executeCommand: () => Promise<{ rows: unknown[] }>;
     ensureTable: () => Promise<void>;
-    transaction: <T>(cb: (db: InMemoryDb) => Promise<T>) => Promise<T>;
+    transaction: <T>(
+        callback: (db: InMemoryDatabase) => Promise<T>,
+    ) => Promise<T>;
 };
 
 export type TestResponse = {
@@ -29,16 +31,19 @@ export type TestResponse = {
     readonly writableEnded: boolean;
 };
 
-export function makeInMemoryDb(): InMemoryDb {
+function makeInMemoryDatabase(): InMemoryDatabase {
     return {
-        execute: async (_sql: string, _params?: unknown[]) => ({ rows: [] }),
+        execute: async (_sql: string, _parameters?: unknown[]) => ({
+            rows: [],
+        }),
         executeCommand: async () => ({ rows: [] }),
         ensureTable: async () => {},
         transaction: async <T>(
-            cb: (db: InMemoryDb) => Promise<T>,
-        ): Promise<T> => cb(makeInMemoryDb()),
+            callback: (db: InMemoryDatabase) => Promise<T>,
+        ): Promise<T> => callback(makeInMemoryDatabase()),
     };
 }
+export { makeInMemoryDatabase };
 
 export function makeJsonRequest(
     method: string,
@@ -70,7 +75,7 @@ export async function dispatchRoute(
         );
         if (handled) break;
     }
-    return { handled, res };
+    return { handled, res: res };
 }
 
 export function makeResponse(): TestResponse {

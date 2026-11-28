@@ -6,7 +6,7 @@ The public interfaces and operational rules of PostgreSQL.
 
 ### Architecture
 
-`PostgresDbGateway` in `src/adapters/db/postgres/index.ts` owns a `pg.Pool`. Ordinary queries use the pool directly. Transactions reserve one client for `BEGIN`, all callback statements, and `COMMIT` or `ROLLBACK`, then release it. The adapter registers pool drainage with the `system:lifecycle` ctx capability so termination stops accepting work before closing pooled connections.
+`PostgresDatabaseGateway` in `src/adapters/db/postgres/index.ts` owns a `pg.Pool`. Ordinary queries use the pool directly. Transactions reserve one client for `BEGIN`, all callback statements, and `COMMIT` or `ROLLBACK`, then release it. The adapter registers pool drainage with the `system:lifecycle` ctx capability so termination stops accepting work before closing pooled connections.
 
 Schema self-healing preserves foreign-key clauses when adding missing columns and reports index or column repair failures instead of silently ignoring them.
 
@@ -46,7 +46,7 @@ PostgreSQL uses numbered `$N` placeholders rather than `?`. All SQL passed to th
 INSERT INTO accounts (id, email) VALUES ($1, $2)
 ```
 
-Use `DbDialectHelper.upsert()` and `DbDialectHelper.insertIgnore()` from `src/gateways/db/bootstrap.ts` to generate dialect-appropriate statements rather than writing raw `INSERT … ON CONFLICT DO UPDATE`.
+Use `DatabaseDialectHelper.upsert()` and `DatabaseDialectHelper.insertIgnore()` from `src/gateways/db/bootstrap.ts` to generate dialect-appropriate statements rather than writing raw `INSERT … ON CONFLICT DO UPDATE`.
 
 ### Unique-key reconciliation
 

@@ -1,9 +1,9 @@
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import { parseLanguageList } from "./rows.js";
 import type { StudyPreferencesRow } from "./types.js";
 
 export async function getStudyPreferences(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     accountId: string,
 ): Promise<StudyPreferencesRow> {
     const result = await db.executeCommand({
@@ -35,7 +35,7 @@ export async function getStudyPreferences(
 }
 
 export async function saveStudyPreferences(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     accountId: string,
     learningLanguages: string[],
     teachingLanguages: string[],

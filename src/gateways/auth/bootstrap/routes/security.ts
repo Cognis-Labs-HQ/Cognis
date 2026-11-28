@@ -11,7 +11,10 @@ import {
     defaultPasswordPolicy,
     parsePasswordPolicy,
 } from "../../password-policy.js";
-import type { AuthGatewayRouteHandler, AuthRouteLogMeta } from "./shared.js";
+import type {
+    AuthGatewayRouteHandler,
+    AuthRouteLogMetadata,
+} from "./shared.js";
 import {
     LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY,
     resolveLoginSessionTimeoutPreference,
@@ -81,7 +84,7 @@ export function createSecurityRoutes({
         req,
         res,
         url,
-        logMeta: AuthRouteLogMeta,
+        logMetadata: AuthRouteLogMetadata,
     ): Promise<boolean> => {
         if (
             url.pathname === "/api/v1/auth/security-sections" &&
@@ -89,7 +92,7 @@ export function createSecurityRoutes({
         ) {
             if (!requireAuth(req, res, "user")) return true;
             log?.("debug", "Listed auth security sections.", {
-                ...logMeta,
+                ...logMetadata,
                 count: securitySubsections.length,
             });
             res.writeHead(200, { "content-type": "application/json" });
@@ -125,7 +128,7 @@ export function createSecurityRoutes({
                               "warn",
                               "Registration UI composition failed; serving the base registration configuration.",
                               {
-                                  ...logMeta,
+                                  ...logMetadata,
                                   error:
                                       error instanceof Error
                                           ? error.message
@@ -145,7 +148,7 @@ export function createSecurityRoutes({
                     : [];
             });
             log?.("debug", "Read registration config.", {
-                ...logMeta,
+                ...logMetadata,
                 registrationsEnabled: enabled,
                 userValidationMode,
             });
@@ -182,7 +185,7 @@ export function createSecurityRoutes({
                     }
                 }
             }
-            log?.("debug", "Served password policy.", logMeta);
+            log?.("debug", "Served password policy.", logMetadata);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: policy }));
             return true;
@@ -266,7 +269,7 @@ export function createSecurityRoutes({
                         maximumMinutes,
                     );
                 log?.("info", "Reset login session timeout preference.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: claims.sub,
                     revokedSessionCount,
                 });
@@ -317,7 +320,7 @@ export function createSecurityRoutes({
                     timeoutMinutes,
                 );
             log?.("info", "Updated login session timeout preference.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
                 timeoutMinutes,
                 revokedSessionCount,
@@ -349,7 +352,7 @@ export function createSecurityRoutes({
                 );
             }
             log?.("info", "Updated password policy.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
             });
             res.writeHead(200, { "content-type": "application/json" });

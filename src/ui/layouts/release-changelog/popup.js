@@ -16,7 +16,7 @@
  */
 import { apiFetch } from "../../reuse/api-client.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
-import { linkShortCommitRefs } from "../../reuse/commit-links.js";
+import { linkShortCommitReferences } from "../../reuse/commit-links.js";
 import { renderMarkdown } from "../../reuse/markdown-renderer.js";
 import { readPreferredLanguages } from "../../reuse/i18n.js";
 import { openPopup } from "../../reuse/popup.js";
@@ -48,9 +48,9 @@ function buildReleaseNotesBody(i18n, releaseVersion, releaseEntries) {
                       .map((changeHeading, index) => {
                           const detail = String(entry.details?.[index] ?? "");
                           const renderedDetail = detail
-                              ? `<div class="popup-summary-detail">${renderMarkdown(linkShortCommitRefs(detail))}</div>`
+                              ? `<div class="popup-summary-detail">${renderMarkdown(linkShortCommitReferences(detail))}</div>`
                               : "";
-                          return `<li><div class="popup-summary-heading">${renderMarkdown(linkShortCommitRefs(changeHeading))}</div>${renderedDetail}</li>`;
+                          return `<li><div class="popup-summary-heading">${renderMarkdown(linkShortCommitReferences(changeHeading))}</div>${renderedDetail}</li>`;
                       })
                       .join("")
                 : "";
@@ -87,18 +87,18 @@ export async function maybeShowReleaseChangelogPopup(i18n, { signal } = {}) {
         if (localStorage.getItem("cognis_account") !== accountId)
             throw new DOMException("account_changed", "AbortError");
     };
-    const prefs = (await loadUiPreferences()) ?? {};
+    const preferences = (await loadUiPreferences()) ?? {};
     active();
-    if (prefs.releaseChangelogShow === false) return;
+    if (preferences.releaseChangelogShow === false) return;
     const changelogState = await loadReleaseChangelogState();
     active();
     if (uiCtx.capabilities.get("session:isGuest")?.() === true) return;
 
     let changelogPayload;
     try {
-        const langs = readPreferredLanguages().join(",");
+        const languages = readPreferredLanguages().join(",");
         const response = await apiFetch(
-            `/api/v1/system/release-changelog?langs=${encodeURIComponent(langs)}`,
+            `/api/v1/system/release-changelog?langs=${encodeURIComponent(languages)}`,
             { signal },
         );
         if (!response.ok) return;

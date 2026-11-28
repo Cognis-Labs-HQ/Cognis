@@ -8,7 +8,7 @@ import { showToast } from "./toast.js";
 
 /** Render a thumbnail with an optional removal action. Data attributes belong to the caller. */
 export function renderImagePreview({
-    src = "",
+    src: src = "",
     alt = "",
     removeId,
     removeLabel,
@@ -44,7 +44,11 @@ export function bindImagePreviews(root, { signal }) {
             try {
                 const preview = uiCtx.capabilities.get("ui:imagePreview");
                 if (!preview) throw new Error("image_preview_unavailable");
-                await preview.open({ src, alt: image.alt, signal });
+                await preview.open({
+                    src: src,
+                    alt: image.alt,
+                    signal,
+                });
                 if (button.isConnected && !signal?.aborted)
                     button.focus({ preventScroll: true });
             } catch {
@@ -61,7 +65,7 @@ export function bindImagePreviews(root, { signal }) {
     );
 }
 
-async function openImagePreview({ src, alt, signal }) {
+async function openImagePreview({ src: src, alt, signal }) {
     const i18n = await createI18n();
     if (signal.aborted) return;
     let dismissPopup;

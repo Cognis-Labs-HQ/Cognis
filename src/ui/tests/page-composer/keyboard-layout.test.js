@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { bindLayoutKeyboard } from "../../reuse/page-composer/keyboard-layout.js";
+import { applyGridSwap } from "../../reuse/page-composer/swap-model.js";
 import { resolveElementGridSize } from "../../reuse/page-composer/grid-sizing.js";
 
 function setup(testContext, maximum) {
@@ -20,8 +21,9 @@ function setup(testContext, maximum) {
     let allowed = true;
     let swap = null;
     const state = {
-        gridCols: 6,
+        gridColumns: 6,
         gridRows: 6,
+        layout: { placements: [placement], hidden: [] },
         gridSection: {
             querySelector: () => ({
                 focus: () => {
@@ -39,6 +41,8 @@ function setup(testContext, maximum) {
         }),
         canPlace: () => allowed,
         findSwapCandidate: () => swap,
+        commitSwap: (sourceId, targetId) =>
+            applyGridSwap(state, sourceId, targetId),
         render: () => {
             renders++;
         },
@@ -63,6 +67,7 @@ function setup(testContext, maximum) {
         },
         setSwap: (value) => {
             swap = value;
+            state.layout.placements = value ? [placement, value] : [placement];
         },
     };
 }
@@ -98,4 +103,24 @@ test("keyboard resize honors bounds and browser shortcut modifiers", (context) =
     assert.equal(fixture.renders(), 0);
     fixture.press("ArrowDown", { shiftKey: true });
     assert.equal(fixture.placement.h, 3);
+});
+
+test("keyboard leap-frogging revalidates the complete snapped destination", (context) => {
+    const fixture = setup(context);
+    fixture.placement.w = 4;
+    fixture.placement.h = 3;
+    fixture.state.gridColumns = 8;
+    fixture.setAllowed(false);
+    fixture.setSwap({ id: "other", col: 4, row: 0, w: 2, h: 2 });
+    fixture.state.layout.placements.push({
+        id: "blocker",
+        col: 4,
+        row: 2,
+        w: 2,
+        h: 2,
+    });
+    const before = structuredClone(fixture.state.layout);
+    fixture.press("ArrowRight");
+    assert.deepEqual(fixture.state.layout, before);
+    assert.equal(fixture.renders(), 0);
 });

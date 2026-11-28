@@ -8,14 +8,14 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const exportCache = new Map();
 
 function walk(dir) {
-    const out = [];
-    for (const e of readdirSync(dir)) {
-        const p = join(dir, e);
-        const s = statSync(p);
-        if (s.isDirectory()) out.push(...walk(p));
-        else out.push(p);
+    const discoveredFiles = [];
+    for (const directoryEntry of readdirSync(dir)) {
+        const entryPath = join(dir, directoryEntry);
+        const entryStat = statSync(entryPath);
+        if (entryStat.isDirectory()) discoveredFiles.push(...walk(entryPath));
+        else discoveredFiles.push(entryPath);
     }
-    return out;
+    return discoveredFiles;
 }
 
 function parseNamedSpecifiers(specifierList) {
@@ -99,9 +99,11 @@ function extractDefinedCssClasses() {
             const stripped = src
                 .replace(/\/\*[\s\S]*?\*\//g, "")
                 .replace(/@import\s+url\([^)]*\)[^;]*;/g, "");
-            for (const m of stripped.matchAll(/\.([a-zA-Z][a-zA-Z0-9_-]*)/g)) {
-                const cls = m[1];
-                if (!map.has(cls)) map.set(cls, file);
+            for (const match of stripped.matchAll(
+                /\.([a-zA-Z][a-zA-Z0-9_-]*)/g,
+            )) {
+                const className = match[1];
+                if (!map.has(className)) map.set(className, file);
             }
         }
     }
@@ -118,38 +120,46 @@ const CSS_IDENT_CAPTURE = "([a-zA-Z][a-zA-Z0-9_-]*[a-zA-Z0-9_]|[a-zA-Z])";
 function extractAppliedCssClasses(content) {
     const classes = new Set();
 
-    const addTokens = (str) => {
-        for (const tok of str.trim().split(/\s+/)) {
-            if (CSS_IDENT.test(tok)) classes.add(tok);
+    const addTokens = (text) => {
+        for (const token of text.trim().split(/\s+/)) {
+            if (CSS_IDENT.test(token)) classes.add(token);
         }
     };
 
     // Stop at `$` so that template-literal interpolations (${...}) are never read
     // as part of the class attribute value — e.g. class="tab ${active}" → only "tab".
-    for (const m of content.matchAll(/\bclass="([^"$]*)/g)) addTokens(m[1]);
-    for (const m of content.matchAll(/\bclass='([^'$]*)/g)) addTokens(m[1]);
+    for (const match of content.matchAll(/\bclass="([^"$]*)/g))
+        addTokens(match[1]);
+    for (const match of content.matchAll(/\bclass='([^'$]*)/g))
+        addTokens(match[1]);
 
     const identRe = new RegExp(`['"]${CSS_IDENT_CAPTURE}['"]`, "g");
-    for (const m of content.matchAll(/classList\.(?:add|remove)\([^)]+\)/g)) {
-        for (const arg of m[0].matchAll(identRe)) classes.add(arg[1]);
+    for (const match of content.matchAll(
+        /classList\.(?:add|remove)\([^)]+\)/g,
+    )) {
+        for (const arg of match[0].matchAll(identRe)) classes.add(arg[1]);
     }
-    for (const m of content.matchAll(
+    for (const match of content.matchAll(
         new RegExp(
             `classList\\.(?:toggle|contains)\\(\\s*['"]${CSS_IDENT_CAPTURE}['"]`,
             "g",
         ),
     )) {
-        classes.add(m[1]);
+        classes.add(match[1]);
     }
 
-    for (const m of content.matchAll(/\bclassName\s*[=:]\s*['"]([^'"]+)['"]/g))
-        addTokens(m[1]);
+    for (const match of content.matchAll(
+        /\bclassName\s*[=:]\s*['"]([^'"]+)['"]/g,
+    ))
+        addTokens(match[1]);
 
-    for (const m of content.matchAll(
+    for (const match of content.matchAll(
         /querySelector(?:All)?\(\s*['"]([^'"]+)['"]\s*\)/g,
     )) {
-        for (const cm of m[1].matchAll(/\.([a-zA-Z][a-zA-Z0-9_-]*)/g))
-            classes.add(cm[1]);
+        for (const classMatch of match[1].matchAll(
+            /\.([a-zA-Z][a-zA-Z0-9_-]*)/g,
+        ))
+            classes.add(classMatch[1]);
     }
 
     return classes;
@@ -194,18 +204,18 @@ test("no missing CSS definitions (class applied in scripts or templates but not 
         for (const file of walk(root)) {
             if (!file.endsWith(".js") && !file.endsWith(".html")) continue;
             const content = readFileSync(file, "utf8");
-            for (const cls of extractAppliedCssClasses(content))
-                appliedClasses.add(cls);
+            for (const className of extractAppliedCssClasses(content))
+                appliedClasses.add(className);
         }
     }
 
     const missing = [];
-    for (const cls of appliedClasses) {
-        if (DYNAMIC_CLASS_NAMES.has(cls)) continue;
-        if (SELECTOR_HOOK_CLASSES.has(cls)) continue;
-        if (!cssDefinitions.has(cls)) {
+    for (const className of appliedClasses) {
+        if (DYNAMIC_CLASS_NAMES.has(className)) continue;
+        if (SELECTOR_HOOK_CLASSES.has(className)) continue;
+        if (!cssDefinitions.has(className)) {
             missing.push(
-                `  .${cls}  (applied in scripts/templates but not defined in any stylesheet)`,
+                `  .${className}  (applied in scripts/templates but not defined in any stylesheet)`,
             );
         }
     }
@@ -229,26 +239,26 @@ test("no missing named imports from relative modules", () => {
         for (const file of walk(root)) {
             if (!file.endsWith(".js")) continue;
             const src = readFileSync(file, "utf8");
-            const fileDir = dirname(file);
+            const fileDirectory = dirname(file);
 
-            for (const m of src.matchAll(
+            for (const match of src.matchAll(
                 /^import\s*\{([^}]+)\}\s*from\s*['"](\.[^'"]+)['"]/gm,
             )) {
-                const names = m[1]
+                const names = match[1]
                     .split(",")
-                    .map((n) =>
-                        n
+                    .map((className) =>
+                        className
                             .trim()
                             .replace(/\s+as\s+\w+$/, "")
                             .trim(),
                     )
                     .filter(Boolean);
-                const relPath = m[2];
-                const targetPath = resolve(fileDir, relPath);
+                const relativePathPath = match[2];
+                const targetPath = resolve(fileDirectory, relativePathPath);
 
                 if (!existsSync(targetPath)) {
                     missing.push(
-                        `  Module not found: ${relPath}  (imported from ${file})`,
+                        `  Module not found: ${relativePathPath}  (imported from ${file})`,
                     );
                     continue;
                 }
@@ -258,7 +268,7 @@ test("no missing named imports from relative modules", () => {
                 for (const name of names) {
                     if (!exported.has(name)) {
                         missing.push(
-                            `  '${name}' is not exported by ${relPath}  (imported in ${file})`,
+                            `  '${name}' is not exported by ${relativePathPath}  (imported in ${file})`,
                         );
                     }
                 }

@@ -115,7 +115,9 @@ export function createKeyringRoutes(input: {
         if (req.method === "PUT") {
             let body: Record<string, unknown>;
             try {
-                body = await readJson(req, { maxBytes: maxVaultBytes + 1024 });
+                body = await readJson(req, {
+                    maxBytes: maxVaultBytes + 1024,
+                });
             } catch (error) {
                 if (
                     error instanceof Error &&

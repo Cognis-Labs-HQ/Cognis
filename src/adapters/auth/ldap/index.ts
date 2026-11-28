@@ -183,11 +183,11 @@ function splitList(value: unknown): string[] {
     if (Array.isArray(value))
         return value
             .map(String)
-            .map((v) => v.trim())
+            .map((mappingValue) => mappingValue.trim())
             .filter(Boolean);
     return String(value ?? "")
         .split(",")
-        .map((v) => v.trim())
+        .map((mappingValue) => mappingValue.trim())
         .filter(Boolean);
 }
 
@@ -195,8 +195,11 @@ function parseRoleMappings(value: unknown): Record<string, string> {
     if (value && typeof value === "object" && !Array.isArray(value)) {
         return Object.fromEntries(
             Object.entries(value)
-                .map(([k, v]) => [k.trim(), String(v).trim()])
-                .filter(([k, v]) => k && v),
+                .map(([key, mappingValue]) => [
+                    key.trim(),
+                    String(mappingValue).trim(),
+                ])
+                .filter(([key, mappingValue]) => key && mappingValue),
         );
     }
     const mappings: Record<string, string> = {};
@@ -305,7 +308,7 @@ class LdapAuthAdapter implements AuthProviderAdapter {
     private client: LdapClient = new StandardLdapClient();
     private adminGroups = new Set(["cognis-admins"]);
     private writebackEnabled = false;
-    private writebackBaseDn = "";
+    private writebackBaseDistinguishedName = "";
     private writebackUserAttribute = "uid";
     private options: LdapRuntimeOptions = {
         serverUrl: "",
@@ -416,7 +419,7 @@ class LdapAuthAdapter implements AuthProviderAdapter {
         }
         for (const role of ["admin", "moderator", "teacher", "user"])
             if (mappedRoles.includes(role)) return role;
-        if (groups.some((g) => this.adminGroups.has(g))) return "admin";
+        if (groups.some((group) => this.adminGroups.has(group))) return "admin";
         return Object.values(options.roleMappings).includes("user")
             ? null
             : "user";
@@ -570,7 +573,7 @@ class LdapAuthAdapter implements AuthProviderAdapter {
             ...this.options,
             ...Object.fromEntries(
                 Object.entries(config).filter(
-                    ([, v]) => typeof v !== "undefined",
+                    ([, value]) => typeof value !== "undefined",
                 ),
             ),
         } as LdapRuntimeOptions;
@@ -588,7 +591,7 @@ class LdapAuthAdapter implements AuthProviderAdapter {
         if (typeof config.adminGroups === "string" && config.adminGroups)
             this.adminGroups = new Set(splitList(config.adminGroups));
         this.writebackEnabled = config.writebackEnabled === true;
-        this.writebackBaseDn = String(
+        this.writebackBaseDistinguishedName = String(
             config.writebackBaseDn ?? this.options.baseDn ?? "",
         ).trim();
         this.writebackUserAttribute =
@@ -717,7 +720,7 @@ class LdapAuthAdapter implements AuthProviderAdapter {
                 reason: "gateway.auth.security.ldap.writeback_disabled",
             };
         if (
-            !this.writebackBaseDn &&
+            !this.writebackBaseDistinguishedName &&
             !configuredServers.some((server) => server.writebackBaseDn)
         )
             return {
@@ -771,7 +774,9 @@ class LdapAuthAdapter implements AuthProviderAdapter {
             return { updated: false, message: support.reason };
         const options = {
             ...selectedOptions,
-            baseDn: selectedOptions.writebackBaseDn || this.writebackBaseDn,
+            baseDn:
+                selectedOptions.writebackBaseDn ||
+                this.writebackBaseDistinguishedName,
             userAttribute:
                 selectedOptions.writebackUserAttribute ||
                 this.writebackUserAttribute,

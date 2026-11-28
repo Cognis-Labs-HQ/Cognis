@@ -67,7 +67,10 @@ async function collectCommandInput(
         (definition.bodyFields ?? []).some((field) => field.required);
     if (args.length === 0 && hasRequiredWizardInput) {
         const fields = [
-            ...params.map((name): WizardField => ({ name, required: true })),
+            ...params.map((name): WizardField => ({
+                name,
+                required: true,
+            })),
             ...(definition.queryFields ?? []),
             ...(definition.bodyFields ?? []),
         ];
@@ -104,17 +107,17 @@ async function collectCommandInput(
     const pathValues = Object.fromEntries(
         params.map((name, index) => [name, args[index]]),
     );
-    const missingParam = params.find((name) => !pathValues[name]);
-    if (missingParam)
-        throw new Error(`Missing required argument: ${missingParam}`);
-    const payloadArg = args[params.length];
+    const missingParameter = params.find((name) => !pathValues[name]);
+    if (missingParameter)
+        throw new Error(`Missing required argument: ${missingParameter}`);
+    const payloadArgument = args[params.length];
     const body =
         definition.method === "GET" || definition.method === "DELETE"
             ? {}
-            : parseJsonObject(payloadArg);
+            : parseJsonObject(payloadArgument);
     const query =
         definition.method === "GET" || definition.method === "DELETE"
-            ? parseJsonObject(payloadArg)
+            ? parseJsonObject(payloadArgument)
             : {};
     return { pathValues, query, body };
 }
@@ -132,10 +135,10 @@ export function registerHttpCommand(
         definition.method === "GET" || definition.method === "DELETE"
             ? "[query-json]"
             : "[body-json]";
-    const usage = `cognisctl ${definition.name}${params.map((param) => ` <${param}>`).join("")}${definition.bodyFields || definition.queryFields ? ` ${payloadUsage}` : ""}`;
+    const usage = `cognisctl ${definition.name}${params.map((parameter) => ` <${parameter}>`).join("")}${definition.bodyFields || definition.queryFields ? ` ${payloadUsage}` : ""}`;
     registerCommand(
         definition.name,
-        async ({ args, apiBaseUrl, getApiToken }) => {
+        async ({ args: args, apiBaseUrl, getApiToken }) => {
             const inputValues = await collectCommandInput(definition, args);
             const path = appendQuery(
                 buildPath(definition.path, inputValues.pathValues),

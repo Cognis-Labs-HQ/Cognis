@@ -23,7 +23,7 @@ export function createAdapterAdminRoutes(
         url: URL,
     ): Promise<boolean> => {
         const claims = getAuthClaims(req);
-        const logMeta = {
+        const logMetadata = {
             component: "auth-gateway",
             method: req.method ?? "GET",
             path: url.pathname,
@@ -32,7 +32,7 @@ export function createAdapterAdminRoutes(
         if (url.pathname === base && req.method === "GET") {
             if (!requireAuth(req, res, "admin")) return true;
             log?.("debug", "Listed auth adapters.", {
-                ...logMeta,
+                ...logMetadata,
                 count: authGateway.listAdapters().length,
             });
             res.writeHead(200, { "content-type": "application/json" });
@@ -66,11 +66,13 @@ export function createAdapterAdminRoutes(
                         "warn",
                         "Auth adapter config lookup failed because adapter was not found.",
                         {
-                            ...logMeta,
+                            ...logMetadata,
                             adapterId,
                         },
                     );
-                    res.writeHead(404, { "content-type": "application/json" });
+                    res.writeHead(404, {
+                        "content-type": "application/json",
+                    });
                     res.end(
                         JSON.stringify({
                             error: {
@@ -92,7 +94,7 @@ export function createAdapterAdminRoutes(
                     .filter((field) => field.required)
                     .map((field) => field.key);
                 log?.("debug", "Read auth adapter config.", {
-                    ...logMeta,
+                    ...logMetadata,
                     adapterId,
                     requiredFieldCount: requiredFields.length,
                 });
@@ -120,11 +122,13 @@ export function createAdapterAdminRoutes(
                         "warn",
                         "Auth adapter config update failed because adapter was not found.",
                         {
-                            ...logMeta,
+                            ...logMetadata,
                             adapterId,
                         },
                     );
-                    res.writeHead(404, { "content-type": "application/json" });
+                    res.writeHead(404, {
+                        "content-type": "application/json",
+                    });
                     res.end(
                         JSON.stringify({
                             error: {
@@ -149,7 +153,7 @@ export function createAdapterAdminRoutes(
                     body as Record<string, unknown>,
                 );
                 log?.("info", "Saved auth adapter config.", {
-                    ...logMeta,
+                    ...logMetadata,
                     adapterId,
                     fieldCount: Object.keys(body as Record<string, unknown>)
                         .length,
@@ -197,7 +201,7 @@ export function createAdapterAdminRoutes(
                         ? error.fieldErrors
                         : undefined;
                 log?.("error", "Auth adapter configuration test failed.", {
-                    ...logMeta,
+                    ...logMetadata,
                     adapterId,
                     operation: "test_adapter_configuration",
                     error:
@@ -238,7 +242,7 @@ export function createAdapterAdminRoutes(
                     "warn",
                     "Blocked attempt to disable locked auth adapter.",
                     {
-                        ...logMeta,
+                        ...logMetadata,
                         adapterId,
                     },
                 );
@@ -259,7 +263,7 @@ export function createAdapterAdminRoutes(
                     "warn",
                     "Auth adapter toggle failed because adapter was not found.",
                     {
-                        ...logMeta,
+                        ...logMetadata,
                         adapterId,
                         action,
                     },
@@ -304,7 +308,7 @@ export function createAdapterAdminRoutes(
                 });
             }
             log?.("info", `Auth adapter ${action}d.`, {
-                ...logMeta,
+                ...logMetadata,
                 adapterId,
             });
             res.writeHead(200, { "content-type": "application/json" });

@@ -14,7 +14,7 @@ import { UIRegistry } from "../../../api/reuse/ui-registry.js";
 import { issueAccessToken } from "../../auth/access-tokens.js";
 import { bootstrap } from "../bootstrap.js";
 import { bootstrap as bootstrapAuth } from "../../auth/bootstrap/index.js";
-import { DbTfaStore } from "../reuse/tfa-store.js";
+import { DatabaseTfaStore } from "../reuse/tfa-store.js";
 import { InMemoryTestExecutor } from "../../db/tests/in-memory-test-executor.js";
 
 const tfaRoutesSource = readFileSync(
@@ -75,12 +75,12 @@ async function dispatchRoute(
             break;
         }
     }
-    return { handled, res };
+    return { handled, res: res };
 }
 
 test("tfa catalog restores adapter state and publishes authenticated lifecycle controls", async () => {
     const db = new InMemoryTestExecutor();
-    const store = new DbTfaStore(db);
+    const store = new DatabaseTfaStore(db);
     await store.ensureSchema();
     await store.saveAdapterConfig("totp", false, {});
 
@@ -187,7 +187,7 @@ test("tfa catalog restores adapter state and publishes authenticated lifecycle c
     }
 
     assert.equal(
-        uiRegistry.getStaticDir("tfa"),
+        uiRegistry.getStaticDirectory("tfa"),
         path.resolve(process.cwd(), "src", "gateways", "tfa", "ui"),
     );
     assert.deepEqual(

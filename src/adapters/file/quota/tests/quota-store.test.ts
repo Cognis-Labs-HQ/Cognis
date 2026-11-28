@@ -1,11 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { DbFileQuotaStore } from "../index.js";
+import { DatabaseFileQuotaStore } from "../index.js";
 import { InMemoryTestExecutor } from "../../../../gateways/db/tests/in-memory-test-executor.js";
 
-function buildStore(): DbFileQuotaStore {
+function buildStore(): DatabaseFileQuotaStore {
     const executor = new InMemoryTestExecutor();
-    return new DbFileQuotaStore(() => executor);
+    return new DatabaseFileQuotaStore(() => executor);
 }
 
 test("getGlobalDefault falls back to the built-in default when unset", async () => {
@@ -19,7 +19,12 @@ test("setNamespaceDefault and listNamespaceDefaults round-trip", async () => {
     await store.setNamespaceDefault("profile", 2000);
     const defaults = await store.listNamespaceDefaults();
     assert.deepEqual(
-        defaults.map((d) => [d.namespaceId, d.quotaBytes]).sort(),
+        defaults
+            .map((quotaDefault) => [
+                quotaDefault.namespaceId,
+                quotaDefault.quotaBytes,
+            ])
+            .sort(),
         [
             ["profile", 2000],
             ["user", 1000],

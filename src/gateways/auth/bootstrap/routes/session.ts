@@ -24,7 +24,7 @@ import { CTX_CAPABILITY, type Ctx } from "@cognis/core";
 import type { GatewayBootstrapContext } from "../../../shared.js";
 import type {
     AuthGatewayRouteHandler,
-    AuthRouteLogMeta,
+    AuthRouteLogMetadata,
     LoginFlowSessionResult,
 } from "./shared.js";
 
@@ -234,7 +234,7 @@ export function createSessionRoutes({
         req: import("node:http").IncomingMessage,
         res: import("node:http").ServerResponse,
         sessionResult: LoginFlowSessionResult,
-        logMeta: AuthRouteLogMeta,
+        logMetadata: AuthRouteLogMetadata,
         responseCookies: string[] = [],
     ): true {
         const appendResponseCookie = (cookie: string): string | string[] =>
@@ -242,7 +242,7 @@ export function createSessionRoutes({
         const outcome = sessionResult.outcome;
         if (outcome === "provider_unavailable") {
             log?.("warn", "Login failed: provider unavailable (flow).", {
-                ...logMeta,
+                ...logMetadata,
             });
             res.writeHead(503, { "content-type": "application/json" });
             res.end(
@@ -257,7 +257,7 @@ export function createSessionRoutes({
         }
         if (outcome === "invalid_credentials") {
             log?.("warn", "Login failed due to invalid credentials (flow).", {
-                ...logMeta,
+                ...logMetadata,
             });
             res.writeHead(401, { "content-type": "application/json" });
             res.end(
@@ -284,7 +284,7 @@ export function createSessionRoutes({
                   )
                 : null;
             log?.("info", "Held external login for account authorization.", {
-                ...logMeta,
+                ...logMetadata,
                 emailRequired: sessionResult.emailRequired === true,
             });
             res.writeHead(403, {
@@ -326,7 +326,7 @@ export function createSessionRoutes({
             log?.(
                 "warn",
                 "Login denied because configured TFA challenges are unavailable (flow).",
-                { ...logMeta },
+                { ...logMetadata },
             );
             res.writeHead(503, { "content-type": "application/json" });
             res.end(
@@ -342,7 +342,7 @@ export function createSessionRoutes({
         }
         if (outcome === "tfa_required") {
             log?.("info", "Login entered TFA challenge flow (flow).", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: sessionResult.accountId,
                 provider: sessionResult.provider,
                 role: sessionResult.role,
@@ -378,7 +378,7 @@ export function createSessionRoutes({
                 "info",
                 "Login succeeded with pending TFA setup gate (flow).",
                 {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: sessionResult.accountId,
                     provider: sessionResult.provider,
                     role: sessionResult.role,
@@ -420,7 +420,7 @@ export function createSessionRoutes({
                 "warn",
                 "Login denied for inactive account lifecycle state.",
                 {
-                    ...logMeta,
+                    ...logMetadata,
                     outcome,
                 },
             );
@@ -443,7 +443,7 @@ export function createSessionRoutes({
                     ? 0
                     : sessionResult.ttlSeconds;
             log?.("info", "Login succeeded (flow).", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: sessionResult.accountId,
                 provider: sessionResult.provider,
                 role: sessionResult.role,
@@ -479,7 +479,7 @@ export function createSessionRoutes({
             return true;
         }
         log?.("warn", "Login flow returned unknown outcome.", {
-            ...logMeta,
+            ...logMetadata,
             outcome,
         });
         res.writeHead(500, { "content-type": "application/json" });
@@ -498,7 +498,7 @@ export function createSessionRoutes({
         req,
         res,
         url,
-        logMeta: AuthRouteLogMeta,
+        logMetadata: AuthRouteLogMetadata,
     ): Promise<boolean> => {
         if (
             url.pathname === "/api/v1/auth/login-methods" &&
@@ -512,7 +512,7 @@ export function createSessionRoutes({
                       name: adapter.name,
                   }));
             log?.("debug", "Listed login methods.", {
-                ...logMeta,
+                ...logMetadata,
                 count: methods.length,
             });
             res.writeHead(200, { "content-type": "application/json" });
@@ -542,7 +542,7 @@ export function createSessionRoutes({
                       integrations: [],
                   };
             log?.("debug", "Resolved login UI flow configuration.", {
-                ...logMeta,
+                ...logMetadata,
                 methodCount: data.methods.length,
                 integrationCount: data.integrations.length,
             });
@@ -568,7 +568,7 @@ export function createSessionRoutes({
                 !method?.loginButton
             ) {
                 log?.("warn", "Rejected unavailable SSO login provider.", {
-                    ...logMeta,
+                    ...logMetadata,
                     providerId,
                 });
                 res.writeHead(422, { "content-type": "application/json" });
@@ -589,7 +589,7 @@ export function createSessionRoutes({
                 });
             } catch (error) {
                 log?.("error", "SSO authorization flow failed.", {
-                    ...logMeta,
+                    ...logMetadata,
                     providerId,
                     error:
                         error instanceof Error ? error.message : String(error),
@@ -611,7 +611,7 @@ export function createSessionRoutes({
             );
             if (!redirectUrl) {
                 log?.("error", "SSO authorization did not return a redirect.", {
-                    ...logMeta,
+                    ...logMetadata,
                     providerId,
                 });
                 res.writeHead(502, { "content-type": "application/json" });
@@ -626,7 +626,7 @@ export function createSessionRoutes({
                 return true;
             }
             log?.("info", "Started SSO authorization.", {
-                ...logMeta,
+                ...logMetadata,
                 providerId,
             });
             res.writeHead(200, { "content-type": "application/json" });
@@ -759,12 +759,12 @@ export function createSessionRoutes({
                         req,
                         res,
                         sessionResult,
-                        logMeta,
+                        logMetadata,
                         responseCookies,
                     );
                 }
                 log?.("warn", "Login flow did not produce a session outcome.", {
-                    ...logMeta,
+                    ...logMetadata,
                     provider,
                 });
                 res.writeHead(500, { "content-type": "application/json" });
@@ -783,7 +783,7 @@ export function createSessionRoutes({
             log?.(
                 "error",
                 "Login flow is unavailable because canonical flow registration is missing.",
-                { ...logMeta, provider },
+                { ...logMetadata, provider },
             );
             res.writeHead(503, { "content-type": "application/json" });
             res.end(
@@ -864,7 +864,7 @@ export function createSessionRoutes({
                 Date.now() + ttlSeconds * 1000,
             ).toISOString();
             log?.("warn", "Issued emergency API token.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
                 role: claims.role,
                 ttlSeconds,
@@ -894,7 +894,7 @@ export function createSessionRoutes({
                 revokeAccessToken(bearerToken);
             }
             log?.("info", "User logged out.", {
-                ...logMeta,
+                ...logMetadata,
                 hadCookieToken: Boolean(cookieToken),
                 hadBearerToken: Boolean(bearerToken),
             });

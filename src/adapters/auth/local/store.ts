@@ -15,7 +15,7 @@ import {
  * auth adapter. Nothing outside the auth gateway bootstrap should hold a
  * direct reference to this class.
  *
- * All persistence goes through the structured DbExecutor DSL — no raw SQL.
+ * All persistence goes through the structured DatabaseExecutor DSL — no raw SQL.
  */
 import { randomBytes, scrypt, timingSafeEqual } from "node:crypto";
 import { promisify } from "node:util";
@@ -27,7 +27,7 @@ import {
     normalizeUsername,
     validateUsername,
 } from "../../../gateways/auth/reuse/account-store.js";
-import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../gateways/db/reuse/db-executor.js";
 
 const scryptAsync = promisify(scrypt);
 const PASSWORD_HISTORY_LIMIT = 10;
@@ -54,9 +54,9 @@ async function verifyPassword(
     );
 }
 
-export class DbLocalAccountStore implements LocalAccountStore {
+class DatabaseLocalAccountStore implements LocalAccountStore {
     constructor(
-        private readonly db: DbExecutor,
+        private readonly db: DatabaseExecutor,
         private readonly log?: BootstrapLog,
     ) {}
 
@@ -92,8 +92,8 @@ export class DbLocalAccountStore implements LocalAccountStore {
             identity.role === "admin"
                 ? identity.role
                 : "user";
-        await this.db.transaction(async (txDb) => {
-            const identityResult = await txDb.executeCommand({
+        await this.db.transaction(async (transactionDatabase) => {
+            const identityResult = await transactionDatabase.executeCommand({
                 option: "SELECT",
                 table: "auth_identities",
                 columns: ["account_id"],
@@ -115,7 +115,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
                 throw new Error("legacy_sso_account_requires_recreation");
             }
             if (!identityResult.rows?.[0]?.account_id) {
-                const accountResult = await txDb.executeCommand({
+                const accountResult = await transactionDatabase.executeCommand({
                     option: "SELECT",
                     table: "accounts",
                     columns: ["id"],
@@ -126,7 +126,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
                     throw new Error("external_account_id_conflict");
                 }
             }
-            await txDb.executeCommand({
+            await transactionDatabase.executeCommand({
                 option: "DELETE",
                 table: "deleted_auth_identities",
                 where: [
@@ -139,7 +139,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
                     },
                 ],
             });
-            await txDb.executeCommand({
+            await transactionDatabase.executeCommand({
                 option: "INSERT",
                 table: "accounts",
                 values: {
@@ -164,7 +164,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
                     },
                 },
             });
-            await txDb.executeCommand({
+            await transactionDatabase.executeCommand({
                 option: "INSERT",
                 table: "auth_identities",
                 values: {
@@ -178,13 +178,13 @@ export class DbLocalAccountStore implements LocalAccountStore {
                 conflict: { action: "ignore" },
             });
             const username = await reserveUsername(
-                txDb,
+                transactionDatabase,
                 accountId,
                 identity.provider,
                 proposedUsername,
             );
             if (!identity.displayName?.trim())
-                await txDb.executeCommand({
+                await transactionDatabase.executeCommand({
                     option: "UPDATE",
                     table: "accounts",
                     set: { display_name: username },
@@ -355,8 +355,8 @@ export class DbLocalAccountStore implements LocalAccountStore {
         const passwordHash = await hashPassword(password);
         const accountDisplayName = displayName?.trim() || username;
         try {
-            await this.db.transaction(async (txDb) => {
-                await txDb.executeCommand({
+            await this.db.transaction(async (transactionDatabase) => {
+                await transactionDatabase.executeCommand({
                     option: "INSERT",
                     table: "accounts",
                     values: {
@@ -369,8 +369,13 @@ export class DbLocalAccountStore implements LocalAccountStore {
                         updated_at: new Date().toISOString(),
                     },
                 });
-                await reserveUsername(txDb, username, "local", username);
-                await txDb.executeCommand({
+                await reserveUsername(
+                    transactionDatabase,
+                    username,
+                    "local",
+                    username,
+                );
+                await transactionDatabase.executeCommand({
                     option: "INSERT",
                     table: "local_auth_credentials",
                     values: {
@@ -382,7 +387,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
                         updated_at: new Date().toISOString(),
                     },
                 });
-                await txDb.executeCommand({
+                await transactionDatabase.executeCommand({
                     option: "INSERT",
                     table: "local_auth_password_history",
                     values: {
@@ -596,13 +601,14 @@ export class DbLocalAccountStore implements LocalAccountStore {
         }
 
         const passwordHash = await hashPassword(password);
-        await this.db.transaction(async (txDb) => {
-            const currentPasswordHistoryResult = await txDb.executeCommand({
-                option: "SELECT",
-                table: "local_auth_password_history",
-                columns: ["password_hash"],
-                where: [{ column: "account_id", value: accountId }],
-            });
+        await this.db.transaction(async (transactionDatabase) => {
+            const currentPasswordHistoryResult =
+                await transactionDatabase.executeCommand({
+                    option: "SELECT",
+                    table: "local_auth_password_history",
+                    columns: ["password_hash"],
+                    where: [{ column: "account_id", value: accountId }],
+                });
             const hasCurrentPasswordHash = (
                 currentPasswordHistoryResult.rows ?? []
             ).some(
@@ -610,7 +616,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
                     String(row.password_hash ?? "") === currentPasswordHash,
             );
             if (currentPasswordHash && !hasCurrentPasswordHash) {
-                await txDb.executeCommand({
+                await transactionDatabase.executeCommand({
                     option: "INSERT",
                     table: "local_auth_password_history",
                     values: {
@@ -620,7 +626,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
                     },
                 });
             }
-            await txDb.executeCommand({
+            await transactionDatabase.executeCommand({
                 option: "UPDATE",
                 table: "local_auth_credentials",
                 set: {
@@ -630,7 +636,7 @@ export class DbLocalAccountStore implements LocalAccountStore {
                 },
                 where: [{ column: "username", value: lowercaseUsername }],
             });
-            await txDb.executeCommand({
+            await transactionDatabase.executeCommand({
                 option: "INSERT",
                 table: "local_auth_password_history",
                 values: {
@@ -639,21 +645,22 @@ export class DbLocalAccountStore implements LocalAccountStore {
                     created_at: new Date().toISOString(),
                 },
             });
-            const trimmedHistoryResult = await txDb.executeCommand({
-                option: "SELECT",
-                table: "local_auth_password_history",
-                columns: ["password_hash", "created_at"],
-                where: [{ column: "account_id", value: accountId }],
-                orderBy: [
-                    { column: "created_at", direction: "DESC" },
-                    { column: "password_hash", direction: "DESC" },
-                ],
-            });
+            const trimmedHistoryResult =
+                await transactionDatabase.executeCommand({
+                    option: "SELECT",
+                    table: "local_auth_password_history",
+                    columns: ["password_hash", "created_at"],
+                    where: [{ column: "account_id", value: accountId }],
+                    orderBy: [
+                        { column: "created_at", direction: "DESC" },
+                        { column: "password_hash", direction: "DESC" },
+                    ],
+                });
             const rowsToDelete = (trimmedHistoryResult.rows ?? []).slice(
                 PASSWORD_HISTORY_LIMIT,
             );
             for (const historyRow of rowsToDelete) {
-                await txDb.executeCommand({
+                await transactionDatabase.executeCommand({
                     option: "DELETE",
                     table: "local_auth_password_history",
                     where: [
@@ -752,20 +759,24 @@ export class DbLocalAccountStore implements LocalAccountStore {
     ) {
         const lowercaseUsername = normalizeUsername(username);
         try {
-            await this.db.transaction(async (txDb) => {
-                const identityResult = await txDb.executeCommand({
-                    option: "SELECT",
-                    table: "auth_identities",
-                    columns: ["provider", "external_user_id"],
-                    where: [{ column: "account_id", value: lowercaseUsername }],
-                });
+            await this.db.transaction(async (transactionDatabase) => {
+                const identityResult = await transactionDatabase.executeCommand(
+                    {
+                        option: "SELECT",
+                        table: "auth_identities",
+                        columns: ["provider", "external_user_id"],
+                        where: [
+                            { column: "account_id", value: lowercaseUsername },
+                        ],
+                    },
+                );
                 for (const identity of options.recordExternalIdentityDeletion ===
                 false
                     ? []
                     : (identityResult.rows ?? [])) {
                     const provider = String(identity.provider);
                     const externalUserId = String(identity.external_user_id);
-                    await txDb.executeCommand({
+                    await transactionDatabase.executeCommand({
                         option: "INSERT",
                         table: "deleted_auth_identities",
                         values: {
@@ -778,17 +789,17 @@ export class DbLocalAccountStore implements LocalAccountStore {
                         conflict: { action: "ignore" },
                     });
                 }
-                await txDb.executeCommand({
+                await transactionDatabase.executeCommand({
                     option: "DELETE",
                     table: "local_auth_credentials",
                     where: [{ column: "account_id", value: lowercaseUsername }],
                 });
-                await txDb.executeCommand({
+                await transactionDatabase.executeCommand({
                     option: "DELETE",
                     table: "local_auth_password_history",
                     where: [{ column: "account_id", value: lowercaseUsername }],
                 });
-                await txDb.executeCommand({
+                await transactionDatabase.executeCommand({
                     option: "DELETE",
                     table: "accounts",
                     where: [{ column: "id", value: lowercaseUsername }],
@@ -881,3 +892,4 @@ export class DbLocalAccountStore implements LocalAccountStore {
         });
     }
 }
+export { DatabaseLocalAccountStore };

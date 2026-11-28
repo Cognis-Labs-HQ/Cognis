@@ -29,7 +29,9 @@ export function registerFloatingMenus(ctx) {
         const active = entries
             .filter((entry) => entry.enabled && !entry.signal?.aborted)
             .sort(
-                (a, b) => b.priority - a.priority || a.sequence - b.sequence,
+                (leftEntry, rightEntry) =>
+                    rightEntry.priority - leftEntry.priority ||
+                    leftEntry.sequence - rightEntry.sequence,
             )[0];
         for (const entry of entries) {
             if (entry.element) entry.element.hidden = entry !== active;

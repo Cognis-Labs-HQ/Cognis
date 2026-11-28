@@ -8,18 +8,18 @@ import {
 
 export function mountProvider(uiCtx) {
     registerStudyNavigation(uiCtx);
-    const subPages = uiCtx.capabilities.get("ui:subPages");
-    subPages?.register("study", {
+    const nestedPages = uiCtx.capabilities.get("ui:subPages");
+    nestedPages?.register("study", {
         listGroups: () => fetchStudyLanguages(),
         listPages: (languageCode) => fetchStudyModules(languageCode),
     });
     uiCtx.signal.addEventListener(
         "abort",
-        () => subPages?.unregister("study"),
+        () => nestedPages?.unregister("study"),
         { once: true },
     );
 
-    uiCtx.capabilities.contribute("study:subPages", subPages);
+    uiCtx.capabilities.contribute("study:subPages", nestedPages);
 
     const DETAIL_FLOW = "study:library:composeEntryDetail";
     if (!uiCtx.flowExists(DETAIL_FLOW)) {

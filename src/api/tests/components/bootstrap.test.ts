@@ -18,9 +18,13 @@ import { installComponentManagement } from "../../components/bootstrap.js";
 test("provider ownership and protection come from server registries, and management contracts have server lifetime", async () => {
     const ctx = createCtx();
     const registry = new UIRegistry();
-    registry.registerModuleStaticDir("example", "/owned/example");
-    registry.registerStaticDir("storage", "/owned/storage");
-    registry.registerAdapterStaticDir("storage", "driver", "/owned/driver");
+    registry.registerModuleStaticDirectory("example", "/owned/example");
+    registry.registerStaticDirectory("storage", "/owned/storage");
+    registry.registerAdapterStaticDirectory(
+        "storage",
+        "driver",
+        "/owned/driver",
+    );
     registry.registerCapabilityProvider({
         scriptUrl: "/static/modules/example/provider.js",
         ownerId: "example",
@@ -128,7 +132,7 @@ test("Social provider owners use runtime IDs while retaining canonical manifest 
     const registry = new UIRegistry();
     const ids = ["profile", "messages", "call"];
     for (const id of ids) {
-        registry.registerAdapterStaticDir(
+        registry.registerAdapterStaticDirectory(
             "social",
             id,
             path.resolve("src/adapters/social", id),
@@ -197,7 +201,7 @@ test("required and locked adapter providers retain their identity across aliases
     const ctx = createCtx();
     const registry = new UIRegistry(manifestPath);
     await runBootstrapScope(ctx, "adapter:notify:internal", async () => {
-        registry.registerStaticDir("notify-internal", "/owned/internal");
+        registry.registerStaticDirectory("notify-internal", "/owned/internal");
         registry.registerNavbarPlugin({
             scriptUrl: "/static/gateways/notify-internal/navbar-plugin.js",
         });

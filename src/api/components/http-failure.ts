@@ -11,7 +11,7 @@ export async function recoverComponentRequest(
     management:
         | Promise<{
               reportServerFailure(
-                  request: IncomingMessage,
+                  req: IncomingMessage,
                   owner: ComponentTarget,
               ): Promise<void>;
           }>

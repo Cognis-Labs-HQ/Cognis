@@ -13,7 +13,7 @@ export function getErrorCode(error: unknown): string | undefined {
     return undefined;
 }
 
-export function buildDbErrorMeta(error: unknown): Record<string, unknown> {
+function buildDatabaseErrorMetadata(error: unknown): Record<string, unknown> {
     const meta: Record<string, unknown> = {
         errorName: error instanceof Error ? error.name : typeof error,
     };
@@ -23,8 +23,9 @@ export function buildDbErrorMeta(error: unknown): Record<string, unknown> {
     }
     return meta;
 }
+export { buildDatabaseErrorMetadata };
 
-export function writeDbLog(
+function writeDatabaseLog(
     log: BootstrapLog | undefined,
     level: "debug" | "info" | "warn" | "error",
     message: string,
@@ -32,3 +33,4 @@ export function writeDbLog(
 ): void {
     log?.(level, message, meta);
 }
+export { writeDatabaseLog };

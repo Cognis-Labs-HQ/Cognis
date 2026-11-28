@@ -30,7 +30,9 @@ test("checkout fetches the pinned commit with a bounded transfer and idle policy
                 assert.equal(commandOptions.env, options.environment);
                 assert.equal(commandOptions.timeout, 15 * 60 * 1000);
                 commands.push(args);
-                return { stdout: args.includes("rev-parse") ? commit : "" };
+                return {
+                    stdout: args.includes("rev-parse") ? commit : "",
+                };
             },
         ),
         commit,

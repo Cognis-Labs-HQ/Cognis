@@ -8,7 +8,7 @@ Runtime penyemat harus menyediakan klien SQLite; penerapan standar tidak menghub
 
 ## Contoh
 
-Sediakan SqliteClient dengan all, run, dan exec, lalu gunakan SqliteDbGateway untuk kueri dan transaksi di runtime Anda.
+Sediakan SqliteClient dengan all, run, dan exec, lalu gunakan SqliteDatabaseGateway untuk kueri dan transaksi di runtime Anda.
 
 ## Hasil yang Diharapkan
 

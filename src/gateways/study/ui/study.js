@@ -27,11 +27,11 @@ import { showToast } from "/static/reuse/toast.js";
 import { escapeHtml } from "/static/reuse/escape-html.js";
 import { navigateTo } from "/static/reuse/app-router.js";
 import {
-    bindStudySubNavigation,
-    clearStudySubNavCache,
-    loadStudySubNavigationModel,
+    bindStudyNestedNavigation,
+    clearStudyNestedNavigationCache,
+    loadStudyNestedNavigationModel,
     readSelectedStudyLanguageCode,
-    renderStudySubNavigation,
+    renderStudyNestedNavigation,
 } from "/static/gateways/study/sub-navigation.js";
 import {
     resolveLanguageLabel,
@@ -79,7 +79,7 @@ export async function mount(root, { signal } = {}) {
     const isWelcomePath = currentPath === "/study/welcome";
     const isSettingsPath = currentPath === "/study/settings";
 
-    const [languagesResult, prefsResult] = await Promise.allSettled([
+    const [languagesResult, preferencesResult] = await Promise.allSettled([
         fetchStudyLanguages({ signal }).then((data) => ({ data })),
         fetchStudyPreferences({ signal }).then((data) => ({ data })),
     ]);
@@ -88,7 +88,7 @@ export async function mount(root, { signal } = {}) {
     if (
         isOffline() &&
         (languagesResult.status === "rejected" ||
-            prefsResult.status === "rejected")
+            preferencesResult.status === "rejected")
     )
         throw new Error("offline_read_unavailable");
 
@@ -118,9 +118,9 @@ export async function mount(root, { signal } = {}) {
     }
 
     const storedLearningLanguages =
-        prefsResult.status === "fulfilled" &&
-        Array.isArray(prefsResult.value?.data?.learningLanguages)
-            ? [...new Set(prefsResult.value.data.learningLanguages)]
+        preferencesResult.status === "fulfilled" &&
+        Array.isArray(preferencesResult.value?.data?.learningLanguages)
+            ? [...new Set(preferencesResult.value.data.learningLanguages)]
             : [];
     const registeredLanguageCodes = new Set(
         registeredLanguages.map(({ code }) => code),
@@ -270,7 +270,7 @@ async function mountWelcome(root, { i18n, registeredLanguages, signal }) {
                         },
                     );
                     if (!response.ok) throw new Error("save_failed");
-                    clearStudySubNavCache();
+                    clearStudyNestedNavigationCache();
                     navigateTo("/study");
                 } catch {
                     showToast(i18n.t("ui.reuse.save_failed"), {
@@ -298,24 +298,25 @@ async function mountHub(
     )
         ? requestedLanguageCode
         : learningLanguages[0];
-    const navigationModel = await loadStudySubNavigationModel({
+    const navigationModel = await loadStudyNestedNavigationModel({
         fallbackLanguageCode: selectedLanguageCode,
     });
 
-    const subPages = uiCtx.capabilities.get("study:subPages");
-    if (!subPages) throw new Error("Study sub-page provider unavailable.");
-    const subPageModel = await subPages.load("study", {
+    const nestedPages = uiCtx.capabilities.get("study:subPages");
+    if (!nestedPages) throw new Error("Study sub-page provider unavailable.");
+    const nestedPageModel = await nestedPages.load("study", {
         selectedGroupId: selectedLanguageCode,
         groupIds: learningLanguages,
     });
-    const languageModulesMap = subPageModel.pagesByGroup;
+    const languageModulesMap = nestedPageModel.pagesByGroup;
 
     const languageByCode = new Map();
     for (const language of registeredLanguages) {
         languageByCode.set(language.code, language);
     }
-    const languageCatalog = Array.from(languageByCode.values()).sort((a, b) =>
-        a.name.localeCompare(b.name),
+    const languageCatalog = Array.from(languageByCode.values()).sort(
+        (leftEntry, rightEntry) =>
+            leftEntry.name.localeCompare(rightEntry.name),
     );
 
     function getLanguage(languageCode) {
@@ -350,8 +351,8 @@ async function mountHub(
         return "/study/settings";
     }
 
-    function renderSubNavigation() {
-        return renderStudySubNavigation({
+    function renderNestedNavigation() {
+        return renderStudyNestedNavigation({
             model: navigationModel,
             currentPath: window.location.pathname,
             i18n,
@@ -586,7 +587,7 @@ async function mountHub(
             {
                 id: "study-subnav",
                 label: i18n.t("ui.reuse.study"),
-                render: renderSubNavigation,
+                render: renderNestedNavigation,
             },
         ],
     });
@@ -594,7 +595,7 @@ async function mountHub(
     await composer.init();
     if (signal?.aborted) return;
     bindOnlineControls(root, signal);
-    bindStudySubNavigation(root, { signal, i18n });
+    bindStudyNestedNavigation(root, { signal, i18n });
 
     function bindSettingsEvents() {
         root.querySelectorAll(".study-lang-action-btn").forEach((button) => {
@@ -650,7 +651,7 @@ async function mountHub(
                         },
                     );
                     if (!response.ok) throw new Error("save_failed");
-                    clearStudySubNavCache();
+                    clearStudyNestedNavigationCache();
                     navigateTo(buildSettingsUrl());
                 } catch {
                     showToast(i18n.t("ui.reuse.save_failed"), {

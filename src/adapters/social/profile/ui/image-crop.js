@@ -28,37 +28,41 @@ export function clampCropOffset(offset, maxOffset) {
  * @param {number} imageHeight
  * @returns {{ panX: number, panY: number }}
  */
-export function sourceRectToCoverObjectPositionPercent(
-    sourceRect,
+function sourceRectangleToCoverObjectPositionPercent(
+    sourceRectangle,
     imageWidth,
     imageHeight,
 ) {
     const safeImageWidth = Math.max(1, Number(imageWidth) || 1);
     const safeImageHeight = Math.max(1, Number(imageHeight) || 1);
-    const safeSourceRect = clampSourceRectToImage({
-        sourceX: sourceRect?.sourceX,
-        sourceY: sourceRect?.sourceY,
-        sourceWidth: sourceRect?.sourceWidth,
-        sourceHeight: sourceRect?.sourceHeight,
+    const safeSourceRectangle = clampSourceRectangleToImage({
+        sourceX: sourceRectangle?.sourceX,
+        sourceY: sourceRectangle?.sourceY,
+        sourceWidth: sourceRectangle?.sourceWidth,
+        sourceHeight: sourceRectangle?.sourceHeight,
         imageWidth: safeImageWidth,
         imageHeight: safeImageHeight,
     });
-    const overflowX = Math.max(0, safeImageWidth - safeSourceRect.sourceWidth);
+    const overflowX = Math.max(
+        0,
+        safeImageWidth - safeSourceRectangle.sourceWidth,
+    );
     const overflowY = Math.max(
         0,
-        safeImageHeight - safeSourceRect.sourceHeight,
+        safeImageHeight - safeSourceRectangle.sourceHeight,
     );
     const panX =
-        overflowX === 0 ? 50 : (safeSourceRect.sourceX / overflowX) * 100;
+        overflowX === 0 ? 50 : (safeSourceRectangle.sourceX / overflowX) * 100;
     const panY =
-        overflowY === 0 ? 50 : (safeSourceRect.sourceY / overflowY) * 100;
+        overflowY === 0 ? 50 : (safeSourceRectangle.sourceY / overflowY) * 100;
     return {
         panX: Math.min(100, Math.max(0, panX)),
         panY: Math.min(100, Math.max(0, panY)),
     };
 }
+export { sourceRectangleToCoverObjectPositionPercent };
 
-function clampSourceRectToImage({
+function clampSourceRectangleToImage({
     sourceX,
     sourceY,
     sourceWidth,
@@ -199,7 +203,7 @@ export function computeCropViewport({
  *   sourceHeight: number,
  * }}
  */
-export function computeCropSourceRect(viewport) {
+function computeCropSourceRectangle(viewport) {
     const baseLeft = (viewport.frameWidth - viewport.renderedWidth) / 2;
     const baseTop = (viewport.frameHeight - viewport.renderedHeight) / 2;
     const renderedLeft = baseLeft + viewport.offsetX;
@@ -214,7 +218,7 @@ export function computeCropSourceRect(viewport) {
     const sourceHeight =
         (viewport.frameHeight / viewport.renderedHeight) * viewport.imageHeight;
 
-    return clampSourceRectToImage({
+    return clampSourceRectangleToImage({
         sourceX,
         sourceY,
         sourceWidth,
@@ -223,6 +227,7 @@ export function computeCropSourceRect(viewport) {
         imageHeight: viewport.imageHeight,
     });
 }
+export { computeCropSourceRectangle };
 
 /**
  * Returns output image dimensions derived from the target crop aspect ratio.
@@ -290,13 +295,13 @@ export function computeContainImageBounds({
  *   sourceHeight: number,
  * }}
  * @example
- * const sourceRect = computeMaxAspectSourceRect({
+ * const sourceRect = computeMaxAspectSourceRectangle({
  *   imageWidth: 2400,
  *   imageHeight: 1600,
  *   aspectRatio: 3,
  * });
  */
-export function computeMaxAspectSourceRect({
+function computeMaxAspectSourceRectangle({
     imageWidth,
     imageHeight,
     aspectRatio,
@@ -308,7 +313,7 @@ export function computeMaxAspectSourceRect({
 
     if (imageAspectRatio > safeAspectRatio) {
         const sourceWidth = safeImageHeight * safeAspectRatio;
-        return clampSourceRectToImage({
+        return clampSourceRectangleToImage({
             sourceX: (safeImageWidth - sourceWidth) / 2,
             sourceY: 0,
             sourceWidth,
@@ -319,7 +324,7 @@ export function computeMaxAspectSourceRect({
     }
 
     const sourceHeight = safeImageWidth / safeAspectRatio;
-    return clampSourceRectToImage({
+    return clampSourceRectangleToImage({
         sourceX: 0,
         sourceY: (safeImageHeight - sourceHeight) / 2,
         sourceWidth: safeImageWidth,
@@ -328,6 +333,7 @@ export function computeMaxAspectSourceRect({
         imageHeight: safeImageHeight,
     });
 }
+export { computeMaxAspectSourceRectangle };
 
 /**
  * Creates a centered initial crop selection inside image bounds.
@@ -597,7 +603,7 @@ export function computeResizedCropSelection({
  *   sourceHeight: number,
  * }}
  */
-export function computeCropSourceRectFromSelection({
+function computeCropSourceRectangleFromSelection({
     selection,
     imageBounds,
     imageWidth,
@@ -612,7 +618,7 @@ export function computeCropSourceRectFromSelection({
     const normalizedTop = (selection.top - imageBounds.top) / safeBoundsHeight;
     const normalizedWidth = selection.width / safeBoundsWidth;
     const normalizedHeight = selection.height / safeBoundsHeight;
-    return clampSourceRectToImage({
+    return clampSourceRectangleToImage({
         sourceX: normalizedLeft * safeImageWidth,
         sourceY: normalizedTop * safeImageHeight,
         sourceWidth: normalizedWidth * safeImageWidth,
@@ -621,6 +627,7 @@ export function computeCropSourceRectFromSelection({
         imageHeight: safeImageHeight,
     });
 }
+export { computeCropSourceRectangleFromSelection };
 
 /**
  * Composes a crop selection into an absolute source rectangle when the
@@ -643,30 +650,36 @@ export function computeCropSourceRectFromSelection({
  *   sourceHeight: number,
  * }}
  */
-export function composeCropSourceRect({
-    baseSourceRect,
+function composeCropSourceRectangle({
+    baseSourceRect: baseSourceRectangle,
     selection,
     imageBounds,
 }) {
-    const safeBaseSourceRect = {
-        sourceX: Math.max(0, Number(baseSourceRect?.sourceX) || 0),
-        sourceY: Math.max(0, Number(baseSourceRect?.sourceY) || 0),
-        sourceWidth: Math.max(1, Number(baseSourceRect?.sourceWidth) || 1),
-        sourceHeight: Math.max(1, Number(baseSourceRect?.sourceHeight) || 1),
+    const safeBaseSourceRectangle = {
+        sourceX: Math.max(0, Number(baseSourceRectangle?.sourceX) || 0),
+        sourceY: Math.max(0, Number(baseSourceRectangle?.sourceY) || 0),
+        sourceWidth: Math.max(1, Number(baseSourceRectangle?.sourceWidth) || 1),
+        sourceHeight: Math.max(
+            1,
+            Number(baseSourceRectangle?.sourceHeight) || 1,
+        ),
     };
-    const nestedSourceRect = computeCropSourceRectFromSelection({
+    const nestedSourceRectangle = computeCropSourceRectangleFromSelection({
         selection,
         imageBounds,
-        imageWidth: safeBaseSourceRect.sourceWidth,
-        imageHeight: safeBaseSourceRect.sourceHeight,
+        imageWidth: safeBaseSourceRectangle.sourceWidth,
+        imageHeight: safeBaseSourceRectangle.sourceHeight,
     });
     return {
-        sourceX: safeBaseSourceRect.sourceX + nestedSourceRect.sourceX,
-        sourceY: safeBaseSourceRect.sourceY + nestedSourceRect.sourceY,
-        sourceWidth: nestedSourceRect.sourceWidth,
-        sourceHeight: nestedSourceRect.sourceHeight,
+        sourceX:
+            safeBaseSourceRectangle.sourceX + nestedSourceRectangle.sourceX,
+        sourceY:
+            safeBaseSourceRectangle.sourceY + nestedSourceRectangle.sourceY,
+        sourceWidth: nestedSourceRectangle.sourceWidth,
+        sourceHeight: nestedSourceRectangle.sourceHeight,
     };
 }
+export { composeCropSourceRectangle };
 
 /**
  * Pans an existing source rectangle inside image bounds without changing zoom.
@@ -690,47 +703,51 @@ export function composeCropSourceRect({
  *   sourceHeight: number,
  * }}
  */
-export function panCropSourceRect({
-    startSourceRect,
+function panCropSourceRectangle({
+    startSourceRect: startSourceRectangle,
     sourceDeltaX,
     sourceDeltaY,
     imageWidth,
     imageHeight,
 }) {
-    const normalizedStartSourceRect = clampSourceRectToImage({
-        sourceX: Number(startSourceRect?.sourceX) || 0,
-        sourceY: Number(startSourceRect?.sourceY) || 0,
-        sourceWidth: Number(startSourceRect?.sourceWidth) || 1,
-        sourceHeight: Number(startSourceRect?.sourceHeight) || 1,
+    const normalizedStartSourceRectangle = clampSourceRectangleToImage({
+        sourceX: Number(startSourceRectangle?.sourceX) || 0,
+        sourceY: Number(startSourceRectangle?.sourceY) || 0,
+        sourceWidth: Number(startSourceRectangle?.sourceWidth) || 1,
+        sourceHeight: Number(startSourceRectangle?.sourceHeight) || 1,
         imageWidth,
         imageHeight,
     });
     const maxSourceX = Math.max(
         0,
-        (Number(imageWidth) || 1) - normalizedStartSourceRect.sourceWidth,
+        (Number(imageWidth) || 1) - normalizedStartSourceRectangle.sourceWidth,
     );
     const maxSourceY = Math.max(
         0,
-        (Number(imageHeight) || 1) - normalizedStartSourceRect.sourceHeight,
+        (Number(imageHeight) || 1) -
+            normalizedStartSourceRectangle.sourceHeight,
     );
     return {
-        ...normalizedStartSourceRect,
+        ...normalizedStartSourceRectangle,
         sourceX: Math.min(
             maxSourceX,
             Math.max(
                 0,
-                normalizedStartSourceRect.sourceX + (Number(sourceDeltaX) || 0),
+                normalizedStartSourceRectangle.sourceX +
+                    (Number(sourceDeltaX) || 0),
             ),
         ),
         sourceY: Math.min(
             maxSourceY,
             Math.max(
                 0,
-                normalizedStartSourceRect.sourceY + (Number(sourceDeltaY) || 0),
+                normalizedStartSourceRectangle.sourceY +
+                    (Number(sourceDeltaY) || 0),
             ),
         ),
     };
 }
+export { panCropSourceRectangle };
 
 export const BANNER_FULL_HEIGHT_ASPECT_RATIO = 3;
 export const BANNER_HALF_HEIGHT_ASPECT_RATIO =

@@ -10,7 +10,7 @@
 
 `src/gateways/tfa/bootstrap.ts` の bootstrap 手順:
 
-1. `DbTfaStore` を作成して schema を保証する。
+1. `DatabaseTfaStore` を作成して schema を保証する。
 2. `src/adapters/tfa/` を走査してアダプターを検出する。
 3. 永続化済み設定を読み込む。
 4. API route と adapter admin route を登録する。

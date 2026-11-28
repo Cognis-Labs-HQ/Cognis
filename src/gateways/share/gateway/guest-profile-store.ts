@@ -1,5 +1,5 @@
 import { randomInt, randomUUID } from "node:crypto";
-import type { DbExecutor } from "../../db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../db/reuse/db-executor.js";
 
 export interface GuestProfileRecord {
     guestId: string;
@@ -52,7 +52,7 @@ function parseRecord(row: Record<string, unknown>): GuestProfileRecord | null {
  * are purged once expired, mirroring `ShareTokenStore`'s lazy-purge pattern.
  */
 export class GuestProfileStore {
-    constructor(private readonly db: DbExecutor) {}
+    constructor(private readonly db: DatabaseExecutor) {}
 
     async ensureSchema(): Promise<void> {
         await this.db.ensureTable({

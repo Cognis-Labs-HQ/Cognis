@@ -39,8 +39,11 @@ function fixture() {
         {
             requireAuth(req, res, role) {
                 assert.equal(role, "admin");
-                const sub = String(req.headers.authorization ?? "");
-                if (sub.startsWith("admin-")) return { sub, role: "admin" };
+                const authorizationHeader = String(
+                    req.headers.authorization ?? "",
+                );
+                if (authorizationHeader.startsWith("admin-"))
+                    return { sub: authorizationHeader, role: "admin" };
                 res.writeHead(403);
                 res.end();
                 return null;

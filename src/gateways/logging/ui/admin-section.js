@@ -47,7 +47,7 @@ function parseSseBlock(block) {
     return { eventName, data: dataLines.join("\n") };
 }
 
-function buildMetaHtml(entry, escapeHtml) {
+function buildMetadataHtml(entry, escapeHtml) {
     const copy = { ...entry };
     delete copy.id;
     delete copy.ts;
@@ -74,7 +74,7 @@ function renderLogRow(entry, i18n, escapeHtml) {
           <span class="logs-stream-level">${escapeHtml(level.toUpperCase())}</span>
         </header>
         <p class="logs-stream-message">${message}</p>
-        ${buildMetaHtml(entry, escapeHtml)}
+        ${buildMetadataHtml(entry, escapeHtml)}
       </article>
     `;
 }
@@ -109,9 +109,9 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
     let streamController = null;
     let reconnectTimer = null;
     let autoRefreshTimer = null;
-    let panelEl = null;
-    let resultsEl = null;
-    let statusEl = null;
+    let panelElement = null;
+    let resultsElement = null;
+    let statusElement = null;
     let visibilityListenerAttached = false;
     let reconnectAttempts = 0;
     let activeSession = 0;
@@ -122,7 +122,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
     };
 
     function isPanelActive() {
-        return !!panelEl?.isConnected;
+        return !!panelElement?.isConnected;
     }
 
     function clearFlushFrame() {
@@ -133,30 +133,30 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
     }
 
     function setStatus(message = "") {
-        if (!(statusEl instanceof HTMLElement)) return;
-        statusEl.textContent = message;
-        statusEl.hidden = message === "";
+        if (!(statusElement instanceof HTMLElement)) return;
+        statusElement.textContent = message;
+        statusElement.hidden = message === "";
     }
 
     function removeEmptyState() {
-        resultsEl?.querySelector(".logs-stream-empty")?.remove();
+        resultsElement?.querySelector(".logs-stream-empty")?.remove();
     }
 
     function trimRenderedRows() {
-        if (!(resultsEl instanceof HTMLElement)) return;
-        while (resultsEl.childElementCount > MAX_DISPLAYED_LOGS) {
-            resultsEl.lastElementChild?.remove();
+        if (!(resultsElement instanceof HTMLElement)) return;
+        while (resultsElement.childElementCount > MAX_DISPLAYED_LOGS) {
+            resultsElement.lastElementChild?.remove();
         }
     }
 
     function ensureEmptyState() {
-        if (!(resultsEl instanceof HTMLElement) || logs.length > 0) return;
-        resultsEl.innerHTML = `<p class="logs-stream-empty">${i18n.t("ui.app.admin.logs.empty")}</p>`;
+        if (!(resultsElement instanceof HTMLElement) || logs.length > 0) return;
+        resultsElement.innerHTML = `<p class="logs-stream-empty">${i18n.t("ui.app.admin.logs.empty")}</p>`;
     }
 
     function flushPendingEntries() {
         flushFrame = null;
-        if (!(resultsEl instanceof HTMLElement)) return;
+        if (!(resultsElement instanceof HTMLElement)) return;
         if (!pendingEntries.length) {
             ensureEmptyState();
             return;
@@ -171,7 +171,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
             }
         }
         pendingEntries = [];
-        resultsEl.prepend(fragment);
+        resultsElement.prepend(fragment);
         trimRenderedRows();
     }
 
@@ -185,12 +185,12 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
     function renderSnapshot() {
         clearFlushFrame();
         pendingEntries = [];
-        if (!(resultsEl instanceof HTMLElement)) return;
+        if (!(resultsElement instanceof HTMLElement)) return;
         if (!logs.length) {
             ensureEmptyState();
             return;
         }
-        resultsEl.innerHTML = logs
+        resultsElement.innerHTML = logs
             .map((entry) => renderLogRow(entry, i18n, escapeHtml))
             .join("");
     }
@@ -245,7 +245,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
     }
 
     function refreshByTimeRangeWindow() {
-        if (!(resultsEl instanceof HTMLElement)) return;
+        if (!(resultsElement instanceof HTMLElement)) return;
         const nextLogs = logs.filter((entry) =>
             isWithinTimeRange(entry, activeFilters.timeRange),
         );
@@ -385,18 +385,18 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
     }
 
     function bindSection(root) {
-        panelEl = root.querySelector(".logs-stream-panel");
-        resultsEl = root.querySelector(".logs-stream-results");
-        statusEl = root.querySelector(".logs-stream-status");
+        panelElement = root.querySelector(".logs-stream-panel");
+        resultsElement = root.querySelector(".logs-stream-results");
+        statusElement = root.querySelector(".logs-stream-status");
         const severitySelect = root.querySelector('[name="logsSeverity"]');
         const keywordInput = root.querySelector('[name="logsKeyword"]');
         const timeRangeSelect = root.querySelector('[name="logsTimeRange"]');
         const applyButton = root.querySelector(".logs-stream-apply");
 
         if (
-            !(panelEl instanceof HTMLElement) ||
-            !(resultsEl instanceof HTMLElement) ||
-            !(statusEl instanceof HTMLElement) ||
+            !(panelElement instanceof HTMLElement) ||
+            !(resultsElement instanceof HTMLElement) ||
+            !(statusElement instanceof HTMLElement) ||
             !(severitySelect instanceof HTMLSelectElement) ||
             !(keywordInput instanceof HTMLInputElement) ||
             !(timeRangeSelect instanceof HTMLSelectElement) ||
@@ -445,9 +445,9 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
         stopAutoRefresh();
         detachVisibilityListener();
         stopStream();
-        panelEl = null;
-        resultsEl = null;
-        statusEl = null;
+        panelElement = null;
+        resultsElement = null;
+        statusElement = null;
     }
 
     return {

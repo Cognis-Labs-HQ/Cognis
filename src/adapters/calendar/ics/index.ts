@@ -55,7 +55,7 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
         ].includes(String(method ?? ""));
 
     const respondCalendarPayload = (
-        reqMethod: string | undefined,
+        requestMethod: string | undefined,
         res: {
             writeHead: (
                 statusCode: number,
@@ -73,7 +73,7 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
             ...buildCalendarExportHeaders(calendarName, calendarId),
             "x-cognis-calendar-access": accessMode,
         };
-        if (reqMethod === "OPTIONS") {
+        if (requestMethod === "OPTIONS") {
             res.writeHead(204, {
                 ...headers,
                 allow: "GET,HEAD,OPTIONS,PROPFIND",
@@ -81,7 +81,7 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
             res.end();
             return;
         }
-        if (reqMethod === "PROPFIND") {
+        if (requestMethod === "PROPFIND") {
             res.writeHead(207, {
                 ...headers,
                 "content-type": "application/xml; charset=utf-8",
@@ -91,7 +91,7 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
             );
             return;
         }
-        if (reqMethod === "HEAD") {
+        if (requestMethod === "HEAD") {
             res.writeHead(200, headers);
             res.end();
             return;
@@ -339,7 +339,9 @@ function createIcsRoutes(ctx: CalendarAdapterBootstrapCtx) {
                     error instanceof Error &&
                     error.message === "calendar_not_found"
                 ) {
-                    res.writeHead(404, { "content-type": "application/json" });
+                    res.writeHead(404, {
+                        "content-type": "application/json",
+                    });
                     res.end(
                         JSON.stringify({
                             error: {

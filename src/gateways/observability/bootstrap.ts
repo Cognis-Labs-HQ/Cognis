@@ -45,7 +45,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         import.meta.url,
         "./manifest.json",
     );
-    ctx.uiRegistry?.registerStaticDir(
+    ctx.uiRegistry?.registerStaticDirectory(
         "observability",
         path.resolve(process.cwd(), "src", "gateways", "observability", "ui"),
     );
@@ -122,7 +122,9 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         for await (const chunk of req) {
             body += chunk;
             if (body.length > 16_384) {
-                res.writeHead(413, { "cache-control": "private, no-store" });
+                res.writeHead(413, {
+                    "cache-control": "private, no-store",
+                });
                 res.end();
                 return true;
             }

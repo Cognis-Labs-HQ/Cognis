@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import {
     ensureDeckDocuments,
     readDeckDocuments,
@@ -19,7 +19,7 @@ const DECK_COLUMNS = [
 ];
 
 export class DeckStore {
-    constructor(private readonly db: DbExecutor) {}
+    constructor(private readonly db: DatabaseExecutor) {}
 
     async initialize(): Promise<void> {
         await ensureDeckDocuments(this.db);

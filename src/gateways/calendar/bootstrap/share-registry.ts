@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { DbExecutor } from "../../db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../db/reuse/db-executor.js";
 
 export type CalendarShareLinkRegistryRecord = {
     id: string;
@@ -56,10 +56,10 @@ export class CalendarShareRegistry {
     >();
 
     constructor(
-        private readonly db: DbExecutor | null,
+        private readonly db: DatabaseExecutor | null,
         private readonly log?: (
             level: string,
-            msg: string,
+            message: string,
             meta?: Record<string, unknown>,
         ) => void,
     ) {}

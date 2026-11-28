@@ -9,9 +9,9 @@ import { createGatewayHost } from "../../reuse/gateway-host.js";
 import { bootstrap as bootstrapShare } from "../../../gateways/share/bootstrap.js";
 import { bootstrap as bootstrapCalendar } from "../../../gateways/calendar/bootstrap.js";
 
-async function host(t, { password } = {}) {
+async function host(testContext, { password } = {}) {
     const { root, capabilities, routes, dispatch } = await createGatewayHost(
-        t,
+        testContext,
         [
             ["share", bootstrapShare],
             ["calendar", bootstrapCalendar],
@@ -52,7 +52,9 @@ async function host(t, { password } = {}) {
         "recipient-token",
         "/api/v1/calendar/calendars",
     );
-    const delivered = received.body.data.find((c) => c.visibility === "shared");
+    const delivered = received.body.data.find(
+        (calendarEntry) => calendarEntry.visibility === "shared",
+    );
     assert.ok(delivered);
     const raw = async (method, pathname, headers = {}, body) => {
         const response = new ResponseRecorder();
@@ -81,129 +83,140 @@ async function host(t, { password } = {}) {
     };
 }
 
-test("clearing real Share grants removes delivered Calendar access and cannot recreate it on refresh", async (t) => {
-    const h = await host(t);
-    const eventPath = `/api/v1/calendar/calendars/${h.delivered.id}/events/${h.eventId}`;
+test("clearing real Share grants removes delivered Calendar access and cannot recreate it on refresh", async (testContext) => {
+    const shareHost = await host(testContext);
+    const eventPath = `/api/v1/calendar/calendars/${shareHost.delivered.id}/events/${shareHost.eventId}`;
     assert.equal(
-        (await h.dispatch("GET", "recipient-token", eventPath)).statusCode,
+        (await shareHost.dispatch("GET", "recipient-token", eventPath))
+            .statusCode,
         200,
     );
-    const update = await h.dispatch(
+    const update = await shareHost.dispatch(
         "PATCH",
         "owner-token",
-        `/api/v1/share/tokens/${h.token.id}`,
+        `/api/v1/share/tokens/${shareHost.token.id}`,
         { grantedCapabilities: [] },
     );
     assert.equal(update.statusCode, 200);
     assert.ok(
-        (await h.dispatch("GET", "recipient-token", eventPath)).statusCode >=
-            400,
+        (await shareHost.dispatch("GET", "recipient-token", eventPath))
+            .statusCode >= 400,
     );
-    await h.capabilities.require("calendar:reconcileUserShares")("recipient");
-    const calendars = await h.dispatch(
+    await shareHost.capabilities.require("calendar:reconcileUserShares")(
+        "recipient",
+    );
+    const calendars = await shareHost.dispatch(
         "GET",
         "recipient-token",
         "/api/v1/calendar/calendars",
     );
     assert.equal(
-        calendars.body.data.some((c) => c.visibility === "shared"),
+        calendars.body.data.some(
+            (calendar) => calendar.visibility === "shared",
+        ),
         false,
     );
     assert.equal(
         (
-            await h.dispatch(
+            await shareHost.dispatch(
                 "GET",
                 "owner-token",
-                `/api/v1/calendar/calendars/${h.ownerId}/events/${h.eventId}`,
+                `/api/v1/calendar/calendars/${shareHost.ownerId}/events/${shareHost.eventId}`,
             )
         ).statusCode,
         200,
     );
 });
 
-test("Calendar reads reauthorize Share grants even when delivery reconciliation has not completed", async (t) => {
-    const h = await host(t);
+test("Calendar reads reauthorize Share grants even when delivery reconciliation has not completed", async (testContext) => {
+    const shareHost = await host(testContext);
     // Delay only the Calendar projection; authorization must use the current Share grant.
-    h.root.removeFlowStageHook(
+    shareHost.root.removeFlowStageHook(
         "update-share-token",
         "reconcile-deliveries",
         "calendar-gateway:reconcile-share-deliveries",
     );
-    const update = await h.dispatch(
+    const update = await shareHost.dispatch(
         "PATCH",
         "owner-token",
-        `/api/v1/share/tokens/${h.token.id}`,
+        `/api/v1/share/tokens/${shareHost.token.id}`,
         { grantedCapabilities: [] },
     );
     assert.equal(update.statusCode, 200);
-    const denied = await h.dispatch(
+    const denied = await shareHost.dispatch(
         "GET",
         "recipient-token",
-        `/api/v1/calendar/calendars/${h.delivered.id}/events/${h.eventId}`,
+        `/api/v1/calendar/calendars/${shareHost.delivered.id}/events/${shareHost.eventId}`,
     );
     assert.equal(denied.statusCode, 403);
 });
 
-test("protected Calendar delivery still requires its password and loses access when its grants are cleared", async (t) => {
-    const h = await host(t, { password: "fixture-password" });
-    const eventPath = `/api/v1/calendar/calendars/${h.delivered.id}/events/${h.eventId}`;
-    assert.equal((await h.raw("GET", eventPath)).statusCode, 401);
+test("protected Calendar delivery still requires its password and loses access when its grants are cleared", async (testContext) => {
+    const shareHost = await host(testContext, { password: "fixture-password" });
+    const eventPath = `/api/v1/calendar/calendars/${shareHost.delivered.id}/events/${shareHost.eventId}`;
+    assert.equal((await shareHost.raw("GET", eventPath)).statusCode, 401);
     assert.equal(
         (
-            await h.raw("GET", eventPath, {
+            await shareHost.raw("GET", eventPath, {
                 "x-cognis-share-password": "fixture-password",
             })
         ).statusCode,
         200,
     );
-    assert.equal((await h.raw("GET", eventPath)).statusCode, 200);
-    const result = await h.dispatch(
+    assert.equal((await shareHost.raw("GET", eventPath)).statusCode, 200);
+    const result = await shareHost.dispatch(
         "PATCH",
         "owner-token",
-        `/api/v1/share/tokens/${h.token.id}`,
+        `/api/v1/share/tokens/${shareHost.token.id}`,
         { grantedCapabilities: [] },
     );
     assert.equal(result.statusCode, 200);
     assert.ok(
         (
-            await h.raw("GET", eventPath, {
+            await shareHost.raw("GET", eventPath, {
                 "x-cognis-share-password": "fixture-password",
             })
         ).statusCode >= 400,
     );
 });
 
-test("a stale delivered write permission cannot override a current read-only Share grant", async (t) => {
-    const h = await host(t);
-    h.root.removeFlowStageHook(
+test("a stale delivered write permission cannot override a current read-only Share grant", async (testContext) => {
+    const shareHost = await host(testContext);
+    shareHost.root.removeFlowStageHook(
         "update-share-token",
         "reconcile-deliveries",
         "calendar-gateway:reconcile-share-deliveries",
     );
     assert.equal(
         (
-            await h.dispatch(
+            await shareHost.dispatch(
                 "PATCH",
                 "owner-token",
-                `/api/v1/share/tokens/${h.token.id}`,
+                `/api/v1/share/tokens/${shareHost.token.id}`,
                 { grantedCapabilities: ["calendar:read"] },
             )
         ).statusCode,
         200,
     );
-    const eventPath = `/api/v1/calendar/calendars/${h.delivered.id}/events/${h.eventId}`;
-    assert.equal((await h.raw("GET", eventPath)).statusCode, 200);
-    assert.equal(
-        (await h.raw("PATCH", eventPath, {}, { title: "Unauthorized change" }))
-            .statusCode,
-        403,
-    );
-    assert.equal((await h.raw("DELETE", eventPath)).statusCode, 403);
+    const eventPath = `/api/v1/calendar/calendars/${shareHost.delivered.id}/events/${shareHost.eventId}`;
+    assert.equal((await shareHost.raw("GET", eventPath)).statusCode, 200);
     assert.equal(
         (
-            await h.raw(
+            await shareHost.raw(
+                "PATCH",
+                eventPath,
+                {},
+                { title: "Unauthorized change" },
+            )
+        ).statusCode,
+        403,
+    );
+    assert.equal((await shareHost.raw("DELETE", eventPath)).statusCode, 403);
+    assert.equal(
+        (
+            await shareHost.raw(
                 "POST",
-                `/api/v1/calendar/calendars/${h.delivered.id}/events`,
+                `/api/v1/calendar/calendars/${shareHost.delivered.id}/events`,
                 {},
                 {
                     title: "Unauthorized creation",
@@ -216,107 +229,113 @@ test("a stale delivered write permission cannot override a current read-only Sha
     );
 });
 
-test("Calendar exports reject revoked Share grants through both real adapters", async (t) => {
-    const h = await host(t);
-    const record = await h.capabilities.require("share:getTokenById")(
-        h.token.id,
+test("Calendar exports reject revoked Share grants through both real adapters", async (testContext) => {
+    const shareHost = await host(testContext);
+    const record = await shareHost.capabilities.require("share:getTokenById")(
+        shareHost.token.id,
     );
     const paths = [
         `/api/v1/calendar/ics/share/${record.tokenValue}/Source.ics`,
         `/api/v1/calendar/caldav/share/${record.tokenValue}/Source`,
     ];
     for (const path of paths) {
-        const result = await h.raw("GET", path);
+        const result = await shareHost.raw("GET", path);
         assert.equal(result.statusCode, 200);
         assert.match(result.payload, /Private Event/);
     }
     assert.equal(
         (
-            await h.dispatch(
+            await shareHost.dispatch(
                 "PATCH",
                 "owner-token",
-                `/api/v1/share/tokens/${h.token.id}`,
+                `/api/v1/share/tokens/${shareHost.token.id}`,
                 { grantedCapabilities: [] },
             )
         ).statusCode,
         200,
     );
     for (const path of paths) {
-        const result = await h.raw("GET", path);
+        const result = await shareHost.raw("GET", path);
         assert.equal(result.statusCode, 401);
         assert.doesNotMatch(result.payload, /Private Event/);
     }
 });
 
-test("revoked Calendar delivery is recreated only after an explicit read grant is restored", async (t) => {
-    const h = await host(t);
-    const tokenPath = `/api/v1/share/tokens/${h.token.id}`;
+test("revoked Calendar delivery is recreated only after an explicit read grant is restored", async (testContext) => {
+    const shareHost = await host(testContext);
+    const tokenPath = `/api/v1/share/tokens/${shareHost.token.id}`;
     for (const grants of [[], ["unrelated:read"], ["calendar:write"]]) {
         assert.equal(
             (
-                await h.dispatch("PATCH", "owner-token", tokenPath, {
+                await shareHost.dispatch("PATCH", "owner-token", tokenPath, {
                     grantedCapabilities: grants,
                 })
             ).statusCode,
             200,
         );
-        await h.capabilities.require("calendar:reconcileUserShares")(
+        await shareHost.capabilities.require("calendar:reconcileUserShares")(
             "recipient",
         );
-        const received = await h.dispatch(
+        const received = await shareHost.dispatch(
             "GET",
             "recipient-token",
             "/api/v1/calendar/calendars",
         );
         assert.equal(
-            received.body.data.some((c) => c.visibility === "shared"),
+            received.body.data.some(
+                (calendar) => calendar.visibility === "shared",
+            ),
             false,
         );
     }
     assert.equal(
         (
-            await h.dispatch("PATCH", "owner-token", tokenPath, {
+            await shareHost.dispatch("PATCH", "owner-token", tokenPath, {
                 grantedCapabilities: ["calendar:read"],
             })
         ).statusCode,
         200,
     );
-    await h.capabilities.require("calendar:reconcileUserShares")("recipient");
-    const received = await h.dispatch(
+    await shareHost.capabilities.require("calendar:reconcileUserShares")(
+        "recipient",
+    );
+    const received = await shareHost.dispatch(
         "GET",
         "recipient-token",
         "/api/v1/calendar/calendars",
     );
-    const restored = received.body.data.find((c) => c.visibility === "shared");
+    const restored = received.body.data.find(
+        (calendar) => calendar.visibility === "shared",
+    );
     assert.ok(restored);
     assert.equal(
         (
-            await h.raw(
+            await shareHost.raw(
                 "GET",
-                `/api/v1/calendar/calendars/${restored.id}/events/${h.eventId}`,
+                `/api/v1/calendar/calendars/${restored.id}/events/${shareHost.eventId}`,
             )
         ).statusCode,
         200,
     );
 });
 
-test("retained Calendar delivery cannot outlive its authoritative Share expiry", async (t) => {
-    const h = await host(t);
+test("retained Calendar delivery cannot outlive its authoritative Share expiry", async (testContext) => {
+    const shareHost = await host(testContext);
     const now = Date.now();
-    t.mock.timers.enable({ apis: ["Date"], now });
+    testContext.mock.timers.enable({ apis: ["Date"], now });
     assert.equal(
         (
-            await h.dispatch(
+            await shareHost.dispatch(
                 "PATCH",
                 "owner-token",
-                `/api/v1/share/tokens/${h.token.id}`,
+                `/api/v1/share/tokens/${shareHost.token.id}`,
                 { expiresAt: new Date(now + 60_000).toISOString() },
             )
         ).statusCode,
         200,
     );
-    const eventPath = `/api/v1/calendar/calendars/${h.delivered.id}/events/${h.eventId}`;
-    assert.equal((await h.raw("GET", eventPath)).statusCode, 200);
-    t.mock.timers.tick(60_001);
-    assert.equal((await h.raw("GET", eventPath)).statusCode, 410);
+    const eventPath = `/api/v1/calendar/calendars/${shareHost.delivered.id}/events/${shareHost.eventId}`;
+    assert.equal((await shareHost.raw("GET", eventPath)).statusCode, 200);
+    testContext.mock.timers.tick(60_001);
+    assert.equal((await shareHost.raw("GET", eventPath)).statusCode, 410);
 });

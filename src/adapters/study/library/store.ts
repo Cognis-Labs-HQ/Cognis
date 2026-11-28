@@ -14,11 +14,11 @@ import {
     entryReferenceRows,
     referenceTransformationValue,
 } from "./store/reference-rows.js";
-import type { StructuredDbWhereClause } from "../../../gateways/db/reuse/db-command.js";
+import type { StructuredDatabaseWhereClause } from "../../../gateways/db/reuse/db-command.js";
 import { randomUUID } from "node:crypto";
 import { AsyncLocalStorage } from "node:async_hooks";
 import type { LibraryDictionaryResult } from "./service/dictionary.js";
-import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import { contentEntryId, contentRecordHash } from "./content-pack.js";
 import type {
     LibraryAsset,
@@ -46,18 +46,19 @@ import {
 import { markEntriesViewed, moveEntry, viewedEntryIds } from "./entry-state.js";
 
 export class LibraryStore {
-    private readonly transactionContext = new AsyncLocalStorage<DbExecutor>();
+    private readonly transactionContext =
+        new AsyncLocalStorage<DatabaseExecutor>();
 
-    constructor(private readonly database: DbExecutor) {}
+    constructor(private readonly baseDatabase: DatabaseExecutor) {}
 
-    private get db(): DbExecutor {
-        return this.transactionContext.getStore() ?? this.database;
+    private get db(): DatabaseExecutor {
+        return this.transactionContext.getStore() ?? this.baseDatabase;
     }
 
     async transaction<T>(operation: () => Promise<T>): Promise<T> {
         if (this.transactionContext.getStore()) return operation();
-        return this.database.transaction((executor) => {
-            const scoped: DbExecutor = {
+        return this.baseDatabase.transaction((executor) => {
+            const scoped: DatabaseExecutor = {
                 executeCommand: executor.executeCommand.bind(executor),
                 ensureTable: executor.ensureTable.bind(executor),
                 transaction: (callback) => callback(scoped),
@@ -107,7 +108,7 @@ export class LibraryStore {
     }
 
     private async upsert(
-        db: DbExecutor,
+        db: DatabaseExecutor,
         table: string,
         conflictTarget: string[],
         values: Record<string, unknown>,
@@ -542,7 +543,7 @@ export class LibraryStore {
 
     async resolveDeletionCascade(
         entryIds: readonly string[],
-        db: DbExecutor = this.db,
+        db: DatabaseExecutor = this.db,
         includeRestricted = false,
     ): Promise<readonly string[]> {
         const cascadeIds = new Set(entryIds);
@@ -674,7 +675,7 @@ export class LibraryStore {
             filters.sourceRecordIds?.length === 0
         )
             return [];
-        const where: StructuredDbWhereClause[] = [
+        const where: StructuredDatabaseWhereClause[] = [
             { column: "scope", value: location.scope },
             { column: "scope_id", value: location.scopeId ?? location.scope },
         ];
@@ -705,8 +706,8 @@ export class LibraryStore {
         requestedId?: string,
     ): Promise<LibraryEntry> {
         const id = requestedId ?? randomUUID();
-        await this.db.transaction(async (transactionDb) => {
-            await transactionDb.executeCommand({
+        await this.db.transaction(async (transactionDatabase) => {
+            await transactionDatabase.executeCommand({
                 option: "INSERT",
                 table: "study_library_entries",
                 values: {
@@ -731,7 +732,7 @@ export class LibraryStore {
                     created_by: accountId,
                 },
             });
-            await insertEntryReferences(transactionDb, id, input);
+            await insertEntryReferences(transactionDatabase, id, input);
         });
         return (await this.get(id))!;
     }
@@ -741,8 +742,13 @@ export class LibraryStore {
         input: LibraryEntryInput,
         providerModified = false,
     ): Promise<LibraryEntry> {
-        await this.db.transaction((transactionDb) =>
-            replaceEntryContent(transactionDb, id, input, providerModified),
+        await this.db.transaction((transactionDatabase) =>
+            replaceEntryContent(
+                transactionDatabase,
+                id,
+                input,
+                providerModified,
+            ),
         );
         return (await this.get(id))!;
     }

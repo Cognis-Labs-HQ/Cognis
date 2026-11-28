@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { createMessagesRoutes } from "../../routes/index.js";
 import { issueAccessToken } from "../../../../../gateways/auth/access-tokens.js";
 
-function makeReq(method: string, token: string | null) {
+function makeRequest(method: string, token: string | null) {
     const headers = token ? { authorization: "Bearer " + token } : {};
     return {
         method,
@@ -34,7 +34,7 @@ test("POST /messages/requests/:id/approve reactivates archived DM members", asyn
             if (roomId !== "room-1") return null;
             return { id: "room-1", kind: "dm", title: null, avatarKey: null };
         },
-        async findDmBetween() {
+        async findDirectMessageBetween() {
             return null;
         },
         async createRoom() {
@@ -76,7 +76,7 @@ test("POST /messages/requests/:id/approve reactivates archived DM members", asyn
     let responseBody = "";
 
     const handled = await route(
-        makeReq("POST", token),
+        makeRequest("POST", token),
         {
             writeHead(status: number) {
                 statusCode = status;
@@ -107,7 +107,7 @@ test("POST /messages/rooms reactivates archived members for existing DMs", async
         archived: boolean;
     }> = [];
     const messagesStore = {
-        async findDmBetween() {
+        async findDirectMessageBetween() {
             return { id: "room-existing", kind: "dm", createdBy: "alice" };
         },
         async setArchived(
@@ -154,7 +154,7 @@ test("POST /messages/rooms reactivates archived members for existing DMs", async
     });
     let statusCode = 0;
     let responseBody = "";
-    const req = makeReq("POST", token);
+    const req = makeRequest("POST", token);
     req[Symbol.asyncIterator] = async function* () {
         yield Buffer.from(JSON.stringify({ handles: ["bob"] }));
     };
@@ -186,10 +186,10 @@ test("concurrent direct-room requests create only one room", async () => {
     let createdRoom: { id: string; kind: string } | null = null;
     let createCount = 0;
     const messagesStore = {
-        async findDmBetween() {
+        async findDirectMessageBetween() {
             return createdRoom;
         },
-        async createDm() {
+        async createDirectMessage() {
             createCount += 1;
             await new Promise((resolve) => setTimeout(resolve, 10));
             createdRoom = { id: "room-only", kind: "dm" };
@@ -235,7 +235,7 @@ test("concurrent direct-room requests create only one room", async () => {
         isAdapterEnabled: () => true,
     });
     const invoke = async () => {
-        const request = makeReq("POST", token);
+        const request = makeRequest("POST", token);
         request[Symbol.asyncIterator] = async function* () {
             yield Buffer.from(JSON.stringify({ handles: ["bob"] }));
         };

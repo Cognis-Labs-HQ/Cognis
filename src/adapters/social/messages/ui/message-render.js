@@ -229,15 +229,15 @@ function renderMessageStatus(
         return "";
     }
     if (!isDelivered) {
-        const titleAttr = escapeHtml(
+        const titleAttribute = escapeHtml(
             i18n.t("module.social.messages.receipt_sent"),
         );
-        return `<span class="messages-message-status" title="${titleAttr}" aria-label="${titleAttr}"><span class="messages-status-badge messages-status-badge--sent">${statusUnknownSvgMarkup()}</span></span>`;
+        return `<span class="messages-message-status" title="${titleAttribute}" aria-label="${titleAttribute}"><span class="messages-status-badge messages-status-badge--sent">${statusUnknownSvgMarkup()}</span></span>`;
     }
-    const titleAttr = escapeHtml(
+    const titleAttribute = escapeHtml(
         i18n.t("module.social.messages.receipt_delivered"),
     );
-    return `<span class="messages-message-status" title="${titleAttr}" aria-label="${titleAttr}"><span class="messages-status-badge messages-status-badge--delivered">${statusSentSvgMarkup()}</span></span>`;
+    return `<span class="messages-message-status" title="${titleAttribute}" aria-label="${titleAttribute}"><span class="messages-status-badge messages-status-badge--delivered">${statusSentSvgMarkup()}</span></span>`;
 }
 
 async function formatRoomEventText(message, i18n) {
@@ -371,7 +371,7 @@ function renderReactionRows(message, i18n, isOwn = false) {
             ? `<button type="button" class="messages-reaction-chip messages-reaction-more-btn messages-reaction-more-btn--details" data-reaction-details="1" data-reaction-details-payload="${escapeHtml(reactionDetailsPayload)}" data-message-id="${escapeHtml(message.id)}" title="${escapeHtml(detailsButtonLabel)}">+${escapeHtml(String(hiddenReactionCount))}</button>`
             : "";
     const moreLabel = i18n?.t("module.social.messages.emoji_more") ?? "···";
-    const moreBtn = `<button type="button" class="messages-reaction-more-btn" title="${escapeHtml(moreLabel)}" data-message-id="${escapeHtml(message.id)}" data-reaction-more="1">···</button>`;
+    const moreButton = `<button type="button" class="messages-reaction-more-btn" title="${escapeHtml(moreLabel)}" data-message-id="${escapeHtml(message.id)}" data-reaction-more="1">···</button>`;
     const activeRowClass = hasChips
         ? "messages-reactions-row messages-reactions-row--has-active"
         : "messages-reactions-row";
@@ -379,7 +379,7 @@ function renderReactionRows(message, i18n, isOwn = false) {
         ? "messages-reactions-active messages-reactions-active--has-chips"
         : "messages-reactions-active";
     const ownClass = isOwn ? " messages-reactions-row--own" : "";
-    const pickerRow = `<div class="messages-reaction-picker-row${ownClass}"><span class="messages-reactions-available">${quick}${moreBtn}</span></div>`;
+    const pickerRow = `<div class="messages-reaction-picker-row${ownClass}"><span class="messages-reactions-available">${quick}${moreButton}</span></div>`;
     const activeRow = `<div class="${activeRowClass}${ownClass}"><span class="${activeClass}">${chips}${detailsButton}</span></div>`;
     return {
         pickerRow,
@@ -840,8 +840,8 @@ export async function renderThread(
                 timeLabel || statusBlock
                     ? `<span class="messages-message-meta">${timeLabel}${statusBlock}</span>`
                     : "";
-            const innerMetaRow = isSpeechBubbles ? "" : metadataRow;
-            const outerMetaRow = isSpeechBubbles ? metadataRow : "";
+            const innerMetadataRow = isSpeechBubbles ? "" : metadataRow;
+            const outerMetadataRow = isSpeechBubbles ? metadataRow : "";
             return `${showDateDivider}<div id="message-${escapeHtml(encodeURIComponent(messageRecord.id))}" class="messages-message-row${ownRowClass}" data-message-id="${escapeHtml(messageRecord.id)}" data-search-label="${escapeHtml(displayName)}" data-search-description="${escapeHtml(formatDate(messageRecord.createdAt, ""))}" data-search-text="${escapeHtml([messageSearchText, formatDate(messageRecord.createdAt, "")].filter(Boolean).join(" "))}">
         ${isOwn ? "" : formatMessageAvatar(messageRecord)}
         <div class="messages-message-wrap">
@@ -851,10 +851,10 @@ export async function renderThread(
             ${senderLabel}
             <div class="messages-message-content">
               ${renderMessageBodyMarkup(messageRecord.text)}
-              ${innerMetaRow}
+              ${innerMetadataRow}
             </div>
           </div>
-          ${outerMetaRow}
+          ${outerMetadataRow}
           <span data-search-exclude="true">${reactionRows.activeRow}</span>
         </div>
       </div>`;

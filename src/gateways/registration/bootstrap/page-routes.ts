@@ -42,7 +42,9 @@ export function createRegistrationPageRoutes(
         if (url.pathname !== "/invite") return false;
         const session = ctx.getCookieSession(req);
         if (!session) {
-            res.writeHead(302, { location: "/login?reason=session_expired" });
+            res.writeHead(302, {
+                location: "/login?reason=session_expired",
+            });
             res.end();
             return true;
         }

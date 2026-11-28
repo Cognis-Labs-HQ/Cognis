@@ -1,8 +1,8 @@
 import { textChunks } from "../../../gateways/reuse/text-chunks.js";
 
-export interface KeyringDbExecutor {
+export interface KeyringDatabaseExecutor {
     transaction<T>(
-        operation: (db: KeyringDbExecutor) => Promise<T>,
+        operation: (db: KeyringDatabaseExecutor) => Promise<T>,
     ): Promise<T>;
     ensureTable(input: {
         name: string;
@@ -21,11 +21,11 @@ export interface KeyringVaultStore {
     delete(accountId: string): Promise<void>;
 }
 
-export class DbKeyringVaultStore implements KeyringVaultStore {
-    private readonly db: KeyringDbExecutor;
+class DatabaseKeyringVaultStore implements KeyringVaultStore {
+    private readonly db: KeyringDatabaseExecutor;
 
     constructor(db: unknown) {
-        this.db = db as KeyringDbExecutor;
+        this.db = db as KeyringDatabaseExecutor;
     }
 
     async ensureSchema(): Promise<void> {
@@ -143,3 +143,4 @@ export class DbKeyringVaultStore implements KeyringVaultStore {
         });
     }
 }
+export { DatabaseKeyringVaultStore };

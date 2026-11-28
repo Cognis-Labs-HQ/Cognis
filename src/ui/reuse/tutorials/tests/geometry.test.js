@@ -1,11 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-    clipRect,
+    clipRectangle,
     calloutViewport,
     shadeRegions,
     tutorialViewport,
-    visibleTargetRect,
+    visibleTargetRectangle,
 } from "../geometry.js";
 
 const viewport = { offsetLeft: 60, offsetTop: 150, width: 390, height: 400 };
@@ -43,7 +43,7 @@ test("visible highlighting clips oversized areas to an offset visual viewport", 
         right: 3000,
         bottom: 4000,
     });
-    assert.deepEqual(visibleTargetRect(element, viewport, 12), {
+    assert.deepEqual(visibleTargetRectangle(element, viewport, 12), {
         left: 68,
         top: 158,
         right: 442,
@@ -72,7 +72,7 @@ test("scrolling ancestors clip highlights per axis without growing padding beyon
         { left: 70, top: 100, right: 400, bottom: 1500 },
         scroller,
     );
-    assert.deepEqual(visibleTargetRect(element, viewport, 10), {
+    assert.deepEqual(visibleTargetRectangle(element, viewport, 10), {
         left: 82,
         top: 202,
         right: 282,
@@ -81,19 +81,19 @@ test("scrolling ancestors clip highlights per axis without growing padding beyon
         height: 240,
     });
     scroller.style.overflowX = "visible";
-    assert.equal(visibleTargetRect(element, viewport, 10).width, 342);
+    assert.equal(visibleTargetRectangle(element, viewport, 10).width, 342);
 });
 
 test("fully clipped and offscreen targets have no misleading highlight", () => {
     assert.equal(
-        visibleTargetRect(
+        visibleTargetRectangle(
             target({ left: 0, top: 900, right: 200, bottom: 1000 }),
             viewport,
         ),
         null,
     );
     assert.equal(
-        clipRect(
+        clipRectangle(
             { left: 10, top: 10, right: 20, bottom: 20 },
             { left: 20, top: 0, right: 30, bottom: 100 },
         ),
@@ -154,11 +154,11 @@ test("shade excludes controls and targets even when their regions overlap or ext
         const regions = shadeRegions(bounds, [highlight, menu]);
         for (let row = 0; row < 100; row++) {
             for (let column = 0; column < 120; column++) {
-                const contains = (rect) =>
-                    column >= rect.left &&
-                    column < rect.right &&
-                    row >= rect.top &&
-                    row < rect.bottom;
+                const contains = (rectangle) =>
+                    column >= rectangle.left &&
+                    column < rectangle.right &&
+                    row >= rectangle.top &&
+                    row < rectangle.bottom;
                 assert.equal(
                     regions.filter(contains).length,
                     contains(highlight) || contains(menu) ? 0 : 1,
@@ -209,7 +209,7 @@ test("floating dock highlights follow actual control height below the reserved f
         const element = target(bounds);
         element.closest = () => element;
         element.ownerDocument.defaultView.innerHeight = 600;
-        const visible = visibleTargetRect(
+        const visible = visibleTargetRectangle(
             element,
             { offsetLeft: 0, offsetTop: 80, width: 390, height: 480 },
             8,
@@ -245,7 +245,7 @@ test("overlay input highlights retain their full height when covering shell chro
         "overlay",
     );
     assert.equal(overlayViewport.offsetTop, 0);
-    const highlight = visibleTargetRect(input, overlayViewport, 8);
+    const highlight = visibleTargetRectangle(input, overlayViewport, 8);
     assert.equal(highlight.top, 92);
     assert.equal(highlight.bottom, 152);
     assert.equal(highlight.height, 60);

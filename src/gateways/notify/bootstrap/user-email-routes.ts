@@ -28,7 +28,7 @@ import type { NotificationUserEmailStore } from "./stores.js";
  *   POST   /api/v1/notify/verify-email
  */
 export function createUserEmailRoutes(
-    notifStore: NotificationUserEmailStore,
+    notificationStore: NotificationUserEmailStore,
     tfaService: TfaCodeService,
     verifyTokenService: VerifyTokenService,
     emailDelivery: {
@@ -112,7 +112,7 @@ export function createUserEmailRoutes(
                 return true;
             }
             const [username, email] = identity;
-            await notifStore.verifyUserEmail(username, email);
+            await notificationStore.verifyUserEmail(username, email);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { verified: true } }));
             return true;
@@ -147,7 +147,7 @@ export function createUserEmailRoutes(
             }
 
             if (req.method === "GET") {
-                const emails = await notifStore.getUserEmails(username);
+                const emails = await notificationStore.getUserEmails(username);
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: emails }));
                 return true;
@@ -172,7 +172,8 @@ export function createUserEmailRoutes(
                     );
                     return true;
                 }
-                const existingEmails = await notifStore.getUserEmails(username);
+                const existingEmails =
+                    await notificationStore.getUserEmails(username);
                 const existingEntry = existingEmails.find(
                     (emailEntry) => emailEntry.email === email,
                 );
@@ -192,7 +193,7 @@ export function createUserEmailRoutes(
                     return true;
                 }
                 const takenByOther =
-                    await notifStore.isEmailRegisteredByOtherUser(
+                    await notificationStore.isEmailRegisteredByOtherUser(
                         email,
                         username,
                     );
@@ -227,7 +228,7 @@ export function createUserEmailRoutes(
                     return true;
                 }
 
-                await notifStore.addUserEmail(username, email);
+                await notificationStore.addUserEmail(username, email);
 
                 try {
                     const key = emailVerificationKey(username, email);
@@ -253,10 +254,10 @@ export function createUserEmailRoutes(
                             },
                         }),
                     );
-                } catch (err) {
-                    const msg =
-                        err instanceof Error ? err.message : String(err);
-                    if (msg === "email_rate_limited") {
+                } catch (error) {
+                    const message =
+                        error instanceof Error ? error.message : String(error);
+                    if (message === "email_rate_limited") {
                         res.writeHead(429, {
                             "content-type": "application/json",
                         });
@@ -341,17 +342,25 @@ export function createUserEmailRoutes(
                     url.searchParams.get("force") === "true";
                 try {
                     if (forceUnverified) {
-                        await notifStore.removeUnverifiedEmail(username, email);
+                        await notificationStore.removeUnverifiedEmail(
+                            username,
+                            email,
+                        );
                     } else {
-                        await notifStore.removeUserEmail(username, email);
+                        await notificationStore.removeUserEmail(
+                            username,
+                            email,
+                        );
                     }
                     res.writeHead(200, {
                         "content-type": "application/json",
                     });
                     res.end(JSON.stringify({ data: { removed: true } }));
-                } catch (err) {
+                } catch (error) {
                     const code =
-                        err instanceof Error ? err.message : "remove_failed";
+                        error instanceof Error
+                            ? error.message
+                            : "remove_failed";
                     const status =
                         code === "cannot_remove_primary_email" ||
                         code === "cannot_remove_last_email"
@@ -366,7 +375,7 @@ export function createUserEmailRoutes(
             }
 
             if (req.method === "PUT" && emailAction === "primary") {
-                await notifStore.setPrimaryEmail(username, email);
+                await notificationStore.setPrimaryEmail(username, email);
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: { updated: true } }));
                 return true;
@@ -393,7 +402,7 @@ export function createUserEmailRoutes(
                     );
                     return true;
                 }
-                await notifStore.verifyUserEmail(username, email);
+                await notificationStore.verifyUserEmail(username, email);
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: { verified: true } }));
                 return true;
@@ -414,7 +423,7 @@ export function createUserEmailRoutes(
                     );
                     return true;
                 }
-                const emails = await notifStore.getUserEmails(username);
+                const emails = await notificationStore.getUserEmails(username);
                 const resendTarget = emails.find(
                     (emailEntry) => emailEntry.email === email,
                 );
@@ -469,10 +478,10 @@ export function createUserEmailRoutes(
                             },
                         }),
                     );
-                } catch (err) {
-                    const msg =
-                        err instanceof Error ? err.message : String(err);
-                    if (msg === "email_rate_limited") {
+                } catch (error) {
+                    const message =
+                        error instanceof Error ? error.message : String(error);
+                    if (message === "email_rate_limited") {
                         res.writeHead(429, {
                             "content-type": "application/json",
                         });

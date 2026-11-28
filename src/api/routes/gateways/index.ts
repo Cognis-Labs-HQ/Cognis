@@ -38,7 +38,7 @@ export function createGatewayRoutes(
         res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        const logMeta = {
+        const logMetadata = {
             component: "api-gateways",
             method: req.method ?? "GET",
             path: url.pathname,
@@ -47,7 +47,7 @@ export function createGatewayRoutes(
             const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
             log?.("debug", "Listed gateways.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
                 count: registry.list().length,
             });
@@ -65,7 +65,7 @@ export function createGatewayRoutes(
                     isRoleAllowed(claims.role, section.access),
             );
             log?.("debug", "Listed admin sections.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
                 count: sections.length,
             });
@@ -84,7 +84,7 @@ export function createGatewayRoutes(
             const manifest = registry.get(id);
             if (!manifest) {
                 log?.("warn", "Gateway lookup failed.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: claims.sub,
                     gatewayId: id,
                 });
@@ -100,7 +100,7 @@ export function createGatewayRoutes(
                 return true;
             }
             log?.("debug", "Read gateway manifest.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
                 gatewayId: id,
                 status: manifest.status,
@@ -124,7 +124,7 @@ export function createGatewayRoutes(
                     "warn",
                     "Gateway toggle failed because gateway was not found.",
                     {
-                        ...logMeta,
+                        ...logMetadata,
                         accountId: claims.sub,
                         gatewayId: id,
                         action,
@@ -143,7 +143,7 @@ export function createGatewayRoutes(
             }
             if (entry.required && action === "disable") {
                 log?.("warn", "Blocked attempt to disable required gateway.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: claims.sub,
                     gatewayId: id,
                 });
@@ -165,7 +165,7 @@ export function createGatewayRoutes(
             }
             await persistGatewayState?.(id, action === "enable");
             log?.("info", `Gateway ${action}d.`, {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
                 gatewayId: id,
                 status: action === "enable" ? "active" : "disabled",

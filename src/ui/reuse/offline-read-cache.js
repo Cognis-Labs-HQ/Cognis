@@ -21,8 +21,8 @@ export function createOfflineReadCache({
     maxBytes = 4_000_000,
     maxEntries = 100,
     preferCached = false,
-    refreshIntervalMs = 30_000,
-    onlineMaxAgeMs = 0,
+    refreshIntervalMs: refreshIntervalMs = 30_000,
+    onlineMaxAgeMs: onlineMaxAgeMs = 0,
 } = {}) {
     if (!Number.isFinite(onlineMaxAgeMs) || onlineMaxAgeMs < 0)
         throw new TypeError("invalid_online_cache_age");

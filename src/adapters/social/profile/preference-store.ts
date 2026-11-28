@@ -1,12 +1,12 @@
 import { createHash } from "node:crypto";
-import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../gateways/db/reuse/db-executor.js";
 
 function cacheKey(accountId: string, pageId: string) {
     return createHash("sha256").update(`${accountId}:${pageId}`).digest("hex");
 }
 
-export class DbUserPreferenceStore {
-    constructor(private readonly db: DbExecutor) {}
+class DatabaseUserPreferenceStore {
+    constructor(private readonly db: DatabaseExecutor) {}
 
     async ensureSchema() {
         await this.db.ensureTable({
@@ -68,3 +68,4 @@ export class DbUserPreferenceStore {
         });
     }
 }
+export { DatabaseUserPreferenceStore };

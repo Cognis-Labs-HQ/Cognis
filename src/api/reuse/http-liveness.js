@@ -1,4 +1,7 @@
-export async function checkHttpLiveness(url, { timeoutMs = 5000 } = {}) {
+export async function checkHttpLiveness(
+    url,
+    { timeoutMs: timeoutMs = 5000 } = {},
+) {
     const abortController = new AbortController();
     const timer = setTimeout(() => {
         abortController.abort();

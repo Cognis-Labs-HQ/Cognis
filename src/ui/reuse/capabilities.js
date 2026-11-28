@@ -40,7 +40,7 @@ export function createCapabilityRegistry() {
             if (!key) throw new TypeError("capability_id_required");
             return (...args) => {
                 if (values.has(key)) return invoke(key, args);
-                pending.push({ id: key, args });
+                pending.push({ id: key, args: args });
                 if (pending.length > MAX_PENDING_INVOCATIONS) pending.shift();
                 return Promise.resolve(false);
             };

@@ -35,12 +35,12 @@ import { createTopBanners } from "./top-banners.js";
 import { registerOfflineRuntime } from "./offline-runtime.js";
 import { BROWSER_FLOW_CONTRACTS } from "./flow-contracts.js";
 import { createReuseResources } from "./resources.js";
-import { createSubPageRegistry } from "./sub-page-registry.js";
+import { createNestedPageRegistry } from "./sub-page-registry.js";
 
 function sortHooks(hooks) {
     return [...hooks].sort((left, right) => {
-        const orderDiff = (left.order ?? 0) - (right.order ?? 0);
-        if (orderDiff !== 0) return orderDiff;
+        const orderDifference = (left.order ?? 0) - (right.order ?? 0);
+        if (orderDifference !== 0) return orderDifference;
         return left.id.localeCompare(right.id);
     });
 }
@@ -89,10 +89,10 @@ function createFlowEngine() {
         };
     }
 
-    function extendFlow(flowId, stageId, hookMeta, handler) {
+    function extendFlow(flowId, stageId, hookMetadata, handler) {
         const flow = flows.get(flowId);
         if (!flow) throw new Error(`Flow "${flowId}" is not registered.`);
-        const hookId = String(hookMeta?.id ?? "").trim();
+        const hookId = String(hookMetadata?.id ?? "").trim();
         if (!hookId) return false;
         const stageHooks = flow.stageHooks.get(stageId);
         if (!stageHooks) {
@@ -103,7 +103,10 @@ function createFlowEngine() {
         if (stageHooks.has(hookId)) return false;
         stageHooks.set(hookId, {
             id: hookId,
-            order: typeof hookMeta?.order === "number" ? hookMeta.order : 0,
+            order:
+                typeof hookMetadata?.order === "number"
+                    ? hookMetadata.order
+                    : 0,
             handler,
         });
         return true;
@@ -162,7 +165,7 @@ uiCtx.capabilities.contribute("ui:reuse", createReuseResources());
 if (!uiCtx.capabilities.get("ui:broadcast"))
     uiCtx.capabilities.contribute("ui:broadcast", createTopBanners());
 if (!uiCtx.capabilities.get("ui:subPages"))
-    uiCtx.capabilities.contribute("ui:subPages", createSubPageRegistry());
+    uiCtx.capabilities.contribute("ui:subPages", createNestedPageRegistry());
 
 for (const [flowId, stages] of Object.entries(BROWSER_FLOW_CONTRACTS)) {
     if (!uiCtx.flowExists(flowId)) uiCtx.registerFlow(flowId, stages);

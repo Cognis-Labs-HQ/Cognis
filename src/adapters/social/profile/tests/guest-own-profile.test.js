@@ -60,13 +60,13 @@ for (const guest of [true, false]) {
     });
 }
 
-test("authenticated Share guests do not prepare account-only Profile snapshots", async (t) => {
+test("authenticated Share guests do not prepare account-only Profile snapshots", async (testContext) => {
     const requests = [];
     const host = createOfflineClientFixture(async (path) => {
         requests.push(path);
         return Response.json({ data: {} });
     });
-    t.after(() => host.controller.abort());
+    testContext.after(() => host.controller.abort());
     host.ctx.capabilities.contribute("session:isGuest", () => true);
     const client = loadProfileOfflineClient(host);
     client.registerProfileOfflineClient(host.ctx);

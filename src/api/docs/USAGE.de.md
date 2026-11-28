@@ -10,7 +10,7 @@ Betreiber stellen den Server bereit; veröffentlichte Dokumente benötigen keine
 
 Wähle Info, Nutzung oder Technik und eine Version; prüfe beim Ansichtswechsel die erhaltene Version.
 
-Rufen Sie `store.diff(fromVersion, toVersion)` über einen Speicher auf, der mit der Fähigkeit `docs:versionStore` erstellt wurde. Laufzeitmodule können das strukturierte Ergebnis über ihre eigene authentifizierte Route zurückgeben, `ui:documentDiff` über den Browser-ctx auflösen und das Ergebnis an `renderDocumentDiff(diff)` übergeben.
+Rufen Sie `store.diff(fromVersion, toVersion)` über einen Speicher auf, der mit der Fähigkeit `docs:versionStore` erstellt wurde. Laufzeitmodule können das strukturierte Ergebnis über ihre eigene authentifizierte Route zurückgeben, `ui:documentDiff` über den Browser-ctx auflösen und das Ergebnis an `renderDocumentDifference(diff)` übergeben.
 
 ## Erwartete Ergebnisse
 

@@ -4,46 +4,50 @@ export const PAGE_COMPOSER_GRID_GAP = 8;
 /**
  * Returns the draggable snap increment for an element dimension.
  *
- * @param {number} dim
+ * @param {number} dimension
  * @returns {number}
  */
-export function gridStep(dim) {
-    return dim % 2 === 1 ? 0.5 : 1;
+export function gridStep(dimension) {
+    return dimension % 2 === 1 ? 0.5 : 1;
 }
 
 /**
  * Returns half a grid dimension while preserving half-step placement for odd
  * widths and heights.
  *
- * @param {number} dim
+ * @param {number} dimension
  * @returns {number}
  */
-export function halfGrid(dim) {
-    return dim % 2 === 1 ? dim / 2 : Math.floor(dim / 2);
+export function halfGrid(dimension) {
+    return dimension % 2 === 1 ? dimension / 2 : Math.floor(dimension / 2);
 }
 
 /**
  * Snaps a pixel offset down to the nearest valid grid row/column position.
  *
- * @param {number} px
- * @param {number} dim
+ * @param {number} pixels
+ * @param {number} dimension
  * @param {number} unit
  * @returns {number}
  */
-export function snapGridFloor(px, dim, unit = PAGE_COMPOSER_GRID_UNIT) {
-    const step = gridStep(dim);
-    return Math.floor(px / (unit * step)) * step;
+export function snapGridFloor(
+    pixels,
+    dimension,
+    unit = PAGE_COMPOSER_GRID_UNIT,
+) {
+    const step = gridStep(dimension);
+    return Math.floor(pixels / (unit * step)) * step;
 }
 
 /**
  * Rounds a raw grid coordinate to the nearest valid placement increment.
  *
  * @param {number} raw
- * @param {number} dim
+ * @param {number} dimension
  * @returns {number}
  */
-export function snapGridRound(raw, dim) {
-    const step = gridStep(dim);
+export function snapGridRound(raw, dimension) {
+    const step = gridStep(dimension);
     return Math.round(raw / step) * step;
 }
 
@@ -94,16 +98,20 @@ export function buildOccupiedSet(placements, hidden, excludeId) {
  * Checks whether a proposed placement overlaps an occupied cell.
  *
  * @param {Set<string>} cells
- * @param {number} col
+ * @param {number} column
  * @param {number} row
- * @param {number} w
- * @param {number} h
+ * @param {number} width
+ * @param {number} height
  * @returns {boolean}
  */
-export function checkPlacement(cells, col, row, w, h) {
-    for (let r = row * 2; r < (row + h) * 2; r++) {
-        for (let c = col * 2; c < (col + w) * 2; c++) {
-            if (cells.has(`${c},${r}`)) return false;
+export function checkPlacement(cells, column, row, width, height) {
+    for (let rowIndex = row * 2; rowIndex < (row + height) * 2; rowIndex++) {
+        for (
+            let columnIndex = column * 2;
+            columnIndex < (column + width) * 2;
+            columnIndex++
+        ) {
+            if (cells.has(`${columnIndex},${rowIndex}`)) return false;
         }
     }
     return true;

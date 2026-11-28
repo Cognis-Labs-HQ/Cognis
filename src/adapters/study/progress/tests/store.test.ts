@@ -1,22 +1,22 @@
 import { ProgressService } from "../service.js";
 import assert from "node:assert/strict";
 import test from "node:test";
-import type { StructuredDbCommand } from "../../../../gateways/db/reuse/db-command.js";
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
-import { DbProgressStore } from "../store.js";
+import type { StructuredDatabaseCommand } from "../../../../gateways/db/reuse/db-command.js";
+import type { DatabaseExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import { DatabaseProgressStore } from "../store.js";
 import type {
     LearningEvent,
     ProgressProjection,
 } from "../../../../gateways/study/reuse/progress.js";
 
-function persistentExecutor(): DbExecutor {
+function persistentExecutor(): DatabaseExecutor {
     const tables = new Map<string, Array<Record<string, unknown>>>();
-    const executor: DbExecutor = {
+    const executor: DatabaseExecutor = {
         ensureTable: async (definition) => {
             if (!tables.has(definition.name)) tables.set(definition.name, []);
         },
         transaction: async (callback) => callback(executor),
-        executeCommand: async (command: StructuredDbCommand) => {
+        executeCommand: async (command: StructuredDatabaseCommand) => {
             if (command.option === "INSERT") {
                 for (const value of Object.values(command.values))
                     if (typeof value === "string" && value.includes("\u0000"))
@@ -87,7 +87,7 @@ function learningEvent(durationMs = 800): LearningEvent {
         correct: true,
         independentCorrect: true,
         hints: 0,
-        durationMs,
+        durationMs: durationMs,
         completion: "completed",
         metadata: {},
     };
@@ -95,11 +95,11 @@ function learningEvent(durationMs = 800): LearningEvent {
 
 test("DB progress survives store recreation and enforces idempotency", async () => {
     const databaseExecutor = persistentExecutor();
-    const firstStore = new DbProgressStore(databaseExecutor);
+    const firstStore = new DatabaseProgressStore(databaseExecutor);
     await firstStore.ensureSchema();
     assert.equal(await firstStore.append(learningEvent()), "inserted");
 
-    const restoredStore = new DbProgressStore(databaseExecutor);
+    const restoredStore = new DatabaseProgressStore(databaseExecutor);
     assert.deepEqual(await restoredStore.all(), [learningEvent()]);
     assert.equal(await restoredStore.append(learningEvent()), "duplicate");
     await assert.rejects(
@@ -110,7 +110,7 @@ test("DB progress survives store recreation and enforces idempotency", async () 
 
 test("idempotent events compare object values independent of key order", async () => {
     const databaseExecutor = persistentExecutor();
-    const store = new DbProgressStore(databaseExecutor);
+    const store = new DatabaseProgressStore(databaseExecutor);
     await store.ensureSchema();
     const original = {
         ...learningEvent(),
@@ -138,7 +138,7 @@ test("idempotent events compare object values independent of key order", async (
 
 test("DB progress atomically replaces rebuildable projections", async () => {
     const databaseExecutor = persistentExecutor();
-    const store = new DbProgressStore(databaseExecutor);
+    const store = new DatabaseProgressStore(databaseExecutor);
     await store.ensureSchema();
     const projection: ProgressProjection = {
         actorId: "actor-one",
@@ -161,7 +161,7 @@ test("DB progress atomically replaces rebuildable projections", async () => {
 
 test("DB progress atomically permits one correction per target", async () => {
     const databaseExecutor = persistentExecutor();
-    const store = new DbProgressStore(databaseExecutor);
+    const store = new DatabaseProgressStore(databaseExecutor);
     await store.ensureSchema();
     const firstCorrection = {
         ...learningEvent(),
@@ -181,7 +181,7 @@ test("DB progress atomically permits one correction per target", async () => {
 
 test("projection identity stays distinct when valid identity fields contain delimiter characters", async () => {
     const databaseExecutor = persistentExecutor();
-    const store = new DbProgressStore(databaseExecutor);
+    const store = new DatabaseProgressStore(databaseExecutor);
     await store.ensureSchema();
     const service = new ProgressService(store);
     for (const [actorId, schema, id] of [

@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { InMemoryTestExecutor } from "../../../../gateways/db/tests/in-memory-test-executor.js";
-import { DbProfileStore } from "../store.js";
+import { DatabaseProfileStore } from "../store.js";
 import { VolatileProfileStore } from "../store-contract.js";
 
 for (const role of [
@@ -14,11 +14,12 @@ for (const role of [
     test(`${role} profiles default to friends visibility`, async () => {
         const stores = [
             new VolatileProfileStore(),
-            new DbProfileStore(new InMemoryTestExecutor()),
+            new DatabaseProfileStore(new InMemoryTestExecutor()),
         ];
 
         for (const store of stores) {
-            if (store instanceof DbProfileStore) await store.ensureSchema();
+            if (store instanceof DatabaseProfileStore)
+                await store.ensureSchema();
             const profile = await store.createProfile(role, role, role);
             assert.equal(profile?.visibility, "friends");
         }
@@ -28,11 +29,12 @@ for (const role of [
         test(`${role} profiles can be changed to private or hidden`, async () => {
             const stores = [
                 new VolatileProfileStore(),
-                new DbProfileStore(new InMemoryTestExecutor()),
+                new DatabaseProfileStore(new InMemoryTestExecutor()),
             ];
 
             for (const store of stores) {
-                if (store instanceof DbProfileStore) await store.ensureSchema();
+                if (store instanceof DatabaseProfileStore)
+                    await store.ensureSchema();
                 await store.createProfile(role, role, role);
 
                 for (const visibility of ["private", "hidden"] as const) {
@@ -49,11 +51,12 @@ for (const role of [
     test(`${role} role updates set profile visibility to friends`, async () => {
         const stores = [
             new VolatileProfileStore(),
-            new DbProfileStore(new InMemoryTestExecutor()),
+            new DatabaseProfileStore(new InMemoryTestExecutor()),
         ];
 
         for (const store of stores) {
-            if (store instanceof DbProfileStore) await store.ensureSchema();
+            if (store instanceof DatabaseProfileStore)
+                await store.ensureSchema();
             await store.createProfile(role, role, "user");
             await store.setRoleByHandle(role, role);
             assert.equal((await store.getProfile(role))?.role, role);
@@ -64,7 +67,7 @@ for (const role of [
 
 test("profile store resolves handles case-insensitively", async () => {
     const databaseExecutor = new InMemoryTestExecutor();
-    const store = new DbProfileStore(databaseExecutor);
+    const store = new DatabaseProfileStore(databaseExecutor);
     await store.ensureSchema();
     await store.createProfile("alice-account", "AliceUser", "user", "Alice");
 
@@ -78,11 +81,11 @@ test("profile store resolves handles case-insensitively", async () => {
 test("profile store makes synchronized external handles searchable", async () => {
     const stores = [
         new VolatileProfileStore(),
-        new DbProfileStore(new InMemoryTestExecutor()),
+        new DatabaseProfileStore(new InMemoryTestExecutor()),
     ];
 
     for (const store of stores) {
-        if (store instanceof DbProfileStore) await store.ensureSchema();
+        if (store instanceof DatabaseProfileStore) await store.ensureSchema();
         await store.createProfile(
             "opaque-external-account",
             "opaque-external-account",
@@ -104,7 +107,7 @@ test("profile store makes synchronized external handles searchable", async () =>
 
 test("profile store search can require a follow relationship", async () => {
     const databaseExecutor = new InMemoryTestExecutor();
-    const store = new DbProfileStore(databaseExecutor);
+    const store = new DatabaseProfileStore(databaseExecutor);
     await store.ensureSchema();
     await store.createProfile("alice-account", "alice", "user", "Alice");
     await store.createProfile("bob-account", "bob", "user", "Bob Teacher");
@@ -131,7 +134,7 @@ test("profile store search can require a follow relationship", async () => {
 
 test("profile store search returns every match when no limit is supplied", async () => {
     const databaseExecutor = new InMemoryTestExecutor();
-    const store = new DbProfileStore(databaseExecutor);
+    const store = new DatabaseProfileStore(databaseExecutor);
     await store.ensureSchema();
     for (let index = 0; index < 12; index += 1) {
         await store.createProfile(

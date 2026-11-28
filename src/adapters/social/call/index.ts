@@ -15,11 +15,11 @@ import { createCallRoutes } from "./routes/index.js";
 let adapterReady = false;
 const CALL_NOTIFICATION_LOCALES = ["de", "en", "id", "ja"];
 
-async function loadNotificationTranslations(uiDir: string) {
+async function loadNotificationTranslations(uiDirectory: string) {
     const entries = await Promise.all(
         CALL_NOTIFICATION_LOCALES.map(async (locale) => {
             const xml = await readFile(
-                path.join(uiDir, "languages", locale, "strings.xml"),
+                path.join(uiDirectory, "languages", locale, "strings.xml"),
                 "utf8",
             );
             const readString = (key: string) =>
@@ -42,10 +42,10 @@ async function loadNotificationTranslations(uiDir: string) {
     return Object.fromEntries(entries);
 }
 
-async function loadNotificationActionIcons(uiDir: string) {
+async function loadNotificationActionIcons(uiDirectory: string) {
     const [answer, decline] = await Promise.all([
-        readFile(path.join(uiDir, "answer.svg"), "utf8"),
-        readFile(path.join(uiDir, "decline.svg"), "utf8"),
+        readFile(path.join(uiDirectory, "answer.svg"), "utf8"),
+        readFile(path.join(uiDirectory, "decline.svg"), "utf8"),
     ]);
     return { answer, decline };
 }
@@ -105,12 +105,14 @@ export async function bootstrapSocialAdapter(
         ctx.capabilities.get<(value: AppendCallEvent) => Promise<unknown>>(
             "social:messages:appendRoomEvent",
         )?.(input) ?? Promise.resolve();
-    const uiDir = path.resolve(
+    const uiDirectory = path.resolve(
         path.dirname(fileURLToPath(import.meta.url)),
         "ui",
     );
-    const notificationTranslations = await loadNotificationTranslations(uiDir);
-    const notificationActionIcons = await loadNotificationActionIcons(uiDir);
+    const notificationTranslations =
+        await loadNotificationTranslations(uiDirectory);
+    const notificationActionIcons =
+        await loadNotificationActionIcons(uiDirectory);
     ctx.capabilities.get<(id: string, label: string) => void>(
         "notify:registerCategory",
     )?.("calls", "Calls");
@@ -127,7 +129,7 @@ export async function bootstrapSocialAdapter(
         ),
         "social",
     );
-    ctx.registerAdapterStaticDir?.("social", "call", uiDir);
+    ctx.registerAdapterStaticDirectory?.("social", "call", uiDirectory);
     ctx.registerCapabilityProvider?.({
         scriptUrl: "/static/adapters/social/call/provider.js",
         providesCapabilities: ["social:callUi"],

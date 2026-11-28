@@ -1,3 +1,4 @@
+import { bindDependencyLinks } from "./dependency-links.js";
 import {
     createAdministrationSave,
     confirmAdministrationSectionSwitch,
@@ -20,7 +21,7 @@ import {
     bindModuleConfigureButtons as bindAdministrationModuleConfigureButtons,
     bindModuleToggles as bindAdministrationModuleToggles,
 } from "./bind-module-controls.js";
-import { initSecuritySection } from "./security.js";
+import { initializeSecuritySection } from "./security.js";
 import {
     bindExpandedStateListeners,
     bindDetailsToggleClicks,
@@ -48,7 +49,6 @@ import {
 import {
     renderComponentsContent,
     renderStatusContent,
-    buildScrollTargetId,
 } from "./render-components.js";
 import {
     getAdapterDisableContext,
@@ -179,20 +179,22 @@ function bindGatewayToggles() {
             const gateway = gatewayById.get(gatewayId);
 
             if (action === "enable") {
-                const disabledDeps = (gateway?.requires ?? []).filter(
-                    (depId) => {
-                        const dep = gatewayById.get(depId);
-                        return dep && dep.status === "disabled";
+                const disabledDependencies = (gateway?.requires ?? []).filter(
+                    (dependencyId) => {
+                        const dependency = gatewayById.get(dependencyId);
+                        return dependency && dependency.status === "disabled";
                     },
                 );
-                if (disabledDeps.length > 0) {
-                    const depNames = disabledDeps.map((depId) => {
-                        const dep = gatewayById.get(depId);
-                        return dep ? dep.name : depId;
-                    });
+                if (disabledDependencies.length > 0) {
+                    const dependencyNames = disabledDependencies.map(
+                        (dependencyId) => {
+                            const dependency = gatewayById.get(dependencyId);
+                            return dependency ? dependency.name : dependencyId;
+                        },
+                    );
                     const result = await openPopup({
                         title: i18n.t("ui.app.admin.enable_confirm_gateway"),
-                        body: `<p>${i18n.t("ui.app.admin.enable_deps_will_enable")}</p><ul>${depNames.map((n) => `<li><strong>${escapeHtml(n)}</strong></li>`).join("")}</ul>`,
+                        body: `<p>${i18n.t("ui.app.admin.enable_deps_will_enable")}</p><ul>${dependencyNames.map((dependencyName) => `<li><strong>${escapeHtml(dependencyName)}</strong></li>`).join("")}</ul>`,
                         actions: [
                             {
                                 id: "confirm",
@@ -210,8 +212,8 @@ function bindGatewayToggles() {
                         toggle.checked = previousState;
                         return;
                     }
-                    for (const depId of disabledDeps) {
-                        await toggleGateway(depId, "enable");
+                    for (const dependencyId of disabledDependencies) {
+                        await toggleGateway(dependencyId, "enable");
                     }
                     await reloadGatewaysAndAdapters();
                 }
@@ -382,42 +384,54 @@ function bindAdapterToggles() {
                     return;
                 }
                 const requires = adapter?.requires ?? [];
-                const disabledDepNames = [];
-                const disabledGatewayDeps = [];
-                const disabledAdapterDeps = [];
+                const disabledDependencyNames = [];
+                const disabledGatewayDependencies = [];
+                const disabledAdapterDependencies = [];
 
                 for (const req of requires) {
                     const parts = req.split(":");
                     if (parts.length === 2) {
-                        const [depGwId, depAdapterId] = parts;
-                        const depAdapter = adapterByCompositeKey.get(
-                            adapterCompositeKey(depGwId, depAdapterId),
+                        const [dependencyGatewayId, dependencyAdapterId] =
+                            parts;
+                        const dependencyAdapter = adapterByCompositeKey.get(
+                            adapterCompositeKey(
+                                dependencyGatewayId,
+                                dependencyAdapterId,
+                            ),
                         );
                         if (
-                            depAdapter &&
-                            !(depAdapter.active ?? depAdapter.enabled)
+                            dependencyAdapter &&
+                            !(
+                                dependencyAdapter.active ??
+                                dependencyAdapter.enabled
+                            )
                         ) {
-                            disabledAdapterDeps.push({
-                                gatewayId: depGwId,
-                                adapterId: depAdapterId,
+                            disabledAdapterDependencies.push({
+                                gatewayId: dependencyGatewayId,
+                                adapterId: dependencyAdapterId,
                             });
-                            disabledDepNames.push(
-                                depAdapter.name ?? depAdapterId,
+                            disabledDependencyNames.push(
+                                dependencyAdapter.name ?? dependencyAdapterId,
                             );
                         }
                     } else {
-                        const depGw = gatewayById.get(req);
-                        if (depGw && depGw.status === "disabled") {
-                            disabledGatewayDeps.push(req);
-                            disabledDepNames.push(depGw.name ?? req);
+                        const dependencyGateway = gatewayById.get(req);
+                        if (
+                            dependencyGateway &&
+                            dependencyGateway.status === "disabled"
+                        ) {
+                            disabledGatewayDependencies.push(req);
+                            disabledDependencyNames.push(
+                                dependencyGateway.name ?? req,
+                            );
                         }
                     }
                 }
 
-                if (disabledDepNames.length > 0) {
+                if (disabledDependencyNames.length > 0) {
                     const result = await openPopup({
                         title: i18n.t("ui.app.admin.enable_confirm_adapter"),
-                        body: `<p>${i18n.t("ui.app.admin.enable_deps_will_enable")}</p><ul>${disabledDepNames.map((n) => `<li><strong>${escapeHtml(n)}</strong></li>`).join("")}</ul>`,
+                        body: `<p>${i18n.t("ui.app.admin.enable_deps_will_enable")}</p><ul>${disabledDependencyNames.map((dependencyName) => `<li><strong>${escapeHtml(dependencyName)}</strong></li>`).join("")}</ul>`,
                         actions: [
                             {
                                 id: "confirm",
@@ -435,16 +449,19 @@ function bindAdapterToggles() {
                         toggle.checked = previouslyChecked;
                         return;
                     }
-                    for (const depGwId of disabledGatewayDeps) {
-                        await toggleGateway(depGwId, "enable");
+                    for (const dependencyGatewayId of disabledGatewayDependencies) {
+                        await toggleGateway(dependencyGatewayId, "enable");
                     }
-                    for (const dep of disabledAdapterDeps) {
+                    for (const dependency of disabledAdapterDependencies) {
                         const dependentAdapter = adapterByCompositeKey.get(
-                            adapterCompositeKey(dep.gatewayId, dep.adapterId),
+                            adapterCompositeKey(
+                                dependency.gatewayId,
+                                dependency.adapterId,
+                            ),
                         );
                         await toggleAdapter(
-                            dep.gatewayId,
-                            dep.adapterId,
+                            dependency.gatewayId,
+                            dependency.adapterId,
                             "enable",
                             dependentAdapter ?? null,
                         );
@@ -528,17 +545,18 @@ function bindAdapterRows() {
             adapterCompositeKey(gatewayId, adapterId),
         ) ?? { senderId: adapterId, name: adapterId };
 
-        async function handleOpen(e) {
-            if (e.target.closest?.("[data-details-toggle]")) return;
+        async function handleOpen(event) {
+            if (event.target.closest?.("[data-details-toggle]")) return;
             const switchLabel = row.querySelector(".switch--inline");
             if (
                 switchLabel &&
-                (e.target === switchLabel || switchLabel.contains(e.target))
+                (event.target === switchLabel ||
+                    switchLabel.contains(event.target))
             ) {
                 return;
             }
-            e.preventDefault();
-            e.stopPropagation();
+            event.preventDefault();
+            event.stopPropagation();
             const openedSettings = await openAdapterConfig(
                 gatewayId,
                 adapterId,
@@ -551,8 +569,8 @@ function bindAdapterRows() {
         }
 
         row.addEventListener("click", handleOpen);
-        row.addEventListener("keydown", (e) => {
-            if (e.key === "Enter" || e.key === " ") handleOpen(e);
+        row.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") handleOpen(event);
         });
     });
 }
@@ -562,9 +580,9 @@ function bindStatusRerun() {
     if (!rerunButton) return;
     rerunButton.addEventListener("click", async () => {
         /** @type {HTMLButtonElement} */
-        const btn = rerunButton;
-        btn.disabled = true;
-        btn.textContent = i18n.t("ui.app.admin.checking");
+        const button = rerunButton;
+        button.disabled = true;
+        button.textContent = i18n.t("ui.app.admin.checking");
         const [nextHealthStatus, nextIntegrityRows] = await Promise.all([
             loadHealth(),
             loadIntegrity(),
@@ -572,61 +590,6 @@ function bindStatusRerun() {
         healthStatus = nextHealthStatus;
         integrityRows = nextIntegrityRows;
         composer.refresh(elements);
-    });
-}
-
-function bindDependencyLinks() {
-    root.querySelectorAll("a[data-scroll-to]").forEach((link) => {
-        if (!(link instanceof HTMLAnchorElement)) return;
-        const targetId = link.dataset.scrollTo;
-        if (!targetId) return;
-        link.addEventListener("click", (e) => {
-            e.preventDefault();
-            if (link.closest(".adapter-inline-row")) {
-                // Stop propagation so the adapter row's click handler (which opens its config panel) does not fire when clicking a synced-pill link.
-                e.stopPropagation();
-            }
-            let targetElement = null;
-            if (targetId.startsWith("gateway-")) {
-                targetElement = root.querySelector(
-                    `[data-gateway="${CSS.escape(targetId.replace(/^gateway-/, ""))}"]`,
-                );
-            } else if (targetId.startsWith("module-")) {
-                targetElement = root.querySelector(
-                    `[data-module="${CSS.escape(targetId.replace(/^module-/, ""))}"]`,
-                );
-            } else if (targetId.startsWith("adapter-")) {
-                const adapterRows = root.querySelectorAll(
-                    ".adapter-inline-row[data-gateway-id][data-adapter-id]",
-                );
-                for (const row of adapterRows) {
-                    if (!(row instanceof HTMLElement)) continue;
-                    const rowGatewayId = row.dataset.gatewayId;
-                    const rowAdapterId = row.dataset.adapterId;
-                    if (
-                        rowGatewayId &&
-                        rowAdapterId &&
-                        buildScrollTargetId(rowGatewayId, rowAdapterId) ===
-                            targetId
-                    ) {
-                        targetElement = row;
-                        break;
-                    }
-                }
-            }
-            if (!(targetElement instanceof HTMLElement)) return;
-            const gatewayContainer = targetElement.closest("[data-gateway]");
-            if (gatewayContainer instanceof HTMLElement) {
-                gatewayContainer.setAttribute("open", "");
-            }
-            requestAnimationFrame(() => {
-                targetElement.scrollIntoView({
-                    behavior: "smooth",
-                    block: "center",
-                    inline: "nearest",
-                });
-            });
-        });
     });
 }
 
@@ -662,8 +625,8 @@ async function openAdapterConfig(gatewayId, adapterId, name, adapterOverride = n
     });
 }
 
-export async function mount(rootEl, { signal } = {}) {
-    root = rootEl;
+export async function mount(rootElement, { signal } = {}) {
+    root = rootElement;
     i18n = await createI18n();
     i18n = await extendI18n(i18n, "/static/gateways/tfa/languages");
     applyDocumentTitle(i18n, "ui.page.title.administration");
@@ -681,16 +644,16 @@ export async function mount(rootEl, { signal } = {}) {
     integrityRows = loadedIntegrityRows;
     await reloadGatewaysAndAdapters();
 
-    securitySection = initSecuritySection(root, {
+    securitySection = initializeSecuritySection(root, {
         i18n,
         signal,
         onDirtyChange: (dirty) => changesBar?.markDirty("security", dirty),
     });
 
-    const sectionMeta = await loadAdminSections();
+    const sectionMetadata = await loadAdminSections();
     gatewaySections = (
         await Promise.all(
-            sectionMeta.map((section) =>
+            sectionMetadata.map((section) =>
                 loadGatewaySection(section, {
                     i18n,
                     extendI18n,
@@ -761,7 +724,7 @@ export async function mount(rootEl, { signal } = {}) {
                     bindAdapterRows();
                     bindSummarySliderClicks(root);
                     bindDetailsToggleClicks(root);
-                    bindDependencyLinks();
+                    bindDependencyLinks(root);
                     restoreExpandedState(root);
                     syncRuntimeToggleControls();
                     bindExpandedStateListeners(root);
@@ -832,23 +795,23 @@ export async function mount(rootEl, { signal } = {}) {
 
     elements = [
         ...baseElements,
-        ...topLevelGatewaySections.map((sec) => ({
-            id: sec.id,
-            label: sec.label,
+        ...topLevelGatewaySections.map((seconds) => ({
+            id: seconds.id,
+            label: seconds.label,
             subComposerOptions: {
-                ...sec.subComposerOptions,
-                onRender: () => sec.subComposerOptions?.onRender?.(root),
+                ...seconds.subComposerOptions,
+                onRender: () => seconds.subComposerOptions?.onRender?.(root),
             },
         })),
     ];
 
-    const navItems = [
+    const navigationItems = [
         `<li><button data-composer-scroll="components">${i18n.t("ui.app.admin.components")}</button></li>`,
         `<li><button data-composer-scroll="status">${i18n.t("ui.reuse.status")}</button></li>`,
         `<li><button data-composer-scroll="security">${i18n.t("ui.app.admin.security.title")}</button></li>`,
         ...topLevelGatewaySections.map(
-            (sec) =>
-                `<li><button data-composer-scroll="${escapeHtml(sec.id)}">${escapeHtml(sec.label)}</button></li>`,
+            (seconds) =>
+                `<li><button data-composer-scroll="${escapeHtml(seconds.id)}">${escapeHtml(seconds.label)}</button></li>`,
         ),
     ];
 
@@ -879,7 +842,7 @@ export async function mount(rootEl, { signal } = {}) {
                 render: () => `
         <h2>${i18n.t("ui.reuse.administration")}</h2>
         <ul>
-          ${navItems.join("\n")}
+          ${navigationItems.join("\n")}
         </ul>
       `,
             },
@@ -922,9 +885,9 @@ export async function mount(rootEl, { signal } = {}) {
 
     window.addEventListener(
         "beforeunload",
-        (e) => {
+        (event) => {
             if (changesBar?.isAnyDirty()) {
-                e.preventDefault();
+                event.preventDefault();
             }
         },
         { signal },

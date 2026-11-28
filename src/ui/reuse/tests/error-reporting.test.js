@@ -3,13 +3,13 @@ import test from "node:test";
 import { reportClientError } from "../error-reporting.js";
 import { subscribeDiagnostics } from "../../../tooling/reuse/diagnostic-fixture.ts";
 
-test("client failures and early callbacks reach gateway diagnostics with safe context", async (t) => {
+test("client failures and early callbacks reach gateway diagnostics with safe context", async (testContext) => {
     const entries = [];
     const release = subscribeDiagnostics(async (entry) => {
         entries.push(entry);
         return true;
     });
-    t.after(release);
+    testContext.after(release);
     assert.equal(
         await reportClientError({
             component: "public-page",

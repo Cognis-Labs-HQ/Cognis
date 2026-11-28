@@ -26,17 +26,23 @@ test("advanced preferences require remembered consent and use dirty tracking", (
     assert.match(editorSource, /await saveAcknowledgement\?\.\(\)/);
     assert.match(acknowledgementSource, /preferences-editor-acknowledgement/);
     assert.match(editorSource, /createFormDirtyTracker\(editor\.parentElement/);
-    assert.match(settingsSource, /advancedPrefs\.getPreferences\(\)/);
+    assert.match(settingsSource, /advancedPreferences\.getPreferences\(\)/);
     assert.match(settingsSource, /preferences_invalid_json/);
 });
 
 test("dirty form controls are merged when advanced preferences are edited", () => {
-    assert.match(settingsSource, /if \(fontPrefs\?\.isDirty\(\)\)/);
-    assert.match(settingsSource, /if \(languagePrefs\?\.isDirty\(\)\)/);
-    assert.match(settingsSource, /if \(themePrefs\?\.isDirty\(\)\)/);
-    assert.match(settingsSource, /if \(datetimePrefs\?\.isDirty\(\)\)/);
-    assert.match(settingsSource, /if \(messageStylePrefs\?\.isDirty\(\)\)/);
-    assert.match(settingsSource, /if \(releaseNotesPrefs\?\.isDirty\(\)\)/);
+    assert.match(settingsSource, /if \(fontPreferences\?\.isDirty\(\)\)/);
+    assert.match(settingsSource, /if \(languagePreferences\?\.isDirty\(\)\)/);
+    assert.match(settingsSource, /if \(themePreferences\?\.isDirty\(\)\)/);
+    assert.match(settingsSource, /if \(datetimePreferences\?\.isDirty\(\)\)/);
+    assert.match(
+        settingsSource,
+        /if \(messageStylePreferences\?\.isDirty\(\)\)/,
+    );
+    assert.match(
+        settingsSource,
+        /if \(releaseNotesPreferences\?\.isDirty\(\)\)/,
+    );
 });
 
 test("release acknowledgement state is stored outside editable UI preferences", () => {
@@ -53,8 +59,11 @@ test("release changelog headings link to their full changelog documents", () => 
 });
 
 test("release changelog summaries display short commit references", () => {
-    assert.match(releasePopupSource, /linkShortCommitRefs\(detail\)/);
-    assert.match(releasePopupSource, /linkShortCommitRefs\(changeHeading\)/);
+    assert.match(releasePopupSource, /linkShortCommitReferences\(detail\)/);
+    assert.match(
+        releasePopupSource,
+        /linkShortCommitReferences\(changeHeading\)/,
+    );
 });
 
 test("release changelogs remain safe when editable preferences contain no seen slugs", () => {

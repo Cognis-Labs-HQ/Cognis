@@ -612,7 +612,7 @@ test("Study Library unfolds structured character variants", () => {
     assert.match(source, /function overflowScore/);
     assert.match(source, /function collisionScore/);
     assert.match(source, /function overlapArea/);
-    assert.match(source, /const occupiedRects/);
+    assert.match(source, /const occupiedRectangles/);
     assert.match(source, /function variantDirectionCandidates/);
     assert.match(source, /DIRECTION_ALTERNATIVES/);
     assert.match(source, /grid\.querySelectorAll/);

@@ -102,7 +102,9 @@ function createStudyAdapterRoutes(
             if (req.method === "GET") {
                 const config = gateway.getAdapterConfig(adapterId);
                 if (config === null) {
-                    res.writeHead(404, { "content-type": "application/json" });
+                    res.writeHead(404, {
+                        "content-type": "application/json",
+                    });
                     res.end(
                         JSON.stringify({
                             error: {
@@ -130,7 +132,9 @@ function createStudyAdapterRoutes(
 
             if (req.method === "PUT") {
                 if (!gateway.getAdapter(adapterId)) {
-                    res.writeHead(404, { "content-type": "application/json" });
+                    res.writeHead(404, {
+                        "content-type": "application/json",
+                    });
                     res.end(
                         JSON.stringify({
                             error: {
@@ -175,7 +179,9 @@ function createStudyAdapterRoutes(
             if (action === "enable") {
                 const gatewayEntry = gatewayRegistry.get(gatewayId);
                 if (gatewayEntry?.status === "disabled") {
-                    res.writeHead(409, { "content-type": "application/json" });
+                    res.writeHead(409, {
+                        "content-type": "application/json",
+                    });
                     res.end(
                         JSON.stringify({
                             error: {
@@ -504,8 +510,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         flow: ctx.flow,
         registerRoute: (handler, gatewayId) =>
             ctx.routeRegistry.register(handler, gatewayId ?? "study"),
-        registerAdapterStaticDir: (gatewayId, adapterId, dir) => {
-            if (!ctx.uiRegistry?.registerAdapterStaticDir) {
+        registerAdapterStaticDirectory: (gatewayId, adapterId, dir) => {
+            if (!ctx.uiRegistry?.registerAdapterStaticDirectory) {
                 ctx.log?.(
                     "warn",
                     "Study adapter UI static directory registration skipped because the UI registry does not support adapter static dirs.",
@@ -513,12 +519,16 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                         component: "study-gateway",
                         gatewayId,
                         adapterId,
-                        dir,
+                        dir: dir,
                     },
                 );
                 return;
             }
-            ctx.uiRegistry.registerAdapterStaticDir(gatewayId, adapterId, dir);
+            ctx.uiRegistry.registerAdapterStaticDirectory(
+                gatewayId,
+                adapterId,
+                dir,
+            );
         },
         log: ctx.log,
     });
@@ -528,7 +538,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         adapterCount: gateway.listAdapters().length,
     });
 
-    ctx.uiRegistry?.registerStaticDir("study", path.join(GATEWAY_ROOT, "ui"));
+    ctx.uiRegistry?.registerStaticDirectory(
+        "study",
+        path.join(GATEWAY_ROOT, "ui"),
+    );
     const studyStylesheets = [
         "/static/styles/page-builder.css",
         "/static/styles/reuse/page-sections.css",

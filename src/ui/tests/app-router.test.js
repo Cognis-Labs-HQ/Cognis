@@ -76,15 +76,15 @@ test("all dashboard pages call mount on direct browser load", () => {
     }
 });
 
-test("router exports initRouter, navigateTo and getCurrentBase", () => {
+test("router exports initializeRouter, navigateTo and getCurrentBase", () => {
     const src = readFileSync(
         resolve(ROOT, "src/ui/reuse/app-router.js"),
         "utf8",
     );
     assert.match(
         src,
-        /export function initRouter\(/,
-        "app-router.js must export initRouter",
+        /export function initializeRouter\(/,
+        "app-router.js must export initializeRouter",
     );
     assert.match(
         src,
@@ -282,7 +282,8 @@ test("router resets page actions and prepares retained styles before mounting", 
     assert.match(src, /capabilities\.get\("page:actions"\)\?\.reset/);
     assert.match(src, /preparePageStylesheets\(/);
     assert.ok(
-        src.indexOf("commitPageStylesheets()") < src.indexOf("await mod.mount"),
+        src.indexOf("commitPageStylesheets()") <
+            src.indexOf("await moduleExports.mount"),
         "destination styles must be ready before page layout calculations",
     );
 });
@@ -310,7 +311,7 @@ test("router guards against re-initialisation while refreshing its root", () => 
     assert.match(
         src,
         /routerState.initialized/,
-        "app-router.js must guard initRouter against being called twice",
+        "app-router.js must guard initializeRouter against being called twice",
     );
     assert.match(
         src,
@@ -333,7 +334,7 @@ test("router resolves #app before mounting routes", () => {
     assert.match(src, /const routeRoot = resolveRouterRoot\(\);/);
     assert.match(
         src,
-        /await mod\.mount\(routeRoot, \{[\s\S]*signal,[\s\S]*shareContext:/,
+        /await moduleExports\.mount\(routeRoot, \{[\s\S]*signal,[\s\S]*shareContext:/,
     );
 });
 
@@ -344,12 +345,12 @@ test("dashboard-layout initialises the router after shell setup", () => {
     );
     assert.match(
         src,
-        /import.*initRouter.*from/,
-        "dashboard-layout.js must import initRouter",
+        /import.*initializeRouter.*from/,
+        "dashboard-layout.js must import initializeRouter",
     );
     assert.match(
         src,
-        /if \(!componentWindow\) \{\s*initRouter\(root\);\s*const preferences = usePreferenceApi \? loadUiPreferences\(\) : null;\s*bindThemeToggle/,
+        /if \(!componentWindow\) \{\s*initializeRouter\(root\);\s*const preferences = usePreferenceApi \? loadUiPreferences\(\) : null;\s*bindThemeToggle/,
         "dashboard-layout.js must initialize routing independently of account enhancements",
     );
     assert.doesNotMatch(
@@ -462,7 +463,7 @@ test("router loads destination flow hooks before authenticating an SPA route", (
     );
     const loadRouteStart = source.indexOf("async function loadRoute(path)");
     const routeModuleLoad = source.indexOf(
-        "mod = await loadWithSpaImportGuard(() => route.load(path))",
+        "moduleExports = await loadWithSpaImportGuard(() => route.load(path))",
         loadRouteStart,
     );
     const authentication = source.indexOf(
@@ -491,21 +492,21 @@ test("router authenticates against the requested route instead of mutable locati
 });
 
 test("router delegates auth enforcement to the authenticate-session flow", () => {
-    const routerSrc = readFileSync(
+    const routerSource = readFileSync(
         resolve(ROOT, "src/ui/reuse/app-router.js"),
         "utf8",
     );
     assert.match(
-        routerSrc,
+        routerSource,
         /authenticate-session/,
         "app-router.js must run the authenticate-session flow to enforce auth before route mounts",
     );
-    const hooksSrc = readFileSync(
+    const hooksSource = readFileSync(
         resolve(ROOT, "src/gateways/auth/ui/session-flow-hooks.js"),
         "utf8",
     );
     assert.match(
-        hooksSrc,
+        hooksSource,
         /\/settings#security/,
         "auth session-flow-hooks.js must redirect users who require TFA setup to /settings#security",
     );

@@ -5,8 +5,8 @@ import type {
     StudyAdapter,
     StudyAdapterBootstrapCtx,
 } from "../../../gateways/study/gateway.js";
-import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
-import { DbClassesStore } from "./store/index.js";
+import type { DatabaseExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import { DatabaseClassesStore } from "./store/index.js";
 import type { ClassesRouteOptions } from "./routes/index.js";
 import { createClassesRoutes } from "./routes/index.js";
 import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js";
@@ -111,8 +111,9 @@ export async function bootstrapStudyAdapter(
 ): Promise<void> {
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
-    const dbExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
-    if (!dbExecutor) {
+    const databaseExecutor =
+        ctx.capabilities.get<DatabaseExecutor>("db:executor");
+    if (!databaseExecutor) {
         ctx.log?.(
             "warn",
             "Study/classes adapter: no DB executor available — skipping.",
@@ -121,17 +122,17 @@ export async function bootstrapStudyAdapter(
         return;
     }
 
-    const store = new DbClassesStore(dbExecutor);
+    const store = new DatabaseClassesStore(databaseExecutor);
 
     try {
         await store.ensureSchema();
-    } catch (err) {
+    } catch (error) {
         ctx.log?.(
             "error",
             "Study/classes adapter: schema initialisation failed.",
             {
                 component: "study-classes",
-                error: err instanceof Error ? err.message : String(err),
+                error: error instanceof Error ? error.message : String(error),
             },
         );
         return;
@@ -139,8 +140,8 @@ export async function bootstrapStudyAdapter(
 
     adapterReady = true;
     const deleteAccountActivity = async (accountId: string) => {
-        await dbExecutor.transaction(async (transactionDb) => {
-            const classResult = await transactionDb.executeCommand({
+        await databaseExecutor.transaction(async (transactionDatabase) => {
+            const classResult = await transactionDatabase.executeCommand({
                 option: "SELECT",
                 table: "study_classes",
                 columns: ["id"],
@@ -149,7 +150,7 @@ export async function bootstrapStudyAdapter(
             for (const classRow of classResult.rows ?? []) {
                 const classId = String(classRow.id);
                 for (const table of ["class_memberships", "classroom_state"]) {
-                    await transactionDb.executeCommand({
+                    await transactionDatabase.executeCommand({
                         option: "DELETE",
                         table,
                         where: [{ column: "class_id", value: classId }],
@@ -165,7 +166,7 @@ export async function bootstrapStudyAdapter(
                 ["study_classes", "teacher_account_id"],
             ] as const;
             for (const [table, column] of deletions) {
-                await transactionDb.executeCommand({
+                await transactionDatabase.executeCommand({
                     option: "DELETE",
                     table,
                     where: [{ column, value: accountId }],
@@ -400,7 +401,7 @@ export async function bootstrapStudyAdapter(
         isEnabled: () => ctx.isAdapterEnabled(),
     });
 
-    ctx.registerAdapterStaticDir?.("study", "classes", ADAPTER_UI_ROOT);
+    ctx.registerAdapterStaticDirectory?.("study", "classes", ADAPTER_UI_ROOT);
     ctx.registerSpaRoute?.({
         id: "study-classes-teacher-page",
         pattern: "^/classes$",

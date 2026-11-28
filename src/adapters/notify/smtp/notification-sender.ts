@@ -86,8 +86,8 @@ function encodeQuotedPrintable(input: string): string {
         }
         return encoded.replace(
             /[ \t]$/g,
-            (char) =>
-                `=${char.charCodeAt(0).toString(16).toUpperCase().padStart(2, "0")}`,
+            (character) =>
+                `=${character.charCodeAt(0).toString(16).toUpperCase().padStart(2, "0")}`,
         );
     });
 
@@ -108,7 +108,7 @@ function encodeQuotedPrintable(input: string): string {
 
 async function buildMessage(
     from: string,
-    to: string,
+    recipient: string,
     subject: string,
     body: string,
     options: {
@@ -133,7 +133,7 @@ async function buildMessage(
     const mixedBoundary = hasAttachments ? `cognis-mixed-${randomUUID()}` : "";
     const headers = [
         foldHeader("From", formatAddressHeader(from, options.senderName)),
-        foldHeader("To", formatAddressHeader(to)),
+        foldHeader("To", formatAddressHeader(recipient)),
         foldHeader("Subject", encodeHeaderPhrase(subject)),
         `Date: ${new Date().toUTCString()}`,
         `Message-ID: ${makeMessageId(from, options.messageIdDomain ?? options.externalHost)}`,
@@ -189,7 +189,7 @@ async function buildMessage(
 
 async function sendMail(
     config: SmtpConfig,
-    to: string,
+    recipient: string,
     subject: string,
     body: string,
     theme?: string,
@@ -210,10 +210,10 @@ async function sendMail(
     try {
         const greeting = await session.read();
         if (greeting.code !== 220) {
-            const msg = `smtp_unexpected_greeting:${greeting.code}`;
+            const message = `smtp_unexpected_greeting:${greeting.code}`;
             throw isTemporaryCode(greeting.code)
-                ? new SmtpTemporaryError(msg)
-                : new Error(msg);
+                ? new SmtpTemporaryError(message)
+                : new Error(message);
         }
 
         const ehloHostname = sanitizeHeader(config.ehloHostname ?? "localhost");
@@ -241,43 +241,43 @@ async function sendMail(
 
         if (!config.authDisabled && config.user && config.password) {
             // SASL PLAIN format: \0authcid\0password (RFC 4616)
-            const creds = Buffer.from(
+            const credentials = Buffer.from(
                 `\0${config.user}\0${config.password}`,
             ).toString("base64");
-            const auth = await session.cmd(`AUTH PLAIN ${creds}`);
+            const auth = await session.cmd(`AUTH PLAIN ${credentials}`);
             if (auth.code !== 235) {
                 throw new Error(`smtp_auth_failed:${auth.code}`);
             }
         }
 
         const mailFromAddress = sanitizeSmtpPath(config.from);
-        const recipientAddress = sanitizeSmtpPath(to);
+        const recipientAddress = sanitizeSmtpPath(recipient);
         const mailFrom = await session.cmd(`MAIL FROM:<${mailFromAddress}>`);
         if (mailFrom.code !== 250) {
-            const msg = `smtp_mail_from_failed:${mailFrom.code}`;
+            const message = `smtp_mail_from_failed:${mailFrom.code}`;
             throw isTemporaryCode(mailFrom.code)
-                ? new SmtpTemporaryError(msg)
-                : new Error(msg);
+                ? new SmtpTemporaryError(message)
+                : new Error(message);
         }
 
         const rcptTo = await session.cmd(`RCPT TO:<${recipientAddress}>`);
         if (rcptTo.code !== 250 && rcptTo.code !== 251) {
-            const msg = `smtp_rcpt_to_failed:${rcptTo.code}`;
+            const message = `smtp_rcpt_to_failed:${rcptTo.code}`;
             throw isTemporaryCode(rcptTo.code)
-                ? new SmtpTemporaryError(msg)
-                : new Error(msg);
+                ? new SmtpTemporaryError(message)
+                : new Error(message);
         }
 
-        const dataCmd = await session.cmd("DATA");
-        if (dataCmd.code !== 354) {
-            const msg = `smtp_data_cmd_failed:${dataCmd.code}`;
-            throw isTemporaryCode(dataCmd.code)
-                ? new SmtpTemporaryError(msg)
-                : new Error(msg);
+        const dataCommand = await session.cmd("DATA");
+        if (dataCommand.code !== 354) {
+            const message = `smtp_data_cmd_failed:${dataCommand.code}`;
+            throw isTemporaryCode(dataCommand.code)
+                ? new SmtpTemporaryError(message)
+                : new Error(message);
         }
 
         session.writeRaw(
-            await buildMessage(config.from, to, subject, body, {
+            await buildMessage(config.from, recipient, subject, body, {
                 theme,
                 presentation,
                 externalHost: config.externalHost,
@@ -290,10 +290,10 @@ async function sendMail(
         );
         const sent = await session.read();
         if (sent.code !== 250) {
-            const msg = `smtp_message_rejected:${sent.code}`;
+            const message = `smtp_message_rejected:${sent.code}`;
             throw isTemporaryCode(sent.code)
-                ? new SmtpTemporaryError(msg)
-                : new Error(msg);
+                ? new SmtpTemporaryError(message)
+                : new Error(message);
         }
 
         await session.cmd("QUIT");
@@ -326,7 +326,7 @@ async function waitForRetry(
 
 async function sendMailWithRetry(
     config: SmtpConfig,
-    to: string,
+    recipient: string,
     subject: string,
     body: string,
     sleep: (ms: number) => Promise<void>,
@@ -350,7 +350,7 @@ async function sendMailWithRetry(
         try {
             await sendMail(
                 config,
-                to,
+                recipient,
                 subject,
                 body,
                 theme,
@@ -361,13 +361,13 @@ async function sendMailWithRetry(
                 presentation,
             );
             return;
-        } catch (err) {
+        } catch (error) {
             signal?.throwIfAborted();
-            if (err instanceof SmtpTemporaryError && attempt < maxRetries) {
-                lastError = err;
+            if (error instanceof SmtpTemporaryError && attempt < maxRetries) {
+                lastError = error;
                 continue;
             }
-            throw err;
+            throw error;
         }
     }
     throw lastError;
@@ -378,7 +378,7 @@ export class SmtpNotificationSender implements NotificationSender {
     readonly requiresVerifiedEmail = true;
     readonly senderName = "SMTP Email";
 
-    private readonly envSnapshot: Record<string, string | undefined>;
+    private readonly environmentSnapshot: Record<string, string | undefined>;
     private readonly sleep: (ms: number) => Promise<void>;
     private deliveryEnabled = true;
     private recipientTheme: (email: string) => Promise<"light" | "dark"> =
@@ -403,11 +403,11 @@ export class SmtpNotificationSender implements NotificationSender {
 
     constructor(
         private config: SmtpConfig,
-        envSnapshot?: Record<string, string | undefined>,
+        environmentSnapshot?: Record<string, string | undefined>,
         sleep?: (ms: number) => Promise<void>,
         createRateLimiter?: () => SmtpRateLimiter,
     ) {
-        this.envSnapshot = envSnapshot ?? {};
+        this.environmentSnapshot = environmentSnapshot ?? {};
         this.sleep =
             sleep ??
             ((ms) =>
@@ -424,7 +424,10 @@ export class SmtpNotificationSender implements NotificationSender {
         await bootstrapNotifyAdapter(ctx, this);
     }
 
-    test?: (to: string, config?: Record<string, unknown>) => Promise<void>;
+    test?: (
+        recipient: string,
+        config?: Record<string, unknown>,
+    ) => Promise<void>;
 
     registerChannel(
         category: NotificationCategory,
@@ -648,8 +651,8 @@ export class SmtpNotificationSender implements NotificationSender {
         ];
     }
 
-    getEnvValues(): Record<string, string | undefined> {
-        return { ...this.envSnapshot };
+    getEnvironmentValues(): Record<string, string | undefined> {
+        return { ...this.environmentSnapshot };
     }
 
     getRequiredFields(): string[] {
@@ -722,7 +725,11 @@ export class SmtpNotificationSender implements NotificationSender {
     listQueue(): NotificationSenderQueueEntry[] {
         return [...this.queues.values()]
             .flatMap((queue) => queue.listQueue())
-            .sort((a, b) => Date.parse(b.updatedAt) - Date.parse(a.updatedAt));
+            .sort(
+                (leftEntry, rightEntry) =>
+                    Date.parse(rightEntry.updatedAt) -
+                    Date.parse(leftEntry.updatedAt),
+            );
     }
 
     getQueueItem(notificationId: string): NotificationSenderQueueEntry | null {
@@ -735,18 +742,18 @@ export class SmtpNotificationSender implements NotificationSender {
 
     async sendTestEmail(
         purpose: string,
-        to: string,
+        recipient: string,
         overrideConfig?: Record<string, unknown>,
     ): Promise<void> {
-        if (!to) throw new Error("smtp_test_email_requires_recipient");
-        const cfg = this.resolveDeliveryConfig(overrideConfig);
-        const theme = await this.getRecipientTheme(to);
+        if (!recipient) throw new Error("smtp_test_email_requires_recipient");
+        const configuration = this.resolveDeliveryConfig(overrideConfig);
+        const theme = await this.getRecipientTheme(recipient);
         const queued = this.requireQueue(purpose).enqueue({
             purpose,
-            recipientEmail: to,
+            recipientEmail: recipient,
             subject: "Cognis SMTP Test",
             body: "This is a test email from Cognis.",
-            config: { ...cfg },
+            config: { ...configuration },
             theme,
         });
         await this.requireQueue(purpose).waitForResult(queued.notificationId);

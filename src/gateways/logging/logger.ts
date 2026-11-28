@@ -107,10 +107,10 @@ export function formatConsoleLog(
         return baseLine;
     }
 
-    const metaLines = Object.entries(entry.meta).map(
+    const metadataLines = Object.entries(entry.meta).map(
         ([key, value]) => `  ${key}: ${formatPrettyValue(value)}`,
     );
-    return `${baseLine}\n${metaLines.join("\n")}`;
+    return `${baseLine}\n${metadataLines.join("\n")}`;
 }
 
 export function writeConsoleLog(
@@ -252,9 +252,9 @@ export class Logger {
         if (this.rotationOptions.maxFiles < 0) {
             return;
         }
-        const dirPath = path.dirname(this.filePath);
+        const directoryPath = path.dirname(this.filePath);
         const baseName = path.basename(this.filePath);
-        const entries = await readdir(dirPath);
+        const entries = await readdir(directoryPath);
         const rotatedCandidates = entries
             .filter(
                 (entry) =>
@@ -263,14 +263,16 @@ export class Logger {
                         entry.slice(baseName.length + 1),
                     ),
             )
-            .map((entry) => path.join(dirPath, entry));
+            .map((entry) => path.join(directoryPath, entry));
         const resolved = await Promise.all(
             rotatedCandidates.map(async (file) => ({
                 file,
                 mtimeMs: (await stat(file)).mtimeMs,
             })),
         );
-        resolved.sort((a, b) => b.mtimeMs - a.mtimeMs);
+        resolved.sort(
+            (leftEntry, rightEntry) => rightEntry.mtimeMs - leftEntry.mtimeMs,
+        );
         const removable = resolved.slice(this.rotationOptions.maxFiles);
         await Promise.all(removable.map(({ file }) => unlink(file)));
     }

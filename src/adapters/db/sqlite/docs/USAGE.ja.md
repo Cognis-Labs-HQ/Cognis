@@ -8,7 +8,7 @@ SQLite の実践的な操作手順です。
 
 ## 使用例
 
-all、run、exec を持つ SqliteClient を渡し、SqliteDbGateway で問い合わせとトランザクションを実行します。
+all、run、exec を持つ SqliteClient を渡し、SqliteDatabaseGateway で問い合わせとトランザクションを実行します。
 
 ## 期待される結果
 

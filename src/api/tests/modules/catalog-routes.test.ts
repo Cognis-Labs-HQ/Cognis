@@ -285,7 +285,8 @@ test("module marketplace reports and logs installation failures", async () => {
     const route = createModuleRoutes(
         { list: async () => [] } as any,
         {
-            log: (_level, message, meta) => entries.push({ message, meta }),
+            log: (_level, message, meta) =>
+                entries.push({ message, meta: meta }),
         },
         undefined,
         {
@@ -362,7 +363,7 @@ for (const code of ["github_connection_timeout", "module_install_timeout"]) {
         const route = createModuleRoutes(
             { list: async () => [] } as any,
             {
-                log: (_level, _message, meta) => entries.push({ meta }),
+                log: (_level, _message, meta) => entries.push({ meta: meta }),
             },
             undefined,
             {

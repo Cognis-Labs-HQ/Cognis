@@ -7,7 +7,7 @@ export async function serveHtmlPage(
     res: ServerResponse,
     filePath: string,
     log?: BootstrapLog,
-    logMeta?: Record<string, unknown>,
+    logMetadata?: Record<string, unknown>,
     routeContext?: RouteContext,
 ): Promise<void> {
     try {
@@ -22,7 +22,7 @@ export async function serveHtmlPage(
         log?.("error", "Failed to serve UI asset.", {
             component: "api-ui",
             filePath,
-            ...(logMeta ?? {}),
+            ...(logMetadata ?? {}),
             error: error instanceof Error ? error.message : String(error),
         });
         res.writeHead(404, { "content-type": "application/json" });
@@ -39,7 +39,7 @@ export async function serveHtmlPageWithReplacements(
     filePath: string,
     replacements: Array<{ from: string; to: string }>,
     log?: BootstrapLog,
-    logMeta?: Record<string, unknown>,
+    logMetadata?: Record<string, unknown>,
     routeContext?: RouteContext,
 ): Promise<void> {
     try {
@@ -57,7 +57,7 @@ export async function serveHtmlPageWithReplacements(
         log?.("error", "Failed to serve UI asset.", {
             component: "api-ui",
             filePath,
-            ...(logMeta ?? {}),
+            ...(logMetadata ?? {}),
             error: error instanceof Error ? error.message : String(error),
         });
         res.writeHead(404, { "content-type": "text/html; charset=utf-8" });

@@ -1,11 +1,11 @@
-import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import {
     usernameBase,
     usernameWithSuffix,
 } from "../../../gateways/auth/reuse/usernames.js";
 
 export async function readUsername(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     accountId: string,
 ): Promise<string | null> {
     const result = await db.executeCommand({
@@ -20,7 +20,7 @@ export async function readUsername(
 
 /** Reserve before profile/email side effects; unique constraints also serialize racing claims. */
 export async function reserveUsername(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     accountId: string,
     provider: string,
     proposed: string,
@@ -59,7 +59,7 @@ export async function reserveUsername(
 }
 
 /** Explicitly repair existing provider-prefixed names without changing relationship keys. */
-export async function prepareUsernames(db: DbExecutor): Promise<void> {
+export async function prepareUsernames(db: DatabaseExecutor): Promise<void> {
     await db.ensureTable({
         name: "auth_account_names",
         columns: [

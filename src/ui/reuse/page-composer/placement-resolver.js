@@ -7,6 +7,7 @@
  */
 import {
     isCompactComposer,
+    hasGridProfile,
     stackComposerPlacements,
 } from "./responsive-layout.js";
 import {
@@ -21,45 +22,53 @@ export function createPlacementResolver({
     state,
     getGridSize,
     MOBILE_LAYOUT_WIDTH_RECLAIM_BREAKPOINT,
-    COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS,
+    COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS:
+        COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLUMNS,
     computeGridDimensions,
     initializePlacements,
-    computeSubGridDimensions,
-    initializeSubPlacements,
+    computeSubGridDimensions: computeNestedGridDimensions,
+    initializeSubPlacements: initializeNestedPlacements,
 }) {
     function repackPlacementsIntoColumns(
         sortedVisible,
-        maxCols,
-        elems = state.elements,
+        maxColumns,
+        elements = state.elements,
     ) {
         const packed = [];
-        const cStep = gridStep(maxCols);
-        for (const orig of sortedVisible) {
-            const element = elems.find((e) => e.id === orig.id);
-            const gridSize = element ? getGridSize(element) : null;
-            let w;
-            if (gridSize?.fullWidth) {
-                w = maxCols;
-            } else if (gridSize?.halfWidth) {
-                w = Math.min(
-                    maxCols,
-                    Math.max(gridSize.min[0], halfGrid(maxCols)),
-                );
-            } else {
-                w = Math.min(orig.w, maxCols);
-            }
-            const h = orig.h;
+        const columnStep = gridStep(maxColumns);
+        for (const originalPlacement of sortedVisible) {
+            const bounds = resolvePlacementWidthBounds(
+                originalPlacement,
+                maxColumns,
+                elements,
+            );
+            const width = Math.min(
+                bounds.max,
+                Math.max(bounds.min, originalPlacement.w),
+            );
+            const height = originalPlacement.h;
             let placed = false;
-            for (let row = 0; !placed; row += cStep) {
+            for (let row = 0; !placed; row += columnStep) {
                 for (
-                    let col = 0;
-                    col <= Math.max(0, maxCols - w);
-                    col += cStep
+                    let column = 0;
+                    column <= Math.max(0, maxColumns - width);
+                    column += columnStep
                 ) {
                     const cells = buildOccupiedSet(packed, [], null);
-                    const fits = checkPlacement(cells, col, row, w, h);
+                    const fits = checkPlacement(
+                        cells,
+                        column,
+                        row,
+                        width,
+                        height,
+                    );
                     if (fits) {
-                        packed.push({ ...orig, col, row, w });
+                        packed.push({
+                            ...originalPlacement,
+                            col: column,
+                            row,
+                            w: width,
+                        });
                         placed = true;
                         break;
                     }
@@ -74,32 +83,32 @@ export function createPlacementResolver({
      * contract.
      *
      * @param {{ id: string, w: number }} placement
-     * @param {number} maxCols
-     * @param {Array<{ id: string, gridSize?: object }>} [elems]
+     * @param {number} maxColumns
+     * @param {Array<{ id: string, gridSize?: object }>} [elements]
      * @returns {{ min: number, max: number }}
      */
     function resolvePlacementWidthBounds(
         placement,
-        maxCols,
-        elems = state.elements,
+        maxColumns,
+        elements = state.elements,
     ) {
-        const element = elems.find((entry) => entry.id === placement.id);
-        const currentWidth = Math.min(maxCols, Math.max(1, placement.w));
+        const element = elements.find((entry) => entry.id === placement.id);
+        const currentWidth = Math.min(maxColumns, Math.max(1, placement.w));
         if (!element) {
             return {
                 min: currentWidth,
-                max: maxCols,
+                max: maxColumns,
             };
         }
         const gridSize = getGridSize(element);
-        const minWidth = Math.min(maxCols, Math.max(1, gridSize.min[0]));
+        const minWidth = Math.min(maxColumns, Math.max(1, gridSize.min[0]));
         if (gridSize.fullWidth || gridSize.fillWidth) {
-            return { min: maxCols, max: maxCols };
+            return { min: maxColumns, max: maxColumns };
         }
         if (gridSize.halfWidth) {
             const halfWidth = Math.min(
-                maxCols,
-                Math.max(minWidth, halfGrid(maxCols)),
+                maxColumns,
+                Math.max(minWidth, halfGrid(maxColumns)),
             );
             return { min: halfWidth, max: halfWidth };
         }
@@ -110,8 +119,8 @@ export function createPlacementResolver({
                 ? gridSize.max[0]
                 : null;
         const maxWidth = declaredMaxWidth
-            ? Math.min(maxCols, Math.max(minWidth, declaredMaxWidth))
-            : maxCols;
+            ? Math.min(maxColumns, Math.max(minWidth, declaredMaxWidth))
+            : maxColumns;
         return { min: minWidth, max: maxWidth };
     }
     /**
@@ -119,19 +128,19 @@ export function createPlacementResolver({
      * active grid column count while respecting per-element width bounds.
      *
      * @param {Array<{ id: string, col: number, row: number, w: number, h: number }>} sortedVisible
-     * @param {number} maxCols
-     * @param {Array<{ id: string, gridSize?: object }>} [elems] Defaults to the composer's current state.elements array.
+     * @param {number} maxColumns
+     * @param {Array<{ id: string, gridSize?: object }>} [elements] Defaults to the composer's current state.elements array.
      * @returns {Array<{ id: string, col: number, row: number, w: number, h: number }>|null}
      */
     function normalizePlacementRowsForGridWidth(
         sortedVisible,
-        maxCols,
-        elems = state.elements,
+        maxColumns,
+        elements = state.elements,
     ) {
         const allowSingleRowFullWidthReclaim =
             shouldUseMobileWidthReclaim() &&
-            maxCols <= COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLS;
-        const step = gridStep(maxCols);
+            maxColumns <= COMPACT_SINGLE_ROW_FULL_WIDTH_MAX_COLUMNS;
+        const step = gridStep(maxColumns);
         const epsilon = 0.001;
         const rowGroups = [];
         for (const placement of sortedVisible) {
@@ -165,8 +174,8 @@ export function createPlacementResolver({
                 const placement = rowGroup.placements[0];
                 const bounds = resolvePlacementWidthBounds(
                     placement,
-                    maxCols,
-                    elems,
+                    maxColumns,
+                    elements,
                 );
                 const boundedWidth = Math.min(
                     bounds.max,
@@ -213,8 +222,8 @@ export function createPlacementResolver({
             const descriptors = rowGroup.placements.map((placement) => {
                 const bounds = resolvePlacementWidthBounds(
                     placement,
-                    maxCols,
-                    elems,
+                    maxColumns,
+                    elements,
                 );
                 const boundedWidth = Math.min(
                     bounds.max,
@@ -231,7 +240,7 @@ export function createPlacementResolver({
             if (
                 descriptors.some(
                     (descriptor) =>
-                        descriptor.min === maxCols &&
+                        descriptor.min === maxColumns &&
                         rowGroup.placements.length > 1,
                 )
             ) {
@@ -241,7 +250,7 @@ export function createPlacementResolver({
                 (sum, descriptor) => sum + descriptor.min,
                 0,
             );
-            if (minimumWidthTotal > maxCols + epsilon) {
+            if (minimumWidthTotal > maxColumns + epsilon) {
                 return null;
             }
             const ratioTotal = descriptors.reduce(
@@ -253,7 +262,8 @@ export function createPlacementResolver({
             }
             for (const descriptor of descriptors) {
                 const rawTarget =
-                    (descriptor.proportionalBaseWidth / ratioTotal) * maxCols;
+                    (descriptor.proportionalBaseWidth / ratioTotal) *
+                    maxColumns;
                 descriptor.assignedWidth = Math.min(
                     descriptor.max,
                     Math.max(
@@ -266,14 +276,15 @@ export function createPlacementResolver({
                 (sum, descriptor) => sum + descriptor.assignedWidth,
                 0,
             );
-            let remaining = Math.round((maxCols - currentTotal) / step) * step;
+            let remaining =
+                Math.round((maxColumns - currentTotal) / step) * step;
             let guard = 0;
             // Guard width redistribution loops using the maximum number of grid
             // step changes each pane can take across the grid in both growth and
             // shrink directions to prevent infinite redistribution attempts.
             const maxIterations = Math.max(
                 1,
-                Math.ceil(maxCols / step) * descriptors.length * 2,
+                Math.ceil(maxColumns / step) * descriptors.length * 2,
             );
             const getProportionalDelta = (descriptor) =>
                 descriptor.assignedWidth - descriptor.proportionalBaseWidth;
@@ -330,7 +341,7 @@ export function createPlacementResolver({
             let column = 0;
             const occupiedCells = new Set(occupiedOutsideRow);
             for (const descriptor of descriptors) {
-                if (column + descriptor.assignedWidth > maxCols + epsilon) {
+                if (column + descriptor.assignedWidth > maxColumns + epsilon) {
                     return null;
                 }
                 const nextPlacement = {
@@ -360,7 +371,8 @@ export function createPlacementResolver({
                 column += descriptor.assignedWidth;
             }
         }
-        return changed ? normalized : sortedVisible;
+        const result = changed ? normalized : sortedVisible;
+        return hasWidthViolation(result, maxColumns, elements) ? null : result;
     }
     /**
      * Determines whether compact single-row width reclaim should run for the
@@ -425,15 +437,15 @@ export function createPlacementResolver({
                 : placement;
         });
     }
-    function syncSubLayoutToCurrentGridColumns(subState) {
-        if (!subState.layout || !subState.container) return;
-        computeSubGridDimensions(subState);
-        initializeSubPlacements(subState);
-        const adjustedPlacements = computeSubViewPlacements(subState);
+    function syncNestedLayoutToCurrentGridColumns(nestedState) {
+        if (!nestedState.layout || !nestedState.container) return;
+        computeNestedGridDimensions(nestedState);
+        initializeNestedPlacements(nestedState);
+        const adjustedPlacements = computeNestedViewPlacements(nestedState);
         const adjustedById = new Map(
             adjustedPlacements.map((placement) => [placement.id, placement]),
         );
-        subState.layout.placements = subState.layout.placements.map(
+        nestedState.layout.placements = nestedState.layout.placements.map(
             (placement) => {
                 const adjusted = adjustedById.get(placement.id);
                 return adjusted
@@ -448,10 +460,49 @@ export function createPlacementResolver({
             },
         );
     }
+    function hasWidthViolation(placements, columns, elements) {
+        return placements.some((placement) => {
+            const bounds = resolvePlacementWidthBounds(
+                placement,
+                columns,
+                elements,
+            );
+            return (
+                placement.col < 0 ||
+                placement.col + placement.w > columns ||
+                placement.w < bounds.min ||
+                placement.w > bounds.max
+            );
+        });
+    }
+
+    function resolveSavedPlacements(layoutState, visible) {
+        if (!layoutState.editing && !hasGridProfile(layoutState)) return null;
+        return hasWidthViolation(
+            visible,
+            layoutState.gridColumns,
+            layoutState.elements,
+        )
+            ? repackPlacementsIntoColumns(
+                  visible,
+                  layoutState.gridColumns,
+                  layoutState.elements,
+              )
+            : visible;
+    }
     function computeViewPlacements() {
         const visible = state.layout.placements
-            .filter((p) => !state.layout.hidden.includes(p.id))
-            .sort((a, b) => a.row - b.row || a.col - b.col);
+            .filter(
+                (candidatePlacement) =>
+                    !state.layout.hidden.includes(candidatePlacement.id),
+            )
+            .sort(
+                (leftEntry, rightEntry) =>
+                    leftEntry.row - rightEntry.row ||
+                    leftEntry.col - rightEntry.col,
+            );
+        const saved = resolveSavedPlacements(state, visible);
+        if (saved) return saved;
         if (
             !state.frameless &&
             isCompactComposer(state.contentGrid, state.stackAt)
@@ -462,76 +513,66 @@ export function createPlacementResolver({
                 return index < 0 ? order.length : index;
             };
             return stackComposerPlacements(
-                [...visible].sort((a, b) => rank(a.id) - rank(b.id)),
-                state.gridCols,
+                [...visible].sort(
+                    (leftEntry, rightEntry) =>
+                        rank(leftEntry.id) - rank(rightEntry.id),
+                ),
+                state.gridColumns,
             );
         }
         const normalizedRows = normalizePlacementRowsForGridWidth(
             visible,
-            state.gridCols,
+            state.gridColumns,
         );
         if (normalizedRows) {
             return normalizedRows;
         }
-        const needsRepack = visible.some((p) => {
-            if (p.col + p.w > state.gridCols) return true;
-            const element = state.elements.find((e) => e.id === p.id);
-            if (!element) return false;
-            const gridSize = getGridSize(element);
-            if (gridSize.fullWidth && p.w !== state.gridCols) return true;
-            if (gridSize.halfWidth) {
-                const target = Math.min(
-                    state.gridCols,
-                    Math.max(gridSize.min[0], halfGrid(state.gridCols)),
-                );
-                if (p.w !== target) return true;
-            }
-            return false;
-        });
-        if (!needsRepack) return visible;
-        return repackPlacementsIntoColumns(visible, state.gridCols);
+        if (!hasWidthViolation(visible, state.gridColumns, state.elements))
+            return visible;
+        return repackPlacementsIntoColumns(visible, state.gridColumns);
     }
-    function computeSubViewPlacements(subState) {
-        const visible = subState.layout.placements
-            .filter((pl) => !subState.layout.hidden.includes(pl.id))
-            .sort((a, b) => a.row - b.row || a.col - b.col);
-        if (isCompactComposer(subState.container)) {
-            return stackComposerPlacements(visible, subState.gridCols);
+    function computeNestedViewPlacements(nestedState) {
+        const visible = nestedState.layout.placements
+            .filter(
+                (candidatePlacement) =>
+                    !nestedState.layout.hidden.includes(candidatePlacement.id),
+            )
+            .sort(
+                (leftEntry, rightEntry) =>
+                    leftEntry.row - rightEntry.row ||
+                    leftEntry.col - rightEntry.col,
+            );
+        const saved = resolveSavedPlacements(nestedState, visible);
+        if (saved) return saved;
+        if (isCompactComposer(nestedState.container)) {
+            return stackComposerPlacements(visible, nestedState.gridColumns);
         }
         const normalizedRows = normalizePlacementRowsForGridWidth(
             visible,
-            subState.gridCols,
-            subState.elements,
+            nestedState.gridColumns,
+            nestedState.elements,
         );
         if (normalizedRows) {
             return normalizedRows;
         }
-        const needsRepack = visible.some((pl) => {
-            if (pl.col + pl.w > subState.gridCols) return true;
-            const element = subState.elements.find((e) => e.id === pl.id);
-            if (!element) return false;
-            const gridSize = getGridSize(element);
-            if (gridSize.fullWidth && pl.w !== subState.gridCols) return true;
-            if (gridSize.halfWidth) {
-                const target = Math.min(
-                    subState.gridCols,
-                    Math.max(gridSize.min[0], halfGrid(subState.gridCols)),
-                );
-                if (pl.w !== target) return true;
-            }
-            return false;
-        });
-        if (!needsRepack) return visible;
+        if (
+            !hasWidthViolation(
+                visible,
+                nestedState.gridColumns,
+                nestedState.elements,
+            )
+        )
+            return visible;
         return repackPlacementsIntoColumns(
             visible,
-            subState.gridCols,
-            subState.elements,
+            nestedState.gridColumns,
+            nestedState.elements,
         );
     }
     return {
         computeViewPlacements,
-        computeSubViewPlacements,
+        computeSubViewPlacements: computeNestedViewPlacements,
         syncLayoutToCurrentGridColumns,
-        syncSubLayoutToCurrentGridColumns,
+        syncSubLayoutToCurrentGridColumns: syncNestedLayoutToCurrentGridColumns,
     };
 }

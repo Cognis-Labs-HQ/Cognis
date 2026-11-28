@@ -6,7 +6,7 @@ import {
     type RouteContext,
 } from "../../../../api/reuse/route-context.js";
 import type {
-    DbProfileStore,
+    DatabaseProfileStore,
     AccountProfile,
     Post,
     PostVisibility,
@@ -26,7 +26,7 @@ async function canViewPost(
     requesterRole: string | null,
     post: Post,
     author: AccountProfile,
-    profileStore: DbProfileStore,
+    profileStore: DatabaseProfileStore,
 ): Promise<boolean> {
     if (requesterRole === "admin") return true;
     if (requesterId === post.accountId) return true;
@@ -59,7 +59,7 @@ async function canViewPost(
 }
 
 export function createPostRoutes(
-    profileStore: DbProfileStore,
+    profileStore: DatabaseProfileStore,
     routeContext?: RouteContext,
 ) {
     const ctx = resolveRouteContext(routeContext);
@@ -159,7 +159,9 @@ export function createPostRoutes(
                         error.message !== "delivery_conflict"
                     )
                         throw error;
-                    res.writeHead(409, { "content-type": "application/json" });
+                    res.writeHead(409, {
+                        "content-type": "application/json",
+                    });
                     res.end(
                         JSON.stringify({
                             error: { code: "delivery_conflict" },
@@ -325,12 +327,12 @@ export function createPostRoutes(
     };
 }
 
-function postVisibilityRank(v: PostVisibility): number {
+function postVisibilityRank(visibility: PostVisibility): number {
     const ranks: Record<PostVisibility, number> = {
         only_me: 0,
         private: 1,
         friends: 2,
         community: 3,
     };
-    return ranks[v] ?? 0;
+    return ranks[visibility] ?? 0;
 }

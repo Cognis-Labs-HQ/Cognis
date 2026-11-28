@@ -2,7 +2,7 @@ import path from "node:path";
 import { readFile } from "node:fs/promises";
 import { type GatewayBootstrapContext } from "../../shared.js";
 import type { ServerResponse } from "node:http";
-import type { DbExecutor } from "../../db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../db/reuse/db-executor.js";
 
 export interface NotificationUserEmailStore {
     getUserEmails(
@@ -79,7 +79,7 @@ export async function serveHtmlPage(
 export async function loadNotificationStores(
     ctx: GatewayBootstrapContext,
 ): Promise<{
-    dbExecutor: DbExecutor;
+    dbExecutor: DatabaseExecutor;
     notifStore: NotificationStoreWithSchema;
     notificationPrefStore: {
         getSenderIds(
@@ -88,7 +88,8 @@ export async function loadNotificationStores(
         ): Promise<string[]>;
     };
 }> {
-    const dbExecutor = ctx.capabilities.require<DbExecutor>("db:executor");
+    const databaseExecutor =
+        ctx.capabilities.require<DatabaseExecutor>("db:executor");
     const notificationStoreModulePath = path.resolve(
         process.cwd(),
         "src",
@@ -100,18 +101,24 @@ export async function loadNotificationStores(
         `${notificationStoreModulePath}?t=${Date.now()}`
     );
     const NotificationStoreClass =
-        notificationStoreModule.DbNotificationStore as
-            | (new (dbExecutor: DbExecutor) => NotificationStoreWithSchema)
+        notificationStoreModule.DatabaseNotificationStore as
+            | (new (
+                  databaseExecutor: DatabaseExecutor,
+              ) => NotificationStoreWithSchema)
             | undefined;
     const NotificationPreferenceStoreClass =
-        notificationStoreModule.DbNotificationPreferenceStore as
+        notificationStoreModule.DatabaseNotificationPreferenceStore as
             NotificationPreferenceStoreCtor | undefined;
     if (!NotificationStoreClass || !NotificationPreferenceStoreClass) {
         throw new Error("notification_store_gateway_exports_missing");
     }
-    const notifStore = new NotificationStoreClass(dbExecutor);
-    const notificationPrefStore = new NotificationPreferenceStoreClass(
-        notifStore,
+    const notificationStore = new NotificationStoreClass(databaseExecutor);
+    const notificationPreferenceStore = new NotificationPreferenceStoreClass(
+        notificationStore,
     );
-    return { dbExecutor, notifStore, notificationPrefStore };
+    return {
+        dbExecutor: databaseExecutor,
+        notifStore: notificationStore,
+        notificationPrefStore: notificationPreferenceStore,
+    };
 }

@@ -47,7 +47,7 @@ export function subscribeDiagnostics(handler: (entry: object) => unknown) {
         handler({
             level,
             message,
-            meta,
+            meta: meta,
             ...(details.length ? { details } : {}),
         });
     if (!uiCapabilities.contribute("ui:log", log))

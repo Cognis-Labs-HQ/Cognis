@@ -51,7 +51,7 @@ Use `?` positional placeholders:
 INSERT INTO accounts (id, email) VALUES (?, ?)
 ```
 
-Use `DbDialectHelper.upsert()` and `DbDialectHelper.insertIgnore()` from `src/gateways/db/bootstrap.ts` to generate dialect-appropriate statements rather than writing raw `INSERT … ON DUPLICATE KEY UPDATE`.
+Use `DatabaseDialectHelper.upsert()` and `DatabaseDialectHelper.insertIgnore()` from `src/gateways/db/bootstrap.ts` to generate dialect-appropriate statements rather than writing raw `INSERT … ON DUPLICATE KEY UPDATE`.
 
 ## Security
 

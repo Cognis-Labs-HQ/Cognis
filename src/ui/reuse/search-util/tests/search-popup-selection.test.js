@@ -188,7 +188,7 @@ test("global search exposes registered categories and match controls", () => {
     assert.match(popupSource, /search-popup-overlay--closing/);
     assert.match(popupSource, /Close search/);
     assert.match(source, /collectVisibleNavigationSearchGroups/);
-    assert.match(source, /collectGlobalDocsSearchGroups/);
+    assert.match(source, /collectGlobalDocumentsSearchGroups/);
     assert.match(source, /collectGlobalSettingsSearchGroups/);
     assert.match(popupSource, /registerSearchAvenue/);
     assert.match(popupSource, /registerSearchIndex\("global-docs"/);
@@ -315,8 +315,8 @@ test("docs search indexes navigation titles and document contents", () => {
         "utf8",
     );
     assert.match(source, /registerSearchIndex\(\s*["\']docs["\']/);
-    assert.match(source, /createDocsSearchProvider/);
-    assert.match(source, /loadDocsBundleMarkdown/);
+    assert.match(source, /createDocumentsSearchProvider/);
+    assert.match(source, /loadDocumentsBundleMarkdown/);
     assert.match(source, /resultClass: "page"/);
     assert.match(source, /loadMarkdownDocumentHtml/);
     assert.match(source, /changelogSlugToRoutePath/);
@@ -428,7 +428,7 @@ test("study content and sub-navigation participate in global search", () => {
         resolve(ROOT, "src/gateways/study/ui/study.js"),
         "utf8",
     );
-    const subNavigationSource = readFileSync(
+    const nestedNavigationSource = readFileSync(
         resolve(ROOT, "src/gateways/study/ui/sub-navigation.js"),
         "utf8",
     );
@@ -445,8 +445,8 @@ test("study content and sub-navigation participate in global search", () => {
     assert.match(studySource, /resultClass: "page"/);
     assert.match(studySource, /resultClass: "setting"/);
     assert.match(studySource, /data-search-category/);
-    assert.match(subNavigationSource, /data-search-category/);
-    assert.match(subNavigationSource, /data-search-description/);
+    assert.match(nestedNavigationSource, /data-search-category/);
+    assert.match(nestedNavigationSource, /data-search-description/);
     assert.match(studyNavbarSource, /registerSearchIndexing\(\)/);
     assert.match(studySearchSource, /export const componentSearchId = "study"/);
     assert.match(studySearchSource, /registeredLanguages/);
@@ -539,7 +539,10 @@ test("createSearchBar stores shortcut button through search state", async () => 
             resolve(ROOT, "src/ui/reuse/search-util/popup.js"),
             "utf8",
         );
-        assert.match(popupSource, /setActiveSearchToggleButton\(toggleBtn\)/);
+        assert.match(
+            popupSource,
+            /setActiveSearchToggleButton\(toggleButton\)/,
+        );
         assert.doesNotMatch(popupSource, /activeSearchToggleButton\s*=/);
 
         const { createSearchBar } =
@@ -630,7 +633,7 @@ test("profile messages notifications and study indexes are privacy scoped", () =
 });
 
 test("docs changelogs and study subpages are indexed as pages", () => {
-    const docsSource = readFileSync(
+    const documentsSource = readFileSync(
         resolve(ROOT, "src/ui/app/docs/index.js"),
         "utf8",
     );
@@ -643,8 +646,8 @@ test("docs changelogs and study subpages are indexed as pages", () => {
         "utf8",
     );
 
-    assert.match(docsSource, /category: i18n\.t\("ui\.reuse\.docs"\)/);
-    assert.match(docsSource, /ui\.layout\.footer\.changelogs/);
+    assert.match(documentsSource, /category: i18n\.t\("ui\.reuse\.docs"\)/);
+    assert.match(documentsSource, /ui\.layout\.footer\.changelogs/);
     assert.match(studySource, /category: "Pages"/);
     assert.match(
         studySource,

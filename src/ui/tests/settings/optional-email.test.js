@@ -42,49 +42,57 @@ for (const notifyState of ["absent", "failed", "available"]) {
                           return Response.json({ data: [] });
                       },
                   };
-        const { initGeneralPrefs } = loadTestModule(
-            new URL("../../app/settings/general-prefs.js", import.meta.url),
-            {
-                "../../reuse/capabilities.js": createDiagnosticFixture(),
-                "../../reuse/escape-html.js": { escapeHtml },
-                "../../reuse/ui-ctx.js": {
-                    uiCtx: { capabilities: { get: () => emailClient } },
-                },
-                "../../reuse/offline-state.js": { isOffline: () => false },
-                "../../reuse/api-client.js": {
-                    apiFetch: async (path, options) => {
-                        requests.push({ path, body: JSON.parse(options.body) });
-                        return Response.json({ data: {} });
+        const { initializeGeneralPreferences: initializeGeneralPreferences } =
+            loadTestModule(
+                new URL("../../app/settings/general-prefs.js", import.meta.url),
+                {
+                    "../../reuse/capabilities.js": createDiagnosticFixture(),
+                    "../../reuse/escape-html.js": { escapeHtml },
+                    "../../reuse/ui-ctx.js": {
+                        uiCtx: { capabilities: { get: () => emailClient } },
+                    },
+                    "../../reuse/offline-state.js": { isOffline: () => false },
+                    "../../reuse/api-client.js": {
+                        apiFetch: async (path, options) => {
+                            requests.push({
+                                path,
+                                body: JSON.parse(options.body),
+                            });
+                            return Response.json({ data: {} });
+                        },
+                    },
+                    "../../reuse/popup.js": {
+                        openPopup: async (options) => {
+                            popups.push(options);
+                        },
+                    },
+                    "../../reuse/validation-url.js": {
+                        watchToken: () =>
+                            assert.fail("no verification requested"),
+                    },
+                    "../../reuse/toast.js": {
+                        showToast: (...args) => toasts.push(args),
+                    },
+                    "../../reuse/trusted-domains.js": {
+                        matchesTrustedDomain: () => true,
                     },
                 },
-                "../../reuse/popup.js": {
-                    openPopup: async (options) => {
-                        popups.push(options);
-                    },
+                {
+                    HTMLElement: Element,
+                    HTMLInputElement: Input,
+                    window: { location: { replace() {} } },
                 },
-                "../../reuse/validation-url.js": {
-                    watchToken: () => assert.fail("no verification requested"),
-                },
-                "../../reuse/toast.js": {
-                    showToast: (...args) => toasts.push(args),
-                },
-                "../../reuse/trusted-domains.js": {
-                    matchesTrustedDomain: () => true,
-                },
-            },
-            {
-                HTMLElement: Element,
-                HTMLInputElement: Input,
-                window: { location: { replace() {} } },
-            },
-        );
-        const prefs = initGeneralPrefs(root, {
+            );
+        const preferences = initializeGeneralPreferences(root, {
             i18n: { t: (key) => key },
             username: "learner",
         });
         if (notifyState === "failed")
-            await assert.rejects(prefs.init(), /email_transport_unavailable/);
-        else await prefs.init();
+            await assert.rejects(
+                preferences.init(),
+                /email_transport_unavailable/,
+            );
+        else await preferences.init();
         assert.equal(section.hidden, notifyState === "absent");
         for (const action of ["archive", "deactivate", "delete"]) {
             await listeners.get("click")({

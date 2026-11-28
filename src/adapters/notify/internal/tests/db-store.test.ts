@@ -1,18 +1,21 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
-import type { StructuredDbTableDef } from "../../../../gateways/db/reuse/db-table.js";
-import { DbInternalNotificationStore } from "../db-store.js";
+import type { DatabaseExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { StructuredDatabaseTableDefinition } from "../../../../gateways/db/reuse/db-table.js";
+import { DatabaseInternalNotificationStore } from "../db-store.js";
 
 test("internal notification schema uses a portable read-state identifier", async () => {
-    let tableDefinition: StructuredDbTableDef | undefined;
+    let tableDefinition: StructuredDatabaseTableDefinition | undefined;
     const database = {
-        async ensureTable(definition: StructuredDbTableDef) {
+        async ensureTable(definition: StructuredDatabaseTableDefinition) {
             tableDefinition = definition;
         },
-    } as DbExecutor;
+    } as DatabaseExecutor;
 
-    await new DbInternalNotificationStore(database, "unused").ensureSchema();
+    await new DatabaseInternalNotificationStore(
+        database,
+        "unused",
+    ).ensureSchema();
 
     assert.equal(tableDefinition?.name, "internal_notifications");
     assert.deepEqual(

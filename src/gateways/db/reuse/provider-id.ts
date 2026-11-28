@@ -1,1 +1,1 @@
-export type DbProviderId = string;
+export type DatabaseProviderId = string;

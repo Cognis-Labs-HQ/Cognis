@@ -100,14 +100,14 @@ test("external-package contract fixture preserves validated contract metadata", 
     );
 });
 
-test("external packages reject unvalidated field types and invalid metadata", async (t) => {
+test("external packages reject unvalidated field types and invalid metadata", async (testContext) => {
     const source = fileURLToPath(
         new URL("../fixtures/external-pack", import.meta.url),
     );
     const root = await mkdtemp(
         path.join(os.tmpdir(), "cognis-library-contract-"),
     );
-    t.after(() => rm(root, { recursive: true, force: true }));
+    testContext.after(() => rm(root, { recursive: true, force: true }));
     await cp(source, root, { recursive: true });
     const schemaFile = path.join(root, "schema.json");
     const schema = JSON.parse(await readFile(schemaFile, "utf8"));
@@ -129,14 +129,14 @@ async function writeJson(file: string, value: unknown): Promise<void> {
     await writeFile(file, JSON.stringify(value), "utf8");
 }
 
-test("external packs preserve unknown writing-unit readings without bypassing required fields", async (t) => {
+test("external packs preserve unknown writing-unit readings without bypassing required fields", async (testContext) => {
     const source = fileURLToPath(
         new URL("../fixtures/external-pack", import.meta.url),
     );
     const root = await mkdtemp(
         path.join(os.tmpdir(), "cognis-unknown-reading-"),
     );
-    t.after(() => rm(root, { recursive: true, force: true }));
+    testContext.after(() => rm(root, { recursive: true, force: true }));
     await cp(source, root, { recursive: true });
     const schemaFile = path.join(root, "schema.json");
     const schema = JSON.parse(await readFile(schemaFile, "utf8"));
@@ -169,9 +169,9 @@ test("external packs preserve unknown writing-unit readings without bypassing re
     );
 });
 
-test("declarative language packs are inspected deterministically", async (t) => {
+test("declarative language packs are inspected deterministically", async (testContext) => {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-library-pack-"));
-    t.after(() => rm(root, { recursive: true, force: true }));
+    testContext.after(() => rm(root, { recursive: true, force: true }));
     await mkdir(path.join(root, "content", "letters"), { recursive: true });
     await mkdir(path.join(root, "content", "words"), { recursive: true });
     await mkdir(path.join(root, "assets", "strokes"), { recursive: true });
@@ -318,9 +318,9 @@ test("declarative language packs are inspected deterministically", async (t) => 
     );
 });
 
-test("content packs accept complete semantic versions", async (t) => {
+test("content packs accept complete semantic versions", async (testContext) => {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-library-pack-"));
-    t.after(() => rm(root, { recursive: true, force: true }));
+    testContext.after(() => rm(root, { recursive: true, force: true }));
     await mkdir(path.join(root, "content", "units"), { recursive: true });
     await writeJson(path.join(root, "manifest.json"), {
         id: "versioned",
@@ -350,9 +350,9 @@ test("content packs accept complete semantic versions", async (t) => {
     );
 });
 
-test("content packs reject dangling relationships", async (t) => {
+test("content packs reject dangling relationships", async (testContext) => {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-library-pack-"));
-    t.after(() => rm(root, { recursive: true, force: true }));
+    testContext.after(() => rm(root, { recursive: true, force: true }));
     await mkdir(path.join(root, "content", "units"), { recursive: true });
     await writeJson(path.join(root, "manifest.json"), {
         id: "broken",
@@ -396,9 +396,9 @@ test("content packs reject dangling relationships", async (t) => {
     await assert.rejects(inspectContentPack(root), /reference_not_found/);
 });
 
-test("content packs reject ordered sequences with unlinked text", async (t) => {
+test("content packs reject ordered sequences with unlinked text", async (testContext) => {
     const root = await mkdtemp(path.join(os.tmpdir(), "cognis-library-pack-"));
-    t.after(() => rm(root, { recursive: true, force: true }));
+    testContext.after(() => rm(root, { recursive: true, force: true }));
     for (const layer of ["words", "particles", "sentences"])
         await mkdir(path.join(root, "content", layer), { recursive: true });
     await writeJson(path.join(root, "manifest.json"), {

@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-    resolveDbProviderDir,
+    resolveDatabaseProviderDirectory,
     initializeDatabaseSchema,
 } from "../../bootstrap/db-init.js";
 import path from "node:path";
@@ -11,9 +11,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const fixturesRoot = path.resolve(__dirname, "fixtures");
 
 test("db init resolves supported providers", () => {
-    assert.equal(resolveDbProviderDir("postgresql"), "postgres");
-    assert.equal(resolveDbProviderDir("mariadb"), "mariadb");
-    assert.equal(resolveDbProviderDir("mysql"), "mariadb");
+    assert.equal(resolveDatabaseProviderDirectory("postgresql"), "postgres");
+    assert.equal(resolveDatabaseProviderDirectory("mariadb"), "mariadb");
+    assert.equal(resolveDatabaseProviderDirectory("mysql"), "mariadb");
 });
 
 interface Call {
@@ -36,7 +36,7 @@ function makeMockExecutor() {
             mockedRows.set(key, result);
         },
         async execute(sql: string, params: unknown[] = []) {
-            calls.push({ sql: sql.trim(), params });
+            calls.push({ sql: sql.trim(), params: params });
             const key = `${sql.trim()}${JSON.stringify(params)}`;
             if (mockedRows.has(key)) {
                 return { rows: mockedRows.get(key) };
@@ -52,9 +52,9 @@ function makeMockExecutor() {
 
 function insertCalls(calls: Call[], table: string): Call[] {
     return calls.filter(
-        (c) =>
-            c.sql.toLowerCase().startsWith("insert") &&
-            c.sql.toLowerCase().includes(table),
+        (command) =>
+            command.sql.toLowerCase().startsWith("insert") &&
+            command.sql.toLowerCase().includes(table),
     );
 }
 
@@ -70,7 +70,9 @@ test("init phase runs SQL files the first time and records sentinel", async () =
     );
 
     const sentinelInserts = insertCalls(executor.calls, "db_migrations").filter(
-        (c) => Array.isArray(c.params) && c.params[0] === "init:__phase__",
+        (command) =>
+            Array.isArray(command.params) &&
+            command.params[0] === "init:__phase__",
     );
     assert.equal(sentinelInserts.length, 1, "sentinel should be recorded once");
 });
@@ -92,13 +94,15 @@ test("init phase is skipped when sentinel already recorded", async () => {
         fixturesRoot,
     );
 
-    const initDdl = executor.calls.filter(
-        (c) =>
-            c.sql.toLowerCase().startsWith("create table if not exists") &&
-            !c.sql.toLowerCase().includes("db_migrations"),
+    const initializationDdl = executor.calls.filter(
+        (command) =>
+            command.sql
+                .toLowerCase()
+                .startsWith("create table if not exists") &&
+            !command.sql.toLowerCase().includes("db_migrations"),
     );
     assert.equal(
-        initDdl.length,
+        initializationDdl.length,
         0,
         "no init DDL should execute on second boot",
     );
@@ -125,10 +129,10 @@ test("migration runs the first time and records it", async () => {
         executor.calls,
         "db_migrations",
     ).filter(
-        (c) =>
-            Array.isArray(c.params) &&
-            typeof c.params[0] === "string" &&
-            (c.params[0] as string).startsWith("migrate:"),
+        (command) =>
+            Array.isArray(command.params) &&
+            typeof command.params[0] === "string" &&
+            (command.params[0] as string).startsWith("migrate:"),
     );
     assert.ok(
         migrationInserts.length >= 1,
@@ -158,8 +162,8 @@ test("migration is skipped when already recorded", async () => {
         fixturesRoot,
     );
 
-    const alterStatements = executor.calls.filter((c) =>
-        c.sql.toLowerCase().startsWith("alter"),
+    const alterStatements = executor.calls.filter((command) =>
+        command.sql.toLowerCase().startsWith("alter"),
     );
     assert.equal(alterStatements.length, 0, "migration DDL should not re-run");
 });
@@ -175,8 +179,8 @@ test("db_migrations table is always created", async () => {
         fixturesRoot,
     );
 
-    const created = executor.calls.some((c) =>
-        c.sql
+    const created = executor.calls.some((command) =>
+        command.sql
             .toLowerCase()
             .includes("create table if not exists db_migrations"),
     );
@@ -194,8 +198,8 @@ test("postgresql uses dollar-sign placeholders", async () => {
         fixturesRoot,
     );
 
-    const selectWithDollar = executor.calls.some((c) =>
-        c.sql.includes("WHERE id = $1"),
+    const selectWithDollar = executor.calls.some((command) =>
+        command.sql.includes("WHERE id = $1"),
     );
     assert.ok(selectWithDollar, "postgresql should use $1 placeholders");
 });

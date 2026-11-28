@@ -10,7 +10,7 @@ Operators deploy the server; readers can use published documentation without adm
 
 Select Info, Usage or Technical, choose a component version and switch views while checking that the version stays selected.
 
-Call `store.diff(fromVersion, toVersion)` through a store created by the `docs:versionStore` capability. Runtime modules can return that structured result from their own authenticated route, resolve `ui:documentDiff` through browser ctx, and pass the result to `renderDocumentDiff(diff)`.
+Call `store.diff(fromVersion, toVersion)` through a store created by the `docs:versionStore` capability. Runtime modules can return that structured result from their own authenticated route, resolve `ui:documentDiff` through browser ctx, and pass the result to `renderDocumentDifference(diff)`.
 
 ## Expected Results
 

@@ -66,7 +66,9 @@ test(
                     sidebar.headings[1].left,
                 );
                 assert.ok(
-                    sidebar.headings.every((h) => h.textAlign === "start"),
+                    sidebar.headings.every(
+                        (heading) => heading.textAlign === "start",
+                    ),
                 );
                 assert.equal(sidebar.rowBackground, "rgba(0, 0, 0, 0)");
                 assert.equal(sidebar.rowBorder, "0px");

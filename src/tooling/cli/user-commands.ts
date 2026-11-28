@@ -2,7 +2,7 @@ import {
     ensureBooleanAcknowledgement,
     ensureUserExists,
     mergePayloadFields,
-    requireArgs,
+    requireArgumentsList,
 } from "./command-utils.ts";
 import {
     formatBoolean,
@@ -30,9 +30,9 @@ export function registerUserCommands(): void {
 
     register(
         "user:create",
-        async ({ args, apiBaseUrl, getApiToken }) => {
+        async ({ args: args, apiBaseUrl, getApiToken }) => {
             const [username, password, role] = args;
-            requireArgs(
+            requireArgumentsList(
                 args,
                 ["username", "password", "role"],
                 "cognisctl user:create <username> <password> <role>",
@@ -54,9 +54,9 @@ export function registerUserCommands(): void {
 
     register(
         "user:role",
-        async ({ args, apiBaseUrl, getApiToken }) => {
+        async ({ args: args, apiBaseUrl, getApiToken }) => {
             const [username, role] = args;
-            requireArgs(
+            requireArgumentsList(
                 args,
                 ["username", "role"],
                 "cognisctl user:role <username> <role>",
@@ -91,9 +91,9 @@ export function registerUserCommands(): void {
 
     register(
         "user:set-password",
-        async ({ args, apiBaseUrl, getApiToken }) => {
+        async ({ args: args, apiBaseUrl, getApiToken }) => {
             const [username, password] = args;
-            requireArgs(
+            requireArgumentsList(
                 args,
                 ["username", "password"],
                 "cognisctl user:set-password <username> <password>",
@@ -126,9 +126,9 @@ export function registerUserCommands(): void {
 
     register(
         "user:disable",
-        async ({ args, apiBaseUrl, getApiToken }) => {
+        async ({ args: args, apiBaseUrl, getApiToken }) => {
             const [username] = args;
-            requireArgs(
+            requireArgumentsList(
                 args,
                 ["username"],
                 "cognisctl user:disable <username>",
@@ -163,9 +163,13 @@ export function registerUserCommands(): void {
 
     register(
         "user:enable",
-        async ({ args, apiBaseUrl, getApiToken }) => {
+        async ({ args: args, apiBaseUrl, getApiToken }) => {
             const [username] = args;
-            requireArgs(args, ["username"], "cognisctl user:enable <username>");
+            requireArgumentsList(
+                args,
+                ["username"],
+                "cognisctl user:enable <username>",
+            );
 
             await ensureUserExists(apiBaseUrl, getApiToken, username);
             const payload = await apiPost(
@@ -196,9 +200,9 @@ export function registerUserCommands(): void {
 
     register(
         "user:isfounder",
-        async ({ args, apiBaseUrl, getApiToken }) => {
+        async ({ args: args, apiBaseUrl, getApiToken }) => {
             const [username, value] = args;
-            requireArgs(
+            requireArgumentsList(
                 args,
                 ["username", "isFounder"],
                 "cognisctl user:isfounder <username> <true|false>",
@@ -251,9 +255,13 @@ export function registerUserCommands(): void {
 
     register(
         "user:delete",
-        async ({ args, apiBaseUrl, getApiToken }) => {
+        async ({ args: args, apiBaseUrl, getApiToken }) => {
             const [username] = args;
-            requireArgs(args, ["username"], "cognisctl user:delete <username>");
+            requireArgumentsList(
+                args,
+                ["username"],
+                "cognisctl user:delete <username>",
+            );
 
             await ensureUserExists(apiBaseUrl, getApiToken, username);
             const payload = await apiRequest(
@@ -280,9 +288,9 @@ export function registerUserCommands(): void {
 
     register(
         "user:preferences:clear",
-        async ({ args, apiBaseUrl, getApiToken }) => {
+        async ({ args: args, apiBaseUrl, getApiToken }) => {
             const [username] = args;
-            requireArgs(
+            requireArgumentsList(
                 args,
                 ["username"],
                 "cognisctl user:preferences:clear <username>",

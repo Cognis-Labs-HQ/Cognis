@@ -1,18 +1,18 @@
 /**
  * Computes visible tutorial geometry without changing targets or scrolling their owners.
- * Public exports: clipRect — intersects rectangles; tutorialViewport — excludes shell chrome;
- * visibleTargetRect — clips a padded target to its scrolling ancestors and viewport;
+ * Public exports: clipRectangle — intersects rectangles; tutorialViewport — excludes shell chrome;
+ * visibleTargetRectangle — clips a padded target to its scrolling ancestors and viewport;
  * calloutViewport — reclaims header space for readable explanations on short screens;
  * shadeRegions — subtracts highlight and control rectangles from the page shade.
- * @example const visible = visibleTargetRect(target, tutorialViewport(window, document, target), 8);
+ * @example const visible = visibleTargetRectangle(target, tutorialViewport(window, document, target), 8);
  */
 
-/** @param {object} rect Source rectangle. @param {object} bounds Clip rectangle. @returns {object|null} Visible intersection. */
-export function clipRect(rect, bounds) {
-    const left = Math.max(rect.left, bounds.left);
-    const top = Math.max(rect.top, bounds.top);
-    const right = Math.min(rect.right, bounds.right);
-    const bottom = Math.min(rect.bottom, bounds.bottom);
+/** @param {object} rectangle Source rectangle. @param {object} bounds Clip rectangle. @returns {object|null} Visible intersection. */
+function clipRectangle(rectangle, bounds) {
+    const left = Math.max(rectangle.left, bounds.left);
+    const top = Math.max(rectangle.top, bounds.top);
+    const right = Math.min(rectangle.right, bounds.right);
+    const bottom = Math.min(rectangle.bottom, bounds.bottom);
     return right > left && bottom > top
         ? {
               left,
@@ -24,6 +24,7 @@ export function clipRect(rect, bounds) {
           }
         : null;
 }
+export { clipRectangle };
 
 /** @param {Window} window Browser window. @param {Document} document Owner document. @param {Element} target Tutorial target. @param {string} layer Target layer; overlays are not obscured by shell chrome. @returns {object} Visible page viewport. */
 export function tutorialViewport(window, document, target, layer = "page") {
@@ -43,23 +44,27 @@ export function tutorialViewport(window, document, target, layer = "page") {
             continue;
         if (!element || element.contains(target) || target?.contains(element))
             continue;
-        const rect = element.getBoundingClientRect();
+        const rectangle = element.getBoundingClientRect();
         if (
-            rect.width <= 0 ||
-            rect.height <= 0 ||
-            rect.right <= left ||
-            rect.left >= left + width
+            rectangle.width <= 0 ||
+            rectangle.height <= 0 ||
+            rectangle.right <= left ||
+            rectangle.left >= left + width
         )
             continue;
-        if (edge === "top" && rect.bottom > top && rect.bottom < bottom)
-            top = rect.bottom;
+        if (
+            edge === "top" &&
+            rectangle.bottom > top &&
+            rectangle.bottom < bottom
+        )
+            top = rectangle.bottom;
         if (
             edge === "bottom" &&
-            rect.top > top &&
-            rect.top < bottom &&
-            rect.bottom > rect.top
+            rectangle.top > top &&
+            rectangle.top < bottom &&
+            rectangle.bottom > rectangle.top
         )
-            bottom = rect.top;
+            bottom = rectangle.top;
     }
     return {
         offsetLeft: left,
@@ -86,19 +91,19 @@ export function calloutViewport(viewport, window) {
 }
 
 /** @param {Element} target Tutorial target. @param {object} viewport Visible page viewport. @param {number} padding Target padding. @returns {object|null} Visible padded target. */
-export function visibleTargetRect(target, viewport, padding = 0) {
-    const rect = target.getBoundingClientRect();
+function visibleTargetRectangle(target, viewport, padding = 0) {
+    const rectangle = target.getBoundingClientRect();
     const window = target.ownerDocument.defaultView;
     const visual = window.visualViewport;
     const bottom = target.closest?.("[data-page-action-dock]")
         ? (visual?.offsetTop ?? 0) + (visual?.height ?? window.innerHeight)
         : viewport.offsetTop + viewport.height;
-    let visible = clipRect(
+    let visible = clipRectangle(
         {
-            left: rect.left - padding,
-            top: rect.top - padding,
-            right: rect.right + padding,
-            bottom: rect.bottom + padding,
+            left: rectangle.left - padding,
+            top: rectangle.top - padding,
+            right: rectangle.right + padding,
+            bottom: rectangle.bottom + padding,
         },
         {
             left: viewport.offsetLeft + 8,
@@ -115,7 +120,7 @@ export function visibleTargetRect(target, viewport, padding = 0) {
             /^(auto|scroll|hidden|clip)$/.test(overflow);
         const left = bounds.left + parent.clientLeft;
         const top = bounds.top + parent.clientTop;
-        visible = clipRect(visible, {
+        visible = clipRectangle(visible, {
             left: clips(style.overflowX) ? left : visible.left,
             right: clips(style.overflowX)
                 ? left + parent.clientWidth
@@ -129,13 +134,14 @@ export function visibleTargetRect(target, viewport, padding = 0) {
     }
     return visible;
 }
+export { visibleTargetRectangle };
 
 /** @param {object} bounds Page bounds. @param {object[]} exclusions Unshaded rectangles. @returns {object[]} Non-overlapping shaded rectangles. */
 export function shadeRegions(bounds, exclusions) {
     let regions = [bounds];
     for (const exclusion of exclusions) {
         regions = regions.flatMap((region) => {
-            const overlap = clipRect(region, exclusion);
+            const overlap = clipRectangle(region, exclusion);
             if (!overlap) return [region];
             return [
                 { ...region, bottom: overlap.top },

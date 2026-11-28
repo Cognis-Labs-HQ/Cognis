@@ -19,7 +19,7 @@ import {
     requireOrganizerOwnedSourceEvent,
     requireWritableSharedSourceEvent,
     resolveCreatedSeries,
-    resolveEventMeta,
+    resolveEventMetadata,
     resolveAvailabilityStatus,
     sendCalendarError,
     sendJson,
@@ -170,7 +170,9 @@ export function createCalendarCoreRoutes({
                 return true;
             }
             if (req.method === "GET") {
-                sendJson(res, 200, { data: gateway.listEvents(calendarId) });
+                sendJson(res, 200, {
+                    data: gateway.listEvents(calendarId),
+                });
                 return true;
             }
             const body = (await readJson(req)) as Record<string, unknown>;
@@ -422,8 +424,8 @@ export function createCalendarCoreRoutes({
         }
         if (
             await handleCalendarMutationRoutes({
-                req,
-                res,
+                req: req,
+                res: res,
                 url,
                 ctx,
                 gateway,
@@ -445,8 +447,8 @@ export function createCalendarCoreRoutes({
             const shareClaims = ctx.requireAuth(req, res, "user");
             if (!shareClaims) return true;
             const handledShareRoute = await handleCalendarShareRoutes({
-                req,
-                res,
+                req: req,
+                res: res,
                 url,
                 claims: { sub: shareClaims.sub },
                 gateway,
@@ -478,8 +480,8 @@ export function createCalendarCoreRoutes({
             if (
                 activeSharedCalendar &&
                 !(await requireSharedCalendarAccess({
-                    req,
-                    res,
+                    req: req,
+                    res: res,
                     shareTokenId: activeSharedCalendar.shareTokenId,
                     accountId: claims.sub,
                     ownerCalendarId: activeSharedCalendar.ownerCalendarId,
@@ -494,7 +496,7 @@ export function createCalendarCoreRoutes({
                     accountId: claims.sub,
                     calendarId,
                     activeShare: activeSharedCalendar,
-                    res,
+                    res: res,
                 })
             ) {
                 return true;
@@ -561,8 +563,8 @@ export function createCalendarCoreRoutes({
                 if (
                     activeSharedCalendar &&
                     !(await requireSharedCalendarAccess({
-                        req,
-                        res,
+                        req: req,
+                        res: res,
                         shareTokenId: activeSharedCalendar.shareTokenId,
                         accountId: claims.sub,
                         ownerCalendarId: activeSharedCalendar.ownerCalendarId,
@@ -578,7 +580,7 @@ export function createCalendarCoreRoutes({
                         accountId: claims.sub,
                         calendarId,
                         activeShare: activeSharedCalendar,
-                        res,
+                        res: res,
                     })
                 ) {
                     return true;
@@ -670,7 +672,10 @@ export function createCalendarCoreRoutes({
                       });
                 if (replayed) {
                     await gateway.flushStore();
-                    sendJson(res, 201, { data: createdEvent, replayed: true });
+                    sendJson(res, 201, {
+                        data: createdEvent,
+                        replayed: true,
+                    });
                     return true;
                 }
                 const createdSeries = resolveCreatedSeries(
@@ -764,8 +769,8 @@ export function createCalendarCoreRoutes({
 
         if (
             await handleCalendarEventRoutes({
-                req,
-                res,
+                req: req,
+                res: res,
                 url,
                 ctx,
                 gateway,
@@ -796,8 +801,8 @@ export function createCalendarCoreRoutes({
             if (
                 responseSharedCalendar?.recipientAccountId === claims.sub &&
                 !(await requireSharedCalendarAccess({
-                    req,
-                    res,
+                    req: req,
+                    res: res,
                     shareTokenId: responseSharedCalendar.shareTokenId,
                     accountId: claims.sub,
                     ownerCalendarId: responseSharedCalendar.ownerCalendarId,
@@ -807,8 +812,8 @@ export function createCalendarCoreRoutes({
                 return true;
             }
             await handleCalendarResponseRoute({
-                req,
-                res,
+                req: req,
+                res: res,
                 url,
                 claims,
                 calendarId: responseCalendarId,

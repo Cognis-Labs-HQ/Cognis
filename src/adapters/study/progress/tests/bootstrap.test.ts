@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createCtx } from "@cognis/core";
 import { CoreStudyGateway } from "../../../../gateways/study/gateway.js";
-import type { StructuredDbCommand } from "../../../../gateways/db/reuse/db-command.js";
+import type { StructuredDatabaseCommand } from "../../../../gateways/db/reuse/db-command.js";
 import type { LearningEventInput } from "../../../../gateways/study/reuse/progress.js";
 import type { ProgressCapability } from "../index.js";
 import { bootstrapStudyAdapter, createStudyAdapter } from "../index.js";
@@ -75,7 +75,7 @@ function bootstrapContext() {
     });
     systemCtx.contributeCapability("db:executor", {
         ensureTable: async () => {},
-        executeCommand: async (command: StructuredDbCommand) => {
+        executeCommand: async (command: StructuredDatabaseCommand) => {
             commands.push(command);
             if (command.option === "INSERT") {
                 for (const value of Object.values(command.values))
@@ -157,7 +157,7 @@ function bootstrapContext() {
             gatewayRegistry: {} as never,
             flow: systemCtx.flow,
             registerRoute: (route: unknown) => routes.push(route),
-            registerStaticDir: () => {},
+            registerStaticDirectory: () => {},
             registerNavbarPlugin: () => {},
             registerPageExtension: () => {},
             isAdapterEnabled: (id = "progress") => enabled && id === "progress",

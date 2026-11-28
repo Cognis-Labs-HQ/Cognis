@@ -10,9 +10,9 @@ import { LibraryStore } from "../../store.js";
 import { contentEntryId } from "../../content-pack.js";
 import type { LibraryContentPackPlan } from "../../types.js";
 
-test("saved reference images remain readable after store recreation and provider reload", async (t) => {
+test("saved reference images remain readable after store recreation and provider reload", async (testContext) => {
     const root = await mkdtemp(join(tmpdir(), "study-images-"));
-    t.after(() => rm(root, { recursive: true, force: true }));
+    testContext.after(() => rm(root, { recursive: true, force: true }));
     const files = (): NamespaceFileClient =>
         ({
             async put(_actor, key, data) {

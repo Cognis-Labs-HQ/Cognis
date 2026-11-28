@@ -4,11 +4,11 @@ import type {
     EngagementState,
 } from "@cognis/core";
 import { textChunks } from "../../reuse/text-chunks.js";
-import type { DbExecutor } from "./db-executor.js";
+import type { DatabaseExecutor } from "./db-executor.js";
 
 /** Persist participant reward ledgers through the database gateway's public contract. */
 export function createEngagementStore(
-    resolveDatabase: () => DbExecutor,
+    resolveDatabase: () => DatabaseExecutor,
 ): EngagementStore {
     let initialized: Promise<void> | undefined;
     const database = async () => {

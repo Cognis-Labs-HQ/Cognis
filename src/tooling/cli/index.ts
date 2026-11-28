@@ -49,7 +49,7 @@ function parseRequiredUsageFields(usage: string): string[] {
     return Array.from(usage.matchAll(/<([^>]+)>/g)).map((match) => match[1]);
 }
 
-async function resolveCommandArgs(
+async function resolveCommandArgumentsList(
     command: string,
     args: string[],
 ): Promise<string[]> {
@@ -95,10 +95,13 @@ export async function executeRegisteredCommand(
     }
 
     const parsed = parseOutputOptions(args);
-    const resolvedArgs = await resolveCommandArgs(command, parsed.args);
+    const resolvedArgumentsList = await resolveCommandArgumentsList(
+        command,
+        parsed.args,
+    );
 
     return spec.handler({
-        args: resolvedArgs,
+        args: resolvedArgumentsList,
         apiBaseUrl: options.apiBaseUrl,
         getApiToken: options.getApiToken,
         verbose: options.verbose || parsed.verbose,
@@ -125,8 +128,8 @@ async function main(): Promise<void> {
     const packageJson = await import("./package.json", {
         with: { type: "json" },
     });
-    const originalArgs = process.argv.slice(2);
-    const parsed = parseOutputOptions(originalArgs);
+    const originalArgumentsList = process.argv.slice(2);
+    const parsed = parseOutputOptions(originalArgumentsList);
     const argv = parsed.args;
     const apiBaseUrl = process.env.COGNIS_API_URL ?? "http://localhost:3000";
     let apiTokenPromise: Promise<string> | null = null;
@@ -172,7 +175,9 @@ async function main(): Promise<void> {
     const execute = () =>
         executeRegisteredCommand(
             command,
-            originalArgs.slice(originalArgs.indexOf(command) + 1),
+            originalArgumentsList.slice(
+                originalArgumentsList.indexOf(command) + 1,
+            ),
             {
                 apiBaseUrl,
                 getApiToken,

@@ -10,10 +10,10 @@ import {
     fetchLeaderboardStandings,
 } from "../client.js";
 import {
-    bindStudySubNavigation,
-    loadStudySubNavigationModel,
+    bindStudyNestedNavigation,
+    loadStudyNestedNavigationModel,
     readSelectedStudyLanguageCode,
-    createStudySubNavigationSlot,
+    createStudyNestedNavigationSlot,
 } from "/static/gateways/study/sub-navigation.js";
 
 export async function mount(root, { signal } = {}) {
@@ -24,7 +24,7 @@ export async function mount(root, { signal } = {}) {
         ],
     });
     applyDocumentTitle(i18n, "gateway.study.leaderboard_label");
-    const model = await loadStudySubNavigationModel({
+    const model = await loadStudyNestedNavigationModel({
         fallbackLanguageCode: readSelectedStudyLanguageCode(),
     });
     let requestFailed = false;
@@ -110,7 +110,7 @@ export async function mount(root, { signal } = {}) {
             subtitle: i18n.t("gateway.study.leaderboard_subtitle"),
         },
         preferenceKey: "study-leaderboard-layout",
-        subNavigation: [createStudySubNavigationSlot(model, i18n)],
+        subNavigation: [createStudyNestedNavigationSlot(model, i18n)],
         toolbar: [],
     });
     await composer.init();
@@ -147,7 +147,7 @@ export async function mount(root, { signal } = {}) {
         },
         { signal },
     );
-    bindStudySubNavigation(root, { signal });
+    bindStudyNestedNavigation(root, { signal });
 }
 
 await mountWhenDirect(mount);

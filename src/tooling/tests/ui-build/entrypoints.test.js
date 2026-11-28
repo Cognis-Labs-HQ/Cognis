@@ -72,7 +72,9 @@ test("a directly registered provider remains a built entry when another entry im
         assert.equal(app.helperValue, "bundled dependency");
         const contributions = [];
         provider.mountProvider({
-            capabilities: { contribute: (...args) => contributions.push(args) },
+            capabilities: {
+                contribute: (...args) => contributions.push(args),
+            },
         });
         assert.deepEqual(contributions, [["example:value", "ready"]]);
     } finally {

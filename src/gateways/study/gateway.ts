@@ -89,7 +89,7 @@ export interface LanguageModuleBootstrapCtx {
             url: URL,
         ) => Promise<boolean>,
     ): void;
-    registerStaticDir(urlPrefix: string, absoluteDir: string): void;
+    registerStaticDirectory(urlPrefix: string, absoluteDirectory: string): void;
     log?(
         level: string,
         message: string,
@@ -156,11 +156,11 @@ export interface StudyAdapterBootstrapCtx {
         ) => Promise<boolean>,
         gatewayId?: string,
     ): void;
-    registerStaticDir(urlPrefix: string, absoluteDir: string): void;
-    registerAdapterStaticDir?(
+    registerStaticDirectory(urlPrefix: string, absoluteDirectory: string): void;
+    registerAdapterStaticDirectory?(
         gatewayId: string,
         adapterId: string,
-        absoluteDir: string,
+        absoluteDirectory: string,
     ): void;
     registerNavbarPlugin(scriptUrl: string, isEnabled?: () => boolean): void;
     registerCapabilityProvider(provider: {
@@ -354,7 +354,10 @@ export class CoreStudyGateway {
                 );
             })
             .slice()
-            .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+            .sort(
+                (leftEntry, rightEntry) =>
+                    (leftEntry.order ?? 0) - (rightEntry.order ?? 0),
+            );
     }
 
     listAdapters(): StudyAdapterInfo[] {
@@ -467,14 +470,18 @@ export class CoreStudyGateway {
 
         await Promise.all(
             entries.sort().map(async (entry) => {
-                const pkgPath = path.join(adaptersRoot, entry, "package.json");
+                const packagePath = path.join(
+                    adaptersRoot,
+                    entry,
+                    "package.json",
+                );
                 try {
-                    const raw = await readFile(pkgPath, "utf8");
-                    const pkg = JSON.parse(raw) as {
+                    const raw = await readFile(packagePath, "utf8");
+                    const packageManifest = JSON.parse(raw) as {
                         main?: string;
                         version?: string;
                     };
-                    if (!pkg.main) return;
+                    if (!packageManifest.main) return;
                     const manifestRaw = await readFile(
                         path.join(adaptersRoot, entry, "manifest.json"),
                         "utf8",
@@ -488,15 +495,19 @@ export class CoreStudyGateway {
                     const entryPath = path.resolve(
                         adaptersRoot,
                         entry,
-                        pkg.main,
+                        packageManifest.main,
                     );
-                    const mod = await import(entryPath);
-                    if (typeof mod.createStudyAdapter === "function") {
+                    const moduleExports = await import(entryPath);
+                    if (
+                        typeof moduleExports.createStudyAdapter === "function"
+                    ) {
                         const factory =
-                            mod.createStudyAdapter as () => StudyAdapter | null;
+                            moduleExports.createStudyAdapter as () => StudyAdapter | null;
                         const adapter = factory();
-                        if (adapter && pkg.version) {
-                            Object.assign(adapter, { version: pkg.version });
+                        if (adapter && packageManifest.version) {
+                            Object.assign(adapter, {
+                                version: packageManifest.version,
+                            });
                         }
                         if (adapter && manifest.publisher) {
                             Object.assign(adapter, {
@@ -549,15 +560,19 @@ export class CoreStudyGateway {
         };
         for (const entry of entries.sort()) visit(entry);
         for (const entry of ordered) {
-            const pkgPath = path.join(adaptersRoot, entry, "package.json");
+            const packagePath = path.join(adaptersRoot, entry, "package.json");
 
-            let mod: Record<string, unknown>;
+            let moduleExports: Record<string, unknown>;
             try {
-                const raw = await readFile(pkgPath, "utf8");
-                const pkg = JSON.parse(raw) as { main?: string };
-                if (!pkg.main) continue;
-                const entryPath = path.resolve(adaptersRoot, entry, pkg.main);
-                mod = await import(entryPath);
+                const raw = await readFile(packagePath, "utf8");
+                const packageManifest = JSON.parse(raw) as { main?: string };
+                if (!packageManifest.main) continue;
+                const entryPath = path.resolve(
+                    adaptersRoot,
+                    entry,
+                    packageManifest.main,
+                );
+                moduleExports = await import(entryPath);
             } catch (error) {
                 baseCtx.log?.(
                     "error",
@@ -573,12 +588,12 @@ export class CoreStudyGateway {
             }
 
             if (
-                typeof mod.bootstrapStudyAdapter !== "function" &&
-                mod.defineContracts === undefined
+                typeof moduleExports.bootstrapStudyAdapter !== "function" &&
+                moduleExports.defineContracts === undefined
             )
                 continue;
 
-            const bootstrapFn = mod.bootstrapStudyAdapter as (
+            const bootstrapCallback = moduleExports.bootstrapStudyAdapter as (
                 ctx: StudyAdapterBootstrapCtx,
             ) => Promise<void> | void;
 
@@ -613,14 +628,14 @@ export class CoreStudyGateway {
                     "study",
                     entry,
                     adapterCtx,
-                    mod,
+                    moduleExports,
                     async () => {
-                        if (typeof bootstrapFn === "function")
-                            await bootstrapFn(adapterCtx);
+                        if (typeof bootstrapCallback === "function")
+                            await bootstrapCallback(adapterCtx);
                         this.refreshAdapterAvailability();
                     },
                 );
-            } catch (err) {
+            } catch (error) {
                 this.disabledAdapters.add(entry);
                 this.refreshAdapterAvailability();
                 for (const state of this.availabilityListeners) {
@@ -633,7 +648,10 @@ export class CoreStudyGateway {
                     {
                         component: "study-gateway",
                         adapter: entry,
-                        error: err instanceof Error ? err.message : String(err),
+                        error:
+                            error instanceof Error
+                                ? error.message
+                                : String(error),
                     },
                 );
             }

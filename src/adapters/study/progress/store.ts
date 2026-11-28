@@ -3,7 +3,7 @@ import type {
     LearningEvent,
     ProgressProjection,
 } from "../../../gateways/study/reuse/progress.js";
-import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import { isDeepStrictEqual } from "node:util";
 
 export interface ProgressStore {
@@ -70,8 +70,8 @@ function parseJson<Value>(value: unknown): Value {
     return JSON.parse(String(value)) as Value;
 }
 
-export class DbProgressStore implements ProgressStore {
-    constructor(private readonly db: DbExecutor) {}
+class DatabaseProgressStore implements ProgressStore {
+    constructor(private readonly db: DatabaseExecutor) {}
 
     async ensureSchema(): Promise<void> {
         await this.db.ensureTable({
@@ -201,3 +201,4 @@ export class DbProgressStore implements ProgressStore {
         );
     }
 }
+export { DatabaseProgressStore };

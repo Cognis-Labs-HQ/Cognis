@@ -55,7 +55,7 @@ test("child cards can never occupy any ancestor card bounds", () => {
     );
     assert.match(
         source,
-        /if \(!isAncestorSafe\(rect, ancestorRects\)\) continue/,
+        /if \(!isAncestorSafe\(rectangle, ancestorRectangles\)\)\s*continue/,
     );
     assert.match(source, /setVariantDistance\(slot, distance\)/);
     assert.doesNotMatch(source, /slot\.hidden = true/);

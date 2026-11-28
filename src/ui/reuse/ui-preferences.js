@@ -78,31 +78,34 @@ export async function saveUiPreferences(patch, { bufferOffline = true } = {}) {
     }
 }
 
-export function applyUiPreferences(prefs) {
-    if (prefs) {
+export function applyUiPreferences(preferences) {
+    if (preferences) {
         const previousEnabled = offlineEnabled();
         const previousOwner = localStorage.getItem(
             "cognis_offline_preference_account",
         );
         const account = localStorage.getItem("cognis_account") ?? "";
-        localStorage.setItem("cognis_ui_preferences", JSON.stringify(prefs));
+        localStorage.setItem(
+            "cognis_ui_preferences",
+            JSON.stringify(preferences),
+        );
         localStorage.setItem("cognis_offline_preference_account", account);
         if (
-            previousEnabled !== (prefs.offlineEnabled !== false) ||
+            previousEnabled !== (preferences.offlineEnabled !== false) ||
             (previousOwner && previousOwner !== account)
         )
             window.dispatchEvent(
                 new CustomEvent("cognis:offline-preference-changed"),
             );
     }
-    const messageStyle = normalizeMessageStyle(prefs?.messageStyle);
+    const messageStyle = normalizeMessageStyle(preferences?.messageStyle);
     document.documentElement.dataset.messageStyle = messageStyle;
-    if (!prefs) return;
-    const fontFamily = prefs.appFont || prefs.greetingFont;
+    if (!preferences) return;
+    const fontFamily = preferences.appFont || preferences.greetingFont;
     if (fontFamily) {
         document.documentElement.style.setProperty("--app-font", fontFamily);
     }
-    const rawSize = prefs.appFontSize ?? prefs.greetingFontSize;
+    const rawSize = preferences.appFontSize ?? preferences.greetingFontSize;
     if (rawSize != null) {
         const size = Number(rawSize);
         // Values below 8 are legacy rem values; convert to pt (1rem ≈ 12pt at default browser zoom).

@@ -68,11 +68,12 @@ try {
     const composer = createPageComposer(root, {
         i18n,
         preferenceKey: nested ? "responsive-nested" : "responsive-grid",
-        allowCustomization: true,
+        allowCustomization: !nested,
         frameless: options.has("frameless"),
         requireAccountSession: false,
         enableAccountEnhancements: false,
         toolbarScrollable: true,
+        contentScrolling: !options.has("document-scroll"),
         signal: lifetime.signal,
         pageContext: {
             title: i18n.t("ui.reuse.settings"),
@@ -196,6 +197,7 @@ try {
     window.fixture = {
         menu,
         menuChoices,
+        elementCount: elements.length,
         composer,
         lifetime,
         openFixturePopup,

@@ -10,7 +10,7 @@ import {
     type IInternalNotificationStore,
     AsyncInternalNotificationStore,
 } from "./store.js";
-import { DbInternalNotificationStore } from "./db-store.js";
+import { DatabaseInternalNotificationStore } from "./db-store.js";
 import type { RouteContext } from "../../../api/reuse/route-context.js";
 import { getDataEncryptionKey } from "../../../api/reuse/crypto.js";
 import { createInternalNotificationRoutes } from "./routes/index.js";
@@ -47,7 +47,7 @@ class InternalNotificationSender implements NotificationSender {
  * `process.env`. The internal adapter does not need any environment
  * configuration, so the argument is ignored. The returned sender always
  * resolves its store lazily from the module-level `activeStore`, which
- * `bootstrapNotifyAdapter` upgrades to a `DbInternalNotificationStore` once
+ * `bootstrapNotifyAdapter` upgrades to a `DatabaseInternalNotificationStore` once
  * the database is available — that lazy lookup is what lets notifications
  * persist across logins.
  *
@@ -56,7 +56,7 @@ class InternalNotificationSender implements NotificationSender {
  * here would be incorrect, since the gateway always supplies `process.env`.
  */
 export function createNotificationSender(
-    _env?: Record<string, string | undefined>,
+    _environment?: Record<string, string | undefined>,
 ): NotificationSender {
     return new InternalNotificationSender(null);
 }
@@ -86,9 +86,9 @@ export async function bootstrapNotifyAdapter(
     ctx.capabilities.require<(id: string) => void>(
         "notify:registerAlwaysOnSender",
     )(SENDER_ID);
-    const dbExecutor = ctx.capabilities.get("db:executor");
+    const databaseExecutor = ctx.capabilities.get("db:executor");
 
-    if (dbExecutor) {
+    if (databaseExecutor) {
         const secret = getDataEncryptionKey();
         if (!secret) {
             const baseMessage =
@@ -105,13 +105,13 @@ export async function bootstrapNotifyAdapter(
                 throw new Error(baseMessage);
             }
         }
-        const dbStore = new DbInternalNotificationStore(
-            dbExecutor,
+        const databaseStore = new DatabaseInternalNotificationStore(
+            databaseExecutor,
             secret,
             ctx.log,
         );
-        await dbStore.ensureSchema();
-        activeStore = dbStore;
+        await databaseStore.ensureSchema();
+        activeStore = databaseStore;
         ctx.log?.(
             "info",
             "Internal notification adapter using database store.",
@@ -174,11 +174,11 @@ export async function bootstrapNotifyAdapter(
         "notify",
     );
 
-    const uiDir = path.resolve(
+    const uiDirectory = path.resolve(
         path.dirname(fileURLToPath(import.meta.url)),
         "ui",
     );
-    ctx.registerStaticDir("notify-internal", uiDir);
+    ctx.registerStaticDirectory("notify-internal", uiDirectory);
     ctx.registerNavbarPlugin(
         "/static/gateways/notify-internal/navbar-plugin.js",
     );

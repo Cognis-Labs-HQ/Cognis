@@ -39,12 +39,12 @@ Profileの設定保存が成功すると、再送時やオンライン専用の�
 
 ### 主要なソース
 
-| パス                                           | 目的                                           |
-| ---------------------------------------------- | ---------------------------------------------- |
-| `src/adapters/social/profile/index.ts`         | ブートストラップエントリポイント               |
-| `src/adapters/social/profile/routes/social.ts` | フォロー、ブロック、フォロワーのルート         |
-| `src/adapters/social/profile/routes/posts.ts`  | 投稿の作成、一覧表示、削除                     |
-| `src/adapters/social/profile/store.ts`         | `DbProfileStore` — すべてのプロフィールSQL操作 |
+| パス                                           | 目的                                                 |
+| ---------------------------------------------- | ---------------------------------------------------- |
+| `src/adapters/social/profile/index.ts`         | ブートストラップエントリポイント                     |
+| `src/adapters/social/profile/routes/social.ts` | フォロー、ブロック、フォロワーのルート               |
+| `src/adapters/social/profile/routes/posts.ts`  | 投稿の作成、一覧表示、削除                           |
+| `src/adapters/social/profile/store.ts`         | `DatabaseProfileStore` — すべてのプロフィールSQL操作 |
 
 ### プロフィールの即時更新
 

@@ -46,9 +46,9 @@ export function createMessagesRoomState({
     onRoomAction = async () => {},
     lastOpenedRoomKey = "messages:last-opened-room",
     typingTtlSeconds = 8,
-    typingIdleResetMs = 5000,
-    typingSendDebounceMs = 1200,
-    liveRefreshIntervalMs = 2500,
+    typingIdleResetMs: typingIdleResetMs = 5000,
+    typingSendDebounceMs: typingSendDebounceMs = 1200,
+    liveRefreshIntervalMs: liveRefreshIntervalMs = 2500,
 }) {
     let rooms = [];
     let selectedRoomId = initialSelectedRoomId;

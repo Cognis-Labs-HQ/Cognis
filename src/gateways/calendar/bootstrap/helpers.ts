@@ -52,11 +52,11 @@ export type ResolveAccountDisplayName = (
 ) => Promise<string> | string;
 export type CalendarLogger = (
     level: string,
-    msg: string,
+    message: string,
     meta?: Record<string, unknown>,
 ) => void;
 
-export type EventLocationRef = {
+export type EventLocationReference = {
     calendarId: string;
     eventId: string;
 };
@@ -717,7 +717,7 @@ export function resolveCreatedSeries(
         .filter((entry) => entry.recurrenceId === event.recurrenceId);
 }
 
-export function resolveEventMeta(
+function resolveEventMetadata(
     event: CalendarEventRecord,
     accountId: string,
     response: CalendarEventResponse | null,
@@ -739,6 +739,7 @@ export function resolveEventMeta(
         responseOptions: ["accepted", "tentative", "declined"],
     };
 }
+export { resolveEventMetadata };
 
 export function errorMessage(error: unknown): string {
     return error instanceof Error ? error.message : "calendar_error";

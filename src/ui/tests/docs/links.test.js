@@ -2,10 +2,10 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { join, relative, resolve } from "node:path";
-import { linkShortCommitRefs } from "../../reuse/commit-links.js";
+import { linkShortCommitReferences } from "../../reuse/commit-links.js";
 
 const ROOT = resolve(import.meta.dirname, "../../../..");
-const OLD_DOC_FILE_URL_PATTERNS = [
+const OLD_DOCUMENT_FILE_URL_PATTERNS = [
     {
         label: "inline markdown link",
         pattern: /\[[^\]]+\]\((?!https?:)[^)]+\.md(?:[#?][^)]*)?\)/g,
@@ -20,7 +20,7 @@ const OLD_DOC_FILE_URL_PATTERNS = [
     },
 ];
 
-function listTrackedDocFiles() {
+function listTrackedDocumentFiles() {
     const discoveredFiles = [];
     const pendingDirectories = [ROOT];
 
@@ -58,9 +58,9 @@ function lineNumberAt(content, index) {
 
 test("docs links use pretty docs URLs instead of markdown file URLs", () => {
     const offenders = [];
-    for (const file of listTrackedDocFiles()) {
+    for (const file of listTrackedDocumentFiles()) {
         const content = readFileSync(join(ROOT, file), "utf8");
-        for (const { label, pattern } of OLD_DOC_FILE_URL_PATTERNS) {
+        for (const { label, pattern } of OLD_DOCUMENT_FILE_URL_PATTERNS) {
             pattern.lastIndex = 0;
             for (const match of content.matchAll(pattern)) {
                 offenders.push({
@@ -75,7 +75,7 @@ test("docs links use pretty docs URLs instead of markdown file URLs", () => {
     assert.deepEqual(offenders, []);
 });
 
-function localizedDocGroup(file) {
+function localizedDocumentGroup(file) {
     const match = file.match(/^(.*)\.(de|en|id|ja)\.md$/);
     if (!match) return null;
     return { stem: `${match[1]}.md`, lang: match[2] };
@@ -83,10 +83,10 @@ function localizedDocGroup(file) {
 
 test("localized docs stay in language lockstep", () => {
     const groups = new Map();
-    for (const file of listTrackedDocFiles().filter((name) =>
+    for (const file of listTrackedDocumentFiles().filter((name) =>
         name.endsWith(".md"),
     )) {
-        const group = localizedDocGroup(file);
+        const group = localizedDocumentGroup(file);
         if (!group) continue;
         if (!groups.has(group.stem)) groups.set(group.stem, new Set());
         groups.get(group.stem).add(group.lang);
@@ -95,7 +95,7 @@ test("localized docs stay in language lockstep", () => {
     const incompleteGroups = [];
     for (const [stem, languages] of groups) {
         const missing = ["de", "en", "id", "ja"].filter(
-            (lang) => !languages.has(lang),
+            (language) => !languages.has(language),
         );
         if (missing.length > 0) incompleteGroups.push({ stem, missing });
     }
@@ -103,37 +103,37 @@ test("localized docs stay in language lockstep", () => {
 });
 
 test("unsuffixed markdown docs have localized variants", () => {
-    const trackedDocs = listTrackedDocFiles().filter((name) =>
+    const trackedDocuments = listTrackedDocumentFiles().filter((name) =>
         name.endsWith(".md"),
     );
-    const trackedDocSet = new Set(trackedDocs);
-    const unsuffixedDocs = trackedDocs.filter(
+    const trackedDocumentSet = new Set(trackedDocuments);
+    const unsuffixedDocuments = trackedDocuments.filter(
         (name) => !/\.(de|en|id|ja)\.md$/.test(name),
     );
-    const exemptUnsuffixedDocs = new Set([
+    const exemptUnsuffixedDocuments = new Set([
         ".github/copilot-instructions.md",
         "AGENTS.md",
         "TODO.md",
     ]);
-    const missingExemptions = [...exemptUnsuffixedDocs].filter(
-        (file) => !trackedDocSet.has(file),
+    const missingExemptions = [...exemptUnsuffixedDocuments].filter(
+        (file) => !trackedDocumentSet.has(file),
     );
     assert.deepEqual(missingExemptions, []);
     const missingLocalizedVariants = [];
 
-    for (const unsuffixedDoc of unsuffixedDocs) {
-        if (exemptUnsuffixedDocs.has(unsuffixedDoc)) {
+    for (const unsuffixedDocument of unsuffixedDocuments) {
+        if (exemptUnsuffixedDocuments.has(unsuffixedDocument)) {
             continue;
         }
         const missingLanguages = ["de", "en", "id", "ja"].filter(
             (languageCode) =>
-                !trackedDocSet.has(
-                    unsuffixedDoc.replace(/\.md$/, `.${languageCode}.md`),
+                !trackedDocumentSet.has(
+                    unsuffixedDocument.replace(/\.md$/, `.${languageCode}.md`),
                 ),
         );
         if (missingLanguages.length > 0) {
             missingLocalizedVariants.push({
-                file: unsuffixedDoc,
+                file: unsuffixedDocument,
                 missingLanguages,
             });
         }
@@ -148,21 +148,23 @@ test("docs page strips pretty docs URL prefixes before loading document slugs", 
         source.includes('.replace(/^docs\\/?/, "")'),
         "pretty /docs links are normalized to document slugs",
     );
-    assert.match(source, /const slug = normalizeDocSlug\(href\);/);
+    assert.match(source, /const slug = normalizeDocumentSlug\(href\);/);
 });
 
 test("docs page excludes changelog entries from navigation menu", () => {
     const source = readFileSync(join(ROOT, "src/ui/app/docs/index.js"), "utf8");
     assert.ok(
-        source.includes("function isChangelogDoc(item)"),
+        source.includes("function isChangelogDocument(item)"),
         "docs page should classify changelog slugs",
     );
     assert.ok(
-        source.includes("docs.filter((doc) => !isChangelogDoc(doc))"),
+        /docs\.filter\(\s*\(document\) => !isChangelogDocument\(document\),?\s*\)/.test(
+            source,
+        ),
         "docs navigation should exclude changelog docs",
     );
     assert.ok(
-        source.includes("resolveDefaultSlug(subpath, navigationDocs)"),
+        source.includes("resolveDefaultSlug(subpath, navigationDocuments)"),
         "docs default selection should only consider non-changelog docs",
     );
 });
@@ -174,11 +176,11 @@ test("docs page falls back ungrouped docs to the platform section", () => {
         "docs navigation should assign ungrouped docs to platform",
     );
     assert.match(source, /createSideMenu\(/);
-    assert.match(source, /createNavigationGroups\(i18n, navigationDocs\)/);
+    assert.match(source, /createNavigationGroups\(i18n, navigationDocuments\)/);
 });
 
 test("docs and changelogs use the shared side menu capability", () => {
-    const docsSource = readFileSync(
+    const documentsSource = readFileSync(
         join(ROOT, "src/ui/app/docs/index.js"),
         "utf8",
     );
@@ -186,7 +188,7 @@ test("docs and changelogs use the shared side menu capability", () => {
         join(ROOT, "src/ui/app/changelogs/index.js"),
         "utf8",
     );
-    for (const source of [docsSource, changelogSource]) {
+    for (const source of [documentsSource, changelogSource]) {
         assert.match(source, /createSideMenu\(/);
         assert.match(source, /navigationMenu\.mount\(root, \{ signal \}\)/);
         assert.match(source, /navigationMenu\.setActive\(slug\)/);
@@ -216,7 +218,9 @@ test("changelogs module keeps changelog-only navigation data", () => {
         "utf8",
     );
     assert.ok(
-        source.includes("docs.filter((doc) => isChangelogDoc(doc))"),
+        /docs\.filter\(\s*\(document\) =>\s*isChangelogDocument\(document\),?\s*\)/.test(
+            source,
+        ),
         "changelogs page navigation should include only changelog docs",
     );
     assert.ok(
@@ -231,7 +235,7 @@ test("changelogs module keeps changelog-only navigation data", () => {
         source.includes("item.sourceName || CHANGELOG_GROUP_KEY"),
         "changelog navigation should group external module entries by module name",
     );
-    assert.match(source, /transformMarkdown: linkShortCommitRefs/);
+    assert.match(source, /transformMarkdown: linkShortCommitReferences/);
 
     const styles = readFileSync(join(ROOT, "src/ui/styles/docs.css"), "utf8");
     assert.ok(
@@ -245,23 +249,23 @@ test("changelog navigation delegates structured module groups to the side menu",
         join(ROOT, "src/ui/app/changelogs/index.js"),
         "utf8",
     );
-    assert.match(source, /createNavigationGroups\(i18n, changelogDocs\)/);
+    assert.match(source, /createNavigationGroups\(i18n, changelogDocuments\)/);
     assert.match(source, /group === CHANGELOG_GROUP_KEY/);
     assert.match(source, /items: groupItems\.map/);
 });
 
 test("changelog commit links show short refs with complete hrefs", () => {
-    const commitRef = "1234567890abcdef1234567890abcdef12345678";
-    const url = `https://github.com/Cognis-Labs-HQ/Cognis/commit/${commitRef}`;
-    assert.equal(linkShortCommitRefs(url), `[1234567](${url})`);
+    const commitReference = "1234567890abcdef1234567890abcdef12345678";
+    const url = `https://github.com/Cognis-Labs-HQ/Cognis/commit/${commitReference}`;
+    assert.equal(linkShortCommitReferences(url), `[1234567](${url})`);
     assert.equal(
-        linkShortCommitRefs(`[complete commit reference](${url})`),
+        linkShortCommitReferences(`[complete commit reference](${url})`),
         `[1234567](${url})`,
     );
 });
 
 test("documentation markdown titles stay within 30 characters", () => {
-    const docs = listTrackedDocFiles().filter(
+    const docs = listTrackedDocumentFiles().filter(
         (file) =>
             (file.startsWith("src/docs/") || file.includes("/docs/")) &&
             !file.includes("/changelog/") &&

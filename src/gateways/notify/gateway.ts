@@ -73,21 +73,21 @@ export interface NotificationEmailStore {
 }
 
 export class VolatileNotificationPreferenceStore implements NotificationPreferenceStore {
-    private readonly prefs = new Map<string, string[]>();
+    private readonly preferences = new Map<string, string[]>();
 
     set(
         recipientUsername: string,
         category: string,
         senderIds: string[],
     ): void {
-        this.prefs.set(`${recipientUsername}:${category}`, senderIds);
+        this.preferences.set(`${recipientUsername}:${category}`, senderIds);
     }
 
     async getSenderIds(
         recipientUsername: string,
         category: string,
     ): Promise<string[]> {
-        return this.prefs.get(`${recipientUsername}:${category}`) ?? [];
+        return this.preferences.get(`${recipientUsername}:${category}`) ?? [];
     }
 }
 
@@ -152,7 +152,7 @@ export class CoreNotificationGateway implements NotificationGateway {
     >();
 
     constructor(
-        private readonly prefStore: NotificationPreferenceStore,
+        private readonly preferenceStore: NotificationPreferenceStore,
         private readonly configStore?: NotificationConfigStore,
         private readonly emailStore?: NotificationEmailStore,
     ) {}
@@ -264,13 +264,17 @@ export class CoreNotificationGateway implements NotificationGateway {
                 queueEntries.push({ senderId, ...entry });
             }
         }
-        return queueEntries.sort((a, b) => {
+        return queueEntries.sort((leftEntry, rightEntry) => {
             const updatedAtDelta =
-                Date.parse(b.updatedAt) - Date.parse(a.updatedAt);
+                Date.parse(rightEntry.updatedAt) -
+                Date.parse(leftEntry.updatedAt);
             if (updatedAtDelta !== 0) return updatedAtDelta;
             return (
-                Date.parse(b.createdAt) - Date.parse(a.createdAt) ||
-                b.notificationId.localeCompare(a.notificationId)
+                Date.parse(rightEntry.createdAt) -
+                    Date.parse(leftEntry.createdAt) ||
+                rightEntry.notificationId.localeCompare(
+                    leftEntry.notificationId,
+                )
             );
         });
     }
@@ -295,12 +299,13 @@ export class CoreNotificationGateway implements NotificationGateway {
         };
     }
 
-    getProviderEnvValues(
+    getProviderEnvironmentValues(
         senderId: string,
     ): Record<string, string | undefined> | null {
         const sender = this.senders.get(senderId);
-        if (!sender || typeof sender.getEnvValues !== "function") return null;
-        return sender.getEnvValues();
+        if (!sender || typeof sender.getEnvironmentValues !== "function")
+            return null;
+        return sender.getEnvironmentValues();
     }
 
     getProviderRequiredFields(senderId: string): string[] | null {
@@ -475,7 +480,7 @@ export class CoreNotificationGateway implements NotificationGateway {
             stringsBaseUrl: sender.stringsBaseUrl,
             configuredSecretFields: sender.getConfiguredSecretFields?.() ?? [],
             config: sender.getConfig(),
-            envValues: sender.getEnvValues?.() ?? {},
+            envValues: sender.getEnvironmentValues?.() ?? {},
             requiredFields: sender.getRequiredFields?.() ?? [],
             supportsTest: typeof sender.test === "function",
             locked: this.alwaysOnSenders.has(senderId),
@@ -522,14 +527,14 @@ export class CoreNotificationGateway implements NotificationGateway {
         }
 
         for (const entry of entries) {
-            const pkgPath = path.join(adaptersRoot, entry, "package.json");
+            const packagePath = path.join(adaptersRoot, entry, "package.json");
             try {
-                const raw = await readFile(pkgPath, "utf8");
-                const pkg = JSON.parse(raw) as {
+                const raw = await readFile(packagePath, "utf8");
+                const packageManifest = JSON.parse(raw) as {
                     main?: string;
                     version?: string;
                 };
-                if (!pkg.main) continue;
+                if (!packageManifest.main) continue;
 
                 let requires: string[] | undefined;
                 let publisher: string | undefined;
@@ -550,18 +555,26 @@ export class CoreNotificationGateway implements NotificationGateway {
                     // No manifest — adapter has no declared dependencies
                 }
 
-                const entryPath = path.resolve(adaptersRoot, entry, pkg.main);
-                const mod = await import(entryPath);
+                const entryPath = path.resolve(
+                    adaptersRoot,
+                    entry,
+                    packageManifest.main,
+                );
+                const moduleExports = await import(entryPath);
 
-                if (typeof mod.createNotificationSender === "function") {
-                    const factory = mod.createNotificationSender as (
+                if (
+                    typeof moduleExports.createNotificationSender === "function"
+                ) {
+                    const factory = moduleExports.createNotificationSender as (
                         env: Record<string, string | undefined>,
                     ) => NotificationSender | null;
                     const sender = factory(
                         process.env as Record<string, string | undefined>,
                     );
-                    if (sender && pkg.version) {
-                        Object.assign(sender, { version: pkg.version });
+                    if (sender && packageManifest.version) {
+                        Object.assign(sender, {
+                            version: packageManifest.version,
+                        });
                     }
                     if (sender && publisher) {
                         Object.assign(sender, { publisher });
@@ -590,28 +603,32 @@ export class CoreNotificationGateway implements NotificationGateway {
 
         const modules = new Map<string, Record<string, unknown>>();
         for (const entry of entries) {
-            const pkgPath = path.join(adaptersRoot, entry, "package.json");
+            const packagePath = path.join(adaptersRoot, entry, "package.json");
 
             // Resolve the adapter module, skipping silently if the directory does
             // not contain a valid package.json or its main entry cannot be imported.
-            let mod: Record<string, unknown>;
+            let moduleExports: Record<string, unknown>;
             try {
-                const raw = await readFile(pkgPath, "utf8");
-                const pkg = JSON.parse(raw) as { main?: string };
-                if (!pkg.main) continue;
+                const raw = await readFile(packagePath, "utf8");
+                const packageManifest = JSON.parse(raw) as { main?: string };
+                if (!packageManifest.main) continue;
 
-                const entryPath = path.resolve(adaptersRoot, entry, pkg.main);
+                const entryPath = path.resolve(
+                    adaptersRoot,
+                    entry,
+                    packageManifest.main,
+                );
                 // The import path must be stable (no cache-busting query string) so that
                 // the ESM module cache is shared between discoverSenders() and
                 // bootstrapAdapters(). Using the same module instance ensures the
                 // module-level activeStore set during bootstrap is the same one used by
                 // the sender registered in discoverSenders().
-                mod = await import(entryPath);
+                moduleExports = await import(entryPath);
             } catch {
                 continue;
             }
 
-            modules.set(entry, mod);
+            modules.set(entry, moduleExports);
         }
 
         const initialized = new Set<string>();
@@ -631,32 +648,39 @@ export class CoreNotificationGateway implements NotificationGateway {
             initialized.add(owner);
         }
 
-        for (const [entry, mod] of modules) {
+        for (const [entry, moduleExports] of modules) {
             if (initialized.has(entry)) continue;
             const ownedSender = this.adapterSenders.get(entry);
             const bootstrap =
                 !ownedSender?.bootstrap &&
-                typeof mod.bootstrapNotifyAdapter === "function"
-                    ? (mod.bootstrapNotifyAdapter as (
+                typeof moduleExports.bootstrapNotifyAdapter === "function"
+                    ? (moduleExports.bootstrapNotifyAdapter as (
                           ctx: NotifyAdapterBootstrapCtx,
                       ) => Promise<void> | void)
                     : undefined;
-            if (!bootstrap && mod.defineContracts === undefined) continue;
-            await bootstrapAdapter("notify", entry, ctx, mod, async () => {
-                await bootstrap?.(ctx);
-            });
+            if (!bootstrap && moduleExports.defineContracts === undefined)
+                continue;
+            await bootstrapAdapter(
+                "notify",
+                entry,
+                ctx,
+                moduleExports,
+                async () => {
+                    await bootstrap?.(ctx);
+                },
+            );
         }
     }
 
     async dispatch(
         envelope: NotificationEnvelope,
     ): Promise<NotificationDispatchResult> {
-        const prefSenderIds = await this.prefStore.getSenderIds(
+        const preferenceSenderIds = await this.preferenceStore.getSenderIds(
             envelope.recipientUsername,
             envelope.category,
         );
         const effectiveSenderIds = new Set([
-            ...prefSenderIds,
+            ...preferenceSenderIds,
             ...this.alwaysOnSenders,
         ]);
         const dispatched: string[] = [];
@@ -695,10 +719,11 @@ export class CoreNotificationGateway implements NotificationGateway {
                     await delivery.send(resolvedEnvelope);
                 }
                 dispatched.push(id);
-            } catch (err) {
+            } catch (error) {
                 errors.push({
                     senderId: id,
-                    error: err instanceof Error ? err.message : String(err),
+                    error:
+                        error instanceof Error ? error.message : String(error),
                 });
             }
         }

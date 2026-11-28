@@ -2,11 +2,11 @@
  * Loads and validates the documentation index exposed by the core docs API.
  *
  * Public exports:
- * - `loadDocsIndex` — returns documentation index entries or an empty list when unavailable.
- * - `loadDocsBundleMarkdown` — reads all views at one component version.
+ * - `loadDocumentsIndex` — returns documentation index entries or an empty list when unavailable.
+ * - `loadDocumentsBundleMarkdown` — reads all views at one component version.
  *
  * @example
- * const docs = await loadDocsIndex();
+ * const docs = await loadDocumentsIndex();
  *
  * @param {{ fetchDocs?: (path: string) => Promise<Response> }} [options]
  * @returns {Promise<Array<Record<string, unknown>>>} Valid documentation entries.
@@ -14,7 +14,7 @@
 import { apiFetch } from "./api-client.js";
 import { activeUiLanguage, enabledUiLanguages } from "./ui-language-state.js";
 
-export function readDocsLanguages() {
+function readDocumentsLanguages() {
     return [
         ...new Set(
             [
@@ -29,13 +29,14 @@ export function readDocsLanguages() {
         ),
     ];
 }
+export { readDocumentsLanguages };
 
-export async function loadDocsIndex({
-    fetchDocs = apiFetch,
-    languages = readDocsLanguages(),
+async function loadDocumentsIndex({
+    fetchDocs: fetchDocuments = apiFetch,
+    languages = readDocumentsLanguages(),
     signal,
 } = {}) {
-    const response = await fetchDocs(
+    const response = await fetchDocuments(
         `/api/v1/docs?langs=${encodeURIComponent(languages.join(","))}`,
         { signal },
     ).catch(() => null);
@@ -46,10 +47,15 @@ export async function loadDocsIndex({
         (entry) => entry && typeof entry === "object" && !Array.isArray(entry),
     );
 }
+export { loadDocumentsIndex };
 
-export async function loadDocsBundleMarkdown(
+async function loadDocumentsBundleMarkdown(
     item,
-    { fetchDocs = apiFetch, languages = readDocsLanguages(), signal } = {},
+    {
+        fetchDocs: fetchDocuments = apiFetch,
+        languages = readDocumentsLanguages(),
+        signal,
+    } = {},
 ) {
     if (
         !item.slug ||
@@ -67,7 +73,7 @@ export async function loadDocsBundleMarkdown(
     for (const view of views) {
         signal?.throwIfAborted();
         const suffix = view === "info" ? "" : `/${view}`;
-        const response = await fetchDocs(
+        const response = await fetchDocuments(
             `/api/v1/docs/${item.version}/${item.slug}${suffix}?langs=${encodeURIComponent(languages.join(","))}`,
             { signal },
         );
@@ -80,3 +86,4 @@ export async function loadDocsBundleMarkdown(
     }
     return markdown.join("\n\n");
 }
+export { loadDocumentsBundleMarkdown };

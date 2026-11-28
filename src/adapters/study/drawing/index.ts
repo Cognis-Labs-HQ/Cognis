@@ -16,7 +16,11 @@ export function createStudyAdapter(): StudyAdapter {
 export async function bootstrapStudyAdapter(
     ctx: StudyAdapterBootstrapCtx,
 ): Promise<void> {
-    ctx.registerAdapterStaticDir?.("study", "drawing", `${ctx.adapterRoot}/ui`);
+    ctx.registerAdapterStaticDirectory?.(
+        "study",
+        "drawing",
+        `${ctx.adapterRoot}/ui`,
+    );
     ctx.registerNavbarPlugin("/static/adapters/study/drawing/provider.js", () =>
         ctx.isAdapterEnabled(),
     );

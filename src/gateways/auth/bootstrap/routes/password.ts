@@ -16,7 +16,10 @@ import {
     requireAuth,
     type GatewayBootstrapContext,
 } from "../../../shared.js";
-import type { AuthGatewayRouteHandler, AuthRouteLogMeta } from "./shared.js";
+import type {
+    AuthGatewayRouteHandler,
+    AuthRouteLogMetadata,
+} from "./shared.js";
 
 interface PasswordRouteDependencies {
     authGateway: CoreAuthGateway;
@@ -48,7 +51,7 @@ export function createPasswordRoutes({
         req,
         res,
         url,
-        logMeta: AuthRouteLogMeta,
+        logMetadata: AuthRouteLogMetadata,
     ): Promise<boolean> => {
         if (url.pathname === "/api/v1/auth/verify" && req.method === "DELETE") {
             const claims = requireAuth(req, res, "user");
@@ -71,7 +74,7 @@ export function createPasswordRoutes({
                     "debug",
                     "Password verification reused freshness window.",
                     {
-                        ...logMeta,
+                        ...logMetadata,
                         accountId: claims.sub,
                     },
                 );
@@ -89,7 +92,7 @@ export function createPasswordRoutes({
                 : false;
             if (!verified) {
                 log?.("warn", "Password verification failed.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: claims.sub,
                 });
                 res.writeHead(401, { "content-type": "application/json" });
@@ -107,7 +110,7 @@ export function createPasswordRoutes({
                 recordTokenVerification(rawToken);
             }
             log?.("info", "Password verification succeeded.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
             });
             res.writeHead(200, { "content-type": "application/json" });
@@ -147,7 +150,7 @@ export function createPasswordRoutes({
                     "warn",
                     "Account lifecycle password confirmation failed.",
                     {
-                        ...logMeta,
+                        ...logMetadata,
                         accountId: claims.sub,
                         action,
                     },
@@ -173,7 +176,9 @@ export function createPasswordRoutes({
                     ): Promise<unknown>;
                 }>("social:profileLifecycle");
                 if (!profileLifecycle) {
-                    res.writeHead(503, { "content-type": "application/json" });
+                    res.writeHead(503, {
+                        "content-type": "application/json",
+                    });
                     res.end(
                         JSON.stringify({
                             error: {
@@ -191,7 +196,7 @@ export function createPasswordRoutes({
             }
             const revokedTokenCount = revokeAccessTokensForSubject(claims.sub);
             log?.("warn", "Applied account lifecycle action.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
                 action,
                 revokedTokenCount,
@@ -215,7 +220,7 @@ export function createPasswordRoutes({
                 claims.providerId,
             );
             log?.("debug", "Read password change support.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
                 providerId: claims.providerId,
                 supported: support.supported,
@@ -278,7 +283,7 @@ export function createPasswordRoutes({
                     "warn",
                     "Blocked password reset for unsupported provider.",
                     {
-                        ...logMeta,
+                        ...logMetadata,
                         accountId: claims.sub,
                         providerId: claims.providerId,
                         reason: support.reason,
@@ -308,7 +313,7 @@ export function createPasswordRoutes({
                 const message =
                     error instanceof Error ? error.message : String(error);
                 log?.("error", "Password reset failed.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: claims.sub,
                     providerId: claims.providerId,
                     error: message,
@@ -326,7 +331,7 @@ export function createPasswordRoutes({
             }
             revokeAccessTokensForSubject(claims.sub);
             log?.("info", "Password reset succeeded.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
                 providerId: claims.providerId,
             });
@@ -341,7 +346,7 @@ export function createPasswordRoutes({
                         "error",
                         "Failed to dispatch password change notification.",
                         {
-                            ...logMeta,
+                            ...logMetadata,
                             accountId: claims.sub,
                             error:
                                 error instanceof Error

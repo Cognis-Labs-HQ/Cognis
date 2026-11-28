@@ -174,7 +174,7 @@ export class ScoringEngine implements ScoringCapability {
                     id,
                     activityType,
                     hints,
-                    durationMs,
+                    durationMs: durationMs,
                     correct,
                     independentCorrect,
                 }) =>

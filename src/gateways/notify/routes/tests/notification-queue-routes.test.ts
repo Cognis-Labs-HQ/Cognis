@@ -19,8 +19,8 @@ function makeResponse() {
         writeHead(code: number) {
             status = code;
         },
-        end(p: string) {
-            payload = p;
+        end(responseBody: string) {
+            payload = responseBody;
         },
         get status() {
             return status;
@@ -60,8 +60,8 @@ class QueueAwareSender implements NotificationSender {
 }
 
 test("GET /api/v1/notify/queue returns queue entries to admin", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     gateway.registerSender(new QueueAwareSender("smtp"));
     const route = createNotificationRoutes(gateway);
     const adminToken = issueAccessToken("admin", "admin", 60);
@@ -84,8 +84,8 @@ test("GET /api/v1/notify/queue returns queue entries to admin", async () => {
 });
 
 test("GET /api/v1/notify/queue returns 403 for non-admin users", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     gateway.registerSender(new QueueAwareSender("smtp"));
     const route = createNotificationRoutes(gateway);
     const userToken = issueAccessToken("alice", "user", 60);
@@ -105,8 +105,8 @@ test("GET /api/v1/notify/queue returns 403 for non-admin users", async () => {
 });
 
 test("GET /api/v1/notify/queue/:id returns queue item details", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     gateway.registerSender(new QueueAwareSender("smtp"));
     const route = createNotificationRoutes(gateway);
     const adminToken = issueAccessToken("admin", "admin", 60);
@@ -128,8 +128,8 @@ test("GET /api/v1/notify/queue/:id returns queue item details", async () => {
 });
 
 test("GET /api/v1/notify/queue/:id returns 404 for unknown item", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     gateway.registerSender(new QueueAwareSender("smtp"));
     const route = createNotificationRoutes(gateway);
     const adminToken = issueAccessToken("admin", "admin", 60);
@@ -150,8 +150,8 @@ test("GET /api/v1/notify/queue/:id returns 404 for unknown item", async () => {
 });
 
 test("GET /api/v1/notify/queue/:id returns 400 for invalid ID", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     gateway.registerSender(new QueueAwareSender("smtp"));
     const route = createNotificationRoutes(gateway);
     const adminToken = issueAccessToken("admin", "admin", 60);

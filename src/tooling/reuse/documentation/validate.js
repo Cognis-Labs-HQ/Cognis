@@ -94,9 +94,9 @@ export function validateMarkdown(markdown, kind, language) {
     return issues;
 }
 
-export function validateComponent(manifestPath, docsDirectory = "docs") {
+export function validateComponent(manifestPath, documentsDirectory = "docs") {
     const root = dirname(manifestPath);
-    const core = docsDirectory === "src/docs";
+    const core = documentsDirectory === "src/docs";
     const manifest = JSON.parse(readFileSync(manifestPath, "utf8"));
     const issues = [];
     const pointers = manifest.documentation;
@@ -112,16 +112,16 @@ export function validateComponent(manifestPath, docsDirectory = "docs") {
         const name = core
             ? `${coreDocuments[kind]}.en.md`
             : documentName(kind, "en");
-        if (pointers[kind] !== `${docsDirectory}/${name}`) {
+        if (pointers[kind] !== `${documentsDirectory}/${name}`) {
             issues.push(
-                `Invalid documentation.${kind}: use ${docsDirectory}/${name}`,
+                `Invalid documentation.${kind}: use ${documentsDirectory}/${name}`,
             );
             continue;
         }
         for (const language of languages) {
             const path = resolve(
                 root,
-                docsDirectory,
+                documentsDirectory,
                 core
                     ? `${coreDocuments[kind]}.${language}.md`
                     : documentName(kind, language),
@@ -144,7 +144,7 @@ export function validateComponent(manifestPath, docsDirectory = "docs") {
     if (core)
         return [
             ...issues,
-            ...validateCoreDocumentation(resolve(root, docsDirectory)),
+            ...validateCoreDocumentation(resolve(root, documentsDirectory)),
         ];
     const allowed = new Set(
         Object.keys(documents).flatMap((kind) =>
@@ -152,13 +152,13 @@ export function validateComponent(manifestPath, docsDirectory = "docs") {
         ),
     );
     try {
-        for (const path of sourceFiles(resolve(root, docsDirectory), {
+        for (const path of sourceFiles(resolve(root, documentsDirectory), {
             excludeDirectories: [],
         })) {
             if (
                 /\.md$/i.test(path) &&
                 !path.includes(`${sep}changelog${sep}`) &&
-                !allowed.has(relative(resolve(root, docsDirectory), path))
+                !allowed.has(relative(resolve(root, documentsDirectory), path))
             )
                 issues.push(
                     `Unregistered component document: ${relative(root, path)}`,

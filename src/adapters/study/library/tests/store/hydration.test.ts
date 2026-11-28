@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { LibraryStore } from "../../store.js";
-import type { DbExecutor } from "../../../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../../../gateways/db/reuse/db-executor.js";
 
 test("listing cards hydrates ordered and grouped references with one batch per edge kind", async () => {
     const commands: object[] = [];
-    const database: DbExecutor = {
+    const database: DatabaseExecutor = {
         ensureTable: async () => {},
         transaction: async (operation) => operation(database),
         executeCommand: async (command) => {
@@ -76,7 +76,7 @@ test("listing cards hydrates ordered and grouped references with one batch per e
 
 test("saving dictionary results removes expired cache rows before upserting", async () => {
     const commands: object[] = [];
-    const database: DbExecutor = {
+    const database: DatabaseExecutor = {
         ensureTable: async () => {},
         transaction: async (operation) => operation(database),
         executeCommand: async (command) => {

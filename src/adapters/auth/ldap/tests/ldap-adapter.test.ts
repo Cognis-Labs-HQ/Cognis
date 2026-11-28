@@ -4,7 +4,7 @@ import { bootstrapAuthAdapter, createAdapter } from "../index.js";
 import type { LdapRuntimeOptions } from "../index.js";
 import {
     isDirectoryGroupEntry,
-    isDnWithinBase,
+    isDistinguishedNameWithinBase,
     resolveDirectorySearchBases,
 } from "../client.js";
 
@@ -98,14 +98,14 @@ test("LDAP discovery excludes user objects from group results", () => {
 
 test("LDAP discovery rejects entries returned outside the requested base", () => {
     assert.equal(
-        isDnWithinBase(
+        isDistinguishedNameWithinBase(
             "cn=teachers,cn=groups,cn=accounts,dc=example,dc=org",
             "cn=groups,cn=accounts,dc=example,dc=org",
         ),
         true,
     );
     assert.equal(
-        isDnWithinBase(
+        isDistinguishedNameWithinBase(
             "uid=alice,cn=users,cn=accounts,dc=example,dc=org",
             "cn=groups,cn=accounts,dc=example,dc=org",
         ),
@@ -300,8 +300,8 @@ test("unified LDAP authentication continues after a source error", async () => {
     const adapter = createAdapter() as ReturnType<typeof createAdapter> & {
         setClient(client: {
             authenticate: (
-                _u: string,
-                _p: string,
+                _username: string,
+                _password: string,
                 options: LdapRuntimeOptions,
             ) => Promise<{ id: string } | null>;
         }): void;
@@ -314,7 +314,7 @@ test("unified LDAP authentication continues after a source error", async () => {
         ],
     });
     adapter.setClient({
-        authenticate: async (_u, _p, options) => {
+        authenticate: async (_username, _password, options) => {
             if (options.identifier === "Offline")
                 throw new Error("unavailable");
             return { id: "alice" };
@@ -367,7 +367,7 @@ test("ldap adapter config schema has required fields", () => {
         "/static/adapters/auth/ldap/languages",
     );
     const schema = adapter.getConfigSchema();
-    const keys = schema.map((f) => f.key);
+    const keys = schema.map((field) => field.key);
     assert.ok(keys.includes("host"));
     assert.ok(keys.includes("bindDn"));
     assert.ok(keys.includes("baseDn"));

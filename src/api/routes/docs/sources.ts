@@ -1,13 +1,13 @@
 import { readFile, readdir } from "node:fs/promises";
 import { dirname, join, relative, resolve, sep } from "node:path";
 
-export type DocView = "info" | "usage" | "technical";
-export interface DocSource {
+export type DocumentView = "info" | "usage" | "technical";
+export interface DocumentSource {
     slug: string;
     group: string;
     sourceName: string;
     version: string;
-    files: Partial<Record<DocView, Record<string, string>>>;
+    files: Partial<Record<DocumentView, Record<string, string>>>;
 }
 
 export async function optionalText(path: string): Promise<string | undefined> {
@@ -106,9 +106,9 @@ async function localizedFiles(
 }
 
 async function bundleFiles(
-    paths: Record<DocView, string>,
-): Promise<DocSource["files"]> {
-    const files: DocSource["files"] = {};
+    paths: Record<DocumentView, string>,
+): Promise<DocumentSource["files"]> {
+    const files: DocumentSource["files"] = {};
     for (const view of ["info", "usage", "technical"] as const)
         files[view] = await localizedFiles(paths[view]);
     const languages = Object.keys(files.info!);
@@ -123,13 +123,13 @@ async function bundleFiles(
     return files;
 }
 
-export async function discoverDocSources(
+async function discoverDocumentSources(
     sourceRoot: string,
-): Promise<DocSource[]> {
+): Promise<DocumentSource[]> {
     sourceRoot = resolve(sourceRoot);
     const boundary = dirname(sourceRoot);
     const paths = await filesWithin(sourceRoot);
-    const sources: DocSource[] = [];
+    const sources: DocumentSource[] = [];
     const manifests = paths.filter(
         (path) =>
             path.endsWith(`${sep}manifest.json`) ||
@@ -145,7 +145,7 @@ export async function discoverDocSources(
         if (!manifest.documentation) continue;
         owners.add(root);
         const pointers = manifest.documentation;
-        const declared = {} as Record<DocView, string>;
+        const declared = {} as Record<DocumentView, string>;
         for (const [view, key] of [
             ["info", "readme"],
             ["usage", "usage"],
@@ -223,3 +223,4 @@ export async function discoverDocSources(
     }
     return sources;
 }
+export { discoverDocumentSources };

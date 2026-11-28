@@ -27,30 +27,34 @@
 
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
-import type { DbExecutor } from "./reuse/db-executor.js";
+import type { DatabaseExecutor } from "./reuse/db-executor.js";
 import { sha256Of } from "../../api/reuse/crypto.js";
 
 /** Minimal logging interface required by the database initializer. */
-export interface DbInitLogger {
+export interface DatabaseInitializationLogger {
     info(message: string, meta?: Record<string, unknown>): void | Promise<void>;
 }
 
-export function resolveDbProviderDir(dbType: string) {
-    if (dbType === "mariadb" || dbType === "mysql") return "mariadb";
+function resolveDatabaseProviderDirectory(databaseType: string) {
+    if (databaseType === "mariadb" || databaseType === "mysql")
+        return "mariadb";
     return "postgres";
 }
+export { resolveDatabaseProviderDirectory };
 
 function splitSqlStatements(sql: string): string[] {
     return sql
         .split(";")
-        .map((s) => s.trim())
-        .filter((s) => s.length > 0 && !s.startsWith("--"))
-        .map((s) => `${s};`);
+        .map((statement) => statement.trim())
+        .filter(
+            (statement) => statement.length > 0 && !statement.startsWith("--"),
+        )
+        .map((statement) => `${statement};`);
 }
 
 async function ensureMigrationsTable(
     dir: string,
-    executor: DbExecutor,
+    executor: DatabaseExecutor,
 ): Promise<void> {
     if (dir === "mariadb") {
         await executor.execute(
@@ -78,7 +82,7 @@ function migrationPlaceholder(dir: string, index: number): string {
 async function isMigrationApplied(
     id: string,
     dir: string,
-    executor: DbExecutor,
+    executor: DatabaseExecutor,
 ): Promise<boolean> {
     const placeholder = migrationPlaceholder(dir, 1);
     const result = await executor.execute(
@@ -92,7 +96,7 @@ async function recordMigration(
     id: string,
     checksum: string,
     dir: string,
-    executor: DbExecutor,
+    executor: DatabaseExecutor,
 ): Promise<void> {
     const now = new Date().toISOString();
     if (dir === "postgres") {
@@ -108,32 +112,36 @@ async function recordMigration(
     }
 }
 
-const INIT_SENTINEL_ID = "init:__phase__";
-const INIT_SENTINEL_CHECKSUM = "phase-sentinel";
+const INITIALIZATION_SENTINEL_ID = "init:__phase__";
+const INITIALIZATION_SENTINEL_CHECKSUM = "phase-sentinel";
 
-async function runInitPhase(
-    initRoot: string,
+async function runInitializationPhase(
+    initializationRoot: string,
     dir: string,
-    logger: DbInitLogger,
-    executor: DbExecutor,
+    logger: DatabaseInitializationLogger,
+    executor: DatabaseExecutor,
 ): Promise<{ files: string[]; sqlCount: number }> {
-    const already = await isMigrationApplied(INIT_SENTINEL_ID, dir, executor);
+    const already = await isMigrationApplied(
+        INITIALIZATION_SENTINEL_ID,
+        dir,
+        executor,
+    );
     if (already) {
         await logger.info("Database init phase already applied, skipping.", {
-            dir: initRoot,
+            dir: initializationRoot,
         });
         return { files: [], sqlCount: 0 };
     }
 
     let files: string[];
     try {
-        files = (await readdir(initRoot))
+        files = (await readdir(initializationRoot))
             .filter((name) => name.endsWith(".sql"))
             .sort();
     } catch {
         await recordMigration(
-            INIT_SENTINEL_ID,
-            INIT_SENTINEL_CHECKSUM,
+            INITIALIZATION_SENTINEL_ID,
+            INITIALIZATION_SENTINEL_CHECKSUM,
             dir,
             executor,
         );
@@ -142,10 +150,12 @@ async function runInitPhase(
 
     if (files.length > 0) {
         const contents = await Promise.all(
-            files.map((name) => readFile(path.join(initRoot, name), "utf8")),
+            files.map((name) =>
+                readFile(path.join(initializationRoot, name), "utf8"),
+            ),
         );
         await logger.info("Running database initialization scripts.", {
-            dir: initRoot,
+            dir: initializationRoot,
             files,
         });
         for (let i = 0; i < files.length; i++) {
@@ -160,8 +170,8 @@ async function runInitPhase(
     }
 
     await recordMigration(
-        INIT_SENTINEL_ID,
-        INIT_SENTINEL_CHECKSUM,
+        INITIALIZATION_SENTINEL_ID,
+        INITIALIZATION_SENTINEL_CHECKSUM,
         dir,
         executor,
     );
@@ -171,8 +181,8 @@ async function runInitPhase(
 async function runMigratePhase(
     migrateRoot: string,
     dir: string,
-    logger: DbInitLogger,
-    executor: DbExecutor,
+    logger: DatabaseInitializationLogger,
+    executor: DatabaseExecutor,
 ): Promise<{ files: string[]; sqlCount: number }> {
     let files: string[];
     try {
@@ -214,29 +224,31 @@ async function runMigratePhase(
 }
 
 export async function initializeDatabaseSchema(
-    dbType: string,
-    logger: DbInitLogger,
-    executor: DbExecutor,
+    databaseType: string,
+    logger: DatabaseInitializationLogger,
+    executor: DatabaseExecutor,
     adaptersRoot: string = path.resolve(process.cwd(), "src", "adapters"),
 ) {
-    const dir = resolveDbProviderDir(dbType);
-    const initRoot = path.join(adaptersRoot, "db", dir, "sql", "init");
+    const dir = resolveDatabaseProviderDirectory(databaseType);
+    const initializationRoot = path.join(
+        adaptersRoot,
+        "db",
+        dir,
+        "sql",
+        "init",
+    );
     const migrateRoot = path.join(adaptersRoot, "db", dir, "sql", "migrate");
 
     await ensureMigrationsTable(dir, executor);
 
-    const { files: initFiles, sqlCount: initCount } = await runInitPhase(
-        initRoot,
-        dir,
-        logger,
-        executor,
-    );
+    const { files: initializationFiles, sqlCount: initializationCount } =
+        await runInitializationPhase(initializationRoot, dir, logger, executor);
     const { files: migrateFiles, sqlCount: migrateCount } =
         await runMigratePhase(migrateRoot, dir, logger, executor);
 
     return {
         dbType: dir,
-        files: [...initFiles, ...migrateFiles],
-        sqlCount: initCount + migrateCount,
+        files: [...initializationFiles, ...migrateFiles],
+        sqlCount: initializationCount + migrateCount,
     };
 }

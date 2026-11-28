@@ -1,19 +1,19 @@
 import type { DatabaseGateway, QueryResult } from "@cognis/core";
 import type { BootstrapLog } from "@cognis/core";
-import type { RawDbExecutor } from "../../../gateways/db/reuse/db-executor.js";
-import type { DbProviderId } from "../../../gateways/db/reuse/provider-id.js";
-import type { StructuredDbTableDef } from "../../../gateways/db/reuse/db-table.js";
+import type { RawDatabaseExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseProviderId } from "../../../gateways/db/reuse/provider-id.js";
+import type { StructuredDatabaseTableDefinition } from "../../../gateways/db/reuse/db-table.js";
 import { readBoundedEnvironmentInteger } from "./settings.js";
 import {
-    buildDbErrorMeta,
+    buildDatabaseErrorMetadata,
     summarizeStatement,
-    writeDbLog,
+    writeDatabaseLog,
 } from "../../../gateways/db/reuse/executor-log.js";
 import {
-    buildStructuredDbCommandStatement,
-    type StructuredDbCommand,
-    type StructuredDbCommandResult,
-    type StructuredDbDialect,
+    buildStructuredDatabaseCommandStatement,
+    type StructuredDatabaseCommand,
+    type StructuredDatabaseCommandResult,
+    type StructuredDatabaseDialect,
 } from "../../../gateways/db/reuse/db-command.js";
 
 export interface MariaDbClient {
@@ -106,7 +106,7 @@ function readAffectedRows(result: unknown): number {
     return 0;
 }
 
-const MARIADB_STRUCTURED_DB_DIALECT: StructuredDbDialect = {
+const MARIADB_STRUCTURED_DATABASE_DIALECT: StructuredDatabaseDialect = {
     createPlaceholder() {
         return "?";
     },
@@ -147,11 +147,11 @@ export class MariaDbGateway implements DatabaseGateway {
     }
 
     async executeCommand<Row = Record<string, unknown>>(
-        command: StructuredDbCommand,
-    ): Promise<StructuredDbCommandResult<Row>> {
-        const statement = buildStructuredDbCommandStatement(
+        command: StructuredDatabaseCommand,
+    ): Promise<StructuredDatabaseCommandResult<Row>> {
+        const statement = buildStructuredDatabaseCommandStatement(
             command,
-            MARIADB_STRUCTURED_DB_DIALECT,
+            MARIADB_STRUCTURED_DATABASE_DIALECT,
         );
         const [result] = await this.queryTarget.query(
             statement.sql,
@@ -200,19 +200,24 @@ export class MariaDbGateway implements DatabaseGateway {
             await client.commit();
             return result;
         } catch (error) {
-            writeDbLog(this.log, "error", "MariaDB transaction failed.", {
+            writeDatabaseLog(this.log, "error", "MariaDB transaction failed.", {
                 component: "db",
                 provider: "mariadb",
-                ...buildDbErrorMeta(error),
+                ...buildDatabaseErrorMetadata(error),
             });
             try {
                 await client.rollback();
             } catch (rollbackError) {
-                writeDbLog(this.log, "error", "MariaDB rollback failed.", {
-                    component: "db",
-                    provider: "mariadb",
-                    ...buildDbErrorMeta(rollbackError),
-                });
+                writeDatabaseLog(
+                    this.log,
+                    "error",
+                    "MariaDB rollback failed.",
+                    {
+                        component: "db",
+                        provider: "mariadb",
+                        ...buildDatabaseErrorMetadata(rollbackError),
+                    },
+                );
             }
             throw error;
         } finally {
@@ -221,18 +226,21 @@ export class MariaDbGateway implements DatabaseGateway {
     }
 }
 
-class MariaDbExecutor implements RawDbExecutor {
+class MariaDbExecutor implements RawDatabaseExecutor {
     constructor(
         private readonly pool: MariaDbPool,
         private readonly log?: BootstrapLog,
         private readonly columnTypes = new Map<
             string,
-            Map<string, StructuredDbTableDef["columns"][number]["type"]>
+            Map<
+                string,
+                StructuredDatabaseTableDefinition["columns"][number]["type"]
+            >
         >(),
     ) {}
 
     async execute(sql: string, params: unknown[] = []) {
-        writeDbLog(this.log, "debug", "Executing SQL statement.", {
+        writeDatabaseLog(this.log, "debug", "Executing SQL statement.", {
             component: "db",
             provider: "mariadb",
             statement: summarizeStatement(sql),
@@ -245,20 +253,20 @@ class MariaDbExecutor implements RawDbExecutor {
             }
             return { rowCount: readAffectedRows(result) };
         } catch (error) {
-            writeDbLog(this.log, "warn", "SQL execution failed.", {
+            writeDatabaseLog(this.log, "warn", "SQL execution failed.", {
                 component: "db",
                 provider: "mariadb",
                 statement: summarizeStatement(sql),
                 parameterCount: params.length,
-                ...buildDbErrorMeta(error),
+                ...buildDatabaseErrorMetadata(error),
             });
             throw error;
         }
     }
 
     async executeCommand(
-        command: StructuredDbCommand,
-    ): Promise<StructuredDbCommandResult> {
+        command: StructuredDatabaseCommand,
+    ): Promise<StructuredDatabaseCommandResult> {
         const gateway = new MariaDbGateway(this.pool, this.log);
         const normalizedCommand = this.normalizeTemporalValues(command);
         try {
@@ -280,7 +288,7 @@ class MariaDbExecutor implements RawDbExecutor {
             ) {
                 throw error;
             }
-            writeDbLog(
+            writeDatabaseLog(
                 this.log,
                 "error",
                 "Retrying MariaDB command with normalized temporal values.",
@@ -295,7 +303,7 @@ class MariaDbExecutor implements RawDbExecutor {
     }
 
     async transaction<T>(
-        callback: (executor: RawDbExecutor) => Promise<T>,
+        callback: (executor: RawDatabaseExecutor) => Promise<T>,
     ): Promise<T> {
         const client = await this.pool.getConnection();
         const transactionExecutor = new MariaDbExecutor(
@@ -313,19 +321,24 @@ class MariaDbExecutor implements RawDbExecutor {
             await client.commit();
             return result;
         } catch (error) {
-            writeDbLog(this.log, "error", "MariaDB transaction failed.", {
+            writeDatabaseLog(this.log, "error", "MariaDB transaction failed.", {
                 component: "db",
                 provider: "mariadb",
-                ...buildDbErrorMeta(error),
+                ...buildDatabaseErrorMetadata(error),
             });
             try {
                 await client.rollback();
             } catch (rollbackError) {
-                writeDbLog(this.log, "error", "MariaDB rollback failed.", {
-                    component: "db",
-                    provider: "mariadb",
-                    ...buildDbErrorMeta(rollbackError),
-                });
+                writeDatabaseLog(
+                    this.log,
+                    "error",
+                    "MariaDB rollback failed.",
+                    {
+                        component: "db",
+                        provider: "mariadb",
+                        ...buildDatabaseErrorMetadata(rollbackError),
+                    },
+                );
             }
             throw error;
         } finally {
@@ -333,30 +346,34 @@ class MariaDbExecutor implements RawDbExecutor {
         }
     }
 
-    async ensureTable(def: StructuredDbTableDef): Promise<void> {
+    async ensureTable(
+        definition: StructuredDatabaseTableDefinition,
+    ): Promise<void> {
         this.columnTypes.set(
-            def.name,
-            new Map(def.columns.map((column) => [column.name, column.type])),
+            definition.name,
+            new Map(
+                definition.columns.map((column) => [column.name, column.type]),
+            ),
         );
-        const compositePk = def.primaryKey ?? [];
+        const compositePrimaryKey = definition.primaryKey ?? [];
         const keyColumns = new Set<string>([
-            ...compositePk,
-            ...(def.uniqueKeys ?? []).flat(),
-            ...(def.indexes ?? []).flatMap((index) => index.columns),
+            ...compositePrimaryKey,
+            ...(definition.uniqueKeys ?? []).flat(),
+            ...(definition.indexes ?? []).flatMap((index) => index.columns),
         ]);
         const isKeyColumn = (
-            col: StructuredDbTableDef["columns"][number],
+            column: StructuredDatabaseTableDefinition["columns"][number],
         ): boolean =>
-            Boolean(col.primaryKey) ||
-            Boolean(col.unique) ||
-            col.references !== undefined ||
-            keyColumns.has(col.name);
-        const dbType = (
-            col: StructuredDbTableDef["columns"][number],
+            Boolean(column.primaryKey) ||
+            Boolean(column.unique) ||
+            column.references !== undefined ||
+            keyColumns.has(column.name);
+        const databaseType = (
+            column: StructuredDatabaseTableDefinition["columns"][number],
         ): string => {
-            switch (col.type) {
+            switch (column.type) {
                 case "text":
-                    return isKeyColumn(col) ? "VARCHAR(255)" : "TEXT";
+                    return isKeyColumn(column) ? "VARCHAR(255)" : "TEXT";
                 case "integer":
                     return "INT";
                 case "bigint":
@@ -369,8 +386,8 @@ class MariaDbExecutor implements RawDbExecutor {
                     return "BLOB";
             }
         };
-        const dbDefault = (
-            value: StructuredDbTableDef["columns"][number]["default"],
+        const databaseDefault = (
+            value: StructuredDatabaseTableDefinition["columns"][number]["default"],
         ): string => {
             if (value === "now") return "CURRENT_TIMESTAMP";
             if (value === "true") return "1";
@@ -380,9 +397,9 @@ class MariaDbExecutor implements RawDbExecutor {
             return `'${String(value).replace(/'/g, "''")}'`;
         };
         const notNullFallback = (
-            col: StructuredDbTableDef["columns"][number],
+            column: StructuredDatabaseTableDefinition["columns"][number],
         ): string => {
-            switch (col.type) {
+            switch (column.type) {
                 case "integer":
                 case "bigint":
                     return "0";
@@ -394,51 +411,54 @@ class MariaDbExecutor implements RawDbExecutor {
                     return "''";
             }
         };
-        const columnDefs = def.columns.map((col) => {
-            const parts: string[] = [`${col.name} ${dbType(col)}`];
-            if (col.notNull || col.primaryKey) parts.push("NOT NULL");
-            if (col.primaryKey && compositePk.length === 0)
+        const columnDefinitions = definition.columns.map((column) => {
+            const parts: string[] = [`${column.name} ${databaseType(column)}`];
+            if (column.notNull || column.primaryKey) parts.push("NOT NULL");
+            if (column.primaryKey && compositePrimaryKey.length === 0)
                 parts.push("PRIMARY KEY");
             if (
-                col.unique &&
-                !(def.uniqueKeys ?? []).some(
-                    (uk) => uk.length === 1 && uk[0] === col.name,
+                column.unique &&
+                !(definition.uniqueKeys ?? []).some(
+                    (uniqueKey) =>
+                        uniqueKey.length === 1 && uniqueKey[0] === column.name,
                 )
             ) {
                 parts.push("UNIQUE");
             }
-            if (col.default !== undefined)
-                parts.push(`DEFAULT ${dbDefault(col.default)}`);
-            if (col.references) {
+            if (column.default !== undefined)
+                parts.push(`DEFAULT ${databaseDefault(column.default)}`);
+            if (column.references) {
                 parts.push(
-                    `REFERENCES ${col.references.table}(${col.references.column})`,
+                    `REFERENCES ${column.references.table}(${column.references.column})`,
                 );
-                if (col.references.onDelete)
-                    parts.push(`ON DELETE ${col.references.onDelete}`);
+                if (column.references.onDelete)
+                    parts.push(`ON DELETE ${column.references.onDelete}`);
             }
             return parts.join(" ");
         });
         const tableConstraints: string[] = [];
-        if (compositePk.length > 0)
-            tableConstraints.push(`PRIMARY KEY (${compositePk.join(", ")})`);
-        for (const uniqueKey of def.uniqueKeys ?? []) {
+        if (compositePrimaryKey.length > 0)
+            tableConstraints.push(
+                `PRIMARY KEY (${compositePrimaryKey.join(", ")})`,
+            );
+        for (const uniqueKey of definition.uniqueKeys ?? []) {
             tableConstraints.push(`UNIQUE (${uniqueKey.join(", ")})`);
         }
-        const allDefs = [...columnDefs, ...tableConstraints];
+        const allDefinitions = [...columnDefinitions, ...tableConstraints];
         await this.execute(
-            `CREATE TABLE IF NOT EXISTS ${def.name} (${allDefs.join(", ")})`,
+            `CREATE TABLE IF NOT EXISTS ${definition.name} (${allDefinitions.join(", ")})`,
         );
-        const existingColsResult = await this.execute(
+        const existingColumnsResult = await this.execute(
             `SELECT column_name, data_type FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?`,
-            [def.name],
+            [definition.name],
         );
-        const existingCols = new Set(
-            (existingColsResult.rows ?? []).map((row) =>
+        const existingColumns = new Set(
+            (existingColumnsResult.rows ?? []).map((row) =>
                 String((row as Record<string, unknown>).column_name ?? ""),
             ),
         );
         const existingColumnTypes = new Map(
-            (existingColsResult.rows ?? []).map((row) => {
+            (existingColumnsResult.rows ?? []).map((row) => {
                 const column = row as Record<string, unknown>;
                 return [
                     String(column.column_name ?? ""),
@@ -446,66 +466,67 @@ class MariaDbExecutor implements RawDbExecutor {
                 ];
             }),
         );
-        for (const col of def.columns) {
-            if (existingCols.has(col.name)) continue;
-            const renamedFrom = readRenamedColumn(col);
-            if (renamedFrom && existingCols.has(renamedFrom)) {
-                const notNullClause = col.notNull ? " NOT NULL" : "";
+        for (const column of definition.columns) {
+            if (existingColumns.has(column.name)) continue;
+            const renamedFrom = readRenamedColumn(column);
+            if (renamedFrom && existingColumns.has(renamedFrom)) {
+                const notNullClause = column.notNull ? " NOT NULL" : "";
                 const defaultClause =
-                    col.default !== undefined
-                        ? ` DEFAULT ${dbDefault(col.default)}`
+                    column.default !== undefined
+                        ? ` DEFAULT ${databaseDefault(column.default)}`
                         : "";
                 await this.execute(
-                    `ALTER TABLE ${def.name} CHANGE COLUMN \`${renamedFrom}\` ${col.name} ${dbType(col)}${notNullClause}${defaultClause}`,
+                    `ALTER TABLE ${definition.name} CHANGE COLUMN \`${renamedFrom}\` ${column.name} ${databaseType(column)}${notNullClause}${defaultClause}`,
                 );
-                existingCols.add(col.name);
+                existingColumns.add(column.name);
                 continue;
             }
             const defaultClause =
-                col.default !== undefined
-                    ? `DEFAULT ${dbDefault(col.default)}`
-                    : col.notNull
-                      ? `DEFAULT ${notNullFallback(col)}`
+                column.default !== undefined
+                    ? `DEFAULT ${databaseDefault(column.default)}`
+                    : column.notNull
+                      ? `DEFAULT ${notNullFallback(column)}`
                       : "";
-            const notNullClause = col.notNull ? " NOT NULL" : "";
-            const referenceClause = col.references
-                ? ` REFERENCES ${col.references.table}(${col.references.column})${col.references.onDelete ? ` ON DELETE ${col.references.onDelete}` : ""}`
+            const notNullClause = column.notNull ? " NOT NULL" : "";
+            const referenceClause = column.references
+                ? ` REFERENCES ${column.references.table}(${column.references.column})${column.references.onDelete ? ` ON DELETE ${column.references.onDelete}` : ""}`
                 : "";
             await this.execute(
-                `ALTER TABLE ${def.name} ADD COLUMN IF NOT EXISTS ${col.name} ${dbType(col)}${notNullClause}${defaultClause ? ` ${defaultClause}` : ""}${referenceClause}`,
+                `ALTER TABLE ${definition.name} ADD COLUMN IF NOT EXISTS ${column.name} ${databaseType(column)}${notNullClause}${defaultClause ? ` ${defaultClause}` : ""}${referenceClause}`,
             );
         }
-        for (const col of def.columns) {
+        for (const column of definition.columns) {
             if (
-                col.type !== "text" ||
-                !isKeyColumn(col) ||
-                existingColumnTypes.get(col.name) !== "text"
+                column.type !== "text" ||
+                !isKeyColumn(column) ||
+                existingColumnTypes.get(column.name) !== "text"
             ) {
                 continue;
             }
             const notNullClause =
-                col.notNull || col.primaryKey ? " NOT NULL" : "";
+                column.notNull || column.primaryKey ? " NOT NULL" : "";
             const defaultClause =
-                col.default !== undefined
-                    ? ` DEFAULT ${dbDefault(col.default)}`
+                column.default !== undefined
+                    ? ` DEFAULT ${databaseDefault(column.default)}`
                     : "";
             await this.execute(
-                `ALTER TABLE ${def.name} MODIFY COLUMN ${col.name} ${dbType(col)}${notNullClause}${defaultClause}`,
+                `ALTER TABLE ${definition.name} MODIFY COLUMN ${column.name} ${databaseType(column)}${notNullClause}${defaultClause}`,
             );
         }
-        for (const index of def.indexes ?? []) {
+        for (const index of definition.indexes ?? []) {
             const indexName =
-                index.name ?? `idx_${def.name}_${index.columns.join("_")}`;
+                index.name ??
+                `idx_${definition.name}_${index.columns.join("_")}`;
             await this.execute(
-                `CREATE INDEX IF NOT EXISTS ${indexName} ON ${def.name} (${index.columns.join(", ")})`,
+                `CREATE INDEX IF NOT EXISTS ${indexName} ON ${definition.name} (${index.columns.join(", ")})`,
             );
         }
     }
 
     private normalizeTemporalValues(
-        command: StructuredDbCommand,
+        command: StructuredDatabaseCommand,
         fallbackTemporalColumns = new Set<string>(),
-    ): StructuredDbCommand {
+    ): StructuredDatabaseCommand {
         const tableColumns = this.columnTypes.get(command.table);
         if (!tableColumns && fallbackTemporalColumns.size === 0) return command;
         const normalize = (column: string, value: unknown): unknown => {
@@ -556,7 +577,7 @@ class MariaDbExecutor implements RawDbExecutor {
 }
 
 function readRenamedColumn(
-    column: StructuredDbTableDef["columns"][number],
+    column: StructuredDatabaseTableDefinition["columns"][number],
 ): string | undefined {
     if (!("renamedFrom" in column)) return undefined;
     return typeof column.renamedFrom === "string"
@@ -564,18 +585,19 @@ function readRenamedColumn(
         : undefined;
 }
 
-export function canHandleDbProvider(providerId: DbProviderId): boolean {
+function canHandleDatabaseProvider(providerId: DatabaseProviderId): boolean {
     return providerId === "mariadb";
 }
+export { canHandleDatabaseProvider };
 
-export async function createDbExecutor(args: {
+async function createDatabaseExecutor(args: {
     databaseUrl: string;
     log?: BootstrapLog;
     lifecycle?: { registerShutdown(handler: () => Promise<void>): void };
     pool?: MariaDbPool;
     startup?: MariaDbStartupSettings;
     sleep?: (milliseconds: number) => Promise<void>;
-}): Promise<RawDbExecutor> {
+}): Promise<RawDatabaseExecutor> {
     const pool =
         args.pool ?? (await createMariaDbPool(args.databaseUrl, args.log));
     try {
@@ -591,13 +613,14 @@ export async function createDbExecutor(args: {
     }
     args.lifecycle?.registerShutdown(async () => {
         await pool.end();
-        writeDbLog(args.log, "info", "MariaDB connection pool drained.", {
+        writeDatabaseLog(args.log, "info", "MariaDB connection pool drained.", {
             component: "db",
             provider: "mariadb",
         });
     });
     return new MariaDbExecutor(pool, args.log);
 }
+export { createDatabaseExecutor };
 
 const RETRYABLE_STARTUP_ERROR_CODES = new Set([
     "ECONNREFUSED",
@@ -637,7 +660,7 @@ export async function waitForMariaDb(
         try {
             await pool.query("SELECT 1");
             if (attempt > 1) {
-                writeDbLog(log, "info", "MariaDB became ready.", {
+                writeDatabaseLog(log, "info", "MariaDB became ready.", {
                     component: "db",
                     provider: "mariadb",
                     attempts: attempt,
@@ -651,12 +674,12 @@ export async function waitForMariaDb(
             if (!retryable || Date.now() >= deadline) {
                 throw error;
             }
-            writeDbLog(log, "error", "MariaDB is not ready; retrying.", {
+            writeDatabaseLog(log, "error", "MariaDB is not ready; retrying.", {
                 component: "db",
                 provider: "mariadb",
                 attempt,
                 retryIntervalMs: settings.retryInterval,
-                ...buildDbErrorMeta(error),
+                ...buildDatabaseErrorMetadata(error),
             });
             await sleep(settings.retryInterval);
         }
@@ -673,10 +696,10 @@ async function createMariaDbPool(
         ...readMariaDbPoolSettings(),
     });
     pool.on("error", (error: Error) => {
-        writeDbLog(log, "error", "Idle MariaDB pool connection failed.", {
+        writeDatabaseLog(log, "error", "Idle MariaDB pool connection failed.", {
             component: "db",
             provider: "mariadb",
-            ...buildDbErrorMeta(error),
+            ...buildDatabaseErrorMetadata(error),
         });
     });
     return pool as MariaDbPool;

@@ -160,9 +160,9 @@ export interface SettingsSection {
 export class UIRegistry {
     private readonly assetManifest: Record<string, string>;
     private readonly sections = new Map<string, AdminSection>();
-    private readonly staticDirs = new Map<string, string>();
-    private readonly adapterStaticDirs = new Map<string, string>();
-    private readonly moduleStaticDirs = new Map<string, string>();
+    private readonly staticDirectories = new Map<string, string>();
+    private readonly adapterStaticDirectories = new Map<string, string>();
+    private readonly moduleStaticDirectories = new Map<string, string>();
     private readonly pageExtensions = new Map<string, PageElement[]>();
     private readonly navbarPlugins: NavbarPlugin[] = [];
     private readonly capabilityProviders: UiCapabilityProvider[] = [];
@@ -190,9 +190,9 @@ export class UIRegistry {
             /^\/static\/adapters\/([^/]+)\/([^/]+)\/([^?#]+)$/,
         );
         const directory = gatewayAsset
-            ? this.getStaticDir(gatewayAsset[1])
+            ? this.getStaticDirectory(gatewayAsset[1])
             : adapterAsset
-              ? this.getAdapterStaticDir(adapterAsset[1], adapterAsset[2])
+              ? this.getAdapterStaticDirectory(adapterAsset[1], adapterAsset[2])
               : undefined;
         const relativeAsset = gatewayAsset?.[2] ?? adapterAsset?.[3];
         if (
@@ -256,8 +256,11 @@ export class UIRegistry {
      * Maps a URL prefix segment (gatewayId) to an absolute filesystem path.
      * Registered directories are served under /static/gateways/:gatewayId/.
      */
-    registerStaticDir(gatewayId: string, absoluteDir: string): void {
-        this.staticDirs.set(gatewayId, absoluteDir);
+    registerStaticDirectory(
+        gatewayId: string,
+        absoluteDirectory: string,
+    ): void {
+        this.staticDirectories.set(gatewayId, absoluteDirectory);
     }
 
     /**
@@ -267,12 +270,15 @@ export class UIRegistry {
      * (navbar plugins, page scripts, styles) should live next to the adapter
      * code on disk and be exposed via this method.
      */
-    registerAdapterStaticDir(
+    registerAdapterStaticDirectory(
         gatewayId: string,
         adapterId: string,
-        absoluteDir: string,
+        absoluteDirectory: string,
     ): void {
-        this.adapterStaticDirs.set(`${gatewayId}/${adapterId}`, absoluteDir);
+        this.adapterStaticDirectories.set(
+            `${gatewayId}/${adapterId}`,
+            absoluteDirectory,
+        );
     }
 
     /**
@@ -419,29 +425,32 @@ export class UIRegistry {
         return this.resolveDescriptor(Array.from(this.sections.values()));
     }
 
-    getStaticDir(gatewayId: string): string | undefined {
-        return this.staticDirs.get(gatewayId);
+    getStaticDirectory(gatewayId: string): string | undefined {
+        return this.staticDirectories.get(gatewayId);
     }
 
-    getAdapterStaticDir(
+    getAdapterStaticDirectory(
         gatewayId: string,
         adapterId: string,
     ): string | undefined {
-        return this.adapterStaticDirs.get(`${gatewayId}/${adapterId}`);
+        return this.adapterStaticDirectories.get(`${gatewayId}/${adapterId}`);
     }
 
     /**
      * Registers a URL prefix under /static/modules/ that the server serves
      * from the given absolute filesystem directory. Modules call this via the
-     * `registerStaticDir` hook on their bootstrap context (the gateway routes
+     * `registerStaticDirectory` hook on their bootstrap context (the gateway routes
      * prefixes that start with "modules/" here instead of to staticDirs).
      */
-    registerModuleStaticDir(urlPrefix: string, absoluteDir: string): void {
-        const existing = this.moduleStaticDirs.get(urlPrefix);
-        if (existing && existing !== absoluteDir) {
+    registerModuleStaticDirectory(
+        urlPrefix: string,
+        absoluteDirectory: string,
+    ): void {
+        const existing = this.moduleStaticDirectories.get(urlPrefix);
+        if (existing && existing !== absoluteDirectory) {
             throw new Error("ui_registration_conflict");
         }
-        this.moduleStaticDirs.set(urlPrefix, absoluteDir);
+        this.moduleStaticDirectories.set(urlPrefix, absoluteDirectory);
     }
 
     unregisterModuleContributions(moduleId: string): void {
@@ -461,9 +470,9 @@ export class UIRegistry {
         this.removeOwned(this.authTypingMessages, moduleId);
         this.removeOwned(this.authFooterPlugins, moduleId);
         this.removeOwned(this.settingsSections, moduleId);
-        for (const prefix of this.moduleStaticDirs.keys()) {
+        for (const prefix of this.moduleStaticDirectories.keys()) {
             if (prefix === moduleId || prefix.startsWith(`${moduleId}/`)) {
-                this.moduleStaticDirs.delete(prefix);
+                this.moduleStaticDirectories.delete(prefix);
             }
         }
     }
@@ -489,21 +498,21 @@ export class UIRegistry {
         urlPath: string,
     ): { dir: string; relPath: string } | undefined {
         let bestPrefix = "";
-        let bestDir: string | undefined;
-        for (const [prefix, dir] of this.moduleStaticDirs) {
+        let bestDirectory: string | undefined;
+        for (const [prefix, dir] of this.moduleStaticDirectories) {
             if (urlPath === prefix || urlPath.startsWith(prefix + "/")) {
                 if (prefix.length > bestPrefix.length) {
                     bestPrefix = prefix;
-                    bestDir = dir;
+                    bestDirectory = dir;
                 }
             }
         }
-        if (!bestDir) return undefined;
-        const relPath =
+        if (!bestDirectory) return undefined;
+        const relativePathPath =
             urlPath.length > bestPrefix.length
                 ? urlPath.slice(bestPrefix.length + 1)
                 : "";
-        return { dir: bestDir, relPath };
+        return { dir: bestDirectory, relPath: relativePathPath };
     }
 
     /**

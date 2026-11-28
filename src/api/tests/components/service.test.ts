@@ -645,14 +645,14 @@ test("catalog provenance preserves the installed channel and missing revisions r
     });
     Reflect.deleteProperty(current.rows[0], "installedBranch");
     const target = { type: "module", id: "language" };
-    const noop = (await current.service.apply(current.request, {
+    const noOperation = (await current.service.apply(current.request, {
         action: "upgrade",
         target,
     })) as {
         results: Array<{ data: { channel: string; unchanged: boolean } }>;
     };
-    assert.equal(noop.results[0].data.channel, "preview");
-    assert.equal(noop.results[0].data.unchanged, true);
+    assert.equal(noOperation.results[0].data.channel, "preview");
+    assert.equal(noOperation.results[0].data.unchanged, true);
     const unknown = await fixture(context, { installedCommit: null });
     const failed = (await unknown.service.apply(unknown.request, {
         action: "upgrade",

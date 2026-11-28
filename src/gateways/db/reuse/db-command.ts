@@ -1,6 +1,7 @@
-export type StructuredDbOption = "SELECT" | "INSERT" | "UPDATE" | "DELETE";
+export type StructuredDatabaseOption =
+    "SELECT" | "INSERT" | "UPDATE" | "DELETE";
 
-export type StructuredDbOperator =
+export type StructuredDatabaseOperator =
     | "="
     | "!="
     | "<"
@@ -12,21 +13,21 @@ export type StructuredDbOperator =
     | "IS NULL"
     | "IS NOT NULL";
 
-export interface StructuredDbWhereClause {
+export interface StructuredDatabaseWhereClause {
     column: string;
-    operator?: StructuredDbOperator;
+    operator?: StructuredDatabaseOperator;
     value?: unknown;
     /** ESCAPE character for LIKE expressions. Only valid when operator is 'LIKE'. */
     escapeChar?: string;
 }
 
 /** Column with an optional alias for SELECT statements. */
-export interface StructuredDbSelectColumn {
+export interface StructuredDatabaseSelectColumn {
     col: string;
     as: string;
 }
 
-export interface StructuredDbJoinClause {
+export interface StructuredDatabaseJoinClause {
     type?: "INNER" | "LEFT";
     table: string;
     alias?: string;
@@ -36,71 +37,73 @@ export interface StructuredDbJoinClause {
     };
 }
 
-export interface StructuredDbOrderByClause {
+export interface StructuredDatabaseOrderByClause {
     column: string;
     direction?: "ASC" | "DESC";
 }
 
-export interface StructuredDbConflictClause {
+export interface StructuredDatabaseConflictClause {
     action: "ignore" | "update";
     target?: string[];
     update?: Record<string, unknown>;
 }
 
-export interface StructuredDbSelectCommand {
+export interface StructuredDatabaseSelectCommand {
     option: "SELECT";
     table: string;
     alias?: string;
-    columns?: (string | StructuredDbSelectColumn)[];
+    columns?: (string | StructuredDatabaseSelectColumn)[];
     count?: boolean;
-    joins?: StructuredDbJoinClause[];
-    where?: StructuredDbWhereClause[];
-    orderBy?: StructuredDbOrderByClause[];
+    joins?: StructuredDatabaseJoinClause[];
+    where?: StructuredDatabaseWhereClause[];
+    orderBy?: StructuredDatabaseOrderByClause[];
     limit?: number;
 }
 
-export interface StructuredDbInsertCommand {
+export interface StructuredDatabaseInsertCommand {
     option: "INSERT";
     table: string;
     values: Record<string, unknown>;
-    conflict?: StructuredDbConflictClause;
+    conflict?: StructuredDatabaseConflictClause;
 }
 
-export interface StructuredDbUpdateCommand {
+export interface StructuredDatabaseUpdateCommand {
     option: "UPDATE";
     table: string;
     set: Record<string, unknown>;
-    where?: StructuredDbWhereClause[];
+    where?: StructuredDatabaseWhereClause[];
 }
 
-export interface StructuredDbDeleteCommand {
+export interface StructuredDatabaseDeleteCommand {
     option: "DELETE";
     table: string;
-    where?: StructuredDbWhereClause[];
+    where?: StructuredDatabaseWhereClause[];
 }
 
-export type StructuredDbCommand =
-    | StructuredDbSelectCommand
-    | StructuredDbInsertCommand
-    | StructuredDbUpdateCommand
-    | StructuredDbDeleteCommand;
+export type StructuredDatabaseCommand =
+    | StructuredDatabaseSelectCommand
+    | StructuredDatabaseInsertCommand
+    | StructuredDatabaseUpdateCommand
+    | StructuredDatabaseDeleteCommand;
 
-export interface StructuredDbCommandStatement {
+export interface StructuredDatabaseCommandStatement {
     sql: string;
     params: unknown[];
     returnsRows: boolean;
 }
 
-export interface StructuredDbCommandResult<Row = Record<string, unknown>> {
+export interface StructuredDatabaseCommandResult<
+    Row = Record<string, unknown>,
+> {
     rows?: Row[];
     rowCount?: number;
 }
 
-export interface StructuredDbDialect {
+export interface StructuredDatabaseDialect {
     createPlaceholder(parameterIndex: number): string;
-    buildInsertPrefix(conflict?: StructuredDbConflictClause): string;
+    buildInsertPrefix(conflict?: StructuredDatabaseConflictClause): string;
     buildInsertConflictClause(args: {
-        conflict: StructuredDbConflictClause;
+        conflict: StructuredDatabaseConflictClause;
         conflictTarget: string[];
         updateEntries: Array<[string, unknown]>;
         addParameter: (value: unknown) => string;
@@ -108,7 +111,7 @@ export interface StructuredDbDialect {
     }): string;
 }
 
-const STRUCTURED_DB_OPERATORS = new Set<StructuredDbOperator>([
+const STRUCTURED_DATABASE_OPERATORS = new Set<StructuredDatabaseOperator>([
     "=",
     "!=",
     "<",
@@ -121,28 +124,28 @@ const STRUCTURED_DB_OPERATORS = new Set<StructuredDbOperator>([
     "IS NOT NULL",
 ]);
 
-const STRUCTURED_DB_JOIN_TYPES = new Set<StructuredDbJoinClause["type"]>([
-    "INNER",
-    "LEFT",
-]);
+const STRUCTURED_DATABASE_JOIN_TYPES = new Set<
+    StructuredDatabaseJoinClause["type"]
+>(["INNER", "LEFT"]);
 
-const STRUCTURED_DB_ORDER_DIRECTIONS = new Set<
-    StructuredDbOrderByClause["direction"]
+const STRUCTURED_DATABASE_ORDER_DIRECTIONS = new Set<
+    StructuredDatabaseOrderByClause["direction"]
 >(["ASC", "DESC"]);
 
-const MAX_STRUCTURED_DB_IDENTIFIER_LENGTH = 128;
-const MAX_STRUCTURED_DB_IDENTIFIER_SEGMENT_LENGTH = 64;
-const MAX_STRUCTURED_DB_SELECT_LIMIT = 10000;
+const MAX_STRUCTURED_DATABASE_IDENTIFIER_LENGTH = 128;
+const MAX_STRUCTURED_DATABASE_IDENTIFIER_SEGMENT_LENGTH = 64;
+const MAX_STRUCTURED_DATABASE_SELECT_LIMIT = 10000;
 
 function assertIdentifier(identifier: string, label: string): string {
     const segments = identifier.split(".");
     if (
         segments.length === 0 ||
-        identifier.length > MAX_STRUCTURED_DB_IDENTIFIER_LENGTH ||
+        identifier.length > MAX_STRUCTURED_DATABASE_IDENTIFIER_LENGTH ||
         segments.some(
             (segment) =>
                 segment.length === 0 ||
-                segment.length > MAX_STRUCTURED_DB_IDENTIFIER_SEGMENT_LENGTH ||
+                segment.length >
+                    MAX_STRUCTURED_DATABASE_IDENTIFIER_SEGMENT_LENGTH ||
                 !/^[A-Za-z_][A-Za-z0-9_]*$/.test(segment),
         )
     ) {
@@ -156,7 +159,7 @@ function assertColumnList(columns: string[], label: string): string[] {
 }
 
 function createPlaceholderFactory(
-    dialect: StructuredDbDialect,
+    dialect: StructuredDatabaseDialect,
 ): (params: unknown[], value: unknown) => string {
     let index = 1;
     return (params: unknown[], value: unknown): string => {
@@ -166,7 +169,7 @@ function createPlaceholderFactory(
 }
 
 function buildWhereClause(
-    clauses: StructuredDbWhereClause[] | undefined,
+    clauses: StructuredDatabaseWhereClause[] | undefined,
     params: unknown[],
     placeholder: (params: unknown[], value: unknown) => string,
 ): string {
@@ -177,7 +180,7 @@ function buildWhereClause(
     const sqlClauses = clauses.map((clause) => {
         const column = assertIdentifier(clause.column, "where column");
         const operator = clause.operator ?? "=";
-        if (!STRUCTURED_DB_OPERATORS.has(operator)) {
+        if (!STRUCTURED_DATABASE_OPERATORS.has(operator)) {
             throw new Error(`Unsupported structured DB operator: ${operator}`);
         }
 
@@ -198,11 +201,11 @@ function buildWhereClause(
         }
 
         if (operator === "LIKE") {
-            const ph = placeholder(params, clause.value);
+            const valuePlaceholder = placeholder(params, clause.value);
             const escape = clause.escapeChar
                 ? ` ESCAPE '${clause.escapeChar}'`
                 : "";
-            return `${column} LIKE ${ph}${escape}`;
+            return `${column} LIKE ${valuePlaceholder}${escape}`;
         }
 
         return `${column} ${operator} ${placeholder(params, clause.value)}`;
@@ -212,10 +215,10 @@ function buildWhereClause(
 }
 
 function buildSelectStatement(
-    command: StructuredDbSelectCommand,
+    command: StructuredDatabaseSelectCommand,
     params: unknown[],
     placeholder: (params: unknown[], value: unknown) => string,
-): StructuredDbCommandStatement {
+): StructuredDatabaseCommandStatement {
     const columns = command.count
         ? ["COUNT(*) AS cnt"]
         : command.columns && command.columns.length > 0
@@ -236,7 +239,7 @@ function buildSelectStatement(
     const joins = (command.joins ?? [])
         .map((join) => {
             const joinType = join.type ?? "INNER";
-            if (!STRUCTURED_DB_JOIN_TYPES.has(joinType)) {
+            if (!STRUCTURED_DATABASE_JOIN_TYPES.has(joinType)) {
                 throw new Error(
                     `Unsupported structured DB join type: ${joinType}`,
                 );
@@ -267,7 +270,9 @@ function buildSelectStatement(
                           "order by column",
                       );
                       const direction = entry.direction ?? "ASC";
-                      if (!STRUCTURED_DB_ORDER_DIRECTIONS.has(direction)) {
+                      if (
+                          !STRUCTURED_DATABASE_ORDER_DIRECTIONS.has(direction)
+                      ) {
                           throw new Error(
                               `Unsupported structured DB order direction: ${direction}`,
                           );
@@ -282,10 +287,10 @@ function buildSelectStatement(
         if (
             !Number.isInteger(command.limit) ||
             command.limit < 0 ||
-            command.limit > MAX_STRUCTURED_DB_SELECT_LIMIT
+            command.limit > MAX_STRUCTURED_DATABASE_SELECT_LIMIT
         ) {
             throw new Error(
-                `Structured DB SELECT limit must be a non-negative integer no greater than ${MAX_STRUCTURED_DB_SELECT_LIMIT}.`,
+                `Structured DB SELECT limit must be a non-negative integer no greater than ${MAX_STRUCTURED_DATABASE_SELECT_LIMIT}.`,
             );
         }
         limitClause = ` LIMIT ${command.limit}`;
@@ -298,17 +303,17 @@ function buildSelectStatement(
             whereClause +
             orderByClause +
             limitClause,
-        params,
+        params: params,
         returnsRows: true,
     };
 }
 
 function buildInsertStatement(
-    command: StructuredDbInsertCommand,
-    dialect: StructuredDbDialect,
+    command: StructuredDatabaseInsertCommand,
+    dialect: StructuredDatabaseDialect,
     params: unknown[],
     placeholder: (params: unknown[], value: unknown) => string,
-): StructuredDbCommandStatement {
+): StructuredDatabaseCommandStatement {
     const table = assertIdentifier(command.table, "table");
     const entries = Object.entries(command.values);
     if (entries.length === 0) {
@@ -328,7 +333,7 @@ function buildInsertStatement(
     const conflict = command.conflict;
 
     if (!conflict) {
-        return { sql, params, returnsRows: false };
+        return { sql, params: params, returnsRows: false };
     }
 
     if (conflict.action === "ignore") {
@@ -342,7 +347,7 @@ function buildInsertStatement(
             addParameter: (value: unknown) => placeholder(params, value),
             hasExplicitUpdate: false,
         });
-        return { sql, params, returnsRows: false };
+        return { sql, params: params, returnsRows: false };
     }
 
     if (!conflict.target || conflict.target.length === 0) {
@@ -376,14 +381,14 @@ function buildInsertStatement(
         hasExplicitUpdate: Boolean(conflict.update),
     });
 
-    return { sql, params, returnsRows: false };
+    return { sql, params: params, returnsRows: false };
 }
 
 function buildUpdateStatement(
-    command: StructuredDbUpdateCommand,
+    command: StructuredDatabaseUpdateCommand,
     params: unknown[],
     placeholder: (params: unknown[], value: unknown) => string,
-): StructuredDbCommandStatement {
+): StructuredDatabaseCommandStatement {
     const table = assertIdentifier(command.table, "table");
     const entries = Object.entries(command.set);
     if (entries.length === 0) {
@@ -401,30 +406,30 @@ function buildUpdateStatement(
 
     return {
         sql: `UPDATE ${table} SET ${setClause}${whereClause}`,
-        params,
+        params: params,
         returnsRows: false,
     };
 }
 
 function buildDeleteStatement(
-    command: StructuredDbDeleteCommand,
+    command: StructuredDatabaseDeleteCommand,
     params: unknown[],
     placeholder: (params: unknown[], value: unknown) => string,
-): StructuredDbCommandStatement {
+): StructuredDatabaseCommandStatement {
     const table = assertIdentifier(command.table, "table");
     const whereClause = buildWhereClause(command.where, params, placeholder);
 
     return {
         sql: `DELETE FROM ${table}${whereClause}`,
-        params,
+        params: params,
         returnsRows: false,
     };
 }
 
-export function buildStructuredDbCommandStatement(
-    command: StructuredDbCommand,
-    dialect: StructuredDbDialect,
-): StructuredDbCommandStatement {
+function buildStructuredDatabaseCommandStatement(
+    command: StructuredDatabaseCommand,
+    dialect: StructuredDatabaseDialect,
+): StructuredDatabaseCommandStatement {
     const params: unknown[] = [];
     const placeholder = createPlaceholderFactory(dialect);
 
@@ -439,3 +444,4 @@ export function buildStructuredDbCommandStatement(
     }
     return buildDeleteStatement(command, params, placeholder);
 }
+export { buildStructuredDatabaseCommandStatement };

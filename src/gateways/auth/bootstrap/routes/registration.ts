@@ -6,7 +6,10 @@ import type {
     GatewayBootstrapContext,
 } from "../../../shared.js";
 import { readJson } from "../../../shared.js";
-import type { AuthGatewayRouteHandler, AuthRouteLogMeta } from "./shared.js";
+import type {
+    AuthGatewayRouteHandler,
+    AuthRouteLogMetadata,
+} from "./shared.js";
 
 interface SecuritySettings {
     userValidationMode: string;
@@ -31,7 +34,7 @@ export function createRegistrationRoutes({
         req,
         res,
         url,
-        logMeta: AuthRouteLogMeta,
+        logMetadata: AuthRouteLogMetadata,
     ): Promise<boolean> => {
         if (url.pathname !== "/api/v1/auth/register" || req.method !== "POST") {
             return false;
@@ -41,7 +44,7 @@ export function createRegistrationRoutes({
             log?.(
                 "warn",
                 "Blocked public registration because registrations are disabled.",
-                logMeta,
+                logMetadata,
             );
             res.writeHead(403, { "content-type": "application/json" });
             res.end(
@@ -65,7 +68,7 @@ export function createRegistrationRoutes({
                 "warn",
                 "Rejected public registration with missing credentials.",
                 {
-                    ...logMeta,
+                    ...logMetadata,
                     username,
                 },
             );
@@ -87,7 +90,7 @@ export function createRegistrationRoutes({
                 "warn",
                 "Rejected public registration with invalid username.",
                 {
-                    ...logMeta,
+                    ...logMetadata,
                     username,
                     usernameError,
                 },
@@ -120,7 +123,7 @@ export function createRegistrationRoutes({
             log?.(
                 "warn",
                 "Blocked public registration because registration capability is unavailable.",
-                logMeta,
+                logMetadata,
             );
             res.writeHead(403, { "content-type": "application/json" });
             res.end(
@@ -186,7 +189,7 @@ export function createRegistrationRoutes({
         }
 
         log?.("info", "Registered public account.", {
-            ...logMeta,
+            ...logMetadata,
             accountId: result.username,
             hasEmail: Boolean(email),
             hasDisplayName: Boolean(displayName),

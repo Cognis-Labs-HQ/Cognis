@@ -1,7 +1,7 @@
 import { hasMinRole } from "@cognis/core";
 import type { FlowApi } from "@cognis/core";
 import type { RouteContext } from "../../../../api/reuse/route-context.js";
-import type { DbMessagesStore, MemberRow } from "../store.js";
+import type { DatabaseMessagesStore, MemberRow } from "../store.js";
 import type {
     SocialMessagesProfile,
     SocialMessagesProfileStore,
@@ -93,7 +93,7 @@ export async function canSendMessageRequest(
 
 export async function canDirectMessageNowOrByApprovedRequest(
     profileStore: SocialMessagesProfileStore,
-    messagesStore: DbMessagesStore,
+    messagesStore: DatabaseMessagesStore,
     fromId: string,
     toId: string,
 ): Promise<boolean> {
@@ -133,8 +133,8 @@ export interface RoomRequestSummary {
     canRespond: boolean;
 }
 
-export interface MessagesRoutesDeps {
-    messagesStore: DbMessagesStore;
+export interface MessagesRoutesDependencies {
+    messagesStore: DatabaseMessagesStore;
     profileStore: SocialMessagesProfileStore;
     dispatch: Dispatch | null;
     isAdapterEnabled: () => boolean;
@@ -162,7 +162,7 @@ export async function enrichMembersWithProfiles(
 
 export async function summarizeRoomRequest(
     request: Awaited<
-        ReturnType<DbMessagesStore["getPendingRoomMessageRequest"]>
+        ReturnType<DatabaseMessagesStore["getPendingRoomMessageRequest"]>
     >,
     profileStore: SocialMessagesProfileStore,
     accountId: string,

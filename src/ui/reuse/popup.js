@@ -387,7 +387,7 @@ export async function openPopup({
     onAction,
     closeProtection = false,
     signal,
-    timeoutMs = 0,
+    timeoutMs: timeoutMs = 0,
     timeoutActionId = null,
     closeButtonVariant = "cancel",
     mandatory = false,
@@ -574,14 +574,14 @@ export async function openPopup({
 
         const actionButtons = effectiveActions
             .map((action) => {
-                const btnVariant = action.variant ?? "neutral";
-                const btnClass =
-                    btnVariant === "confirm"
+                const buttonVariant = action.variant ?? "neutral";
+                const buttonClass =
+                    buttonVariant === "confirm"
                         ? "btn-confirm btn-animated popup-action-btn"
-                        : btnVariant === "cancel"
+                        : buttonVariant === "cancel"
                           ? "btn-cancel btn-animated popup-action-btn"
                           : "popup-action-btn popup-action-btn--neutral btn-animated";
-                return `<button class="${btnClass}" data-popup-action="${escapeHtml(action.id)}" type="button"${action.disabled ? " disabled" : ""}>${renderActionContent(action)}</button>`;
+                return `<button class="${buttonClass}" data-popup-action="${escapeHtml(action.id)}" type="button"${action.disabled ? " disabled" : ""}>${renderActionContent(action)}</button>`;
             })
             .join("");
 
@@ -632,11 +632,11 @@ export async function openPopup({
             const nextPage = popupPages.find((page) => page.id === pageId);
             if (!nextPage) return false;
             currentPage = nextPage;
-            const headingEl = overlay.querySelector(".popup-heading");
-            const bodyEl = overlay.querySelector(".popup-body");
-            const footerEl = overlay.querySelector(".popup-footer");
-            if (headingEl) {
-                headingEl.innerHTML = renderPopupHeading(
+            const headingElement = overlay.querySelector(".popup-heading");
+            const bodyElement = overlay.querySelector(".popup-body");
+            const footerElement = overlay.querySelector(".popup-footer");
+            if (headingElement) {
+                headingElement.innerHTML = renderPopupHeading(
                     currentPage.title ?? title,
                     currentPage.titleDetail ?? titleDetail,
                     currentPage.titleAction ?? titleAction,
@@ -644,11 +644,14 @@ export async function openPopup({
                     currentPage.titleItems ?? titleItems,
                     currentPage.titleDetailItems ?? titleDetailItems,
                 );
-                bindActionButtons(headingEl);
+                bindActionButtons(headingElement);
                 fitPopupTitleRow();
             }
-            if (bodyEl)
-                bodyEl.innerHTML = resolvePageValue(currentPage.body, body);
+            if (bodyElement)
+                bodyElement.innerHTML = resolvePageValue(
+                    currentPage.body,
+                    body,
+                );
             if (closeProtection) {
                 closeProtectionTracker?.destroy();
                 closeProtectionTracker = createFormDirtyTracker(overlay, {
@@ -656,20 +659,20 @@ export async function openPopup({
                 });
             }
             const pageActions = currentPage.actions ?? actions ?? [];
-            if (footerEl) {
-                footerEl.innerHTML = pageActions
+            if (footerElement) {
+                footerElement.innerHTML = pageActions
                     .map((action) => {
-                        const btnVariant = action.variant ?? "neutral";
-                        const btnClass =
-                            btnVariant === "confirm"
+                        const buttonVariant = action.variant ?? "neutral";
+                        const buttonClass =
+                            buttonVariant === "confirm"
                                 ? "btn-confirm btn-animated popup-action-btn"
-                                : btnVariant === "cancel"
+                                : buttonVariant === "cancel"
                                   ? "btn-cancel btn-animated popup-action-btn"
                                   : "popup-action-btn popup-action-btn--neutral btn-animated";
-                        return `<button class="${btnClass}" data-popup-action="${escapeHtml(action.id)}" type="button"${action.disabled ? " disabled" : ""}>${renderActionContent(action)}</button>`;
+                        return `<button class="${buttonClass}" data-popup-action="${escapeHtml(action.id)}" type="button"${action.disabled ? " disabled" : ""}>${renderActionContent(action)}</button>`;
                     })
                     .join("");
-                bindActionButtons(footerEl);
+                bindActionButtons(footerElement);
             }
             onOpen?.(overlay, () => dismiss(null), {
                 setPage: renderPopupPage,
@@ -692,9 +695,9 @@ export async function openPopup({
         }
 
         function bindActionButtons(root) {
-            root.querySelectorAll("[data-popup-action]").forEach((btn) => {
-                btn.addEventListener("click", async () => {
-                    const actionId = btn.dataset.popupAction;
+            root.querySelectorAll("[data-popup-action]").forEach((button) => {
+                button.addEventListener("click", async () => {
+                    const actionId = button.dataset.popupAction;
                     const resolvedActionId =
                         actionId === "close" ? null : actionId;
                     if (typeof onAction === "function") {
@@ -795,12 +798,12 @@ export async function openPopup({
             if (event.key === "Enter") {
                 if (document.activeElement instanceof HTMLTextAreaElement)
                     return;
-                const confirmBtn = overlay.querySelector(
+                const confirmButton = overlay.querySelector(
                     '[data-popup-action="confirm"], [data-popup-action="save"], [data-popup-action].btn-confirm',
                 );
-                if (confirmBtn instanceof HTMLButtonElement) {
+                if (confirmButton instanceof HTMLButtonElement) {
                     event.preventDefault();
-                    confirmBtn.click();
+                    confirmButton.click();
                 }
             }
         }

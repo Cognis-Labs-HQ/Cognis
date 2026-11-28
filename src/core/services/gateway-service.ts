@@ -302,12 +302,16 @@ export class GatewayService {
     ): Promise<readonly string[]> {
         let entries: string[];
         try {
-            const dirEntries = await readdir(gatewaysRoot, {
+            const directoryEntries = await readdir(gatewaysRoot, {
                 withFileTypes: true,
             });
-            entries = dirEntries
-                .filter((e) => e.isDirectory() && e.name !== "tests")
-                .map((e) => e.name);
+            entries = directoryEntries
+                .filter(
+                    (directoryEntry) =>
+                        directoryEntry.isDirectory() &&
+                        directoryEntry.name !== "tests",
+                )
+                .map((directoryEntry) => directoryEntry.name);
         } catch {
             return [];
         }
@@ -367,14 +371,17 @@ export class GatewayService {
             } catch {}
         }
         entries = entries.filter((entry) => directoryManifests.has(entry));
-        const compareBootstrapPriority = (a: string, b: string) => {
-            if (a === "files") return -1;
-            if (b === "files") return 1;
-            if (a === "logging") return -1;
-            if (b === "logging") return 1;
-            if (a === "db") return -1;
-            if (b === "db") return 1;
-            return a.localeCompare(b);
+        const compareBootstrapPriority = (
+            leftEntry: string,
+            rightEntry: string,
+        ) => {
+            if (leftEntry === "files") return -1;
+            if (rightEntry === "files") return 1;
+            if (leftEntry === "logging") return -1;
+            if (rightEntry === "logging") return 1;
+            if (leftEntry === "db") return -1;
+            if (rightEntry === "db") return 1;
+            return leftEntry.localeCompare(rightEntry);
         };
         const directoryByGatewayId = new Map<string, string>();
         for (const entry of entries) {
@@ -412,7 +419,7 @@ export class GatewayService {
         const completionHooks: Array<{ id: string; run: () => Promise<void> }> =
             [];
         for (const entry of orderedEntries) {
-            const gatewayDir = path.join(gatewaysRoot, entry);
+            const gatewayDirectory = path.join(gatewaysRoot, entry);
             const manifest = directoryManifests.get(entry) ?? {};
 
             const gatewayId = manifest.id ?? entry;
@@ -428,20 +435,20 @@ export class GatewayService {
             });
 
             const bootstrapUrl = pathToFileURL(
-                path.join(gatewayDir, "bootstrap.ts"),
+                path.join(gatewayDirectory, "bootstrap.ts"),
             ).href;
 
             try {
-                const mod = (await import(bootstrapUrl)) as {
+                const moduleExports = (await import(bootstrapUrl)) as {
                     bootstrap?: (ctx: unknown) => Promise<void>;
                     completeBootstrap?: (ctx: unknown) => Promise<void>;
                 };
-                if (typeof mod.bootstrap === "function") {
+                if (typeof moduleExports.bootstrap === "function") {
                     await runBootstrapScope(
                         ctx.capabilities.get<object>("system:ctx") ??
                             ctx.capabilities,
                         `gateway:${gatewayId}`,
-                        () => mod.bootstrap!(ctx),
+                        () => moduleExports.bootstrap!(ctx),
                         (dispose) =>
                             ctx.gatewayRegistry.retainBootstrapDisposer(
                                 gatewayId,
@@ -449,10 +456,10 @@ export class GatewayService {
                             ),
                     );
                 }
-                if (mod.completeBootstrap)
+                if (moduleExports.completeBootstrap)
                     completionHooks.push({
                         id: gatewayId,
-                        run: () => mod.completeBootstrap!(ctx),
+                        run: () => moduleExports.completeBootstrap!(ctx),
                     });
             } catch (error) {
                 const message =
@@ -514,16 +521,19 @@ export class GatewayService {
             for (const dependencyReference of meta.requires) {
                 const dependencyDirectory =
                     directoryByGatewayId.get(dependencyReference);
-                const depId = dependencyDirectory
+                const dependencyId = dependencyDirectory
                     ? (directoryManifests.get(dependencyDirectory)?.id ??
                       dependencyDirectory)
                     : dependencyReference;
-                if (!ctx.gatewayRegistry.get(depId)) {
-                    const message = `Gateway "${gatewayId}" requires gateway "${depId}" but it is not registered.`;
+                if (!ctx.gatewayRegistry.get(dependencyId)) {
+                    const message = `Gateway "${gatewayId}" requires gateway "${dependencyId}" but it is not registered.`;
                     if (meta.required) {
                         throw new Error(message);
                     }
-                    void ctx.log?.("warn", message, { gatewayId, depId });
+                    void ctx.log?.("warn", message, {
+                        gatewayId,
+                        depId: dependencyId,
+                    });
                 }
             }
         }

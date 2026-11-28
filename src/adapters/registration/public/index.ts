@@ -1,7 +1,7 @@
 import type { LocalAccountStore } from "../../../gateways/auth/reuse/account-store.js";
 import type { RegistrationGatewayAdapter } from "../../../gateways/registration/gateway.js";
 
-export function createAdapter(deps: {
+export function createAdapter(dependencies: {
     accountStore: LocalAccountStore;
     createProfile?: (
         accountId: string,
@@ -10,7 +10,7 @@ export function createAdapter(deps: {
         displayName?: string,
     ) => Promise<void>;
 }): RegistrationGatewayAdapter {
-    const { accountStore, createProfile } = deps;
+    const { accountStore, createProfile } = dependencies;
 
     return {
         id: "public",

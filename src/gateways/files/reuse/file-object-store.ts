@@ -1,8 +1,8 @@
 import type { FileObjectAcl } from "@cognis/core";
-import type { DbExecutor } from "../../db/reuse/db-executor.js";
-import type { StructuredDbTableDef } from "../../db/reuse/db-table.js";
+import type { DatabaseExecutor } from "../../db/reuse/db-executor.js";
+import type { StructuredDatabaseTableDefinition } from "../../db/reuse/db-table.js";
 
-const TABLE_DEF: StructuredDbTableDef = {
+const TABLE_DEFINITION: StructuredDatabaseTableDefinition = {
     name: "file_objects",
     columns: [
         { name: "namespace_id", type: "text", notNull: true },
@@ -60,18 +60,20 @@ function rowToAcl(row: FileObjectRow): FileObjectAcl {
  * GatewayService.bootstrap ordering), so schema creation is deferred to the
  * first actual call rather than performed at bootstrap time.
  */
-export class DbFileObjectStore {
+class DatabaseFileObjectStore {
     private schemaReady: Promise<void> | undefined;
 
-    constructor(private readonly getDb: () => DbExecutor | undefined) {}
+    constructor(
+        private readonly getDatabase: () => DatabaseExecutor | undefined,
+    ) {}
 
-    private async ensureSchema(): Promise<DbExecutor> {
-        const executor = this.getDb();
+    private async ensureSchema(): Promise<DatabaseExecutor> {
+        const executor = this.getDatabase();
         if (!executor) {
             throw new Error("db_executor_unavailable");
         }
         if (!this.schemaReady) {
-            this.schemaReady = executor.ensureTable(TABLE_DEF);
+            this.schemaReady = executor.ensureTable(TABLE_DEFINITION);
         }
         await this.schemaReady;
         return executor;
@@ -177,6 +179,7 @@ export class DbFileObjectStore {
         return sumSizes(result.rows as FileObjectRow[] | undefined);
     }
 }
+export { DatabaseFileObjectStore };
 
 function sumSizes(rows: FileObjectRow[] | undefined): number {
     if (!rows) return 0;

@@ -24,10 +24,10 @@ import assert from "node:assert/strict";
 import { readdir, readFile, stat } from "node:fs/promises";
 import path from "node:path";
 
-const srcRoot = path.resolve(import.meta.dirname, "../..");
+const sourceRoot = path.resolve(import.meta.dirname, "../..");
 
 /** Recursively collect all .ts files under a directory. */
-async function findTsFiles(dir: string): Promise<string[]> {
+async function findTypeScriptFiles(dir: string): Promise<string[]> {
     const results: string[] = [];
     let entries: string[];
     try {
@@ -39,7 +39,7 @@ async function findTsFiles(dir: string): Promise<string[]> {
         const fullPath = path.join(dir, entry);
         const info = await stat(fullPath);
         if (info.isDirectory()) {
-            results.push(...(await findTsFiles(fullPath)));
+            results.push(...(await findTypeScriptFiles(fullPath)));
         } else if (entry.endsWith(".ts")) {
             results.push(fullPath);
         }
@@ -61,15 +61,15 @@ function extractImportPaths(source: string): string[] {
 
 /** Check whether a relative import path from a source file resolves into
  *  a given directory (expressed as a path relative to srcRoot). */
-function resolveImportDir(
+function resolveImportDirectory(
     sourceFile: string,
     importPath: string,
 ): string | null {
     if (!importPath.startsWith(".")) {
         return null; // package import — not relative
     }
-    const sourceDir = path.dirname(sourceFile);
-    const resolved = path.resolve(sourceDir, importPath);
+    const sourceDirectory = path.dirname(sourceFile);
+    const resolved = path.resolve(sourceDirectory, importPath);
     return resolved;
 }
 
@@ -78,24 +78,24 @@ function resolveImportDir(
 // ---------------------------------------------------------------------------
 
 test("core package does not import from gateway or API implementations", async () => {
-    const coreDir = path.join(srcRoot, "core");
-    const gatewaysDir = path.join(srcRoot, "gateways");
-    const apiDir = path.join(srcRoot, "api");
-    const coreFiles = await findTsFiles(coreDir);
+    const coreDirectory = path.join(sourceRoot, "core");
+    const gatewaysDirectory = path.join(sourceRoot, "gateways");
+    const apiDirectory = path.join(sourceRoot, "api");
+    const coreFiles = await findTypeScriptFiles(coreDirectory);
 
     const violations: string[] = [];
     for (const file of coreFiles) {
         const source = await readFile(file, "utf8");
         const importPaths = extractImportPaths(source);
         for (const importPath of importPaths) {
-            const resolved = resolveImportDir(file, importPath);
+            const resolved = resolveImportDirectory(file, importPath);
             if (!resolved) continue;
             if (
-                resolved.startsWith(gatewaysDir) ||
-                resolved.startsWith(apiDir)
+                resolved.startsWith(gatewaysDirectory) ||
+                resolved.startsWith(apiDirectory)
             ) {
-                const rel = path.relative(srcRoot, file);
-                violations.push(`${rel}: imports ${importPath}`);
+                const relativePath = path.relative(sourceRoot, file);
+                violations.push(`${relativePath}: imports ${importPath}`);
             }
         }
     }
@@ -113,15 +113,16 @@ test("core package does not import from gateway or API implementations", async (
 
 test("no source file uses the deprecated flowCtx.on() or ctx.on() flow hook shorthand", async () => {
     const allFiles = [
-        ...(await findTsFiles(path.join(srcRoot, "core"))),
-        ...(await findTsFiles(path.join(srcRoot, "gateways"))),
-        ...(await findTsFiles(path.join(srcRoot, "adapters"))),
-        ...(await findTsFiles(path.join(srcRoot, "api"))),
-        ...(await findTsFiles(path.join(srcRoot, "modules"))),
+        ...(await findTypeScriptFiles(path.join(sourceRoot, "core"))),
+        ...(await findTypeScriptFiles(path.join(sourceRoot, "gateways"))),
+        ...(await findTypeScriptFiles(path.join(sourceRoot, "adapters"))),
+        ...(await findTypeScriptFiles(path.join(sourceRoot, "api"))),
+        ...(await findTypeScriptFiles(path.join(sourceRoot, "modules"))),
         // Exclude this test file from the scan to avoid self-matching on the
         // pattern strings defined in this file.
     ].filter(
-        (f) => f !== path.resolve(import.meta.dirname, "ctx-boundary.test.ts"),
+        (file) =>
+            file !== path.resolve(import.meta.dirname, "ctx-boundary.test.ts"),
     );
 
     // Matches flowCtx.on( or ctx.on( followed by a quoted string (flow ID),
@@ -132,7 +133,7 @@ test("no source file uses the deprecated flowCtx.on() or ctx.on() flow hook shor
     for (const file of allFiles) {
         const source = await readFile(file, "utf8");
         if (brokenPattern.test(source)) {
-            violations.push(path.relative(srcRoot, file));
+            violations.push(path.relative(sourceRoot, file));
         }
     }
 
@@ -161,16 +162,20 @@ const CONTRACT_TYPES = [
 
 test("gateway contract types are sourced from @cognis/core, not gateway files", async () => {
     // Scan adapter files that are type-checked (have tsconfig.json).
-    const checkedAdapterDirs = [
-        path.join(srcRoot, "adapters", "auth"),
-        path.join(srcRoot, "adapters", "db"),
-        path.join(srcRoot, "adapters", "file"),
+    const checkedAdapterDirectories = [
+        path.join(sourceRoot, "adapters", "auth"),
+        path.join(sourceRoot, "adapters", "db"),
+        path.join(sourceRoot, "adapters", "file"),
     ];
-    const apiDir = path.join(srcRoot, "api");
+    const apiDirectory = path.join(sourceRoot, "api");
 
     const filesToCheck = [
-        ...(await Promise.all(checkedAdapterDirs.map(findTsFiles))).flat(),
-        ...(await findTsFiles(apiDir)),
+        ...(
+            await Promise.all(
+                checkedAdapterDirectories.map(findTypeScriptFiles),
+            )
+        ).flat(),
+        ...(await findTypeScriptFiles(apiDirectory)),
     ];
 
     // Forbidden import sources — importing contract types from these files
@@ -187,12 +192,12 @@ test("gateway contract types are sourced from @cognis/core, not gateway files", 
         const importPaths = extractImportPaths(source);
         for (const importPath of importPaths) {
             if (!importPath.startsWith(".")) continue;
-            const sourceDir = path.dirname(file);
-            const resolved = path.resolve(sourceDir, importPath);
-            const relResolved = path.relative(srcRoot, resolved);
+            const sourceDirectory = path.dirname(file);
+            const resolved = path.resolve(sourceDirectory, importPath);
+            const relativePathResolved = path.relative(sourceRoot, resolved);
 
             const isForbidden = forbiddenSources.some((forbidden) =>
-                relResolved.startsWith(forbidden),
+                relativePathResolved.startsWith(forbidden),
             );
             if (!isForbidden) continue;
 
@@ -205,13 +210,13 @@ test("gateway contract types are sourced from @cognis/core, not gateway files", 
             );
             if (!importMatch) continue;
             const importStatement = importMatch[0];
-            const usesContractType = CONTRACT_TYPES.some((t) =>
-                importStatement.includes(t),
+            const usesContractType = CONTRACT_TYPES.some((contractType) =>
+                importStatement.includes(contractType),
             );
             if (usesContractType) {
-                const rel = path.relative(srcRoot, file);
+                const relativePath = path.relative(sourceRoot, file);
                 violations.push(
-                    `${rel}: imports contract type from ${importPath} — use @cognis/core instead`,
+                    `${relativePath}: imports contract type from ${importPath} — use @cognis/core instead`,
                 );
             }
         }
@@ -229,37 +234,37 @@ test("gateway contract types are sourced from @cognis/core, not gateway files", 
 // ---------------------------------------------------------------------------
 
 test("gateway implementations do not import production code from other gateways", async () => {
-    const gatewaysDir = path.join(srcRoot, "gateways");
-    const gatewayNames = await readdir(gatewaysDir);
+    const gatewaysDirectory = path.join(sourceRoot, "gateways");
+    const gatewayNames = await readdir(gatewaysDirectory);
 
     // Exception: gateways may import from gateways/db/reuse/ (the shared DB
     // executor layer, intentionally cross-boundary per its own documentation),
     // from gateways/db/tests/ in test files, from gateways/shared.ts (the
     // common gateway bootstrap utility layer), and from gateways/reuse/.
     const allowedCrossBoundary = [
-        path.join(gatewaysDir, "db", "reuse"),
-        path.join(gatewaysDir, "db", "tests"),
-        path.join(gatewaysDir, "shared.ts"),
-        path.join(gatewaysDir, "reuse"),
+        path.join(gatewaysDirectory, "db", "reuse"),
+        path.join(gatewaysDirectory, "db", "tests"),
+        path.join(gatewaysDirectory, "shared.ts"),
+        path.join(gatewaysDirectory, "reuse"),
     ];
 
     const violations: string[] = [];
 
-    for (const gwName of gatewayNames) {
-        const gwDir = path.join(gatewaysDir, gwName);
-        const gwStat = await stat(gwDir).catch(() => null);
-        if (!gwStat?.isDirectory()) continue;
+    for (const gatewayName of gatewayNames) {
+        const gatewayDirectory = path.join(gatewaysDirectory, gatewayName);
+        const gatewayStat = await stat(gatewayDirectory).catch(() => null);
+        if (!gatewayStat?.isDirectory()) continue;
 
-        const files = await findTsFiles(gwDir);
+        const files = await findTypeScriptFiles(gatewayDirectory);
         for (const file of files) {
             const source = await readFile(file, "utf8");
             const importPaths = extractImportPaths(source);
 
             for (const importPath of importPaths) {
-                const resolved = resolveImportDir(file, importPath);
+                const resolved = resolveImportDirectory(file, importPath);
                 if (!resolved) continue;
-                if (!resolved.startsWith(gatewaysDir)) continue;
-                if (resolved.startsWith(gwDir)) continue; // own gateway — ok
+                if (!resolved.startsWith(gatewaysDirectory)) continue;
+                if (resolved.startsWith(gatewayDirectory)) continue; // own gateway — ok
 
                 const isAllowed = allowedCrossBoundary.some((allowed) => {
                     const resolvedBase = resolved.replace(/\.[jt]s$/, "");
@@ -270,7 +275,7 @@ test("gateway implementations do not import production code from other gateways"
 
                 // Public provider-owned declarations contain types only; executable
                 // cross-component integration must still go through ctx.
-                const relative = path.relative(gatewaysDir, resolved);
+                const relative = path.relative(gatewaysDirectory, resolved);
                 const isPublicContract = /^[^/]+\/contracts\/[^/]+\.js$/.test(
                     relative,
                 );
@@ -284,9 +289,9 @@ test("gateway implementations do not import production code from other gateways"
                     file.includes("/tests/") || file.endsWith(".test.ts");
                 if (isTestFile) continue;
 
-                const rel = path.relative(srcRoot, file);
+                const relativePath = path.relative(sourceRoot, file);
                 violations.push(
-                    `${rel}: imports from other gateway: ${importPath}`,
+                    `${relativePath}: imports from other gateway: ${importPath}`,
                 );
             }
         }
@@ -306,12 +311,13 @@ test("gateway implementations do not import production code from other gateways"
 
 test("no source file outside core uses the removed ensureCtxCapability helper", async () => {
     const allFiles = [
-        ...(await findTsFiles(path.join(srcRoot, "gateways"))),
-        ...(await findTsFiles(path.join(srcRoot, "adapters"))),
-        ...(await findTsFiles(path.join(srcRoot, "api"))),
-        ...(await findTsFiles(path.join(srcRoot, "modules"))),
+        ...(await findTypeScriptFiles(path.join(sourceRoot, "gateways"))),
+        ...(await findTypeScriptFiles(path.join(sourceRoot, "adapters"))),
+        ...(await findTypeScriptFiles(path.join(sourceRoot, "api"))),
+        ...(await findTypeScriptFiles(path.join(sourceRoot, "modules"))),
     ].filter(
-        (f) => f !== path.resolve(import.meta.dirname, "ctx-boundary.test.ts"),
+        (file) =>
+            file !== path.resolve(import.meta.dirname, "ctx-boundary.test.ts"),
     );
 
     const pattern = /\bensureCtxCapability\b/;
@@ -320,7 +326,7 @@ test("no source file outside core uses the removed ensureCtxCapability helper", 
     for (const file of allFiles) {
         const source = await readFile(file, "utf8");
         if (pattern.test(source)) {
-            violations.push(path.relative(srcRoot, file));
+            violations.push(path.relative(sourceRoot, file));
         }
     }
 
@@ -337,12 +343,13 @@ test("no source file outside core uses the removed ensureCtxCapability helper", 
 
 test("no source file outside core calls addFlowStageHook directly", async () => {
     const allFiles = [
-        ...(await findTsFiles(path.join(srcRoot, "gateways"))),
-        ...(await findTsFiles(path.join(srcRoot, "adapters"))),
-        ...(await findTsFiles(path.join(srcRoot, "api"))),
-        ...(await findTsFiles(path.join(srcRoot, "modules"))),
+        ...(await findTypeScriptFiles(path.join(sourceRoot, "gateways"))),
+        ...(await findTypeScriptFiles(path.join(sourceRoot, "adapters"))),
+        ...(await findTypeScriptFiles(path.join(sourceRoot, "api"))),
+        ...(await findTypeScriptFiles(path.join(sourceRoot, "modules"))),
     ].filter(
-        (f) => f !== path.resolve(import.meta.dirname, "ctx-boundary.test.ts"),
+        (file) =>
+            file !== path.resolve(import.meta.dirname, "ctx-boundary.test.ts"),
     );
 
     const pattern = /\.addFlowStageHook\(/;
@@ -351,7 +358,7 @@ test("no source file outside core calls addFlowStageHook directly", async () => 
     for (const file of allFiles) {
         const source = await readFile(file, "utf8");
         if (pattern.test(source)) {
-            violations.push(path.relative(srcRoot, file));
+            violations.push(path.relative(sourceRoot, file));
         }
     }
 

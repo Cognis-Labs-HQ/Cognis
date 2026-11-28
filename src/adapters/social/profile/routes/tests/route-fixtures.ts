@@ -44,7 +44,7 @@ export function fakeFileGateway() {
     };
 }
 
-export function makeReq(
+function makeRequest(
     method: string,
     token: string | null,
     body?: string | Buffer,
@@ -64,6 +64,7 @@ export function makeReq(
         },
     } as any;
 }
+export { makeRequest };
 
 export async function setupUser(
     profileStore: VolatileProfileStore,

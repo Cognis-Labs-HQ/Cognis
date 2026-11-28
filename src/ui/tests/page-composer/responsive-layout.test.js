@@ -6,7 +6,7 @@ import {
     resolveGridWidthBounds,
 } from "../../reuse/page-composer/grid-sizing.js";
 import { createGridOverlayHandlers } from "../../reuse/page-composer/grid-overlay.js";
-import { createSubComposerHandlers } from "../../reuse/page-composer/sub-composer.js";
+import { createNestedComposerHandlers } from "../../reuse/page-composer/sub-composer.js";
 import { createComposerRenderer } from "../../reuse/page-composer/composer-render.js";
 import {
     fitComposerPanel,
@@ -33,12 +33,12 @@ for (const maximum of ["half", "fill", "full", ["half", 8], [8, 8]]) {
         for (const nested of [false, true]) {
             const state = {
                 elements: [element],
-                gridCols: 2,
+                gridColumns: 2,
                 gridRows: 6,
                 layout: { placements: [], hidden: [] },
             };
             if (nested) {
-                createSubComposerHandlers({
+                createNestedComposerHandlers({
                     UNIT: 90,
                     getGridSize: resolveElementGridSize,
                 }).initializeSubPlacements(state);
@@ -94,7 +94,7 @@ test("nested responsive presentation filters hidden cards and restores wide layo
     const state = {
         elements: placements.map((placement) => ({ id: placement.id })),
         layout: { placements, hidden: ["hidden"] },
-        gridCols: 3,
+        gridColumns: 3,
         container: containerAt(320),
     };
     const renderer = createComposerRenderer({
@@ -104,14 +104,19 @@ test("nested responsive presentation filters hidden cards and restores wide layo
     assert.deepEqual(
         renderer
             .computeSubViewPlacements(state)
-            .map(({ id, col, row, w }) => ({ id, col, row, w })),
+            .map(({ id, col: column, row, w: width }) => ({
+                id,
+                col: column,
+                row,
+                w: width,
+            })),
         [
             { id: "first", col: 0, row: 0, w: 3 },
             { id: "second", col: 0, row: 2, w: 3 },
         ],
     );
     state.container = containerAt(800);
-    state.gridCols = 8;
+    state.gridColumns = 8;
     assert.deepEqual(
         renderer.computeSubViewPlacements(state),
         placements.slice(0, 2),
@@ -125,9 +130,9 @@ test("nested editor uses every available pixel rather than truncating its width"
         editing: true,
         layout: { placements: [], hidden: [] },
     };
-    createSubComposerHandlers({ UNIT: 90 }).computeSubGridDimensions(state);
-    assert.equal(state.gridCols, 3);
-    assert.equal(state.gridTrackSize * state.gridCols, 347);
+    createNestedComposerHandlers({ UNIT: 90 }).computeSubGridDimensions(state);
+    assert.equal(state.gridColumns, 3);
+    assert.equal(state.gridTrackSize * state.gridColumns, 347);
     assert.equal(state.container.style.width, "");
 });
 
@@ -135,13 +140,13 @@ for (const nested of [false, true]) {
     test(`${nested ? "nested" : "main"} Add reveals a default-hidden widget without dragging`, () => {
         const state = {
             elements: [{ id: "optional", defaultHidden: true }],
-            gridCols: 3,
+            gridColumns: 3,
             gridRows: 6,
             layout: { placements: [], hidden: [] },
         };
         const initialize = nested
             ? (options) =>
-                  createSubComposerHandlers({
+                  createNestedComposerHandlers({
                       UNIT: 90,
                       getGridSize: resolveElementGridSize,
                   }).initializeSubPlacements(state, options)
@@ -186,13 +191,13 @@ test("nested geometry remeasures same-column pixel widths in edit mode", () => {
         editing: true,
         layout: { placements: [], hidden: [] },
     };
-    const handlers = createSubComposerHandlers({ UNIT: 90 });
+    const handlers = createNestedComposerHandlers({ UNIT: 90 });
     handlers.computeSubGridDimensions(state);
-    assert.equal(state.gridCols, 3);
+    assert.equal(state.gridColumns, 3);
     state.container = containerAt(300);
     handlers.computeSubGridDimensions(state);
-    assert.equal(state.gridCols, 3);
-    assert.equal(state.gridTrackSize * state.gridCols, 300);
+    assert.equal(state.gridColumns, 3);
+    assert.equal(state.gridTrackSize * state.gridColumns, 300);
 });
 
 test("same-column editing resizes redraw pixel geometry without reflowing unsaved placements", () => {
@@ -213,4 +218,27 @@ test("same-column editing resizes redraw pixel geometry without reflowing unsave
         ),
         { render: true, reflow: true },
     );
+});
+
+test("panel placement includes width added by its vertical scrollbar", () => {
+    const properties = new Map();
+    const panel = {
+        ownerDocument: { defaultView: { innerWidth: 568, innerHeight: 320 } },
+        style: {
+            left: "500px",
+            top: "180px",
+            setProperty: (key, value) => properties.set(key, value),
+        },
+        getBoundingClientRect: () => ({
+            width: properties.has("--composer-panel-top") ? 230 : 200,
+            height: 280,
+        }),
+    };
+    fitComposerPanel(panel);
+    assert.equal(
+        panel.style.left,
+        "326px",
+        "The constrained width fits with its viewport inset",
+    );
+    assert.equal(panel.style.top, "28px");
 });

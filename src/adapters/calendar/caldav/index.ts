@@ -90,7 +90,7 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
             "ACL",
         ].includes(String(method ?? ""));
     const respondCalendarPayload = (
-        reqMethod: string | undefined,
+        requestMethod: string | undefined,
         res: {
             writeHead: (
                 statusCode: number,
@@ -111,7 +111,7 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
                 accessMode === "read" ? "true" : "false",
             dav: "1, calendar-access",
         };
-        if (reqMethod === "OPTIONS") {
+        if (requestMethod === "OPTIONS") {
             res.writeHead(204, {
                 ...headers,
                 allow:
@@ -122,7 +122,7 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
             res.end();
             return;
         }
-        if (reqMethod === "REPORT") {
+        if (requestMethod === "REPORT") {
             res.writeHead(207, {
                 ...headers,
                 "content-type": "application/xml; charset=utf-8",
@@ -132,7 +132,7 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
             );
             return;
         }
-        if (reqMethod === "PROPFIND") {
+        if (requestMethod === "PROPFIND") {
             const writePrivileges =
                 accessMode === "write"
                     ? "<d:privilege><d:write/></d:privilege><d:privilege><d:write-content/></d:privilege>"
@@ -146,7 +146,7 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
             );
             return;
         }
-        if (reqMethod === "HEAD") {
+        if (requestMethod === "HEAD") {
             res.writeHead(200, headers);
             res.end();
             return;
@@ -345,7 +345,9 @@ function createCaldavRoutes(ctx: CalendarAdapterBootstrapCtx) {
                     await readRequestText(req),
                 );
                 if (!eventPayload) {
-                    res.writeHead(400, { "content-type": "application/json" });
+                    res.writeHead(400, {
+                        "content-type": "application/json",
+                    });
                     res.end(
                         JSON.stringify({
                             error: {

@@ -1,9 +1,9 @@
-import type { DbMessagesStore } from "./store.js";
+import type { DatabaseMessagesStore } from "./store.js";
 
 class ChatroomDeletionRequestError extends Error {}
 
 export function createChatroomDeletionCapability(
-    store: DbMessagesStore,
+    store: DatabaseMessagesStore,
     log?: (
         level: string,
         message: string,

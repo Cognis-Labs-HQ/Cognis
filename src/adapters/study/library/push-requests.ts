@@ -1,6 +1,6 @@
 import { isDeepStrictEqual } from "node:util";
 import { randomUUID } from "node:crypto";
-import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import type {
     LibraryEntry,
     LibraryLocation,
@@ -29,7 +29,9 @@ export async function captureRequestContext(
     return context;
 }
 
-export async function ensurePushRequestSchema(db: DbExecutor): Promise<void> {
+export async function ensurePushRequestSchema(
+    db: DatabaseExecutor,
+): Promise<void> {
     await db.ensureTable({
         name: "study_library_pending_requests",
         columns: [
@@ -80,7 +82,7 @@ export async function ensurePushRequestSchema(db: DbExecutor): Promise<void> {
 }
 
 export async function createPushRequest(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     sourceEntryId: string,
     destination: LibraryLocation,
     accountId: string,
@@ -128,7 +130,7 @@ export async function createPushRequest(
 }
 
 export async function getPushRequest(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     id: string,
 ): Promise<LibraryPushRequest | null> {
     const result = await db.executeCommand({
@@ -175,7 +177,7 @@ function mapPushRequest(row: Record<string, unknown>): LibraryPushRequest {
 }
 
 export async function listPushRequests(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     status?: LibraryPushRequest["status"],
 ): Promise<LibraryPushRequest[]> {
     const result = await db.executeCommand({
@@ -187,7 +189,7 @@ export async function listPushRequests(
 }
 
 export async function reviewPushRequest(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     id: string,
     status: "approved" | "rejected" | "withdrawn",
     reviewerId: string,
@@ -214,7 +216,7 @@ export async function reviewPushRequest(
 }
 
 export async function stagePushRequest(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     id: string,
     entry: NonNullable<LibraryPushRequest["proposedEntry"]>,
     actorId: string,
@@ -272,7 +274,7 @@ export async function stagePushRequest(
 }
 
 export async function addEntryOwners(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     id: string,
     owners: readonly string[],
 ): Promise<void> {

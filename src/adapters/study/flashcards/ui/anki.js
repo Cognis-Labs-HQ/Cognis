@@ -8,20 +8,20 @@ export function parseAnkiNotes(text) {
         field = "",
         quoted = false;
     for (let index = 0; index < body.length; index++) {
-        const char = body[index];
-        if (char === '"') {
+        const character = body[index];
+        if (character === '"') {
             if (quoted && body[index + 1] === '"') {
                 field += '"';
                 index++;
             } else quoted = !quoted;
-        } else if (!quoted && (char === "\t" || char === "\n")) {
+        } else if (!quoted && (character === "\t" || character === "\n")) {
             row.push(field);
             field = "";
-            if (char === "\n") {
+            if (character === "\n") {
                 rows.push(row);
                 row = [];
             }
-        } else field += char;
+        } else field += character;
     }
     if (quoted) throw new Error("invalid_anki_quotes");
     row.push(field);

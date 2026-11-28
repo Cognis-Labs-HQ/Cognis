@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createSubPageRegistry } from "../sub-page-registry.js";
+import { createNestedPageRegistry } from "../sub-page-registry.js";
 
 test("sub-page providers expose grouped menus and resolve page routes", async () => {
-    const registry = createSubPageRegistry();
+    const registry = createNestedPageRegistry();
     assert.equal(
         registry.register("languages", {
             listGroups: async () => [
@@ -40,7 +40,7 @@ test("sub-page providers expose grouped menus and resolve page routes", async ()
 });
 
 test("sub-page invalidation reloads provider data", async () => {
-    const registry = createSubPageRegistry();
+    const registry = createNestedPageRegistry();
     let loadCount = 0;
     registry.register("pages", {
         listGroups: async () => [{ id: "group" }],
@@ -57,7 +57,7 @@ test("sub-page invalidation reloads provider data", async () => {
 
 for (const stage of ["groups", "pages"]) {
     test(`failed ${stage} discovery can retry without remounting its provider`, async () => {
-        const registry = createSubPageRegistry();
+        const registry = createNestedPageRegistry();
         let unavailable = true;
         registry.register("study", {
             listGroups: async () => {

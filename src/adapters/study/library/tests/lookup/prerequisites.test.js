@@ -95,8 +95,8 @@ function session(overrides = {}) {
 }
 
 test("missing Kanji are committed once and canonical IDs replace every spelling link", async () => {
-    const h = session();
-    const result = await h.run(input);
+    const lookupSession = session();
+    const result = await lookupSession.run(input);
     assert.deepEqual(
         Array.from(result.references, (ref) => ref.entryId),
         ["kanji-room", "kanji-room"],
@@ -106,28 +106,29 @@ test("missing Kanji are committed once and canonical IDs replace every spelling 
         "kanji-room",
     );
     assert.equal(
-        h.stats().saved.linkedEntries[0].entry.fields.translations.en,
+        lookupSession.stats().saved.linkedEntries[0].entry.fields.translations
+            .en,
         "room",
     );
-    assert.equal(h.entries[0].scope, "global");
-    await h.run(input);
-    assert.equal(h.stats().lookups, 1);
-    assert.equal(h.stats().creates, 1);
+    assert.equal(lookupSession.entries[0].scope, "global");
+    await lookupSession.run(input);
+    assert.equal(lookupSession.stats().lookups, 1);
+    assert.equal(lookupSession.stats().creates, 1);
 });
 test("read-only atomic characters cannot be created as dictionary prerequisites", async () => {
-    const h = session();
+    const lookupSession = session();
     await assert.rejects(
-        h.run({
+        lookupSession.run({
             prerequisites: [{ key: "atomic", layer: "kana", label: "あ" }],
         }),
         /invalid_lookup_prerequisite/,
     );
-    assert.equal(h.stats().creates, 0);
-    assert.equal(h.stats().lookups, 0);
+    assert.equal(lookupSession.stats().creates, 0);
+    assert.equal(lookupSession.stats().lookups, 0);
 });
 test("a concurrent global conflict reuses its canonical ID but cannot reuse a private dependency", async () => {
     for (const scope of ["global", "user"]) {
-        const h = session({
+        const lookupSession = session({
             createLibraryEntry: async () => {
                 const error = new Error("content_conflict");
                 error.details = { conflictEntryId: "existing" };
@@ -146,12 +147,12 @@ test("a concurrent global conflict reuses its canonical ID but cannot reuse a pr
         });
         if (scope === "user")
             await assert.rejects(
-                h.run(input),
+                lookupSession.run(input),
                 /lookup_prerequisite_scope_conflict/,
             );
         else
             assert.equal(
-                (await h.run(input)).references[0].entryId,
+                (await lookupSession.run(input)).references[0].entryId,
                 "existing",
             );
     }

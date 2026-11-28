@@ -10,7 +10,7 @@ Antarmuka publik dan aturan operasional Autentikasi Dua Faktor.
 
 Bootstrap di `src/gateways/tfa/bootstrap.ts` melakukan urutan berikut:
 
-1. Membuat `DbTfaStore` dan memastikan schema tersedia.
+1. Membuat `DatabaseTfaStore` dan memastikan schema tersedia.
 2. Menemukan adapter di `src/adapters/tfa/`.
 3. Memuat konfigurasi adapter yang tersimpan.
 4. Mendaftarkan route API dan route admin adapter.

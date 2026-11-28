@@ -50,7 +50,7 @@ export async function runFlow(
             flowId,
             stageId,
             input,
-            meta,
+            meta: meta,
             data,
             stageResults,
         };

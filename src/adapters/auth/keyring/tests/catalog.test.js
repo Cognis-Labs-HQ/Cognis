@@ -7,7 +7,7 @@ import { showKeyringLifecycleToast } from "../ui/lifecycle-notifications.js";
 import { loadKeyringI18n } from "../ui/resources.js";
 import { notifications } from "./fixtures/lifecycle-toast.js";
 
-test("guest keyring creation resolves its real catalog and lifecycle toast in every UI language", async (t) => {
+test("guest keyring creation resolves its real catalog and lifecycle toast in every UI language", async (testContext) => {
     const originalLocation = Object.getOwnPropertyDescriptor(
         globalThis,
         "location",
@@ -37,7 +37,7 @@ test("guest keyring creation resolves its real catalog and lifecycle toast in ev
             return nextResolve(specifier, context);
         },
     });
-    t.after(() => {
+    testContext.after(() => {
         hook.deregister();
         if (originalLocation)
             Object.defineProperty(globalThis, "location", originalLocation);

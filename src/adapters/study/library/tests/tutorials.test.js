@@ -104,25 +104,29 @@ test("language guides replace generic Explore only for an enrolled active langua
     const host = fixture(context);
     await host.mount();
     assert.deepEqual(
-        (await host.list("/study/explore/en/alphabet")).map((x) => x.id),
+        (await host.list("/study/explore/en/alphabet")).map(
+            (tutorial) => tutorial.id,
+        ),
         ["study.library.pages:explore"],
     );
     await host.register("en");
     await host.register("ja");
     const overview = await host.list("/study");
     assert.equal(overview.length, 2);
-    assert.ok(overview.every((x) => x.automatic === false));
+    assert.ok(overview.every((tutorial) => tutorial.automatic === false));
     assert.equal(host.routes(), 0);
     const active = await host.list("/study/explore/ja/kanji");
     assert.deepEqual(
-        active.map((x) => x.id),
+        active.map((tutorial) => tutorial.id),
         ["module.study-language-ja:introduction"],
     );
     assert.notEqual(active[0].automatic, false);
     assert.equal(host.routes(), 0);
     host.enrolled.delete("ja");
     assert.deepEqual(
-        (await host.list("/study/explore/ja/kanji")).map((x) => x.id),
+        (await host.list("/study/explore/ja/kanji")).map(
+            (tutorial) => tutorial.id,
+        ),
         ["study.library.pages:explore"],
     );
     assert.ok(host.events.includes("study.library:tutorials:register"));
@@ -150,7 +154,9 @@ test("duplicate language registrations fail without losing the guide; provider r
     );
     lifetime.abort();
     assert.deepEqual(
-        (await host.list("/study/explore/en/words")).map((x) => x.id),
+        (await host.list("/study/explore/en/words")).map(
+            (tutorial) => tutorial.id,
+        ),
         ["study.library.pages:explore"],
     );
     await host.register("en");

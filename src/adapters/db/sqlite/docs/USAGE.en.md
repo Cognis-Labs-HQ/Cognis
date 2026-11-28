@@ -8,7 +8,7 @@ An embedding runtime must supply the SQLite client; standard deployment does not
 
 ## Examples
 
-Supply a SqliteClient implementing all, run and exec, then use SqliteDbGateway for a query and transaction in your runtime.
+Supply a SqliteClient implementing all, run and exec, then use SqliteDatabaseGateway for a query and transaction in your runtime.
 
 ## Expected Results
 

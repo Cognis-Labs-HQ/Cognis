@@ -18,14 +18,18 @@ export interface NotifyAdapterBootstrapCtx {
         gatewayId?: string,
     ): void;
     registerNavbarPlugin(scriptUrl: string): void;
-    registerStaticDir(urlPrefix: string, absoluteDir: string): void;
+    registerStaticDirectory(urlPrefix: string, absoluteDirectory: string): void;
     requireAuth(
         req: IncomingMessage,
         res: ServerResponse,
         minimumRole: "admin",
     ): boolean;
     readJson(req: IncomingMessage): Promise<Record<string, unknown>>;
-    log?: (level: string, msg: string, meta?: Record<string, unknown>) => void;
+    log?: (
+        level: string,
+        message: string,
+        meta?: Record<string, unknown>,
+    ) => void;
 }
 
 export interface NotificationEnvelope {
@@ -129,9 +133,9 @@ export interface NotificationSender {
     registerChannel?(
         category: NotificationCategory,
     ): NotificationChannelRegistration;
-    test?(to: string, config?: Record<string, unknown>): Promise<void>;
+    test?(recipient: string, config?: Record<string, unknown>): Promise<void>;
     isConfigured?(): boolean;
-    getEnvValues?(): Record<string, string | undefined>;
+    getEnvironmentValues?(): Record<string, string | undefined>;
     getRequiredFields?(): string[];
     listQueue?(): NotificationSenderQueueEntry[];
     getQueueItem?(notificationId: string): NotificationSenderQueueEntry | null;

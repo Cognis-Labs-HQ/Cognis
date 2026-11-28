@@ -5,7 +5,7 @@ import { Readable } from "node:stream";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { createCtx, CTX_CAPABILITY } from "@cognis/core";
 import { bootstrapSocialAdapter } from "../index.js";
-import { DbMessagesStore } from "../store.js";
+import { DatabaseMessagesStore } from "../store.js";
 import { InMemoryTestExecutor } from "../../../../gateways/db/tests/in-memory-test-executor.js";
 import { issueAccessToken } from "../../../../gateways/auth/access-tokens.js";
 import type { SocialAdapterBootstrapCtx } from "../../../../gateways/social/gateway.js";
@@ -60,7 +60,7 @@ test("registered messaging flows replay one encrypted message without duplicate 
         isGatewayEnabled: () => true,
     } as unknown as SocialAdapterBootstrapCtx;
     await bootstrapSocialAdapter(context);
-    const store = new DbMessagesStore(database);
+    const store = new DatabaseMessagesStore(database);
     const room = await store.createRoom("group", "Conversation", "alice");
     await store.addMember(room.id, "alice", "owner");
     await store.addMember(room.id, "bob", "member");

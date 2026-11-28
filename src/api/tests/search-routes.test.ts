@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { createSearchRoutes } from "../routes/search/index.js";
 import { issueAccessToken } from "../../gateways/auth/access-tokens.js";
 
-function makeReq(token: string) {
+function makeRequest(token: string) {
     return {
         method: "GET",
         headers: { authorization: `Bearer ${token}` },
@@ -35,7 +35,7 @@ test("global search includes hidden profiles for admins", async () => {
     let body = "";
 
     await route(
-        makeReq(adminToken),
+        makeRequest(adminToken),
         {
             writeHead(code: number) {
                 status = code;
@@ -85,7 +85,7 @@ test("global search excludes hidden profiles for regular users", async () => {
     let body = "";
 
     await route(
-        makeReq(userToken),
+        makeRequest(userToken),
         {
             writeHead(code: number) {
                 status = code;

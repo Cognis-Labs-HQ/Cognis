@@ -495,9 +495,9 @@ uiCtx.extendFlow(
     "authenticate",
     { id: "auth-gateway:load-page-authenticate" },
     async (stageCtx) => {
-        const mountFn = stageCtx.input?.mount;
+        const mountCallback = stageCtx.input?.mount;
         if (PUBLIC_AUTH_PATHNAMES.has(window.location.pathname)) {
-            stageCtx.data.mountFn = mountFn;
+            stageCtx.data.mountFn = mountCallback;
             stageCtx.data.session = null;
             return { authenticated: false };
         }
@@ -509,7 +509,7 @@ uiCtx.extendFlow(
             stageCtx.data.redirected = true;
             return { authenticated: false, redirected: true };
         }
-        stageCtx.data.mountFn = mountFn;
+        stageCtx.data.mountFn = mountCallback;
         stageCtx.data.session = session;
         return { authenticated: session?.authenticated === true };
     },
@@ -521,10 +521,10 @@ uiCtx.extendFlow(
     { id: "auth-gateway:load-page-mount" },
     async (stageCtx) => {
         if (stageCtx.data.redirected) return { mounted: false };
-        const mountFn = stageCtx.data.mountFn ?? stageCtx.input?.mount;
-        if (typeof mountFn !== "function") return { mounted: false };
+        const mountCallback = stageCtx.data.mountFn ?? stageCtx.input?.mount;
+        if (typeof mountCallback !== "function") return { mounted: false };
         const root = stageCtx.input?.root ?? null;
-        await mountFn(root);
+        await mountCallback(root);
         return { mounted: true };
     },
 );

@@ -72,7 +72,10 @@ export function createModuleMarketplaceStateRoute({
                 withMarketplaceAssetUrls(module, marketplace, log),
             ),
         );
-        res.writeHead(200, { ...headers, "content-type": "application/json" });
+        res.writeHead(200, {
+            ...headers,
+            "content-type": "application/json",
+        });
         res.end(
             JSON.stringify({ data: { sources, installed, cached: prepared } }),
         );

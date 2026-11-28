@@ -9,8 +9,8 @@ The public interfaces and operational rules of Profiles and Posts.
 The adapter bootstrap in `src/adapters/social/profile/index.ts`:
 
 1. Guards on `ctx.capabilities.get("db:executor")` — logs a warning and returns if unavailable.
-2. Instantiates `DbProfileStore` and calls `ensureSchema()`.
-3. Instantiates `DbUserPreferenceStore`, calls `ensureSchema()`, and
+2. Instantiates `DatabaseProfileStore` and calls `ensureSchema()`.
+3. Instantiates `DatabaseUserPreferenceStore`, calls `ensureSchema()`, and
    contributes `preferences:store` and `social:profileStore`.
 4. Contributes `profile:createProfile` and `profile:setRoleByHandle`.
 5. Retrieves `file:gateway` (optional); registers file routes only when the
@@ -25,8 +25,8 @@ The adapter bootstrap in `src/adapters/social/profile/index.ts`:
 | ------------------------- | --------------------------------------------- | ------------------------------------------------------- |
 | `profile:createProfile`   | `(accountId, handle, role?) => Promise<void>` | Creates a profile row; called by auth on register       |
 | `profile:setRoleByHandle` | `(handle, role) => Promise<void>`             | Syncs role on the profile row when admin changes a role |
-| `preferences:store`       | `DbUserPreferenceStore`                       | User preference key/value persistence                   |
-| `social:profileStore`     | `DbProfileStore`                              | Profile store shared with the messages adapter          |
+| `preferences:store`       | `DatabaseUserPreferenceStore`                 | User preference key/value persistence                   |
+| `social:profileStore`     | `DatabaseProfileStore`                        | Profile store shared with the messages adapter          |
 
 ### API Routes
 
@@ -115,8 +115,8 @@ authentication (auth gateway), or private messaging (messages adapter).
 | `src/adapters/social/profile/routes/posts.ts`               | Post creation, listing, and deletion                                   |
 | `src/adapters/social/profile/routes/profile-file-client.ts` | File upload, download, and admin size-limit management                 |
 | `src/adapters/social/profile/routes/preferences.ts`         | User preference get/set                                                |
-| `src/adapters/social/profile/store.ts`                      | `DbProfileStore` — all profile, social graph, and post SQL             |
-| `src/adapters/social/profile/preference-store.ts`           | `DbUserPreferenceStore`                                                |
+| `src/adapters/social/profile/store.ts`                      | `DatabaseProfileStore` — all profile, social graph, and post SQL       |
+| `src/adapters/social/profile/preference-store.ts`           | `DatabaseUserPreferenceStore`                                          |
 | `src/adapters/social/profile/store.ts`                      | Abstract `ProfileStore` interface and `VolatileProfileStore` for tests |
 | `src/adapters/social/profile/routes/index.ts`               | Own profile and public profile route handlers                          |
 

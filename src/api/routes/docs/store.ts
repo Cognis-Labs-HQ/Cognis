@@ -8,20 +8,24 @@ import {
 } from "node:fs/promises";
 import { randomUUID } from "node:crypto";
 import { dirname, join } from "node:path";
-import { discoverDocSources, optionalText, type DocView } from "./sources.js";
+import {
+    discoverDocumentSources,
+    optionalText,
+    type DocumentView,
+} from "./sources.js";
 
-export interface StoredDoc {
+export interface StoredDocument {
     slug: string;
     title: string;
     group: string;
     version: string;
     versions: string[];
     sourceName: string;
-    views: DocView[];
+    views: DocumentView[];
 }
 
-interface Snapshot extends Omit<StoredDoc, "versions" | "title"> {
-    documents: Partial<Record<DocView, Record<string, string>>>;
+interface Snapshot extends Omit<StoredDocument, "versions" | "title"> {
+    documents: Partial<Record<DocumentView, Record<string, string>>>;
 }
 
 function localizedMarkdown(
@@ -44,7 +48,7 @@ function validateSnapshot(snapshot: Snapshot): void {
         : ["info", "usage", "technical"];
     if (
         JSON.stringify(snapshot.views) !== JSON.stringify(expected) ||
-        expected.some((view) => !snapshot.documents[view as DocView]?.en)
+        expected.some((view) => !snapshot.documents[view as DocumentView]?.en)
     )
         throw new Error(
             `docs_incomplete_bundle:${snapshot.slug}:${snapshot.version}`,
@@ -96,14 +100,14 @@ async function archivedSnapshots(directory: string): Promise<Snapshot[]> {
     return snapshots.flat();
 }
 
-export async function initializeDocsStore(
+async function initializeDocumentsStore(
     sourceRoot: string | string[],
     archiveRoot: string,
     languages: string[] = ["en"],
-): Promise<Map<string, StoredDoc>> {
+): Promise<Map<string, StoredDocument>> {
     const live = new Map<string, Snapshot>();
     for (const root of Array.isArray(sourceRoot) ? sourceRoot : [sourceRoot]) {
-        for (const source of await discoverDocSources(root)) {
+        for (const source of await discoverDocumentSources(root)) {
             if (live.has(source.slug))
                 throw new Error(`docs_duplicate_slug:${source.slug}`);
             const documents: Snapshot["documents"] = {};
@@ -111,14 +115,14 @@ export async function initializeDocsStore(
                 const contents: Record<string, string> = {};
                 for (const [language, path] of Object.entries(files))
                     contents[language] = await readFile(path, "utf8");
-                documents[view as DocView] = contents;
+                documents[view as DocumentView] = contents;
             }
             const snapshot: Snapshot = {
                 slug: source.slug,
                 group: source.group,
                 sourceName: source.sourceName,
                 version: source.version,
-                views: Object.keys(source.files) as DocView[],
+                views: Object.keys(source.files) as DocumentView[],
                 documents,
             };
             await publishSnapshot(
@@ -135,7 +139,7 @@ export async function initializeDocsStore(
             ...(grouped.get(snapshot.slug) ?? []),
             snapshot,
         ]);
-    const stored = new Map<string, StoredDoc>();
+    const stored = new Map<string, StoredDocument>();
     for (const [slug, versions] of grouped) {
         versions.sort((first, second) =>
             second.version.localeCompare(first.version, undefined, {
@@ -158,19 +162,20 @@ export async function initializeDocsStore(
     }
     return stored;
 }
+export { initializeDocumentsStore };
 
 export async function readStoredMarkdown(
     archiveRoot: string,
-    doc: StoredDoc,
+    document: StoredDocument,
     requestedVersion: string,
     languages: string[],
-    view: DocView = "info",
+    view: DocumentView = "info",
 ): Promise<string | undefined> {
     const version =
-        requestedVersion === "latest" ? doc.version : requestedVersion;
-    if (!doc.versions.includes(version)) return undefined;
+        requestedVersion === "latest" ? document.version : requestedVersion;
+    if (!document.versions.includes(version)) return undefined;
     const snapshot = await readSnapshot(
-        join(archiveRoot, doc.slug, version, "bundle.json"),
+        join(archiveRoot, document.slug, version, "bundle.json"),
     );
     const translations = snapshot?.documents[view];
     if (!translations) return undefined;

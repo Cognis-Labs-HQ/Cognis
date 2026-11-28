@@ -4,7 +4,12 @@ import {
     renderSearchDataAttributes,
 } from "../../reuse/search-util/indexing.js";
 
-function accountOperationSearchAttrs(i18n, action, labelKey, descriptionKey) {
+function accountOperationSearchAttributes(
+    i18n,
+    action,
+    labelKey,
+    descriptionKey,
+) {
     const label = i18n.t(labelKey);
     const description = i18n.t(descriptionKey);
     return renderSearchDataAttributes({
@@ -34,7 +39,7 @@ export function renderAccountOperationButton(
         class="btn-cancel btn-animated"
         type="button"
         data-account-action="${escapeHtml(action)}"
-        ${accountOperationSearchAttrs(i18n, action, labelKey, descriptionKey)}
+        ${accountOperationSearchAttributes(i18n, action, labelKey, descriptionKey)}
       >${escapeHtml(label)}</button>
     `;
 }
@@ -169,7 +174,7 @@ function collectSettingsElementSearchItems(section) {
     });
 }
 
-export function collectSettingsSearchGroups(sections, loadedPrefs) {
+export function collectSettingsSearchGroups(sections, loadedPreferences) {
     const items = [];
     for (const section of sections ?? []) {
         const label = String(
@@ -190,8 +195,8 @@ export function collectSettingsSearchGroups(sections, loadedPrefs) {
         items.push(...collectSettingsElementSearchItems(section));
     }
 
-    if (loadedPrefs && typeof loadedPrefs === "object") {
-        items.push(...collectPreferenceSearchItems(loadedPrefs));
+    if (loadedPreferences && typeof loadedPreferences === "object") {
+        items.push(...collectPreferenceSearchItems(loadedPreferences));
     }
 
     return [{ category: "Settings", items: dedupeSettingsSearchItems(items) }];

@@ -20,7 +20,9 @@ import { canonicalizeLanguageTag } from "../language.js";
 
 async function readJson(req: IncomingMessage): Promise<unknown> {
     try {
-        const body = await readRequestJson(req, { maxBytes: 5 * 1024 * 1024 });
+        const body = await readRequestJson(req, {
+            maxBytes: 5 * 1024 * 1024,
+        });
         if (!body || typeof body !== "object" || Array.isArray(body))
             throw new Error("invalid_request_json");
         return body;
@@ -85,7 +87,9 @@ export function createLibraryRoutes(
                 url.pathname === "/api/v1/study/library/images" &&
                 req.method === "DELETE"
             ) {
-                const body = (await readJson(req)) as { value: string };
+                const body = (await readJson(req)) as {
+                    value: string;
+                };
                 sendJson(res, 200, {
                     data: await library.images.discard(actor, body.value),
                 });
@@ -248,7 +252,9 @@ export function createLibraryRoutes(
                 url.pathname === "/api/v1/study/library/viewed-entries" &&
                 req.method === "PUT"
             ) {
-                const body = (await readJson(req)) as { entryIds?: unknown };
+                const body = (await readJson(req)) as {
+                    entryIds?: unknown;
+                };
                 if (
                     !Array.isArray(body.entryIds) ||
                     !body.entryIds.every((id) => typeof id === "string")
@@ -342,7 +348,9 @@ export function createLibraryRoutes(
                     "/api/v1/study/library/entries/deletion-plan" &&
                 req.method === "POST"
             ) {
-                const body = (await readJson(req)) as { entryIds?: unknown };
+                const body = (await readJson(req)) as {
+                    entryIds?: unknown;
+                };
                 if (
                     !Array.isArray(body.entryIds) ||
                     !body.entryIds.every((id) => typeof id === "string")
@@ -577,7 +585,9 @@ export function createLibraryRoutes(
                         requestId: result.request?.id,
                     },
                 );
-                sendJson(res, result.request ? 201 : 200, { data: result });
+                sendJson(res, result.request ? 201 : 200, {
+                    data: result,
+                });
                 return true;
             }
             const relocateMatch = url.pathname.match(

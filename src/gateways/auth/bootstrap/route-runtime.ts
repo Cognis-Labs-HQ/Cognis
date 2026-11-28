@@ -13,14 +13,20 @@ import type {
 // 18 random bytes provide ample entropy for short-lived login-attempt IDs.
 export const TFA_LOGIN_ATTEMPT_ID_BYTES = 18;
 // Pending TFA login attempts expire after 5 minutes to limit replay windows.
-export const TFA_LOGIN_ATTEMPT_TTL_MS = 5 * 60 * 1000;
-export const ACCOUNT_CREATION_ATTEMPT_TTL_MS = 10 * 60 * 1000;
+const TFA_LOGIN_ATTEMPT_TTL_MS = 5 * 60 * 1000;
+export { TFA_LOGIN_ATTEMPT_TTL_MS };
+const ACCOUNT_CREATION_ATTEMPT_TTL_MS = 10 * 60 * 1000;
+export { ACCOUNT_CREATION_ATTEMPT_TTL_MS };
 const ACCOUNT_CREATION_COOKIE = "cognis_account_creation";
 export const PASSWORD_RESET_TOKEN_TTL_SECONDS = 15 * 60;
-export const PASSWORD_RESET_RATE_LIMIT_MS = 60_000;
-export const PASSWORD_RESET_MIN_RESPONSE_MS = 350;
-export const PASSWORD_RESET_RESPONSE_JITTER_MS = 120;
-export const PASSWORD_RESET_LOOKUP_JITTER_MS = 40;
+const PASSWORD_RESET_RATE_LIMIT_MS = 60_000;
+export { PASSWORD_RESET_RATE_LIMIT_MS };
+const PASSWORD_RESET_MIN_RESPONSE_MS = 350;
+export { PASSWORD_RESET_MIN_RESPONSE_MS };
+const PASSWORD_RESET_RESPONSE_JITTER_MS = 120;
+export { PASSWORD_RESET_RESPONSE_JITTER_MS };
+const PASSWORD_RESET_LOOKUP_JITTER_MS = 40;
+export { PASSWORD_RESET_LOOKUP_JITTER_MS };
 
 export function sleep(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));

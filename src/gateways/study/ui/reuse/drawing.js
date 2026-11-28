@@ -1,3 +1,4 @@
+import { annotationPosition, scoreStroke } from "../drawing/geometry.js";
 import { transientSurfaces } from "/static/reuse/transient-surfaces.js";
 
 import { fetchLibrarySchemas } from "../library-client.js";
@@ -36,159 +37,6 @@ const runDrawingAction = createActionRunner("study:drawing", [
 
 let activeDrawingSession = null;
 let padTemplate;
-
-function distance(left, right) {
-    return Math.hypot(left.x - right.x, left.y - right.y);
-}
-
-function pathLength(points) {
-    return points
-        .slice(1)
-        .reduce(
-            (total, point, index) => total + distance(points[index], point),
-            0,
-        );
-}
-
-function distanceToSegment(point, start, end) {
-    const deltaX = end.x - start.x;
-    const deltaY = end.y - start.y;
-    const lengthSquared = deltaX ** 2 + deltaY ** 2;
-    if (!lengthSquared) return distance(point, start);
-    const projection = Math.max(
-        0,
-        Math.min(
-            1,
-            ((point.x - start.x) * deltaX + (point.y - start.y) * deltaY) /
-                lengthSquared,
-        ),
-    );
-    return distance(point, {
-        x: start.x + projection * deltaX,
-        y: start.y + projection * deltaY,
-    });
-}
-
-function annotationPosition(start, angle, canvas, occupied, paths) {
-    const directions = [
-        angle - Math.PI / 2,
-        angle + Math.PI / 2,
-        angle + Math.PI,
-        angle - (Math.PI * 3) / 4,
-        angle + (Math.PI * 3) / 4,
-        angle - Math.PI / 4,
-        angle + Math.PI / 4,
-        angle,
-    ];
-    const candidates = [18, 24, 30].flatMap((radius) =>
-        directions.map((direction) => ({
-            x: start.x + Math.cos(direction) * radius,
-            y: start.y + Math.sin(direction) * radius,
-        })),
-    );
-    const clearance = (candidate) =>
-        Math.min(
-            ...occupied.map((position) => distance(candidate, position) - 21),
-            ...paths.flatMap((path) =>
-                path
-                    .slice(1)
-                    .map(
-                        (point, index) =>
-                            distanceToSegment(candidate, path[index], point) -
-                            12,
-                    ),
-            ),
-        );
-    const scoredCandidates = candidates
-        .filter(
-            ({ x, y }) =>
-                x >= 12 &&
-                y >= 12 &&
-                x <= canvas.width - 12 &&
-                y <= canvas.height - 12,
-        )
-        .map((candidate, preference) => ({
-            candidate,
-            preference,
-            clearance: clearance(candidate),
-        }));
-    return (
-        scoredCandidates
-            .filter(
-                ({ clearance: candidateClearance }) => candidateClearance >= 0,
-            )
-            .sort((left, right) => left.preference - right.preference)[0]
-            ?.candidate ??
-        scoredCandidates.sort(
-            (left, right) =>
-                right.clearance - left.clearance ||
-                left.preference - right.preference,
-        )[0]?.candidate
-    );
-}
-
-function resample(points, count = 48) {
-    if (points.length < 2) return points;
-    const total = pathLength(points);
-    if (!total) return Array.from({ length: count }, () => points[0]);
-    const result = [points[0]];
-    let segment = 1;
-    let traversed = 0;
-    for (let sample = 1; sample < count - 1; sample += 1) {
-        const target = (total * sample) / (count - 1);
-        while (
-            segment < points.length &&
-            traversed + distance(points[segment - 1], points[segment]) < target
-        ) {
-            traversed += distance(points[segment - 1], points[segment]);
-            segment += 1;
-        }
-        const end = points[Math.min(segment, points.length - 1)];
-        const start = points[Math.max(0, segment - 1)];
-        const length = Math.max(distance(start, end), Number.EPSILON);
-        const ratio = Math.min(1, (target - traversed) / length);
-        result.push({
-            x: start.x + (end.x - start.x) * ratio,
-            y: start.y + (end.y - start.y) * ratio,
-        });
-    }
-    result.push(points.at(-1));
-    return result;
-}
-
-function scoreStroke(input, expected) {
-    if (input.length < 2 || expected.length < 2) return 0;
-    const sampledInput = resample(input);
-    const sampledExpected = resample(expected);
-    const rootMeanSquare = Math.sqrt(
-        sampledInput.reduce(
-            (sum, point, index) =>
-                sum + distance(point, sampledExpected[index]) ** 2,
-            0,
-        ) / sampledInput.length,
-    );
-    const endpointError =
-        distance(sampledInput[0], sampledExpected[0]) +
-        distance(sampledInput.at(-1), sampledExpected.at(-1));
-    const lengthRatio = Math.abs(
-        Math.log(
-            Math.max(pathLength(input), Number.EPSILON) /
-                Math.max(pathLength(expected), Number.EPSILON),
-        ),
-    );
-    return Math.max(
-        0,
-        Math.min(
-            100,
-            Math.round(
-                100 -
-                    rootMeanSquare * 180 -
-                    endpointError * 45 -
-                    lengthRatio * 18,
-            ),
-        ),
-    );
-}
 
 function playSuccessSound() {
     const AudioContextClass = window.AudioContext;
@@ -282,9 +130,9 @@ async function createDrawingPad({
         host.className = "study-drawing-embedded";
         container.append(host);
     } else host.classList.add("study-drawing-host");
-    const pad = document.createElement("section");
-    pad.className = "study-drawing-pad is-opening";
-    pad.innerHTML = formatTemplate(
+    const drawingPad = document.createElement("section");
+    drawingPad.className = "study-drawing-pad is-opening";
+    drawingPad.innerHTML = formatTemplate(
         padTemplate,
         Object.fromEntries(
             Object.entries({
@@ -299,16 +147,16 @@ async function createDrawingPad({
             ]),
         ),
     );
-    host.append(pad);
+    host.append(drawingPad);
     if (container) {
-        pad.querySelector("[data-close]").hidden = true;
-        pad.querySelector("[data-complete-close]").hidden = true;
+        drawingPad.querySelector("[data-close]").hidden = true;
+        drawingPad.querySelector("[data-complete-close]").hidden = true;
     }
-    pad.querySelector("[data-try-again]").hidden = suppressRetry;
-    const canvas = pad.querySelector("canvas");
-    const stage = pad.querySelector(".study-drawing-stage");
-    const completion = pad.querySelector("[data-complete]");
-    const header = pad.querySelector("header");
+    drawingPad.querySelector("[data-try-again]").hidden = suppressRetry;
+    const canvas = drawingPad.querySelector("canvas");
+    const stage = drawingPad.querySelector(".study-drawing-stage");
+    const completion = drawingPad.querySelector("[data-complete]");
+    const header = drawingPad.querySelector("header");
     const context = canvas.getContext("2d");
     const completed = [];
     let currentCard = card;
@@ -381,7 +229,7 @@ async function createDrawingPad({
         const width = Math.max(1, Math.round(bounds.width));
         const height = Math.max(1, Math.round(bounds.height));
         header.style.width = `${Math.round(bounds.width)}px`;
-        const styles = getComputedStyle(pad);
+        const styles = getComputedStyle(drawingPad);
         colors.guide = styles.getPropertyValue("--drawing-guide").trim();
         colors.ink = styles.getPropertyValue("--drawing-ink").trim();
         colors.active = styles.getPropertyValue("--drawing-active").trim();
@@ -504,17 +352,20 @@ async function createDrawingPad({
         context.restore();
     };
     const draw = () => {
-        pad.querySelector("[data-guidance]").disabled = revealHiddenGuides;
+        drawingPad.querySelector("[data-guidance]").disabled =
+            revealHiddenGuides;
         context.clearRect(0, 0, canvas.width, canvas.height);
         const viewport = drawingViewport(
             canvas,
             currentPattern.aspectRatio ?? currentPattern.columns,
         );
         const annotationPaths = currentPattern.strokes.map(({ points }) =>
-            points.map(({ x, y }) => ({
-                x: viewport.x + x * viewport.width,
-                y: viewport.y + y * viewport.height,
-            })),
+            points.map(
+                ({ x: horizontalCoordinate, y: verticalCoordinate }) => ({
+                    x: viewport.x + horizontalCoordinate * viewport.width,
+                    y: viewport.y + verticalCoordinate * viewport.height,
+                }),
+            ),
         );
         const hasHiddenGuide =
             !revealHiddenGuides && hiddenGuideIndices.has(completed.length);
@@ -569,7 +420,7 @@ async function createDrawingPad({
             active = [normalized(event)];
             hasStarted = true;
             revealHiddenGuides = false;
-            pad.querySelector("[data-guidance]").hidden = false;
+            drawingPad.querySelector("[data-guidance]").hidden = false;
             canvas.setPointerCapture(event.pointerId);
             scheduleDraw();
         },
@@ -634,7 +485,7 @@ async function createDrawingPad({
                                 .t("gateway.study.drawing.mistakes")
                                 .replace("{{ count }}", String(mistakes));
                             completion.hidden = false;
-                            pad.classList.add("is-complete");
+                            drawingPad.classList.add("is-complete");
                         }
                     } else {
                         onResult?.({ correct: false, mistakes: mistakes + 1 });
@@ -660,7 +511,7 @@ async function createDrawingPad({
                                 "[data-mistakes]",
                             ).textContent = "";
                             completion.hidden = false;
-                            pad.classList.add("is-complete");
+                            drawingPad.classList.add("is-complete");
                         }
                     }
                     active = null;
@@ -671,7 +522,7 @@ async function createDrawingPad({
         { signal: controller.signal },
     );
     const resetHeading = bindDrawingHeading(
-        pad.querySelector("[data-card-label]"),
+        drawingPad.querySelector("[data-card-label]"),
         {
             signal: controller.signal,
             i18n,
@@ -687,7 +538,7 @@ async function createDrawingPad({
             reportFailure,
         },
     );
-    pad.querySelector("[data-reset]").addEventListener(
+    drawingPad.querySelector("[data-reset]").addEventListener(
         "click",
         () =>
             void runDrawingAction(
@@ -710,7 +561,7 @@ async function createDrawingPad({
                     assistedAttempt = false;
                     revealHiddenGuides = false;
                     completion.hidden = true;
-                    pad.classList.remove("is-complete");
+                    drawingPad.classList.remove("is-complete");
                     draw();
                 },
                 controller.signal,
@@ -719,9 +570,9 @@ async function createDrawingPad({
     );
     const release = container
         ? undefined
-        : makeFloatingWindow(pad, {
+        : makeFloatingWindow(drawingPad, {
               boundaryElement: host,
-              handle: pad.querySelector("header"),
+              handle: drawingPad.querySelector("header"),
               signal: controller.signal,
               minWidth: 360,
               minHeight: 320,
@@ -741,7 +592,7 @@ async function createDrawingPad({
         observer.disconnect();
         pageOverlay?.destroy();
         release?.();
-        pad.remove();
+        drawingPad.remove();
         host.remove();
         if (!container) {
             activeDrawingSession = null;
@@ -756,8 +607,8 @@ async function createDrawingPad({
         runDrawingAction("close", () => {
             if (closing) return;
             closing = true;
-            pad.classList.add("is-closing");
-            pad.addEventListener(
+            drawingPad.classList.add("is-closing");
+            drawingPad.addEventListener(
                 "animationend",
                 (event) => {
                     if (event.animationName === "drawing-pad-close")
@@ -776,17 +627,15 @@ async function createDrawingPad({
         },
         { signal: controller.signal },
     );
-    pad.querySelector("[data-close]").addEventListener("click", close, {
+    drawingPad.querySelector("[data-close]").addEventListener("click", close, {
         signal: controller.signal,
     });
-    pad.querySelector("[data-complete-close]").addEventListener(
-        "click",
-        close,
-        {
+    drawingPad
+        .querySelector("[data-complete-close]")
+        .addEventListener("click", close, {
             signal: controller.signal,
-        },
-    );
-    pad.querySelector("[data-try-again]").addEventListener(
+        });
+    drawingPad.querySelector("[data-try-again]").addEventListener(
         "click",
         () =>
             void runDrawingAction(
@@ -811,23 +660,23 @@ async function createDrawingPad({
                     revealHiddenGuides = false;
                     completion.hidden = true;
                     completion.classList.remove("is-failure");
-                    pad.classList.remove("is-complete");
+                    drawingPad.classList.remove("is-complete");
                     draw();
                 },
                 controller.signal,
             ).catch(reportFailure),
         { signal: controller.signal },
     );
-    pad.addEventListener(
+    drawingPad.addEventListener(
         "animationend",
         (event) => {
             if (event.animationName === "drawing-pad-open")
-                pad.classList.remove("is-opening");
+                drawingPad.classList.remove("is-opening");
         },
         { signal: controller.signal },
     );
-    window.setTimeout(() => pad.classList.remove("is-opening"), 220);
-    pad.querySelector("[data-guidance]").addEventListener(
+    window.setTimeout(() => drawingPad.classList.remove("is-opening"), 220);
+    drawingPad.querySelector("[data-guidance]").addEventListener(
         "click",
         () =>
             void runDrawingAction(
@@ -836,7 +685,7 @@ async function createDrawingPad({
                     revealHiddenGuides = true;
                     assistedAttempt = true;
                     onResult?.({ correct: false, assisted: true, mistakes });
-                    pad.querySelector("[data-guidance]").disabled = true;
+                    drawingPad.querySelector("[data-guidance]").disabled = true;
                     draw();
                 },
                 controller.signal,
@@ -874,10 +723,10 @@ async function createDrawingPad({
             );
             const fittedWidth =
                 Math.min(maximumWidth, 448 * columns) * (aspectRatio / columns);
-            pad.style.width = `${fittedWidth}px`;
-            pad.style.height = "auto";
+            drawingPad.style.width = `${fittedWidth}px`;
+            drawingPad.style.height = "auto";
         }
-        pad.style.setProperty("--drawing-columns", String(aspectRatio));
+        drawingPad.style.setProperty("--drawing-columns", String(aspectRatio));
         resetHiddenGuides();
         revealHiddenGuides = false;
         completed.length = 0;
@@ -888,22 +737,25 @@ async function createDrawingPad({
         assistedAttempt = false;
         completion.hidden = true;
         completion.classList.remove("is-failure");
-        pad.classList.remove("is-complete");
+        drawingPad.classList.remove("is-complete");
         resetHeading();
         if (!container)
             setDrawingCard({ id: currentCard.id, label: currentCard.label });
-        pad.querySelector("[data-pronunciations]").classList.toggle(
-            "study-ipa",
-            Boolean(pronunciationClass(currentPronunciations)),
-        );
-        pad.querySelector("[data-pronunciations]").textContent = [
+        drawingPad
+            .querySelector("[data-pronunciations]")
+            .classList.toggle(
+                "study-ipa",
+                Boolean(pronunciationClass(currentPronunciations)),
+            );
+        drawingPad.querySelector("[data-pronunciations]").textContent = [
             currentPronunciations,
         ]
             .flat()
             .filter(Boolean)
             .join(" · ");
-        pad.querySelector("[data-definition]").textContent = currentDefinition;
-        pad.querySelector("[data-guidance]").disabled = false;
+        drawingPad.querySelector("[data-definition]").textContent =
+            currentDefinition;
+        drawingPad.querySelector("[data-guidance]").disabled = false;
         stage.style.visibility = "visible";
         resize();
         window.requestAnimationFrame(resize);
@@ -916,7 +768,11 @@ async function createDrawingPad({
     };
     if (!container) {
         activeDrawingSession = session;
-        transientSurfaces.register(pad, session.close, controller.signal);
+        transientSurfaces.register(
+            drawingPad,
+            session.close,
+            controller.signal,
+        );
     }
     try {
         await load({ card, definition, pronunciations, strokePattern });
@@ -924,8 +780,8 @@ async function createDrawingPad({
         finishClose();
         throw error;
     }
-    pad.style.top = `${host.scrollTop + 16}px`;
-    pad.style.left = `${Math.max(16, host.clientWidth - pad.getBoundingClientRect().width - 16)}px`;
+    drawingPad.style.top = `${host.scrollTop + 16}px`;
+    drawingPad.style.left = `${Math.max(16, host.clientWidth - drawingPad.getBoundingClientRect().width - 16)}px`;
     return session;
 }
 

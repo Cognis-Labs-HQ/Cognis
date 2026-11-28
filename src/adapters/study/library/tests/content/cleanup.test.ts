@@ -28,7 +28,7 @@ function fixture() {
         },
         async resolveDeletionCascade(
             ids: string[],
-            _db: unknown,
+            _database: unknown,
             includeRestricted: boolean,
         ) {
             assert.deepEqual(ids, ["provider"]);

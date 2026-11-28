@@ -28,7 +28,7 @@ export class CoreAuthGateway {
 
 `src/gateways/auth/bootstrap.ts` と `src/gateways/auth/bootstrap/` でのブートストラップ:
 
-1. `src/adapters/auth/local/store.ts` から `DbLocalAccountStore` をインスタンス化。
+1. `src/adapters/auth/local/store.ts` から `DatabaseLocalAccountStore` をインスタンス化。
 2. DBエグゼキューターとタイプで `CoreAuthGateway` をインスタンス化。
 3. `setLocalAdapter()` でローカルアダプターを読み込む。
 4. `discoverAdapters(authAdaptersRoot)` を呼び出して他のすべてのアダプターを読み込む。

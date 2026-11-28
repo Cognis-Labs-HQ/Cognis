@@ -171,8 +171,8 @@ test("Logger applies independent console and file severity thresholds", async ()
 });
 
 test("Logger rotates and compresses old log files", async () => {
-    const tempRoot = await mkdtemp(path.join(tmpdir(), "cognis-logger-"));
-    const logPath = path.join(tempRoot, "app.log");
+    const temporaryRoot = await mkdtemp(path.join(tmpdir(), "cognis-logger-"));
+    const logPath = path.join(temporaryRoot, "app.log");
     try {
         const logger = new Logger("debug", logPath, undefined, "pretty", {
             maxBytes: 1,
@@ -184,7 +184,7 @@ test("Logger rotates and compresses old log files", async () => {
         await logger.info("second entry");
         await logger.info("third entry");
 
-        const entries = await readdir(tempRoot);
+        const entries = await readdir(temporaryRoot);
         const compressed = entries.filter(
             (entry) => entry.startsWith("app.log.") && entry.endsWith(".gz"),
         );
@@ -192,12 +192,12 @@ test("Logger rotates and compresses old log files", async () => {
         const latestLog = await readFile(logPath, "utf8");
         assert.match(latestLog, /third entry/);
         for (const archiveName of compressed) {
-            const archivePath = path.join(tempRoot, archiveName);
+            const archivePath = path.join(temporaryRoot, archiveName);
             const archiveStats = await stat(archivePath);
             assert.ok(archiveStats.size > 0);
         }
     } finally {
-        await rm(tempRoot, { recursive: true, force: true });
+        await rm(temporaryRoot, { recursive: true, force: true });
     }
 });
 
@@ -275,15 +275,15 @@ test("formatConsoleLog serializes entry as compact JSON when format is json", ()
 });
 
 test("createLogEntry omits meta when no meaningful fields are present", () => {
-    const entryWithoutMeta = createLogEntry("info", "Health check passed.");
-    assert.equal(entryWithoutMeta.meta, undefined);
+    const entryWithoutMetadata = createLogEntry("info", "Health check passed.");
+    assert.equal(entryWithoutMetadata.meta, undefined);
 
-    const entryWithEmptyMeta = createLogEntry(
+    const entryWithEmptyMetadata = createLogEntry(
         "info",
         "Health check passed.",
         {},
     );
-    assert.equal(entryWithEmptyMeta.meta, undefined);
+    assert.equal(entryWithEmptyMetadata.meta, undefined);
 
     const entryWithUndefinedValues = createLogEntry(
         "info",

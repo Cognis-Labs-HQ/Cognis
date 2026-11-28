@@ -21,7 +21,7 @@ function gate() {
 }
 
 async function fixture(
-    t: TestContext,
+    testContext: TestContext,
     work: (scope: BootstrapScope) => Promise<void>,
 ) {
     const root = createCtx();
@@ -37,7 +37,7 @@ async function fixture(
     );
     const previous = process.env.COGNIS_EXTERNAL_MODULES_ROOT;
     process.env.COGNIS_EXTERNAL_MODULES_ROOT = directory;
-    t.after(async () => {
+    testContext.after(async () => {
         if (previous === undefined)
             delete process.env.COGNIS_EXTERNAL_MODULES_ROOT;
         else process.env.COGNIS_EXTERNAL_MODULES_ROOT = previous;
@@ -80,9 +80,9 @@ async function fixture(
 }
 
 for (const fail of [false, true]) {
-    test(`module bootstrap exposes revocable host authority and owns disposal (fail=${fail})`, async (t) => {
+    test(`module bootstrap exposes revocable host authority and owns disposal (fail=${fail})`, async (testContext) => {
         const events: string[] = [];
-        const host = await fixture(t, async (scope) => {
+        const host = await fixture(testContext, async (scope) => {
             events.push(scope.owner);
             scope.registerDisposer(() => {
                 events.push("dispose");
@@ -105,12 +105,12 @@ for (const fail of [false, true]) {
     });
 }
 
-test("timed-out module bootstrap revokes authority before its detached work finishes", async (t) => {
+test("timed-out module bootstrap revokes authority before its detached work finishes", async (testContext) => {
     const entered = gate();
     const release = gate();
     let late!: Promise<void>;
     let disposed = false;
-    const host = await fixture(t, async (scope) => {
+    const host = await fixture(testContext, async (scope) => {
         scope.registerDisposer(() => {
             disposed = true;
         });
@@ -123,13 +123,13 @@ test("timed-out module bootstrap revokes authority before its detached work fini
         entered.resolve();
         await late;
     });
-    t.mock.timers.enable({ apis: ["setTimeout"] });
+    testContext.mock.timers.enable({ apis: ["setTimeout"] });
     const outcome = assert.rejects(
         host.extension.refresh({ throwOnFailure: true }),
         /timed out/,
     );
     await entered.promise;
-    t.mock.timers.tick(51);
+    testContext.mock.timers.tick(51);
     await outcome;
     assert.equal(disposed, true);
     release.resolve();

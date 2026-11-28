@@ -194,7 +194,7 @@ function highlightCode(code, language) {
         tokenBucket.push(renderedToken);
         return token;
     };
-    const wrap = (regex, className) => {
+    const wrapMarkup = (regex, className) => {
         highlighted = highlighted.replace(regex, (match) =>
             tokenize(
                 `<span class="markdown-token ${className}">${match}</span>`,
@@ -203,24 +203,24 @@ function highlightCode(code, language) {
     };
 
     if (language === "javascript" || language === "typescript") {
-        wrap(/\/\*[\s\S]*?\*\//g, "markdown-token--comment");
-        wrap(/\/\/[^\n]*/g, "markdown-token--comment");
+        wrapMarkup(/\/\*[\s\S]*?\*\//g, "markdown-token--comment");
+        wrapMarkup(/\/\/[^\n]*/g, "markdown-token--comment");
     } else if (language === "python" || language === "bash") {
-        wrap(/#[^\n]*/g, "markdown-token--comment");
+        wrapMarkup(/#[^\n]*/g, "markdown-token--comment");
     } else if (language === "sql") {
-        wrap(/--[^\n]*/g, "markdown-token--comment");
+        wrapMarkup(/--[^\n]*/g, "markdown-token--comment");
     } else if (language === "css") {
-        wrap(/\/\*[\s\S]*?\*\//g, "markdown-token--comment");
+        wrapMarkup(/\/\*[\s\S]*?\*\//g, "markdown-token--comment");
     }
 
-    wrap(
+    wrapMarkup(
         /("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`)/g,
         "markdown-token--string",
     );
-    wrap(/\b\d+(?:\.\d+)?\b/g, "markdown-token--number");
-    const keywordRegex = CODE_HIGHLIGHT_KEYWORDS[language];
-    if (keywordRegex) {
-        wrap(keywordRegex, "markdown-token--keyword");
+    wrapMarkup(/\b\d+(?:\.\d+)?\b/g, "markdown-token--number");
+    const keywordRegularExpression = CODE_HIGHLIGHT_KEYWORDS[language];
+    if (keywordRegularExpression) {
+        wrapMarkup(keywordRegularExpression, "markdown-token--keyword");
     }
 
     return highlighted.replace(/@@TOK_(\d+)@@/g, (match, index) => {

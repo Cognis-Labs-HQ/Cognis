@@ -6,7 +6,7 @@ Antarmuka publik dan aturan operasional PostgreSQL.
 
 ### Arsitektur
 
-`PostgresDbGateway` di `src/adapters/db/postgres/index.ts` memiliki `pg.Pool`. Kueri biasa dijalankan langsung melalui pool. Transaksi mencadangkan satu klien untuk `BEGIN`, semua pernyataan callback, serta `COMMIT` atau `ROLLBACK`, lalu melepaskannya. Adapter mendaftarkan pengosongan pool melalui kapabilitas ctx `system:lifecycle` agar penghentian server berhenti menerima pekerjaan sebelum menutup koneksi.
+`PostgresDatabaseGateway` di `src/adapters/db/postgres/index.ts` memiliki `pg.Pool`. Kueri biasa dijalankan langsung melalui pool. Transaksi mencadangkan satu klien untuk `BEGIN`, semua pernyataan callback, serta `COMMIT` atau `ROLLBACK`, lalu melepaskannya. Adapter mendaftarkan pengosongan pool melalui kapabilitas ctx `system:lifecycle` agar penghentian server berhenti menerima pekerjaan sebelum menutup koneksi.
 
 Pemulihan mandiri skema mempertahankan klausa kunci asing saat menambahkan kolom yang hilang dan melaporkan kegagalan perbaikan indeks atau kolom alih-alih mengabaikannya.
 

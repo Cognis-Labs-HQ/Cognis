@@ -15,7 +15,7 @@ test("gateway controls browser console output using current role and console thr
     let currentRole: "user" | "admin" | "owner" = "user";
     ctx.capabilities.contribute("auth:routeContext", {
         ...createDefaultRouteContext(),
-        requireAuth(_req: unknown, res: any, minimumRole: string) {
+        requireAuth(_request: unknown, res: any, minimumRole: string) {
             assert.equal(minimumRole, "user");
             if (authenticated) return { sub: "log-user", role: currentRole };
             res.writeHead(401);

@@ -1,13 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { rmSync } from "node:fs";
-import { DbProfileStore } from "../../store.js";
-import { DbLocalAccountStore } from "../../../../../adapters/auth/local/store.js";
+import { DatabaseProfileStore } from "../../store.js";
+import { DatabaseLocalAccountStore } from "../../../../../adapters/auth/local/store.js";
 import { createSocialRoutes } from "../social.js";
 import { issueAccessToken } from "../../../../../gateways/auth/access-tokens.js";
-import { makeTempDb } from "./helpers.js";
+import { makeTemporaryDatabase } from "./helpers.js";
 
-function makeReq(method: string, token: string | null) {
+function makeRequest(method: string, token: string | null) {
     return {
         method,
         headers: token ? { authorization: `Bearer ${token}` } : {},
@@ -16,9 +16,9 @@ function makeReq(method: string, token: string | null) {
 }
 
 async function setupUsers(executor: any, ...usernames: string[]) {
-    const accountStore = new DbLocalAccountStore(executor);
+    const accountStore = new DatabaseLocalAccountStore(executor);
     await accountStore.ensureSchema();
-    const profileStore = new DbProfileStore(executor);
+    const profileStore = new DatabaseProfileStore(executor);
     await profileStore.ensureSchema();
     for (const username of usernames) {
         await accountStore.register(username, "pw");
@@ -28,7 +28,7 @@ async function setupUsers(executor: any, ...usernames: string[]) {
 }
 
 test("social routes - follow and unfollow", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUsers(executor, "alice", "bob");
         await profileStore.updateProfile("alice", { visibility: "community" });
@@ -47,13 +47,13 @@ test("social routes - follow and unfollow", async () => {
         let body = "";
 
         await route(
-            makeReq("POST", aliceToken),
+            makeRequest("POST", aliceToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL("http://localhost/api/v1/social/users/provider-bob/follow"),
@@ -81,13 +81,13 @@ test("social routes - follow and unfollow", async () => {
         ]);
 
         await route(
-            makeReq("DELETE", aliceToken),
+            makeRequest("DELETE", aliceToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL("http://localhost/api/v1/social/users/provider-bob/follow"),
@@ -100,7 +100,7 @@ test("social routes - follow and unfollow", async () => {
 });
 
 test("social routes - follow recreates a missing requester profile", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUsers(executor, "alice", "bob");
         await profileStore.updateProfile("alice", { visibility: "hidden" });
@@ -120,7 +120,7 @@ test("social routes - follow recreates a missing requester profile", async () =>
         let status = 0;
 
         await route(
-            makeReq("POST", aliceToken),
+            makeRequest("POST", aliceToken),
             {
                 writeHead(code: number) {
                     status = code;
@@ -142,7 +142,7 @@ test("social routes - follow recreates a missing requester profile", async () =>
 });
 
 test("social routes - can unfollow inactive profile", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUsers(executor, "alice", "bob");
         await profileStore.updateProfile("alice", { visibility: "community" });
@@ -156,10 +156,10 @@ test("social routes - can unfollow inactive profile", async () => {
         let status = 0;
 
         await route(
-            makeReq("DELETE", aliceToken),
+            makeRequest("DELETE", aliceToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
                 end() {},
             } as any,
@@ -174,7 +174,7 @@ test("social routes - can unfollow inactive profile", async () => {
 });
 
 test("social routes - cannot follow hidden user", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUsers(executor, "alice", "hidden");
         await profileStore.updateProfile("hidden", { visibility: "hidden" });
@@ -183,10 +183,10 @@ test("social routes - cannot follow hidden user", async () => {
         let status = 0;
 
         await route(
-            makeReq("POST", aliceToken),
+            makeRequest("POST", aliceToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
                 end() {},
             } as any,
@@ -199,7 +199,7 @@ test("social routes - cannot follow hidden user", async () => {
 });
 
 test("social routes - hidden requester cannot follow visible user", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUsers(executor, "alice", "bob");
         await profileStore.updateProfile("alice", { visibility: "hidden" });
@@ -210,13 +210,13 @@ test("social routes - hidden requester cannot follow visible user", async () => 
         let body = "";
 
         await route(
-            makeReq("POST", aliceToken),
+            makeRequest("POST", aliceToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL("http://localhost/api/v1/social/users/bob/follow"),
@@ -231,7 +231,7 @@ test("social routes - hidden requester cannot follow visible user", async () => 
 });
 
 test("social routes - cannot follow yourself", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUsers(executor, "alice");
         const route = createSocialRoutes(profileStore);
@@ -239,10 +239,10 @@ test("social routes - cannot follow yourself", async () => {
         let status = 0;
 
         await route(
-            makeReq("POST", aliceToken),
+            makeRequest("POST", aliceToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
                 end() {},
             } as any,
@@ -255,7 +255,7 @@ test("social routes - cannot follow yourself", async () => {
 });
 
 test("social routes - unauthenticated follow request returns 401", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUsers(executor, "alice", "bob");
         await profileStore.updateProfile("alice", { visibility: "hidden" });
@@ -264,10 +264,10 @@ test("social routes - unauthenticated follow request returns 401", async () => {
         let status = 0;
 
         await route(
-            makeReq("POST", null),
+            makeRequest("POST", null),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
                 end() {},
             } as any,
@@ -280,7 +280,7 @@ test("social routes - unauthenticated follow request returns 401", async () => {
 });
 
 test("social routes - block removes follow and returns 404 for blocked user", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUsers(executor, "alice", "bob");
         await profileStore.updateProfile("alice", { visibility: "community" });
@@ -293,10 +293,10 @@ test("social routes - block removes follow and returns 404 for blocked user", as
         let status = 0;
 
         await route(
-            makeReq("POST", aliceToken),
+            makeRequest("POST", aliceToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
                 end() {},
             } as any,
@@ -306,10 +306,10 @@ test("social routes - block removes follow and returns 404 for blocked user", as
         assert.ok(!(await profileStore.isFollowing("bob", "alice")));
 
         await route(
-            makeReq("POST", bobToken),
+            makeRequest("POST", bobToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
                 end() {},
             } as any,
@@ -322,7 +322,7 @@ test("social routes - block removes follow and returns 404 for blocked user", as
 });
 
 test("social routes - admin blocked by a user cannot find blocker in social search", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUsers(executor, "alice", "admin");
         await profileStore.updateProfile("alice", { visibility: "community" });
@@ -334,13 +334,13 @@ test("social routes - admin blocked by a user cannot find blocker in social sear
         let body = "";
 
         await route(
-            makeReq("GET", adminToken),
+            makeRequest("GET", adminToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL("http://localhost/api/v1/social/users/search?q=ali"),
@@ -354,7 +354,7 @@ test("social routes - admin blocked by a user cannot find blocker in social sear
 });
 
 test("social routes - cannot block yourself", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUsers(executor, "alice");
         const route = createSocialRoutes(profileStore);
@@ -362,10 +362,10 @@ test("social routes - cannot block yourself", async () => {
         let status = 0;
 
         await route(
-            makeReq("POST", aliceToken),
+            makeRequest("POST", aliceToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
                 end() {},
             } as any,
@@ -378,7 +378,7 @@ test("social routes - cannot block yourself", async () => {
 });
 
 test("social routes - unblock removes block", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUsers(executor, "alice", "bob");
         await profileStore.updateProfile("alice", { visibility: "community" });
@@ -392,13 +392,13 @@ test("social routes - unblock removes block", async () => {
         let body = "";
 
         await route(
-            makeReq("DELETE", aliceToken),
+            makeRequest("DELETE", aliceToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL("http://localhost/api/v1/social/users/bob/block"),
@@ -407,10 +407,10 @@ test("social routes - unblock removes block", async () => {
         assert.match(body, /false/);
 
         await route(
-            makeReq("POST", bobToken),
+            makeRequest("POST", bobToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
                 end() {},
             } as any,
@@ -423,7 +423,7 @@ test("social routes - unblock removes block", async () => {
 });
 
 test("social routes - get followers and following", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUsers(
             executor,
@@ -443,13 +443,13 @@ test("social routes - get followers and following", async () => {
         let body = "";
 
         await route(
-            makeReq("GET", aliceToken),
+            makeRequest("GET", aliceToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL("http://localhost/api/v1/social/users/alice/follow"),
@@ -459,13 +459,13 @@ test("social routes - get followers and following", async () => {
         assert.equal(parsed.data.length, 2);
 
         await route(
-            makeReq("GET", aliceToken),
+            makeRequest("GET", aliceToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL("http://localhost/api/v1/social/users/bob/following"),
@@ -480,7 +480,7 @@ test("social routes - get followers and following", async () => {
 });
 
 test("social routes - followers list is empty for friends-visibility account when requester is not a follower", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUsers(
             executor,
@@ -498,13 +498,13 @@ test("social routes - followers list is empty for friends-visibility account whe
         let body = "";
 
         await route(
-            makeReq("GET", carolToken),
+            makeRequest("GET", carolToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL("http://localhost/api/v1/social/users/alice/follow"),
@@ -518,7 +518,7 @@ test("social routes - followers list is empty for friends-visibility account whe
 });
 
 test("social routes - admin search includes hidden users", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUsers(executor, "admin", "hidden-user");
         await profileStore.updateProfile("hidden-user", {
@@ -530,13 +530,13 @@ test("social routes - admin search includes hidden users", async () => {
         let body = "";
 
         await route(
-            makeReq("GET", adminToken),
+            makeRequest("GET", adminToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL("http://localhost/api/v1/social/users/search?q=hidden"),
@@ -552,7 +552,7 @@ test("social routes - admin search includes hidden users", async () => {
 });
 
 test("social routes - regular search excludes hidden users", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUsers(executor, "alice", "hidden-user");
         await profileStore.updateProfile("alice", { visibility: "community" });
@@ -565,13 +565,13 @@ test("social routes - regular search excludes hidden users", async () => {
         let body = "";
 
         await route(
-            makeReq("GET", aliceToken),
+            makeRequest("GET", aliceToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL("http://localhost/api/v1/social/users/search?q=hidden"),
@@ -586,7 +586,7 @@ test("social routes - regular search excludes hidden users", async () => {
 });
 
 test("social routes - admin relationship can message hidden users", async () => {
-    const { dir, executor } = makeTempDb();
+    const { dir: dir, executor } = makeTemporaryDatabase();
     try {
         const profileStore = await setupUsers(executor, "admin", "hidden-user");
         await profileStore.updateProfile("admin", { visibility: "hidden" });
@@ -599,13 +599,13 @@ test("social routes - admin relationship can message hidden users", async () => 
         let body = "";
 
         await route(
-            makeReq("GET", adminToken),
+            makeRequest("GET", adminToken),
             {
-                writeHead(c: number) {
-                    status = c;
+                writeHead(statusCode: number) {
+                    status = statusCode;
                 },
-                end(p: string) {
-                    body = p;
+                end(responseBody: string) {
+                    body = responseBody;
                 },
             } as any,
             new URL(

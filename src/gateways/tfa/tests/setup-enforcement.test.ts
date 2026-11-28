@@ -72,7 +72,7 @@ async function dispatchRoute(
             break;
         }
     }
-    return { handled, res };
+    return { handled, res: res };
 }
 
 test("login issues setup-pending token when global TFA setup is required", async () => {

@@ -1,9 +1,9 @@
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import { rowToTyping } from "./row-mappers.js";
 import type { TypingRow } from "./types.js";
 
 export async function setTyping(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     roomId: string,
     accountId: string,
     typing: boolean,
@@ -38,7 +38,7 @@ export async function setTyping(
 }
 
 export async function listActiveTypers(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     roomId: string,
 ): Promise<TypingRow[]> {
     const nowIso = new Date().toISOString();

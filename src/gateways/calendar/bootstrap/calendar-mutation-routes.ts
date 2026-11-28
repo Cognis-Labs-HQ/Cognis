@@ -23,8 +23,8 @@ import type { CalendarShareRegistry } from "./share-registry.js";
 import { rejectInactiveSharedCalendar } from "./shared-calendar-guards.js";
 
 export async function handleCalendarMutationRoutes({
-    req,
-    res,
+    req: req,
+    res: res,
     url,
     ctx,
     gateway,
@@ -69,7 +69,7 @@ export async function handleCalendarMutationRoutes({
                     sharedCalendar?.recipientAccountId === claims.sub
                         ? sharedCalendar
                         : null,
-                res,
+                res: res,
             })
         ) {
             return true;
@@ -220,7 +220,7 @@ export async function handleCalendarMutationRoutes({
                     sharedCalendar?.recipientAccountId === claims.sub
                         ? sharedCalendar
                         : null,
-                res,
+                res: res,
             })
         ) {
             return true;

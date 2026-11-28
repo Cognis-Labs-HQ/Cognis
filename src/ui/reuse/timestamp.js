@@ -79,11 +79,11 @@ function detectBrowserTimezone() {
     }
 }
 
-export function applyTimezoneToLocalStorage(savedTz, detectedTz) {
-    if (savedTz && savedTz !== "auto") {
-        localStorage.setItem(TIMEZONE_STORAGE_KEY, savedTz);
-    } else if (detectedTz) {
-        localStorage.setItem(TIMEZONE_STORAGE_KEY, detectedTz);
+export function applyTimezoneToLocalStorage(savedTimezone, detectedTimezone) {
+    if (savedTimezone && savedTimezone !== "auto") {
+        localStorage.setItem(TIMEZONE_STORAGE_KEY, savedTimezone);
+    } else if (detectedTimezone) {
+        localStorage.setItem(TIMEZONE_STORAGE_KEY, detectedTimezone);
     } else {
         localStorage.removeItem(TIMEZONE_STORAGE_KEY);
     }
@@ -187,40 +187,40 @@ export function formatRelativeTime(epochMs, fallback = "") {
         cachedRelativeTimeFormatter ??= new Intl.RelativeTimeFormat(undefined, {
             numeric: "auto",
         });
-        const diffMs = epochMs - Date.now();
-        const absDiff = Math.abs(diffMs);
-        if (absDiff < 60_000) {
+        const differenceMs = epochMs - Date.now();
+        const absDifference = Math.abs(differenceMs);
+        if (absDifference < 60_000) {
             return cachedRelativeTimeFormatter.format(
-                Math.round(diffMs / 1000),
+                Math.round(differenceMs / 1000),
                 "second",
             );
         }
-        if (absDiff < 3_600_000) {
+        if (absDifference < 3_600_000) {
             return cachedRelativeTimeFormatter.format(
-                Math.round(diffMs / 60_000),
+                Math.round(differenceMs / 60_000),
                 "minute",
             );
         }
-        if (absDiff < 86_400_000) {
+        if (absDifference < 86_400_000) {
             return cachedRelativeTimeFormatter.format(
-                Math.round(diffMs / 3_600_000),
+                Math.round(differenceMs / 3_600_000),
                 "hour",
             );
         }
-        if (absDiff < 30 * 86_400_000) {
+        if (absDifference < 30 * 86_400_000) {
             return cachedRelativeTimeFormatter.format(
-                Math.round(diffMs / 86_400_000),
+                Math.round(differenceMs / 86_400_000),
                 "day",
             );
         }
-        if (absDiff < 365 * 86_400_000) {
+        if (absDifference < 365 * 86_400_000) {
             return cachedRelativeTimeFormatter.format(
-                Math.round(diffMs / (30 * 86_400_000)),
+                Math.round(differenceMs / (30 * 86_400_000)),
                 "month",
             );
         }
         return cachedRelativeTimeFormatter.format(
-            Math.round(diffMs / (365 * 86_400_000)),
+            Math.round(differenceMs / (365 * 86_400_000)),
             "year",
         );
     } catch {
@@ -233,21 +233,21 @@ export async function syncTimezoneOnLogin(username) {
         return;
     const assertAccount = captureAccountGuard();
     try {
-        const prefs = await loadUiPreferences();
+        const preferences = await loadUiPreferences();
         assertAccount();
-        const savedTz = prefs?.timezone;
+        const savedTimezone = preferences?.timezone;
 
-        applyTimeFormatToLocalStorage(prefs?.timeFormat);
+        applyTimeFormatToLocalStorage(preferences?.timeFormat);
 
-        if (savedTz && savedTz !== "auto") {
-            applyTimezoneToLocalStorage(savedTz, null);
+        if (savedTimezone && savedTimezone !== "auto") {
+            applyTimezoneToLocalStorage(savedTimezone, null);
             return;
         }
 
         const detected = detectBrowserTimezone();
         applyTimezoneToLocalStorage(null, detected);
 
-        if (prefs?.detectedTimezone !== detected) {
+        if (preferences?.detectedTimezone !== detected) {
             await saveUiPreferences(
                 { detectedTimezone: detected },
                 { bufferOffline: false },

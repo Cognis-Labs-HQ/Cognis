@@ -1,3 +1,5 @@
+import type { ApiDependencies } from "./server-dependencies.js";
+export type { ApiDependencies } from "./server-dependencies.js";
 import { recoverComponentRequest } from "./components/http-failure.js";
 import {
     discoverCoreComponentDependencies,
@@ -24,96 +26,12 @@ import {
     ModuleEnableValidationError,
 } from "./routes/modules/index.js";
 import { createSystemRoutes } from "./routes/system/index.js";
-import { createDocsRoutes } from "./routes/docs/index.js";
+import { createDocumentsRoutes } from "./routes/docs/index.js";
 import { createUiRoutes } from "./routes/ui/index.js";
 import { createModuleExtensionRoutes } from "./reuse/module-extension-routes.js";
-import type { LocalAccountStore } from "@cognis/core";
-import type { UserPreferenceStore } from "./reuse/preference-store.js";
-import type { RouteContext } from "./reuse/route-context.js";
 import { createUserRoutes } from "./routes/users/index.js";
-import type { RouteRegistry } from "./reuse/route-registry.js";
 import { createGatewayRoutes } from "./routes/gateways/index.js";
-import type { UIRegistry } from "./reuse/ui-registry.js";
 import { installComponentManagement } from "./components/bootstrap.js";
-
-export interface ApiDependencies {
-    moduleRuntimeGateway: ModuleRuntimeGateway;
-    accountStore?: LocalAccountStore;
-    preferenceStore?: UserPreferenceStore;
-    routeRegistry?: RouteRegistry;
-    gatewayRegistry?: GatewayRegistry;
-    uiRegistry?: UIRegistry;
-    healthService?: HealthService;
-    log?: BootstrapLog;
-    validateModuleEnable?: (moduleId: string) => Promise<void> | void;
-    runModuleTests?: (moduleId: string) => Promise<void>;
-    moduleIntegrityChecker?: () => Promise<
-        Array<{
-            moduleId: string;
-            file: string;
-            expected: string | null;
-            actual: string | null;
-            status: "ok" | "mismatch" | "missing" | "missing_shasum";
-        }>
-    >;
-    loadModuleStates?: () => Promise<
-        Array<{ moduleId: string; enabled: boolean }>
-    >;
-    persistModuleState?: (moduleId: string, enabled: boolean) => Promise<void>;
-    loadGatewayStates?: () => Promise<
-        Array<{ gatewayId: string; enabled: boolean }>
-    >;
-    persistGatewayState?: (
-        gatewayId: string,
-        enabled: boolean,
-    ) => Promise<void>;
-    createProfile?: (
-        accountId: string,
-        handle: string,
-        role?: string,
-    ) => Promise<void>;
-    setProfileRole?: (accountId: string, role: string) => Promise<void>;
-    searchProfiles?: (
-        query: string,
-        limit: number,
-        options?: { includeHidden?: boolean; requesterAccountId?: string },
-    ) => Promise<
-        Array<{
-            accountId?: string;
-            handle?: string;
-            displayName?: string;
-            avatarKey?: string | null;
-        }>
-    >;
-    getProfileVisibility?: (
-        accountId: string,
-    ) => Promise<string | null | undefined>;
-    setProfileVisibility?: (
-        accountId: string,
-        visibility: "friends",
-    ) => Promise<void>;
-    getProfileLifecycleState?: (
-        accountId: string,
-    ) => Promise<string | null | undefined>;
-    setProfileLifecycleState?: (
-        accountId: string,
-        lifecycleState: "active" | "deactivated" | "archived",
-    ) => Promise<void>;
-    onModuleStateChanged?: (
-        moduleId: string,
-        enabled: boolean,
-    ) => Promise<void> | void;
-    routeContext?: RouteContext;
-    observability?: {
-        record(
-            name: string,
-            value: number,
-            labels?: Record<string, string>,
-        ): void;
-    };
-    discoverModulesOnStartup?: boolean;
-    moduleMarketplaceService?: ModuleMarketplaceService;
-}
 
 export async function discoverModuleSourcesOnStartup(
     marketplace: Pick<ModuleMarketplaceService, "discover" | "listSources">,
@@ -306,8 +224,8 @@ function isUiStaticAssetRequest(pathname: string): boolean {
     );
 }
 
-export function buildServer(deps: ApiDependencies) {
-    const log = deps.log ?? (() => undefined);
+export function buildServer(dependencies: ApiDependencies) {
+    const log = dependencies.log ?? (() => undefined);
     const coreComponentDependencies = discoverCoreComponentDependencies(
         [
             fileURLToPath(new URL("../gateways", import.meta.url)),
@@ -319,7 +237,7 @@ export function buildServer(deps: ApiDependencies) {
             ),
         },
     );
-    const routeContext = deps.routeContext;
+    const routeContext = dependencies.routeContext;
     if (!routeContext) {
         throw new Error(
             "route_context_missing: auth route context is required in ApiDependencies",
@@ -328,14 +246,14 @@ export function buildServer(deps: ApiDependencies) {
     const externalModulesRoot =
         process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
         path.resolve(process.cwd(), "external-modules");
-    const moduleService = new ModuleService(deps.moduleRuntimeGateway, {
+    const moduleService = new ModuleService(dependencies.moduleRuntimeGateway, {
         externalModulesPath: externalModulesRoot,
         enabledPointersPath:
             process.env.COGNIS_ENABLED_MODULES_ROOT ??
             path.resolve(process.cwd(), "config", "enabled-modules"),
     });
     const moduleMarketplaceService =
-        deps.moduleMarketplaceService ??
+        dependencies.moduleMarketplaceService ??
         new ModuleMarketplaceService(
             process.env.COGNIS_MODULE_SOURCES_PATH ??
                 path.resolve(process.cwd(), "config", "module-sources.json"),
@@ -343,29 +261,30 @@ export function buildServer(deps: ApiDependencies) {
             (level, message, meta) => log(level, message, meta),
             routeContext.getCapability<Ctx>("system:ctx"),
         );
-    if (deps.discoverModulesOnStartup) {
+    if (dependencies.discoverModulesOnStartup) {
         void discoverModuleSourcesOnStartup(moduleMarketplaceService, log);
     }
     const moduleTestService = new ModuleTestService([externalModulesRoot]);
-    const healthService = deps.healthService ?? new HealthService();
+    const healthService = dependencies.healthService ?? new HealthService();
     const enabledModules = new Set<string>();
     const temporarilyDisabledDependents = new Map<string, string[]>();
     const moduleExtensionRoutes = createModuleExtensionRoutes(
-        deps.moduleRuntimeGateway,
+        dependencies.moduleRuntimeGateway,
         (moduleId) => enabledModules.has(moduleId),
         log,
         {
-            uiRegistry: deps.uiRegistry,
+            uiRegistry: dependencies.uiRegistry,
             routeContext,
             authorizeModuleNamespace: (request) =>
-                deps.gatewayRegistry?.allowsModuleNamespace(
+                dependencies.gatewayRegistry?.allowsModuleNamespace(
                     request,
                     request.kind === "apiRoute"
-                        ? deps.routeRegistry?.findOwner(request.id)?.gatewayId
+                        ? dependencies.routeRegistry?.findOwner(request.id)
+                              ?.gatewayId
                         : undefined,
                 ) === true,
             getProtectedRoutePrefixes: () =>
-                deps.routeRegistry?.getClaimedPrefixes() ?? [],
+                dependencies.routeRegistry?.getClaimedPrefixes() ?? [],
             onBootstrapFailed: async (moduleId) => {
                 const manifest = (await moduleService.list()).find(
                     (entry) => entry.id === moduleId,
@@ -380,20 +299,21 @@ export function buildServer(deps: ApiDependencies) {
                     return;
                 }
                 enabledModules.delete(moduleId);
-                await deps.onModuleStateChanged?.(moduleId, false);
-                await deps.persistModuleState?.(moduleId, false);
+                await dependencies.onModuleStateChanged?.(moduleId, false);
+                await dependencies.persistModuleState?.(moduleId, false);
             },
         },
     );
 
     const validateModuleForEnable = async (moduleId: string): Promise<void> => {
-        await deps.moduleRuntimeGateway.refresh?.();
-        const manifests = await deps.moduleRuntimeGateway.listManifests();
+        await dependencies.moduleRuntimeGateway.refresh?.();
+        const manifests =
+            await dependencies.moduleRuntimeGateway.listManifests();
         const manifest = manifests.find((entry) => entry.id === moduleId);
         assertModuleEnableDependencies(
             moduleId,
             manifest?.requires ?? [],
-            deps.gatewayRegistry,
+            dependencies.gatewayRegistry,
             await coreComponentDependencies,
         );
         assertExternalModuleDependencies(
@@ -409,18 +329,19 @@ export function buildServer(deps: ApiDependencies) {
                 isModuleCapabilityAvailable(
                     capabilityId,
                     routeContext,
-                    deps.uiRegistry,
+                    dependencies.uiRegistry,
                 ),
         );
         await (
-            deps.runModuleTests ?? moduleTestService.run.bind(moduleTestService)
+            dependencies.runModuleTests ??
+            moduleTestService.run.bind(moduleTestService)
         )(moduleId);
-        await deps.validateModuleEnable?.(moduleId);
+        await dependencies.validateModuleEnable?.(moduleId);
     };
 
     const assertModuleIntegrity = async (moduleId: string): Promise<void> => {
-        if (!deps.moduleIntegrityChecker) return;
-        const failures = (await deps.moduleIntegrityChecker()).filter(
+        if (!dependencies.moduleIntegrityChecker) return;
+        const failures = (await dependencies.moduleIntegrityChecker()).filter(
             (entry) => entry.moduleId === moduleId && entry.status !== "ok",
         );
         if (failures.length === 0) return;
@@ -437,14 +358,14 @@ export function buildServer(deps: ApiDependencies) {
                 assertModuleInstallDependencies(
                     manifest.id,
                     manifest.requires ?? [],
-                    deps.gatewayRegistry,
+                    dependencies.gatewayRegistry,
                     await coreComponentDependencies,
                 );
-                await deps.moduleRuntimeGateway.refresh?.();
+                await dependencies.moduleRuntimeGateway.refresh?.();
                 assertExternalModuleDependencies(
                     manifest.id,
                     manifest.hardDependencies ?? [],
-                    await deps.moduleRuntimeGateway.listManifests(),
+                    await dependencies.moduleRuntimeGateway.listManifests(),
                     (dependencyId) => enabledModules.has(dependencyId),
                 );
             },
@@ -452,8 +373,8 @@ export function buildServer(deps: ApiDependencies) {
             onEnabled: async (moduleId) => {
                 enabledModules.add(moduleId);
                 try {
-                    await deps.onModuleStateChanged?.(moduleId, true);
-                    await deps.persistModuleState?.(moduleId, true);
+                    await dependencies.onModuleStateChanged?.(moduleId, true);
+                    await dependencies.persistModuleState?.(moduleId, true);
                     const dependentModuleIds =
                         temporarilyDisabledDependents.get(moduleId) ?? [];
                     for (const dependentModuleId of [
@@ -465,11 +386,11 @@ export function buildServer(deps: ApiDependencies) {
                             acknowledgeExternalDisclaimer: true,
                         });
                         enabledModules.add(dependentModuleId);
-                        await deps.onModuleStateChanged?.(
+                        await dependencies.onModuleStateChanged?.(
                             dependentModuleId,
                             true,
                         );
-                        await deps.persistModuleState?.(
+                        await dependencies.persistModuleState?.(
                             dependentModuleId,
                             true,
                         );
@@ -480,16 +401,16 @@ export function buildServer(deps: ApiDependencies) {
                     });
                 } catch (error) {
                     enabledModules.delete(moduleId);
-                    await deps.onModuleStateChanged?.(moduleId, false);
-                    await deps.persistModuleState?.(moduleId, false);
+                    await dependencies.onModuleStateChanged?.(moduleId, false);
+                    await dependencies.persistModuleState?.(moduleId, false);
                     await moduleExtensionRoutes.refresh();
                     throw error;
                 }
             },
             onDisabled: async (moduleId, { preserveEnabledState }) => {
-                await deps.moduleRuntimeGateway.refresh?.();
+                await dependencies.moduleRuntimeGateway.refresh?.();
                 const manifests =
-                    await deps.moduleRuntimeGateway.listManifests();
+                    await dependencies.moduleRuntimeGateway.listManifests();
                 const dependentModuleIds = resolveHardDependencyDisableOrder(
                     moduleId,
                     manifests,
@@ -504,12 +425,15 @@ export function buildServer(deps: ApiDependencies) {
                 for (const dependentModuleId of dependentModuleIds) {
                     await moduleService.disable(dependentModuleId);
                     enabledModules.delete(dependentModuleId);
-                    deps.uiRegistry?.unregisterModuleContributions(
+                    dependencies.uiRegistry?.unregisterModuleContributions(
                         dependentModuleId,
                     );
-                    await deps.onModuleStateChanged?.(dependentModuleId, false);
+                    await dependencies.onModuleStateChanged?.(
+                        dependentModuleId,
+                        false,
+                    );
                     if (!preserveEnabledState) {
-                        await deps.persistModuleState?.(
+                        await dependencies.persistModuleState?.(
                             dependentModuleId,
                             false,
                         );
@@ -524,28 +448,30 @@ export function buildServer(deps: ApiDependencies) {
                     );
                 }
                 enabledModules.delete(moduleId);
-                deps.uiRegistry?.unregisterModuleContributions(moduleId);
+                dependencies.uiRegistry?.unregisterModuleContributions(
+                    moduleId,
+                );
                 await moduleExtensionRoutes.refresh();
-                await deps.onModuleStateChanged?.(moduleId, false);
+                await dependencies.onModuleStateChanged?.(moduleId, false);
                 if (!preserveEnabledState) {
-                    await deps.persistModuleState?.(moduleId, false);
+                    await dependencies.persistModuleState?.(moduleId, false);
                 }
             },
             onImported: async () => {
-                await deps.moduleRuntimeGateway.refresh?.();
+                await dependencies.moduleRuntimeGateway.refresh?.();
                 await moduleExtensionRoutes.refresh();
             },
             beforeUninstall: (moduleId, options) =>
                 moduleExtensionRoutes.uninstall(moduleId, options),
             onUninstalled: async (moduleId) => {
                 enabledModules.delete(moduleId);
-                await deps.persistModuleState?.(moduleId, false);
-                await deps.moduleRuntimeGateway.refresh?.();
+                await dependencies.persistModuleState?.(moduleId, false);
+                await dependencies.moduleRuntimeGateway.refresh?.();
                 await moduleExtensionRoutes.refresh();
             },
             getStatus: (moduleId) =>
                 enabledModules.has(moduleId) ? "enabled" : "disabled",
-            getIntegrityReport: deps.moduleIntegrityChecker,
+            getIntegrityReport: dependencies.moduleIntegrityChecker,
             log,
         },
         routeContext,
@@ -553,48 +479,51 @@ export function buildServer(deps: ApiDependencies) {
     );
     const systemRoutes = createSystemRoutes(
         healthService,
-        deps.preferenceStore,
+        dependencies.preferenceStore,
         log,
         routeContext,
     );
-    const docsRoutes = createDocsRoutes();
+    const documentsRoutes = createDocumentsRoutes();
     const uiRoutes = createUiRoutes(
-        deps.moduleRuntimeGateway,
-        deps.uiRegistry,
-        deps.accountStore,
-        deps.gatewayRegistry,
+        dependencies.moduleRuntimeGateway,
+        dependencies.uiRegistry,
+        dependencies.accountStore,
+        dependencies.gatewayRegistry,
         (moduleId) => enabledModules.has(moduleId),
         log,
         routeContext,
     );
-    const userRoutes = deps.accountStore
+    const userRoutes = dependencies.accountStore
         ? createUserRoutes(
-              deps.accountStore,
-              deps.preferenceStore,
-              deps.setProfileRole,
+              dependencies.accountStore,
+              dependencies.preferenceStore,
+              dependencies.setProfileRole,
               log,
-              deps.getProfileVisibility,
-              deps.setProfileVisibility,
+              dependencies.getProfileVisibility,
+              dependencies.setProfileVisibility,
               routeContext,
-              deps.getProfileLifecycleState,
-              deps.setProfileLifecycleState,
+              dependencies.getProfileLifecycleState,
+              dependencies.setProfileLifecycleState,
           )
         : null;
-    const gatewayRoutes = deps.gatewayRegistry
+    const gatewayRoutes = dependencies.gatewayRegistry
         ? createGatewayRoutes(
-              deps.gatewayRegistry,
-              deps.uiRegistry,
-              deps.persistGatewayState,
+              dependencies.gatewayRegistry,
+              dependencies.uiRegistry,
+              dependencies.persistGatewayState,
               log,
               routeContext,
           )
         : null;
-    const searchRoutes = createSearchRoutes(deps.searchProfiles, routeContext);
+    const searchRoutes = createSearchRoutes(
+        dependencies.searchProfiles,
+        routeContext,
+    );
 
     const runtimeStateReady = Promise.all([
-        deps.moduleRuntimeGateway.listManifests(),
-        deps.loadModuleStates?.() ?? Promise.resolve([]),
-        deps.loadGatewayStates?.() ?? Promise.resolve([]),
+        dependencies.moduleRuntimeGateway.listManifests(),
+        dependencies.loadModuleStates?.() ?? Promise.resolve([]),
+        dependencies.loadGatewayStates?.() ?? Promise.resolve([]),
     ])
         .then(async ([manifests, savedStates, savedGatewayStates]) => {
             const saved = new Map(
@@ -608,7 +537,11 @@ export function buildServer(deps: ApiDependencies) {
                     persisted,
                 );
                 if (isEnabled) pendingEnabledManifests.push(manifest);
-                else await deps.onModuleStateChanged?.(manifest.id, false);
+                else
+                    await dependencies.onModuleStateChanged?.(
+                        manifest.id,
+                        false,
+                    );
             }
             let restoredInPass = true;
             while (pendingEnabledManifests.length && restoredInPass) {
@@ -630,13 +563,16 @@ export function buildServer(deps: ApiDependencies) {
                     });
                     if (!dependenciesReady) continue;
                     enabledModules.add(manifest.id);
-                    await deps.onModuleStateChanged?.(manifest.id, true);
+                    await dependencies.onModuleStateChanged?.(
+                        manifest.id,
+                        true,
+                    );
                     pendingEnabledManifests.splice(i, 1);
                     restoredInPass = true;
                 }
             }
             for (const manifest of pendingEnabledManifests) {
-                await deps.onModuleStateChanged?.(manifest.id, false);
+                await dependencies.onModuleStateChanged?.(manifest.id, false);
                 log("error", "Persisted module state could not be restored.", {
                     component: "api-server",
                     operation: "restore-module-state",
@@ -658,15 +594,15 @@ export function buildServer(deps: ApiDependencies) {
                     checkedAt: new Date().toISOString(),
                 }));
             }
-            if (deps.gatewayRegistry) {
-                for (const entry of deps.gatewayRegistry.list()) {
+            if (dependencies.gatewayRegistry) {
+                for (const entry of dependencies.gatewayRegistry.list()) {
                     if (entry.required) continue;
                     const persisted = savedGateways.get(entry.id);
                     if (persisted === false) {
-                        await deps.gatewayRegistry.disable(entry.id);
+                        await dependencies.gatewayRegistry.disable(entry.id);
                     }
                 }
-                for (const entry of deps.gatewayRegistry.list()) {
+                for (const entry of dependencies.gatewayRegistry.list()) {
                     healthService.contribute(`gateway:${entry.id}`, () => ({
                         componentId: entry.id,
                         componentType: "gateway",
@@ -694,14 +630,14 @@ export function buildServer(deps: ApiDependencies) {
               ctx: managementCtx,
               routeContext,
               modules: moduleService,
-              gateways: deps.gatewayRegistry,
-              uiRegistry: deps.uiRegistry,
+              gateways: dependencies.gatewayRegistry,
+              uiRegistry: dependencies.uiRegistry,
               components: () => coreComponentDependencies,
               log,
               handlers: () => [
                   moduleRoutes,
                   ...(gatewayRoutes ? [gatewayRoutes] : []),
-                  ...(deps.routeRegistry?.getHandlers() ?? []),
+                  ...(dependencies.routeRegistry?.getHandlers() ?? []),
               ],
           })
         : undefined;
@@ -730,12 +666,12 @@ export function buildServer(deps: ApiDependencies) {
                 route,
                 status_class: `${Math.floor(res.statusCode / 100)}xx`,
             };
-            deps.observability?.record(
+            dependencies.observability?.record(
                 "http.server.duration_ms",
                 Date.now() - startedAt,
                 labels,
             );
-            deps.observability?.record(
+            dependencies.observability?.record(
                 "http.server.response_bytes",
                 responseBytes,
                 labels,
@@ -747,10 +683,10 @@ export function buildServer(deps: ApiDependencies) {
         });
 
         try {
-            const owner = deps.routeRegistry?.findOwner(url.pathname);
+            const owner = dependencies.routeRegistry?.findOwner(url.pathname);
             if (
                 owner &&
-                deps.gatewayRegistry?.get(owner.gatewayId)?.status ===
+                dependencies.gatewayRegistry?.get(owner.gatewayId)?.status ===
                     "disabled"
             ) {
                 res.writeHead(503, { "content-type": "application/json" });
@@ -847,11 +783,12 @@ export function buildServer(deps: ApiDependencies) {
             // module extensions, docs, and UI. Handlers tied to a disabled
             // gateway are skipped so that disabling a gateway also silences its
             // routes without needing explicit unregistration.
-            for (const entry of deps.routeRegistry?.getEntries() ?? []) {
+            for (const entry of dependencies.routeRegistry?.getEntries() ??
+                []) {
                 if (
                     entry.gatewayId &&
-                    deps.gatewayRegistry?.get(entry.gatewayId)?.status ===
-                        "disabled"
+                    dependencies.gatewayRegistry?.get(entry.gatewayId)
+                        ?.status === "disabled"
                 ) {
                     continue;
                 }
@@ -880,8 +817,8 @@ export function buildServer(deps: ApiDependencies) {
                 return;
             }
 
-            const handledByDocs = await docsRoutes(req, res, url);
-            if (handledByDocs) {
+            const handledByDocuments = await documentsRoutes(req, res, url);
+            if (handledByDocuments) {
                 log("debug", "Request handled by docs routes.", {
                     method: req.method ?? "GET",
                     path: url.pathname,

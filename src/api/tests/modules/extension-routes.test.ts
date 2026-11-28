@@ -465,7 +465,7 @@ test("external module bootstrap ingests navigation, SPA routes, and ctx capabili
             if (typeof ctx.getCapability("auth:requireAuth") !== "function") {
                 throw new Error("auth capability unavailable");
             }
-            ctx.registerStaticDir("", ctx.moduleRoot + "/ui");
+            ctx.registerStaticDirectory("", ctx.moduleRoot + "/ui");
             ctx.registerNavbarPlugin({ scriptUrl: "/static/modules/meetings/navbar.js", providesCapabilities: ["voip:startCall"] });
             ctx.registerSpaRoute({ id: "meetings", pattern: "^/meetings$", base: "/meetings", scriptUrl: "/static/modules/meetings/app.js" });
             ctx.registerAuthTypingMessage({ id: "meetings-ready", textKey: "module.meetings.ready" });
@@ -511,7 +511,8 @@ test("external module bootstrap ingests navigation, SPA routes, and ctx capabili
             ],
         } as any,
         () => true,
-        (level, message, meta) => logEntries.push({ level, message, meta }),
+        (level, message, meta) =>
+            logEntries.push({ level, message, meta: meta }),
         {
             routeContext: createDefaultRouteContext({
                 getCapability: (id) =>

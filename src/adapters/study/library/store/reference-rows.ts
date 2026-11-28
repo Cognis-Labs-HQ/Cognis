@@ -1,5 +1,5 @@
 import type { LibraryEntryInput } from "../types.js";
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import { executeReferences } from "./reference-storage.js";
 
 export function entryReferenceRows(
@@ -34,7 +34,7 @@ export function referenceTransformationValue(reference: {
 
 /** Write canonical placements identically for new and edited cards. */
 export async function insertEntryReferences(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     sourceId: string,
     input: Pick<LibraryEntryInput, "references" | "referenceGroups">,
 ): Promise<void> {

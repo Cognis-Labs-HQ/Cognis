@@ -15,7 +15,7 @@ function createProvider(): AuthProviderAdapter {
         configure() {},
         getConfigSchema: () => [],
         registerRoutes(router) {
-            router.get("/callback", (_req, res, url) => {
+            router.get("/callback", (_request, res, url) => {
                 if (url.searchParams.has("fail")) {
                     throw new Error("provider_callback_failed");
                 }

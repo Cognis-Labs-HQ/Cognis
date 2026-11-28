@@ -90,7 +90,7 @@ export async function mount(root, { signal } = {}) {
             id: "app-icon",
             label: i18n.t("ui.app.dashboard.element.app_icon.label"),
             pinned: true,
-            gridSize: { default: [2, 2], min: [2, 2], max: [4, 4] },
+            gridSize: { default: [3, 2], min: [3, 2], max: [4, 4] },
             render: () => `
       <div class="dashboard-app-icon">
         <img src="/static/assets/icons/cognis-icon-384.png" alt="${i18n.t("ui.shared.brand.name")}" class="dashboard-app-icon-img" />
@@ -101,7 +101,7 @@ export async function mount(root, { signal } = {}) {
         {
             id: "welcome",
             label: i18n.t("ui.app.dashboard.element.welcome.label"),
-            gridSize: { default: [4, 2], min: [2, 2] },
+            gridSize: { default: [4, 2], min: [3, 2] },
             render: () => `
       <h2 class="dashboard-welcome-heading">${i18n.t("ui.layout.greeting")} ${displayName}</h2>
       <p class="dashboard-welcome-account">${account}</p>
@@ -110,7 +110,7 @@ export async function mount(root, { signal } = {}) {
         {
             id: "account-info",
             label: i18n.t("ui.app.dashboard.element.account.label"),
-            gridSize: { default: [4, 3], min: [3, 2] },
+            gridSize: { default: [4, 2], min: [3, 2] },
             render: () => `
       <h3>${i18n.t("ui.app.dashboard.element.account.label")}</h3>
       <dl class="dashboard-info-list">
@@ -124,7 +124,7 @@ export async function mount(root, { signal } = {}) {
         {
             id: "last-login",
             label: i18n.t("ui.app.dashboard.element.last_login.label"),
-            gridSize: { default: [3, 2], min: [2, 2] },
+            gridSize: { default: [4, 2], min: [3, 2] },
             render: () => `
       <h3>${i18n.t("ui.app.dashboard.element.last_login.label")}</h3>
       <p class="dashboard-last-seen">

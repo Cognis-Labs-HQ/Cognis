@@ -73,7 +73,7 @@ export function registerCommands({ register, apiGet }) {
 
     register(
         "calendar:overview",
-        async ({ args, apiBaseUrl, getApiToken }) => {
+        async ({ args: args, apiBaseUrl, getApiToken }) => {
             const username = args[0];
             if (!username) {
                 throw new Error("Missing required argument: username");

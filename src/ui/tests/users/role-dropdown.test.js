@@ -91,7 +91,7 @@ test("users hamburger menu includes resend only when unverified emails exist", (
 
     assert.match(
         source,
-        /const hasUnverifiedEmails = emails\.some\(\(e\) => !e\.verified\)/,
+        /const hasUnverifiedEmails = emails\.some\(\s*\(emailEntry\) => !emailEntry\.verified,?\s*\)/,
     );
     assert.match(source, /\.\.\.\(hasUnverifiedEmails/);
 });

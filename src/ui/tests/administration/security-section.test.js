@@ -37,7 +37,7 @@ test("administration security section renders registered validation metadata", (
 
 test("administration dependency links scroll centered after expanding target gateway", () => {
     const source = readFileSync(
-        resolve(ROOT, "src/ui/app/administration/index.js"),
+        resolve(ROOT, "src/ui/app/administration/dependency-links.js"),
         "utf8",
     );
 

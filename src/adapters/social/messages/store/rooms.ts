@@ -1,10 +1,10 @@
 import { randomUUID } from "node:crypto";
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import { rowToMember, rowToRoom } from "./row-mappers.js";
 import type { ChatroomKind, MemberRole, MemberRow, RoomRow } from "./types.js";
 
 export async function createRoom(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     kind: ChatroomKind,
     title: string | null,
     createdBy: string,
@@ -31,17 +31,18 @@ export async function createRoom(
     return rowToRoom(result.rows![0]);
 }
 
-export async function createDm(
-    db: DbExecutor,
+async function createDirectMessage(
+    db: DatabaseExecutor,
     accountA: string,
     accountB: string,
 ): Promise<RoomRow> {
     if (accountA === accountB) throw new Error("dm_participants_must_differ");
     return createRoom(db, "dm", null, accountA);
 }
+export { createDirectMessage };
 
 export async function getRoom(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     id: string,
 ): Promise<RoomRow | null> {
     const result = await db.executeCommand({
@@ -53,7 +54,7 @@ export async function getRoom(
 }
 
 export async function updateRoomAvatar(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     roomId: string,
     avatarKey: string | null,
 ): Promise<RoomRow | null> {
@@ -70,7 +71,7 @@ export async function updateRoomAvatar(
 }
 
 export async function addMember(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     roomId: string,
     accountId: string,
     role: MemberRole,
@@ -87,7 +88,7 @@ export async function addMember(
 }
 
 export async function removeMember(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     roomId: string,
     accountId: string,
 ): Promise<void> {
@@ -102,7 +103,7 @@ export async function removeMember(
 }
 
 export async function removeMemberAndApplyLifecycle(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     roomId: string,
     accountId: string,
 ): Promise<"active" | "archived" | "deleted"> {
@@ -130,15 +131,15 @@ export async function removeMemberAndApplyLifecycle(
 }
 
 export async function deleteRoom(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     roomId: string,
 ): Promise<void> {
-    await db.transaction(async (transactionDb) => {
-        await deleteRoomRecords(transactionDb, roomId);
+    await db.transaction(async (transactionDatabase) => {
+        await deleteRoomRecords(transactionDatabase, roomId);
     });
 }
 
-async function deleteRoomRecords(db: DbExecutor, roomId: string) {
+async function deleteRoomRecords(db: DatabaseExecutor, roomId: string) {
     for (const table of [
         "chatroom_typing",
         "chat_message_reactions",
@@ -165,25 +166,25 @@ async function deleteRoomRecords(db: DbExecutor, roomId: string) {
 }
 
 export async function deleteRoomForActor(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     roomId: string,
     actorAccountId: string,
 ): Promise<"deleted" | "forbidden" | "not_found"> {
-    return db.transaction(async (transactionDb) => {
-        const room = await getRoom(transactionDb, roomId);
+    return db.transaction(async (transactionDatabase) => {
+        const room = await getRoom(transactionDatabase, roomId);
         if (!room) return "not_found";
-        const members = await listMembers(transactionDb, roomId);
+        const members = await listMembers(transactionDatabase, roomId);
         const isOwner = room.createdBy === actorAccountId;
         const isSoleParticipant =
             members.length === 1 && members[0]?.accountId === actorAccountId;
         if (!isOwner && !isSoleParticipant) return "forbidden";
-        await deleteRoomRecords(transactionDb, roomId);
+        await deleteRoomRecords(transactionDatabase, roomId);
         return "deleted";
     });
 }
 
 export async function getMember(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     roomId: string,
     accountId: string,
 ): Promise<MemberRow | null> {
@@ -199,7 +200,7 @@ export async function getMember(
 }
 
 export async function listMembers(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     roomId: string,
 ): Promise<MemberRow[]> {
     const result = await db.executeCommand({
@@ -212,7 +213,7 @@ export async function listMembers(
 }
 
 export async function listRoomsForAccount(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     accountId: string,
 ): Promise<RoomRow[]> {
     const result = await db.executeCommand({
@@ -236,8 +237,8 @@ export async function listRoomsForAccount(
     return (result.rows ?? []).map((row) => rowToRoom(row));
 }
 
-export async function findDmBetween(
-    db: DbExecutor,
+async function findDirectMessageBetween(
+    db: DatabaseExecutor,
     accountA: string,
     accountB: string,
 ): Promise<RoomRow | null> {
@@ -294,9 +295,10 @@ export async function findDmBetween(
     }
     return null;
 }
+export { findDirectMessageBetween };
 
 export async function updateRoomTitle(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     roomId: string,
     title: string | null,
 ): Promise<RoomRow | null> {
@@ -313,7 +315,7 @@ export async function updateRoomTitle(
 }
 
 export async function findGroupByExactMembers(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     memberAccountIds: string[],
 ): Promise<RoomRow | null> {
     const normalizedMembers = Array.from(

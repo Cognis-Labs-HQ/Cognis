@@ -32,8 +32,8 @@ test("share adapter manifests declare their parent gateway", async () => {
     );
 });
 
-test("share gateway discovers Link and User method adapters", async (t) => {
-    const host = createShareAdapterHost(t);
+test("share gateway discovers Link and User method adapters", async (testContext) => {
+    const host = createShareAdapterHost(testContext);
     const gateway = createGateway();
     await host.discover(gateway, path.resolve("src/adapters/share"));
     assert.deepEqual(
@@ -76,16 +76,16 @@ test("share gateway discovers Link and User method adapters", async (t) => {
     );
 });
 
-test("share gateway tolerates an absent adapter directory", async (t) => {
-    const host = createShareAdapterHost(t);
+test("share gateway tolerates an absent adapter directory", async (testContext) => {
+    const host = createShareAdapterHost(testContext);
     const gateway = createGateway();
-    const temp = await mkdtemp(path.join(os.tmpdir(), "share-adapters-"));
-    await host.discover(gateway, path.join(temp, "missing"));
+    const temporary = await mkdtemp(path.join(os.tmpdir(), "share-adapters-"));
+    await host.discover(gateway, path.join(temporary, "missing"));
     assert.deepEqual(gateway.listAdapters(), []);
 });
 
-test("share adapter power state persists and blocks existing records", async (t) => {
-    const host = createShareAdapterHost(t);
+test("share adapter power state persists and blocks existing records", async (testContext) => {
+    const host = createShareAdapterHost(testContext);
     const configs = new Map<string, boolean>();
     const existingRecord = { metadata: { adapterId: "link" } };
     const createPersistentGateway = () =>

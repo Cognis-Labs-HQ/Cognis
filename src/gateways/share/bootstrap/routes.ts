@@ -1,3 +1,8 @@
+import {
+    normalizeExpiresAt,
+    readResourceFilter,
+    readSharePassword,
+} from "./route-input.js";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
@@ -41,69 +46,12 @@ function sendDuplicateUserShareError(res: ServerResponse): void {
     );
 }
 
-function normalizeExpiresAt(value: unknown): string | undefined | null {
-    if (value === undefined) return undefined;
-    if (typeof value !== "string") return null;
-    const expiresAt = value.trim();
-    if (!expiresAt) return "";
-    const timestamp = Date.parse(expiresAt);
-    return Number.isFinite(timestamp)
-        ? new Date(timestamp).toISOString()
-        : null;
-}
-
-function readResourceFilter(url: URL): {
-    resourceType?: string;
-    resourceId?: string;
-} {
-    const resourceType = String(
-        url.searchParams.get("resourceType") ?? "",
-    ).trim();
-    const resourceId = String(url.searchParams.get("resourceId") ?? "").trim();
-    return {
-        ...(resourceType ? { resourceType } : {}),
-        ...(resourceId ? { resourceId } : {}),
-    };
-}
-
 function getFirstStageResult<T>(
     stageResults: Record<string, unknown[]>,
     stageId: string,
 ): T | null {
     const results = stageResults[stageId] as T[] | undefined;
     return results?.[0] ?? null;
-}
-
-function readSharePassword(req: IncomingMessage, url: URL): string | null {
-    for (const headerName of [
-        "x-cognis-share-password",
-        "x-cognis-calendar-passphrase",
-    ]) {
-        const value = req.headers[headerName];
-        const password = String(
-            Array.isArray(value) ? value[0] : (value ?? ""),
-        );
-        if (password) return password;
-    }
-    const authorization = String(
-        Array.isArray(req.headers.authorization)
-            ? req.headers.authorization[0]
-            : (req.headers.authorization ?? ""),
-    );
-    if (authorization.startsWith("Basic ")) {
-        const decoded = Buffer.from(
-            authorization.slice("Basic ".length),
-            "base64",
-        ).toString("utf8");
-        const separator = decoded.indexOf(":");
-        const password = separator >= 0 ? decoded.slice(separator + 1) : "";
-        if (password) return password;
-    }
-    const queryPassword =
-        url.searchParams.get("password") ??
-        url.searchParams.get("passphrase") ??
-        "";
-    return queryPassword || null;
 }
 
 export function createShareRoutes(input: {
@@ -210,7 +158,9 @@ export function createShareRoutes(input: {
                 ),
                 "utf8",
             );
-            res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+            res.writeHead(200, {
+                "content-type": "text/html; charset=utf-8",
+            });
             res.end(html);
             return true;
         }
@@ -530,7 +480,9 @@ export function createShareRoutes(input: {
                 sendError(res, 404, "not_found", "Share token not found.");
                 return true;
             }
-            sendJson(res, 200, { data: updateResult.updatedToken ?? null });
+            sendJson(res, 200, {
+                data: updateResult.updatedToken ?? null,
+            });
             return true;
         }
 
@@ -884,15 +836,15 @@ export function createShareRoutes(input: {
                 claims.sub,
             );
             sendJson(res, 200, {
-                data: pending.map((request) => ({
-                    id: request.id,
-                    resourceType: request.resourceType,
-                    resourceId: request.resourceId,
-                    requesterDisplayName: request.requesterDisplayName,
-                    action: request.approvalAction,
-                    target: request.approvalTarget,
-                    createdAt: request.createdAt,
-                    expiresAt: request.expiresAt,
+                data: pending.map((req) => ({
+                    id: req.id,
+                    resourceType: req.resourceType,
+                    resourceId: req.resourceId,
+                    requesterDisplayName: req.requesterDisplayName,
+                    action: req.approvalAction,
+                    target: req.approvalTarget,
+                    createdAt: req.createdAt,
+                    expiresAt: req.expiresAt,
                 })),
             });
             return true;

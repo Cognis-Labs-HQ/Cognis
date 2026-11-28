@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { structuredStore } from "../../../../gateways/reuse/tests/structured-store.js";
-import { DbLeaderboardStore, type LeaderboardState } from "../store.js";
+import { DatabaseLeaderboardStore, type LeaderboardState } from "../store.js";
 
 test("large leaderboard snapshots round-trip in bounded rows and failed replacements preserve the saved state", async () => {
     const fixture = structuredStore();
-    const store = new DbLeaderboardStore(fixture.db);
+    const store = new DatabaseLeaderboardStore(fixture.db);
     await store.ensureSchema();
     const state: LeaderboardState = {
         definitions: [],
@@ -20,7 +20,10 @@ test("large leaderboard snapshots round-trip in bounded rows and failed replacem
     };
     await store.save(state);
     assert.ok(fixture.rows("study_leaderboard_state").length > 1);
-    assert.deepEqual(await new DbLeaderboardStore(fixture.db).load(), state);
+    assert.deepEqual(
+        await new DatabaseLeaderboardStore(fixture.db).load(),
+        state,
+    );
     fixture.fail(
         (command) =>
             command.option === "INSERT" &&

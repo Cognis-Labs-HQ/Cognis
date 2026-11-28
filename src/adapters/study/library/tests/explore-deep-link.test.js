@@ -24,7 +24,7 @@ test("a directly opened Explore card path opens the requested preview without hi
         history: { state: null },
         document: { documentElement: { lang: "en" } },
         createI18n: async () => ({ t: (key) => key }),
-        loadStudySubNavigationModel: async () => ({
+        loadStudyNestedNavigationModel: async () => ({
             selectedLanguageCode: "ja",
         }),
         loadLibrary: async () => ({ schemas: [schema], entries: [] }),
@@ -35,7 +35,7 @@ test("a directly opened Explore card path opens the requested preview without hi
         fetchLibraryForms: async () => [],
         canCreateLayerEntries: () => false,
         applyDocumentTitle() {},
-        createStudySubNavigationSlot: (model) => {
+        createStudyNestedNavigationSlot: (model) => {
             navigationModels.push(model);
             return navigationSlot;
         },
@@ -44,7 +44,7 @@ test("a directly opened Explore card path opens the requested preview without hi
             return { init: async () => {} };
         },
         librarySelectionFloatingMenu: () => [],
-        bindStudySubNavigation() {},
+        bindStudyNestedNavigation() {},
         bindLibraryInteractions() {},
         fetchLibraryEntry: async (id) => {
             fetched.push(id);
@@ -95,13 +95,14 @@ test("a directly opened Explore card path opens the requested preview without hi
                     mountWhenDirect: context.mountWhenDirect,
                 },
                 "/static/gateways/study/sub-navigation.js": {
-                    bindStudySubNavigation: context.bindStudySubNavigation,
-                    loadStudySubNavigationModel:
-                        context.loadStudySubNavigationModel,
+                    bindStudyNestedNavigation:
+                        context.bindStudyNestedNavigation,
+                    loadStudyNestedNavigationModel:
+                        context.loadStudyNestedNavigationModel,
                     readSelectedStudyLanguageCode:
                         context.readSelectedStudyLanguageCode,
-                    createStudySubNavigationSlot:
-                        context.createStudySubNavigationSlot,
+                    createStudyNestedNavigationSlot:
+                        context.createStudyNestedNavigationSlot,
                 },
                 "../data.js": { loadLibrary: context.loadLibrary },
                 "./workspace.js": workspace,

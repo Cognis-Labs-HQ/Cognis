@@ -1,12 +1,17 @@
 /**
  * Provides keyboard movement and resizing for composer editing cells.
  * Exports bindLayoutKeyboard to attach one cell's interaction lifecycle.
- * @example bindLayoutKeyboard({ cell, placement, state, gridSize, canPlace, render, i18n });
+ * @example bindLayoutKeyboard({ cell, placement, state, gridSize, canPlace, findSwapCandidate, commitSwap, render, i18n });
  */
 import { gridStep } from "./grid-math.js";
 import { resolveGridWidthBounds } from "./grid-sizing.js";
 
-/** @param {object} options Cell, placement, grid state and layout callbacks. @returns {void} */
+/**
+ * @param {object} options Cell, placement, grid state and layout callbacks.
+ * @param {Function} options.findSwapCandidate Read-only lookup of a collision-safe exchange target.
+ * @param {function(string,string):boolean} options.commitSwap Revalidates current geometry and atomically exchanges both placements; false changes nothing.
+ * @returns {void} Binds movement and resizing to the cell lifetime.
+ */
 export function bindLayoutKeyboard({
     cell,
     placement,
@@ -14,6 +19,7 @@ export function bindLayoutKeyboard({
     gridSize,
     canPlace,
     findSwapCandidate,
+    commitSwap,
     render,
     i18n,
 }) {
@@ -37,12 +43,12 @@ export function bindLayoutKeyboard({
         if (!direction) return;
         event.preventDefault();
         const next = { ...placement };
-        const horizontal = direction[0] * gridStep(state.gridCols);
+        const horizontal = direction[0] * gridStep(state.gridColumns);
         const vertical = direction[1] * gridStep(state.gridRows);
         if (event.shiftKey) {
             const bounds = resolveGridWidthBounds(
                 gridSize,
-                state.gridCols - next.col,
+                state.gridColumns - next.col,
             );
             if (
                 horizontal &&
@@ -63,7 +69,7 @@ export function bindLayoutKeyboard({
         } else {
             next.col = Math.max(
                 0,
-                Math.min(state.gridCols - next.w, next.col + horizontal),
+                Math.min(state.gridColumns - next.w, next.col + horizontal),
             );
             next.row = Math.max(0, next.row + vertical);
         }
@@ -83,13 +89,10 @@ export function bindLayoutKeyboard({
                 next.h,
                 next.id,
             );
-            if (!candidate) return;
-            next.col = candidate.col;
-            next.row = candidate.row;
-            candidate.col = placement.col;
-            candidate.row = placement.row;
+            if (!candidate || !commitSwap(next.id, candidate.id)) return;
+        } else {
+            Object.assign(placement, next);
         }
-        Object.assign(placement, next);
         render();
         const container = state.gridSection ?? state.container;
         container

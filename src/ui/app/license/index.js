@@ -121,7 +121,9 @@ export async function mount(root, { signal } = {}) {
             return;
         }
         const section =
-            sections.find((s) => s.id === activeSectionId) ?? sections[0];
+            sections.find(
+                (sectionEntry) => sectionEntry.id === activeSectionId,
+            ) ?? sections[0];
         container.innerHTML =
             `<h2 class="license-section-title">${section.title}</h2>` +
             `<div class="license-section-body">${renderMarkdown(section.lines.join("\n"))}</div>`;
@@ -172,31 +174,31 @@ export async function mount(root, { signal } = {}) {
     }
 
     if (signal?.aborted) return;
-    const nav = root.querySelector(".license-nav");
-    if (nav && sections.length > 0) {
+    const navigation = root.querySelector(".license-nav");
+    if (navigation && sections.length > 0) {
         activeSectionId = sections[0].id;
         const items = sections
             .map(
-                (s) =>
-                    `<li><button data-section-id="${s.id}">${s.title}</button></li>`,
+                (section) =>
+                    `<li><button data-section-id="${section.id}">${section.title}</button></li>`,
             )
             .join("");
-        nav.innerHTML = `<ul>${items}</ul>`;
-        nav.querySelector(
-            `[data-section-id="${activeSectionId}"]`,
-        )?.classList.add("active");
+        navigation.innerHTML = `<ul>${items}</ul>`;
+        navigation
+            .querySelector(`[data-section-id="${activeSectionId}"]`)
+            ?.classList.add("active");
     }
 
     renderSections();
 
     root.addEventListener("click", (event) => {
-        const btn = event.target.closest("[data-section-id]");
-        if (!btn) return;
-        activeSectionId = btn.dataset.sectionId;
-        root.querySelectorAll("[data-section-id]").forEach((b) => {
-            b.classList.toggle(
+        const button = event.target.closest("[data-section-id]");
+        if (!button) return;
+        activeSectionId = button.dataset.sectionId;
+        root.querySelectorAll("[data-section-id]").forEach((button) => {
+            button.classList.toggle(
                 "active",
-                b.dataset.sectionId === activeSectionId,
+                button.dataset.sectionId === activeSectionId,
             );
         });
         renderSections();

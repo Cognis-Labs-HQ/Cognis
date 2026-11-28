@@ -27,7 +27,7 @@ export function createNotificationSender(
         ? clampVerificationCodeLength(rawCodeLength)
         : undefined;
 
-    const envSnapshot: Record<string, string | undefined> = {
+    const environmentSnapshot: Record<string, string | undefined> = {
         host: env["COGNIS_SMTP_HOST"],
         port: env["COGNIS_SMTP_PORT"],
         from: env["COGNIS_SMTP_FROM"],
@@ -54,6 +54,6 @@ export function createNotificationSender(
             externalHost,
             codeLength,
         },
-        envSnapshot,
+        environmentSnapshot,
     );
 }

@@ -17,8 +17,8 @@ import {
     rebuildProgressProjections,
     type ProgressRecordFlowData,
 } from "./service.js";
-import { DbProgressStore } from "./store.js";
-import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import { DatabaseProgressStore } from "./store.js";
+import type { DatabaseExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import type { LearningEvent } from "../../../gateways/study/reuse/progress.js";
 
 let adapterReady = false;
@@ -50,7 +50,8 @@ export async function bootstrapStudyAdapter(
         );
         return;
     }
-    const databaseExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
+    const databaseExecutor =
+        ctx.capabilities.get<DatabaseExecutor>("db:executor");
     if (!databaseExecutor) {
         await ctx.log?.(
             "error",
@@ -84,7 +85,7 @@ export async function bootstrapStudyAdapter(
             stages: ["authorize", "validate", "observe", "persist", "project"],
         });
     }
-    const store = new DbProgressStore(databaseExecutor);
+    const store = new DatabaseProgressStore(databaseExecutor);
     try {
         await store.ensureSchema();
     } catch (error) {
@@ -146,7 +147,7 @@ export async function bootstrapStudyAdapter(
         (participantId) => ledger.summary(participantId),
     );
     await registerPracticeAchievements(achievements);
-    ctx.registerAdapterStaticDir?.(
+    ctx.registerAdapterStaticDirectory?.(
         "study",
         "progress",
         `${ctx.adapterRoot}/ui`,

@@ -1,4 +1,4 @@
-import type { DbExecutor } from "../db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../db/reuse/db-executor.js";
 
 export interface AdapterConfigStore {
     getConfig(adapterId: string): Promise<Record<string, unknown> | null>;
@@ -8,8 +8,8 @@ export interface AdapterConfigStore {
     ): Promise<void>;
 }
 
-export class DbAdapterConfigStore implements AdapterConfigStore {
-    constructor(private readonly db: DbExecutor) {}
+class DatabaseAdapterConfigStore implements AdapterConfigStore {
+    constructor(private readonly db: DatabaseExecutor) {}
 
     async ensureSchema(): Promise<void> {
         await this.db.ensureTable({
@@ -63,3 +63,4 @@ export class DbAdapterConfigStore implements AdapterConfigStore {
         });
     }
 }
+export { DatabaseAdapterConfigStore };

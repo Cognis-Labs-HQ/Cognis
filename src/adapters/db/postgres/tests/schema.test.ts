@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { createDbExecutor, type PostgresPool } from "../index.js";
+import { createDatabaseExecutor, type PostgresPool } from "../index.js";
 
 for (const existing of [false, true]) {
     test(`unique declarations are reconciled with existing index coverage: ${existing}`, async () => {
@@ -18,7 +18,7 @@ for (const existing of [false, true]) {
             }
             return { rows: [], rowCount: 0 };
         };
-        const executor = await createDbExecutor({
+        const executor = await createDatabaseExecutor({
             databaseUrl: "postgresql://unused",
             pool: {
                 query,
@@ -56,7 +56,7 @@ test("a rejected unique key rolls back schema initialization and releases the cl
         if (sql.startsWith("CREATE UNIQUE INDEX")) throw failure;
         return { rows: [], rowCount: 0 };
     };
-    const executor = await createDbExecutor({
+    const executor = await createDatabaseExecutor({
         databaseUrl: "postgresql://unused",
         pool: {
             query,

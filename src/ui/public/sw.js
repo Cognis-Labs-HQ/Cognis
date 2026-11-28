@@ -2,7 +2,7 @@
 const CACHE_VERSION = "v15";
 const pendingLogs = [];
 async function log(level, message, meta = {}) {
-    if (level) pendingLogs.push({ level, message, meta });
+    if (level) pendingLogs.push({ level, message, meta: meta });
     if (pendingLogs.length > 64) pendingLogs.shift();
     const clients = await self.clients.matchAll({ type: "window" });
     const client = clients.find((entry) => entry.focused) ?? clients[0];

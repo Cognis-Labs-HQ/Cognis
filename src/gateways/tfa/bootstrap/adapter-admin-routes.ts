@@ -19,7 +19,7 @@ export function createTfaAdapterAdminRoutes(
         url: URL,
     ): Promise<boolean> => {
         const claims = getAuthClaims(req);
-        const logMeta = {
+        const logMetadata = {
             component: "tfa-gateway",
             method: req.method ?? "GET",
             path: url.pathname,
@@ -90,7 +90,7 @@ export function createTfaAdapterAdminRoutes(
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: { saved: true } }));
                 log?.("info", "Saved TFA adapter config.", {
-                    ...logMeta,
+                    ...logMetadata,
                     adapterId,
                 });
                 return true;
@@ -126,7 +126,7 @@ export function createTfaAdapterAdminRoutes(
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { updated: true } }));
             log?.("warn", "Changed TFA adapter state.", {
-                ...logMeta,
+                ...logMetadata,
                 adapterId,
                 action,
             });

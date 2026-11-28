@@ -68,7 +68,7 @@ export function normalizeSearchOptions(options = {}) {
         onThisPage: Boolean(options.onThisPage),
     };
 }
-function escapeRegex(value) {
+function escapeRegularExpression(value) {
     return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 export function createSearchMatchResolver(query, options = {}) {
@@ -99,7 +99,7 @@ export function createSearchMatchResolver(query, options = {}) {
         ? query
         : query.toLowerCase();
     const expression = normalizedOptions.wholeWord
-        ? new RegExp(`\\b${escapeRegex(resolvedQuery)}\\b`)
+        ? new RegExp(`\\b${escapeRegularExpression(resolvedQuery)}\\b`)
         : null;
 
     return (value) => {
@@ -219,8 +219,8 @@ export function normalizeSearchGroup(group) {
 }
 
 function isVisibleSearchElement(element) {
-    const rect = element.getBoundingClientRect?.();
-    return Boolean(rect && rect.width > 0 && rect.height > 0);
+    const rectangle = element.getBoundingClientRect?.();
+    return Boolean(rectangle && rectangle.width > 0 && rectangle.height > 0);
 }
 
 function resolveVisibleContentCategory(element) {
@@ -387,7 +387,7 @@ export async function collectGlobalSettingsSearchGroups({ signal } = {}) {
     return [{ category: "Settings", items }];
 }
 
-export { collectGlobalDocsSearchGroups } from "./docs-index.js";
+export { collectGlobalDocumentsSearchGroups } from "./docs-index.js";
 
 export function collectVisibleNavigationSearchGroups() {
     const items = [];
@@ -762,19 +762,19 @@ export function buildSearchUrl(
             : "";
     const resolvedTypeFilter = normalizeResultType(rawTypeFilter);
     const connector = endpoint.includes("?") ? "&" : "?";
-    const typeFilterParam = resolvedTypeFilter
+    const typeFilterParameter = resolvedTypeFilter
         ? `&type=${encodeURIComponent(resolvedTypeFilter)}`
         : "";
     const options = normalizeSearchOptions(searchOptions);
-    const optionParams = [
+    const optionParameters = [
         options.wholeWord ? "wholeWord=1" : "",
         options.regex ? "regex=1" : "",
         options.caseSensitive ? "caseSensitive=1" : "",
     ]
         .filter(Boolean)
         .join("&");
-    const optionSuffix = optionParams ? `&${optionParams}` : "";
-    return `${endpoint}${connector}q=${encodeURIComponent(query)}${typeFilterParam}${optionSuffix}`;
+    const optionSuffix = optionParameters ? `&${optionParameters}` : "";
+    return `${endpoint}${connector}q=${encodeURIComponent(query)}${typeFilterParameter}${optionSuffix}`;
 }
 
 function normalizeSearchUrlKey(url) {

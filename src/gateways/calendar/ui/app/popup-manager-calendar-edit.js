@@ -148,7 +148,7 @@ export function createCalendarEditPopupHandler({
                       )
                     : String(calendar.name);
                 const immutableSharedSuffix = sharedSuffixMatch?.[1] ?? "";
-                const nameFieldDisabledAttr = calendar.isDefault
+                const nameFieldDisabledAttribute = calendar.isDefault
                     ? " disabled"
                     : "";
                 const isPrivate = calendar.visibility !== "public";
@@ -158,7 +158,7 @@ export function createCalendarEditPopupHandler({
                 return `<div class="calendar-edit-popup">
           <div class="calendar-create-row">
             <input id="calendar-edit-color" type="color" value="${escapeHtml(calendarUi.normalizeHexColor(calendar.color))}" class="calendar-color-picker-bare" />
-            <input id="calendar-edit-name" type="text" maxlength="30" value="${escapeHtml(editableCalendarName)}" placeholder="${escapeHtml(i18n.t("gateway.calendar.calendar_name_placeholder"))}" required${nameFieldDisabledAttr} />
+            <input id="calendar-edit-name" type="text" maxlength="30" value="${escapeHtml(editableCalendarName)}" placeholder="${escapeHtml(i18n.t("gateway.calendar.calendar_name_placeholder"))}" required${nameFieldDisabledAttribute} />
             ${immutableSharedSuffix ? `<span class="calendar-shared-name-suffix">${escapeHtml(immutableSharedSuffix)}</span>` : ""}
           </div>
           ${

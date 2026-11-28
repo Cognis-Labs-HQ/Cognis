@@ -9,13 +9,13 @@ import {
     hasAdminBypass,
     normalizeReactionEmoji,
     summarizeRoomRequest,
-    type MessagesRoutesDeps,
+    type MessagesRoutesDependencies,
 } from "../shared.js";
 
-export function createRoomHandler(deps: MessagesRoutesDeps) {
-    const { messagesStore, profileStore, dispatch, flow } = deps;
-    const membership = deps.membership!;
-    const ctx = resolveRouteContext(deps.routeContext);
+export function createRoomHandler(dependencies: MessagesRoutesDependencies) {
+    const { messagesStore, profileStore, dispatch, flow } = dependencies;
+    const membership = dependencies.membership!;
+    const ctx = resolveRouteContext(dependencies.routeContext);
 
     return async (
         req: IncomingMessage,
@@ -32,9 +32,9 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
         const accountId = claims.sub;
         const hasBypass = hasAdminBypass(claims.role);
         const roomId = roomMatch[1];
-        const sub = roomMatch[2];
-        const subArg = roomMatch[3];
-        const subArg2 = roomMatch[4];
+        const operationPath = roomMatch[2];
+        const resourceId = roomMatch[3];
+        const resourceAction = roomMatch[4];
         const resolveShareGuestId = ctx.getCapability<
             (claims: { sub?: string }) => string
         >("share:resolveGuestId");
@@ -108,12 +108,12 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
         if (
             isAllowedShareGuest &&
             !(
-                (!sub && req.method === "GET") ||
-                (sub === "key-contribution" &&
+                (!operationPath && req.method === "GET") ||
+                (operationPath === "key-contribution" &&
                     req.method === "POST" &&
                     hasMeetingChatAccess("chat:read")) ||
-                (sub === "messages" &&
-                    !subArg &&
+                (operationPath === "messages" &&
+                    !resourceId &&
                     (req.method === "GET" || req.method === "POST"))
             )
         ) {
@@ -155,7 +155,11 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                   accountId,
               );
 
-        if (sub === "key-contribution" && !subArg && req.method === "POST") {
+        if (
+            operationPath === "key-contribution" &&
+            !resourceId &&
+            req.method === "POST"
+        ) {
             if (incomingPendingRoomRequest) {
                 res.writeHead(403, { "content-type": "application/json" });
                 res.end(
@@ -197,8 +201,8 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
         }
 
         if (
-            sub === "key-contribution" &&
-            subArg === "acknowledge" &&
+            operationPath === "key-contribution" &&
+            resourceId === "acknowledge" &&
             req.method === "POST"
         ) {
             if (!isAllowedShareGuest) {
@@ -212,7 +216,7 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
             return true;
         }
 
-        if (!sub && req.method === "GET") {
+        if (!operationPath && req.method === "GET") {
             const members = await messagesStore.listMembers(roomId);
             const enrichedMembers = await enrichMembersWithProfiles(
                 members,
@@ -235,7 +239,7 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
             return true;
         }
 
-        if (!sub && req.method === "PATCH") {
+        if (!operationPath && req.method === "PATCH") {
             const body = (await readJson(req)) as { avatarKey?: unknown };
             if (room.kind !== "classroom") {
                 res.writeHead(400, { "content-type": "application/json" });
@@ -276,10 +280,12 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
             return true;
         }
 
-        if (sub === "messages" && !subArg) {
+        if (operationPath === "messages" && !resourceId) {
             if (req.method === "GET") {
                 if (isAllowedShareGuest && !hasMeetingChatAccess("chat:read")) {
-                    res.writeHead(403, { "content-type": "application/json" });
+                    res.writeHead(403, {
+                        "content-type": "application/json",
+                    });
                     res.end(
                         JSON.stringify({
                             error: {
@@ -292,7 +298,9 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                     return true;
                 }
                 if (incomingPendingRoomRequest) {
-                    res.writeHead(200, { "content-type": "application/json" });
+                    res.writeHead(200, {
+                        "content-type": "application/json",
+                    });
                     res.end(
                         JSON.stringify({
                             data: [],
@@ -484,7 +492,9 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                     isAllowedShareGuest &&
                     !hasMeetingChatAccess("chat:write")
                 ) {
-                    res.writeHead(403, { "content-type": "application/json" });
+                    res.writeHead(403, {
+                        "content-type": "application/json",
+                    });
                     res.end(
                         JSON.stringify({
                             error: {
@@ -497,7 +507,9 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                     return true;
                 }
                 if (incomingPendingRoomRequest) {
-                    res.writeHead(403, { "content-type": "application/json" });
+                    res.writeHead(403, {
+                        "content-type": "application/json",
+                    });
                     res.end(
                         JSON.stringify({
                             error: {
@@ -510,11 +522,13 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                     return true;
                 }
                 const activeMembers = await messagesStore.listMembers(roomId);
-                const dmIsArchivedForSender =
+                const directMessageIsArchivedForSender =
                     room.kind === "dm" &&
                     ((member?.archived ?? false) || activeMembers.length < 2);
-                if (dmIsArchivedForSender) {
-                    res.writeHead(409, { "content-type": "application/json" });
+                if (directMessageIsArchivedForSender) {
+                    res.writeHead(409, {
+                        "content-type": "application/json",
+                    });
                     res.end(
                         JSON.stringify({
                             error: {
@@ -604,7 +618,7 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
             }
         }
 
-        if (sub === "read" && !subArg && req.method === "POST") {
+        if (operationPath === "read" && !resourceId && req.method === "POST") {
             if (incomingPendingRoomRequest) {
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: { ok: true } }));
@@ -624,10 +638,12 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
             return true;
         }
 
-        if (sub === "typing" && !subArg) {
+        if (operationPath === "typing" && !resourceId) {
             if (req.method === "POST") {
                 if (incomingPendingRoomRequest) {
-                    res.writeHead(200, { "content-type": "application/json" });
+                    res.writeHead(200, {
+                        "content-type": "application/json",
+                    });
                     res.end(JSON.stringify({ data: { ok: true } }));
                     return true;
                 }
@@ -651,7 +667,9 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
             }
             if (req.method === "GET") {
                 if (incomingPendingRoomRequest) {
-                    res.writeHead(200, { "content-type": "application/json" });
+                    res.writeHead(200, {
+                        "content-type": "application/json",
+                    });
                     res.end(JSON.stringify({ data: [] }));
                     return true;
                 }
@@ -679,7 +697,11 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
             }
         }
 
-        if (sub === "members" && !subArg && req.method === "POST") {
+        if (
+            operationPath === "members" &&
+            !resourceId &&
+            req.method === "POST"
+        ) {
             if (member.role !== "owner" && member.role !== "admin") {
                 res.writeHead(403, { "content-type": "application/json" });
                 res.end(
@@ -744,8 +766,12 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
             return true;
         }
 
-        if (sub === "members" && subArg && req.method === "DELETE") {
-            const target = await profileStore.getProfileByHandle(subArg);
+        if (
+            operationPath === "members" &&
+            resourceId &&
+            req.method === "DELETE"
+        ) {
+            const target = await profileStore.getProfileByHandle(resourceId);
             if (!target) {
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
@@ -783,9 +809,9 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
         }
 
         if (
-            sub === "messages" &&
-            subArg &&
-            subArg2 === "reactions" &&
+            operationPath === "messages" &&
+            resourceId &&
+            resourceAction === "reactions" &&
             req.method === "POST"
         ) {
             if (incomingPendingRoomRequest) {
@@ -801,7 +827,7 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                 );
                 return true;
             }
-            const message = await messagesStore.getMessage(subArg);
+            const message = await messagesStore.getMessage(resourceId);
             if (!message || message.chatroomId !== roomId) {
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
@@ -844,7 +870,7 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
             }
             const hasReaction = await messagesStore.hasMessageReaction(
                 roomId,
-                subArg,
+                resourceId,
                 accountId,
                 emoji,
             );
@@ -852,7 +878,7 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                 typeof body.active === "boolean" ? body.active : !hasReaction;
             await messagesStore.setMessageReaction(
                 roomId,
-                subArg,
+                resourceId,
                 accountId,
                 emoji,
                 active,
@@ -869,7 +895,9 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                         message.senderId,
                     );
                 if (pendingIncomingForMessageSender) {
-                    res.writeHead(200, { "content-type": "application/json" });
+                    res.writeHead(200, {
+                        "content-type": "application/json",
+                    });
                     res.end(
                         JSON.stringify({
                             data: { active },
@@ -892,7 +920,7 @@ export function createRoomHandler(deps: MessagesRoutesDeps) {
                         actionUrl: `/messages/${roomId}`,
                         metadata: {
                             roomId,
-                            messageId: subArg,
+                            messageId: resourceId,
                             reaction: emoji,
                         },
                     }).catch(() => undefined);

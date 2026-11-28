@@ -39,7 +39,7 @@ export function createModuleSourceRoutes(
             url.pathname !== "/api/v1/modules/settings"
         )
             return false;
-        const logMeta = {
+        const logMetadata = {
             component: "api-modules",
             method: req.method ?? "GET",
             path: url.pathname,
@@ -66,7 +66,9 @@ export function createModuleSourceRoutes(
                 const claims = ctx.requireAuth(req, res, "admin");
                 if (!claims) return true;
                 if (req.method === "GET") {
-                    res.writeHead(200, { "content-type": "application/json" });
+                    res.writeHead(200, {
+                        "content-type": "application/json",
+                    });
                     res.end(
                         JSON.stringify({
                             data: await marketplace.listSources(),
@@ -94,12 +96,14 @@ export function createModuleSourceRoutes(
                             ? "Module source updated."
                             : "Module source added.",
                         {
-                            ...logMeta,
+                            ...logMetadata,
                             accountId: claims.sub,
                             sourceUuid: source.uuid,
                         },
                     );
-                    res.writeHead(200, { "content-type": "application/json" });
+                    res.writeHead(200, {
+                        "content-type": "application/json",
+                    });
                     res.end(JSON.stringify({ data: source }));
                     return true;
                 }
@@ -116,7 +120,9 @@ export function createModuleSourceRoutes(
                           ? await marketplace.getSettings()
                           : null;
                 if (data) {
-                    res.writeHead(200, { "content-type": "application/json" });
+                    res.writeHead(200, {
+                        "content-type": "application/json",
+                    });
                     res.end(JSON.stringify({ data }));
                     return true;
                 }
@@ -131,7 +137,7 @@ export function createModuleSourceRoutes(
                     decodeURIComponent(sourceDeleteMatch[1]),
                 );
                 log?.("warn", "Module source deleted.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: claims.sub,
                     sourceUuid: sourceDeleteMatch[1],
                 });
@@ -148,7 +154,7 @@ export function createModuleSourceRoutes(
                     ? error.message
                     : "module_source_operation_failed";
             log?.("error", "Module source operation failed.", {
-                ...logMeta,
+                ...logMetadata,
                 code,
                 errorName: error instanceof Error ? error.name : "Error",
             });

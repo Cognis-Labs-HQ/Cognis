@@ -1,11 +1,11 @@
 import { createHash } from "node:crypto";
 import { textChunks } from "../../../../gateways/reuse/text-chunks.js";
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
-import type { StructuredDbWhereClause } from "../../../../gateways/db/reuse/db-command.js";
+import type { DatabaseExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { StructuredDatabaseWhereClause } from "../../../../gateways/db/reuse/db-command.js";
 
 const TABLE = "study_deck_document_parts";
 
-export async function ensureDeckDocuments(db: DbExecutor): Promise<void> {
+export async function ensureDeckDocuments(db: DatabaseExecutor): Promise<void> {
     await db.ensureTable({
         name: TABLE,
         columns: [
@@ -22,7 +22,7 @@ export async function ensureDeckDocuments(db: DbExecutor): Promise<void> {
 
 /** Base fragments and continuation rows share the caller's scheduling or save transaction. */
 export async function writeDeckDocument(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     deckId: string,
     identity: string[],
     fields: Record<string, unknown>,
@@ -67,11 +67,11 @@ export async function writeDeckDocument(
 
 /** One joined read keeps every document on the same committed revision. */
 export async function readDeckDocuments(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     table: string,
     columns: string[],
     identity: string[],
-    where: StructuredDbWhereClause[],
+    where: StructuredDatabaseWhereClause[],
 ): Promise<Record<string, unknown>[]> {
     const result = await db.executeCommand({
         option: "SELECT",
@@ -121,7 +121,7 @@ export async function readDeckDocuments(
 }
 
 export async function deleteDeckDocuments(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     deckId: string,
 ): Promise<void> {
     await db.executeCommand({

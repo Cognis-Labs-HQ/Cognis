@@ -5,17 +5,20 @@ import { fetchStudyPreferences } from "../navigation-client.js";
 
 /** Prepare enrolled lightweight collections through the owning scoped read flows. @returns {void} */
 export function registerEnrolledLibrarySnapshots(ctx, actions) {
-    const read = (name, ...args) => actions[name]({ args, signal: ctx.signal });
+    const read = (name, ...args) =>
+        actions[name]({ args: args, signal: ctx.signal });
     bindOfflineSnapshotRefresh(ctx, {
         id: "study:prepareEnrolledLibrary",
         events: ["cognis:study-enrollment-changed"],
         refresh: async () => {
             const assertAccount = captureAccountGuard();
-            const prefs = await fetchStudyPreferences({ signal: ctx.signal });
+            const preferences = await fetchStudyPreferences({
+                signal: ctx.signal,
+            });
             const codes = [
                 ...new Set([
-                    ...(prefs.learningLanguages ?? []),
-                    ...(prefs.teachingLanguages ?? []),
+                    ...(preferences.learningLanguages ?? []),
+                    ...(preferences.teachingLanguages ?? []),
                 ]),
             ];
             const access = await read("fetchLibraryLocations");

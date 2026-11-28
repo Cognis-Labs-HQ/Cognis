@@ -1,14 +1,14 @@
-export function initCheckboxPrefs(
+function initializeCheckboxPreferences(
     root,
     {
-        existingPrefs,
+        existingPrefs: existingPreferences,
         onDirtyChange,
         onCommit,
         preference = "alwaysShowLanguageSwitcher",
         selector = "#pref-always-show-language-switcher",
     } = {},
 ) {
-    let savedValue = existingPrefs?.[preference] !== false;
+    let savedValue = existingPreferences?.[preference] !== false;
     let value = savedValue;
 
     function getInput() {
@@ -48,3 +48,4 @@ export function initCheckboxPrefs(
         },
     };
 }
+export { initializeCheckboxPreferences };

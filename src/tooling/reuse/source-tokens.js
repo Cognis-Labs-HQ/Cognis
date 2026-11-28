@@ -1,6 +1,6 @@
 import { createScanner, SyntaxKind } from "typescript/unstable/ast";
 
-const REGEX_PREFIXES = new Set([
+const REGULAR_EXPRESSION_PREFIXES = new Set([
     "=",
     "(",
     "[",
@@ -24,7 +24,8 @@ export function sourceTokens(source) {
     while ((kind = scanner.scan()) !== SyntaxKind.EndOfFile) {
         if (
             kind === SyntaxKind.SlashToken &&
-            (!values.length || REGEX_PREFIXES.has(values.at(-1).text))
+            (!values.length ||
+                REGULAR_EXPRESSION_PREFIXES.has(values.at(-1).text))
         )
             kind = scanner.reScanSlashToken();
         if (kind === SyntaxKind.TemplateHead) templates.push(0);

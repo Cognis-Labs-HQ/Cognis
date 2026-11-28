@@ -54,8 +54,8 @@ async function waitFor(
 }
 
 test("SmtpNotificationSender.sendTracked returns IDs and exposes queue status", async () => {
-    const server = await createMockSmtpServer((conn) =>
-        smtpSuccessHandler(conn),
+    const server = await createMockSmtpServer((connection) =>
+        smtpSuccessHandler(connection),
     );
     try {
         const sender = await createTestSender({
@@ -88,8 +88,8 @@ test("SmtpNotificationSender.sendTracked returns IDs and exposes queue status", 
 });
 
 test("SmtpNotificationSender queue applies recipient rate-limit spacing", async () => {
-    const server = await createMockSmtpServer((conn) =>
-        smtpSuccessHandler(conn),
+    const server = await createMockSmtpServer((connection) =>
+        smtpSuccessHandler(connection),
     );
     const limiter = new SmtpRateLimiter(250);
     try {

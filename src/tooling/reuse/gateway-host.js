@@ -14,7 +14,7 @@ import {
 import { MemoryDatabase } from "./memory-database.js";
 
 /** Compose actual gateway bootstraps against the public DB/Auth host contracts. */
-export async function createGatewayHost(t, gateways) {
+export async function createGatewayHost(testContext, gateways) {
     const root = createCtx();
     const capabilities = new CapabilityStore();
     const routes = new RouteRegistry();
@@ -38,7 +38,7 @@ export async function createGatewayHost(t, gateways) {
         ),
     );
     const disposers = [];
-    t.after(async () => {
+    testContext.after(async () => {
         for (const dispose of disposers.reverse()) await dispose();
     });
     for (const [id, bootstrap] of gateways)

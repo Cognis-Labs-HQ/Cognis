@@ -19,7 +19,7 @@ test("Study providers and pages load their actual source-module graphs through p
                 () => false,
             )
         ) {
-            registry.registerStaticDir(entry.name, directory);
+            registry.registerStaticDirectory(entry.name, directory);
         }
     }
     const adapters = path.resolve("src/adapters");
@@ -41,7 +41,7 @@ test("Study providers and pages load their actual source-module graphs through p
                     () => false,
                 )
             ) {
-                registry.registerAdapterStaticDir(
+                registry.registerAdapterStaticDirectory(
                     gateway.name,
                     adapter.name,
                     directory,

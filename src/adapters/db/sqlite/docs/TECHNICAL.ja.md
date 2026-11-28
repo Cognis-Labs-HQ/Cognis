@@ -4,7 +4,7 @@ SQLite の公開インターフェースと運用規則を説明します。
 
 ## インターフェース
 
-`SqliteDbGateway(client)` は DatabaseGateway を実装します。SqliteClient に all(statement, params)、changes を返す run(statement, params)、exec(statement) が必要です。構造化操作は SQLite のプレースホルダーと競合句を使います。
+`SqliteDatabaseGateway(client)` は DatabaseGateway を実装します。SqliteClient に all(statement, params)、changes を返す run(statement, params)、exec(statement) が必要です。構造化操作は SQLite のプレースホルダーと競合句を使います。
 
 ## 設定
 
@@ -18,7 +18,7 @@ SQLiteアダプターは、SQLiteベースのデプロイメント、ローカ�
 
 ### 責務
 
-- `SqliteDbGateway` を通じて `DatabaseGateway` インターフェースを実装する。
+- `SqliteDatabaseGateway` を通じて `DatabaseGateway` インターフェースを実装する。
 - 提供されたSQLiteクライアントに対してクエリ、コマンド、トランザクションを実行する。
 - SQLiteのプレースホルダー構文と競合解決構文を使う構造化データベースコマンドをサポートする。
 - SQLite固有の認証スキーマヘルパーと、SQL初期化・マイグレーションスクリプトを提供する。

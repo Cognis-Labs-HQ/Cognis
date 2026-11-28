@@ -22,17 +22,17 @@ const log = bindCapability("ui:log");
  * before the verification flow begins.
  *
  * Public exports:
- *   initGeneralPrefs(root, options) — initialises email management in the given root element.
+ *   initializeGeneralPreferences(root, options) — initialises email management in the given root element.
  *
  * Usage:
- *   const generalPrefs = initGeneralPrefs(root, { i18n, username, signal, onRender = () => {} });
+ *   const generalPrefs = initializeGeneralPreferences(root, { i18n, username, signal, onRender = () => {} });
  *   await generalPrefs.init();
  *
  * @param {Element} root
  * @param {{ i18n: object, username: string }} options
  * @returns {{ init: () => Promise<void> }}
  */
-export function initGeneralPrefs(
+function initializeGeneralPreferences(
     root,
     { i18n, username, signal, onRender = () => {} },
 ) {
@@ -150,14 +150,14 @@ export function initGeneralPrefs(
     }
 
     function renderEmailList() {
-        const listEl = root.querySelector("#email-list");
-        if (!listEl) return;
+        const listElement = root.querySelector("#email-list");
+        if (!listElement) return;
         if (!emails.length) {
-            listEl.innerHTML = `<li class="email-list-item"><span class="email-address">${i18n.t("ui.app.settings.emails_none")}</span></li>`;
+            listElement.innerHTML = `<li class="email-list-item"><span class="email-address">${i18n.t("ui.app.settings.emails_none")}</span></li>`;
             onRender();
             return;
         }
-        listEl.innerHTML = emails
+        listElement.innerHTML = emails
             .map((entry) => {
                 const escaped = escapeHtml(entry.email);
                 const verifiedBadge = entry.verified
@@ -166,10 +166,10 @@ export function initGeneralPrefs(
                 const primaryBadge = entry.primary
                     ? `<span class="email-badge-primary">${i18n.t("ui.app.settings.emails_primary")}</span>`
                     : `<button class="btn-animated" type="button" data-set-primary="${escaped}">${i18n.t("ui.app.settings.emails_set_primary")}</button>`;
-                const removeBtn = entry.primary
+                const removeButton = entry.primary
                     ? ""
                     : `<button class="btn-animated" type="button" data-remove-email="${escaped}">${i18n.t("ui.reuse.remove")}</button>`;
-                return `<li class="email-list-item"><span class="email-address">${escaped}</span>${verifiedBadge}${primaryBadge}${removeBtn}</li>`;
+                return `<li class="email-list-item"><span class="email-address">${escaped}</span>${verifiedBadge}${primaryBadge}${removeButton}</li>`;
             })
             .join("");
         onRender();
@@ -218,13 +218,13 @@ export function initGeneralPrefs(
                             overlay
                                 .querySelector('[data-popup-action="verified"]')
                                 .click();
-                        } catch (err) {
-                            const errCode =
-                                err instanceof Error
-                                    ? err.message
+                        } catch (error) {
+                            const errorCode =
+                                error instanceof Error
+                                    ? error.message
                                     : "verify_failed";
                             showToast(
-                                errCode === "invalid_code"
+                                errorCode === "invalid_code"
                                     ? i18n.t(
                                           "ui.app.settings.emails_verify_invalid",
                                       )
@@ -248,7 +248,8 @@ export function initGeneralPrefs(
                                 .then((res) => (res.ok ? res.json() : null))
                                 .then((payload) => {
                                     const entry = (payload?.data ?? []).find(
-                                        (e) => e.email === address,
+                                        (emailEntry) =>
+                                            emailEntry.email === address,
                                     );
                                     if (entry?.verified) {
                                         overlay
@@ -298,13 +299,13 @@ export function initGeneralPrefs(
     function bindEmailAddShortcut() {
         root.addEventListener(
             "keydown",
-            (evt) => {
-                const target = evt.target;
+            (event) => {
+                const target = event.target;
                 if (!(target instanceof HTMLInputElement)) return;
                 if (target.id !== "email-add-input") return;
-                if (evt.key !== "Enter") return;
+                if (event.key !== "Enter") return;
 
-                evt.preventDefault();
+                event.preventDefault();
                 root.querySelector("#email-add-btn")?.click();
             },
             { signal },
@@ -365,8 +366,9 @@ export function initGeneralPrefs(
                         variant: "success",
                     });
                     window.location.replace("/login");
-                } catch (err) {
-                    const code = err instanceof Error ? err.message : "failed";
+                } catch (error) {
+                    const code =
+                        error instanceof Error ? error.message : "failed";
                     showToast(
                         code === "invalid_credentials"
                             ? i18n.t("ui.app.settings.danger_invalid_password")
@@ -382,20 +384,20 @@ export function initGeneralPrefs(
     function bindEmailActions() {
         root.addEventListener(
             "click",
-            async (evt) => {
-                const target = evt.target;
+            async (event) => {
+                const target = event.target;
                 if (!(target instanceof HTMLElement)) return;
 
-                const removeAttr = target.dataset.removeEmail;
-                if (removeAttr) {
+                const removeAttribute = target.dataset.removeEmail;
+                if (removeAttribute) {
                     try {
-                        await removeEmail(removeAttr);
+                        await removeEmail(removeAttribute);
                         await loadEmails();
                         renderEmailList();
-                    } catch (err) {
+                    } catch (error) {
                         const code =
-                            err instanceof Error
-                                ? err.message
+                            error instanceof Error
+                                ? error.message
                                 : "remove_failed";
                         if (code === "cannot_remove_primary_email") {
                             showToast(
@@ -415,10 +417,10 @@ export function initGeneralPrefs(
                     return;
                 }
 
-                const setPrimaryAttr = target.dataset.setPrimary;
-                if (setPrimaryAttr) {
+                const setPrimaryAttribute = target.dataset.setPrimary;
+                if (setPrimaryAttribute) {
                     try {
-                        await setPrimaryEmail(setPrimaryAttr);
+                        await setPrimaryEmail(setPrimaryAttribute);
                         await loadEmails();
                         renderEmailList();
                     } catch (error) {
@@ -427,21 +429,28 @@ export function initGeneralPrefs(
                     return;
                 }
 
-                const resendAttr = target.dataset.resendVerification;
-                if (isOffline() && (resendAttr || target.dataset.accountAction))
+                const resendAttribute = target.dataset.resendVerification;
+                if (
+                    isOffline() &&
+                    (resendAttribute || target.dataset.accountAction)
+                )
                     return;
-                if (resendAttr) {
-                    const allowed = await checkDomainAndNotify(resendAttr);
+                if (resendAttribute) {
+                    const allowed = await checkDomainAndNotify(resendAttribute);
                     if (!allowed) return;
                     try {
-                        const result = await resendVerification(resendAttr);
-                        await openVerifyPopup(resendAttr, result.watchToken);
+                        const result =
+                            await resendVerification(resendAttribute);
+                        await openVerifyPopup(
+                            resendAttribute,
+                            result.watchToken,
+                        );
                         await loadEmails();
                         renderEmailList();
-                    } catch (err) {
+                    } catch (error) {
                         const code =
-                            err instanceof Error
-                                ? err.message
+                            error instanceof Error
+                                ? error.message
                                 : "resend_failed";
                         if (code === "rate_limited") {
                             showStatus(
@@ -502,9 +511,11 @@ export function initGeneralPrefs(
                             await loadEmails();
                             renderEmailList();
                         }
-                    } catch (err) {
+                    } catch (error) {
                         const code =
-                            err instanceof Error ? err.message : "add_failed";
+                            error instanceof Error
+                                ? error.message
+                                : "add_failed";
                         if (code === "already_verified") {
                             showStatus(
                                 i18n.t(
@@ -555,3 +566,4 @@ export function initGeneralPrefs(
         },
     };
 }
+export { initializeGeneralPreferences };

@@ -54,16 +54,16 @@ export function renderTfaMethodTabs(
     root = document,
     onMethodActivated,
 ) {
-    const tabsEl = root.querySelector("#login-tfa-method-nav");
+    const tabsElement = root.querySelector("#login-tfa-method-nav");
     const methodInput = root.querySelector("#login-tfa-method");
     const tfaCodeInput = root.querySelector("#login-tfa-code");
     if (
-        !(tabsEl instanceof HTMLElement) ||
+        !(tabsElement instanceof HTMLElement) ||
         !(methodInput instanceof HTMLInputElement)
     ) {
         return;
     }
-    tabsEl.replaceChildren();
+    tabsElement.replaceChildren();
     const normalizedMethods = Array.isArray(methods) ? methods : [];
     normalizedMethods.forEach((method, index) => {
         const tabLink = document.createElement("a");
@@ -72,7 +72,7 @@ export function renderTfaMethodTabs(
         tabLink.addEventListener("click", (event) => {
             event.preventDefault();
             methodInput.value = method.id;
-            tabsEl.querySelectorAll("a").forEach((entry) => {
+            tabsElement.querySelectorAll("a").forEach((entry) => {
                 entry.classList.toggle("active", entry === tabLink);
             });
             setActiveTfaInputPlaceholder(i18n, method, tfaCodeInput);
@@ -85,9 +85,9 @@ export function renderTfaMethodTabs(
             setActiveTfaInputPlaceholder(i18n, method, tfaCodeInput);
             onMethodChanged?.(method);
         }
-        tabsEl.appendChild(tabLink);
+        tabsElement.appendChild(tabLink);
     });
-    tabsEl.hidden = normalizedMethods.length <= 1;
+    tabsElement.hidden = normalizedMethods.length <= 1;
 }
 
 export function switchToTfaPrompt(

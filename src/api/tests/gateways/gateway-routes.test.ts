@@ -11,8 +11,8 @@ function makeResponse() {
         writeHead(code: number) {
             status = code;
         },
-        end(p: string) {
-            payload = p;
+        end(responseBody: string) {
+            payload = responseBody;
         },
         get status() {
             return status;
@@ -105,7 +105,7 @@ test("gateway routes log enable operations", async () => {
         undefined,
         undefined,
         (level, message, meta) => {
-            entries.push({ level, message, meta });
+            entries.push({ level, message, meta: meta });
         },
     );
     const req = makeRequest("POST", adminToken);
@@ -229,13 +229,13 @@ test("GET /api/v1/admin/sections requires admin auth", async () => {
 
 test("GET /api/v1/admin/sections returns registered sections", async () => {
     const registry = new GatewayRegistry();
-    const uiReg = new UIRegistry();
-    uiReg.registerAdminSection({
+    const uiRegistry = new UIRegistry();
+    uiRegistry.registerAdminSection({
         id: "notifications",
         label: "Notifications",
         scriptUrl: "/static/gateways/notify/admin-section.js",
     });
-    const handler = createGatewayRoutes(registry, uiReg);
+    const handler = createGatewayRoutes(registry, uiRegistry);
 
     const req = makeRequest("GET", adminToken);
     const res = makeResponse();
@@ -258,47 +258,47 @@ test("GET /api/v1/admin/sections returns registered sections", async () => {
 
 test("GET /api/v1/admin/sections filters sections by role access policy", async () => {
     const registry = new GatewayRegistry();
-    const uiReg = new UIRegistry();
-    uiReg.registerAdminSection({
+    const uiRegistry = new UIRegistry();
+    uiRegistry.registerAdminSection({
         id: "audit",
         label: "Audit",
         scriptUrl: "/static/gateways/logging/audit.js",
     });
-    uiReg.registerAdminSection({
+    uiRegistry.registerAdminSection({
         id: "owner-only",
         label: "Owner",
         scriptUrl: "/static/gateways/logging/owner.js",
         access: { onlyRole: "owner" },
     });
-    const handler = createGatewayRoutes(registry, uiReg);
+    const handler = createGatewayRoutes(registry, uiRegistry);
 
-    const adminReq = makeRequest(
+    const adminRequest = makeRequest(
         "GET",
         issueAccessToken("admin-user", "admin", 60),
     );
-    const adminRes = makeResponse();
+    const adminResponse = makeResponse();
     await handler(
-        adminReq,
-        adminRes,
+        adminRequest,
+        adminResponse,
         new URL("/api/v1/admin/sections", "http://localhost"),
     );
-    const adminBody = JSON.parse(adminRes.payload);
+    const adminBody = JSON.parse(adminResponse.payload);
     assert.deepEqual(
         adminBody.data.map((entry: { id: string }) => entry.id),
         ["audit"],
     );
 
-    const ownerReq = makeRequest(
+    const ownerRequest = makeRequest(
         "GET",
         issueAccessToken("owner-user", "owner", 60),
     );
-    const ownerRes = makeResponse();
+    const ownerResponse = makeResponse();
     await handler(
-        ownerReq,
-        ownerRes,
+        ownerRequest,
+        ownerResponse,
         new URL("/api/v1/admin/sections", "http://localhost"),
     );
-    const ownerBody = JSON.parse(ownerRes.payload);
+    const ownerBody = JSON.parse(ownerResponse.payload);
     assert.deepEqual(
         ownerBody.data.map((entry: { id: string }) => entry.id),
         ["audit", "owner-only"],
@@ -307,25 +307,25 @@ test("GET /api/v1/admin/sections filters sections by role access policy", async 
 
 test("GET /api/v1/admin/sections omits disabled sections", async () => {
     const registry = new GatewayRegistry();
-    const uiReg = new UIRegistry();
-    uiReg.registerAdminSection({
+    const uiRegistry = new UIRegistry();
+    uiRegistry.registerAdminSection({
         id: "disabled-section",
         label: "Disabled",
         scriptUrl: "/static/gateways/logging/disabled.js",
         isEnabled: () => false,
     });
-    uiReg.registerAdminSection({
+    uiRegistry.registerAdminSection({
         id: "enabled-section",
         label: "Enabled",
         scriptUrl: "/static/gateways/logging/enabled.js",
         isEnabled: () => true,
     });
-    uiReg.registerAdminSection({
+    uiRegistry.registerAdminSection({
         id: "default-enabled-section",
         label: "Default Enabled",
         scriptUrl: "/static/gateways/logging/default-enabled.js",
     });
-    const handler = createGatewayRoutes(registry, uiReg);
+    const handler = createGatewayRoutes(registry, uiRegistry);
 
     const req = makeRequest("GET", adminToken);
     const res = makeResponse();

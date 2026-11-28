@@ -2,14 +2,14 @@
  * Renders structured document-version differences with git-style semantics.
  *
  * Public exports:
- *   renderDocumentDiff(diff) — renders escaped line changes with a change overview.
- *   renderMarkdownDocumentDiff(diff) — renders a full Markdown document with change overlays.
- *   documentDiff — ctx capability exposing the document diff renderer.
+ *   renderDocumentDifference(diff) — renders escaped line changes with a change overview.
+ *   renderMarkdownDocumentDifference(diff) — renders a full Markdown document with change overlays.
+ *   documentDifference — ctx capability exposing the document diff renderer.
  *
  * Usage:
- *   const { renderDocumentDiff } = uiCtx.capabilities.get('ui:documentDiff');
- *   container.innerHTML = renderDocumentDiff(await response.json().then(({ data }) => data));
- *   article.innerHTML = renderMarkdownDocumentDiff(diff);
+ *   const { renderDocumentDifference } = uiCtx.capabilities.get('ui:documentDiff');
+ *   container.innerHTML = renderDocumentDifference(await response.json().then(({ data }) => data));
+ *   article.innerHTML = renderMarkdownDocumentDifference(diff);
  *
  * @param {{ lines?: Array<{type: 'unchanged'|'added'|'removed'|'changed', content?: string, oldContent?: string, newContent?: string, oldLine?: number|null, newLine?: number|null}> }} diff
  * @returns {string} Escaped document-diff HTML.
@@ -23,7 +23,7 @@ function renderLineNumber(value) {
     return value == null ? "" : escapeHtml(String(value));
 }
 
-let diffInstance = 0;
+let differenceInstance = 0;
 
 function markerPosition(lineIndex, lineCount) {
     return lineCount <= 1 ? 0 : (lineIndex / (lineCount - 1)) * 100;
@@ -42,8 +42,8 @@ function renderRow(type, oldLine, newLine, prefix, content, id) {
     return `<div id="${id}" class="document-diff-line document-diff-line--${type}" data-document-diff-line="${type}"><span class="document-diff-line-number">${renderLineNumber(oldLine)}</span><span class="document-diff-line-number">${renderLineNumber(newLine)}</span><span class="document-diff-prefix" aria-hidden="true">${prefix}</span><pre>${escapeHtml(String(content ?? ""))}</pre></div>`;
 }
 
-export function renderDocumentDiff(diff) {
-    const instanceId = `document-diff-${++diffInstance}`;
+function renderDocumentDifference(diff) {
+    const instanceId = `document-diff-${++differenceInstance}`;
     const markers = [];
     const rows = (Array.isArray(diff?.lines) ? diff.lines : []).flatMap(
         (line, lineIndex, lines) => {
@@ -97,6 +97,7 @@ export function renderDocumentDiff(diff) {
     const overview = renderOverview(markers);
     return `<div class="document-diff-shell"><div class="document-diff">${rows.join("")}</div><nav class="document-diff-overview" aria-label="±">${overview}</nav></div>`;
 }
+export { renderDocumentDifference };
 
 function annotatedMarkdownLine(content, annotationId) {
     const source = String(content ?? "");
@@ -126,8 +127,8 @@ function applyMarkdownAnnotations(html, annotations) {
  * @param {{ lines?: Array<{type: 'unchanged'|'added'|'removed'|'changed', content?: string, oldContent?: string, newContent?: string}> }} diff
  * @returns {string} Sanitized rendered Markdown with diff overlays.
  */
-export function renderMarkdownDocumentDiff(diff) {
-    const instanceId = `document-diff-markdown-${++diffInstance}`;
+function renderMarkdownDocumentDifference(diff) {
+    const instanceId = `document-diff-markdown-${++differenceInstance}`;
     const lines = Array.isArray(diff?.lines) ? diff.lines : [];
     const markers = [];
     const annotations = [];
@@ -174,9 +175,11 @@ export function renderMarkdownDocumentDiff(diff) {
     );
     return `<div class="document-diff-shell document-diff-shell--markdown"><article class="document-diff-markdown">${renderedMarkdown}</article><nav class="document-diff-overview" aria-label="±">${renderOverview(markers)}</nav></div>`;
 }
+export { renderMarkdownDocumentDifference };
 
-export const documentDiff = Object.freeze({
-    renderDocumentDiff,
-    renderMarkdownDocumentDiff,
+const documentDifference = Object.freeze({
+    renderDocumentDifference: renderDocumentDifference,
+    renderMarkdownDocumentDifference: renderMarkdownDocumentDifference,
 });
-uiCtx.capabilities.contribute("ui:documentDiff", documentDiff);
+export { documentDifference };
+uiCtx.capabilities.contribute("ui:documentDiff", documentDifference);

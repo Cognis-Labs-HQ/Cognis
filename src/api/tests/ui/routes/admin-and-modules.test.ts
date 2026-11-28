@@ -6,7 +6,7 @@ import { createUiRoutes } from "../../../routes/ui/index.js";
 import { issueAccessToken } from "../../../../gateways/auth/access-tokens.js";
 import { createResponseRecorder } from "../ui-routes-test-helpers.js";
 
-test("module ui routes resolve installed external modules by UUID", async (t) => {
+test("module ui routes resolve installed external modules by UUID", async (testContext) => {
     const uuid = "11111111-2222-4333-8444-555555555555";
     const moduleRoot = path.resolve("external-modules", uuid);
     await mkdir(path.join(moduleRoot, "ui"), { recursive: true });
@@ -18,7 +18,7 @@ test("module ui routes resolve installed external modules by UUID", async (t) =>
         path.join(moduleRoot, "ui", "index.html"),
         "<!doctype html><title>External meeting module</title>",
     );
-    t.after(() => rm(moduleRoot, { recursive: true, force: true }));
+    testContext.after(() => rm(moduleRoot, { recursive: true, force: true }));
 
     const route = createUiRoutes({
         listManifests: async () => [
@@ -54,25 +54,25 @@ test("administration page is visible to admins only", async () => {
     assert.equal(anonymous.headers.location, "/login");
 
     const userToken = issueAccessToken("u1", "user", 60);
-    const userRes = createResponseRecorder();
+    const userResponse = createResponseRecorder();
     await route(
         { headers: { cookie: `cognis_access_token=${userToken}` } } as any,
-        userRes.res as any,
+        userResponse.res as any,
         new URL("http://localhost/administration"),
     );
-    assert.equal(userRes.status, 302);
-    assert.equal(userRes.headers.location, "/dashboard");
+    assert.equal(userResponse.status, 302);
+    assert.equal(userResponse.headers.location, "/dashboard");
 
     const adminToken = issueAccessToken("u1", "admin", 60);
-    const adminRes = createResponseRecorder();
+    const adminResponse = createResponseRecorder();
     await route(
         { headers: { cookie: `cognis_access_token=${adminToken}` } } as any,
-        adminRes.res as any,
+        adminResponse.res as any,
         new URL("http://localhost/administration"),
     );
-    assert.equal(adminRes.status, 200);
-    assert.match(adminRes.body, /static\/app\/administration\/index\.js/);
-    assert.match(adminRes.body, /id="app"/);
+    assert.equal(adminResponse.status, 200);
+    assert.match(adminResponse.body, /static\/app\/administration\/index\.js/);
+    assert.match(adminResponse.body, /id="app"/);
 });
 
 test("module detail deep links serve the modules SPA entry", async () => {
@@ -106,22 +106,22 @@ test("users page is visible to admins only", async () => {
     assert.equal(anonymous.headers.location, "/login");
 
     const userToken = issueAccessToken("u1", "user", 60);
-    const userRes = createResponseRecorder();
+    const userResponse = createResponseRecorder();
     await route(
         { headers: { cookie: `cognis_access_token=${userToken}` } } as any,
-        userRes.res as any,
+        userResponse.res as any,
         new URL("http://localhost/users"),
     );
-    assert.equal(userRes.status, 302);
-    assert.equal(userRes.headers.location, "/dashboard");
+    assert.equal(userResponse.status, 302);
+    assert.equal(userResponse.headers.location, "/dashboard");
 
     const adminToken = issueAccessToken("u1", "admin", 60);
-    const adminRes = createResponseRecorder();
+    const adminResponse = createResponseRecorder();
     await route(
         { headers: { cookie: `cognis_access_token=${adminToken}` } } as any,
-        adminRes.res as any,
+        adminResponse.res as any,
         new URL("http://localhost/users"),
     );
-    assert.equal(adminRes.status, 200);
-    assert.match(adminRes.body, /static\/app\/users\/index\.js/);
+    assert.equal(adminResponse.status, 200);
+    assert.match(adminResponse.body, /static\/app\/users\/index\.js/);
 });

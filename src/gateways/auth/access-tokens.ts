@@ -55,9 +55,12 @@ function persistTokenStore() {
             null,
             2,
         );
-        const tempPath = `${tokenStorePath}.${process.pid}.tmp`;
-        writeFileSync(tempPath, payload, { encoding: "utf8", mode: 0o600 });
-        renameSync(tempPath, tokenStorePath);
+        const temporaryPath = `${tokenStorePath}.${process.pid}.tmp`;
+        writeFileSync(temporaryPath, payload, {
+            encoding: "utf8",
+            mode: 0o600,
+        });
+        renameSync(temporaryPath, tokenStorePath);
         hasWarnedPersistFailure = false;
     } catch (error) {
         if (!hasWarnedPersistFailure) {

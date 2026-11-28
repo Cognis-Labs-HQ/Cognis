@@ -1,4 +1,4 @@
-import net from "node:net";
+import network from "node:net";
 import tls from "node:tls";
 
 interface SmtpResponse {
@@ -7,7 +7,7 @@ interface SmtpResponse {
 }
 
 export class SmtpSession {
-    private buf = "";
+    private buffer = "";
     private failure?: Error;
     private rejectPending?: (error: Error) => void;
     private readonly onError = (error: Error) => {
@@ -19,29 +19,29 @@ export class SmtpSession {
     private readonly onClose = () =>
         this.onError(this.failure ?? new Error("smtp_connection_closed"));
     private readonly onTimeout = () =>
-        this.sock.destroy(new Error("smtp_timeout"));
-    private pending: ((r: SmtpResponse) => void) | null = null;
-    private readonly listener: (d: string) => void;
+        this.socket.destroy(new Error("smtp_timeout"));
+    private pending: ((response: SmtpResponse) => void) | null = null;
+    private readonly listener: (data: string) => void;
 
-    constructor(private readonly sock: net.Socket | tls.TLSSocket) {
-        this.listener = (d: string) => {
-            this.buf += d;
+    constructor(private readonly socket: network.Socket | tls.TLSSocket) {
+        this.listener = (data: string) => {
+            this.buffer += data;
             this.processBuffer();
         };
-        sock.setEncoding("utf8");
-        sock.on("data", this.listener);
-        sock.on("error", this.onError);
-        sock.on("close", this.onClose);
-        sock.on("timeout", this.onTimeout);
-        sock.setTimeout(SMTP_TIMEOUT_MS);
+        socket.setEncoding("utf8");
+        socket.on("data", this.listener);
+        socket.on("error", this.onError);
+        socket.on("close", this.onClose);
+        socket.on("timeout", this.onTimeout);
+        socket.setTimeout(SMTP_TIMEOUT_MS);
     }
 
     private processBuffer(): void {
         while (true) {
-            const end = this.buf.indexOf("\r\n");
+            const end = this.buffer.indexOf("\r\n");
             if (end === -1) break;
-            const line = this.buf.slice(0, end);
-            this.buf = this.buf.slice(end + 2);
+            const line = this.buffer.slice(0, end);
+            this.buffer = this.buffer.slice(end + 2);
             if (line.length < 3) continue;
             const code = Number.parseInt(line.slice(0, 3), 10);
             const isContinuation = line.length > 3 && line[3] === "-";
@@ -65,33 +65,34 @@ export class SmtpSession {
     }
 
     cmd(command: string): Promise<SmtpResponse> {
-        this.sock.write(`${command}\r\n`);
+        this.socket.write(`${command}\r\n`);
         return this.read();
     }
 
     writeRaw(data: string): void {
-        this.sock.write(data);
+        this.socket.write(data);
     }
 
     detach(): void {
-        this.sock.removeListener("data", this.listener);
-        this.sock.removeListener("error", this.onError);
-        this.sock.removeListener("close", this.onClose);
-        this.sock.removeListener("timeout", this.onTimeout);
+        this.socket.removeListener("data", this.listener);
+        this.socket.removeListener("error", this.onError);
+        this.socket.removeListener("close", this.onClose);
+        this.socket.removeListener("timeout", this.onTimeout);
     }
 
-    get socket(): net.Socket | tls.TLSSocket {
-        return this.sock;
+    get socket(): network.Socket | tls.TLSSocket {
+        return this.socket;
     }
 
     destroy(): void {
-        this.sock.destroy();
+        this.socket.destroy();
     }
 }
 
-export const SMTP_TIMEOUT_MS = 30_000;
+const SMTP_TIMEOUT_MS = 30_000;
+export { SMTP_TIMEOUT_MS };
 
-function awaitConnection<Socket extends net.Socket>(
+function awaitConnection<Socket extends network.Socket>(
     socket: Socket,
     event: "connect" | "secureConnect",
 ): Promise<Socket> {
@@ -133,14 +134,14 @@ export async function openSession(
                   tls.connect({
                       host,
                       port,
-                      servername: net.isIP(host) ? undefined : host,
+                      servername: network.isIP(host) ? undefined : host,
                       rejectUnauthorized: !allowSelfSigned,
                       signal,
                   }),
                   "secureConnect",
               )
             : await awaitConnection(
-                  net.createConnection({ host, port, signal }),
+                  network.createConnection({ host, port, signal }),
                   "connect",
               );
     return new SmtpSession(socket);
@@ -157,7 +158,7 @@ export async function upgradeToTls(
         tls.connect({
             socket: session.socket,
             host,
-            servername: net.isIP(host) ? undefined : host,
+            servername: network.isIP(host) ? undefined : host,
             rejectUnauthorized: !allowSelfSigned,
             signal,
         }),

@@ -1,4 +1,4 @@
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 
 export interface ChatroomSourceInput {
     roomId: string;
@@ -9,7 +9,7 @@ export interface ChatroomSourceInput {
 
 /** Compare-and-set prevents concurrent integrations from claiming the same room. */
 export async function changeChatroomSource(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     input: ChatroomSourceInput,
     release = false,
     administrator = false,

@@ -1,8 +1,13 @@
 import { readdir, readFile, stat } from "node:fs/promises";
 import { basename, join, relative, resolve, sep } from "node:path";
 
-const DEFAULT_DOC_LANGUAGE = "en";
-const CHANGELOG_DOCS_DIR = resolve(process.cwd(), "src", "docs", "changelog");
+const DEFAULT_DOCUMENT_LANGUAGE = "en";
+const CHANGELOG_DOCUMENTS_DIRECTORY = resolve(
+    process.cwd(),
+    "src",
+    "docs",
+    "changelog",
+);
 const EXTERNAL_MODULES_ROOT =
     process.env.COGNIS_EXTERNAL_MODULES_ROOT ??
     resolve(process.cwd(), "external-modules");
@@ -14,8 +19,8 @@ const API_PACKAGE_JSON_FILE = resolve(
 );
 const RELEASE_NOTES_SUMMARY_MAX_LENGTH = 260;
 const MAX_RELEASE_CHANGE_BULLETS = 8;
-const SAFE_LANG_PATTERN = /^[a-z]{2}(?:-[a-z]{2})?$/;
-const LOCALIZED_DOC_SUFFIX_PATTERN = /\.([a-z]{2}(?:-[a-z]{2})?)\.md$/i;
+const SAFE_LANGUAGE_PATTERN = /^[a-z]{2}(?:-[a-z]{2})?$/;
+const LOCALIZED_DOCUMENT_SUFFIX_PATTERN = /\.([a-z]{2}(?:-[a-z]{2})?)\.md$/i;
 
 export type ChangelogEntrySummary = {
     slug: string;
@@ -100,12 +105,13 @@ function normalizePreferredLanguages(preferredLanguages: string[]): string[] {
     const normalized: string[] = [];
     for (const language of preferredLanguages) {
         const normalizedLanguage = String(language).trim().toLowerCase();
-        if (!SAFE_LANG_PATTERN.test(normalizedLanguage)) continue;
+        if (!SAFE_LANGUAGE_PATTERN.test(normalizedLanguage)) continue;
         if (seen.has(normalizedLanguage)) continue;
         seen.add(normalizedLanguage);
         normalized.push(normalizedLanguage);
     }
-    if (!seen.has(DEFAULT_DOC_LANGUAGE)) normalized.push(DEFAULT_DOC_LANGUAGE);
+    if (!seen.has(DEFAULT_DOCUMENT_LANGUAGE))
+        normalized.push(DEFAULT_DOCUMENT_LANGUAGE);
     return normalized;
 }
 
@@ -125,7 +131,9 @@ function parseChangelogFileName(fileName: string): {
 } | null {
     if (!fileName.endsWith(".md")) return null;
 
-    const localizedSuffixMatch = fileName.match(LOCALIZED_DOC_SUFFIX_PATTERN);
+    const localizedSuffixMatch = fileName.match(
+        LOCALIZED_DOCUMENT_SUFFIX_PATTERN,
+    );
     if (localizedSuffixMatch) {
         const slug = fileName.slice(0, -localizedSuffixMatch[0].length).trim();
         if (!slug || slug === "index") return null;
@@ -181,7 +189,10 @@ export async function readReleaseVersion(): Promise<string> {
 
 export async function loadReleaseChangelogEntries(
     preferredLanguagesInput: string[] = [],
-    changelogRoots: string[] = [CHANGELOG_DOCS_DIR, EXTERNAL_MODULES_ROOT],
+    changelogRoots: string[] = [
+        CHANGELOG_DOCUMENTS_DIRECTORY,
+        EXTERNAL_MODULES_ROOT,
+    ],
 ): Promise<ChangelogEntrySummary[]> {
     const preferredLanguages = normalizePreferredLanguages(
         preferredLanguagesInput,
@@ -258,7 +269,7 @@ export async function loadReleaseChangelogEntries(
     for (const root of changelogRoots) {
         await collectChangelogFiles(
             root,
-            root === CHANGELOG_DOCS_DIR ? "" : undefined,
+            root === CHANGELOG_DOCUMENTS_DIRECTORY ? "" : undefined,
             root,
         );
     }

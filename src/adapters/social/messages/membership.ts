@@ -1,4 +1,4 @@
-import type { DbMessagesStore } from "./store.js";
+import type { DatabaseMessagesStore } from "./store.js";
 import type { SocialMessagesProfileStore } from "./profile-store-contract.js";
 
 export interface ChatroomMembershipMutation {
@@ -16,7 +16,7 @@ export interface ChatroomMembershipCapability {
 }
 
 export function createChatroomMembershipCapability(
-    messagesStore: DbMessagesStore,
+    messagesStore: DatabaseMessagesStore,
     profileStore: SocialMessagesProfileStore,
 ): ChatroomMembershipCapability {
     return {

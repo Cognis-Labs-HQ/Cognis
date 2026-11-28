@@ -37,8 +37,8 @@ function fixture() {
             navigator: { serviceWorker: { controller: worker } },
             MessageChannel,
             console,
-            setTimeout: (fn) => {
-                timers.set(++next, fn);
+            setTimeout: (callback) => {
+                timers.set(++next, callback);
                 return next;
             },
             clearTimeout: (id) => timers.delete(id),

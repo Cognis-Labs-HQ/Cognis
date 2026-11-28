@@ -253,8 +253,8 @@ test("weighted ranking is explicit and rolling observations expire", async () =>
         id: "weighted",
         strategy: "weighted",
         season: undefined,
-        criteria: definition.criteria.map((c) => ({
-            ...c,
+        criteria: definition.criteria.map((criterion) => ({
+            ...criterion,
             window: { kind: "rolling", durationMs: 1000 } as const,
             weight: 1,
         })),

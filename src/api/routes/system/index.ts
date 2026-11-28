@@ -5,7 +5,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import type { BootstrapLog, HealthService } from "@cognis/core";
 import { readJson } from "../../reuse/read-json.js";
 import type { UserPreferenceStore } from "../../reuse/preference-store.js";
-import { resolveLangs } from "../../reuse/preferred-languages.js";
+import { resolveLanguages } from "../../reuse/preferred-languages.js";
 import {
     resolveRouteContext,
     type RouteContext,
@@ -36,8 +36,8 @@ async function listLanguages(log?: BootstrapLog) {
                     .split(/\r?\n/)
                     .filter(Boolean)
                     .map((line) => {
-                        const [k, ...rest] = line.split(":");
-                        return [k.trim(), rest.join(":").trim()];
+                        const [key, ...rest] = line.split(":");
+                        return [key.trim(), rest.join(":").trim()];
                     }),
             );
             if (data.iso_code && data.name)
@@ -53,7 +53,7 @@ async function listLanguages(log?: BootstrapLog) {
     return languages;
 }
 
-function parseDemoModeFromEnv() {
+function parseDemoModeFromEnvironment() {
     const raw = process.env.COGNIS_UI_DEMO_MODE;
     return raw === "1" || raw === "true";
 }
@@ -123,7 +123,7 @@ export function createSystemRoutes(
         url: URL,
     ): Promise<boolean> => {
         if (await tutorialCompletionRoutes(req, res, url)) return true;
-        const logMeta = {
+        const logMetadata = {
             component: "api-system",
             method: req.method ?? "GET",
             path: url.pathname,
@@ -134,7 +134,7 @@ export function createSystemRoutes(
             req.method === "GET";
 
         if (isHealthRoute) {
-            log?.("debug", "Served health status.", logMeta);
+            log?.("debug", "Served health status.", logMetadata);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
                 JSON.stringify({
@@ -154,7 +154,7 @@ export function createSystemRoutes(
             if (!claims) return true;
             const data = listCapabilities?.() ?? [];
             log?.("debug", "Listed registered capabilities.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
                 count: data.length,
             });
@@ -169,7 +169,7 @@ export function createSystemRoutes(
         ) {
             const languages = await listLanguages(log);
             log?.("debug", "Listed UI languages.", {
-                ...logMeta,
+                ...logMetadata,
                 count: languages.length,
             });
             res.writeHead(200, { "content-type": "application/json" });
@@ -182,12 +182,14 @@ export function createSystemRoutes(
             req.method === "GET"
         ) {
             log?.("debug", "Served UI config.", {
-                ...logMeta,
-                demoMode: parseDemoModeFromEnv(),
+                ...logMetadata,
+                demoMode: parseDemoModeFromEnvironment(),
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(
-                JSON.stringify({ data: { demoMode: parseDemoModeFromEnv() } }),
+                JSON.stringify({
+                    data: { demoMode: parseDemoModeFromEnvironment() },
+                }),
             );
             return true;
         }
@@ -198,17 +200,17 @@ export function createSystemRoutes(
         ) {
             const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
-            const langs = resolveLangs(url);
+            const languages = resolveLanguages(url);
             const [releaseVersion, entries] = await Promise.all([
                 readReleaseVersion(),
-                loadReleaseChangelogEntries(langs),
+                loadReleaseChangelogEntries(languages),
             ]);
             log?.("debug", "Served release changelog feed.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
                 releaseVersion,
                 entryCount: entries.length,
-                langs,
+                langs: languages,
             });
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { releaseVersion, entries } }));
@@ -230,12 +232,12 @@ export function createSystemRoutes(
                 : data?.enforceTfaForAllUsers === true;
             if (!data && raw) {
                 log?.("warn", "Failed to parse persisted security settings.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: claims.sub,
                 });
             }
             log?.("debug", "Read security settings.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
             });
             res.writeHead(200, { "content-type": "application/json" });
@@ -289,7 +291,9 @@ export function createSystemRoutes(
                         error.message !== "user_validation_unavailable"
                     )
                         throw error;
-                    res.writeHead(400, { "content-type": "application/json" });
+                    res.writeHead(400, {
+                        "content-type": "application/json",
+                    });
                     res.end(
                         JSON.stringify({
                             error: {
@@ -351,7 +355,7 @@ export function createSystemRoutes(
                         "warn",
                         "Failed to apply mandatory TFA enforcement policy.",
                         {
-                            ...logMeta,
+                            ...logMetadata,
                             accountId: claims.sub,
                             error:
                                 error instanceof Error
@@ -370,7 +374,7 @@ export function createSystemRoutes(
                         "info",
                         "Revoked setup-pending access tokens after disabling mandatory TFA.",
                         {
-                            ...logMeta,
+                            ...logMetadata,
                             accountId: claims.sub,
                             revokedSetupPendingCount:
                                 enforcementResult.revokedSetupPendingCount,
@@ -379,7 +383,7 @@ export function createSystemRoutes(
                 }
             }
             log?.("info", "Updated security settings.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: claims.sub,
                 trustedDomainCount: trustedDomains.length,
                 userValidationMode,
@@ -396,7 +400,7 @@ export function createSystemRoutes(
             try {
                 markdown = await readFile(licenseMarkdownFile, "utf8");
             } catch {
-                log?.("warn", "License file was not found.", logMeta);
+                log?.("warn", "License file was not found.", logMetadata);
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -408,7 +412,7 @@ export function createSystemRoutes(
                 );
                 return true;
             }
-            log?.("debug", "Served license markdown.", logMeta);
+            log?.("debug", "Served license markdown.", logMetadata);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { markdown } }));
             return true;

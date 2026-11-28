@@ -75,7 +75,7 @@ async function loadUsers() {
 }
 
 async function promptInput({ title, label, type = "text", placeholder = "" }) {
-    let inputEl = null;
+    let inputElement = null;
     const result = await openPopup({
         title,
         body: () => `
@@ -102,13 +102,13 @@ async function promptInput({ title, label, type = "text", placeholder = "" }) {
         ],
         closeProtection: true,
         onOpen: (overlay) => {
-            inputEl = overlay.querySelector("#users-input");
+            inputElement = overlay.querySelector("#users-input");
         },
     });
-    if (result !== "confirm" || !(inputEl instanceof HTMLInputElement)) {
+    if (result !== "confirm" || !(inputElement instanceof HTMLInputElement)) {
         return null;
     }
-    return inputEl.value.trim();
+    return inputElement.value.trim();
 }
 
 async function fetchUserQuotas(username) {
@@ -393,8 +393,9 @@ async function runUserMenuAction(action, username) {
                 .get("notify:emailClient")
                 ?.listUserEmails({ accountId: username })) ?? [];
         const unverifiedEmail =
-            emails.find((e) => e.primary && !e.verified) ??
-            emails.find((e) => !e.verified);
+            emails.find(
+                (emailEntry) => emailEntry.primary && !emailEntry.verified,
+            ) ?? emails.find((emailEntry) => !emailEntry.verified);
         if (!unverifiedEmail) {
             showToast(i18n.t("ui.app.users.no_unverified_email"), {
                 variant: "error",
@@ -541,11 +542,11 @@ function bindUsersInteractions() {
         });
     });
 
-    root.querySelectorAll(".users-toggle-btn").forEach((btn) => {
-        btn.addEventListener("click", async () => {
-            const username = btn.dataset.username;
-            const enabled = btn.dataset.enabled === "true";
-            const lifecycleState = btn.dataset.lifecycleState ?? "active";
+    root.querySelectorAll(".users-toggle-btn").forEach((button) => {
+        button.addEventListener("click", async () => {
+            const username = button.dataset.username;
+            const enabled = button.dataset.enabled === "true";
+            const lifecycleState = button.dataset.lifecycleState ?? "active";
             if (!username) return;
             const isInactiveLifecycle =
                 lifecycleState === "archived" ||
@@ -571,10 +572,10 @@ function bindUsersInteractions() {
         });
     });
 
-    root.querySelectorAll(".users-menu-btn").forEach((btn) => {
-        btn.addEventListener("click", async () => {
-            const username = btn.dataset.username;
-            if (!username || !(btn instanceof HTMLButtonElement)) return;
+    root.querySelectorAll(".users-menu-btn").forEach((button) => {
+        button.addEventListener("click", async () => {
+            const username = button.dataset.username;
+            if (!username || !(button instanceof HTMLButtonElement)) return;
             const isSelf = username === localStorage.getItem("cognis_account");
             const user = users.find((entry) => entry.accountId === username);
             if (!user) return;
@@ -582,7 +583,9 @@ function bindUsersInteractions() {
                 (await uiCtx.capabilities
                     .get("notify:emailClient")
                     ?.listUserEmails({ accountId: username })) ?? [];
-            const hasUnverifiedEmails = emails.some((e) => !e.verified);
+            const hasUnverifiedEmails = emails.some(
+                (emailEntry) => !emailEntry.verified,
+            );
             const menuItems = [
                 {
                     id: user?.isFounder ? "unset-founder" : "set-founder",
@@ -625,15 +628,17 @@ function bindUsersInteractions() {
                       ]
                     : []),
             ];
-            const action = await openHamburgerMenu(btn, { items: menuItems });
+            const action = await openHamburgerMenu(button, {
+                items: menuItems,
+            });
             if (!action) return;
             await runUserMenuAction(action, username);
         });
     });
 
-    root.querySelectorAll(".users-delete-btn").forEach((btn) => {
-        btn.addEventListener("click", async () => {
-            const username = btn.dataset.username;
+    root.querySelectorAll(".users-delete-btn").forEach((button) => {
+        button.addEventListener("click", async () => {
+            const username = button.dataset.username;
             if (!username) return;
             await runUserMenuAction("delete", username);
         });
@@ -671,9 +676,9 @@ function bindUsersInteractions() {
     });
 }
 
-export async function mount(rootEl, { signal } = {}) {
+export async function mount(rootElement, { signal } = {}) {
     pageSignal = signal;
-    root = rootEl;
+    root = rootElement;
     await ensurePageStylesheet("/static/styles/users.css", { signal });
     i18n = await createI18n();
     readUserDetails = createUserDetailsReader({ i18n, signal });

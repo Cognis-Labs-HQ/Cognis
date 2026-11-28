@@ -42,14 +42,14 @@ export function emojiDisplayName(emoji, i18n) {
 }
 
 export async function encryptMessage(key, plaintext) {
-    const initVector = crypto.getRandomValues(new Uint8Array(12));
+    const initializationVector = crypto.getRandomValues(new Uint8Array(12));
     const ciphertext = await crypto.subtle.encrypt(
-        { name: "AES-GCM", iv: initVector },
+        { name: "AES-GCM", iv: initializationVector },
         key,
         TEXT_ENCODER.encode(plaintext),
     );
     return {
-        iv: bytesToHex(initVector),
+        iv: bytesToHex(initializationVector),
         ciphertext: bytesToHex(new Uint8Array(ciphertext)),
     };
 }

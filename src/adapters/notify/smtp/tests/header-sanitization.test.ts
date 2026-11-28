@@ -1,7 +1,7 @@
 import { createTestSender } from "./fixtures/sender.js";
 import test from "node:test";
 import assert from "node:assert/strict";
-import net from "node:net";
+import network from "node:net";
 
 type MockSmtpServer = {
     host: string;
@@ -10,50 +10,55 @@ type MockSmtpServer = {
 };
 
 function createMockSmtpServer(
-    handleConnection: (conn: net.Socket, attemptNumber: number) => void,
+    handleConnection: (
+        connection: network.Socket,
+        attemptNumber: number,
+    ) => void,
 ): Promise<MockSmtpServer> {
     let attempts = 0;
     return new Promise((resolve) => {
-        const server = net.createServer((conn) => {
+        const server = network.createServer((connection) => {
             attempts++;
-            handleConnection(conn, attempts);
+            handleConnection(connection, attempts);
         });
         server.listen(0, "127.0.0.1", () => {
-            const addr = server.address() as net.AddressInfo;
+            const address = server.address() as network.AddressInfo;
             resolve({
                 host: "127.0.0.1",
-                port: addr.port,
+                port: address.port,
                 close: () =>
-                    new Promise<void>((res, rej) =>
-                        server.close((err) => (err ? rej(err) : res())),
+                    new Promise<void>((res, reject) =>
+                        server.close((error) =>
+                            error ? reject(error) : res(),
+                        ),
                     ),
             });
         });
     });
 }
 
-const noopSleep = () => Promise.resolve();
+const noOperationSleep = () => Promise.resolve();
 
 test("SmtpNotificationSender strips CR/LF from display name in Subject header", async () => {
     let capturedData = "";
 
-    const server = await createMockSmtpServer((conn) => {
-        conn.setEncoding("utf8");
-        conn.write("220 mock.example.com SMTP\r\n");
+    const server = await createMockSmtpServer((connection) => {
+        connection.setEncoding("utf8");
+        connection.write("220 mock.example.com SMTP\r\n");
 
-        conn.on("data", (chunk: string) => {
+        connection.on("data", (chunk: string) => {
             capturedData += chunk;
             const upper = chunk.toUpperCase();
             if (upper.includes("EHLO") || upper.includes("HELO"))
-                conn.write("250 OK\r\n");
-            if (upper.includes("MAIL FROM")) conn.write("250 OK\r\n");
-            if (upper.includes("RCPT TO")) conn.write("250 OK\r\n");
+                connection.write("250 OK\r\n");
+            if (upper.includes("MAIL FROM")) connection.write("250 OK\r\n");
+            if (upper.includes("RCPT TO")) connection.write("250 OK\r\n");
             if (upper.includes("\r\nDATA\r\n") || chunk.trim() === "DATA")
-                conn.write("354 Start mail input\r\n");
-            if (chunk.includes("\r\n.\r\n")) conn.write("250 OK\r\n");
+                connection.write("354 Start mail input\r\n");
+            if (chunk.includes("\r\n.\r\n")) connection.write("250 OK\r\n");
             if (upper.includes("QUIT")) {
-                conn.write("221 Bye\r\n");
-                conn.end();
+                connection.write("221 Bye\r\n");
+                connection.end();
             }
         });
     });
@@ -68,7 +73,7 @@ test("SmtpNotificationSender strips CR/LF from display name in Subject header", 
                 greylistRetries: 0,
             },
             undefined,
-            noopSleep,
+            noOperationSleep,
         );
         const maliciousName =
             "Attacker\r\nBcc: victim@evil.example.com\r\nX-Injected: yes";

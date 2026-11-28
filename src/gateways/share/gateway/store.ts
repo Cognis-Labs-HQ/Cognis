@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from "node:crypto";
-import type { DbExecutor } from "../../db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../db/reuse/db-executor.js";
 import {
     issueShareTokenValue,
     parseShareToken,
@@ -131,7 +131,7 @@ function parseRecord(
 
 export class ShareTokenStore {
     constructor(
-        private readonly db: DbExecutor,
+        private readonly db: DatabaseExecutor,
         private readonly log?: (
             level: string,
             message: string,

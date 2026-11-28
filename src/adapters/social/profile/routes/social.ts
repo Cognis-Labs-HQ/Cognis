@@ -4,7 +4,7 @@ import {
     resolveRouteContext,
     type RouteContext,
 } from "../../../../api/reuse/route-context.js";
-import type { DbProfileStore, AccountProfile } from "../store.js";
+import type { DatabaseProfileStore, AccountProfile } from "../store.js";
 import { visibilityRank } from "../store.js";
 import { createFollowersCapability } from "../follow-membership.js";
 
@@ -62,7 +62,7 @@ async function canFollowProfile(
     requesterRole: string,
     requester: AccountProfile | null,
     target: AccountProfile,
-    profileStore: DbProfileStore,
+    profileStore: DatabaseProfileStore,
 ): Promise<boolean> {
     if (!isProfileInteractive(target)) return false;
     if (
@@ -81,7 +81,7 @@ async function canFollowProfile(
 }
 
 async function ensureRequesterProfile(
-    profileStore: DbProfileStore,
+    profileStore: DatabaseProfileStore,
     accountId: string,
     role: string,
 ): Promise<AccountProfile | null> {
@@ -103,7 +103,7 @@ async function ensureRequesterProfile(
 }
 
 export function createSocialRoutes(
-    profileStore: DbProfileStore,
+    profileStore: DatabaseProfileStore,
     routeContext?: RouteContext,
     options: SocialRoutesOptions = {},
 ) {
@@ -134,7 +134,9 @@ export function createSocialRoutes(
                     requesterAccountId: claims.sub,
                 },
             );
-            const filtered = results.filter((p) => p.accountId !== claims.sub);
+            const filtered = results.filter(
+                (profile) => profile.accountId !== claims.sub,
+            );
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: filtered.map(publicProfile) }));
             return true;
@@ -266,7 +268,9 @@ export function createSocialRoutes(
             }
             if (req.method === "POST") {
                 if (!isProfileInteractive(target)) {
-                    res.writeHead(409, { "content-type": "application/json" });
+                    res.writeHead(409, {
+                        "content-type": "application/json",
+                    });
                     res.end(
                         JSON.stringify({
                             error: {
@@ -281,7 +285,9 @@ export function createSocialRoutes(
                 if (
                     await profileStore.isBlocked(target.accountId, claims.sub)
                 ) {
-                    res.writeHead(404, { "content-type": "application/json" });
+                    res.writeHead(404, {
+                        "content-type": "application/json",
+                    });
                     res.end(
                         JSON.stringify({
                             error: {
@@ -293,7 +299,9 @@ export function createSocialRoutes(
                     return true;
                 }
                 if (claims.sub === target.accountId) {
-                    res.writeHead(400, { "content-type": "application/json" });
+                    res.writeHead(400, {
+                        "content-type": "application/json",
+                    });
                     res.end(
                         JSON.stringify({
                             error: {
@@ -315,7 +323,9 @@ export function createSocialRoutes(
                     target,
                 );
                 if (!canDiscover) {
-                    res.writeHead(404, { "content-type": "application/json" });
+                    res.writeHead(404, {
+                        "content-type": "application/json",
+                    });
                     res.end(
                         JSON.stringify({
                             error: {
@@ -334,7 +344,9 @@ export function createSocialRoutes(
                     profileStore,
                 );
                 if (!canFollow) {
-                    res.writeHead(403, { "content-type": "application/json" });
+                    res.writeHead(403, {
+                        "content-type": "application/json",
+                    });
                     res.end(
                         JSON.stringify({
                             error: {
@@ -409,7 +421,9 @@ export function createSocialRoutes(
             }
             if (req.method === "POST") {
                 if (!isProfileInteractive(target)) {
-                    res.writeHead(409, { "content-type": "application/json" });
+                    res.writeHead(409, {
+                        "content-type": "application/json",
+                    });
                     res.end(
                         JSON.stringify({
                             error: {
@@ -422,7 +436,9 @@ export function createSocialRoutes(
                     return true;
                 }
                 if (claims.sub === target.accountId) {
-                    res.writeHead(400, { "content-type": "application/json" });
+                    res.writeHead(400, {
+                        "content-type": "application/json",
+                    });
                     res.end(
                         JSON.stringify({
                             error: {

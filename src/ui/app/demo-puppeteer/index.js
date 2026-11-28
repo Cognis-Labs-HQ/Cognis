@@ -2,7 +2,12 @@ import { mergeElementConfig } from "../../reuse/element-registry.js";
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-export async function runDemoPuppeteer({ state, render, isRunningRef, i18n }) {
+export async function runDemoPuppeteer({
+    state,
+    render,
+    isRunningRef: isRunningReference,
+    i18n,
+}) {
     const [sandboxPage] = state.pages;
     if (!sandboxPage) return;
 
@@ -37,10 +42,10 @@ export async function runDemoPuppeteer({ state, render, isRunningRef, i18n }) {
     ];
 
     for (const step of scenarios) {
-        if (!isRunningRef.value) break;
+        if (!isRunningReference.value) break;
         await step();
     }
 
-    isRunningRef.value = false;
+    isRunningReference.value = false;
     render(i18n.t("ui.app.demo.complete"));
 }

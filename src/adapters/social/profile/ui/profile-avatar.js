@@ -126,7 +126,7 @@ function buildInitialsHtml(
     { avatarKey = "", imageClass = "" } = {},
 ) {
     const color = getProfileInitialsColor(colorSeed);
-    const dataAttrs = avatarKey
+    const dataAttributes = avatarKey
         ? ` data-avatar-key="${escapeHtml(avatarKey)}"` +
           ` data-avatar-label="${escapeHtml(label)}"` +
           ` data-avatar-color-seed="${escapeHtml(colorSeed)}"` +
@@ -135,7 +135,7 @@ function buildInitialsHtml(
         : "";
     return (
         `<span class="${escapeHtml(fallbackClass)}"` +
-        ` style="--initials-bg: ${escapeHtml(color)};"${dataAttrs}>` +
+        ` style="--initials-bg: ${escapeHtml(color)};"${dataAttributes}>` +
         `${escapeHtml(getProfileInitials(label))}</span>`
     );
 }

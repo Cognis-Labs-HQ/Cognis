@@ -10,7 +10,7 @@ import assert from "node:assert/strict";
 import { loadTestModule } from "../../../tooling/reuse/test-module.ts";
 import { BROWSER_FLOW_CONTRACTS } from "../../../ui/reuse/flow-contracts.js";
 import { createReuseResources } from "../../../ui/reuse/resources.js";
-import { createSubPageRegistry } from "../../../ui/reuse/sub-page-registry.js";
+import { createNestedPageRegistry } from "../../../ui/reuse/sub-page-registry.js";
 
 function fixture() {
     const values = new Map([
@@ -38,7 +38,9 @@ function fixture() {
             "./offline-runtime.js": { registerOfflineRuntime },
             "./resources.js": { createReuseResources },
             "./top-banners.js": { createTopBanners },
-            "./sub-page-registry.js": { createSubPageRegistry },
+            "./sub-page-registry.js": {
+                createNestedPageRegistry: createNestedPageRegistry,
+            },
         },
     );
     const window = new EventTarget();

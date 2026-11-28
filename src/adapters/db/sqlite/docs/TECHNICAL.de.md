@@ -4,7 +4,7 @@
 
 ## Schnittstellen
 
-`SqliteDbGateway(client)` implementiert DatabaseGateway. SqliteClient braucht all(statement, params), run(statement, params) mit changes und exec(statement). Strukturierte Befehle nutzen SQLite-Platzhalter und Konfliktklauseln.
+`SqliteDatabaseGateway(client)` implementiert DatabaseGateway. SqliteClient braucht all(statement, params), run(statement, params) mit changes und exec(statement). Strukturierte Befehle nutzen SQLite-Platzhalter und Konfliktklauseln.
 
 ## Konfiguration
 
@@ -18,7 +18,7 @@ Der SQLite-Adapter stellt ein schlankes Datenbank-Gateway für SQLite-basierte D
 
 ### Verantwortlichkeiten
 
-- Die `DatabaseGateway`-Schnittstelle über `SqliteDbGateway` implementieren.
+- Die `DatabaseGateway`-Schnittstelle über `SqliteDatabaseGateway` implementieren.
 - Abfragen, Befehle und Transaktionen gegen einen bereitgestellten SQLite-Client ausführen.
 - Strukturierte Datenbankbefehle mit SQLite-Platzhalter- und Konfliktsyntax unterstützen.
 - SQLite-spezifische Auth-Schema-Helfer sowie SQL-Initialisierungs- und Migrationsskripte bereitstellen.

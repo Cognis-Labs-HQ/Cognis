@@ -4,7 +4,7 @@ import { promisify } from "node:util";
 import type { ModuleMarketplaceLog } from "./index.js";
 import { commandFailureText } from "../../reuse/command-failure-text.js";
 
-const execFileAsync = promisify(execFile);
+const executorFileAsync = promisify(execFile);
 const TRANSFER_TIMEOUT_MS = 15 * 60 * 1000;
 const RETRY_DELAYS_MS = [250, 1_000];
 const TRANSIENT_FAILURE =
@@ -26,7 +26,7 @@ interface CheckoutOptions {
 
 export async function checkoutModuleRepository(
     options: CheckoutOptions,
-    execute: GitRunner = execFileAsync,
+    execute: GitRunner = executorFileAsync,
 ): Promise<string> {
     const { cloneUrl, commit, root, environment, log } = options;
     if (!/^[a-f0-9]{7,64}$/i.test(commit)) {

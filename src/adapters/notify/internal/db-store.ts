@@ -12,8 +12,8 @@
  * @module adapters/notify/internal/db-store
  */
 import { randomUUID } from "node:crypto";
-import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
-import type { StructuredDbTableDef } from "../../../gateways/db/reuse/db-table.js";
+import type { DatabaseExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { StructuredDatabaseTableDefinition } from "../../../gateways/db/reuse/db-table.js";
 
 import type { NotificationEnvelope } from "../../../gateways/notify/contracts/sender.js";
 import type {
@@ -39,13 +39,13 @@ const MAX_PER_USER = 50;
 
 type StoreLog = (
     level: string,
-    msg: string,
+    message: string,
     meta?: Record<string, unknown>,
 ) => void;
 
-export class DbInternalNotificationStore implements IInternalNotificationStore {
+class DatabaseInternalNotificationStore implements IInternalNotificationStore {
     constructor(
-        private readonly db: DbExecutor,
+        private readonly db: DatabaseExecutor,
         private readonly serverSecret: string,
         private readonly log?: StoreLog,
     ) {}
@@ -73,9 +73,9 @@ export class DbInternalNotificationStore implements IInternalNotificationStore {
                     name: "idx_internal_notif_account",
                 },
             ],
-        } satisfies StructuredDbTableDef & {
+        } satisfies StructuredDatabaseTableDefinition & {
             columns: Array<
-                StructuredDbTableDef["columns"][number] & {
+                StructuredDatabaseTableDefinition["columns"][number] & {
                     renamedFrom?: string;
                 }
             >;
@@ -96,7 +96,7 @@ export class DbInternalNotificationStore implements IInternalNotificationStore {
             actionUrl: envelope.actionUrl,
             metadata: envelope.metadata,
         };
-        const { iv, ciphertext } = await encryptPayload(
+        const { iv: iv, ciphertext } = await encryptPayload(
             key,
             JSON.stringify(payload),
         );
@@ -109,7 +109,7 @@ export class DbInternalNotificationStore implements IInternalNotificationStore {
             values: {
                 id,
                 account_id: envelope.recipientUsername,
-                iv,
+                iv: iv,
                 payload_enc: ciphertext,
                 is_read: 0,
                 created_at: now,
@@ -189,14 +189,17 @@ export class DbInternalNotificationStore implements IInternalNotificationStore {
                     read: Boolean(row.is_read),
                     createdAt: Number(row.created_at),
                 });
-            } catch (err) {
+            } catch (error) {
                 this.log?.(
                     "warn",
                     "Failed to decrypt notification; row skipped. Verify DATA_ENCRYPTION_KEY matches the value used when this notification was encrypted (the key cannot be rotated without re-encrypting existing rows). If the key is unchanged, check the database row for corruption.",
                     {
                         component: "notify-internal",
                         notifId: row.id,
-                        error: err instanceof Error ? err.message : String(err),
+                        error:
+                            error instanceof Error
+                                ? error.message
+                                : String(error),
                     },
                 );
             }
@@ -294,3 +297,4 @@ export class DbInternalNotificationStore implements IInternalNotificationStore {
         return total;
     }
 }
+export { DatabaseInternalNotificationStore };

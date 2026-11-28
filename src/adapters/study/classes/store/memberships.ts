@@ -1,4 +1,4 @@
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import {
     getClassById,
     getClassroomState,
@@ -8,7 +8,7 @@ import { rowToClassMembership } from "./rows.js";
 import type { ClassMembershipRow } from "./types.js";
 
 export async function requestJoinClass(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     classId: string,
     studentAccountId: string,
 ): Promise<ClassMembershipRow> {
@@ -50,7 +50,7 @@ export async function requestJoinClass(
 }
 
 export async function leaveClass(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     classId: string,
     studentAccountId: string,
 ): Promise<void> {
@@ -67,7 +67,7 @@ export async function leaveClass(
 }
 
 export async function inviteToClass(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     classId: string,
     studentAccountId: string,
     teacherAccountId: string,
@@ -109,7 +109,7 @@ export async function inviteToClass(
 }
 
 export async function getClassMembers(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     classId: string,
     teacherAccountId: string,
     search?: string,
@@ -147,7 +147,7 @@ export async function getClassMembers(
 }
 
 export async function getClassMembersForViewer(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     classId: string,
     viewerAccountId: string,
 ): Promise<ClassMembershipRow[]> {
@@ -188,7 +188,7 @@ export async function getClassMembersForViewer(
 }
 
 export async function removeClassMemberByTeacher(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     classId: string,
     teacherAccountId: string,
     studentAccountId: string,
@@ -220,7 +220,7 @@ export async function removeClassMemberByTeacher(
 }
 
 export async function getPendingJoinRequests(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     classId: string,
     teacherAccountId: string,
 ): Promise<ClassMembershipRow[]> {
@@ -250,7 +250,7 @@ export async function getPendingJoinRequests(
 }
 
 export async function reviewJoinRequest(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     classId: string,
     studentAccountId: string,
     teacherAccountId: string,
@@ -273,7 +273,7 @@ export async function reviewJoinRequest(
 }
 
 async function getMembership(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     classId: string,
     studentAccountId: string,
 ): Promise<ClassMembershipRow | null> {

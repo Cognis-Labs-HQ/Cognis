@@ -5,12 +5,13 @@
  * @param {object} dependencies Composer state, rendering and persistence callbacks.
  * @returns {object} Panel creation and positioning operations.
  */
+import { commitLayoutEdit, stageLayoutReset } from "./layout-save.js";
+
 import { fitComposerPanel } from "./responsive-layout.js";
 export function createEditorPanelHandlers({
     state,
     i18n,
     bindPanelItemDrag,
-    compactPlacements,
     endEditMode,
     saveLayout,
     renderGridComposer,
@@ -19,14 +20,14 @@ export function createEditorPanelHandlers({
     function bindPanelDrag(panel) {
         const handle = panel.querySelector("#composer-panel-drag-handle");
         if (!handle) return;
-        handle.addEventListener("pointerdown", (e) => {
-            if (e.button !== 0) return;
-            if (e.target.closest("button")) return;
-            e.preventDefault();
-            handle.setPointerCapture(e.pointerId);
-            const startX = e.clientX - panel.offsetLeft;
-            const startY = e.clientY - panel.offsetTop;
-            function onMove(e) {
+        handle.addEventListener("pointerdown", (event) => {
+            if (event.button !== 0) return;
+            if (event.target.closest("button")) return;
+            event.preventDefault();
+            handle.setPointerCapture(event.pointerId);
+            const startX = event.clientX - panel.offsetLeft;
+            const startY = event.clientY - panel.offsetTop;
+            function onMove(moveEvent) {
                 const bounds = getComposerPanelHorizontalBounds(
                     panel.offsetWidth,
                 );
@@ -39,11 +40,11 @@ export function createEditorPanelHandlers({
                 );
                 const newLeft = Math.max(
                     minLeft,
-                    Math.min(maxLeft, e.clientX - startX),
+                    Math.min(maxLeft, moveEvent.clientX - startX),
                 );
                 const newTop = Math.max(
                     minTop,
-                    Math.min(maxTop, e.clientY - startY),
+                    Math.min(maxTop, moveEvent.clientY - startY),
                 );
                 panel.style.left = `${newLeft}px`;
                 panel.style.top = `${newTop}px`;
@@ -61,7 +62,7 @@ export function createEditorPanelHandlers({
         });
     }
     function getComposerPanelSafeTop() {
-        const navRowBottom =
+        const navigationRowBottom =
             state.root.querySelector(".global-navrow")?.getBoundingClientRect()
                 ?.bottom ?? 0;
         const topbarBottom =
@@ -69,7 +70,7 @@ export function createEditorPanelHandlers({
                 ?.bottom ?? 0;
         return Math.max(
             12,
-            Math.ceil(Math.max(navRowBottom, topbarBottom) + 12),
+            Math.ceil(Math.max(navigationRowBottom, topbarBottom) + 12),
         );
     }
     /**
@@ -81,14 +82,14 @@ export function createEditorPanelHandlers({
      * @returns {{ minLeft: number, maxLeft: number }}
      */
     function getComposerPanelHorizontalBounds(panelWidth) {
-        const workspaceRect = state.root
+        const workspaceRectangle = state.root
             .querySelector(".workspace")
             ?.getBoundingClientRect();
         const inset = 12;
-        if (workspaceRect) {
-            const minLeft = Math.ceil(workspaceRect.left + inset);
+        if (workspaceRectangle) {
+            const minLeft = Math.ceil(workspaceRectangle.left + inset);
             const maxLeft = Math.floor(
-                workspaceRect.right - panelWidth - inset,
+                workspaceRectangle.right - panelWidth - inset,
             );
             if (maxLeft >= minLeft) {
                 return { minLeft, maxLeft };
@@ -105,13 +106,14 @@ export function createEditorPanelHandlers({
     }
 
     function createElementsPanel() {
-        const hiddenElements = state.elements.filter((e) =>
-            state.layout.hidden.includes(e.id),
+        const hiddenElements = state.elements.filter((candidateElement) =>
+            state.layout.hidden.includes(candidateElement.id),
         );
 
         const panel = document.createElement("div");
         panel.id = "composer-elements-panel";
         panel.className = "composer-panel";
+        panel.inert = state.saving === true;
 
         let listHtml;
         if (hiddenElements.length === 0) {
@@ -119,8 +121,8 @@ export function createEditorPanelHandlers({
         } else {
             listHtml = hiddenElements
                 .map(
-                    (el) =>
-                        `<li class="composer-library-item" data-composer-panel-item="${el.id}"><span>${el.label}</span><button type="button" class="composer-add-btn btn-confirm">${i18n.t("ui.reuse.add")}</button></li>`,
+                    (elementDefinition) =>
+                        `<li class="composer-library-item" data-composer-panel-item="${elementDefinition.id}"><span>${elementDefinition.label}</span><button type="button" class="composer-add-btn btn-confirm">${i18n.t("ui.reuse.add")}</button></li>`,
                 )
                 .join("");
         }
@@ -128,33 +130,39 @@ export function createEditorPanelHandlers({
         panel.innerHTML = `
       <div id="composer-panel-drag-handle" class="composer-panel-header">
         <span class="composer-panel-title">${i18n.t("ui.reuse.elements")}</span>
-        <button class="composer-panel-minimize-btn btn-neutral" type="button">−</button>
+        <button aria-label="${i18n.t("ui.reuse.elements")}" aria-expanded="true" class="composer-panel-minimize-btn btn-neutral" type="button">−</button>
       </div>
       <div class="composer-panel-body">
         <ul class="composer-library-list">${listHtml}</ul>
       </div>
       <div class="composer-panel-actions">
-        <a href="#" class="composer-discard-btn btn-cancel btn-animated" role="button">${i18n.t("ui.reuse.discard")}</a>
-        <a href="#" class="composer-done-btn btn-confirm btn-animated" role="button">${i18n.t("ui.reuse.done")}</a>
+        <div class="composer-panel-decisions">
+          <a href="#" class="composer-discard-btn btn-cancel btn-animated" role="button">${i18n.t("ui.reuse.discard")}</a>
+          <a href="#" class="composer-done-btn btn-confirm btn-animated" role="button">${i18n.t("ui.reuse.done")}</a>
+        </div>
         <a href="#" class="composer-reset-btn btn-neutral btn-animated" role="button">↺ ${i18n.t("ui.reuse.reset_layout")}</a>
       </div>
     `;
 
+        document.body.appendChild(panel);
+        const panelWidth = panel.getBoundingClientRect().width;
         const safeTop = getComposerPanelSafeTop();
         if (state.panelPosition !== null) {
             panel.style.top = `${Math.max(safeTop, state.panelPosition.top)}px`;
-            panel.style.left = `${clampComposerPanelLeft(state.panelPosition.left, 240)}px`;
+            panel.style.left = `${clampComposerPanelLeft(state.panelPosition.left, panelWidth)}px`;
             panel.style.right = "auto";
         } else {
-            const gridRect = state.contentGrid.getBoundingClientRect();
-            const panelLeft = clampComposerPanelLeft(gridRect.right + 12, 240);
-            const panelTop = gridRect.top;
+            const gridRectangle = state.contentGrid.getBoundingClientRect();
+            const panelLeft = clampComposerPanelLeft(
+                gridRectangle.right + 12,
+                panelWidth,
+            );
+            const panelTop = gridRectangle.top;
             panel.style.top = `${Math.max(safeTop, panelTop)}px`;
             panel.style.left = `${panelLeft}px`;
             panel.style.right = "auto";
         }
         state.elementsPanel = panel;
-        document.body.appendChild(panel);
         fitComposerPanel(panel);
         bindPanelDrag(panel);
 
@@ -167,17 +175,22 @@ export function createEditorPanelHandlers({
                 panel.querySelector(
                     ".composer-panel-minimize-btn",
                 ).textContent = minimized ? "+" : "−";
+                panel
+                    .querySelector(".composer-panel-minimize-btn")
+                    .setAttribute("aria-expanded", String(!minimized));
+                fitComposerPanel(panel);
             });
 
         panel
             .querySelector(".composer-done-btn")
             .addEventListener("click", async (event) => {
                 event.preventDefault();
-                compactPlacements();
-                state.editing = false;
-                endEditMode();
-                await saveLayout();
-                renderGridComposer();
+                await commitLayoutEdit({
+                    state,
+                    save: saveLayout,
+                    finish: endEditMode,
+                    render: renderGridComposer,
+                });
             });
 
         panel
@@ -192,26 +205,28 @@ export function createEditorPanelHandlers({
 
         panel
             .querySelector(".composer-reset-btn")
-            .addEventListener("click", async (event) => {
+            .addEventListener("click", (event) => {
                 event.preventDefault();
-                state.layout = { placements: [], hidden: [] };
-                initializePlacements();
-                state.layoutSnapshot = JSON.parse(JSON.stringify(state.layout));
-                await saveLayout();
-                renderGridComposer();
+                stageLayoutReset({
+                    state,
+                    initialize: initializePlacements,
+                    render: renderGridComposer,
+                });
             });
 
         panel.querySelectorAll("[data-composer-panel-item]").forEach((item) => {
-            const elId = item.dataset.composerPanelItem;
-            const element = state.elements.find((e) => e.id === elId);
+            const elementId = item.dataset.composerPanelItem;
+            const element = state.elements.find(
+                (candidateElement) => candidateElement.id === elementId,
+            );
             if (element) bindPanelItemDrag(item, element);
             item.querySelector(".composer-add-btn")?.addEventListener(
                 "click",
                 () => {
                     state.layout.hidden = state.layout.hidden.filter(
-                        (id) => id !== elId,
+                        (id) => id !== elementId,
                     );
-                    initializePlacements({ reveal: [elId] });
+                    initializePlacements({ reveal: [elementId] });
                     renderGridComposer();
                 },
             );

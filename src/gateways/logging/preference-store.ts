@@ -1,9 +1,9 @@
-import type { DbExecutor } from "../db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../db/reuse/db-executor.js";
 
 export type LoggingPreferenceValue = string | number | boolean;
 
 export class LoggingPreferenceStore {
-    constructor(private readonly db: DbExecutor) {}
+    constructor(private readonly db: DatabaseExecutor) {}
 
     async ensureSchema(): Promise<void> {
         await this.db.ensureTable({

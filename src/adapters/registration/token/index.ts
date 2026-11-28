@@ -1,5 +1,5 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
-import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import type { LocalAccountStore } from "../../../gateways/auth/reuse/account-store.js";
 import type { RegistrationGatewayAdapter } from "../../../gateways/registration/gateway.js";
 
@@ -94,12 +94,12 @@ function parseToken(rawToken: string): { tokenId: string; tokenHash: string } {
     };
 }
 
-export function createAdapter(deps: {
-    dbExecutor: DbExecutor;
+export function createAdapter(dependencies: {
+    dbExecutor: DatabaseExecutor;
     accountStore: LocalAccountStore;
     canSendInviteEmail: () => boolean;
     sendInviteEmail: (
-        to: string,
+        recipient: string,
         inviterDisplayName: string,
         inviteUrl: string,
     ) => Promise<void>;
@@ -121,7 +121,7 @@ export function createAdapter(deps: {
     ) => void;
 }): RegistrationGatewayAdapter {
     const {
-        dbExecutor,
+        dbExecutor: databaseExecutor,
         accountStore,
         canSendInviteEmail,
         sendInviteEmail,
@@ -129,20 +129,20 @@ export function createAdapter(deps: {
         isEmailRegistered,
         upsertVerifiedPrimaryEmail,
         log,
-    } = deps;
+    } = dependencies;
 
     let schemaInitialized: Promise<void> | null = null;
     const externalConsumptionByToken = new Map<string, Promise<boolean>>();
 
     function ensureReady(): Promise<void> {
         if (!schemaInitialized) {
-            schemaInitialized = initSchema();
+            schemaInitialized = initializeSchema();
         }
         return schemaInitialized;
     }
 
-    async function initSchema(): Promise<void> {
-        await dbExecutor.ensureTable({
+    async function initializeSchema(): Promise<void> {
+        await databaseExecutor.ensureTable({
             name: "registration_tokens",
             columns: [
                 { name: "id", type: "text", primaryKey: true },
@@ -183,7 +183,7 @@ export function createAdapter(deps: {
                 },
             ],
         });
-        await dbExecutor.ensureTable({
+        await databaseExecutor.ensureTable({
             name: "user_emails",
             columns: [
                 { name: "account_id", type: "text", notNull: true },
@@ -208,7 +208,7 @@ export function createAdapter(deps: {
 
     async function readInviteByTokenHash(tokenHash: string) {
         await ensureReady();
-        const result = await dbExecutor.executeCommand({
+        const result = await databaseExecutor.executeCommand({
             option: "SELECT",
             table: "registration_tokens",
             alias: "registration_tokens",
@@ -250,7 +250,7 @@ export function createAdapter(deps: {
         inviterAccountId: string,
     ): Promise<number> {
         const nowIso = new Date().toISOString();
-        const result = await dbExecutor.executeCommand({
+        const result = await databaseExecutor.executeCommand({
             option: "SELECT",
             table: "registration_tokens",
             count: true,
@@ -306,7 +306,7 @@ export function createAdapter(deps: {
         const expiresAt = new Date(Date.now() + INVITE_EXPIRY_MS).toISOString();
         const inviteUrl = buildInviteUrl(input.inviteBaseUrl, rawToken);
 
-        await dbExecutor.executeCommand({
+        await databaseExecutor.executeCommand({
             option: "INSERT",
             table: "registration_tokens",
             values: {
@@ -327,7 +327,7 @@ export function createAdapter(deps: {
                     inviteUrl,
                 );
             } catch (error) {
-                await dbExecutor.executeCommand({
+                await databaseExecutor.executeCommand({
                     option: "DELETE",
                     table: "registration_tokens",
                     where: [{ column: "id", value: tokenId }],
@@ -337,7 +337,7 @@ export function createAdapter(deps: {
         }
         const revokeTimestamp = new Date().toISOString();
         if (inviteeEmail) {
-            await dbExecutor.executeCommand({
+            await databaseExecutor.executeCommand({
                 option: "UPDATE",
                 table: "registration_tokens",
                 set: {
@@ -374,7 +374,7 @@ export function createAdapter(deps: {
                   },
               ]
             : undefined;
-        const result = await dbExecutor.executeCommand({
+        const result = await databaseExecutor.executeCommand({
             option: "SELECT",
             table: "registration_tokens",
             alias: "registration_tokens",
@@ -449,7 +449,7 @@ export function createAdapter(deps: {
     }): Promise<boolean> {
         await ensureReady();
         const nowIso = new Date().toISOString();
-        const result = await dbExecutor.executeCommand({
+        const result = await databaseExecutor.executeCommand({
             option: "UPDATE",
             table: "registration_tokens",
             set: {
@@ -543,14 +543,14 @@ export function createAdapter(deps: {
             throw error;
         }
         if (displayName) {
-            await dbExecutor.executeCommand({
+            await databaseExecutor.executeCommand({
                 option: "UPDATE",
                 table: "accounts",
                 set: { display_name: displayName },
                 where: [{ column: "id", value: created.username }],
             });
         }
-        await dbExecutor.executeCommand({
+        await databaseExecutor.executeCommand({
             option: "UPDATE",
             table: "accounts",
             set: { invited_by_account_id: invite.inviterAccountId },
@@ -565,7 +565,7 @@ export function createAdapter(deps: {
 
         const nowIso = new Date().toISOString();
         const { tokenHash } = parseToken(input.token);
-        const redeemResult = await dbExecutor.executeCommand({
+        const redeemResult = await databaseExecutor.executeCommand({
             option: "UPDATE",
             table: "registration_tokens",
             set: {
@@ -597,7 +597,7 @@ export function createAdapter(deps: {
         await ensureReady();
         const { tokenHash } = parseToken(input.token);
         const redeemedAt = new Date().toISOString();
-        const result = await dbExecutor.executeCommand({
+        const result = await databaseExecutor.executeCommand({
             option: "UPDATE",
             table: "registration_tokens",
             set: {
@@ -611,7 +611,7 @@ export function createAdapter(deps: {
             ],
         });
         if (Number(result.rowCount ?? 0) !== 1) {
-            const redemption = await dbExecutor.executeCommand({
+            const redemption = await databaseExecutor.executeCommand({
                 option: "SELECT",
                 table: "registration_tokens",
                 columns: ["redeemed_account_id"],
@@ -633,7 +633,7 @@ export function createAdapter(deps: {
                 );
             }
         } catch (error) {
-            await dbExecutor.executeCommand({
+            await databaseExecutor.executeCommand({
                 option: "UPDATE",
                 table: "registration_tokens",
                 set: { redeemed_at: null, redeemed_account_id: null },
@@ -668,7 +668,7 @@ export function createAdapter(deps: {
     async function resetFounderInviteLimit(accountId: string): Promise<void> {
         await ensureReady();
         const nowIso = new Date().toISOString();
-        await dbExecutor.executeCommand({
+        await databaseExecutor.executeCommand({
             option: "UPDATE",
             table: "registration_tokens",
             set: {

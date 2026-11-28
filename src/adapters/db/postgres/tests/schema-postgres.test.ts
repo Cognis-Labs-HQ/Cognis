@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import test from "node:test";
 import { Pool } from "pg";
-import { createDbExecutor } from "../index.js";
-import type { StructuredDbTableDef } from "../../../../gateways/db/reuse/db-table.js";
+import { createDatabaseExecutor } from "../index.js";
+import type { StructuredDatabaseTableDefinition } from "../../../../gateways/db/reuse/db-table.js";
 
 const databaseUrl = process.env.COGNIS_TEST_POSTGRES_URL;
 
@@ -22,11 +22,11 @@ test(
             connectionString: databaseUrl,
             options: `-c search_path=${schema}`,
         });
-        const executor = await createDbExecutor({
+        const executor = await createDatabaseExecutor({
             databaseUrl: databaseUrl!,
             pool,
         });
-        const definition: StructuredDbTableDef = {
+        const definition: StructuredDatabaseTableDefinition = {
             name: "resources",
             columns: [
                 { name: "id", type: "text", primaryKey: true },
@@ -195,7 +195,7 @@ test(
             await context.test(
                 "composite unique declarations are healed and existing reversed key order is reused",
                 async () => {
-                    const composite: StructuredDbTableDef = {
+                    const composite: StructuredDatabaseTableDefinition = {
                         name: "memberships",
                         columns: [
                             { name: "resource_id", type: "text" },

@@ -10,7 +10,7 @@ export class MemoryDatabaseGateway implements DatabaseGateway {
         statement: string,
         params?: unknown[],
     ): Promise<QueryResult<Row>> {
-        this.queryLog.push({ statement, params });
+        this.queryLog.push({ statement, params: params });
         return { rows: [], rowCount: 0 };
     }
 
@@ -18,7 +18,7 @@ export class MemoryDatabaseGateway implements DatabaseGateway {
         statement: string,
         params?: unknown[],
     ): Promise<{ affectedRows: number }> {
-        this.queryLog.push({ statement, params });
+        this.queryLog.push({ statement, params: params });
         return { affectedRows: 0 };
     }
 

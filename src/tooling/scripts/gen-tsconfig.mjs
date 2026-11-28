@@ -16,11 +16,11 @@ import { readdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const repoRoot = path.resolve(
+const repositoryRoot = path.resolve(
     path.dirname(fileURLToPath(import.meta.url)),
     "../../..",
 );
-const srcRoot = path.join(repoRoot, "src");
+const sourceRoot = path.join(repositoryRoot, "src");
 
 function findCompositeProjects(dir) {
     const results = [];
@@ -39,7 +39,7 @@ function findCompositeProjects(dir) {
         isComposite = false;
     }
     if (isComposite) {
-        results.push(path.relative(repoRoot, dir));
+        results.push(path.relative(repositoryRoot, dir));
         return results;
     }
     for (const entry of entries) {
@@ -55,16 +55,16 @@ function findCompositeProjects(dir) {
     return results;
 }
 
-const projects = findCompositeProjects(srcRoot).sort();
+const projects = findCompositeProjects(sourceRoot).sort();
 
 const tsconfig = {
     extends: "./tsconfig.base.json",
     files: [],
-    references: projects.map((p) => ({ path: `./${p}` })),
+    references: projects.map((project) => ({ path: `./${project}` })),
 };
 
 const output = JSON.stringify(tsconfig, null, 4) + "\n";
-writeFileSync(path.join(repoRoot, "tsconfig.json"), output, "utf8");
+writeFileSync(path.join(repositoryRoot, "tsconfig.json"), output, "utf8");
 
 writeTerminalReport(
     "stdout",

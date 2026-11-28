@@ -1,9 +1,9 @@
 import type { DatabaseGateway, QueryResult } from "@cognis/core";
 import {
-    buildStructuredDbCommandStatement,
-    type StructuredDbCommand,
-    type StructuredDbCommandResult,
-    type StructuredDbDialect,
+    buildStructuredDatabaseCommandStatement,
+    type StructuredDatabaseCommand,
+    type StructuredDatabaseCommandResult,
+    type StructuredDatabaseDialect,
 } from "../../../gateways/db/reuse/db-command.js";
 
 export interface SqliteRunResult {
@@ -19,7 +19,7 @@ export interface SqliteClient {
     exec(statement: string): Promise<void>;
 }
 
-const SQLITE_STRUCTURED_DB_DIALECT: StructuredDbDialect = {
+const SQLITE_STRUCTURED_DATABASE_DIALECT: StructuredDatabaseDialect = {
     createPlaceholder() {
         return "?";
     },
@@ -54,15 +54,15 @@ const SQLITE_STRUCTURED_DB_DIALECT: StructuredDbDialect = {
     },
 };
 
-export class SqliteDbGateway implements DatabaseGateway {
+class SqliteDatabaseGateway implements DatabaseGateway {
     constructor(private readonly client: SqliteClient) {}
 
     async executeCommand<Row = Record<string, unknown>>(
-        command: StructuredDbCommand,
-    ): Promise<StructuredDbCommandResult<Row>> {
-        const statement = buildStructuredDbCommandStatement(
+        command: StructuredDatabaseCommand,
+    ): Promise<StructuredDatabaseCommandResult<Row>> {
+        const statement = buildStructuredDatabaseCommandStatement(
             command,
-            SQLITE_STRUCTURED_DB_DIALECT,
+            SQLITE_STRUCTURED_DATABASE_DIALECT,
         );
         if (statement.returnsRows) {
             const rows = await this.client.all<Row>(
@@ -105,3 +105,4 @@ export class SqliteDbGateway implements DatabaseGateway {
         }
     }
 }
+export { SqliteDatabaseGateway };

@@ -10,7 +10,7 @@
 | ------------------------- | --------------------------------------------- | ------------------------------------------------------------------------- |
 | `profile:createProfile`   | `(accountId, handle, role?) => Promise<void>` | Erstellt eine Profilzeile; wird von Auth bei der Registrierung aufgerufen |
 | `profile:setRoleByHandle` | `(handle, role) => Promise<void>`             | Synchronisiert die Rolle in der Profilzeile                               |
-| `preferences:store`       | `DbUserPreferenceStore`                       | Benutzerpräferenz-Persistenz                                              |
+| `preferences:store`       | `DatabaseUserPreferenceStore`                 | Benutzerpräferenz-Persistenz                                              |
 
 ### Bereitgestellte UI-Capabilities
 
@@ -55,12 +55,12 @@ Beitrags-Sichtbarkeit (`only_me | private | friends | community`) ist immer durc
 
 ### Wichtige Quellen
 
-| Pfad                                           | Zweck                                          |
-| ---------------------------------------------- | ---------------------------------------------- |
-| `src/adapters/social/profile/index.ts`         | Bootstrap-Einstiegspunkt                       |
-| `src/adapters/social/profile/routes/social.ts` | Folgen, Blockieren, Follower-Routen            |
-| `src/adapters/social/profile/routes/posts.ts`  | Beitrags-Erstellung, -Auflistung und -Löschung |
-| `src/adapters/social/profile/store.ts`         | `DbProfileStore` — alle Profil-SQL-Operationen |
+| Pfad                                           | Zweck                                                |
+| ---------------------------------------------- | ---------------------------------------------------- |
+| `src/adapters/social/profile/index.ts`         | Bootstrap-Einstiegspunkt                             |
+| `src/adapters/social/profile/routes/social.ts` | Folgen, Blockieren, Follower-Routen                  |
+| `src/adapters/social/profile/routes/posts.ts`  | Beitrags-Erstellung, -Auflistung und -Löschung       |
+| `src/adapters/social/profile/store.ts`         | `DatabaseProfileStore` — alle Profil-SQL-Operationen |
 
 ### Direkte Profilaktualisierungen
 

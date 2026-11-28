@@ -1,7 +1,24 @@
 /**
- * Main grid overlay helpers for page composer edit mode.
- * Export: createGridOverlayHandlers(deps). @param {object} deps @returns {object}
+ * Builds main-grid cells, drag/resize previews and the element editing panel.
+ *
+ * Public exports:
+ *   createGridOverlayHandlers(deps) — creates grid geometry, placement and editing operations.
+ *
+ * Usage:
+ *   const grid = createGridOverlayHandlers(dependencies);
+ *   grid.computeGridDimensions();
+ *   gridSection.appendChild(grid.createGridOverlay());
+ *   // Remove the floating panel owned by the handlers when the page ends.
+ *   grid.destroy();
+ *
+ * @param {object} deps Live composer state and injected sizing, rendering, save and edit-mode callbacks.
+ * @returns {object} Grid measurement, placement, cell/panel creation and destroy operations.
  */
+import { snapDragPlacement } from "./drag-placement.js";
+import { findGridSwap, previewGridSwap, applyGridSwap } from "./swap-model.js";
+import { appendResizeControls } from "./resize-controls.js";
+import { bindComposerPointerDrag } from "./pointer-drag.js";
+
 import {
     composerPresentation,
     applyComposerPresentation,
@@ -16,10 +33,7 @@ import {
 } from "./grid-math.js";
 import { createEditorPanelHandlers } from "./editor-panel.js";
 import { createGridGeometry } from "./grid-geometry.js";
-import {
-    resolveInitialGridWidth,
-    resolveGridWidthBounds,
-} from "./grid-sizing.js";
+import { resolveInitialGridWidth } from "./grid-sizing.js";
 import { bindLayoutKeyboard } from "./keyboard-layout.js";
 export function createGridOverlayHandlers({
     state,
@@ -33,6 +47,7 @@ export function createGridOverlayHandlers({
 }) {
     const {
         computeGridDimensions,
+        gridPointerPosition,
         gridColumnOffset,
         gridRowOffset,
         gridColumnSpanSize,
@@ -42,73 +57,31 @@ export function createGridOverlayHandlers({
         snapPixelColumnFloor,
         snapPixelRowFloor,
     } = createGridGeometry(state, UNIT);
-    function canPlace(col, row, w, h, excludeId) {
-        if (col < 0 || row < 0 || col + w > state.gridCols) return false;
+    function canPlace(column, row, width, height, excludeId) {
+        if (column < 0 || row < 0 || column + width > state.gridColumns)
+            return false;
         const cells = buildOccupiedSet(
             state.layout?.placements ?? [],
             state.layout?.hidden ?? [],
             excludeId,
         );
-        return checkPlacement(cells, col, row, w, h);
+        return checkPlacement(cells, column, row, width, height);
     }
-    function applyGravity(col, row, w, h, excludeId) {
-        const step = gridStep(state.gridRows);
-        for (let r = 0; r <= row; r += step) {
-            if (canPlace(col, r, w, h, excludeId)) return r;
-        }
-        return row;
-    }
-    function findSwapCandidate(col, row, w, h, excludeId) {
-        const displaced = [];
-        for (const placement of state.layout?.placements ?? []) {
-            if (placement.id === excludeId) continue;
-            if ((state.layout?.hidden ?? []).includes(placement.id)) continue;
-            const overlapsH =
-                col < placement.col + placement.w && col + w > placement.col;
-            const overlapsV =
-                row < placement.row + placement.h && row + h > placement.row;
-            if (overlapsH && overlapsV) displaced.push(placement);
-        }
-        if (displaced.length !== 1) return null;
-        const candidate = displaced[0];
-        const source = state.layout.placements.find((p) => p.id === excludeId);
-        if (!source) return null;
-        if (source.col + candidate.w > state.gridCols) return null;
-        const others = (state.layout?.placements ?? []).filter(
-            (p) =>
-                p.id !== excludeId &&
-                p.id !== candidate.id &&
-                !(state.layout?.hidden ?? []).includes(p.id),
-        );
-        const occupied = buildOccupiedSet(others, [], null);
-        if (
-            !checkPlacement(
-                occupied,
-                source.col,
-                source.row,
-                candidate.w,
-                candidate.h,
-            )
-        )
-            return null;
-        const postSwapColsOverlap =
-            candidate.col < source.col + candidate.w &&
-            candidate.col + w > source.col;
-        const postSwapRowsOverlap =
-            candidate.row < source.row + candidate.h &&
-            candidate.row + h > source.row;
-        if (postSwapColsOverlap && postSwapRowsOverlap) return null;
-        return candidate;
-    }
-    function buildDropZoneLine(srcCol, srcRow, candidate, tgtCol, tgtRow) {
+    function buildDropZoneLine(
+        sourceColumn,
+        sourceRow,
+        candidate,
+        targetColumn,
+        targetRow,
+    ) {
         const line = document.createElement("div");
         line.className = "composer-dropzone-line";
-        const dCol = Math.abs(tgtCol - srcCol);
-        const dRow = Math.abs(tgtRow - srcRow);
-        if (dCol >= dRow) {
+        const columnDelta = Math.abs(targetColumn - sourceColumn);
+        const rowDelta = Math.abs(targetRow - sourceRow);
+        if (columnDelta >= rowDelta) {
             line.classList.add("composer-dropzone-line--v");
             const lineX =
-                tgtCol >= srcCol
+                targetColumn >= sourceColumn
                     ? gridColumnOffset(candidate.col) +
                       gridColumnSpanSize(candidate.w)
                     : gridColumnOffset(candidate.col);
@@ -118,7 +91,7 @@ export function createGridOverlayHandlers({
         } else {
             line.classList.add("composer-dropzone-line--h");
             const lineY =
-                tgtRow >= srcRow
+                targetRow >= sourceRow
                     ? gridRowOffset(candidate.row) +
                       gridRowSpanSize(candidate.h)
                     : gridRowOffset(candidate.row);
@@ -132,22 +105,27 @@ export function createGridOverlayHandlers({
         if (!state.layout.placements) state.layout.placements = [];
         if (!state.layout.hidden) state.layout.hidden = [];
         state.layout.placements = state.layout.placements.filter(
-            (p) =>
-                p &&
-                typeof p.id === "string" &&
-                Number.isFinite(p.col) &&
-                Number.isFinite(p.row) &&
-                Number.isFinite(p.w) &&
-                Number.isFinite(p.h) &&
-                p.w > 0 &&
-                p.h > 0,
+            (candidatePlacement) =>
+                candidatePlacement &&
+                typeof candidatePlacement.id === "string" &&
+                Number.isFinite(candidatePlacement.col) &&
+                Number.isFinite(candidatePlacement.row) &&
+                Number.isFinite(candidatePlacement.w) &&
+                Number.isFinite(candidatePlacement.h) &&
+                candidatePlacement.w > 0 &&
+                candidatePlacement.h > 0,
         );
         state.layout.hidden = state.layout.hidden.filter(
             (id) => id && typeof id === "string",
         );
         for (const element of state.elements) {
             if (state.layout.hidden.includes(element.id)) continue;
-            if (state.layout.placements.some((p) => p.id === element.id))
+            if (
+                state.layout.placements.some(
+                    (candidatePlacement) =>
+                        candidatePlacement.id === element.id,
+                )
+            )
                 continue;
             if (
                 element.defaultHidden &&
@@ -158,37 +136,48 @@ export function createGridOverlayHandlers({
                 continue;
             }
             const gridSize = getGridSize(element);
-            const cStep = gridStep(state.gridCols);
-            const rStep = gridStep(state.gridRows);
-            const baseW = resolveInitialGridWidth(gridSize, state.gridCols);
-            const baseH = gridSize.halfHeight
+            const columnStep = gridStep(state.gridColumns);
+            const rowStep = gridStep(state.gridRows);
+            const baseWidth = resolveInitialGridWidth(
+                gridSize,
+                state.gridColumns,
+            );
+            const baseHeight = gridSize.halfHeight
                 ? Math.max(gridSize.min[1], halfGrid(state.gridRows))
                 : gridSize.default[1];
             let placed = false;
-            for (let row = 0; !placed; row += rStep) {
-                const colLimit = gridSize.fillWidth
-                    ? state.gridCols
-                    : Math.max(0, state.gridCols - baseW);
-                for (let col = 0; col <= colLimit; col += cStep) {
-                    const w = gridSize.fillWidth
+            for (let row = 0; !placed; row += rowStep) {
+                const columnLimit = gridSize.fillWidth
+                    ? state.gridColumns
+                    : Math.max(0, state.gridColumns - baseWidth);
+                for (
+                    let column = 0;
+                    column <= columnLimit;
+                    column += columnStep
+                ) {
+                    const width = gridSize.fillWidth
                         ? Math.min(
-                              state.gridCols,
-                              Math.max(gridSize.min[0], state.gridCols - col),
+                              state.gridColumns,
+                              Math.max(
+                                  gridSize.min[0],
+                                  state.gridColumns - column,
+                              ),
                           )
                         : gridSize.halfWidth &&
-                            col + baseW + cStep === state.gridCols
-                          ? baseW + cStep
-                          : baseW;
-                    const h = gridSize.fillHeight
+                            column + baseWidth + columnStep ===
+                                state.gridColumns
+                          ? baseWidth + columnStep
+                          : baseWidth;
+                    const height = gridSize.fillHeight
                         ? Math.max(gridSize.min[1], state.gridRows - row)
-                        : baseH;
-                    if (canPlace(col, row, w, h, null)) {
+                        : baseHeight;
+                    if (canPlace(column, row, width, height, null)) {
                         state.layout.placements.push({
                             id: element.id,
-                            col,
+                            col: column,
                             row,
-                            w,
-                            h,
+                            w: width,
+                            h: height,
                         });
                         placed = true;
                         break;
@@ -215,19 +204,19 @@ export function createGridOverlayHandlers({
         cell.style.top = `${gridRowOffset(placement.row)}px`;
         cell.style.width = `${gridColumnSpanSize(placement.w)}px`;
         cell.style.height = `${gridRowSpanSize(placement.h)}px`;
-        const closeBtn = document.createElement("button");
-        closeBtn.className = "composer-close-btn";
-        closeBtn.type = "button";
-        closeBtn.textContent = "×";
-        closeBtn.setAttribute("aria-label", i18n.t("ui.reuse.remove"));
-        closeBtn.addEventListener("click", () => {
+        const closeButton = document.createElement("button");
+        closeButton.className = "composer-close-btn btn-cancel";
+        closeButton.type = "button";
+        closeButton.textContent = "×";
+        closeButton.setAttribute("aria-label", i18n.t("ui.reuse.remove"));
+        closeButton.addEventListener("click", () => {
             state.layout.hidden.push(placement.id);
             state.layout.placements = state.layout.placements.filter(
                 (entry) => entry.id !== placement.id,
             );
             renderGridComposer();
         });
-        cell.appendChild(closeBtn);
+        cell.appendChild(closeButton);
         const content = document.createElement("div");
         content.className =
             "widget-card composer-cell-content composer-cell-content--missing";
@@ -242,28 +231,43 @@ export function createGridOverlayHandlers({
         overlay.style.top = "0";
         overlay.style.width = `${state.gridPixelWidth}px`;
         overlay.style.height = `${state.gridPixelHeight}px`;
-        const cStep = gridStep(state.gridCols);
-        const rStep = gridStep(state.gridRows);
-        for (let r = 0; r < state.gridRows; r += rStep) {
-            for (let c = 0; c < state.gridCols; c += cStep) {
+        const columnStep = gridStep(state.gridColumns);
+        const rowStep = gridStep(state.gridRows);
+        for (let rowIndex = 0; rowIndex < state.gridRows; rowIndex += rowStep) {
+            for (
+                let columnIndex = 0;
+                columnIndex < state.gridColumns;
+                columnIndex += columnStep
+            ) {
                 const cell = document.createElement("div");
                 cell.className =
-                    cStep < 1 || rStep < 1
+                    columnStep < 1 || rowStep < 1
                         ? "composer-grid-cell composer-grid-cell--half"
                         : "composer-grid-cell";
-                cell.style.left = `${gridColumnOffset(c)}px`;
-                cell.style.top = `${gridRowOffset(r)}px`;
-                cell.style.width = `${gridColumnSpanSize(cStep)}px`;
-                cell.style.height = `${gridRowSpanSize(rStep)}px`;
+                cell.style.left = `${gridColumnOffset(columnIndex)}px`;
+                cell.style.top = `${gridRowOffset(rowIndex)}px`;
+                cell.style.width = `${Math.min(gridColumnSpanSize(columnStep), state.gridPixelWidth - gridColumnOffset(columnIndex))}px`;
+                cell.style.height = `${Math.min(gridRowSpanSize(rowStep), state.gridPixelHeight - gridRowOffset(rowIndex))}px`;
                 overlay.appendChild(cell);
             }
         }
         return overlay;
     }
-    function createCell(el, placement, { includeContent = true } = {}) {
+    function refreshGridBounds(minimumRows = 0) {
+        if (!state.gridSection?.isConnected) return;
+        computeGridDimensions({ minimumRows });
+        state.gridSection
+            .querySelector(".composer-grid-overlay")
+            ?.replaceWith(createGridOverlay());
+    }
+    function createCell(
+        elementDefinition,
+        placement,
+        { includeContent = true } = {},
+    ) {
         const cell = document.createElement("div");
         cell.className = "composer-cell";
-        cell.dataset.composerElement = el.id;
+        cell.dataset.composerElement = elementDefinition.id;
         cell.style.left = `${gridColumnOffset(placement.col)}px`;
         cell.style.top = `${gridRowOffset(placement.row)}px`;
         cell.style.width = `${gridColumnSpanSize(placement.w)}px`;
@@ -274,17 +278,22 @@ export function createGridOverlayHandlers({
                 cell,
                 placement,
                 state,
-                gridSize: getGridSize(el),
+                gridSize: getGridSize(elementDefinition),
                 canPlace,
-                findSwapCandidate,
+                findSwapCandidate: (...argumentsList) =>
+                    findGridSwap(state, ...argumentsList),
+                commitSwap: (sourceId, targetId) =>
+                    applyGridSwap(state, sourceId, targetId),
                 render: renderGridComposer,
                 i18n,
             });
-            cell.addEventListener("pointerdown", (e) => {
-                if (e.button !== 0) return;
-                if (e.target.closest("button")) return;
-                e.preventDefault();
-                cell.setPointerCapture(e.pointerId);
+            cell.addEventListener("pointerdown", (event) => {
+                if (event.button !== 0 || event.isPrimary === false) return;
+                if (event.target.closest("button")) return;
+                event.preventDefault();
+                const cellBounds = cell.getBoundingClientRect();
+                const grabX = event.clientX - cellBounds.left;
+                const grabY = event.clientY - cellBounds.top;
                 const shade = document.createElement("div");
                 shade.className = "composer-shade";
                 shade.style.left = `${gridColumnOffset(placement.col)}px`;
@@ -293,23 +302,24 @@ export function createGridOverlayHandlers({
                 shade.style.height = `${gridRowSpanSize(placement.h)}px`;
                 state.gridSection.appendChild(shade);
                 cell.classList.add("composer-cell--dragging");
-                let currentCol = placement.col;
+                let currentColumn = placement.col;
                 let currentRow = placement.row;
                 let swapTarget = null;
                 let dropZoneLine = null;
-                function onMove(e) {
+                function onMove(moveEvent) {
                     const panel = document.getElementById(
                         "composer-elements-panel",
                     );
                     const overPanel =
                         panel &&
                         (() => {
-                            const panelRect = panel.getBoundingClientRect();
+                            const panelRectangle =
+                                panel.getBoundingClientRect();
                             return (
-                                e.clientX >= panelRect.left &&
-                                e.clientX <= panelRect.right &&
-                                e.clientY >= panelRect.top &&
-                                e.clientY <= panelRect.bottom
+                                moveEvent.clientX >= panelRectangle.left &&
+                                moveEvent.clientX <= panelRectangle.right &&
+                                moveEvent.clientY >= panelRectangle.top &&
+                                moveEvent.clientY <= panelRectangle.bottom
                             );
                         })();
                     if (dropZoneLine) {
@@ -317,59 +327,84 @@ export function createGridOverlayHandlers({
                         dropZoneLine = null;
                     }
                     swapTarget = null;
-                    if (overPanel && !el.pinned) {
+                    if (overPanel && !elementDefinition.pinned) {
                         shade.classList.add("composer-shade--invalid");
                         panel?.classList.add("composer-panel--drop-target");
                         return;
                     }
                     shade.classList.remove("composer-shade--invalid");
                     panel?.classList.remove("composer-panel--drop-target");
-                    const gridRect = state.gridSection.getBoundingClientRect();
-                    const x = e.clientX - gridRect.left;
-                    const y = e.clientY - gridRect.top;
-                    const col = Math.max(
+                    const { x: horizontalCoordinate, y: verticalCoordinate } =
+                        gridPointerPosition(moveEvent);
+                    const column = Math.max(
                         0,
                         Math.min(
-                            state.gridCols - placement.w,
+                            state.gridColumns - placement.w,
                             snapGridRound(
-                                pixelToGridColumn(x) - placement.w / 2,
-                                state.gridCols,
+                                pixelToGridColumn(horizontalCoordinate - grabX),
+                                state.gridColumns,
                             ),
                         ),
                     );
                     const rawRow = Math.max(
                         0,
                         snapGridRound(
-                            pixelToGridRow(y) - placement.h / 2,
+                            pixelToGridRow(verticalCoordinate - grabY),
                             state.gridRows,
                         ),
                     );
                     if (rawRow + placement.h > state.gridRows) {
-                        state.gridRows = rawRow + placement.h + 1;
-                        state.gridSection.style.minHeight = `${state.gridPixelHeight}px`;
+                        refreshGridBounds(rawRow + placement.h + 1);
                     }
-                    currentCol = col;
-                    currentRow = rawRow;
-                    shade.style.left = `${gridColumnOffset(col)}px`;
-                    shade.style.top = `${gridRowOffset(rawRow)}px`;
+                    const target = snapDragPlacement(
+                        { ...placement, col: column, row: rawRow },
+                        state.gridRows,
+                        canPlace,
+                    );
+                    currentColumn = target.col;
+                    currentRow = target.row;
+                    shade.classList.toggle(
+                        "composer-shade--snapped",
+                        target.row !== rawRow,
+                    );
+                    shade.style.left = `${gridColumnOffset(column)}px`;
+                    shade.style.top = `${gridRowOffset(currentRow)}px`;
+                    shade.style.width = `${gridColumnSpanSize(placement.w)}px`;
+                    shade.style.height = `${gridRowSpanSize(placement.h)}px`;
                     if (
-                        !canPlace(col, rawRow, placement.w, placement.h, el.id)
-                    ) {
-                        const candidate = findSwapCandidate(
-                            col,
-                            rawRow,
+                        !canPlace(
+                            column,
+                            currentRow,
                             placement.w,
                             placement.h,
-                            el.id,
+                            elementDefinition.id,
+                        )
+                    ) {
+                        const preview = previewGridSwap(
+                            state,
+                            column,
+                            currentRow,
+                            placement.w,
+                            placement.h,
+                            elementDefinition.id,
                         );
-                        if (candidate) {
-                            swapTarget = candidate;
+                        if (preview) {
+                            const { target: candidate, valid } = preview;
+                            swapTarget = valid ? candidate : null;
+                            shade.classList.toggle(
+                                "composer-shade--invalid",
+                                !valid,
+                            );
                             dropZoneLine = buildDropZoneLine(
                                 placement.col,
                                 placement.row,
                                 candidate,
-                                col,
-                                rawRow,
+                                column,
+                                currentRow,
+                            );
+                            dropZoneLine.classList.toggle(
+                                "composer-dropzone-line--invalid",
+                                !valid,
                             );
                             state.gridSection.appendChild(dropZoneLine);
                         } else {
@@ -377,10 +412,7 @@ export function createGridOverlayHandlers({
                         }
                     }
                 }
-                async function onUp(e) {
-                    cell.removeEventListener("pointermove", onMove);
-                    cell.removeEventListener("pointerup", onUp);
-                    cell.removeEventListener("pointercancel", onUp);
+                async function onUp(releaseEvent) {
                     document
                         .getElementById("composer-elements-panel")
                         ?.classList.remove("composer-panel--drop-target");
@@ -390,26 +422,30 @@ export function createGridOverlayHandlers({
                     }
                     shade.remove();
                     cell.classList.remove("composer-cell--dragging");
-                    if (e.type === "pointercancel") return;
+                    refreshGridBounds();
+                    if (releaseEvent.type === "pointercancel") return;
                     const panel = document.getElementById(
                         "composer-elements-panel",
                     );
                     const overPanel =
                         panel &&
                         (() => {
-                            const panelRect = panel.getBoundingClientRect();
+                            const panelRectangle =
+                                panel.getBoundingClientRect();
                             return (
-                                e.clientX >= panelRect.left &&
-                                e.clientX <= panelRect.right &&
-                                e.clientY >= panelRect.top &&
-                                e.clientY <= panelRect.bottom
+                                releaseEvent.clientX >= panelRectangle.left &&
+                                releaseEvent.clientX <= panelRectangle.right &&
+                                releaseEvent.clientY >= panelRectangle.top &&
+                                releaseEvent.clientY <= panelRectangle.bottom
                             );
                         })();
-                    if (overPanel && !el.pinned) {
-                        state.layout.hidden.push(el.id);
+                    if (overPanel && !elementDefinition.pinned) {
+                        state.layout.hidden.push(elementDefinition.id);
                         state.layout.placements =
                             state.layout.placements.filter(
-                                (p) => p.id !== el.id,
+                                (candidatePlacement) =>
+                                    candidatePlacement.id !==
+                                    elementDefinition.id,
                             );
                         renderGridComposer();
                         return;
@@ -417,68 +453,66 @@ export function createGridOverlayHandlers({
                     const currentSwapTarget = swapTarget;
                     swapTarget = null;
                     if (currentSwapTarget) {
-                        const targetPlacement = state.layout.placements.find(
-                            (lp) => lp.id === el.id,
-                        );
-                        const swapPlacement = state.layout.placements.find(
-                            (lp) => lp.id === currentSwapTarget.id,
-                        );
-                        if (targetPlacement && swapPlacement) {
-                            const oldCol = targetPlacement.col;
-                            const oldRow = targetPlacement.row;
-                            targetPlacement.col = currentSwapTarget.col;
-                            targetPlacement.row = currentSwapTarget.row;
-                            swapPlacement.col = oldCol;
-                            swapPlacement.row = oldRow;
+                        if (
+                            applyGridSwap(
+                                state,
+                                elementDefinition.id,
+                                currentSwapTarget.id,
+                            )
+                        ) {
                             renderGridComposer();
                         }
                     } else {
                         const moved =
-                            currentCol !== placement.col ||
+                            currentColumn !== placement.col ||
                             currentRow !== placement.row;
                         if (
                             moved &&
                             canPlace(
-                                currentCol,
+                                currentColumn,
                                 currentRow,
                                 placement.w,
                                 placement.h,
-                                el.id,
+                                elementDefinition.id,
                             )
                         ) {
                             const targetPlacement =
                                 state.layout.placements.find(
-                                    (lp) => lp.id === el.id,
+                                    (candidatePlacement) =>
+                                        candidatePlacement.id ===
+                                        elementDefinition.id,
                                 );
                             if (targetPlacement) {
-                                targetPlacement.col = currentCol;
+                                targetPlacement.col = currentColumn;
                                 targetPlacement.row = currentRow;
                             }
                             renderGridComposer();
                         }
                     }
                 }
-                cell.addEventListener("pointermove", onMove);
-                cell.addEventListener("pointerup", onUp);
-                cell.addEventListener("pointercancel", onUp);
+                bindComposerPointerDrag(cell, event, onMove, onUp);
             });
-            if (!el.pinned) {
-                const closeBtn = document.createElement("button");
-                closeBtn.className = "composer-close-btn";
-                closeBtn.type = "button";
-                closeBtn.textContent = "×";
-                closeBtn.setAttribute("aria-label", i18n.t("ui.reuse.remove"));
-                closeBtn.addEventListener("pointerdown", (e) =>
-                    e.stopPropagation(),
+            if (!elementDefinition.pinned) {
+                const closeButton = document.createElement("button");
+                closeButton.className = "composer-close-btn btn-cancel";
+                closeButton.type = "button";
+                closeButton.textContent = "×";
+                closeButton.setAttribute(
+                    "aria-label",
+                    i18n.t("ui.reuse.remove"),
                 );
-                closeBtn.addEventListener("click", () => {
-                    state.layout.hidden.push(el.id);
+                closeButton.addEventListener("pointerdown", (event) =>
+                    event.stopPropagation(),
+                );
+                closeButton.addEventListener("click", () => {
+                    state.layout.hidden.push(elementDefinition.id);
                     state.layout.placements = state.layout.placements.filter(
-                        (p) => p.id !== el.id,
+                        (candidatePlacement) =>
+                            candidatePlacement.id !== elementDefinition.id,
                     );
                     renderGridComposer();
                 });
-                cell.appendChild(closeBtn);
+                cell.appendChild(closeButton);
             }
         }
         if (includeContent) {
@@ -486,220 +520,104 @@ export function createGridOverlayHandlers({
             content.className = "widget-card composer-cell-content";
             const presentation = composerPresentation(state.contentGrid);
             applyComposerPresentation(state.root, content, presentation);
-            content.innerHTML = el.render(presentation);
+            content.innerHTML = elementDefinition.render(presentation);
             cell.appendChild(content);
         }
         if (state.editing) {
-            const gridSize = getGridSize(el);
-            const canResizeE =
-                !gridSize.fullWidth &&
-                (!gridSize.max || gridSize.max[0] > gridSize.min[0]);
-            const canResizeS =
-                !gridSize.max || gridSize.max[1] > gridSize.min[1];
-            if (canResizeE) {
-                const handleE = document.createElement("div");
-                handleE.className = "composer-resize-handle composer-resize-e";
-                bindResizeHandle(handleE, "e", el, placement);
-                cell.appendChild(handleE);
-            }
-            if (canResizeS) {
-                const handleS = document.createElement("div");
-                handleS.className = "composer-resize-handle composer-resize-s";
-                bindResizeHandle(handleS, "s", el, placement);
-                cell.appendChild(handleS);
-            }
-            if (canResizeE && canResizeS) {
-                const handleSE = document.createElement("div");
-                handleSE.className =
-                    "composer-resize-handle composer-resize-se";
-                bindResizeHandle(handleSE, "se", el, placement);
-                cell.appendChild(handleSE);
-            }
+            const gridSize = getGridSize(elementDefinition);
+            appendResizeControls({
+                cell,
+                placement,
+                state,
+                gridSize,
+                container: state.gridSection,
+                canPlace,
+                refreshBounds: refreshGridBounds,
+                render: renderGridComposer,
+                geometry: {
+                    point(event) {
+                        const point = gridPointerPosition(event);
+                        return {
+                            col: pixelToGridColumn(point.x),
+                            row: pixelToGridRow(point.y),
+                        };
+                    },
+                    columnOffset: gridColumnOffset,
+                    rowOffset: gridRowOffset,
+                    columnSpan: gridColumnSpanSize,
+                    rowSpan: gridRowSpanSize,
+                },
+            });
         }
         return cell;
     }
-    function bindResizeHandle(handle, direction, el, placement) {
-        handle.addEventListener("pointerdown", (e) => {
-            if (e.button !== 0) return;
-            e.preventDefault();
-            e.stopPropagation();
-            handle.setPointerCapture(e.pointerId);
-            const gridSize = getGridSize(el);
-            const shade = document.createElement("div");
-            shade.className = "composer-shade";
-            shade.style.left = `${gridColumnOffset(placement.col)}px`;
-            shade.style.top = `${gridRowOffset(placement.row)}px`;
-            shade.style.width = `${gridColumnSpanSize(placement.w)}px`;
-            shade.style.height = `${gridRowSpanSize(placement.h)}px`;
-            state.gridSection.appendChild(shade);
-            const cell = handle.closest(".composer-cell");
-            cell.classList.add("composer-cell--resizing");
-            let currentW = placement.w;
-            let currentH = placement.h;
-            function clampValue(val, min, max) {
-                if (max != null) return Math.max(min, Math.min(max, val));
-                return Math.max(min, val);
-            }
-            function onMove(e) {
-                const gridRect = state.gridSection.getBoundingClientRect();
-                const x = e.clientX - gridRect.left;
-                const y = e.clientY - gridRect.top;
-                if (direction === "e" || direction === "se") {
-                    const rawW = snapGridRound(
-                        pixelToGridColumn(x) - placement.col,
-                        state.gridCols,
-                    );
-                    const widthBounds = resolveGridWidthBounds(
-                        gridSize,
-                        state.gridCols - placement.col,
-                    );
-                    currentW = clampValue(
-                        rawW,
-                        widthBounds.min,
-                        widthBounds.max,
-                    );
-                }
-                if (direction === "s" || direction === "se") {
-                    const rawH = snapGridRound(
-                        pixelToGridRow(y) - placement.row,
-                        state.gridRows,
-                    );
-                    currentH = clampValue(
-                        rawH,
-                        gridSize.min[1],
-                        gridSize.max ? gridSize.max[1] : null,
-                    );
-                }
-                shade.style.width = `${gridColumnSpanSize(currentW)}px`;
-                shade.style.height = `${gridRowSpanSize(currentH)}px`;
-                shade.classList.toggle(
-                    "composer-shade--invalid",
-                    !canPlace(
-                        placement.col,
-                        placement.row,
-                        currentW,
-                        currentH,
-                        el.id,
-                    ),
-                );
-            }
-            function onUp(event) {
-                handle.removeEventListener("pointermove", onMove);
-                handle.removeEventListener("pointerup", onUp);
-                handle.removeEventListener("pointercancel", onUp);
-                shade.remove();
-                cell.classList.remove("composer-cell--resizing");
-                if (event.type === "pointercancel") return;
-                const sizeChanged =
-                    currentW !== placement.w || currentH !== placement.h;
-                const valid = canPlace(
-                    placement.col,
-                    placement.row,
-                    currentW,
-                    currentH,
-                    el.id,
-                );
-                if (sizeChanged && valid) {
-                    const targetPlacement = state.layout.placements.find(
-                        (lp) => lp.id === el.id,
-                    );
-                    if (targetPlacement) {
-                        targetPlacement.w = currentW;
-                        targetPlacement.h = currentH;
-                    }
-                    renderGridComposer();
-                }
-            }
-            handle.addEventListener("pointermove", onMove);
-            handle.addEventListener("pointerup", onUp);
-            handle.addEventListener("pointercancel", onUp);
-        });
-    }
-    function canPlaceInSet(set, col, row, w, h) {
-        if (col < 0 || row < 0 || col + w > state.gridCols) return false;
-        const cells = buildOccupiedSet(set, [], null);
-        return checkPlacement(cells, col, row, w, h);
-    }
-    function compactPlacements() {
-        const visible = state.layout.placements.filter(
-            (p) => !state.layout.hidden.includes(p.id),
-        );
-        visible.sort((a, b) => a.row - b.row || a.col - b.col);
-        const rStep = gridStep(state.gridRows);
-        const settled = [];
-        for (const placement of visible) {
-            let bestRow = placement.row;
-            for (let r = 0; r < placement.row; r += rStep) {
-                if (
-                    canPlaceInSet(
-                        settled,
-                        placement.col,
-                        r,
-                        placement.w,
-                        placement.h,
-                    )
-                ) {
-                    bestRow = r;
-                    break;
-                }
-            }
-            settled.push({ ...placement, row: bestRow });
-        }
-        for (const placement of settled) {
-            const orig = state.layout.placements.find(
-                (lp) => lp.id === placement.id,
-            );
-            if (orig) orig.row = placement.row;
-        }
-    }
-    function bindPanelItemDrag(item, el) {
-        item.addEventListener("pointerdown", (e) => {
-            if (e.button !== 0 || e.target.closest("button")) return;
-            e.preventDefault();
-            item.setPointerCapture(e.pointerId);
-            const gridSize = getGridSize(el);
-            const w = resolveInitialGridWidth(gridSize, state.gridCols);
-            const h = gridSize.fillHeight
+    function bindPanelItemDrag(item, elementDefinition) {
+        item.addEventListener("pointerdown", (event) => {
+            if (event.button !== 0 || event.target.closest("button")) return;
+            event.preventDefault();
+            const gridSize = getGridSize(elementDefinition);
+            const width = resolveInitialGridWidth(gridSize, state.gridColumns);
+            const height = gridSize.fillHeight
                 ? state.gridRows
                 : gridSize.halfHeight
                   ? Math.max(gridSize.min[1], halfGrid(state.gridRows))
                   : gridSize.default[1];
             let shade = null;
-            let currentCol = -1;
+            let currentColumn = -1;
             let currentRow = -1;
             let overGrid = false;
-            function onMove(e) {
-                const gridRect = state.gridSection.getBoundingClientRect();
-                const x = e.clientX - gridRect.left;
-                const y = e.clientY - gridRect.top;
-                const inGrid = x >= 0 && x <= gridRect.width && y >= 0;
+            function onMove(moveEvent) {
+                const { x: horizontalCoordinate, y: verticalCoordinate } =
+                    gridPointerPosition(moveEvent);
+                const inGrid =
+                    horizontalCoordinate >= 0 &&
+                    horizontalCoordinate <= state.gridPixelWidth &&
+                    verticalCoordinate >= 0;
                 if (inGrid) {
                     if (!shade) {
                         shade = document.createElement("div");
                         shade.className = "composer-shade";
-                        shade.style.width = `${gridColumnSpanSize(w)}px`;
-                        shade.style.height = `${gridRowSpanSize(h)}px`;
+                        shade.style.width = `${gridColumnSpanSize(width)}px`;
+                        shade.style.height = `${gridRowSpanSize(height)}px`;
                         state.gridSection.appendChild(shade);
                     }
-                    const col = Math.max(
+                    const column = Math.max(
                         0,
                         Math.min(
-                            state.gridCols - w,
-                            snapPixelColumnFloor(x, state.gridCols),
+                            state.gridColumns - width,
+                            snapPixelColumnFloor(
+                                horizontalCoordinate,
+                                state.gridColumns,
+                            ),
                         ),
                     );
                     const rawRow = Math.max(
                         0,
-                        snapPixelRowFloor(y, state.gridRows),
+                        snapPixelRowFloor(verticalCoordinate, state.gridRows),
                     );
-                    const row = applyGravity(col, rawRow, w, h, null);
-                    currentCol = col;
+                    const target = snapDragPlacement(
+                        {
+                            id: null,
+                            col: column,
+                            row: rawRow,
+                            w: width,
+                            h: height,
+                        },
+                        state.gridRows,
+                        canPlace,
+                    );
+                    const row = target.row;
+                    shade.classList.toggle(
+                        "composer-shade--snapped",
+                        row !== rawRow,
+                    );
+                    currentColumn = column;
                     currentRow = row;
-                    shade.style.left = `${gridColumnOffset(col)}px`;
+                    shade.style.left = `${gridColumnOffset(column)}px`;
                     shade.style.top = `${gridRowOffset(row)}px`;
                     shade.classList.toggle(
                         "composer-shade--invalid",
-                        !canPlace(col, row, w, h, null),
+                        !canPlace(column, row, width, height, null),
                     );
                     overGrid = true;
                 } else {
@@ -711,28 +629,32 @@ export function createGridOverlayHandlers({
                 }
             }
             function onUp(event) {
-                item.removeEventListener("pointermove", onMove);
-                item.removeEventListener("pointerup", onUp);
-                item.removeEventListener("pointercancel", onUp);
                 if (shade) shade.remove();
                 if (event.type === "pointercancel") return;
-                if (overGrid && canPlace(currentCol, currentRow, w, h, null)) {
+                if (
+                    overGrid &&
+                    canPlace(currentColumn, currentRow, width, height, null)
+                ) {
                     state.layout.hidden = state.layout.hidden.filter(
-                        (id) => id !== el.id,
+                        (id) => id !== elementDefinition.id,
                     );
                     state.layout.placements.push({
-                        id: el.id,
-                        col: currentCol,
+                        id: elementDefinition.id,
+                        col: currentColumn,
                         row: currentRow,
-                        w,
-                        h,
+                        w: width,
+                        h: height,
                     });
                     renderGridComposer();
                 }
             }
-            item.addEventListener("pointermove", onMove);
-            item.addEventListener("pointerup", onUp);
-            item.addEventListener("pointercancel", onUp);
+            bindComposerPointerDrag(
+                item,
+                event,
+                onMove,
+                onUp,
+                state.gridSection,
+            );
         });
     }
     const {
@@ -745,7 +667,6 @@ export function createGridOverlayHandlers({
         state,
         i18n,
         bindPanelItemDrag,
-        compactPlacements,
         endEditMode,
         saveLayout,
         renderGridComposer,
@@ -756,14 +677,12 @@ export function createGridOverlayHandlers({
         destroy,
         computeGridDimensions,
         canPlace,
-        applyGravity,
         buildDropZoneLine,
         initializePlacements,
         renderMissingElementContent,
         createMissingCell,
         createGridOverlay,
         createCell,
-        compactPlacements,
         getComposerPanelSafeTop,
         getComposerPanelHorizontalBounds,
         clampComposerPanelLeft,

@@ -26,7 +26,7 @@
 import { createHash, randomBytes } from "node:crypto";
 
 const ENCRYPT_ALG = "AES-GCM";
-const IV_BYTES = 12;
+const INITIALIZATION_VECTOR_BYTES = 12;
 const KEY_BITS = 256;
 const HKDF_SALT = new TextEncoder().encode("cognis-data-v1");
 
@@ -90,10 +90,10 @@ export async function deriveScopedKey(
     serverSecret: string,
 ): Promise<CryptoKey> {
     const subtle = globalThis.crypto.subtle;
-    const enc = new TextEncoder();
+    const textEncoder = new TextEncoder();
     const effectiveSecret =
         serverSecret.length > 0 ? serverSecret : getOrCreateFallbackSecret();
-    const keyMaterial = enc.encode(effectiveSecret);
+    const keyMaterial = textEncoder.encode(effectiveSecret);
 
     const baseKey = await subtle.importKey(
         "raw",
@@ -108,7 +108,7 @@ export async function deriveScopedKey(
             name: "HKDF",
             hash: "SHA-256",
             salt: HKDF_SALT,
-            info: enc.encode(scope),
+            info: textEncoder.encode(scope),
         },
         baseKey,
         { name: ENCRYPT_ALG, length: KEY_BITS },
@@ -129,16 +129,16 @@ export async function encryptPayload(
     plaintext: string,
 ): Promise<{ iv: string; ciphertext: string }> {
     const subtle = globalThis.crypto.subtle;
-    const initVector = globalThis.crypto.getRandomValues(
-        new Uint8Array(IV_BYTES),
+    const iv = globalThis.crypto.getRandomValues(
+        new Uint8Array(INITIALIZATION_VECTOR_BYTES),
     );
     const encrypted = await subtle.encrypt(
-        { name: ENCRYPT_ALG, iv: initVector },
+        { name: ENCRYPT_ALG, iv: iv },
         key,
         new TextEncoder().encode(plaintext),
     );
     return {
-        iv: Buffer.from(initVector).toString("hex"),
+        iv: Buffer.from(iv).toString("hex"),
         ciphertext: Buffer.from(encrypted).toString("hex"),
     };
 }

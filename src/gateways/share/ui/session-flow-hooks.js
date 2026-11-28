@@ -55,9 +55,9 @@ import { stopShareStatusWatch, watchShareStatus } from "./status-monitor.js";
 const log = bindCapability("ui:log");
 
 const ACCESS_TOKEN_KEY = "cognis_access_token";
-const PREV_ACCESS_TOKEN_KEY = "cognis_prev_access_token";
-const PREV_ACCOUNT_KEY = "cognis_prev_account";
-const PREV_DISPLAY_NAME_KEY = "cognis_prev_display_name";
+const PREVIOUS_ACCESS_TOKEN_KEY = "cognis_prev_access_token";
+const PREVIOUS_ACCOUNT_KEY = "cognis_prev_account";
+const PREVIOUS_DISPLAY_NAME_KEY = "cognis_prev_display_name";
 const GUEST_TOKEN_ACTIVE_KEY = GUEST_SESSION_ACTIVE_STORAGE_KEY;
 const DISPLAY_NAME_KEY = "cognis_display_name";
 const ACCOUNT_KEY = "cognis_account";
@@ -112,9 +112,9 @@ function hasStoredAccountSession() {
 function discardStaleGuestMarkers() {
     pendingShareResolution = null;
     stopShareStatusMonitor();
-    sessionStorage.removeItem(PREV_ACCESS_TOKEN_KEY);
-    sessionStorage.removeItem(PREV_ACCOUNT_KEY);
-    sessionStorage.removeItem(PREV_DISPLAY_NAME_KEY);
+    sessionStorage.removeItem(PREVIOUS_ACCESS_TOKEN_KEY);
+    sessionStorage.removeItem(PREVIOUS_ACCOUNT_KEY);
+    sessionStorage.removeItem(PREVIOUS_DISPLAY_NAME_KEY);
     sessionStorage.removeItem(GUEST_TOKEN_ACTIVE_KEY);
     delete document.body.dataset.shareGuest;
     activeGuestSession = null;
@@ -255,19 +255,19 @@ async function activateGuestToken(
     const hasAccountSession = hasStoredAccountSession();
     if (!guestSessionAlreadyActive || hasAccountSession) {
         if (prior) {
-            sessionStorage.setItem(PREV_ACCESS_TOKEN_KEY, prior);
+            sessionStorage.setItem(PREVIOUS_ACCESS_TOKEN_KEY, prior);
         } else {
-            sessionStorage.removeItem(PREV_ACCESS_TOKEN_KEY);
+            sessionStorage.removeItem(PREVIOUS_ACCESS_TOKEN_KEY);
         }
         if (priorAccount) {
-            sessionStorage.setItem(PREV_ACCOUNT_KEY, priorAccount);
+            sessionStorage.setItem(PREVIOUS_ACCOUNT_KEY, priorAccount);
         } else {
-            sessionStorage.removeItem(PREV_ACCOUNT_KEY);
+            sessionStorage.removeItem(PREVIOUS_ACCOUNT_KEY);
         }
         if (priorDisplayName) {
-            sessionStorage.setItem(PREV_DISPLAY_NAME_KEY, priorDisplayName);
+            sessionStorage.setItem(PREVIOUS_DISPLAY_NAME_KEY, priorDisplayName);
         } else {
-            sessionStorage.removeItem(PREV_DISPLAY_NAME_KEY);
+            sessionStorage.removeItem(PREVIOUS_DISPLAY_NAME_KEY);
         }
     }
     sessionStorage.setItem(GUEST_TOKEN_ACTIVE_KEY, "1");
@@ -313,9 +313,9 @@ function restoreGuestToken() {
     if (sessionStorage.getItem(GUEST_TOKEN_ACTIVE_KEY) !== "1") return;
     uiCtx.capabilities.get("keyring:endTemporary")?.();
     activeGuestKeyring = null;
-    const prior = sessionStorage.getItem(PREV_ACCESS_TOKEN_KEY);
-    const priorAccount = sessionStorage.getItem(PREV_ACCOUNT_KEY);
-    const priorDisplayName = sessionStorage.getItem(PREV_DISPLAY_NAME_KEY);
+    const prior = sessionStorage.getItem(PREVIOUS_ACCESS_TOKEN_KEY);
+    const priorAccount = sessionStorage.getItem(PREVIOUS_ACCOUNT_KEY);
+    const priorDisplayName = sessionStorage.getItem(PREVIOUS_DISPLAY_NAME_KEY);
     if (prior) {
         localStorage.setItem(ACCESS_TOKEN_KEY, prior);
     } else {
@@ -331,9 +331,9 @@ function restoreGuestToken() {
     } else {
         localStorage.removeItem(DISPLAY_NAME_KEY);
     }
-    sessionStorage.removeItem(PREV_ACCESS_TOKEN_KEY);
-    sessionStorage.removeItem(PREV_ACCOUNT_KEY);
-    sessionStorage.removeItem(PREV_DISPLAY_NAME_KEY);
+    sessionStorage.removeItem(PREVIOUS_ACCESS_TOKEN_KEY);
+    sessionStorage.removeItem(PREVIOUS_ACCOUNT_KEY);
+    sessionStorage.removeItem(PREVIOUS_DISPLAY_NAME_KEY);
     sessionStorage.removeItem(GUEST_TOKEN_ACTIVE_KEY);
     delete document.body.dataset.shareGuest;
     activeGuestSession = null;
@@ -423,7 +423,10 @@ uiCtx.extendFlow(
         ) {
             return pendingShareResolution.promise;
         }
-        if (isViewingAsGuest() && sessionStorage.getItem(PREV_ACCESS_TOKEN_KEY))
+        if (
+            isViewingAsGuest() &&
+            sessionStorage.getItem(PREVIOUS_ACCESS_TOKEN_KEY)
+        )
             restoreGuestToken();
         const resolution = {
             shareToken,

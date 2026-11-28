@@ -112,59 +112,59 @@ test("dashboard route redirects revoked disabled-account sessions with account_d
 test("ui static route serves templates and assets from public folder", async () => {
     const route = createUiRoutes();
 
-    const templateRes = createResponseRecorder();
+    const templateResponse = createResponseRecorder();
     await route(
         { headers: {} } as any,
-        templateRes.res as any,
+        templateResponse.res as any,
         new URL("http://localhost/static/templates/dashboard-layout.html"),
     );
-    assert.equal(templateRes.status, 200);
-    assert.match(templateRes.body, /topbar-icon/);
+    assert.equal(templateResponse.status, 200);
+    assert.match(templateResponse.body, /topbar-icon/);
 
-    const assetRes = createResponseRecorder();
+    const assetResponse = createResponseRecorder();
     await route(
         { headers: {} } as any,
-        assetRes.res as any,
+        assetResponse.res as any,
         new URL("http://localhost/static/assets/icons/cognis-icon.png"),
     );
-    assert.equal(assetRes.status, 200);
-    assert.equal(assetRes.headers["content-type"], "image/png");
-    const closeIconRes = createResponseRecorder();
+    assert.equal(assetResponse.status, 200);
+    assert.equal(assetResponse.headers["content-type"], "image/png");
+    const closeIconResponse = createResponseRecorder();
     await route(
         { headers: {} } as any,
-        closeIconRes.res as any,
+        closeIconResponse.res as any,
         new URL("http://localhost/static/assets/reuse/icons/toolbar-close.svg"),
     );
-    assert.equal(closeIconRes.status, 200);
+    assert.equal(closeIconResponse.status, 200);
     assert.equal(
-        closeIconRes.headers["content-type"],
+        closeIconResponse.headers["content-type"],
         "image/svg+xml; charset=utf-8",
     );
-    assert.match(closeIconRes.body, /<svg/);
+    assert.match(closeIconResponse.body, /<svg/);
 });
 
 test("ui routes serve public assets directly from /assets", async () => {
     const route = createUiRoutes();
 
-    const assetRes = createResponseRecorder();
+    const assetResponse = createResponseRecorder();
     await route(
         { headers: {} } as any,
-        assetRes.res as any,
+        assetResponse.res as any,
         new URL("http://localhost/assets/icons/cognis-icon.png"),
     );
 
-    assert.equal(assetRes.status, 200);
-    assert.equal(assetRes.headers["content-type"], "image/png");
+    assert.equal(assetResponse.status, 200);
+    assert.equal(assetResponse.headers["content-type"], "image/png");
 
-    const fallbackRes = createResponseRecorder();
+    const fallbackResponse = createResponseRecorder();
     await route(
         { headers: {} } as any,
-        fallbackRes.res as any,
+        fallbackResponse.res as any,
         new URL("http://localhost/assets/reuse/module-icon-unknown.svg"),
     );
-    assert.equal(fallbackRes.status, 200);
+    assert.equal(fallbackResponse.status, 200);
     assert.equal(
-        fallbackRes.headers["content-type"],
+        fallbackResponse.headers["content-type"],
         "image/svg+xml; charset=utf-8",
     );
 });

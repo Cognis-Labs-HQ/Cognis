@@ -13,11 +13,11 @@ import {
     type BootstrapDisposer,
 } from "../ctx/bootstrap-scope.js";
 
-test("gateway host retains bootstrap and completion resources across disable and reactivation", async (t) => {
+test("gateway host retains bootstrap and completion resources across disable and reactivation", async (testContext) => {
     const directory = await mkdtemp(
         path.join(tmpdir(), "cognis-gateway-lifecycle-"),
     );
-    t.after(() => rm(directory, { recursive: true, force: true }));
+    testContext.after(() => rm(directory, { recursive: true, force: true }));
     const gatewayRoot = path.join(directory, "example");
     await mkdir(gatewayRoot);
     await cp(

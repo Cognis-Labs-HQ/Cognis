@@ -10,16 +10,19 @@ import { RouteRegistry } from "../../../../api/reuse/route-registry.js";
 import { bootstrapAuthTestHost as bootstrap } from "../auth-gateway-test-helpers.js";
 import {
     contributeTestKeyring,
-    makeInMemoryDb,
-    type InMemoryDb,
+    makeInMemoryDatabase,
+    type InMemoryDatabase,
 } from "../auth-gateway-test-helpers.js";
-function createDbExecutor(): InMemoryDb {
-    return makeInMemoryDb();
+function createDatabaseExecutor(): InMemoryDatabase {
+    return makeInMemoryDatabase();
 }
-function makeBaseCtx(capabilities: CapabilityStore, dbExecutor: InMemoryDb) {
+function makeBaseCtx(
+    capabilities: CapabilityStore,
+    databaseExecutor: InMemoryDatabase,
+) {
     const systemCtx = createCtx();
     capabilities.contribute(CTX_CAPABILITY, systemCtx);
-    capabilities.contribute("db:executor", dbExecutor);
+    capabilities.contribute("db:executor", databaseExecutor);
     contributeTestKeyring(capabilities);
     return { flow: systemCtx.flow };
 }
@@ -63,14 +66,14 @@ test("auth bootstrap contributes page script origin registration capability", as
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-    const dbExecutor = createDbExecutor();
+    const databaseExecutor = createDatabaseExecutor();
 
     await bootstrap({
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
         capabilities,
-        ...makeBaseCtx(capabilities, dbExecutor),
+        ...makeBaseCtx(capabilities, databaseExecutor),
     });
 
     const registerScriptOrigins = capabilities.get<
@@ -93,14 +96,14 @@ test("auth bootstrap exposes route authentication capabilities to modules", asyn
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-    const dbExecutor = createDbExecutor();
+    const databaseExecutor = createDatabaseExecutor();
 
     await bootstrap({
         adaptersRoot: "/nonexistent",
         routeRegistry,
         gatewayRegistry,
         capabilities,
-        ...makeBaseCtx(capabilities, dbExecutor),
+        ...makeBaseCtx(capabilities, databaseExecutor),
     });
 
     assert.equal(typeof capabilities.get("auth:getAuthClaims"), "function");

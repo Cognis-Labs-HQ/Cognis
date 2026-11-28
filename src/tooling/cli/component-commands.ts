@@ -1,5 +1,5 @@
 import { registerComponentOperations } from "./components/commands.ts";
-import { requireArgs } from "./command-utils.ts";
+import { requireArgumentsList } from "./command-utils.ts";
 import { renderStructuredSummary, renderComponentsList } from "./formatters.ts";
 import { apiGet, apiPost, apiPut } from "./http.ts";
 import { register } from "./registry.ts";
@@ -103,7 +103,7 @@ function resolveConfigTarget(
         : "cognisctl component:config:get <module|gateway|adapter> <componentId> [adapterId]";
 
     if (componentType === "module") {
-        requireArgs(
+        requireArgumentsList(
             args,
             expectsConfigJson
                 ? ["componentType", "moduleId", "configJson"]
@@ -119,7 +119,7 @@ function resolveConfigTarget(
     }
 
     if (componentType === "gateway") {
-        requireArgs(
+        requireArgumentsList(
             args,
             expectsConfigJson
                 ? ["componentType", "gatewayId", "configJson"]
@@ -135,7 +135,7 @@ function resolveConfigTarget(
     }
 
     if (componentType === "adapter") {
-        requireArgs(
+        requireArgumentsList(
             args,
             expectsConfigJson
                 ? ["componentType", "gatewayId", "adapterId", "configJson"]
@@ -175,9 +175,9 @@ export function registerComponentCommands(): void {
 
     register(
         "component:import",
-        async ({ args, apiBaseUrl, getApiToken }) => {
+        async ({ args: args, apiBaseUrl, getApiToken }) => {
             const [repositoryUrl, versionTag] = args;
-            requireArgs(
+            requireArgumentsList(
                 args,
                 ["repositoryUrl", "versionTag"],
                 "cognisctl component:import <repositoryUrl> <versionTag>",
@@ -201,7 +201,7 @@ export function registerComponentCommands(): void {
 
     register(
         "component:config:get",
-        async ({ args, apiBaseUrl, getApiToken }) => {
+        async ({ args: args, apiBaseUrl, getApiToken }) => {
             const target = resolveConfigTarget(args, false);
             const token = await getApiToken();
             return filterUserConfigPayload(
@@ -223,7 +223,7 @@ export function registerComponentCommands(): void {
 
     register(
         "component:config:set",
-        async ({ args, apiBaseUrl, getApiToken }) => {
+        async ({ args: args, apiBaseUrl, getApiToken }) => {
             const target = resolveConfigTarget(args, true);
             const token = await getApiToken();
             const currentConfig = (await apiGet(

@@ -51,10 +51,10 @@ export function observePerformance() {
     const navigation = performance.getEntriesByType("navigation")[0];
     if (navigation)
         documentMetrics.set("web.ttfb_ms", navigation.responseStart);
-    let clsMaximum = 0;
-    let clsWindowValue = 0;
-    let clsWindowStartedAt = 0;
-    let clsPreviousShiftAt = 0;
+    let classNameMaximum = 0;
+    let classNameWindowValue = 0;
+    let classNameWindowStartedAt = 0;
+    let classNamePreviousShiftAt = 0;
     observerTypes: for (const [type, callback] of [
         [
             "largest-contentful-paint",
@@ -76,16 +76,19 @@ export function observePerformance() {
             (entry) => {
                 if (entry.hadRecentInput) return;
                 if (
-                    entry.startTime - clsPreviousShiftAt > 1_000 ||
-                    entry.startTime - clsWindowStartedAt > 5_000
+                    entry.startTime - classNamePreviousShiftAt > 1_000 ||
+                    entry.startTime - classNameWindowStartedAt > 5_000
                 ) {
-                    clsWindowStartedAt = entry.startTime;
-                    clsWindowValue = 0;
+                    classNameWindowStartedAt = entry.startTime;
+                    classNameWindowValue = 0;
                 }
-                clsPreviousShiftAt = entry.startTime;
-                clsWindowValue += entry.value;
-                clsMaximum = Math.max(clsMaximum, clsWindowValue);
-                documentMetrics.set("web.cls", clsMaximum);
+                classNamePreviousShiftAt = entry.startTime;
+                classNameWindowValue += entry.value;
+                classNameMaximum = Math.max(
+                    classNameMaximum,
+                    classNameWindowValue,
+                );
+                documentMetrics.set("web.cls", classNameMaximum);
             },
         ],
     ]) {

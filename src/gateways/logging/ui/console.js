@@ -27,7 +27,7 @@ export function captureConsole(log, target = console) {
         target[method] = wrapper;
     }
     return {
-        publish({ level, message, meta }) {
+        publish({ level, message, meta: meta }) {
             originals.get(level)?.(message, meta);
         },
         dispose() {

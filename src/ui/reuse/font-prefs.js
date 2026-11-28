@@ -9,11 +9,11 @@
  *   parseSavedFont(fontValue)                — extracts the primary family name from a saved CSS string.
  *   loadFontsCatalog()                       — resolves all available font families from document.fonts.
  *   buildFontSelect(container, fontList, initialValue, onChange) — renders a font-selector dropdown.
- *   initFontPrefs(root, options)             — wires up the full font-preference UI inside root.
+ *   initializeFontPreferences(root, options)             — wires up the full font-preference UI inside root.
  *
  * Usage:
- *   import { initFontPrefs, DEFAULT_FONT_SIZE } from '../reuse/font-prefs.js';
- *   const prefs = initFontPrefs(root, { existingPrefs, i18n, onDirtyChange });
+ *   import { initializeFontPreferences, DEFAULT_FONT_SIZE } from '../reuse/font-prefs.js';
+ *   const prefs = initializeFontPreferences(root, { existingPrefs, i18n, onDirtyChange });
  *   await prefs.init();
  *
  * @param {string} font — a font family name, e.g. "Inter" or "My Custom Font".
@@ -48,7 +48,9 @@ export async function loadFontsCatalog() {
         const family = face.family.replace(/^['"]|['"]$/g, "").trim();
         if (family) seen.add(family);
     });
-    return Array.from(seen).sort((a, b) => a.localeCompare(b));
+    return Array.from(seen).sort((leftEntry, rightEntry) =>
+        leftEntry.localeCompare(rightEntry),
+    );
 }
 
 export function buildFontSelect(container, fontList, initialValue, onChange) {
@@ -77,15 +79,18 @@ export function buildFontSelect(container, fontList, initialValue, onChange) {
     };
 }
 
-export function initFontPrefs(root, { existingPrefs, i18n, onDirtyChange }) {
+function initializeFontPreferences(
+    root,
+    { existingPrefs: existingPreferences, i18n, onDirtyChange },
+) {
     const fontPreview = root.querySelector("#pref-font-preview");
     const fontPickerContainer = root.querySelector("#pref-font-picker");
     const fontSizeValue = root.querySelector("#pref-font-size-value");
-    const resetBtn = root.querySelector("#pref-font-reset");
+    const resetButton = root.querySelector("#pref-font-reset");
 
     const rawStoredSize = Number(
-        existingPrefs?.appFontSize ??
-            existingPrefs?.greetingFontSize ??
+        existingPreferences?.appFontSize ??
+            existingPreferences?.greetingFontSize ??
             DEFAULT_FONT_SIZE,
     );
     // Values below 8 are legacy rem values; convert to pt (1rem ≈ 12pt at default browser zoom).
@@ -94,7 +99,7 @@ export function initFontPrefs(root, { existingPrefs, i18n, onDirtyChange }) {
     let fontSize = Math.max(8, Math.min(24, Math.round(normalizedSize)));
 
     let savedFont = parseSavedFont(
-        existingPrefs?.appFont || existingPrefs?.greetingFont,
+        existingPreferences?.appFont || existingPreferences?.greetingFont,
     );
     let savedSize = fontSize;
 
@@ -104,11 +109,11 @@ export function initFontPrefs(root, { existingPrefs, i18n, onDirtyChange }) {
     }
 
     function updateResetButton() {
-        if (!resetBtn) return;
+        if (!resetButton) return;
         const atDefault = isAtDefault();
-        resetBtn.disabled = atDefault;
-        resetBtn.classList.toggle("btn-cancel", !atDefault);
-        resetBtn.classList.toggle("btn-animated", !atDefault);
+        resetButton.disabled = atDefault;
+        resetButton.classList.toggle("btn-cancel", !atDefault);
+        resetButton.classList.toggle("btn-animated", !atDefault);
     }
 
     function notifyDirty() {
@@ -138,7 +143,7 @@ export function initFontPrefs(root, { existingPrefs, i18n, onDirtyChange }) {
         ]);
         const fonts = Array.from(
             new Set([...FALLBACK_FONTS, ...fontOptions]),
-        ).sort((a, b) => a.localeCompare(b));
+        ).sort((leftEntry, rightEntry) => leftEntry.localeCompare(rightEntry));
 
         if (!fonts.includes(savedFont)) fonts.unshift(savedFont);
 
@@ -168,7 +173,7 @@ export function initFontPrefs(root, { existingPrefs, i18n, onDirtyChange }) {
             () => setFontSize(fontSize + 1),
         );
 
-        resetBtn?.addEventListener("click", () => {
+        resetButton?.addEventListener("click", () => {
             if (isAtDefault()) return;
             pickerControl?.setValue(DEFAULT_FONT);
             updatePreview(DEFAULT_FONT);
@@ -190,7 +195,7 @@ export function initFontPrefs(root, { existingPrefs, i18n, onDirtyChange }) {
     }
 
     return {
-        init,
+        init: init,
         getFont: () => pickerControl?.getValue() || DEFAULT_FONT,
         getFontSize: () => fontSize,
         isDirty: () => {
@@ -201,3 +206,4 @@ export function initFontPrefs(root, { existingPrefs, i18n, onDirtyChange }) {
         discard,
     };
 }
+export { initializeFontPreferences };

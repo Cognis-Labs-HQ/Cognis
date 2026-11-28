@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
-import type { DbExecutor } from "../shared.js";
+import type { DatabaseExecutor } from "../shared.js";
 
 export class AccountInstanceStore {
-    constructor(private readonly db: DbExecutor) {}
+    constructor(private readonly db: DatabaseExecutor) {}
 
     async ensureSchema(): Promise<void> {
         await this.db.ensureTable({

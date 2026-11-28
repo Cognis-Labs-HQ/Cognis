@@ -216,7 +216,10 @@ test("adapter rows expand manifest details when no settings popup opens", () => 
         source,
         /const openedSettings = await openAdapterConfig\([\s\S]*if \(!openedSettings\) \{\s*row\.open = !row\.open;/,
     );
-    assert.match(source, /e\.target\.closest\?\.\("\[data-details-toggle\]"\)/);
+    assert.match(
+        source,
+        /event\.target\.closest\?\.\("\[data-details-toggle\]"\)/,
+    );
     assert.match(source, /row\.querySelector\("\.switch--inline"\)/);
     assert.match(source, /row\.addEventListener\("click", handleOpen\)/);
     assert.match(source, /row\.addEventListener\("keydown"/);

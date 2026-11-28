@@ -40,15 +40,15 @@ function makeResponse() {
 }
 
 test("POST /api/v1/notify/broadcasts/:id/acknowledge marks broadcast state", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     let acknowledgedBy = "";
     let acknowledgedId = "";
     const route = createNotificationRoutes(gateway, {
-        async getUserNotifPrefs() {
+        async getUserNotificationPreferences() {
             return [];
         },
-        async saveUserNotifPrefs() {},
+        async saveUserNotificationPreferences() {},
         async markBroadcastAcknowledged(accountId, broadcastId) {
             acknowledgedBy = accountId;
             acknowledgedId = broadcastId;
@@ -71,15 +71,15 @@ test("POST /api/v1/notify/broadcasts/:id/acknowledge marks broadcast state", asy
 });
 
 test("POST /api/v1/notify/broadcasts/:id/dismiss marks broadcast state", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     let dismissedBy = "";
     let dismissedId = "";
     const route = createNotificationRoutes(gateway, {
-        async getUserNotifPrefs() {
+        async getUserNotificationPreferences() {
             return [];
         },
-        async saveUserNotifPrefs() {},
+        async saveUserNotificationPreferences() {},
         async markBroadcastDismissed(accountId, broadcastId) {
             dismissedBy = accountId;
             dismissedId = broadcastId;

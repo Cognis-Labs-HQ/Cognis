@@ -8,7 +8,7 @@ const SHOW_DELAY_MS = 250;
 const HIDE_DELAY_MS = 150;
 const PREVIEW_ROLE_LABELS = new Set(["teacher", "admin", "owner"]);
 const profileCache = new Map();
-let previewEl = null;
+let previewElement = null;
 let activeLink = null;
 let showTimer = null;
 let hideTimer = null;
@@ -36,17 +36,17 @@ async function loadProfilePreview(handle) {
 }
 
 function ensurePreview() {
-    if (previewEl) return previewEl;
-    previewEl = document.createElement("aside");
-    previewEl.className = "profile-mini-preview";
-    previewEl.setAttribute("role", "tooltip");
-    previewEl.hidden = true;
-    previewEl.addEventListener("mouseenter", () => {
+    if (previewElement) return previewElement;
+    previewElement = document.createElement("aside");
+    previewElement.className = "profile-mini-preview";
+    previewElement.setAttribute("role", "tooltip");
+    previewElement.hidden = true;
+    previewElement.addEventListener("mouseenter", () => {
         if (hideTimer) clearTimeout(hideTimer);
     });
-    previewEl.addEventListener("mouseleave", scheduleHide);
-    document.body.appendChild(previewEl);
-    return previewEl;
+    previewElement.addEventListener("mouseleave", scheduleHide);
+    document.body.appendChild(previewElement);
+    return previewElement;
 }
 
 function renderAvatar(profile) {
@@ -63,18 +63,21 @@ function renderAvatar(profile) {
 }
 
 function positionPreview(link, preview) {
-    const rect = link.getBoundingClientRect();
+    const rectangle = link.getBoundingClientRect();
     const width = Math.min(320, window.innerWidth - 24);
     preview.style.width = `${width}px`;
-    const previewRect = preview.getBoundingClientRect();
+    const previewRectangle = preview.getBoundingClientRect();
     const left = Math.max(
         12,
-        Math.min(window.innerWidth - previewRect.width - 12, rect.left),
+        Math.min(
+            window.innerWidth - previewRectangle.width - 12,
+            rectangle.left,
+        ),
     );
-    const belowTop = rect.bottom + 10;
-    const aboveTop = rect.top - previewRect.height - 10;
+    const belowTop = rectangle.bottom + 10;
+    const aboveTop = rectangle.top - previewRectangle.height - 10;
     const top =
-        belowTop + previewRect.height < window.innerHeight
+        belowTop + previewRectangle.height < window.innerHeight
             ? belowTop
             : Math.max(12, aboveTop);
     preview.style.left = `${left}px`;
@@ -146,7 +149,7 @@ function scheduleHide() {
     if (hideTimer) clearTimeout(hideTimer);
     hideTimer = setTimeout(() => {
         activeLink = null;
-        if (previewEl) previewEl.hidden = true;
+        if (previewElement) previewElement.hidden = true;
     }, HIDE_DELAY_MS);
 }
 
@@ -171,7 +174,10 @@ export function bindProfilePreviews(i18n = null) {
         const link = event.target.closest?.('a[href^="/profile/"]');
         if (!link) return;
         const related = event.relatedTarget;
-        if (related && (link.contains(related) || previewEl?.contains(related)))
+        if (
+            related &&
+            (link.contains(related) || previewElement?.contains(related))
+        )
             return;
         scheduleHide();
     });

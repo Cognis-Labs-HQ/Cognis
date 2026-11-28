@@ -77,7 +77,7 @@ test("direct and routed module mounts await active UI providers", () => {
     );
     assert.match(
         router,
-        /await ensureHostUiProviders\(\);[\s\S]*mod = await loadWithSpaImportGuard\(\(\) => route\.load/,
+        /await ensureHostUiProviders\(\);[\s\S]*moduleExports = await loadWithSpaImportGuard\(\(\) => route\.load/,
     );
     assert.match(
         router,
@@ -125,8 +125,14 @@ test("the files client is a standalone provider independent of navbar mount", ()
         filesBootstrap,
         /registerCapabilityProvider\(\{[\s\S]*files:uiClient/,
     );
-    assert.match(filesBootstrap, /registerStaticDir\("files", uiDir\)/);
-    assert.doesNotMatch(filesBootstrap, /registerStaticDir\("gateways\/files"/);
+    assert.match(
+        filesBootstrap,
+        /registerStaticDirectory\("files", uiDirectory\)/,
+    );
+    assert.doesNotMatch(
+        filesBootstrap,
+        /registerStaticDirectory\("gateways\/files"/,
+    );
     assert.doesNotMatch(
         filesBootstrap,
         /registerNavbarPlugin\(\{[\s\S]*files:uiClient/,

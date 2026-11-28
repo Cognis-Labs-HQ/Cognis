@@ -10,7 +10,7 @@ import { dirname, isAbsolute, relative, resolve } from "node:path";
 import { randomUUID } from "node:crypto";
 import type { FileStorageGateway, StoredObject } from "@cognis/core";
 
-const MIME_EXT: Record<string, string> = {
+const MIME_EXTENSION: Record<string, string> = {
     "image/jpeg": "jpg",
     "image/jpg": "jpg",
     "image/png": "png",
@@ -82,10 +82,12 @@ export class LocalFileGateway implements FileStorageGateway {
         content: Uint8Array,
         contentType?: string,
     ): Promise<StoredObject> {
-        const ext = contentType
-            ? (MIME_EXT[contentType.toLowerCase()] ?? "")
+        const extension = contentType
+            ? (MIME_EXTENSION[contentType.toLowerCase()] ?? "")
             : "";
-        const filename = ext ? `${randomUUID()}.${ext}` : randomUUID();
+        const filename = extension
+            ? `${randomUUID()}.${extension}`
+            : randomUUID();
         const key = `${actorId}/${filename}`;
         return this.put(namespaceId, key, content, contentType);
     }
@@ -111,11 +113,13 @@ export class LocalFileGateway implements FileStorageGateway {
     }
 
     async list(namespaceId: string, prefix = ""): Promise<StoredObject[]> {
-        const baseDir = prefix
+        const baseDirectory = prefix
             ? this.objectPath(namespaceId, prefix)
             : this.namespaceRoot(namespaceId);
         try {
-            const entries = await readdir(baseDir, { withFileTypes: true });
+            const entries = await readdir(baseDirectory, {
+                withFileTypes: true,
+            });
             const files = entries.filter((entry) => entry.isFile());
 
             return Promise.all(

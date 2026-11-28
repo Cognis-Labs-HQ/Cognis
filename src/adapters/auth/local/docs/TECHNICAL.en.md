@@ -6,7 +6,7 @@ The public interfaces and operational rules of Local Accounts.
 
 ### Architecture
 
-`DbLocalAccountStore` in `src/adapters/auth/local/store.ts` is the sole persistence layer for local user accounts. It is instantiated by the auth gateway bootstrap and passed to the local adapter; nothing outside the auth gateway bootstrap holds a direct reference to it.
+`DatabaseLocalAccountStore` in `src/adapters/auth/local/store.ts` is the sole persistence layer for local user accounts. It is instantiated by the auth gateway bootstrap and passed to the local adapter; nothing outside the auth gateway bootstrap holds a direct reference to it.
 
 ## Configuration
 
@@ -29,7 +29,7 @@ For most single-organisation deployments, the local adapter is the only auth met
 - Store and verify locally managed credentials using `crypto.scrypt`.
 - Provide `register()` for account creation (used by the auth gateway's register route).
 - Provide `updateLastLogin()` for tracking last login time.
-- Expose `DbLocalAccountStore` as the `LocalAccountStore` implementation.
+- Expose `DatabaseLocalAccountStore` as the `LocalAccountStore` implementation.
 
 Not responsible for: managing sessions or tokens (that is the auth gateway), enforcing role assignments (done at the gateway level), or managing external identities.
 

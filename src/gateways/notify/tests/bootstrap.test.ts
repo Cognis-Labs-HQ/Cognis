@@ -11,13 +11,15 @@ import { RouteRegistry } from "../../../api/reuse/route-registry.js";
 import { bootstrap as bootstrapImplementation } from "../bootstrap.js";
 import { issueAccessToken } from "../../auth/access-tokens.js";
 
-function makeInMemoryDb() {
+function makeInMemoryDatabase() {
     return {
         executeCommand: async () => ({ rows: [], rowCount: 0 }),
         ensureTable: async () => {},
         transaction: async <T>(
-            cb: (db: ReturnType<typeof makeInMemoryDb>) => Promise<T>,
-        ) => cb(makeInMemoryDb()),
+            callback: (
+                db: ReturnType<typeof makeInMemoryDatabase>,
+            ) => Promise<T>,
+        ) => callback(makeInMemoryDatabase()),
     };
 }
 
@@ -28,8 +30,8 @@ function makeResponse() {
         writeHead(code: number) {
             status = code;
         },
-        end(p: string) {
-            payload = p;
+        end(responseBody: string) {
+            payload = responseBody;
         },
         get status() {
             return status;
@@ -54,7 +56,7 @@ async function makeCtx() {
     const gatewayRegistry = new GatewayRegistry();
     const routeRegistry = new RouteRegistry();
     const capabilities = new CapabilityStore();
-    const db = makeInMemoryDb();
+    const db = makeInMemoryDatabase();
     const systemCtx = createCtx();
     capabilities.contribute("db:executor", db);
     capabilities.contribute("system:ctx", systemCtx);
@@ -62,7 +64,7 @@ async function makeCtx() {
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db,
+        db: db,
         flow: systemCtx.flow,
         systemCtx,
     };
@@ -297,18 +299,18 @@ test("notify gateway bootstrap registers correct static dir and admin-section.js
         uiRegistry,
     });
 
-    const staticDir = uiRegistry.getStaticDir("notify");
+    const staticDirectory = uiRegistry.getStaticDirectory("notify");
     assert.ok(
-        staticDir,
+        staticDirectory,
         "notify gateway must register a static dir with UIRegistry",
     );
 
     await assert.doesNotReject(
-        access(staticDir),
-        `static dir must exist on disk: ${staticDir}`,
+        access(staticDirectory),
+        `static dir must exist on disk: ${staticDirectory}`,
     );
 
-    const adminSectionPath = path.join(staticDir, "admin-section.js");
+    const adminSectionPath = path.join(staticDirectory, "admin-section.js");
     await assert.doesNotReject(
         access(adminSectionPath),
         `admin-section.js must exist in the registered static dir: ${adminSectionPath}`,
@@ -330,23 +332,25 @@ test("notify gateway bootstrap registers admin section scriptUrl that resolves w
     });
 
     const sections = uiRegistry.listAdminSections();
-    const notifSection = sections.find((s) => s.id === "notifications");
+    const notificationSection = sections.find(
+        (section) => section.id === "notifications",
+    );
     assert.ok(
-        notifSection,
+        notificationSection,
         "notify gateway must register a 'notifications' admin section",
     );
 
-    const staticDir = uiRegistry.getStaticDir("notify");
-    assert.ok(staticDir, "notify gateway must register a static dir");
+    const staticDirectory = uiRegistry.getStaticDirectory("notify");
+    assert.ok(staticDirectory, "notify gateway must register a static dir");
 
     const urlPrefix = "/static/gateways/notify/";
     assert.ok(
-        notifSection.scriptUrl.startsWith(urlPrefix),
-        `scriptUrl must start with ${urlPrefix}, got: ${notifSection.scriptUrl}`,
+        notificationSection.scriptUrl.startsWith(urlPrefix),
+        `scriptUrl must start with ${urlPrefix}, got: ${notificationSection.scriptUrl}`,
     );
 
-    const filePart = notifSection.scriptUrl.slice(urlPrefix.length);
-    const resolvedPath = path.join(staticDir, filePart);
+    const filePart = notificationSection.scriptUrl.slice(urlPrefix.length);
+    const resolvedPath = path.join(staticDirectory, filePart);
     await assert.doesNotReject(
         access(resolvedPath),
         `file referenced by scriptUrl must exist on disk: ${resolvedPath}`,
@@ -376,8 +380,8 @@ test("notify gateway bootstrap registers broadcasts admin section scriptUrl that
         "notify gateway must register a 'broadcasts' admin section",
     );
 
-    const staticDir = uiRegistry.getStaticDir("notify");
-    assert.ok(staticDir, "notify gateway must register a static dir");
+    const staticDirectory = uiRegistry.getStaticDirectory("notify");
+    assert.ok(staticDirectory, "notify gateway must register a static dir");
 
     const urlPrefix = "/static/gateways/notify/";
     assert.ok(
@@ -386,7 +390,7 @@ test("notify gateway bootstrap registers broadcasts admin section scriptUrl that
     );
 
     const filePart = broadcastsSection.scriptUrl.slice(urlPrefix.length);
-    const resolvedPath = path.join(staticDir, filePart);
+    const resolvedPath = path.join(staticDirectory, filePart);
     await assert.doesNotReject(
         access(resolvedPath),
         `file referenced by scriptUrl must exist on disk: ${resolvedPath}`,

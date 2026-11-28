@@ -13,12 +13,16 @@ import type {
 } from "../notification-store.js";
 
 export interface NotificationPreferenceRouteStore {
-    getUserNotifPrefs(
+    getUserNotificationPreferences(
         accountId: string,
     ): Promise<Array<{ category: string; senderId: string }>>;
-    saveUserNotifPrefs(
+    saveUserNotificationPreferences(
         accountId: string,
-        prefs: Array<{ category: string; senderId: string; enabled: boolean }>,
+        preferences: Array<{
+            category: string;
+            senderId: string;
+            enabled: boolean;
+        }>,
     ): Promise<void>;
     createBroadcast?(input: {
         title: string;
@@ -197,7 +201,7 @@ function getBroadcastCreateValidationError(input: {
 
 export function createNotificationRoutes(
     gateway: CoreNotificationGateway,
-    notifStore?: NotificationPreferenceRouteStore,
+    notificationStore?: NotificationPreferenceRouteStore,
     options?: {
         getTrustedDomains?: () => Promise<string[]>;
         routeContext?: RouteContext;
@@ -230,13 +234,18 @@ export function createNotificationRoutes(
             const category = String(body.category ?? "");
             const recipientUsername = String(body.recipientUsername ?? "");
             const subject = String(body.subject ?? "");
-            const notifBody = String(body.body ?? "");
+            const notificationBody = String(body.body ?? "");
             const recipientEmail =
                 body.recipientEmail != null
                     ? String(body.recipientEmail)
                     : undefined;
 
-            if (!category || !recipientUsername || !subject || !notifBody) {
+            if (
+                !category ||
+                !recipientUsername ||
+                !subject ||
+                !notificationBody
+            ) {
                 res.writeHead(400, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -255,7 +264,7 @@ export function createNotificationRoutes(
                 recipientUsername,
                 recipientEmail,
                 subject,
-                body: notifBody,
+                body: notificationBody,
                 metadata: body.metadata as Record<string, unknown> | undefined,
             });
 
@@ -344,12 +353,12 @@ export function createNotificationRoutes(
             req.method === "GET"
         ) {
             if (!ctx.requireAuth(req, res, "admin")) return true;
-            if (!notifStore?.listBroadcasts) {
+            if (!notificationStore?.listBroadcasts) {
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: [] }));
                 return true;
             }
-            const broadcasts = await notifStore.listBroadcasts();
+            const broadcasts = await notificationStore.listBroadcasts();
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: broadcasts }));
             return true;
@@ -361,7 +370,7 @@ export function createNotificationRoutes(
         ) {
             const claims = ctx.requireAuth(req, res, "admin");
             if (!claims) return true;
-            if (!notifStore?.createBroadcast) {
+            if (!notificationStore?.createBroadcast) {
                 res.writeHead(503, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -417,7 +426,7 @@ export function createNotificationRoutes(
                 return true;
             }
 
-            const createdBroadcast = await notifStore.createBroadcast({
+            const createdBroadcast = await notificationStore.createBroadcast({
                 title,
                 message,
                 displayMode,
@@ -439,7 +448,7 @@ export function createNotificationRoutes(
         );
         if (setBroadcastEnabledMatch && req.method === "POST") {
             if (!ctx.requireAuth(req, res, "admin")) return true;
-            if (!notifStore?.setBroadcastEnabled) {
+            if (!notificationStore?.setBroadcastEnabled) {
                 res.writeHead(503, { "content-type": "application/json" });
                 res.end(
                     JSON.stringify({
@@ -453,7 +462,7 @@ export function createNotificationRoutes(
             }
             const broadcastId = decodeURIComponent(setBroadcastEnabledMatch[1]);
             const action = setBroadcastEnabledMatch[2];
-            await notifStore.setBroadcastEnabled(
+            await notificationStore.setBroadcastEnabled(
                 broadcastId,
                 action === "enable",
             );
@@ -475,12 +484,12 @@ export function createNotificationRoutes(
         );
         if (broadcastStatesMatch && req.method === "GET") {
             if (!ctx.requireAuth(req, res, "admin")) return true;
-            if (!notifStore?.listBroadcastStates) {
+            if (!notificationStore?.listBroadcastStates) {
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: [] }));
                 return true;
             }
-            const broadcastStates = await notifStore.listBroadcastStates(
+            const broadcastStates = await notificationStore.listBroadcastStates(
                 decodeURIComponent(broadcastStatesMatch[1]),
             );
             res.writeHead(200, { "content-type": "application/json" });
@@ -505,13 +514,13 @@ export function createNotificationRoutes(
                 );
                 return true;
             }
-            if (!notifStore?.getActiveBroadcastsForRole) {
+            if (!notificationStore?.getActiveBroadcastsForRole) {
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: [] }));
                 return true;
             }
             const activeBroadcasts =
-                await notifStore.getActiveBroadcastsForRole(
+                await notificationStore.getActiveBroadcastsForRole(
                     claims.sub,
                     claims.role as NotificationBroadcastRole,
                 );
@@ -537,12 +546,12 @@ export function createNotificationRoutes(
                 );
                 return true;
             }
-            if (!notifStore?.markBroadcastAcknowledged) {
+            if (!notificationStore?.markBroadcastAcknowledged) {
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: { saved: true } }));
                 return true;
             }
-            await notifStore.markBroadcastAcknowledged(
+            await notificationStore.markBroadcastAcknowledged(
                 claims.sub,
                 decodeURIComponent(acknowledgeBroadcastMatch[1]),
             );
@@ -568,12 +577,12 @@ export function createNotificationRoutes(
                 );
                 return true;
             }
-            if (!notifStore?.markBroadcastDismissed) {
+            if (!notificationStore?.markBroadcastDismissed) {
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: { saved: true } }));
                 return true;
             }
-            await notifStore.markBroadcastDismissed(
+            await notificationStore.markBroadcastDismissed(
                 claims.sub,
                 decodeURIComponent(dismissBroadcastMatch[1]),
             );
@@ -592,7 +601,9 @@ export function createNotificationRoutes(
                 if (!ctx.requireAuth(req, res, "admin")) return true;
                 const config = gateway.getProviderConfig(senderId);
                 if (config === null) {
-                    res.writeHead(404, { "content-type": "application/json" });
+                    res.writeHead(404, {
+                        "content-type": "application/json",
+                    });
                     res.end(
                         JSON.stringify({
                             error: {
@@ -607,7 +618,9 @@ export function createNotificationRoutes(
                 res.end(
                     JSON.stringify({
                         data: config,
-                        envValues: gateway.getProviderEnvValues(senderId) ?? {},
+                        envValues:
+                            gateway.getProviderEnvironmentValues(senderId) ??
+                            {},
                         requiredFields:
                             gateway.getProviderRequiredFields(senderId) ?? [],
                     }),
@@ -637,7 +650,7 @@ export function createNotificationRoutes(
             if (!ctx.requireAuth(req, res, "admin")) return true;
             const senderId = decodeURIComponent(providerTestMatch[1]);
             const body = await readJson(req);
-            const to = String(body.to ?? "");
+            const recipient = String(body.to ?? "");
             const overrideConfig =
                 body.config != null &&
                 typeof body.config === "object" &&
@@ -656,17 +669,17 @@ export function createNotificationRoutes(
                 );
                 return true;
             }
-            await gateway.testSender(senderId, to, overrideConfig);
+            await gateway.testSender(senderId, recipient, overrideConfig);
             res.writeHead(200, { "content-type": "application/json" });
             res.end(JSON.stringify({ data: { sent: true } }));
             return true;
         }
 
-        const userPrefsMatch = url.pathname.match(
+        const userPreferencesMatch = url.pathname.match(
             /^\/api\/v1\/notify\/users\/([^/]+)\/notification-prefs$/,
         );
-        if (userPrefsMatch) {
-            const username = decodeURIComponent(userPrefsMatch[1]);
+        if (userPreferencesMatch) {
+            const username = decodeURIComponent(userPreferencesMatch[1]);
 
             const claims = ctx.getAuthClaims(req);
             if (!claims) {
@@ -692,34 +705,50 @@ export function createNotificationRoutes(
             }
 
             if (req.method === "GET") {
-                if (!notifStore) {
-                    res.writeHead(200, { "content-type": "application/json" });
+                if (!notificationStore) {
+                    res.writeHead(200, {
+                        "content-type": "application/json",
+                    });
                     res.end(JSON.stringify({ data: [] }));
                     return true;
                 }
-                const prefs = await notifStore.getUserNotifPrefs(username);
+                const preferences =
+                    await notificationStore.getUserNotificationPreferences(
+                        username,
+                    );
                 res.writeHead(200, { "content-type": "application/json" });
-                res.end(JSON.stringify({ data: prefs }));
+                res.end(JSON.stringify({ data: preferences }));
                 return true;
             }
 
             if (req.method === "PUT") {
-                if (!notifStore) {
-                    res.writeHead(200, { "content-type": "application/json" });
+                if (!notificationStore) {
+                    res.writeHead(200, {
+                        "content-type": "application/json",
+                    });
                     res.end(JSON.stringify({ data: { saved: true } }));
                     return true;
                 }
-                const prefsArray = await readJson(req, { shape: "array" });
+                const preferencesArray = await readJson(req, {
+                    shape: "array",
+                });
                 const filtered = (
-                    prefsArray as Array<{
+                    preferencesArray as Array<{
                         category: string;
                         senderId: string;
                         enabled: boolean;
                     }>
                 ).filter(
-                    (p) => !(gateway.isAlwaysOn(p.senderId) && !p.enabled),
+                    (preference) =>
+                        !(
+                            gateway.isAlwaysOn(preference.senderId) &&
+                            !preference.enabled
+                        ),
                 );
-                await notifStore.saveUserNotifPrefs(username, filtered);
+                await notificationStore.saveUserNotificationPreferences(
+                    username,
+                    filtered,
+                );
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: { saved: true } }));
                 return true;

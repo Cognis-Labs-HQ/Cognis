@@ -20,13 +20,13 @@ interface SmtpTfaAdapterContext {
         codeLength: number;
     };
     sendVerificationEmail?: (
-        to: string,
+        recipient: string,
         code: string,
         verifyUrl?: string,
         theme?: string,
     ) => Promise<void>;
     queueVerificationEmail?: (
-        to: string,
+        recipient: string,
         code: string,
         verifyUrl?: string,
         theme?: string,
@@ -98,14 +98,14 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
                 body: `Your verification code is ${variables.code}.`,
             }));
             const send = async (
-                to: string,
+                recipient: string,
                 code: string,
                 _verifyUrl?: string,
                 _theme?: string,
             ) =>
                 ctx.capabilities.require<SendEmailAction>("notify:sendEmail")({
                     purpose,
-                    recipientEmail: to,
+                    recipientEmail: recipient,
                     variables: { code },
                 });
             this.context.canSendVerificationEmail = () =>

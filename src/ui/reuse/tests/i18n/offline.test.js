@@ -11,7 +11,7 @@ const xml = (text) =>
 test(
     "cold offline translations render cached fallback locales without waiting for a stalled network",
     { timeout: 1000 },
-    async (t) => {
+    async (testContext) => {
         const worker = workerFixture();
         await worker.lifecycle("install");
         worker.serve(() => xml("Cached"));
@@ -26,7 +26,7 @@ test(
                 ? xml("Recovered")
                 : new Promise((resolve) => releases.push(resolve)),
         );
-        t.after(async () => {
+        testContext.after(async () => {
             cleaningUp = true;
             for (const release of releases) release(xml("Recovered"));
             await Promise.all(pending.map((request) => request.finished()));

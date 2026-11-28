@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { LibraryStore } from "../../store.js";
-import type { DbExecutor } from "../../../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../../../gateways/db/reuse/db-executor.js";
 
 test("scope changes keep entry identity and persist relocation history through hydration", async () => {
     let row: Record<string, unknown> = {
@@ -17,7 +17,7 @@ test("scope changes keep entry identity and persist relocation history through h
         created_at: "2026-10-11T00:00:00Z",
         updated_at: "2026-10-11T00:00:00Z",
     };
-    const database: DbExecutor = {
+    const database: DatabaseExecutor = {
         ensureTable: async () => {},
         transaction: async (operation) => operation(database),
         executeCommand: async (command) => {

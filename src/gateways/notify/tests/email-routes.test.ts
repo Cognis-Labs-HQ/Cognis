@@ -2,7 +2,7 @@ import { emailVerificationKey } from "../bootstrap/email-verification-key.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createUserEmailRoutes } from "../bootstrap.js";
-import { DbNotificationStore } from "../notification-store.js";
+import { DatabaseNotificationStore } from "../notification-store.js";
 import { InMemoryTestExecutor } from "../../../gateways/db/tests/in-memory-test-executor.js";
 import { TfaCodeService, InMemoryTfaStore } from "../../reuse/tfa-code.js";
 import {
@@ -15,9 +15,9 @@ import { issueAccessToken } from "../../auth/access-tokens.js";
 
 const EMAIL_PURPOSE = "test:verification";
 
-async function makeNotifStore(): Promise<DbNotificationStore> {
+async function makeNotificationStore(): Promise<DatabaseNotificationStore> {
     const db = new InMemoryTestExecutor();
-    const store = new DbNotificationStore(db);
+    const store = new DatabaseNotificationStore(db);
     await store.ensureSchema();
     return store;
 }
@@ -89,7 +89,7 @@ function makeResponse() {
 }
 
 test("adding the first email auto-sets it as primary", async () => {
-    const notifStore = await makeNotifStore();
+    const notificationStore = await makeNotificationStore();
     const tfaService = new TfaCodeService(new InMemoryTfaStore());
     const verifyTokenService = new VerifyTokenService(
         new InMemoryVerifyTokenStore(),
@@ -98,7 +98,7 @@ test("adding the first email auto-sets it as primary", async () => {
     const token = issueAccessToken("alice", "user", 60);
 
     const route = createUserEmailRoutes(
-        notifStore,
+        notificationStore,
         tfaService,
         verifyTokenService,
         {
@@ -120,13 +120,13 @@ test("adding the first email auto-sets it as primary", async () => {
     assert.equal(sentEmails[0]?.purpose, EMAIL_PURPOSE);
     assert.equal(sentEmails[0]?.recipientEmail, "alice@example.com");
 
-    const emails = await notifStore.getUserEmails("alice");
+    const emails = await notificationStore.getUserEmails("alice");
     assert.equal(emails.length, 1);
     assert.equal(emails[0].primary, true);
 });
 
 test("returns 503 when SMTP is not available and does not add the email", async () => {
-    const notifStore = await makeNotifStore();
+    const notificationStore = await makeNotificationStore();
     const tfaService = new TfaCodeService(new InMemoryTfaStore());
     const verifyTokenService = new VerifyTokenService(
         new InMemoryVerifyTokenStore(),
@@ -135,7 +135,7 @@ test("returns 503 when SMTP is not available and does not add the email", async 
     const token = issueAccessToken("alice", "user", 60);
 
     const route = createUserEmailRoutes(
-        notifStore,
+        notificationStore,
         tfaService,
         verifyTokenService,
         {
@@ -157,7 +157,7 @@ test("returns 503 when SMTP is not available and does not add the email", async 
     const data = JSON.parse(res.payload);
     assert.equal(data.error.code, "email_delivery_unavailable");
 
-    const emails = await notifStore.getUserEmails("alice");
+    const emails = await notificationStore.getUserEmails("alice");
     assert.equal(
         emails.length,
         0,
@@ -166,9 +166,9 @@ test("returns 503 when SMTP is not available and does not add the email", async 
 });
 
 test("cannot delete primary email", async () => {
-    const notifStore = await makeNotifStore();
-    await notifStore.addUserEmail("alice", "alice@example.com");
-    await notifStore.addUserEmail("alice", "alt@example.com");
+    const notificationStore = await makeNotificationStore();
+    await notificationStore.addUserEmail("alice", "alice@example.com");
+    await notificationStore.addUserEmail("alice", "alt@example.com");
 
     const tfaService = new TfaCodeService(new InMemoryTfaStore());
     const verifyTokenService = new VerifyTokenService(
@@ -178,7 +178,7 @@ test("cannot delete primary email", async () => {
     const token = issueAccessToken("alice", "user", 60);
 
     const route = createUserEmailRoutes(
-        notifStore,
+        notificationStore,
         tfaService,
         verifyTokenService,
         makeEmailDelivery(gateway),
@@ -201,7 +201,7 @@ test("cannot delete primary email", async () => {
 });
 
 test("email verification flow: issue code, verify, email becomes verified", async () => {
-    const notifStore = await makeNotifStore();
+    const notificationStore = await makeNotificationStore();
     const tfaService = new TfaCodeService(new InMemoryTfaStore());
     const verifyTokenService = new VerifyTokenService(
         new InMemoryVerifyTokenStore(),
@@ -214,53 +214,53 @@ test("email verification flow: issue code, verify, email becomes verified", asyn
         canSendVerificationEmail: () => true,
         sendVerificationEmail: async (
             _purpose: string,
-            to: string,
+            recipient: string,
             code: string,
         ) => {
-            sentEmails.push({ to, code });
+            sentEmails.push({ to: recipient, code });
         },
     } as any;
 
     const route = createUserEmailRoutes(
-        notifStore,
+        notificationStore,
         tfaService,
         verifyTokenService,
         makeEmailDelivery(mockGateway),
     );
 
-    const addRes = makeResponse();
+    const addResponse = makeResponse();
     await route(
         makeRequest("POST", { email: "alice@example.com" }, token),
-        addRes,
+        addResponse,
         new URL("http://localhost/api/v1/notify/users/alice/emails"),
     );
-    assert.equal(addRes.status, 201);
-    const addData = JSON.parse(addRes.payload);
+    assert.equal(addResponse.status, 201);
+    const addData = JSON.parse(addResponse.payload);
     assert.equal(addData.data.pendingVerification, true);
     assert.equal(sentEmails.length, 1);
     assert.equal(sentEmails[0].to, "alice@example.com");
 
-    const emailsBefore = await notifStore.getUserEmails("alice");
+    const emailsBefore = await notificationStore.getUserEmails("alice");
     assert.equal(emailsBefore[0].verified, false);
 
     const code = sentEmails[0].code;
 
-    const verRes = makeResponse();
+    const verResponse = makeResponse();
     await route(
         makeRequest("POST", { code }, token),
-        verRes,
+        verResponse,
         new URL(
             "http://localhost/api/v1/notify/users/alice/emails/alice%40example.com/verify",
         ),
     );
-    assert.equal(verRes.status, 200);
+    assert.equal(verResponse.status, 200);
 
-    const emailsAfter = await notifStore.getUserEmails("alice");
+    const emailsAfter = await notificationStore.getUserEmails("alice");
     assert.equal(emailsAfter[0].verified, true);
 });
 
 test("email verification codes use configured TFA SMTP code length", async () => {
-    const notifStore = await makeNotifStore();
+    const notificationStore = await makeNotificationStore();
     const tfaService = new TfaCodeService(new InMemoryTfaStore());
     const verifyTokenService = new VerifyTokenService(
         new InMemoryVerifyTokenStore(),
@@ -273,15 +273,15 @@ test("email verification codes use configured TFA SMTP code length", async () =>
         canSendVerificationEmail: () => true,
         sendVerificationEmail: async (
             _purpose: string,
-            to: string,
+            recipient: string,
             code: string,
         ) => {
-            sentEmails.push({ to, code });
+            sentEmails.push({ to: recipient, code });
         },
     } as any;
 
     const route = createUserEmailRoutes(
-        notifStore,
+        notificationStore,
         tfaService,
         verifyTokenService,
         makeEmailDelivery(mockGateway),
@@ -290,21 +290,21 @@ test("email verification codes use configured TFA SMTP code length", async () =>
         () => 8,
     );
 
-    const addRes = makeResponse();
+    const addResponse = makeResponse();
     await route(
         makeRequest("POST", { email: "alice@example.com" }, token),
-        addRes,
+        addResponse,
         new URL("http://localhost/api/v1/notify/users/alice/emails"),
     );
 
-    assert.equal(addRes.status, 201);
+    assert.equal(addResponse.status, 201);
     assert.equal(sentEmails.length, 1);
     assert.match(sentEmails[0].code, /^\d{8}$/);
 });
 
 test("email verification rejects wrong code with 422", async () => {
-    const notifStore = await makeNotifStore();
-    await notifStore.addUserEmail("alice", "alice@example.com");
+    const notificationStore = await makeNotificationStore();
+    await notificationStore.addUserEmail("alice", "alice@example.com");
 
     const tfaService = new TfaCodeService(new InMemoryTfaStore());
     tfaService.issue(emailVerificationKey("alice", "alice@example.com"));
@@ -315,7 +315,7 @@ test("email verification rejects wrong code with 422", async () => {
     const token = issueAccessToken("alice", "user", 60);
 
     const route = createUserEmailRoutes(
-        notifStore,
+        notificationStore,
         tfaService,
         verifyTokenService,
         makeEmailDelivery(gateway),
@@ -333,8 +333,8 @@ test("email verification rejects wrong code with 422", async () => {
 });
 
 test("link verification GET redirects to /verify-email", async () => {
-    const notifStore = await makeNotifStore();
-    await notifStore.addUserEmail("alice", "alice@example.com");
+    const notificationStore = await makeNotificationStore();
+    await notificationStore.addUserEmail("alice", "alice@example.com");
 
     const tfaService = new TfaCodeService(new InMemoryTfaStore());
     const verifyTokenService = new VerifyTokenService(
@@ -346,7 +346,7 @@ test("link verification GET redirects to /verify-email", async () => {
     const gateway = makeGateway();
 
     const route = createUserEmailRoutes(
-        notifStore,
+        notificationStore,
         tfaService,
         verifyTokenService,
         makeEmailDelivery(gateway),
@@ -372,7 +372,7 @@ test("link verification GET redirects to /verify-email", async () => {
         `expected redirect to /verify-email, got: ${capturedLocation}`,
     );
 
-    const emails = await notifStore.getUserEmails("alice");
+    const emails = await notificationStore.getUserEmails("alice");
     assert.equal(
         emails[0].verified,
         false,
@@ -381,8 +381,8 @@ test("link verification GET redirects to /verify-email", async () => {
 });
 
 test("POST /api/v1/notify/verify-email with valid token verifies email", async () => {
-    const notifStore = await makeNotifStore();
-    await notifStore.addUserEmail("alice", "alice@example.com");
+    const notificationStore = await makeNotificationStore();
+    await notificationStore.addUserEmail("alice", "alice@example.com");
 
     const tfaService = new TfaCodeService(new InMemoryTfaStore());
     const verifyTokenService = new VerifyTokenService(
@@ -394,7 +394,7 @@ test("POST /api/v1/notify/verify-email with valid token verifies email", async (
     const gateway = makeGateway();
 
     const route = createUserEmailRoutes(
-        notifStore,
+        notificationStore,
         tfaService,
         verifyTokenService,
         makeEmailDelivery(gateway),
@@ -410,13 +410,13 @@ test("POST /api/v1/notify/verify-email with valid token verifies email", async (
     const data = JSON.parse(res.payload);
     assert.equal(data.data.verified, true);
 
-    const emails = await notifStore.getUserEmails("alice");
+    const emails = await notificationStore.getUserEmails("alice");
     assert.equal(emails[0].verified, true);
 });
 
 test("POST /api/v1/notify/verify-email token cannot be reused", async () => {
-    const notifStore = await makeNotifStore();
-    await notifStore.addUserEmail("alice", "alice@example.com");
+    const notificationStore = await makeNotificationStore();
+    await notificationStore.addUserEmail("alice", "alice@example.com");
 
     const tfaService = new TfaCodeService(new InMemoryTfaStore());
     const verifyTokenService = new VerifyTokenService(
@@ -428,7 +428,7 @@ test("POST /api/v1/notify/verify-email token cannot be reused", async () => {
     const gateway = makeGateway();
 
     const route = createUserEmailRoutes(
-        notifStore,
+        notificationStore,
         tfaService,
         verifyTokenService,
         makeEmailDelivery(gateway),
@@ -449,12 +449,12 @@ test("POST /api/v1/notify/verify-email token cannot be reused", async () => {
         new URL("http://localhost/api/v1/notify/verify-email"),
     );
     assert.equal(second.status, 400);
-    const errData = JSON.parse(second.payload);
-    assert.equal(errData.error.code, "invalid_token");
+    const errorData = JSON.parse(second.payload);
+    assert.equal(errorData.error.code, "invalid_token");
 });
 
 test("add email issues both TFA code and verify token and includes link in email", async () => {
-    const notifStore = await makeNotifStore();
+    const notificationStore = await makeNotificationStore();
     const tfaService = new TfaCodeService(new InMemoryTfaStore());
     const verifyTokenService = new VerifyTokenService(
         new InMemoryVerifyTokenStore(),
@@ -468,16 +468,16 @@ test("add email issues both TFA code and verify token and includes link in email
         canSendVerificationEmail: () => true,
         sendVerificationEmail: async (
             _purpose: string,
-            to: string,
+            recipient: string,
             code: string,
             verifyUrl?: string,
         ) => {
-            sentEmails.push({ to, code, verifyUrl });
+            sentEmails.push({ to: recipient, code, verifyUrl });
         },
     } as any;
 
     const route = createUserEmailRoutes(
-        notifStore,
+        notificationStore,
         tfaService,
         verifyTokenService,
         makeEmailDelivery(mockGateway),
@@ -502,7 +502,7 @@ test("add email issues both TFA code and verify token and includes link in email
 });
 
 test("verify-tokens/status returns pending:true for a live token", async () => {
-    const notifStore = await makeNotifStore();
+    const notificationStore = await makeNotificationStore();
     const tfaService = new TfaCodeService(new InMemoryTfaStore());
     const verifyTokenService = new VerifyTokenService(
         new InMemoryVerifyTokenStore(),
@@ -513,7 +513,7 @@ test("verify-tokens/status returns pending:true for a live token", async () => {
     const gateway = makeGateway();
 
     const route = createUserEmailRoutes(
-        notifStore,
+        notificationStore,
         tfaService,
         verifyTokenService,
         makeEmailDelivery(gateway),
@@ -533,8 +533,8 @@ test("verify-tokens/status returns pending:true for a live token", async () => {
 });
 
 test("verify-tokens/status returns pending:false after token is consumed", async () => {
-    const notifStore = await makeNotifStore();
-    await notifStore.addUserEmail("alice", "alice@example.com");
+    const notificationStore = await makeNotificationStore();
+    await notificationStore.addUserEmail("alice", "alice@example.com");
 
     const tfaService = new TfaCodeService(new InMemoryTfaStore());
     const verifyTokenService = new VerifyTokenService(
@@ -546,37 +546,37 @@ test("verify-tokens/status returns pending:false after token is consumed", async
     const gateway = makeGateway();
 
     const route = createUserEmailRoutes(
-        notifStore,
+        notificationStore,
         tfaService,
         verifyTokenService,
         makeEmailDelivery(gateway),
         "http://localhost",
     );
 
-    const verifyRes = makeResponse();
+    const verifyResponse = makeResponse();
     await route(
         makeRequest("POST", { token: liveToken }, ""),
-        verifyRes,
+        verifyResponse,
         new URL("http://localhost/api/v1/notify/verify-email"),
     );
-    assert.equal(verifyRes.status, 200);
+    assert.equal(verifyResponse.status, 200);
 
-    const statusRes = makeResponse();
+    const statusResponse = makeResponse();
     await route(
         { method: "GET", headers: {} } as any,
-        statusRes,
+        statusResponse,
         new URL(
             `http://localhost/api/v1/notify/verify-tokens/status?token=${liveToken}`,
         ),
     );
-    assert.equal(statusRes.status, 200);
-    const data = JSON.parse(statusRes.payload);
+    assert.equal(statusResponse.status, 200);
+    const data = JSON.parse(statusResponse.payload);
     assert.equal(data.data.pending, false);
 });
 
 test("owner can list another user's emails", async () => {
-    const notifStore = await makeNotifStore();
-    await notifStore.addUserEmail("alice", "alice@example.com");
+    const notificationStore = await makeNotificationStore();
+    await notificationStore.addUserEmail("alice", "alice@example.com");
 
     const tfaService = new TfaCodeService(new InMemoryTfaStore());
     const verifyTokenService = new VerifyTokenService(
@@ -586,7 +586,7 @@ test("owner can list another user's emails", async () => {
     const ownerToken = issueAccessToken("owner-account", "owner", 60);
 
     const route = createUserEmailRoutes(
-        notifStore,
+        notificationStore,
         tfaService,
         verifyTokenService,
         makeEmailDelivery(gateway),
@@ -607,7 +607,7 @@ test("owner can list another user's emails", async () => {
 });
 
 test("verify-tokens/status returns pending:false for an unknown token", async () => {
-    const notifStore = await makeNotifStore();
+    const notificationStore = await makeNotificationStore();
     const tfaService = new TfaCodeService(new InMemoryTfaStore());
     const verifyTokenService = new VerifyTokenService(
         new InMemoryVerifyTokenStore(),
@@ -615,7 +615,7 @@ test("verify-tokens/status returns pending:false for an unknown token", async ()
     const gateway = makeGateway();
 
     const route = createUserEmailRoutes(
-        notifStore,
+        notificationStore,
         tfaService,
         verifyTokenService,
         makeEmailDelivery(gateway),
@@ -635,7 +635,7 @@ test("verify-tokens/status returns pending:false for an unknown token", async ()
 });
 
 test("SSO email resends support code and link verification with namespaced account IDs", async () => {
-    const store = await makeNotifStore();
+    const store = await makeNotificationStore();
     const account = "x:firehawksystems";
     const email = "firehawk@opayq.net";
     await store.addUserEmail(account, email);

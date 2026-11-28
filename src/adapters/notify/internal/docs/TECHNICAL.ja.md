@@ -4,7 +4,7 @@
 
 ## インターフェース
 
-createNotificationSender は現在の保存先を遅延参照します。bootstrapNotifyAdapter が常時配信、認証付き受信箱、ベルを登録します。db:executor があれば DbInternalNotificationStore を初期化し、なければ一時保存の警告を出します。
+createNotificationSender は現在の保存先を遅延参照します。bootstrapNotifyAdapter が常時配信、認証付き受信箱、ベルを登録します。db:executor があれば DatabaseInternalNotificationStore を初期化し、なければ一時保存の警告を出します。
 
 | メソッド | パス                            | 説明                     | 認証     |
 | -------- | ------------------------------- | ------------------------ | -------- |

@@ -84,8 +84,8 @@ export function bindVariantInteractions(root, { signal, suppressNextClick }) {
     const dimensions = new WeakMap();
     const observer = new ResizeObserver((records) => {
         let changed = false;
-        for (const { target, contentRect } of records) {
-            const size = `${contentRect.width}:${contentRect.height}`;
+        for (const { target, contentRect: contentRectangle } of records) {
+            const size = `${contentRectangle.width}:${contentRectangle.height}`;
             const previous = dimensions.get(target);
             dimensions.set(target, size);
             if (previous !== undefined && previous !== size) changed = true;

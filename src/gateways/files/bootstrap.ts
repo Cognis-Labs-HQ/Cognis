@@ -9,11 +9,11 @@ import type {
     NamespaceFileClientFactory,
 } from "@cognis/core";
 import type { GatewayBootstrapContext } from "../shared.js";
-import type { DbExecutor } from "../db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../db/reuse/db-executor.js";
 import type { RouteContext } from "../../api/reuse/route-context.js";
 import { resolveRouteContext } from "../../api/reuse/route-context.js";
 import { NamespaceRegistry } from "./reuse/namespace-registry.js";
-import { DbFileObjectStore } from "./reuse/file-object-store.js";
+import { DatabaseFileObjectStore } from "./reuse/file-object-store.js";
 import { NamespaceFileService } from "./reuse/namespace-file-service.js";
 import type { FileQuotaStore } from "./reuse/quota-store-contract.js";
 import { createFileRoutes, createQuotaAdminRoutes } from "./routes/index.js";
@@ -54,7 +54,7 @@ async function loadLocalFileGateway(
 }
 
 async function loadQuotaStore(
-    getDb: () => DbExecutor | undefined,
+    getDatabase: () => DatabaseExecutor | undefined,
     adaptersRoot: string,
     context: GatewayBootstrapContext,
 ): Promise<FileQuotaStore> {
@@ -67,13 +67,16 @@ async function loadQuotaStore(
     const quotaAdapterModule = await import(
         `${quotaAdapterPath}?t=${Date.now()}`
     );
-    const DbFileQuotaStoreClass = quotaAdapterModule.DbFileQuotaStore as
-        | (new (getDb: () => DbExecutor | undefined) => FileQuotaStore)
-        | undefined;
-    if (!DbFileQuotaStoreClass) {
+    const DatabaseFileQuotaStoreClass =
+        quotaAdapterModule.DatabaseFileQuotaStore as
+            | (new (
+                  getDatabase: () => DatabaseExecutor | undefined,
+              ) => FileQuotaStore)
+            | undefined;
+    if (!DatabaseFileQuotaStoreClass) {
         throw new Error("file_quota_adapter_missing_store_class");
     }
-    const create = () => new DbFileQuotaStoreClass(getDb);
+    const create = () => new DatabaseFileQuotaStoreClass(getDatabase);
     return quotaAdapterModule.defineContracts !== undefined
         ? bootstrapAdapter(
               "files",
@@ -125,9 +128,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         adaptersRoot,
         ctx,
     );
-    const getDb = () => ctx.capabilities.get<DbExecutor>("db:executor");
-    const quotaStore = await loadQuotaStore(getDb, adaptersRoot, ctx);
-    const objectStore = new DbFileObjectStore(getDb);
+    const getDatabase = () =>
+        ctx.capabilities.get<DatabaseExecutor>("db:executor");
+    const quotaStore = await loadQuotaStore(getDatabase, adaptersRoot, ctx);
+    const objectStore = new DatabaseFileObjectStore(getDatabase);
     const registry = new NamespaceRegistry();
     const service = new NamespaceFileService(
         registry,
@@ -224,8 +228,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     );
 
     ctx.routeRegistry.registerPrefix("/api/v1/files", "files");
-    const uiDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "ui");
-    ctx.uiRegistry?.registerStaticDir("files", uiDir);
+    const uiDirectory = path.join(
+        path.dirname(fileURLToPath(import.meta.url)),
+        "ui",
+    );
+    ctx.uiRegistry?.registerStaticDirectory("files", uiDirectory);
     ctx.uiRegistry?.registerAdminSection({
         id: "file-namespace-quotas",
         label: "File namespace quotas",

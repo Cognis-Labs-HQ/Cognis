@@ -80,8 +80,10 @@ test("guard allows auth security sections during TFA setup pending flow", () => 
 });
 
 test("token store persists tokens to disk across module reload", async () => {
-    const tempDir = mkdtempSync(path.join(tmpdir(), "cognis-token-store-"));
-    const tokenStorePath = path.join(tempDir, "access-tokens.json");
+    const temporaryDirectory = mkdtempSync(
+        path.join(tmpdir(), "cognis-token-store-"),
+    );
+    const tokenStorePath = path.join(temporaryDirectory, "access-tokens.json");
     const tokenModulePath = new URL("../access-tokens.ts", import.meta.url)
         .href;
 
@@ -106,7 +108,7 @@ test("token store persists tokens to disk across module reload", async () => {
         });
     } finally {
         delete process.env.COGNIS_ACCESS_TOKEN_STORE_PATH;
-        rmSync(tempDir, { recursive: true, force: true });
+        rmSync(temporaryDirectory, { recursive: true, force: true });
     }
 });
 

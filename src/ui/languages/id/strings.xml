@@ -77,6 +77,8 @@
   <string name="ui.reuse.confirm">Konfirmasi</string>
   <string name="ui.reuse.error">Kesalahan</string>
   <string name="ui.reuse.coming_soon">Segera Hadir</string>
+  <string name="ui.reuse.layout_saved">Tata letak halaman diperbarui.</string>
+  <string name="ui.reuse.layout_save_failed">Tata letak halaman tidak dapat diperbarui.</string>
   <string name="ui.reuse.save_failed">Gagal Menyimpan</string>
   <string name="ui.reuse.more_information">Informasi lainnya</string>
   <string name="ui.reuse.system">Sistem</string>
@@ -752,7 +754,7 @@
   <string name="ui.tutorial.workspace.dock.language.body">Gunakan pengalih bahasa untuk mengganti bahasa antarmuka. Atur urutan bahasa pilihan di Pengaturan.</string>
   <string name="ui.tutorial.workspace.dock.theme.body">Tombol tampilan beralih antara tema terang dan gelap. Klik kanan untuk membuka pengaturan tampilan lainnya.</string>
   <string name="ui.tutorial.workspace.dock.layout.title">Atur Widget Halaman</string>
-  <string name="ui.tutorial.workspace.dock.layout.body">Gunakan Tambah untuk menempatkan elemen tanpa menyeret. Pada layar sentuh, gunakan kontrol ukuran dan hapus yang terlihat. Dengan papan ketik, fokuskan widget lalu gunakan panah untuk memindahkan atau Shift bersama panah untuk mengubah ukuran. Simpan atau buang susunan setelah selesai.</string>
+  <string name="ui.tutorial.workspace.dock.layout.body">Tukar hanya jika kedua widget muat. Garis hijau menandai pertukaran sah; merah berarti salah satu posisi baru terhalang. Seret widget untuk memindahkannya; kuning menunjukkan tujuan saat dilepas. Tahan dekat tepi layar untuk menggulir. Ubah ukuran pada tepi atau sudut yang disorot; oranye berarti batas ukuran. Kursor menunjukkan arah yang tersedia. Perkecil Elemen atau gunakan Tambah. Panah memindahkan widget yang difokuskan; Shift bersama panah mengubah ukuran. Atur Ulang Tata Letak menampilkan nilai bawaan sebagai draf. Selesai menyimpan tata letak yang terlihat; Batalkan memulihkan tata letak sebelum pengeditan. Notifikasi melaporkan hasil penyimpanan.</string>
   <string name="ui.tutorial.restart">Mulai Ulang Tutorial</string>
   <string name="ui.tutorial.docs.read.browse.documents.title">Jelajahi Dokumen</string>
   <string name="ui.tutorial.docs.read.browse.documents.body">Gunakan menu samping untuk memilih topik atau komponen. Buka grup untuk menemukan halamannya; dokumen pilihan tampil di sebelah menu.</string>

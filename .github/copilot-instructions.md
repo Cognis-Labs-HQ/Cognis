@@ -557,23 +557,21 @@ Tests outside `src/core` must assume any gateway, adapter, or module outside the
 
 Prefer fully qualified database table names instead of aliases. When an alias is necessary, it must preserve the complete, descriptive table name; never shorten table names to initials, abbreviations, or single-letter aliases such as `a`, `i`, or `c`.
 
-Variable and binding names must be descriptive. Single-letter names are only acceptable in the roles listed below; all other one- or two-letter identifiers are forbidden in `const`, `let`, and `var` declarations and in `for-of` / `for-in` bindings:
+Variable names, import bindings, function/class and runtime enum/namespace bindings, signature parameter labels and private members must describe their role. Reject opaque shorthand such as `ft`, `gs`, `tgtRow`, `orig` and numbered placeholders. Conventional developer vocabulary such as `args`, `db`, LDAP `dn`, HTTP `req`/`res`, `env`, `opts` and `params` is meaningful as a standalone binding, parameter or private member and must not be mechanically expanded there. Composite identifiers must expand non-unit abbreviations. Measurement-unit tokens such as `ms`, `sec`, `px`, `rad` and `deg` stay abbreviated inside composites, for example `INVITE_EXPIRY_MS`, `timeoutSec`, `widthPx` and `angleDeg`; never mechanically expand those units. The `measurementUnits` glossary map records these exceptions. Other examples: `db` and `this.db`, but `databaseType`, `DatabaseExecutor` and `createDatabaseExecutor`; `args`, but `requestArguments`; `dn`, but `baseDistinguishedName`. Apply this to existing upstream code as well as new changes. Owned composite type identities and method names follow the same rule. Canonical dependency/platform names retain their external contracts. The shared glossary `src/tooling/reuse/ambiguous-name-words.json` defines the standalone vocabulary, measurement-unit exceptions, rejected composite abbreviations and canonical platform members.
 
-**Acceptable single-letter names:**
+Other short binding exceptions are:
 
-- `x`, `y` — 2-D spatial coordinates.
-- `w`, `h` — layout width / height (in grid units or pixels).
-- `_` — explicitly ignored binding.
-- `i`, `j`, `k` — numeric for-loop counters (e.g. `for (let i = 0; ...)`).
-- `r`, `c` — row / column counters in nested grid-cell loops.
+- `_` — an unused, unexported binding. Consuming its value or storing it as a parameter property is forbidden.
+- `id` — a unique identifier.
+- `i`, `j`, `k` — numeric `for` counters with a matching increment, decrement or arithmetic update. Collection bindings and unrelated updates do not qualify.
 
-**Acceptable two-letter names:**
+Use descriptive coordinate and dimension locals such as `horizontalCoordinate`, `verticalCoordinate`, `width`, `height`, `rowIndex` and `columnIndex`. A broad `x`/`y`/`w`/`h` exception must not hide harnesses, headings, list entries or other non-spatial values. Replace numbered placeholders such as `event2` with their actual role, such as `moveEvent` or `releaseEvent`.
 
-- `id` — a unique identifier; universally understood and unambiguous in any context.
+Established contract vocabulary (`ctx`, `log`, `i18n`), protocol terms and product names retain their meaning. Do not expand MariaDB or IndexedDB into a different product name. Match complete identifier words rather than substrings.
 
-Everything else must use a full descriptive name: `element` not `el`, `gridSize` not `gs`, `floatingToolbar` not `ft`, `resizeObserver` not `ro`, `gateway` not `gw`, `timestamp` not `ts`, `listItem` not `li`, `initVector` not `iv`, `timezone` not `tz`, `recipient` not `to`, etc.
+The syntax-tree detector in `src/tooling/reuse/ambiguous-names.js` checks bindings independently of line breaks, exports, declaration order and type annotations. `src/ui/tests/ambiguous-names.test.js` scans all JavaScript and TypeScript under `src`, including gateways, tooling, tests and fixtures, without baselines or file-specific exceptions. Parse failures fail validation. Regression cases cover rejected shorthand, direct conventional names, expanded composites, owned type/method declarations, canonical platform APIs, counter roles, ignored bindings and naming-only import/export aliases.
 
-A test in `src/ui/tests/ambiguous-names.test.js` enforces this rule automatically for all source files in the scanned directories.
+When renaming an owned API, update its declaration, exports, imports and every caller to one canonical name. Never expand an implementation name only to export it under the compressed name, or import the compressed name under the expanded name. Naming-only aliases fail validation. Retain canonical third-party API names rather than creating mechanical expansion aliases. Preserve public property/payload keys; destructuring may separate a stable data key from a descriptive local. Public data keys, literal text, generic type parameters and type-only import identities are not local variable bindings.
 
 ### Module cohesion
 

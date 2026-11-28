@@ -3,7 +3,12 @@ import { readFile } from "node:fs/promises";
 import vm from "node:vm";
 
 export async function loadPopupManager() {
-    const context = vm.createContext({ Date, Map, Set, AbortController });
+    const context = vm.createContext({
+        Date,
+        Map,
+        Set,
+        AbortController,
+    });
     const modules = new Map();
     const diagnostics = createDiagnosticFixture();
     const contracts = {

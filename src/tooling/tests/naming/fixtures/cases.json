@@ -1,0 +1,402 @@
+[
+    {
+        "name": "exported constant",
+        "source": "export const a = 1;",
+        "names": ["a"]
+    },
+    {
+        "name": "additional declarators",
+        "source": "const first = 1, b = 2; let second = 3, c = 4;",
+        "names": ["b", "c"]
+    },
+    {
+        "name": "uninitialized and uppercase bindings",
+        "source": "let n; var Q; const AB = 1;",
+        "names": ["n", "Q", "AB"]
+    },
+    {
+        "name": "multiline export",
+        "source": "export\nconst\n el\n= 1;",
+        "names": ["el"]
+    },
+    {
+        "name": "destructured local alias",
+        "source": "const { key: a, nested: { b }, ...c } = source;",
+        "names": ["a", "b", "c"]
+    },
+    {
+        "name": "array rest and default",
+        "source": "const [a = 0, , ...b] = source;",
+        "names": ["a", "b"]
+    },
+    {
+        "name": "destructured short field",
+        "source": "const { ft, gs } = source;",
+        "names": ["ft", "gs"]
+    },
+    {
+        "name": "arrow parameters",
+        "source": "items.map((e, p) => e + p);",
+        "names": ["e", "p"]
+    },
+    {
+        "name": "ordinary and async parameters",
+        "source": "function read(a) {} const operation = async function(b) {};",
+        "names": ["a", "b"]
+    },
+    {
+        "name": "nested default parameters",
+        "source": "const operation = ({ key: a = 1 }, [b], ...c) => {};",
+        "names": ["a", "b", "c"]
+    },
+    {
+        "name": "class constructor method setter and catch",
+        "source": "class Example { constructor(a) {} method(b) {} set value(c) {} } try {} catch (e) {}",
+        "names": ["a", "b", "c", "e"]
+    },
+    {
+        "name": "object method",
+        "source": "const handlers = { run(a) {} };",
+        "names": ["a"]
+    },
+    {
+        "name": "typed declarations and parameter properties",
+        "source": "const ft: Toolbar = source; class Example { constructor(private readonly gs: string) {} }",
+        "names": ["ft", "gs"]
+    },
+    {
+        "name": "typed optional async arrow in a conditional",
+        "source": "const handler = ready ? async (a?: string): Promise<void> => {} : undefined;",
+        "names": ["a"]
+    },
+    {
+        "name": "numeric counter names only in counter position",
+        "source": "for (let i = 0; i < 2; i++) { const j = i; } for (const k of values) {}",
+        "names": ["j", "k"]
+    },
+    {
+        "name": "disallowed loop counter",
+        "source": "for (let a = 0; a < 2; a++) {} for (const el in source) {}",
+        "names": ["a", "el"]
+    },
+    {
+        "name": "numeric suffix cannot bypass the rule",
+        "source": "const a1 = 1; const x1 = 2;",
+        "names": ["a1", "x1"]
+    },
+    {
+        "name": "ignored name is exact",
+        "source": "const _u = source; const __ = source;",
+        "names": ["_u", "__"]
+    },
+    {
+        "name": "SQL table aliases",
+        "source": "const query = { table: { alias: 'a' }, joins: [{ alias: 'ab' }] };",
+        "names": ["a", "ab"]
+    },
+    {
+        "name": "computed SQL alias property",
+        "source": "const query = { ['alias']: 'x' };",
+        "names": ["x"]
+    },
+    {
+        "name": "descriptive bindings and retained contract keys",
+        "source": "const { iv: initializationVector, db: database } = source; const values = { db: database, iv: initializationVector };",
+        "names": []
+    },
+    {
+        "name": "coordinate and dimension locals require descriptive names",
+        "source": "const { x, y, w, h, id } = rect; const _ = source;",
+        "names": ["x", "y", "w", "h"]
+    },
+    {
+        "name": "documented numeric counters",
+        "source": "for (let i = 0; i < 3; i++) {} for (let j = 0; j < 3; j++) {} for (let k = 0; k < 3; k++) {} for (let rowIndex = 0; rowIndex < 2; rowIndex++) { for (let columnIndex = 0; columnIndex < 2; columnIndex++) {} }",
+        "names": []
+    },
+    {
+        "name": "signature parameter labels require descriptive names",
+        "source": "type Handler<T> = (gs: T) => T; interface Reader { read(a: string): void; }",
+        "names": ["gs", "a"]
+    },
+    {
+        "name": "property and string text are not bindings",
+        "source": "const record = { a: 1, b: 2 }; const text = 'const q = 1; alias: x'; /* const z = 1; */",
+        "names": []
+    },
+    {
+        "name": "regex and template text are not declarations",
+        "source": "const pattern = /const a = 1/; const message = `const b = 2`;",
+        "names": []
+    },
+    {
+        "name": "template expressions contain real bindings",
+        "source": "const message = `${items.map(e => e.id)}`;",
+        "names": ["e"]
+    },
+    {
+        "name": "descriptive SQL alias",
+        "source": "const query = { table: { alias: 'calendar_events' } };",
+        "names": []
+    },
+    {
+        "name": "import aliases and namespaces",
+        "source": "import { readFile as f } from 'node:fs'; import fs from 'node:fs'; import * as vm from 'node:vm';",
+        "names": ["f"]
+    },
+    {
+        "name": "runtime function and class bindings",
+        "source": "function f() {} class C {} const factory = function g() {}; const type = class D {};",
+        "names": ["f", "C", "g", "D"]
+    },
+    {
+        "name": "type-only imports do not bind runtime variables",
+        "source": "import type { T } from './types.js';",
+        "names": []
+    },
+    {
+        "name": "JSX expressions contain real bindings",
+        "source": "const view = <section>{items.map(e => e.id)}</section>;",
+        "names": ["e"]
+    },
+    {
+        "name": "escaped names cannot bypass inspection",
+        "source": "const \\u0061 = 1;",
+        "names": ["a"]
+    },
+    {
+        "name": "counter exceptions do not apply to parameters",
+        "source": "items.map(i => i);",
+        "names": ["i"]
+    },
+    {
+        "name": "abbreviated words in locals and parameters",
+        "source": "const tgt = input; function read(orig, msg, prefs) {}",
+        "names": ["tgt", "orig", "msg", "prefs"]
+    },
+    {
+        "name": "camel case and constant words",
+        "source": "const tgtRow = source; const DEFAULT_PREFS = source; let errorMsg;",
+        "names": ["tgtRow", "DEFAULT_PREFS", "errorMsg"]
+    },
+    {
+        "name": "ignored prefix does not hide abbreviations",
+        "source": "function read(_tgt, _orig, _prefs) {}",
+        "names": ["_tgt", "_orig", "_prefs"]
+    },
+    {
+        "name": "numbered placeholders are not descriptive roles",
+        "source": "const event3 = source; const value42 = source;",
+        "names": ["event3", "value42"]
+    },
+    {
+        "name": "private storage fields",
+        "source": "class Example { private prefs: unknown; #msg; private readonly ft: unknown; }",
+        "names": ["prefs", "msg", "ft"]
+    },
+    {
+        "name": "private accessor and method names",
+        "source": "class Example { private get ft() { return source; } private readMsg() {} }",
+        "names": ["ft", "readMsg"]
+    },
+    {
+        "name": "quoted private field",
+        "source": "class Example { private 'prefs': unknown; }",
+        "names": ["prefs"]
+    },
+    {
+        "name": "public data keys stay stable",
+        "source": "const { w: width, h: height, prefs: preferences } = input; const output = { w: width, h: height, prefs: preferences };",
+        "names": []
+    },
+    {
+        "name": "descriptive typed signatures and generic names",
+        "source": "type Handler<T> = (database: T) => T; interface Reader { read(value: string): void; }",
+        "names": []
+    },
+    {
+        "name": "established protocol and contract vocabulary",
+        "source": "function read(ctx, log, i18n, url, html, sql, api, uuid) {}",
+        "names": []
+    },
+    {
+        "name": "whole word matching avoids substrings",
+        "source": "const pressure = source; const request = input; const dependency = input; const rectangle = input; const metadata = input;",
+        "names": []
+    },
+    {
+        "name": "product names retain their meaning",
+        "source": "const mariaDbPool = source; const indexedDbStorage = source;",
+        "names": []
+    },
+    {
+        "name": "product names cannot exempt neighboring abbreviations",
+        "source": "const mariaDbConn = source; const indexedDbPrefs = source;",
+        "names": ["mariaDbConn", "indexedDbPrefs"]
+    },
+    {
+        "name": "numeric counter update is required",
+        "source": "for (let i = 0; ready; record()) {}",
+        "names": ["i"]
+    },
+    {
+        "name": "text iteration is not a numeric counter",
+        "source": "for (let i = 'value'; ready; i += 'next') {}",
+        "names": ["i"]
+    },
+    {
+        "name": "numeric counter collection does not apply to row shorthand",
+        "source": "for (let r = 0; r < 2; r++) { for (let c = 0; c < 2; c++) {} }",
+        "names": ["r", "c"]
+    },
+    {
+        "name": "ignored names cannot be consumed",
+        "source": "const _ = input; read(_);",
+        "names": ["_"]
+    },
+    {
+        "name": "ignored names cannot be exported",
+        "source": "export const _ = input;",
+        "names": ["_"]
+    },
+    {
+        "name": "parameter properties store a value and cannot be ignored",
+        "source": "class Example { constructor(private readonly _: string) {} }",
+        "names": ["_"]
+    },
+    {
+        "name": "unused ignored arguments remain valid",
+        "source": "items.map((_, index) => index);",
+        "names": []
+    },
+    {
+        "name": "underscore property labels are not ignored-variable reads",
+        "source": "const record = { _: value }; const result = record._;",
+        "names": []
+    },
+    {
+        "name": "plural abbreviation words and constants",
+        "source": "const ancestorRects = []; const settingsExts = []; const MSGS_LIMIT = 10;",
+        "names": ["ancestorRects", "settingsExts", "MSGS_LIMIT"]
+    },
+    {
+        "name": "asserted ignored values are still consumed",
+        "source": "const _ = input; use(_ as number); use(_!); use(_ satisfies unknown); use(<number>_);",
+        "names": ["_", "_", "_", "_"]
+    },
+    {
+        "name": "enum and namespace runtime bindings",
+        "source": "enum a { Value } namespace b { export const label = 1; }",
+        "names": ["a", "b"]
+    },
+    {
+        "name": "module labels and descriptive namespaces remain valid",
+        "source": "declare module \"x\" {} namespace Network { export const value = 1; } enum Status { Ready }",
+        "names": []
+    },
+    {
+        "name": "type heritage and generic identifiers are not value reads",
+        "source": "interface Example<_> extends _ {} type Identity<_> = _;",
+        "names": []
+    },
+    {
+        "name": "conventional developer vocabulary",
+        "source": "function read(args, db, dn, req, res, env, opts, params, iv, tx, fs, os, vm, io, exec, init, ms, src, dir, meta, docs, diff, ref, refs, regex, prev, sep, rm, cp) {}",
+        "names": []
+    },
+    {
+        "name": "conventional private names",
+        "source": "class Store { private db: Database; private get dn() { return source; } }",
+        "names": []
+    },
+    {
+        "name": "naming-only owned export aliases",
+        "source": "class DatabaseStore {} export { DatabaseStore as DbStore };",
+        "names": ["DbStore"]
+    },
+    {
+        "name": "naming-only reexports",
+        "source": "export { createDatabaseExecutor as createDbExecutor } from './store.js';",
+        "names": ["createDbExecutor"]
+    },
+    {
+        "name": "semantic export and type aliases",
+        "source": "const render = source; export { render as mount }; export type { DatabaseStore as Store } from \"./types.js\";",
+        "names": []
+    },
+    {
+        "name": "naming-only import aliases",
+        "source": "import { DbStore as DatabaseStore } from './store.js';",
+        "names": ["DatabaseStore"]
+    },
+    {
+        "name": "canonical third party imports",
+        "source": "import { execFileSync } from 'node:child_process'; import { rm, cp } from 'node:fs/promises';",
+        "names": []
+    },
+    {
+        "name": "conventional words expand inside composites",
+        "source": "const dbExec = source; const TIMEOUT_MS = 1; const baseDn = source; let requestArgs; function initFontPreferences() {}",
+        "names": ["dbExec", "baseDn", "requestArgs", "initFontPreferences"]
+    },
+    {
+        "name": "expanded composites with direct shorthand",
+        "source": "class DatabaseStore { private db: Database; constructor(db, args) { this.db = db; } } function createDatabaseExecutor(db, ...args) {} const TIMEOUT_MS = 1;",
+        "names": []
+    },
+    {
+        "name": "owned composite type names",
+        "source": "interface DbExecutor {} type DbStore = DatabaseStore; interface DatabaseExecutor {} type T = unknown;",
+        "names": ["DbExecutor", "DbStore"]
+    },
+    {
+        "name": "prefixed direct conventional names",
+        "source": "function run(_db, _args, _req) {}",
+        "names": []
+    },
+    {
+        "name": "type export aliases cannot compress composites",
+        "source": "export type { DatabaseStore as DbStore } from \"./store.js\";",
+        "names": ["DbStore"]
+    },
+    {
+        "name": "type import aliases cannot hide compressed owned types",
+        "source": "import type { DbStore as DatabaseStore } from \"./store.js\";",
+        "names": ["DatabaseStore"]
+    },
+    {
+        "name": "canonical external aliases retain dependency identity",
+        "source": "import { execFileSync as runCompiler } from \"node:child_process\";",
+        "names": []
+    },
+    {
+        "name": "owned composite methods use expanded words",
+        "source": "class Registry { getDb() {} } const host = { registerStaticDir() {} }; interface Store { getDb(): unknown; }",
+        "names": ["getDb", "registerStaticDir", "getDb"]
+    },
+    {
+        "name": "canonical platform method names retain their identity",
+        "source": "const canvas = { clearRect() {} }; class ElementMock { getBoundingClientRect() {} getClientRects() {} } const runtime = { initializeImportMeta() {} };",
+        "names": []
+    },
+    {
+        "name": "measurement units stay abbreviated in composites",
+        "source": "const INVITE_EXPIRY_MS = 1000; const durationMs = 1; const timeoutSec = 1; const cacheSecs = 1; const widthPx = 1; const angleRad = 1; const angleDeg = 1; const delayUs = 1; const frequencyHz = 1; const sizeMB = 1;",
+        "names": []
+    },
+    {
+        "name": "unit exception does not permit opaque neighboring words",
+        "source": "const tgtMs = 1; const btnPx = 1; const reqSec = 1;",
+        "names": ["tgtMs", "btnPx", "reqSec"]
+    },
+    {
+        "name": "unit exception does not permit ambiguous scalar names",
+        "source": "const px = 1; const rad = 1; const deg = 1;",
+        "names": ["px", "rad", "deg"]
+    },
+    {
+        "name": "unit-bearing composites still require canonical exports",
+        "source": "const INVITE_EXPIRY_MS = 1; export { INVITE_EXPIRY_MS as INVITE_EXPIRY_MILLISECONDS };",
+        "names": ["INVITE_EXPIRY_MILLISECONDS"]
+    }
+]

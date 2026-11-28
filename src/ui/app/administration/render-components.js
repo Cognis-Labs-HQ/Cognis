@@ -237,8 +237,8 @@ function renderInlineAdapters(
     `;
 }
 
-function renderGatewaysContent(gateways, allAdapters, deps) {
-    const { i18n, escapeHtml, healthStatus, componentResolver } = deps;
+function renderGatewaysContent(gateways, allAdapters, dependencies) {
+    const { i18n, escapeHtml, healthStatus, componentResolver } = dependencies;
     if (!gateways.length) {
         return `<p>${i18n.t("ui.app.admin.no_gateways")}</p>`;
     }
@@ -302,8 +302,13 @@ function renderGatewaysContent(gateways, allAdapters, deps) {
     );
 }
 
-export function renderComponentsContent(modules, gateways, allAdapters, deps) {
-    const { i18n } = deps;
+export function renderComponentsContent(
+    modules,
+    gateways,
+    allAdapters,
+    dependencies,
+) {
+    const { i18n } = dependencies;
     const componentResolver = createComponentDependencyResolver(
         modules,
         gateways,
@@ -313,7 +318,7 @@ export function renderComponentsContent(modules, gateways, allAdapters, deps) {
     <div class="components-section">
       <h3 class="components-section-heading">${i18n.t("ui.app.admin.gateways")}</h3>
       <div class="components-section-body">
-        ${renderGatewaysContent(gateways, allAdapters, { ...deps, componentResolver })}
+        ${renderGatewaysContent(gateways, allAdapters, { ...dependencies, componentResolver })}
       </div>
     </div>
   `;

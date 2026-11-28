@@ -13,7 +13,7 @@
         "bindModuleConfigureButtons",
         "bindModuleToggles"
     ],
-    "./security.js": ["initSecuritySection"],
+    "./security.js": ["initializeSecuritySection"],
     "./ui-state-bindings.js": [
         "bindExpandedStateListeners",
         "bindDetailsToggleClicks",
@@ -60,5 +60,6 @@
     "./save.js": [
         "createAdministrationSave",
         "confirmAdministrationSectionSwitch"
-    ]
+    ],
+    "./dependency-links.js": ["bindDependencyLinks"]
 }

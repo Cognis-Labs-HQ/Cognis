@@ -22,14 +22,14 @@ async function mountStudyRoute(root, options = {}) {
         await hub.mount(root, options);
         return;
     }
-    const subPages = uiCtx.capabilities.get("study:subPages");
-    const model = await subPages.load("study");
+    const nestedPages = uiCtx.capabilities.get("study:subPages");
+    const model = await nestedPages.load("study");
     if (model.groups.length === 0) {
         await navigateTo("/error?code=503");
         return;
     }
     const component = (
-        await subPages.resolve("study", window.location.pathname)
+        await nestedPages.resolve("study", window.location.pathname)
     )?.page;
     if (!component?.scriptUrl)
         throw new Error("Study child route unavailable.");

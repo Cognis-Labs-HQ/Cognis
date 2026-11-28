@@ -21,10 +21,11 @@ export function createNavbarAvatarProvider(ctx) {
         if (!canLoadOwnProfile(ctx))
             return { ...fallback, profileAvailable: false };
         try {
-            const pingRes = isOffline()
+            const pingResponse = isOffline()
                 ? { ok: true }
                 : await apiFetch("/api/v1/social/profile/ping");
-            if (!pingRes.ok) return { ...fallback, profileAvailable: false };
+            if (!pingResponse.ok)
+                return { ...fallback, profileAvailable: false };
         } catch (error) {
             log("error", "profile_avatar_load_failed", {
                 component: "social-profile",

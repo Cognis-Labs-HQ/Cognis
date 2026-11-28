@@ -3,12 +3,14 @@ import { resolveRouteContext } from "../../../../../api/reuse/route-context.js";
 import {
     canSendMessageRequest,
     publicProfileSummary,
-    type MessagesRoutesDeps,
+    type MessagesRoutesDependencies,
 } from "../shared.js";
 
-export function createRequestsHandler(deps: MessagesRoutesDeps) {
-    const { messagesStore, profileStore } = deps;
-    const ctx = resolveRouteContext(deps.routeContext);
+export function createRequestsHandler(
+    dependencies: MessagesRoutesDependencies,
+) {
+    const { messagesStore, profileStore } = dependencies;
+    const ctx = resolveRouteContext(dependencies.routeContext);
 
     return async (
         req: IncomingMessage,
@@ -90,7 +92,7 @@ export function createRequestsHandler(deps: MessagesRoutesDeps) {
                     request.toAccountId,
                     request.fromAccountId,
                 ]) {
-                    await deps.membership!.remove({
+                    await dependencies.membership!.remove({
                         roomId: request.roomId,
                         actorAccountId: request.toAccountId,
                         userAccountId: memberAccountId,
@@ -124,7 +126,7 @@ export function createRequestsHandler(deps: MessagesRoutesDeps) {
             : null;
         const existingRoom =
             requestedRoom ??
-            (await messagesStore.findDmBetween(
+            (await messagesStore.findDirectMessageBetween(
                 request.fromAccountId,
                 request.toAccountId,
             ));
@@ -133,14 +135,14 @@ export function createRequestsHandler(deps: MessagesRoutesDeps) {
             (await messagesStore.createRoom("dm", null, request.fromAccountId));
         if (!existingRoom) {
             await messagesStore.generateAndStoreRoomKey(room.id);
-            await deps.membership!.add({
+            await dependencies.membership!.add({
                 roomId: room.id,
                 actorAccountId: request.fromAccountId,
                 userAccountId: request.fromAccountId,
                 role: "owner",
             });
         }
-        await deps.membership!.add({
+        await dependencies.membership!.add({
             roomId: room.id,
             actorAccountId: request.toAccountId,
             userAccountId: request.toAccountId,

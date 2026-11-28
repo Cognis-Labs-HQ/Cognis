@@ -22,7 +22,7 @@ function requestWithBody(
         method,
         headers: { authorization: `Bearer ${token}` },
         [Symbol.asyncIterator]: async function* () {
-            for (const c of chunks) yield c;
+            for (const chunk of chunks) yield chunk;
         },
     } as any;
 }
@@ -34,8 +34,8 @@ function makeResponse() {
         writeHead(code: number) {
             status = code;
         },
-        end(p: string) {
-            payload = p;
+        end(responseBody: string) {
+            payload = responseBody;
         },
         get status() {
             return status;
@@ -60,11 +60,11 @@ class CapturingSender implements NotificationSender {
 }
 
 test("notification route dispatches to registered sender when prefs match", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    prefStore.set("alice", "account_alert", ["test-sender"]);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    preferenceStore.set("alice", "account_alert", ["test-sender"]);
 
     const sender = new CapturingSender("test-sender");
-    const gateway = new CoreNotificationGateway(prefStore);
+    const gateway = new CoreNotificationGateway(preferenceStore);
     gateway.registerSender(sender);
 
     const route = createNotificationRoutes(gateway);
@@ -97,8 +97,8 @@ test("notification route dispatches to registered sender when prefs match", asyn
 });
 
 test("notification route returns empty dispatched array when no prefs configured", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
 
     const route = createNotificationRoutes(gateway);
     const adminToken = issueAccessToken("admin", "admin", 60);
@@ -125,8 +125,8 @@ test("notification route returns empty dispatched array when no prefs configured
 });
 
 test("notification route returns 400 when required fields are missing", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     const route = createNotificationRoutes(gateway);
     const adminToken = issueAccessToken("admin", "admin", 60);
     const res = makeResponse();
@@ -142,8 +142,8 @@ test("notification route returns 400 when required fields are missing", async ()
 });
 
 test("notification route returns 401 without authentication", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     const route = createNotificationRoutes(gateway);
     let status = 0;
 
@@ -154,8 +154,8 @@ test("notification route returns 401 without authentication", async () => {
             [Symbol.asyncIterator]: async function* () {},
         } as any,
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -166,8 +166,8 @@ test("notification route returns 401 without authentication", async () => {
 });
 
 test("notification route returns 403 for non-admin users", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     const route = createNotificationRoutes(gateway);
     const userToken = issueAccessToken("alice", "user", 60);
     let status = 0;
@@ -184,8 +184,8 @@ test("notification route returns 403 for non-admin users", async () => {
             userToken,
         ),
         {
-            writeHead(c: number) {
-                status = c;
+            writeHead(statusCode: number) {
+                status = statusCode;
             },
             end() {},
         } as any,
@@ -196,8 +196,8 @@ test("notification route returns 403 for non-admin users", async () => {
 });
 
 test("notification route does not handle unrelated paths", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     const route = createNotificationRoutes(gateway);
     const adminToken = issueAccessToken("admin", "admin", 60);
 
@@ -214,8 +214,8 @@ test("notification route does not handle unrelated paths", async () => {
 });
 
 test("GET /api/v1/notify/providers returns sender list to admin", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     gateway.registerSender(new CapturingSender("smtp"));
     const route = createNotificationRoutes(gateway);
     const adminToken = issueAccessToken("admin", "admin", 60);
@@ -239,8 +239,8 @@ test("GET /api/v1/notify/providers returns sender list to admin", async () => {
 });
 
 test("GET /api/v1/notify/providers returns sender list to non-admin user", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     gateway.registerSender(new CapturingSender("smtp"));
     const route = createNotificationRoutes(gateway);
     const userToken = issueAccessToken("alice", "user", 60);
@@ -262,8 +262,8 @@ test("GET /api/v1/notify/providers returns sender list to non-admin user", async
 });
 
 test("GET /api/v1/notify/providers returns 401 without auth", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     const route = createNotificationRoutes(gateway);
     const res = makeResponse();
 
@@ -281,8 +281,8 @@ test("GET /api/v1/notify/providers returns 401 without auth", async () => {
 });
 
 test("GET /api/v1/notify/categories returns categories to authenticated user", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     gateway.registerCategory("system", "System");
     const route = createNotificationRoutes(gateway);
     const userToken = issueAccessToken("alice", "user", 60);
@@ -301,12 +301,14 @@ test("GET /api/v1/notify/categories returns categories to authenticated user", a
     assert.equal(res.status, 200);
     const data = JSON.parse(res.payload);
     assert.ok(Array.isArray(data.data));
-    assert.ok(data.data.some((c: { id: string }) => c.id === "system"));
+    assert.ok(
+        data.data.some((category: { id: string }) => category.id === "system"),
+    );
 });
 
 test("GET /api/v1/notify/categories returns 401 without auth", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     const route = createNotificationRoutes(gateway);
     const res = makeResponse();
 
@@ -324,8 +326,8 @@ test("GET /api/v1/notify/categories returns 401 without auth", async () => {
 });
 
 test("GET /api/v1/notify/providers/:id/config returns 404 for unknown sender", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     const route = createNotificationRoutes(gateway);
     const adminToken = issueAccessToken("admin", "admin", 60);
     const res = makeResponse();
@@ -344,8 +346,8 @@ test("GET /api/v1/notify/providers/:id/config returns 404 for unknown sender", a
 });
 
 test("POST /api/v1/notify/providers/:id/test returns 400 when sender has no sendTestEmail", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     gateway.registerSender(new CapturingSender("smtp"));
     const route = createNotificationRoutes(gateway);
     const adminToken = issueAccessToken("admin", "admin", 60);
@@ -362,8 +364,8 @@ test("POST /api/v1/notify/providers/:id/test returns 400 when sender has no send
 });
 
 test("GET /api/v1/notify/users/:username/notification-prefs returns 401 without auth", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     const route = createNotificationRoutes(gateway);
     const res = makeResponse();
 
@@ -383,8 +385,8 @@ test("GET /api/v1/notify/users/:username/notification-prefs returns 401 without 
 });
 
 test("GET /api/v1/notify/users/:username/notification-prefs returns 403 for different user", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     const route = createNotificationRoutes(gateway);
     const userToken = issueAccessToken("bob", "user", 60);
     const res = makeResponse();
@@ -405,8 +407,8 @@ test("GET /api/v1/notify/users/:username/notification-prefs returns 403 for diff
 });
 
 test("GET /api/v1/notify/users/:username/notification-prefs returns empty array without notifStore", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     const route = createNotificationRoutes(gateway);
     const userToken = issueAccessToken("alice", "user", 60);
     const res = makeResponse();
@@ -429,8 +431,8 @@ test("GET /api/v1/notify/users/:username/notification-prefs returns empty array 
 });
 
 test("PUT /api/v1/notify/users/:username/notification-prefs returns 200 without notifStore", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     const route = createNotificationRoutes(gateway);
     const userToken = issueAccessToken("alice", "user", 60);
     const res = makeResponse();
@@ -451,28 +453,28 @@ test("PUT /api/v1/notify/users/:username/notification-prefs returns 200 without 
 });
 
 test("PUT /api/v1/notify/users/:username/notification-prefs strips disabled entries for always-on senders", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     gateway.registerAlwaysOnSender("internal");
 
-    let savedPrefs: Array<{
+    let savedPreferences: Array<{
         category: string;
         senderId: string;
         enabled: boolean;
     }> = [];
     const mockStore = {
-        async getUserNotifPrefs() {
-            return savedPrefs;
+        async getUserNotificationPreferences() {
+            return savedPreferences;
         },
-        async saveUserNotifPrefs(
+        async saveUserNotificationPreferences(
             _username: string,
-            prefs: Array<{
+            preferences: Array<{
                 category: string;
                 senderId: string;
                 enabled: boolean;
             }>,
         ) {
-            savedPrefs = prefs;
+            savedPreferences = preferences;
         },
         async getConfig() {
             return null;
@@ -502,11 +504,11 @@ test("PUT /api/v1/notify/users/:username/notification-prefs strips disabled entr
 
     assert.equal(res.status, 200);
     assert.equal(
-        savedPrefs.length,
+        savedPreferences.length,
         1,
         "always-on disabled entry must be stripped",
     );
-    assert.equal(savedPrefs[0].senderId, "smtp");
+    assert.equal(savedPreferences[0].senderId, "smtp");
 });
 
 test("GET /api/v1/notify/providers/:id/config includes requiredFields when sender implements getRequiredFields", async () => {
@@ -521,7 +523,7 @@ test("GET /api/v1/notify/providers/:id/config includes requiredFields when sende
                 secure: "starttls",
             };
         }
-        getEnvValues(): Record<string, string | undefined> {
+        getEnvironmentValues(): Record<string, string | undefined> {
             return {};
         }
         getRequiredFields(): string[] {
@@ -532,8 +534,8 @@ test("GET /api/v1/notify/providers/:id/config includes requiredFields when sende
         }
     }
 
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     gateway.registerSender(new ConfiguredSender());
     const route = createNotificationRoutes(gateway);
     const adminToken = issueAccessToken("admin", "admin", 60);
@@ -561,13 +563,13 @@ test("GET /api/v1/notify/providers/:id/config returns empty requiredFields when 
         getConfig(): Record<string, unknown> {
             return { host: "smtp.example.com" };
         }
-        getEnvValues(): Record<string, string | undefined> {
+        getEnvironmentValues(): Record<string, string | undefined> {
             return {};
         }
     }
 
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     gateway.registerSender(new MinimalSender());
     const route = createNotificationRoutes(gateway);
     const adminToken = issueAccessToken("admin", "admin", 60);
@@ -589,8 +591,8 @@ test("GET /api/v1/notify/providers/:id/config returns empty requiredFields when 
 });
 
 test("GET /api/v1/notify/users/:username/notification-prefs returns 200 for owner accessing another user", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     const route = createNotificationRoutes(gateway);
     const ownerToken = issueAccessToken("owner-account", "owner", 60);
     const res = makeResponse();
@@ -613,14 +615,14 @@ test("GET /api/v1/notify/users/:username/notification-prefs returns 200 for owne
 });
 
 test("POST /api/v1/notify/broadcasts creates a broadcast for admin users", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     let createdPayload: Record<string, unknown> | null = null;
     const route = createNotificationRoutes(gateway, {
-        async getUserNotifPrefs() {
+        async getUserNotificationPreferences() {
             return [];
         },
-        async saveUserNotifPrefs() {},
+        async saveUserNotificationPreferences() {},
         async createBroadcast(input) {
             createdPayload = input as Record<string, unknown>;
             return { id: "broadcast-1", ...input };
@@ -657,13 +659,13 @@ test("POST /api/v1/notify/broadcasts creates a broadcast for admin users", async
 });
 
 test("POST /api/v1/notify/broadcasts returns 400 for invalid payload", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     const route = createNotificationRoutes(gateway, {
-        async getUserNotifPrefs() {
+        async getUserNotificationPreferences() {
             return [];
         },
-        async saveUserNotifPrefs() {},
+        async saveUserNotificationPreferences() {},
         async createBroadcast() {
             return {};
         },
@@ -691,13 +693,13 @@ test("POST /api/v1/notify/broadcasts returns 400 for invalid payload", async () 
 });
 
 test("POST /api/v1/notify/broadcasts returns 400 when no target roles are selected", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     const route = createNotificationRoutes(gateway, {
-        async getUserNotifPrefs() {
+        async getUserNotificationPreferences() {
             return [];
         },
-        async saveUserNotifPrefs() {},
+        async saveUserNotificationPreferences() {},
         async createBroadcast() {
             return {};
         },
@@ -725,13 +727,13 @@ test("POST /api/v1/notify/broadcasts returns 400 when no target roles are select
 });
 
 test("POST /api/v1/notify/broadcasts returns 400 for invalid date ranges", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     const route = createNotificationRoutes(gateway, {
-        async getUserNotifPrefs() {
+        async getUserNotificationPreferences() {
             return [];
         },
-        async saveUserNotifPrefs() {},
+        async saveUserNotificationPreferences() {},
         async createBroadcast() {
             return {};
         },
@@ -761,13 +763,13 @@ test("POST /api/v1/notify/broadcasts returns 400 for invalid date ranges", async
 });
 
 test("POST /api/v1/notify/broadcasts rejects external redirect URLs", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     const route = createNotificationRoutes(gateway, {
-        async getUserNotifPrefs() {
+        async getUserNotificationPreferences() {
             return [];
         },
-        async saveUserNotifPrefs() {},
+        async saveUserNotificationPreferences() {},
         async createBroadcast() {
             return {};
         },
@@ -796,16 +798,16 @@ test("POST /api/v1/notify/broadcasts rejects external redirect URLs", async () =
 });
 
 test("POST /api/v1/notify/broadcasts accepts trusted external redirect URLs", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     let createdPayload: Record<string, unknown> | null = null;
     const route = createNotificationRoutes(
         gateway,
         {
-            async getUserNotifPrefs() {
+            async getUserNotificationPreferences() {
                 return [];
             },
-            async saveUserNotifPrefs() {},
+            async saveUserNotificationPreferences() {},
             async createBroadcast(input) {
                 createdPayload = input as Record<string, unknown>;
                 return { id: "broadcast-2", ...input };
@@ -844,15 +846,15 @@ test("POST /api/v1/notify/broadcasts accepts trusted external redirect URLs", as
 });
 
 test("GET /api/v1/notify/broadcasts/active returns role-targeted broadcasts", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     let receivedRole = "";
     let receivedAccountId = "";
     const route = createNotificationRoutes(gateway, {
-        async getUserNotifPrefs() {
+        async getUserNotificationPreferences() {
             return [];
         },
-        async saveUserNotifPrefs() {},
+        async saveUserNotificationPreferences() {},
         async getActiveBroadcastsForRole(accountId, role) {
             receivedAccountId = accountId;
             receivedRole = role;
@@ -880,14 +882,14 @@ test("GET /api/v1/notify/broadcasts/active returns role-targeted broadcasts", as
 });
 
 test("GET /api/v1/notify/broadcasts/:id/states returns broadcast acknowledgement state rows for admin", async () => {
-    const prefStore = new VolatileNotificationPreferenceStore();
-    const gateway = new CoreNotificationGateway(prefStore);
+    const preferenceStore = new VolatileNotificationPreferenceStore();
+    const gateway = new CoreNotificationGateway(preferenceStore);
     let requestedBroadcastId = "";
     const route = createNotificationRoutes(gateway, {
-        async getUserNotifPrefs() {
+        async getUserNotificationPreferences() {
             return [];
         },
-        async saveUserNotifPrefs() {},
+        async saveUserNotificationPreferences() {},
         async listBroadcastStates(broadcastId) {
             requestedBroadcastId = broadcastId;
             return [

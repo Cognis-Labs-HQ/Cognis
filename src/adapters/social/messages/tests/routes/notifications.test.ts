@@ -36,18 +36,18 @@ type MinimalProfileStore = {
     getProfile(accountId: string): Promise<Record<string, unknown> | null>;
 };
 
-type DispatchFn = (
+type DispatchCallback = (
     envelope: Record<string, unknown>,
 ) => Promise<{ dispatched: string[] }>;
 
 function makeFlow(
     messagesStore: MinimalMessagesStore,
     profileStore: MinimalProfileStore,
-    dispatch: DispatchFn,
+    dispatch: DispatchCallback,
 ): FlowApi {
     const ctx = createCtx();
     const sendMessageFlow = MESSAGING_FLOW_CATALOG.find(
-        (f) => f.id === "send-message",
+        (flow) => flow.id === "send-message",
     );
     if (sendMessageFlow) {
         registerCanonicalFlow(ctx, sendMessageFlow);
@@ -83,7 +83,7 @@ function makeFlow(
                 authTag?: string;
                 contentType?: string;
             };
-            const msg = await messagesStore.appendMessage({
+            const message = await messagesStore.appendMessage({
                 roomId: input.roomId ?? "",
                 senderId: input.senderId ?? "",
                 ciphertext: input.ciphertext ?? "",
@@ -96,7 +96,11 @@ function makeFlow(
                 input.senderId ?? "",
                 false,
             );
-            return { persisted: true, message: msg, messageId: msg["id"] };
+            return {
+                persisted: true,
+                message: message,
+                messageId: message["id"],
+            };
         },
     );
     ctx.flow.extend(
@@ -148,7 +152,7 @@ function makeFlow(
     return ctx.flow;
 }
 
-function makeReq(method: string, token: string | null) {
+function makeRequest(method: string, token: string | null) {
     return {
         method,
         headers: token ? { authorization: "Bearer " + token } : {},
@@ -163,7 +167,7 @@ test("POST /messages/rooms sends a message-request notification for pending DMs"
         async hasApprovedMessageRequestBetween() {
             return false;
         },
-        async findDmBetween() {
+        async findDirectMessageBetween() {
             return null;
         },
         async findPendingMessageRequest() {
@@ -225,7 +229,7 @@ test("POST /messages/rooms sends a message-request notification for pending DMs"
     });
     let statusCode = 0;
     let responseBody = "";
-    const req = makeReq("POST", token);
+    const req = makeRequest("POST", token);
     req[Symbol.asyncIterator] = async function* () {
         yield Buffer.from(JSON.stringify({ handles: ["bob"] }));
     };
@@ -270,7 +274,7 @@ test("POST /messages/rooms does not resend an existing message-request notificat
         async hasApprovedMessageRequestBetween() {
             return false;
         },
-        async findDmBetween() {
+        async findDirectMessageBetween() {
             return { id: "room-existing", kind: "dm" };
         },
         async setArchived() {},
@@ -311,7 +315,7 @@ test("POST /messages/rooms does not resend an existing message-request notificat
         },
         isAdapterEnabled: () => true,
     });
-    const req = makeReq("POST", token);
+    const req = makeRequest("POST", token);
     req[Symbol.asyncIterator] = async function* () {
         yield Buffer.from(JSON.stringify({ handles: ["bob"] }));
     };
@@ -456,7 +460,7 @@ test("POST /messages/rooms/:id/messages skips notifications when recipient has p
     });
     let statusCode = 0;
     let responseBody = "";
-    const req = makeReq("POST", token);
+    const req = makeRequest("POST", token);
     req[Symbol.asyncIterator] = async function* () {
         yield Buffer.from(
             JSON.stringify({

@@ -9,7 +9,7 @@ import { InMemoryTestExecutor } from "../../db/tests/in-memory-test-executor.js"
 test("native signup policy persists independently of the adapter and SSO creation flow", async () => {
     const db = new InMemoryTestExecutor();
     const registered: string[] = [];
-    const deps = {
+    const dependencies = {
         dbExecutor: db,
         accountStore: {
             register: async (username: string) => {
@@ -23,7 +23,7 @@ test("native signup policy persists independently of the adapter and SSO creatio
         await gateway.ensureSchema();
         await gateway.discoverAdapters(
             path.resolve("src/adapters/registration"),
-            deps,
+            dependencies,
         );
         await gateway.loadPersistedConfigs();
         return gateway;

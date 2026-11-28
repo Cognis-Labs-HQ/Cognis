@@ -12,7 +12,7 @@ import {
     publicProfileSummary,
     type Dispatch,
     type DispatchEnvelope,
-    type MessagesRoutesDeps,
+    type MessagesRoutesDependencies,
 } from "./shared.js";
 import { createChatroomMembershipCapability } from "../membership.js";
 
@@ -20,7 +20,7 @@ export type {
     Dispatch,
     DispatchEnvelope,
     EnrichedMemberRow,
-    MessagesRoutesDeps,
+    MessagesRoutesDependencies,
     PublicProfileSummary,
     RoomRequestSummary,
 } from "./shared.js";
@@ -35,18 +35,18 @@ export {
     summarizeRoomRequest,
 } from "./shared.js";
 
-export function createMessagesRoutes(deps: MessagesRoutesDeps) {
-    const { messagesStore, profileStore, isAdapterEnabled } = deps;
-    const routeDeps = {
-        ...deps,
+export function createMessagesRoutes(dependencies: MessagesRoutesDependencies) {
+    const { messagesStore, profileStore, isAdapterEnabled } = dependencies;
+    const routeDependencies = {
+        ...dependencies,
         membership:
-            deps.membership ??
+            dependencies.membership ??
             createChatroomMembershipCapability(messagesStore, profileStore),
     };
-    const ctx = resolveRouteContext(deps.routeContext);
-    const roomListHandler = createRoomListHandler(routeDeps);
-    const requestsHandler = createRequestsHandler(routeDeps);
-    const roomHandler = createRoomHandler(routeDeps);
+    const ctx = resolveRouteContext(dependencies.routeContext);
+    const roomListHandler = createRoomListHandler(routeDependencies);
+    const requestsHandler = createRequestsHandler(routeDependencies);
+    const roomHandler = createRoomHandler(routeDependencies);
 
     return async (
         req: IncomingMessage,

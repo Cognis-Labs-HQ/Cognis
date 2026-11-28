@@ -1,17 +1,17 @@
 import { bindCapability } from "../capabilities.js";
 
 import {
-    loadDocsIndex,
-    loadDocsBundleMarkdown,
-    readDocsLanguages,
+    loadDocumentsIndex,
+    loadDocumentsBundleMarkdown,
+    readDocumentsLanguages,
 } from "../docs-client.js";
 import { createI18n } from "../i18n.js";
 
 const log = bindCapability("ui:log");
 /**
  * Documentation search emits navigation metadata before reading document bodies.
- * Public export: collectGlobalDocsSearchGroups({ signal, onResults }).
- * @example collectGlobalDocsSearchGroups({ signal, onResults: renderGroups });
+ * Public export: collectGlobalDocumentsSearchGroups({ signal, onResults }).
+ * @example collectGlobalDocumentsSearchGroups({ signal, onResults: renderGroups });
  */
 let content = new Map();
 let contentIdentity = "";
@@ -28,12 +28,9 @@ function textFromHtml(html) {
 }
 
 /** Returns partial groups promptly and uses four cancellable workers for content. */
-export async function collectGlobalDocsSearchGroups({
-    signal,
-    onResults,
-} = {}) {
+async function collectGlobalDocumentsSearchGroups({ signal, onResults } = {}) {
     const token = localStorage.getItem("cognis_access_token");
-    const languages = readDocsLanguages();
+    const languages = readDocumentsLanguages();
     const i18n = await createI18n({
         preferredLanguages: languages,
         persistLocale: false,
@@ -53,7 +50,7 @@ export async function collectGlobalDocsSearchGroups({
         signal,
         headers: token ? { authorization: `Bearer ${token}` } : {},
     };
-    const docs = await loadDocsIndex({
+    const docs = await loadDocumentsIndex({
         fetchDocs: (path) => fetch(path, request),
         languages,
         signal,
@@ -117,7 +114,7 @@ export async function collectGlobalDocsSearchGroups({
             const entry = entries[next++];
             if (cachedContent.has(entry.key)) continue;
             try {
-                const markdown = await loadDocsBundleMarkdown(entry, {
+                const markdown = await loadDocumentsBundleMarkdown(entry, {
                     fetchDocs: (path) => fetch(path, request),
                     signal,
                     languages,
@@ -144,3 +141,4 @@ export async function collectGlobalDocsSearchGroups({
     );
     return groups();
 }
+export { collectGlobalDocumentsSearchGroups };

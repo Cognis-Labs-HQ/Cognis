@@ -104,7 +104,7 @@ export interface ModuleUiRegistrationContext {
         access?: RoleAccessPolicy;
         stringsBaseUrl?: string;
     }): void;
-    registerStaticDir(urlPrefix: string, absoluteDir: string): void;
+    registerStaticDirectory(urlPrefix: string, absoluteDirectory: string): void;
     registerAuthTypingMessage(message: {
         id: string;
         textKey: string;

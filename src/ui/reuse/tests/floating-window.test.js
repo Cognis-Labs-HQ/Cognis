@@ -11,8 +11,8 @@ const floatingWindowStyles = readFileSync(
 );
 
 class FakeElement {
-    constructor(rect) {
-        this.rect = rect ?? { left: 0, top: 0, width: 0, height: 0 };
+    constructor(rectangle) {
+        this.rect = rectangle ?? { left: 0, top: 0, width: 0, height: 0 };
         this.style = {};
         this.attributes = {};
         this.dataset = {};

@@ -359,9 +359,11 @@ test("global help includes component commands under the Components section", () 
 });
 
 test("loadModuleCliPlugins filters commands for disabled components", async () => {
-    const tempRoot = await mkdtemp(path.join(tmpdir(), "cognis-cli-filter-"));
-    const enabledRoot = path.join(tempRoot, "enabled-module");
-    const disabledRoot = path.join(tempRoot, "disabled-module");
+    const temporaryRoot = await mkdtemp(
+        path.join(tmpdir(), "cognis-cli-filter-"),
+    );
+    const enabledRoot = path.join(temporaryRoot, "enabled-module");
+    const disabledRoot = path.join(temporaryRoot, "disabled-module");
     const previousModulePaths = process.env.COGNIS_MODULE_CLI_PATHS;
     const previousGatewayPaths = process.env.COGNIS_GATEWAY_CLI_PATHS;
     const previousAdapterPaths = process.env.COGNIS_ADAPTER_CLI_PATHS;
@@ -394,9 +396,15 @@ test("loadModuleCliPlugins filters commands for disabled components", async () =
             }`,
         );
 
-        process.env.COGNIS_MODULE_CLI_PATHS = tempRoot;
-        process.env.COGNIS_GATEWAY_CLI_PATHS = path.join(tempRoot, "gateways");
-        process.env.COGNIS_ADAPTER_CLI_PATHS = path.join(tempRoot, "adapters");
+        process.env.COGNIS_MODULE_CLI_PATHS = temporaryRoot;
+        process.env.COGNIS_GATEWAY_CLI_PATHS = path.join(
+            temporaryRoot,
+            "gateways",
+        );
+        process.env.COGNIS_ADAPTER_CLI_PATHS = path.join(
+            temporaryRoot,
+            "adapters",
+        );
         globalThis.fetch = async (input) => {
             const requestUrl = String(input);
             if (requestUrl.endsWith("/api/v1/modules")) {
@@ -450,16 +458,18 @@ test("loadModuleCliPlugins filters commands for disabled components", async () =
         } else {
             process.env.COGNIS_ADAPTER_CLI_PATHS = previousAdapterPaths;
         }
-        await rm(tempRoot, { recursive: true, force: true });
+        await rm(temporaryRoot, { recursive: true, force: true });
     }
 });
 
 test("loadModuleCliPlugins discovers manifest-declared component CLI commands", async () => {
-    const tempRoot = await mkdtemp(path.join(tmpdir(), "cognis-cli-modules-"));
-    const moduleRoot = path.join(tempRoot, "demo-component");
-    const gatewayRoot = path.join(tempRoot, "demo-gateway");
+    const temporaryRoot = await mkdtemp(
+        path.join(tmpdir(), "cognis-cli-modules-"),
+    );
+    const moduleRoot = path.join(temporaryRoot, "demo-component");
+    const gatewayRoot = path.join(temporaryRoot, "demo-gateway");
     const adapterRoot = path.join(
-        tempRoot,
+        temporaryRoot,
         "demo-gateway-adapters",
         "demo-adapter",
     );
@@ -506,9 +516,9 @@ test("loadModuleCliPlugins discovers manifest-declared component CLI commands", 
             }`,
         );
 
-        process.env.COGNIS_MODULE_CLI_PATHS = tempRoot;
-        process.env.COGNIS_GATEWAY_CLI_PATHS = tempRoot;
-        process.env.COGNIS_ADAPTER_CLI_PATHS = tempRoot;
+        process.env.COGNIS_MODULE_CLI_PATHS = temporaryRoot;
+        process.env.COGNIS_GATEWAY_CLI_PATHS = temporaryRoot;
+        process.env.COGNIS_ADAPTER_CLI_PATHS = temporaryRoot;
         await loadModuleCliPlugins({ refresh: true });
 
         assert.ok(registry.has("demo-component:inspect"));
@@ -552,6 +562,6 @@ test("loadModuleCliPlugins discovers manifest-declared component CLI commands", 
         } else {
             process.env.COGNIS_ADAPTER_CLI_PATHS = previousAdapterPaths;
         }
-        await rm(tempRoot, { recursive: true, force: true });
+        await rm(temporaryRoot, { recursive: true, force: true });
     }
 });

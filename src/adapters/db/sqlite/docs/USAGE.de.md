@@ -8,7 +8,7 @@ Eine einbettende Laufzeit muss den SQLite-Client bereitstellen; die Standardinst
 
 ## Beispiele
 
-Stelle einen SqliteClient mit all, run und exec bereit und verwende SqliteDbGateway für Abfrage und Transaktion.
+Stelle einen SqliteClient mit all, run und exec bereit und verwende SqliteDatabaseGateway für Abfrage und Transaktion.
 
 ## Erwartete Ergebnisse
 

@@ -6,6 +6,19 @@ Page Composer mengelola tata letak elemen, tampilan responsif, siklus hidup DOM,
 
 createPageComposer(root, options) membuat siklus halaman. Elemen memasok konten dan callback; init memasang shell dan refresh memperbarui deskriptor.
 
+Helper editor milik Composer menyediakan kontrak berikut. Header sumbernya memuat contoh pemanggilan; halaman biasanya menggunakannya melalui `createPageComposer`.
+
+| Helper                                                                                                                              | Kontrak                                                                                                                     |
+| ----------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| [`createLayoutSaveHandler`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/layout-save.js)           | Membuat handler penyimpanan bertahap yang menggabungkan permintaan; lihat kontrak persistensi di bawah.                     |
+| [`stageLayoutReset`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/layout-save.js)                  | Menyiapkan posisi dan visibilitas bawaan tanpa menyimpan atau mengubah snapshot pembatalan.                                 |
+| [`commitLayoutEdit`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/layout-save.js)                  | Menerapkan state editor dengan interaksi terlindungi dan kegagalan yang dapat dicoba kembali.                               |
+| [`bindComposerPointerDrag`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/pointer-drag.js)          | Mengelola penangkapan penunjuk, pengguliran tepi, pelepasan/pembatalan, dan pembersihan gerakan.                            |
+| [`RESIZE_EDGES / resizePlacement`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/resize-model.js)   | Mendeskripsikan delapan tepi/sudut dan menghitung geometri terbatas yang mengikuti grid tanpa memeriksa tabrakan.           |
+| [`resolveResizeAvailability`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/resize-availability.js) | Menghasilkan kursor CSS arah yang tersedia atau `null` untuk setiap tepi/sudut.                                             |
+| [`appendResizeControls`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/resize-controls.js)          | Menghubungkan geometri dan pemeriksaan tabrakan dari pemilik ke pratinjau ukuran dan perubahan penempatan; tidak menyimpan. |
+| [`findGridSwap / applyGridSwap`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/swap-model.js)       | Menemukan target pertukaran yang diizinkan dan menerapkan kedua posisi secara atomik setelah validasi state saat ini.       |
+
 ## Konfigurasi
 
 createPageComposer menerima elements, pageManifest, i18n, signal, dan opsi tata letak. Elemen viewport mengikuti kontrak responsif; preferensi memakai preferenceKey.
@@ -47,7 +60,23 @@ Sebuah elemen adalah blok konten bernama:
 
 ### Layout Grid
 
-Unit grid adalah 90 px lebar dan tinggi. `gridSize.max: 'full'` merentangkan elemen di semua kolom yang tersedia.
+Profil tersimpan untuk kisi saat ini mempertahankan lebar, tinggi, dan celah eksplisit, bukan membagikan ulang sisa lebar baris. Perender utama dan bersarang berbagi metrik kisi pecahan; kisi bersarang yang disimpan mempertahankan jarak jalur editornya. Dokumen dan panel konten Composer menyediakan ruang bilah gulir agar penyelesaian edit tidak memilih profil kolom lain. `snapDragPlacement` hanya menggeser kandidat yang diseret ke atas sampai baris terisi berikutnya atau titik awal; fungsi ini tidak melompati kartu lain. Pratinjau kuning menunjukkan tujuan tersebut dan pelepasan penunjuk menerapkannya sebelum Selesai. Selesai menulis tata letak yang terlihat tanpa pemadatan akhir. `resizeLimitAxes` melaporkan pelampauan batas horizontal dan vertikal sebelum pembatasan, termasuk gerakan sudut campuran; umpan balik oranye menjaga setiap sumbu dalam batasnya sendiri.
+
+Pertukaran dengan mouse, sentuhan, dan papan ketik berbagi `previewGridSwap`, `findGridSwap`, dan `applyGridSwap` dari `swap-model.js`. Pertukaran horizontal mempertahankan tepi luar kiri/kanan pasangan dan jarak di antaranya, beserta lebar dan tinggi setiap elemen. Elemen bersebelahan dengan tinggi sama dapat bertukar meskipun lebarnya berbeda. Tinggi berbeda hanya diperbolehkan jika kedua persegi panjang tujuan utuh bebas dari elemen terlihat lainnya, termasuk elemen di atas atau di bawah kedua tujuan, serta satu sama lain. Pertukaran vertikal mempertahankan titik awal tujuan. Pemeriksaan perpotongan persegi panjang bergantung pada jumlah penempatan, bukan luas grid yang terisi. Penerapan memeriksa ulang posisi, visibilitas, dan batas grid terkini sebelum mengubah kedua posisi secara atomis; pratinjau tidak mengubah tata letak. Garis tujuan bersama memakai aksen hijau tema untuk pertukaran sah dan warna bahaya merah untuk pertukaran terhalang. `previewGridSwap` menerima argumen yang sama dan mengembalikan `{ target, valid }` untuk tampilan, termasuk target terhalang atau ambigu, atau `null` di luar semua elemen.
+
+Kedua helper menerima state saat ini melalui `gridColumns`, `layout.placements`, dan `layout.hidden`. `findGridSwap(state, col, row, w, h, sourceId)` menghasilkan penempatan target saat ini atau `null`; `applyGridSwap(state, sourceId, targetId)` menghasilkan boolean dan tidak mengubah posisi mana pun jika ditolak. Pengikat papan ketik menerima `findSwapCandidate` dan `commitSwap`; Composer menyediakan operasi ini dari model pertukaran bersama.
+
+Ukuran bawaan dan lebar minimum elemen harus menyediakan ruang untuk padding kartu dan kontennya. Merek dasbor menggunakan minimal tiga kolom grid; detail akun memakai dua baris secara bawaan, sedangkan kartu sambutan/login terakhir mempertahankan minimal tiga kolom. Jika batas lebar saat ini tidak lagi muat dalam baris tersimpan, Composer menyusun ulang dengan mengikuti batas tersebut tanpa menimpa profil tersimpan. Tampilan utama dan bersarang memakai aturan yang sama. Baris yang dinormalisasi harus menempatkan setiap kartu di dalam kolom grid yang ditetapkan; baris yang gagal divalidasi akan disusun ulang.
+
+Editor utama dan bersarang berbagi pengubahan ukuran delapan arah melalui `resize-model.js` dan `resize-controls.js`. Pegangan kiri dan atas menggeser titik awal sambil mempertahankan tepi yang berlawanan. Perubahan posisi penunjuk mengikuti satuan grid; batas ukuran, batas grid, dan pemeriksaan tabrakan berlaku untuk semua arah. Target sentuh tetap 44px; kontrol hapus digeser ke dalam agar pegangan sudut tetap dapat dijangkau.
+
+Baris kisi yang dapat disunting memiliki tinggi dasar 90 px; kolom berbagi lebar konten yang tersedia dengan jarak 8 px antarjalur. `gridSize.max: 'full'` merentangkan elemen di semua kolom yang tersedia.
+
+Mode penyuntingan menggunakan baris tetap dan geometri piksel yang memperhitungkan jarak untuk kartu, pratinjau seret, dan pegangan pengubahan ukuran, termasuk penempatan setengah kisi. Konten gulir menyediakan ruang bilah gulir sebelum pengukuran; koordinat penunjuk tidak menyertakan inset konten bersama. Panel Elemen menyesuaikan lebar dengan isinya dalam batas layar. Lebar terukur menentukan posisi awal dan pembatasan posisi berikutnya. Batas tinggi diterapkan sebelum pengukuran lebar agar bilah gulir internal diperhitungkan dalam posisi horizontal.
+
+Penangkapan penunjuk mempertahankan titik pegangan saat menggulir, bukan memusatkan kartu di bawah penunjuk. Editor utama dan bersarang berbagi pemeriksaan identitas penunjuk, pengguliran tepi, pembatalan, dan pembersihan penangkapan. Pembatalan penunjuk atau pelepasan editor membuang perpindahan dan perluasan kisi sementara. Kontrol ukuran dan hapus pada layar sentuh menyediakan sasaran 44px; memperkecil Elemen menyembunyikan isi dan tindakannya sampai diperluas kembali. Mode penyuntingan tetap aktif sampai penyimpanan berhasil agar perenderan responsif tidak memulihkan tata letak lama selama penulisan berlangsung.
+
+Pegangan ukuran hanya muncul jika perubahan ukuran mematuhi batas elemen dan tidak bertabrakan dengan kisi yang terisi. Pengecilan tetap tersedia di samping elemen lain. Kursor membedakan pembesaran, pengecilan, dan gerakan sudut campuran; percobaan yang bertabrakan dengan elemen lain menampilkan `not-allowed`. Penghapusan elemen menggunakan tampilan bersama `btn-cancel`.
 
 ### Navigasi Sub-Halaman
 
@@ -59,7 +88,15 @@ Parkir DOM dinonaktifkan secara bawaan. Tetapkan `enableDomParking: true` pada p
 
 ### Persistensi
 
-Layout tetap disimpan melalui API preferensi menggunakan `preferenceKey`. Selain itu, draf formulir disimpan di `localStorage` per pengguna, path halaman, dan kunci composer agar input tetap muncul setelah halaman dimuat ulang atau setelah render ulang responsif. Penyimpanan draf formulir yang persisten bersifat opt-in: hanya field yang leluhur terdekatnya memiliki atribut `data-composer-include-form-memory="true"` yang ditulis ke localStorage. Field tanpa leluhur opt-in tetap diambil dalam snapshot sementara di memori agar bertahan selama render ulang responsif dalam sesi yang sama, namun tidak pernah ditulis ke penyimpanan persisten. Field sensitif (`password`, `file`, `hidden`, dan pengenal yang memuat `password`/`secret`/`token`) selalu dikecualikan dari penyimpanan draf persisten terlepas dari status opt-in.
+Penulisan tata letak menggunakan `ui:pageComposer:saveLayout` dengan tahap `validate`, `persist`, dan `notify`. Penyimpanan bersamaan untuk kunci preferensi yang sama berbagi satu snapshot permintaan yang tidak berubah. Selesai dan pintasan tata letak menampilkan notifikasi sukses atau gagal yang dilokalkan. Atur Ulang hanya menyiapkan posisi dan visibilitas bawaan dalam draf; tidak menulis preferensi, menampilkan hasil penyimpanan, atau mengubah snapshot untuk pembatalan. Kesalahan HTTP dan sesi yang tidak tersedia tidak boleh dilaporkan berhasil. Kontrol pengeditan dinonaktifkan selama penyimpanan; kegagalan memulihkan perubahan tertunda dan mempertahankan editor untuk mencoba kembali. Pembatalan halaman membatalkan penyimpanan dan mencegah notifikasi terlambat. Diagnostik menggunakan `ui:log`.
+
+`createLayoutSaveHandler({ctx, save, notify, i18n, signal})` menghasilkan `update(key, profiles, columns, layout)`. Fungsi `save(key, profiles, columns, layout, signal)` yang diinjeksi harus menghasilkan profil terbaru dan menolak penulisan yang gagal. `update` menghasilkan profil tersebut atau `null` jika penyimpanan gagal/halaman dibatalkan; kesalahan alur dan terjemahan tetap diteruskan. ctx harus mendukung pendaftaran/eksekusi alur dan kapabilitas. `notify` memakai tanda tangan toast bersama; `i18n.t` menyediakan kunci sukses/gagal.
+
+`stageLayoutReset({state, initialize, render})` mengganti draf yang sedang diedit dengan nilai bawaan yang diinisialisasi, mempertahankan `layoutSnapshot` dan profil tersimpan, serta membiarkan editor terbuka. Fungsi mengembalikan false saat menyimpan, di luar pengeditan, atau setelah pembatalan halaman. `commitLayoutEdit({state, save, finish?, render})` menyimpan draf saat ini dengan interaksi dinonaktifkan. `save()` menghasilkan boolean dan memperbarui profil pemilik saat berhasil. Kegagalan mempertahankan draf, termasuk pengaturan ulang tertunda, sehingga pengguna dapat mencoba Selesai lagi atau membatalkan ke tata letak sebelum pengeditan. Keberhasilan memperbarui `layoutSnapshot` dan memanggil `finish` jika diberikan. `container` atau `contentGrid`, `elementsPanel`, dan `signal` opsional mengatur interaksi dan masa hidup halaman. Kesalahan callback yang tidak diharapkan diteruskan setelah interaksi dipulihkan.
+
+Tata letak memakai `PUT /api/v1/social/users/:accountId/preferences/:preferenceKey` dengan isi `{ layout: profiles }`. `profiles.layoutsByGrid` memetakan kunci `cols-<count>` ke tata letak `{ placements: [{id, col, row, w, h}], hidden: [] }`. GET yang sesuai mengembalikan profil terserialisasi dalam `data.layoutJson`. Penyimpanan memerlukan akun dan token akses saat ini.
+
+Selain itu, draf formulir disimpan di `localStorage` per pengguna, path halaman, dan kunci composer agar input tetap muncul setelah halaman dimuat ulang atau setelah render ulang responsif. Penyimpanan draf formulir yang persisten bersifat opt-in: hanya field yang leluhur terdekatnya memiliki atribut `data-composer-include-form-memory="true"` yang ditulis ke localStorage. Field tanpa leluhur opt-in tetap diambil dalam snapshot sementara di memori agar bertahan selama render ulang responsif dalam sesi yang sama, namun tidak pernah ditulis ke penyimpanan persisten. Field sensitif (`password`, `file`, `hidden`, dan pengenal yang memuat `password`/`secret`/`token`) selalu dikecualikan dari penyimpanan draf persisten terlepas dari status opt-in.
 
 Kartu dengan formulir besar (minimal 6 field yang dapat dipersistensikan) menampilkan tombol **Setel ulang draf**. Tombol ini menghapus draf tersimpan untuk kartu tersebut dan mengembalikan field saat ini ke nilai bawaan.
 
@@ -128,6 +165,8 @@ Composer mengatur jarak dalam bagian konten: 28px pada layar lebar dan 14px pada
 ### Pemuatan Font
 
 Teks bersama membungkus sesuai lebar yang tersedia sebelum dan sesudah font dimuat, tanpa memperkecil ukuran font pilihan.
+
+Deklarasi array mendukung `['full', 'fill']` untuk lebar penuh dan pengisian tinggi yang tersedia, atau `['full', n]` untuk lebar penuh dengan batas tinggi numerik. Composer utama maupun bersarang mengikuti ukuran ini pada grid sempit dan lebar. Saat pengguliran tepi, jumlah baris minimum sementara diterapkan sebelum tinggi grid ditetapkan; grid dan pratinjau tumbuh bersama tanpa penyusutan sementara. Setelah perluasan, pratinjau seret bertingkat mengukur ulang wadahnya karena elemen induk mungkin kehilangan posisi gulir sebelumnya.
 
 ## Keamanan
 

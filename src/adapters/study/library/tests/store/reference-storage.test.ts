@@ -7,7 +7,7 @@ import {
 } from "../../store/reference-storage.js";
 
 test("existing flat primary keys preserve every repeated grouped placement through repartition and restart", async () => {
-    const { db, rows } = structuredStore();
+    const { db: db, rows } = structuredStore();
     await db.ensureTable({
         name: "study_library_references",
         columns: [],

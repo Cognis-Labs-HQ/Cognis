@@ -74,7 +74,7 @@ test("module routes log enable operations", async () => {
         } as any,
         {
             log: (level, message, meta) => {
-                entries.push({ level, message, meta });
+                entries.push({ level, message, meta: meta });
             },
         },
     );

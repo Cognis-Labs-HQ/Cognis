@@ -52,7 +52,9 @@ for (const path of changelogFiles(root)) {
 
 if (base) {
     const run = (args) => {
-        const result = spawnSync("git", args, { encoding: "utf8" });
+        const result = spawnSync("git", args, {
+            encoding: "utf8",
+        });
         if (result.error || result.status !== 0)
             throw new Error(
                 `Documentation comparison failed: ${result.error?.message ?? result.stderr}`,

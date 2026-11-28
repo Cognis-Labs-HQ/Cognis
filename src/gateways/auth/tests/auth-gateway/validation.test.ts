@@ -343,7 +343,7 @@ test("external login cannot create an account without registration authorization
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db,
+        db: db,
     });
     const registerProvider = capabilities.require<
         (provider: {
@@ -410,7 +410,7 @@ test("external login retries account creation through the registration token gat
         gatewayRegistry,
         routeRegistry,
         capabilities,
-        db,
+        db: db,
     });
     let createdProfileHandle = "";
     let synchronizedProfileHandle = "";

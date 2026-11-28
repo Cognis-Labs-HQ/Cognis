@@ -1,4 +1,4 @@
-import net from "node:net";
+import network from "node:net";
 
 type MockSmtpServer = {
     host: string;
@@ -7,58 +7,60 @@ type MockSmtpServer = {
 };
 
 export function createMockSmtpServer(
-    handleConnection: (conn: net.Socket) => void,
+    handleConnection: (connection: network.Socket) => void,
 ): Promise<MockSmtpServer> {
     return new Promise((resolve) => {
-        const server = net.createServer((conn) => {
-            handleConnection(conn);
+        const server = network.createServer((connection) => {
+            handleConnection(connection);
         });
         server.listen(0, "127.0.0.1", () => {
-            const addr = server.address() as net.AddressInfo;
+            const address = server.address() as network.AddressInfo;
             resolve({
                 host: "127.0.0.1",
-                port: addr.port,
+                port: address.port,
                 close: () =>
-                    new Promise<void>((res, rej) =>
-                        server.close((err) => (err ? rej(err) : res())),
+                    new Promise<void>((res, reject) =>
+                        server.close((error) =>
+                            error ? reject(error) : res(),
+                        ),
                     ),
             });
         });
     });
 }
 
-export function smtpSuccessHandler(conn: net.Socket): void {
-    let buf = "";
+export function smtpSuccessHandler(connection: network.Socket): void {
+    let buffer = "";
     let dataMode = false;
-    conn.setEncoding("utf8");
-    conn.write("220 mock.example.com SMTP\r\n");
+    connection.setEncoding("utf8");
+    connection.write("220 mock.example.com SMTP\r\n");
 
-    conn.on("data", (chunk: string) => {
-        buf += chunk;
-        const lines = buf.split("\r\n");
-        buf = lines.pop() ?? "";
+    connection.on("data", (chunk: string) => {
+        buffer += chunk;
+        const lines = buffer.split("\r\n");
+        buffer = lines.pop() ?? "";
         for (const line of lines) {
             if (dataMode) {
                 if (line === ".") {
                     dataMode = false;
-                    conn.write("250 OK\r\n");
+                    connection.write("250 OK\r\n");
                 }
                 continue;
             }
             if (!line) continue;
             const upper = line.toUpperCase();
             if (upper.startsWith("EHLO") || upper.startsWith("HELO")) {
-                conn.write("250 OK\r\n");
+                connection.write("250 OK\r\n");
             } else if (upper.startsWith("MAIL FROM")) {
-                conn.write("250 OK\r\n");
+                connection.write("250 OK\r\n");
             } else if (upper.startsWith("RCPT TO")) {
-                conn.write("250 OK\r\n");
+                connection.write("250 OK\r\n");
             } else if (upper === "DATA") {
                 dataMode = true;
-                conn.write("354 Start mail input\r\n");
+                connection.write("354 Start mail input\r\n");
             } else if (upper.startsWith("QUIT")) {
-                conn.write("221 Bye\r\n");
-                conn.end();
+                connection.write("221 Bye\r\n");
+                connection.end();
             }
         }
     });

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { initCheckboxPrefs } from "../checkbox-prefs.js";
+import { initializeCheckboxPreferences } from "../checkbox-prefs.js";
 
 function createRoot() {
     let input = null;
@@ -20,7 +20,7 @@ test("language switcher preference defaults on and tracks changes", () => {
     const root = createRoot();
     const dirtyStates = [];
     const committedStates = [];
-    const controller = initCheckboxPrefs(root, {
+    const controller = initializeCheckboxPreferences(root, {
         existingPrefs: {},
         onDirtyChange: (dirty) => dirtyStates.push(dirty),
         onCommit: (visible) => committedStates.push(visible),
@@ -41,7 +41,9 @@ test("language switcher preference defaults on and tracks changes", () => {
 
 test("language switcher preference rebinds after settings remount", () => {
     const root = createRoot();
-    const controller = initCheckboxPrefs(root, { existingPrefs: {} });
+    const controller = initializeCheckboxPreferences(root, {
+        existingPrefs: {},
+    });
     const firstInput = root.mountInput();
     controller.bind();
     firstInput.checked = false;
@@ -58,7 +60,7 @@ test("language switcher preference rebinds after settings remount", () => {
 test("discard restores saved state without applying pending visibility", () => {
     const root = createRoot();
     const committedStates = [];
-    const controller = initCheckboxPrefs(root, {
+    const controller = initializeCheckboxPreferences(root, {
         existingPrefs: {},
         onCommit: (visible) => committedStates.push(visible),
     });
@@ -75,7 +77,7 @@ test("discard restores saved state without applying pending visibility", () => {
 test("offline setting saves and discards independently using the shared checkbox controller", () => {
     const root = createRoot();
     const input = root.mountInput();
-    const controller = initCheckboxPrefs(root, {
+    const controller = initializeCheckboxPreferences(root, {
         existingPrefs: { offlineEnabled: false },
         preference: "offlineEnabled",
         selector: "#pref-offline-enabled",

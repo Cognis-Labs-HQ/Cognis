@@ -2,11 +2,11 @@
  * Advanced JSON preference editor for the Settings page.
  *
  * Public exports:
- *   initAdvancedPrefs(root, options) — protects, validates, and tracks edits to
+ *   initializeAdvancedPreferences(root, options) — protects, validates, and tracks edits to
  *     the complete UI preference document.
  *
  * Usage:
- *   const editor = initAdvancedPrefs(root, { existingPrefs, i18n, onDirtyChange });
+ *   const editor = initializeAdvancedPreferences(root, { existingPrefs, i18n, onDirtyChange });
  *   const preferences = editor.getPreferences();
  *
  * @param {Element} root
@@ -18,10 +18,10 @@ import { createFormDirtyTracker } from "../../reuse/unsaved-changes.js";
 import { escapeHtml } from "../../reuse/escape-html.js";
 import { showToast } from "../../reuse/toast.js";
 
-export function initAdvancedPrefs(
+function initializeAdvancedPreferences(
     root,
     {
-        existingPrefs,
+        existingPrefs: existingPreferences,
         acknowledgementAccepted = false,
         saveAcknowledgement,
         i18n,
@@ -32,7 +32,7 @@ export function initAdvancedPrefs(
     if (!(editor instanceof HTMLTextAreaElement)) {
         return {
             requestEditingConsent: async () => undefined,
-            getPreferences: () => existingPrefs ?? {},
+            getPreferences: () => existingPreferences ?? {},
             isDirty: () => false,
             commit: () => undefined,
             discard: () => undefined,
@@ -40,7 +40,7 @@ export function initAdvancedPrefs(
         };
     }
 
-    let committedPreferences = existingPrefs ?? {};
+    let committedPreferences = existingPreferences ?? {};
     let dirtyTracker;
     let warningOpen = false;
     editor.readOnly = !acknowledgementAccepted;
@@ -129,3 +129,4 @@ export function initAdvancedPrefs(
         destroy: () => dirtyTracker?.destroy(),
     };
 }
+export { initializeAdvancedPreferences };

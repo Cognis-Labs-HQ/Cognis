@@ -675,7 +675,7 @@ export const {
         async (...args) => {
             const actions = uiCtx.capabilities.get("study:library:client");
             if (!actions) throw new Error("library_client_unavailable");
-            return actions[name]({ args });
+            return actions[name]({ args: args });
         },
     ]),
 );

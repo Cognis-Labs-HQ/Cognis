@@ -25,7 +25,12 @@ import {
 } from "../../reuse/static-asset-response.js";
 import * as htmlResponse from "../../reuse/html-response.js";
 import { handleRegisteredSpaPage } from "./spa-pages.js";
-import { versionDescriptor } from "./asset-versioning.js";
+import {
+    versionDescriptor,
+    createVersionedAssetServer,
+    IMMUTABLE_CACHE_CONTROL,
+    REVALIDATED_CACHE_CONTROL,
+} from "./asset-versioning.js";
 import { serveProviders } from "./capability-providers.js";
 import { resolveLoginRedirectLocation } from "./access.js";
 import {
@@ -46,31 +51,7 @@ const SERVED_PUBLIC_ROOT = IS_PRODUCTION_BUILD
     ? PRODUCTION_PUBLIC_ROOT
     : path.join(UI_ROOT, "public");
 const ASSET_VERSION = process.env.COGNIS_ASSET_VERSION ?? "development";
-const IMMUTABLE_CACHE_CONTROL = "public, max-age=31536000, immutable";
-const REVALIDATED_CACHE_CONTROL = "public, max-age=0, must-revalidate";
-
-async function serveVersionedAsset(
-    req: IncomingMessage,
-    res: ServerResponse,
-    url: URL,
-    filePath: string,
-    contentType: string,
-    routeContext?: RouteContext,
-) {
-    routeContext?.setPageSecurityHeaders(res);
-    const isVersioned =
-        !url.pathname.startsWith("/static/modules/") &&
-        url.searchParams.get("v") === ASSET_VERSION;
-    await serveStaticAsset(
-        req,
-        res,
-        filePath,
-        contentType,
-        undefined,
-        undefined,
-        isVersioned ? IMMUTABLE_CACHE_CONTROL : REVALIDATED_CACHE_CONTROL,
-    );
-}
+const serveVersionedAsset = createVersionedAssetServer(ASSET_VERSION);
 
 function sendRedirect(res: ServerResponse, location: string): true {
     res.writeHead(302, { location });
@@ -406,8 +387,8 @@ export function createUiRoutes(
         if (
             uiRegistry &&
             (await handleRegisteredSpaPage({
-                req,
-                res,
+                req: req,
+                res: res,
                 route: registeredSpaRoute,
                 uiRegistry,
                 publicRoot: SERVED_PUBLIC_ROOT,
@@ -502,13 +483,13 @@ export function createUiRoutes(
             }
         }
 
-        const pageExtMatch = url.pathname.match(
+        const pageExtensionMatch = url.pathname.match(
             /^\/api\/v1\/ui\/page-extensions\/([^/]+)$/,
         );
-        if (pageExtMatch && req.method === "GET") {
+        if (pageExtensionMatch && req.method === "GET") {
             const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
-            const pageId = decodeURIComponent(pageExtMatch[1]);
+            const pageId = decodeURIComponent(pageExtensionMatch[1]);
             const extensions = (
                 uiRegistry?.listPageExtensions(pageId) ?? []
             ).filter(
@@ -729,7 +710,7 @@ export function createUiRoutes(
                 const gatewayId = parts[0];
                 const adapterId = parts[1];
                 const filePart = parts.slice(2).join("/");
-                const dir = uiRegistry?.getAdapterStaticDir(
+                const dir = uiRegistry?.getAdapterStaticDirectory(
                     gatewayId,
                     adapterId,
                 );
@@ -763,11 +744,11 @@ export function createUiRoutes(
 
         if (url.pathname.startsWith("/static/gateways/")) {
             const rest = url.pathname.slice("/static/gateways/".length);
-            const slashIdx = rest.indexOf("/");
-            if (slashIdx > 0) {
-                const gatewayId = rest.slice(0, slashIdx);
-                const filePart = rest.slice(slashIdx + 1);
-                const dir = uiRegistry?.getStaticDir(gatewayId);
+            const slashIndex = rest.indexOf("/");
+            if (slashIndex > 0) {
+                const gatewayId = rest.slice(0, slashIndex);
+                const filePart = rest.slice(slashIndex + 1);
+                const dir = uiRegistry?.getStaticDirectory(gatewayId);
                 if (
                     dir &&
                     /^[a-zA-Z0-9_./-]+$/.test(filePart) &&
@@ -910,7 +891,9 @@ export function createUiRoutes(
                     requestedCode <= 599
                         ? String(requestedCode)
                         : "404";
-                res.writeHead(302, { location: `/error?code=${errorCode}` });
+                res.writeHead(302, {
+                    location: `/error?code=${errorCode}`,
+                });
                 res.end();
                 return true;
             }

@@ -40,7 +40,7 @@ export function createRegistrationRoutes(
         url: URL,
     ): Promise<boolean> => {
         const claims = ctx.getAuthClaims(req);
-        const logMeta = {
+        const logMetadata = {
             component: "registration-gateway",
             method: req.method ?? "GET",
             path: url.pathname,
@@ -65,7 +65,7 @@ export function createRegistrationRoutes(
                 authenticatedClaims.role === "admin" ||
                 authenticatedClaims.role === "owner";
             log?.("debug", "Read registration state.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: authenticatedClaims.sub,
                 gatewayEnabled: isGatewayEnabled(),
                 inviteEnabled: gateway.isInviteEnabled(),
@@ -140,7 +140,7 @@ export function createRegistrationRoutes(
                 log?.(
                     "warn",
                     "Invite lookup failed because token was missing.",
-                    logMeta,
+                    logMetadata,
                 );
                 res.writeHead(400, { "content-type": "application/json" });
                 res.end(
@@ -158,7 +158,7 @@ export function createRegistrationRoutes(
                 log?.(
                     "warn",
                     "Invite lookup failed because token was invalid.",
-                    logMeta,
+                    logMetadata,
                 );
                 res.writeHead(404, { "content-type": "application/json" });
                 res.end(
@@ -172,7 +172,7 @@ export function createRegistrationRoutes(
                 return true;
             }
             log?.("debug", "Resolved registration invite.", {
-                ...logMeta,
+                ...logMetadata,
                 inviterAccountId: invite.inviterAccountId,
                 inviteeEmail: invite.inviteeEmail,
             });
@@ -225,7 +225,7 @@ export function createRegistrationRoutes(
                     1800,
                 );
                 log?.("info", "Redeemed registration invite.", {
-                    ...logMeta,
+                    ...logMetadata,
                     createdAccountId: result.createdAccountId,
                     inviterAccountId: result.inviterAccountId,
                 });
@@ -235,12 +235,14 @@ export function createRegistrationRoutes(
                 const code =
                     error instanceof Error ? error.message : "redeem_failed";
                 log?.("warn", "Invite redemption failed.", {
-                    ...logMeta,
+                    ...logMetadata,
                     code,
                     username,
                 });
                 const status = redeemInviteErrorStatus(code);
-                res.writeHead(status, { "content-type": "application/json" });
+                res.writeHead(status, {
+                    "content-type": "application/json",
+                });
                 res.end(JSON.stringify({ error: { code, message: code } }));
             }
             return true;
@@ -287,7 +289,7 @@ export function createRegistrationRoutes(
                 includeClosed: url.searchParams.get("includeClosed") === "true",
             });
             log?.("debug", "Listed registration invites.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: authenticatedClaims.sub,
                 count: invites.length,
                 includeClosed: url.searchParams.get("includeClosed") === "true",
@@ -400,7 +402,7 @@ export function createRegistrationRoutes(
                     deliverEmail,
                 });
                 log?.("info", "Issued registration invite.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: authenticatedClaims.sub,
                     inviteeEmail,
                     tokenId: created.tokenId,
@@ -411,13 +413,15 @@ export function createRegistrationRoutes(
                 const code =
                     error instanceof Error ? error.message : "invite_failed";
                 log?.("warn", "Registration invite issuance failed.", {
-                    ...logMeta,
+                    ...logMetadata,
                     accountId: authenticatedClaims.sub,
                     inviteeEmail,
                     code,
                 });
                 const status = issueInviteErrorStatus(code);
-                res.writeHead(status, { "content-type": "application/json" });
+                res.writeHead(status, {
+                    "content-type": "application/json",
+                });
                 res.end(JSON.stringify({ error: { code, message: code } }));
             }
             return true;
@@ -475,7 +479,9 @@ export function createRegistrationRoutes(
                     inviterAccountId: authenticatedClaims.sub,
                 });
                 if (!myInvites.some((invite) => invite.id === tokenId)) {
-                    res.writeHead(403, { "content-type": "application/json" });
+                    res.writeHead(403, {
+                        "content-type": "application/json",
+                    });
                     res.end(
                         JSON.stringify({
                             error: {
@@ -496,7 +502,7 @@ export function createRegistrationRoutes(
                     "warn",
                     "Registration invite revocation failed because token was not found.",
                     {
-                        ...logMeta,
+                        ...logMetadata,
                         accountId: authenticatedClaims.sub,
                         tokenId,
                     },
@@ -513,7 +519,7 @@ export function createRegistrationRoutes(
                 return true;
             }
             log?.("info", "Revoked registration invite.", {
-                ...logMeta,
+                ...logMetadata,
                 accountId: authenticatedClaims.sub,
                 tokenId,
             });
