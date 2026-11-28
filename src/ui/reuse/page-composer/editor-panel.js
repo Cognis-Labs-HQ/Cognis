@@ -5,7 +5,7 @@
  * @param {object} dependencies Composer state, rendering and persistence callbacks.
  * @returns {object} Panel creation and positioning operations.
  */
-import { commitLayoutEdit } from "./layout-save.js";
+import { commitLayoutEdit, stageLayoutReset } from "./layout-save.js";
 
 import { fitComposerPanel } from "./responsive-layout.js";
 export function createEditorPanelHandlers({
@@ -205,15 +205,11 @@ export function createEditorPanelHandlers({
 
         panel
             .querySelector(".composer-reset-btn")
-            .addEventListener("click", async (event) => {
+            .addEventListener("click", (event) => {
                 event.preventDefault();
-                await commitLayoutEdit({
+                stageLayoutReset({
                     state,
-                    prepare: () => {
-                        state.layout = { placements: [], hidden: [] };
-                        initializePlacements();
-                    },
-                    save: saveLayout,
+                    initialize: initializePlacements,
                     render: renderGridComposer,
                 });
             });

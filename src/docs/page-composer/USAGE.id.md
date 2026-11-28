@@ -16,7 +16,7 @@ Kursor ukuran menunjukkan apakah tepi dapat diperbesar, diperkecil, atau digerak
 
 Buka Edit Tata Letak pada halaman yang dapat disesuaikan. Seret bagian dalam widget untuk memindahkannya; tahan di dekat tepi atas atau bawah layar untuk menggulir ke baris di luar layar. Seret tepi atau sudut yang disorot untuk mengubah ukuran, termasuk sisi kiri dan atas. Tepi yang berlawanan tetap di tempatnya. Perkecil Elemen bila menghalangi area kerja, lalu perluas untuk memilih Selesai atau Batalkan. Tambah menempatkan elemen tersembunyi tanpa menyeret.
 
-Selesai, pintasan tata letak, dan Atur Ulang menampilkan notifikasi keberhasilan atau kegagalan. Jika penyimpanan gagal, editor tetap terbuka dan perubahan yang tertunda tetap tersedia untuk dicoba kembali.
+Atur Ulang Tata Letak menampilkan tata letak bawaan tanpa menyimpannya. Tekan Selesai untuk menyimpan atau Batalkan untuk memulihkan tata letak sebelum pengeditan. Selesai dan pintasan tata letak melaporkan sukses atau gagal. Penyimpanan yang gagal mempertahankan draf untuk dicoba lagi atau dibatalkan.
 
 Perkecil ke lebar ponsel, buka bilah samping, pilih tujuan, dan kembali; ulangi pada tablet serta desktop.
 

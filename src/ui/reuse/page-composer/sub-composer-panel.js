@@ -12,7 +12,7 @@
  * @returns {{createSubElementsPanel: function(object): void}} Panel creation for a nested state; the owner removes the panel on unmount.
  */
 import { snapDragPlacement } from "./drag-placement.js";
-import { commitLayoutEdit } from "./layout-save.js";
+import { commitLayoutEdit, stageLayoutReset } from "./layout-save.js";
 import { bindComposerPointerDrag } from "./pointer-drag.js";
 
 import { halfGrid, snapGridFloor } from "./grid-math.js";
@@ -297,15 +297,11 @@ function createNestedComposerPanelHandlers({
 
         panel
             .querySelector(".composer-reset-btn")
-            .addEventListener("click", async (event) => {
+            .addEventListener("click", (event) => {
                 event.preventDefault();
-                await commitLayoutEdit({
+                stageLayoutReset({
                     state,
-                    prepare: () => {
-                        state.layout = { placements: [], hidden: [] };
-                        initializeNestedPlacements(state);
-                    },
-                    save: () => saveLayout(state),
+                    initialize: () => initializeNestedPlacements(state),
                     render: () => renderNestedGrid(state),
                 });
             });

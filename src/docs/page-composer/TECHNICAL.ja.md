@@ -11,6 +11,7 @@ Composer 内部の編集用ヘルパーは次の契約を提供します。ソ�
 | ヘルパー                                                                                                                            | 契約                                                                                             |
 | ----------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
 | [`createLayoutSaveHandler`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/layout-save.js)           | 同時リクエストをまとめる段階的な保存ハンドラーを作成します。下記の永続化契約を参照してください。 |
+| [`stageLayoutReset`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/layout-save.js)                  | 保存や取り消し用スナップショットの変更をせず、既定の配置と表示状態を下書きに反映します。         |
 | [`commitLayoutEdit`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/layout-save.js)                  | 操作を保護して編集状態を確定し、保存失敗時は再試行できます。                                     |
 | [`bindComposerPointerDrag`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/pointer-drag.js)          | ポインターの捕捉、端でのスクロール、ドロップ・中断通知、操作終了時の解放を管理します。           |
 | [`RESIZE_EDGES / resizePlacement`](https://github.com/Cognis-Labs-HQ/Cognis/blob/HEAD/src/ui/reuse/page-composer/resize-model.js)   | 8方向の辺・角を定義し、グリッドに合わせて制限した配置を計算します。重なりは検査しません。        |
@@ -87,11 +88,11 @@ DOM パーキングは既定では無効です。メディア DOM を composer �
 
 ### 永続化
 
-レイアウトの保存は `ui:pageComposer:saveLayout` の `validate`、`persist`、`notify` ステージを通ります。同じ設定キーへの同時保存は、変更されないリクエストのスナップショットを共有します。「完了」、レイアウトのショートカット、リセット操作は、翻訳済みの成功または失敗の通知を表示します。HTTPエラーやセッションがない場合は成功として扱いません。保存中は編集操作を無効にし、失敗時は保留中の配置を復元して編集画面を維持します。ページの終了時は保存を中断し、遅れて届く通知を抑止します。診断には `ui:log` を使用します。
+レイアウトの保存は `ui:pageComposer:saveLayout` の `validate`、`persist`、`notify` ステージを通ります。同じ設定キーへの同時保存は、変更されないリクエストのスナップショットを共有します。「完了」とレイアウトのショートカットは、翻訳済みの成功または失敗の通知を表示します。リセットは既定の配置と表示状態を下書きに反映するだけで、設定の保存、保存結果の通知、取り消し用スナップショットの変更は行いません。HTTPエラーやセッションがない場合は成功として扱いません。保存中は編集操作を無効にし、失敗時は保留中の配置を復元して編集画面を維持します。ページの終了時は保存を中断し、遅れて届く通知を抑止します。診断には `ui:log` を使用します。
 
 `createLayoutSaveHandler({ctx, save, notify, i18n, signal})` は `update(key, profiles, columns, layout)` を返します。注入する `save(key, profiles, columns, layout, signal)` は更新済みプロファイルを返し、書き込み失敗時は拒否する必要があります。`update` はそのプロファイル、または保存失敗・ページ中断時に `null` を返します。フローと翻訳のエラーは拒否として伝わります。ctx はフローの登録・実行と capabilities を提供し、`notify` は共通トーストのシグネチャを使い、`i18n.t` は成功・失敗のキーを解決します。
 
-`commitLayoutEdit({state, prepare?, save, finish?, render})` は複製可能な `state.layout`、変更可能な `editing`/`saving` フラグ、同じ状態を操作するコールバックを必要とします。`layoutSnapshot` を管理し、任意の `container` または `contentGrid`、`elementsPanel`、`signal` が操作の無効化とページの生存期間を制御します。任意の `prepare()` はリセット時に配置を同期的に初期化し、通常の「完了」操作では省略します。`save()` は真偽値を返し、成功時に所有側のプロファイルを更新する必要があります。false は準備前の配置を復元し、true はスナップショットを更新して `finish` がある場合のみ編集を終了します。想定外のコールバックエラーは、操作を復元した後に呼び出し元へ伝わります。
+`stageLayoutReset({state, initialize, render})` は編集中の下書きを初期化した既定値に置き換え、`layoutSnapshot` と保存済みプロファイルを変えずに編集を維持します。保存中、編集外、ページのキャンセル後は false を返します。`commitLayoutEdit({state, save, finish?, render})` は操作を無効にして現在の下書きを保存します。`save()` は真偽値を返し、成功時に所有側のプロファイルを更新します。失敗時はリセットした内容も下書きに保持するため、「完了」で再試行するか「元に戻す」で編集前の配置に戻せます。成功時に `layoutSnapshot` を更新し、指定された `finish` を呼びます。任意の `container` または `contentGrid`、`elementsPanel`、`signal` は操作とページの生存期間を制御します。想定外のコールバックエラーは、操作を復元した後に呼び出し元へ伝わります。
 
 配置は `PUT /api/v1/social/users/:accountId/preferences/:preferenceKey` に `{ layout: profiles }` を送信して保存します。`profiles.layoutsByGrid` は `cols-<count>` キーを `{ placements: [{id, col, row, w, h}], hidden: [] }` 形式の配置に対応付けます。同じパスへの GET は、シリアライズされたプロファイルを `data.layoutJson` に返します。保存には現在のアカウントとアクセストークンが必要です。
 

@@ -16,7 +16,7 @@ Der Größenänderungszeiger zeigt, ob eine Kante vergrößert, verkleinert oder
 
 Öffne Layout bearbeiten auf einer anpassbaren Seite. Ziehe im Inneren eines Widgets, um es zu verschieben; halte es zum Scrollen nahe am oberen oder unteren Bildschirmrand. Ziehe eine hervorgehobene Kante oder Ecke zum Skalieren, auch links und oben. Die gegenüberliegende Kante bleibt an ihrem Platz. Minimiere Elemente, wenn das Fenster im Weg ist, und öffne es wieder für Fertig oder Verwerfen. Hinzufügen platziert ausgeblendete Elemente ohne Ziehen.
 
-Fertig, das Layout-Kürzel und Zurücksetzen melden Erfolg oder Fehler. Schlägt das Speichern fehl, bleibt der Editor mit deinen ausstehenden Änderungen für einen erneuten Versuch geöffnet.
+Layout zurücksetzen zeigt die Standardanordnung als Entwurf, ohne zu speichern. Fertig speichert sie; Verwerfen stellt die Anordnung vor der Bearbeitung wieder her. Fertig und das Layout-Kürzel melden Erfolg oder Fehler. Bei einem Fehler bleibt der Entwurf zum erneuten Speichern oder Verwerfen erhalten.
 
 Verkleinere auf Telefonbreite, öffne die Seitenleiste und wähle ein Ziel; wiederhole bei Tablet- und Desktopbreite.
 

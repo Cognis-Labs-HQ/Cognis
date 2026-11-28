@@ -16,7 +16,7 @@ Resize cursors indicate whether an edge can grow, shrink or move in both directi
 
 Open Edit Layout on a customizable page. Drag inside a widget to move it; holding near the top or bottom of the screen scrolls to off-screen rows. Drag a highlighted edge or corner to resize, including the left and top edges. The opposite edge stays in place. Minimize Elements when it covers your work, then expand it to choose Done or Discard. Add places a hidden element without dragging.
 
-Done, the layout shortcut and Reset report success or failure with a notification. If saving fails, the editor stays open and your pending changes remain available to retry.
+Reset Layout previews the default layout without saving. Press Done to save it, or Discard to restore the layout from before editing. Done and the layout shortcut report success or failure. A failed save keeps the staged layout available to retry or discard.
 
 Resize to a phone width, open the sidebar, select a destination and return to the main content; repeat at tablet and desktop widths.
 

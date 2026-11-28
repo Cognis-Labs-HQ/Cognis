@@ -4,6 +4,7 @@ import { flowHost } from "../../reuse/tests/fixtures/flow-host.js";
 import {
     createLayoutSaveHandler,
     commitLayoutEdit,
+    stageLayoutReset,
 } from "../../reuse/page-composer/layout-save.js";
 import { createLayoutPersistence } from "../../reuse/page-composer/layout-persistence.js";
 
@@ -127,9 +128,6 @@ test("failed editor commits retain pending changes and restore interaction", asy
     assert.equal(
         await commitLayoutEdit({
             state,
-            prepare() {
-                state.layout.placements[0].row = 0;
-            },
             save: async () => false,
             finish() {
                 finished++;
@@ -167,3 +165,71 @@ test("HTTP errors and missing sessions cannot be reported as a successful write"
         /layout_session_unavailable/,
     );
 });
+
+test("reset stages defaults without advancing the discard snapshot or saved profiles", async () => {
+    const original = layout();
+    const profiles = { layoutsByGrid: { "cols-4": structuredClone(original) } };
+    const state = {
+        editing: true,
+        layout: layout(),
+        layoutSnapshot: structuredClone(original),
+        layoutProfiles: structuredClone(profiles),
+    };
+    const defaults = {
+        placements: [{ id: "card", col: 0, row: 0, w: 2, h: 2 }],
+        hidden: [],
+    };
+    let renders = 0;
+    assert.equal(
+        stageLayoutReset({
+            state,
+            initialize: () =>
+                Object.assign(state.layout, structuredClone(defaults)),
+            render: () => renders++,
+        }),
+        true,
+    );
+    assert.deepEqual(state.layout, defaults);
+    assert.deepEqual(state.layoutSnapshot, original);
+    assert.deepEqual(state.layoutProfiles, profiles);
+    assert.equal(state.editing, true);
+    assert.equal(renders, 1);
+    assert.equal(
+        await commitLayoutEdit({
+            state,
+            save: async () => false,
+            render: () => {},
+        }),
+        false,
+    );
+    assert.deepEqual(
+        state.layout,
+        defaults,
+        "Failed Done keeps the reset draft available",
+    );
+    assert.deepEqual(
+        state.layoutSnapshot,
+        original,
+        "Discard still restores the pre-edit layout after a failed Done",
+    );
+});
+
+for (const flags of [
+    { saving: true, editing: true },
+    { editing: false },
+    { editing: true, signal: AbortSignal.abort() },
+]) {
+    test(`reset does not change an inactive editor ${JSON.stringify(flags)}`, () => {
+        const state = { ...flags, layout: layout() };
+        const before = structuredClone(state.layout);
+        assert.equal(
+            stageLayoutReset({
+                state,
+                initialize: () => assert.fail("Must not initialize"),
+                render: () => assert.fail("Must not render"),
+            }),
+            false,
+        );
+        assert.deepEqual(state.layout, before);
+    });
+}

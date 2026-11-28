@@ -3,6 +3,7 @@
  *
  * Public exports:
  *   createLayoutSaveHandler(options) — coalesces writes and returns profiles or null.
+ *   stageLayoutReset(options) — replaces only the editable draft with initialized defaults.
  *   commitLayoutEdit(options) — guards a save and retains edits on a false result.
  *
  * Usage:
@@ -100,8 +101,25 @@ export function createLayoutSaveHandler({ ctx, save, notify, i18n, signal }) {
 }
 
 /**
- * Prepares and commits the live editor layout while its controls are inert.
- * A false save restores the pre-prepare layout and keeps editing active. Success
+ * Stages defaults without writing preferences, notifying, or changing the discard snapshot.
+ * @param {object} options Editor state and callbacks operating on that same state.
+ * @param {object} options.state Mutable layout, editing/saving flags and optional lifetime signal.
+ * @param {function():void} options.initialize Populates the empty draft with current defaults.
+ * @param {function():void} options.render Renders the staged draft while remaining in edit mode.
+ * @returns {boolean} True when staged; false while saving, outside editing or after cancellation.
+ * @example stageLayoutReset({ state, initialize: initializePlacements, render: renderGrid });
+ */
+export function stageLayoutReset({ state, initialize, render }) {
+    if (!state.editing || state.saving || state.signal?.aborted) return false;
+    state.layout = { placements: [], hidden: [] };
+    initialize();
+    render();
+    return true;
+}
+
+/**
+ * Commits the live editor layout while its controls are inert.
+ * A false save restores the pending layout and keeps editing active. Success
  * updates layoutSnapshot; supplying finish also exits edit mode. Unexpected callback
  * errors propagate, with interaction restored in finally. Save should handle expected
  * persistence errors and return false, as in the module example.
@@ -112,19 +130,12 @@ export function createLayoutSaveHandler({ ctx, save, notify, i18n, signal }) {
  * @param {HTMLElement} [options.state.contentGrid] Main grid made inert while saving.
  * @param {HTMLElement} [options.state.elementsPanel] Current panel made inert while saving.
  * @param {AbortSignal} [options.state.signal] Suppresses rendering after page cancellation.
- * @param {function(): void} [options.prepare] Optional reset of state.layout before persistence.
  * @param {function(): Promise<boolean>} options.save True only after successful persistence; updates owner profiles.
- * @param {function(): void} [options.finish] End edit-mode effects; omit for Reset to remain in edit mode.
+ * @param {function(): void} [options.finish] End edit-mode effects after persistence.
  * @param {function(): void} options.render Rebuilds from state after settlement unless the page ended.
  * @returns {Promise<boolean>} True after persistence, false for a pending commit or a false save result.
  */
-export async function commitLayoutEdit({
-    state,
-    prepare,
-    save,
-    finish,
-    render,
-}) {
+export async function commitLayoutEdit({ state, save, finish, render }) {
     if (state.saving) return false;
     const previous = structuredClone(state.layout);
     const container = state.container ?? state.contentGrid;
@@ -133,7 +144,6 @@ export async function commitLayoutEdit({
     if (container) container.inert = true;
     if (state.elementsPanel) state.elementsPanel.inert = true;
     try {
-        prepare?.();
         if (!(await save())) {
             state.layout = previous;
             return false;

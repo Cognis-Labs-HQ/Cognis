@@ -7,7 +7,7 @@ for (const mode of ["grid", "nested"]) {
     for (const [language, action] of [
         ["en", "done"],
         ["de", "shortcut"],
-        ["id", "reset"],
+        ["id", "reset-done"],
         ["ja", "done"],
     ]) {
         test(
@@ -63,12 +63,22 @@ for (const mode of ["grid", "nested"]) {
                 await browser.evaluate(
                     `document.querySelector('.composer-cell[data-composer-element="form"]').dispatchEvent(new KeyboardEvent('keydown', {key:'ArrowUp', shiftKey:true, bubbles:true, cancelable:true}))`,
                 );
+                if (action === "reset-done") {
+                    await browser.evaluate(
+                        `document.querySelector('.composer-reset-btn').click()`,
+                    );
+                    assert.equal(
+                        writes,
+                        0,
+                        "Reset remains staged before attempting Done",
+                    );
+                }
                 const pendingHeight = await browser.evaluate(
                     `document.querySelector('.composer-cell[data-composer-element="form"]').style.height`,
                 );
                 const click = () =>
                     browser.callFunction(
-                        `function(action) { document.querySelector(action === 'shortcut' ? '#composer-edit-toggle' : action === 'reset' ? '.composer-reset-btn' : '.composer-done-btn').click(); }`,
+                        `function(action) { document.querySelector(action === 'shortcut' ? '#composer-edit-toggle' : '.composer-done-btn').click(); }`,
                         [action],
                     );
                 await click();
@@ -124,17 +134,9 @@ for (const mode of ["grid", "nested"]) {
                     2,
                     "One failed request and one retry reach persistence",
                 );
-                if (action !== "reset")
-                    await browser.waitFor(
-                        `!document.querySelector('.composer-cell')`,
-                    );
-                else
-                    assert.ok(
-                        await browser.evaluate(
-                            `Boolean(document.querySelector('.composer-cell'))`,
-                        ),
-                        "Reset keeps the editor open",
-                    );
+                await browser.waitFor(
+                    `!document.querySelector('.composer-cell')`,
+                );
                 assert.equal(
                     browser.events.filter(
                         (event) => event.method === "Runtime.exceptionThrown",

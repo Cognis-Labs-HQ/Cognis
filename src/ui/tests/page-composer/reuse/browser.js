@@ -14,11 +14,13 @@ export const skip = !browserEnabled
     : !executable
       ? "Chromium is not installed. Set COGNIS_TEST_CHROMIUM to its executable."
       : false;
+/** expectedElementCount accounts for deliberately hidden fixture elements; default fixtures require every declared element. */
 export async function startFixture(
     context,
     suffix = "",
     viewport = [1440, 900],
     serverOptions = {},
+    expectedElementCount,
 ) {
     const server = await serveBrowserFixture(fixtureDirectory, serverOptions);
     context.after(() => server.close());
@@ -29,7 +31,7 @@ export async function startFixture(
     await browser.waitFor("Boolean(window.fixture)");
     assert.equal(await browser.evaluate("window.fixture.error ?? null"), null);
     await browser.waitFor(
-        'document.querySelectorAll("[data-composer-element]").length === window.fixture.elementCount',
+        `document.querySelectorAll("[data-composer-element]").length === ${expectedElementCount ?? "window.fixture.elementCount"}`,
     );
     await browser.evaluate(
         `document.fonts.ready.then(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))))`,
