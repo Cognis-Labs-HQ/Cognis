@@ -56,7 +56,7 @@ export interface ClassesRouteOptions {
     log?: (
         level: string,
         message: string,
-        metadata?: Record<string, unknown>,
+        meta?: Record<string, unknown>,
     ) => void;
     routeContext?: RouteContext;
 }
@@ -77,11 +77,7 @@ function normalizeLanguageList(input: unknown): string[] {
 export function createClassesRoutes(
     store: DatabaseClassesStore,
     options: ClassesRouteOptions = {},
-): (
-    request: IncomingMessage,
-    response: ServerResponse,
-    url: URL,
-) => Promise<boolean> {
+): (req: IncomingMessage, res: ServerResponse, url: URL) => Promise<boolean> {
     const ctx = resolveRouteContext(options.routeContext);
     return async (
         req: IncomingMessage,

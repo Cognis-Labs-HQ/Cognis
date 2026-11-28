@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import type { DbExecutor } from "../../../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../../../gateways/db/reuse/db-executor.js";
 import { retainedPackEntries } from "../../store/retained-pack-entries.js";
 
 test("pack pruning retains recursive dependencies of user cards and provider edits but releases replaced provider-only edges", async () => {
@@ -11,7 +11,7 @@ test("pack pruning retains recursive dependencies of user cards and provider edi
         ["modified", "old-reading"],
         ["replaced", "obsolete"],
     ];
-    const db: DbExecutor = {
+    const db: DatabaseExecutor = {
         ensureTable: async () => {},
         transaction: async (operation) => operation(db),
         executeCommand: async (command) => {

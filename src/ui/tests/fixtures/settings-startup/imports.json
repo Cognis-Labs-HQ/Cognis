@@ -20,15 +20,15 @@
     ],
     "../../reuse/font-prefs.js": [
         "toFontFamilyValue",
-        "initFontPreferences",
+        "initializeFontPreferences",
         "DEFAULT_FONT_SIZE"
     ],
-    "./language-prefs.js": ["initLanguagePreferences"],
-    "./checkbox-prefs.js": ["initCheckboxPreferences"],
-    "./general-prefs.js": ["initGeneralPreferences"],
-    "./datetime-prefs.js": ["initDateTimePreferences"],
+    "./language-prefs.js": ["initializeLanguagePreferences"],
+    "./checkbox-prefs.js": ["initializeCheckboxPreferences"],
+    "./general-prefs.js": ["initializeGeneralPreferences"],
+    "./datetime-prefs.js": ["initializeDateTimePreferences"],
     "./release-changelog-prefs.js": [
-        "initReleaseChangelogPreferences",
+        "initializeReleaseChangelogPreferences",
         "shouldShowReleaseChangelog"
     ],
     "../../reuse/timestamp.js": [
@@ -36,7 +36,7 @@
         "applyTimezoneToLocalStorage"
     ],
     "../../reuse/unsaved-changes.js": ["createUnsavedChangesBar"],
-    "./advanced-prefs.js": ["initAdvancedPreferences"],
+    "./advanced-prefs.js": ["initializeAdvancedPreferences"],
     "./editor-acknowledgement.js": [
         "loadEditorAcknowledgement",
         "saveEditorAcknowledgement"

@@ -48,7 +48,7 @@ async function fixture(
         for (const dispose of cleanup.reverse()) await dispose();
     });
     const routes: Array<
-        (request: never, response: never, url: URL) => Promise<boolean>
+        (req: never, res: never, url: URL) => Promise<boolean>
     > = [];
     capabilities.contribute("notify:isSenderEnabled", () => true);
     capabilities.contribute(

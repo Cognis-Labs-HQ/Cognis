@@ -299,12 +299,13 @@ export class CoreNotificationGateway implements NotificationGateway {
         };
     }
 
-    getProviderEnvValues(
+    getProviderEnvironmentValues(
         senderId: string,
     ): Record<string, string | undefined> | null {
         const sender = this.senders.get(senderId);
-        if (!sender || typeof sender.getEnvValues !== "function") return null;
-        return sender.getEnvValues();
+        if (!sender || typeof sender.getEnvironmentValues !== "function")
+            return null;
+        return sender.getEnvironmentValues();
     }
 
     getProviderRequiredFields(senderId: string): string[] | null {
@@ -479,7 +480,7 @@ export class CoreNotificationGateway implements NotificationGateway {
             stringsBaseUrl: sender.stringsBaseUrl,
             configuredSecretFields: sender.getConfiguredSecretFields?.() ?? [],
             config: sender.getConfig(),
-            envValues: sender.getEnvValues?.() ?? {},
+            envValues: sender.getEnvironmentValues?.() ?? {},
             requiredFields: sender.getRequiredFields?.() ?? [],
             supportsTest: typeof sender.test === "function",
             locked: this.alwaysOnSenders.has(senderId),
@@ -565,7 +566,7 @@ export class CoreNotificationGateway implements NotificationGateway {
                     typeof moduleExports.createNotificationSender === "function"
                 ) {
                     const factory = moduleExports.createNotificationSender as (
-                        environment: Record<string, string | undefined>,
+                        env: Record<string, string | undefined>,
                     ) => NotificationSender | null;
                     const sender = factory(
                         process.env as Record<string, string | undefined>,

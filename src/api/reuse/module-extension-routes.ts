@@ -49,8 +49,8 @@ interface RouteHandler {
     invalidAccessPolicy: boolean;
     allowWhenDisabled?: boolean;
     handler: (
-        request: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
     ) => Promise<void> | void;
 }
 
@@ -71,8 +71,8 @@ export interface ModuleExtensionOptions {
 
 export interface ModuleExtensionRoutes {
     handle(
-        request: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         url: URL,
     ): Promise<boolean>;
     refresh(options?: { throwOnFailure?: boolean }): Promise<void>;
@@ -576,7 +576,7 @@ export function createModuleExtensionRoutes(
                     isEnabled: () => isModuleEnabled(moduleId),
                 });
             },
-            registerStaticDir(urlPrefix, absoluteDirectory) {
+            registerStaticDirectory(urlPrefix, absoluteDirectory) {
                 requireActiveBootstrap();
                 if (!moduleEnabled) return;
                 const normalizedPrefix = String(urlPrefix ?? "")
@@ -585,7 +585,7 @@ export function createModuleExtensionRoutes(
                 const fullPrefix = normalizedPrefix
                     ? `${moduleId}/${normalizedPrefix}`
                     : moduleId;
-                options?.uiRegistry?.registerModuleStaticDir(
+                options?.uiRegistry?.registerModuleStaticDirectory(
                     fullPrefix,
                     absoluteDirectory,
                 );
@@ -723,7 +723,7 @@ export function createModuleExtensionRoutes(
                     },
                 );
             }
-            options?.uiRegistry?.registerModuleStaticDir(
+            options?.uiRegistry?.registerModuleStaticDirectory(
                 manifest.id,
                 path.join(moduleRoot, "ui"),
             );

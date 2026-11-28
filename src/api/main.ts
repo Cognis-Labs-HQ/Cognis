@@ -33,8 +33,8 @@ import {
 import type { LocalAccountStore } from "../gateways/auth/reuse/account-store.js";
 import type { UserPreferenceStore } from "./reuse/preference-store.js";
 import type { RouteContext } from "./reuse/route-context.js";
-import type { DbExecutor } from "../gateways/db/reuse/db-executor.js";
-import type { DbDialectHelper } from "../gateways/db/bootstrap.js";
+import type { DatabaseExecutor } from "../gateways/db/reuse/db-executor.js";
+import type { DatabaseDialectHelper } from "../gateways/db/bootstrap.js";
 import {
     isExcludedModuleIntegrityFile,
     isVerifiedModuleIntegrityAlias,
@@ -486,11 +486,11 @@ if (flowCtx.flow.exists("bootstrap-platform")) {
     await log("info", "bootstrap-platform flow complete.");
 }
 
-const databaseExecutor = capabilities.get<DbExecutor>("db:executor")!;
+const databaseExecutor = capabilities.get<DatabaseExecutor>("db:executor")!;
 const documentVersionStore = createDocumentVersionStoreCapability();
 capabilities.contribute("docs:versionStore", documentVersionStore);
 systemCtx.contributeCapability("docs:versionStore", documentVersionStore);
-const databaseDialect = capabilities.get<DbDialectHelper>("db:dialect")!;
+const databaseDialect = capabilities.get<DatabaseDialectHelper>("db:dialect")!;
 await databaseExecutor.ensureTable({
     name: "gateways",
     columns: [

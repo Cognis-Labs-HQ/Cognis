@@ -3,15 +3,15 @@ import { EventEmitter } from "node:events";
 import { GatewayRegistry, CapabilityStore } from "@cognis/core";
 import { RouteRegistry } from "../../../../api/reuse/route-registry.js";
 import { UIRegistry } from "../../../../api/reuse/ui-registry.js";
-import type { DbExecutor } from "../../../db/reuse/db-executor.js";
-import type { StructuredDbCommand } from "../../../db/reuse/db-command.js";
+import type { DatabaseExecutor } from "../../../db/reuse/db-executor.js";
+import type { StructuredDatabaseCommand } from "../../../db/reuse/db-command.js";
 
-class PreferenceDatabase implements DbExecutor {
+class PreferenceDatabase implements DatabaseExecutor {
     readonly preferences = new Map<string, string>();
 
     async ensureTable() {}
 
-    async executeCommand(command: StructuredDbCommand) {
+    async executeCommand(command: StructuredDatabaseCommand) {
         if (command.option === "SELECT") {
             return {
                 rows: [...this.preferences].map(
@@ -35,7 +35,7 @@ class PreferenceDatabase implements DbExecutor {
     }
 
     async transaction<Result>(
-        callback: (executor: DbExecutor) => Promise<Result>,
+        callback: (executor: DatabaseExecutor) => Promise<Result>,
     ): Promise<Result> {
         return callback(this);
     }
@@ -85,7 +85,7 @@ export class RequestRecorder extends EventEmitter {
 }
 
 export async function makeContext(
-    databaseExecutor: DbExecutor = new PreferenceDatabase(),
+    databaseExecutor: DatabaseExecutor = new PreferenceDatabase(),
 ) {
     const capabilities = new CapabilityStore();
     capabilities.contribute("db:executor", databaseExecutor);

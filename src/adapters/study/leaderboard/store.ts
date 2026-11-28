@@ -1,5 +1,5 @@
 import { textChunks } from "../../../gateways/reuse/text-chunks.js";
-import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import type {
     LeaderboardDefinition,
     LeaderboardObservation,
@@ -21,10 +21,10 @@ export interface LeaderboardStore {
 }
 
 class DatabaseLeaderboardStore implements LeaderboardStore {
-    constructor(private readonly database: DbExecutor) {}
+    constructor(private readonly db: DatabaseExecutor) {}
 
     async ensureSchema(): Promise<void> {
-        await this.database.ensureTable({
+        await this.db.ensureTable({
             name: "study_leaderboard_state",
             columns: [
                 { name: "state_id", type: "text", primaryKey: true },
@@ -38,7 +38,7 @@ class DatabaseLeaderboardStore implements LeaderboardStore {
     }
 
     async load(): Promise<LeaderboardState | undefined> {
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "study_leaderboard_state",
             where: [
@@ -57,7 +57,7 @@ class DatabaseLeaderboardStore implements LeaderboardStore {
     }
 
     async save(state: LeaderboardState): Promise<void> {
-        await this.database.transaction(async (db) => {
+        await this.db.transaction(async (db) => {
             await db.executeCommand({
                 option: "DELETE",
                 table: "study_leaderboard_state",

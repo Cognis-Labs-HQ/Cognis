@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import test from "node:test";
 import { Pool } from "pg";
 import { createDatabaseExecutor } from "../index.js";
-import type { StructuredDbTableDef } from "../../../../gateways/db/reuse/db-table.js";
+import type { StructuredDatabaseTableDefinition } from "../../../../gateways/db/reuse/db-table.js";
 
 const databaseUrl = process.env.COGNIS_TEST_POSTGRES_URL;
 
@@ -26,7 +26,7 @@ test(
             databaseUrl: databaseUrl!,
             pool,
         });
-        const definition: StructuredDbTableDef = {
+        const definition: StructuredDatabaseTableDefinition = {
             name: "resources",
             columns: [
                 { name: "id", type: "text", primaryKey: true },
@@ -195,7 +195,7 @@ test(
             await context.test(
                 "composite unique declarations are healed and existing reversed key order is reused",
                 async () => {
-                    const composite: StructuredDbTableDef = {
+                    const composite: StructuredDatabaseTableDefinition = {
                         name: "memberships",
                         columns: [
                             { name: "resource_id", type: "text" },

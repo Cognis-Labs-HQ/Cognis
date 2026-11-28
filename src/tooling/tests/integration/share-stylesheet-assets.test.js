@@ -16,7 +16,7 @@ test("registered Share method stylesheets resolve their component assets through
         .filter((entry) => entry.isDirectory())
         .map((entry) => ({
             prefix: `/static/adapters/share/${entry.name}/`,
-            directory: context.uiRegistry.getAdapterStaticDir(
+            directory: context.uiRegistry.getAdapterStaticDirectory(
                 "share",
                 entry.name,
             ),

@@ -43,12 +43,12 @@ export function bindLayoutKeyboard({
         if (!direction) return;
         event.preventDefault();
         const next = { ...placement };
-        const horizontal = direction[0] * gridStep(state.gridCols);
+        const horizontal = direction[0] * gridStep(state.gridColumns);
         const vertical = direction[1] * gridStep(state.gridRows);
         if (event.shiftKey) {
             const bounds = resolveGridWidthBounds(
                 gridSize,
-                state.gridCols - next.col,
+                state.gridColumns - next.col,
             );
             if (
                 horizontal &&
@@ -69,7 +69,7 @@ export function bindLayoutKeyboard({
         } else {
             next.col = Math.max(
                 0,
-                Math.min(state.gridCols - next.w, next.col + horizontal),
+                Math.min(state.gridColumns - next.w, next.col + horizontal),
             );
             next.row = Math.max(0, next.row + vertical);
         }

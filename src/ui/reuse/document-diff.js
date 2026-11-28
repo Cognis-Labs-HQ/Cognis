@@ -124,7 +124,7 @@ function applyMarkdownAnnotations(html, annotations) {
  * content retains normal Markdown presentation while changes receive semantic
  * overlays and overview-rail anchors.
  *
- * @param {{ lines?: Array<{type: 'unchanged'|'added'|'removed'|'changed', content?: string, oldContent?: string, newContent?: string}> }} difference
+ * @param {{ lines?: Array<{type: 'unchanged'|'added'|'removed'|'changed', content?: string, oldContent?: string, newContent?: string}> }} diff
  * @returns {string} Sanitized rendered Markdown with diff overlays.
  */
 function renderMarkdownDocumentDifference(diff) {

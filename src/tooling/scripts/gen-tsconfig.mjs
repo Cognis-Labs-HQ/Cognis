@@ -22,15 +22,15 @@ const repositoryRoot = path.resolve(
 );
 const sourceRoot = path.join(repositoryRoot, "src");
 
-function findCompositeProjects(directory) {
+function findCompositeProjects(dir) {
     const results = [];
     let entries;
     try {
-        entries = readdirSync(directory);
+        entries = readdirSync(dir);
     } catch {
         return results;
     }
-    const tsconfigPath = path.join(directory, "tsconfig.json");
+    const tsconfigPath = path.join(dir, "tsconfig.json");
     let isComposite = false;
     try {
         const parsed = JSON.parse(readFileSync(tsconfigPath, "utf8"));
@@ -39,11 +39,11 @@ function findCompositeProjects(directory) {
         isComposite = false;
     }
     if (isComposite) {
-        results.push(path.relative(repositoryRoot, directory));
+        results.push(path.relative(repositoryRoot, dir));
         return results;
     }
     for (const entry of entries) {
-        const full = path.join(directory, entry);
+        const full = path.join(dir, entry);
         try {
             if (statSync(full).isDirectory() && entry !== "node_modules") {
                 results.push(...findCompositeProjects(full));

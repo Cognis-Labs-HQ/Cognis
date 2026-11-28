@@ -4,7 +4,7 @@ import { bootstrapAuthAdapter, createAdapter } from "../index.js";
 import type { LdapRuntimeOptions } from "../index.js";
 import {
     isDirectoryGroupEntry,
-    isDnWithinBase,
+    isDistinguishedNameWithinBase,
     resolveDirectorySearchBases,
 } from "../client.js";
 
@@ -98,14 +98,14 @@ test("LDAP discovery excludes user objects from group results", () => {
 
 test("LDAP discovery rejects entries returned outside the requested base", () => {
     assert.equal(
-        isDnWithinBase(
+        isDistinguishedNameWithinBase(
             "cn=teachers,cn=groups,cn=accounts,dc=example,dc=org",
             "cn=groups,cn=accounts,dc=example,dc=org",
         ),
         true,
     );
     assert.equal(
-        isDnWithinBase(
+        isDistinguishedNameWithinBase(
             "uid=alice,cn=users,cn=accounts,dc=example,dc=org",
             "cn=groups,cn=accounts,dc=example,dc=org",
         ),

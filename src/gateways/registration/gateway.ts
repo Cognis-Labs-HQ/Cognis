@@ -3,7 +3,7 @@ import type { GatewayBootstrapContext } from "../shared.js";
 import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { resolveComponentEnabledState } from "@cognis/core";
-import type { DbExecutor } from "../db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../db/reuse/db-executor.js";
 
 export interface InviteRecord {
     id: string;
@@ -104,8 +104,8 @@ export interface RegistrationAdapterInfo {
     authTypingMessages?: RegistrationTypingMessage[];
 }
 
-export interface RegistrationAdapterDeps {
-    dbExecutor: DbExecutor;
+export interface RegistrationAdapterDependencies {
+    dbExecutor: DatabaseExecutor;
     [key: string]: unknown;
 }
 
@@ -116,10 +116,10 @@ export class CoreRegistrationGateway {
     private publicAdapterId: string | null = null;
     private publicRegistrationEnabled = true;
 
-    constructor(private readonly database: DbExecutor) {}
+    constructor(private readonly db: DatabaseExecutor) {}
 
     async ensureSchema(): Promise<void> {
-        await this.database.ensureTable({
+        await this.db.ensureTable({
             name: "registration_adapter_configs",
             columns: [
                 {
@@ -131,7 +131,7 @@ export class CoreRegistrationGateway {
                 { name: "enabled", type: "integer", notNull: true, default: 0 },
             ],
         });
-        await this.database.ensureTable({
+        await this.db.ensureTable({
             name: "registration_policy",
             columns: [
                 {
@@ -163,7 +163,7 @@ export class CoreRegistrationGateway {
         founderInvitesEnabled: boolean;
         adminInvitesEnabled: boolean;
     }> {
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "registration_policy",
             columns: [
@@ -201,7 +201,7 @@ export class CoreRegistrationGateway {
     }): Promise<void> {
         const publicRegistrationEnabled =
             input.publicRegistrationEnabled ?? this.publicRegistrationEnabled;
-        await this.database.executeCommand({
+        await this.db.executeCommand({
             option: "INSERT",
             table: "registration_policy",
             values: {
@@ -234,7 +234,7 @@ export class CoreRegistrationGateway {
 
     async discoverAdapters(
         adaptersRoot: string,
-        dependencies: RegistrationAdapterDeps,
+        dependencies: RegistrationAdapterDependencies,
         context?: GatewayBootstrapContext,
     ): Promise<void> {
         let entries: string[];
@@ -302,7 +302,7 @@ export class CoreRegistrationGateway {
     }
 
     async loadPersistedConfigs(): Promise<void> {
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "registration_adapter_configs",
             columns: ["adapter_id", "enabled"],
@@ -472,7 +472,7 @@ export class CoreRegistrationGateway {
         adapterId: string,
         enabled: boolean,
     ): Promise<void> {
-        await this.database.executeCommand({
+        await this.db.executeCommand({
             option: "INSERT",
             table: "registration_adapter_configs",
             values: {

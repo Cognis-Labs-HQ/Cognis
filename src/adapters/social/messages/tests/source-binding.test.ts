@@ -1,8 +1,8 @@
-import type { StructuredDbCommand } from "../../../../gateways/db/reuse/db-command.js";
+import type { StructuredDatabaseCommand } from "../../../../gateways/db/reuse/db-command.js";
 import assert from "node:assert/strict";
 import test from "node:test";
 import { changeChatroomSource } from "../store/source-binding.js";
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 
 function fixture() {
     const room: Record<string, unknown> = {
@@ -11,7 +11,7 @@ function fixture() {
         source_id: null,
     };
     const executor = {
-        async executeCommand(command: StructuredDbCommand) {
+        async executeCommand(command: StructuredDatabaseCommand) {
             if (command.option === "SELECT")
                 return {
                     rows: command.table === "chatrooms" ? [{ ...room }] : [],
@@ -28,7 +28,7 @@ function fixture() {
                 Object.assign(room, command.set);
             return { rowCount: 1 };
         },
-    } as DbExecutor;
+    } as DatabaseExecutor;
     return { executor, room };
 }
 const input = {

@@ -146,7 +146,7 @@ test("SmtpNotificationSender.enqueueEmail returns a waiting rate-limit entry imm
     assert.equal(typeof queued.availableAt, "string");
 });
 
-test("createNotificationSender.getEnvValues returns env snapshot fields", () => {
+test("createNotificationSender.getEnvironmentValues returns env snapshot fields", () => {
     const env = {
         COGNIS_SMTP_HOST: "smtp.example.com",
         COGNIS_SMTP_PORT: "465",
@@ -155,16 +155,16 @@ test("createNotificationSender.getEnvValues returns env snapshot fields", () => 
         COGNIS_SMTP_SECURE: "tls",
     };
     const sender = createNotificationSender(env);
-    const environmentValues = sender.getEnvValues();
+    const environmentValues = sender.getEnvironmentValues();
     assert.equal(environmentValues["host"], "smtp.example.com");
     assert.equal(environmentValues["port"], "465");
     assert.equal(environmentValues["from"], "no-reply@example.com");
     assert.equal(environmentValues["user"], "user@example.com");
     assert.equal(environmentValues["secure"], "tls");
 });
-test("createNotificationSender.getEnvValues returns undefined fields when env is empty", () => {
+test("createNotificationSender.getEnvironmentValues returns undefined fields when env is empty", () => {
     const sender = createNotificationSender({});
-    const environmentValues = sender.getEnvValues();
+    const environmentValues = sender.getEnvironmentValues();
     assert.equal(environmentValues["host"], undefined);
     assert.equal(environmentValues["port"], undefined);
     assert.equal(environmentValues["from"], undefined);

@@ -9,7 +9,7 @@ import {
     resolveRouteContext,
     type RouteContext,
 } from "../../../api/reuse/route-context.js";
-import type { DbExecutor } from "../db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../db/reuse/db-executor.js";
 import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js";
 import type { GatewayBootstrapContext } from "../shared.js";
 import { DatabaseCalendarStore } from "../store.js";
@@ -33,7 +33,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const getDispatchNotification = () =>
         ctx.capabilities.get<NotificationDispatcher>("notify:dispatch") ?? null;
     const adaptersRoot = path.join(ctx.adaptersRoot, "calendar");
-    const databaseExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
+    const databaseExecutor =
+        ctx.capabilities.get<DatabaseExecutor>("db:executor");
     const getPreferenceStore = () =>
         ctx.capabilities.get<UserPreferenceStore>("preferences:store");
     const systemCtx = ctx.capabilities.get<Ctx>("system:ctx");

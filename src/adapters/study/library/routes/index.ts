@@ -51,7 +51,7 @@ export function createLibraryRoutes(
     log?: (
         level: string,
         message: string,
-        metadata?: Record<string, unknown>,
+        meta?: Record<string, unknown>,
     ) => void | Promise<void>,
 ) {
     const ctx = resolveRouteContext(routeContext);

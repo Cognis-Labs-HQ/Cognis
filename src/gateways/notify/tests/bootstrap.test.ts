@@ -17,7 +17,7 @@ function makeInMemoryDatabase() {
         ensureTable: async () => {},
         transaction: async <T>(
             callback: (
-                database: ReturnType<typeof makeInMemoryDatabase>,
+                db: ReturnType<typeof makeInMemoryDatabase>,
             ) => Promise<T>,
         ) => callback(makeInMemoryDatabase()),
     };
@@ -299,7 +299,7 @@ test("notify gateway bootstrap registers correct static dir and admin-section.js
         uiRegistry,
     });
 
-    const staticDirectory = uiRegistry.getStaticDir("notify");
+    const staticDirectory = uiRegistry.getStaticDirectory("notify");
     assert.ok(
         staticDirectory,
         "notify gateway must register a static dir with UIRegistry",
@@ -340,7 +340,7 @@ test("notify gateway bootstrap registers admin section scriptUrl that resolves w
         "notify gateway must register a 'notifications' admin section",
     );
 
-    const staticDirectory = uiRegistry.getStaticDir("notify");
+    const staticDirectory = uiRegistry.getStaticDirectory("notify");
     assert.ok(staticDirectory, "notify gateway must register a static dir");
 
     const urlPrefix = "/static/gateways/notify/";
@@ -380,7 +380,7 @@ test("notify gateway bootstrap registers broadcasts admin section scriptUrl that
         "notify gateway must register a 'broadcasts' admin section",
     );
 
-    const staticDirectory = uiRegistry.getStaticDir("notify");
+    const staticDirectory = uiRegistry.getStaticDirectory("notify");
     assert.ok(staticDirectory, "notify gateway must register a static dir");
 
     const urlPrefix = "/static/gateways/notify/";

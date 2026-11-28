@@ -11,7 +11,7 @@ import { captureTerminalOutput } from "./fixtures/output.ts";
  * The tests cover formatted JSON fallback and command-specific rendering for
  * representative built-in commands.
  */
-import { mkdtemp, rm as removePath, writeFile, mkdir } from "node:fs/promises";
+import { mkdtemp, rm, writeFile, mkdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -110,12 +110,12 @@ test("plugin commands use structured summaries by default", async () => {
 test("search:query maps wizard-friendly query fields to search API", async () => {
     const originalFetch = globalThis.fetch;
     try {
-        globalThis.fetch = async (input, requestOptions) => {
+        globalThis.fetch = async (input, init) => {
             assert.equal(
                 String(input),
                 "http://localhost:3000/api/v1/search?q=alice&type=users",
             );
-            assert.equal(requestOptions?.method, "GET");
+            assert.equal(init?.method, "GET");
             return new Response(JSON.stringify({ data: [] }), {
                 status: 200,
                 headers: { "content-type": "application/json" },
@@ -163,12 +163,12 @@ test("renderStructuredSummary turns JSON arrays and metadata into readable outpu
 test("calendar:events maps calendar IDs to inspection routes", async () => {
     const originalFetch = globalThis.fetch;
     try {
-        globalThis.fetch = async (input, requestOptions) => {
+        globalThis.fetch = async (input, init) => {
             assert.equal(
                 String(input),
                 "http://localhost:3000/api/v1/calendar/calendars/cal-1/events",
             );
-            assert.equal(requestOptions?.method, "GET");
+            assert.equal(init?.method, "GET");
             return new Response(JSON.stringify({ data: [] }), {
                 status: 200,
                 headers: { "content-type": "application/json" },
@@ -193,12 +193,12 @@ test("calendar:events maps calendar IDs to inspection routes", async () => {
 test("tfa CLI commands require a target username", async () => {
     const originalFetch = globalThis.fetch;
     try {
-        globalThis.fetch = async (input, requestOptions) => {
+        globalThis.fetch = async (input, init) => {
             assert.equal(
                 String(input),
                 "http://localhost:3000/api/v1/tfa/methods?accountId=alice",
             );
-            assert.equal(requestOptions?.method, "GET");
+            assert.equal(init?.method, "GET");
             return new Response(
                 JSON.stringify({ data: { enabledMethods: [] } }),
                 {
@@ -226,12 +226,12 @@ test("tfa CLI commands require a target username", async () => {
 test("calendar:list requires a target username and forwards account ID", async () => {
     const originalFetch = globalThis.fetch;
     try {
-        globalThis.fetch = async (input, requestOptions) => {
+        globalThis.fetch = async (input, init) => {
             assert.equal(
                 String(input),
                 "http://localhost:3000/api/v1/calendar/calendars?accountId=alice",
             );
-            assert.equal(requestOptions?.method, "GET");
+            assert.equal(init?.method, "GET");
             return new Response(
                 JSON.stringify({
                     data: [{ id: "cal-1", ownerAccountId: "alice" }],
@@ -265,12 +265,12 @@ test("calendar:list requires a target username and forwards account ID", async (
 test("feature CLI command maps optional query JSON to API route", async () => {
     const originalFetch = globalThis.fetch;
     try {
-        globalThis.fetch = async (input, requestOptions) => {
+        globalThis.fetch = async (input, init) => {
             assert.equal(
                 String(input),
                 "http://localhost:3000/api/v1/share/tokens?resourceType=meeting&resourceId=meeting-1",
             );
-            assert.equal(requestOptions?.method, "GET");
+            assert.equal(init?.method, "GET");
             return new Response(JSON.stringify({ data: [] }), {
                 status: 200,
                 headers: { "content-type": "application/json" },
@@ -300,14 +300,14 @@ test("feature CLI command maps optional query JSON to API route", async () => {
 test("notify:send accepts structured JSON payloads for direct execution", async () => {
     const originalFetch = globalThis.fetch;
     try {
-        globalThis.fetch = async (input, requestOptions) => {
+        globalThis.fetch = async (input, init) => {
             assert.equal(
                 String(input),
                 "http://localhost:3000/api/v1/notify/send",
             );
-            assert.equal(requestOptions?.method, "POST");
+            assert.equal(init?.method, "POST");
             assert.equal(
-                requestOptions?.body,
+                init?.body,
                 JSON.stringify({
                     category: "system",
                     recipientUsername: "alice",
@@ -458,7 +458,7 @@ test("loadModuleCliPlugins filters commands for disabled components", async () =
         } else {
             process.env.COGNIS_ADAPTER_CLI_PATHS = previousAdapterPaths;
         }
-        await removePath(temporaryRoot, { recursive: true, force: true });
+        await rm(temporaryRoot, { recursive: true, force: true });
     }
 });
 
@@ -562,6 +562,6 @@ test("loadModuleCliPlugins discovers manifest-declared component CLI commands", 
         } else {
             process.env.COGNIS_ADAPTER_CLI_PATHS = previousAdapterPaths;
         }
-        await removePath(temporaryRoot, { recursive: true, force: true });
+        await rm(temporaryRoot, { recursive: true, force: true });
     }
 });

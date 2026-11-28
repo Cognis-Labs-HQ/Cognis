@@ -10,7 +10,7 @@ import {
 import type { FlowApi } from "@cognis/core";
 
 type MinimalMessagesStore = {
-    appendMessage(argumentsList: {
+    appendMessage(args: {
         roomId: string;
         senderId: string;
         ciphertext: string;
@@ -36,14 +36,14 @@ type MinimalProfileStore = {
     getProfile(accountId: string): Promise<Record<string, unknown> | null>;
 };
 
-type DispatchFn = (
+type DispatchCallback = (
     envelope: Record<string, unknown>,
 ) => Promise<{ dispatched: string[] }>;
 
 function makeFlow(
     messagesStore: MinimalMessagesStore,
     profileStore: MinimalProfileStore,
-    dispatch: DispatchFn,
+    dispatch: DispatchCallback,
 ): FlowApi {
     const ctx = createCtx();
     const sendMessageFlow = MESSAGING_FLOW_CATALOG.find(

@@ -23,7 +23,7 @@ export class MemoryDatabaseGateway implements DatabaseGateway {
     }
 
     async transaction<T>(
-        callback: (database: DatabaseGateway) => Promise<T>,
+        callback: (db: DatabaseGateway) => Promise<T>,
     ): Promise<T> {
         return callback(this);
     }

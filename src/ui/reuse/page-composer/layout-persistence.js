@@ -154,7 +154,7 @@ export function createLayoutPersistence({ apiFetch }) {
     }
 
     async function loadLayout() {
-        const loaded = await loadLayoutByKey(preferenceKey, gridCols);
+        const loaded = await loadLayoutByKey(preferenceKey, gridColumns);
         layoutProfiles = loaded.profiles;
         return cloneLayoutData(loaded.layout);
     }
@@ -167,7 +167,7 @@ export function createLayoutPersistence({ apiFetch }) {
         layoutProfiles = await saveLayoutByKey(
             preferenceKey,
             layoutProfiles,
-            gridCols,
+            gridColumns,
             layout,
         );
     }

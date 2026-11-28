@@ -22,11 +22,7 @@ export function createDrawingRoutes(
         input: DrawingCompletion,
     ) => Promise<void>,
     available: () => boolean = () => true,
-): (
-    request: IncomingMessage,
-    response: ServerResponse,
-    url: URL,
-) => Promise<boolean> {
+): (req: IncomingMessage, res: ServerResponse, url: URL) => Promise<boolean> {
     return async (req, res, url) => {
         const match = /^\/api\/v1\/study\/drawing\/([^/]+)$/.exec(url.pathname);
         if (!match || !["GET", "POST"].includes(req.method ?? "")) return false;

@@ -1,12 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {
-    cp as copyPath,
-    mkdir,
-    mkdtemp,
-    readFile,
-    rm as removePath,
-} from "node:fs/promises";
+import { cp, mkdir, mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
@@ -25,7 +19,7 @@ test("a directly registered provider remains a built entry when another entry im
         for (const [fixture, destination] of Object.entries(layout)) {
             const target = path.join(directory, destination);
             await mkdir(path.dirname(target), { recursive: true });
-            await copyPath(new URL(fixture, fixtureRoot), target);
+            await cp(new URL(fixture, fixtureRoot), target);
         }
         await run(
             process.execPath,
@@ -79,12 +73,11 @@ test("a directly registered provider remains a built entry when another entry im
         const contributions = [];
         provider.mountProvider({
             capabilities: {
-                contribute: (...argumentsList) =>
-                    contributions.push(argumentsList),
+                contribute: (...args) => contributions.push(args),
             },
         });
         assert.deepEqual(contributions, [["example:value", "ready"]]);
     } finally {
-        await removePath(directory, { recursive: true, force: true });
+        await rm(directory, { recursive: true, force: true });
     }
 });

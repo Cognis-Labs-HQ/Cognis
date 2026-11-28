@@ -193,9 +193,9 @@ async function decryptRoomMessage(roomId) {
 
 async function fetchNotifications() {
     try {
-        const response = await apiFetch("/api/v1/notify/inbox");
-        if (!response.ok) return [];
-        const payload = await response.json();
+        const res = await apiFetch("/api/v1/notify/inbox");
+        if (!res.ok) return [];
+        const payload = await res.json();
         return (payload.data ?? []).map(localizeNotification);
     } catch {
         return [];
@@ -265,11 +265,11 @@ async function resolveCorrelatedNotifications(correlationId) {
 }
 
 async function deleteAllNotifications() {
-    const response = await apiFetch("/api/v1/notify/inbox", {
+    const res = await apiFetch("/api/v1/notify/inbox", {
         method: "DELETE",
     });
-    if (!response.ok) {
-        throw new Error(`clear-all failed: ${response.status}`);
+    if (!res.ok) {
+        throw new Error(`clear-all failed: ${res.status}`);
     }
 }
 
@@ -897,7 +897,7 @@ window.addEventListener("cognis:notification-resolved", (event) => {
     );
 });
 
-(async function initialize() {
+(async function init() {
     if (!localStorage.getItem("cognis_access_token")) return;
 
     try {

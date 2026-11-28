@@ -9,11 +9,11 @@
  *   parseSavedFont(fontValue)                — extracts the primary family name from a saved CSS string.
  *   loadFontsCatalog()                       — resolves all available font families from document.fonts.
  *   buildFontSelect(container, fontList, initialValue, onChange) — renders a font-selector dropdown.
- *   initFontPreferences(root, options)             — wires up the full font-preference UI inside root.
+ *   initializeFontPreferences(root, options)             — wires up the full font-preference UI inside root.
  *
  * Usage:
- *   import { initFontPreferences, DEFAULT_FONT_SIZE } from '../reuse/font-prefs.js';
- *   const prefs = initFontPreferences(root, { existingPrefs, i18n, onDirtyChange });
+ *   import { initializeFontPreferences, DEFAULT_FONT_SIZE } from '../reuse/font-prefs.js';
+ *   const prefs = initializeFontPreferences(root, { existingPrefs, i18n, onDirtyChange });
  *   await prefs.init();
  *
  * @param {string} font — a font family name, e.g. "Inter" or "My Custom Font".
@@ -79,7 +79,7 @@ export function buildFontSelect(container, fontList, initialValue, onChange) {
     };
 }
 
-function initFontPreferences(
+function initializeFontPreferences(
     root,
     { existingPrefs: existingPreferences, i18n, onDirtyChange },
 ) {
@@ -206,4 +206,4 @@ function initFontPreferences(
         discard,
     };
 }
-export { initFontPreferences };
+export { initializeFontPreferences };

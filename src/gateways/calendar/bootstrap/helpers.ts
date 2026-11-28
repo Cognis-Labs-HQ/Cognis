@@ -53,10 +53,10 @@ export type ResolveAccountDisplayName = (
 export type CalendarLogger = (
     level: string,
     message: string,
-    metadata?: Record<string, unknown>,
+    meta?: Record<string, unknown>,
 ) => void;
 
-export type EventLocationRef = {
+export type EventLocationReference = {
     calendarId: string;
     eventId: string;
 };

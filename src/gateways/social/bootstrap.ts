@@ -2,7 +2,7 @@ import { readGatewayManifestVersion } from "../reuse/manifest-version.js";
 import path from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
 import type { GatewayBootstrapContext } from "../shared.js";
-import type { DbExecutor } from "../db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../db/reuse/db-executor.js";
 import { readJson } from "../../api/reuse/read-json.js";
 import { buildGatewayAdapterAdminControls } from "../../api/reuse/adapter-admin-controls.js";
 import {
@@ -188,7 +188,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
     const databaseExecutor =
-        ctx.capabilities.require<DbExecutor>("db:executor");
+        ctx.capabilities.require<DatabaseExecutor>("db:executor");
     const configStore = new DatabaseAdapterConfigStore(databaseExecutor);
     await configStore.ensureSchema();
 
@@ -211,8 +211,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         flow: ctx.flow,
         registerRoute: (handler, gatewayId) =>
             ctx.routeRegistry.register(handler, gatewayId ?? "social"),
-        registerAdapterStaticDir: (gatewayId, adapterId, absoluteDirectory) =>
-            ctx.uiRegistry?.registerAdapterStaticDir(
+        registerAdapterStaticDirectory: (
+            gatewayId,
+            adapterId,
+            absoluteDirectory,
+        ) =>
+            ctx.uiRegistry?.registerAdapterStaticDirectory(
                 gatewayId,
                 adapterId,
                 absoluteDirectory,
@@ -264,7 +268,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "social",
         "ui",
     );
-    ctx.uiRegistry?.registerStaticDir("social", uiDirectory);
+    ctx.uiRegistry?.registerStaticDirectory("social", uiDirectory);
 
     ctx.log?.("info", "Social gateway: initialized.", {
         component: "social-gateway",

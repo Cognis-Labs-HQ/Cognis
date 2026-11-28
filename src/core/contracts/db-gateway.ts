@@ -14,15 +14,13 @@ export interface QueryResult<Row = Record<string, unknown>> {
 export interface DatabaseGateway {
     query<Row = Record<string, unknown>>(
         statement: string,
-        parameters?: unknown[],
+        params?: unknown[],
     ): Promise<QueryResult<Row>>;
 
     execute(
         statement: string,
-        parameters?: unknown[],
+        params?: unknown[],
     ): Promise<{ affectedRows: number }>;
 
-    transaction<T>(
-        callback: (database: DatabaseGateway) => Promise<T>,
-    ): Promise<T>;
+    transaction<T>(callback: (db: DatabaseGateway) => Promise<T>): Promise<T>;
 }

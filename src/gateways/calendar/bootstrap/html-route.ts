@@ -6,11 +6,7 @@ import type { RouteContext } from "../../../api/reuse/route-context.js";
 export function createCalendarHtmlRoute(
     gatewayRoot: string,
     routeContext: RouteContext,
-): (
-    request: IncomingMessage,
-    response: ServerResponse,
-    url: URL,
-) => Promise<boolean> {
+): (req: IncomingMessage, res: ServerResponse, url: URL) => Promise<boolean> {
     return async (req, res, url) => {
         if (req.method !== "GET" || url.pathname !== "/calendar") return false;
         if (!routeContext.getCookieSession(req)) {

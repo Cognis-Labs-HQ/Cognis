@@ -57,10 +57,10 @@ const POLICY_FIELDS = [
  * controls.
  *
  * Public exports:
- *   initSecuritySection(root, options) — initialises the security section.
+ *   initializeSecuritySection(root, options) — initialises the security section.
  *
  * Usage:
- *   const security = initSecuritySection(root, { i18n, onDirtyChange });
+ *   const security = initializeSecuritySection(root, { i18n, onDirtyChange });
  *   await security.init();
  *   await security.save();
  *   security.discard();
@@ -69,7 +69,10 @@ const POLICY_FIELDS = [
  * @param {{ i18n: object, onDirtyChange?: (dirty: boolean) => void, signal?: AbortSignal }} options
  * @returns {{ isDirty: () => boolean, init: () => Promise<void>, refresh: () => Promise<void>, save: () => Promise<void>, discard: () => void, renderContent: () => string }}
  */
-export function initSecuritySection(root, { i18n, onDirtyChange, signal }) {
+export function initializeSecuritySection(
+    root,
+    { i18n, onDirtyChange, signal },
+) {
     let originalSettings = null;
     let draftSettings = null;
     let originalPasswordPolicy = null;

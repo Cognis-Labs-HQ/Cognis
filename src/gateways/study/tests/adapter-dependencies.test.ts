@@ -96,7 +96,7 @@ test("discovery loads manifest UUID dependencies and bootstrap runs them before 
             registerRoute: (...args) => {
                 registered.push(args);
             },
-            registerStaticDir: (...args) => {
+            registerStaticDirectory: (...args) => {
                 registered.push(args);
             },
             registerCapabilityProvider: (...args) => {

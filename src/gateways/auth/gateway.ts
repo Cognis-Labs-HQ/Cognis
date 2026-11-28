@@ -8,7 +8,7 @@ import {
     type AuthGateway,
     type FlowApi,
 } from "@cognis/core";
-import type { DbExecutor } from "../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../gateways/db/reuse/db-executor.js";
 import type { CapabilityStore } from "../shared.js";
 import type { LocalAccountStore } from "./reuse/account-store.js";
 
@@ -69,8 +69,8 @@ export interface AuthProviderAdapter {
 }
 
 export type AuthProviderRouteHandler = (
-    request: IncomingMessage,
-    response: ServerResponse,
+    req: IncomingMessage,
+    res: ServerResponse,
     url: URL,
 ) => Promise<void> | void;
 
@@ -210,10 +210,10 @@ export class CoreAuthGateway {
           })
         | null = null;
 
-    constructor(private readonly database: DbExecutor) {}
+    constructor(private readonly db: DatabaseExecutor) {}
 
     async ensureSchema(): Promise<void> {
-        await this.database.ensureTable({
+        await this.db.ensureTable({
             name: "auth_adapter_configs",
             columns: [
                 {
@@ -272,7 +272,7 @@ export class CoreAuthGateway {
     }
 
     async loadPersistedConfigs(): Promise<void> {
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "auth_adapter_configs",
             columns: ["adapter_id", "enabled", "config_json"],
@@ -283,7 +283,7 @@ export class CoreAuthGateway {
     }
 
     async restoreRegisteredAdapter(adapterId: string): Promise<void> {
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "auth_adapter_configs",
             columns: ["adapter_id", "enabled", "config_json"],
@@ -346,7 +346,7 @@ export class CoreAuthGateway {
         adapter.configure(adapterConfig);
         const json = JSON.stringify(adapterConfig);
         const enabled = this.enabledAdapters.has(adapterId) ? 1 : 0;
-        await this.database.executeCommand({
+        await this.db.executeCommand({
             option: "INSERT",
             table: "auth_adapter_configs",
             values: {
@@ -402,7 +402,7 @@ export class CoreAuthGateway {
     async getPersistedConfig(
         adapterId: string,
     ): Promise<Record<string, unknown>> {
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "auth_adapter_configs",
             columns: ["config_json"],
@@ -428,7 +428,7 @@ export class CoreAuthGateway {
     ): Promise<void> {
         const json = JSON.stringify(config);
         const enabledInt = enabled ? 1 : 0;
-        await this.database.executeCommand({
+        await this.db.executeCommand({
             option: "INSERT",
             table: "auth_adapter_configs",
             values: {
@@ -627,7 +627,7 @@ export class CoreAuthGateway {
         authAdaptersRoot: string,
         bootstrapContext?: {
             capabilities: CapabilityStore;
-            registerStaticDir?: (
+            registerStaticDirectory?: (
                 adapterId: string,
                 absolutePath: string,
             ) => void;

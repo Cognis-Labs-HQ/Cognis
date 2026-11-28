@@ -12,7 +12,7 @@ import {
     publicProfileSummary,
     type Dispatch,
     type DispatchEnvelope,
-    type MessagesRoutesDeps,
+    type MessagesRoutesDependencies,
 } from "./shared.js";
 import { createChatroomMembershipCapability } from "../membership.js";
 
@@ -20,7 +20,7 @@ export type {
     Dispatch,
     DispatchEnvelope,
     EnrichedMemberRow,
-    MessagesRoutesDeps,
+    MessagesRoutesDependencies,
     PublicProfileSummary,
     RoomRequestSummary,
 } from "./shared.js";
@@ -35,7 +35,7 @@ export {
     summarizeRoomRequest,
 } from "./shared.js";
 
-export function createMessagesRoutes(dependencies: MessagesRoutesDeps) {
+export function createMessagesRoutes(dependencies: MessagesRoutesDependencies) {
     const { messagesStore, profileStore, isAdapterEnabled } = dependencies;
     const routeDependencies = {
         ...dependencies,

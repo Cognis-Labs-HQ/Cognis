@@ -3,7 +3,7 @@
         "addr": "address",
         "ad": "adapter",
         "arg": "argument",
-        "args": "argumentsList",
+        "args": "arguments",
         "arr": "array",
         "attr": "attribute",
         "attrs": "attributes",
@@ -134,7 +134,15 @@
         "rad": "radians",
         "deg": "degrees",
         "diff": "difference",
-        "tgt": "target"
+        "tgt": "target",
+        "dn": "distinguishedName",
+        "fs": "fileSystem",
+        "os": "operatingSystem",
+        "vm": "virtualMachine",
+        "io": "inputOutput",
+        "init": "initialize",
+        "rm": "remove",
+        "cp": "copy"
     },
     "names": {
         "rStep": "rowStep",
@@ -203,5 +211,11 @@
         "sep": "path separator",
         "rm": "remove",
         "cp": "copy"
+    },
+    "canonicalMembers": {
+        "clearRect": "CanvasRenderingContext2D.clearRect",
+        "getBoundingClientRect": "Element.getBoundingClientRect",
+        "getClientRects": "Element.getClientRects",
+        "initializeImportMeta": "node:vm SourceTextModule.initializeImportMeta"
     }
 }

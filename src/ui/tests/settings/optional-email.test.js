@@ -42,7 +42,7 @@ for (const notifyState of ["absent", "failed", "available"]) {
                           return Response.json({ data: [] });
                       },
                   };
-        const { initGeneralPreferences: initGeneralPreferences } =
+        const { initializeGeneralPreferences: initializeGeneralPreferences } =
             loadTestModule(
                 new URL("../../app/settings/general-prefs.js", import.meta.url),
                 {
@@ -83,7 +83,7 @@ for (const notifyState of ["absent", "failed", "available"]) {
                     window: { location: { replace() {} } },
                 },
             );
-        const preferences = initGeneralPreferences(root, {
+        const preferences = initializeGeneralPreferences(root, {
             i18n: { t: (key) => key },
             username: "learner",
         });

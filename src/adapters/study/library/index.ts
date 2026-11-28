@@ -16,7 +16,7 @@ import type {
     StudyAdapterBootstrapCtx,
     StudyClassAccessCapability,
 } from "../../../gateways/study/gateway.js";
-import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import type {
     Ctx,
     NamespaceDefinition,
@@ -48,7 +48,8 @@ export function createStudyAdapter(): StudyAdapter {
 export async function bootstrapStudyAdapter(
     ctx: StudyAdapterBootstrapCtx,
 ): Promise<void> {
-    const databaseExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
+    const databaseExecutor =
+        ctx.capabilities.get<DatabaseExecutor>("db:executor");
     if (!databaseExecutor) {
         await ctx.log?.(
             "error",
@@ -178,7 +179,7 @@ export async function bootstrapStudyAdapter(
         ),
         "study",
     );
-    ctx.registerAdapterStaticDir?.("study", "library", UI_ROOT);
+    ctx.registerAdapterStaticDirectory?.("study", "library", UI_ROOT);
     ctx.registerCapabilityProvider({
         scriptUrl: "/static/adapters/study/library/provider.js",
         providesCapabilities: [

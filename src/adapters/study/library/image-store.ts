@@ -1,4 +1,4 @@
-import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import { randomUUID } from "node:crypto";
 import type { NamespaceFileClient } from "@cognis/core";
 import type { LibraryActor } from "./contracts.js";
@@ -73,7 +73,7 @@ export class LibraryImageStore {
 }
 
 export async function hasImageReference(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     value: string,
 ): Promise<boolean> {
     const contains = (input: unknown): boolean =>

@@ -72,11 +72,7 @@ export function createCalendarCoreRoutes({
         accountId: string;
         limit?: number;
     }) => Promise<unknown[]>;
-}): (
-    request: IncomingMessage,
-    response: ServerResponse,
-    url: URL,
-) => Promise<boolean> {
+}): (req: IncomingMessage, res: ServerResponse, url: URL) => Promise<boolean> {
     const ctx = resolveRouteContext(routeContext);
     const externalHost =
         process.env.EXTERNAL_HOST ??

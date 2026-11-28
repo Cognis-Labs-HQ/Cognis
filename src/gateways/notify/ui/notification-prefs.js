@@ -13,18 +13,21 @@ import { showToast } from "/static/reuse/toast.js";
  * reverted.
  *
  * Public exports:
- *   initNotificationPreferences(root, options) — initialises the notification preferences matrix.
+ *   initializeNotificationPreferences(root, options) — initialises the notification preferences matrix.
  *   createSettingsSection({ i18n, root, markDirty }) — returns a settings section descriptor.
  *
  * Usage:
- *   const notifPrefs = initNotificationPreferences(root, { i18n, username, onDirtyChange });
+ *   const notifPrefs = initializeNotificationPreferences(root, { i18n, username, onDirtyChange });
  *   await notifPrefs.init();
  *
  * @param {Element} root
  * @param {{ i18n: object, username: string, onDirtyChange?: (dirty: boolean) => void }} options
  * @returns {{ init: () => Promise<void>, commit: () => void, discard: () => void, isDirty: () => boolean, getPendingPrefs: () => Array<{senderId: string, category: string, enabled: boolean}> }}
  */
-function initNotificationPreferences(root, { i18n, username, onDirtyChange }) {
+function initializeNotificationPreferences(
+    root,
+    { i18n, username, onDirtyChange },
+) {
     let providers = [];
     let categories = [];
     let savedPreferences = {};
@@ -223,7 +226,7 @@ function initNotificationPreferences(root, { i18n, username, onDirtyChange }) {
         getPendingPrefs: getPendingPreferences,
     };
 }
-export { initNotificationPreferences };
+export { initializeNotificationPreferences };
 
 export function createSettingsSection({ i18n, root, markDirty }) {
     let notificationPreferences = null;
@@ -236,7 +239,7 @@ export function createSettingsSection({ i18n, root, markDirty }) {
         renderContent: () => `<div id="notif-matrix-container"></div>`,
         onRender: () => {
             const account = localStorage.getItem("cognis_account") ?? "";
-            notificationPreferences = initNotificationPreferences(root, {
+            notificationPreferences = initializeNotificationPreferences(root, {
                 i18n,
                 username: account,
                 onDirtyChange: (dirty) => markDirty("notifications", dirty),

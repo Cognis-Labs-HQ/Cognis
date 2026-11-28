@@ -1,9 +1,9 @@
 import { createHash } from "node:crypto";
 import type { DatabaseGateway, QueryResult } from "@cognis/core";
 import type { BootstrapLog } from "@cognis/core";
-import type { RawDbExecutor } from "../../../gateways/db/reuse/db-executor.js";
-import type { DbProviderId } from "../../../gateways/db/reuse/provider-id.js";
-import type { StructuredDbTableDef } from "../../../gateways/db/reuse/db-table.js";
+import type { RawDatabaseExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseProviderId } from "../../../gateways/db/reuse/provider-id.js";
+import type { StructuredDatabaseTableDefinition } from "../../../gateways/db/reuse/db-table.js";
 import { readBoundedEnvironmentInteger } from "./settings.js";
 import {
     buildDatabaseErrorMetadata,
@@ -12,9 +12,9 @@ import {
 } from "../../../gateways/db/reuse/executor-log.js";
 import {
     buildStructuredDatabaseCommandStatement,
-    type StructuredDbCommand,
-    type StructuredDbCommandResult,
-    type StructuredDbDialect,
+    type StructuredDatabaseCommand,
+    type StructuredDatabaseCommandResult,
+    type StructuredDatabaseDialect,
 } from "../../../gateways/db/reuse/db-command.js";
 
 export interface PostgresQueryResult<Row = Record<string, unknown>> {
@@ -25,7 +25,7 @@ export interface PostgresQueryResult<Row = Record<string, unknown>> {
 export interface PostgresClient {
     query<Row = Record<string, unknown>>(
         sql: string,
-        parameters?: unknown[],
+        params?: unknown[],
     ): Promise<PostgresQueryResult<Row>>;
     release(): void;
 }
@@ -33,7 +33,7 @@ export interface PostgresClient {
 export interface PostgresPool {
     query<Row = Record<string, unknown>>(
         sql: string,
-        parameters?: unknown[],
+        params?: unknown[],
     ): Promise<PostgresQueryResult<Row>>;
     connect(): Promise<PostgresClient>;
     end(): Promise<void>;
@@ -73,7 +73,7 @@ export function readPostgresPoolSettings(): PostgresPoolSettings {
     };
 }
 
-const POSTGRESQL_STRUCTURED_DATABASE_DIALECT: StructuredDbDialect = {
+const POSTGRESQL_STRUCTURED_DATABASE_DIALECT: StructuredDatabaseDialect = {
     createPlaceholder(parameterIndex) {
         return `$${parameterIndex}`;
     },
@@ -110,8 +110,8 @@ class PostgresDatabaseGateway implements DatabaseGateway {
     ) {}
 
     async executeCommand<Row = Record<string, unknown>>(
-        command: StructuredDbCommand,
-    ): Promise<StructuredDbCommandResult<Row>> {
+        command: StructuredDatabaseCommand,
+    ): Promise<StructuredDatabaseCommandResult<Row>> {
         const statement = buildStructuredDatabaseCommandStatement(
             command,
             POSTGRESQL_STRUCTURED_DATABASE_DIALECT,
@@ -140,7 +140,7 @@ class PostgresDatabaseGateway implements DatabaseGateway {
     }
 
     async transaction<T>(
-        callback: (database: DatabaseGateway) => Promise<T>,
+        callback: (db: DatabaseGateway) => Promise<T>,
     ): Promise<T> {
         const client = await this.pool.connect();
         const transactionGateway = new PostgresDatabaseGateway(
@@ -189,7 +189,7 @@ class PostgresDatabaseGateway implements DatabaseGateway {
 }
 export { PostgresDatabaseGateway };
 
-class PostgresExecutor implements RawDbExecutor {
+class PostgresExecutor implements RawDatabaseExecutor {
     constructor(
         private readonly pool: PostgresPool,
         private readonly log?: BootstrapLog,
@@ -221,13 +221,13 @@ class PostgresExecutor implements RawDbExecutor {
     }
 
     async executeCommand(
-        command: StructuredDbCommand,
-    ): Promise<StructuredDbCommandResult> {
+        command: StructuredDatabaseCommand,
+    ): Promise<StructuredDatabaseCommandResult> {
         return new PostgresDatabaseGateway(this.pool).executeCommand(command);
     }
 
     async transaction<T>(
-        callback: (executor: RawDbExecutor) => Promise<T>,
+        callback: (executor: RawDatabaseExecutor) => Promise<T>,
     ): Promise<T> {
         const client = await this.pool.connect();
         const transactionExecutor = new PostgresExecutor(
@@ -275,7 +275,9 @@ class PostgresExecutor implements RawDbExecutor {
         }
     }
 
-    async ensureTable(definition: StructuredDbTableDef): Promise<void> {
+    async ensureTable(
+        definition: StructuredDatabaseTableDefinition,
+    ): Promise<void> {
         if (!this.inTransaction) {
             await this.transaction((executor) =>
                 executor.ensureTable(definition),
@@ -291,10 +293,10 @@ class PostgresExecutor implements RawDbExecutor {
     }
 
     private async reconcileTable(
-        definition: StructuredDbTableDef,
+        definition: StructuredDatabaseTableDefinition,
     ): Promise<void> {
         const pgType = (
-            column: StructuredDbTableDef["columns"][number],
+            column: StructuredDatabaseTableDefinition["columns"][number],
         ): string => {
             switch (column.type) {
                 case "text":
@@ -312,7 +314,7 @@ class PostgresExecutor implements RawDbExecutor {
             }
         };
         const pgDefault = (
-            value: StructuredDbTableDef["columns"][number]["default"],
+            value: StructuredDatabaseTableDefinition["columns"][number]["default"],
         ): string => {
             if (value === "now") return "CURRENT_TIMESTAMP";
             if (value === "true") return "TRUE";
@@ -322,7 +324,7 @@ class PostgresExecutor implements RawDbExecutor {
             return `'${String(value).replace(/'/g, "''")}'`;
         };
         const notNullFallback = (
-            column: StructuredDbTableDef["columns"][number],
+            column: StructuredDatabaseTableDefinition["columns"][number],
         ): string => {
             switch (column.type) {
                 case "integer":
@@ -419,7 +421,7 @@ class PostgresExecutor implements RawDbExecutor {
     }
 
     private async ensureUniqueKeys(
-        definition: StructuredDbTableDef,
+        definition: StructuredDatabaseTableDefinition,
     ): Promise<void> {
         const declaredKeys = [
             ...definition.columns
@@ -477,7 +479,7 @@ class PostgresExecutor implements RawDbExecutor {
 }
 
 function readRenamedColumn(
-    column: StructuredDbTableDef["columns"][number],
+    column: StructuredDatabaseTableDefinition["columns"][number],
 ): string | undefined {
     if (!("renamedFrom" in column)) return undefined;
     return typeof column.renamedFrom === "string"
@@ -485,7 +487,7 @@ function readRenamedColumn(
         : undefined;
 }
 
-function canHandleDatabaseProvider(providerId: DbProviderId): boolean {
+function canHandleDatabaseProvider(providerId: DatabaseProviderId): boolean {
     return providerId === "postgresql";
 }
 export { canHandleDatabaseProvider };
@@ -495,7 +497,7 @@ async function createDatabaseExecutor(args: {
     log?: BootstrapLog;
     lifecycle?: { registerShutdown(handler: () => Promise<void>): void };
     pool?: PostgresPool;
-}): Promise<RawDbExecutor> {
+}): Promise<RawDatabaseExecutor> {
     const pool =
         args.pool ?? (await createPostgresPool(args.databaseUrl, args.log));
     args.lifecycle?.registerShutdown(async () => {

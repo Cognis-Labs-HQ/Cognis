@@ -1,4 +1,4 @@
-import type { DbExecutor } from "../../db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../db/reuse/db-executor.js";
 
 export interface ShareAdapterConfigStoreContract {
     list(): Promise<Array<{ adapterId: string; enabled: boolean }>>;
@@ -6,10 +6,10 @@ export interface ShareAdapterConfigStoreContract {
 }
 
 export class ShareAdapterConfigStore implements ShareAdapterConfigStoreContract {
-    constructor(private readonly database: DbExecutor) {}
+    constructor(private readonly db: DatabaseExecutor) {}
 
     async ensureSchema(): Promise<void> {
-        await this.database.ensureTable({
+        await this.db.ensureTable({
             name: "share_adapter_configs",
             columns: [
                 { name: "adapter_id", type: "text", primaryKey: true },
@@ -19,7 +19,7 @@ export class ShareAdapterConfigStore implements ShareAdapterConfigStoreContract 
     }
 
     async list(): Promise<Array<{ adapterId: string; enabled: boolean }>> {
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "share_adapter_configs",
             columns: ["adapter_id", "enabled"],
@@ -31,7 +31,7 @@ export class ShareAdapterConfigStore implements ShareAdapterConfigStoreContract 
     }
 
     async save(adapterId: string, enabled: boolean): Promise<void> {
-        await this.database.executeCommand({
+        await this.db.executeCommand({
             option: "INSERT",
             table: "share_adapter_configs",
             values: { adapter_id: adapterId, enabled: enabled ? 1 : 0 },

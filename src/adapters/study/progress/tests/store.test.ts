@@ -1,22 +1,22 @@
 import { ProgressService } from "../service.js";
 import assert from "node:assert/strict";
 import test from "node:test";
-import type { StructuredDbCommand } from "../../../../gateways/db/reuse/db-command.js";
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { StructuredDatabaseCommand } from "../../../../gateways/db/reuse/db-command.js";
+import type { DatabaseExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import { DatabaseProgressStore } from "../store.js";
 import type {
     LearningEvent,
     ProgressProjection,
 } from "../../../../gateways/study/reuse/progress.js";
 
-function persistentExecutor(): DbExecutor {
+function persistentExecutor(): DatabaseExecutor {
     const tables = new Map<string, Array<Record<string, unknown>>>();
-    const executor: DbExecutor = {
+    const executor: DatabaseExecutor = {
         ensureTable: async (definition) => {
             if (!tables.has(definition.name)) tables.set(definition.name, []);
         },
         transaction: async (callback) => callback(executor),
-        executeCommand: async (command: StructuredDbCommand) => {
+        executeCommand: async (command: StructuredDatabaseCommand) => {
             if (command.option === "INSERT") {
                 for (const value of Object.values(command.values))
                     if (typeof value === "string" && value.includes("\u0000"))

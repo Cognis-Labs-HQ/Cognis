@@ -1,6 +1,6 @@
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 
-export async function ensureSchema(db: DbExecutor): Promise<void> {
+export async function ensureSchema(db: DatabaseExecutor): Promise<void> {
     await db.ensureTable({
         name: "chatrooms",
         columns: [

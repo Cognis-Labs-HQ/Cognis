@@ -67,8 +67,8 @@ function createNestedComposerHandlers({
         if (!state.container) return;
         state.container.style.width = "";
         const width = state.container.getBoundingClientRect().width;
-        state.gridCols = Math.max(1, Math.floor(width / UNIT));
-        state.gridTrackSize = width / state.gridCols;
+        state.gridColumns = Math.max(1, Math.floor(width / UNIT));
+        state.gridTrackSize = width / state.gridColumns;
         const visiblePlacements = (state.layout?.placements ?? []).filter(
             (candidatePlacement) =>
                 !(state.layout?.hidden ?? []).includes(candidatePlacement.id),
@@ -92,7 +92,7 @@ function createNestedComposerHandlers({
     }
 
     function canNestedPlace(state, column, row, width, height, excludeId) {
-        if (column < 0 || row < 0 || column + width > state.gridCols)
+        if (column < 0 || row < 0 || column + width > state.gridColumns)
             return false;
         const cells = buildOccupiedSet(
             state.layout?.placements ?? [],
@@ -135,17 +135,20 @@ function createNestedComposerHandlers({
                 continue;
             }
             const gridSize = getGridSize(element);
-            const columnStep = gridStep(state.gridCols);
+            const columnStep = gridStep(state.gridColumns);
             const rowStep = gridStep(state.gridRows);
-            const baseWidth = resolveInitialGridWidth(gridSize, state.gridCols);
+            const baseWidth = resolveInitialGridWidth(
+                gridSize,
+                state.gridColumns,
+            );
             const baseHeight = gridSize.halfHeight
                 ? Math.max(gridSize.min[1], halfGrid(state.gridRows))
                 : gridSize.default[1];
             let placed = false;
             for (let row = 0; !placed; row += rowStep) {
                 const columnLimit = gridSize.fillWidth
-                    ? state.gridCols
-                    : Math.max(0, state.gridCols - baseWidth);
+                    ? state.gridColumns
+                    : Math.max(0, state.gridColumns - baseWidth);
                 for (
                     let column = 0;
                     column <= columnLimit;
@@ -153,14 +156,15 @@ function createNestedComposerHandlers({
                 ) {
                     const width = gridSize.fillWidth
                         ? Math.min(
-                              state.gridCols,
+                              state.gridColumns,
                               Math.max(
                                   gridSize.min[0],
-                                  state.gridCols - column,
+                                  state.gridColumns - column,
                               ),
                           )
                         : gridSize.halfWidth &&
-                            column + baseWidth + columnStep === state.gridCols
+                            column + baseWidth + columnStep ===
+                                state.gridColumns
                           ? baseWidth + columnStep
                           : baseWidth;
                     const height = gridSize.fillHeight
@@ -189,16 +193,16 @@ function createNestedComposerHandlers({
         overlay.className = "composer-grid-overlay";
         overlay.style.left = "0";
         overlay.style.top = "0";
-        overlay.style.width = `${state.gridCols * state.gridTrackSize}px`;
+        overlay.style.width = `${state.gridColumns * state.gridTrackSize}px`;
         overlay.style.height = `${state.gridRows * UNIT}px`;
-        const columnStep = gridStep(state.gridCols);
+        const columnStep = gridStep(state.gridColumns);
         const rowStep = gridStep(state.gridRows);
         const cellWidth = state.gridTrackSize * columnStep;
         const cellHeight = UNIT * rowStep;
         for (let rowIndex = 0; rowIndex < state.gridRows; rowIndex += rowStep) {
             for (
                 let columnIndex = 0;
-                columnIndex < state.gridCols;
+                columnIndex < state.gridColumns;
                 columnIndex += columnStep
             ) {
                 const cell = document.createElement("div");
@@ -240,10 +244,8 @@ function createNestedComposerHandlers({
                 placement,
                 state,
                 gridSize: getGridSize(elementDefinition),
-                canPlace: (...argumentsList) =>
-                    canNestedPlace(state, ...argumentsList),
-                findSwapCandidate: (...argumentsList) =>
-                    findGridSwap(state, ...argumentsList),
+                canPlace: (...args) => canNestedPlace(state, ...args),
+                findSwapCandidate: (...args) => findGridSwap(state, ...args),
                 commitSwap: (sourceId, targetId) =>
                     applyGridSwap(state, sourceId, targetId),
                 render: () => renderNestedGrid(state),
@@ -313,11 +315,11 @@ function createNestedComposerHandlers({
                     const column = Math.max(
                         0,
                         Math.min(
-                            state.gridCols - placement.w,
+                            state.gridColumns - placement.w,
                             snapGridRound(
                                 (horizontalCoordinate - grabX) /
                                     state.gridTrackSize,
-                                state.gridCols,
+                                state.gridColumns,
                             ),
                         ),
                     );
@@ -338,8 +340,7 @@ function createNestedComposerHandlers({
                     const target = snapDragPlacement(
                         { ...placement, col: column, row },
                         state.gridRows,
-                        (...argumentsList) =>
-                            canNestedPlace(state, ...argumentsList),
+                        (...args) => canNestedPlace(state, ...args),
                     );
                     currentColumn = target.col;
                     currentRow = target.row;
@@ -524,8 +525,7 @@ function createNestedComposerHandlers({
                 state,
                 gridSize,
                 container: state.container,
-                canPlace: (...argumentsList) =>
-                    canNestedPlace(state, ...argumentsList),
+                canPlace: (...args) => canNestedPlace(state, ...args),
                 refreshBounds: (minimum) =>
                     refreshNestedGridBounds(state, minimum),
                 render: () => renderNestedGrid(state),
@@ -554,7 +554,7 @@ function createNestedComposerHandlers({
         const saved = await saveLayoutFor(
             state.preferenceKey,
             state.layoutProfiles,
-            state.gridCols,
+            state.gridColumns,
             state.layout,
         );
         if (!saved) return false;
@@ -650,7 +650,7 @@ function createNestedComposerHandlers({
                 ? applyGridMetrics(
                       state.container,
                       sorted,
-                      state.gridCols,
+                      state.gridColumns,
                       UNIT,
                       0,
                   )
@@ -716,7 +716,7 @@ function createNestedComposerHandlers({
                 layoutProfiles: { layoutsByGrid: {} },
                 editing: false,
                 layoutSnapshot: null,
-                gridCols: 1,
+                gridColumns: 1,
                 gridRows: 6,
                 lastObservedCols: 0,
                 panelPosition: null,
@@ -757,7 +757,7 @@ function createNestedComposerHandlers({
         initializeNestedPlacements(state);
         computeNestedGridDimensions(state);
         renderNestedGrid(state);
-        state.lastObservedCols = state.gridCols;
+        state.lastObservedCols = state.gridColumns;
         state.lastObservedCompact = isCompactComposer(state.container);
         state.lastObservedWidth = state.container.getBoundingClientRect().width;
 
@@ -788,7 +788,7 @@ function createNestedComposerHandlers({
                 state.lastObservedCols = newColumns;
                 state.lastObservedCompact = compact;
                 state.lastObservedWidth = width;
-                state.gridCols = newColumns;
+                state.gridColumns = newColumns;
                 if (resize.reflow) {
                     const visible = computeNestedViewPlacements(state);
                     const adjusted = new Map(

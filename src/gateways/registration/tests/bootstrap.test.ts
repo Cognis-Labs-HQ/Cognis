@@ -157,10 +157,10 @@ test("registration gateway bootstrap registers admin section, navbar plugin, and
             registerNavbarPlugin(plugin) {
                 registeredPlugins.push(plugin);
             },
-            registerStaticDir(id, dir) {
+            registerStaticDirectory(id, dir) {
                 registeredStaticDirectories.push({ id, dir: dir });
             },
-            registerAdapterStaticDir(gatewayId, adapterId, dir) {
+            registerAdapterStaticDirectory(gatewayId, adapterId, dir) {
                 registeredAdapterStaticDirectories.push({
                     gatewayId,
                     adapterId,
@@ -332,7 +332,7 @@ test("registration:public:isEnabled capability returns false when gateway is dis
             registerCapabilityProvider() {},
             registerAdminSection() {},
             registerNavbarPlugin() {},
-            registerStaticDir() {},
+            registerStaticDirectory() {},
             registerAuthTypingMessage() {},
         } as any,
         gatewayRegistry: registry as any,
@@ -416,7 +416,7 @@ test("registration:public:register capability throws when gateway is disabled", 
             registerCapabilityProvider() {},
             registerAdminSection() {},
             registerNavbarPlugin() {},
-            registerStaticDir() {},
+            registerStaticDirectory() {},
             registerAuthTypingMessage() {},
         } as any,
         gatewayRegistry: registry as any,
@@ -502,7 +502,7 @@ test("registration adapter routes announce controls and accept empty config save
             registerCapabilityProvider() {},
             registerAdminSection() {},
             registerNavbarPlugin() {},
-            registerStaticDir() {},
+            registerStaticDirectory() {},
             registerAuthTypingMessage() {},
         } as any,
         gatewayRegistry: new GatewayRegistry(),

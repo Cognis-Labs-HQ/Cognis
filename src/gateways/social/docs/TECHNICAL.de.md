@@ -87,22 +87,22 @@ nicht und überspringt profilabhängige Funktionen kontrolliert.
 
 Definiert in `src/gateways/social/gateway.ts` und an jeden Adapter übergeben:
 
-| Feld                                    | Beschreibung                                                            |
-| --------------------------------------- | ----------------------------------------------------------------------- |
-| `gateway`                               | `CoreSocialGateway`-Instanz für Gateway-Steuerung                       |
-| `adapterId`                             | Verzeichnisname des gestarteten Adapters                                |
-| `adapterRoot`                           | Absoluter Pfad zum Adapterverzeichnis                                   |
-| `capabilities`                          | Gemeinsamer `CapabilityStore`                                           |
-| `gatewayRegistry`                       | Gateway-Registry; bevorzugt nur lesend verwenden                        |
-| `registerRoute(handler, gwId)`          | Registriert eine HTTP-Route unter der Gateway-ID                        |
-| `registerStaticDir(prefix, dir)`        | Stellt ein statisches Verzeichnis unter `/static/<prefix>/` bereit      |
-| `registerAdapterStaticDir(gw, ad, dir)` | Stellt Dateien unter `/static/adapters/<gw>/<ad>/` bereit               |
-| `registerNavbarPlugin(url, isEnabled?)` | Trägt ein bedingt aktiviertes Navbar-Skript bei                         |
-| `log`                                   | Optionaler strukturierter Logger                                        |
-| `dbExecutor`                            | Datenbank-Executor aus der Capability `db:executor`                     |
-| `dbType`                                | Datenbankdialekt als Zeichenkette                                       |
-| `isGatewayEnabled()`                    | Gibt `false` zurück, wenn das Social-Gateway deaktiviert ist            |
-| `isAdapterEnabled(id?)`                 | Gibt `false` zurück, wenn der aktuelle/benannte Adapter deaktiviert ist |
+| Feld                                          | Beschreibung                                                            |
+| --------------------------------------------- | ----------------------------------------------------------------------- |
+| `gateway`                                     | `CoreSocialGateway`-Instanz für Gateway-Steuerung                       |
+| `adapterId`                                   | Verzeichnisname des gestarteten Adapters                                |
+| `adapterRoot`                                 | Absoluter Pfad zum Adapterverzeichnis                                   |
+| `capabilities`                                | Gemeinsamer `CapabilityStore`                                           |
+| `gatewayRegistry`                             | Gateway-Registry; bevorzugt nur lesend verwenden                        |
+| `registerRoute(handler, gwId)`                | Registriert eine HTTP-Route unter der Gateway-ID                        |
+| `registerStaticDirectory(prefix, dir)`        | Stellt ein statisches Verzeichnis unter `/static/<prefix>/` bereit      |
+| `registerAdapterStaticDirectory(gw, ad, dir)` | Stellt Dateien unter `/static/adapters/<gw>/<ad>/` bereit               |
+| `registerNavbarPlugin(url, isEnabled?)`       | Trägt ein bedingt aktiviertes Navbar-Skript bei                         |
+| `log`                                         | Optionaler strukturierter Logger                                        |
+| `dbExecutor`                                  | Datenbank-Executor aus der Capability `db:executor`                     |
+| `dbType`                                      | Datenbankdialekt als Zeichenkette                                       |
+| `isGatewayEnabled()`                          | Gibt `false` zurück, wenn das Social-Gateway deaktiviert ist            |
+| `isAdapterEnabled(id?)`                       | Gibt `false` zurück, wenn der aktuelle/benannte Adapter deaktiviert ist |
 
 ### Enthaltene Adapter
 

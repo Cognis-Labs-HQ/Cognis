@@ -17,7 +17,7 @@ test("notification UI resources resolve through the adapter's registered public 
     );
     await bootstrapNotifyAdapter({
         capabilities,
-        registerStaticDir(prefix, directory) {
+        registerStaticDirectory(prefix, directory) {
             directories.set(`/static/gateways/${prefix}/`, directory);
         },
         registerNavbarPlugin(url) {

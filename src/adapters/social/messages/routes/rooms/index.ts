@@ -8,7 +8,7 @@ import {
     enrichMembersWithProfiles,
     hasAdminBypass,
     summarizeRoomRequest,
-    type MessagesRoutesDeps,
+    type MessagesRoutesDependencies,
 } from "../shared.js";
 import type { SocialMessagesProfile } from "../../profile-store-contract.js";
 
@@ -53,7 +53,9 @@ function isPendingRequestLookupSchemaError(error: unknown): boolean {
     );
 }
 
-export function createRoomListHandler(dependencies: MessagesRoutesDeps) {
+export function createRoomListHandler(
+    dependencies: MessagesRoutesDependencies,
+) {
     const { messagesStore, profileStore, dispatch } = dependencies;
     const ctx = resolveRouteContext(dependencies.routeContext);
 

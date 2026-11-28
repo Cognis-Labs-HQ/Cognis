@@ -21,7 +21,7 @@ function setup(testContext, maximum) {
     let allowed = true;
     let swap = null;
     const state = {
-        gridCols: 6,
+        gridColumns: 6,
         gridRows: 6,
         layout: { placements: [placement], hidden: [] },
         gridSection: {
@@ -109,7 +109,7 @@ test("keyboard leap-frogging revalidates the complete snapped destination", (con
     const fixture = setup(context);
     fixture.placement.w = 4;
     fixture.placement.h = 3;
-    fixture.state.gridCols = 8;
+    fixture.state.gridColumns = 8;
     fixture.setAllowed(false);
     fixture.setSwap({ id: "other", col: 4, row: 0, w: 2, h: 2 });
     fixture.state.layout.placements.push({

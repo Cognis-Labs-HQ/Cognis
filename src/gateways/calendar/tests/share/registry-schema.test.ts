@@ -1,24 +1,26 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import type {
-    StructuredDbCommand,
-    StructuredDbCommandResult,
+    StructuredDatabaseCommand,
+    StructuredDatabaseCommandResult,
 } from "../../../db/reuse/db-command.js";
-import type { StructuredDbTableDef } from "../../../db/reuse/db-table.js";
+import type { StructuredDatabaseTableDefinition } from "../../../db/reuse/db-table.js";
 import { CalendarShareRegistry } from "../../bootstrap/share-registry.js";
 
 class MockSchemaExecutor {
-    public readonly capturedTableDefs: StructuredDbTableDef[] = [];
+    public readonly capturedTableDefs: StructuredDatabaseTableDefinition[] = [];
 
     async executeCommand(
-        command: StructuredDbCommand,
-    ): Promise<StructuredDbCommandResult> {
+        command: StructuredDatabaseCommand,
+    ): Promise<StructuredDatabaseCommandResult> {
         throw new Error(
             `executeCommand should not run during schema test: ${command.option}`,
         );
     }
 
-    async ensureTable(definition: StructuredDbTableDef): Promise<void> {
+    async ensureTable(
+        definition: StructuredDatabaseTableDefinition,
+    ): Promise<void> {
         this.capturedTableDefs.push(definition);
     }
 
@@ -30,11 +32,11 @@ class MockSchemaExecutor {
 }
 
 class MockShareUpdateExecutor {
-    public readonly executedCommands: StructuredDbCommand[] = [];
+    public readonly executedCommands: StructuredDatabaseCommand[] = [];
 
     async executeCommand(
-        command: StructuredDbCommand,
-    ): Promise<StructuredDbCommandResult> {
+        command: StructuredDatabaseCommand,
+    ): Promise<StructuredDatabaseCommandResult> {
         this.executedCommands.push(command);
         if (command.option !== "SELECT") return { rowCount: 1 };
         return {
@@ -57,7 +59,9 @@ class MockShareUpdateExecutor {
         };
     }
 
-    async ensureTable(_definition: StructuredDbTableDef): Promise<void> {}
+    async ensureTable(
+        _definition: StructuredDatabaseTableDefinition,
+    ): Promise<void> {}
 
     async transaction<T>(
         callback: (executor: MockShareUpdateExecutor) => Promise<T>,

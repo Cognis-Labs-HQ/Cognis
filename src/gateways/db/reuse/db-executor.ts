@@ -7,7 +7,7 @@
  * inside DB adapters and satisfy this interface.
  *
  * Why it lives here rather than in src/api/reuse/:
- *   DbExecutor is the DB gateway's own contract — knowing its shape requires
+ *   DatabaseExecutor is the DB gateway's own contract — knowing its shape requires
  *   knowing the gateway exists. Placing it here keeps all DB-specific
  *   knowledge inside the gateway tree and out of the generic API layer.
  *
@@ -16,13 +16,13 @@
  * is a required component for every deployment.
  *
  * @example
- *   import type { DbExecutor } from '../../gateways/db/reuse/db-executor.js';
+ *   import type { DatabaseExecutor } from '../../gateways/db/reuse/db-executor.js';
  */
 import type {
-    StructuredDbCommand,
-    StructuredDbCommandResult,
+    StructuredDatabaseCommand,
+    StructuredDatabaseCommandResult,
 } from "./db-command.js";
-import type { StructuredDbTableDef } from "./db-table.js";
+import type { StructuredDatabaseTableDefinition } from "./db-table.js";
 
 /**
  * Public DB executor interface for application code.
@@ -31,12 +31,14 @@ import type { StructuredDbTableDef } from "./db-table.js";
  * command DSL. DDL is expressed via ensureTable(); transactional
  * grouping via transaction().
  */
-export interface DbExecutor {
+export interface DatabaseExecutor {
     executeCommand(
-        command: StructuredDbCommand,
-    ): Promise<StructuredDbCommandResult>;
-    ensureTable(definition: StructuredDbTableDef): Promise<void>;
-    transaction<T>(callback: (executor: DbExecutor) => Promise<T>): Promise<T>;
+        command: StructuredDatabaseCommand,
+    ): Promise<StructuredDatabaseCommandResult>;
+    ensureTable(definition: StructuredDatabaseTableDefinition): Promise<void>;
+    transaction<T>(
+        callback: (executor: DatabaseExecutor) => Promise<T>,
+    ): Promise<T>;
 }
 
 /**
@@ -45,9 +47,9 @@ export interface DbExecutor {
  * Exposes the raw execute() method. Nothing outside
  * src/adapters/db/ or src/gateways/db/ may import or call this.
  */
-export interface RawDbExecutor extends DbExecutor {
+export interface RawDatabaseExecutor extends DatabaseExecutor {
     execute(
         sql: string,
-        parameters?: unknown[],
+        params?: unknown[],
     ): Promise<{ rows?: any[]; rowCount?: number }>;
 }

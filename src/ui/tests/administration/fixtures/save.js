@@ -132,8 +132,7 @@ export async function environment() {
         capabilities: {
             get: (name) =>
                 name === "ui:log"
-                    ? (...argumentsList) =>
-                          events.push({ kind: "log", args: argumentsList })
+                    ? (...args) => events.push({ kind: "log", args: args })
                     : undefined,
         },
     };
@@ -201,8 +200,8 @@ export async function environment() {
         createAdministrationReloaders,
         createAdministrationSave,
         confirmAdministrationSectionSwitch,
-        initSecuritySection: (...argumentsList) =>
-            (section = security.initSecuritySection(...argumentsList)),
+        initializeSecuritySection: (...args) =>
+            (section = security.initializeSecuritySection(...args)),
         createUnsavedChangesBar: unsaved.createUnsavedChangesBar,
         mountWhenDirect: async () => {},
         loadModules: async () => [],

@@ -129,7 +129,7 @@ export async function bootstrapSocialAdapter(
         ),
         "social",
     );
-    ctx.registerAdapterStaticDir?.("social", "call", uiDirectory);
+    ctx.registerAdapterStaticDirectory?.("social", "call", uiDirectory);
     ctx.registerCapabilityProvider?.({
         scriptUrl: "/static/adapters/social/call/provider.js",
         providesCapabilities: ["social:callUi"],

@@ -3,11 +3,11 @@ import type { IncomingMessage } from "node:http";
 type JsonReadOptions = { maxBytes?: number };
 
 export function readJson(
-    request: IncomingMessage,
+    req: IncomingMessage,
     options: JsonReadOptions & { shape: "array" },
 ): Promise<unknown[]>;
 export function readJson(
-    request: IncomingMessage,
+    req: IncomingMessage,
     options?: JsonReadOptions & { shape?: "object" },
 ): Promise<Record<string, unknown>>;
 export async function readJson(

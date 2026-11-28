@@ -1,8 +1,8 @@
 import type { DatabaseGateway, QueryResult } from "@cognis/core";
 import type { BootstrapLog } from "@cognis/core";
-import type { RawDbExecutor } from "../../../gateways/db/reuse/db-executor.js";
-import type { DbProviderId } from "../../../gateways/db/reuse/provider-id.js";
-import type { StructuredDbTableDef } from "../../../gateways/db/reuse/db-table.js";
+import type { RawDatabaseExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseProviderId } from "../../../gateways/db/reuse/provider-id.js";
+import type { StructuredDatabaseTableDefinition } from "../../../gateways/db/reuse/db-table.js";
 import { readBoundedEnvironmentInteger } from "./settings.js";
 import {
     buildDatabaseErrorMetadata,
@@ -11,13 +11,13 @@ import {
 } from "../../../gateways/db/reuse/executor-log.js";
 import {
     buildStructuredDatabaseCommandStatement,
-    type StructuredDbCommand,
-    type StructuredDbCommandResult,
-    type StructuredDbDialect,
+    type StructuredDatabaseCommand,
+    type StructuredDatabaseCommandResult,
+    type StructuredDatabaseDialect,
 } from "../../../gateways/db/reuse/db-command.js";
 
 export interface MariaDbClient {
-    query(sql: string, parameters?: unknown[]): Promise<[unknown, unknown]>;
+    query(sql: string, params?: unknown[]): Promise<[unknown, unknown]>;
     beginTransaction(): Promise<void>;
     commit(): Promise<void>;
     rollback(): Promise<void>;
@@ -25,7 +25,7 @@ export interface MariaDbClient {
 }
 
 export interface MariaDbPool {
-    query(sql: string, parameters?: unknown[]): Promise<[unknown, unknown]>;
+    query(sql: string, params?: unknown[]): Promise<[unknown, unknown]>;
     getConnection(): Promise<MariaDbClient>;
     end(): Promise<void>;
     on?(event: "error", handler: (error: Error) => void): void;
@@ -106,7 +106,7 @@ function readAffectedRows(result: unknown): number {
     return 0;
 }
 
-const MARIADB_STRUCTURED_DATABASE_DIALECT: StructuredDbDialect = {
+const MARIADB_STRUCTURED_DATABASE_DIALECT: StructuredDatabaseDialect = {
     createPlaceholder() {
         return "?";
     },
@@ -147,8 +147,8 @@ export class MariaDbGateway implements DatabaseGateway {
     }
 
     async executeCommand<Row = Record<string, unknown>>(
-        command: StructuredDbCommand,
-    ): Promise<StructuredDbCommandResult<Row>> {
+        command: StructuredDatabaseCommand,
+    ): Promise<StructuredDatabaseCommandResult<Row>> {
         const statement = buildStructuredDatabaseCommandStatement(
             command,
             MARIADB_STRUCTURED_DATABASE_DIALECT,
@@ -187,7 +187,7 @@ export class MariaDbGateway implements DatabaseGateway {
     }
 
     async transaction<T>(
-        callback: (database: DatabaseGateway) => Promise<T>,
+        callback: (db: DatabaseGateway) => Promise<T>,
     ): Promise<T> {
         if (!this.pool) {
             throw new Error("MariaDB transactions require a connection pool.");
@@ -226,13 +226,16 @@ export class MariaDbGateway implements DatabaseGateway {
     }
 }
 
-class MariaDbExecutor implements RawDbExecutor {
+class MariaDbExecutor implements RawDatabaseExecutor {
     constructor(
         private readonly pool: MariaDbPool,
         private readonly log?: BootstrapLog,
         private readonly columnTypes = new Map<
             string,
-            Map<string, StructuredDbTableDef["columns"][number]["type"]>
+            Map<
+                string,
+                StructuredDatabaseTableDefinition["columns"][number]["type"]
+            >
         >(),
     ) {}
 
@@ -262,8 +265,8 @@ class MariaDbExecutor implements RawDbExecutor {
     }
 
     async executeCommand(
-        command: StructuredDbCommand,
-    ): Promise<StructuredDbCommandResult> {
+        command: StructuredDatabaseCommand,
+    ): Promise<StructuredDatabaseCommandResult> {
         const gateway = new MariaDbGateway(this.pool, this.log);
         const normalizedCommand = this.normalizeTemporalValues(command);
         try {
@@ -300,7 +303,7 @@ class MariaDbExecutor implements RawDbExecutor {
     }
 
     async transaction<T>(
-        callback: (executor: RawDbExecutor) => Promise<T>,
+        callback: (executor: RawDatabaseExecutor) => Promise<T>,
     ): Promise<T> {
         const client = await this.pool.getConnection();
         const transactionExecutor = new MariaDbExecutor(
@@ -343,7 +346,9 @@ class MariaDbExecutor implements RawDbExecutor {
         }
     }
 
-    async ensureTable(definition: StructuredDbTableDef): Promise<void> {
+    async ensureTable(
+        definition: StructuredDatabaseTableDefinition,
+    ): Promise<void> {
         this.columnTypes.set(
             definition.name,
             new Map(
@@ -357,14 +362,14 @@ class MariaDbExecutor implements RawDbExecutor {
             ...(definition.indexes ?? []).flatMap((index) => index.columns),
         ]);
         const isKeyColumn = (
-            column: StructuredDbTableDef["columns"][number],
+            column: StructuredDatabaseTableDefinition["columns"][number],
         ): boolean =>
             Boolean(column.primaryKey) ||
             Boolean(column.unique) ||
             column.references !== undefined ||
             keyColumns.has(column.name);
         const databaseType = (
-            column: StructuredDbTableDef["columns"][number],
+            column: StructuredDatabaseTableDefinition["columns"][number],
         ): string => {
             switch (column.type) {
                 case "text":
@@ -382,7 +387,7 @@ class MariaDbExecutor implements RawDbExecutor {
             }
         };
         const databaseDefault = (
-            value: StructuredDbTableDef["columns"][number]["default"],
+            value: StructuredDatabaseTableDefinition["columns"][number]["default"],
         ): string => {
             if (value === "now") return "CURRENT_TIMESTAMP";
             if (value === "true") return "1";
@@ -392,7 +397,7 @@ class MariaDbExecutor implements RawDbExecutor {
             return `'${String(value).replace(/'/g, "''")}'`;
         };
         const notNullFallback = (
-            column: StructuredDbTableDef["columns"][number],
+            column: StructuredDatabaseTableDefinition["columns"][number],
         ): string => {
             switch (column.type) {
                 case "integer":
@@ -519,9 +524,9 @@ class MariaDbExecutor implements RawDbExecutor {
     }
 
     private normalizeTemporalValues(
-        command: StructuredDbCommand,
+        command: StructuredDatabaseCommand,
         fallbackTemporalColumns = new Set<string>(),
-    ): StructuredDbCommand {
+    ): StructuredDatabaseCommand {
         const tableColumns = this.columnTypes.get(command.table);
         if (!tableColumns && fallbackTemporalColumns.size === 0) return command;
         const normalize = (column: string, value: unknown): unknown => {
@@ -572,7 +577,7 @@ class MariaDbExecutor implements RawDbExecutor {
 }
 
 function readRenamedColumn(
-    column: StructuredDbTableDef["columns"][number],
+    column: StructuredDatabaseTableDefinition["columns"][number],
 ): string | undefined {
     if (!("renamedFrom" in column)) return undefined;
     return typeof column.renamedFrom === "string"
@@ -580,7 +585,7 @@ function readRenamedColumn(
         : undefined;
 }
 
-function canHandleDatabaseProvider(providerId: DbProviderId): boolean {
+function canHandleDatabaseProvider(providerId: DatabaseProviderId): boolean {
     return providerId === "mariadb";
 }
 export { canHandleDatabaseProvider };
@@ -592,7 +597,7 @@ async function createDatabaseExecutor(args: {
     pool?: MariaDbPool;
     startup?: MariaDbStartupSettings;
     sleep?: (milliseconds: number) => Promise<void>;
-}): Promise<RawDbExecutor> {
+}): Promise<RawDatabaseExecutor> {
     const pool =
         args.pool ?? (await createMariaDbPool(args.databaseUrl, args.log));
     try {

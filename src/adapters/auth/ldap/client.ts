@@ -56,13 +56,16 @@ export function isDirectoryGroupEntry(entry: Record<string, unknown>): boolean {
     );
 }
 
-export function isDnWithinBase(dn: string, baseDn: string): boolean {
-    const normalizedDn = dn.trim().toLowerCase();
-    const normalizedBase = baseDn.trim().toLowerCase();
+export function isDistinguishedNameWithinBase(
+    dn: string,
+    baseDistinguishedName: string,
+): boolean {
+    const normalizedDistinguishedName = dn.trim().toLowerCase();
+    const normalizedBase = baseDistinguishedName.trim().toLowerCase();
     return (
         normalizedBase.length > 0 &&
-        (normalizedDn === normalizedBase ||
-            normalizedDn.endsWith(`,${normalizedBase}`))
+        (normalizedDistinguishedName === normalizedBase ||
+            normalizedDistinguishedName.endsWith(`,${normalizedBase}`))
     );
 }
 
@@ -151,15 +154,15 @@ async function resolveGroups(
     );
     const username = first(entry, options.userAttribute) ?? "";
     const groupBase = resolveDirectorySearchBases(options).groups;
-    const directDns = new Set(
+    const directDistinguishedNames = new Set(
         values(entry, options.memberOfAttribute).filter((dn) =>
-            isDnWithinBase(dn, groupBase),
+            isDistinguishedNameWithinBase(dn, groupBase),
         ),
     );
     const groupEntries = result.searchEntries.filter(
         (raw) =>
             isDirectoryGroupEntry(raw as LdapEntry) &&
-            isDnWithinBase((raw as LdapEntry).dn, groupBase),
+            isDistinguishedNameWithinBase((raw as LdapEntry).dn, groupBase),
     );
     for (const raw of groupEntries) {
         const group = raw as LdapEntry;
@@ -169,7 +172,7 @@ async function resolveGroups(
             ...values(group, "memberUid"),
         ];
         if (members.includes(entry.dn) || members.includes(username))
-            directDns.add(group.dn);
+            directDistinguishedNames.add(group.dn);
     }
     if (options.nestedMemberOf) {
         let changed = true;
@@ -182,16 +185,18 @@ async function resolveGroups(
                     ...values(group, "uniqueMember"),
                 ];
                 if (
-                    members.some((member) => directDns.has(member)) &&
-                    !directDns.has(group.dn)
+                    members.some((member) =>
+                        directDistinguishedNames.has(member),
+                    ) &&
+                    !directDistinguishedNames.has(group.dn)
                 ) {
-                    directDns.add(group.dn);
+                    directDistinguishedNames.add(group.dn);
                     changed = true;
                 }
             }
         }
     }
-    const namesByDn = new Map(
+    const namesByDistinguishedName = new Map(
         groupEntries.map((raw) => {
             const group = raw as LdapEntry;
             return [
@@ -201,7 +206,9 @@ async function resolveGroups(
             ];
         }),
     );
-    return [...directDns].map((dn) => namesByDn.get(dn) ?? firstRdnValue(dn));
+    return [...directDistinguishedNames].map(
+        (dn) => namesByDistinguishedName.get(dn) ?? firstRdnValue(dn),
+    );
 }
 
 function firstRdnValue(dn: string): string {
@@ -333,7 +340,7 @@ export class StandardLdapClient implements LdapClient {
                     ),
                     users: userResult.searchEntries
                         .filter((entry) =>
-                            isDnWithinBase(
+                            isDistinguishedNameWithinBase(
                                 (entry as LdapEntry).dn,
                                 searchBases.users,
                             ),
@@ -343,7 +350,7 @@ export class StandardLdapClient implements LdapClient {
                         .filter(
                             (raw) =>
                                 isDirectoryGroupEntry(raw as LdapEntry) &&
-                                isDnWithinBase(
+                                isDistinguishedNameWithinBase(
                                     (raw as LdapEntry).dn,
                                     searchBases.groups,
                                 ),

@@ -338,7 +338,7 @@ test("buildServer loads external module assets before accepting requests", async
     await writeFile(
         path.join(moduleRoot, "bootstrap.js"),
         `export function bootstrapModule(ctx) {
-            ctx.registerStaticDir("", ctx.moduleRoot + "/ui");
+            ctx.registerStaticDirectory("", ctx.moduleRoot + "/ui");
         }`,
     );
     await writeFile(path.join(moduleRoot, "ui", "app.js"), "export {};");

@@ -1,7 +1,9 @@
-import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import type { LibraryLocation } from "./types.js";
 
-export async function ensureEntryStateSchema(db: DbExecutor): Promise<void> {
+export async function ensureEntryStateSchema(
+    db: DatabaseExecutor,
+): Promise<void> {
     await db.ensureTable({
         name: "study_library_viewed_entries",
         columns: [
@@ -19,7 +21,7 @@ export async function ensureEntryStateSchema(db: DbExecutor): Promise<void> {
 }
 
 export async function viewedEntryIds(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     accountId: string,
 ): Promise<string[]> {
     const result = await db.executeCommand({
@@ -31,7 +33,7 @@ export async function viewedEntryIds(
 }
 
 export async function markEntriesViewed(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     accountId: string,
     entryIds: readonly string[],
 ): Promise<void> {
@@ -56,7 +58,7 @@ export async function markEntriesViewed(
 }
 
 export async function moveEntry(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     id: string,
     destination: LibraryLocation,
 ): Promise<void> {

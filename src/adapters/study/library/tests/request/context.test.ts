@@ -6,7 +6,7 @@ import {
     getPushRequest,
 } from "../../push-requests.js";
 import { LibraryService } from "../../service/index.js";
-import type { DbExecutor } from "../../../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../../../gateways/db/reuse/db-executor.js";
 import type { LibraryEntry, LibraryPushRequest } from "../../types.js";
 
 const entry = (
@@ -64,7 +64,7 @@ test("request snapshots retain original downstream details without following cyc
                 rows: command.option === "SELECT" ? [row] : [],
             };
         },
-    } as DbExecutor;
+    } as DatabaseExecutor;
     const request = await createPushRequest(
         database,
         source.id,

@@ -85,22 +85,22 @@ Profile が存在しない、または失敗した場合、Messages はその Ca
 
 `src/gateways/social/gateway.ts` で定義され、各アダプターに渡されます。
 
-| フィールド                              | 説明                                       |
-| --------------------------------------- | ------------------------------------------ |
-| `gateway`                               | ゲートウェイ制御用の `CoreSocialGateway`   |
-| `adapterId`                             | 起動中アダプターのディレクトリ名           |
-| `adapterRoot`                           | アダプターディレクトリの絶対パス           |
-| `capabilities`                          | 共有 `CapabilityStore`                     |
-| `gatewayRegistry`                       | ゲートウェイレジストリ。読み取り推奨       |
-| `registerRoute(handler, gwId)`          | 指定ゲートウェイ ID で HTTP ルート登録     |
-| `registerStaticDir(prefix, dir)`        | `/static/<prefix>/` で静的ディレクトリ配信 |
-| `registerAdapterStaticDir(gw, ad, dir)` | `/static/adapters/<gw>/<ad>/` で配信       |
-| `registerNavbarPlugin(url, isEnabled?)` | 条件付きナビバー スクリプトを追加          |
-| `log`                                   | 任意の構造化ロガー                         |
-| `dbExecutor`                            | `db:executor` Capability の DB Executor    |
-| `dbType`                                | データベース方言文字列                     |
-| `isGatewayEnabled()`                    | Social ゲートウェイ無効時に `false`        |
-| `isAdapterEnabled(id?)`                 | 現在/指定アダプター無効時に `false`        |
+| フィールド                                    | 説明                                       |
+| --------------------------------------------- | ------------------------------------------ |
+| `gateway`                                     | ゲートウェイ制御用の `CoreSocialGateway`   |
+| `adapterId`                                   | 起動中アダプターのディレクトリ名           |
+| `adapterRoot`                                 | アダプターディレクトリの絶対パス           |
+| `capabilities`                                | 共有 `CapabilityStore`                     |
+| `gatewayRegistry`                             | ゲートウェイレジストリ。読み取り推奨       |
+| `registerRoute(handler, gwId)`                | 指定ゲートウェイ ID で HTTP ルート登録     |
+| `registerStaticDirectory(prefix, dir)`        | `/static/<prefix>/` で静的ディレクトリ配信 |
+| `registerAdapterStaticDirectory(gw, ad, dir)` | `/static/adapters/<gw>/<ad>/` で配信       |
+| `registerNavbarPlugin(url, isEnabled?)`       | 条件付きナビバー スクリプトを追加          |
+| `log`                                         | 任意の構造化ロガー                         |
+| `dbExecutor`                                  | `db:executor` Capability の DB Executor    |
+| `dbType`                                      | データベース方言文字列                     |
+| `isGatewayEnabled()`                          | Social ゲートウェイ無効時に `false`        |
+| `isAdapterEnabled(id?)`                       | 現在/指定アダプター無効時に `false`        |
 
 ### 同梱アダプター
 

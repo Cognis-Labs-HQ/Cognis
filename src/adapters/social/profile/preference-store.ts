@@ -1,15 +1,15 @@
 import { createHash } from "node:crypto";
-import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../gateways/db/reuse/db-executor.js";
 
 function cacheKey(accountId: string, pageId: string) {
     return createHash("sha256").update(`${accountId}:${pageId}`).digest("hex");
 }
 
 class DatabaseUserPreferenceStore {
-    constructor(private readonly database: DbExecutor) {}
+    constructor(private readonly db: DatabaseExecutor) {}
 
     async ensureSchema() {
-        await this.database.ensureTable({
+        await this.db.ensureTable({
             name: "user_preferences",
             columns: [
                 {
@@ -27,7 +27,7 @@ class DatabaseUserPreferenceStore {
 
     async get(accountId: string, pageId: string) {
         const key = cacheKey(accountId, pageId);
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "user_preferences",
             columns: ["layout_json"],
@@ -39,7 +39,7 @@ class DatabaseUserPreferenceStore {
 
     async set(accountId: string, pageId: string, layoutJson: string) {
         const key = cacheKey(accountId, pageId);
-        await this.database.executeCommand({
+        await this.db.executeCommand({
             option: "INSERT",
             table: "user_preferences",
             values: {
@@ -61,7 +61,7 @@ class DatabaseUserPreferenceStore {
     }
 
     async clearUser(accountId: string) {
-        await this.database.executeCommand({
+        await this.db.executeCommand({
             option: "DELETE",
             table: "user_preferences",
             where: [{ column: "account_id", value: accountId }],

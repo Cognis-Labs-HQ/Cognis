@@ -1,19 +1,19 @@
-import type { DbExecutor } from "../../db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../db/reuse/db-executor.js";
 import type {
-    StructuredDbCommand,
-    StructuredDbWhereClause,
+    StructuredDatabaseCommand,
+    StructuredDatabaseWhereClause,
 } from "../../db/reuse/db-command.js";
-import type { StructuredDbTableDef } from "../../db/reuse/db-table.js";
+import type { StructuredDatabaseTableDefinition } from "../../db/reuse/db-table.js";
 
 /** Public structured-command fake: existing keys remain fixed and TEXT rows are byte-bounded. */
 export function structuredStore() {
     let tables = new Map<string, Record<string, unknown>[]>();
-    const schemas = new Map<string, StructuredDbTableDef>();
-    let fail = (_command: StructuredDbCommand) => false;
+    const schemas = new Map<string, StructuredDatabaseTableDefinition>();
+    let fail = (_command: StructuredDatabaseCommand) => false;
     let transactionQueue = Promise.resolve();
     const matches = (
         row: Record<string, unknown>,
-        clauses: StructuredDbWhereClause[] = [],
+        clauses: StructuredDatabaseWhereClause[] = [],
     ) =>
         clauses.every(({ column, operator = "=", value }) => {
             if (operator === "LIKE")
@@ -25,7 +25,7 @@ export function structuredStore() {
                 return (value as unknown[]).includes(row[column]);
             return row[column] === value;
         });
-    const db: DbExecutor = {
+    const db: DatabaseExecutor = {
         ensureTable: async (schema) => {
             if (!schemas.has(schema.name))
                 schemas.set(schema.name, structuredClone(schema));

@@ -24,17 +24,19 @@ import {
 import { bootstrap } from "../bootstrap.js";
 import { issueAccessToken } from "../../auth/access-tokens.js";
 import type {
-    StructuredDbCommand,
-    StructuredDbCommandResult,
+    StructuredDatabaseCommand,
+    StructuredDatabaseCommandResult,
 } from "../../db/reuse/db-command.js";
-import type { StructuredDbTableDef } from "../../db/reuse/db-table.js";
+import type { StructuredDatabaseTableDefinition } from "../../db/reuse/db-table.js";
 
 class MemoryExecutor {
     public readonly rows = new Map<string, Record<string, unknown>>();
-    async ensureTable(_definition: StructuredDbTableDef): Promise<void> {}
+    async ensureTable(
+        _definition: StructuredDatabaseTableDefinition,
+    ): Promise<void> {}
     async executeCommand(
-        command: StructuredDbCommand,
-    ): Promise<StructuredDbCommandResult> {
+        command: StructuredDatabaseCommand,
+    ): Promise<StructuredDatabaseCommandResult> {
         if (command.table !== "share_tokens") {
             return { rows: [] };
         }
@@ -297,18 +299,18 @@ test("share bootstrap registers gateway routes and serves share html", async () 
         { approved: true, requiresApproval: false },
     );
     assert.equal(
-        uiRegistry.getStaticDir("share")?.endsWith("src/gateways/share"),
+        uiRegistry.getStaticDirectory("share")?.endsWith("src/gateways/share"),
         true,
     );
     assert.equal(
         uiRegistry
-            .getAdapterStaticDir("share", "link")
+            .getAdapterStaticDirectory("share", "link")
             ?.endsWith("src/adapters/share/link"),
         true,
     );
     assert.equal(
         uiRegistry
-            .getAdapterStaticDir("share", "user")
+            .getAdapterStaticDirectory("share", "user")
             ?.endsWith("src/adapters/share/user"),
         true,
     );

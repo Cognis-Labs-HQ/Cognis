@@ -124,7 +124,7 @@ test("UIRegistry removes every contribution owned by a module", () => {
         ownerType: "module",
         ownerId: "example",
     });
-    uiRegistry.registerModuleStaticDir("example", "/srv/example/ui");
+    uiRegistry.registerModuleStaticDirectory("example", "/srv/example/ui");
 
     uiRegistry.unregisterModuleContributions("example");
 
@@ -137,10 +137,10 @@ test("UIRegistry removes every contribution owned by a module", () => {
 
 test("UIRegistry registers and looks up static dirs", () => {
     const uiRegistry = new UIRegistry();
-    uiRegistry.registerStaticDir("notify", "/srv/notify/ui");
+    uiRegistry.registerStaticDirectory("notify", "/srv/notify/ui");
 
-    assert.equal(uiRegistry.getStaticDir("notify"), "/srv/notify/ui");
-    assert.equal(uiRegistry.getStaticDir("missing"), undefined);
+    assert.equal(uiRegistry.getStaticDirectory("notify"), "/srv/notify/ui");
+    assert.equal(uiRegistry.getStaticDirectory("missing"), undefined);
 });
 
 test("UIRegistry overwrites section when registered twice with same id", () => {

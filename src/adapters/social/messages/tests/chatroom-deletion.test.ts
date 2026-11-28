@@ -83,9 +83,7 @@ test("chatroom deletion removes dependent records transactionally", async () => 
             commands.push(command);
             return { rows: [] };
         },
-        async transaction(
-            callback: (database: typeof executor) => Promise<void>,
-        ) {
+        async transaction(callback: (db: typeof executor) => Promise<void>) {
             await callback(executor);
         },
     };
@@ -152,9 +150,7 @@ test("chatroom deletion authorizes and deletes in the same transaction", async (
             }
             return { rows: [] };
         },
-        async transaction<T>(
-            callback: (database: typeof executor) => Promise<T>,
-        ) {
+        async transaction<T>(callback: (db: typeof executor) => Promise<T>) {
             transactionActive = true;
             const result = await callback(executor);
             transactionActive = false;

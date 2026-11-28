@@ -83,22 +83,22 @@ find that capability and will skip profile-dependent features gracefully.
 
 Defined in `src/gateways/social/gateway.ts` and passed to every adapter:
 
-| Field                                   | Description                                                |
-| --------------------------------------- | ---------------------------------------------------------- |
-| `gateway`                               | `CoreSocialGateway` instance for gateway-owned controls    |
-| `adapterId`                             | Directory name of the adapter being bootstrapped           |
-| `adapterRoot`                           | Absolute path to the adapter directory                     |
-| `capabilities`                          | Shared `CapabilityStore`                                   |
-| `gatewayRegistry`                       | Gateway registry (read-only use recommended)               |
-| `registerRoute(handler, gwId)`          | Register an HTTP route under the given gateway ID          |
-| `registerStaticDir(prefix, dir)`        | Serve a static directory under `/static/<prefix>/`         |
-| `registerAdapterStaticDir(gw, ad, dir)` | Serve under `/static/adapters/<gw>/<ad>/`                  |
-| `registerNavbarPlugin(url, isEnabled?)` | Contribute a conditionally enabled navbar script           |
-| `log`                                   | Optional structured logger                                 |
-| `dbExecutor`                            | Database executor from `db:executor` capability            |
-| `dbType`                                | Database dialect string                                    |
-| `isGatewayEnabled()`                    | Returns `false` if the social gateway is disabled          |
-| `isAdapterEnabled(id?)`                 | Returns `false` when the current/named adapter is disabled |
+| Field                                         | Description                                                |
+| --------------------------------------------- | ---------------------------------------------------------- |
+| `gateway`                                     | `CoreSocialGateway` instance for gateway-owned controls    |
+| `adapterId`                                   | Directory name of the adapter being bootstrapped           |
+| `adapterRoot`                                 | Absolute path to the adapter directory                     |
+| `capabilities`                                | Shared `CapabilityStore`                                   |
+| `gatewayRegistry`                             | Gateway registry (read-only use recommended)               |
+| `registerRoute(handler, gwId)`                | Register an HTTP route under the given gateway ID          |
+| `registerStaticDirectory(prefix, dir)`        | Serve a static directory under `/static/<prefix>/`         |
+| `registerAdapterStaticDirectory(gw, ad, dir)` | Serve under `/static/adapters/<gw>/<ad>/`                  |
+| `registerNavbarPlugin(url, isEnabled?)`       | Contribute a conditionally enabled navbar script           |
+| `log`                                         | Optional structured logger                                 |
+| `dbExecutor`                                  | Database executor from `db:executor` capability            |
+| `dbType`                                      | Database dialect string                                    |
+| `isGatewayEnabled()`                          | Returns `false` if the social gateway is disabled          |
+| `isAdapterEnabled(id?)`                       | Returns `false` when the current/named adapter is disabled |
 
 ### Bundled Adapters
 

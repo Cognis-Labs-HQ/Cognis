@@ -22,7 +22,7 @@ function createBaseCtx(gateway: CoreSocialGateway) {
         },
         registerRoute: () => {},
         registerNavbarPlugin: () => {},
-        registerStaticDir: () => {},
+        registerStaticDirectory: () => {},
         isGatewayEnabled: () => true,
     } as never;
 }

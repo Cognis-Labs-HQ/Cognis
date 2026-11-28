@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { CapabilityStore, createCtx, GatewayRegistry } from "@cognis/core";
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import {
     CoreStudyGateway,
     type StudyAdapterBootstrapCtx,
@@ -13,7 +13,7 @@ test("registered class access uses current memberships and the class teacher wit
     let enrolled = true;
     let enabled = true;
     const commands: string[] = [];
-    const db: DbExecutor = {
+    const db: DatabaseExecutor = {
         ensureTable: async () => {},
         transaction: async (operation) => operation(db),
         executeCommand: async (command) => {
@@ -64,7 +64,7 @@ test("registered class access uses current memberships and the class teacher wit
         adapterRoot: "",
         isAdapterEnabled: () => enabled,
         registerRoute: (route) => routes.push(route),
-        registerStaticDir: (prefix, directory) =>
+        registerStaticDirectory: (prefix, directory) =>
             pages.push({ prefix, directory }),
         registerNavbarPlugin: (url) => pages.push(url),
         registerPageExtension: (id, element) => pages.push({ id, element }),

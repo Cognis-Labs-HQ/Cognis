@@ -1,11 +1,13 @@
 import { ensureSchemaParts } from "./store/schema-storage.js";
 import { ensurePackAssets } from "./store/pack-assets.js";
 import { ensureReferenceStorage } from "./store/reference-storage.js";
-import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import { ensureEntryStateSchema } from "./entry-state.js";
 import { ensurePushRequestSchema } from "./push-requests.js";
 
-export async function ensureLibraryStoreSchema(db: DbExecutor): Promise<void> {
+export async function ensureLibraryStoreSchema(
+    db: DatabaseExecutor,
+): Promise<void> {
     await db.ensureTable({
         name: "study_library_dictionary_cache",
         indexes: [{ columns: ["expires_at"] }],

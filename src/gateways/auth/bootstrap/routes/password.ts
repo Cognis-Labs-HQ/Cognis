@@ -16,7 +16,10 @@ import {
     requireAuth,
     type GatewayBootstrapContext,
 } from "../../../shared.js";
-import type { AuthGatewayRouteHandler, AuthRouteLogMeta } from "./shared.js";
+import type {
+    AuthGatewayRouteHandler,
+    AuthRouteLogMetadata,
+} from "./shared.js";
 
 interface PasswordRouteDependencies {
     authGateway: CoreAuthGateway;
@@ -48,7 +51,7 @@ export function createPasswordRoutes({
         req,
         res,
         url,
-        logMetadata: AuthRouteLogMeta,
+        logMetadata: AuthRouteLogMetadata,
     ): Promise<boolean> => {
         if (url.pathname === "/api/v1/auth/verify" && req.method === "DELETE") {
             const claims = requireAuth(req, res, "user");

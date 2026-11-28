@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import type { StructuredDbCommand } from "../../../../../gateways/db/reuse/db-command.js";
-import type { DbExecutor } from "../../../../../gateways/db/reuse/db-executor.js";
+import type { StructuredDatabaseCommand } from "../../../../../gateways/db/reuse/db-command.js";
+import type { DatabaseExecutor } from "../../../../../gateways/db/reuse/db-executor.js";
 import { LibraryStore } from "../../store.js";
 import { contentEntryId } from "../../content-pack.js";
 import type { LibraryContentPackPlan } from "../../types.js";
 
 test("new releases may replace a schema owned only by the same content pack", async () => {
-    const commands: StructuredDbCommand[] = [];
+    const commands: StructuredDatabaseCommand[] = [];
     const previousSchema = {
         id: "mock-language",
         version: 45,
@@ -25,7 +25,7 @@ test("new releases may replace a schema owned only by the same content pack", as
             },
         ],
     };
-    const db: DbExecutor = {
+    const db: DatabaseExecutor = {
         ensureTable: async () => {},
         transaction: async (callback) => callback(db),
         executeCommand: async (command) => {
@@ -84,7 +84,7 @@ test("new releases may replace a schema owned only by the same content pack", as
 });
 
 test("content pack import ignores duplicate all-key references", async () => {
-    const commands: StructuredDbCommand[] = [];
+    const commands: StructuredDatabaseCommand[] = [];
     const schema = {
         id: "mock-language",
         version: 1,
@@ -98,7 +98,7 @@ test("content pack import ignores duplicate all-key references", async () => {
             },
         ],
     };
-    const db: DbExecutor = {
+    const db: DatabaseExecutor = {
         ensureTable: async () => {},
         transaction: async (callback) => callback(db),
         executeCommand: async (command) => {
@@ -234,7 +234,7 @@ test("content pack import ignores duplicate all-key references", async () => {
 });
 
 test("entry reads compact sparse grouped references before sorting", async () => {
-    const db: DbExecutor = {
+    const db: DatabaseExecutor = {
         ensureTable: async () => {},
         transaction: async (callback) => callback(db),
         executeCommand: async (command) => {
@@ -303,7 +303,7 @@ test("entry reads compact sparse grouped references before sorting", async () =>
 });
 
 test("authoritative content packs prune omitted records by default", async () => {
-    const commands: StructuredDbCommand[] = [];
+    const commands: StructuredDatabaseCommand[] = [];
     const schema = {
         id: "mock-language",
         version: 1,
@@ -314,7 +314,7 @@ test("authoritative content packs prune omitted records by default", async () =>
             { id: "characters", metadata: { labels: { en: "Characters" } } },
         ],
     };
-    const db: DbExecutor = {
+    const db: DatabaseExecutor = {
         ensureTable: async () => {},
         transaction: async (callback) => callback(db),
         executeCommand: async (command) => {
@@ -383,7 +383,7 @@ test("authoritative content packs prune omitted records by default", async () =>
 });
 
 test("content packs preserve provider records after a user modifies them", async () => {
-    const commands: StructuredDbCommand[] = [];
+    const commands: StructuredDatabaseCommand[] = [];
     const manifest = {
         id: "study-language-ja",
         publisher: "Cognis Labs HQ",
@@ -405,7 +405,7 @@ test("content packs preserve provider records after a user modifies them", async
         ],
     };
     const protectedId = contentEntryId(manifest, "neko");
-    const db: DbExecutor = {
+    const db: DatabaseExecutor = {
         ensureTable: async () => {},
         transaction: async (callback) => callback(db),
         executeCommand: async (command) => {
@@ -461,7 +461,7 @@ test("content packs preserve provider records after a user modifies them", async
 });
 
 test("content packs retain omitted records only when explicitly requested", async () => {
-    const commands: StructuredDbCommand[] = [];
+    const commands: StructuredDatabaseCommand[] = [];
     const schema = {
         id: "mock-language",
         version: 1,
@@ -470,7 +470,7 @@ test("content packs retain omitted records only when explicitly requested", asyn
         metadata: { labels: { en: "Mock Language" } },
         layers: [],
     };
-    const db: DbExecutor = {
+    const db: DatabaseExecutor = {
         ensureTable: async () => {},
         transaction: async (callback) => callback(db),
         executeCommand: async (command) => {
@@ -509,7 +509,7 @@ test("content packs retain omitted records only when explicitly requested", asyn
 });
 
 test("content pack reconciliation skips blacklisted hashes", async () => {
-    const commands: StructuredDbCommand[] = [];
+    const commands: StructuredDatabaseCommand[] = [];
     const schema = {
         id: "mock-language",
         version: 1,
@@ -545,7 +545,7 @@ test("content pack reconciliation skips blacklisted hashes", async () => {
         plan.schema,
         plan.records[0],
     );
-    const db: DbExecutor = {
+    const db: DatabaseExecutor = {
         ensureTable: async () => {},
         transaction: async (callback) => callback(db),
         executeCommand: async (command) => {
@@ -572,7 +572,7 @@ test("content pack reconciliation skips blacklisted hashes", async () => {
 });
 
 test("unchanged content packs restore entries removed after installation", async () => {
-    const commands: StructuredDbCommand[] = [];
+    const commands: StructuredDatabaseCommand[] = [];
     const schema = {
         id: "mock-language",
         version: 1,
@@ -603,7 +603,7 @@ test("unchanged content packs restore entries removed after installation", async
         records: [{ id: "a", layer: "characters", label: "A" }],
         assets: [],
     };
-    const db: DbExecutor = {
+    const db: DatabaseExecutor = {
         ensureTable: async () => {},
         transaction: async (callback) => callback(db),
         executeCommand: async (command) => {
@@ -632,8 +632,8 @@ test("unchanged content packs restore entries removed after installation", async
 });
 
 test("entry updates replace editable fields and relationships atomically", async () => {
-    const commands: StructuredDbCommand[] = [];
-    const db: DbExecutor = {
+    const commands: StructuredDatabaseCommand[] = [];
+    const db: DatabaseExecutor = {
         ensureTable: async () => {},
         transaction: async (callback) => callback(db),
         executeCommand: async (command) => {

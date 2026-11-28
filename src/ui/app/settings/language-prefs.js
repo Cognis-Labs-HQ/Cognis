@@ -5,7 +5,7 @@ import {
     readBrowserLocales,
 } from "../../reuse/i18n.js";
 
-function initLanguagePreferences(
+function initializeLanguagePreferences(
     root,
     initialPriority,
     { onDirtyChange, signal } = {},
@@ -367,4 +367,4 @@ function initLanguagePreferences(
         discard,
     };
 }
-export { initLanguagePreferences };
+export { initializeLanguagePreferences };

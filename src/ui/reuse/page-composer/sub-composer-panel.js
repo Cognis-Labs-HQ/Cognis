@@ -39,7 +39,7 @@ function createNestedComposerPanelHandlers({
             event.preventDefault();
 
             const gridSize = getGridSize(elementDefinition);
-            const width = resolveInitialGridWidth(gridSize, state.gridCols);
+            const width = resolveInitialGridWidth(gridSize, state.gridColumns);
             const height = gridSize.fillHeight
                 ? state.gridRows
                 : gridSize.halfHeight
@@ -73,10 +73,10 @@ function createNestedComposerPanelHandlers({
                     const column = Math.max(
                         0,
                         Math.min(
-                            state.gridCols - width,
+                            state.gridColumns - width,
                             snapGridFloor(
                                 horizontalCoordinate,
-                                state.gridCols,
+                                state.gridColumns,
                                 state.gridTrackSize,
                             ),
                         ),

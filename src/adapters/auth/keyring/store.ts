@@ -1,8 +1,8 @@
 import { textChunks } from "../../../gateways/reuse/text-chunks.js";
 
-export interface KeyringDbExecutor {
+export interface KeyringDatabaseExecutor {
     transaction<T>(
-        operation: (database: KeyringDbExecutor) => Promise<T>,
+        operation: (db: KeyringDatabaseExecutor) => Promise<T>,
     ): Promise<T>;
     ensureTable(input: {
         name: string;
@@ -22,14 +22,14 @@ export interface KeyringVaultStore {
 }
 
 class DatabaseKeyringVaultStore implements KeyringVaultStore {
-    private readonly database: KeyringDbExecutor;
+    private readonly db: KeyringDatabaseExecutor;
 
     constructor(db: unknown) {
-        this.database = db as KeyringDbExecutor;
+        this.db = db as KeyringDatabaseExecutor;
     }
 
     async ensureSchema(): Promise<void> {
-        await this.database.ensureTable({
+        await this.db.ensureTable({
             name: "auth_keyring_vaults",
             columns: [
                 {
@@ -42,7 +42,7 @@ class DatabaseKeyringVaultStore implements KeyringVaultStore {
                 { name: "updated_at", type: "text", notNull: true },
             ],
         });
-        await this.database.ensureTable({
+        await this.db.ensureTable({
             name: "auth_keyring_vault_parts",
             columns: [
                 { name: "account_id", type: "text", notNull: true },
@@ -54,7 +54,7 @@ class DatabaseKeyringVaultStore implements KeyringVaultStore {
     }
 
     async get(accountId: string): Promise<string | null> {
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "auth_keyring_vaults",
             alias: "vault",
@@ -87,7 +87,7 @@ class DatabaseKeyringVaultStore implements KeyringVaultStore {
 
     async set(accountId: string, vaultJson: string): Promise<void> {
         const updatedAt = new Date().toISOString();
-        await this.database.transaction(async (db) => {
+        await this.db.transaction(async (db) => {
             await db.executeCommand({
                 option: "DELETE",
                 table: "auth_keyring_vault_parts",
@@ -130,7 +130,7 @@ class DatabaseKeyringVaultStore implements KeyringVaultStore {
     }
 
     async delete(accountId: string): Promise<void> {
-        await this.database.transaction(async (db) => {
+        await this.db.transaction(async (db) => {
             for (const table of [
                 "auth_keyring_vault_parts",
                 "auth_keyring_vaults",

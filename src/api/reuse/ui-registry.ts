@@ -190,9 +190,9 @@ export class UIRegistry {
             /^\/static\/adapters\/([^/]+)\/([^/]+)\/([^?#]+)$/,
         );
         const directory = gatewayAsset
-            ? this.getStaticDir(gatewayAsset[1])
+            ? this.getStaticDirectory(gatewayAsset[1])
             : adapterAsset
-              ? this.getAdapterStaticDir(adapterAsset[1], adapterAsset[2])
+              ? this.getAdapterStaticDirectory(adapterAsset[1], adapterAsset[2])
               : undefined;
         const relativeAsset = gatewayAsset?.[2] ?? adapterAsset?.[3];
         if (
@@ -256,7 +256,10 @@ export class UIRegistry {
      * Maps a URL prefix segment (gatewayId) to an absolute filesystem path.
      * Registered directories are served under /static/gateways/:gatewayId/.
      */
-    registerStaticDir(gatewayId: string, absoluteDirectory: string): void {
+    registerStaticDirectory(
+        gatewayId: string,
+        absoluteDirectory: string,
+    ): void {
         this.staticDirectories.set(gatewayId, absoluteDirectory);
     }
 
@@ -267,7 +270,7 @@ export class UIRegistry {
      * (navbar plugins, page scripts, styles) should live next to the adapter
      * code on disk and be exposed via this method.
      */
-    registerAdapterStaticDir(
+    registerAdapterStaticDirectory(
         gatewayId: string,
         adapterId: string,
         absoluteDirectory: string,
@@ -422,11 +425,11 @@ export class UIRegistry {
         return this.resolveDescriptor(Array.from(this.sections.values()));
     }
 
-    getStaticDir(gatewayId: string): string | undefined {
+    getStaticDirectory(gatewayId: string): string | undefined {
         return this.staticDirectories.get(gatewayId);
     }
 
-    getAdapterStaticDir(
+    getAdapterStaticDirectory(
         gatewayId: string,
         adapterId: string,
     ): string | undefined {
@@ -436,10 +439,10 @@ export class UIRegistry {
     /**
      * Registers a URL prefix under /static/modules/ that the server serves
      * from the given absolute filesystem directory. Modules call this via the
-     * `registerStaticDir` hook on their bootstrap context (the gateway routes
+     * `registerStaticDirectory` hook on their bootstrap context (the gateway routes
      * prefixes that start with "modules/" here instead of to staticDirs).
      */
-    registerModuleStaticDir(
+    registerModuleStaticDirectory(
         urlPrefix: string,
         absoluteDirectory: string,
     ): void {

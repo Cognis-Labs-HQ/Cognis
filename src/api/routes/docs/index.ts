@@ -1,4 +1,4 @@
-import type { DocView } from "./sources.js";
+import type { DocumentView } from "./sources.js";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import type { IncomingMessage, ServerResponse } from "node:http";
@@ -6,7 +6,7 @@ import { resolveLanguages } from "../../reuse/preferred-languages.js";
 import {
     initializeDocumentsStore,
     readStoredMarkdown,
-    type StoredDoc,
+    type StoredDocument,
 } from "./store.js";
 
 const SOURCE_ROOT = join(process.cwd(), "src");
@@ -27,7 +27,7 @@ function resolveDocumentsArchiveRoot(
 }
 export { resolveDocumentsArchiveRoot };
 
-interface DocEntry extends StoredDoc {
+interface DocumentEntry extends StoredDocument {
     slug: string;
     path: string;
     group: string;
@@ -60,10 +60,10 @@ function withChangelogBranch(markdown: string, slug: string): string {
 }
 
 function buildChangelogIndexMarkdown(
-    entries: DocEntry[],
+    entries: DocumentEntry[],
     title: string,
 ): string {
-    const groupedEntries = new Map<string, DocEntry[]>();
+    const groupedEntries = new Map<string, DocumentEntry[]>();
     for (const entry of entries
         .filter((entry) => entry.slug.startsWith("changelog/"))
         .sort((first, second) => first.slug.localeCompare(second.slug))) {
@@ -89,10 +89,10 @@ function buildChangelogIndexMarkdown(
 }
 
 async function collectDocumentIndex(
-    storedDocumentsPromise: Promise<Map<string, StoredDoc>>,
-): Promise<Map<string, DocEntry>> {
+    storedDocumentsPromise: Promise<Map<string, StoredDocument>>,
+): Promise<Map<string, DocumentEntry>> {
     const storedDocuments = await storedDocumentsPromise;
-    const bySlug = new Map<string, DocEntry>();
+    const bySlug = new Map<string, DocumentEntry>();
     for (const [slug, document] of storedDocuments) {
         bySlug.set(slug, {
             ...document,
@@ -196,7 +196,7 @@ function createDocumentsRoutes(
             loadStoredDocuments(languages),
         );
         let slug = rawSlug;
-        let view: DocView = "info";
+        let view: DocumentView = "info";
         if (!index.has(slug)) {
             const parts = slug.split("/");
             const candidate = parts.pop();

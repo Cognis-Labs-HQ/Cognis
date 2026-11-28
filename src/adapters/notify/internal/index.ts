@@ -178,7 +178,7 @@ export async function bootstrapNotifyAdapter(
         path.dirname(fileURLToPath(import.meta.url)),
         "ui",
     );
-    ctx.registerStaticDir("notify-internal", uiDirectory);
+    ctx.registerStaticDirectory("notify-internal", uiDirectory);
     ctx.registerNavbarPlugin(
         "/static/gateways/notify-internal/navbar-plugin.js",
     );

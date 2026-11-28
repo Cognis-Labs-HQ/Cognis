@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { initDateTimePreferences } from "../../app/settings/datetime-prefs.js";
+import { initializeDateTimePreferences } from "../../app/settings/datetime-prefs.js";
 import {
     applyTimezoneToLocalStorage,
     formatDateTime,
@@ -24,7 +24,7 @@ function createController(existingPreferences = { timezone: "auto" }) {
     const timezone = createSelect();
     const format = createSelect();
     const dirty = [];
-    const controller = initDateTimePreferences(
+    const controller = initializeDateTimePreferences(
         {
             querySelector: (selector) =>
                 selector === "#pref-timezone-select" ? timezone : format,

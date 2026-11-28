@@ -1,9 +1,9 @@
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import { rowToEmojiUsage } from "./row-mappers.js";
 import type { EmojiUsageRow } from "./types.js";
 
 export async function incrementEmojiUsage(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     accountId: string,
     emoji: string,
 ): Promise<void> {
@@ -43,7 +43,7 @@ export async function incrementEmojiUsage(
 }
 
 export async function getTopEmojiUsage(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     accountId: string,
     limit: number,
 ): Promise<EmojiUsageRow[]> {

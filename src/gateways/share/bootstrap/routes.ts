@@ -20,26 +20,26 @@ import type { CoreShareGateway } from "../gateway/index.js";
 import { buildGatewayAdapterAdminControls } from "../../../api/reuse/adapter-admin-controls.js";
 
 function sendJson(
-    response: ServerResponse,
+    res: ServerResponse,
     statusCode: number,
     payload: Record<string, unknown>,
 ): void {
-    response.writeHead(statusCode, { "content-type": "application/json" });
-    response.end(JSON.stringify(payload));
+    res.writeHead(statusCode, { "content-type": "application/json" });
+    res.end(JSON.stringify(payload));
 }
 
 function sendError(
-    response: ServerResponse,
+    res: ServerResponse,
     statusCode: number,
     code: string,
     message: string,
 ): void {
-    sendJson(response, statusCode, { error: { code, message } });
+    sendJson(res, statusCode, { error: { code, message } });
 }
 
-function sendDuplicateUserShareError(response: ServerResponse): void {
+function sendDuplicateUserShareError(res: ServerResponse): void {
     sendError(
-        response,
+        res,
         409,
         "duplicate_user_share",
         "This item is already shared with one or more selected users.",
@@ -63,21 +63,16 @@ export function createShareRoutes(input: {
     log?: (
         level: string,
         message: string,
-        metadata?: Record<string, unknown>,
+        meta?: Record<string, unknown>,
     ) => void;
-}): (
-    request: IncomingMessage,
-    response: ServerResponse,
-    url: URL,
-) => Promise<boolean> {
+}): (req: IncomingMessage, res: ServerResponse, url: URL) => Promise<boolean> {
     const routeContext = resolveRouteContext(input.routeContext);
 
-    return async (request, response, url): Promise<boolean> => {
+    return async (req, res, url): Promise<boolean> => {
         const adapterAdminBase = "/api/v1/gateways/share/adapters";
-        if (request.method === "GET" && url.pathname === adapterAdminBase) {
-            if (!routeContext.requireAuth(request, response, "admin"))
-                return true;
-            sendJson(response, 200, {
+        if (req.method === "GET" && url.pathname === adapterAdminBase) {
+            if (!routeContext.requireAuth(req, res, "admin")) return true;
+            sendJson(res, 200, {
                 data: input.gateway.listAdapters().map((adapter) => ({
                     ...adapter,
                     active: input.gateway.isAdapterEnabled(adapter.id),
@@ -95,19 +90,18 @@ export function createShareRoutes(input: {
         );
         if (
             adapterConfigMatch &&
-            (request.method === "GET" || request.method === "PUT")
+            (req.method === "GET" || req.method === "PUT")
         ) {
-            if (!routeContext.requireAuth(request, response, "admin"))
-                return true;
+            if (!routeContext.requireAuth(req, res, "admin")) return true;
             const adapterId = decodeURIComponent(adapterConfigMatch[1]);
             if (!input.gateway.getAdapter(adapterId)) {
-                sendError(response, 404, "not_found", "Adapter not found.");
+                sendError(res, 404, "not_found", "Adapter not found.");
                 return true;
             }
-            if (request.method === "PUT") await readJson(request);
-            sendJson(response, 200, {
-                data: request.method === "GET" ? {} : { saved: true },
-                ...(request.method === "GET"
+            if (req.method === "PUT") await readJson(req);
+            sendJson(res, 200, {
+                data: req.method === "GET" ? {} : { saved: true },
+                ...(req.method === "GET"
                     ? { schema: [], requiredFields: [] }
                     : {}),
             });
@@ -117,18 +111,17 @@ export function createShareRoutes(input: {
         const adapterToggleMatch = url.pathname.match(
             /^\/api\/v1\/gateways\/share\/adapters\/([^/]+)\/(enable|disable)$/,
         );
-        if (adapterToggleMatch && request.method === "POST") {
-            if (!routeContext.requireAuth(request, response, "admin"))
-                return true;
+        if (adapterToggleMatch && req.method === "POST") {
+            if (!routeContext.requireAuth(req, res, "admin")) return true;
             const adapterId = decodeURIComponent(adapterToggleMatch[1]);
             const adapter = input.gateway.getAdapter(adapterId);
             if (!adapter) {
-                sendError(response, 404, "not_found", "Adapter not found.");
+                sendError(res, 404, "not_found", "Adapter not found.");
                 return true;
             }
             if (adapter.locked) {
                 sendError(
-                    response,
+                    res,
                     403,
                     "locked_adapter",
                     "This adapter is always on and cannot be toggled.",
@@ -137,12 +130,12 @@ export function createShareRoutes(input: {
             }
             const enabled = adapterToggleMatch[2] === "enable";
             await input.gateway.setAdapterEnabled(adapterId, enabled);
-            sendJson(response, 200, { data: { enabled } });
+            sendJson(res, 200, { data: { enabled } });
             return true;
         }
 
         if (
-            request.method === "GET" &&
+            req.method === "GET" &&
             (url.pathname === "/shares" || url.pathname.startsWith("/share/"))
         ) {
             const deliveryPage = input.gateway
@@ -155,7 +148,7 @@ export function createShareRoutes(input: {
                         new RegExp(candidate.pattern).test(url.pathname),
                 );
             if (url.pathname !== "/shares" && !deliveryPage) return false;
-            routeContext.setPageSecurityHeaders(response);
+            routeContext.setPageSecurityHeaders(res);
             const html = await readFile(
                 path.join(
                     input.uiRoot,
@@ -165,35 +158,29 @@ export function createShareRoutes(input: {
                 ),
                 "utf8",
             );
-            response.writeHead(200, {
+            res.writeHead(200, {
                 "content-type": "text/html; charset=utf-8",
             });
-            response.end(html);
+            res.end(html);
             return true;
         }
 
-        if (
-            request.method === "GET" &&
-            url.pathname === "/api/v1/share/tokens"
-        ) {
-            const claims = routeContext.requireAuth(request, response, "user");
+        if (req.method === "GET" && url.pathname === "/api/v1/share/tokens") {
+            const claims = routeContext.requireAuth(req, res, "user");
             if (!claims) return true;
             const filter = readResourceFilter(url);
             const data = await input.gateway.listTokens({
                 ownerAccountId: claims.sub,
                 ...filter,
             });
-            sendJson(response, 200, { data });
+            sendJson(res, 200, { data });
             return true;
         }
 
-        if (
-            request.method === "GET" &&
-            url.pathname === "/api/v1/share/methods"
-        ) {
-            const claims = routeContext.requireAuth(request, response, "user");
+        if (req.method === "GET" && url.pathname === "/api/v1/share/methods") {
+            const claims = routeContext.requireAuth(req, res, "user");
             if (!claims) return true;
-            sendJson(response, 200, {
+            sendJson(res, 200, {
                 data: input.gateway
                     .listAdapters()
                     .filter((adapter) =>
@@ -213,26 +200,16 @@ export function createShareRoutes(input: {
         const statusMatch = url.pathname.match(
             /^\/api\/v1\/share\/status\/([^/]+)$/,
         );
-        if (request.method === "GET" && statusMatch) {
-            const claims = routeContext.getAuthClaims(request);
+        if (req.method === "GET" && statusMatch) {
+            const claims = routeContext.getAuthClaims(req);
             if (!claims) {
-                sendError(
-                    response,
-                    401,
-                    "unauthorized",
-                    "Authentication required.",
-                );
+                sendError(res, 401, "unauthorized", "Authentication required.");
                 return true;
             }
             const shareId = decodeURIComponent(statusMatch[1]);
             const record = await input.gateway.getTokenById(shareId);
             if (!record || input.gateway.isTokenExpired(record)) {
-                sendError(
-                    response,
-                    404,
-                    "not_found",
-                    "Share no longer exists.",
-                );
+                sendError(res, 404, "not_found", "Share no longer exists.");
                 return true;
             }
             const guestShareId = resolveShareGuestId(claims);
@@ -245,39 +222,31 @@ export function createShareRoutes(input: {
                         recipient.type === "user" && recipient.id === accountId,
                 );
             if (!authorized) {
-                sendError(
-                    response,
-                    403,
-                    "forbidden",
-                    "Share access was revoked.",
-                );
+                sendError(res, 403, "forbidden", "Share access was revoked.");
                 return true;
             }
-            sendJson(response, 200, { data: { active: true } });
+            sendJson(res, 200, { data: { active: true } });
             return true;
         }
 
-        if (
-            request.method === "GET" &&
-            url.pathname === "/api/v1/share/overview"
-        ) {
-            const claims = routeContext.requireAuth(request, response, "user");
+        if (req.method === "GET" && url.pathname === "/api/v1/share/overview") {
+            const claims = routeContext.requireAuth(req, res, "user");
             if (!claims) return true;
             const [sent, received] = await Promise.all([
                 input.gateway.listTokens({ ownerAccountId: claims.sub }),
                 input.gateway.listReceivedTokens(claims.sub),
             ]);
-            sendJson(response, 200, { data: { sent, received } });
+            sendJson(res, 200, { data: { sent, received } });
             return true;
         }
 
         const accountShareMatch = url.pathname.match(
             /^\/api\/v1\/share\/account\/([^/]+)\/resolve$/,
         );
-        if (request.method === "POST" && accountShareMatch) {
-            const claims = routeContext.requireAuth(request, response, "user");
+        if (req.method === "POST" && accountShareMatch) {
+            const claims = routeContext.requireAuth(req, res, "user");
             if (!claims) return true;
-            const body = (await readJson(request)) as { password?: unknown };
+            const body = (await readJson(req)) as { password?: unknown };
             const result = await input.gateway.resolveAccountShare({
                 shareId: decodeURIComponent(accountShareMatch[1]),
                 accountId: claims.sub,
@@ -298,12 +267,7 @@ export function createShareRoutes(input: {
                         : result.reason === "invalid_password"
                           ? 401
                           : 403;
-                sendError(
-                    response,
-                    status,
-                    result.reason,
-                    "Share access denied.",
-                );
+                sendError(res, status, result.reason, "Share access denied.");
                 return true;
             }
             input.log?.("info", "Resolved account share access.", {
@@ -312,17 +276,14 @@ export function createShareRoutes(input: {
                 shareId: decodeURIComponent(accountShareMatch[1]),
                 accountId: claims.sub,
             });
-            sendJson(response, 200, { data: result });
+            sendJson(res, 200, { data: result });
             return true;
         }
 
-        if (
-            request.method === "POST" &&
-            url.pathname === "/api/v1/share/tokens"
-        ) {
-            const claims = routeContext.requireAuth(request, response, "user");
+        if (req.method === "POST" && url.pathname === "/api/v1/share/tokens") {
+            const claims = routeContext.requireAuth(req, res, "user");
             if (!claims) return true;
-            const body = (await readJson(request)) as {
+            const body = (await readJson(req)) as {
                 resourceType?: unknown;
                 resourceId?: unknown;
                 contentUrl?: unknown;
@@ -341,7 +302,7 @@ export function createShareRoutes(input: {
             const contentUrl = String(body.contentUrl ?? "").trim();
             if (!resourceType || !resourceId) {
                 sendError(
-                    response,
+                    res,
                     400,
                     "bad_request",
                     "resourceType and resourceId are required.",
@@ -350,7 +311,7 @@ export function createShareRoutes(input: {
             }
             if (contentUrl && !/^\/(?!\/)/.test(contentUrl)) {
                 sendError(
-                    response,
+                    res,
                     400,
                     "invalid_content_url",
                     "contentUrl must be an internal absolute path.",
@@ -366,7 +327,7 @@ export function createShareRoutes(input: {
                     resourceId,
                 });
                 sendError(
-                    response,
+                    res,
                     400,
                     "invalid_expires_at",
                     "Share expiration must be a valid timestamp.",
@@ -390,7 +351,7 @@ export function createShareRoutes(input: {
             }>(methodResult.stageResults, "prepare-method");
             if (!prepared?.prepared) {
                 sendError(
-                    response,
+                    res,
                     400,
                     "invalid_share_method",
                     prepared?.reason ?? "Share method input is invalid.",
@@ -422,29 +383,29 @@ export function createShareRoutes(input: {
             }>(flowResult.stageResults, "issue-token");
             if (!issued?.minted) {
                 if (issued?.reason === "duplicate_user_share") {
-                    sendDuplicateUserShareError(response);
+                    sendDuplicateUserShareError(res);
                     return true;
                 }
                 sendError(
-                    response,
+                    res,
                     403,
                     "forbidden",
                     "Share token could not be created.",
                 );
                 return true;
             }
-            sendJson(response, 200, { data: issued.shareRecord ?? null });
+            sendJson(res, 200, { data: issued.shareRecord ?? null });
             return true;
         }
 
         const updateMatch = url.pathname.match(
             /^\/api\/v1\/share\/tokens\/([^/]+)$/,
         );
-        if (request.method === "PATCH" && updateMatch) {
-            const claims = routeContext.requireAuth(request, response, "user");
+        if (req.method === "PATCH" && updateMatch) {
+            const claims = routeContext.requireAuth(req, res, "user");
             if (!claims) return true;
             const shareId = decodeURIComponent(updateMatch[1]);
-            const body = (await readJson(request)) as {
+            const body = (await readJson(req)) as {
                 label?: unknown;
                 grantedCapabilities?: unknown;
                 accessControls?: unknown;
@@ -461,7 +422,7 @@ export function createShareRoutes(input: {
                     shareId,
                 });
                 sendError(
-                    response,
+                    res,
                     400,
                     "invalid_expires_at",
                     "Share expiration must be a valid timestamp.",
@@ -506,7 +467,7 @@ export function createShareRoutes(input: {
                     error instanceof Error &&
                     error.message === "duplicate_user_share"
                 ) {
-                    sendDuplicateUserShareError(response);
+                    sendDuplicateUserShareError(res);
                     return true;
                 }
                 throw error;
@@ -516,10 +477,10 @@ export function createShareRoutes(input: {
                 updatedToken?: unknown;
             }>(flowResult.stageResults, "update-token");
             if (!updateResult?.updated) {
-                sendError(response, 404, "not_found", "Share token not found.");
+                sendError(res, 404, "not_found", "Share token not found.");
                 return true;
             }
-            sendJson(response, 200, {
+            sendJson(res, 200, {
                 data: updateResult.updatedToken ?? null,
             });
             return true;
@@ -528,13 +489,13 @@ export function createShareRoutes(input: {
         const deleteMatch = url.pathname.match(
             /^\/api\/v1\/share\/tokens\/([^/]+)$/,
         );
-        if (request.method === "DELETE" && deleteMatch) {
-            const claims = routeContext.requireAuth(request, response, "user");
+        if (req.method === "DELETE" && deleteMatch) {
+            const claims = routeContext.requireAuth(req, res, "user");
             if (!claims) return true;
             const shareId = decodeURIComponent(deleteMatch[1]);
             const existingToken = await input.gateway.getTokenById(shareId);
             if (!existingToken) {
-                sendError(response, 404, "not_found", "Share token not found.");
+                sendError(res, 404, "not_found", "Share token not found.");
                 return true;
             }
             const flowResult = await input.flow.run("revoke-share-token", {
@@ -552,22 +513,22 @@ export function createShareRoutes(input: {
             );
             if (!deleted?.revoked) {
                 sendError(
-                    response,
+                    res,
                     403,
                     "forbidden",
                     "Share token could not be revoked.",
                 );
                 return true;
             }
-            sendJson(response, 200, { data: { deleted: true } });
+            sendJson(res, 200, { data: { deleted: true } });
             return true;
         }
 
         const rejectMatch = url.pathname.match(
             /^\/api\/v1\/share\/tokens\/([^/]+)\/reject$/,
         );
-        if (request.method === "POST" && rejectMatch) {
-            const claims = routeContext.requireAuth(request, response, "user");
+        if (req.method === "POST" && rejectMatch) {
+            const claims = routeContext.requireAuth(req, res, "user");
             if (!claims) return true;
             const shareId = decodeURIComponent(rejectMatch[1]);
             const shareRecord = await input.gateway.getTokenById(shareId);
@@ -586,32 +547,32 @@ export function createShareRoutes(input: {
             }>(flowResult.stageResults, "delete-token");
             if (!rejected?.revoked || !rejected.rejected) {
                 sendError(
-                    response,
+                    res,
                     403,
                     "forbidden",
                     "Share could not be rejected.",
                 );
                 return true;
             }
-            sendJson(response, 200, { data: { rejected: true } });
+            sendJson(res, 200, { data: { rejected: true } });
             return true;
         }
 
         const emailMatch = url.pathname.match(
             /^\/api\/v1\/share\/tokens\/([^/]+)\/email$/,
         );
-        if (request.method === "POST" && emailMatch) {
-            const claims = routeContext.requireAuth(request, response, "user");
+        if (req.method === "POST" && emailMatch) {
+            const claims = routeContext.requireAuth(req, res, "user");
             if (!claims) return true;
             const shareId = decodeURIComponent(emailMatch[1]);
             const shareRecord = await input.gateway.getTokenById(shareId);
             if (!shareRecord || shareRecord.ownerAccountId !== claims.sub) {
-                sendError(response, 404, "not_found", "Share token not found.");
+                sendError(res, 404, "not_found", "Share token not found.");
                 return true;
             }
             const serializedShare =
                 await input.gateway.serializeRecord(shareRecord);
-            const body = (await readJson(request)) as { recipients?: unknown };
+            const body = (await readJson(req)) as { recipients?: unknown };
             const recipients = Array.from(
                 new Set(
                     (Array.isArray(body.recipients) ? body.recipients : [])
@@ -626,12 +587,7 @@ export function createShareRoutes(input: {
                 ),
             ).slice(0, 20);
             if (recipients.length === 0) {
-                sendError(
-                    response,
-                    400,
-                    "bad_request",
-                    "Recipients are required.",
-                );
+                sendError(res, 400, "bad_request", "Recipients are required.");
                 return true;
             }
             const sendEmail =
@@ -644,7 +600,7 @@ export function createShareRoutes(input: {
                 >("notify:sendEmail");
             if (!sendEmail) {
                 sendError(
-                    response,
+                    res,
                     503,
                     "unavailable",
                     "Share email is unavailable.",
@@ -701,24 +657,21 @@ export function createShareRoutes(input: {
                 shareId,
                 recipientCount: recipients.length,
             });
-            sendJson(response, 200, { data: { sent: recipients.length } });
+            sendJson(res, 200, { data: { sent: recipients.length } });
             return true;
         }
 
         const resolveMatch = url.pathname.match(
             /^\/api\/v1\/share\/resolve\/([^/]+)$/,
         );
-        if (
-            (request.method === "GET" || request.method === "POST") &&
-            resolveMatch
-        ) {
+        if ((req.method === "GET" || req.method === "POST") && resolveMatch) {
             const token = decodeURIComponent(resolveMatch[1]);
             const body =
-                request.method === "POST"
-                    ? ((await readJson(request)) as { password?: unknown })
+                req.method === "POST"
+                    ? ((await readJson(req)) as { password?: unknown })
                     : {};
-            const transportPassword = readSharePassword(request, url);
-            const requesterClaims = routeContext.getAuthClaims(request);
+            const transportPassword = readSharePassword(req, url);
+            const requesterClaims = routeContext.getAuthClaims(req);
             // Share guests resolving another share link (e.g. following a
             // link while already viewing a shared resource) are not "real"
             // requesters for direct-access purposes — only pass through
@@ -758,7 +711,7 @@ export function createShareRoutes(input: {
             if (!resolved?.resolved) {
                 const reason = String(resolved?.reason ?? "invalid_token");
                 sendError(
-                    response,
+                    res,
                     reason === "invalid_token"
                         ? 404
                         : reason === "password_required"
@@ -778,7 +731,7 @@ export function createShareRoutes(input: {
                     stringsBaseUrl?: string | string[];
                 };
             }>(flowResult.stageResults, "deliver-recipient");
-            sendJson(response, 200, {
+            sendJson(res, 200, {
                 data: {
                     shareId: resolved.shareId ?? "",
                     resourceType: resolved.resourceType,
@@ -804,10 +757,10 @@ export function createShareRoutes(input: {
         }
 
         if (
-            request.method === "GET" &&
+            req.method === "GET" &&
             url.pathname === "/api/v1/share/recipients/users"
         ) {
-            const claims = routeContext.requireAuth(request, response, "user");
+            const claims = routeContext.requireAuth(req, res, "user");
             if (!claims) return true;
             const query = String(url.searchParams.get("q") ?? "").trim();
             const profileStore = input.gateway.getCapability<{
@@ -828,7 +781,7 @@ export function createShareRoutes(input: {
                 query && typeof profileStore?.searchProfiles === "function"
                     ? await profileStore.searchProfiles(query)
                     : [];
-            sendJson(response, 200, {
+            sendJson(res, 200, {
                 data: profiles
                     .filter((profile) => profile.accountId !== claims.sub)
                     .map((profile) => ({
@@ -843,15 +796,15 @@ export function createShareRoutes(input: {
         }
 
         if (
-            request.method === "GET" &&
+            req.method === "GET" &&
             url.pathname === "/api/v1/share/guest-profile"
         ) {
-            const claims = routeContext.requireAuth(request, response, "user");
+            const claims = routeContext.requireAuth(req, res, "user");
             if (!claims) return true;
             const guestSessionId = resolveShareGuestSessionId(claims);
             if (!guestSessionId) {
                 sendError(
-                    response,
+                    res,
                     404,
                     "not_found",
                     "No guest profile is associated with this session.",
@@ -861,15 +814,10 @@ export function createShareRoutes(input: {
             const guestProfile =
                 await input.gateway.getGuestProfile(guestSessionId);
             if (!guestProfile) {
-                sendError(
-                    response,
-                    404,
-                    "not_found",
-                    "Guest profile not found.",
-                );
+                sendError(res, 404, "not_found", "Guest profile not found.");
                 return true;
             }
-            sendJson(response, 200, {
+            sendJson(res, 200, {
                 data: {
                     displayName: guestProfile.displayName,
                     avatarKey: guestProfile.avatarKey,
@@ -879,24 +827,24 @@ export function createShareRoutes(input: {
         }
 
         if (
-            request.method === "GET" &&
+            req.method === "GET" &&
             url.pathname === "/api/v1/share/approvals/pending"
         ) {
-            const claims = routeContext.requireAuth(request, response, "user");
+            const claims = routeContext.requireAuth(req, res, "user");
             if (!claims) return true;
             const pending = await input.gateway.listPendingApprovalsForAccount(
                 claims.sub,
             );
-            sendJson(response, 200, {
-                data: pending.map((request) => ({
-                    id: request.id,
-                    resourceType: request.resourceType,
-                    resourceId: request.resourceId,
-                    requesterDisplayName: request.requesterDisplayName,
-                    action: request.approvalAction,
-                    target: request.approvalTarget,
-                    createdAt: request.createdAt,
-                    expiresAt: request.expiresAt,
+            sendJson(res, 200, {
+                data: pending.map((req) => ({
+                    id: req.id,
+                    resourceType: req.resourceType,
+                    resourceId: req.resourceId,
+                    requesterDisplayName: req.requesterDisplayName,
+                    action: req.approvalAction,
+                    target: req.approvalTarget,
+                    createdAt: req.createdAt,
+                    expiresAt: req.expiresAt,
                 })),
             });
             return true;
@@ -905,15 +853,15 @@ export function createShareRoutes(input: {
         const approvalRespondMatch = url.pathname.match(
             /^\/api\/v1\/share\/approvals\/([^/]+)\/respond$/,
         );
-        if (request.method === "POST" && approvalRespondMatch) {
-            const claims = routeContext.requireAuth(request, response, "user");
+        if (req.method === "POST" && approvalRespondMatch) {
+            const claims = routeContext.requireAuth(req, res, "user");
             if (!claims) return true;
             const approvalId = decodeURIComponent(approvalRespondMatch[1]);
-            const body = (await readJson(request)) as { decision?: unknown };
+            const body = (await readJson(req)) as { decision?: unknown };
             const decision = String(body.decision ?? "").trim();
             if (decision !== "approved" && decision !== "declined") {
                 sendError(
-                    response,
+                    res,
                     400,
                     "bad_request",
                     "decision must be 'approved' or 'declined'.",
@@ -927,14 +875,14 @@ export function createShareRoutes(input: {
             });
             if (!applied) {
                 sendError(
-                    response,
+                    res,
                     404,
                     "not_found",
                     "Approval request not found, already resolved, or expired.",
                 );
                 return true;
             }
-            sendJson(response, 200, { data: { ok: true } });
+            sendJson(res, 200, { data: { ok: true } });
             return true;
         }
 

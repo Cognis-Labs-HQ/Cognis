@@ -33,7 +33,7 @@ for (const maximum of ["half", "fill", "full", ["half", 8], [8, 8]]) {
         for (const nested of [false, true]) {
             const state = {
                 elements: [element],
-                gridCols: 2,
+                gridColumns: 2,
                 gridRows: 6,
                 layout: { placements: [], hidden: [] },
             };
@@ -94,7 +94,7 @@ test("nested responsive presentation filters hidden cards and restores wide layo
     const state = {
         elements: placements.map((placement) => ({ id: placement.id })),
         layout: { placements, hidden: ["hidden"] },
-        gridCols: 3,
+        gridColumns: 3,
         container: containerAt(320),
     };
     const renderer = createComposerRenderer({
@@ -116,7 +116,7 @@ test("nested responsive presentation filters hidden cards and restores wide layo
         ],
     );
     state.container = containerAt(800);
-    state.gridCols = 8;
+    state.gridColumns = 8;
     assert.deepEqual(
         renderer.computeSubViewPlacements(state),
         placements.slice(0, 2),
@@ -131,8 +131,8 @@ test("nested editor uses every available pixel rather than truncating its width"
         layout: { placements: [], hidden: [] },
     };
     createNestedComposerHandlers({ UNIT: 90 }).computeSubGridDimensions(state);
-    assert.equal(state.gridCols, 3);
-    assert.equal(state.gridTrackSize * state.gridCols, 347);
+    assert.equal(state.gridColumns, 3);
+    assert.equal(state.gridTrackSize * state.gridColumns, 347);
     assert.equal(state.container.style.width, "");
 });
 
@@ -140,7 +140,7 @@ for (const nested of [false, true]) {
     test(`${nested ? "nested" : "main"} Add reveals a default-hidden widget without dragging`, () => {
         const state = {
             elements: [{ id: "optional", defaultHidden: true }],
-            gridCols: 3,
+            gridColumns: 3,
             gridRows: 6,
             layout: { placements: [], hidden: [] },
         };
@@ -193,11 +193,11 @@ test("nested geometry remeasures same-column pixel widths in edit mode", () => {
     };
     const handlers = createNestedComposerHandlers({ UNIT: 90 });
     handlers.computeSubGridDimensions(state);
-    assert.equal(state.gridCols, 3);
+    assert.equal(state.gridColumns, 3);
     state.container = containerAt(300);
     handlers.computeSubGridDimensions(state);
-    assert.equal(state.gridCols, 3);
-    assert.equal(state.gridTrackSize * state.gridCols, 300);
+    assert.equal(state.gridColumns, 3);
+    assert.equal(state.gridTrackSize * state.gridColumns, 300);
 });
 
 test("same-column editing resizes redraw pixel geometry without reflowing unsaved placements", () => {

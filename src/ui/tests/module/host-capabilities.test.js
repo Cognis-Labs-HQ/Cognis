@@ -125,8 +125,14 @@ test("the files client is a standalone provider independent of navbar mount", ()
         filesBootstrap,
         /registerCapabilityProvider\(\{[\s\S]*files:uiClient/,
     );
-    assert.match(filesBootstrap, /registerStaticDir\("files", uiDirectory\)/);
-    assert.doesNotMatch(filesBootstrap, /registerStaticDir\("gateways\/files"/);
+    assert.match(
+        filesBootstrap,
+        /registerStaticDirectory\("files", uiDirectory\)/,
+    );
+    assert.doesNotMatch(
+        filesBootstrap,
+        /registerStaticDirectory\("gateways\/files"/,
+    );
     assert.doesNotMatch(
         filesBootstrap,
         /registerNavbarPlugin\(\{[\s\S]*files:uiClient/,

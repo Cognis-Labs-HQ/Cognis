@@ -29,7 +29,7 @@ import { bindComposerPointerDrag } from "./pointer-drag.js";
  * @param {object} options Owner-supplied grid state and geometry operations.
  * @param {HTMLElement} options.cell Connected editable cell receiving the handles.
  * @param {{id: string, col: number, row: number, w: number, h: number}} options.placement Cell's current placement.
- * @param {{gridCols: number, gridRows: number, layout: {placements: object[]}}} options.state Live mutable grid state.
+ * @param {{gridColumns: number, gridRows: number, layout: {placements: object[]}}} options.state Live mutable grid state.
  * @param {object} options.gridSize Normalized sizing from resolveElementGridSize.
  * @param {HTMLElement} options.container Preview parent in the same coordinate system as geometry.
  * @param {{point: function(PointerEvent): {col: number, row: number}, columnOffset: function(number): number, rowOffset: function(number): number, columnSpan: function(number): number, rowSpan: function(number): number}} options.geometry Pointer-to-grid and grid-to-pixel operations; read live scroll position.
@@ -52,7 +52,7 @@ export function appendResizeControls({
     const availability = resolveResizeAvailability({
         placement,
         gridSize,
-        columns: state.gridCols,
+        columns: state.gridColumns,
         rows: state.gridRows,
         canPlace,
     });
@@ -69,7 +69,7 @@ export function appendResizeControls({
             event.stopPropagation();
             const start = geometry.point(event);
             const dimensions = {
-                columns: state.gridCols,
+                columns: state.gridColumns,
                 rows: state.gridRows,
             };
             let candidate = { ...placement };

@@ -11,15 +11,12 @@ import { issueAccessToken } from "../access-tokens.js";
 
 export type HttpIncomingMessage = import("node:http").IncomingMessage;
 
-export type InMemoryDb = {
-    execute: (
-        sql: string,
-        parameters?: unknown[],
-    ) => Promise<{ rows: unknown[] }>;
+export type InMemoryDatabase = {
+    execute: (sql: string, params?: unknown[]) => Promise<{ rows: unknown[] }>;
     executeCommand: () => Promise<{ rows: unknown[] }>;
     ensureTable: () => Promise<void>;
     transaction: <T>(
-        callback: (database: InMemoryDb) => Promise<T>,
+        callback: (db: InMemoryDatabase) => Promise<T>,
     ) => Promise<T>;
 };
 
@@ -34,7 +31,7 @@ export type TestResponse = {
     readonly writableEnded: boolean;
 };
 
-function makeInMemoryDatabase(): InMemoryDb {
+function makeInMemoryDatabase(): InMemoryDatabase {
     return {
         execute: async (_sql: string, _parameters?: unknown[]) => ({
             rows: [],
@@ -42,7 +39,7 @@ function makeInMemoryDatabase(): InMemoryDb {
         executeCommand: async () => ({ rows: [] }),
         ensureTable: async () => {},
         transaction: async <T>(
-            callback: (database: InMemoryDb) => Promise<T>,
+            callback: (db: InMemoryDatabase) => Promise<T>,
         ): Promise<T> => callback(makeInMemoryDatabase()),
     };
 }

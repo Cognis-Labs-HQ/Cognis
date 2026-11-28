@@ -510,8 +510,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         flow: ctx.flow,
         registerRoute: (handler, gatewayId) =>
             ctx.routeRegistry.register(handler, gatewayId ?? "study"),
-        registerAdapterStaticDir: (gatewayId, adapterId, dir) => {
-            if (!ctx.uiRegistry?.registerAdapterStaticDir) {
+        registerAdapterStaticDirectory: (gatewayId, adapterId, dir) => {
+            if (!ctx.uiRegistry?.registerAdapterStaticDirectory) {
                 ctx.log?.(
                     "warn",
                     "Study adapter UI static directory registration skipped because the UI registry does not support adapter static dirs.",
@@ -524,7 +524,11 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
                 );
                 return;
             }
-            ctx.uiRegistry.registerAdapterStaticDir(gatewayId, adapterId, dir);
+            ctx.uiRegistry.registerAdapterStaticDirectory(
+                gatewayId,
+                adapterId,
+                dir,
+            );
         },
         log: ctx.log,
     });
@@ -534,7 +538,10 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         adapterCount: gateway.listAdapters().length,
     });
 
-    ctx.uiRegistry?.registerStaticDir("study", path.join(GATEWAY_ROOT, "ui"));
+    ctx.uiRegistry?.registerStaticDirectory(
+        "study",
+        path.join(GATEWAY_ROOT, "ui"),
+    );
     const studyStylesheets = [
         "/static/styles/page-builder.css",
         "/static/styles/reuse/page-sections.css",

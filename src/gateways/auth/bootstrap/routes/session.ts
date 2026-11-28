@@ -24,7 +24,7 @@ import { CTX_CAPABILITY, type Ctx } from "@cognis/core";
 import type { GatewayBootstrapContext } from "../../../shared.js";
 import type {
     AuthGatewayRouteHandler,
-    AuthRouteLogMeta,
+    AuthRouteLogMetadata,
     LoginFlowSessionResult,
 } from "./shared.js";
 
@@ -234,7 +234,7 @@ export function createSessionRoutes({
         req: import("node:http").IncomingMessage,
         res: import("node:http").ServerResponse,
         sessionResult: LoginFlowSessionResult,
-        logMetadata: AuthRouteLogMeta,
+        logMetadata: AuthRouteLogMetadata,
         responseCookies: string[] = [],
     ): true {
         const appendResponseCookie = (cookie: string): string | string[] =>
@@ -498,7 +498,7 @@ export function createSessionRoutes({
         req,
         res,
         url,
-        logMetadata: AuthRouteLogMeta,
+        logMetadata: AuthRouteLogMetadata,
     ): Promise<boolean> => {
         if (
             url.pathname === "/api/v1/auth/login-methods" &&

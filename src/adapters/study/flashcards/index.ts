@@ -6,7 +6,7 @@ import type {
     StudyAdapter,
     StudyAdapterBootstrapCtx,
 } from "../../../gateways/study/gateway.js";
-import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import type { RouteContext } from "../../../api/reuse/route-context.js";
 import type { DeckLibrary } from "./service/types.js";
 import { registerDeckFlows } from "./service/flows.js";
@@ -34,7 +34,8 @@ export function createStudyAdapter(): StudyAdapter {
 export async function bootstrapStudyAdapter(
     ctx: StudyAdapterBootstrapCtx,
 ): Promise<void> {
-    const databaseExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
+    const databaseExecutor =
+        ctx.capabilities.get<DatabaseExecutor>("db:executor");
     const system = ctx.capabilities.get<Ctx>("system:ctx");
     const auth = ctx.capabilities.get<RouteContext>("auth:routeContext");
     if (!databaseExecutor || !system || !auth) return;
@@ -89,7 +90,7 @@ export async function bootstrapStudyAdapter(
     );
     ctx.capabilities.contribute("study:decks", service);
     ctx.registerRoute(createDeckRoutes(service, auth, ctx.log), "study");
-    ctx.registerAdapterStaticDir?.(
+    ctx.registerAdapterStaticDirectory?.(
         "study",
         "flashcards",
         `${ctx.adapterRoot}/ui`,

@@ -308,7 +308,7 @@ class LdapAuthAdapter implements AuthProviderAdapter {
     private client: LdapClient = new StandardLdapClient();
     private adminGroups = new Set(["cognis-admins"]);
     private writebackEnabled = false;
-    private writebackBaseDn = "";
+    private writebackBaseDistinguishedName = "";
     private writebackUserAttribute = "uid";
     private options: LdapRuntimeOptions = {
         serverUrl: "",
@@ -591,7 +591,7 @@ class LdapAuthAdapter implements AuthProviderAdapter {
         if (typeof config.adminGroups === "string" && config.adminGroups)
             this.adminGroups = new Set(splitList(config.adminGroups));
         this.writebackEnabled = config.writebackEnabled === true;
-        this.writebackBaseDn = String(
+        this.writebackBaseDistinguishedName = String(
             config.writebackBaseDn ?? this.options.baseDn ?? "",
         ).trim();
         this.writebackUserAttribute =
@@ -720,7 +720,7 @@ class LdapAuthAdapter implements AuthProviderAdapter {
                 reason: "gateway.auth.security.ldap.writeback_disabled",
             };
         if (
-            !this.writebackBaseDn &&
+            !this.writebackBaseDistinguishedName &&
             !configuredServers.some((server) => server.writebackBaseDn)
         )
             return {
@@ -774,7 +774,9 @@ class LdapAuthAdapter implements AuthProviderAdapter {
             return { updated: false, message: support.reason };
         const options = {
             ...selectedOptions,
-            baseDn: selectedOptions.writebackBaseDn || this.writebackBaseDn,
+            baseDn:
+                selectedOptions.writebackBaseDn ||
+                this.writebackBaseDistinguishedName,
             userAttribute:
                 selectedOptions.writebackUserAttribute ||
                 this.writebackUserAttribute,

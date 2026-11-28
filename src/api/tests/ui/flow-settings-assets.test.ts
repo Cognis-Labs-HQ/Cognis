@@ -13,7 +13,7 @@ test("flow-added settings resolve bundles after live authorization and retain fr
     const registry = new UIRegistry(
         new URL("./fixtures/asset-manifest.json", import.meta.url).pathname,
     );
-    registry.registerStaticDir(
+    registry.registerStaticDirectory(
         "alias",
         path.resolve("src/adapters/example/sample/ui"),
     );

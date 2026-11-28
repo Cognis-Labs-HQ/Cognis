@@ -670,7 +670,7 @@ export async function bootstrapSocialAdapter(
         path.dirname(fileURLToPath(import.meta.url)),
         "ui",
     );
-    ctx.registerAdapterStaticDir?.("social", "messages", uiDirectory);
+    ctx.registerAdapterStaticDirectory?.("social", "messages", uiDirectory);
     ctx.registerSpaRoute?.({
         id: "social-messages-page",
         requiredCapabilities: ["social:messagesRequest"],

@@ -50,7 +50,7 @@ test("GET /api/v1/auth/login-methods returns enabled providers", async () => {
         > & {
             execute: (
                 sql: string,
-                parameters?: unknown[],
+                params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
     });
@@ -118,7 +118,7 @@ test("GET /api/v1/auth/login-ui returns flow-resolved methods and integrations",
         > & {
             execute: (
                 sql: string,
-                parameters?: unknown[],
+                params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
     });
@@ -271,7 +271,7 @@ test("GET /api/v1/auth/registration-config returns open-registration state", asy
         > & {
             execute: (
                 sql: string,
-                parameters?: unknown[],
+                params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
     });
@@ -360,7 +360,7 @@ test("GET /api/v1/gateways/auth/adapters requires admin auth", async () => {
         > & {
             execute: (
                 sql: string,
-                parameters?: unknown[],
+                params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
     });
@@ -400,7 +400,7 @@ test("GET /api/v1/gateways/auth/adapters returns adapter list to admin", async (
         > & {
             execute: (
                 sql: string,
-                parameters?: unknown[],
+                params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
     });
@@ -448,7 +448,7 @@ test("login endpoint returns 503 when no auth providers are available", async ()
         > & {
             execute: (
                 sql: string,
-                parameters?: unknown[],
+                params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
     });
@@ -500,7 +500,7 @@ test("POST /api/v1/auth/verify returns 401 for stale unknown authenticated user"
         > & {
             execute: (
                 sql: string,
-                parameters?: unknown[],
+                params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
     });
@@ -550,7 +550,7 @@ test("POST /api/v1/auth/verify returns 200 for fresh authenticated session", asy
         > & {
             execute: (
                 sql: string,
-                parameters?: unknown[],
+                params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
     });
@@ -593,7 +593,7 @@ test("POST /api/v1/auth/verify accepts a fresh cookie-only SSO session", async (
         > & {
             execute: (
                 sql: string,
-                parameters?: unknown[],
+                params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
     });
@@ -638,7 +638,7 @@ test("POST /api/v1/auth/verify returns 401 when unauthenticated", async () => {
         > & {
             execute: (
                 sql: string,
-                parameters?: unknown[],
+                params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
     });
@@ -680,7 +680,7 @@ test("registration:public:register capability is looked up lazily in register ha
         > & {
             execute: (
                 sql: string,
-                parameters?: unknown[],
+                params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
     });
@@ -741,7 +741,7 @@ test("auth register endpoint returns 403 when open registration is disabled", as
         > & {
             execute: (
                 sql: string,
-                parameters?: unknown[],
+                params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
     });

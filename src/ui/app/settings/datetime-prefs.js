@@ -9,10 +9,10 @@ import { getBrowserDetectedTimezone } from "../../reuse/timestamp.js";
  * specific timezone is chosen it overrides auto-detection permanently.
  *
  * Public exports:
- *   initDateTimePreferences(root, options) — initialises the timezone selector inside root.
+ *   initializeDateTimePreferences(root, options) — initialises the timezone selector inside root.
  *
  * Usage:
- *   const dtPrefs = initDateTimePreferences(root, { existingPrefs, i18n, onDirtyChange });
+ *   const dtPrefs = initializeDateTimePreferences(root, { existingPrefs, i18n, onDirtyChange });
  *   await dtPrefs.init();
  *   const tz = dtPrefs.getTimezone();  // 'auto' | IANA string
  *   const timeFormat = dtPrefs.getTimeFormat(); // 'auto' | '12h' | '24h'
@@ -21,7 +21,7 @@ import { getBrowserDetectedTimezone } from "../../reuse/timestamp.js";
  * @param {{ existingPrefs: object|null, i18n: object, onDirtyChange?: (dirty: boolean) => void }} options
  * @returns {{ init: () => void, getTimezone: () => string, getTimeFormat: () => string, isDirty: () => boolean, commit: () => void, discard: () => void }}
  */
-function initDateTimePreferences(
+function initializeDateTimePreferences(
     root,
     { existingPrefs: existingPreferences, i18n, onDirtyChange },
 ) {
@@ -150,4 +150,4 @@ function initDateTimePreferences(
         discard,
     };
 }
-export { initDateTimePreferences };
+export { initializeDateTimePreferences };

@@ -1,9 +1,9 @@
 import { executeReferences } from "./reference-storage.js";
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 
 /** Keep omitted provider dependencies reachable from authored or modified cards. */
 export async function retainedPackEntries(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     previous: ReadonlySet<string>,
     imported: ReadonlySet<string>,
     modified: ReadonlySet<string>,

@@ -133,7 +133,7 @@ export interface RoomRequestSummary {
     canRespond: boolean;
 }
 
-export interface MessagesRoutesDeps {
+export interface MessagesRoutesDependencies {
     messagesStore: DatabaseMessagesStore;
     profileStore: SocialMessagesProfileStore;
     dispatch: Dispatch | null;

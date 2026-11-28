@@ -107,7 +107,7 @@ export interface ModuleDiscoveryResult {
 export type ModuleMarketplaceLog = (
     level: "info" | "warn" | "error",
     message: string,
-    metadata: Record<string, unknown>,
+    meta: Record<string, unknown>,
 ) => void;
 
 export const DEFAULT_RECOMMENDED_MODULES_URL =

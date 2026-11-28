@@ -187,7 +187,7 @@ test("tfa catalog restores adapter state and publishes authenticated lifecycle c
     }
 
     assert.equal(
-        uiRegistry.getStaticDir("tfa"),
+        uiRegistry.getStaticDirectory("tfa"),
         path.resolve(process.cwd(), "src", "gateways", "tfa", "ui"),
     );
     assert.deepEqual(

@@ -278,26 +278,29 @@ test("offline language tables allow selected reordering, block membership change
         querySelectorAll: () => [],
         addEventListener: (name, callback) => handlers.set(name, callback),
     };
-    const { initLanguagePreferences: initLanguagePreferences } = loadTestModule(
-        new URL("../../app/settings/language-prefs.js", import.meta.url),
-        {
-            "../../reuse/offline-state.js": { isOffline: () => disconnected },
-            "../../reuse/ui-language-catalog.js": {
-                loadUiLanguageCatalog: async () =>
-                    ["en", "de", "ja"].map((iso_code) => ({
-                        iso_code,
-                        name: iso_code,
-                    })),
+    const { initializeLanguagePreferences: initializeLanguagePreferences } =
+        loadTestModule(
+            new URL("../../app/settings/language-prefs.js", import.meta.url),
+            {
+                "../../reuse/offline-state.js": {
+                    isOffline: () => disconnected,
+                },
+                "../../reuse/ui-language-catalog.js": {
+                    loadUiLanguageCatalog: async () =>
+                        ["en", "de", "ja"].map((iso_code) => ({
+                            iso_code,
+                            name: iso_code,
+                        })),
+                },
+                "../../reuse/i18n.js": {
+                    sanitizeLanguagePriority: (value) => value,
+                    readBrowserLocales: () => ["ja"],
+                },
             },
-            "../../reuse/i18n.js": {
-                sanitizeLanguagePriority: (value) => value,
-                readBrowserLocales: () => ["ja"],
-            },
-        },
-        { window, document: { createElement: () => new Element() } },
-    );
+            { window, document: { createElement: () => new Element() } },
+        );
     const scope = new AbortController();
-    const controller = initLanguagePreferences(root, ["en", "de"], {
+    const controller = initializeLanguagePreferences(root, ["en", "de"], {
         signal: scope.signal,
     });
     await controller.init();

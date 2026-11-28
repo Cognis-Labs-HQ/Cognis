@@ -12,8 +12,8 @@
  * @module adapters/notify/internal/db-store
  */
 import { randomUUID } from "node:crypto";
-import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
-import type { StructuredDbTableDef } from "../../../gateways/db/reuse/db-table.js";
+import type { DatabaseExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { StructuredDatabaseTableDefinition } from "../../../gateways/db/reuse/db-table.js";
 
 import type { NotificationEnvelope } from "../../../gateways/notify/contracts/sender.js";
 import type {
@@ -40,12 +40,12 @@ const MAX_PER_USER = 50;
 type StoreLog = (
     level: string,
     message: string,
-    metadata?: Record<string, unknown>,
+    meta?: Record<string, unknown>,
 ) => void;
 
 class DatabaseInternalNotificationStore implements IInternalNotificationStore {
     constructor(
-        private readonly database: DbExecutor,
+        private readonly db: DatabaseExecutor,
         private readonly serverSecret: string,
         private readonly log?: StoreLog,
     ) {}
@@ -73,14 +73,14 @@ class DatabaseInternalNotificationStore implements IInternalNotificationStore {
                     name: "idx_internal_notif_account",
                 },
             ],
-        } satisfies StructuredDbTableDef & {
+        } satisfies StructuredDatabaseTableDefinition & {
             columns: Array<
-                StructuredDbTableDef["columns"][number] & {
+                StructuredDatabaseTableDefinition["columns"][number] & {
                     renamedFrom?: string;
                 }
             >;
         };
-        await this.database.ensureTable(definition);
+        await this.db.ensureTable(definition);
     }
 
     async add(envelope: NotificationEnvelope): Promise<void> {
@@ -103,7 +103,7 @@ class DatabaseInternalNotificationStore implements IInternalNotificationStore {
         const id = randomUUID();
         const now = Date.now();
 
-        await this.database.executeCommand({
+        await this.db.executeCommand({
             option: "INSERT",
             table: "internal_notifications",
             values: {
@@ -120,7 +120,7 @@ class DatabaseInternalNotificationStore implements IInternalNotificationStore {
     }
 
     private async evictOldest(accountId: string): Promise<void> {
-        const countResult = await this.database.executeCommand({
+        const countResult = await this.db.executeCommand({
             option: "SELECT",
             table: "internal_notifications",
             count: true,
@@ -132,7 +132,7 @@ class DatabaseInternalNotificationStore implements IInternalNotificationStore {
         if (total <= MAX_PER_USER) return;
 
         const excess = total - MAX_PER_USER;
-        const idsResult = await this.database.executeCommand({
+        const idsResult = await this.db.executeCommand({
             option: "SELECT",
             table: "internal_notifications",
             columns: ["id"],
@@ -144,7 +144,7 @@ class DatabaseInternalNotificationStore implements IInternalNotificationStore {
             (row) => (row as Record<string, unknown>).id as string,
         );
         for (const id of ids) {
-            await this.database.executeCommand({
+            await this.db.executeCommand({
                 option: "DELETE",
                 table: "internal_notifications",
                 where: [{ column: "id", value: id }],
@@ -153,7 +153,7 @@ class DatabaseInternalNotificationStore implements IInternalNotificationStore {
     }
 
     async list(username: string): Promise<InternalNotification[]> {
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "internal_notifications",
             columns: ["id", "iv", "payload_enc", "is_read", "created_at"],
@@ -209,7 +209,7 @@ class DatabaseInternalNotificationStore implements IInternalNotificationStore {
     }
 
     async countUnread(username: string): Promise<number> {
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "internal_notifications",
             count: true,
@@ -222,7 +222,7 @@ class DatabaseInternalNotificationStore implements IInternalNotificationStore {
     }
 
     async markRead(username: string, id: string): Promise<boolean> {
-        const check = await this.database.executeCommand({
+        const check = await this.db.executeCommand({
             option: "SELECT",
             table: "internal_notifications",
             columns: ["id"],
@@ -233,7 +233,7 @@ class DatabaseInternalNotificationStore implements IInternalNotificationStore {
         });
         if (!check.rows?.length) return false;
 
-        await this.database.executeCommand({
+        await this.db.executeCommand({
             option: "UPDATE",
             table: "internal_notifications",
             set: { is_read: 1 },
@@ -246,7 +246,7 @@ class DatabaseInternalNotificationStore implements IInternalNotificationStore {
     }
 
     async markAllRead(username: string): Promise<void> {
-        await this.database.executeCommand({
+        await this.db.executeCommand({
             option: "UPDATE",
             table: "internal_notifications",
             set: { is_read: 1 },
@@ -255,7 +255,7 @@ class DatabaseInternalNotificationStore implements IInternalNotificationStore {
     }
 
     async delete(username: string, id: string): Promise<boolean> {
-        const check = await this.database.executeCommand({
+        const check = await this.db.executeCommand({
             option: "SELECT",
             table: "internal_notifications",
             columns: ["id"],
@@ -266,7 +266,7 @@ class DatabaseInternalNotificationStore implements IInternalNotificationStore {
         });
         if (!check.rows?.length) return false;
 
-        await this.database.executeCommand({
+        await this.db.executeCommand({
             option: "DELETE",
             table: "internal_notifications",
             where: [
@@ -278,7 +278,7 @@ class DatabaseInternalNotificationStore implements IInternalNotificationStore {
     }
 
     async deleteAll(username: string): Promise<number> {
-        const countResult = await this.database.executeCommand({
+        const countResult = await this.db.executeCommand({
             option: "SELECT",
             table: "internal_notifications",
             count: true,
@@ -289,7 +289,7 @@ class DatabaseInternalNotificationStore implements IInternalNotificationStore {
         );
         if (total === 0) return 0;
 
-        await this.database.executeCommand({
+        await this.db.executeCommand({
             option: "DELETE",
             table: "internal_notifications",
             where: [{ column: "account_id", value: username }],

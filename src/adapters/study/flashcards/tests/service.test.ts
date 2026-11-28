@@ -6,8 +6,8 @@ import { createCtx } from "@cognis/core";
 import { DeckService, nextReview } from "../service/index.js";
 import { registerDeckFlows } from "../service/flows.js";
 import { DeckStore } from "../service/store.js";
-import type { StructuredDbCommand } from "../../../../gateways/db/reuse/db-command.js";
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { StructuredDatabaseCommand } from "../../../../gateways/db/reuse/db-command.js";
+import type { DatabaseExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import { structuredStore } from "../../../../gateways/reuse/tests/structured-store.js";
 
 async function session(
@@ -21,7 +21,7 @@ async function session(
 ) {
     const storage = structuredStore();
     let transactionDepth = 0;
-    const db: DbExecutor = {
+    const db: DatabaseExecutor = {
         ...storage.db,
         transaction: (callback) =>
             storage.db.transaction(async (executor) => {
@@ -573,7 +573,7 @@ test("review and editing acquire the learner lock before transaction snapshot re
         name: "Serialized",
         entryIds: ["public"],
     });
-    const commands: StructuredDbCommand[] = [];
+    const commands: StructuredDatabaseCommand[] = [];
     const execute = storage.db.executeCommand;
     storage.db.executeCommand = async (command) => {
         commands.push(command);

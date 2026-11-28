@@ -5,7 +5,7 @@ import type {
     StudyAdapter,
     StudyAdapterBootstrapCtx,
 } from "../../../gateways/study/gateway.js";
-import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import { DatabaseClassesStore } from "./store/index.js";
 import type { ClassesRouteOptions } from "./routes/index.js";
 import { createClassesRoutes } from "./routes/index.js";
@@ -111,7 +111,8 @@ export async function bootstrapStudyAdapter(
 ): Promise<void> {
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
-    const databaseExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
+    const databaseExecutor =
+        ctx.capabilities.get<DatabaseExecutor>("db:executor");
     if (!databaseExecutor) {
         ctx.log?.(
             "warn",
@@ -400,7 +401,7 @@ export async function bootstrapStudyAdapter(
         isEnabled: () => ctx.isAdapterEnabled(),
     });
 
-    ctx.registerAdapterStaticDir?.("study", "classes", ADAPTER_UI_ROOT);
+    ctx.registerAdapterStaticDirectory?.("study", "classes", ADAPTER_UI_ROOT);
     ctx.registerSpaRoute?.({
         id: "study-classes-teacher-page",
         pattern: "^/classes$",

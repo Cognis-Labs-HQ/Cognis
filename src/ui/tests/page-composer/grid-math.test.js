@@ -64,7 +64,7 @@ test("occupied placement registration blocks any overlapping target region", () 
 test("grid overlay initializes placements with the shared grid step", () => {
     const state = {
         elements: [{ id: "login", gridSize: { default: [4, 2] } }],
-        gridCols: 8,
+        gridColumns: 8,
         gridRows: 8,
         layout: { placements: [], hidden: [] },
     };

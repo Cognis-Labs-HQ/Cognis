@@ -1,5 +1,5 @@
-import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
-import type { StructuredDbTableDef } from "../../../gateways/db/reuse/db-table.js";
+import type { DatabaseExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { StructuredDatabaseTableDefinition } from "../../../gateways/db/reuse/db-table.js";
 import type {
     FileQuotaStore,
     NamespaceQuotaDefaults,
@@ -10,7 +10,7 @@ const DEFAULT_NAMESPACE_QUOTA_BYTES = 1_073_741_824; // 1 GiB
 const DEFAULT_GLOBAL_QUOTA_BYTES = 5_368_709_120; // 5 GiB
 const GLOBAL_DEFAULT_ROW_ID = "global";
 
-const NAMESPACE_DEFAULTS_TABLE: StructuredDbTableDef = {
+const NAMESPACE_DEFAULTS_TABLE: StructuredDatabaseTableDefinition = {
     name: "file_namespace_quota_defaults",
     columns: [
         { name: "namespace_id", type: "text", primaryKey: true },
@@ -18,7 +18,7 @@ const NAMESPACE_DEFAULTS_TABLE: StructuredDbTableDef = {
     ],
 };
 
-const GLOBAL_DEFAULT_TABLE: StructuredDbTableDef = {
+const GLOBAL_DEFAULT_TABLE: StructuredDatabaseTableDefinition = {
     name: "file_global_quota_default",
     columns: [
         { name: "id", type: "text", primaryKey: true },
@@ -26,7 +26,7 @@ const GLOBAL_DEFAULT_TABLE: StructuredDbTableDef = {
     ],
 };
 
-const USER_NAMESPACE_QUOTAS_TABLE: StructuredDbTableDef = {
+const USER_NAMESPACE_QUOTAS_TABLE: StructuredDatabaseTableDefinition = {
     name: "file_user_namespace_quotas",
     columns: [
         { name: "username", type: "text", notNull: true },
@@ -36,7 +36,7 @@ const USER_NAMESPACE_QUOTAS_TABLE: StructuredDbTableDef = {
     primaryKey: ["username", "namespace_id"],
 };
 
-const USER_GLOBAL_QUOTAS_TABLE: StructuredDbTableDef = {
+const USER_GLOBAL_QUOTAS_TABLE: StructuredDatabaseTableDefinition = {
     name: "file_user_global_quotas",
     columns: [
         { name: "username", type: "text", primaryKey: true },
@@ -57,9 +57,11 @@ const USER_GLOBAL_QUOTAS_TABLE: StructuredDbTableDef = {
 class DatabaseFileQuotaStore implements FileQuotaStore {
     private schemaReady: Promise<void> | undefined;
 
-    constructor(private readonly getDatabase: () => DbExecutor | undefined) {}
+    constructor(
+        private readonly getDatabase: () => DatabaseExecutor | undefined,
+    ) {}
 
-    private async ensureSchema(): Promise<DbExecutor> {
+    private async ensureSchema(): Promise<DatabaseExecutor> {
         const executor = this.getDatabase();
         if (!executor) {
             throw new Error("db_executor_unavailable");

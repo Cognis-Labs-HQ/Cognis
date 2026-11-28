@@ -480,12 +480,12 @@ export function createPlacementResolver({
         if (!layoutState.editing && !hasGridProfile(layoutState)) return null;
         return hasWidthViolation(
             visible,
-            layoutState.gridCols,
+            layoutState.gridColumns,
             layoutState.elements,
         )
             ? repackPlacementsIntoColumns(
                   visible,
-                  layoutState.gridCols,
+                  layoutState.gridColumns,
                   layoutState.elements,
               )
             : visible;
@@ -517,19 +517,19 @@ export function createPlacementResolver({
                     (leftEntry, rightEntry) =>
                         rank(leftEntry.id) - rank(rightEntry.id),
                 ),
-                state.gridCols,
+                state.gridColumns,
             );
         }
         const normalizedRows = normalizePlacementRowsForGridWidth(
             visible,
-            state.gridCols,
+            state.gridColumns,
         );
         if (normalizedRows) {
             return normalizedRows;
         }
-        if (!hasWidthViolation(visible, state.gridCols, state.elements))
+        if (!hasWidthViolation(visible, state.gridColumns, state.elements))
             return visible;
-        return repackPlacementsIntoColumns(visible, state.gridCols);
+        return repackPlacementsIntoColumns(visible, state.gridColumns);
     }
     function computeNestedViewPlacements(nestedState) {
         const visible = nestedState.layout.placements
@@ -545,11 +545,11 @@ export function createPlacementResolver({
         const saved = resolveSavedPlacements(nestedState, visible);
         if (saved) return saved;
         if (isCompactComposer(nestedState.container)) {
-            return stackComposerPlacements(visible, nestedState.gridCols);
+            return stackComposerPlacements(visible, nestedState.gridColumns);
         }
         const normalizedRows = normalizePlacementRowsForGridWidth(
             visible,
-            nestedState.gridCols,
+            nestedState.gridColumns,
             nestedState.elements,
         );
         if (normalizedRows) {
@@ -558,14 +558,14 @@ export function createPlacementResolver({
         if (
             !hasWidthViolation(
                 visible,
-                nestedState.gridCols,
+                nestedState.gridColumns,
                 nestedState.elements,
             )
         )
             return visible;
         return repackPlacementsIntoColumns(
             visible,
-            nestedState.gridCols,
+            nestedState.gridColumns,
             nestedState.elements,
         );
     }

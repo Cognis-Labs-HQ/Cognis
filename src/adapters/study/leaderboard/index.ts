@@ -17,7 +17,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { RouteContext } from "../../../api/reuse/route-context.js";
 import { createLeaderboardRoutes } from "./routes/index.js";
-import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import { DatabaseLeaderboardStore } from "./store.js";
 
 let ready = false;
@@ -67,7 +67,7 @@ export async function bootstrapStudyAdapter(
         if (!systemCtx.hasFlow(id))
             systemCtx.registerFlow({ id, description, stages: [...stages] });
     const databaseExecutor =
-        ctx.capabilities.require<DbExecutor>("db:executor");
+        ctx.capabilities.require<DatabaseExecutor>("db:executor");
     const store = new DatabaseLeaderboardStore(databaseExecutor);
     await store.ensureSchema();
     const service = new LeaderboardService(
@@ -206,7 +206,7 @@ export async function bootstrapStudyAdapter(
         ),
         "study",
     );
-    ctx.registerAdapterStaticDir?.("study", "leaderboard", UI_ROOT);
+    ctx.registerAdapterStaticDirectory?.("study", "leaderboard", UI_ROOT);
     ctx.registerSpaRoute?.({
         id: "study-leaderboard-page",
         pattern: "^/study/leaderboard$",

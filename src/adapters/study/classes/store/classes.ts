@@ -1,10 +1,10 @@
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import { DEFAULT_STUDENT_LIMIT } from "./constants.js";
 import { parseSeatAssignments, rowToClassRow } from "./rows.js";
 import type { ClassRow, ClassroomStateRow } from "./types.js";
 
 export async function getClassesForTeacher(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     teacherAccountId: string,
 ): Promise<ClassRow[]> {
     const result = await db.executeCommand({
@@ -20,7 +20,7 @@ export async function getClassesForTeacher(
 }
 
 export async function getClassById(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     classId: string,
 ): Promise<ClassRow | null> {
     const result = await db.executeCommand({
@@ -36,7 +36,7 @@ export async function getClassById(
 }
 
 export async function getClassroomState(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     classId: string,
 ): Promise<ClassroomStateRow> {
     const result = await db.executeCommand({
@@ -75,7 +75,7 @@ export async function getClassroomState(
 }
 
 export async function updateClassroomStateForTeacher(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     classId: string,
     teacherAccountId: string,
     options: {
@@ -123,7 +123,7 @@ export async function updateClassroomStateForTeacher(
 }
 
 export async function getEnrolledClasses(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     studentAccountId: string,
 ): Promise<ClassRow[]> {
     const membershipsResult = await db.executeCommand({
@@ -154,7 +154,7 @@ export async function getEnrolledClasses(
 }
 
 export async function getAvailableClasses(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     languageCode?: string,
     excludeAccountId?: string,
 ): Promise<ClassRow[]> {
@@ -190,7 +190,7 @@ export async function getAvailableClasses(
 }
 
 export async function getClassesForTeacherWithFilter(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     teacherAccountId: string,
     languageCode?: string,
 ): Promise<(ClassRow & { memberCount: number })[]> {

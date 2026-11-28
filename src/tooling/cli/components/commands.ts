@@ -14,13 +14,8 @@ export function registerComponentOperations(): void {
     for (const action of ["enable", "disable", "upgrade"])
         register(
             `component:${action}`,
-            async ({
-                args: argumentsList,
-                apiBaseUrl,
-                getApiToken,
-                reportProgress,
-            }) => {
-                const selection = selectComponents(argumentsList, {
+            async ({ args: args, apiBaseUrl, getApiToken, reportProgress }) => {
+                const selection = selectComponents(args, {
                     allowForce: true,
                 });
                 const payload = await apiRequest(
@@ -31,10 +26,10 @@ export function registerComponentOperations(): void {
                         body: {
                             ...selection,
                             action,
-                            ...(argumentsList.includes("--force")
+                            ...(args.includes("--force")
                                 ? { force: true }
                                 : {}),
-                            acknowledge: argumentsList.includes(
+                            acknowledge: args.includes(
                                 "--ack-external-disclaimer",
                             ),
                         },
@@ -81,8 +76,8 @@ export function registerComponentOperations(): void {
         );
     register(
         "component:info",
-        async ({ args: argumentsList, apiBaseUrl, getApiToken }) => {
-            const selection = selectComponents(argumentsList);
+        async ({ args: args, apiBaseUrl, getApiToken }) => {
+            const selection = selectComponents(args);
             const token = await getApiToken();
             if (selection.target)
                 return apiGet(
@@ -114,8 +109,8 @@ export function registerComponentOperations(): void {
     );
     register(
         "component:release-channel",
-        async ({ args: argumentsList, apiBaseUrl, getApiToken }) => {
-            const [action, ...rest] = argumentsList;
+        async ({ args: args, apiBaseUrl, getApiToken }) => {
+            const [action, ...rest] = args;
             if (!["get", "set", "list"].includes(action))
                 throw new Error("Expected release-channel get, set or list.");
             const channel = action === "set" ? rest.pop() : undefined;

@@ -130,7 +130,7 @@ function showInfoTooltip(tooltipButtonElement) {
     positionTooltipOverlay(tooltipButtonElement, tooltipOverlay);
 }
 
-function initInfoTooltipRuntime() {
+function initializeInfoTooltipRuntime() {
     if (typeof document === "undefined") return;
     if (document.body?.dataset.infoTooltipRuntimeReady === "true") return;
     runtimeEventAbortController?.abort();
@@ -230,7 +230,7 @@ function initInfoTooltipRuntime() {
 }
 
 export function renderInfoTooltip(text, ariaLabel = "More information", id) {
-    initInfoTooltipRuntime();
+    initializeInfoTooltipRuntime();
     const baseTooltipId = id ?? "info-tooltip";
     const tooltipId = `${baseTooltipId}-${++tooltipSequence}`;
     tooltipTextById.set(tooltipId, String(text ?? ""));

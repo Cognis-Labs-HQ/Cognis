@@ -120,8 +120,8 @@ export interface CalendarAdapterBootstrapCtx {
     gatewayRegistry: GatewayRegistry;
     registerRoute(
         handler: (
-            request: IncomingMessage,
-            response: ServerResponse,
+            req: IncomingMessage,
+            res: ServerResponse,
             url: URL,
         ) => Promise<boolean>,
         gatewayId?: string,
@@ -129,7 +129,7 @@ export interface CalendarAdapterBootstrapCtx {
     log?: (
         level: string,
         message: string,
-        metadata?: Record<string, unknown>,
+        meta?: Record<string, unknown>,
     ) => void;
     isGatewayEnabled(): boolean;
     isAdapterEnabled(adapterId?: string): boolean;

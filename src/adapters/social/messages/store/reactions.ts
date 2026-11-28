@@ -1,9 +1,9 @@
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import { rowToReaction } from "./row-mappers.js";
 import type { MessageReactionRow } from "./types.js";
 
 export async function setMessageReaction(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     roomId: string,
     messageId: string,
     accountId: string,
@@ -39,7 +39,7 @@ export async function setMessageReaction(
 }
 
 export async function hasMessageReaction(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     roomId: string,
     messageId: string,
     accountId: string,
@@ -60,7 +60,7 @@ export async function hasMessageReaction(
 }
 
 export async function listMessageReactions(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     roomId: string,
 ): Promise<MessageReactionRow[]> {
     const result = await db.executeCommand({

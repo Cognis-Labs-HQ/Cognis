@@ -42,32 +42,32 @@ function buildPath(template: string, values: Record<string, unknown>): string {
 }
 
 function appendQuery(path: string, query: Record<string, unknown>): string {
-    const parameters = new URLSearchParams();
+    const params = new URLSearchParams();
     for (const [key, value] of Object.entries(query)) {
         if (value === undefined || value === null || value === "") continue;
-        parameters.set(key, String(value));
+        params.set(key, String(value));
     }
-    const queryString = parameters.toString();
+    const queryString = params.toString();
     return queryString ? `${path}?${queryString}` : path;
 }
 
 async function collectCommandInput(
     definition: FeatureCommandDefinition,
-    argumentsList: string[],
+    args: string[],
 ): Promise<{
     pathValues: Record<string, unknown>;
     body: Record<string, unknown>;
     query: Record<string, unknown>;
 }> {
-    const parameters = definition.params ?? [];
+    const params = definition.params ?? [];
     const hasRequiredWizardInput =
-        parameters.length > 0 ||
+        params.length > 0 ||
         definition.method === "POST" ||
         definition.method === "PUT" ||
         (definition.bodyFields ?? []).some((field) => field.required);
-    if (argumentsList.length === 0 && hasRequiredWizardInput) {
+    if (args.length === 0 && hasRequiredWizardInput) {
         const fields = [
-            ...parameters.map((name): WizardField => ({
+            ...params.map((name): WizardField => ({
                 name,
                 required: true,
             })),
@@ -76,7 +76,7 @@ async function collectCommandInput(
         ];
         const values = await collectWizardFields(definition.name, fields);
         const pathValues = Object.fromEntries(
-            parameters.map((name) => [name, values[name]]),
+            params.map((name) => [name, values[name]]),
         );
         const query = Object.fromEntries(
             (definition.queryFields ?? []).map((field) => [
@@ -105,12 +105,12 @@ async function collectCommandInput(
     }
 
     const pathValues = Object.fromEntries(
-        parameters.map((name, index) => [name, argumentsList[index]]),
+        params.map((name, index) => [name, args[index]]),
     );
-    const missingParameter = parameters.find((name) => !pathValues[name]);
+    const missingParameter = params.find((name) => !pathValues[name]);
     if (missingParameter)
         throw new Error(`Missing required argument: ${missingParameter}`);
-    const payloadArgument = argumentsList[parameters.length];
+    const payloadArgument = args[params.length];
     const body =
         definition.method === "GET" || definition.method === "DELETE"
             ? {}
@@ -130,19 +130,16 @@ export function registerHttpCommand(
         options?: RegisterCommandOptions,
     ) => void,
 ): void {
-    const parameters = definition.params ?? [];
+    const params = definition.params ?? [];
     const payloadUsage =
         definition.method === "GET" || definition.method === "DELETE"
             ? "[query-json]"
             : "[body-json]";
-    const usage = `cognisctl ${definition.name}${parameters.map((parameter) => ` <${parameter}>`).join("")}${definition.bodyFields || definition.queryFields ? ` ${payloadUsage}` : ""}`;
+    const usage = `cognisctl ${definition.name}${params.map((parameter) => ` <${parameter}>`).join("")}${definition.bodyFields || definition.queryFields ? ` ${payloadUsage}` : ""}`;
     registerCommand(
         definition.name,
-        async ({ args: argumentsList, apiBaseUrl, getApiToken }) => {
-            const inputValues = await collectCommandInput(
-                definition,
-                argumentsList,
-            );
+        async ({ args: args, apiBaseUrl, getApiToken }) => {
+            const inputValues = await collectCommandInput(definition, args);
             const path = appendQuery(
                 buildPath(definition.path, inputValues.pathValues),
                 inputValues.query,

@@ -5,7 +5,7 @@ import type {
 import { readGatewayManifestVersion } from "../../reuse/manifest-version.js";
 import path from "node:path";
 import { type GatewayBootstrapContext } from "../../shared.js";
-import type { DbExecutor } from "../../db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../db/reuse/db-executor.js";
 import type { LocalAccountStore } from "@cognis/core";
 import type { UserPreferenceStore } from "../../../api/reuse/preference-store.js";
 import {
@@ -28,7 +28,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
     const databaseExecutor =
-        ctx.capabilities.require<DbExecutor>("db:executor");
+        ctx.capabilities.require<DatabaseExecutor>("db:executor");
     const accountStore =
         ctx.capabilities.get<LocalAccountStore>("auth:accountStore");
     if (!accountStore) return;
@@ -184,7 +184,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         scriptUrl: "/static/gateways/registration/admin-section.js",
         stringsBaseUrl: "/static/gateways/registration/languages",
     });
-    ctx.uiRegistry?.registerStaticDir("registration", uiDirectory);
+    ctx.uiRegistry?.registerStaticDirectory("registration", uiDirectory);
     const uiHooks = createGatewayUiRegistryHooks(
         ctx.uiRegistry,
         "registration",
@@ -202,7 +202,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         isEnabled: isGatewayEnabled,
     });
     for (const adapter of gateway.listAdapters()) {
-        ctx.uiRegistry?.registerAdapterStaticDir?.(
+        ctx.uiRegistry?.registerAdapterStaticDirectory?.(
             "registration",
             adapter.id,
             path.resolve(registrationAdaptersRoot, adapter.id, "ui"),

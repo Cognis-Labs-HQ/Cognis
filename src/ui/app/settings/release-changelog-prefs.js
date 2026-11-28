@@ -6,11 +6,11 @@
  * Public exports:
  *   shouldShowReleaseChangelog(existingPrefs) — resolves the default-on
  *     release changelog visibility state from persisted preferences.
- *   initReleaseChangelogPreferences(root, options) — initialises and manages the
+ *   initializeReleaseChangelogPreferences(root, options) — initialises and manages the
  *     release-changelog settings control state within root.
  *
  * Usage:
- *   const releasePrefs = initReleaseChangelogPreferences(root, {
+ *   const releasePrefs = initializeReleaseChangelogPreferences(root, {
  *     existingPrefs,
  *     onDirtyChange: (dirty) => markDirty('release-notes', dirty),
  *   });
@@ -24,7 +24,7 @@ export function shouldShowReleaseChangelog(existingPreferences) {
     return existingPreferences?.releaseChangelogShow !== false;
 }
 
-function initReleaseChangelogPreferences(
+function initializeReleaseChangelogPreferences(
     root,
     { existingPrefs: existingPreferences, onDirtyChange },
 ) {
@@ -78,4 +78,4 @@ function initReleaseChangelogPreferences(
         discard,
     };
 }
-export { initReleaseChangelogPreferences };
+export { initializeReleaseChangelogPreferences };

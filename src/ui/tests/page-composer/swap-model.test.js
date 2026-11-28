@@ -12,7 +12,7 @@ const cases = JSON.parse(
 );
 function stateFor(fixture) {
     return {
-        gridCols: fixture.columns,
+        gridColumns: fixture.columns,
         layout: {
             placements: structuredClone(fixture.placements),
             hidden: [...fixture.hidden],
@@ -103,7 +103,7 @@ test("commit uses the grid bounds current at release", () => {
     const state = stateFor(fixture);
     const target = findGridSwap(state, ...fixture.drop, "source");
     assert.ok(target);
-    state.gridCols = 7;
+    state.gridColumns = 7;
     const before = structuredClone(state);
     assert.equal(applyGridSwap(state, "source", target.id), false);
     assert.deepEqual(state, before);

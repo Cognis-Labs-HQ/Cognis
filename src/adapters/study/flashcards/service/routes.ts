@@ -9,11 +9,7 @@ export function createDeckRoutes(
     service: DeckService,
     ctx: RouteContext,
     log?: BootstrapLog,
-): (
-    request: IncomingMessage,
-    response: ServerResponse,
-    url: URL,
-) => Promise<boolean> {
+): (req: IncomingMessage, res: ServerResponse, url: URL) => Promise<boolean> {
     return async (
         req: IncomingMessage,
         res: ServerResponse,

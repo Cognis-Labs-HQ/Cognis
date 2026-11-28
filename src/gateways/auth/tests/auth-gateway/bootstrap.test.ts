@@ -18,7 +18,7 @@ import {
     dispatchRoute,
     makeJsonRequest,
     makeInMemoryDatabase,
-    type InMemoryDb,
+    type InMemoryDatabase,
 } from "../auth-gateway-test-helpers.js";
 
 test("keyring manifest declares the Authentication gateway as its parent", async () => {
@@ -93,7 +93,7 @@ test("keyring adapter purges a vault after every persisted user deletion", async
     }
 });
 
-function createDatabaseExecutor(): InMemoryDb {
+function createDatabaseExecutor(): InMemoryDatabase {
     return makeInMemoryDatabase();
 }
 
@@ -638,7 +638,7 @@ test("auth gateway bootstrap registers correct static dir", async () => {
         ...createAuthTestContext(capabilities, databaseExecutor),
     });
 
-    const staticDirectory = uiRegistry.getStaticDir("auth");
+    const staticDirectory = uiRegistry.getStaticDirectory("auth");
     assert.ok(
         staticDirectory,
         "auth gateway must register a static dir with UIRegistry",
@@ -666,14 +666,17 @@ test("auth gateway registers adapter-owned UI directories", async () => {
         ...createAuthTestContext(capabilities, databaseExecutor),
     });
 
-    const ldapUiDirectory = uiRegistry.getAdapterStaticDir("auth", "ldap");
+    const ldapUiDirectory = uiRegistry.getAdapterStaticDirectory(
+        "auth",
+        "ldap",
+    );
     assert.ok(ldapUiDirectory);
     await assert.doesNotReject(access(`${ldapUiDirectory}/config-popup.js`));
     await assert.doesNotReject(
         access(`${ldapUiDirectory}/languages/en/strings.xml`),
     );
 
-    const keyringUiDirectory = uiRegistry.getAdapterStaticDir(
+    const keyringUiDirectory = uiRegistry.getAdapterStaticDirectory(
         "auth",
         "keyring",
     );
@@ -729,7 +732,7 @@ test("auth gateway bootstrap registers security section without redundant authen
         "/static/gateways/auth/security-prefs/index.js",
     );
 
-    const staticDirectory = uiRegistry.getStaticDir("auth");
+    const staticDirectory = uiRegistry.getStaticDirectory("auth");
     assert.ok(staticDirectory, "auth gateway must register a static dir");
 });
 
@@ -744,7 +747,7 @@ test("CoreAuthGateway.getEnabledAdapter returns null for a disabled adapter", as
     } as ReturnType<typeof makeInMemoryDatabase> & {
         execute: (
             sql: string,
-            parameters?: unknown[],
+            params?: unknown[],
         ) => Promise<{ rows?: unknown[] }>;
         executeCommand: () => Promise<{ rows?: unknown[] }>;
     };

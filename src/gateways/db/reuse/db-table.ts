@@ -1,16 +1,16 @@
-export type StructuredDbColumnType =
+export type StructuredDatabaseColumnType =
     "text" | "integer" | "bigint" | "boolean" | "timestamp" | "blob";
 
-export type StructuredDbColumnDefault =
+export type StructuredDatabaseColumnDefault =
     "now" | "true" | "false" | null | string | number;
 
-export interface StructuredDbColumnDef {
+export interface StructuredDatabaseColumnDefinition {
     name: string;
-    type: StructuredDbColumnType;
+    type: StructuredDatabaseColumnType;
     notNull?: boolean;
     primaryKey?: boolean;
     unique?: boolean;
-    default?: StructuredDbColumnDefault;
+    default?: StructuredDatabaseColumnDefault;
     references?: {
         table: string;
         column: string;
@@ -18,9 +18,9 @@ export interface StructuredDbColumnDef {
     };
 }
 
-export interface StructuredDbTableDef {
+export interface StructuredDatabaseTableDefinition {
     name: string;
-    columns: StructuredDbColumnDef[];
+    columns: StructuredDatabaseColumnDefinition[];
     /** Composite primary key — overrides column-level primaryKey when set. */
     primaryKey?: string[];
     /** Composite unique constraints. */

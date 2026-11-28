@@ -2,16 +2,16 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
     buildStructuredDatabaseCommandStatement,
-    type StructuredDbCommand,
-    type StructuredDbDialect,
+    type StructuredDatabaseCommand,
+    type StructuredDatabaseDialect,
 } from "../reuse/db-command.js";
 import {
     createDatabaseDialectHelper,
-    type DbDialectHelper,
+    type DatabaseDialectHelper,
 } from "../bootstrap.js";
-import type { DbExecutor } from "../reuse/db-executor.js";
+import type { DatabaseExecutor } from "../reuse/db-executor.js";
 
-const POSTGRESQL_STRUCTURED_DATABASE_DIALECT: StructuredDbDialect = {
+const POSTGRESQL_STRUCTURED_DATABASE_DIALECT: StructuredDatabaseDialect = {
     createPlaceholder(parameterIndex) {
         return `$${parameterIndex}`;
     },
@@ -41,7 +41,7 @@ const POSTGRESQL_STRUCTURED_DATABASE_DIALECT: StructuredDbDialect = {
     },
 };
 
-const MARIADB_STRUCTURED_DATABASE_DIALECT: StructuredDbDialect = {
+const MARIADB_STRUCTURED_DATABASE_DIALECT: StructuredDatabaseDialect = {
     createPlaceholder() {
         return "?";
     },
@@ -69,7 +69,7 @@ const MARIADB_STRUCTURED_DATABASE_DIALECT: StructuredDbDialect = {
     },
 };
 
-const SQLITE_STRUCTURED_DATABASE_DIALECT: StructuredDbDialect = {
+const SQLITE_STRUCTURED_DATABASE_DIALECT: StructuredDatabaseDialect = {
     createPlaceholder() {
         return "?";
     },
@@ -162,8 +162,8 @@ test("gateway command builder emits sqlite ignore syntax", () => {
 });
 
 test("gateway dialect helper delegates structured commands to the executor", async () => {
-    const calls: StructuredDbCommand[] = [];
-    const executor: DbExecutor = {
+    const calls: StructuredDatabaseCommand[] = [];
+    const executor: DatabaseExecutor = {
         async execute() {
             throw new Error(
                 "helper should use executeCommand for structured calls",
@@ -178,7 +178,8 @@ test("gateway dialect helper delegates structured commands to the executor", asy
         },
     };
 
-    const dialect: DbDialectHelper = createDatabaseDialectHelper(executor);
+    const dialect: DatabaseDialectHelper =
+        createDatabaseDialectHelper(executor);
     const result = await dialect.executeCommand({
         option: "SELECT",
         table: "profiles",
@@ -201,8 +202,8 @@ test("gateway dialect helper delegates structured commands to the executor", asy
 });
 
 test("gateway dialect helper insertIgnore delegates a structured command", async () => {
-    const calls: StructuredDbCommand[] = [];
-    const executor: DbExecutor = {
+    const calls: StructuredDatabaseCommand[] = [];
+    const executor: DatabaseExecutor = {
         async execute() {
             throw new Error(
                 "helper should use executeCommand for structured calls",

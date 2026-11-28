@@ -13,7 +13,7 @@ export function createGridGeometry(state, unit) {
         const section = state.gridSection?.isConnected
             ? state.gridSection
             : null;
-        if (!section) return state.gridCols * unit;
+        if (!section) return state.gridColumns * unit;
         const rectangle = section.getBoundingClientRect();
         const styles = window.getComputedStyle(section);
         const padding =
@@ -69,7 +69,7 @@ export function createGridGeometry(state, unit) {
         state.contentGrid.style.width = "";
         const width = state.contentGrid.getBoundingClientRect().width;
         if (!state.editing)
-            state.gridCols = Math.max(1, Math.floor(width / unit));
+            state.gridColumns = Math.max(1, Math.floor(width / unit));
         const visible = (state.layout?.placements ?? []).filter(
             (placement) => !(state.layout?.hidden ?? []).includes(placement.id),
         );
@@ -96,13 +96,13 @@ export function createGridGeometry(state, unit) {
         }
         if (state.editing) {
             const totalGap =
-                Math.max(0, state.gridCols - 1) * PAGE_COMPOSER_GRID_GAP;
+                Math.max(0, state.gridColumns - 1) * PAGE_COMPOSER_GRID_GAP;
             state.gridTrackSize = Math.max(
                 1,
-                (getEditGridWidth() - totalGap) / state.gridCols,
+                (getEditGridWidth() - totalGap) / state.gridColumns,
             );
         } else state.gridTrackSize = unit;
-        state.gridPixelWidth = gridColumnSpanSize(state.gridCols);
+        state.gridPixelWidth = gridColumnSpanSize(state.gridColumns);
     }
     return {
         computeGridDimensions,

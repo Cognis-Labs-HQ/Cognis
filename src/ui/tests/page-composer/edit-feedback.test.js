@@ -118,7 +118,7 @@ for (const nested of [false, true]) {
             { id: "second", col: 4, row: 2, w: 3, h: 4 },
         ];
         const state = {
-            gridCols: 12,
+            gridColumns: 12,
             layout: { placements, hidden: [] },
             layoutProfiles: { layoutsByGrid: { "cols-12": { placements } } },
             elements: placements.map((placement) => ({

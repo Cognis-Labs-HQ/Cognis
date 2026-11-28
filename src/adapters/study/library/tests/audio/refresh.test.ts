@@ -6,7 +6,7 @@ import { readAuthorizedEntryAudio } from "../../service/audio.js";
 import { createLibraryFlow } from "../reuse/flows.js";
 import type { LibraryEntry, LibrarySchema } from "../../types.js";
 import { LibraryStore } from "../../store.js";
-import type { DbExecutor } from "../../../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../../../gateways/db/reuse/db-executor.js";
 
 test("only global administrators can regenerate, bypassing cache and replacing an explicit recording", async () => {
     const objects = new Map<string, Uint8Array>();
@@ -144,7 +144,7 @@ function regenerationStore(
             position: 0,
         },
     ];
-    const database: DbExecutor = {
+    const database: DatabaseExecutor = {
         ensureTable: async () => {},
         transaction: async (operation) => operation(database),
         executeCommand: async (command) => {

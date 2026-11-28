@@ -1,4 +1,4 @@
-import type { DbExecutor } from "../db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../db/reuse/db-executor.js";
 import type {
     CalendarEventRecord,
     CalendarEventResponseRecord,
@@ -50,10 +50,10 @@ function parseJsonNumberArray(value: unknown): number[] {
 }
 
 class DatabaseCalendarStore implements CalendarStore {
-    constructor(private readonly database: DbExecutor) {}
+    constructor(private readonly db: DatabaseExecutor) {}
 
     async ensureSchema(): Promise<void> {
-        await this.database.ensureTable({
+        await this.db.ensureTable({
             name: "calendar_calendars",
             columns: [
                 { name: "id", type: "text", notNull: true, primaryKey: true },
@@ -83,7 +83,7 @@ class DatabaseCalendarStore implements CalendarStore {
                 },
             ],
         });
-        await this.database.ensureTable({
+        await this.db.ensureTable({
             name: "calendar_events",
             columns: [
                 { name: "id", type: "text", notNull: true, primaryKey: true },
@@ -124,7 +124,7 @@ class DatabaseCalendarStore implements CalendarStore {
                 },
             ],
         });
-        await this.database.ensureTable({
+        await this.db.ensureTable({
             name: "calendar_event_responses",
             columns: [
                 { name: "root_event_id", type: "text", notNull: true },
@@ -144,7 +144,7 @@ class DatabaseCalendarStore implements CalendarStore {
     }
 
     async listCalendars(): Promise<CalendarRecord[]> {
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "calendar_calendars",
             columns: [
@@ -184,7 +184,7 @@ class DatabaseCalendarStore implements CalendarStore {
     }
 
     async saveCalendar(calendar: CalendarRecord): Promise<void> {
-        await this.database.executeCommand({
+        await this.db.executeCommand({
             option: "INSERT",
             table: "calendar_calendars",
             values: {
@@ -220,7 +220,7 @@ class DatabaseCalendarStore implements CalendarStore {
     }
 
     async deleteCalendar(calendarId: string): Promise<void> {
-        await this.database.executeCommand({
+        await this.db.executeCommand({
             option: "DELETE",
             table: "calendar_calendars",
             where: [{ column: "id", value: calendarId }],
@@ -228,7 +228,7 @@ class DatabaseCalendarStore implements CalendarStore {
     }
 
     async listEvents(): Promise<CalendarEventRecord[]> {
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "calendar_events",
             columns: [
@@ -295,7 +295,7 @@ class DatabaseCalendarStore implements CalendarStore {
     }
 
     async saveEvent(event: CalendarEventRecord): Promise<void> {
-        await this.database.executeCommand({
+        await this.db.executeCommand({
             option: "INSERT",
             table: "calendar_events",
             values: {
@@ -347,7 +347,7 @@ class DatabaseCalendarStore implements CalendarStore {
     }
 
     async deleteEvent(eventId: string): Promise<void> {
-        await this.database.executeCommand({
+        await this.db.executeCommand({
             option: "DELETE",
             table: "calendar_events",
             where: [{ column: "id", value: eventId }],
@@ -355,7 +355,7 @@ class DatabaseCalendarStore implements CalendarStore {
     }
 
     async listResponses(): Promise<CalendarEventResponseRecord[]> {
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "calendar_event_responses",
             columns: [
@@ -385,7 +385,7 @@ class DatabaseCalendarStore implements CalendarStore {
     }
 
     async saveResponse(response: CalendarEventResponseRecord): Promise<void> {
-        await this.database.executeCommand({
+        await this.db.executeCommand({
             option: "INSERT",
             table: "calendar_event_responses",
             values: {
@@ -411,7 +411,7 @@ class DatabaseCalendarStore implements CalendarStore {
         rootEventId: string,
         accountId: string,
     ): Promise<void> {
-        await this.database.executeCommand({
+        await this.db.executeCommand({
             option: "DELETE",
             table: "calendar_event_responses",
             where: [
@@ -422,7 +422,7 @@ class DatabaseCalendarStore implements CalendarStore {
     }
 
     async deleteResponsesForRootEvent(rootEventId: string): Promise<void> {
-        await this.database.executeCommand({
+        await this.db.executeCommand({
             option: "DELETE",
             table: "calendar_event_responses",
             where: [{ column: "root_event_id", value: rootEventId }],
@@ -430,7 +430,7 @@ class DatabaseCalendarStore implements CalendarStore {
     }
 
     async deleteAccountActivity(accountId: string): Promise<void> {
-        await this.database.transaction(async (transactionDatabase) => {
+        await this.db.transaction(async (transactionDatabase) => {
             const calendars = await transactionDatabase.executeCommand({
                 option: "SELECT",
                 table: "calendar_calendars",

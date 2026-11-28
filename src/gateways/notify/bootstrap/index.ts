@@ -89,8 +89,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             ctx.routeRegistry.register(handler, gatewayId ?? "notify"),
         registerNavbarPlugin: (scriptUrl) =>
             ctx.uiRegistry?.registerNavbarPlugin({ scriptUrl }),
-        registerStaticDir: (prefix, dir) =>
-            ctx.uiRegistry?.registerStaticDir(prefix, dir),
+        registerStaticDirectory: (prefix, dir) =>
+            ctx.uiRegistry?.registerStaticDirectory(prefix, dir),
         requireAuth: (req, res, minimumRole) =>
             routeContext?.requireAuth(req, res, minimumRole) ?? false,
         readJson: (req) => readJson(req) as Promise<Record<string, unknown>>,
@@ -234,7 +234,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     ctx.uiRegistry?.registerNavbarPlugin({
         scriptUrl: "/static/gateways/notify/broadcast-navbar-plugin.js",
     });
-    ctx.uiRegistry?.registerStaticDir("notify", uiDirectory);
+    ctx.uiRegistry?.registerStaticDirectory("notify", uiDirectory);
     ctx.uiRegistry?.registerCapabilityProvider({
         scriptUrl: "/static/gateways/notify/email-client.js",
         providesCapabilities: ["notify:emailClient"],

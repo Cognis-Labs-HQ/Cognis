@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
-export interface AuthRouteLogMeta {
+export interface AuthRouteLogMetadata {
     component: string;
     method: string;
     path: string;
@@ -8,10 +8,10 @@ export interface AuthRouteLogMeta {
 }
 
 export type AuthGatewayRouteHandler = (
-    request: IncomingMessage,
-    response: ServerResponse,
+    req: IncomingMessage,
+    res: ServerResponse,
     url: URL,
-    logMetadata: AuthRouteLogMeta,
+    logMetadata: AuthRouteLogMetadata,
 ) => Promise<boolean>;
 
 export interface LoginFlowSessionResult {

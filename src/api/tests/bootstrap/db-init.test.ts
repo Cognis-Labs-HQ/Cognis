@@ -94,7 +94,7 @@ test("init phase is skipped when sentinel already recorded", async () => {
         fixturesRoot,
     );
 
-    const initDdl = executor.calls.filter(
+    const initializationDdl = executor.calls.filter(
         (command) =>
             command.sql
                 .toLowerCase()
@@ -102,7 +102,7 @@ test("init phase is skipped when sentinel already recorded", async () => {
             !command.sql.toLowerCase().includes("db_migrations"),
     );
     assert.equal(
-        initDdl.length,
+        initializationDdl.length,
         0,
         "no init DDL should execute on second boot",
     );

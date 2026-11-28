@@ -12,7 +12,7 @@ import {
     sendCalendarError,
     sendJson,
     type CalendarLogger,
-    type EventLocationRef,
+    type EventLocationReference,
     type NotificationDispatcher,
 } from "./helpers.js";
 import type { CalendarShareRegistry } from "./share-registry.js";
@@ -152,7 +152,7 @@ export async function handleCalendarResponseRoute(input: {
                 input.onEventUpdatedForReminders?.(event);
             });
         }
-        let movedTo: EventLocationRef | null = null;
+        let movedTo: EventLocationReference | null = null;
         if (
             (response === "accepted" || response === "tentative") &&
             targetCalendarId

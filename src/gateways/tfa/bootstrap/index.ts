@@ -5,7 +5,7 @@ import {
     registerLimitedAuthPathAllowance,
     type GatewayBootstrapContext,
 } from "../../shared.js";
-import type { DbExecutor } from "../../db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../db/reuse/db-executor.js";
 import { DatabaseTfaStore } from "../reuse/tfa-store.js";
 import { CoreTfaGateway } from "../gateway.js";
 import { createTfaRoutes } from "./tfa-routes.js";
@@ -29,7 +29,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "../manifest.json",
     );
     const databaseExecutor =
-        ctx.capabilities.require<DbExecutor>("db:executor");
+        ctx.capabilities.require<DatabaseExecutor>("db:executor");
 
     const store = new DatabaseTfaStore(databaseExecutor);
     await store.ensureSchema();
@@ -94,7 +94,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "tfa",
         "ui",
     );
-    ctx.uiRegistry?.registerStaticDir("tfa", gatewayUiDirectory);
+    ctx.uiRegistry?.registerStaticDirectory("tfa", gatewayUiDirectory);
     const adapterLanguageResources = gateway
         .listAdapters()
         .map((adapter) => adapter.stringsBaseUrl)
@@ -134,7 +134,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     }).catch(() => []);
     for (const adapterDirectory of adapterDirectories) {
         if (!adapterDirectory.isDirectory()) continue;
-        ctx.uiRegistry?.registerAdapterStaticDir(
+        ctx.uiRegistry?.registerAdapterStaticDirectory(
             "tfa",
             adapterDirectory.name,
             path.join(tfaAdaptersRoot, adapterDirectory.name),

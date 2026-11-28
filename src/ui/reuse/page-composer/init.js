@@ -268,7 +268,10 @@ export function createPageComposer(
     }
 
     function applyNestedLayoutForCurrentGridColumns(state) {
-        const selected = getLayoutForGrid(state.layoutProfiles, state.gridCols);
+        const selected = getLayoutForGrid(
+            state.layoutProfiles,
+            state.gridColumns,
+        );
         if (!selected.layout) return false;
         state.layout = cloneLayoutData(selected.layout);
         return true;
@@ -333,10 +336,10 @@ export function createPageComposer(
         set contentGrid(value) {
             contentGrid = value;
         },
-        get activeSubPageId() {
+        get activeNestedPageId() {
             return activeNestedPageId;
         },
-        set activeSubPageId(value) {
+        set activeNestedPageId(value) {
             activeNestedPageId = value;
         },
         get panelPosition() {
@@ -351,10 +354,10 @@ export function createPageComposer(
         set layoutSnapshot(value) {
             layoutSnapshot = value;
         },
-        get gridCols() {
+        get gridColumns() {
             return gridColumns;
         },
-        set gridCols(value) {
+        set gridColumns(value) {
             gridColumns = value;
         },
         get gridRows() {
@@ -615,7 +618,7 @@ export function createPageComposer(
         return true;
     }
 
-    async function initialize() {
+    async function init() {
         if (composerDestroyed) return;
         configureToastDismissLabel(i18n.t("ui.reuse.dismiss"));
         configureConnectionRecoveryPrompt(
@@ -884,7 +887,7 @@ export function createPageComposer(
     }
 
     return {
-        init: initialize,
+        init,
         refresh,
         refreshElements,
         openToolbar: (trigger) => toolbarController?.open(trigger),

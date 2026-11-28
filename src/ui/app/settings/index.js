@@ -31,15 +31,15 @@ import {
 } from "../../reuse/theme-toggle.js";
 import {
     toFontFamilyValue,
-    initFontPreferences,
+    initializeFontPreferences,
     DEFAULT_FONT_SIZE,
 } from "../../reuse/font-prefs.js";
-import { initLanguagePreferences } from "./language-prefs.js";
-import { initCheckboxPreferences } from "./checkbox-prefs.js";
-import { initGeneralPreferences } from "./general-prefs.js";
-import { initDateTimePreferences } from "./datetime-prefs.js";
+import { initializeLanguagePreferences } from "./language-prefs.js";
+import { initializeCheckboxPreferences } from "./checkbox-prefs.js";
+import { initializeGeneralPreferences } from "./general-prefs.js";
+import { initializeDateTimePreferences } from "./datetime-prefs.js";
 import {
-    initReleaseChangelogPreferences,
+    initializeReleaseChangelogPreferences,
     shouldShowReleaseChangelog,
 } from "./release-changelog-prefs.js";
 import {
@@ -47,7 +47,7 @@ import {
     applyTimezoneToLocalStorage,
 } from "../../reuse/timestamp.js";
 import { createUnsavedChangesBar } from "../../reuse/unsaved-changes.js";
-import { initAdvancedPreferences } from "./advanced-prefs.js";
+import { initializeAdvancedPreferences } from "./advanced-prefs.js";
 import {
     loadEditorAcknowledgement,
     saveEditorAcknowledgement,
@@ -78,9 +78,9 @@ const log = bindCapability("ui:log");
 async function loadSettingsSections() {
     if (isOffline()) return [];
     try {
-        const response = await apiFetch("/api/v1/ui/settings-sections");
-        if (!response.ok) return [];
-        const payload = await response.json();
+        const res = await apiFetch("/api/v1/ui/settings-sections");
+        if (!res.ok) return [];
+        const payload = await res.json();
         return payload.data ?? [];
     } catch {
         return [];
@@ -233,7 +233,7 @@ export async function mount(root, { signal } = {}) {
             .join("");
     }
 
-    function initThemePreferences({ onDirtyChange }) {
+    function initializeThemePreferences({ onDirtyChange }) {
         let currentMode = savedMode;
 
         function updateSelector() {
@@ -273,7 +273,7 @@ export async function mount(root, { signal } = {}) {
         };
     }
 
-    function initMessageStylePreferences({ onDirtyChange }) {
+    function initializeMessageStylePreferences({ onDirtyChange }) {
         let savedMessageStyle = normalizeMessageStyle(
             loadedPreferences?.messageStyle,
         );
@@ -384,12 +384,15 @@ export async function mount(root, { signal } = {}) {
                         localStorage.getItem("cognis_account") ?? "";
                     refreshOnlineControls();
                     if (!generalPreferences) {
-                        generalPreferences = initGeneralPreferences(root, {
-                            i18n,
-                            username: account,
-                            onRender: refreshOnlineControls,
-                            signal,
-                        });
+                        generalPreferences = initializeGeneralPreferences(
+                            root,
+                            {
+                                i18n,
+                                username: account,
+                                onRender: refreshOnlineControls,
+                                signal,
+                            },
+                        );
                         void generalPreferences
                             .init()
                             .catch(reportGeneralFailure);
@@ -400,7 +403,7 @@ export async function mount(root, { signal } = {}) {
                     }
                     if (!releaseNotesPreferences) {
                         releaseNotesPreferences =
-                            initReleaseChangelogPreferences(root, {
+                            initializeReleaseChangelogPreferences(root, {
                                 existingPrefs: loadedPreferences,
                                 onDirtyChange: (dirty) =>
                                     markDirty("release-notes", dirty),
@@ -409,13 +412,16 @@ export async function mount(root, { signal } = {}) {
                         releaseNotesPreferences.refresh();
                     }
                     if (!offlinePreferences) {
-                        offlinePreferences = initCheckboxPreferences(root, {
-                            existingPrefs: loadedPreferences,
-                            preference: "offlineEnabled",
-                            selector: "#pref-offline-enabled",
-                            onDirtyChange: (dirty) =>
-                                markDirty("offline", dirty),
-                        });
+                        offlinePreferences = initializeCheckboxPreferences(
+                            root,
+                            {
+                                existingPrefs: loadedPreferences,
+                                preference: "offlineEnabled",
+                                selector: "#pref-offline-enabled",
+                                onDirtyChange: (dirty) =>
+                                    markDirty("offline", dirty),
+                            },
+                        );
                     }
                     offlinePreferences.bind();
                     for (const section of generalContributions) {
@@ -478,19 +484,21 @@ export async function mount(root, { signal } = {}) {
                     },
                 ],
                 onRender: () => {
-                    fontPreferences = initFontPreferences(root, {
+                    fontPreferences = initializeFontPreferences(root, {
                         existingPrefs: loadedPreferences,
                         i18n,
                         onDirtyChange: (dirty) => markDirty("font", dirty),
                     });
                     fontPreferences.init();
-                    themePreferences = initThemePreferences({
+                    themePreferences = initializeThemePreferences({
                         onDirtyChange: (dirty) => markDirty("theme", dirty),
                     });
-                    messageStylePreferences = initMessageStylePreferences({
-                        onDirtyChange: (dirty) =>
-                            markDirty(DIRTY_KEY_MESSAGE_STYLE, dirty),
-                    });
+                    messageStylePreferences = initializeMessageStylePreferences(
+                        {
+                            onDirtyChange: (dirty) =>
+                                markDirty(DIRTY_KEY_MESSAGE_STYLE, dirty),
+                        },
+                    );
                 },
             },
         },
@@ -535,9 +543,8 @@ export async function mount(root, { signal } = {}) {
                 ],
                 onRender: () => {
                     if (!languageSwitcherPreferences) {
-                        languageSwitcherPreferences = initCheckboxPreferences(
-                            root,
-                            {
+                        languageSwitcherPreferences =
+                            initializeCheckboxPreferences(root, {
                                 existingPrefs: loadedPreferences,
                                 onDirtyChange: (dirty) =>
                                     markDirty("language-switcher", dirty),
@@ -548,13 +555,12 @@ export async function mount(root, { signal } = {}) {
                                             { detail: { visible } },
                                         ),
                                     ),
-                            },
-                        );
+                            });
                     }
                     languageSwitcherPreferences.bind();
                     refreshOnlineControls();
                     if (!languagePreferences) {
-                        languagePreferences = initLanguagePreferences(
+                        languagePreferences = initializeLanguagePreferences(
                             root,
                             languagePriority,
                             {
@@ -628,7 +634,7 @@ export async function mount(root, { signal } = {}) {
                     },
                 ],
                 onRender: () => {
-                    datetimePreferences = initDateTimePreferences(root, {
+                    datetimePreferences = initializeDateTimePreferences(root, {
                         existingPrefs: loadedPreferences,
                         i18n,
                         onDirtyChange: (dirty) => markDirty("datetime", dirty),
@@ -664,15 +670,18 @@ export async function mount(root, { signal } = {}) {
                             null,
                             2,
                         );
-                        advancedPreferences = initAdvancedPreferences(root, {
-                            existingPrefs: loadedPreferences ?? {},
-                            acknowledgementAccepted:
-                                editorAcknowledgementAccepted,
-                            saveAcknowledgement: saveEditorAcknowledgement,
-                            i18n,
-                            onDirtyChange: (dirty) =>
-                                markDirty("advanced", dirty),
-                        });
+                        advancedPreferences = initializeAdvancedPreferences(
+                            root,
+                            {
+                                existingPrefs: loadedPreferences ?? {},
+                                acknowledgementAccepted:
+                                    editorAcknowledgementAccepted,
+                                saveAcknowledgement: saveEditorAcknowledgement,
+                                i18n,
+                                onDirtyChange: (dirty) =>
+                                    markDirty("advanced", dirty),
+                            },
+                        );
                     }
                 },
             },
@@ -898,9 +907,9 @@ export async function mount(root, { signal } = {}) {
                 variant: "success",
             });
             const next = preferences.languagePriority ?? [];
-            const previous = languagePriority ?? [];
+            const prev = languagePriority ?? [];
             languagePriority = [...next];
-            if (hasLanguagePriorityChanged(previous, next))
+            if (hasLanguagePriorityChanged(prev, next))
                 scheduleLanguageRedraw(next[0]);
         },
         onDiscard: () => {

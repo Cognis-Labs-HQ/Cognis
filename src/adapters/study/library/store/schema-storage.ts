@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { textChunks } from "../../../../gateways/reuse/text-chunks.js";
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import type { LibrarySchema } from "../types.js";
 
 function schemaKey(id: string, version: number): string {
@@ -9,7 +9,7 @@ function schemaKey(id: string, version: number): string {
         .digest("hex");
 }
 
-export async function ensureSchemaParts(db: DbExecutor): Promise<void> {
+export async function ensureSchemaParts(db: DatabaseExecutor): Promise<void> {
     await db.ensureTable({
         name: "study_library_schema_parts",
         columns: [
@@ -22,7 +22,7 @@ export async function ensureSchemaParts(db: DbExecutor): Promise<void> {
 }
 
 export async function readSchemaJson(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     id: string,
     version: number,
 ): Promise<string | null> {
@@ -57,7 +57,7 @@ export async function readSchemaJson(
 
 /** The caller owns the transaction with schema registration or pack reconciliation. */
 export async function writeSchemaJson(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     schema: LibrarySchema,
     replace: boolean,
 ): Promise<void> {

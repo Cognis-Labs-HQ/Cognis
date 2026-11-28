@@ -7,7 +7,7 @@ import {
 } from "./api/routes/index.js";
 import {
     DatabaseKeyringVaultStore,
-    type KeyringDbExecutor,
+    type KeyringDatabaseExecutor,
     type KeyringVaultStore,
 } from "./store.js";
 import type { AuthProviderAdapter } from "../../../gateways/auth/gateway.js";
@@ -84,7 +84,7 @@ export function createAdapter(): AuthProviderAdapter {
 export async function bootstrapAuthAdapter(input: {
     capabilities: CapabilityStore;
     adapterRoot: string;
-    registerStaticDir?: (adapterId: string, absolutePath: string) => void;
+    registerStaticDirectory?: (adapterId: string, absolutePath: string) => void;
     registerNavbarPlugin?: (scriptUrl: string) => void;
     registerSettingsSection?: (section: {
         id: string;
@@ -100,7 +100,7 @@ export async function bootstrapAuthAdapter(input: {
     ) => void;
 }): Promise<void> {
     const store = new DatabaseKeyringVaultStore(
-        input.capabilities.require<KeyringDbExecutor>("db:executor"),
+        input.capabilities.require<KeyringDatabaseExecutor>("db:executor"),
     );
     await store.ensureSchema();
     input.capabilities.contribute("auth:keyringVaultStore", store);
@@ -124,7 +124,10 @@ export async function bootstrapAuthAdapter(input: {
                 log: input.log,
             }),
     );
-    input.registerStaticDir?.("keyring", path.join(input.adapterRoot, "ui"));
+    input.registerStaticDirectory?.(
+        "keyring",
+        path.join(input.adapterRoot, "ui"),
+    );
     input.registerNavbarPlugin?.("/static/adapters/auth/keyring/keyring.js");
     input.registerSettingsSection?.({
         id: "keyring",

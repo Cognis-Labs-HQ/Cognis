@@ -18,16 +18,16 @@ import type { RoleAccessPolicy } from "@cognis/core";
 
 export interface RouteContext {
     getAuthClaims(
-        request: IncomingMessage,
+        req: IncomingMessage,
     ): { sub: string; role: AccessRole } | null;
     requireAuth(
-        request: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         minRole?: AccessRole,
     ): { sub: string; role: AccessRole } | null;
     requireRoleAccess(
-        request: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         policy: RoleAccessPolicy,
     ): { sub: string; role: AccessRole } | null;
     canAccessUserData(
@@ -35,11 +35,11 @@ export interface RouteContext {
         targetUsername: string,
     ): boolean;
     hasMinRole(role: AccessRole, minRole: AccessRole): boolean;
-    getCookieSession(request: IncomingMessage): {
+    getCookieSession(req: IncomingMessage): {
         sub: string;
         role: AccessRole;
     } | null;
-    setPageSecurityHeaders(response: ServerResponse): void;
+    setPageSecurityHeaders(res: ServerResponse): void;
     lookupAccessToken(
         token: string,
     ): { sub: string; role: AccessRole; revoked: boolean } | null;

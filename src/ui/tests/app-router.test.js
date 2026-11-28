@@ -76,15 +76,15 @@ test("all dashboard pages call mount on direct browser load", () => {
     }
 });
 
-test("router exports initRouter, navigateTo and getCurrentBase", () => {
+test("router exports initializeRouter, navigateTo and getCurrentBase", () => {
     const src = readFileSync(
         resolve(ROOT, "src/ui/reuse/app-router.js"),
         "utf8",
     );
     assert.match(
         src,
-        /export function initRouter\(/,
-        "app-router.js must export initRouter",
+        /export function initializeRouter\(/,
+        "app-router.js must export initializeRouter",
     );
     assert.match(
         src,
@@ -311,7 +311,7 @@ test("router guards against re-initialisation while refreshing its root", () => 
     assert.match(
         src,
         /routerState.initialized/,
-        "app-router.js must guard initRouter against being called twice",
+        "app-router.js must guard initializeRouter against being called twice",
     );
     assert.match(
         src,
@@ -345,12 +345,12 @@ test("dashboard-layout initialises the router after shell setup", () => {
     );
     assert.match(
         src,
-        /import.*initRouter.*from/,
-        "dashboard-layout.js must import initRouter",
+        /import.*initializeRouter.*from/,
+        "dashboard-layout.js must import initializeRouter",
     );
     assert.match(
         src,
-        /if \(!componentWindow\) \{\s*initRouter\(root\);\s*const preferences = usePreferenceApi \? loadUiPreferences\(\) : null;\s*bindThemeToggle/,
+        /if \(!componentWindow\) \{\s*initializeRouter\(root\);\s*const preferences = usePreferenceApi \? loadUiPreferences\(\) : null;\s*bindThemeToggle/,
         "dashboard-layout.js must initialize routing independently of account enhancements",
     );
     assert.doesNotMatch(

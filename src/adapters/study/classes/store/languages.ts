@@ -1,9 +1,9 @@
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import { rowToStudyLanguage } from "./rows.js";
 import type { StudyLanguageRow } from "./types.js";
 
 export async function listStudyLanguages(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     onlyAvailable = false,
 ): Promise<StudyLanguageRow[]> {
     const result = await db.executeCommand({
@@ -24,7 +24,7 @@ export async function listStudyLanguages(
 }
 
 export async function upsertStudyLanguage(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     row: Partial<StudyLanguageRow> & { code: string },
 ): Promise<StudyLanguageRow> {
     await db.executeCommand({

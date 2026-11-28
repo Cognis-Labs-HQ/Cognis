@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
-import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
-import type { StructuredDbTableDef } from "../../../gateways/db/reuse/db-table.js";
+import type { DatabaseExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { StructuredDatabaseTableDefinition } from "../../../gateways/db/reuse/db-table.js";
 import {
     normalizeHandleKey,
     rowToProfile,
@@ -59,7 +59,7 @@ const JOINED_PROFILE_COLUMNS: Array<{ col: string; as: string }> = [
     { col: "account_profiles.updated_at", as: "updated_at" },
 ];
 
-const SCHEMA_TABLE_DEFINITIONS: StructuredDbTableDef[] = [
+const SCHEMA_TABLE_DEFINITIONS: StructuredDatabaseTableDefinition[] = [
     {
         name: "account_profiles",
         columns: [
@@ -156,11 +156,11 @@ const SCHEMA_TABLE_DEFINITIONS: StructuredDbTableDef[] = [
 ];
 
 class DatabaseProfileStore implements ProfileCreateStore {
-    constructor(private readonly database: DbExecutor) {}
+    constructor(private readonly db: DatabaseExecutor) {}
 
     async ensureSchema(): Promise<void> {
         for (const definition of SCHEMA_TABLE_DEFINITIONS) {
-            await this.database.ensureTable(definition);
+            await this.db.ensureTable(definition);
         }
     }
 
@@ -171,7 +171,7 @@ class DatabaseProfileStore implements ProfileCreateStore {
         displayName?: string,
     ): Promise<AccountProfile | null> {
         try {
-            await this.database.executeCommand({
+            await this.db.executeCommand({
                 option: "INSERT",
                 table: "account_profiles",
                 values: {
@@ -184,7 +184,7 @@ class DatabaseProfileStore implements ProfileCreateStore {
                 conflict: { action: "ignore" },
             });
             if (displayName) {
-                await this.database.executeCommand({
+                await this.db.executeCommand({
                     option: "UPDATE",
                     table: "account_profiles",
                     set: { display_name: displayName },
@@ -198,7 +198,7 @@ class DatabaseProfileStore implements ProfileCreateStore {
     }
 
     async getProfile(accountId: string): Promise<AccountProfile | null> {
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "account_profiles",
             where: [{ column: "account_id", value: accountId }],
@@ -211,7 +211,7 @@ class DatabaseProfileStore implements ProfileCreateStore {
         const normalizedHandle = normalizeHandleKey(handle);
         if (!normalizedHandle) return null;
 
-        const exactResult = await this.database.executeCommand({
+        const exactResult = await this.db.executeCommand({
             option: "SELECT",
             table: "account_profiles",
             where: [{ column: "handle", value: handle }],
@@ -222,7 +222,7 @@ class DatabaseProfileStore implements ProfileCreateStore {
             return rowToProfile(exactRow);
         }
 
-        const profileHandleRowsResult = await this.database.executeCommand({
+        const profileHandleRowsResult = await this.db.executeCommand({
             option: "SELECT",
             table: "account_profiles",
             columns: ["account_id", "handle"],
@@ -261,7 +261,7 @@ class DatabaseProfileStore implements ProfileCreateStore {
                   { column: "account_lifecycle_state", value: "active" },
               ];
 
-        const byHandle = await this.database.executeCommand({
+        const byHandle = await this.db.executeCommand({
             option: "SELECT",
             table: "account_profiles",
             where: [
@@ -275,7 +275,7 @@ class DatabaseProfileStore implements ProfileCreateStore {
             ],
         });
 
-        const byDisplayName = await this.database.executeCommand({
+        const byDisplayName = await this.db.executeCommand({
             option: "SELECT",
             table: "account_profiles",
             where: [
@@ -403,7 +403,7 @@ class DatabaseProfileStore implements ProfileCreateStore {
 
         setRecord.updated_at = new Date().toISOString();
 
-        await this.database.executeCommand({
+        await this.db.executeCommand({
             option: "UPDATE",
             table: "account_profiles",
             set: setRecord,
@@ -420,7 +420,7 @@ class DatabaseProfileStore implements ProfileCreateStore {
         if (role === "teacher" || role === "admin" || role === "owner") {
             set.visibility = "friends";
         }
-        await this.database.executeCommand({
+        await this.db.executeCommand({
             option: "UPDATE",
             table: "account_profiles",
             set,
@@ -429,7 +429,7 @@ class DatabaseProfileStore implements ProfileCreateStore {
     }
 
     async getRole(accountId: string): Promise<AccountRole> {
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "account_profiles",
             columns: ["role"],
@@ -439,7 +439,7 @@ class DatabaseProfileStore implements ProfileCreateStore {
     }
 
     async follow(followerId: string, followingId: string): Promise<void> {
-        await this.database.executeCommand({
+        await this.db.executeCommand({
             option: "INSERT",
             table: "account_follows",
             values: { follower_id: followerId, following_id: followingId },
@@ -448,7 +448,7 @@ class DatabaseProfileStore implements ProfileCreateStore {
     }
 
     async unfollow(followerId: string, followingId: string): Promise<void> {
-        await this.database.executeCommand({
+        await this.db.executeCommand({
             option: "DELETE",
             table: "account_follows",
             where: [
@@ -462,7 +462,7 @@ class DatabaseProfileStore implements ProfileCreateStore {
         followerId: string,
         followingId: string,
     ): Promise<boolean> {
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "account_follows",
             count: true,
@@ -475,7 +475,7 @@ class DatabaseProfileStore implements ProfileCreateStore {
     }
 
     async getFollowers(accountId: string): Promise<AccountProfile[]> {
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "account_follows",
             alias: "account_follows",
@@ -502,7 +502,7 @@ class DatabaseProfileStore implements ProfileCreateStore {
     }
 
     async getFollowing(accountId: string): Promise<AccountProfile[]> {
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "account_follows",
             alias: "account_follows",
@@ -529,7 +529,7 @@ class DatabaseProfileStore implements ProfileCreateStore {
     }
 
     async getFollowerCount(accountId: string): Promise<number> {
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "account_follows",
             count: true,
@@ -539,7 +539,7 @@ class DatabaseProfileStore implements ProfileCreateStore {
     }
 
     async getFollowingCount(accountId: string): Promise<number> {
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "account_follows",
             count: true,
@@ -551,7 +551,7 @@ class DatabaseProfileStore implements ProfileCreateStore {
     async block(blockerId: string, blockedId: string): Promise<void> {
         await this.unfollow(blockerId, blockedId);
         await this.unfollow(blockedId, blockerId);
-        await this.database.executeCommand({
+        await this.db.executeCommand({
             option: "INSERT",
             table: "account_blocks",
             values: { blocker_id: blockerId, blocked_id: blockedId },
@@ -560,7 +560,7 @@ class DatabaseProfileStore implements ProfileCreateStore {
     }
 
     async unblock(blockerId: string, blockedId: string): Promise<void> {
-        await this.database.executeCommand({
+        await this.db.executeCommand({
             option: "DELETE",
             table: "account_blocks",
             where: [
@@ -571,7 +571,7 @@ class DatabaseProfileStore implements ProfileCreateStore {
     }
 
     async isBlocked(blockerId: string, blockedId: string): Promise<boolean> {
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "account_blocks",
             count: true,
@@ -592,7 +592,7 @@ class DatabaseProfileStore implements ProfileCreateStore {
             operationId?: string;
         },
     ): Promise<Post> {
-        return this.database.transaction(async (executor) => {
+        return this.db.transaction(async (executor) => {
             const id = input.operationId ?? randomUUID();
             await executor.executeCommand({
                 option: "INSERT",
@@ -626,7 +626,7 @@ class DatabaseProfileStore implements ProfileCreateStore {
     }
 
     async getPostsByAccount(accountId: string): Promise<Post[]> {
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "posts",
             where: [{ column: "account_id", value: accountId }],
@@ -636,7 +636,7 @@ class DatabaseProfileStore implements ProfileCreateStore {
     }
 
     async getAllPosts(): Promise<Post[]> {
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "posts",
             orderBy: [{ column: "created_at", direction: "DESC" }],
@@ -645,7 +645,7 @@ class DatabaseProfileStore implements ProfileCreateStore {
     }
 
     async getPostById(postId: string): Promise<Post | null> {
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "posts",
             where: [{ column: "id", value: postId }],
@@ -655,7 +655,7 @@ class DatabaseProfileStore implements ProfileCreateStore {
     }
 
     async deletePost(postId: string): Promise<boolean> {
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "DELETE",
             table: "posts",
             where: [{ column: "id", value: postId }],

@@ -52,7 +52,7 @@ test("GET /api/v1/auth/password-change-capability reports support for local acco
         > & {
             execute: (
                 sql: string,
-                parameters?: unknown[],
+                params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
     });
@@ -435,7 +435,7 @@ test("POST /api/v1/auth/emergency-token requires admin auth", async () => {
         > & {
             execute: (
                 sql: string,
-                parameters?: unknown[],
+                params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
     });
@@ -470,7 +470,7 @@ test("POST /api/v1/auth/emergency-token returns a 1h admin token", async () => {
         > & {
             execute: (
                 sql: string,
-                parameters?: unknown[],
+                params?: unknown[],
             ) => Promise<{ rows?: unknown[] }>;
         },
     });

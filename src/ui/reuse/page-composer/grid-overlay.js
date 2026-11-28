@@ -58,7 +58,7 @@ export function createGridOverlayHandlers({
         snapPixelRowFloor,
     } = createGridGeometry(state, UNIT);
     function canPlace(column, row, width, height, excludeId) {
-        if (column < 0 || row < 0 || column + width > state.gridCols)
+        if (column < 0 || row < 0 || column + width > state.gridColumns)
             return false;
         const cells = buildOccupiedSet(
             state.layout?.placements ?? [],
@@ -136,17 +136,20 @@ export function createGridOverlayHandlers({
                 continue;
             }
             const gridSize = getGridSize(element);
-            const columnStep = gridStep(state.gridCols);
+            const columnStep = gridStep(state.gridColumns);
             const rowStep = gridStep(state.gridRows);
-            const baseWidth = resolveInitialGridWidth(gridSize, state.gridCols);
+            const baseWidth = resolveInitialGridWidth(
+                gridSize,
+                state.gridColumns,
+            );
             const baseHeight = gridSize.halfHeight
                 ? Math.max(gridSize.min[1], halfGrid(state.gridRows))
                 : gridSize.default[1];
             let placed = false;
             for (let row = 0; !placed; row += rowStep) {
                 const columnLimit = gridSize.fillWidth
-                    ? state.gridCols
-                    : Math.max(0, state.gridCols - baseWidth);
+                    ? state.gridColumns
+                    : Math.max(0, state.gridColumns - baseWidth);
                 for (
                     let column = 0;
                     column <= columnLimit;
@@ -154,14 +157,15 @@ export function createGridOverlayHandlers({
                 ) {
                     const width = gridSize.fillWidth
                         ? Math.min(
-                              state.gridCols,
+                              state.gridColumns,
                               Math.max(
                                   gridSize.min[0],
-                                  state.gridCols - column,
+                                  state.gridColumns - column,
                               ),
                           )
                         : gridSize.halfWidth &&
-                            column + baseWidth + columnStep === state.gridCols
+                            column + baseWidth + columnStep ===
+                                state.gridColumns
                           ? baseWidth + columnStep
                           : baseWidth;
                     const height = gridSize.fillHeight
@@ -227,12 +231,12 @@ export function createGridOverlayHandlers({
         overlay.style.top = "0";
         overlay.style.width = `${state.gridPixelWidth}px`;
         overlay.style.height = `${state.gridPixelHeight}px`;
-        const columnStep = gridStep(state.gridCols);
+        const columnStep = gridStep(state.gridColumns);
         const rowStep = gridStep(state.gridRows);
         for (let rowIndex = 0; rowIndex < state.gridRows; rowIndex += rowStep) {
             for (
                 let columnIndex = 0;
-                columnIndex < state.gridCols;
+                columnIndex < state.gridColumns;
                 columnIndex += columnStep
             ) {
                 const cell = document.createElement("div");
@@ -335,10 +339,10 @@ export function createGridOverlayHandlers({
                     const column = Math.max(
                         0,
                         Math.min(
-                            state.gridCols - placement.w,
+                            state.gridColumns - placement.w,
                             snapGridRound(
                                 pixelToGridColumn(horizontalCoordinate - grabX),
-                                state.gridCols,
+                                state.gridColumns,
                             ),
                         ),
                     );
@@ -552,7 +556,7 @@ export function createGridOverlayHandlers({
             if (event.button !== 0 || event.target.closest("button")) return;
             event.preventDefault();
             const gridSize = getGridSize(elementDefinition);
-            const width = resolveInitialGridWidth(gridSize, state.gridCols);
+            const width = resolveInitialGridWidth(gridSize, state.gridColumns);
             const height = gridSize.fillHeight
                 ? state.gridRows
                 : gridSize.halfHeight
@@ -580,10 +584,10 @@ export function createGridOverlayHandlers({
                     const column = Math.max(
                         0,
                         Math.min(
-                            state.gridCols - width,
+                            state.gridColumns - width,
                             snapPixelColumnFloor(
                                 horizontalCoordinate,
-                                state.gridCols,
+                                state.gridColumns,
                             ),
                         ),
                     );

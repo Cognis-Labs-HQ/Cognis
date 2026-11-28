@@ -1,4 +1,4 @@
-import type { DbExecutor } from "../db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../db/reuse/db-executor.js";
 
 export interface AdapterConfigStore {
     getConfig(adapterId: string): Promise<Record<string, unknown> | null>;
@@ -9,10 +9,10 @@ export interface AdapterConfigStore {
 }
 
 class DatabaseAdapterConfigStore implements AdapterConfigStore {
-    constructor(private readonly database: DbExecutor) {}
+    constructor(private readonly db: DatabaseExecutor) {}
 
     async ensureSchema(): Promise<void> {
-        await this.database.ensureTable({
+        await this.db.ensureTable({
             name: "social_adapter_configs",
             columns: [
                 {
@@ -29,7 +29,7 @@ class DatabaseAdapterConfigStore implements AdapterConfigStore {
     async getConfig(
         adapterId: string,
     ): Promise<Record<string, unknown> | null> {
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "social_adapter_configs",
             columns: ["config_json"],
@@ -46,7 +46,7 @@ class DatabaseAdapterConfigStore implements AdapterConfigStore {
         config: Record<string, unknown>,
     ): Promise<void> {
         const json = JSON.stringify(config);
-        await this.database.executeCommand({
+        await this.db.executeCommand({
             option: "INSERT",
             table: "social_adapter_configs",
             values: {

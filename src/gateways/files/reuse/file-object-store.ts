@@ -1,8 +1,8 @@
 import type { FileObjectAcl } from "@cognis/core";
-import type { DbExecutor } from "../../db/reuse/db-executor.js";
-import type { StructuredDbTableDef } from "../../db/reuse/db-table.js";
+import type { DatabaseExecutor } from "../../db/reuse/db-executor.js";
+import type { StructuredDatabaseTableDefinition } from "../../db/reuse/db-table.js";
 
-const TABLE_DEFINITION: StructuredDbTableDef = {
+const TABLE_DEFINITION: StructuredDatabaseTableDefinition = {
     name: "file_objects",
     columns: [
         { name: "namespace_id", type: "text", notNull: true },
@@ -63,9 +63,11 @@ function rowToAcl(row: FileObjectRow): FileObjectAcl {
 class DatabaseFileObjectStore {
     private schemaReady: Promise<void> | undefined;
 
-    constructor(private readonly getDatabase: () => DbExecutor | undefined) {}
+    constructor(
+        private readonly getDatabase: () => DatabaseExecutor | undefined,
+    ) {}
 
-    private async ensureSchema(): Promise<DbExecutor> {
+    private async ensureSchema(): Promise<DatabaseExecutor> {
         const executor = this.getDatabase();
         if (!executor) {
             throw new Error("db_executor_unavailable");

@@ -19,7 +19,7 @@ import {
 } from "../../shared.js";
 import { type AccessRole } from "../access-tokens.js";
 import { CoreAuthGateway } from "../gateway.js";
-import type { DbExecutor } from "../../db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../db/reuse/db-executor.js";
 import { createAdapterAdminRoutes } from "./adapter-admin-routes.js";
 import {
     createAuthGatewayRoutes,
@@ -131,7 +131,7 @@ export interface AuthBootstrapHookContext {
 
 export interface AuthRouteBootstrapRuntime {
     buildAccessTokenCookie: (
-        request: IncomingMessage,
+        req: IncomingMessage,
         rawToken: string,
         ttlSeconds: number | null,
     ) => string;
@@ -151,12 +151,12 @@ export interface AuthRouteBootstrapRuntime {
         attemptId: string,
     ) => PendingAccountCreationAttempt | null;
     buildPendingAccountCreationCookie: (
-        request: IncomingMessage,
+        req: IncomingMessage,
         attemptId: string,
     ) => string;
-    clearPendingAccountCreationCookie: (request: IncomingMessage) => string;
+    clearPendingAccountCreationCookie: (req: IncomingMessage) => string;
     extractPendingAccountCreationAttemptId: (
-        request: IncomingMessage,
+        req: IncomingMessage,
     ) => string | null;
 }
 
@@ -218,7 +218,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             verificationCodes,
         );
     const databaseExecutor =
-        ctx.capabilities.require<DbExecutor>("db:executor");
+        ctx.capabilities.require<DatabaseExecutor>("db:executor");
 
     const accountStore = await loadLocalAccountStore(databaseExecutor, ctx.log);
     await accountStore.ensureSchema();
@@ -383,8 +383,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const authAdaptersRoot = path.join(ctx.adaptersRoot, "auth");
     await authGateway.discoverAdapters(authAdaptersRoot, {
         capabilities: ctx.capabilities,
-        registerStaticDir: (adapterId, absolutePath) =>
-            ctx.uiRegistry?.registerAdapterStaticDir(
+        registerStaticDirectory: (adapterId, absolutePath) =>
+            ctx.uiRegistry?.registerAdapterStaticDirectory(
                 "auth",
                 adapterId,
                 absolutePath,
@@ -404,7 +404,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             "ui",
         );
         if (existsSync(adapterUiDirectory)) {
-            ctx.uiRegistry?.registerAdapterStaticDir(
+            ctx.uiRegistry?.registerAdapterStaticDirectory(
                 "auth",
                 adapter.id,
                 adapterUiDirectory,
@@ -513,7 +513,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "auth",
         "ui",
     );
-    ctx.uiRegistry?.registerStaticDir("auth", uiDirectory);
+    ctx.uiRegistry?.registerStaticDirectory("auth", uiDirectory);
     ctx.uiRegistry?.registerSettingsSection({
         id: "security",
         label: "Security",

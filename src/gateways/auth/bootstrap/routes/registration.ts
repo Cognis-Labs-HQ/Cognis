@@ -6,7 +6,10 @@ import type {
     GatewayBootstrapContext,
 } from "../../../shared.js";
 import { readJson } from "../../../shared.js";
-import type { AuthGatewayRouteHandler, AuthRouteLogMeta } from "./shared.js";
+import type {
+    AuthGatewayRouteHandler,
+    AuthRouteLogMetadata,
+} from "./shared.js";
 
 interface SecuritySettings {
     userValidationMode: string;
@@ -31,7 +34,7 @@ export function createRegistrationRoutes({
         req,
         res,
         url,
-        logMetadata: AuthRouteLogMeta,
+        logMetadata: AuthRouteLogMetadata,
     ): Promise<boolean> => {
         if (url.pathname !== "/api/v1/auth/register" || req.method !== "POST") {
             return false;

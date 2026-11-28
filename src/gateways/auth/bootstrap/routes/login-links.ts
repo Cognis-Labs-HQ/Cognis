@@ -18,7 +18,10 @@ import {
     sleep,
     waitForPasswordResetResponseFloor,
 } from "../route-runtime.js";
-import type { AuthGatewayRouteHandler, AuthRouteLogMeta } from "./shared.js";
+import type {
+    AuthGatewayRouteHandler,
+    AuthRouteLogMetadata,
+} from "./shared.js";
 
 interface LoginLinkRouteDependencies {
     authGateway: CoreAuthGateway;
@@ -26,9 +29,7 @@ interface LoginLinkRouteDependencies {
     capabilities: import("../../../shared.js").CapabilityStore;
     oneTimeLoginAccountRateLimiter: MemoryRateLimiter;
     oneTimeLoginIpRateLimiter: MemoryRateLimiter;
-    resolveRequestAddress: (
-        request: import("node:http").IncomingMessage,
-    ) => string;
+    resolveRequestAddress: (req: import("node:http").IncomingMessage) => string;
     log?: GatewayBootstrapContext["log"];
 }
 
@@ -45,7 +46,7 @@ export function createLoginLinkRoutes({
         req,
         res,
         url,
-        logMetadata: AuthRouteLogMeta,
+        logMetadata: AuthRouteLogMetadata,
     ): Promise<boolean> => {
         if (
             url.pathname === "/api/v1/auth/login-link-status" &&

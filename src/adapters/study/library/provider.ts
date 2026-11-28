@@ -13,7 +13,7 @@ export function registerLibraryCapabilities(
     const system = ctx.capabilities.require<Ctx>("system:ctx");
     const guard =
         <Arguments extends unknown[], Result>(
-            operation: (...argumentsList: Arguments) => Result,
+            operation: (...args: Arguments) => Result,
         ) =>
         (...args: Arguments): Result => {
             if (!ctx.isAdapterEnabled())

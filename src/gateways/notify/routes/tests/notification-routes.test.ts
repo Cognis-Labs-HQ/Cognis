@@ -463,10 +463,10 @@ test("PUT /api/v1/notify/users/:username/notification-prefs strips disabled entr
         enabled: boolean;
     }> = [];
     const mockStore = {
-        async getUserNotifPrefs() {
+        async getUserNotificationPreferences() {
             return savedPreferences;
         },
-        async saveUserNotifPrefs(
+        async saveUserNotificationPreferences(
             _username: string,
             preferences: Array<{
                 category: string;
@@ -523,7 +523,7 @@ test("GET /api/v1/notify/providers/:id/config includes requiredFields when sende
                 secure: "starttls",
             };
         }
-        getEnvValues(): Record<string, string | undefined> {
+        getEnvironmentValues(): Record<string, string | undefined> {
             return {};
         }
         getRequiredFields(): string[] {
@@ -563,7 +563,7 @@ test("GET /api/v1/notify/providers/:id/config returns empty requiredFields when 
         getConfig(): Record<string, unknown> {
             return { host: "smtp.example.com" };
         }
-        getEnvValues(): Record<string, string | undefined> {
+        getEnvironmentValues(): Record<string, string | undefined> {
             return {};
         }
     }
@@ -619,10 +619,10 @@ test("POST /api/v1/notify/broadcasts creates a broadcast for admin users", async
     const gateway = new CoreNotificationGateway(preferenceStore);
     let createdPayload: Record<string, unknown> | null = null;
     const route = createNotificationRoutes(gateway, {
-        async getUserNotifPrefs() {
+        async getUserNotificationPreferences() {
             return [];
         },
-        async saveUserNotifPrefs() {},
+        async saveUserNotificationPreferences() {},
         async createBroadcast(input) {
             createdPayload = input as Record<string, unknown>;
             return { id: "broadcast-1", ...input };
@@ -662,10 +662,10 @@ test("POST /api/v1/notify/broadcasts returns 400 for invalid payload", async () 
     const preferenceStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(preferenceStore);
     const route = createNotificationRoutes(gateway, {
-        async getUserNotifPrefs() {
+        async getUserNotificationPreferences() {
             return [];
         },
-        async saveUserNotifPrefs() {},
+        async saveUserNotificationPreferences() {},
         async createBroadcast() {
             return {};
         },
@@ -696,10 +696,10 @@ test("POST /api/v1/notify/broadcasts returns 400 when no target roles are select
     const preferenceStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(preferenceStore);
     const route = createNotificationRoutes(gateway, {
-        async getUserNotifPrefs() {
+        async getUserNotificationPreferences() {
             return [];
         },
-        async saveUserNotifPrefs() {},
+        async saveUserNotificationPreferences() {},
         async createBroadcast() {
             return {};
         },
@@ -730,10 +730,10 @@ test("POST /api/v1/notify/broadcasts returns 400 for invalid date ranges", async
     const preferenceStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(preferenceStore);
     const route = createNotificationRoutes(gateway, {
-        async getUserNotifPrefs() {
+        async getUserNotificationPreferences() {
             return [];
         },
-        async saveUserNotifPrefs() {},
+        async saveUserNotificationPreferences() {},
         async createBroadcast() {
             return {};
         },
@@ -766,10 +766,10 @@ test("POST /api/v1/notify/broadcasts rejects external redirect URLs", async () =
     const preferenceStore = new VolatileNotificationPreferenceStore();
     const gateway = new CoreNotificationGateway(preferenceStore);
     const route = createNotificationRoutes(gateway, {
-        async getUserNotifPrefs() {
+        async getUserNotificationPreferences() {
             return [];
         },
-        async saveUserNotifPrefs() {},
+        async saveUserNotificationPreferences() {},
         async createBroadcast() {
             return {};
         },
@@ -804,10 +804,10 @@ test("POST /api/v1/notify/broadcasts accepts trusted external redirect URLs", as
     const route = createNotificationRoutes(
         gateway,
         {
-            async getUserNotifPrefs() {
+            async getUserNotificationPreferences() {
                 return [];
             },
-            async saveUserNotifPrefs() {},
+            async saveUserNotificationPreferences() {},
             async createBroadcast(input) {
                 createdPayload = input as Record<string, unknown>;
                 return { id: "broadcast-2", ...input };
@@ -851,10 +851,10 @@ test("GET /api/v1/notify/broadcasts/active returns role-targeted broadcasts", as
     let receivedRole = "";
     let receivedAccountId = "";
     const route = createNotificationRoutes(gateway, {
-        async getUserNotifPrefs() {
+        async getUserNotificationPreferences() {
             return [];
         },
-        async saveUserNotifPrefs() {},
+        async saveUserNotificationPreferences() {},
         async getActiveBroadcastsForRole(accountId, role) {
             receivedAccountId = accountId;
             receivedRole = role;
@@ -886,10 +886,10 @@ test("GET /api/v1/notify/broadcasts/:id/states returns broadcast acknowledgement
     const gateway = new CoreNotificationGateway(preferenceStore);
     let requestedBroadcastId = "";
     const route = createNotificationRoutes(gateway, {
-        async getUserNotifPrefs() {
+        async getUserNotificationPreferences() {
             return [];
         },
-        async saveUserNotifPrefs() {},
+        async saveUserNotificationPreferences() {},
         async listBroadcastStates(broadcastId) {
             requestedBroadcastId = broadcastId;
             return [

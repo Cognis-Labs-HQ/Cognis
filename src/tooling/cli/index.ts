@@ -51,11 +51,11 @@ function parseRequiredUsageFields(usage: string): string[] {
 
 async function resolveCommandArgumentsList(
     command: string,
-    argumentsList: string[],
+    args: string[],
 ): Promise<string[]> {
-    if (argumentsList.length > 0) return argumentsList;
+    if (args.length > 0) return args;
     const spec = registry.get(command);
-    if (!spec) return argumentsList;
+    if (!spec) return args;
     const featureSections = new Set([
         "TFA",
         "Notifications",
@@ -71,9 +71,9 @@ async function resolveCommandArgumentsList(
         "Files",
         "Social",
     ]);
-    if (featureSections.has(spec.section)) return argumentsList;
+    if (featureSections.has(spec.section)) return args;
     const fields = parseRequiredUsageFields(spec.usage);
-    if (fields.length === 0) return argumentsList;
+    if (fields.length === 0) return args;
     const values = await collectWizardFields(
         command,
         fields.map((name) => ({ name, required: true })),
@@ -83,7 +83,7 @@ async function resolveCommandArgumentsList(
 
 export async function executeRegisteredCommand(
     command: string,
-    argumentsList: string[],
+    args: string[],
     options: CommandExecutionOptions,
 ): Promise<unknown> {
     if (!registry.has(command)) {
@@ -94,7 +94,7 @@ export async function executeRegisteredCommand(
         throw new Error(`Unknown command: ${command}`);
     }
 
-    const parsed = parseOutputOptions(argumentsList);
+    const parsed = parseOutputOptions(args);
     const resolvedArgumentsList = await resolveCommandArgumentsList(
         command,
         parsed.args,
@@ -109,20 +109,17 @@ export async function executeRegisteredCommand(
     });
 }
 
-export function parseOutputOptions(argumentsList: string[]): {
+export function parseOutputOptions(args: string[]): {
     args: string[];
     verbose: boolean;
 } {
-    const boundary = argumentsList.indexOf("--");
-    const options =
-        boundary < 0 ? argumentsList : argumentsList.slice(0, boundary);
+    const boundary = args.indexOf("--");
+    const options = boundary < 0 ? args : args.slice(0, boundary);
     return {
         verbose: options.includes("-v") || options.includes("--verbose"),
         args: [
-            ...options.filter(
-                (argument) => argument !== "-v" && argument !== "--verbose",
-            ),
-            ...(boundary < 0 ? [] : argumentsList.slice(boundary + 1)),
+            ...options.filter((arg) => arg !== "-v" && arg !== "--verbose"),
+            ...(boundary < 0 ? [] : args.slice(boundary + 1)),
         ],
     };
 }
@@ -158,8 +155,8 @@ async function main(): Promise<void> {
         return;
     }
 
-    const [command, ...argumentsList] = argv;
-    if (argumentsList.includes("-h") || argumentsList.includes("--help")) {
+    const [command, ...args] = argv;
+    if (args.includes("-h") || args.includes("--help")) {
         printCommandHelp(command);
         return;
     }

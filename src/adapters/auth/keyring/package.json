@@ -1,10 +1,10 @@
 {
     "name": "@cognis/adapter-auth-keyring",
-    "version": "2.1.8",
+    "version": "2.1.9",
     "private": true,
     "type": "module",
     "main": "index.ts",
     "dependencies": {
-        "@cognis/gateways": "<=0.4.6"
+        "@cognis/gateways": "<=0.4.7"
     }
 }

@@ -18,7 +18,10 @@ import { createPasswordRoutes } from "./password.js";
 import { createRegistrationRoutes } from "./registration.js";
 import { createSecurityRoutes, type SecuritySubsection } from "./security.js";
 import { createSessionRoutes } from "./session.js";
-import type { AuthGatewayRouteHandler, AuthRouteLogMeta } from "./shared.js";
+import type {
+    AuthGatewayRouteHandler,
+    AuthRouteLogMetadata,
+} from "./shared.js";
 
 export function createAuthGatewayRoutes(
     authGateway: CoreAuthGateway,
@@ -121,7 +124,7 @@ export function createAuthGatewayRoutes(
         res: import("node:http").ServerResponse,
         url: URL,
     ): Promise<boolean> => {
-        const logMetadata: AuthRouteLogMeta = {
+        const logMetadata: AuthRouteLogMetadata = {
             component: "auth-gateway",
             method: req.method ?? "GET",
             path: url.pathname,

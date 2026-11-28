@@ -71,9 +71,8 @@ test("bootstrap publishes the leaderboard capability for language providers", as
     capabilities.contribute("db:executor", {
         ensureTable: async () => {},
         executeCommand: async () => ({ rows: [] }),
-        transaction: async (
-            operation: (database: unknown) => Promise<unknown>,
-        ) => operation(capabilities.get("db:executor")),
+        transaction: async (operation: (db: unknown) => Promise<unknown>) =>
+            operation(capabilities.get("db:executor")),
     });
     let spaRoute:
         { pattern: string; requiredCapabilities?: string[] } | undefined;

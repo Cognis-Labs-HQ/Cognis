@@ -6,7 +6,7 @@
  *
  * Usage:
  *   const handles = resolveResizeAvailability({ placement, gridSize,
- *     columns: state.gridCols, rows: state.gridRows, canPlace });
+ *     columns: state.gridColumns, rows: state.gridRows, canPlace });
  *   if (handles.west) westHandle.style.cursor = handles.west;
  */
 import { gridStep } from "./grid-math.js";

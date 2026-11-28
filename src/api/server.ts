@@ -258,7 +258,7 @@ export function buildServer(dependencies: ApiDependencies) {
             process.env.COGNIS_MODULE_SOURCES_PATH ??
                 path.resolve(process.cwd(), "config", "module-sources.json"),
             externalModulesRoot,
-            (level, message, metadata) => log(level, message, metadata),
+            (level, message, meta) => log(level, message, meta),
             routeContext.getCapability<Ctx>("system:ctx"),
         );
     if (dependencies.discoverModulesOnStartup) {
@@ -641,30 +641,30 @@ export function buildServer(dependencies: ApiDependencies) {
               ],
           })
         : undefined;
-    const server = createServer(async (request, response) => {
+    const server = createServer(async (req, res) => {
         await runtimeStateReady;
-        const url = new URL(request.url ?? "/", "http://localhost");
+        const url = new URL(req.url ?? "/", "http://localhost");
         const startedAt = Date.now();
         let responseBytes = 0;
-        const originalWrite = response.write.bind(response);
-        const originalEnd = response.end.bind(response);
-        response.write = ((chunk: unknown, ...argumentsList: unknown[]) => {
+        const originalWrite = res.write.bind(res);
+        const originalEnd = res.end.bind(res);
+        res.write = ((chunk: unknown, ...args: unknown[]) => {
             if (chunk) responseBytes += Buffer.byteLength(chunk as string);
-            return originalWrite(chunk as never, ...(argumentsList as never[]));
-        }) as typeof response.write;
-        response.end = ((chunk?: unknown, ...argumentsList: unknown[]) => {
+            return originalWrite(chunk as never, ...(args as never[]));
+        }) as typeof res.write;
+        res.end = ((chunk?: unknown, ...args: unknown[]) => {
             if (chunk) responseBytes += Buffer.byteLength(chunk as string);
-            return originalEnd(chunk as never, ...(argumentsList as never[]));
-        }) as typeof response.end;
-        response.once("finish", () => {
+            return originalEnd(chunk as never, ...(args as never[]));
+        }) as typeof res.end;
+        res.once("finish", () => {
             const pathSegments = url.pathname.split("/").filter(Boolean);
             const route = url.pathname.startsWith("/api/")
                 ? `/${pathSegments.slice(0, 3).join("/")}`
                 : `/${pathSegments[0] ?? "root"}`;
             const labels = {
-                method: request.method ?? "GET",
+                method: req.method ?? "GET",
                 route,
-                status_class: `${Math.floor(response.statusCode / 100)}xx`,
+                status_class: `${Math.floor(res.statusCode / 100)}xx`,
             };
             dependencies.observability?.record(
                 "http.server.duration_ms",
@@ -678,7 +678,7 @@ export function buildServer(dependencies: ApiDependencies) {
             );
         });
         log("debug", "Incoming API request.", {
-            method: request.method ?? "GET",
+            method: req.method ?? "GET",
             path: url.pathname,
         });
 
@@ -689,8 +689,8 @@ export function buildServer(dependencies: ApiDependencies) {
                 dependencies.gatewayRegistry?.get(owner.gatewayId)?.status ===
                     "disabled"
             ) {
-                response.writeHead(503, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(503, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "gateway_disabled",
@@ -699,7 +699,7 @@ export function buildServer(dependencies: ApiDependencies) {
                     }),
                 );
                 log("debug", "Request blocked: gateway disabled.", {
-                    method: request.method ?? "GET",
+                    method: req.method ?? "GET",
                     path: url.pathname,
                     gatewayId: owner.gatewayId,
                     durationMs: Date.now() - startedAt,
@@ -710,23 +710,23 @@ export function buildServer(dependencies: ApiDependencies) {
             const componentManagement = await componentManagementReady;
             if (
                 componentManagement &&
-                (await componentManagement.routes(request, response, url))
+                (await componentManagement.routes(req, res, url))
             )
                 return;
-            const handledByModule = await moduleRoutes(request, response, url);
+            const handledByModule = await moduleRoutes(req, res, url);
             if (handledByModule) {
                 log("debug", "Request handled by module routes.", {
-                    method: request.method ?? "GET",
+                    method: req.method ?? "GET",
                     path: url.pathname,
                     durationMs: Date.now() - startedAt,
                 });
                 return;
             }
 
-            const handledBySystem = await systemRoutes(request, response, url);
+            const handledBySystem = await systemRoutes(req, res, url);
             if (handledBySystem) {
                 log("debug", "Request handled by system routes.", {
-                    method: request.method ?? "GET",
+                    method: req.method ?? "GET",
                     path: url.pathname,
                     durationMs: Date.now() - startedAt,
                 });
@@ -734,10 +734,10 @@ export function buildServer(dependencies: ApiDependencies) {
             }
 
             if (userRoutes) {
-                const handledByUsers = await userRoutes(request, response, url);
+                const handledByUsers = await userRoutes(req, res, url);
                 if (handledByUsers) {
                     log("debug", "Request handled by user routes.", {
-                        method: request.method ?? "GET",
+                        method: req.method ?? "GET",
                         path: url.pathname,
                         durationMs: Date.now() - startedAt,
                     });
@@ -746,14 +746,10 @@ export function buildServer(dependencies: ApiDependencies) {
             }
 
             if (gatewayRoutes) {
-                const handledByGateways = await gatewayRoutes(
-                    request,
-                    response,
-                    url,
-                );
+                const handledByGateways = await gatewayRoutes(req, res, url);
                 if (handledByGateways) {
                     log("debug", "Request handled by gateway routes.", {
-                        method: request.method ?? "GET",
+                        method: req.method ?? "GET",
                         path: url.pathname,
                         durationMs: Date.now() - startedAt,
                     });
@@ -762,14 +758,10 @@ export function buildServer(dependencies: ApiDependencies) {
             }
 
             if (isUiStaticAssetRequest(url.pathname)) {
-                const handledByUiStatic = await uiRoutes(
-                    request,
-                    response,
-                    url,
-                );
+                const handledByUiStatic = await uiRoutes(req, res, url);
                 if (handledByUiStatic) {
                     log("debug", "Static request handled by UI routes.", {
-                        method: request.method ?? "GET",
+                        method: req.method ?? "GET",
                         path: url.pathname,
                         durationMs: Date.now() - startedAt,
                     });
@@ -777,10 +769,10 @@ export function buildServer(dependencies: ApiDependencies) {
                 }
             }
 
-            const handledBySearch = await searchRoutes(request, response, url);
+            const handledBySearch = await searchRoutes(req, res, url);
             if (handledBySearch) {
                 log("debug", "Request handled by search routes.", {
-                    method: request.method ?? "GET",
+                    method: req.method ?? "GET",
                     path: url.pathname,
                     durationMs: Date.now() - startedAt,
                 });
@@ -800,14 +792,10 @@ export function buildServer(dependencies: ApiDependencies) {
                 ) {
                     continue;
                 }
-                const handledByRegistry = await entry.handler(
-                    request,
-                    response,
-                    url,
-                );
+                const handledByRegistry = await entry.handler(req, res, url);
                 if (handledByRegistry) {
                     log("debug", "Request handled by registered route.", {
-                        method: request.method ?? "GET",
+                        method: req.method ?? "GET",
                         path: url.pathname,
                         durationMs: Date.now() - startedAt,
                     });
@@ -816,64 +804,60 @@ export function buildServer(dependencies: ApiDependencies) {
             }
 
             const handledByExtensions = await moduleExtensionRoutes.handle(
-                request,
-                response,
+                req,
+                res,
                 url,
             );
             if (handledByExtensions) {
                 log("debug", "Request handled by module extension routes.", {
-                    method: request.method ?? "GET",
+                    method: req.method ?? "GET",
                     path: url.pathname,
                     durationMs: Date.now() - startedAt,
                 });
                 return;
             }
 
-            const handledByDocuments = await documentsRoutes(
-                request,
-                response,
-                url,
-            );
+            const handledByDocuments = await documentsRoutes(req, res, url);
             if (handledByDocuments) {
                 log("debug", "Request handled by docs routes.", {
-                    method: request.method ?? "GET",
+                    method: req.method ?? "GET",
                     path: url.pathname,
                     durationMs: Date.now() - startedAt,
                 });
                 return;
             }
 
-            const handledByUi = await uiRoutes(request, response, url);
+            const handledByUi = await uiRoutes(req, res, url);
             if (handledByUi) {
                 log("debug", "Request handled by UI routes.", {
-                    method: request.method ?? "GET",
+                    method: req.method ?? "GET",
                     path: url.pathname,
                     durationMs: Date.now() - startedAt,
                 });
                 return;
             }
 
-            response.writeHead(404, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(404, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     error: { code: "not_found", message: "Route not found" },
                 }),
             );
             log("warn", "Request resulted in 404.", {
-                method: request.method ?? "GET",
+                method: req.method ?? "GET",
                 path: url.pathname,
                 durationMs: Date.now() - startedAt,
             });
         } catch (error) {
             await recoverComponentRequest(
-                request,
-                response,
+                req,
+                res,
                 error,
                 componentManagementReady,
                 log,
             );
             log("error", "Request failed with handled error response.", {
-                method: request.method ?? "GET",
+                method: req.method ?? "GET",
                 path: url.pathname,
                 durationMs: Date.now() - startedAt,
                 error: error instanceof Error ? error.message : String(error),

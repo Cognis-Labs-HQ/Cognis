@@ -1,10 +1,10 @@
 import { randomUUID } from "node:crypto";
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import { rowToTeacherRequest } from "./rows.js";
 import type { ClassRow, TeacherRequestRow } from "./types.js";
 
 export async function getTeacherRequest(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     accountId: string,
     languageCode: string,
 ): Promise<TeacherRequestRow | null> {
@@ -33,7 +33,7 @@ export async function getTeacherRequest(
 }
 
 export async function listPendingRequests(
-    db: DbExecutor,
+    db: DatabaseExecutor,
 ): Promise<TeacherRequestRow[]> {
     const result = await db.executeCommand({
         option: "SELECT",
@@ -57,7 +57,7 @@ export async function listPendingRequests(
 }
 
 export async function submitTeacherRequest(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     accountId: string,
     languageCode: string,
     reason: string | null,
@@ -90,7 +90,7 @@ export async function submitTeacherRequest(
 }
 
 export async function approveTeacherRequest(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     requestId: string,
     reviewerAccountId: string,
 ): Promise<ClassRow | null> {
@@ -162,7 +162,7 @@ export async function approveTeacherRequest(
 }
 
 export async function rejectTeacherRequest(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     requestId: string,
     reviewerAccountId: string,
 ): Promise<void> {

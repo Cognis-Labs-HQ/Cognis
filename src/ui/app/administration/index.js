@@ -21,7 +21,7 @@ import {
     bindModuleConfigureButtons as bindAdministrationModuleConfigureButtons,
     bindModuleToggles as bindAdministrationModuleToggles,
 } from "./bind-module-controls.js";
-import { initSecuritySection } from "./security.js";
+import { initializeSecuritySection } from "./security.js";
 import {
     bindExpandedStateListeners,
     bindDetailsToggleClicks,
@@ -388,8 +388,8 @@ function bindAdapterToggles() {
                 const disabledGatewayDependencies = [];
                 const disabledAdapterDependencies = [];
 
-                for (const request of requires) {
-                    const parts = request.split(":");
+                for (const req of requires) {
+                    const parts = req.split(":");
                     if (parts.length === 2) {
                         const [dependencyGatewayId, dependencyAdapterId] =
                             parts;
@@ -415,14 +415,14 @@ function bindAdapterToggles() {
                             );
                         }
                     } else {
-                        const dependencyGateway = gatewayById.get(request);
+                        const dependencyGateway = gatewayById.get(req);
                         if (
                             dependencyGateway &&
                             dependencyGateway.status === "disabled"
                         ) {
-                            disabledGatewayDependencies.push(request);
+                            disabledGatewayDependencies.push(req);
                             disabledDependencyNames.push(
-                                dependencyGateway.name ?? request,
+                                dependencyGateway.name ?? req,
                             );
                         }
                     }
@@ -644,7 +644,7 @@ export async function mount(rootElement, { signal } = {}) {
     integrityRows = loadedIntegrityRows;
     await reloadGatewaysAndAdapters();
 
-    securitySection = initSecuritySection(root, {
+    securitySection = initializeSecuritySection(root, {
         i18n,
         signal,
         onDirtyChange: (dirty) => changesBar?.markDirty("security", dirty),
@@ -874,8 +874,7 @@ export async function mount(rootElement, { signal } = {}) {
             },
             i18n,
             showToast,
-            log: (...argumentsList) =>
-                uiCtx.capabilities.get("ui:log")?.(...argumentsList),
+            log: (...args) => uiCtx.capabilities.get("ui:log")?.(...args),
         }),
         onDiscard: async () => {
             securitySection?.discard();

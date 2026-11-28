@@ -18,7 +18,7 @@ import {
 export type AppLog = (
     level: LogLevel,
     message: string,
-    metadata?: Record<string, unknown>,
+    meta?: Record<string, unknown>,
 ) => void;
 
 const LOG_LEVEL_PRIORITY: Record<LogLevel, number> = {

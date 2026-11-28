@@ -13,7 +13,7 @@ import { registerPageRedraw } from "./page-redraw.js";
  * inline auth logic or session-state variables in this file.
  *
  * Public exports:
- *   initRouter(root)    — wire up click interception and popstate handling.
+ *   initializeRouter(root)    — wire up click interception and popstate handling.
  *                         Call once after the dashboard shell is rendered.
  *   navigateTo(path, options) — navigate in-app with optional history state.
  *   getCurrentBase()    — returns the base path of the currently mounted page.
@@ -21,8 +21,8 @@ import { registerPageRedraw } from "./page-redraw.js";
  *   `router:invalidateRoutes` — ctx capability for invalidating those routes.
  *
  * Usage:
- *   import { initRouter } from '../reuse/app-router.js';
- *   initRouter(document.querySelector('#app'));
+ *   import { initializeRouter } from '../reuse/app-router.js';
+ *   initializeRouter(document.querySelector('#app'));
  *
  * Double-mount guard: when the router imports a page module for the first
  * time, the browser evaluates its top-level code, including the module-level
@@ -710,7 +710,7 @@ export function getCurrentBase() {
     return routerState.currentBase;
 }
 
-export function initRouter(root) {
+export function initializeRouter(root) {
     if (root) routerState.root = root;
     if (routerState.initialized) return;
     routerState.initialized = true;

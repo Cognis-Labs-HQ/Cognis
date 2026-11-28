@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import {
     decryptPayload,
     deriveScopedKey,
@@ -8,7 +8,7 @@ import {
 } from "../../../../api/reuse/crypto.js";
 
 export async function storeWrappedRoomKey(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     roomId: string,
     plaintextKeyHex: string,
 ): Promise<void> {
@@ -34,7 +34,7 @@ export async function storeWrappedRoomKey(
 }
 
 export async function getUnwrappedRoomKey(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     roomId: string,
 ): Promise<string | null> {
     const result = await db.executeCommand({
@@ -57,7 +57,7 @@ export async function getUnwrappedRoomKey(
 }
 
 export async function generateAndStoreRoomKey(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     roomId: string,
 ): Promise<string> {
     const plaintextHex = randomBytes(32).toString("hex");
@@ -66,7 +66,7 @@ export async function generateAndStoreRoomKey(
 }
 
 export async function claimRoomKeyContribution(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     roomId: string,
     accountId: string,
 ): Promise<string | null> {
@@ -91,7 +91,7 @@ export async function claimRoomKeyContribution(
 }
 
 export async function acknowledgeRoomKeyContribution(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     roomId: string,
     accountId: string,
 ): Promise<void> {

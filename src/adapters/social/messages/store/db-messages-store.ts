@@ -2,7 +2,7 @@ import {
     changeChatroomSource,
     type ChatroomSourceInput,
 } from "./source-binding.js";
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import {
     appendMessage,
     appendRoomEvent,
@@ -71,21 +71,21 @@ import type {
 } from "./types.js";
 
 class DatabaseMessagesStore {
-    constructor(private readonly database: DbExecutor) {}
+    constructor(private readonly db: DatabaseExecutor) {}
 
     async ensureSchema(): Promise<void> {
-        await ensureSchema(this.database);
+        await ensureSchema(this.db);
     }
 
     async bindSource(input: ChatroomSourceInput): Promise<void> {
-        await changeChatroomSource(this.database, input);
+        await changeChatroomSource(this.db, input);
     }
 
     async releaseSource(
         input: ChatroomSourceInput,
         administrator = false,
     ): Promise<void> {
-        await changeChatroomSource(this.database, input, true, administrator);
+        await changeChatroomSource(this.db, input, true, administrator);
     }
 
     async createRoom(
@@ -93,36 +93,36 @@ class DatabaseMessagesStore {
         title: string | null,
         createdBy: string,
     ): Promise<RoomRow> {
-        return createRoom(this.database, kind, title, createdBy);
+        return createRoom(this.db, kind, title, createdBy);
     }
 
     async createDirectMessage(
         accountA: string,
         accountB: string,
     ): Promise<RoomRow> {
-        return createDirectMessage(this.database, accountA, accountB);
+        return createDirectMessage(this.db, accountA, accountB);
     }
 
     async getRoom(id: string): Promise<RoomRow | null> {
-        return getRoom(this.database, id);
+        return getRoom(this.db, id);
     }
 
     async deleteRoom(id: string): Promise<void> {
-        await deleteRoom(this.database, id);
+        await deleteRoom(this.db, id);
     }
 
     async deleteRoomForActor(
         roomId: string,
         actorAccountId: string,
     ): Promise<"deleted" | "forbidden" | "not_found"> {
-        return deleteRoomForActor(this.database, roomId, actorAccountId);
+        return deleteRoomForActor(this.db, roomId, actorAccountId);
     }
 
     async updateRoomAvatar(
         roomId: string,
         avatarKey: string | null,
     ): Promise<RoomRow | null> {
-        return updateRoomAvatar(this.database, roomId, avatarKey);
+        return updateRoomAvatar(this.db, roomId, avatarKey);
     }
 
     async addMember(
@@ -130,7 +130,7 @@ class DatabaseMessagesStore {
         accountId: string,
         role: MemberRole,
     ): Promise<boolean> {
-        return addMember(this.database, roomId, accountId, role);
+        return addMember(this.db, roomId, accountId, role);
     }
 
     async addMemberWithEvent(input: {
@@ -141,7 +141,7 @@ class DatabaseMessagesStore {
         handle?: string | null;
         displayName?: string | null;
     }): Promise<boolean> {
-        return this.database.transaction(async (executor) => {
+        return this.db.transaction(async (executor) => {
             const existingMember = await getMember(
                 executor,
                 input.roomId,
@@ -181,7 +181,7 @@ class DatabaseMessagesStore {
         handle?: string | null;
         displayName?: string | null;
     }): Promise<"active" | "archived" | "deleted" | "not_member"> {
-        return this.database.transaction(async (executor) => {
+        return this.db.transaction(async (executor) => {
             const member = await getMember(
                 executor,
                 input.roomId,
@@ -205,49 +205,49 @@ class DatabaseMessagesStore {
     }
 
     async removeMember(roomId: string, accountId: string): Promise<void> {
-        await removeMember(this.database, roomId, accountId);
+        await removeMember(this.db, roomId, accountId);
     }
 
     async removeMemberAndApplyLifecycle(
         roomId: string,
         accountId: string,
     ): Promise<"active" | "archived" | "deleted"> {
-        return removeMemberAndApplyLifecycle(this.database, roomId, accountId);
+        return removeMemberAndApplyLifecycle(this.db, roomId, accountId);
     }
 
     async getMember(
         roomId: string,
         accountId: string,
     ): Promise<MemberRow | null> {
-        return getMember(this.database, roomId, accountId);
+        return getMember(this.db, roomId, accountId);
     }
 
     async listMembers(roomId: string): Promise<MemberRow[]> {
-        return listMembers(this.database, roomId);
+        return listMembers(this.db, roomId);
     }
 
     async listRoomsForAccount(accountId: string): Promise<RoomRow[]> {
-        return listRoomsForAccount(this.database, accountId);
+        return listRoomsForAccount(this.db, accountId);
     }
 
     async findDirectMessageBetween(
         accountA: string,
         accountB: string,
     ): Promise<RoomRow | null> {
-        return findDirectMessageBetween(this.database, accountA, accountB);
+        return findDirectMessageBetween(this.db, accountA, accountB);
     }
 
     async updateRoomTitle(
         roomId: string,
         title: string | null,
     ): Promise<RoomRow | null> {
-        return updateRoomTitle(this.database, roomId, title);
+        return updateRoomTitle(this.db, roomId, title);
     }
 
     async findGroupByExactMembers(
         memberAccountIds: string[],
     ): Promise<RoomRow | null> {
-        return findGroupByExactMembers(this.database, memberAccountIds);
+        return findGroupByExactMembers(this.db, memberAccountIds);
     }
 
     async appendMessage(input: {
@@ -259,7 +259,7 @@ class DatabaseMessagesStore {
         contentType?: string;
         operationId?: string;
     }): Promise<MessageRow> {
-        return appendMessage(this.database, input);
+        return appendMessage(this.db, input);
     }
 
     async appendRoomEvent(input: {
@@ -271,7 +271,7 @@ class DatabaseMessagesStore {
         subjectDisplayName?: string | null;
         details?: Record<string, unknown>;
     }): Promise<MessageRow> {
-        return appendRoomEvent(this.database, input);
+        return appendRoomEvent(this.db, input);
     }
 
     async listMessages(
@@ -279,11 +279,11 @@ class DatabaseMessagesStore {
         limit: number,
         before?: string,
     ): Promise<MessageRow[]> {
-        return listMessages(this.database, roomId, limit, before);
+        return listMessages(this.db, roomId, limit, before);
     }
 
     async getMessage(messageId: string): Promise<MessageRow | null> {
-        return getMessage(this.database, messageId);
+        return getMessage(this.db, messageId);
     }
 
     async markRead(
@@ -291,11 +291,11 @@ class DatabaseMessagesStore {
         accountId: string,
         readAt?: string,
     ): Promise<void> {
-        await markRead(this.database, roomId, accountId, readAt);
+        await markRead(this.db, roomId, accountId, readAt);
     }
 
     async unreadCount(roomId: string, accountId: string): Promise<number> {
-        return unreadCount(this.database, roomId, accountId);
+        return unreadCount(this.db, roomId, accountId);
     }
 
     async setMuted(
@@ -303,7 +303,7 @@ class DatabaseMessagesStore {
         accountId: string,
         muted: boolean,
     ): Promise<void> {
-        await setMuted(this.database, roomId, accountId, muted);
+        await setMuted(this.db, roomId, accountId, muted);
     }
 
     async setArchived(
@@ -311,18 +311,14 @@ class DatabaseMessagesStore {
         accountId: string,
         archived: boolean,
     ): Promise<void> {
-        await setArchived(this.database, roomId, accountId, archived);
+        await setArchived(this.db, roomId, accountId, archived);
     }
 
     async findPendingMessageRequest(
         fromAccountId: string,
         toAccountId: string,
     ): Promise<MessageRequestRow | null> {
-        return findPendingMessageRequest(
-            this.database,
-            fromAccountId,
-            toAccountId,
-        );
+        return findPendingMessageRequest(this.db, fromAccountId, toAccountId);
     }
 
     async createMessageRequest(input: {
@@ -331,17 +327,17 @@ class DatabaseMessagesStore {
         note?: string | null;
         roomId?: string | null;
     }): Promise<MessageRequestRow> {
-        return createMessageRequest(this.database, input);
+        return createMessageRequest(this.db, input);
     }
 
     async getMessageRequest(id: string): Promise<MessageRequestRow | null> {
-        return getMessageRequest(this.database, id);
+        return getMessageRequest(this.db, id);
     }
 
     async getPendingRoomMessageRequest(
         roomId: string,
     ): Promise<MessageRequestRow | null> {
-        return getPendingRoomMessageRequest(this.database, roomId);
+        return getPendingRoomMessageRequest(this.db, roomId);
     }
 
     async getPendingIncomingRoomMessageRequest(
@@ -349,7 +345,7 @@ class DatabaseMessagesStore {
         toAccountId: string,
     ): Promise<MessageRequestRow | null> {
         return getPendingIncomingRoomMessageRequest(
-            this.database,
+            this.db,
             roomId,
             toAccountId,
         );
@@ -358,7 +354,7 @@ class DatabaseMessagesStore {
     async listIncomingMessageRequests(
         accountId: string,
     ): Promise<MessageRequestRow[]> {
-        return listIncomingMessageRequests(this.database, accountId);
+        return listIncomingMessageRequests(this.db, accountId);
     }
 
     async updateMessageRequestStatus(
@@ -366,7 +362,7 @@ class DatabaseMessagesStore {
         status: MessageRequestStatus,
         roomId: string | null = null,
     ): Promise<void> {
-        await updateMessageRequestStatus(this.database, id, status, roomId);
+        await updateMessageRequestStatus(this.db, id, status, roomId);
     }
 
     async approvePendingRequestsBetween(
@@ -375,7 +371,7 @@ class DatabaseMessagesStore {
         roomId: string,
     ): Promise<void> {
         await approvePendingRequestsBetween(
-            this.database,
+            this.db,
             accountA,
             accountB,
             roomId,
@@ -386,11 +382,7 @@ class DatabaseMessagesStore {
         accountA: string,
         accountB: string,
     ): Promise<boolean> {
-        return hasApprovedMessageRequestBetween(
-            this.database,
-            accountA,
-            accountB,
-        );
+        return hasApprovedMessageRequestBetween(this.db, accountA, accountB);
     }
 
     async setTyping(
@@ -399,11 +391,11 @@ class DatabaseMessagesStore {
         typing: boolean,
         ttlSeconds = 8,
     ): Promise<void> {
-        await setTyping(this.database, roomId, accountId, typing, ttlSeconds);
+        await setTyping(this.db, roomId, accountId, typing, ttlSeconds);
     }
 
     async listActiveTypers(roomId: string): Promise<TypingRow[]> {
-        return listActiveTypers(this.database, roomId);
+        return listActiveTypers(this.db, roomId);
     }
 
     async setMessageReaction(
@@ -414,7 +406,7 @@ class DatabaseMessagesStore {
         active: boolean,
     ): Promise<void> {
         await setMessageReaction(
-            this.database,
+            this.db,
             roomId,
             messageId,
             accountId,
@@ -429,57 +421,51 @@ class DatabaseMessagesStore {
         accountId: string,
         emoji: string,
     ): Promise<boolean> {
-        return hasMessageReaction(
-            this.database,
-            roomId,
-            messageId,
-            accountId,
-            emoji,
-        );
+        return hasMessageReaction(this.db, roomId, messageId, accountId, emoji);
     }
 
     async listMessageReactions(roomId: string): Promise<MessageReactionRow[]> {
-        return listMessageReactions(this.database, roomId);
+        return listMessageReactions(this.db, roomId);
     }
 
     async storeWrappedRoomKey(
         roomId: string,
         plaintextKeyHex: string,
     ): Promise<void> {
-        await storeWrappedRoomKey(this.database, roomId, plaintextKeyHex);
+        await storeWrappedRoomKey(this.db, roomId, plaintextKeyHex);
     }
 
     async getUnwrappedRoomKey(roomId: string): Promise<string | null> {
-        return getUnwrappedRoomKey(this.database, roomId);
+        return getUnwrappedRoomKey(this.db, roomId);
     }
 
     async generateAndStoreRoomKey(roomId: string): Promise<string> {
-        return generateAndStoreRoomKey(this.database, roomId);
+        return generateAndStoreRoomKey(this.db, roomId);
     }
 
     async claimRoomKeyContribution(
         roomId: string,
         accountId: string,
     ): Promise<string | null> {
-        return claimRoomKeyContribution(this.database, roomId, accountId);
+        return claimRoomKeyContribution(this.db, roomId, accountId);
     }
 
     async acknowledgeRoomKeyContribution(
         roomId: string,
         accountId: string,
     ): Promise<void> {
-        await acknowledgeRoomKeyContribution(this.database, roomId, accountId);
+        await acknowledgeRoomKeyContribution(this.db, roomId, accountId);
     }
 
     async incrementEmojiUsage(accountId: string, emoji: string): Promise<void> {
-        await incrementEmojiUsage(this.database, accountId, emoji);
+        await incrementEmojiUsage(this.db, accountId, emoji);
     }
 
     async getTopEmojiUsage(
         accountId: string,
         limit: number,
     ): Promise<EmojiUsageRow[]> {
-        return getTopEmojiUsage(this.database, accountId, limit);
+        return getTopEmojiUsage(this.db, accountId, limit);
     }
 }
 export { DatabaseMessagesStore };

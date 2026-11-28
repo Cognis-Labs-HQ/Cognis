@@ -13,9 +13,8 @@ function makeInMemoryDatabase() {
     return {
         executeCommand: async (_command: unknown) => ({ rows: [] }),
         ensureTable: async (_definition: unknown) => {},
-        transaction: async (
-            callback: (database: unknown) => Promise<unknown>,
-        ) => callback(makeInMemoryDatabase()),
+        transaction: async (callback: (db: unknown) => Promise<unknown>) =>
+            callback(makeInMemoryDatabase()),
     };
 }
 
@@ -56,8 +55,8 @@ function makeAdapterCtx(
             gatewayRegistry,
             registerRoute: (
                 handler: (
-                    request: import("node:http").IncomingMessage,
-                    response: import("node:http").ServerResponse,
+                    req: import("node:http").IncomingMessage,
+                    res: import("node:http").ServerResponse,
                     url: URL,
                 ) => Promise<boolean>,
                 gatewayId?: string,
@@ -74,13 +73,18 @@ function makeAdapterCtx(
                 }),
             registerCapabilityProvider: (provider) =>
                 uiRegistry?.registerCapabilityProvider(provider),
-            registerStaticDir: (prefix: string, dir: string) =>
-                uiRegistry?.registerStaticDir(prefix, dir),
-            registerAdapterStaticDir: (
+            registerStaticDirectory: (prefix: string, dir: string) =>
+                uiRegistry?.registerStaticDirectory(prefix, dir),
+            registerAdapterStaticDirectory: (
                 gatewayId: string,
                 adapter: string,
                 dir: string,
-            ) => uiRegistry?.registerAdapterStaticDir(gatewayId, adapter, dir),
+            ) =>
+                uiRegistry?.registerAdapterStaticDirectory(
+                    gatewayId,
+                    adapter,
+                    dir,
+                ),
             registerAuthTypingMessage: (
                 message: Parameters<UIRegistry["registerAuthTypingMessage"]>[0],
             ) => uiRegistry?.registerAuthTypingMessage(message),
@@ -206,7 +210,10 @@ test("profile adapter bootstrap registers static dir and navbar.js exists on dis
     const { ctx } = makeAdapterCtx({ uiRegistry });
     await bootstrapSocialAdapter(ctx);
 
-    const staticDirectory = uiRegistry.getAdapterStaticDir("social", "profile");
+    const staticDirectory = uiRegistry.getAdapterStaticDirectory(
+        "social",
+        "profile",
+    );
     assert.ok(
         staticDirectory,
         "profile adapter must register a static dir under social/profile",
@@ -256,7 +263,10 @@ test("profile adapter registers standalone capabilities and navbar behavior", as
         "social:profileRequest",
     ]);
 
-    const staticDirectory = uiRegistry.getAdapterStaticDir("social", "profile");
+    const staticDirectory = uiRegistry.getAdapterStaticDirectory(
+        "social",
+        "profile",
+    );
     assert.ok(
         staticDirectory,
         "profile adapter must register an adapter static dir",

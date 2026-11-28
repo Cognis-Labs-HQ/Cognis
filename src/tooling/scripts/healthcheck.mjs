@@ -3,7 +3,7 @@ import { request } from "node:http";
 
 const port = Number.parseInt(process.env.PORT ?? "3000", 10);
 
-const currentRequest = request(
+const req = request(
     {
         host: "127.0.0.1",
         port,
@@ -11,17 +11,17 @@ const currentRequest = request(
         method: "GET",
         timeout: 4000,
     },
-    (response) => {
-        process.exit(response.statusCode === 200 ? 0 : 1);
+    (res) => {
+        process.exit(res.statusCode === 200 ? 0 : 1);
     },
 );
 
-currentRequest.on("timeout", () => {
-    currentRequest.destroy(new Error("request timed out"));
+req.on("timeout", () => {
+    req.destroy(new Error("request timed out"));
 });
 
-currentRequest.on("error", () => {
+req.on("error", () => {
     process.exit(1);
 });
 
-currentRequest.end();
+req.end();

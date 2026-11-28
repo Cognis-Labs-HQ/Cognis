@@ -107,12 +107,12 @@ export function resolveComposerResize(previous, next, editing) {
 }
 
 /**
- * @param {{gridCols:number,layoutProfiles?:{layoutsByGrid?:object}}} state Main or nested Composer state.
+ * @param {{gridColumns:number,layoutProfiles?:{layoutsByGrid?:object}}} state Main or nested Composer state.
  * @returns {boolean} Whether this exact grid has a user-authored profile.
  */
 export function hasGridProfile(state) {
     return Object.hasOwn(
         state.layoutProfiles?.layoutsByGrid ?? {},
-        `cols-${state.gridCols}`,
+        `cols-${state.gridColumns}`,
     );
 }

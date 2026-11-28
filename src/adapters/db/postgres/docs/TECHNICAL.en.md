@@ -46,7 +46,7 @@ PostgreSQL uses numbered `$N` placeholders rather than `?`. All SQL passed to th
 INSERT INTO accounts (id, email) VALUES ($1, $2)
 ```
 
-Use `DbDialectHelper.upsert()` and `DbDialectHelper.insertIgnore()` from `src/gateways/db/bootstrap.ts` to generate dialect-appropriate statements rather than writing raw `INSERT … ON CONFLICT DO UPDATE`.
+Use `DatabaseDialectHelper.upsert()` and `DatabaseDialectHelper.insertIgnore()` from `src/gateways/db/bootstrap.ts` to generate dialect-appropriate statements rather than writing raw `INSERT … ON CONFLICT DO UPDATE`.
 
 ### Unique-key reconciliation
 

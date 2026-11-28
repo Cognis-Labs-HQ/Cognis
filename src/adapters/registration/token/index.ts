@@ -1,5 +1,5 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
-import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import type { LocalAccountStore } from "../../../gateways/auth/reuse/account-store.js";
 import type { RegistrationGatewayAdapter } from "../../../gateways/registration/gateway.js";
 
@@ -95,7 +95,7 @@ function parseToken(rawToken: string): { tokenId: string; tokenHash: string } {
 }
 
 export function createAdapter(dependencies: {
-    dbExecutor: DbExecutor;
+    dbExecutor: DatabaseExecutor;
     accountStore: LocalAccountStore;
     canSendInviteEmail: () => boolean;
     sendInviteEmail: (
@@ -117,7 +117,7 @@ export function createAdapter(dependencies: {
     log?: (
         level: "debug" | "info" | "warn" | "error",
         message: string,
-        metadata?: Record<string, unknown>,
+        meta?: Record<string, unknown>,
     ) => void;
 }): RegistrationGatewayAdapter {
     const {
@@ -136,12 +136,12 @@ export function createAdapter(dependencies: {
 
     function ensureReady(): Promise<void> {
         if (!schemaInitialized) {
-            schemaInitialized = initSchema();
+            schemaInitialized = initializeSchema();
         }
         return schemaInitialized;
     }
 
-    async function initSchema(): Promise<void> {
+    async function initializeSchema(): Promise<void> {
         await databaseExecutor.ensureTable({
             name: "registration_tokens",
             columns: [

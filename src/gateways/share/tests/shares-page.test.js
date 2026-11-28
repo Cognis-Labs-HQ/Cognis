@@ -170,7 +170,7 @@ test("Share gateway owns its pages and adapter static directories", () => {
         bootstrapSource,
         /uiHooks\.registerSpaRoute\(\{[\s\S]*id: "shares-page"/,
     );
-    assert.match(bootstrapSource, /uiHooks\.registerAdapterStaticDir/);
+    assert.match(bootstrapSource, /uiHooks\.registerAdapterStaticDirectory/);
 });
 
 test("Share navbar plugin adds Shares to the user menu", () => {

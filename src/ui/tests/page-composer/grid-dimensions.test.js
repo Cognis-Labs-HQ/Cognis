@@ -91,7 +91,7 @@ for (const columns of [2, 3, 8]) {
         for (const nested of [false, true]) {
             const state = {
                 elements: [element],
-                gridCols: columns,
+                gridColumns: columns,
                 gridRows: 6,
                 layout: { placements: [], hidden: [] },
             };
@@ -152,7 +152,7 @@ for (const columns of [2, 3, 8]) {
                 const state = {
                     editing: true,
                     elements: [element],
-                    gridCols: columns,
+                    gridColumns: columns,
                     gridSection: new GridElement(columns * 90 + 17),
                     contentGrid: new GridElement(columns * 90 + 17),
                     layout: { placements: [placement], hidden: [] },
@@ -269,7 +269,7 @@ test("half-grid spans share gaps and pointer origin with CSS tracks", (context) 
     const state = {
         contentGrid: new GridElement(720),
         gridSection: new GridElement(720),
-        gridCols: 4,
+        gridColumns: 4,
         editing: true,
         layout: { placements: [], hidden: [] },
     };
@@ -302,7 +302,7 @@ test("grid width is measured after height growth reserves scrollbar space", (con
     const state = {
         contentGrid: new GridElement(720),
         gridSection: section,
-        gridCols: 4,
+        gridColumns: 4,
         editing: true,
         layout: { placements: [], hidden: [] },
     };

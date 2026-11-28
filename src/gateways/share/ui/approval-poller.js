@@ -124,7 +124,7 @@ async function startPolling(i18n) {
     pollTimer = setTimeout(runTick, POLL_INTERVAL_MILLISECONDS);
 }
 
-(async function initApprovalPoller() {
+(async function initializeApprovalPoller() {
     if (!localStorage.getItem("cognis_access_token")) return;
     if (isViewingAsGuest()) return;
     if (pollTimer) clearTimeout(pollTimer);

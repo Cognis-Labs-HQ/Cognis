@@ -1,5 +1,5 @@
 import { randomInt, randomUUID } from "node:crypto";
-import type { DbExecutor } from "../../db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../db/reuse/db-executor.js";
 
 export interface GuestProfileRecord {
     guestId: string;
@@ -52,10 +52,10 @@ function parseRecord(row: Record<string, unknown>): GuestProfileRecord | null {
  * are purged once expired, mirroring `ShareTokenStore`'s lazy-purge pattern.
  */
 export class GuestProfileStore {
-    constructor(private readonly database: DbExecutor) {}
+    constructor(private readonly db: DatabaseExecutor) {}
 
     async ensureSchema(): Promise<void> {
-        await this.database.ensureTable({
+        await this.db.ensureTable({
             name: "share_guest_profiles",
             columns: [
                 { name: "guest_id", type: "text", primaryKey: true },
@@ -88,7 +88,7 @@ export class GuestProfileStore {
             createdAt,
             expiresAt,
         };
-        await this.database.executeCommand({
+        await this.db.executeCommand({
             option: "INSERT",
             table: "share_guest_profiles",
             values: {
@@ -106,7 +106,7 @@ export class GuestProfileStore {
     async getById(guestId: string): Promise<GuestProfileRecord | null> {
         const normalizedGuestId = String(guestId ?? "").trim();
         if (!normalizedGuestId) return null;
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "share_guest_profiles",
             where: [{ column: "guest_id", value: normalizedGuestId }],
@@ -123,7 +123,7 @@ export class GuestProfileStore {
     }
 
     async deleteById(guestId: string): Promise<void> {
-        await this.database.executeCommand({
+        await this.db.executeCommand({
             option: "DELETE",
             table: "share_guest_profiles",
             where: [
@@ -134,7 +134,7 @@ export class GuestProfileStore {
 
     async listExpired(): Promise<GuestProfileRecord[]> {
         const nowIso = new Date().toISOString();
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "share_guest_profiles",
             where: [
@@ -151,7 +151,7 @@ export class GuestProfileStore {
     async purgeExpired(): Promise<GuestProfileRecord[]> {
         const expired = await this.listExpired();
         const nowIso = new Date().toISOString();
-        await this.database.executeCommand({
+        await this.db.executeCommand({
             option: "DELETE",
             table: "share_guest_profiles",
             where: [

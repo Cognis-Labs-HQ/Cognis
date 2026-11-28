@@ -41,17 +41,17 @@ Gateway Database adalah satu-satunya titik akses untuk semua operasi database di
 
 ### Tanggung Jawab
 
-- Membaca `DB_TYPE` dan membuat instance `DbExecutor` yang benar saat bootstrap.
+- Membaca `DB_TYPE` dan membuat instance `DatabaseExecutor` yang benar saat bootstrap.
 - Menginisialisasi skema database dengan menjalankan skrip SQL dari direktori `sql/` adapter aktif.
 - Berkontribusi `db:executor`, `db:type`, dan `db:dialect` ke capability store.
 - Mengisi tabel `modules` dengan rekaman modul `cognis-core`.
 
-### DbDialectHelper
+### DatabaseDialectHelper
 
-`DbDialectHelper` yang dikontribusikan sebagai `db:dialect` menyediakan dua metode:
+`DatabaseDialectHelper` yang dikontribusikan sebagai `db:dialect` menyediakan dua metode:
 
 ```ts
-export interface DbDialectHelper {
+export interface DatabaseDialectHelper {
     upsert(
         table: string,
         keyCol: string,
@@ -62,12 +62,12 @@ export interface DbDialectHelper {
 }
 ```
 
-| Path                           | Tujuan                                   |
-| ------------------------------ | ---------------------------------------- |
-| `src/gateways/db/gateway.ts`   | Antarmuka `DatabaseGateway`              |
-| `src/gateways/db/executor.ts`  | `createDatabaseExecutor`                 |
-| `src/gateways/db/init.ts`      | `initializeDatabaseSchema`               |
-| `src/gateways/db/bootstrap.ts` | Titik masuk bootstrap; `DbDialectHelper` |
+| Path                           | Tujuan                                         |
+| ------------------------------ | ---------------------------------------------- |
+| `src/gateways/db/gateway.ts`   | Antarmuka `DatabaseGateway`                    |
+| `src/gateways/db/executor.ts`  | `createDatabaseExecutor`                       |
+| `src/gateways/db/init.ts`      | `initializeDatabaseSchema`                     |
+| `src/gateways/db/bootstrap.ts` | Titik masuk bootstrap; `DatabaseDialectHelper` |
 
 ### Administrasi
 

@@ -5,14 +5,7 @@ import { versionOfflineWorker } from "./ui-build/offline-version.mjs";
 import { rewriteHtmlAssets } from "./ui-build/html-assets.mjs";
 import { brotliCompress, gzip } from "node:zlib";
 import { promisify } from "node:util";
-import {
-    cp as copyPath,
-    mkdir,
-    readFile,
-    readdir,
-    rm as removePath,
-    writeFile,
-} from "node:fs/promises";
+import { cp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { build } from "esbuild";
 
@@ -54,7 +47,7 @@ function logicalUrls(filePath) {
     return [...urls];
 }
 
-await removePath(outputRoot, { recursive: true, force: true });
+await rm(outputRoot, { recursive: true, force: true });
 await mkdir(assetRoot, { recursive: true });
 const sourceFiles = (await walk(path.join(repositoryRoot, "src")))
     .filter((filePath) => /\.(?:css|js)$/.test(filePath))
@@ -153,17 +146,10 @@ const result = await build({
         {
             name: "cognis-static-assets",
             setup(buildContext) {
-                buildContext.onResolve(
-                    { filter: /^\/static\// },
-                    (argumentsList) => {
-                        const resolvedPath = logicalSourcePaths.get(
-                            argumentsList.path,
-                        );
-                        return resolvedPath
-                            ? { path: resolvedPath }
-                            : undefined;
-                    },
-                );
+                buildContext.onResolve({ filter: /^\/static\// }, (args) => {
+                    const resolvedPath = logicalSourcePaths.get(args.path);
+                    return resolvedPath ? { path: resolvedPath } : undefined;
+                });
             },
         },
     ],
@@ -194,12 +180,12 @@ for (const sourcePath of resolvableFiles.filter(
     for (const logicalUrl of logicalUrls(sourcePath))
         manifest[logicalUrl] = emittedUrl;
 }
-await copyPath(
+await cp(
     path.join(repositoryRoot, "src", "ui", "public"),
     path.join(outputRoot, "public"),
     { recursive: true },
 );
-await copyPath(
+await cp(
     path.join(repositoryRoot, "src", "ui", "public", "assets"),
     assetRoot,
     { recursive: true },

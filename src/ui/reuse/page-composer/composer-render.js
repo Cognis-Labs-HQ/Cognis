@@ -100,7 +100,7 @@ export function createComposerRenderer({
             !hasGridProfile(state) &&
             isCompactComposer(state.contentGrid, state.stackAt);
         section.classList.toggle("composer-view-grid--compact", compact);
-        return applyGridMetrics(section, placements, state.gridCols, UNIT);
+        return applyGridMetrics(section, placements, state.gridColumns, UNIT);
     }
     function applyCardPlacement(card, placement, scale) {
         if (state.frameless) return;
@@ -334,7 +334,7 @@ export function createComposerRenderer({
                     : "";
                 const isActive =
                     state.subPageNavigation &&
-                    element.id === state.activeSubPageId;
+                    element.id === state.activeNestedPageId;
                 const activeClass = isActive ? " active" : "";
                 const hiddenAttribute =
                     state.subPageNavigation && !isActive ? " hidden" : "";
@@ -402,11 +402,12 @@ export function createComposerRenderer({
         }
         state.onRender?.();
         const activeElement = state.elements.find(
-            (candidateElement) => candidateElement.id === state.activeSubPageId,
+            (candidateElement) =>
+                candidateElement.id === state.activeNestedPageId,
         );
         if (activeElement?.subComposerOptions) {
             const outerDiv = state.contentGrid.querySelector(
-                `#${state.activeSubPageId}`,
+                `#${state.activeNestedPageId}`,
             );
             const sectionDiv =
                 outerDiv?.querySelector(".sub-composer-inner") ??

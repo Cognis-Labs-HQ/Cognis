@@ -16,7 +16,7 @@ import { escapeHtml } from "../../../../ui/reuse/escape-html.js";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import test from "node:test";
-import virtualMachine from "node:vm";
+import vm from "node:vm";
 import { uiCtx } from "../../../../ui/reuse/ui-ctx.js";
 import { compactDrawingPattern } from "../../ui/reuse/drawing-layout.js";
 import { drawingViewport } from "../../ui/reuse/drawing-viewport.js";

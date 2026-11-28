@@ -1,27 +1,29 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import type {
-    StructuredDbCommand,
-    StructuredDbCommandResult,
+    StructuredDatabaseCommand,
+    StructuredDatabaseCommandResult,
 } from "../../db/reuse/db-command.js";
-import type { StructuredDbTableDef } from "../../db/reuse/db-table.js";
+import type { StructuredDatabaseTableDefinition } from "../../db/reuse/db-table.js";
 import { ShareTokenStore } from "../gateway/store.js";
 
 class MemoryExecutor {
-    public readonly tableDefs: StructuredDbTableDef[] = [];
+    public readonly tableDefs: StructuredDatabaseTableDefinition[] = [];
     public readonly rows = new Map<string, Record<string, unknown>>();
     public readonly auxiliaryRows = new Map<
         string,
         Map<string, Record<string, unknown>>
     >();
 
-    async ensureTable(definition: StructuredDbTableDef): Promise<void> {
+    async ensureTable(
+        definition: StructuredDatabaseTableDefinition,
+    ): Promise<void> {
         this.tableDefs.push(definition);
     }
 
     async executeCommand(
-        command: StructuredDbCommand,
-    ): Promise<StructuredDbCommandResult> {
+        command: StructuredDatabaseCommand,
+    ): Promise<StructuredDatabaseCommandResult> {
         const rows =
             command.table === "share_tokens"
                 ? this.rows
@@ -66,7 +68,7 @@ class MemoryExecutor {
 
     private matchesWhere(
         row: Record<string, unknown>,
-        conditions: StructuredDbCommand["where"] = [],
+        conditions: StructuredDatabaseCommand["where"] = [],
     ): boolean {
         return conditions.every((condition) => {
             const rowValue = row[condition.column];

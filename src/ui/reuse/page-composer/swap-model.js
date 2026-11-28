@@ -47,8 +47,8 @@ function resolveSwap(state, sourceId, targetId) {
         nextTarget.col = source.col + source.w - target.w;
     }
     if (
-        !fitsGrid(nextSource, state.gridCols) ||
-        !fitsGrid(nextTarget, state.gridCols) ||
+        !fitsGrid(nextSource, state.gridColumns) ||
+        !fitsGrid(nextTarget, state.gridColumns) ||
         overlaps(nextSource, nextTarget)
     )
         return null;
@@ -70,7 +70,7 @@ function resolveSwap(state, sourceId, targetId) {
  * Preview lookup never mutates placements. Horizontal exchanges retain outer edges,
  * sizes and gaps; both resulting rectangles must clear every other visible tile.
  * Vertically stacked exchanges retain their destination origins.
- * @param {{gridCols:number, layout:{placements:object[],hidden:string[]}}} state Current editor geometry.
+ * @param {{gridColumns:number, layout:{placements:object[],hidden:string[]}}} state Current editor geometry.
  * @param {number} column Proposed pointer-aligned column.
  * @param {number} row Proposed pointer-aligned row.
  * @param {number} width Dragged width in grid units.
@@ -79,7 +79,7 @@ function resolveSwap(state, sourceId, targetId) {
  * @returns {{target:object,valid:boolean}|null} Hovered target and validity, or null outside any tile.
  */
 export function previewGridSwap(state, column, row, width, height, sourceId) {
-    if (!fitsGrid({ col: column, row, w: width, h: height }, state.gridCols))
+    if (!fitsGrid({ col: column, row, w: width, h: height }, state.gridColumns))
         return null;
     const hidden = new Set(state.layout.hidden);
     const proposed = { col: column, row, w: width, h: height };
@@ -130,7 +130,7 @@ export function findGridSwap(state, column, row, width, height, sourceId) {
 /**
  * Recomputes both destinations against live bounds and occupancy before mutation;
  * a changed or missing target cannot commit a stale preview.
- * @param {{gridCols:number, layout:{placements:object[],hidden:string[]}}} state Mutable editor state.
+ * @param {{gridColumns:number, layout:{placements:object[],hidden:string[]}}} state Mutable editor state.
  * @param {string} sourceId Dragged element identity.
  * @param {string} targetId Previewed target identity.
  * @returns {boolean} True only when both positions were committed; false leaves state unchanged.

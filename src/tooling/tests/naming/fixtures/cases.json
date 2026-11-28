@@ -301,7 +301,7 @@
     },
     {
         "name": "conventional developer vocabulary",
-        "source": "function read(args, db, dn, req, res, env, opts, params, iv, tx, fs, os, vm, io, exec, init, ms, src, dir, meta, docs, diff, ref, refs, regex, prev, sep, rm, cp) {} const dbExec = exec; const TIMEOUT_MS = 1;",
+        "source": "function read(args, db, dn, req, res, env, opts, params, iv, tx, fs, os, vm, io, exec, init, ms, src, dir, meta, docs, diff, ref, refs, regex, prev, sep, rm, cp) {}",
         "names": []
     },
     {
@@ -321,7 +321,7 @@
     },
     {
         "name": "semantic export and type aliases",
-        "source": "const render = source; export { render as mount }; export type { DatabaseStore as DbStore } from './types.js';",
+        "source": "const render = source; export { render as mount }; export type { DatabaseStore as Store } from \"./types.js\";",
         "names": []
     },
     {
@@ -332,6 +332,57 @@
     {
         "name": "canonical third party imports",
         "source": "import { execFileSync } from 'node:child_process'; import { rm, cp } from 'node:fs/promises';",
+        "names": []
+    },
+    {
+        "name": "conventional words expand inside composites",
+        "source": "const dbExec = source; const TIMEOUT_MS = 1; const baseDn = source; let requestArgs; function initFontPreferences() {}",
+        "names": [
+            "dbExec",
+            "TIMEOUT_MS",
+            "baseDn",
+            "requestArgs",
+            "initFontPreferences"
+        ]
+    },
+    {
+        "name": "expanded composites with direct shorthand",
+        "source": "class DatabaseStore { private db: Database; constructor(db, args) { this.db = db; } } function createDatabaseExecutor(db, ...args) {} const TIMEOUT_MILLISECONDS = 1;",
+        "names": []
+    },
+    {
+        "name": "owned composite type names",
+        "source": "interface DbExecutor {} type DbStore = DatabaseStore; interface DatabaseExecutor {} type T = unknown;",
+        "names": ["DbExecutor", "DbStore"]
+    },
+    {
+        "name": "prefixed direct conventional names",
+        "source": "function run(_db, _args, _req) {}",
+        "names": []
+    },
+    {
+        "name": "type export aliases cannot compress composites",
+        "source": "export type { DatabaseStore as DbStore } from \"./store.js\";",
+        "names": ["DbStore"]
+    },
+    {
+        "name": "type import aliases cannot hide compressed owned types",
+        "source": "import type { DbStore as DatabaseStore } from \"./store.js\";",
+        "names": ["DatabaseStore"]
+    },
+    {
+        "name": "canonical external aliases retain dependency identity",
+        "source": "import { execFileSync as runCompiler } from \"node:child_process\";",
+        "names": []
+    },
+    {
+        "name": "owned composite methods use expanded words",
+        "source": "class Registry { getDb() {} } const host = { registerStaticDir() {} }; interface Store { getDb(): unknown; }",
+        "names": ["getDb", "registerStaticDir", "getDb"]
+    },
+    {
+        "name": "canonical platform method names retain their identity",
+        "source": "const canvas = { clearRect() {} }; class ElementMock { getBoundingClientRect() {} getClientRects() {} } const runtime = { initializeImportMeta() {} };",
         "names": []
     }
 ]

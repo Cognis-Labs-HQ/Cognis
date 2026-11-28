@@ -83,22 +83,22 @@ profil secara aman.
 Didefinisikan di `src/gateways/social/gateway.ts` dan diberikan ke setiap
 adapter:
 
-| Field                                   | Keterangan                                                   |
-| --------------------------------------- | ------------------------------------------------------------ |
-| `gateway`                               | Instance `CoreSocialGateway` untuk kontrol gateway           |
-| `adapterId`                             | Nama direktori adapter yang sedang di-bootstrap              |
-| `adapterRoot`                           | Path absolut ke direktori adapter                            |
-| `capabilities`                          | `CapabilityStore` bersama                                    |
-| `gatewayRegistry`                       | Registry gateway; disarankan hanya dibaca                    |
-| `registerRoute(handler, gwId)`          | Mendaftarkan route HTTP di bawah ID gateway tersebut         |
-| `registerStaticDir(prefix, dir)`        | Menyajikan direktori statis di `/static/<prefix>/`           |
-| `registerAdapterStaticDir(gw, ad, dir)` | Menyajikan file di `/static/adapters/<gw>/<ad>/`             |
-| `registerNavbarPlugin(url, isEnabled?)` | Menambahkan skrip navbar yang aktif bersyarat                |
-| `log`                                   | Logger terstruktur opsional                                  |
-| `dbExecutor`                            | Executor database dari capability `db:executor`              |
-| `dbType`                                | String dialek database                                       |
-| `isGatewayEnabled()`                    | Mengembalikan `false` jika Gateway Sosial nonaktif           |
-| `isAdapterEnabled(id?)`                 | Mengembalikan `false` jika adapter saat ini/bernama nonaktif |
+| Field                                         | Keterangan                                                   |
+| --------------------------------------------- | ------------------------------------------------------------ |
+| `gateway`                                     | Instance `CoreSocialGateway` untuk kontrol gateway           |
+| `adapterId`                                   | Nama direktori adapter yang sedang di-bootstrap              |
+| `adapterRoot`                                 | Path absolut ke direktori adapter                            |
+| `capabilities`                                | `CapabilityStore` bersama                                    |
+| `gatewayRegistry`                             | Registry gateway; disarankan hanya dibaca                    |
+| `registerRoute(handler, gwId)`                | Mendaftarkan route HTTP di bawah ID gateway tersebut         |
+| `registerStaticDirectory(prefix, dir)`        | Menyajikan direktori statis di `/static/<prefix>/`           |
+| `registerAdapterStaticDirectory(gw, ad, dir)` | Menyajikan file di `/static/adapters/<gw>/<ad>/`             |
+| `registerNavbarPlugin(url, isEnabled?)`       | Menambahkan skrip navbar yang aktif bersyarat                |
+| `log`                                         | Logger terstruktur opsional                                  |
+| `dbExecutor`                                  | Executor database dari capability `db:executor`              |
+| `dbType`                                      | String dialek database                                       |
+| `isGatewayEnabled()`                          | Mengembalikan `false` jika Gateway Sosial nonaktif           |
+| `isAdapterEnabled(id?)`                       | Mengembalikan `false` jika adapter saat ini/bernama nonaktif |
 
 ### Adapter Bawaan
 

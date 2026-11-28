@@ -1,12 +1,12 @@
-import type { DbExecutor } from "../db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../db/reuse/db-executor.js";
 
 export type LoggingPreferenceValue = string | number | boolean;
 
 export class LoggingPreferenceStore {
-    constructor(private readonly database: DbExecutor) {}
+    constructor(private readonly db: DatabaseExecutor) {}
 
     async ensureSchema(): Promise<void> {
-        await this.database.ensureTable({
+        await this.db.ensureTable({
             name: "logging_adapter_preferences",
             columns: [
                 {
@@ -23,7 +23,7 @@ export class LoggingPreferenceStore {
     async getAll(): Promise<
         Map<string, Record<string, LoggingPreferenceValue>>
     > {
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "logging_adapter_preferences",
             columns: ["adapter_id", "config_json"],
@@ -44,7 +44,7 @@ export class LoggingPreferenceStore {
         config: Record<string, LoggingPreferenceValue>,
     ): Promise<void> {
         const configJson = JSON.stringify(config);
-        await this.database.executeCommand({
+        await this.db.executeCommand({
             option: "INSERT",
             table: "logging_adapter_preferences",
             values: {
@@ -60,7 +60,7 @@ export class LoggingPreferenceStore {
     }
 
     async delete(adapterId: string): Promise<void> {
-        await this.database.executeCommand({
+        await this.db.executeCommand({
             option: "DELETE",
             table: "logging_adapter_preferences",
             where: [{ column: "adapter_id", value: adapterId }],

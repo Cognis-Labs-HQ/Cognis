@@ -11,11 +11,7 @@ export function createFavouriteRoutes(
     auth: RouteContext,
     flow: FlowApi,
     log?: BootstrapLog,
-): (
-    request: IncomingMessage,
-    response: ServerResponse,
-    url: URL,
-) => Promise<boolean> {
+): (req: IncomingMessage, res: ServerResponse, url: URL) => Promise<boolean> {
     return async (req, res, url) => {
         if (url.pathname !== "/api/v1/study/favourites") return false;
         const claims = auth.requireAuth(req, res);

@@ -14,7 +14,7 @@ import {
     type RouteContext,
 } from "../../api/reuse/route-context.js";
 import { loadAdapterAdminCatalog } from "../reuse/adapter-admin-catalog.js";
-import type { DbExecutor } from "../db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../db/reuse/db-executor.js";
 import {
     LoggingPreferenceStore,
     type LoggingPreferenceValue,
@@ -594,7 +594,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
     const databaseExecutor =
-        ctx.capabilities.require<DbExecutor>("db:executor");
+        ctx.capabilities.require<DatabaseExecutor>("db:executor");
     const preferenceStore = new LoggingPreferenceStore(databaseExecutor);
     await preferenceStore.ensureSchema();
     const level = isLogLevel(process.env.LOG_LEVEL)
@@ -671,7 +671,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         }
     }
     for (const adapter of adapterCatalog) {
-        ctx.uiRegistry?.registerAdapterStaticDir(
+        ctx.uiRegistry?.registerAdapterStaticDirectory(
             "logging",
             adapter.id,
             path.join(adaptersRoot, "logging", adapter.id),
@@ -710,7 +710,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         label: "Logs",
         scriptUrl: "/static/gateways/logging/admin-section.js",
     });
-    ctx.uiRegistry?.registerStaticDir("logging", uiDirectory);
+    ctx.uiRegistry?.registerStaticDirectory("logging", uiDirectory);
 
     ctx.routeRegistry.registerPrefix("/api/v1/logging", "logging");
     ctx.uiRegistry?.registerCapabilityProvider({

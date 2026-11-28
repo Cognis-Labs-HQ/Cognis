@@ -12,7 +12,7 @@ const TRANSIENT_FAILURE =
 
 type GitRunner = (
     file: string,
-    argumentsList: string[],
+    args: string[],
     options: { env: NodeJS.ProcessEnv; timeout: number; encoding: "utf8" },
 ) => Promise<{ stdout: string }>;
 

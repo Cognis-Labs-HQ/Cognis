@@ -1,11 +1,11 @@
 import { randomUUID } from "node:crypto";
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import { rowToMessage } from "./row-mappers.js";
 import { getMember } from "./rooms.js";
 import type { MessageRow } from "./types.js";
 
 export async function appendMessage(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     input: {
         roomId: string;
         senderId: string;
@@ -20,7 +20,7 @@ export async function appendMessage(
 }
 
 async function insertMessage(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     input: {
         roomId: string;
         senderId: string;
@@ -74,7 +74,7 @@ async function insertMessage(
 }
 
 export async function appendRoomEvent(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     input: {
         roomId: string;
         actorId: string;
@@ -89,7 +89,7 @@ export async function appendRoomEvent(
 }
 
 export async function insertRoomEvent(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     input: {
         roomId: string;
         actorId: string;
@@ -118,7 +118,7 @@ export async function insertRoomEvent(
 }
 
 export async function listMessages(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     roomId: string,
     limit: number,
     before?: string,
@@ -145,7 +145,7 @@ export async function listMessages(
 }
 
 export async function getMessage(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     messageId: string,
 ): Promise<MessageRow | null> {
     const result = await db.executeCommand({
@@ -158,7 +158,7 @@ export async function getMessage(
 }
 
 export async function markRead(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     roomId: string,
     accountId: string,
     readAt = new Date().toISOString(),
@@ -184,7 +184,7 @@ export async function markRead(
 }
 
 export async function unreadCount(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     roomId: string,
     accountId: string,
 ): Promise<number> {
@@ -218,7 +218,7 @@ export async function unreadCount(
 }
 
 export async function setMuted(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     roomId: string,
     accountId: string,
     muted: boolean,
@@ -235,7 +235,7 @@ export async function setMuted(
 }
 
 export async function setArchived(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     roomId: string,
     accountId: string,
     archived: boolean,

@@ -306,7 +306,7 @@ const DEFAULT_GREYLIST_RETRIES = 2;
 const DEFAULT_GREYLIST_RETRY_DELAY_MILLISECONDS = 5 * 60 * 1000;
 
 async function waitForRetry(
-    sleep: (milliseconds: number) => Promise<void>,
+    sleep: (ms: number) => Promise<void>,
     delay: number,
     signal?: AbortSignal,
 ): Promise<void> {
@@ -329,7 +329,7 @@ async function sendMailWithRetry(
     recipient: string,
     subject: string,
     body: string,
-    sleep: (milliseconds: number) => Promise<void>,
+    sleep: (ms: number) => Promise<void>,
     theme?: string,
     verifyUrl?: string,
     verifyButtonLabel?: string,
@@ -380,7 +380,7 @@ export class SmtpNotificationSender implements NotificationSender {
     readonly senderName = "SMTP Email";
 
     private readonly environmentSnapshot: Record<string, string | undefined>;
-    private readonly sleep: (milliseconds: number) => Promise<void>;
+    private readonly sleep: (ms: number) => Promise<void>;
     private deliveryEnabled = true;
     private recipientTheme: (email: string) => Promise<"light" | "dark"> =
         async () => "light";
@@ -405,7 +405,7 @@ export class SmtpNotificationSender implements NotificationSender {
     constructor(
         private config: SmtpConfig,
         environmentSnapshot?: Record<string, string | undefined>,
-        sleep?: (milliseconds: number) => Promise<void>,
+        sleep?: (ms: number) => Promise<void>,
         createRateLimiter?: () => SmtpRateLimiter,
     ) {
         this.environmentSnapshot = environmentSnapshot ?? {};
@@ -652,7 +652,7 @@ export class SmtpNotificationSender implements NotificationSender {
         ];
     }
 
-    getEnvValues(): Record<string, string | undefined> {
+    getEnvironmentValues(): Record<string, string | undefined> {
         return { ...this.environmentSnapshot };
     }
 

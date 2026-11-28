@@ -11,24 +11,24 @@ export interface NotifyAdapterBootstrapCtx {
     capabilities: CapabilityStore;
     registerRoute(
         handler: (
-            request: IncomingMessage,
-            response: ServerResponse,
+            req: IncomingMessage,
+            res: ServerResponse,
             url: URL,
         ) => Promise<boolean>,
         gatewayId?: string,
     ): void;
     registerNavbarPlugin(scriptUrl: string): void;
-    registerStaticDir(urlPrefix: string, absoluteDirectory: string): void;
+    registerStaticDirectory(urlPrefix: string, absoluteDirectory: string): void;
     requireAuth(
-        request: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         minimumRole: "admin",
     ): boolean;
-    readJson(request: IncomingMessage): Promise<Record<string, unknown>>;
+    readJson(req: IncomingMessage): Promise<Record<string, unknown>>;
     log?: (
         level: string,
         message: string,
-        metadata?: Record<string, unknown>,
+        meta?: Record<string, unknown>,
     ) => void;
 }
 
@@ -135,7 +135,7 @@ export interface NotificationSender {
     ): NotificationChannelRegistration;
     test?(recipient: string, config?: Record<string, unknown>): Promise<void>;
     isConfigured?(): boolean;
-    getEnvValues?(): Record<string, string | undefined>;
+    getEnvironmentValues?(): Record<string, string | undefined>;
     getRequiredFields?(): string[];
     listQueue?(): NotificationSenderQueueEntry[];
     getQueueItem?(notificationId: string): NotificationSenderQueueEntry | null;

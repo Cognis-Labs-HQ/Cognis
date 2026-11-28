@@ -39,14 +39,17 @@ export function createGatewayUiRegistryHooks(
         ): void {
             uiRegistry?.registerPageExtension?.(pageId, element);
         },
-        registerStaticDir(urlPrefix: string, absoluteDirectory: string): void {
-            uiRegistry?.registerStaticDir?.(urlPrefix, absoluteDirectory);
+        registerStaticDirectory(
+            urlPrefix: string,
+            absoluteDirectory: string,
+        ): void {
+            uiRegistry?.registerStaticDirectory?.(urlPrefix, absoluteDirectory);
         },
-        registerAdapterStaticDir(
+        registerAdapterStaticDirectory(
             adapterId: string,
             absoluteDirectory: string,
         ): void {
-            uiRegistry?.registerAdapterStaticDir?.(
+            uiRegistry?.registerAdapterStaticDirectory?.(
                 gatewayId,
                 adapterId,
                 absoluteDirectory,

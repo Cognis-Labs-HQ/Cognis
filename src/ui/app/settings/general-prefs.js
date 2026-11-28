@@ -22,17 +22,17 @@ const log = bindCapability("ui:log");
  * before the verification flow begins.
  *
  * Public exports:
- *   initGeneralPreferences(root, options) — initialises email management in the given root element.
+ *   initializeGeneralPreferences(root, options) — initialises email management in the given root element.
  *
  * Usage:
- *   const generalPrefs = initGeneralPreferences(root, { i18n, username, signal, onRender = () => {} });
+ *   const generalPrefs = initializeGeneralPreferences(root, { i18n, username, signal, onRender = () => {} });
  *   await generalPrefs.init();
  *
  * @param {Element} root
  * @param {{ i18n: object, username: string }} options
  * @returns {{ init: () => Promise<void> }}
  */
-function initGeneralPreferences(
+function initializeGeneralPreferences(
     root,
     { i18n, username, signal, onRender = () => {} },
 ) {
@@ -566,4 +566,4 @@ function initGeneralPreferences(
         },
     };
 }
-export { initGeneralPreferences };
+export { initializeGeneralPreferences };

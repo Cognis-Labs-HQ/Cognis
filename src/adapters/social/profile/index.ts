@@ -33,7 +33,7 @@ import {
     resolveRouteContext,
     type RouteContext,
 } from "../../../api/reuse/route-context.js";
-import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import { CTX_CAPABILITY, type Ctx } from "@cognis/core";
 
 const ADAPTER_UI_ROOT = path.resolve(
@@ -150,7 +150,8 @@ export async function bootstrapSocialAdapter(
 ): Promise<void> {
     const routeContext =
         ctx.capabilities.get<RouteContext>("auth:routeContext");
-    const databaseExecutor = ctx.capabilities.get<DbExecutor>("db:executor");
+    const databaseExecutor =
+        ctx.capabilities.get<DatabaseExecutor>("db:executor");
 
     if (!databaseExecutor) {
         ctx.log?.(
@@ -583,7 +584,7 @@ export async function bootstrapSocialAdapter(
         path.dirname(fileURLToPath(import.meta.url)),
         "ui",
     );
-    ctx.registerAdapterStaticDir?.("social", "profile", uiDirectory);
+    ctx.registerAdapterStaticDirectory?.("social", "profile", uiDirectory);
     ctx.registerSpaRoute?.({
         id: "social-profile-page",
         requiredCapabilities: ["social:profileRequest"],

@@ -13,10 +13,10 @@ import type {
 } from "../notification-store.js";
 
 export interface NotificationPreferenceRouteStore {
-    getUserNotifPrefs(
+    getUserNotificationPreferences(
         accountId: string,
     ): Promise<Array<{ category: string; senderId: string }>>;
-    saveUserNotifPrefs(
+    saveUserNotificationPreferences(
         accountId: string,
         preferences: Array<{
             category: string;
@@ -618,7 +618,9 @@ export function createNotificationRoutes(
                 res.end(
                     JSON.stringify({
                         data: config,
-                        envValues: gateway.getProviderEnvValues(senderId) ?? {},
+                        envValues:
+                            gateway.getProviderEnvironmentValues(senderId) ??
+                            {},
                         requiredFields:
                             gateway.getProviderRequiredFields(senderId) ?? [],
                     }),
@@ -711,7 +713,9 @@ export function createNotificationRoutes(
                     return true;
                 }
                 const preferences =
-                    await notificationStore.getUserNotifPrefs(username);
+                    await notificationStore.getUserNotificationPreferences(
+                        username,
+                    );
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: preferences }));
                 return true;
@@ -741,7 +745,10 @@ export function createNotificationRoutes(
                             !preference.enabled
                         ),
                 );
-                await notificationStore.saveUserNotifPrefs(username, filtered);
+                await notificationStore.saveUserNotificationPreferences(
+                    username,
+                    filtered,
+                );
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: { saved: true } }));
                 return true;

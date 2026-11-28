@@ -43,17 +43,17 @@ Kein Komponente außerhalb des Datenbank-Gateway-Baums — kein Route-Handler, k
 
 ### Verantwortlichkeiten
 
-- `DB_TYPE` lesen und beim Bootstrap die korrekte `DbExecutor`-Instanz erstellen.
+- `DB_TYPE` lesen und beim Bootstrap die korrekte `DatabaseExecutor`-Instanz erstellen.
 - Das Datenbankschema initialisieren durch Ausführen der SQL-Init- und Migrationsskripts.
 - `db:executor`, `db:type` und `db:dialect` zum Capability-Store beitragen.
 - Die `modules`-Tabelle mit dem `cognis-core`-Modulrekord befüllen.
 
-### DbDialectHelper
+### DatabaseDialectHelper
 
-Der `DbDialectHelper`, beigetragen als `db:dialect`, stellt zwei Methoden bereit:
+Der `DatabaseDialectHelper`, beigetragen als `db:dialect`, stellt zwei Methoden bereit:
 
 ```ts
-export interface DbDialectHelper {
+export interface DatabaseDialectHelper {
     upsert(
         table: string,
         keyCol: string,
@@ -64,12 +64,12 @@ export interface DbDialectHelper {
 }
 ```
 
-| Pfad                           | Zweck                                       |
-| ------------------------------ | ------------------------------------------- |
-| `src/gateways/db/gateway.ts`   | `DatabaseGateway`-Schnittstelle             |
-| `src/gateways/db/executor.ts`  | `createDatabaseExecutor`                    |
-| `src/gateways/db/init.ts`      | `initializeDatabaseSchema`                  |
-| `src/gateways/db/bootstrap.ts` | Bootstrap-Einstiegspunkt; `DbDialectHelper` |
+| Pfad                           | Zweck                                             |
+| ------------------------------ | ------------------------------------------------- |
+| `src/gateways/db/gateway.ts`   | `DatabaseGateway`-Schnittstelle                   |
+| `src/gateways/db/executor.ts`  | `createDatabaseExecutor`                          |
+| `src/gateways/db/init.ts`      | `initializeDatabaseSchema`                        |
+| `src/gateways/db/bootstrap.ts` | Bootstrap-Einstiegspunkt; `DatabaseDialectHelper` |
 
 ### Administration
 

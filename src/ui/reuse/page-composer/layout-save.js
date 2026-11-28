@@ -12,7 +12,7 @@
  *   await commitLayoutEdit({ state,
  *     save: async () => {
  *       const profiles = await update(preferenceKey, state.layoutProfiles,
- *         state.gridCols, state.layout);
+ *         state.gridColumns, state.layout);
  *       if (profiles === null) return false;
  *       state.layoutProfiles = profiles;
  *       return true;

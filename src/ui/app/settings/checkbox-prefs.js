@@ -1,4 +1,4 @@
-function initCheckboxPreferences(
+function initializeCheckboxPreferences(
     root,
     {
         existingPrefs: existingPreferences,
@@ -48,4 +48,4 @@ function initCheckboxPreferences(
         },
     };
 }
-export { initCheckboxPreferences };
+export { initializeCheckboxPreferences };

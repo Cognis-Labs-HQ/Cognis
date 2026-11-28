@@ -28,17 +28,17 @@ test("logging gateway bootstrap registers admin logs section and static UI scrip
         "/static/gateways/logging/admin-section.js",
     );
 
-    const staticDirectory = ctx.uiRegistry.getStaticDir("logging");
+    const staticDirectory = ctx.uiRegistry.getStaticDirectory("logging");
     assert.ok(staticDirectory);
     await assert.doesNotReject(
         access(path.join(staticDirectory!, "admin-section.js")),
     );
     assert.equal(
-        ctx.uiRegistry.getAdapterStaticDir("logging", "console"),
+        ctx.uiRegistry.getAdapterStaticDirectory("logging", "console"),
         path.resolve(process.cwd(), "src", "adapters", "logging", "console"),
     );
     assert.equal(
-        ctx.uiRegistry.getAdapterStaticDir("logging", "file"),
+        ctx.uiRegistry.getAdapterStaticDirectory("logging", "file"),
         path.resolve(process.cwd(), "src", "adapters", "logging", "file"),
     );
 });

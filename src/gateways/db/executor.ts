@@ -14,22 +14,25 @@ import type { GatewayBootstrapContext } from "../shared.js";
 import { readdir } from "node:fs/promises";
 import path from "node:path";
 import type { BootstrapLog } from "@cognis/core";
-import type { RawDbExecutor } from "./reuse/db-executor.js";
-import type { DbProviderId } from "./reuse/provider-id.js";
+import type { RawDatabaseExecutor } from "./reuse/db-executor.js";
+import type { DatabaseProviderId } from "./reuse/provider-id.js";
 
-export type { DbExecutor, RawDbExecutor } from "./reuse/db-executor.js";
-export type { DbProviderId } from "./reuse/provider-id.js";
-export type SupportedDbType = DbProviderId;
+export type {
+    DatabaseExecutor,
+    RawDatabaseExecutor,
+} from "./reuse/db-executor.js";
+export type { DatabaseProviderId } from "./reuse/provider-id.js";
+export type SupportedDatabaseType = DatabaseProviderId;
 
-interface DbExecutorFactoryModule extends AdapterContractModule {
-    canHandleDatabaseProvider?: (providerId: DbProviderId) => boolean;
-    createDatabaseExecutor?: (argumentsList: {
+interface DatabaseExecutorFactoryModule extends AdapterContractModule {
+    canHandleDatabaseProvider?: (providerId: DatabaseProviderId) => boolean;
+    createDatabaseExecutor?: (args: {
         databaseUrl: string;
         log?: BootstrapLog;
         lifecycle?: {
             registerShutdown(handler: () => Promise<void>): void;
         };
-    }) => Promise<RawDbExecutor> | RawDbExecutor;
+    }) => Promise<RawDatabaseExecutor> | RawDatabaseExecutor;
 }
 
 async function listDatabaseAdapterDirectories(
@@ -50,22 +53,22 @@ async function listDatabaseAdapterDirectories(
 async function loadDatabaseExecutorFactoryModule(
     adaptersRoot: string,
     adapterId: string,
-): Promise<DbExecutorFactoryModule | null> {
+): Promise<DatabaseExecutorFactoryModule | null> {
     const modulePath = path.resolve(adaptersRoot, "db", adapterId, "index.ts");
     try {
-        return (await import(modulePath)) as DbExecutorFactoryModule;
+        return (await import(modulePath)) as DatabaseExecutorFactoryModule;
     } catch {
         return null;
     }
 }
 
 async function createDatabaseExecutor(
-    databaseType: DbProviderId,
+    databaseType: DatabaseProviderId,
     log?: BootstrapLog,
     adaptersRoot?: string,
     lifecycle?: { registerShutdown(handler: () => Promise<void>): void },
     context?: GatewayBootstrapContext,
-): Promise<RawDbExecutor> {
+): Promise<RawDatabaseExecutor> {
     const databaseUrl = process.env.DATABASE_URL;
     if (!databaseUrl) {
         throw new Error(`DATABASE_URL is required for DB_TYPE=${databaseType}`);

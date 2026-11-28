@@ -84,16 +84,16 @@ export interface LanguageModuleBootstrapCtx {
     moduleRoot: string;
     registerChildRoute(
         handler: (
-            request: IncomingMessage,
-            response: ServerResponse,
+            req: IncomingMessage,
+            res: ServerResponse,
             url: URL,
         ) => Promise<boolean>,
     ): void;
-    registerStaticDir(urlPrefix: string, absoluteDirectory: string): void;
+    registerStaticDirectory(urlPrefix: string, absoluteDirectory: string): void;
     log?(
         level: string,
         message: string,
-        metadata?: Record<string, unknown>,
+        meta?: Record<string, unknown>,
     ): void | Promise<void>;
 }
 
@@ -150,14 +150,14 @@ export interface StudyAdapterBootstrapCtx {
     flow: FlowApi;
     registerRoute(
         handler: (
-            request: IncomingMessage,
-            response: ServerResponse,
+            req: IncomingMessage,
+            res: ServerResponse,
             url: URL,
         ) => Promise<boolean>,
         gatewayId?: string,
     ): void;
-    registerStaticDir(urlPrefix: string, absoluteDirectory: string): void;
-    registerAdapterStaticDir?(
+    registerStaticDirectory(urlPrefix: string, absoluteDirectory: string): void;
+    registerAdapterStaticDirectory?(
         gatewayId: string,
         adapterId: string,
         absoluteDirectory: string,
@@ -192,7 +192,7 @@ export interface StudyAdapterBootstrapCtx {
     log?(
         level: string,
         message: string,
-        metadata?: Record<string, unknown>,
+        meta?: Record<string, unknown>,
     ): void | Promise<void>;
 }
 

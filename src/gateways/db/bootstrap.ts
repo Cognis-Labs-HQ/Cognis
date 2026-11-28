@@ -7,12 +7,15 @@ import {
     resolveDatabaseProviderDirectory,
 } from "./init.js";
 import type { GatewayBootstrapContext } from "../shared.js";
-import type { DbExecutor, RawDbExecutor } from "./reuse/db-executor.js";
 import type {
-    StructuredDbCommand,
-    StructuredDbCommandResult,
+    DatabaseExecutor,
+    RawDatabaseExecutor,
+} from "./reuse/db-executor.js";
+import type {
+    StructuredDatabaseCommand,
+    StructuredDatabaseCommandResult,
 } from "./reuse/db-command.js";
-import type { DbProviderId } from "./reuse/provider-id.js";
+import type { DatabaseProviderId } from "./reuse/provider-id.js";
 import type { RouteContext } from "../../api/reuse/route-context.js";
 import {
     createLockedAdapterAdminRoutes,
@@ -26,10 +29,10 @@ import {
  * SQL variant for the active database provider, eliminating per-dialect
  * branching from application code.
  */
-export interface DbDialectHelper {
+export interface DatabaseDialectHelper {
     executeCommand(
-        command: StructuredDbCommand,
-    ): Promise<StructuredDbCommandResult>;
+        command: StructuredDatabaseCommand,
+    ): Promise<StructuredDatabaseCommandResult>;
     upsert(
         table: string,
         keyColumn: string,
@@ -39,7 +42,9 @@ export interface DbDialectHelper {
     insertIgnore(table: string, data: Record<string, unknown>): Promise<void>;
 }
 
-function createDatabaseDialectHelper(executor: DbExecutor): DbDialectHelper {
+function createDatabaseDialectHelper(
+    executor: DatabaseExecutor,
+): DatabaseDialectHelper {
     return {
         async executeCommand(command) {
             return executor.executeCommand(command);
@@ -79,7 +84,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         "./manifest.json",
     );
     const databaseType =
-        (process.env.DB_TYPE as DbProviderId | undefined) ?? "postgresql";
+        (process.env.DB_TYPE as DatabaseProviderId | undefined) ?? "postgresql";
     const adaptersRoot =
         ctx.adaptersRoot ?? path.resolve(process.cwd(), "src", "adapters");
 
@@ -106,8 +111,8 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         }
     };
     const createTimedExecutor = (
-        rawExecutor: RawDbExecutor,
-    ): RawDbExecutor => ({
+        rawExecutor: RawDatabaseExecutor,
+    ): RawDatabaseExecutor => ({
         execute: (sql, params) => timed(() => rawExecutor.execute(sql, params)),
         executeCommand: (command) =>
             timed(() => rawExecutor.executeCommand(command)),

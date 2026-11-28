@@ -1,4 +1,4 @@
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import { DEFAULT_STUDENT_LIMIT } from "./constants.js";
 
 const STUDY_LANGUAGE_SEEDS = [
@@ -64,7 +64,7 @@ const STUDY_LANGUAGE_SEEDS = [
     },
 ];
 
-export async function ensureSchema(db: DbExecutor): Promise<void> {
+export async function ensureSchema(db: DatabaseExecutor): Promise<void> {
     await db.ensureTable({
         name: "study_classes",
         columns: [
@@ -202,7 +202,7 @@ export async function ensureSchema(db: DbExecutor): Promise<void> {
 }
 
 export async function ensureStudyLanguagesSchema(
-    db: DbExecutor,
+    db: DatabaseExecutor,
 ): Promise<void> {
     await db.ensureTable({
         name: "study_languages",
@@ -243,7 +243,7 @@ export async function ensureStudyLanguagesSchema(
     }
 }
 
-async function seedStudyLanguages(db: DbExecutor): Promise<void> {
+async function seedStudyLanguages(db: DatabaseExecutor): Promise<void> {
     for (const seed of STUDY_LANGUAGE_SEEDS) {
         await db
             .executeCommand({

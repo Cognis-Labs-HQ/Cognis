@@ -11,7 +11,10 @@ import {
     defaultPasswordPolicy,
     parsePasswordPolicy,
 } from "../../password-policy.js";
-import type { AuthGatewayRouteHandler, AuthRouteLogMeta } from "./shared.js";
+import type {
+    AuthGatewayRouteHandler,
+    AuthRouteLogMetadata,
+} from "./shared.js";
 import {
     LOGIN_SESSION_TIMEOUT_PREFERENCE_KEY,
     resolveLoginSessionTimeoutPreference,
@@ -81,7 +84,7 @@ export function createSecurityRoutes({
         req,
         res,
         url,
-        logMetadata: AuthRouteLogMeta,
+        logMetadata: AuthRouteLogMetadata,
     ): Promise<boolean> => {
         if (
             url.pathname === "/api/v1/auth/security-sections" &&

@@ -168,7 +168,7 @@ function createRouter({
             sandbox,
         );
     sandbox.router = reload();
-    sandbox.router.initRouter(root);
+    sandbox.router.initializeRouter(root);
     return {
         ...sandbox.router,
         reload,
@@ -584,7 +584,7 @@ test("bundled and directly served router copies share one document binding and c
         ],
     });
     const other = router.reload();
-    other.initRouter(router.root);
+    other.initializeRouter(router.root);
     assert.equal(router.listenerCounts.get("click"), 1);
     assert.equal(router.listenerCounts.get("popstate"), 1);
     const stale = router.navigateTo("/delayed-screen");

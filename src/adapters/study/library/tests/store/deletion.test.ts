@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import type { StructuredDbCommand } from "../../../../../gateways/db/reuse/db-command.js";
-import type { DbExecutor } from "../../../../../gateways/db/reuse/db-executor.js";
+import type { StructuredDatabaseCommand } from "../../../../../gateways/db/reuse/db-command.js";
+import type { DatabaseExecutor } from "../../../../../gateways/db/reuse/db-executor.js";
 import { LibraryStore } from "../../store.js";
 
 test("permanent deletion blacklists content hashes and removes relationships", async () => {
-    const commands: StructuredDbCommand[] = [];
-    const db: DbExecutor = {
+    const commands: StructuredDatabaseCommand[] = [];
+    const db: DatabaseExecutor = {
         ensureTable: async () => {},
         transaction: async (callback) => callback(db),
         executeCommand: async (command) => {
@@ -145,7 +145,7 @@ test("permanent deletion blacklists content hashes and removes relationships", a
 
 test("deletion traversal honors restrict and detach relationship policies", async () => {
     const policy = { value: "detach" };
-    const db: DbExecutor = {
+    const db: DatabaseExecutor = {
         ensureTable: async () => {},
         transaction: async (callback) => callback(db),
         executeCommand: async (command) => {
@@ -211,7 +211,7 @@ test("deletion traversal honors restrict and detach relationship policies", asyn
 });
 
 test("restricted dependants included by another cascade are resolved before restriction checks", async () => {
-    const db: DbExecutor = {
+    const db: DatabaseExecutor = {
         ensureTable: async () => {},
         transaction: async (callback) => callback(db),
         executeCommand: async (command) => {

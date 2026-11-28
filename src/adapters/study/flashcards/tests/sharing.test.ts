@@ -45,7 +45,7 @@ function fixture() {
         adapterId: "flashcards",
         adapterRoot: "",
         registerRoute: () => {},
-        registerStaticDir: () => {},
+        registerStaticDirectory: () => {},
         registerNavbarPlugin: () => {},
         registerPageExtension: () => {},
         isAdapterEnabled: () => enabled,

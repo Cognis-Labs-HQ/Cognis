@@ -64,7 +64,7 @@ createPageComposer に elements、pageManifest、i18n、signal と配置設定�
 
 マウス、タッチ、キーボードの交換は `swap-model.js` の `previewGridSwap`、`findGridSwap`、`applyGridSwap` を共用します。左右の交換は、各要素の幅と高さを変えずに、ペアの左右の外縁と間隔を維持します。隣接する同じ高さの要素は幅が異なっても交換できます。高さが異なる場合は、両方の移動先の完全な矩形が、上下の要素を含む他の表示要素や互いに重ならない場合に限り交換できます。上下に並ぶ要素の交換は移動先の起点を維持します。矩形の交差判定は占有するグリッド面積ではなく配置数に応じた処理量になります。反映時に現在の配置、表示状態、グリッド境界を再検証し、両方の位置を同時に変更します。プレビューは配置を変更しません。共通の移動先ラインは有効な交換をテーマの緑色、妨げられた交換を危険表示の赤色で示します。 `previewGridSwap` は同じ引数を受け取り、妨げられた対象や曖昧な対象も含めて表示用の `{ target, valid }` を返します。どの要素にも重ならない場合は `null` です。
 
-両ヘルパーは `gridCols`、`layout.placements`、`layout.hidden` で現在の状態を受け取ります。`findGridSwap(state, col, row, w, h, sourceId)` は現在の相手の配置または `null` を返し、`applyGridSwap(state, sourceId, targetId)` は真偽値を返して、拒否時はどちらの位置も変更しません。キーボードのバインドには `findSwapCandidate` と `commitSwap` の両方を渡し、Composer は共通の入れ替えモデルからこれらを提供します。
+両ヘルパーは `gridColumns`、`layout.placements`、`layout.hidden` で現在の状態を受け取ります。`findGridSwap(state, col, row, w, h, sourceId)` は現在の相手の配置または `null` を返し、`applyGridSwap(state, sourceId, targetId)` は真偽値を返して、拒否時はどちらの位置も変更しません。キーボードのバインドには `findSwapCandidate` と `commitSwap` の両方を渡し、Composer は共通の入れ替えモデルからこれらを提供します。
 
 要素の既定サイズと最小幅には、カードの余白と内容のための領域が必要です。ダッシュボードのブランドは最低3列、アカウント情報は既定で2行、挨拶と前回ログインのカードは最低3列を使います。現在の幅制限が保存済みの行に収まらない場合、Composer は保存されたプロファイルを上書きせず、その制限内に再配置します。メインと入れ子の表示で同じ規則を使います。正規化された行では各カードが指定されたグリッド列内に収まることを検証し、収まらない場合は再配置します。
 

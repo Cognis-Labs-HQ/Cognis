@@ -8,11 +8,7 @@ import abbreviations from "./ambiguous-name-words.json" with { type: "json" };
 
 const LOOP_NAMES = new Set(["i", "j", "k"]);
 const CONVENTIONAL_NAMES = new Set(Object.keys(abbreviations.conventional));
-const ABBREVIATED_WORDS = new Set(
-    Object.keys(abbreviations.words).filter(
-        (word) => !CONVENTIONAL_NAMES.has(word),
-    ),
-);
+const ABBREVIATED_WORDS = new Set(Object.keys(abbreviations.words));
 const ABBREVIATED_NAMES = new Set(
     Object.keys(abbreviations.names)
         .map((name) => name.toLowerCase())
@@ -20,6 +16,8 @@ const ABBREVIATED_NAMES = new Set(
 );
 
 function isAbbreviated(name) {
+    if (CONVENTIONAL_NAMES.has(name.replace(/^_+/, "").toLowerCase()))
+        return false;
     if (ABBREVIATED_NAMES.has(name.toLowerCase())) return true;
     if (
         /^(?:event|value|database|recipient|node|sender|section|pattern|calendar|reject|request|response)\d+$/.test(
@@ -145,20 +143,50 @@ export function ambiguousNameIssues(source) {
             node.params.forEach((parameter) => binding(parameter));
         if (node.type === "CatchClause") binding(node.param);
         if (
+            (/^(?:ObjectMethod|ClassMethod|MethodDefinition|TSMethodSignature)$/.test(
+                node.type,
+            ) ||
+                (node.type === "Property" &&
+                    (node.method || ["get", "set"].includes(node.kind)))) &&
+            !node.computed &&
+            node.accessibility !== "private" &&
+            node.key?.name &&
+            !Object.hasOwn(abbreviations.canonicalMembers, node.key.name) &&
+            (node.key.name.match(
+                /[A-Z]+(?=[A-Z][a-z]|\d|_|$)|[A-Z]?[a-z]+|\d+/g,
+            )?.length ?? 0) > 1 &&
+            isAbbreviated(node.key.name)
+        )
+            report(node.key, "composite method");
+
+        if (
+            /^TS(?:InterfaceDeclaration|TypeAliasDeclaration)$/.test(
+                node.type,
+            ) &&
+            (node.id.name.match(/[A-Z]+(?=[A-Z][a-z]|\d|_|$)|[A-Z]?[a-z]+|\d+/g)
+                ?.length ?? 0) > 1 &&
+            isAbbreviated(node.id.name)
+        )
+            report(node.id, "composite type");
+
+        if (
             node.type === "ImportSpecifier" &&
-            node.importKind !== "type" &&
-            parent?.importKind !== "type" &&
             node.local.name !== node.imported.name &&
-            expandedName(node.local.name) === expandedName(node.imported.name)
+            (expandedName(node.local.name) ===
+                expandedName(node.imported.name) ||
+                ((parent.source?.value?.startsWith(".") ||
+                    parent.source?.value?.startsWith("/") ||
+                    parent.source?.value?.startsWith("@cognis/")) &&
+                    isAbbreviated(node.imported.name)))
         )
             report(node.local, "naming-only import alias");
 
         if (
             node.type === "ExportSpecifier" &&
-            node.exportKind !== "type" &&
-            parent?.exportKind !== "type" &&
             node.local.name !== node.exported.name &&
-            expandedName(node.local.name) === expandedName(node.exported.name)
+            (expandedName(node.local.name) ===
+                expandedName(node.exported.name) ||
+                isAbbreviated(node.exported.name))
         )
             report(node.exported, "naming-only export alias");
 
@@ -178,7 +206,15 @@ export function ambiguousNameIssues(source) {
             node.importKind !== "type" &&
             parent?.importKind !== "type"
         )
-            binding(node.local);
+            if (!(
+                parent.source?.value &&
+                !parent.source.value.startsWith(".") &&
+                !parent.source.value.startsWith("/") &&
+                !parent.source.value.startsWith("@cognis/") &&
+                node.type === "ImportSpecifier" &&
+                node.imported.name === node.local.name
+            ))
+                binding(node.local);
         if (
             /^(?:FunctionDeclaration|FunctionExpression|ClassDeclaration|ClassExpression|TSEnumDeclaration|TSModuleDeclaration)$/.test(
                 node.type,

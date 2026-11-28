@@ -45,7 +45,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         import.meta.url,
         "./manifest.json",
     );
-    ctx.uiRegistry?.registerStaticDir(
+    ctx.uiRegistry?.registerStaticDirectory(
         "observability",
         path.resolve(process.cwd(), "src", "gateways", "observability", "ui"),
     );

@@ -14,11 +14,11 @@ import {
     entryReferenceRows,
     referenceTransformationValue,
 } from "./store/reference-rows.js";
-import type { StructuredDbWhereClause } from "../../../gateways/db/reuse/db-command.js";
+import type { StructuredDatabaseWhereClause } from "../../../gateways/db/reuse/db-command.js";
 import { randomUUID } from "node:crypto";
 import { AsyncLocalStorage } from "node:async_hooks";
 import type { LibraryDictionaryResult } from "./service/dictionary.js";
-import type { DbExecutor } from "../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../gateways/db/reuse/db-executor.js";
 import { contentEntryId, contentRecordHash } from "./content-pack.js";
 import type {
     LibraryAsset,
@@ -46,18 +46,19 @@ import {
 import { markEntriesViewed, moveEntry, viewedEntryIds } from "./entry-state.js";
 
 export class LibraryStore {
-    private readonly transactionContext = new AsyncLocalStorage<DbExecutor>();
+    private readonly transactionContext =
+        new AsyncLocalStorage<DatabaseExecutor>();
 
-    constructor(private readonly database: DbExecutor) {}
+    constructor(private readonly baseDatabase: DatabaseExecutor) {}
 
-    private get activeDatabase(): DbExecutor {
-        return this.transactionContext.getStore() ?? this.database;
+    private get db(): DatabaseExecutor {
+        return this.transactionContext.getStore() ?? this.baseDatabase;
     }
 
     async transaction<T>(operation: () => Promise<T>): Promise<T> {
         if (this.transactionContext.getStore()) return operation();
-        return this.database.transaction((executor) => {
-            const scoped: DbExecutor = {
+        return this.baseDatabase.transaction((executor) => {
+            const scoped: DatabaseExecutor = {
                 executeCommand: executor.executeCommand.bind(executor),
                 ensureTable: executor.ensureTable.bind(executor),
                 transaction: (callback) => callback(scoped),
@@ -69,7 +70,7 @@ export class LibraryStore {
     async dictionaryCache(
         key: string,
     ): Promise<CacheSnapshot<LibraryDictionaryResult[]> | null> {
-        const result = await this.activeDatabase.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "study_library_dictionary_cache",
             where: [{ column: "cache_key", value: key }],
@@ -82,7 +83,7 @@ export class LibraryStore {
         key: string,
         snapshot: CacheSnapshot<LibraryDictionaryResult[]>,
     ): Promise<void> {
-        await this.activeDatabase.executeCommand({
+        await this.db.executeCommand({
             option: "DELETE",
             table: "study_library_dictionary_cache",
             where: [
@@ -94,7 +95,7 @@ export class LibraryStore {
             ],
         });
         await this.upsert(
-            this.activeDatabase,
+            this.db,
             "study_library_dictionary_cache",
             ["cache_key"],
             {
@@ -107,7 +108,7 @@ export class LibraryStore {
     }
 
     private async upsert(
-        db: DbExecutor,
+        db: DatabaseExecutor,
         table: string,
         conflictTarget: string[],
         values: Record<string, unknown>,
@@ -125,22 +126,22 @@ export class LibraryStore {
     }
 
     async ensureSchema(): Promise<void> {
-        await ensureLibraryStoreSchema(this.activeDatabase);
+        await ensureLibraryStoreSchema(this.db);
     }
 
     async viewedEntryIds(accountId: string): Promise<string[]> {
-        return viewedEntryIds(this.activeDatabase, accountId);
+        return viewedEntryIds(this.db, accountId);
     }
 
     async markEntriesViewed(
         accountId: string,
         entryIds: readonly string[],
     ): Promise<void> {
-        await markEntriesViewed(this.activeDatabase, accountId, entryIds);
+        await markEntriesViewed(this.db, accountId, entryIds);
     }
 
     async saveSchema(schema: LibrarySchema): Promise<void> {
-        await this.activeDatabase.transaction(async (db) => {
+        await this.db.transaction(async (db) => {
             const existing = await readSchemaJson(
                 db,
                 schema.id,
@@ -159,7 +160,7 @@ export class LibraryStore {
         plan: LibraryContentPackPlan,
     ): Promise<LibraryContentPackReceipt> {
         const { manifest, schema, records, digest } = plan;
-        const existing = await this.activeDatabase.executeCommand({
+        const existing = await this.db.executeCommand({
             option: "SELECT",
             table: "study_library_content_packs",
             where: [
@@ -174,7 +175,7 @@ export class LibraryStore {
             if (String(existing.rows[0].digest) !== digest)
                 throw new Error("content_pack_version_conflict");
         }
-        await this.activeDatabase.transaction(async (db) => {
+        await this.db.transaction(async (db) => {
             const blacklist = await db.executeCommand({
                 option: "SELECT",
                 table: "study_library_content_hash_blacklist",
@@ -441,7 +442,7 @@ export class LibraryStore {
         publisher: string,
         packId: string,
     ): Promise<LibraryEntry[]> {
-        const result = await this.activeDatabase.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "study_library_entries",
             where: [
@@ -456,8 +457,8 @@ export class LibraryStore {
 
     async forgetContentPack(publisher: string, packId: string): Promise<void> {
         await this.transaction(async () => {
-            await forgetPackAssets(this.activeDatabase, publisher, packId);
-            await this.activeDatabase.executeCommand({
+            await forgetPackAssets(this.db, publisher, packId);
+            await this.db.executeCommand({
                 option: "DELETE",
                 table: "study_library_content_packs",
                 where: [
@@ -481,7 +482,7 @@ export class LibraryStore {
         ) => Promise<void>,
     ): Promise<readonly string[]> {
         let deletedEntryIds: readonly string[] = [];
-        await this.activeDatabase.transaction(async (db) => {
+        await this.db.transaction(async (db) => {
             deletedEntryIds = await this.resolveDeletionCascade(entryIds, db);
             const entries: LibraryEntry[] = [];
             for (const entryId of deletedEntryIds) {
@@ -542,7 +543,7 @@ export class LibraryStore {
 
     async resolveDeletionCascade(
         entryIds: readonly string[],
-        db: DbExecutor = this.activeDatabase,
+        db: DatabaseExecutor = this.db,
         includeRestricted = false,
     ): Promise<readonly string[]> {
         const cascadeIds = new Set(entryIds);
@@ -616,7 +617,7 @@ export class LibraryStore {
     }
 
     async hasImageReference(value: string): Promise<boolean> {
-        return hasImageReference(this.activeDatabase, value);
+        return hasImageReference(this.db, value);
     }
 
     async getContentPackAsset(
@@ -625,13 +626,7 @@ export class LibraryStore {
         version: string,
         assetPath: string,
     ): Promise<LibraryAsset | null> {
-        return readPackAsset(
-            this.activeDatabase,
-            publisher,
-            packId,
-            version,
-            assetPath,
-        );
+        return readPackAsset(this.db, publisher, packId, version, assetPath);
     }
 
     private contentPackReceipt(
@@ -661,14 +656,14 @@ export class LibraryStore {
     }
 
     async get(id: string): Promise<LibraryEntry | null> {
-        const result = await this.activeDatabase.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "study_library_entries",
             where: [{ column: "id", value: id }],
         });
         const row = result.rows?.[0];
         if (!row) return null;
-        return (await hydrateEntries(this.activeDatabase, [row]))[0];
+        return (await hydrateEntries(this.db, [row]))[0];
     }
 
     async list(
@@ -680,7 +675,7 @@ export class LibraryStore {
             filters.sourceRecordIds?.length === 0
         )
             return [];
-        const where: StructuredDbWhereClause[] = [
+        const where: StructuredDatabaseWhereClause[] = [
             { column: "scope", value: location.scope },
             { column: "scope_id", value: location.scopeId ?? location.scope },
         ];
@@ -695,12 +690,12 @@ export class LibraryStore {
             if (filters[key])
                 where.push({ column, operator: "IN", value: filters[key] });
         }
-        const result = await this.activeDatabase.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "study_library_entries",
             where,
         });
-        return hydrateEntries(this.activeDatabase, result.rows ?? []);
+        return hydrateEntries(this.db, result.rows ?? []);
     }
 
     async create(
@@ -711,7 +706,7 @@ export class LibraryStore {
         requestedId?: string,
     ): Promise<LibraryEntry> {
         const id = requestedId ?? randomUUID();
-        await this.activeDatabase.transaction(async (transactionDatabase) => {
+        await this.db.transaction(async (transactionDatabase) => {
             await transactionDatabase.executeCommand({
                 option: "INSERT",
                 table: "study_library_entries",
@@ -747,7 +742,7 @@ export class LibraryStore {
         input: LibraryEntryInput,
         providerModified = false,
     ): Promise<LibraryEntry> {
-        await this.activeDatabase.transaction((transactionDatabase) =>
+        await this.db.transaction((transactionDatabase) =>
             replaceEntryContent(
                 transactionDatabase,
                 id,
@@ -765,7 +760,7 @@ export class LibraryStore {
         expectedUpdatedAt: string,
     ): Promise<boolean> {
         return this.transaction(async () => {
-            const selected = await this.activeDatabase.executeCommand({
+            const selected = await this.db.executeCommand({
                 option: "SELECT",
                 table: "study_library_entries",
                 where: [{ column: "id", value: id }],
@@ -775,7 +770,7 @@ export class LibraryStore {
             const entry = mapEntry(row);
             if (entry.updatedAt !== expectedUpdatedAt) return false;
             const fields = { ...entry.fields, [fieldId]: value };
-            const result = await this.activeDatabase.executeCommand({
+            const result = await this.db.executeCommand({
                 option: "UPDATE",
                 table: "study_library_entries",
                 set: {
@@ -799,7 +794,7 @@ export class LibraryStore {
         id: string,
         destination: LibraryLocation,
     ): Promise<LibraryEntry> {
-        await moveEntry(this.activeDatabase, id, destination);
+        await moveEntry(this.db, id, destination);
         return (await this.get(id))!;
     }
 
@@ -819,7 +814,7 @@ export class LibraryStore {
                     this.get.bind(this),
                 );
                 return createPushRequest(
-                    this.activeDatabase,
+                    this.db,
                     sourceEntryId,
                     destination,
                     accountId,
@@ -841,13 +836,13 @@ export class LibraryStore {
     }
 
     async getPush(id: string): Promise<LibraryPushRequest | null> {
-        return getPushRequest(this.activeDatabase, id);
+        return getPushRequest(this.db, id);
     }
 
     async listPushRequests(
         status?: LibraryPushRequest["status"],
     ): Promise<LibraryPushRequest[]> {
-        return listPushRequests(this.activeDatabase, status);
+        return listPushRequests(this.db, status);
     }
 
     async stagePush(
@@ -855,11 +850,11 @@ export class LibraryStore {
         entry: LibraryEntryInput,
         actorId: string,
     ): Promise<LibraryPushRequest> {
-        return stagePushRequest(this.activeDatabase, id, entry, actorId);
+        return stagePushRequest(this.db, id, entry, actorId);
     }
 
     async addOwners(id: string, owners: readonly string[]): Promise<void> {
-        await addEntryOwners(this.activeDatabase, id, owners);
+        await addEntryOwners(this.db, id, owners);
     }
 
     async reviewPush(
@@ -867,11 +862,11 @@ export class LibraryStore {
         status: "approved" | "rejected" | "withdrawn",
         reviewerId: string,
     ): Promise<void> {
-        await reviewPushRequest(this.activeDatabase, id, status, reviewerId);
+        await reviewPushRequest(this.db, id, status, reviewerId);
     }
 
     async referencesFor(targetEntryId: string): Promise<LibraryEntry[]> {
-        const result = await executeReferences(this.activeDatabase, {
+        const result = await executeReferences(this.db, {
             option: "SELECT",
             where: [{ column: "target_entry_id", value: targetEntryId }],
         });

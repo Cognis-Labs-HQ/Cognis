@@ -11,7 +11,7 @@ import { captureTerminalOutput } from "./fixtures/output.ts";
  * The tests cover formatted JSON fallback and command-specific rendering for
  * representative built-in commands.
  */
-import { mkdtemp, rm as removePath, writeFile, mkdir } from "node:fs/promises";
+import { mkdtemp, rm, writeFile, mkdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
@@ -516,8 +516,8 @@ test("component:config:set rejects fields not exposed by adapter schema", async 
 test("component:config:get supports module configuration routes", async () => {
     const originalFetch = globalThis.fetch;
     try {
-        globalThis.fetch = async (input, requestOptions) => {
-            assert.equal(requestOptions?.method, "GET");
+        globalThis.fetch = async (input, init) => {
+            assert.equal(init?.method, "GET");
             assert.equal(
                 String(input),
                 "http://localhost:3000/api/v1/modules/jitsi-meet/config",
@@ -560,12 +560,12 @@ test("component:config:set supports module configuration routes", async () => {
     const originalFetch = globalThis.fetch;
     try {
         const requests = [];
-        globalThis.fetch = async (input, requestOptions) => {
+        globalThis.fetch = async (input, init) => {
             const requestUrl = String(input);
             requests.push({
-                method: requestOptions?.method,
+                method: init?.method,
                 requestUrl,
-                body: requestOptions?.body,
+                body: init?.body,
             });
             if (requestUrl.endsWith("/api/v1/modules/jitsi-meet/config")) {
                 return new Response(

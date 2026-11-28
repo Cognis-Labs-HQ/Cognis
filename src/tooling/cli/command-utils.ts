@@ -14,11 +14,11 @@ function failMissingArgumentsList(missing: string[], usage: string): never {
 export { failMissingArgumentsList };
 
 function requireArgumentsList(
-    argumentsList: string[],
+    args: string[],
     names: string[],
     usage: string,
 ): void {
-    const missing = names.filter((_, index) => !argumentsList[index]);
+    const missing = names.filter((_, index) => !args[index]);
     if (missing.length > 0) failMissingArgumentsList(missing, usage);
 }
 export { requireArgumentsList };

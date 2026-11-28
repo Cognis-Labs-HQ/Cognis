@@ -185,7 +185,7 @@ export class GatewayRegistry {
 export type BootstrapLog = (
     level: "debug" | "info" | "warn" | "error",
     message: string,
-    metadata?: Record<string, unknown>,
+    meta?: Record<string, unknown>,
 ) => void;
 
 export class CapabilityStore {

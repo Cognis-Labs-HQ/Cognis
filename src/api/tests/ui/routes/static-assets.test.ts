@@ -159,7 +159,7 @@ test("GET /static/gateways/:id/:file serves file from registered static dir", as
         "auth",
         "ui",
     );
-    uiRegistry.registerStaticDir("auth", authUiDirectory);
+    uiRegistry.registerStaticDirectory("auth", authUiDirectory);
     const route = createUiRoutes(undefined, uiRegistry);
 
     const recorder = createResponseRecorder();
@@ -206,7 +206,7 @@ test("GET /static/gateways/notify/admin-section.js serves notify gateway admin U
         "notify",
         "ui",
     );
-    uiRegistry.registerStaticDir("notify", notifyUiDirectory);
+    uiRegistry.registerStaticDirectory("notify", notifyUiDirectory);
     const route = createUiRoutes(undefined, uiRegistry);
 
     const recorder = createResponseRecorder();
@@ -235,7 +235,7 @@ test("GET /static/adapters/social/profile/navbar.js serves profile adapter navba
         "profile",
         "ui",
     );
-    uiRegistry.registerAdapterStaticDir(
+    uiRegistry.registerAdapterStaticDirectory(
         "social",
         "profile",
         profileUiDirectory,
@@ -261,7 +261,7 @@ test("GET /static/adapters/social/profile/navbar.js serves profile adapter navba
 test("GET /static/adapters/share/:method/page.js serves Share adapter pages", async () => {
     const uiRegistry = new UIRegistry();
     for (const adapterId of ["link", "user"]) {
-        uiRegistry.registerAdapterStaticDir(
+        uiRegistry.registerAdapterStaticDirectory(
             "share",
             adapterId,
             path.resolve(process.cwd(), "src", "adapters", "share", adapterId),
@@ -298,7 +298,7 @@ test("GET /static/adapters/share/link/ui/share-links-popup/index.js serves Link 
         "share",
         "link",
     );
-    uiRegistry.registerAdapterStaticDir("share", "link", linkAdapterRoot);
+    uiRegistry.registerAdapterStaticDirectory("share", "link", linkAdapterRoot);
     const route = createUiRoutes(undefined, uiRegistry);
 
     const recorder = createResponseRecorder();
@@ -328,7 +328,7 @@ test("GET /static/adapters/share/link/ui/share-links-popup/index.css serves Link
         "share",
         "link",
     );
-    uiRegistry.registerAdapterStaticDir("share", "link", linkAdapterRoot);
+    uiRegistry.registerAdapterStaticDirectory("share", "link", linkAdapterRoot);
     const route = createUiRoutes(undefined, uiRegistry);
 
     const recorder = createResponseRecorder();
@@ -489,7 +489,7 @@ test("module scripts revalidate despite the unchanged host asset version", async
             "export const release = 'current';",
         );
         const registry = new UIRegistry();
-        registry.registerModuleStaticDir("legal", moduleRoot);
+        registry.registerModuleStaticDirectory("legal", moduleRoot);
         const recorder = createResponseRecorder();
         await createUiRoutes(undefined, registry)(
             { headers: {} } as any,

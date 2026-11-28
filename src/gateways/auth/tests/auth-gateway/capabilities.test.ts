@@ -11,14 +11,14 @@ import { bootstrapAuthTestHost as bootstrap } from "../auth-gateway-test-helpers
 import {
     contributeTestKeyring,
     makeInMemoryDatabase,
-    type InMemoryDb,
+    type InMemoryDatabase,
 } from "../auth-gateway-test-helpers.js";
-function createDatabaseExecutor(): InMemoryDb {
+function createDatabaseExecutor(): InMemoryDatabase {
     return makeInMemoryDatabase();
 }
 function makeBaseCtx(
     capabilities: CapabilityStore,
-    databaseExecutor: InMemoryDb,
+    databaseExecutor: InMemoryDatabase,
 ) {
     const systemCtx = createCtx();
     capabilities.contribute(CTX_CAPABILITY, systemCtx);

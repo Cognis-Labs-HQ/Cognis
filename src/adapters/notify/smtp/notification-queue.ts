@@ -92,7 +92,7 @@ export class SmtpNotificationQueue {
 
     constructor(
         private readonly rateLimiter: SmtpRateLimiter,
-        private readonly sleep: (milliseconds: number) => Promise<void>,
+        private readonly sleep: (ms: number) => Promise<void>,
         private readonly sendCallback: (
             payload: SmtpNotificationQueuePayload,
         ) => Promise<void>,

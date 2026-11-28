@@ -1,18 +1,18 @@
 /**
- * Minimal in-memory DbExecutor for unit/integration tests.
+ * Minimal in-memory DatabaseExecutor for unit/integration tests.
  *
  * Stores rows in a Map keyed by table name. Tracks PRIMARY KEY columns and
  * DEFAULT values from CREATE TABLE statements and ensureTable() calls so that
  * INSERT operations behave correctly with conflict detection and
  * missing-column defaults.
  */
-import type { DbExecutor } from "../reuse/db-executor.js";
-import type { StructuredDbTableDef } from "../reuse/db-table.js";
+import type { DatabaseExecutor } from "../reuse/db-executor.js";
+import type { StructuredDatabaseTableDefinition } from "../reuse/db-table.js";
 import {
     buildStructuredDatabaseCommandStatement,
-    type StructuredDbCommand,
-    type StructuredDbCommandResult,
-    type StructuredDbDialect,
+    type StructuredDatabaseCommand,
+    type StructuredDatabaseCommandResult,
+    type StructuredDatabaseDialect,
 } from "../reuse/db-command.js";
 
 type Row = Record<string, unknown>;
@@ -23,11 +23,11 @@ interface TableSchema {
     uniqueCols: string[][];
 }
 
-export class InMemoryTestExecutor implements DbExecutor {
+export class InMemoryTestExecutor implements DatabaseExecutor {
     private tables = new Map<string, Row[]>();
     private schemas = new Map<string, TableSchema>();
 
-    private readonly structuredDatabaseDialect: StructuredDbDialect = {
+    private readonly structuredDatabaseDialect: StructuredDatabaseDialect = {
         createPlaceholder(parameterIndex) {
             return `$${parameterIndex}`;
         },
@@ -95,8 +95,8 @@ export class InMemoryTestExecutor implements DbExecutor {
     }
 
     async executeCommand(
-        command: StructuredDbCommand,
-    ): Promise<StructuredDbCommandResult<Row>> {
+        command: StructuredDatabaseCommand,
+    ): Promise<StructuredDatabaseCommandResult<Row>> {
         const statement = buildStructuredDatabaseCommandStatement(
             command,
             this.structuredDatabaseDialect,
@@ -105,12 +105,14 @@ export class InMemoryTestExecutor implements DbExecutor {
     }
 
     async transaction<T>(
-        callback: (executor: DbExecutor) => Promise<T>,
+        callback: (executor: DatabaseExecutor) => Promise<T>,
     ): Promise<T> {
         return callback(this);
     }
 
-    async ensureTable(definition: StructuredDbTableDef): Promise<void> {
+    async ensureTable(
+        definition: StructuredDatabaseTableDefinition,
+    ): Promise<void> {
         if (this.schemas.has(definition.name)) return;
         const primaryKeyColumns: string[] = definition.primaryKey ?? [];
         const defaults = new Map<string, unknown>();
@@ -138,7 +140,7 @@ export class InMemoryTestExecutor implements DbExecutor {
     }
 
     private parseTableDefault(
-        value: StructuredDbTableDef["columns"][number]["default"],
+        value: StructuredDatabaseTableDefinition["columns"][number]["default"],
     ): unknown {
         if (value === "now") return "__NOW__";
         if (value === "true") return true;

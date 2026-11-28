@@ -1,4 +1,4 @@
-import virtualMachine from "node:vm";
+import vm from "node:vm";
 import { readFileSync } from "node:fs";
 import { transformSync } from "esbuild";
 
@@ -15,10 +15,8 @@ export function loadTestModule<Module extends object = Record<string, unknown>>(
         target: "es2022",
         define: { "import.meta.url": JSON.stringify(url.href) },
     }).code;
-    const context = virtualMachine.isContext(globals)
-        ? globals
-        : virtualMachine.createContext(globals);
-    const evaluate = virtualMachine.compileFunction(
+    const context = vm.isContext(globals) ? globals : vm.createContext(globals);
+    const evaluate = vm.compileFunction(
         source,
         ["module", "exports", "require"],
         {
@@ -42,26 +40,24 @@ export async function importTestModule<
     imports: Record<string, Record<string, unknown>>,
     globals: Record<string, unknown> = {},
 ): Promise<Module> {
-    const context = virtualMachine.isContext(globals)
-        ? globals
-        : virtualMachine.createContext(globals);
+    const context = vm.isContext(globals) ? globals : vm.createContext(globals);
     const source = transformSync(readFileSync(url, "utf8"), {
         format: "esm",
         loader: url.pathname.endsWith(".ts") ? "ts" : "js",
         target: "es2022",
     }).code;
-    const module = new virtualMachine.SourceTextModule(source, {
+    const module = new vm.SourceTextModule(source, {
         context,
         identifier: url.href,
-        initializeImportMeta(metadata) {
-            metadata.url = url.href;
+        initializeImportMeta(meta) {
+            meta.url = url.href;
         },
     });
     await module.link((id) => {
         if (!Object.hasOwn(imports, id))
             throw new Error(`Unexpected import: ${id}`);
         const values = imports[id];
-        return new virtualMachine.SyntheticModule(
+        return new vm.SyntheticModule(
             Object.keys(values),
             function () {
                 for (const [key, value] of Object.entries(values))

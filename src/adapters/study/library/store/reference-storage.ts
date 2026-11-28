@@ -1,15 +1,17 @@
 import { createHash } from "node:crypto";
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import type {
-    StructuredDbCommand,
-    StructuredDbCommandResult,
+    StructuredDatabaseCommand,
+    StructuredDatabaseCommandResult,
 } from "../../../../gateways/db/reuse/db-command.js";
-import type { StructuredDbColumnDef } from "../../../../gateways/db/reuse/db-table.js";
+import type { StructuredDatabaseColumnDefinition } from "../../../../gateways/db/reuse/db-table.js";
 
-type WithoutTable<T> = T extends StructuredDbCommand ? Omit<T, "table"> : never;
+type WithoutTable<T> = T extends StructuredDatabaseCommand
+    ? Omit<T, "table">
+    : never;
 
 type ReferenceCommand = WithoutTable<
-    Exclude<StructuredDbCommand, { option: "UPDATE" }>
+    Exclude<StructuredDatabaseCommand, { option: "UPDATE" }>
 >;
 
 const FLAT = "study_library_references";
@@ -31,9 +33,9 @@ function groupId(values: Record<string, unknown>): string {
 
 /** Flat edges retain their established key; grouped placements have an independent identity. */
 export async function executeReferences(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     command: ReferenceCommand,
-): Promise<StructuredDbCommandResult> {
+): Promise<StructuredDatabaseCommandResult> {
     if (command.option === "INSERT") {
         const grouped = Number(command.values.group_index) >= 0;
         return db.executeCommand({
@@ -56,8 +58,10 @@ export async function executeReferences(
     };
 }
 
-export async function ensureReferenceStorage(db: DbExecutor): Promise<void> {
-    const columns: StructuredDbColumnDef[] = [
+export async function ensureReferenceStorage(
+    db: DatabaseExecutor,
+): Promise<void> {
+    const columns: StructuredDatabaseColumnDefinition[] = [
         { name: "source_entry_id", type: "text", notNull: true },
         { name: "target_entry_id", type: "text", notNull: true },
         { name: "relation", type: "text", notNull: true, default: "contains" },

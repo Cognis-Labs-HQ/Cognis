@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import type { DbExecutor } from "../../db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../db/reuse/db-executor.js";
 
 export type CalendarShareLinkRegistryRecord = {
     id: string;
@@ -56,17 +56,17 @@ export class CalendarShareRegistry {
     >();
 
     constructor(
-        private readonly database: DbExecutor | null,
+        private readonly db: DatabaseExecutor | null,
         private readonly log?: (
             level: string,
             message: string,
-            metadata?: Record<string, unknown>,
+            meta?: Record<string, unknown>,
         ) => void,
     ) {}
 
     async ensureSchema(): Promise<void> {
-        if (!this.database) return;
-        await this.database.ensureTable({
+        if (!this.db) return;
+        await this.db.ensureTable({
             name: "calendar_share_links",
             columns: [
                 { name: "calendar_id", type: "text", notNull: true },
@@ -77,7 +77,7 @@ export class CalendarShareRegistry {
             ],
             primaryKey: ["calendar_id"],
         });
-        await this.database.ensureTable({
+        await this.db.ensureTable({
             name: "calendar_user_shares",
             columns: [
                 { name: "id", type: "text", notNull: true, primaryKey: true },
@@ -174,7 +174,7 @@ export class CalendarShareRegistry {
     ): Promise<CalendarShareLinkRegistryRecord | null> {
         const normalizedToken = String(token ?? "").trim();
         if (!normalizedToken) return null;
-        if (!this.database) {
+        if (!this.db) {
             const resolvedLink =
                 this.memoryShareLinksByToken.get(normalizedToken) ?? null;
             if (!resolvedLink) return null;
@@ -185,7 +185,7 @@ export class CalendarShareRegistry {
             );
             return this.memoryShareLinksByToken.get(normalizedToken) ?? null;
         }
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "calendar_share_links",
             columns: [
@@ -227,7 +227,7 @@ export class CalendarShareRegistry {
         ownerAccountId: string,
         ownerCalendarId: string,
     ): Promise<CalendarUserShareRegistryRecord[]> {
-        if (!this.database) {
+        if (!this.db) {
             const shares = Array.from(this.memoryUserShares.values()).filter(
                 (share) =>
                     share.ownerAccountId === ownerAccountId &&
@@ -248,7 +248,7 @@ export class CalendarShareRegistry {
             );
             return activeShares;
         }
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "calendar_user_shares",
             columns: [
@@ -349,11 +349,11 @@ export class CalendarShareRegistry {
             createdAt: existing?.createdAt ?? now,
             updatedAt: now,
         };
-        if (!this.database) {
+        if (!this.db) {
             this.memoryUserShares.set(share.id, share);
             return share;
         }
-        await this.database.executeCommand({
+        await this.db.executeCommand({
             option: "INSERT",
             table: "calendar_user_shares",
             values: {
@@ -413,11 +413,11 @@ export class CalendarShareRegistry {
                     : existingShare.expiresAt,
             updatedAt: now,
         };
-        if (!this.database) {
+        if (!this.db) {
             this.memoryUserShares.set(nextShare.id, nextShare);
             return nextShare;
         }
-        await this.database.executeCommand({
+        await this.db.executeCommand({
             option: "UPDATE",
             table: "calendar_user_shares",
             set: {
@@ -448,8 +448,8 @@ export class CalendarShareRegistry {
     async getCalendarUserShareById(
         shareId: string,
     ): Promise<CalendarUserShareRegistryRecord | null> {
-        if (!this.database) return this.memoryUserShares.get(shareId) ?? null;
-        const result = await this.database.executeCommand({
+        if (!this.db) return this.memoryUserShares.get(shareId) ?? null;
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "calendar_user_shares",
             columns: [
@@ -501,12 +501,12 @@ export class CalendarShareRegistry {
     async listCalendarUserSharesByTokenId(
         shareTokenId: string,
     ): Promise<CalendarUserShareRegistryRecord[]> {
-        if (!this.database) {
+        if (!this.db) {
             return Array.from(this.memoryUserShares.values()).filter(
                 (share) => share.shareTokenId === shareTokenId,
             );
         }
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "calendar_user_shares",
             columns: ["id"],
@@ -525,12 +525,12 @@ export class CalendarShareRegistry {
     async listCalendarUserSharesByRecipient(
         recipientAccountId: string,
     ): Promise<CalendarUserShareRegistryRecord[]> {
-        if (!this.database) {
+        if (!this.db) {
             return Array.from(this.memoryUserShares.values()).filter(
                 (share) => share.recipientAccountId === recipientAccountId,
             );
         }
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "calendar_user_shares",
             columns: ["id"],
@@ -564,7 +564,7 @@ export class CalendarShareRegistry {
     async getByRecipientCalendarId(
         recipientCalendarId: string,
     ): Promise<CalendarUserShareRegistryRecord | null> {
-        if (!this.database) {
+        if (!this.db) {
             const share =
                 Array.from(this.memoryUserShares.values()).find(
                     (entry) =>
@@ -575,7 +575,7 @@ export class CalendarShareRegistry {
             this.memoryUserShares.delete(share.id);
             return null;
         }
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "calendar_user_shares",
             columns: [
@@ -770,14 +770,14 @@ export class CalendarShareRegistry {
         ownerAccountId: string,
         calendarId: string,
     ): Promise<CalendarShareLinkRegistryRecord[]> {
-        if (!this.database) {
+        if (!this.db) {
             const memoryEntry = this.memoryShareLinks.get(calendarId);
             if (!memoryEntry || memoryEntry.ownerAccountId !== ownerAccountId) {
                 return [];
             }
             return [...memoryEntry.links];
         }
-        const result = await this.database.executeCommand({
+        const result = await this.db.executeCommand({
             option: "SELECT",
             table: "calendar_share_links",
             columns: ["token", "created_at", "updated_at"],
@@ -803,7 +803,7 @@ export class CalendarShareRegistry {
         calendarId: string;
         links: CalendarShareLinkRegistryRecord[];
     }): Promise<void> {
-        if (!this.database) {
+        if (!this.db) {
             this.memoryShareLinks.set(input.calendarId, {
                 ownerAccountId: input.ownerAccountId,
                 links: [...input.links],
@@ -831,7 +831,7 @@ export class CalendarShareRegistry {
             input.calendarId,
         );
         const createdAt = existingLinks[0]?.createdAt ?? now;
-        await this.database.executeCommand({
+        await this.db.executeCommand({
             option: "INSERT",
             table: "calendar_share_links",
             values: {
@@ -854,11 +854,11 @@ export class CalendarShareRegistry {
     }
 
     private async deleteCalendarUserShareById(shareId: string): Promise<void> {
-        if (!this.database) {
+        if (!this.db) {
             this.memoryUserShares.delete(shareId);
             return;
         }
-        await this.database.executeCommand({
+        await this.db.executeCommand({
             option: "DELETE",
             table: "calendar_user_shares",
             where: [{ column: "id", value: shareId }],

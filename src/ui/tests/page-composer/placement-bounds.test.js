@@ -12,7 +12,7 @@ function resolvePlacements({ layout, elements, columns, width, nested }) {
     const state = {
         layout,
         elements,
-        gridCols: columns,
+        gridColumns: columns,
         contentGrid: container,
         container,
     };

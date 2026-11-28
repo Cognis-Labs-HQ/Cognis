@@ -53,9 +53,9 @@ const SERVED_PUBLIC_ROOT = IS_PRODUCTION_BUILD
 const ASSET_VERSION = process.env.COGNIS_ASSET_VERSION ?? "development";
 const serveVersionedAsset = createVersionedAssetServer(ASSET_VERSION);
 
-function sendRedirect(response: ServerResponse, location: string): true {
-    response.writeHead(302, { location });
-    response.end();
+function sendRedirect(res: ServerResponse, location: string): true {
+    res.writeHead(302, { location });
+    res.end();
     return true;
 }
 
@@ -80,25 +80,25 @@ export function createUiRoutes(
 ) {
     const ctx = resolveRouteContext(routeContext);
     return async (
-        request: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         url: URL,
     ): Promise<boolean> => {
         if (url.pathname === "/") {
-            response.writeHead(302, { location: "/dashboard" });
-            response.end();
+            res.writeHead(302, { location: "/dashboard" });
+            res.end();
             return true;
         }
 
         if (
             url.pathname === "/api/v1/ui/asset-manifest" &&
-            request.method === "GET"
+            req.method === "GET"
         ) {
-            response.writeHead(200, {
+            res.writeHead(200, {
                 "content-type": "application/json; charset=utf-8",
                 "cache-control": REVALIDATED_CACHE_CONTROL,
             });
-            response.end(
+            res.end(
                 JSON.stringify({
                     data: {
                         version: ASSET_VERSION,
@@ -121,8 +121,8 @@ export function createUiRoutes(
             /^\/assets\/locale-[A-Z0-9]{8}\.xml$/.test(builtTranslation)
         ) {
             await serveVersionedAsset(
-                request,
-                response,
+                req,
+                res,
                 url,
                 path.join(PRODUCTION_UI_ROOT, builtTranslation.slice(1)),
                 "application/xml; charset=utf-8",
@@ -131,17 +131,14 @@ export function createUiRoutes(
             return true;
         }
 
-        if (
-            url.pathname === "/manifest.webmanifest" &&
-            request.method === "GET"
-        ) {
+        if (url.pathname === "/manifest.webmanifest" && req.method === "GET") {
             await serveStaticAsset(
-                request,
-                response,
+                req,
+                res,
                 path.join(SERVED_PUBLIC_ROOT, "manifest.webmanifest"),
                 "application/manifest+json; charset=utf-8",
                 log,
-                { path: url.pathname, method: request.method },
+                { path: url.pathname, method: req.method },
                 // Let browser and service-worker caches retain the manifest,
                 // while revalidation rolls out icon, name, and shortcut updates.
                 "public, max-age=0, must-revalidate",
@@ -149,18 +146,18 @@ export function createUiRoutes(
             return true;
         }
 
-        if (url.pathname === "/sw.js" && request.method === "GET") {
+        if (url.pathname === "/sw.js" && req.method === "GET") {
             try {
                 const file = await readFile(
                     path.join(SERVED_PUBLIC_ROOT, "sw.js"),
                 );
-                response.writeHead(200, {
+                res.writeHead(200, {
                     "content-type": "text/javascript; charset=utf-8",
                     "cache-control": "no-cache",
                     "service-worker-allowed": "/",
                     "x-content-type-options": "nosniff",
                 });
-                response.end(file);
+                res.end(file);
             } catch (error) {
                 log?.("error", "Failed to serve service worker.", {
                     component: "api-ui",
@@ -168,8 +165,8 @@ export function createUiRoutes(
                     error:
                         error instanceof Error ? error.message : String(error),
                 });
-                response.writeHead(404, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -183,22 +180,22 @@ export function createUiRoutes(
 
         if (url.pathname === "/dashboard") {
             const loginRedirect = await resolveLoginRedirectLocation(
-                request,
+                req,
                 ctx,
                 accountStore,
                 log,
             );
             if (loginRedirect) {
-                response.writeHead(302, { location: loginRedirect });
-                response.end();
+                res.writeHead(302, { location: loginRedirect });
+                res.end();
                 return true;
             }
 
             await htmlResponse.serveHtmlPage(
-                response,
+                res,
                 path.join(SERVED_PUBLIC_ROOT, "pages", "index.html"),
                 log,
-                { path: url.pathname, method: request.method ?? "GET" },
+                { path: url.pathname, method: req.method ?? "GET" },
                 ctx,
             );
             return true;
@@ -206,22 +203,22 @@ export function createUiRoutes(
 
         if (url.pathname === "/settings") {
             const loginRedirect = await resolveLoginRedirectLocation(
-                request,
+                req,
                 ctx,
                 accountStore,
                 log,
             );
             if (loginRedirect) {
-                response.writeHead(302, { location: loginRedirect });
-                response.end();
+                res.writeHead(302, { location: loginRedirect });
+                res.end();
                 return true;
             }
 
             await htmlResponse.serveHtmlPage(
-                response,
+                res,
                 path.join(SERVED_PUBLIC_ROOT, "pages", "settings.html"),
                 log,
-                { path: url.pathname, method: request.method ?? "GET" },
+                { path: url.pathname, method: req.method ?? "GET" },
                 ctx,
             );
             return true;
@@ -229,23 +226,23 @@ export function createUiRoutes(
 
         if (/^\/administration(?:\/modules(?:\/[^/]+)?)?$/.test(url.pathname)) {
             const loginRedirect = await resolveLoginRedirectLocation(
-                request,
+                req,
                 ctx,
                 accountStore,
                 log,
             );
             if (loginRedirect) {
-                response.writeHead(302, { location: loginRedirect });
-                response.end();
+                res.writeHead(302, { location: loginRedirect });
+                res.end();
                 return true;
             }
-            const session = ctx.getCookieSession(request);
+            const session = ctx.getCookieSession(req);
             if (
                 !session ||
                 !isRoleAllowed(session.role, { minRole: "admin" })
             ) {
-                response.writeHead(302, { location: "/dashboard" });
-                response.end();
+                res.writeHead(302, { location: "/dashboard" });
+                res.end();
                 return true;
             }
 
@@ -255,10 +252,10 @@ export function createUiRoutes(
                 ? "modules.html"
                 : "administration.html";
             await htmlResponse.serveHtmlPage(
-                response,
+                res,
                 path.join(SERVED_PUBLIC_ROOT, "pages", administrationPage),
                 log,
-                { path: url.pathname, method: request.method ?? "GET" },
+                { path: url.pathname, method: req.method ?? "GET" },
                 ctx,
             );
             return true;
@@ -266,34 +263,34 @@ export function createUiRoutes(
 
         if (url.pathname === "/users") {
             const loginRedirect = await resolveLoginRedirectLocation(
-                request,
+                req,
                 ctx,
                 accountStore,
                 log,
             );
             if (loginRedirect) {
-                response.writeHead(302, { location: loginRedirect });
-                response.end();
+                res.writeHead(302, { location: loginRedirect });
+                res.end();
                 return true;
             }
-            const session = ctx.getCookieSession(request);
+            const session = ctx.getCookieSession(req);
             if (!session) {
-                response.writeHead(302, {
+                res.writeHead(302, {
                     location: "/login?reason=session_expired",
                 });
-                response.end();
+                res.end();
                 return true;
             }
             if (!isRoleAllowed(session.role, { minRole: "admin" })) {
-                response.writeHead(302, { location: "/dashboard" });
-                response.end();
+                res.writeHead(302, { location: "/dashboard" });
+                res.end();
                 return true;
             }
             await htmlResponse.serveHtmlPage(
-                response,
+                res,
                 path.join(SERVED_PUBLIC_ROOT, "pages", "users.html"),
                 log,
-                { path: url.pathname, method: request.method ?? "GET" },
+                { path: url.pathname, method: req.method ?? "GET" },
                 ctx,
             );
             return true;
@@ -301,22 +298,22 @@ export function createUiRoutes(
 
         if (url.pathname.startsWith("/docs")) {
             const loginRedirect = await resolveLoginRedirectLocation(
-                request,
+                req,
                 ctx,
                 accountStore,
                 log,
             );
             if (loginRedirect) {
-                response.writeHead(302, { location: loginRedirect });
-                response.end();
+                res.writeHead(302, { location: loginRedirect });
+                res.end();
                 return true;
             }
 
             await htmlResponse.serveHtmlPage(
-                response,
+                res,
                 path.join(SERVED_PUBLIC_ROOT, "pages", "docs.html"),
                 log,
-                { path: url.pathname, method: request.method ?? "GET" },
+                { path: url.pathname, method: req.method ?? "GET" },
                 ctx,
             );
             return true;
@@ -324,19 +321,19 @@ export function createUiRoutes(
 
         if (url.pathname.startsWith("/changelogs")) {
             const loginRedirect = await resolveLoginRedirectLocation(
-                request,
+                req,
                 ctx,
                 accountStore,
                 log,
             );
             if (loginRedirect) {
-                response.writeHead(302, { location: loginRedirect });
-                response.end();
+                res.writeHead(302, { location: loginRedirect });
+                res.end();
                 return true;
             }
 
             await htmlResponse.serveHtmlPageWithReplacements(
-                response,
+                res,
                 path.join(SERVED_PUBLIC_ROOT, "pages", "docs.html"),
                 [
                     {
@@ -355,7 +352,7 @@ export function createUiRoutes(
                     },
                 ],
                 log,
-                { path: url.pathname, method: request.method ?? "GET" },
+                { path: url.pathname, method: req.method ?? "GET" },
                 ctx,
             );
             return true;
@@ -363,10 +360,10 @@ export function createUiRoutes(
 
         if (url.pathname === "/license") {
             await htmlResponse.serveHtmlPage(
-                response,
+                res,
                 path.join(SERVED_PUBLIC_ROOT, "pages", "license.html"),
                 log,
-                { path: url.pathname, method: request.method ?? "GET" },
+                { path: url.pathname, method: req.method ?? "GET" },
                 ctx,
             );
             return true;
@@ -374,10 +371,10 @@ export function createUiRoutes(
 
         if (url.pathname === "/error") {
             await htmlResponse.serveHtmlPage(
-                response,
+                res,
                 path.join(SERVED_PUBLIC_ROOT, "pages", "error.html"),
                 log,
-                { path: url.pathname, method: request.method ?? "GET" },
+                { path: url.pathname, method: req.method ?? "GET" },
                 ctx,
             );
             return true;
@@ -390,22 +387,17 @@ export function createUiRoutes(
         if (
             uiRegistry &&
             (await handleRegisteredSpaPage({
-                req: request,
-                res: response,
+                req: req,
+                res: res,
                 route: registeredSpaRoute,
                 uiRegistry,
                 publicRoot: SERVED_PUBLIC_ROOT,
                 routeContext: ctx,
                 log,
                 resolveLoginRedirect: () =>
-                    resolveLoginRedirectLocation(
-                        request,
-                        ctx,
-                        accountStore,
-                        log,
-                    ),
-                redirect: (location) => sendRedirect(response, location),
-                getSessionRole: () => ctx.getCookieSession(request)?.role,
+                    resolveLoginRedirectLocation(req, ctx, accountStore, log),
+                redirect: (location) => sendRedirect(res, location),
+                getSessionRole: () => ctx.getCookieSession(req)?.role,
             }))
         ) {
             return true;
@@ -432,13 +424,12 @@ export function createUiRoutes(
                     );
                     if (!matchingRoute) continue;
                     const loginRedirect = await resolveLoginRedirectLocation(
-                        request,
+                        req,
                         ctx,
                         accountStore,
                         log,
                     );
-                    if (loginRedirect)
-                        return sendRedirect(response, loginRedirect);
+                    if (loginRedirect) return sendRedirect(res, loginRedirect);
                     if (matchingRoute.invalidAccessPolicy) {
                         log?.(
                             "warn",
@@ -449,26 +440,26 @@ export function createUiRoutes(
                                 path: url.pathname,
                             },
                         );
-                        return sendRedirect(response, "/dashboard");
+                        return sendRedirect(res, "/dashboard");
                     }
-                    const session = ctx.getCookieSession(request);
+                    const session = ctx.getCookieSession(req);
                     if (
                         matchingRoute.access &&
                         !isRoleAllowed(session.role, matchingRoute.access)
                     ) {
-                        return sendRedirect(response, "/dashboard");
+                        return sendRedirect(res, "/dashboard");
                     }
                     const uiFile = path.resolve(
                         moduleRoot,
                         manifest.entrypoints.ui,
                     );
                     await htmlResponse.serveHtmlPage(
-                        response,
+                        res,
                         uiFile,
                         log,
                         {
                             path: url.pathname,
-                            method: request.method ?? "GET",
+                            method: req.method ?? "GET",
                             moduleId: manifest.id,
                         },
                         ctx,
@@ -495,8 +486,8 @@ export function createUiRoutes(
         const pageExtensionMatch = url.pathname.match(
             /^\/api\/v1\/ui\/page-extensions\/([^/]+)$/,
         );
-        if (pageExtensionMatch && request.method === "GET") {
-            const claims = ctx.requireAuth(request, response, "user");
+        if (pageExtensionMatch && req.method === "GET") {
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             const pageId = decodeURIComponent(pageExtensionMatch[1]);
             const extensions = (
@@ -506,16 +497,16 @@ export function createUiRoutes(
                     (!extension.isEnabled || extension.isEnabled()) &&
                     isRoleAllowed(claims.role, extension.access),
             );
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(JSON.stringify({ data: extensions }));
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(JSON.stringify({ data: extensions }));
             return true;
         }
 
         if (
             url.pathname === "/api/v1/ui/auth-typing-messages" &&
-            request.method === "GET"
+            req.method === "GET"
         ) {
-            const viewerSession = ctx.getCookieSession(request);
+            const viewerSession = ctx.getCookieSession(req);
             const gatewayMessages = (uiRegistry?.listAuthTypingMessages() ?? [])
                 .filter((message) => {
                     if (message.isEnabled && !message.isEnabled()) {
@@ -568,8 +559,8 @@ export function createUiRoutes(
                           ),
                       )
                 : [];
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     data: [...gatewayMessages, ...moduleMessages],
                 }),
@@ -579,9 +570,9 @@ export function createUiRoutes(
 
         if (
             url.pathname === "/api/v1/ui/settings-sections" &&
-            request.method === "GET"
+            req.method === "GET"
         ) {
-            const claims = ctx.requireAuth(request, response, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             let sections: unknown[];
             if (ctx.flow.exists("construct-settings-ui")) {
@@ -608,8 +599,8 @@ export function createUiRoutes(
                     (section) => isSettingsSectionVisible(section, claims.role),
                 );
             }
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     data: versionDescriptor(
                         uiRegistry?.resolveDescriptor(sections) ?? sections,
@@ -622,9 +613,9 @@ export function createUiRoutes(
 
         if (
             url.pathname === "/api/v1/ui/navbar-plugins" &&
-            request.method === "GET"
+            req.method === "GET"
         ) {
-            const claims = ctx.requireAuth(request, response, "user");
+            const claims = ctx.requireAuth(req, res, "user");
             if (!claims) return true;
             let plugins = (uiRegistry?.listNavbarPlugins() ?? []).filter(
                 (plugin) =>
@@ -641,8 +632,8 @@ export function createUiRoutes(
                 }>("component:providerCatalog");
             if (management)
                 plugins = await management.describeProviders(plugins, "navbar");
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     data: versionDescriptor(plugins, ASSET_VERSION),
                 }),
@@ -650,21 +641,12 @@ export function createUiRoutes(
             return true;
         }
 
-        if (
-            await serveProviders(
-                request,
-                response,
-                url,
-                ctx,
-                uiRegistry,
-                ASSET_VERSION,
-            )
-        )
+        if (await serveProviders(req, res, url, ctx, uiRegistry, ASSET_VERSION))
             return true;
 
         if (
             url.pathname === "/api/v1/ui/offline-routes" &&
-            request.method === "GET"
+            req.method === "GET"
         ) {
             const routes = (uiRegistry?.listSpaRoutes() ?? []).filter(
                 (route) =>
@@ -672,11 +654,11 @@ export function createUiRoutes(
                     route.offline &&
                     (!route.isEnabled || route.isEnabled()),
             );
-            response.writeHead(200, {
+            res.writeHead(200, {
                 "content-type": "application/json",
                 "cache-control": "no-store",
             });
-            response.end(
+            res.end(
                 JSON.stringify({
                     data: versionDescriptor(routes, ASSET_VERSION),
                     offlineGuards: (uiRegistry?.listCapabilityProviders() ?? [])
@@ -687,11 +669,8 @@ export function createUiRoutes(
             return true;
         }
 
-        if (
-            url.pathname === "/api/v1/ui/app-routes" &&
-            request.method === "GET"
-        ) {
-            const claims = ctx.getAuthClaims(request);
+        if (url.pathname === "/api/v1/ui/app-routes" && req.method === "GET") {
+            const claims = ctx.getAuthClaims(req);
             const routes = (uiRegistry?.listSpaRoutes() ?? []).filter(
                 (route) =>
                     (!route.isEnabled || route.isEnabled()) &&
@@ -699,8 +678,8 @@ export function createUiRoutes(
                         ? isRoleAllowed(claims.role, route.access)
                         : route.public === true),
             );
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     data: versionDescriptor(routes, ASSET_VERSION),
                 }),
@@ -710,10 +689,10 @@ export function createUiRoutes(
 
         if (
             url.pathname === "/api/v1/ui/auth-footer-plugins" &&
-            request.method === "GET"
+            req.method === "GET"
         ) {
-            response.writeHead(200, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(200, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     data: versionDescriptor(
                         uiRegistry?.listAuthFooterPlugins() ?? [],
@@ -731,28 +710,28 @@ export function createUiRoutes(
                 const gatewayId = parts[0];
                 const adapterId = parts[1];
                 const filePart = parts.slice(2).join("/");
-                const directory = uiRegistry?.getAdapterStaticDir(
+                const dir = uiRegistry?.getAdapterStaticDirectory(
                     gatewayId,
                     adapterId,
                 );
                 if (
-                    directory &&
+                    dir &&
                     /^[a-zA-Z0-9_./-]+$/.test(filePart) &&
                     !filePart.includes("..")
                 ) {
                     await serveVersionedAsset(
-                        request,
-                        response,
+                        req,
+                        res,
                         url,
-                        path.join(directory, filePart),
+                        path.join(dir, filePart),
                         resolveContentType(filePart),
                         ctx,
                     );
                     return true;
                 }
             }
-            response.writeHead(404, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(404, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     error: {
                         code: "not_found",
@@ -769,25 +748,25 @@ export function createUiRoutes(
             if (slashIndex > 0) {
                 const gatewayId = rest.slice(0, slashIndex);
                 const filePart = rest.slice(slashIndex + 1);
-                const directory = uiRegistry?.getStaticDir(gatewayId);
+                const dir = uiRegistry?.getStaticDirectory(gatewayId);
                 if (
-                    directory &&
+                    dir &&
                     /^[a-zA-Z0-9_./-]+$/.test(filePart) &&
                     !filePart.includes("..")
                 ) {
                     await serveVersionedAsset(
-                        request,
-                        response,
+                        req,
+                        res,
                         url,
-                        path.join(directory, filePart),
+                        path.join(dir, filePart),
                         resolveContentType(filePart),
                         ctx,
                     );
                     return true;
                 }
             }
-            response.writeHead(404, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(404, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     error: {
                         code: "not_found",
@@ -807,8 +786,8 @@ export function createUiRoutes(
                 urlPath.includes("//") ||
                 urlPath.split("/").some((segment) => segment.startsWith("."))
             ) {
-                response.writeHead(404, { "content-type": "application/json" });
-                response.end(
+                res.writeHead(404, { "content-type": "application/json" });
+                res.end(
                     JSON.stringify({
                         error: {
                             code: "not_found",
@@ -820,7 +799,7 @@ export function createUiRoutes(
             }
             if (
                 !(await validateModuleAssetRevision(
-                    response,
+                    res,
                     url,
                     urlPath.split("/")[0],
                     runtime,
@@ -830,8 +809,8 @@ export function createUiRoutes(
             const resolved = uiRegistry?.resolveModulePath(urlPath);
             if (resolved) {
                 await serveVersionedAsset(
-                    request,
-                    response,
+                    req,
+                    res,
                     url,
                     path.join(resolved.dir, resolved.relPath),
                     resolveContentType(resolved.relPath),
@@ -841,8 +820,8 @@ export function createUiRoutes(
             }
             if (
                 await serveEnabledModuleAsset(
-                    request,
-                    response,
+                    req,
+                    res,
                     url,
                     urlPath,
                     runtime,
@@ -853,8 +832,8 @@ export function createUiRoutes(
                 return true;
             if (
                 await serveDeclaredModuleStrings(
-                    request,
-                    response,
+                    req,
+                    res,
                     url,
                     urlPath,
                     runtime,
@@ -862,8 +841,8 @@ export function createUiRoutes(
                 )
             )
                 return true;
-            response.writeHead(404, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(404, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     error: {
                         code: "not_found",
@@ -881,12 +860,12 @@ export function createUiRoutes(
                 !relativeAssetPath.includes("..")
             ) {
                 await serveStaticAsset(
-                    request,
-                    response,
+                    req,
+                    res,
                     path.join(PRODUCTION_UI_ROOT, relativeAssetPath),
                     resolveContentType(relativeAssetPath),
                     log,
-                    { path: url.pathname, method: request.method },
+                    { path: url.pathname, method: req.method },
                     IMMUTABLE_CACHE_CONTROL,
                 );
                 return true;
@@ -902,7 +881,7 @@ export function createUiRoutes(
         }
 
         if (relative === null) {
-            if (!url.pathname.startsWith("/api/") && request.method === "GET") {
+            if (!url.pathname.startsWith("/api/") && req.method === "GET") {
                 const requestedCode = Number(
                     url.searchParams.get("code") ?? "",
                 );
@@ -912,18 +891,18 @@ export function createUiRoutes(
                     requestedCode <= 599
                         ? String(requestedCode)
                         : "404";
-                response.writeHead(302, {
+                res.writeHead(302, {
                     location: `/error?code=${errorCode}`,
                 });
-                response.end();
+                res.end();
                 return true;
             }
             return false;
         }
 
         if (!/^[a-zA-Z0-9_./-]+$/.test(relative) || relative.includes("..")) {
-            response.writeHead(400, { "content-type": "application/json" });
-            response.end(
+            res.writeHead(400, { "content-type": "application/json" });
+            res.end(
                 JSON.stringify({
                     error: { code: "bad_request", message: "Invalid path." },
                 }),
@@ -934,8 +913,8 @@ export function createUiRoutes(
         const filePath = staticPath(relative, STATIC_ROOT, SERVED_PUBLIC_ROOT);
 
         await serveVersionedAsset(
-            request,
-            response,
+            req,
+            res,
             url,
             filePath,
             resolveContentType(filePath),

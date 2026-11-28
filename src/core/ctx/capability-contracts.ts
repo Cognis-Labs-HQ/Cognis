@@ -20,7 +20,7 @@ export interface CapabilityContracts {
         id: string,
     ): Readonly<CapabilityContract & { owner: string }> | undefined;
     list(): Array<Readonly<CapabilityContract & { id: string; owner: string }>>;
-    resolve<T = Record<string, (...argumentsList: any[]) => any>>(
+    resolve<T = Record<string, (...args: any[]) => any>>(
         id: string,
         version: number,
     ): T;

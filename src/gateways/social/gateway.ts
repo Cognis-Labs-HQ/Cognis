@@ -45,13 +45,13 @@ export interface SocialAdapterBootstrapCtx {
     flow: FlowApi;
     registerRoute(
         handler: (
-            request: IncomingMessage,
-            response: ServerResponse,
+            req: IncomingMessage,
+            res: ServerResponse,
             url: URL,
         ) => Promise<boolean>,
         gatewayId?: string,
     ): void;
-    registerAdapterStaticDir?(
+    registerAdapterStaticDirectory?(
         gatewayId: string,
         adapterId: string,
         absoluteDirectory: string,
@@ -74,7 +74,7 @@ export interface SocialAdapterBootstrapCtx {
         stylesheets?: string[];
         isEnabled?: () => boolean;
     }): void;
-    registerStaticDir(urlPrefix: string, absoluteDirectory: string): void;
+    registerStaticDirectory(urlPrefix: string, absoluteDirectory: string): void;
     registerAuthTypingMessage?(message: {
         id: string;
         textKey: string;
@@ -84,7 +84,7 @@ export interface SocialAdapterBootstrapCtx {
     log?: (
         level: string,
         message: string,
-        metadata?: Record<string, unknown>,
+        meta?: Record<string, unknown>,
     ) => void;
     isGatewayEnabled(): boolean;
     isAdapterEnabled(adapterId?: string): boolean;

@@ -1,10 +1,10 @@
 import { randomUUID } from "node:crypto";
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import { rowToMessageRequest } from "./row-mappers.js";
 import type { MessageRequestRow, MessageRequestStatus } from "./types.js";
 
 export async function findPendingMessageRequest(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     fromAccountId: string,
     toAccountId: string,
 ): Promise<MessageRequestRow | null> {
@@ -23,7 +23,7 @@ export async function findPendingMessageRequest(
 }
 
 export async function createMessageRequest(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     input: {
         fromAccountId: string;
         toAccountId: string;
@@ -56,7 +56,7 @@ export async function createMessageRequest(
 }
 
 export async function getMessageRequest(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     id: string,
 ): Promise<MessageRequestRow | null> {
     const result = await db.executeCommand({
@@ -69,7 +69,7 @@ export async function getMessageRequest(
 }
 
 export async function getPendingRoomMessageRequest(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     roomId: string,
 ): Promise<MessageRequestRow | null> {
     const result = await db.executeCommand({
@@ -86,7 +86,7 @@ export async function getPendingRoomMessageRequest(
 }
 
 export async function getPendingIncomingRoomMessageRequest(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     roomId: string,
     toAccountId: string,
 ): Promise<MessageRequestRow | null> {
@@ -105,7 +105,7 @@ export async function getPendingIncomingRoomMessageRequest(
 }
 
 export async function listIncomingMessageRequests(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     accountId: string,
 ): Promise<MessageRequestRow[]> {
     const result = await db.executeCommand({
@@ -121,7 +121,7 @@ export async function listIncomingMessageRequests(
 }
 
 export async function updateMessageRequestStatus(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     id: string,
     status: MessageRequestStatus,
     roomId: string | null = null,
@@ -139,7 +139,7 @@ export async function updateMessageRequestStatus(
 }
 
 export async function approvePendingRequestsBetween(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     accountA: string,
     accountB: string,
     roomId: string,
@@ -167,7 +167,7 @@ export async function approvePendingRequestsBetween(
 }
 
 export async function hasApprovedMessageRequestBetween(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     accountA: string,
     accountB: string,
 ): Promise<boolean> {

@@ -25,7 +25,7 @@ export interface DocumentVersionRow {
     published_at: string;
 }
 
-export type DocumentDiffLine =
+export type DocumentDifferenceLine =
     | {
           type: "unchanged" | "added" | "removed";
           content: string;
@@ -40,19 +40,22 @@ export type DocumentDiffLine =
           newLine: number;
       };
 
-export interface DocumentVersionDiff {
+export interface DocumentVersionDifference {
     slug: string;
     fromVersion: string;
     toVersion: string;
-    lines: DocumentDiffLine[];
+    lines: DocumentDifferenceLine[];
 }
 
-type PrimitiveDiffLine = Exclude<DocumentDiffLine, { type: "changed" }>;
+type PrimitiveDifferenceLine = Exclude<
+    DocumentDifferenceLine,
+    { type: "changed" }
+>;
 
 function createDocumentLineDifference(
     previousMarkdown: string,
     nextMarkdown: string,
-): DocumentDiffLine[] {
+): DocumentDifferenceLine[] {
     const previousLines = String(previousMarkdown).split("\n");
     const nextLines = String(nextMarkdown).split("\n");
     const matrix = Array.from(
@@ -79,7 +82,7 @@ function createDocumentLineDifference(
         }
     }
 
-    const primitiveLines: PrimitiveDiffLine[] = [];
+    const primitiveLines: PrimitiveDifferenceLine[] = [];
     let previousIndex = 0;
     let nextIndex = 0;
     while (
@@ -123,14 +126,14 @@ function createDocumentLineDifference(
         }
     }
 
-    const lines: DocumentDiffLine[] = [];
+    const lines: DocumentDifferenceLine[] = [];
     for (let index = 0; index < primitiveLines.length;) {
         if (primitiveLines[index].type === "unchanged") {
             lines.push(primitiveLines[index]);
             index += 1;
             continue;
         }
-        const changeBlock: PrimitiveDiffLine[] = [];
+        const changeBlock: PrimitiveDifferenceLine[] = [];
         while (
             index < primitiveLines.length &&
             primitiveLines[index].type !== "unchanged"
@@ -185,7 +188,10 @@ export interface DocumentVersionStore {
     ensureSchema(): Promise<void>;
     getLatest(slug: string): Promise<DocumentVersionRow | null>;
     getVersion(version: string): Promise<DocumentVersionRow | null>;
-    diff(fromVersion: string, toVersion: string): Promise<DocumentVersionDiff>;
+    diff(
+        fromVersion: string,
+        toVersion: string,
+    ): Promise<DocumentVersionDifference>;
     publish(input: {
         slug: string;
         content: string;

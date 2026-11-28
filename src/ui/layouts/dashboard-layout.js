@@ -25,7 +25,7 @@ import {
     applyTimezoneToLocalStorage,
 } from "../reuse/timestamp.js";
 import { registerReleaseChangelogReadiness } from "./release-changelog/readiness.js";
-import { initRouter, navigateTo } from "../reuse/app-router.js";
+import { initializeRouter, navigateTo } from "../reuse/app-router.js";
 import {
     capturePwaInstallPrompt,
     registerServiceWorker,
@@ -603,7 +603,7 @@ export async function renderDashboardLayout(root, slots = {}) {
             applyCompactNavigation(root, slots.signal);
             scheduleNavbarEnhancements();
             scheduleDeferredLoginSetup(i18n, slots.signal);
-            initSearchBar(i18n);
+            initializeSearchBar(i18n);
             registerReleaseChangelogReadiness(uiCtx, {
                 i18n,
                 signal: slots.signal,
@@ -613,7 +613,7 @@ export async function renderDashboardLayout(root, slots = {}) {
         if (!componentWindow)
             mountOfflineStatus(root, { i18n, signal: slots.signal });
         if (!componentWindow) {
-            initRouter(root);
+            initializeRouter(root);
             const preferences = usePreferenceApi ? loadUiPreferences() : null;
             bindThemeToggle({ usePreferenceApi, preferences });
             bindLanguageToggle({
@@ -672,7 +672,7 @@ export async function renderDashboardLayout(root, slots = {}) {
         scheduleDeferredLoginSetup(i18n, slots.signal);
         applyActiveNavigation();
         applyCompactNavigation(root, slots.signal);
-        initSearchBar(i18n);
+        initializeSearchBar(i18n);
         registerReleaseChangelogReadiness(uiCtx, {
             i18n,
             signal: slots.signal,
@@ -682,7 +682,7 @@ export async function renderDashboardLayout(root, slots = {}) {
     if (!componentWindow)
         mountOfflineStatus(root, { i18n, signal: slots.signal });
     if (!componentWindow) {
-        initRouter(root);
+        initializeRouter(root);
         const preferences = usePreferenceApi ? loadUiPreferences() : null;
         bindThemeToggle({ usePreferenceApi, preferences });
         bindLanguageToggle({
@@ -703,7 +703,7 @@ function injectSearchBarStyles() {
     void ensurePersistentStylesheet(SEARCH_BAR_CSS);
 }
 
-function initSearchBar(i18n) {
+function initializeSearchBar(i18n) {
     const wrapperElement = document.getElementById("global-search-wrap");
     if (!wrapperElement || wrapperElement.dataset.searchBarBound === "true")
         return;

@@ -12,7 +12,7 @@ export function createDictionarySearchContextRoutes(
     log?: (
         level: string,
         message: string,
-        metadata?: Record<string, unknown>,
+        meta?: Record<string, unknown>,
     ) => void | Promise<void>,
 ) {
     return async (

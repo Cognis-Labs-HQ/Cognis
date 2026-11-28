@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { textChunks } from "../../../../gateways/reuse/text-chunks.js";
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { DatabaseExecutor } from "../../../../gateways/db/reuse/db-executor.js";
 import type { LibraryAsset, LibraryContentPackPlan } from "../types.js";
 
 const TABLE = "study_library_asset_chunks";
@@ -9,7 +9,7 @@ function identity(...parts: string[]): string {
     return createHash("sha256").update(JSON.stringify(parts)).digest("hex");
 }
 
-export async function ensurePackAssets(db: DbExecutor): Promise<void> {
+export async function ensurePackAssets(db: DatabaseExecutor): Promise<void> {
     await db.ensureTable({
         name: TABLE,
         columns: [
@@ -26,7 +26,7 @@ export async function ensurePackAssets(db: DbExecutor): Promise<void> {
 
 /** The caller's pack-ingestion transaction owns replacement of metadata and bytes. */
 export async function replacePackAssets(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     { manifest, assets }: Pick<LibraryContentPackPlan, "manifest" | "assets">,
 ): Promise<void> {
     for (const asset of assets) {
@@ -60,7 +60,7 @@ export async function replacePackAssets(
 }
 
 export async function readPackAsset(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     publisher: string,
     packId: string,
     version: string,
@@ -90,7 +90,7 @@ export async function readPackAsset(
 }
 
 export async function forgetPackAssets(
-    db: DbExecutor,
+    db: DatabaseExecutor,
     publisher: string,
     packId: string,
 ): Promise<void> {

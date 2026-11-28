@@ -9,10 +9,10 @@ import {
     hasAdminBypass,
     normalizeReactionEmoji,
     summarizeRoomRequest,
-    type MessagesRoutesDeps,
+    type MessagesRoutesDependencies,
 } from "../shared.js";
 
-export function createRoomHandler(dependencies: MessagesRoutesDeps) {
+export function createRoomHandler(dependencies: MessagesRoutesDependencies) {
     const { messagesStore, profileStore, dispatch, flow } = dependencies;
     const membership = dependencies.membership!;
     const ctx = resolveRouteContext(dependencies.routeContext);

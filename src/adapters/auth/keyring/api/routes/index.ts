@@ -5,15 +5,15 @@ import type { KeyringVaultStore } from "../../store.js";
 
 export interface KeyringRouteContext {
     requireAuth(
-        request: IncomingMessage,
-        response: ServerResponse,
+        req: IncomingMessage,
+        res: ServerResponse,
         minRole?: "user" | "teacher" | "moderator" | "admin" | "owner",
     ): { sub: string; role: string } | null;
 }
 
 export type KeyringRouteHandler = (
-    request: IncomingMessage,
-    response: ServerResponse,
+    req: IncomingMessage,
+    res: ServerResponse,
     url: URL,
 ) => Promise<boolean>;
 

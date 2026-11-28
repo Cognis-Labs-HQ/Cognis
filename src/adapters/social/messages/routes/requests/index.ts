@@ -3,10 +3,12 @@ import { resolveRouteContext } from "../../../../../api/reuse/route-context.js";
 import {
     canSendMessageRequest,
     publicProfileSummary,
-    type MessagesRoutesDeps,
+    type MessagesRoutesDependencies,
 } from "../shared.js";
 
-export function createRequestsHandler(dependencies: MessagesRoutesDeps) {
+export function createRequestsHandler(
+    dependencies: MessagesRoutesDependencies,
+) {
     const { messagesStore, profileStore } = dependencies;
     const ctx = resolveRouteContext(dependencies.routeContext);
 

@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { ensureLibraryStoreSchema } from "../db-schema.js";
-import type { DbExecutor } from "../../../../gateways/db/reuse/db-executor.js";
-import type { StructuredDbTableDef } from "../../../../gateways/db/reuse/db-table.js";
+import type { DatabaseExecutor } from "../../../../gateways/db/reuse/db-executor.js";
+import type { StructuredDatabaseTableDefinition } from "../../../../gateways/db/reuse/db-table.js";
 
 test("Library schema declares scoped lookup indexes and bounded asset keys", async () => {
-    const definitions: StructuredDbTableDef[] = [];
-    const executor: DbExecutor = {
+    const definitions: StructuredDatabaseTableDefinition[] = [];
+    const executor: DatabaseExecutor = {
         async ensureTable(definition) {
             definitions.push(definition);
         },
