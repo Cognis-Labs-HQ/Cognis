@@ -59,6 +59,8 @@ createPageComposer に elements、pageManifest、i18n、signal と配置設定�
 
 ### グリッドレイアウト
 
+現在のグリッドの保存済みプロファイルは、行の余白を再配分せず、明示した幅、高さ、間隔を保持します。メインと入れ子のレンダラーは小数グリッドの寸法処理を共有し、保存済みの入れ子グリッドは編集時のトラック間隔を保ちます。Composer の文書とコンテンツパネルはスクロールバーの領域を確保し、編集終了時に別の列プロファイルへ切り替わるのを防ぎます。`snapDragPlacement` はドラッグ中の候補だけを上方の隣接する占有行または原点まで移動し、他のカードを飛び越えません。黄色のプレビューが移動先を示し、ポインターを離すと「完了」の前に反映します。「完了」は最後に詰め直さず、表示中の配置を保存します。`resizeLimitAxes` はクランプ前に水平・垂直の制限超過を個別に報告し、角の混合操作にも対応します。オレンジ色のフィードバック中も各軸はそれぞれの制限内に保たれます。
+
 マウス、タッチ、キーボードでの入れ替えは、`swap-model.js` の `findGridSwap` と `applyGridSwap` を共有します。ドラッグした要素が相手の正確な開始位置に収まり、相手も元の開始位置に収まる場合のみ入れ替えます。両方の矩形全体がグリッド内にあり、他の表示要素とも互いにも重ならないことが必要です。確定直前に現在の配置、表示状態、グリッド境界を再検証し、プレビューでは配置を変更しません。
 
 両ヘルパーは `gridCols`、`layout.placements`、`layout.hidden` で現在の状態を受け取ります。`findGridSwap(state, col, row, w, h, sourceId)` は現在の相手の配置または `null` を返し、`applyGridSwap(state, sourceId, targetId)` は真偽値を返して、拒否時はどちらの位置も変更しません。キーボードのバインドには `findSwapCandidate` と `commitSwap` の両方を渡し、Composer は共通の入れ替えモデルからこれらを提供します。
@@ -89,7 +91,7 @@ DOM パーキングは既定では無効です。メディア DOM を composer �
 
 `createLayoutSaveHandler({ctx, save, notify, i18n, signal})` は `update(key, profiles, columns, layout)` を返します。注入する `save(key, profiles, columns, layout, signal)` は更新済みプロファイルを返し、書き込み失敗時は拒否する必要があります。`update` はそのプロファイル、または保存失敗・ページ中断時に `null` を返します。フローと翻訳のエラーは拒否として伝わります。ctx はフローの登録・実行と capabilities を提供し、`notify` は共通トーストのシグネチャを使い、`i18n.t` は成功・失敗のキーを解決します。
 
-`commitLayoutEdit({state, prepare, save, finish?, render})` は複製可能な `state.layout`、変更可能な `editing`/`saving` フラグ、同じ状態を操作するコールバックを必要とします。`layoutSnapshot` を管理し、任意の `container` または `contentGrid`、`elementsPanel`、`signal` が操作の無効化とページの生存期間を制御します。`prepare()` は同期処理です。`save()` は真偽値を返し、成功時に所有側のプロファイルを更新する必要があります。false は準備前の配置を復元し、true はスナップショットを更新して `finish` がある場合のみ編集を終了します。想定外のコールバックエラーは、操作を復元した後に呼び出し元へ伝わります。
+`commitLayoutEdit({state, prepare?, save, finish?, render})` は複製可能な `state.layout`、変更可能な `editing`/`saving` フラグ、同じ状態を操作するコールバックを必要とします。`layoutSnapshot` を管理し、任意の `container` または `contentGrid`、`elementsPanel`、`signal` が操作の無効化とページの生存期間を制御します。任意の `prepare()` はリセット時に配置を同期的に初期化し、通常の「完了」操作では省略します。`save()` は真偽値を返し、成功時に所有側のプロファイルを更新する必要があります。false は準備前の配置を復元し、true はスナップショットを更新して `finish` がある場合のみ編集を終了します。想定外のコールバックエラーは、操作を復元した後に呼び出し元へ伝わります。
 
 配置は `PUT /api/v1/social/users/:accountId/preferences/:preferenceKey` に `{ layout: profiles }` を送信して保存します。`profiles.layoutsByGrid` は `cols-<count>` キーを `{ placements: [{id, col, row, w, h}], hidden: [] }` 形式の配置に対応付けます。同じパスへの GET は、シリアライズされたプロファイルを `data.layoutJson` に返します。保存には現在のアカウントとアクセストークンが必要です。
 

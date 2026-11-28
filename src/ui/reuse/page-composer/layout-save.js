@@ -8,7 +8,7 @@
  * Usage:
  *   const update = createLayoutSaveHandler({ ctx, save: persistence.saveLayoutByKey,
  *     notify: showToast, i18n, signal: pageLifetime.signal });
- *   await commitLayoutEdit({ state, prepare: compactPlacements,
+ *   await commitLayoutEdit({ state,
  *     save: async () => {
  *       const profiles = await update(preferenceKey, state.layoutProfiles,
  *         state.gridCols, state.layout);
@@ -113,7 +113,7 @@ export function createLayoutSaveHandler({ ctx, save, notify, i18n, signal }) {
  * @param {HTMLElement} [options.state.contentGrid] Main grid made inert while saving.
  * @param {HTMLElement} [options.state.elementsPanel] Current panel made inert while saving.
  * @param {AbortSignal} [options.state.signal] Suppresses rendering after page cancellation.
- * @param {function(): void} options.prepare Synchronous compaction or reset of state.layout.
+ * @param {function(): void} [options.prepare] Optional reset of state.layout before persistence.
  * @param {function(): Promise<boolean>} options.save True only after successful persistence; updates owner profiles.
  * @param {function(): void} [options.finish] End edit-mode effects; omit for Reset to remain in edit mode.
  * @param {function(): void} options.render Rebuilds from state after settlement unless the page ended.
@@ -134,7 +134,7 @@ export async function commitLayoutEdit({
     if (container) container.inert = true;
     if (state.elementsPanel) state.elementsPanel.inert = true;
     try {
-        prepare();
+        prepare?.();
         if (!(await save())) {
             state.layout = previous;
             return false;

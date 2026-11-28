@@ -8,6 +8,8 @@ Each page supplies its content; the shared composer controls layout and sidebar 
 
 ## Examples
 
+A yellow preview marks the snapped destination reached when you drop a widget; it moves while the editor remains open. Orange marks an attempted minimum, maximum or grid-edge limit on the active resize axes. Done preserves the displayed positions and sizes, including unused space.
+
 Swap a widget with another only when both sizes fit their exchanged positions. A blocked exchange shows an invalid preview and leaves the layout unchanged.
 
 Resize cursors indicate whether an edge can grow, shrink or move in both directions. A handle remains available for shrinking when another element blocks expansion; handles disappear when no legal resize remains.

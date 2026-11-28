@@ -1,5 +1,9 @@
-.content-grid.composer-grid-active > .content-panel,
-.content-panel:has(.sub-composer-inner.composer-grid-active) {
+html:has(.app-shell:not(.app-shell--frameless)) {
+    scrollbar-gutter: stable;
+}
+
+.content-grid > .content-panel,
+.content-panel:has(.sub-composer-inner) {
     scrollbar-gutter: stable;
 }
 
@@ -84,6 +88,18 @@
 .composer-shade--invalid {
     border-color: #ef4444;
     background: color-mix(in srgb, #ef4444 12%, transparent);
+}
+
+.composer-shade--snapped {
+    transition: none;
+    border-color: #eab308;
+    background: color-mix(in srgb, #eab308 16%, transparent);
+}
+
+.composer-shade--limited {
+    transition: none;
+    border-color: #f97316;
+    background: color-mix(in srgb, #f97316 16%, transparent);
 }
 
 .composer-dropzone-line {

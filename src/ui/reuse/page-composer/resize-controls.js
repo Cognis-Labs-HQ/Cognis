@@ -14,7 +14,11 @@
  *     }, canPlace, refreshBounds, render: renderGrid });
  */
 import { resolveResizeAvailability } from "./resize-availability.js";
-import { RESIZE_EDGES, resizePlacement } from "./resize-model.js";
+import {
+    RESIZE_EDGES,
+    resizePlacement,
+    resizeLimitAxes,
+} from "./resize-model.js";
 import { bindComposerPointerDrag } from "./pointer-drag.js";
 
 /**
@@ -93,7 +97,7 @@ export function appendResizeControls({
                 event,
                 (next) => {
                     const point = geometry.point(next);
-                    candidate = resizePlacement({
+                    const resizeOptions = {
                         placement,
                         edge,
                         gridSize,
@@ -102,7 +106,19 @@ export function appendResizeControls({
                             col: point.col - start.col,
                             row: point.row - start.row,
                         },
-                    });
+                    };
+                    candidate = resizePlacement(resizeOptions);
+                    const limited = resizeLimitAxes(resizeOptions);
+                    shade.classList.toggle(
+                        "composer-shade--limited",
+                        limited.horizontal || limited.vertical,
+                    );
+                    shade.dataset.resizeLimited = [
+                        limited.horizontal ? "horizontal" : "",
+                        limited.vertical ? "vertical" : "",
+                    ]
+                        .filter(Boolean)
+                        .join(" ");
                     if (candidate.row + candidate.h > state.gridRows)
                         refreshBounds(candidate.row + candidate.h + 1);
                     paint();

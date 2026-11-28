@@ -4,6 +4,7 @@
  * Public exports:
  *   RESIZE_EDGES — eight named edges/corners with CSS classes and axis signs.
  *   resizePlacement(options) — bounds a pointer delta while retaining opposite edges.
+ *   resizeLimitAxes(options) — reports attempted horizontal/vertical limit crossings before clamping.
  *
  * Usage:
  *   const next = resizePlacement({
@@ -76,6 +77,48 @@ export const RESIZE_EDGES = [
     },
 ];
 
+function resolveResizeBounds({ placement, edge, gridSize, columns }) {
+    const available =
+        edge.horizontal < 0
+            ? placement.col + placement.w
+            : columns - placement.col;
+    const width = resolveGridWidthBounds(gridSize, available);
+    return {
+        minWidth: width.min,
+        maxWidth: width.max,
+        minHeight: gridSize.min[1],
+        maxHeight: Math.min(
+            gridSize.max?.[1] ?? Infinity,
+            edge.vertical < 0 ? placement.row + placement.h : Infinity,
+        ),
+    };
+}
+
+/**
+ * Checks pointer intent independently for each active axis, including mixed corner gestures.
+ * @param {object} options The same original placement, edge, delta, gridSize and columns as resizePlacement.
+ * @returns {{horizontal:boolean,vertical:boolean}} True for each attempted minimum, maximum or origin-bound crossing.
+ */
+export function resizeLimitAxes(options) {
+    const { placement, edge, delta, gridSize } = options;
+    const bounds = resolveResizeBounds(options);
+    const width = placement.w + edge.horizontal * delta.col;
+    const height = placement.h + edge.vertical * delta.row;
+    const outside = (value, minimum, maximum) =>
+        value < minimum - 0.001 || value > maximum + 0.001;
+    return {
+        horizontal: Boolean(
+            edge.horizontal &&
+            !gridSize.fullWidth &&
+            outside(width, bounds.minWidth, bounds.maxWidth),
+        ),
+        vertical: Boolean(
+            edge.vertical &&
+            outside(height, bounds.minHeight, bounds.maxHeight),
+        ),
+    };
+}
+
 /**
  * Applies size/origin bounds only; callers must separately reject occupied tiles.
  * Full-width declarations lock horizontal sizing. Southward growth is not row-capped.
@@ -98,29 +141,24 @@ export function resizePlacement({
     rows,
 }) {
     const next = { ...placement };
+    const bounds = resolveResizeBounds({ placement, edge, gridSize, columns });
     const clamp = (value, minimum, maximum) =>
         Math.max(minimum, Math.min(maximum, value));
     if (edge.horizontal && !gridSize.fullWidth) {
         const right = placement.col + placement.w;
-        const available = edge.horizontal < 0 ? right : columns - placement.col;
-        const bounds = resolveGridWidthBounds(gridSize, available);
         next.w = clamp(
             placement.w + edge.horizontal * snapGridRound(delta.col, columns),
-            bounds.min,
-            bounds.max,
+            bounds.minWidth,
+            bounds.maxWidth,
         );
         if (edge.horizontal < 0) next.col = right - next.w;
     }
     if (edge.vertical) {
         const bottom = placement.row + placement.h;
-        const maximum = Math.min(
-            gridSize.max?.[1] ?? Infinity,
-            edge.vertical < 0 ? bottom : Infinity,
-        );
         next.h = clamp(
             placement.h + edge.vertical * snapGridRound(delta.row, rows),
-            gridSize.min[1],
-            maximum,
+            bounds.minHeight,
+            bounds.maxHeight,
         );
         if (edge.vertical < 0) next.row = bottom - next.h;
     }

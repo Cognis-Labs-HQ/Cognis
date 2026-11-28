@@ -16,8 +16,8 @@ import {
     applyComposerPresentation,
 } from "./presentation.js";
 
-import { PAGE_COMPOSER_GRID_GAP } from "./grid-math.js";
-import { isCompactComposer } from "./responsive-layout.js";
+import { applyGridMetrics, applyGridPlacement } from "./view-geometry.js";
+import { isCompactComposer, hasGridProfile } from "./responsive-layout.js";
 import { createDomPreservation } from "./dom-preservation.js";
 import { createPlacementResolver } from "./placement-resolver.js";
 export function createComposerRenderer({
@@ -89,18 +89,6 @@ export function createComposerRenderer({
                   )
             : computeViewPlacements();
     }
-    function getPlacementScale(placements) {
-        const hasFractional =
-            !state.frameless &&
-            placements.some(
-                (candidatePlacement) =>
-                    candidatePlacement.col % 1 !== 0 ||
-                    candidatePlacement.row % 1 !== 0 ||
-                    candidatePlacement.w % 1 !== 0 ||
-                    candidatePlacement.h % 1 !== 0,
-            );
-        return hasFractional ? 2 : 1;
-    }
     function applySectionGridMetrics(section, placements) {
         if (state.frameless) return 1;
         section.classList.toggle(
@@ -109,19 +97,10 @@ export function createComposerRenderer({
         );
         const compact =
             !state.editing &&
+            !hasGridProfile(state) &&
             isCompactComposer(state.contentGrid, state.stackAt);
         section.classList.toggle("composer-view-grid--compact", compact);
-        const scale = getPlacementScale(placements);
-        section.classList.add("composer-view-grid");
-        section.style.setProperty(
-            "--grid-cols",
-            String(state.gridCols * scale),
-        );
-        section.style.setProperty(
-            "--composer-grid-row-size",
-            `${(UNIT + PAGE_COMPOSER_GRID_GAP) / scale - PAGE_COMPOSER_GRID_GAP}px`,
-        );
-        return scale;
+        return applyGridMetrics(section, placements, state.gridCols, UNIT);
     }
     function applyCardPlacement(card, placement, scale) {
         if (state.frameless) return;
@@ -132,18 +111,14 @@ export function createComposerRenderer({
         }
         if (
             !state.editing &&
+            !hasGridProfile(state) &&
             isCompactComposer(state.contentGrid, state.stackAt)
         ) {
             card.style.gridColumn = "1 / -1";
             card.style.gridRow = "auto";
             return;
         }
-        const scaledColumn = placement.col * scale;
-        const scaledRow = placement.row * scale;
-        const scaledWidth = placement.w * scale;
-        const scaledHeight = placement.h * scale;
-        card.style.gridColumn = `${Math.round(scaledColumn) + 1} / span ${Math.round(scaledWidth)}`;
-        card.style.gridRow = `${Math.round(scaledRow) + 1} / span ${Math.round(scaledHeight)}`;
+        applyGridPlacement(card, placement, scale);
     }
     function renderPlacementCards(section, placements, scale) {
         const renderedIds = new Set(
@@ -261,6 +236,7 @@ export function createComposerRenderer({
         const visiblePlacements = getVisibleComposerPlacements();
         if (
             !state.editing &&
+            !hasGridProfile(state) &&
             isCompactComposer(state.contentGrid, state.stackAt)
         ) {
             state.contentGrid.style.minHeight = "";

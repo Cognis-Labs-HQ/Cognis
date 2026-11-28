@@ -13,6 +13,8 @@
  * @param {object} deps Page lifetime, edit-mode callbacks, persistence, form-state and grid dependencies.
  * @returns {object} Nested mount/unmount, rendering, dimension, placement, save and destroy operations.
  */
+import { applyGridMetrics, applyGridPlacement } from "./view-geometry.js";
+import { snapDragPlacement } from "./drag-placement.js";
 import { findGridSwap, applyGridSwap } from "./swap-model.js";
 import { appendResizeControls } from "./resize-controls.js";
 import { bindComposerPointerDrag } from "./pointer-drag.js";
@@ -30,6 +32,7 @@ import {
 } from "./grid-math.js";
 import {
     isCompactComposer,
+    hasGridProfile,
     resolveComposerResize,
 } from "./responsive-layout.js";
 import { createSubComposerPanelHandlers as createNestedComposerPanelHandlers } from "./sub-composer-panel.js";
@@ -96,13 +99,6 @@ function createNestedComposerHandlers({
             state.layout?.hidden ?? [],
             excludeId,
         );
-        return checkPlacement(cells, column, row, width, height);
-    }
-
-    function canNestedPlaceInSet(state, set, column, row, width, height) {
-        if (column < 0 || row < 0 || column + width > state.gridCols)
-            return false;
-        const cells = buildOccupiedSet(set, [], null);
         return checkPlacement(cells, column, row, width, height);
     }
 
@@ -185,49 +181,6 @@ function createNestedComposerHandlers({
                     }
                 }
             }
-        }
-    }
-
-    function compactNestedPlacements(state) {
-        const visible = state.layout.placements.filter(
-            (candidatePlacement) =>
-                !state.layout.hidden.includes(candidatePlacement.id),
-        );
-        visible.sort(
-            (leftEntry, rightEntry) =>
-                leftEntry.row - rightEntry.row ||
-                leftEntry.col - rightEntry.col,
-        );
-        const rowStep = gridStep(state.gridRows);
-        const settled = [];
-        for (const placement of visible) {
-            let bestRow = placement.row;
-            for (
-                let rowIndex = 0;
-                rowIndex < placement.row;
-                rowIndex += rowStep
-            ) {
-                if (
-                    canNestedPlaceInSet(
-                        state,
-                        settled,
-                        placement.col,
-                        rowIndex,
-                        placement.w,
-                        placement.h,
-                    )
-                ) {
-                    bestRow = rowIndex;
-                    break;
-                }
-            }
-            settled.push({ ...placement, row: bestRow });
-        }
-        for (const placement of settled) {
-            const originalPlacement = state.layout.placements.find(
-                (candidatePlacement) => candidatePlacement.id === placement.id,
-            );
-            if (originalPlacement) originalPlacement.row = placement.row;
         }
     }
 
@@ -382,16 +335,26 @@ function createNestedComposerHandlers({
                         return onMove(moveEvent);
                     }
 
-                    currentColumn = column;
-                    currentRow = row;
+                    const target = snapDragPlacement(
+                        { ...placement, col: column, row },
+                        state.gridRows,
+                        (...argumentsList) =>
+                            canNestedPlace(state, ...argumentsList),
+                    );
+                    currentColumn = target.col;
+                    currentRow = target.row;
+                    shade.classList.toggle(
+                        "composer-shade--snapped",
+                        target.row !== row,
+                    );
                     shade.style.left = `${column * state.gridTrackSize}px`;
-                    shade.style.top = `${row * UNIT}px`;
+                    shade.style.top = `${currentRow * UNIT}px`;
 
                     if (
                         !canNestedPlace(
                             state,
                             column,
-                            row,
+                            currentRow,
                             placement.w,
                             placement.h,
                             elementDefinition.id,
@@ -400,7 +363,7 @@ function createNestedComposerHandlers({
                         const candidate = findGridSwap(
                             state,
                             column,
-                            row,
+                            currentRow,
                             placement.w,
                             placement.h,
                             elementDefinition.id,
@@ -412,7 +375,7 @@ function createNestedComposerHandlers({
                                 placement.row,
                                 candidate,
                                 column,
-                                row,
+                                currentRow,
                             );
                             state.container.appendChild(dropZoneLine);
                         } else {
@@ -600,7 +563,6 @@ function createNestedComposerHandlers({
             clampComposerPanelLeft,
             getComposerPanelHorizontalBounds,
             canSubPlace: canNestedPlace,
-            compactSubPlacements: compactNestedPlacements,
             endEditMode,
             saveLayout: saveNestedLayout,
             initializeSubPlacements: initializeNestedPlacements,
@@ -638,9 +600,15 @@ function createNestedComposerHandlers({
         if (!retainedCards.size) state.container.innerHTML = "";
         state.container.classList.toggle(
             "sub-composer--compact",
-            !state.editing && isCompactComposer(state.container),
+            !state.editing &&
+                !hasGridProfile(state) &&
+                isCompactComposer(state.container),
         );
 
+        state.container.classList.remove("composer-view-grid");
+        state.container.style.removeProperty("--grid-cols");
+        state.container.style.removeProperty("--composer-grid-gap");
+        state.container.style.removeProperty("--composer-grid-row-size");
         if (state.editing) {
             state.container.style.minHeight = `${state.gridRows * UNIT}px`;
             state.container.style.width = "";
@@ -663,11 +631,21 @@ function createNestedComposerHandlers({
             state.container.style.minHeight = "";
             state.container.style.width = "";
 
-            if (state.columns === 2) {
-                state.container.classList.add("content-grid--two-column");
-            }
-
+            const personalized = hasGridProfile(state);
+            state.container.classList.toggle(
+                "content-grid--two-column",
+                state.columns === 2 && !personalized,
+            );
             const sorted = computeNestedViewPlacements(state);
+            const scale = personalized
+                ? applyGridMetrics(
+                      state.container,
+                      sorted,
+                      state.gridCols,
+                      UNIT,
+                      0,
+                  )
+                : 1;
             const visibleIds = new Set(sorted.map((placement) => placement.id));
             for (const [id, card] of retainedCards) {
                 if (!visibleIds.has(id)) card.remove();
@@ -693,6 +671,11 @@ function createNestedComposerHandlers({
                     card,
                     composerPresentation(state.container),
                 );
+                if (personalized) applyGridPlacement(card, placement, scale);
+                else {
+                    card.style.gridColumn = "";
+                    card.style.gridRow = "";
+                }
                 const position = sorted.indexOf(placement);
                 if (state.container.children[position] !== card) {
                     state.container.insertBefore(
@@ -843,7 +826,6 @@ function createNestedComposerHandlers({
         saveSubLayout: saveNestedLayout,
         unmountSubComposer: unmountNestedComposer,
         renderSubGrid: renderNestedGrid,
-        compactSubPlacements: compactNestedPlacements,
         computeSubGridDimensions: computeNestedGridDimensions,
         initializeSubPlacements: initializeNestedPlacements,
     };

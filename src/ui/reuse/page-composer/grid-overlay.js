@@ -14,6 +14,7 @@
  * @param {object} deps Live composer state and injected sizing, rendering, save and edit-mode callbacks.
  * @returns {object} Grid measurement, placement, cell/panel creation and destroy operations.
  */
+import { snapDragPlacement } from "./drag-placement.js";
 import { findGridSwap, applyGridSwap } from "./swap-model.js";
 import { appendResizeControls } from "./resize-controls.js";
 import { bindComposerPointerDrag } from "./pointer-drag.js";
@@ -65,14 +66,6 @@ export function createGridOverlayHandlers({
             excludeId,
         );
         return checkPlacement(cells, column, row, width, height);
-    }
-    function applyGravity(column, row, width, height, excludeId) {
-        const step = gridStep(state.gridRows);
-        for (let rowIndex = 0; rowIndex <= row; rowIndex += step) {
-            if (canPlace(column, rowIndex, width, height, excludeId))
-                return rowIndex;
-        }
-        return row;
     }
     function buildDropZoneLine(
         sourceColumn,
@@ -359,16 +352,25 @@ export function createGridOverlayHandlers({
                     if (rawRow + placement.h > state.gridRows) {
                         refreshGridBounds(rawRow + placement.h + 1);
                     }
-                    currentColumn = column;
-                    currentRow = rawRow;
+                    const target = snapDragPlacement(
+                        { ...placement, col: column, row: rawRow },
+                        state.gridRows,
+                        canPlace,
+                    );
+                    currentColumn = target.col;
+                    currentRow = target.row;
+                    shade.classList.toggle(
+                        "composer-shade--snapped",
+                        target.row !== rawRow,
+                    );
                     shade.style.left = `${gridColumnOffset(column)}px`;
-                    shade.style.top = `${gridRowOffset(rawRow)}px`;
+                    shade.style.top = `${gridRowOffset(currentRow)}px`;
                     shade.style.width = `${gridColumnSpanSize(placement.w)}px`;
                     shade.style.height = `${gridRowSpanSize(placement.h)}px`;
                     if (
                         !canPlace(
                             column,
-                            rawRow,
+                            currentRow,
                             placement.w,
                             placement.h,
                             elementDefinition.id,
@@ -377,7 +379,7 @@ export function createGridOverlayHandlers({
                         const candidate = findGridSwap(
                             state,
                             column,
-                            rawRow,
+                            currentRow,
                             placement.w,
                             placement.h,
                             elementDefinition.id,
@@ -389,7 +391,7 @@ export function createGridOverlayHandlers({
                                 placement.row,
                                 candidate,
                                 column,
-                                rawRow,
+                                currentRow,
                             );
                             state.gridSection.appendChild(dropZoneLine);
                         } else {
@@ -536,53 +538,6 @@ export function createGridOverlayHandlers({
         }
         return cell;
     }
-    function canPlaceInSet(set, column, row, width, height) {
-        if (column < 0 || row < 0 || column + width > state.gridCols)
-            return false;
-        const cells = buildOccupiedSet(set, [], null);
-        return checkPlacement(cells, column, row, width, height);
-    }
-    function compactPlacements() {
-        const visible = state.layout.placements.filter(
-            (candidatePlacement) =>
-                !state.layout.hidden.includes(candidatePlacement.id),
-        );
-        visible.sort(
-            (leftEntry, rightEntry) =>
-                leftEntry.row - rightEntry.row ||
-                leftEntry.col - rightEntry.col,
-        );
-        const rowStep = gridStep(state.gridRows);
-        const settled = [];
-        for (const placement of visible) {
-            let bestRow = placement.row;
-            for (
-                let rowIndex = 0;
-                rowIndex < placement.row;
-                rowIndex += rowStep
-            ) {
-                if (
-                    canPlaceInSet(
-                        settled,
-                        placement.col,
-                        rowIndex,
-                        placement.w,
-                        placement.h,
-                    )
-                ) {
-                    bestRow = rowIndex;
-                    break;
-                }
-            }
-            settled.push({ ...placement, row: bestRow });
-        }
-        for (const placement of settled) {
-            const originalPlacement = state.layout.placements.find(
-                (candidatePlacement) => candidatePlacement.id === placement.id,
-            );
-            if (originalPlacement) originalPlacement.row = placement.row;
-        }
-    }
     function bindPanelItemDrag(item, elementDefinition) {
         item.addEventListener("pointerdown", (event) => {
             if (event.button !== 0 || event.target.closest("button")) return;
@@ -627,12 +582,21 @@ export function createGridOverlayHandlers({
                         0,
                         snapPixelRowFloor(verticalCoordinate, state.gridRows),
                     );
-                    const row = applyGravity(
-                        column,
-                        rawRow,
-                        width,
-                        height,
-                        null,
+                    const target = snapDragPlacement(
+                        {
+                            id: null,
+                            col: column,
+                            row: rawRow,
+                            w: width,
+                            h: height,
+                        },
+                        state.gridRows,
+                        canPlace,
+                    );
+                    const row = target.row;
+                    shade.classList.toggle(
+                        "composer-shade--snapped",
+                        row !== rawRow,
                     );
                     currentColumn = column;
                     currentRow = row;
@@ -690,7 +654,6 @@ export function createGridOverlayHandlers({
         state,
         i18n,
         bindPanelItemDrag,
-        compactPlacements,
         endEditMode,
         saveLayout,
         renderGridComposer,
@@ -701,14 +664,12 @@ export function createGridOverlayHandlers({
         destroy,
         computeGridDimensions,
         canPlace,
-        applyGravity,
         buildDropZoneLine,
         initializePlacements,
         renderMissingElementContent,
         createMissingCell,
         createGridOverlay,
         createCell,
-        compactPlacements,
         getComposerPanelSafeTop,
         getComposerPanelHorizontalBounds,
         clampComposerPanelLeft,

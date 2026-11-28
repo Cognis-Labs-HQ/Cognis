@@ -8,6 +8,8 @@ Halaman menyediakan konten; composer bersama mengatur tata letak dan bilah sampi
 
 ## Contoh
 
+Pratinjau kuning menandai tujuan penempatan saat widget dilepas; perpindahan diterapkan selagi editor tetap terbuka. Oranye menandai percobaan melewati ukuran minimum, maksimum, atau batas kisi pada sumbu pengubahan ukuran yang aktif. Selesai mempertahankan posisi dan ukuran yang ditampilkan, termasuk ruang kosong.
+
 Tukar widget hanya jika ukuran keduanya muat pada posisi yang dipertukarkan. Pertukaran yang terhalang menampilkan pratinjau tidak valid dan mempertahankan tata letak.
 
 Kursor ukuran menunjukkan apakah tepi dapat diperbesar, diperkecil, atau digerakkan ke kedua arah. Pegangan tetap tersedia untuk mengecilkan saat elemen lain menghalangi pembesaran; pegangan hilang jika tidak ada perubahan ukuran yang diizinkan.

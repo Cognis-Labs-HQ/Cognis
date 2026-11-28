@@ -12,7 +12,6 @@ export function createEditorPanelHandlers({
     state,
     i18n,
     bindPanelItemDrag,
-    compactPlacements,
     endEditMode,
     saveLayout,
     renderGridComposer,
@@ -188,7 +187,6 @@ export function createEditorPanelHandlers({
                 event.preventDefault();
                 await commitLayoutEdit({
                     state,
-                    prepare: compactPlacements,
                     save: saveLayout,
                     finish: endEditMode,
                     render: renderGridComposer,

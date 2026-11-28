@@ -7,6 +7,7 @@
  *   COMPOSER_DRAWER_BREAKPOINT — content width boundary for the toolbar drawer.
  *   isCompactWidth(width) — tests a measured width against the compact boundary.
  *   isCompactComposer(container, stackAt) — measures the container at a stacking boundary.
+ *   hasGridProfile(state) — tests for an explicit saved layout at the current column count.
  *   stackComposerPlacements(placements, columns) — returns independent full-width placements.
  *   fitComposerPanel(panel) — clamps a mounted editor panel within the viewport.
  *   resolveComposerResize(previous, next, editing) — distinguishes redraw from grid reflow.
@@ -103,4 +104,15 @@ export function resolveComposerResize(previous, next, editing) {
             (editing && Math.abs(previous.width - next.width) > 0.5),
         reflow: editing && columnsChanged,
     };
+}
+
+/**
+ * @param {{gridCols:number,layoutProfiles?:{layoutsByGrid?:object}}} state Main or nested Composer state.
+ * @returns {boolean} Whether this exact grid has a user-authored profile.
+ */
+export function hasGridProfile(state) {
+    return Object.hasOwn(
+        state.layoutProfiles?.layoutsByGrid ?? {},
+        `cols-${state.gridCols}`,
+    );
 }

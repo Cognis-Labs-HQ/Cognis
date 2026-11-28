@@ -306,6 +306,9 @@ export function createPageComposer(
         set elements(value) {
             elements = value;
         },
+        get layoutProfiles() {
+            return layoutProfiles;
+        },
         get layout() {
             return layout;
         },
@@ -441,12 +444,10 @@ export function createPageComposer(
         bindFormDraftPersistence,
     });
 
-    const { compactPlacements } = gridOverlayHandlers;
     const {
         mountSubComposer: mountNestedComposer,
         unmountSubComposer: unmountNestedComposer,
         renderSubGrid: renderNestedGrid,
-        compactSubPlacements: compactNestedPlacements,
     } = nestedComposerHandlers;
     const {
         render,
@@ -495,7 +496,6 @@ export function createPageComposer(
                 async () => {
                     await commitLayoutEdit({
                         state,
-                        prepare: () => compactNestedPlacements(state),
                         save: () => nestedComposerHandlers.saveSubLayout(state),
                         finish: endEditMode,
                         render: () => renderNestedGrid(state),
@@ -544,9 +544,6 @@ export function createPageComposer(
                 async () => {
                     await commitLayoutEdit({
                         state: composerState,
-                        prepare: () => {
-                            if (!nestedPageNavigation) compactPlacements();
-                        },
                         save: saveLayout,
                         finish: endEditMode,
                         render,

@@ -7,6 +7,7 @@
  */
 import {
     isCompactComposer,
+    hasGridProfile,
     stackComposerPlacements,
 } from "./responsive-layout.js";
 import {
@@ -475,6 +476,20 @@ export function createPlacementResolver({
         });
     }
 
+    function resolveSavedPlacements(layoutState, visible) {
+        if (!layoutState.editing && !hasGridProfile(layoutState)) return null;
+        return hasWidthViolation(
+            visible,
+            layoutState.gridCols,
+            layoutState.elements,
+        )
+            ? repackPlacementsIntoColumns(
+                  visible,
+                  layoutState.gridCols,
+                  layoutState.elements,
+              )
+            : visible;
+    }
     function computeViewPlacements() {
         const visible = state.layout.placements
             .filter(
@@ -486,6 +501,8 @@ export function createPlacementResolver({
                     leftEntry.row - rightEntry.row ||
                     leftEntry.col - rightEntry.col,
             );
+        const saved = resolveSavedPlacements(state, visible);
+        if (saved) return saved;
         if (
             !state.frameless &&
             isCompactComposer(state.contentGrid, state.stackAt)
@@ -525,6 +542,8 @@ export function createPlacementResolver({
                     leftEntry.row - rightEntry.row ||
                     leftEntry.col - rightEntry.col,
             );
+        const saved = resolveSavedPlacements(nestedState, visible);
+        if (saved) return saved;
         if (isCompactComposer(nestedState.container)) {
             return stackComposerPlacements(visible, nestedState.gridCols);
         }

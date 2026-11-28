@@ -8,6 +8,8 @@ Seiten liefern Inhalte; der gemeinsame Composer steuert Layout und Seitenleisten
 
 ## Beispiele
 
+Eine gelbe Vorschau zeigt das Einrastziel beim Ablegen eines Widgets; die Bewegung wird im geöffneten Editor übernommen. Orange kennzeichnet einen versuchten Mindest-, Höchst- oder Rasterrandwert auf den aktiven Größenachsen. Fertig erhält die angezeigten Positionen und Größen einschließlich freier Flächen.
+
 Tausche Widgets nur, wenn beide Größen an den getauschten Positionen Platz haben. Ein blockierter Tausch zeigt eine ungültige Vorschau und lässt die Anordnung unverändert.
 
 Der Größenänderungszeiger zeigt, ob eine Kante vergrößert, verkleinert oder in beide Richtungen bewegt werden kann. Blockiert ein anderes Element das Vergrößern, bleibt Verkleinern möglich. Ohne zulässige Größenänderung verschwindet der Regler.

@@ -16,6 +16,7 @@ class GridElement extends EventTarget {
         this.classList = {
             add() {},
             remove() {},
+            toggle() {},
         };
     }
 
@@ -224,11 +225,12 @@ for (const columns of [2, 3, 8]) {
                 );
                 assert.equal(placement.row, 0);
                 dispatchPointer(cell, completion, { clientY });
+                assert.equal(placement.row, 0);
                 assert.equal(
-                    placement.row,
-                    completion === "pointerup" ? targetRow : 0,
+                    renders,
+                    0,
+                    "Dropping into the original free column snaps back without a redundant render",
                 );
-                assert.equal(renders, completion === "pointerup" ? 1 : 0);
                 assert.equal(state.gridPixelHeight, state.gridRows * 98 - 8);
                 if (completion === "pointercancel") {
                     assert.equal(state.gridPixelHeight, initialHeight);

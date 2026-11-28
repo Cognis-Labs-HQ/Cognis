@@ -12,6 +12,9 @@ for (const mode of ["grid", "nested"]) {
                 const { browser } = await startFixture(
                     context,
                     `?mode=${mode}&scenario=blocked`,
+                    // Exercise shrinking above the declared minimum in the main grid;
+                    // nested defaults remain at their minimum width.
+                    mode === "grid" ? [1530, 900] : [1440, 900],
                 );
                 await browser.callFunction(
                     `function(theme) { document.body.dataset.theme = theme; }`,

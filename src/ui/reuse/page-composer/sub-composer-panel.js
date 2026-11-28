@@ -11,6 +11,7 @@
  * @param {object} deps Injected sizing, placement, panel bounds, rendering and editing callbacks.
  * @returns {{createSubElementsPanel: function(object): void}} Panel creation for a nested state; the owner removes the panel on unmount.
  */
+import { snapDragPlacement } from "./drag-placement.js";
 import { commitLayoutEdit } from "./layout-save.js";
 import { bindComposerPointerDrag } from "./pointer-drag.js";
 
@@ -27,7 +28,6 @@ function createNestedComposerPanelHandlers({
     clampComposerPanelLeft,
     getComposerPanelHorizontalBounds,
     canSubPlace: canNestedPlace,
-    compactSubPlacements: compactNestedPlacements,
     endEditMode,
     saveLayout,
     initializeSubPlacements: initializeNestedPlacements,
@@ -85,16 +85,26 @@ function createNestedComposerPanelHandlers({
                         0,
                         snapGridFloor(verticalCoordinate, state.gridRows),
                     );
+                    const target = snapDragPlacement(
+                        { id: null, col: column, row, w: width, h: height },
+                        state.gridRows,
+                        (...argumentsList) =>
+                            canNestedPlace(state, ...argumentsList),
+                    );
                     currentColumn = column;
-                    currentRow = row;
+                    currentRow = target.row;
+                    shade.classList.toggle(
+                        "composer-shade--snapped",
+                        target.row !== row,
+                    );
                     shade.style.left = `${column * state.gridTrackSize}px`;
-                    shade.style.top = `${row * UNIT}px`;
+                    shade.style.top = `${currentRow * UNIT}px`;
                     shade.classList.toggle(
                         "composer-shade--invalid",
                         !canNestedPlace(
                             state,
                             column,
-                            row,
+                            currentRow,
                             width,
                             height,
                             null,
@@ -269,7 +279,6 @@ function createNestedComposerPanelHandlers({
                 event.preventDefault();
                 await commitLayoutEdit({
                     state,
-                    prepare: () => compactNestedPlacements(state),
                     save: () => saveLayout(state),
                     finish: endEditMode,
                     render: () => renderNestedGrid(state),
