@@ -19,9 +19,9 @@
  */
 export function createAdaptivePoller({
     task,
-    minIntervalMs: minIntervalMilliseconds = 500,
-    maxIntervalMs: maxIntervalMilliseconds = 30_000,
-    initialIntervalMs: initialIntervalMilliseconds = maxIntervalMilliseconds,
+    minIntervalMs: minIntervalMs = 500,
+    maxIntervalMs: maxIntervalMs = 30_000,
+    initialIntervalMs: initialIntervalMs = maxIntervalMs,
     windDownFactor = 1.6,
     onError = null,
     setTimeoutFn: setTimeoutCallback = globalThis.setTimeout?.bind(globalThis),
@@ -39,15 +39,12 @@ export function createAdaptivePoller({
         throw new TypeError("createAdaptivePoller requires timer functions");
     }
 
-    const minDelay = Math.max(0, Number(minIntervalMilliseconds) || 0);
-    const maxDelay = Math.max(
-        minDelay,
-        Number(maxIntervalMilliseconds) || minDelay,
-    );
+    const minDelay = Math.max(0, Number(minIntervalMs) || 0);
+    const maxDelay = Math.max(minDelay, Number(maxIntervalMs) || minDelay);
     const decay = Math.max(1, Number(windDownFactor) || 1);
     let currentInterval = Math.min(
         maxDelay,
-        Math.max(minDelay, Number(initialIntervalMilliseconds) || maxDelay),
+        Math.max(minDelay, Number(initialIntervalMs) || maxDelay),
     );
     let timer = null;
     let running = false;

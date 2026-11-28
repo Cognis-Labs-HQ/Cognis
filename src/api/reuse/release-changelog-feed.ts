@@ -286,9 +286,9 @@ export async function loadReleaseChangelogEntries(
                     selectedVariant.filePath,
                     "utf8",
                 );
-                const latestMtimeMilliseconds = variants.reduce(
-                    (maxMtimeMilliseconds, variant) =>
-                        Math.max(maxMtimeMilliseconds, variant.mtimeMs),
+                const latestMtimeMs = variants.reduce(
+                    (maxMtimeMs, variant) =>
+                        Math.max(maxMtimeMs, variant.mtimeMs),
                     0,
                 );
                 return {
@@ -298,7 +298,7 @@ export async function loadReleaseChangelogEntries(
                     details: extractChangeDetails(markdown),
                     path: `/changelogs/${slug}`,
                     sourceName: selectedVariant.sourceName,
-                    mtimeMs: latestMtimeMilliseconds,
+                    mtimeMs: latestMtimeMs,
                 };
             } catch {
                 return null;
@@ -308,5 +308,5 @@ export async function loadReleaseChangelogEntries(
     return entries
         .filter((entry): entry is NonNullable<typeof entry> => Boolean(entry))
         .sort((entryA, entryB) => entryB.mtimeMs - entryA.mtimeMs)
-        .map(({ mtimeMs: _mtimeMilliseconds, ...entry }) => entry);
+        .map(({ mtimeMs: _mtimeMs, ...entry }) => entry);
 }

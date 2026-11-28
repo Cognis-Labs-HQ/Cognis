@@ -217,5 +217,12 @@
         "getBoundingClientRect": "Element.getBoundingClientRect",
         "getClientRects": "Element.getClientRects",
         "initializeImportMeta": "node:vm SourceTextModule.initializeImportMeta"
+    },
+    "measurementUnits": {
+        "ms": "milliseconds",
+        "sec": "seconds",
+        "px": "pixels",
+        "rad": "radians",
+        "deg": "degrees"
     }
 }

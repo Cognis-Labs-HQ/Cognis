@@ -387,7 +387,7 @@ export async function openPopup({
     onAction,
     closeProtection = false,
     signal,
-    timeoutMs: timeoutMilliseconds = 0,
+    timeoutMs: timeoutMs = 0,
     timeoutActionId = null,
     closeButtonVariant = "cancel",
     mandatory = false,
@@ -846,7 +846,7 @@ export async function openPopup({
                 quiet: true,
             });
         }
-        if (Number.isFinite(timeoutMilliseconds) && timeoutMilliseconds > 0) {
+        if (Number.isFinite(timeoutMs) && timeoutMs > 0) {
             timeoutHandle = setTimeout(() => {
                 dismiss(timeoutActionId).catch(
                     (error) =>
@@ -856,7 +856,7 @@ export async function openPopup({
                             error,
                         ),
                 );
-            }, timeoutMilliseconds);
+            }, timeoutMs);
 
             const timeoutButton = timeoutActionId
                 ? overlay.querySelector(
@@ -870,8 +870,7 @@ export async function openPopup({
                     const remainingSeconds = Math.max(
                         0,
                         Math.ceil(
-                            (timeoutMilliseconds - (Date.now() - startedAt)) /
-                                1000,
+                            (timeoutMs - (Date.now() - startedAt)) / 1000,
                         ),
                     );
                     timeoutButton.textContent = `${originalLabel} (${remainingSeconds})`;

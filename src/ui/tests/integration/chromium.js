@@ -188,9 +188,9 @@ export async function launchChromium(executable) {
         }
         async function waitFor(
             expression,
-            { timeoutMs: timeoutMilliseconds = 5000 } = {},
+            { timeoutMs: timeoutMs = 5000 } = {},
         ) {
-            const deadline = Date.now() + timeoutMilliseconds;
+            const deadline = Date.now() + timeoutMs;
             while (Date.now() < deadline) {
                 if (await evaluate(expression)) return;
                 await setTimeout(50);

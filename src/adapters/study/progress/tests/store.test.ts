@@ -69,7 +69,7 @@ function persistentExecutor(): DatabaseExecutor {
     return executor;
 }
 
-function learningEvent(durationMilliseconds = 800): LearningEvent {
+function learningEvent(durationMs = 800): LearningEvent {
     return {
         id: "persistent-event",
         actorId: "actor-one",
@@ -87,7 +87,7 @@ function learningEvent(durationMilliseconds = 800): LearningEvent {
         correct: true,
         independentCorrect: true,
         hints: 0,
-        durationMs: durationMilliseconds,
+        durationMs: durationMs,
         completion: "completed",
         metadata: {},
     };

@@ -155,7 +155,7 @@ export function createRegistrationRoutes({
             (accountId: string) => Promise<boolean>
         >("notify:hasVerifiedEmail");
         if (hasVerifiedEmail && registrationValidationMode === "email") {
-            const fiveMinutesMilliseconds = 5 * 60 * 1000;
+            const fiveMinutesMs = 5 * 60 * 1000;
             const timer = setTimeout(async () => {
                 try {
                     const verified = await hasVerifiedEmail(result.username);
@@ -184,7 +184,7 @@ export function createRegistrationRoutes({
                         },
                     );
                 }
-            }, fiveMinutesMilliseconds);
+            }, fiveMinutesMs);
             timer.unref();
         }
 

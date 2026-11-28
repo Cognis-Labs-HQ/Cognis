@@ -54,9 +54,9 @@ import { renderMessagesSidebar } from "./sidebar.js";
 import { activateRoomAction, resolveRoomActions } from "./flows.js";
 import {
     LAST_OPENED_ROOM_KEY,
-    LIVE_REFRESH_INTERVAL_MILLISECONDS,
-    TYPING_IDLE_RESET_MILLISECONDS,
-    TYPING_SEND_DEBOUNCE_MILLISECONDS,
+    LIVE_REFRESH_INTERVAL_MS,
+    TYPING_IDLE_RESET_MS,
+    TYPING_SEND_DEBOUNCE_MS,
     TYPING_TTL_SECONDS,
 } from "./runtime-config.js";
 import {
@@ -126,9 +126,9 @@ export async function mount(root, { signal } = {}) {
         resolveThreadRoomKey,
         lastOpenedRoomKey: LAST_OPENED_ROOM_KEY,
         typingTtlSeconds: TYPING_TTL_SECONDS,
-        typingIdleResetMs: TYPING_IDLE_RESET_MILLISECONDS,
-        typingSendDebounceMs: TYPING_SEND_DEBOUNCE_MILLISECONDS,
-        liveRefreshIntervalMs: LIVE_REFRESH_INTERVAL_MILLISECONDS,
+        typingIdleResetMs: TYPING_IDLE_RESET_MS,
+        typingSendDebounceMs: TYPING_SEND_DEBOUNCE_MS,
+        liveRefreshIntervalMs: LIVE_REFRESH_INTERVAL_MS,
         onRoomOpened: async (room) => {
             syncOpenRoomPreviews();
             const openedRoomId = room?.id != null ? String(room.id) : null;

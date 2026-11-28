@@ -8,8 +8,8 @@ import { VolatileLocalAccountStore } from "../reuse/account-store.js";
 import { registerAuthBootstrapHook } from "../bootstrap/flow-registrations.js";
 import {
     createAuthRouteBootstrapRuntime,
-    ACCOUNT_CREATION_ATTEMPT_TTL_MILLISECONDS,
-    TFA_LOGIN_ATTEMPT_TTL_MILLISECONDS,
+    ACCOUNT_CREATION_ATTEMPT_TTL_MS,
+    TFA_LOGIN_ATTEMPT_TTL_MS,
 } from "../bootstrap/route-runtime.js";
 import { createSessionRoutes } from "../bootstrap/routes/session.js";
 import type { AuthAccountStore } from "../bootstrap/index.js";
@@ -117,8 +117,7 @@ for (const outcome of ["cancelled", "expired"] as const) {
                 "/api/v1/auth/account-creation-attempt",
             );
             assert.equal(cancelled.res.status, 204);
-        } else
-            context.mock.timers.tick(ACCOUNT_CREATION_ATTEMPT_TTL_MILLISECONDS);
+        } else context.mock.timers.tick(ACCOUNT_CREATION_ATTEMPT_TTL_MS);
         const late = await dispatchRoute(
             host.routes,
             makeJsonRequest(
@@ -162,6 +161,6 @@ test("TFA attempts expire exactly at their deadline", (context) => {
         ttlSeconds: 720,
     });
     assert.equal(runtime.getPendingTfaLoginAttempt(attempt.id)?.id, attempt.id);
-    context.mock.timers.tick(TFA_LOGIN_ATTEMPT_TTL_MILLISECONDS);
+    context.mock.timers.tick(TFA_LOGIN_ATTEMPT_TTL_MS);
     assert.equal(runtime.getPendingTfaLoginAttempt(attempt.id), null);
 });

@@ -40,7 +40,7 @@ import { apiFetch } from "/static/reuse/api-client.js";
 
 const log = bindCapability("ui:log");
 
-const AUTH_SETUP_CACHE_TTL_MILLISECONDS = 5_000;
+const AUTH_SETUP_CACHE_TTL_MS = 5_000;
 let authSetupCacheExpiresAt = 0;
 let authSetupRequiredCached = false;
 let sessionExpiryNavigationPending = false;
@@ -277,8 +277,7 @@ uiCtx.extendFlow(
         }
         if (!localStorage.getItem("cognis_access_token")) {
             authSetupRequiredCached = false;
-            authSetupCacheExpiresAt =
-                Date.now() + AUTH_SETUP_CACHE_TTL_MILLISECONDS;
+            authSetupCacheExpiresAt = Date.now() + AUTH_SETUP_CACHE_TTL_MS;
             return { requiresSetup: false, redirectTo: null };
         }
         try {
@@ -349,8 +348,7 @@ uiCtx.extendFlow(
             authSetupRequiredCached = true;
             return { requiresSetup: true, redirectTo: "/login" };
         }
-        authSetupCacheExpiresAt =
-            Date.now() + AUTH_SETUP_CACHE_TTL_MILLISECONDS;
+        authSetupCacheExpiresAt = Date.now() + AUTH_SETUP_CACHE_TTL_MS;
         if (!authSetupRequiredCached)
             return { requiresSetup: false, redirectTo: null };
         if (isSecurityRoute) return { requiresSetup: true, redirectTo: null };

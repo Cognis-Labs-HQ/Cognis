@@ -217,12 +217,12 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
         const existingTimer = shareExpiryTimers.get(shareId);
         if (existingTimer) clearTimeout(existingTimer);
         shareExpiryTimers.delete(shareId);
-        const expiryMilliseconds = Date.parse(expiresAt);
-        if (!Number.isFinite(expiryMilliseconds)) return;
-        const delay = Math.max(0, expiryMilliseconds - Date.now());
+        const expiryMs = Date.parse(expiresAt);
+        if (!Number.isFinite(expiryMs)) return;
+        const delay = Math.max(0, expiryMs - Date.now());
         const timer = setTimeout(
             () => {
-                if (expiryMilliseconds > Date.now()) {
+                if (expiryMs > Date.now()) {
                     scheduleCalendarShareExpiry(shareId, expiresAt);
                     return;
                 }

@@ -13,7 +13,7 @@ const defaultLog = bindCapability("ui:log");
 const STORAGE_KEY = "cognis_offline_outbox";
 const MAX_ITEMS = 1000;
 const MAX_BYTES = 1_000_000;
-const MAX_AGE_MILLISECONDS = 7 * 24 * 60 * 60 * 1000;
+const MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 const PERMANENT_STATUS = new Set([400, 403, 404, 409, 410, 413, 422]);
 
 function requestLock(name, operation) {
@@ -63,7 +63,7 @@ export function createOfflineOutbox({
         return rows.filter(
             (row) =>
                 Number.isFinite(row.createdAt) &&
-                row.createdAt > now() - MAX_AGE_MILLISECONDS,
+                row.createdAt > now() - MAX_AGE_MS,
         );
     }
     function write(rows) {

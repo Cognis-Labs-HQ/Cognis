@@ -9,7 +9,7 @@ export function createShareMaintenance(
     root: Ctx,
     jobs: Array<{ operation: string; run(signal: AbortSignal): Promise<void> }>,
     log: BootstrapLog | undefined,
-    intervalMilliseconds: number,
+    intervalMs: number,
 ): BootstrapDisposer & { run(): Promise<void> } {
     const flowId = "share:maintenance";
     const registration = registerBootstrapFlow(root, {
@@ -88,7 +88,7 @@ export function createShareMaintenance(
             void run().finally(() => {
                 if (scheduledGeneration === generation) schedule();
             });
-        }, intervalMilliseconds);
+        }, intervalMs);
         timer.unref?.();
     };
     const dispose: BootstrapDisposer & { run(): Promise<void> } = Object.assign(

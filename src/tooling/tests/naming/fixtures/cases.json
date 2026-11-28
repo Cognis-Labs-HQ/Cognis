@@ -337,17 +337,11 @@
     {
         "name": "conventional words expand inside composites",
         "source": "const dbExec = source; const TIMEOUT_MS = 1; const baseDn = source; let requestArgs; function initFontPreferences() {}",
-        "names": [
-            "dbExec",
-            "TIMEOUT_MS",
-            "baseDn",
-            "requestArgs",
-            "initFontPreferences"
-        ]
+        "names": ["dbExec", "baseDn", "requestArgs", "initFontPreferences"]
     },
     {
         "name": "expanded composites with direct shorthand",
-        "source": "class DatabaseStore { private db: Database; constructor(db, args) { this.db = db; } } function createDatabaseExecutor(db, ...args) {} const TIMEOUT_MILLISECONDS = 1;",
+        "source": "class DatabaseStore { private db: Database; constructor(db, args) { this.db = db; } } function createDatabaseExecutor(db, ...args) {} const TIMEOUT_MS = 1;",
         "names": []
     },
     {
@@ -384,5 +378,25 @@
         "name": "canonical platform method names retain their identity",
         "source": "const canvas = { clearRect() {} }; class ElementMock { getBoundingClientRect() {} getClientRects() {} } const runtime = { initializeImportMeta() {} };",
         "names": []
+    },
+    {
+        "name": "measurement units stay abbreviated in composites",
+        "source": "const INVITE_EXPIRY_MS = 1000; const durationMs = 1; const timeoutSec = 1; const cacheSecs = 1; const widthPx = 1; const angleRad = 1; const angleDeg = 1; const delayUs = 1; const frequencyHz = 1; const sizeMB = 1;",
+        "names": []
+    },
+    {
+        "name": "unit exception does not permit opaque neighboring words",
+        "source": "const tgtMs = 1; const btnPx = 1; const reqSec = 1;",
+        "names": ["tgtMs", "btnPx", "reqSec"]
+    },
+    {
+        "name": "unit exception does not permit ambiguous scalar names",
+        "source": "const px = 1; const rad = 1; const deg = 1;",
+        "names": ["px", "rad", "deg"]
+    },
+    {
+        "name": "unit-bearing composites still require canonical exports",
+        "source": "const INVITE_EXPIRY_MS = 1; export { INVITE_EXPIRY_MS as INVITE_EXPIRY_MILLISECONDS };",
+        "names": ["INVITE_EXPIRY_MILLISECONDS"]
     }
 ]

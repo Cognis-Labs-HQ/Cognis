@@ -6,7 +6,7 @@ import { showToast } from "/static/reuse/toast.js";
 
 const log = bindCapability("ui:log");
 
-const CHALLENGE_REQUEST_TIMEOUT_MILLISECONDS = 15_000;
+const CHALLENGE_REQUEST_TIMEOUT_MS = 15_000;
 
 function setActiveTfaInputPlaceholder(i18n, method, tfaCodeInput) {
     if (!(tfaCodeInput instanceof HTMLInputElement)) {
@@ -471,13 +471,9 @@ export async function createTfaLoginClient({ baseI18n, root = document } = {}) {
                 signal: signal
                     ? AbortSignal.any([
                           signal,
-                          AbortSignal.timeout(
-                              CHALLENGE_REQUEST_TIMEOUT_MILLISECONDS,
-                          ),
+                          AbortSignal.timeout(CHALLENGE_REQUEST_TIMEOUT_MS),
                       ])
-                    : AbortSignal.timeout(
-                          CHALLENGE_REQUEST_TIMEOUT_MILLISECONDS,
-                      ),
+                    : AbortSignal.timeout(CHALLENGE_REQUEST_TIMEOUT_MS),
             });
             const body = await response.json();
             return { response, body };

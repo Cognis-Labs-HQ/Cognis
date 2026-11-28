@@ -7,6 +7,7 @@ import { parsers } from "prettier/plugins/typescript";
 import abbreviations from "./ambiguous-name-words.json" with { type: "json" };
 
 const LOOP_NAMES = new Set(["i", "j", "k"]);
+const MEASUREMENT_UNITS = new Set(Object.keys(abbreviations.measurementUnits));
 const CONVENTIONAL_NAMES = new Set(Object.keys(abbreviations.conventional));
 const ABBREVIATED_WORDS = new Set(Object.keys(abbreviations.words));
 const ABBREVIATED_NAMES = new Set(
@@ -34,6 +35,13 @@ function isAbbreviated(name) {
         )
             return false;
         const normalized = word.toLowerCase();
+        if (
+            words.length > 1 &&
+            (MEASUREMENT_UNITS.has(normalized) ||
+                (normalized.endsWith("s") &&
+                    MEASUREMENT_UNITS.has(normalized.slice(0, -1))))
+        )
+            return false;
         return (
             ABBREVIATED_WORDS.has(normalized) ||
             (normalized.endsWith("s") &&

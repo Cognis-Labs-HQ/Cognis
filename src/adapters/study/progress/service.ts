@@ -35,7 +35,7 @@ export async function rebuildProgressProjections(
 const IDENTIFIER = /^[A-Za-z0-9][A-Za-z0-9._:@/-]{0,199}$/;
 const PRIVILEGED_ROLES = new Set(["admin", "owner"]);
 const MAX_REVIEW_DELAY_DAYS = 14;
-const MAX_REVIEW_DELAY_MILLISECONDS = MAX_REVIEW_DELAY_DAYS * 86_400_000;
+const MAX_REVIEW_DELAY_MS = MAX_REVIEW_DELAY_DAYS * 86_400_000;
 
 function requireIdentifier(value: unknown, code: string): string {
     if (typeof value !== "string" || !IDENTIFIER.test(value))
@@ -69,8 +69,7 @@ function normalizeEvent(
     const occurredAt = new Date(input.occurredAt);
     if (
         !Number.isFinite(occurredAt.valueOf()) ||
-        occurredAt.valueOf() >
-            8_640_000_000_000_000 - MAX_REVIEW_DELAY_MILLISECONDS
+        occurredAt.valueOf() > 8_640_000_000_000_000 - MAX_REVIEW_DELAY_MS
     )
         throw new Error("invalid_occurred_at");
     if (!Number.isInteger(input.attempt) || input.attempt < 0)

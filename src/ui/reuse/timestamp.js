@@ -181,46 +181,46 @@ export function formatMonthYear(iso, fallback = "") {
  * @returns {string}
  */
 let cachedRelativeTimeFormatter;
-export function formatRelativeTime(epochMilliseconds, fallback = "") {
-    if (!epochMilliseconds) return fallback;
+export function formatRelativeTime(epochMs, fallback = "") {
+    if (!epochMs) return fallback;
     try {
         cachedRelativeTimeFormatter ??= new Intl.RelativeTimeFormat(undefined, {
             numeric: "auto",
         });
-        const differenceMilliseconds = epochMilliseconds - Date.now();
-        const absDifference = Math.abs(differenceMilliseconds);
+        const differenceMs = epochMs - Date.now();
+        const absDifference = Math.abs(differenceMs);
         if (absDifference < 60_000) {
             return cachedRelativeTimeFormatter.format(
-                Math.round(differenceMilliseconds / 1000),
+                Math.round(differenceMs / 1000),
                 "second",
             );
         }
         if (absDifference < 3_600_000) {
             return cachedRelativeTimeFormatter.format(
-                Math.round(differenceMilliseconds / 60_000),
+                Math.round(differenceMs / 60_000),
                 "minute",
             );
         }
         if (absDifference < 86_400_000) {
             return cachedRelativeTimeFormatter.format(
-                Math.round(differenceMilliseconds / 3_600_000),
+                Math.round(differenceMs / 3_600_000),
                 "hour",
             );
         }
         if (absDifference < 30 * 86_400_000) {
             return cachedRelativeTimeFormatter.format(
-                Math.round(differenceMilliseconds / 86_400_000),
+                Math.round(differenceMs / 86_400_000),
                 "day",
             );
         }
         if (absDifference < 365 * 86_400_000) {
             return cachedRelativeTimeFormatter.format(
-                Math.round(differenceMilliseconds / (30 * 86_400_000)),
+                Math.round(differenceMs / (30 * 86_400_000)),
                 "month",
             );
         }
         return cachedRelativeTimeFormatter.format(
-            Math.round(differenceMilliseconds / (365 * 86_400_000)),
+            Math.round(differenceMs / (365 * 86_400_000)),
             "year",
         );
     } catch {

@@ -212,11 +212,8 @@ export function createAuthRoutes(
                 ? rawAuthHeader.slice("Bearer ".length)
                 : "";
 
-            const ONE_HOUR_MILLISECONDS = 60 * 60 * 1000;
-            if (
-                rawToken &&
-                isTokenVerificationFresh(rawToken, ONE_HOUR_MILLISECONDS)
-            ) {
+            const ONE_HOUR_MS = 60 * 60 * 1000;
+            if (rawToken && isTokenVerificationFresh(rawToken, ONE_HOUR_MS)) {
                 res.writeHead(200, { "content-type": "application/json" });
                 res.end(JSON.stringify({ data: { verified: true } }));
                 return true;

@@ -20,7 +20,7 @@ import { transientSurfaces } from "../transient-surfaces.js";
 import { uiCtx } from "../ui-ctx.js";
 import { search } from "./capability.js";
 import {
-    DEBOUNCE_MILLISECONDS,
+    DEBOUNCE_MS,
     MIN_SEARCH_QUERY_LENGTH,
     REGISTERED_SEARCH_CATEGORY_HOOKS,
     bindSearchShortcut,
@@ -603,7 +603,7 @@ export function openSearchPopup({
                     searchingText,
                     errorText,
                 }),
-            DEBOUNCE_MILLISECONDS,
+            DEBOUNCE_MS,
         );
     };
 

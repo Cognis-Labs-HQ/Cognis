@@ -13,7 +13,7 @@ import type { AuthAccountStore } from "../index.js";
 import { resolveRole } from "../local-account.js";
 import { MemoryRateLimiter } from "../rate-limiter.js";
 import {
-    PASSWORD_RESET_LOOKUP_JITTER_MILLISECONDS,
+    PASSWORD_RESET_LOOKUP_JITTER_MS,
     PASSWORD_RESET_TOKEN_TTL_SECONDS,
     sleep,
     waitForPasswordResetResponseFloor,
@@ -145,9 +145,7 @@ export function createLoginLinkRoutes({
                     },
                 });
             }
-            await sleep(
-                randomInt(0, PASSWORD_RESET_LOOKUP_JITTER_MILLISECONDS),
-            );
+            await sleep(randomInt(0, PASSWORD_RESET_LOOKUP_JITTER_MS));
             const accountId = await getAccountIdByEmail(email).catch(
                 () => null,
             );

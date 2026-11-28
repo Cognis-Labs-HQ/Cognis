@@ -10,7 +10,7 @@ import type {
 import type { TfaAdapterBootstrapContext } from "../../../gateways/tfa/gateway.js";
 import type { TfaMethodAdapter } from "../../../gateways/tfa/gateway.js";
 
-const CODE_EXPIRY_MILLISECONDS = 15 * 60 * 1000;
+const CODE_EXPIRY_MS = 15 * 60 * 1000;
 const MAX_CODE_GENERATION_ATTEMPTS = 10;
 
 interface SmtpTfaAdapterContext {
@@ -75,7 +75,7 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         );
     }
 
-    private get deliveryIntervalMilliseconds() {
+    private get deliveryIntervalMs() {
         return Math.max(
             0,
             this.context.getEmailDeliveryPolicy?.().minimumIntervalMs ?? 0,
@@ -176,7 +176,7 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         }
         this.challenges.set(key, {
             code,
-            expiresAt: Date.now() + CODE_EXPIRY_MILLISECONDS,
+            expiresAt: Date.now() + CODE_EXPIRY_MS,
         });
         return code;
     }
@@ -247,16 +247,14 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
         };
     }
 
-    private buildCooldownMetadata(sentAtMilliseconds = Date.now()): {
+    private buildCooldownMetadata(sentAtMs = Date.now()): {
         retryAfterSeconds: number;
         resendAvailableAt: string;
     } {
         return {
-            retryAfterSeconds: Math.ceil(
-                this.deliveryIntervalMilliseconds / 1000,
-            ),
+            retryAfterSeconds: Math.ceil(this.deliveryIntervalMs / 1000),
             resendAvailableAt: new Date(
-                sentAtMilliseconds + this.deliveryIntervalMilliseconds,
+                sentAtMs + this.deliveryIntervalMs,
             ).toISOString(),
         };
     }
@@ -446,17 +444,15 @@ class SmtpTfaAdapter implements TfaMethodAdapter {
                 const now = Date.now();
                 const lastSentAt =
                     this.loginChallengeLastSentAt.get(input.accountId) ?? now;
-                const retryMilliseconds = Math.max(
-                    this.deliveryIntervalMilliseconds - (now - lastSentAt),
+                const retryMs = Math.max(
+                    this.deliveryIntervalMs - (now - lastSentAt),
                     0,
                 );
                 return {
                     ready: true,
                     message: "email_rate_limited",
-                    retryAfterSeconds: Math.ceil(retryMilliseconds / 1000),
-                    resendAvailableAt: new Date(
-                        now + retryMilliseconds,
-                    ).toISOString(),
+                    retryAfterSeconds: Math.ceil(retryMs / 1000),
+                    resendAvailableAt: new Date(now + retryMs).toISOString(),
                 };
             }
             this.context.log?.(

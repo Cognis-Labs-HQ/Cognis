@@ -37,7 +37,7 @@ const GATEWAY_ROOT = path.resolve(
 );
 const SHARE_ADAPTERS_ROOT = path.resolve(GATEWAY_ROOT, "../../adapters/share");
 
-const GUEST_PROFILE_CLEANUP_INTERVAL_MILLISECONDS = 15 * 60 * 1000;
+const GUEST_PROFILE_CLEANUP_INTERVAL_MS = 15 * 60 * 1000;
 
 export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
     const manifestVersion = await readGatewayManifestVersion(
@@ -360,7 +360,7 @@ export async function bootstrap(ctx: GatewayBootstrapContext): Promise<void> {
             },
         ],
         ctx.log,
-        GUEST_PROFILE_CLEANUP_INTERVAL_MILLISECONDS,
+        GUEST_PROFILE_CLEANUP_INTERVAL_MS,
     );
     requireBootstrapScope().registerDisposer(maintenance);
     void maintenance.run();

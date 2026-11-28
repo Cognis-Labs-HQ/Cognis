@@ -1,13 +1,13 @@
 import { apiFetch } from "/static/reuse/api-client.js";
 
-const ACTIVE_POLL_INTERVAL_MILLISECONDS = 5_000;
+const ACTIVE_POLL_INTERVAL_MS = 5_000;
 let activeWatch = null;
 
 function schedulePoll() {
     if (!activeWatch || document.hidden) return;
     activeWatch.timer = window.setTimeout(
         pollShareStatus,
-        ACTIVE_POLL_INTERVAL_MILLISECONDS,
+        ACTIVE_POLL_INTERVAL_MS,
     );
 }
 

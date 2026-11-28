@@ -23,9 +23,9 @@ const RETRYABLE_SERVER_STATUS_CODES = new Set([502, 503, 504]);
 const RETRYABLE_SERVER_STATUS_MESSAGE_REGULAR_EXPRESSION = new RegExp(
     `\\b(${[...RETRYABLE_SERVER_STATUS_CODES].join("|")})\\b`,
 );
-const CONNECTION_RECOVERY_POPUP_SUPPRESSION_WINDOW_MILLISECONDS = 5_000;
-const CONNECTION_RECOVERY_POLL_INTERVAL_MILLISECONDS = 5_000;
-const API_REQUEST_TIMEOUT_MILLISECONDS = 30_000;
+const CONNECTION_RECOVERY_POPUP_SUPPRESSION_WINDOW_MS = 5_000;
+const CONNECTION_RECOVERY_POLL_INTERVAL_MS = 5_000;
+const API_REQUEST_TIMEOUT_MS = 30_000;
 const connectionRecoveryFailureMarker = Symbol("connectionRecoveryFailure");
 const connectionRecoveryStatesKey = Symbol.for(
     "cognis.connectionRecoveryStates",
@@ -69,7 +69,7 @@ function getConnectionRecoveryState() {
             didShowToast: false,
             lastSignalAt: 0,
             pollTimer: null,
-            pollDelayMs: CONNECTION_RECOVERY_POLL_INTERVAL_MILLISECONDS,
+            pollDelayMs: CONNECTION_RECOVERY_POLL_INTERVAL_MS,
         });
     }
     return connectionRecoveryStates.get(origin);
@@ -185,7 +185,7 @@ function isRecentConnectionRecoverySignal() {
     return (
         connectionRecoveryState.lastSignalAt > 0 &&
         Date.now() - connectionRecoveryState.lastSignalAt <=
-            CONNECTION_RECOVERY_POPUP_SUPPRESSION_WINDOW_MILLISECONDS
+            CONNECTION_RECOVERY_POPUP_SUPPRESSION_WINDOW_MS
     );
 }
 
@@ -234,7 +234,7 @@ export async function apiFetch(path, options = {}) {
         accessToken,
         suppressAccessDeniedEvent = false,
         suppressConnectionRecoveryToast = false,
-        timeoutMs: timeoutMilliseconds = API_REQUEST_TIMEOUT_MILLISECONDS,
+        timeoutMs: timeoutMs = API_REQUEST_TIMEOUT_MS,
         ...requestOptions
     } = options ?? {};
     const token = String(
@@ -244,8 +244,7 @@ export async function apiFetch(path, options = {}) {
     if (token) {
         headers.set("authorization", `Bearer ${token}`);
     }
-    const timeoutSignal =
-        globalThis.AbortSignal?.timeout?.(timeoutMilliseconds);
+    const timeoutSignal = globalThis.AbortSignal?.timeout?.(timeoutMs);
     const signal = requestOptions.signal
         ? (globalThis.AbortSignal?.any?.([
               requestOptions.signal,

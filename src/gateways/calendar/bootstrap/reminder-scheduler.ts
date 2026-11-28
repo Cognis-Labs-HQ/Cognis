@@ -7,7 +7,7 @@ import {
     type ResolveAccountId,
 } from "./helpers.js";
 
-const MAX_SET_TIMEOUT_DELAY_MILLISECONDS = 2 ** 31 - 1;
+const MAX_SET_TIMEOUT_DELAY_MS = 2 ** 31 - 1;
 
 export function createReminderScheduler(input: {
     getDispatchNotification: () => NotificationDispatcher | null;
@@ -51,18 +51,14 @@ export function createReminderScheduler(input: {
         );
         if (reminderOffsets.length === 0 || event.attendees.length === 0)
             return;
-        const eventStartAtMilliseconds = Date.parse(event.startAt);
-        if (!Number.isFinite(eventStartAtMilliseconds)) return;
+        const eventStartAtMs = Date.parse(event.startAt);
+        if (!Number.isFinite(eventStartAtMs)) return;
         for (const attendee of event.attendees) {
             for (const reminderOffsetMinutes of reminderOffsets) {
-                const reminderAtMilliseconds =
-                    eventStartAtMilliseconds - reminderOffsetMinutes * 60_000;
-                const initialDelayMilliseconds =
-                    reminderAtMilliseconds - Date.now();
-                if (
-                    !Number.isFinite(initialDelayMilliseconds) ||
-                    initialDelayMilliseconds <= 0
-                ) {
+                const reminderAtMs =
+                    eventStartAtMs - reminderOffsetMinutes * 60_000;
+                const initialDelayMs = reminderAtMs - Date.now();
+                if (!Number.isFinite(initialDelayMs) || initialDelayMs <= 0) {
                     input.log?.(
                         "warn",
                         "Skipped scheduling calendar reminder in the past.",
@@ -71,9 +67,7 @@ export function createReminderScheduler(input: {
                             eventId: event.id,
                             attendee,
                             reminderOffsetMinutes,
-                            reminderAt: new Date(
-                                reminderAtMilliseconds,
-                            ).toISOString(),
+                            reminderAt: new Date(reminderAtMs).toISOString(),
                             startAt: event.startAt,
                         },
                     );
@@ -84,22 +78,16 @@ export function createReminderScheduler(input: {
                     attendee,
                     reminderOffsetMinutes,
                 ]);
-                const scheduleDispatch = (
-                    remainingDelayMilliseconds: number,
-                ) => {
-                    const delayMilliseconds = Math.min(
-                        remainingDelayMilliseconds,
-                        MAX_SET_TIMEOUT_DELAY_MILLISECONDS,
+                const scheduleDispatch = (remainingDelayMs: number) => {
+                    const delayMs = Math.min(
+                        remainingDelayMs,
+                        MAX_SET_TIMEOUT_DELAY_MS,
                     );
                     const timer = setTimeout(async () => {
                         if (!scheduledReminderTimers.has(reminderKey)) return;
-                        if (
-                            remainingDelayMilliseconds >
-                            MAX_SET_TIMEOUT_DELAY_MILLISECONDS
-                        ) {
+                        if (remainingDelayMs > MAX_SET_TIMEOUT_DELAY_MS) {
                             scheduleDispatch(
-                                remainingDelayMilliseconds -
-                                    MAX_SET_TIMEOUT_DELAY_MILLISECONDS,
+                                remainingDelayMs - MAX_SET_TIMEOUT_DELAY_MS,
                             );
                             return;
                         }
@@ -118,7 +106,7 @@ export function createReminderScheduler(input: {
                             resolveAccountId: input.resolveAccountId,
                             log: input.log,
                         });
-                    }, delayMilliseconds);
+                    }, delayMs);
                     detachReminderTimer(timer);
                     scheduledReminderTimers.set(reminderKey, timer);
                     const eventReminderKeys =
@@ -126,7 +114,7 @@ export function createReminderScheduler(input: {
                     eventReminderKeys.add(reminderKey);
                     reminderKeysByEventId.set(event.id, eventReminderKeys);
                 };
-                scheduleDispatch(initialDelayMilliseconds);
+                scheduleDispatch(initialDelayMs);
             }
         }
     };

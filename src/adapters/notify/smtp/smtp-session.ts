@@ -33,7 +33,7 @@ export class SmtpSession {
         socket.on("error", this.onError);
         socket.on("close", this.onClose);
         socket.on("timeout", this.onTimeout);
-        socket.setTimeout(SMTP_TIMEOUT_MILLISECONDS);
+        socket.setTimeout(SMTP_TIMEOUT_MS);
     }
 
     private processBuffer(): void {
@@ -89,8 +89,8 @@ export class SmtpSession {
     }
 }
 
-const SMTP_TIMEOUT_MILLISECONDS = 30_000;
-export { SMTP_TIMEOUT_MILLISECONDS };
+const SMTP_TIMEOUT_MS = 30_000;
+export { SMTP_TIMEOUT_MS };
 
 function awaitConnection<Socket extends network.Socket>(
     socket: Socket,
@@ -99,7 +99,7 @@ function awaitConnection<Socket extends network.Socket>(
     return new Promise((resolve, reject) => {
         const timer = setTimeout(
             () => socket.destroy(new Error("smtp_timeout")),
-            SMTP_TIMEOUT_MILLISECONDS,
+            SMTP_TIMEOUT_MS,
         );
         timer.unref?.();
         const cleanup = () => {

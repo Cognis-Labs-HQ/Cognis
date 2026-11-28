@@ -46,9 +46,9 @@ export function createMessagesRoomState({
     onRoomAction = async () => {},
     lastOpenedRoomKey = "messages:last-opened-room",
     typingTtlSeconds = 8,
-    typingIdleResetMs: typingIdleResetMilliseconds = 5000,
-    typingSendDebounceMs: typingSendDebounceMilliseconds = 1200,
-    liveRefreshIntervalMs: liveRefreshIntervalMilliseconds = 2500,
+    typingIdleResetMs: typingIdleResetMs = 5000,
+    typingSendDebounceMs: typingSendDebounceMs = 1200,
+    liveRefreshIntervalMs: liveRefreshIntervalMs = 2500,
 }) {
     let rooms = [];
     let selectedRoomId = initialSelectedRoomId;
@@ -589,7 +589,7 @@ export function createMessagesRoomState({
             return;
         liveRefreshIntervalId = setInterval(() => {
             void refreshActiveConversation();
-        }, liveRefreshIntervalMilliseconds);
+        }, liveRefreshIntervalMs);
     }
 
     function queueTypingUpdate(typing) {
@@ -603,11 +603,11 @@ export function createMessagesRoomState({
         if (
             typing &&
             typingActive &&
-            now - lastTypingSentAt < typingSendDebounceMilliseconds
+            now - lastTypingSentAt < typingSendDebounceMs
         ) {
             typingSendTimeoutId = setTimeout(() => {
                 queueTypingUpdate(false);
-            }, typingIdleResetMilliseconds);
+            }, typingIdleResetMs);
             return;
         }
         if (!typing && !typingActive) return;
@@ -626,7 +626,7 @@ export function createMessagesRoomState({
         if (typing) {
             typingSendTimeoutId = setTimeout(() => {
                 queueTypingUpdate(false);
-            }, typingIdleResetMilliseconds);
+            }, typingIdleResetMs);
         }
     }
 

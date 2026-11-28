@@ -68,11 +68,8 @@ export function createPasswordRoutes({
             if (!claims) return true;
             const rawToken =
                 extractBearerToken(req) ?? extractCookieToken(req) ?? "";
-            const oneHourMilliseconds = 60 * 60 * 1000;
-            if (
-                rawToken &&
-                isTokenVerificationFresh(rawToken, oneHourMilliseconds)
-            ) {
+            const oneHourMs = 60 * 60 * 1000;
+            if (rawToken && isTokenVerificationFresh(rawToken, oneHourMs)) {
                 log?.(
                     "debug",
                     "Password verification reused freshness window.",

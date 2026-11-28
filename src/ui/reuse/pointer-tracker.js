@@ -23,7 +23,7 @@ import { uiCtx } from "./ui-ctx.js";
 
 const POINTER_STYLE_STORAGE_KEY = "cognis_page_pointer_style";
 const POINTER_STYLES = ["mouse", "laser", "crosshair"];
-const POINTER_SEND_THROTTLE_MILLISECONDS = 1_000;
+const POINTER_SEND_THROTTLE_MS = 1_000;
 
 function normalizeStyle(value) {
     return POINTER_STYLES.includes(value) ? value : "mouse";
@@ -142,7 +142,7 @@ export function createPointerTracker({
 
     function sendSoon() {
         const now = Date.now();
-        if (now - lastSentAt < POINTER_SEND_THROTTLE_MILLISECONDS) return;
+        if (now - lastSentAt < POINTER_SEND_THROTTLE_MS) return;
         lastSentAt = now;
         requestPresenceUpdate?.();
     }

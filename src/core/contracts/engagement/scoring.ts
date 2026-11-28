@@ -174,7 +174,7 @@ export class ScoringEngine implements ScoringCapability {
                     id,
                     activityType,
                     hints,
-                    durationMs: durationMilliseconds,
+                    durationMs: durationMs,
                     correct,
                     independentCorrect,
                 }) =>
@@ -185,7 +185,7 @@ export class ScoringEngine implements ScoringCapability {
                     (independentCorrect && (!correct || hints > 0)) ||
                     !Number.isInteger(hints) ||
                     hints < 0 ||
-                    !validNumber(durationMilliseconds),
+                    !validNumber(durationMs),
             ) ||
             (input.activityWeight !== undefined &&
                 !within(input.activityWeight, 0.01, 10)) ||

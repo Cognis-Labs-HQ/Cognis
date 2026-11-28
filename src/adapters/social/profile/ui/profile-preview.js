@@ -4,8 +4,8 @@ import { renderMarkdown } from "/static/reuse/markdown-renderer.js";
 import { getRoleLabel, normalizeRoleValue } from "/static/reuse/access-role.js";
 import { uiCtx } from "/static/reuse/ui-ctx.js";
 
-const SHOW_DELAY_MILLISECONDS = 250;
-const HIDE_DELAY_MILLISECONDS = 150;
+const SHOW_DELAY_MS = 250;
+const HIDE_DELAY_MS = 150;
 const PREVIEW_ROLE_LABELS = new Set(["teacher", "admin", "owner"]);
 const profileCache = new Map();
 let previewElement = null;
@@ -150,7 +150,7 @@ function scheduleHide() {
     hideTimer = setTimeout(() => {
         activeLink = null;
         if (previewElement) previewElement.hidden = true;
-    }, HIDE_DELAY_MILLISECONDS);
+    }, HIDE_DELAY_MS);
 }
 
 export function bindProfilePreviews(i18n = null) {
@@ -162,19 +162,13 @@ export function bindProfilePreviews(i18n = null) {
         if (!link || link === activeLink) return;
         if (hideTimer) clearTimeout(hideTimer);
         if (showTimer) clearTimeout(showTimer);
-        showTimer = setTimeout(
-            () => showPreview(link),
-            SHOW_DELAY_MILLISECONDS,
-        );
+        showTimer = setTimeout(() => showPreview(link), SHOW_DELAY_MS);
     });
     document.addEventListener("focusin", (event) => {
         const link = event.target.closest?.('a[href^="/profile/"]');
         if (!link) return;
         if (showTimer) clearTimeout(showTimer);
-        showTimer = setTimeout(
-            () => showPreview(link),
-            SHOW_DELAY_MILLISECONDS,
-        );
+        showTimer = setTimeout(() => showPreview(link), SHOW_DELAY_MS);
     });
     document.addEventListener("mouseout", (event) => {
         const link = event.target.closest?.('a[href^="/profile/"]');

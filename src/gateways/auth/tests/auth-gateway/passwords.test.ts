@@ -498,13 +498,11 @@ test("POST /api/v1/auth/emergency-token returns a 1h admin token", async () => {
     assert.ok(body.data.token.startsWith("cgs_"));
     assert.equal(body.data.role, "admin");
     assert.equal(body.data.ttlSeconds, 3600);
-    const expiresAtMilliseconds = Date.parse(body.data.expiresAt);
-    const expectedExpiresAtMilliseconds =
-        Date.now() + body.data.ttlSeconds * 1000;
-    const MAX_EXPIRY_DRIFT_MILLISECONDS = 5_000;
-    assert.ok(expiresAtMilliseconds > Date.now());
+    const expiresAtMs = Date.parse(body.data.expiresAt);
+    const expectedExpiresAtMs = Date.now() + body.data.ttlSeconds * 1000;
+    const MAX_EXPIRY_DRIFT_MS = 5_000;
+    assert.ok(expiresAtMs > Date.now());
     assert.ok(
-        Math.abs(expiresAtMilliseconds - expectedExpiresAtMilliseconds) <=
-            MAX_EXPIRY_DRIFT_MILLISECONDS,
+        Math.abs(expiresAtMs - expectedExpiresAtMs) <= MAX_EXPIRY_DRIFT_MS,
     );
 });

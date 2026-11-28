@@ -31,12 +31,12 @@ import { escapeHtml } from "../escape-html.js";
 import { createPointerTracker } from "../pointer-tracker.js";
 import { createAdaptivePoller } from "../adaptive-poller.js";
 
-const HEARTBEAT_MIN_INTERVAL_MILLISECONDS = 10_000;
-const HEARTBEAT_MAX_INTERVAL_MILLISECONDS = 30_000;
-const REFRESH_MIN_INTERVAL_MILLISECONDS = 2_500;
-const REFRESH_MAX_INTERVAL_MILLISECONDS = 30_000;
-const ACTIVE_WINDOW_MILLISECONDS = 15000;
-const IDLE_AFTER_MILLISECONDS = 30000;
+const HEARTBEAT_MIN_INTERVAL_MS = 10_000;
+const HEARTBEAT_MAX_INTERVAL_MS = 30_000;
+const REFRESH_MIN_INTERVAL_MS = 2_500;
+const REFRESH_MAX_INTERVAL_MS = 30_000;
+const ACTIVE_WINDOW_MS = 15000;
+const IDLE_AFTER_MS = 30000;
 export const PRESENCE_ACTIVITY_EVENT = "cognis:presence-activity-change";
 const activitySubscribers = new Set();
 let activityDetectorBound = false;
@@ -55,7 +55,7 @@ function schedulePresenceIdle() {
     window.clearTimeout(activityDetectorTimer);
     activityDetectorTimer = window.setTimeout(
         () => publishPresenceActivity(false),
-        IDLE_AFTER_MILLISECONDS,
+        IDLE_AFTER_MS,
     );
 }
 
@@ -184,7 +184,7 @@ export function createPresenceTracker({
     }
 
     function isRecentlyActive() {
-        return Date.now() - lastActivityAt <= IDLE_AFTER_MILLISECONDS;
+        return Date.now() - lastActivityAt <= IDLE_AFTER_MS;
     }
 
     function currentPageId() {
@@ -292,7 +292,7 @@ export function createPresenceTracker({
             active:
                 entry.active !== false &&
                 Date.now() - Date.parse(entry.lastSeenAt || 0) <=
-                    ACTIVE_WINDOW_MILLISECONDS,
+                    ACTIVE_WINDOW_MS,
         }));
         const nextMarkupSignature =
             createPresenceMarkupSignature(activeEntries);
@@ -341,15 +341,15 @@ export function createPresenceTracker({
         }
         refreshPoller = createAdaptivePoller({
             task: refresh,
-            minIntervalMs: REFRESH_MIN_INTERVAL_MILLISECONDS,
-            maxIntervalMs: REFRESH_MAX_INTERVAL_MILLISECONDS,
-            initialIntervalMs: REFRESH_MIN_INTERVAL_MILLISECONDS,
+            minIntervalMs: REFRESH_MIN_INTERVAL_MS,
+            maxIntervalMs: REFRESH_MAX_INTERVAL_MS,
+            initialIntervalMs: REFRESH_MIN_INTERVAL_MS,
         });
         heartbeatPoller = createAdaptivePoller({
             task: () => sendPresence(true).then(refresh),
-            minIntervalMs: HEARTBEAT_MIN_INTERVAL_MILLISECONDS,
-            maxIntervalMs: HEARTBEAT_MAX_INTERVAL_MILLISECONDS,
-            initialIntervalMs: HEARTBEAT_MIN_INTERVAL_MILLISECONDS,
+            minIntervalMs: HEARTBEAT_MIN_INTERVAL_MS,
+            maxIntervalMs: HEARTBEAT_MAX_INTERVAL_MS,
+            initialIntervalMs: HEARTBEAT_MIN_INTERVAL_MS,
         });
         markInactive = () => void sendPresence(false, { keepalive: true });
         unsubscribeActivity = subscribePresenceActivity(({ active }) => {

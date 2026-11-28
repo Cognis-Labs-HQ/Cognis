@@ -23,7 +23,7 @@ import { loadUiPreferences } from "./ui-preferences.js";
 
 const log = bindCapability("ui:log");
 
-const COMMIT_DELAY_MILLISECONDS = 2000;
+const COMMIT_DELAY_MS = 2000;
 const bindings = (globalThis[Symbol.for("cognis.languageToggleBindings")] ??=
     new WeakMap());
 
@@ -150,7 +150,7 @@ export async function bindLanguageToggle({
                             variant: "error",
                         });
                     }
-                }, COMMIT_DELAY_MILLISECONDS);
+                }, COMMIT_DELAY_MS);
             },
             { signal: scope.signal },
         );

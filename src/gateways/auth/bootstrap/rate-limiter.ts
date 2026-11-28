@@ -5,14 +5,14 @@ export class MemoryRateLimiter {
     private readonly lastSeenAt = new Map<string, number>();
 
     constructor(
-        private readonly minIntervalMilliseconds: number,
+        private readonly minIntervalMs: number,
         private readonly now: () => number = () => Date.now(),
     ) {}
 
     private pruneExpiredEntries(): void {
         const now = this.now();
         for (const [key, lastSeenAt] of this.lastSeenAt.entries()) {
-            if (now - lastSeenAt >= this.minIntervalMilliseconds) {
+            if (now - lastSeenAt >= this.minIntervalMs) {
                 this.lastSeenAt.delete(key);
             }
         }
@@ -24,7 +24,7 @@ export class MemoryRateLimiter {
         if (!normalizedKey) return false;
         const lastSeenAt = this.lastSeenAt.get(normalizedKey);
         if (lastSeenAt === undefined) return false;
-        return this.now() - lastSeenAt < this.minIntervalMilliseconds;
+        return this.now() - lastSeenAt < this.minIntervalMs;
     }
 
     record(key: string): void {

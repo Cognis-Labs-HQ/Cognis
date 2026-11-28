@@ -11,8 +11,8 @@ import {
 } from "./image-crop.js";
 
 const POPUP_VIEWPORT_MAX_WIDTH = "95vw";
-const POPUP_MAX_WIDTH_PIXELS = 1400;
-const POPUP_HORIZONTAL_CHROME_PIXELS = 40;
+const POPUP_MAX_WIDTH_PX = 1400;
+const POPUP_HORIZONTAL_CHROME_PX = 40;
 
 function buildCropPopupBody({
     imageUrl,
@@ -126,23 +126,21 @@ export async function openImageCropPopup({
         imageHeight: cropImage.imageHeight,
         aspectRatio: cropAspectRatio,
     });
-    const avatarPopupGeometricMeanPixels = Math.sqrt(
+    const avatarPopupGeometricMeanPx = Math.sqrt(
         cropImage.imageWidth * cropImage.imageHeight,
     );
-    const popupContentWidthPixels =
+    const popupContentWidthPx =
         kind === "avatar"
             ? Math.min(
-                  avatarPopupGeometricMeanPixels,
+                  avatarPopupGeometricMeanPx,
                   defaultSourceRectangle.sourceWidth,
               )
             : defaultSourceRectangle.sourceWidth;
-    const popupMaxWidthPixels = Math.min(
-        POPUP_MAX_WIDTH_PIXELS,
+    const popupMaxWidthPx = Math.min(
+        POPUP_MAX_WIDTH_PX,
         Math.max(
             1,
-            Math.round(
-                popupContentWidthPixels + POPUP_HORIZONTAL_CHROME_PIXELS,
-            ),
+            Math.round(popupContentWidthPx + POPUP_HORIZONTAL_CHROME_PX),
         ),
     );
     const cropInteractionController = new AbortController();
@@ -531,7 +529,7 @@ export async function openImageCropPopup({
                 aspectRatio: cropAspectRatio,
                 escapeHtmlText,
             }),
-        maxWidth: `min(${POPUP_VIEWPORT_MAX_WIDTH}, ${popupMaxWidthPixels}px)`,
+        maxWidth: `min(${POPUP_VIEWPORT_MAX_WIDTH}, ${popupMaxWidthPx}px)`,
         actions: [
             {
                 id: "reset",

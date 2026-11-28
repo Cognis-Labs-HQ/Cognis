@@ -12,7 +12,7 @@ import type {
     SecuritySettings,
 } from "../index.js";
 import { MemoryRateLimiter } from "../rate-limiter.js";
-import { PASSWORD_RESET_RATE_LIMIT_MILLISECONDS } from "../route-runtime.js";
+import { PASSWORD_RESET_RATE_LIMIT_MS } from "../route-runtime.js";
 import { createLoginLinkRoutes } from "./login-links.js";
 import { createPasswordRoutes } from "./password.js";
 import { createRegistrationRoutes } from "./registration.js";
@@ -68,10 +68,10 @@ export function createAuthGatewayRoutes(
     }
 
     const oneTimeLoginAccountRateLimiter = new MemoryRateLimiter(
-        PASSWORD_RESET_RATE_LIMIT_MILLISECONDS,
+        PASSWORD_RESET_RATE_LIMIT_MS,
     );
     const oneTimeLoginIpRateLimiter = new MemoryRateLimiter(
-        PASSWORD_RESET_RATE_LIMIT_MILLISECONDS,
+        PASSWORD_RESET_RATE_LIMIT_MS,
     );
 
     const keyringRouteFactory = capabilities.require<

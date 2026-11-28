@@ -93,7 +93,7 @@ export function resolveTarget(targets, id, owner, document, context) {
  */
 export function waitForTarget(
     resolve,
-    { signal, timeoutMs: timeoutMilliseconds, document },
+    { signal, timeoutMs: timeoutMs, document },
 ) {
     signal.throwIfAborted();
     return new Promise((accept, reject) => {
@@ -123,7 +123,7 @@ export function waitForTarget(
                 null,
                 signal.reason ?? new DOMException("Aborted", "AbortError"),
             );
-        const deadline = Date.now() + timeoutMilliseconds;
+        const deadline = Date.now() + timeoutMs;
         timer = setInterval(() => {
             check();
             if (Date.now() >= deadline) finish(null);
@@ -145,6 +145,6 @@ export function waitForTarget(
             });
         }
         check();
-        if (timeoutMilliseconds === 0) finish(null);
+        if (timeoutMs === 0) finish(null);
     });
 }

@@ -4,10 +4,10 @@ import { formatDateTime } from "/static/reuse/timestamp.js";
 const log = bindCapability("ui:log");
 
 const MAX_DISPLAYED_LOGS = 400;
-const RECONNECT_DELAY_MILLISECONDS = 2000;
+const RECONNECT_DELAY_MS = 2000;
 const MAX_SILENT_RECONNECT_ATTEMPTS = 2;
-const AUTO_REFRESH_INTERVAL_MILLISECONDS = 5000;
-const TIME_RANGE_MILLISECONDS_BY_KEY = {
+const AUTO_REFRESH_INTERVAL_MS = 5000;
+const TIME_RANGE_MS_BY_KEY = {
     "5m": 5 * 60 * 1000,
     "15m": 15 * 60 * 1000,
     "1h": 60 * 60 * 1000,
@@ -79,18 +79,18 @@ function renderLogRow(entry, i18n, escapeHtml) {
     `;
 }
 
-function parseEntryTimestampMilliseconds(entry) {
+function parseEntryTimestampMs(entry) {
     const parsed = Date.parse(String(entry?.ts ?? ""));
     if (Number.isNaN(parsed)) return null;
     return parsed;
 }
 
 function isWithinTimeRange(entry, timeRange) {
-    const rangeMilliseconds = TIME_RANGE_MILLISECONDS_BY_KEY[timeRange];
-    if (!rangeMilliseconds) return true;
-    const timestampMilliseconds = parseEntryTimestampMilliseconds(entry);
-    if (timestampMilliseconds === null) return false;
-    return Date.now() - timestampMilliseconds <= rangeMilliseconds;
+    const rangeMs = TIME_RANGE_MS_BY_KEY[timeRange];
+    if (!rangeMs) return true;
+    const timestampMs = parseEntryTimestampMs(entry);
+    if (timestampMs === null) return false;
+    return Date.now() - timestampMs <= rangeMs;
 }
 
 /**
@@ -260,7 +260,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
         stopAutoRefresh();
         autoRefreshTimer = setInterval(() => {
             refreshByTimeRangeWindow();
-        }, AUTO_REFRESH_INTERVAL_MILLISECONDS);
+        }, AUTO_REFRESH_INTERVAL_MS);
     }
 
     function scheduleReconnect(sessionId) {
@@ -271,7 +271,7 @@ export function createAdminSection({ i18n, apiFetch, escapeHtml, showToast }) {
         reconnectTimer = setTimeout(() => {
             if (!isPanelActive() || sessionId !== activeSession) return;
             void startStream();
-        }, RECONNECT_DELAY_MILLISECONDS);
+        }, RECONNECT_DELAY_MS);
     }
 
     async function consumeStream(stream, sessionId) {

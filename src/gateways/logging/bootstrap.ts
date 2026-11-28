@@ -32,8 +32,8 @@ const DEFAULT_ROTATE_MAX_BYTES = 10 * 1024 * 1024;
 const DEFAULT_ROTATE_MAX_FILES = 10;
 const MAX_KEYWORD_LENGTH = 120;
 const MAX_SNAPSHOT_ENTRIES = 300;
-const STREAM_POLL_INTERVAL_MILLISECONDS = 1500;
-const STREAM_HEARTBEAT_INTERVAL_MILLISECONDS = 15000;
+const STREAM_POLL_INTERVAL_MS = 1500;
+const STREAM_HEARTBEAT_INTERVAL_MS = 15000;
 
 function parseSeverityThreshold(value: string | null): LogLevel | null {
     if (!value || value === "all") return null;
@@ -61,9 +61,7 @@ function parseTimeRangeFilter(value: string | null): number | null {
     return null;
 }
 
-function parseTimestampMilliseconds(
-    entry: Record<string, unknown>,
-): number | null {
+function parseTimestampMs(entry: Record<string, unknown>): number | null {
     const parsed = Date.parse(String(entry.ts ?? ""));
     if (Number.isNaN(parsed)) return null;
     return parsed;
@@ -97,7 +95,7 @@ function matchesFilters(
     entry: Record<string, unknown>,
     severityThreshold: LogLevel | null,
     keyword: string,
-    timeRangeMilliseconds: number | null,
+    timeRangeMs: number | null,
 ): boolean {
     const level = String(entry.level ?? "").toLowerCase() as LogLevel;
     if (!isLogLevel(level)) {
@@ -109,10 +107,10 @@ function matchesFilters(
     ) {
         return false;
     }
-    if (timeRangeMilliseconds !== null) {
-        const timestampMilliseconds = parseTimestampMilliseconds(entry);
-        if (timestampMilliseconds === null) return false;
-        if (Date.now() - timestampMilliseconds > timeRangeMilliseconds) {
+    if (timeRangeMs !== null) {
+        const timestampMs = parseTimestampMs(entry);
+        if (timestampMs === null) return false;
+        if (Date.now() - timestampMs > timeRangeMs) {
             return false;
         }
     }
@@ -212,7 +210,7 @@ function createLoggingRoutes(
             url.searchParams.get("severity"),
         );
         const keyword = parseKeywordFilter(url.searchParams.get("keyword"));
-        const timeRangeMilliseconds = parseTimeRangeFilter(
+        const timeRangeMs = parseTimeRangeFilter(
             url.searchParams.get("timeRange"),
         );
         let sequence = 0;
@@ -221,14 +219,7 @@ function createLoggingRoutes(
         let closed = false;
 
         const pushEntry = (entry: Record<string, unknown>) => {
-            if (
-                !matchesFilters(
-                    entry,
-                    severityThreshold,
-                    keyword,
-                    timeRangeMilliseconds,
-                )
-            )
+            if (!matchesFilters(entry, severityThreshold, keyword, timeRangeMs))
                 return;
             writeSseEvent(res, "log", { id: sequence++, ...entry });
         };
@@ -256,7 +247,7 @@ function createLoggingRoutes(
                             entry,
                             severityThreshold,
                             keyword,
-                            timeRangeMilliseconds,
+                            timeRangeMs,
                         ),
                     );
                 for (const entry of entries.slice(-MAX_SNAPSHOT_ENTRIES)) {
@@ -338,12 +329,12 @@ function createLoggingRoutes(
 
         const pollTimer = setInterval(() => {
             void pollUpdates();
-        }, STREAM_POLL_INTERVAL_MILLISECONDS);
+        }, STREAM_POLL_INTERVAL_MS);
         pollTimer.unref?.();
         const heartbeatTimer = setInterval(() => {
             if (closed) return;
             res.write(": keepalive\n\n");
-        }, STREAM_HEARTBEAT_INTERVAL_MILLISECONDS);
+        }, STREAM_HEARTBEAT_INTERVAL_MS);
         heartbeatTimer.unref?.();
 
         const closeStream = () => {
@@ -367,7 +358,7 @@ function createLoggingRoutes(
             accountId: claims.sub,
             severityThreshold: severityThreshold ?? "all",
             keyword: keyword || undefined,
-            timeRangeMs: timeRangeMilliseconds ?? "all",
+            timeRangeMs: timeRangeMs ?? "all",
         });
         return true;
     };

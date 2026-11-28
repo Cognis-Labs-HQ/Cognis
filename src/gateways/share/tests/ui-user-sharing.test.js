@@ -281,10 +281,7 @@ test("received user shares navigate once through the share session flow", () => 
     assert.match(receivedShareSource, /await promptForPassword\(\{/);
     assert.match(receivedShareSource, /while \(response\.status === 401\)/);
     assert.match(receivedShareSource, /share\.error\.invalid_password/);
-    assert.match(
-        statusMonitorSource,
-        /ACTIVE_POLL_INTERVAL_MILLISECONDS = 5_000/,
-    );
+    assert.match(statusMonitorSource, /ACTIVE_POLL_INTERVAL_MS = 5_000/);
     assert.match(statusMonitorSource, /document\.hidden/);
     assert.match(statusMonitorSource, /visibilitychange/);
     assert.match(receivedShareActionSource, /watchShareStatus/);

@@ -24,7 +24,7 @@ import {
 } from "./calendar-api.js";
 import { createEventComposerBuilder } from "./event-composer.js";
 import { createRenderPendingEvents } from "./calendar-pending-render.js";
-const HALF_HOUR_MILLISECONDS = 30 * 60 * 1000;
+const HALF_HOUR_MS = 30 * 60 * 1000;
 const CALENDAR_VIEWS = ["day", "week", "month", "year"];
 const EVENT_RESPONSE_OPTIONS = ["accepted", "tentative", "declined"];
 const EVENT_STATUS_OPTIONS = ["busy", "free"];

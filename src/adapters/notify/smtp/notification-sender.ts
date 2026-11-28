@@ -40,7 +40,7 @@ import {
     SmtpNotificationQueue,
     SmtpRateLimiter,
 } from "./notification-queue.js";
-import { EMAIL_DELIVERY_RATE_LIMIT_MILLISECONDS } from "./rate-limit.js";
+import { EMAIL_DELIVERY_RATE_LIMIT_MS } from "./rate-limit.js";
 
 export interface SmtpConfig {
     host: string;
@@ -303,7 +303,7 @@ async function sendMail(
 }
 
 const DEFAULT_GREYLIST_RETRIES = 2;
-const DEFAULT_GREYLIST_RETRY_DELAY_MILLISECONDS = 5 * 60 * 1000;
+const DEFAULT_GREYLIST_RETRY_DELAY_MS = 5 * 60 * 1000;
 
 async function waitForRetry(
     sleep: (ms: number) => Promise<void>,
@@ -338,14 +338,13 @@ async function sendMailWithRetry(
     presentation?: EmailPresentation,
 ): Promise<void> {
     const maxRetries = config.greylistRetries ?? DEFAULT_GREYLIST_RETRIES;
-    const delayMilliseconds =
-        config.greylistRetryDelayMs ??
-        DEFAULT_GREYLIST_RETRY_DELAY_MILLISECONDS;
+    const delayMs =
+        config.greylistRetryDelayMs ?? DEFAULT_GREYLIST_RETRY_DELAY_MS;
 
     let lastError: unknown;
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
         if (attempt > 0) {
-            await waitForRetry(sleep, delayMilliseconds, signal);
+            await waitForRetry(sleep, delayMs, signal);
         }
         signal?.throwIfAborted();
         try {
@@ -418,7 +417,7 @@ export class SmtpNotificationSender implements NotificationSender {
                 }));
         this.createRateLimiter =
             createRateLimiter ??
-            (() => new SmtpRateLimiter(EMAIL_DELIVERY_RATE_LIMIT_MILLISECONDS));
+            (() => new SmtpRateLimiter(EMAIL_DELIVERY_RATE_LIMIT_MS));
     }
 
     async bootstrap(ctx: NotifyAdapterBootstrapCtx): Promise<void> {
@@ -683,7 +682,7 @@ export class SmtpNotificationSender implements NotificationSender {
                 this.config.greylistRetries ?? DEFAULT_GREYLIST_RETRIES,
             greylistRetryDelayMs:
                 this.config.greylistRetryDelayMs ??
-                DEFAULT_GREYLIST_RETRY_DELAY_MILLISECONDS,
+                DEFAULT_GREYLIST_RETRY_DELAY_MS,
             codeLength: this.getCodeLength(),
         };
     }

@@ -30,11 +30,11 @@ import { sanitizeNotificationActionIcon } from "./action-icon.js";
 
 const log = bindCapability("ui:log");
 
-const POLL_INTERVAL_VISIBLE_MILLISECONDS = 10_000;
-const POLL_INTERVAL_HIDDEN_MILLISECONDS = 30_000;
+const POLL_INTERVAL_VISIBLE_MS = 10_000;
+const POLL_INTERVAL_HIDDEN_MS = 30_000;
 const TOAST_BODY_PREVIEW_LENGTH = 90;
-const TOAST_AUTO_DISMISS_MILLISECONDS = 6_000;
-const RELATIVE_TIME_TICK_MILLISECONDS = 1000;
+const TOAST_AUTO_DISMISS_MS = 6_000;
+const RELATIVE_TIME_TICK_MS = 1000;
 const CSS_HREF = "/static/gateways/notify-internal/notifications.css";
 const notificationTextDecoder = new TextDecoder();
 
@@ -328,10 +328,7 @@ function startRelativeTimeTicker() {
     relativeTimeNodes = Array.from(
         listElement.querySelectorAll("[data-relative-time]"),
     );
-    relativeTimeTimer = setInterval(
-        tickRelativeTimes,
-        RELATIVE_TIME_TICK_MILLISECONDS,
-    );
+    relativeTimeTimer = setInterval(tickRelativeTimes, RELATIVE_TIME_TICK_MS);
 }
 
 function stopRelativeTimeTicker() {
@@ -685,8 +682,8 @@ async function startPolling(i18n) {
     function scheduleNext() {
         const delay =
             document.visibilityState === "visible"
-                ? POLL_INTERVAL_VISIBLE_MILLISECONDS
-                : POLL_INTERVAL_HIDDEN_MILLISECONDS;
+                ? POLL_INTERVAL_VISIBLE_MS
+                : POLL_INTERVAL_HIDDEN_MS;
         pollTimer = setTimeout(tick, delay);
     }
 
@@ -887,7 +884,7 @@ async function showArrivalToast(notification, i18n) {
             Math.max(0, Number.isFinite(remaining) ? remaining : 0),
         );
     } else {
-        setTimeout(dismiss, TOAST_AUTO_DISMISS_MILLISECONDS);
+        setTimeout(dismiss, TOAST_AUTO_DISMISS_MS);
     }
 }
 

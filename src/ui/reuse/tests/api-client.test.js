@@ -14,11 +14,8 @@ const apiClientSource = readFileSync(
 );
 
 test("API requests receive a finite default browser timeout", () => {
-    assert.match(apiClientSource, /API_REQUEST_TIMEOUT_MILLISECONDS = 30_000/);
-    assert.match(
-        apiClientSource,
-        /AbortSignal\?\.timeout\?\.\(timeoutMilliseconds\)/,
-    );
+    assert.match(apiClientSource, /API_REQUEST_TIMEOUT_MS = 30_000/);
+    assert.match(apiClientSource, /AbortSignal\?\.timeout\?\.\(timeoutMs\)/);
     assert.match(apiClientSource, /AbortSignal\?\.any\?\.\(/);
 });
 

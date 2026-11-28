@@ -27,7 +27,7 @@ export const AVAILABILITY_STATUSES: readonly AvailabilityStatus[] = [
     "tentative",
 ];
 const VALID_STATUSES = new Set(AVAILABILITY_STATUSES);
-const ACTIVE_PRESENCE_TTL_MILLISECONDS = 45_000;
+const ACTIVE_PRESENCE_TTL_MS = 45_000;
 const MAX_PRESENCE_SESSIONS_PER_ACCOUNT = 8;
 
 export class AvailabilityPresenceStore {
@@ -70,7 +70,7 @@ export class AvailabilityPresenceStore {
         now: number,
     ): void {
         for (const [sessionId, session] of sessions) {
-            if (now - session.updatedAt > ACTIVE_PRESENCE_TTL_MILLISECONDS) {
+            if (now - session.updatedAt > ACTIVE_PRESENCE_TTL_MS) {
                 sessions.delete(sessionId);
             }
         }

@@ -45,7 +45,7 @@ export function isExpired(expiresAt: string): boolean {
 // owner can still see them listed with an "Expired" status and the time
 // they expired, instead of the record vanishing the instant it lapses.
 // purgeExpired() only removes tokens older than this retention window.
-const EXPIRED_TOKEN_RETENTION_MILLISECONDS = 7 * 24 * 60 * 60 * 1000;
+const EXPIRED_TOKEN_RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
 
 function parseRecord(
     row: Record<string, unknown>,
@@ -655,7 +655,7 @@ export class ShareTokenStore {
         resourceId?: string;
     }): Promise<void> {
         const retentionCutoffIso = new Date(
-            Date.now() - EXPIRED_TOKEN_RETENTION_MILLISECONDS,
+            Date.now() - EXPIRED_TOKEN_RETENTION_MS,
         ).toISOString();
         // We persist "never expires" tokens with an empty expires_at value, so
         // expiry deletion must first exclude empty rows before applying the

@@ -9,10 +9,10 @@ export class SmtpRateLimiter {
     readonly intervalMs: number;
 
     constructor(
-        intervalMilliseconds: number,
+        intervalMs: number,
         private readonly now: () => number = () => Date.now(),
     ) {
-        this.intervalMs = intervalMilliseconds;
+        this.intervalMs = intervalMs;
     }
 
     nextAvailableAt(recipient: string): number {
@@ -327,7 +327,7 @@ export class SmtpNotificationQueue {
     }
 
     private async sleepWithWake(
-        delayMilliseconds: number,
+        delayMs: number,
         sleepingUntil: number,
     ): Promise<void> {
         const sleepId = this.nextSleepId++;
@@ -335,7 +335,7 @@ export class SmtpNotificationQueue {
         const wakePromise = new Promise<void>((resolve) => {
             this.wakeDrainSleep = { sleepId, resolve };
         });
-        await Promise.race([this.sleep(delayMilliseconds), wakePromise]);
+        await Promise.race([this.sleep(delayMs), wakePromise]);
         if (this.wakeDrainSleep?.sleepId === sleepId) {
             this.wakeDrainSleep = null;
             this.sleepingUntil = null;

@@ -53,13 +53,9 @@ export class TfaCodeService {
      * @param expiryMs Milliseconds until the code expires (default: 15 minutes)
      * @returns The generated code string
      */
-    issue(
-        key: string,
-        expiryMilliseconds = 15 * 60 * 1000,
-        digits?: number,
-    ): string {
+    issue(key: string, expiryMs = 15 * 60 * 1000, digits?: number): string {
         const code = generateNumericCode(digits);
-        this.store.set(key, code, this.now() + expiryMilliseconds);
+        this.store.set(key, code, this.now() + expiryMs);
         return code;
     }
 
@@ -75,14 +71,14 @@ export class TfaCodeService {
      */
     issueOrGet(
         key: string,
-        expiryMilliseconds = 15 * 60 * 1000,
+        expiryMs = 15 * 60 * 1000,
         digits?: number,
     ): string {
         const existing = this.store.get(key);
         if (existing && this.now() <= existing.expiresAt) {
             return existing.code;
         }
-        return this.issue(key, expiryMilliseconds, digits);
+        return this.issue(key, expiryMs, digits);
     }
 
     /**

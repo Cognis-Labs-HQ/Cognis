@@ -7,7 +7,7 @@ import {
 } from "./types.js";
 import type { ComponentService } from "./service.js";
 
-const WINDOW_MILLISECONDS = 5 * 60_000;
+const WINDOW_MS = 5 * 60_000;
 const THRESHOLD = 3;
 const MAX_COMPONENTS = 2048;
 interface FailureRecord {
@@ -82,7 +82,7 @@ export function createComponentFailures(
                     const key =
                         componentKey(owner) + ":" + (owner.version ?? "");
                     for (const [id, record] of records)
-                        if (now() - record.started > WINDOW_MILLISECONDS)
+                        if (now() - record.started > WINDOW_MS)
                             records.delete(id);
                     let record = records.get(key);
                     if (!record) {

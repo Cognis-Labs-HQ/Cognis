@@ -638,22 +638,16 @@ export class CalendarShareRegistry {
         shareLink: CalendarShareLinkRegistryRecord,
     ): boolean {
         if (!shareLink.expiresAt) return false;
-        const expiresAtMilliseconds = Date.parse(shareLink.expiresAt);
-        return (
-            Number.isFinite(expiresAtMilliseconds) &&
-            expiresAtMilliseconds <= Date.now()
-        );
+        const expiresAtMs = Date.parse(shareLink.expiresAt);
+        return Number.isFinite(expiresAtMs) && expiresAtMs <= Date.now();
     }
 
     private isExpiredUserShare(
         share: CalendarUserShareRegistryRecord,
     ): boolean {
         if (!share.expiresAt) return false;
-        const expiresAtMilliseconds = Date.parse(share.expiresAt);
-        return (
-            Number.isFinite(expiresAtMilliseconds) &&
-            expiresAtMilliseconds <= Date.now()
-        );
+        const expiresAtMs = Date.parse(share.expiresAt);
+        return Number.isFinite(expiresAtMs) && expiresAtMs <= Date.now();
     }
 
     private pruneExpiredShareLinks(

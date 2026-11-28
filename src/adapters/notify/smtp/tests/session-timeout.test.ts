@@ -2,11 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import network from "node:net";
 import { setImmediate } from "node:timers/promises";
-import {
-    openSession,
-    upgradeToTls,
-    SMTP_TIMEOUT_MILLISECONDS,
-} from "../smtp-session.js";
+import { openSession, upgradeToTls, SMTP_TIMEOUT_MS } from "../smtp-session.js";
 
 for (const transport of ["tls", "starttls"] as const) {
     test(`${transport} handshake deadlines close an unresponsive connection`, async (testContext) => {
@@ -33,16 +29,13 @@ for (const transport of ["tls", "starttls"] as const) {
             transport === "tls"
                 ? openSession("127.0.0.1", port, "tls", true)
                 : openSession("127.0.0.1", port, "none").then((session) => {
-                      assert.equal(
-                          session.socket.timeout,
-                          SMTP_TIMEOUT_MILLISECONDS,
-                      );
+                      assert.equal(session.socket.timeout, SMTP_TIMEOUT_MS);
                       return upgradeToTls(session, "smtp.example.test", true);
                   });
         const failed = assert.rejects(connecting, /smtp_timeout/);
         await accepted;
         await setImmediate();
-        testContext.mock.timers.tick(SMTP_TIMEOUT_MILLISECONDS);
+        testContext.mock.timers.tick(SMTP_TIMEOUT_MS);
         await failed;
     });
 }

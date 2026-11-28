@@ -562,7 +562,7 @@ export async function mount(root, { signal } = {}) {
                     }
 
                     if (inviteData?.expiresAt) {
-                        const expiresAtMilliseconds = new Date(
+                        const expiresAtMs = new Date(
                             inviteData.expiresAt,
                         ).getTime();
                         let countdownTimer = null;
@@ -574,8 +574,7 @@ export async function mount(root, { signal } = {}) {
                                 clearInterval(countdownTimer);
                                 return;
                             }
-                            const remaining =
-                                expiresAtMilliseconds - Date.now();
+                            const remaining = expiresAtMs - Date.now();
                             if (remaining <= 0) {
                                 countdown.textContent = i18n.t(
                                     "ui.app.register.token_expired",

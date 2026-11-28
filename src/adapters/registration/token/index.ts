@@ -15,7 +15,7 @@ interface RegistrationInviteRecord {
 }
 
 const FOUNDER_PENDING_INVITE_LIMIT = 10;
-const INVITE_EXPIRY_MILLISECONDS = 24 * 60 * 60 * 1000;
+const INVITE_EXPIRY_MS = 24 * 60 * 60 * 1000;
 
 interface RegistrationTokenAdapter {
     issueInvite(input: {
@@ -303,9 +303,7 @@ export function createAdapter(dependencies: {
         const secret = randomBytes(32).toString("base64url");
         const rawToken = `${tokenId}.${secret}`;
         const tokenHash = sha256(rawToken);
-        const expiresAt = new Date(
-            Date.now() + INVITE_EXPIRY_MILLISECONDS,
-        ).toISOString();
+        const expiresAt = new Date(Date.now() + INVITE_EXPIRY_MS).toISOString();
         const inviteUrl = buildInviteUrl(input.inviteBaseUrl, rawToken);
 
         await databaseExecutor.executeCommand({

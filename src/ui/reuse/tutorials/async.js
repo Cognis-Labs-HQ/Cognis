@@ -4,10 +4,10 @@
  * @example const result = await abortable(load(), signal);
  * @param {Promise<unknown>} work Pending owner work.
  * @param {AbortSignal} signal Work lifetime.
- * @param {number} timeoutMilliseconds Maximum wait in milliseconds.
+ * @param {number} timeoutMs Maximum wait in milliseconds.
  * @returns {Promise<unknown>} The result or a cancellation/timeout rejection.
  */
-export function abortable(work, signal, timeoutMilliseconds = 15000) {
+export function abortable(work, signal, timeoutMs = 15000) {
     signal.throwIfAborted();
     return new Promise((resolve, reject) => {
         const dispose = () => {
@@ -21,7 +21,7 @@ export function abortable(work, signal, timeoutMilliseconds = 15000) {
         const timer = setTimeout(() => {
             dispose();
             reject(new Error("tutorial_callback_timeout"));
-        }, timeoutMilliseconds);
+        }, timeoutMs);
         signal.addEventListener("abort", abort, { once: true });
         Promise.resolve(work).then(
             (value) => {

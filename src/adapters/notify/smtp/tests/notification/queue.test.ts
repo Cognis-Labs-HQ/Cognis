@@ -10,7 +10,7 @@ import {
     SmtpNotificationQueue,
 } from "../../notification-queue.js";
 
-const RATE_LIMIT_DELAY_MILLISECONDS = 250;
+const RATE_LIMIT_DELAY_MS = 250;
 
 function sleepWithoutKeepingProcessAlive(ms: number): Promise<void> {
     return new Promise((resolve) => {
@@ -43,9 +43,9 @@ test("SMTP queue carries test configuration through rate-limited delivery", asyn
 
 async function waitFor(
     predicate: () => boolean,
-    timeoutMilliseconds = 2_000,
+    timeoutMs = 2_000,
 ): Promise<void> {
-    const deadline = Date.now() + timeoutMilliseconds;
+    const deadline = Date.now() + timeoutMs;
     while (Date.now() < deadline) {
         if (predicate()) return;
         await new Promise((resolve) => setTimeout(resolve, 10));
@@ -131,7 +131,7 @@ test("SmtpNotificationSender queue applies recipient rate-limit spacing", async 
 });
 
 test("SmtpNotificationQueue wakes during rate-limit sleep when a different recipient is ready", async () => {
-    const limiter = new SmtpRateLimiter(RATE_LIMIT_DELAY_MILLISECONDS);
+    const limiter = new SmtpRateLimiter(RATE_LIMIT_DELAY_MS);
     limiter.record("delayed@example.com", Date.now());
     const sentRecipients: string[] = [];
     const queue = new SmtpNotificationQueue(

@@ -655,11 +655,10 @@ export async function dispatchReminderNotifications({
                 );
             await Promise.all(
                 reminders.map(async (reminderOffsetMinutes) => {
-                    const startAtMilliseconds = Date.parse(event.startAt);
-                    const reminderAt = Number.isFinite(startAtMilliseconds)
+                    const startAtMs = Date.parse(event.startAt);
+                    const reminderAt = Number.isFinite(startAtMs)
                         ? new Date(
-                              startAtMilliseconds -
-                                  reminderOffsetMinutes * 60_000,
+                              startAtMs - reminderOffsetMinutes * 60_000,
                           ).toISOString()
                         : null;
                     try {

@@ -433,19 +433,16 @@ export function issueAccessToken(
  */
 export function isTokenVerificationFresh(
     rawToken: string,
-    windowMilliseconds: number,
+    windowMs: number,
 ): boolean {
     const tokenHash = hashToken(rawToken);
     const record = tokenStore.get(tokenHash);
     if (!record) return false;
     if (invalidatedVerificationTokens.has(tokenHash)) return false;
     const now = Date.now();
-    if (record.issuedAt && now - record.issuedAt <= windowMilliseconds)
-        return true;
+    if (record.issuedAt && now - record.issuedAt <= windowMs) return true;
     const lastVerified = verifiedAtByToken.get(tokenHash);
-    return (
-        lastVerified !== undefined && now - lastVerified <= windowMilliseconds
-    );
+    return lastVerified !== undefined && now - lastVerified <= windowMs;
 }
 
 export function invalidateTokenVerification(rawToken: string): void {

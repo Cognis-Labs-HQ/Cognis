@@ -88,7 +88,7 @@ export function createModuleExtensionRoutes(
     log?: BootstrapLog,
     options?: ModuleExtensionOptions,
 ): ModuleExtensionRoutes {
-    const bootstrapTimeoutMilliseconds = options?.bootstrapTimeoutMs ?? 120_000;
+    const bootstrapTimeoutMs = options?.bootstrapTimeoutMs ?? 120_000;
     let refreshQueue = Promise.resolve();
     const activeRequests = new Set<Promise<boolean>>();
     let handlers: RouteHandler[] = [];
@@ -628,10 +628,10 @@ export function createModuleExtensionRoutes(
                                 () =>
                                     reject(
                                         new Error(
-                                            `Module bootstrap timed out after ${bootstrapTimeoutMilliseconds}ms`,
+                                            `Module bootstrap timed out after ${bootstrapTimeoutMs}ms`,
                                         ),
                                     ),
-                                bootstrapTimeoutMilliseconds,
+                                bootstrapTimeoutMs,
                             );
                         }),
                     ]),

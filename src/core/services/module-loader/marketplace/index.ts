@@ -19,7 +19,7 @@ import { validateModuleRepository } from "../repository-validator.js";
 import { checkoutModuleRepository } from "./checkout.js";
 import { MarketplaceServiceBase } from "./base.js";
 
-const SOURCE_SCAN_INTERVAL_MILLISECONDS = 60 * 60 * 1000;
+const SOURCE_SCAN_INTERVAL_MS = 60 * 60 * 1000;
 const GITHUB_PAT_PERMISSION_DOCUMENTS =
     "https://docs.github.com/rest/authentication/permissions-required-for-fine-grained-personal-access-tokens";
 const GITHUB_SSO_DOCUMENTS =
@@ -382,16 +382,14 @@ export class ModuleMarketplaceService extends MarketplaceServiceBase {
             if (
                 !forceRefresh &&
                 lastAttemptAt &&
-                Date.now() - Date.parse(lastAttemptAt) <
-                    SOURCE_SCAN_INTERVAL_MILLISECONDS
+                Date.now() - Date.parse(lastAttemptAt) < SOURCE_SCAN_INTERVAL_MS
             ) {
                 this.log("info", "Module source scan served from cache.", {
                     sourceUuid: source.uuid,
                     sourceName: source.name,
                     modulesFound: cachedModules.length,
                     nextScanAt: new Date(
-                        Date.parse(lastAttemptAt) +
-                            SOURCE_SCAN_INTERVAL_MILLISECONDS,
+                        Date.parse(lastAttemptAt) + SOURCE_SCAN_INTERVAL_MS,
                     ).toISOString(),
                 });
                 modules = cachedModules;

@@ -114,7 +114,7 @@ export function observePerformance() {
     );
 }
 
-export function recordRouteMount(_route, durationMilliseconds) {
+export function recordRouteMount(_route, durationMs) {
     if (!sampled) return;
-    send("spa", new Map([["web.route_mount_ms", durationMilliseconds]]));
+    send("spa", new Map([["web.route_mount_ms", durationMs]]));
 }

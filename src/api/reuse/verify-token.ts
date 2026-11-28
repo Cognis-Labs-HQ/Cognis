@@ -70,10 +70,10 @@ export class VerifyTokenService {
      * @param expiryMs Milliseconds until the token expires (default: 15 minutes)
      * @returns The generated token string
      */
-    issue(key: string, expiryMilliseconds = 15 * 60 * 1000): string {
+    issue(key: string, expiryMs = 15 * 60 * 1000): string {
         this.store.deleteByKey(key);
         const token = generateVerifyToken();
-        this.store.set(token, key, this.now() + expiryMilliseconds);
+        this.store.set(token, key, this.now() + expiryMs);
         return token;
     }
 
@@ -87,7 +87,7 @@ export class VerifyTokenService {
      * @param expiryMs Milliseconds until a newly-issued token expires (default: 15 minutes)
      * @returns The token string (existing or newly generated)
      */
-    issueOrGet(key: string, expiryMilliseconds = 15 * 60 * 1000): string {
+    issueOrGet(key: string, expiryMs = 15 * 60 * 1000): string {
         const existingToken = this.store.findTokenByKey(key);
         if (existingToken) {
             const entry = this.store.get(existingToken);
@@ -95,7 +95,7 @@ export class VerifyTokenService {
                 return existingToken;
             }
         }
-        return this.issue(key, expiryMilliseconds);
+        return this.issue(key, expiryMs);
     }
 
     /**

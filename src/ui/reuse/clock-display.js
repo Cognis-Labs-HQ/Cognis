@@ -90,8 +90,8 @@ export function buildAnalogueClockMarkup(now, timezone) {
     const centerY = 54;
     const faceRadius = 48;
 
-    function handCoords(angleDegrees, length) {
-        const radians = ((angleDegrees - 90) * Math.PI) / 180;
+    function handCoords(angleDeg, length) {
+        const radians = ((angleDeg - 90) * Math.PI) / 180;
         return {
             x: centerX + length * Math.cos(radians),
             y: centerY + length * Math.sin(radians),
